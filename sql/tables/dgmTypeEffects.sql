@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 18, 2020 at 03:45 PM
+-- Generation Time: Feb 18, 2020 at 04:22 PM
 -- Server version: 10.0.36-MariaDB
 -- PHP Version: 5.6.36
 
@@ -3137,7 +3137,6 @@ INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
 (32013, 2195, 0),
 (3755, 132, 1),
 (3755, 189, 0),
-(30197, 1982, 0),
 (3758, 132, 1),
 (3758, 187, 0),
 (29245, 10, 1),
@@ -3705,9 +3704,9 @@ INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
 (4791, 13, 0),
 (4791, 16, 0),
 (4791, 25, 0),
-(4829, 13, 0);
+(4829, 13, 0),
+(4829, 16, 0);
 INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
-(4829, 16, 0),
 (4829, 48, 1),
 (4829, 3002, 0),
 (4831, 13, 0),
@@ -7339,9 +7338,9 @@ INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
 (11107, 11, 0),
 (11107, 16, 0),
 (11107, 93, 0),
-(11107, 96, 0);
+(11107, 96, 0),
+(11109, 11, 0);
 INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
-(11109, 11, 0),
 (11109, 16, 0),
 (11109, 93, 0),
 (11109, 96, 0),
@@ -10671,9 +10670,9 @@ INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
 (14069, 16, 0),
 (14069, 27, 1),
 (14069, 3200, 0),
-(14070, 11, 0);
+(14070, 11, 0),
+(14070, 16, 0);
 INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
-(14070, 16, 0),
 (14070, 63, 0),
 (14070, 2041, 0),
 (14072, 11, 0),
@@ -14086,9 +14085,9 @@ INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
 (15806, 1826, 0),
 (15808, 11, 0),
 (15808, 16, 0),
-(15808, 91, 0);
+(15808, 91, 0),
+(15808, 95, 0);
 INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
-(15808, 95, 0),
 (15810, 11, 0),
 (15810, 16, 0),
 (15810, 91, 0),
@@ -17451,9 +17450,9 @@ INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
 (17770, 901, 0),
 (17770, 1022, 0),
 (17770, 1023, 0),
-(17770, 1086, 1);
+(17770, 1086, 1),
+(17771, 901, 0);
 INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
-(17771, 901, 0),
 (17771, 1022, 0),
 (17771, 1023, 0),
 (17771, 1086, 1),
@@ -20802,9 +20801,9 @@ INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
 (20635, 13, 0),
 (20635, 16, 0),
 (20635, 2117, 0),
-(20635, 2118, 1);
+(20635, 2118, 1),
+(20635, 3030, 0);
 INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
-(20635, 3030, 0),
 (20637, 13, 0),
 (20637, 16, 0),
 (20637, 2117, 0),
@@ -24128,9 +24127,9 @@ INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
 (23485, 10, 1),
 (23485, 2192, 0),
 (23486, 10, 1),
-(23486, 2192, 0);
+(23486, 2192, 0),
+(23487, 569, 1);
 INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
-(23487, 569, 1),
 (23487, 2193, 0),
 (23488, 569, 1),
 (23488, 2193, 0),
@@ -27419,9 +27418,9 @@ INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
 (26754, 10, 1),
 (26754, 2197, 0),
 (26755, 10, 1),
-(26755, 2196, 0);
+(26755, 2196, 0),
+(26756, 10, 1);
 INSERT INTO `dgmTypeEffects` (`typeID`, `effectID`, `isDefault`) VALUES
-(26756, 10, 1),
 (26756, 569, 0),
 (26756, 2193, 0),
 (26757, 10, 1),
