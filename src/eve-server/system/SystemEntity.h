@@ -458,7 +458,7 @@ public:
     virtual PyDict*             MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual bool                Load();
+    virtual bool                Load()                  { return true; }
     virtual bool                IsInvul()               { return m_invul; }
     virtual bool                IsFrozen()              { return m_frozen; }
 

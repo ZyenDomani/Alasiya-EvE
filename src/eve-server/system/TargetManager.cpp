@@ -298,8 +298,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     _log(TARGET__INFO, "Pilot %s in %s(%u) started targeting %s(%u) (%.2fs lock time)", \
             mySE->GetPilot()->GetName(), mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), lockTime);
 
-    if (is_log_enabled(TARGET__DUMP))
-        Dump();
+    Dump();
 
     return true;
 }
@@ -308,7 +307,6 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxL
 {       // NOTE  this is for npcs
     //first make sure they are not already in the list
     if (m_targets.find(tSE) != m_targets.end()) {
-        //what to do?
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
                 mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return true;
@@ -337,8 +335,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxL
     _log(TARGET__INFO, "NPC %s(%u) started targeting %s(%u) (%.2fs lock time)", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), (lockTime /1000));
 
-    if (is_log_enabled(TARGET__DUMP))
-        Dump();
+    Dump();
 
     return true;
 }
@@ -643,8 +640,7 @@ void TargetManager::Destroyed()
     _log(TARGET__INFO, "%s(%u) has been destroyed. %u modules, %u targets, and %u targeters in maps.", \
             mySE->GetName(), mySE->GetID(), m_modules.size(), m_targets.size(), m_targetedBy.size());
 
-    if (is_log_enabled(TARGET__DUMP))
-        Dump();
+    Dump();
 
     std::string effect = "TargetDestroyed";
     // iterate thru the map of modules targeting this object, and call Deactivate on each.
@@ -753,6 +749,9 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
 }
 
 void TargetManager::Dump() const {
+    if (!is_log_enabled(TARGET__DUMP))
+        return;
+    
     _log(TARGET__DUMP, "Target Dump for %s(%u):", mySE->GetName(), mySE->GetID());
     for (auto cur : m_targets)
         cur.second->Dump();

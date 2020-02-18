@@ -69,3 +69,9 @@ UPDATE dgmTypeAttributes
 SET valueFloat = 1.5
 WHERE attributeID = 600
 AND typeID = 28606;
+
+-- warp speed correction for Freki
+UPDATE dgmTypeAttributes
+SET valueFloat = 15
+WHERE attributeID = 600
+AND typeID = 32207;

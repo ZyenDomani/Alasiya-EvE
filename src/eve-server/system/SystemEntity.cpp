@@ -617,13 +617,10 @@ DynamicSystemEntity::~DynamicSystemEntity()
     SafeDelete(m_destiny);
 }
 
-bool DynamicSystemEntity::Load() {
-    return true;
-}
-
 PyDict *DynamicSystemEntity::MakeSlimItem() {
     if (IsNPCSE())
         return SystemEntity::MakeSlimItem();
+
     _log(SE__SLIMITEM, "MakeSlimItem for DSE %s(%u)", GetName(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));

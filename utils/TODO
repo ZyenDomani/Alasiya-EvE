@@ -312,6 +312,8 @@ look into using "CALL_", "RSP_" and "encode=true/false"/"decode=true/false" for 
 
 *****************  ideas for later
 
+print version #s to local chat on login
+
 aggressionMgr - this obj is system-wide, per system.  bound object can be used for multiple clients
 
 system mail not working.  this would be nice to have, as many systems could(will) use it    -priority level: low
@@ -482,4 +484,4 @@ website updates:
 replace/update outdated mysql_connect with newer mysqli_connect
 --  major updates needed in website code for python 3
 
-revert main server back to mageia 5 (will require full wipe)
+add version #s to site
