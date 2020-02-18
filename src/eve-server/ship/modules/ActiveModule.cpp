@@ -356,8 +356,10 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
     else
         modules.push_back(this);
-    for (auto cur : modules)
-        cur->GetActiveModule()->ShowEffect(true, false);
+    // shit's not set in linked modules...fix this
+    //for (auto cur : modules)
+    //    cur->GetActiveModule()->ShowEffect(true, false);
+    ShowEffect(true, false);
 
     SetModuleState(Module::State::Activated);
 
@@ -595,8 +597,10 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
     else
         modules.push_back(this);
-    for (auto cur : modules)
-        cur->GetActiveModule()->ShowEffect(false, abort);
+    // shit's not set in linked modules...fix this
+    //for (auto cur : modules)
+    //    cur->GetActiveModule()->ShowEffect(false, abort);
+    ShowEffect(false, abort);
 
     ApplyEffect(FX::State::Active, false);
     if (IsValidTarget(m_targetID)
