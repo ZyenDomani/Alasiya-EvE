@@ -207,7 +207,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
    );
 
     item = sItemFactory.SpawnItem(idata);
-    if (!item)
+    if (item.get() == nullptr)
         throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 
     DBSystemDynamicEntity entity = DBSystemDynamicEntity();
@@ -215,24 +215,28 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         entity.groupID = actualGroupID;
         entity.itemID = item->itemID();
         entity.itemName = actualTypeName;
-        entity.ownerID = 1;
         entity.typeID = actualTypeID;
         entity.x = loc.x;
         entity.y = loc.y;
         entity.z = loc.z;
+        /** @todo need to get faction info here... */
+        entity.allianceID = 1;
+        entity.corporationID = 1;
+        entity.factionID = 1;
+        entity.ownerID = 1;
 
     // Actually do the spawn using SystemManager's BuildEntity:
     if (!who->SystemMgr()->BuildDynamicEntity(entity))
         return new PyString("Spawn Failed: typeID or typeName not supported.");
 
-    sLog.White("Command", "%s: Spawned %u.", who->GetName(), typeID);
+    sLog.Yellow("Command", "%s: Spawned %u.", who->GetName(), typeID);
 
     return new PyString("Spawn successful.");
 }
 
-PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    int typeID = 0, spawnCount = 1;
+    int spawnCount = 1;
     uint32 spawnIndex = 0;
     uint32 maximumSpawnCountAllowed = 100;
     uint32 actualTypeID = 0;
@@ -246,7 +250,7 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
     bool offsetLocationSet = false;
     std::string usage = "Correct Usage: <br><br> /spawn [typeID(int)/typeName(string)] <br><br>With optional spawn count: <br> /spawn [typeID(int)/typeName(string)] [count] <br><br>With optional count and (X,Y,Z) coordinate: <br> /spawn [typeID(int/typeName(string)] [count] [x(float)] [y(float)] [z(float)]";
 
-    if (!who->IsInSpace())
+    if (!pClient->IsInSpace())
         throw PyException(MakeCustomError("You must be in space to spawn things."));
 
     if (args.argCount() < 2) {
@@ -256,7 +260,7 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
     if (!args.isNumber(1))
         throw PyException(MakeCustomError("Argument 1 should be an item type ID"));
 
-    typeID = atoi(args.arg(1).c_str());
+    int typeID = atoi(args.arg(1).c_str());
 
     // Search for item type using typeID:
     if (!(db->ItemSearch(typeID, actualTypeID, actualTypeName, actualGroupID, actualCategoryID, actualRadius)))
@@ -305,9 +309,9 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
 
     GPoint loc;
 
-    for(spawnIndex=0; spawnIndex < spawnCount; spawnIndex++)
+    for(spawnIndex=0; spawnIndex < spawnCount; ++spawnIndex)
     {
-        loc = who->GetShipSE()->GetPosition();
+        loc = pClient->GetShipSE()->GetPosition();
 
         if (offsetLocationSet)
         {
@@ -329,18 +333,17 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
         ItemData idata(
             actualTypeID,
             1, // owner is EVE System
-            who->GetLocationID(),
+            pClient->GetLocationID(),
             flagAutoFit,
             actualTypeName.c_str(),
             loc
        );
 
         item = sItemFactory.SpawnItem(idata);
-        if (!item)
+        if (item.get() == nullptr)
             throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 
         DBSystemDynamicEntity entity = DBSystemDynamicEntity();
-        entity.ownerID = 1;
         entity.categoryID = (EVEItemCategories)actualCategoryID;
         entity.groupID = actualGroupID;
         entity.itemID = item->itemID();
@@ -349,17 +352,39 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
         entity.x = loc.x;
         entity.y = loc.y;
         entity.z = loc.z;
+        // set owner data according to type and location
+        switch (actualCategoryID) {
+            case EVEDB::invCategories::Entity: {
+                // owned by system rats
+                entity.factionID = sDataMgr.GetRegionRatFaction(pClient->GetRegionID());
+                entity.allianceID = 0;
+                entity.corporationID = sDataMgr.GetCorpID(entity.factionID);
+                entity.ownerID = entity.corporationID;
+            } break;
+            case EVEDB::invCategories::Ship: {
+                // owned by calling char
+                entity.allianceID = pClient->GetAllianceID();
+                entity.corporationID = pClient->GetCorporationID();
+                entity.factionID = pClient->GetWarFactionID();
+                entity.ownerID = pClient->GetCharacterID();
+            } break;
+            default: {
+                //owned by system sov holder
+                entity.factionID = sDataMgr.GetRegionFaction(pClient->GetRegionID());
+                entity.allianceID = 0;
+                entity.corporationID = sDataMgr.GetCorpID(entity.factionID);
+                entity.ownerID = entity.corporationID;
+            } break;
+        }
+
 
         // Actually do the spawn using SystemManager's BuildEntity:
-        if (!who->SystemMgr()->BuildDynamicEntity(entity)) {
+        if (!pClient->SystemMgr()->BuildDynamicEntity(entity)) {
             return new PyString("Spawn Failed: typeID or typeName not supported.");
-        }
-        if (spawnCount == 1) {
-            return new PyInt(entity.itemID);
         }
     }
 
-    sLog.White("Command_spawn", "%s: Spawned %u in space, %u times", who->GetName(), typeID, spawnCount);
+    sLog.Yellow("Command_spawn", "%s: Spawned %u in space, %u times", pClient->GetName(), typeID, spawnCount);
 
     return new PyString("Spawn successful.");
 }
@@ -410,7 +435,7 @@ PyResult Command_getattr(Client* who, CommandDB* db, PyServiceMgr* services, con
     const ItemAttributeMgr::Attr attribute = (ItemAttributeMgr::Attr)atoi(args.arg(2).c_str());
 
     InventoryItemRef item = sItemFactory.GetItem(itemID);
-    if (!item)
+    if (item.get() == nullptr)
         throw PyException(MakeCustomError("Failed to load item %u.", itemID));
     */
     //return item->attributes.PyGet(attribute);
@@ -455,7 +480,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
         throw PyException(MakeCustomError("1st argument must be a valid 'entity' table itemID that MUST be larger >= 140000000. (got %s)", args.arg(1).c_str()));
 
     InventoryItemRef item = sItemFactory.GetItem(itemID);
-    if (!item)
+    if (item.get() == nullptr)
         throw PyException(MakeCustomError("Failed to load item %u.", itemID));
 
     //item->attributes.SetReal(attribute, value);
@@ -595,7 +620,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
                 InventoryItemRef item = sItemFactory.SpawnItem(idata);
 
-                if (!item)
+                if (item.get() == nullptr)
                     throw PyException(MakeCustomError("Unable to create item of type %s.", item->typeID()));
                 else {
                     skill = SkillRef::StaticCast(item);
