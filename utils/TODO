@@ -318,6 +318,7 @@ aggressionMgr - this obj is system-wide, per system.  bound object can be used f
 
 system mail not working.  this would be nice to have, as many systems could(will) use it    -priority level: low
 entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
+mailDB needs much love.
 
 drone chat window for drone specific msgs (using individual drone as sender)
 player command to show drones targeted by

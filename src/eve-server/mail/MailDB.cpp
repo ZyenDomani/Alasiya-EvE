@@ -610,39 +610,42 @@ PyDict *MailDB::GetJoinedMailingLists(uint32 characterID)
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-                            "SELECT * FROM mailList "
-                            "LEFT JOIN mailListUsers "
-                            "ON mailList.id = mailListUsers.listID "
-                            "AND characterID = %u", characterID))
+                "SELECT l.id, l.displayName, l.defaultAccess, l.defaultMemberAccess, l.cost,"
+                "  u.listID, u.characterID, u.role, u.access"
+                " FROM mailListUsers AS u "
+                "  LEFT JOIN mailList AS l ON l.id = u.listID "
+                "  WHERE u.characterID = %u", characterID))
     {
         codelog(DATABASE__ERROR, "Failed to get joined mailing lists");
         return nullptr;
     }
 
     DBResultRow row;
-
     PyDict *ret = new PyDict();
     while (res.GetRow(row))
     {
         PyDict *dict = new PyDict();
 
         dict->SetItemString("displayName", new PyString(row.GetText(1)));
-        dict->SetItemString("isOperator", new PyBool(false));
-        dict->SetItemString("isMuted", new PyBool(false));
-        dict->SetItemString("isOwner", new PyBool(false));
 
         int32 role = row.GetInt(7);
         switch (role)
         {
-        case mailingListMemberMuted:
+        case mailingListMemberMuted: {
             dict->SetItemString("isMuted", new PyBool(true));
-            break;
-        case mailingListMemberOperator:
+            dict->SetItemString("isOwner", new PyBool(false));
+            dict->SetItemString("isOperator", new PyBool(false));
+        } break;
+        case mailingListMemberOperator: {
+            dict->SetItemString("isMuted", new PyBool(false));
+            dict->SetItemString("isOwner", new PyBool(false));
             dict->SetItemString("isOperator", new PyBool(true));
-            break;
-        case mailingListMemberOwner:
+        } break;
+        case mailingListMemberOwner: {
+            dict->SetItemString("isMuted", new PyBool(false));
             dict->SetItemString("isOwner", new PyBool(true));
-            break;
+            dict->SetItemString("isOperator", new PyBool(false));
+        } break;
         }
 
         ret->SetItem(new PyInt(row.GetInt(0)), new PyObject("util.KeyVal", dict));
