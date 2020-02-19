@@ -68,7 +68,7 @@ public:
     void RemoveTarget(SystemEntity* pSE);
     void CargoFull();
 
-    // only called by MM::fitModule
+    // called by MM::fitModule and MM::VerifySlotExchange
     bool isSlotOccupied(EVEItemFlags flag); // flag is not checked in this call
 
     //useful accessors

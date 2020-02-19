@@ -809,7 +809,7 @@ InventoryItemRef ModuleManager::GetLoadedChargeOnModule(InventoryItemRef moduleR
 
 bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
 {
-    if (!IsModuleSlot(slot1) or !IsModuleSlot(slot2))
+    if (!pModuleCont->isSlotOccupied(slot1) or !pModuleCont->isSlotOccupied(slot2))
         return true;
     if (pModuleCont->GetModule(slot1)->GetModulePowerLevel() == pModuleCont->GetModule(slot2)->GetModulePowerLevel())
         return true;
