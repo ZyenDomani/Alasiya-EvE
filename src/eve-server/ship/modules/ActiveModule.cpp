@@ -356,10 +356,10 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
     else
         modules.push_back(this);
-    // shit's not set in linked modules...fix this
-    //for (auto cur : modules)
-    //    cur->GetActiveModule()->ShowEffect(true, false);
-    ShowEffect(true, false);
+    for (auto cur : modules) {
+        cur->GetActiveModule()->SetSlaveData(pShip);
+        cur->GetActiveModule()->ShowEffect(true, false);
+    }
 
     SetModuleState(Module::State::Activated);
 
@@ -434,6 +434,13 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
 
     // if we're not mining, wait for module to complete current cycle then shut it down.
     m_Stop = true;
+}
+
+void ActiveModule::SetSlaveData ( Ship* pShip ) {
+    m_bubble = pShip->SysBubble();
+    m_sysMgr = pShip->SystemMgr();
+    m_targMgr = pShip->TargetMgr();
+    m_destinyMgr = pShip->DestinyMgr();
 }
 
 void ActiveModule::Overload()
@@ -597,10 +604,10 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
     else
         modules.push_back(this);
-    // shit's not set in linked modules...fix this
-    //for (auto cur : modules)
-    //    cur->GetActiveModule()->ShowEffect(false, abort);
-    ShowEffect(false, abort);
+    for (auto cur : modules) {
+        cur->GetActiveModule()->SetSlaveData(m_shipRef->GetPilot()->GetShipSE());
+        cur->GetActiveModule()->ShowEffect(false, abort);
+    }
 
     ApplyEffect(FX::State::Active, false);
     if (IsValidTarget(m_targetID)

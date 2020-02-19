@@ -80,6 +80,9 @@ protected:
     void                UpdateCharge(uint16 attrID, uint16 testAttrID, uint16 srcAttrID, InventoryItemRef iRef);
     void                UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRef iRef);
 
+    /* for linked weapons */
+    void                SetSlaveData(Ship* pShip);
+
     /* for modules that use charges */
     void                ConsumeCharge();                // common code to reduce ammo by one unit.
 
