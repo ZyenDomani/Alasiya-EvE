@@ -108,14 +108,14 @@ m_type(oth.m_type)
     EvE::traceStack();
     assert(0);
 }
-
+/*
 InventoryItem& InventoryItem::operator=(InventoryItem&& oth) noexcept
 {
     sLog.Error("InventoryItem()", "InventoryItem move op called.");
     EvE::traceStack();
     assert(0);
 }
-
+*/
 
 InventoryItemRef InventoryItem::Load( uint32 itemID)
 {

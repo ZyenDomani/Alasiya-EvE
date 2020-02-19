@@ -76,7 +76,7 @@ public:
     // copy assignment
     //InventoryItem& operator= (const InventoryItem& oth);
     // move assignment
-    InventoryItem& operator= (InventoryItem&& oth) noexcept;
+    //InventoryItem& operator= (InventoryItem&& oth) noexcept;
 
 
     /* class type pointer querys. */
