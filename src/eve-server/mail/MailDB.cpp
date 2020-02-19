@@ -30,13 +30,13 @@
 #include "mail/MailDB.h"
 #include "EVE_Mail.h"
 
+
 PyRep* MailDB::GetMailStatus(int charId)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-                            "SELECT s.messageID, s.statusMask, s.labelMask "
-                            "FROM mailStatus s "
-                            "LEFT JOIN mailMessage m ON s.messageID = m.messageID "
+                            "SELECT messageID, statusMask, labelMask "
+                            "FROM mailStatus"
                             "WHERE characterID = %u", charId)) {
         codelog(DATABASE__ERROR, "Failed to get mail status");
         return nullptr;
@@ -49,9 +49,9 @@ PyRep* MailDB::GetNewMail(int charId)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
                             "SELECT m.messageID, m.senderID, m.toCharacterIDs, m.toListID, "
-                            "m.toCorpOrAllianceID, m.title, sentDate FROM mailMessage m "
-                            "LEFT JOIN mailStatus s ON s.messageID = m.messageID "
-                            "WHERE characterID = %u", charId))
+                            "  m.toCorpOrAllianceID, m.title, m.sentDate FROM mailStatus AS s"
+                            " LEFT JOIN mailMessage AS m USING (messageID) "
+                            " WHERE s.characterID = %u", charId))
         return nullptr;
     return DBResultToCRowset(res);
 }
@@ -282,7 +282,7 @@ void MailDB::ApplyLabels(std::vector<int32> messageIDs, int labelID)
 PyRep* MailDB::GetLabels(int characterID) const
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT bit, name, color, ownerId FROM mailLabel WHERE ownerID = %u", characterID))
+    if (!sDatabase.RunQuery(res, "SELECT bit, name, color FROM mailLabel WHERE ownerID = %u", characterID))
         return nullptr;
 
     PyDict* ret = new PyDict();
@@ -688,7 +688,7 @@ PyDict *MailDB::GetMailingListMembers(int32 listID)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-                            "SELECT * FROM mailListUsers "
+        "SELECT listID, characterID, role, access FROM mailListUsers "
                             "WHERE listID = %u", listID))
     {
         codelog(DATABASE__ERROR, "Failed to get mailing list members");
@@ -715,8 +715,8 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-                            "SELECT * FROM mailList "
-                            "WHERE id = %u", listID))
+        "SELECT id, displayName, defaultAccess, defaultMemberAccess, cost FROM mailList "
+                            " WHERE id = %u", listID))
     {
         codelog(DATABASE__ERROR, "Failed to get mailing list settings");
         return nullptr;
@@ -735,7 +735,7 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
     DBQueryResult res2;
 
     if (!sDatabase.RunQuery(res,
-                            "SELECT * FROM mailListUsers "
+        "SELECT listID, characterID, role, access FROM mailListUsers "
                             "WHERE listID = %u", listID))
     {
         codelog(DATABASE__ERROR, "Failed to get mailing list settings");
