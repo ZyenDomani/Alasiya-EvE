@@ -614,6 +614,13 @@ mResult( nullptr )
 {
 }
 
+void DBResultRow::SetData( DBQueryResult* res, MYSQL_ROW& row, const ulong* lengths )
+{
+    mRow = row;
+    mResult = res;
+    mLengths = lengths;
+}
+
 uint32 DBResultRow::ColumnLength( uint32 index ) const
 {
     if (index >= mResult->ColumnCount()) {
@@ -640,12 +647,12 @@ int32 DBResultRow::GetInt( uint32 index ) const
 bool DBResultRow::GetBool( uint32 index ) const
 {
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetBool: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
         EvE::traceStack();
         return false;
     }
 
-    return strtoul( mRow[index], nullptr, 0 ) != 0;
+    return  mRow[index][0] != 0;
 }
 
 uint32 DBResultRow::GetUInt( uint32 index ) const
@@ -692,11 +699,4 @@ double DBResultRow::GetDouble( uint32 index ) const
     }
 
     return strtod( mRow[index], nullptr );
-}
-
-void DBResultRow::SetData( DBQueryResult* res, MYSQL_ROW& row, const ulong* lengths )
-{
-    mRow = row;
-    mResult = res;
-    mLengths = lengths;
 }

@@ -453,7 +453,9 @@ PyRep *MarketDB::GetTransactions(
 PyRep *MarketDB::GetMarketGroups() {
 
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT * FROM invMarketGroups"))  {
+    if (!sDatabase.RunQuery(res, "SELECT parentGroupID, marketGroupID, marketGroupName,"
+        " description, graphicID, hasTypes, iconID, dataID, marketGroupNameID, descriptionID"
+        " FROM invMarketGroups"))  {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
@@ -497,8 +499,8 @@ PyRep *MarketDB::GetMarketGroups() {
     }
 
     _log(MARKET__DEBUG, "MarketDB::GetMarketGroups returned %u keys.", filterRowset->GetKeyCount());
-    //if (is_log_enabled(MARKET__DB_TRACE))
-    //    filterRowset->Dump(MARKET__DB_TRACE, "    ");
+    if (is_log_enabled(MARKET__DB_TRACE))
+        filterRowset->Dump(MARKET__DB_TRACE, "    ");
 
     return filterRowset;
 }

@@ -40,7 +40,7 @@ check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?
 also check containers for contents and remove/deny before repack
 
-cant insure ships again.
+cant insure ships again.  (verified)
 check insurance payouts.   rounds full ship value up
 check trade - ships retain insurance
 
