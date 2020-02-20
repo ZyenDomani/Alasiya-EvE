@@ -134,15 +134,9 @@ public:
     virtual uint16 GetReloadTime()                      { return 0; }
     virtual uint32 GetTargetID()                        { return 0; }
 
-    /* override for rigs and subsystems in appropriate derived class */
-    virtual int8 GetModulePowerLevel() {
-        return m_hiPower ? Module::Bank::High
-                : ( m_medPower ? Module::Bank::Mid
-                    : (m_loPower ? Module::Bank::Low
-                        : (m_rigSlot ? Module::Bank::Rig
-                            : (m_subSystem ? Module::Bank::Subsystem
-                                : Module::Bank::Undefined ))));
-    }
+    //
+    int8 GetModulePowerLevel();
+
 
 protected:
     const char*         GetModuleStateName(int8 state);

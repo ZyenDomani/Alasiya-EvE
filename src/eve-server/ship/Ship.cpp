@@ -1405,7 +1405,7 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, bool merge/*false*/)
 // this can throw for now...
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     // this will never hit.  client checks before call.
-    if (m_ModuleManager->VerifySlotExchange(slot1, slot2))
+    if (!m_ModuleManager->VerifySlotExchange(slot1, slot2))
         throw PyException(MakeCustomError("Those locations are not compatible."));
 
     // slot1 is occupied, as this is location module is from.

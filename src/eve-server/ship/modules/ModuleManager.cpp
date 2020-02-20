@@ -811,9 +811,7 @@ bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
 {
     if (!pModuleCont->isSlotOccupied(slot1) or !pModuleCont->isSlotOccupied(slot2))
         return true;
-    if (pModuleCont->GetModule(slot1)->GetModulePowerLevel() == pModuleCont->GetModule(slot2)->GetModulePowerLevel())
-        return true;
-    return false;
+    return (pModuleCont->GetModule(slot1)->GetModulePowerLevel() == pModuleCont->GetModule(slot2)->GetModulePowerLevel());
 }
 
 void ModuleManager::UnloadModule(uint32 itemID)

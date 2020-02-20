@@ -279,3 +279,20 @@ const char* GenericModule::GetModuleStateName(int8 state)
         default:                    return "Invalid";
     }
 }
+
+int8 GenericModule::GetModulePowerLevel() {
+    {
+        if (m_hiPower)
+            return Module::Bank::High;
+        else if (m_medPower)
+            return Module::Bank::Mid;
+        else if (m_loPower)
+            return Module::Bank::Low;
+        else if (m_rigSlot)
+            return Module::Bank::Rig;
+        else if (m_subSystem)
+            return Module::Bank::Subsystem;
+        else
+            return Module::Bank::Undefined;
+    }
+}
