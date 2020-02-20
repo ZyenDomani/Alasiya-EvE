@@ -114,10 +114,10 @@ void FxDataMgr::Populate()
             mEffect.effectState = row.GetInt(2);
             mEffect.preExpression = row.GetInt(3);
             mEffect.postExpression = row.GetInt(4);
-            mEffect.isOffensive = row.GetBool(5);
-            mEffect.isAssistance = row.GetBool(6);
-            mEffect.disallowAutoRepeat = row.GetBool(7);
-            mEffect.isWarpSafe = row.GetBool(8);
+            mEffect.isOffensive = row.GetInt(5) ? true : false;
+            mEffect.isAssistance = row.GetInt(6) ? true : false;
+            mEffect.disallowAutoRepeat = row.GetInt(7) ? true : false;
+            mEffect.isWarpSafe = row.GetInt(8) ? true : false;
             mEffect.npcUsageChanceAttributeID = row.GetInt(9);
             mEffect.npcActivationChanceAttributeID = row.GetInt(10);
             mEffect.fittingUsageChanceAttributeID = row.GetInt(11);
@@ -340,7 +340,7 @@ void FxDataMgr::GetDgmTypeEffects(DBQueryResult &res)
         "  effectID,"
         "  isDefault"
         " FROM dgmTypeEffects "
-        " WHERE effectID != 132"))  // 132 maps skill level onto skill data. this screws up my skill level code 
+        " WHERE effectID != 132"))  // 132 maps skill level onto skill data. this screws up my skill level code
     {
         codelog(DATABASE__ERROR, "Error in GetDgmTypeEffects: %s", res.error.c_str());
     }
