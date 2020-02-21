@@ -478,8 +478,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         EvilNumber targValue(EvilZero);
         int8 opID(cur.first);
         for (auto item : itemRefVec) {
-            //if (item.get() == nullptr)  // not sure why i need this, but have seen nulls in the vector (segfaults)
-            //    continue;
+            if (item.get() == nullptr)  // still occasional nulls in the vector (segfaults)
+                continue;
             // get targAttr
             targValue = item->GetAttribute(cur.second.targAttr);
             // check for inf/nan and then reset?  this will fuck up all previous fx processing on this value.
