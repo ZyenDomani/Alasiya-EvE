@@ -225,12 +225,12 @@ private:
 };
 
 /**
- * ItemSystemEntity which represents wreck object in space
+ * DynamicSystemEntity which represents wreck object in space
  * Author:  Allan
  */
 
 class WreckSE
-: public ItemSystemEntity
+: public DynamicSystemEntity
 {
 public:
     WreckSE(WreckContainerRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);

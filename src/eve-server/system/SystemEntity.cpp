@@ -359,7 +359,7 @@ PyDict* StargateSE::MakeSlimItem() {
 }
 
 
-/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace, ForceFields, ScanProbes */
+/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, DeadSpace, ForceFields, ScanProbes */
 ItemSystemEntity::ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
@@ -448,7 +448,7 @@ void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
 }
 
 
-/* Non-Static / Non-Mobile / Destructable / Celestial Objects - POS Structures, Outposts, empty Ships, Asteroids */
+/* Non-Static / Non-Mobile / Destructible / Celestial Objects - POS Structures, Outposts, Deployables, empty Ships, Asteroids */
 ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
@@ -595,7 +595,7 @@ PyDict *FieldSE::MakeSlimItem()
 }
 
 
-/* Non-Static / Mobile / Destructable / Celestial Objects - PC's, NPC's, Drones, Ships, Missiles */
+/* Non-Static / Mobile / Destructible / Celestial Objects - PC's, NPC's, Drones, Ships, Missiles, Wrecks  */
 DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {

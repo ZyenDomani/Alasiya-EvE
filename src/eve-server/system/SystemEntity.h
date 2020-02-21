@@ -75,7 +75,7 @@ class WeaponSE;
 class ReactorSE;
 
 /*
- * base class for all SystemEntities  - no TargetMgr
+ * base class for all SystemEntities  - no TargetMgr or DestinyMgr
  * complete rewrite of entity class system  - allan  9 January 2016
  */
 class SystemEntity {
@@ -279,7 +279,7 @@ protected:
 };
 
 
-/* Static / Non-Mobile / Non-Destructable / Celestial Objects - Suns, Planets, Moons, Belts, Gates, Stations   - no TargetMgr*/
+/* Static / Non-Mobile / Non-Destructable / Celestial Objects - Suns, Planets, Moons, Belts, Gates, Stations   - no TargetMgr or DestinyMgr*/
 class StaticSystemEntity : public SystemEntity {
 public:
     StaticSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -353,7 +353,7 @@ protected:
 };
 
 
-/* Non-Static / Non-Mobile / Non-Destructible / Celestial Objects - Containers, Wrecks, DeadSpace  - no TargetMgr*/
+/* Non-Static / Non-Mobile / Non-Destructible / Celestial Objects - Containers, DeadSpace, ForceFields, ScanProbes  - no TargetMgr or DestinyMgr*/
 class ItemSystemEntity : public SystemEntity {
 public:
     ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -377,7 +377,7 @@ private:
     uint16 m_keyType;
 };
 
-/* Non-Static / Non-Mobile / Destructable / Celestial Objects - POS Structures, Outposts, Asteroids, Deployables  - has TargetMgr*/
+/* Non-Static / Non-Mobile / Destructible / Celestial Objects - POS Structures, Outposts, Deployables, empty Ships, Asteroids  - has TargetMgr*/
 class ObjectSystemEntity : public SystemEntity {
 public:
     ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -438,7 +438,7 @@ public:
 
 
 
-/* Non-Static / Mobile / Destructable / Celestial Objects - Drones, Ships, Missiles  - has TargetMgr*/
+/* Non-Static / Mobile / Destructible / Celestial Objects - Drones, Ships, Missiles, Wrecks  - has TargetMgr*/
 class DynamicSystemEntity : public SystemEntity {
 public:
     DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);

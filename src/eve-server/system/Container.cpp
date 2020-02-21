@@ -474,14 +474,11 @@ void WreckContainer::MakeSlimItemChange()
 
 
 WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system, const FactionData &data)
-: ItemSystemEntity(self, services, system),
+: DynamicSystemEntity(self, services, system),
 m_deleteTimer(sConfig.rates.WorldDecay *60 *1000),
 m_abandoned(false),
 m_contRef(self)
 {
-    m_targMgr = new TargetManager(this);
-    m_destiny = new DestinyManager(this);
-
     assert(m_targMgr != nullptr);
     assert(m_destiny != nullptr);
 
