@@ -20,9 +20,9 @@
 Items listed as "<font color=red>NOT IMPLEMENTED</font>" have no code for that system and the server will not respond to requests for that system.<BR>
 Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outline coded, but limited or no processing and/or returns. The server will not respond or only partially respond to these requests.<BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a rough draft of their specific code, just a step or two above skeleton code, and may not function properly or completely.</font><BR><BR>
-<font color="orange">Last Update:</font>&nbsp;&nbsp;&nbsp;<font color="green">17 February 2020</font><BR>
-<font color="orange">Page Status:</font>&nbsp;&nbsp;&nbsp;<font color="green">Current</font><BR>
-<font color="orange">Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color="teal">All Data Current</font><BR><BR></table>
+<font color="orange">Last Update:</font>&nbsp;&nbsp;&nbsp;<font color="green">20 February 2020</font><BR>
+<font color="orange">Page Status:</font>&nbsp;&nbsp;&nbsp;<font color="yellow">Being Updated</font><BR>
+<font color="orange">Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color="pink">All data currently under review.  Found discrepancies in pre-rewrite tests (before mid-2016)</font><BR><BR></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
@@ -269,7 +269,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=magenta>Skeleton Code Only</font><BR>17July17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Skills_-_Certificates"> Skills &amp; Certificates </span></h2>
+<h2> <span class="mw-headline" id="Skills_-_Certificates"> Skills &amp; Certificates (needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:98%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -395,7 +395,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 </table>
 
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="NPC_Station_Services"> NPC Station Services </span></h2>
+<h2> <span class="mw-headline" id="NPC_Station_Services"> NPC Station Services (needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:83%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -771,7 +771,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color="green">COMPLETE</font><BR>7Sep14</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="EvE_Mail"> EvE Mail </span></h2>
+<h2> <span class="mw-headline" id="EvE_Mail"> EvE Mail (Rewrite on hold)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:40%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -902,7 +902,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=pink>Final Testing</font><BR>17Nov17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Market_Details"> Market Details (Rewrite on hold)</span></h2>
+<h2> <span class="mw-headline" id="Market_Details"> Market Details (Rewrite on hold - needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:48%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1011,7 +1011,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=magenta>Skeleton Code Only</font><BR>26May19</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Assets_Window"> Assets Window </span></h2>
+<h2> <span class="mw-headline" id="Assets_Window"> Assets Window (needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1576,7 +1576,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 // -->
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Ship_Management"> Ship Management </span></h2>
+<h2> <span class="mw-headline" id="Ship_Management"> Ship Management (needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1897,7 +1897,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color="green">COMPLETE</font><BR>2Dec18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Module_Management"> Module Management (Rewrite)</span></h2>
+<h2> <span class="mw-headline" id="Module_Management"> Module Management (Rewrite - needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1932,11 +1932,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>10Aug16</td></tr>
-<tr><td> - Can add/remove charges to modules slots in Fitting window</td><td class="working">100%
+<tr><td> - Can add/remove charges to modules slots in Fitting window</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>10Aug16</td></tr>
+<td><font color=pink>Final Testing</font><BR>20Feb20</td></tr>
 <tr><td> - Can move modules from slot to slot in Fitting window</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1962,21 +1962,21 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>10Aug16</td></tr>
-<tr><td> - Can Overload modules (and they work)</td><td class="working">60%
+<tr><td> - Can Overload modules (and they work)</td><td class="working">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>2Feb20</td></tr>
-<tr><td> - Can De-activate Overloaded modules</td><td class="working">60%
+<td><font color=yellow>Preliminary Implementation</font><BR>20Feb20</td></tr>
+<tr><td> - Can De-activate Overloaded modules</td><td class="working">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>2Feb20</td></tr>
-<tr><td> - Overloaded modules damage bank from heat</td><td class="working">60%
+<td><font color=yellow>Preliminary Implementation</font><BR>20Feb20</td></tr>
+<tr><td> - Overloaded modules damage bank from heat</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>2Feb20</td></tr>
+<td><font color=yellow>Preliminary Implementation</font><BR>20Feb20</td></tr>
 <tr><td> - Can repair damaged modules (using nanite paste)</td><td class="working">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -1984,7 +1984,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=magenta>Skeleton Code Only</font><BR>10Jan19</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Ship_Modules"> Ship Module Groups </span></h2>
+<h2> <span class="mw-headline" id="Ship_Modules"> Ship Module Groups (Rewrite - needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:87%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2175,7 +2175,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="NPC_Combat_Spawning_AI"> NPC AI, Combat &amp; Spawning </span></h2>
+<h2> <span class="mw-headline" id="NPC_Combat_Spawning_AI"> NPC AI, Combat &amp; Spawning (needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:66%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2316,7 +2316,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=magenta>Skeleton Code Only</font><BR>30May19</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Scan_and_Probing"> Scanning &amp; Probing </span></h2>
+<h2> <span class="mw-headline" id="Scan_and_Probing"> Scanning &amp; Probing (needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:99%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2336,11 +2336,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>21May16</td></tr>
-<tr><td> - Directional Scanning (using Ship Sensors)</td><td class="working">100%
+<tr><td> - Directional Scanning (using Ship Sensors)</td><td class="working">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>7Dec15</td></tr>
+<td><font color=yellow>Preliminary Implementation</font><BR>20Feb20</td></tr>
 <tr><td> - Launch Probes from ship</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -2373,7 +2373,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color="green">COMPLETE</font><BR>6Mar18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Fleet_System"> Fleet System </span></h2>
+<h2> <span class="mw-headline" id="Fleet_System"> Fleet System (needs review)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:94%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>

@@ -76,6 +76,7 @@ fx warp speed data to client is wrong....see diff between fit window docked/in s
 
 POS -eject/board for ships inside FF have no code to verify ship is INSIDE FF...just if bubble has FF
 
+skillqueueendtime in chardb wrong/invalid.  check setting
 
 ********  improvements
 
