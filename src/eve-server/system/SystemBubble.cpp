@@ -908,6 +908,8 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
 //send a destiny event to every client in the bubble.
 void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc ) const
 {
+    if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
+        (*payload)->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
     for (auto cur : m_players) {
         _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);

@@ -19,8 +19,9 @@ INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, 
 minVolume, duration, solarSystemID, jumps)
   SELECT typeID, corporationID, regionID, stationID, basePrice / security,550, 550, 132094760660000000 ,1, 1, 250, solarSystemID, 5
   FROM tStations, invTypes inner join invGroups USING (groupID)
-  WHERE invTypes.published = 1 AND invTypes.basePrice != 0
+  WHERE invTypes.published = 1
   AND invGroups.categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+UPDATE mktOrders SET price = 100 WHERE price = 0;
 
 
 
@@ -68,33 +69,35 @@ INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, 
 minVolume, duration, solarSystemID, jumps)
   SELECT typeID,1, regionID, stationID, basePrice, 550, 550, 131989844991575488,1, 1, 250, solarSystemID, 25
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
-  WHERE invTypes.published = 1 AND invTypes.basePrice != 0
+  WHERE invTypes.published = 1
   AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 20, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+UPDATE mktOrders SET price = 100 WHERE price = 0;
+-- 1922 rows affected. (Query took 0.1082 seconds.)
 
-categoryID  categoryName
-4   Material
-5   Accessories
-6   Ship
-7   Module
-8   Charge
-9   Blueprint
-16  Skill
-17  Commodity
-18  Drone
-20  Implant
-22  Deployable
-23  Structure
-24  Reaction
-25  Asteroid
-32  Subsystem
-34  Ancient Relics
-35  Decryptors
-39  Infrastructure Upgrades
-40  Sovereignty Structures
-41  Planetary Interaction
-42  Planetary Resources
-43  Planetary Commodities
-46  Orbitals
+-- categoryID  categoryName
+-- 	4   Material
+-- 	5   Accessories
+-- 	6   Ship
+-- 	7   Module
+-- 	8   Charge
+-- 	9   Blueprint
+-- 	16  Skill
+-- 	17  Commodity
+-- 	18  Drone
+-- 	20  Implant
+-- 	22  Deployable
+-- 	23  Structure
+-- 	24  Reaction
+-- 	25  Asteroid
+-- 	32  Subsystem
+-- 	34  Ancient Relics
+-- 	35  Decryptors
+-- 	39  Infrastructure Upgrades
+-- 	40  Sovereignty Structures
+-- 	41  Planetary Interaction
+-- 	42  Planetary Resources
+-- 	43  Planetary Commodities
+-- 	46  Orbitals
 
 
 -- fix stations security value (missing in dump)

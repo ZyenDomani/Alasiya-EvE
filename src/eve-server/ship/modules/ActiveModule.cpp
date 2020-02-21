@@ -302,14 +302,14 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
          */
 
         // if target is non-combatant deny attack
-        if (sFxDataMgr.isOffensive(m_effectID))
+        if (sFxDataMgr.isOffensive(effectID))
             if ((m_targetSE->IsItemEntity()) or (m_targetSE->IsStaticEntity()))
                 // or (m_targetSE->IsLogin()))       // this is incomplete, so always returns false
             {
                 throw PyException(MakeCustomError("You cannot attack the %s.", m_targetSE->GetName()));
             }
 
-        if (sFxDataMgr.isAssistance(m_effectID)) {
+        if (sFxDataMgr.isAssistance(effectID)) {
             if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
                 Clear();
                 throw PyException(MakeUserError("DeniedActivateTargetAssistDisallowed"));
@@ -338,6 +338,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     }
 
     m_isWarpSafe = sFxDataMgr.isWarpSafe(m_effectID);
+    //this is only used in ShowEffect.  do we really need it?
     m_guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
 
     Ship* pShip = m_shipRef->GetPilot()->GetShipSE();
@@ -360,14 +361,14 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         ApplyEffect(FX::State::Target, true);
 
     std::vector<GenericModule*> modules;
-    if (m_linkMaster)
+    if (m_linkMaster) {
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
-    else
-        modules.push_back(this);
-    for (auto cur : modules) {
-        cur->GetActiveModule()->SetSlaveData(pShip);
-        cur->GetActiveModule()->ShowEffect(true, false);
-    }
+        for (auto cur : modules) {
+            cur->GetActiveModule()->SetSlaveData(pShip);
+            cur->GetActiveModule()->ShowEffect(true, false);
+        }
+    } else
+        ShowEffect(true, false);
 
     SetModuleState(Module::State::Activated);
 
@@ -439,6 +440,12 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
         DeactivateCycle(true);
         return;
     }
+
+    if (effect.compare("TargetDestroyed") == 0) {
+        Clear();
+        return;
+    }
+
 
     // let module complete current cycle then shut it down.
     m_Stop = true;
@@ -608,14 +615,12 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     }
 
     std::vector<GenericModule*> modules;
-    if (m_linkMaster)
+    if (m_linkMaster) {
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
-    else
-        modules.push_back(this);
-    for (auto cur : modules) //{
-        //cur->GetActiveModule()->SetSlaveData(m_shipRef->GetPilot()->GetShipSE());
-        cur->GetActiveModule()->ShowEffect(false, abort);
-    //}
+        for (auto cur : modules)
+            cur->GetActiveModule()->ShowEffect(false, abort);
+    } else
+        ShowEffect(false, abort);
 
     ApplyEffect(FX::State::Active, false);
     if (IsValidTarget(m_targetID)
@@ -695,9 +700,9 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                 // just in case other modules are targeting this object, let them know it was destroyed.
                 if (m_targetSE->TargetMgr() != nullptr)
                     m_targetSE->TargetMgr()->Destroyed();
-                m_sysMgr->RemoveEntity(m_targetSE);
                 m_targetSE->Delete();
                 SafeDelete(m_targetSE);
+                m_targetSE = nullptr;
             }
         } break;
         /*
@@ -1040,7 +1045,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
     uint32 timeLeft = GetRemainingCycleTimeMS();
     EvilNumber cycleTime = EvilZero;
-    // these are a bit weird...this HasAttribute() will set variable if exists, but need to test each case.
+    // these are a bit weird...this HasAttribute() will set variable if attrib exists, but need to test each case.
     if (m_modRef->HasAttribute(AttrDuration, cycleTime))
         ;
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
@@ -1055,8 +1060,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
                 chgTypeID,
                 m_guidStr,
                 sFxDataMgr.isOffensive(m_effectID),
-                active,   // start    - if (start = 0) THEN remove effect
-                active,   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
+                (active ? true : false),   // start    - if (start = 0) THEN remove effect
+                (active ? true : false),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
                 (double)timeLeft,           // duration in ms
                 m_repeat);   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
 
@@ -1087,7 +1092,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = (abort ? (abortTime / EvE::Time::Second) : (shipEff.timeNow - (timeLeft * EvE::Time::Second)));  //if now - startTime > 150000000: return
+        shipEff.startTime = (abort ? (abortTime /*/ EvE::Time::Second*/) : (shipEff.timeNow - (timeLeft * EvE::Time::Second)));  //if now - startTime > 150000000: return
         shipEff.duration = (abort ? 2 : (active ? cycleTime.get_float() : timeLeft));  // duration in seconds
         shipEff.repeat = m_repeat;
         // will need to check and update for data miners here  (any other cases?)

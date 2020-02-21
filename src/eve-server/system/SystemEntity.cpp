@@ -98,7 +98,7 @@ PyTuple* SystemEntity::MakeDamageState() {
         DoDestinyDamageState3 ddds;
             ddds.shield = 0;
             ddds.armor = 0;
-            ddds.structure = 10.0;
+            ddds.structure = 1.0;
         return ddds.Encode();
     }
     DoDestinyDamageState ddds;
