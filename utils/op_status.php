@@ -1636,11 +1636,13 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>1Dec18</td></tr>
+<!--
 <tr><td> - Charges Stack in cargo while in space</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>1Dec18</td></tr>
+-->
 <tr><td> - Unpiloted ships stay in space</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1656,7 +1658,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>10Aug16</td></tr>
-<tr><td> - Can use specalized bays on ships that have them</td><td class="working">100%
+<tr><td> - Can use specialized bays on ships that have them</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>

@@ -6,6 +6,10 @@
 
 **********  errors and other found shit...high priority
 
+after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
+01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
+
+
 destiny accel seems too slow.  not tracking properly.  need logging/testing
 
 moving items to cargo makes ownerID=1 ...could be from market also
@@ -313,9 +317,11 @@ look into using "CALL_", "RSP_" and "encode=true/false"/"decode=true/false" for 
 
 *****************  ideas for later
 
+change TargetMgr::Process call timer to use sub-Hz tics....increase timer resolution for faster response
+
 print version #s to local chat on login
 
-aggressionMgr - this obj is system-wide, per system.  bound object can be used for multiple clients
+aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for multiple clients
 
 system mail not working.  this would be nice to have, as many systems could(will) use it    -priority level: low
 entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
