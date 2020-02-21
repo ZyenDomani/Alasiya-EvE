@@ -46,6 +46,7 @@ public:
     void                Process();
 
     /* Common Methods for all objects */
+    void                ClearModules();
     void                TargetsCleared();
     void                ClearFromTargets();
     void                TargetTry(SystemEntity *who);

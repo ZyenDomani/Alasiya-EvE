@@ -48,10 +48,10 @@ public:
     bool IsShipInsured(uint32 shipID);
 
     // linking save/load methods  -allan 05Jan19
-    static void LoadLinkedWeapons(uint32 shipID, DBQueryResult& res);
+    static void LoadWeaponGroups(uint32 shipID, DBQueryResult& res);
     // this will delete existing regardless of save state
-    static void SaveLinkedWeapons(uint32 shipID, std::multimap<uint32, uint32>& data);
-    static void ClearLinkedWeapons(uint32 shipID);
+    static void SaveWeaponGroups(uint32 shipID, std::multimap<uint32, uint32>& data);
+    static void ClearWeaponGroups(uint32 shipID);
 
 };
 

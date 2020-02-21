@@ -103,7 +103,7 @@ void ShipItem::Init()
     m_ModuleManager->Initialize();
 
     // load linked weapons (if available)
-    LoadLinkedWeapons();
+    LoadWeaponGroups();
 }
 
 void ShipItem::InitPod() {
@@ -579,6 +579,7 @@ PyDict* ShipItem::GetShipInfo()
     for (auto cur : equipped) {
         Rsp_CommonGetInfo_Entry entry2;
         if (cur->Populate(entry2)) {
+            /*
             if (cur->categoryID() == EVEDB::invCategories::Charge) {
                 PyTuple* tuple = new PyTuple(3);
                     tuple->SetItem(0, new PyInt(cur->locationID()));
@@ -586,8 +587,9 @@ PyDict* ShipItem::GetShipInfo()
                     tuple->SetItem(2, new PyInt(cur->typeID()));
                 result->SetItem(tuple, new PyObject("util.KeyVal", entry2.Encode()));
             } else {
+                */
                 result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry2.Encode()));
-            }
+            //}
         } else
             _log( SHIP__ERROR, "%s(%u): Failed to load item %u for ShipGetInfo", name(), itemID(), cur->itemID());
     }
@@ -1898,7 +1900,7 @@ void ShipItem::LinkWeapon(uint32 masterID, uint32 slaveID)
     GenericModule* pMod2 = m_ModuleManager->GetModule(slaveID);
     LinkWeapon(pMod1, pMod2);
 
-    SaveLinkedWeapons();
+    SaveWeaponGroups();
 }
 
 void ShipItem::LinkWeapon(GenericModule* pMaster, GenericModule* pSlave)
@@ -1964,7 +1966,7 @@ void ShipItem::LinkAllWeapons()
             ++itr;
     }
 
-    SaveLinkedWeapons();
+    SaveWeaponGroups();
 }
 
 void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
@@ -2074,7 +2076,7 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
         }
     }
 
-    SaveLinkedWeapons();
+    SaveWeaponGroups();
     //default.  not sure how client will act with this here
     return moduleID;
 }
@@ -2136,7 +2138,7 @@ void ShipItem::UnlinkGroup(uint32 memberID)
             itr2 = itr->second.erase(itr2);
             if (itr->second.empty()) {
                 m_linkedWeapons.erase(itr);
-                SaveLinkedWeapons();
+                SaveWeaponGroups();
                 return;
             }
             ++itr2;
@@ -2170,7 +2172,7 @@ void ShipItem::UnlinkAllWeapons()
         cur->SetLinkMaster(false);
     }
     m_linkedWeapons.clear();
-    ShipDB::ClearLinkedWeapons(m_itemID);
+    ShipDB::ClearWeaponGroups(m_itemID);
 }
 
 uint8 ShipItem::GetLinkedCount(GenericModule* pMod)
@@ -2239,7 +2241,7 @@ void ShipItem::OfflineGroup(GenericModule* pMod)
     }
 }
 
-void ShipItem::SaveLinkedWeapons()
+void ShipItem::SaveWeaponGroups()
 {
     std::multimap< uint32, uint32 > data;
     data.clear();
@@ -2248,18 +2250,19 @@ void ShipItem::SaveLinkedWeapons()
             for (auto slave : cur.second)
                 data.emplace(cur.first->itemID(), slave->itemID());
 
-    ShipDB::SaveLinkedWeapons(m_itemID, data);
+    ShipDB::SaveWeaponGroups(m_itemID, data);
 }
 
-void ShipItem::LoadLinkedWeapons()
+void ShipItem::LoadWeaponGroups()
 {
     // NOTE:  there probably isnt a pilot at this point, so no sending of errors on load.
     if (m_ModuleManager == nullptr) {
         if (m_pilot != nullptr)
-            m_pilot->SendErrorMsg("There was a problem loading your saved weapon grouping.  Ref: ServerError xxxxx");
+            m_pilot->SendErrorMsg("There was an error loading your weapon groups.  Ref: ServerError 06071");
+        return;
     }
     DBQueryResult* res = new DBQueryResult();
-    ShipDB::LoadLinkedWeapons(m_itemID, *res);
+    ShipDB::LoadWeaponGroups(m_itemID, *res);
 
     bool error = false;
     GenericModule* pMaster(nullptr);
@@ -2290,7 +2293,7 @@ void ShipItem::LoadLinkedWeapons()
 
     if (error)
         if (m_pilot != nullptr)
-            m_pilot->SendErrorMsg("There was a problem loading your saved weapon grouping.  Ref: ServerError xxxxx");
+            m_pilot->SendErrorMsg("There was an error loading a weapon group master.  Ref: ServerError 06123");
 
     SafeDelete(res);
 }
@@ -2608,9 +2611,12 @@ void Ship::SetPilot(Client* pClient) {
 }
 
 void Ship::Dock() {
-    m_shipRef->Dock();
-    if (m_targMgr != nullptr)
+    if (m_targMgr != nullptr) {
+        m_targMgr->ClearModules();
         m_targMgr->ClearAllTargets();
+    }
+
+    m_shipRef->Dock();
 }
 
 void Ship::EncodeDestiny( Buffer& into) {

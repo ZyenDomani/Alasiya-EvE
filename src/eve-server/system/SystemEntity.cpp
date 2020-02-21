@@ -98,7 +98,7 @@ PyTuple* SystemEntity::MakeDamageState() {
         DoDestinyDamageState3 ddds;
             ddds.shield = 0;
             ddds.armor = 0;
-            ddds.structure = 1.0;
+            ddds.structure = 10.0;
         return ddds.Encode();
     }
     DoDestinyDamageState ddds;
@@ -461,8 +461,11 @@ ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &serv
 
 ObjectSystemEntity::~ObjectSystemEntity()
 {
-    if (m_targMgr != nullptr)
+    if (m_targMgr != nullptr) {
+        m_targMgr->ClearModules();
         m_targMgr->ClearAllTargets(false);
+    }
+
     SafeDelete(m_targMgr);
     SafeDelete(m_destiny);
 }
@@ -611,8 +614,11 @@ DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &se
 
 DynamicSystemEntity::~DynamicSystemEntity()
 {
-    if (m_targMgr != nullptr)
+    if (m_targMgr != nullptr) {
+        m_targMgr->ClearModules();
         m_targMgr->ClearAllTargets(false);
+    }
+
     SafeDelete(m_targMgr);
     SafeDelete(m_destiny);
 }

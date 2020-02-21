@@ -101,7 +101,7 @@ void TargetManager::ClearTarget(SystemEntity *tSE) {
     //let the other entity know they are no longer targeted.
     tSE->TargetMgr()->TargetedByLost(mySE);
     //tell modules this target is removed
-    // not sure if we should do this here or in ships MM
+    // not sure if we should do this here or in ships MM - should be handled in DestinyMgr or MM
 
     //clear it from our own state
     TargetLost(tSE);
@@ -109,6 +109,12 @@ void TargetManager::ClearTarget(SystemEntity *tSE) {
         m_canAttack = false;
     _log(TARGET__TRACE, "ClearTarget:  %s(%u) has cleared target %s(%u).", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+}
+
+void TargetManager::ClearModules() {
+    // iterate thru the map of modules targeting this object and call AbortCycle on each.
+    for (auto cur : m_modules)
+        cur.second->AbortCycle();
 }
 
 void TargetManager::ClearAllTargets(bool notify/*true*/) {
@@ -751,7 +757,7 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
 void TargetManager::Dump() const {
     if (!is_log_enabled(TARGET__DUMP))
         return;
-    
+
     _log(TARGET__DUMP, "Target Dump for %s(%u):", mySE->GetName(), mySE->GetID());
     for (auto cur : m_targets)
         cur.second->Dump();
@@ -763,7 +769,7 @@ void TargetManager::Dump() const {
         _log(TARGET__DUMP, "      *NONE*");
     } else {
         for (auto cur : m_modules)
-            _log(TARGET__DUMP, "\t\t %s: %s", cur.second->GetShipRef()->itemName().c_str(), cur.second->GetSelf()->itemName().c_str());
+            _log(TARGET__DUMP, "\t\t %s: %s", cur.second->GetShipRef()->name(), cur.second->GetSelf()->name());
     }
 }
 

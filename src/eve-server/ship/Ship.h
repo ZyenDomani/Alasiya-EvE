@@ -254,9 +254,9 @@ protected:
     void LinkWeapon(GenericModule* pMaster, GenericModule* pSlave);
     void UnlinkWeapon(uint32 masterID, uint32 slaveID);
     // to load saved linked weapons
-    void LoadLinkedWeapons();
+    void LoadWeaponGroups();
     // to save linked weapons
-    void SaveLinkedWeapons();
+    void SaveWeaponGroups();
     // this single iteration loop will link same type weapons, then remove the weapon from the list.
     //  non-linked weapons are kept in list to be checked upon return to caller.
     void LinkWeaponLoop(std::list< GenericModule* >& moduleVec);

@@ -147,7 +147,6 @@ public:
     virtual bool                IsStationSE()           { return false; }
     /* Item */
     virtual bool                IsItemEntity()          { return false; }
-    virtual bool                IsWreckSE()             { return false; }
     virtual bool                IsAnomalySE()           { return false; }
     virtual bool                IsWormholeSE()          { return false; }
     virtual bool                IsCelestialSE()         { return false; }
@@ -180,6 +179,7 @@ public:
     virtual bool                IsFrozen()              { return false; }
     virtual bool                IsNPCSE()               { return false; }
     virtual bool                IsDroneSE()             { return false; }
+    virtual bool                IsWreckSE()             { return false; }
     virtual bool                IsMissileSE()           { return false; }
     virtual bool                IsShipSE()              { return false; }
     virtual bool                IsConcord()             { return false; }

@@ -88,18 +88,18 @@ bool ShipDB::IsShipInsured(uint32 shipID)
     return false;
 }
 
-void ShipDB::ClearLinkedWeapons(uint32 shipID)
+void ShipDB::ClearWeaponGroups(uint32 shipID)
 {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM shipWeaponGroups WHERE shipID = %u", shipID );
 }
 
-void ShipDB::LoadLinkedWeapons(uint32 shipID, DBQueryResult& res)
+void ShipDB::LoadWeaponGroups(uint32 shipID, DBQueryResult& res)
 {
     sDatabase.RunQuery(res, "SELECT masterID, slaveID FROM shipWeaponGroups WHERE shipID = %u", shipID );
 }
 
-void ShipDB::SaveLinkedWeapons(uint32 shipID, std::multimap< uint32, uint32 >& data)
+void ShipDB::SaveWeaponGroups(uint32 shipID, std::multimap< uint32, uint32 >& data)
 {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM shipWeaponGroups WHERE shipID = %u", shipID );
