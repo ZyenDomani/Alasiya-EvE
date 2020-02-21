@@ -357,7 +357,7 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
             case EVEDB::invCategories::Entity: {
                 // owned by system rats
                 entity.factionID = sDataMgr.GetRegionRatFaction(pClient->GetRegionID());
-                entity.allianceID = 0;
+                entity.allianceID = entity.factionID;
                 entity.corporationID = sDataMgr.GetCorpID(entity.factionID);
                 entity.ownerID = entity.corporationID;
             } break;
@@ -371,7 +371,7 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
             default: {
                 //owned by system sov holder
                 entity.factionID = sDataMgr.GetRegionFaction(pClient->GetRegionID());
-                entity.allianceID = 0;
+                entity.allianceID = entity.factionID;
                 entity.corporationID = sDataMgr.GetCorpID(entity.factionID);
                 entity.ownerID = entity.corporationID;
             } break;
