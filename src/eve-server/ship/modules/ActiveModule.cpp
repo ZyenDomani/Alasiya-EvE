@@ -295,22 +295,30 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     }
 
     if (m_targetSE != nullptr) {
-        /** @todo criminal shit isnt written yet....fix this once it is.
-        if (sFxDataMgr.isAssistance(effectID))
-            if (m_targetSE->HasPilot())
-                if (m_targetSE->GetPilot()->IsCriminal())
-                    throw PyException(MakeUserError("ModuleActivationDeniedCriminalAssistance"));
-        */
-
         /*
          * AttrdisallowAgainstEwImmuneTarget
          * AttrDisallowOffensiveModifiers
          * AttrDisallowOffensiveModifierBonus
          */
 
-        if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
-            Clear();
-            throw PyException(MakeUserError("DeniedActivateTargetAssistDisallowed"));
+        // if target is non-combatant deny attack
+        if (sFxDataMgr.isOffensive(m_effectID))
+            if ((m_targetSE->IsItemEntity()) or (m_targetSE->IsStaticEntity()))
+                // or (m_targetSE->IsLogin()))       // this is incomplete, so always returns false
+            {
+                throw PyException(MakeCustomError("You cannot attack the %s.", m_targetSE->GetName()));
+            }
+
+        if (sFxDataMgr.isAssistance(m_effectID)) {
+            if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
+                Clear();
+                throw PyException(MakeUserError("DeniedActivateTargetAssistDisallowed"));
+            }
+            /** @todo criminal shit isnt written yet....fix this once it is.
+            if (m_targetSE->HasPilot())
+                if (m_targetSE->GetPilot()->IsCriminal())
+                    throw PyException(MakeUserError("ModuleActivationDeniedCriminalAssistance"));
+             */
         }
         if (m_targetSE->IsCOSE()) {
             Clear();
@@ -432,7 +440,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
         return;
     }
 
-    // if we're not mining, wait for module to complete current cycle then shut it down.
+    // let module complete current cycle then shut it down.
     m_Stop = true;
 }
 
@@ -604,10 +612,10 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
     else
         modules.push_back(this);
-    for (auto cur : modules) {
-        cur->GetActiveModule()->SetSlaveData(m_shipRef->GetPilot()->GetShipSE());
+    for (auto cur : modules) //{
+        //cur->GetActiveModule()->SetSlaveData(m_shipRef->GetPilot()->GetShipSE());
         cur->GetActiveModule()->ShowEffect(false, abort);
-    }
+    //}
 
     ApplyEffect(FX::State::Active, false);
     if (IsValidTarget(m_targetID)
@@ -682,11 +690,12 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         // some data containers will pop after successful access.  currently incomplete
         case EVEDB::invGroups::Salvager: {
             if (IsSuccess()) {
-                _log(MODULE__TRACE, "%s - DeactivateCycle() - Salvage successful.  deleting target %s.", m_modRef->name(), m_targetSE->GetName());
+                _log(MODULE__DEBUG, "%s - DeactivateCycle() - Salvage successful.  deleting target %s.", m_modRef->name(), m_targetSE->GetName());
                 m_targMgr->RemoveTarget(m_targetSE);
                 // just in case other modules are targeting this object, let them know it was destroyed.
                 if (m_targetSE->TargetMgr() != nullptr)
                     m_targetSE->TargetMgr()->Destroyed();
+                m_sysMgr->RemoveEntity(m_targetSE);
                 m_targetSE->Delete();
                 SafeDelete(m_targetSE);
             }
@@ -917,17 +926,6 @@ bool ActiveModule::CanActivate()
 
     // check distance for targetable actions
     if (m_targetSE != nullptr) {
-        // if target is non-combatant deny attack
-        if (sFxDataMgr.isOffensive(m_effectID))
-            if ((m_targetSE->IsItemEntity())
-            or (m_targetSE->IsStaticEntity())
-            or (m_targetSE->IsAsteroidSE()))
-           // or (m_targetSE->IsLogin()))       // this is incomplete, so always returns false
-            {
-                m_shipRef->GetPilot()->SendNotifyMsg("You cannot attack the %s.  Ref: ServerError 16228.", m_targetSE->GetName());
-                return false;
-            }
-
         // weapons use ships AttrMaxTargetRange which is checked in TargetMgr
         if (m_turret or m_launcher)
             return  true;

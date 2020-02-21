@@ -29,6 +29,7 @@
  *   bubble call *SomeFunction* to tell ai of new ship arriving in bubble
  *   method to use npc's preferred sig radius for targets
  *   finish flee and signal action methods (and determine who can use them and when)
+ *      - this should take system sov, npc anomalies, destruction speed, and pirate faction
  *   add methods to check target/targeter warping out and chance of npc following (and possibly calling backup)
  *
  *  have data...needs coding...

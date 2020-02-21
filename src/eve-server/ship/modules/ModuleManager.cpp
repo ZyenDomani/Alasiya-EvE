@@ -532,7 +532,7 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
      * {'FullPath': u'UI/Messages', 'messageID': 259630, 'label': u'InvalidTargetGroupBody'}(u'Invalid target, can only activate this on {groupName}.', None, {u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'}})
      */
 
-    if (pMod->IsMaster() or !pMod->IsLinked())
+    if (!pMod->IsLinked() or pMod->IsMaster())
         pMod->Activate(effectID, targetID, repeat);
 }
 

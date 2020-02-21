@@ -179,6 +179,7 @@ class WreckContainer
 {
     friend class InventoryItem;    // to let it construct us
 public:
+    // put factionID in item's CustomInfo field to allow salvage
     WreckContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data);
     virtual ~WreckContainer();
 
@@ -233,21 +234,22 @@ class WreckSE
 : public DynamicSystemEntity
 {
 public:
+    // put factionID in item's CustomInfo field to allow salvage
     WreckSE(WreckContainerRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
     virtual ~WreckSE();
 
     /* class type pointer querys. */
-    virtual WreckSE* GetWreckSE()                       { return this; }
+    virtual WreckSE*            GetWreckSE()            { return this; }
     /* class type tests. */
-    virtual bool IsWreckSE()                            { return true; }
+    virtual bool                IsWreckSE()             { return true; }
 
     /* SystemEntity interface */
-    virtual void Process();
-    virtual void EncodeDestiny(Buffer& into);
-    virtual PyDict* MakeSlimItem();
+    virtual void                Process();
+    virtual void                EncodeDestiny(Buffer& into);
+    virtual PyDict*             MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Abandon();
+    virtual void                Abandon();
 
     /* specific functions handled in this class. */
     void Salvaged()                                     { m_contRef->Salvaged(); }
