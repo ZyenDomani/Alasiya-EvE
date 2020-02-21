@@ -111,3 +111,23 @@ private:
 
 
 #endif  // _EVE_SHIP_MODULES_ACTIVE_MODULE_H_
+
+/* {'messageKey': 'DeniedActivateCloaked', 'dataID': 17883388, 'suppressable': False, 'bodyID': 259487, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 771}
+ * {'messageKey': 'DeniedActivateControlling', 'dataID': 17880010, 'suppressable': False, 'bodyID': 258228, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2230}
+ * {'messageKey': 'DeniedActivateFrozen', 'dataID': 17883391, 'suppressable': False, 'bodyID': 259488, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 772}
+ * {'messageKey': 'DeniedActivateInJump', 'dataID': 17883394, 'suppressable': False, 'bodyID': 259489, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 773}
+ * {'messageKey': 'DeniedActivateInWarp', 'dataID': 17883704, 'suppressable': False, 'bodyID': 259597, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 774}
+ * {'messageKey': 'DeniedActivateTargetAssistDisallowed', 'dataID': 17883397, 'suppressable': False, 'bodyID': 259490, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 775}
+ * {'messageKey': 'DeniedActivateTargetModuleDisallowed', 'dataID': 17883400, 'suppressable': False, 'bodyID': 259491, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 776}
+ * {'messageKey': 'DeniedActivateTargetNotPresent', 'dataID': 17883403, 'suppressable': False, 'bodyID': 259492, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 777}
+ * {'messageKey': 'DeniedActivateTargetOffModDisallowed', 'dataID': 17883406, 'suppressable': False, 'bodyID': 259493, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 778}
+ * {'FullPath': u'UI/Messages', 'messageID': 259487, 'label': u'DeniedActivateCloakedBody'}(u'Interference from the cloaking you are doing is preventing your systems from functioning at this time.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259488, 'label': u'DeniedActivateFrozenBody'}(u'You are unable to activate any modules because you have been frozen by a GM.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259489, 'label': u'DeniedActivateInJumpBody'}(u'Interference from the jump you are doing is preventing your systems from functioning at this time.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259490, 'label': u'DeniedActivateTargetAssistDisallowedBody'}(u'You cannot activate that module on the target as interference prevents assistance from being given to them.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259491, 'label': u'DeniedActivateTargetModuleDisallowedBody'}(u'You cannot activate that module on the target as interference prevents modules of that type from being used on them.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259492, 'label': u'DeniedActivateTargetNotPresentBody'}(u'You cannot activate that module as the target is no longer present.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259493, 'label': u'DeniedActivateTargetOffModDisallowedBody'}(u'You cannot activate that module on the target as interference prevents modules of that type from being used on them.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259597, 'label': u'DeniedActivateInWarpBody'}(u'Interference from your warp prevents your systems from functioning at this time.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258228, 'label': u'DeniedActivateControllingBody'}(u'You are unable to activate any modules while you are controlling some other objects.', None, None)
+ */
