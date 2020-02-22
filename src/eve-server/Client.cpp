@@ -1347,17 +1347,17 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     m_ship->SetCustomInfo(ci);
 */
     //delay the move 4sec so they can see the JumpOut animation
-    SetStateTimer (ClientState::csJump, ClientTimers::JumpingTimer);
+    SetStateTimer(ClientState::csJump, ClientTimers::JumpingTimer);
 }
 
 void Client::ExecuteJump() {
     if (m_movePoint == NULL_ORIGIN) {   // this is part of infant AP hack
         m_clientState = ClientState::csIdle;
-        _log(AUTOPILOT__TRACE, "ExecuteJump() - m_clientState set to Idle");
+        _log(AUTOPILOT__TRACE, "ExecuteJump() - movePoint = null; state set to Idle");
         return;
     }
 
-    m_ship->Jump();
+    pShipSE->Jump();
     m_invul = true;
 
     MoveToLocation(m_moveSystemID, m_movePoint);
@@ -1379,7 +1379,7 @@ void Client::SetInvulTimer(uint32 time/*ClientTimers::DefaultTimer*/)
     m_invulTimer.Start(time);
 }
 
-void Client::SetStateTimer (ClientState state, uint32 time/*ClientTimers::DefaultTimer*/)
+void Client::SetStateTimer(ClientState state, uint32 time/*ClientTimers::DefaultTimer*/)
 {
     if (m_stateTimer.Enabled()) {
         _log(CLIENT__ERROR, "%s: SetStateTimer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_stateTimer.GetRemainingTime());
@@ -1395,18 +1395,18 @@ void Client::SetStateTimer (ClientState state, uint32 time/*ClientTimers::Defaul
 // these next two are for sending jump effects (easier to test here)
 void Client::JumpInEffect()
 {
-    if ((pShipSE != nullptr)
-    and (pShipSE->DestinyMgr() != nullptr)
-    and (!pShipSE->DestinyMgr()->IsCloaked()))
-        pShipSE->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
+    if (pShipSE != nullptr)
+        if (pShipSE->DestinyMgr() != nullptr)
+            if (!pShipSE->DestinyMgr()->IsCloaked())
+                pShipSE->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
 }
 
 void Client::JumpOutEffect(uint32 locationID)
 {
-    if ((pShipSE != nullptr)
-    and (pShipSE->DestinyMgr() != nullptr)
-    and (!pShipSE->DestinyMgr()->IsCloaked()))
-        pShipSE->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", locationID);
+    if (pShipSE != nullptr)
+        if (pShipSE->DestinyMgr() != nullptr)
+            if (!pShipSE->DestinyMgr()->IsCloaked())
+                pShipSE->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", locationID);
 }
 
 std::string Client::GetStateName(ClientState state)

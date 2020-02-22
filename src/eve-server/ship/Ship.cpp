@@ -855,19 +855,16 @@ void ShipItem::Undock() {
         m_ModuleManager->Initialize();
     }
 
-    // reset all effects, as all variables are set at this point.
-    //ResetEffects();
-    ProcessEffects(true, true/*IsSolarSystem(m_locationID)*/);
+    ProcessEffects(true, true);
 
-    if (sConfig.debug.IsTestServer) {
-        // Heal Ship completely on test server
-        Heal();
-    } else {
-        // live server will Recharge shields and cap if session change isnt active (undocking too fast)
-        if (!m_pilot->IsSessionChange()) {
-            SetShipShield(1.0);
-            SetShipCapacitorLevel(1.0);
-        }
+    // Heal Ship completely on test server
+    //if (sConfig.debug.IsTestServer)
+    //    Heal();
+
+    // Recharge shields and cap if session change isnt active (undocking too fast)
+    if (!m_pilot->IsSessionChange()) {
+        SetShipShield(1.0);
+        SetShipCapacitorLevel(1.0);
     }
 }
 
@@ -2619,6 +2616,30 @@ void Ship::Dock() {
     m_shipRef->Dock();
 }
 
+void Ship::Jump() {
+    if (m_targMgr != nullptr) {
+        m_targMgr->ClearModules();
+        m_targMgr->ClearAllTargets();
+    }
+
+    m_shipRef->Jump();
+}
+
+void Ship::Warp() {
+    if (m_targMgr != nullptr) {
+        m_targMgr->ClearModules();
+        m_targMgr->ClearAllTargets();
+    }
+
+    m_shipRef->Warp();
+}
+
+void Ship::RemoveTarget(SystemEntity* pSE) {
+    // target has been unlocked
+    m_shipRef->GetModuleManager()->RemoveTarget(pSE);
+    m_targMgr->ClearTarget(pSE);
+}
+
 void Ship::EncodeDestiny( Buffer& into) {
     using namespace Destiny;
 
@@ -2924,10 +2945,3 @@ void Ship::AbandonDrones() {
     m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false);
 }
 //AttrDroneControlDistance
-
-void Ship::RemoveTarget(SystemEntity* pSE) {
-    // target has been unlocked
-    m_shipRef->GetModuleManager()->RemoveTarget(pSE);
-    m_targMgr->ClearTarget(pSE);
-
-}

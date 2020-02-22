@@ -323,6 +323,8 @@ public:
 
     /* specific functions handled here. */
     void Dock();
+    void Jump();
+    void Warp();
     void RemoveTarget(SystemEntity* pSE);
     void SetPassword(std::string pass)                  { m_towerPass = pass; }
     // fleet
