@@ -112,7 +112,6 @@ void TargetManager::ClearTarget(SystemEntity *tSE) {
 }
 
 void TargetManager::ClearModules() {
-    // iterate thru the map of modules targeting this object and call AbortCycle on each.
     for (auto cur : m_modules)
         cur.second->AbortCycle();
 }
@@ -130,12 +129,12 @@ void TargetManager::ClearTargets(bool notify/*true*/) {
         return;
 
     for (auto cur : m_targets) {
-        _log(TARGET__INFO, "ClearTarget() - %s(%u) has cleared target %s(%u).",
-                mySE->GetName(), mySE->GetID(), cur.first->GetName(), cur.first->GetID());
         // failsafe   still chance this code is incomplete
         if (cur.first->TargetMgr() != nullptr)
             cur.first->TargetMgr()->TargetedByLost(mySE);
         SafeDelete(cur.second);
+        _log(TARGET__INFO, "ClearTarget() - %s(%u) has cleared target %s(%u).",
+                mySE->GetName(), mySE->GetID(), cur.first->GetName(), cur.first->GetID());
     }
     m_targets.clear();
 
@@ -149,11 +148,11 @@ void TargetManager::ClearFromTargets() {
 
     std::vector<SystemEntity *> ToNotify;
     for (auto cur : m_targetedBy) {
+        SafeDelete(cur.second);
         //do not notify until we clear our target list! otherwise bad things happen.
         ToNotify.push_back(cur.first);
         _log(TARGET__TRACE, "ClearFrom() - %s(%u) has added %s(%u) to delete list.", \
                 mySE->GetName(), mySE->GetID(), cur.first->GetName(), cur.first->GetID());
-        SafeDelete(cur.second);
     }
     m_targetedBy.clear();
 
@@ -376,20 +375,6 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
 }
 
 void TargetManager::TargetedByLocked(SystemEntity* pSE) {
-    //first make sure they are not already in the list
-    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(pSE);
-    if (itr != m_targetedBy.end()) {
-        _log(TARGET__TRACE, "Adding %s(%u) to %s(%u)'s locked list, but they're already in there.", \
-                pSE->GetName(), pSE->GetID(), mySE->GetName(), mySE->GetID());
-        //just re-use the old entry...
-        itr->second->state = TargetedByEntry::Locked;
-        return;
-    } else {
-        //new entry.
-        TargetedByEntry *te = new TargetedByEntry(pSE);
-        te->state = TargetedByEntry::Locked;
-        m_targetedBy[pSE] = te;
-    }
     _log(TARGET__TRACE, "%s(%u) has been locked by %s(%u)", \
             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
     mySE->TargetMgr()->TargetedAdd(pSE);
@@ -580,6 +565,20 @@ void TargetManager::TargetAdded(SystemEntity* tSE) {
 }
 
 void TargetManager::TargetedAdd(SystemEntity *tSE) {
+    //first make sure they are not already in the list
+    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(tSE);
+    if (itr != m_targetedBy.end()) {
+        _log(TARGET__TRACE, "Adding %s(%u) to %s(%u)'s locked list, but they're already in there.", \
+        tSE->GetName(), tSE->GetID(), mySE->GetName(), mySE->GetID());
+        //just re-use the old entry...
+        itr->second->state = TargetedByEntry::Locking;
+        return;
+    } else {
+        //new entry.
+        TargetedByEntry *te = new TargetedByEntry(tSE);
+        te->state = TargetedByEntry::Locking;
+        m_targetedBy[tSE] = te;
+    }
     if (mySE->IsNPCSE())
         mySE->GetNPCSE()->TargetedAdd(tSE);
     if (!mySE->HasPilot())

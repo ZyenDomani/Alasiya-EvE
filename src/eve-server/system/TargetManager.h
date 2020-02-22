@@ -43,9 +43,10 @@ public:
     TargetManager(SystemEntity* self);
     ~TargetManager()                            { /* do nothing here */ }
 
+    /* Common Methods for all objects */
     void                Process();
 
-    /* Common Methods for all objects */
+    // iterate thru the map of modules targeting this object and call AbortCycle on each.
     void                ClearModules();
     void                TargetsCleared();
     void                ClearFromTargets();
