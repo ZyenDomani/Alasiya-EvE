@@ -415,6 +415,20 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
                 m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
         } break;
     }
+    /*def OnSpecialFX
+     if start and guid == 'effects.WarpScramble*':
+     if settings.user.ui.Get('notifyMessagesEnabled', 1) or eve.session.shipid in (shipID, targetID):
+         jammerName = sm.GetService('bracket').GetBracketName2(shipID)
+         targetName = sm.GetService('bracket').GetBracketName2(targetID)
+         if jammerName and targetName:
+            if eve.session.shipid == targetID:
+                 eve.Message('WarpScrambledBy', {'scrambler': jammerName})
+            elif eve.session.shipid == shipID:
+                 eve.Message('WarpScrambledSuccess', {'scrambled': targetName})
+            else:
+                eve.Message('WarpScrambledOtherBy', {'scrambler': jammerName,
+                'scrambled': targetName})
+        */
 
     --m_repeat;
     if (m_repeat < 1)
@@ -442,8 +456,20 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     }
 
     if (effect.compare("TargetDestroyed") == 0) {
-        Clear();
-        return;
+        m_targetSE = nullptr;
+        /*
+        std::vector<GenericModule*> modules;
+        // dont use abort=true in case of salvage module.  it will cause endless loop
+        if (m_linkMaster) {
+            m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
+            for (auto cur : modules)
+                cur->GetActiveModule()->ShowEffect(false, false);
+        } else
+            ShowEffect(false, false);
+        */
+        // dont clear this yet so gfx processing will disable correctly
+        //m_targetID = 0;
+
     }
 
 
@@ -1084,7 +1110,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.other = PyStatic.NewNone();
     }
 
-    timeLeft /= 1000;
+    //timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -1092,8 +1118,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = (abort ? (abortTime /*/ EvE::Time::Second*/) : (shipEff.timeNow - (timeLeft * EvE::Time::Second)));  //if now - startTime > 150000000: return
-        shipEff.duration = (abort ? 2 : (active ? cycleTime.get_float() : timeLeft));  // duration in seconds
+        shipEff.startTime = (abort ? (abortTime /*/ EvE::Time::Second*/) : shipEff.timeNow); // - (timeLeft * EvE::Time::Second)));
+        shipEff.duration = (abort ? 2000 : timeLeft); //(active ? cycleTime.get_float() : timeLeft));  // duration in seconds
         shipEff.repeat = m_repeat;
         // will need to check and update for data miners here  (any other cases?)
         if ((groupID() == EVEDB::invGroups::Salvager) and (abort)) {

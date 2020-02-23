@@ -139,6 +139,13 @@ PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call)
         return nullptr;
     }
 
+    if (!IsCharacter(arg.charID)) {
+        sLog.Error("Client::SelectCharacter()", "CharacterID %u invalid.", arg.charID);
+        call.client->SendErrorMsg("Character ID %u not found.  Ref: ServerError 00522", arg.charID);
+        return nullptr;
+    }
+
+    /** @todo test for valid charID, online status, and ??? */
     call.client->SelectCharacter(arg.charID);
     return nullptr;
 }
@@ -378,7 +385,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     pClient->CreateChar(false);
 
-    _log( CLIENT__MESSAGE, "Created New Character  - Sending charID %u as reply", charRef->itemID() );
+    _log( CLIENT__MESSAGE, "Created New Character - Sending charID %u as reply", charRef->itemID() );
 
     return new PyInt(charRef->itemID());
 }
