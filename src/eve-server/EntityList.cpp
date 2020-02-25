@@ -203,10 +203,6 @@ void EntityList::Process() {
 
         ++m_stamp;
 
-        // these need 1Hz tics
-        sCivMgr.Process();
-        sBubbleMgr.Process();
-
         for (auto cur : m_players)
             if (cur.second->IsValidSession())   // verify client is constructed before calling ProcessClient() on it
                 cur.second->ProcessClient();
@@ -230,13 +226,17 @@ void EntityList::Process() {
             ++itr;
         }
 
+        // these need 1Hz tics
+        sCivMgr.Process();
+        sBubbleMgr.Process();
+
         // these minute tics do not need to be precise
         if (m_minutetimer.Check()) {
             ++m_minutes;
             sMissionDataMgr.Process();  // 1m
 
             if (m_minutes % 5 == 0) { // ~5m
-                sWHMgr.Process(); 
+                sWHMgr.Process();
                 for (auto cur : m_systems)
                     cur.second->UpdateData();   // update active system timers and dynamic data every 5m
             }
