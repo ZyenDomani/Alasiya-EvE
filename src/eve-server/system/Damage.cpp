@@ -269,11 +269,12 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 killed = true;
                 //m_self->SetAttribute(AttrDamage, m_self->GetAttribute(AttrHP));
             }
+
+            // module damage.
+            //  after armor is gone, make damage to random module.
+            if (HasPilot())
+                GetShipSE()->DamageRandModule(sConfig.server.ModuleDamageChance);    // config option for random module damage chance
         }
-        // module damage.
-        //  after shields are gone, make damage to random module.
-        if (HasPilot())
-            GetShipSE()->DamageRandModule(sConfig.server.ModuleDamageChance);    // config option for random module damage chance
     }
 
     if (killed) {
