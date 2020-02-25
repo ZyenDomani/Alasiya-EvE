@@ -68,7 +68,8 @@ enum ClientTimers {
     UndockInvul      = 20000,
     RestoringInvul   = 60000,
     JumpCloak        = 30000,
-    LoginCloak       = 20000
+    LoginCloak       = 20000,
+    UnCloak          = 5000     // not implemented yet
 };
 
 enum ClientState {
@@ -79,7 +80,8 @@ enum ClientState {
     csKilled = 5,
     csLogout = 6,
     csBoard  = 7,
-    csLogin  = 8
+    csLogin  = 8,
+    csUncloak = 9
 };
 
 class CryptoChallengePacket;
@@ -267,6 +269,7 @@ public:
     bool IsInvul()                                      { return m_invul; }
     bool IsLogin()                                      { return m_login; }
     bool IsUndock()                                     { return m_undock; }
+    bool IsUncloak()                                    { return m_uncloak; }
     bool HasBeyonce()                                   { return m_beyonce; }
     bool IsBubbleWait()                                 { return m_bubbleWait; }
     bool IsSetStateSent()                               { return m_setStateSent; }
@@ -384,6 +387,7 @@ protected:
     bool m_undock;
     bool m_loaded;
     bool m_beyonce;
+    bool m_uncloak;
     bool m_showall;         // boolean for showing all dynamics in system on ships scanner (ROLE_GMH)
     bool m_autoStop;        // boolean for auto-stopping modules when target attrib is full (ROLE_PLAYER)
     bool m_packaged;        // used to correctly package updates into a PackagedAction list

@@ -96,6 +96,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_loaded = false;
     m_undock = false;
     m_showall = false;
+    m_uncloak = false;
     m_beyonce = false;
     m_autoStop = true;
     m_canThrow = false;
@@ -314,12 +315,6 @@ bool Client::ProcessNet()
 
 bool Client::SelectCharacter(int32 charID/*0*/)
 {
-    if (!IsCharacter(charID)) {
-        sLog.Error("Client::SelectCharacter()", "CharacterID %u invalid.", charID);
-        SendErrorMsg("Character ID %u not found.  Ref: ServerError xxxxx", charID);
-        return false;
-    }
-
     InitSession(charID);
     if (!m_validSession){
         sLog.Error("Client::SelectCharacter()", "Failed to init session for char %u.", charID);
@@ -396,6 +391,10 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     // load char LPs
     //m_lpMap
+
+    // update account online status, increase login count, set last login timestamp
+    ServiceDB::IncrementLoginCount(GetUserID());
+    ServiceDB::SetAccountOnlineStatus(GetUserID(), true);
 
     //johnsus - characterOnline mod
     ServiceDB::SetCharacterOnlineStatus(charID, true);
@@ -1023,13 +1022,13 @@ void Client::Board(Ship* newShipSE)
         SafeDelete(oldShipSE);
     } else {    // you can xfer direct from one ship from another.
         //  check for POS/FF in bubble.  check for ship in FF.  if so, then not abandoned.
-        /** @todo  incomplete...just cause bubble has FF, dont mean ship is INSIDE said FF */
         bool abandoned = true;
-        TowerSE* ptSE = pShipSE->SysBubble()->GetTowerSE();
-        if (ptSE != nullptr)
+        if (pShipSE->SysBubble()->HasTower()) {
+            TowerSE* ptSE = pShipSE->SysBubble()->GetTowerSE();
             if (ptSE->HasForceField())
                 if (pShipSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI())
                     abandoned = false;
+        }
 
         char ci[45];
         if (abandoned) {
@@ -1075,11 +1074,13 @@ void Client::Eject()
     }
 
     //  check for POS/FF in bubble.  check for ship in FF.  if so, then not abandoned.
-    /** @todo  incomplete...just cause bubble has FF, dont mean ship is INSIDE said FF */
     bool abandoned = true;
-    if (pShipSE->SysBubble()->HasTower())
-        if (pShipSE->SysBubble()->GetTowerSE()->HasForceField())
-            abandoned = false;
+    if (pShipSE->SysBubble()->HasTower()) {
+        TowerSE* ptSE = pShipSE->SysBubble()->GetTowerSE();
+        if (ptSE->HasForceField())
+            if (pShipSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI())
+                abandoned = false;
+    }
 
     char ci[45];
     if (abandoned) {
@@ -1863,7 +1864,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             // send the setstate buffer alone
             act.update = *update;
         } else {
-            // this will package all current updates (and those comming in before next flush) into
+            // this will package all current updates (and those coming in before next flush) into
             //   a single PackagedAction packet, which is then inserted into the DoDestinyAction packet.
             PyList* paList = new PyList();
                 paList->AddItem(*update);
@@ -2001,11 +2002,15 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
 /************************************************************************/
 /* EVEAdministration Interface                                          */
 /************************************************************************/
+    // only used by GM Command
 void Client::DisconnectClient()
 {
+    SendNotifyMsg("You have been kicked from this server and will be disconnected shortly.");
+
     //initiate closing the client TCP Connection
     CloseClientConnection();
 }
+// only used by GM Command
 void Client::BanClient()
 {
     //send message to client
@@ -2123,10 +2128,6 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 
     /** @todo  check this character/account for newbie status and revoke as needed before account update.  */
 
-    /* update account online status, increase login count, set last login timestamp */
-    ServiceDB::IncrementLoginCount(aData.id);
-    ServiceDB::SetAccountOnlineStatus(aData.id, true);
-
     /* marshaled Python string "None" */
     static const uint8 handshakeFunc[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };
 
@@ -2160,8 +2161,8 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     //user type 30 is normal user, type 23 is a trial account user.
     pSession->SetInt("userType", userTypeMammon);
     pSession->SetInt("userid", aData.id);
-    pSession->SetLong("clientID", 0/*10000000000L * account_info.clientID + 888444*/);   /* this should be sent in rsp packet for "clientid".  not sure how yet.   */
     pSession->SetLong("role", aData.role);
+    pSession->SetLong("clientID", 0/*10000000000L * account_info.clientID + 888444*/);   /* this should be sent in rsp packet for "clientid".  not sure how yet.   */
     pSession->SetLong("sessionID", 0/*pSession->CreateSessionID()*/);
 
     sLog.Green("  Client::Login()","Account \"%s\" (uid:%u) logging in from %s", aData.name.c_str(), aData.id, EVEClientSession::GetAddress().c_str());
