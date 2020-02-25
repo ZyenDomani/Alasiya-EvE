@@ -789,7 +789,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 	/*  remotePark.CmdAbandonLoot(wrecks)  <- this is pylist from 'abandonAllWrecks'
-	 *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID
+	 *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID in list
 	 */
   sLog.White( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);

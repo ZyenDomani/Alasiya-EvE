@@ -74,7 +74,7 @@ enum EveAttrEnum {
     AttrCapacityBonus = 72,
     AttrDuration = 73,                                  //durationAttributeID in dgmEffects
     AttrHpToCapacity = 75,                              // dunno what this is for
-    AttrMaxTargetRange = 76,
+    AttrMaxTargetRange = 76,                            // npc dont have this
     AttrMiningAmount = 77,
     AttrScanSpeed = 79,                                 //ship scanning speed in milliseconds
     AttrSpeedBonus = 80,
