@@ -15,16 +15,15 @@
       <stringInline value="OnTarget" />
       <!--
           One of:
-          try - starting to target?
-          add - targeting successful
-          clear - clear all targets
+          add - target added
           lost - target lost
-          otheradd - somebody else has targeted you
-          otherlost - somebody else has stopped targeting you
+          clear - clear all targets
+          otheradd - somebody locked you
+          otherlost - somebody unlocked you
       -->
       <string name="mode" />
       <int name="targetID" />
-      <!-- only seen on `target lost` events, but doesn't seem to do anything -->
+      <!-- sent on lost and otherlost, but not processed -->
       <string name="reason" />
     </tupleInline>
   </elementDef>
