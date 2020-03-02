@@ -55,7 +55,7 @@ public:
 
     /* specific functions handled here. */
     uint32 GetLauncherID()                              { return m_fromSE->GetID(); }
-    SystemEntity* GetTarget()                           { return m_targetSE; }
+    SystemEntity* GetTargetSE()                         { return m_targetSE; }
 
     void SetHitTimer(uint32 setTime)                    { m_hitTimer.Start(setTime); }
     void SetSpeed(double speed)                         { m_speed = speed; }

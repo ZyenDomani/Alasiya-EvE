@@ -26,6 +26,7 @@
 
 #include "eve-server.h"
 
+#include "ConsoleCommands.h"
 #include "Client.h"
 #include "Container.h"
 #include "EVEServerConfig.h"
@@ -72,10 +73,6 @@ m_killed(false)
     _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %.1f.", self->itemName().c_str(), self->itemID(), m_radius);
 }
 
-SystemEntity::~SystemEntity()
-{
-}
-
 void SystemEntity::Process() {
     if (m_killed) {
         _log(SE__DEBUG, "SE::Process() - %s(%u) is dead but still in system.", m_self->itemName().c_str(), m_self->itemID());
@@ -84,11 +81,11 @@ void SystemEntity::Process() {
 
     /*  Enable base call to Process Targeting and Movement
      * this order WILL affect Point/Tackle  (kinda like on live)
-     * processing target first will benefit aggressor
-     * processing destiny first will benefit target
+     * processing target first will benefit point/tackle
+     * processing destiny first will benefit escaping
      */
-    if (m_targMgr != nullptr)
-        m_targMgr->Process();
+    //if (m_targMgr != nullptr)
+    //    m_targMgr->Process();
     if (m_destiny != nullptr)
         m_destiny->Process();
 }
@@ -147,6 +144,8 @@ void SystemEntity::Killed(Damage& fatal_blow)
     if (m_targMgr != nullptr) {
         // loop thru list of all modules targeting this entity and let them know it has been killed.
         m_targMgr->Destroyed();
+        // remove TargMgr here to avoid redundant calls upon object deletion
+        SafeDelete(m_targMgr);
     }
     m_killed = true;
     Delete();
@@ -155,7 +154,7 @@ void SystemEntity::Killed(Damage& fatal_blow)
 void SystemEntity::Delete()
 {
     if (m_targMgr != nullptr)
-        m_targMgr->ClearFromTargets();
+        m_targMgr->ClearFromTargets(); //OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Deleted);
     if (m_system != nullptr)
         m_system->RemoveEntity(this);
     if (!IsContainerSE())
@@ -180,7 +179,7 @@ void SystemEntity::SendDamageStateChanged() {  //working 24Apr15
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
     if (m_targMgr != nullptr)
-        m_targMgr->QueueTBDestinyUpdate(&up);
+        m_targMgr->QueueUpdate(&up);
     PySafeDecRef(up);
     _log(DAMAGE__MESSAGE, "%s(%u): DamageUpdate - S:%f A:%f H:%f.", \
             GetName(), m_self->itemID(), dmgState.shield, dmgState.armor, dmgState.structure);
@@ -461,10 +460,12 @@ ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &serv
 
 ObjectSystemEntity::~ObjectSystemEntity()
 {
-    if (m_targMgr != nullptr) {
-        m_targMgr->ClearModules();
-        m_targMgr->ClearAllTargets(false);
-    }
+    if (m_targMgr != nullptr)
+        if (!sConsole.IsShutdown()) {
+            m_targMgr->ClearModules();
+            m_targMgr->ClearAllTargets(false);
+            //m_targMgr->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Destroyed);
+        }
 
     SafeDelete(m_targMgr);
     SafeDelete(m_destiny);
@@ -614,10 +615,12 @@ DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &se
 
 DynamicSystemEntity::~DynamicSystemEntity()
 {
-    if (m_targMgr != nullptr) {
-        m_targMgr->ClearModules();
-        m_targMgr->ClearAllTargets(false);
-    }
+    if (m_targMgr != nullptr)
+        if (!sConsole.IsShutdown()) {
+            m_targMgr->ClearModules();
+            m_targMgr->ClearAllTargets(false);
+            //m_targMgr->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Destroyed);
+        }
 
     SafeDelete(m_targMgr);
     SafeDelete(m_destiny);

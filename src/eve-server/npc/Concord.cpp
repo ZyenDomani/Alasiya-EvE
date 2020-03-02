@@ -353,7 +353,9 @@ void ConcordAI::Process() {
                         }
                         return;
                     } else if (!pTarget->SysBubble()) {
+
                         m_npc->TargetMgr()->ClearTarget(pTarget);
+                        //m_npc->TargetMgr()->OnTarget(pTarget, TargMgr::Mode::Lost);
                         return;
                     }
                     CheckDistance(pTarget);
@@ -370,6 +372,7 @@ void ConcordAI::Process() {
                         return;
                     } else if (!pTarget->SysBubble()) {
                         m_npc->TargetMgr()->ClearTarget(pTarget);
+                        //m_npc->TargetMgr()->OnTarget(pTarget, TargMgr::Mode::Lost);
                         return;
                     }
                     CheckDistance(pTarget);
@@ -386,6 +389,7 @@ void ConcordAI::Process() {
                         return;
                     } else if (!pTarget->SysBubble()) {
                         m_npc->TargetMgr()->ClearTarget(pTarget);
+                        //m_npc->TargetMgr()->OnTarget(pTarget, TargMgr::Mode::Lost);
                         return;
                     }
                     CheckDistance(pTarget);
@@ -492,6 +496,7 @@ void ConcordAI::CheckDistance(SystemEntity* pSE)
             // target is no longer in npc's "sight range".  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?
             m_npc->TargetMgr()->ClearTarget(pSE);
+            //m_npc->TargetMgr()->OnTarget(pSE, TargMgr::Mode::Lost);
             if (m_npc->TargetMgr()->HasNoTargets())
                 SetIdle();
         }
@@ -521,16 +526,18 @@ void ConcordAI::ClearTargets() {
 }
 
 void ConcordAI::ClearAllTargets() {
-    m_npc->TargetMgr()->ClearAllTargets();
+
+    //m_npc->TargetMgr()->ClearAllTargets();
+    m_npc->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::ClientReq);
 }
 
 void ConcordAI::Target(SystemEntity* pTarget) {
     double targetTime = GetTargetTime();
 
 	if (!m_npc->TargetMgr()->StartTargeting(pTarget, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange )) {
-        //_log(CONCORD__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
+        //_log(CONCORD__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-        //ClearAllTargets();
+        ClearAllTargets();
         SetIdle();
         return;
     }
@@ -608,14 +615,18 @@ void ConcordAI::Attack(SystemEntity* pSE)
         if (!m_npc->SysBubble()->InBubble(pSE->GetPosition())) {
             _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
                  m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
+
             m_npc->TargetMgr()->ClearTarget(pSE);
+            //m_npc->TargetMgr()->OnTarget(pSE, TargMgr::Mode::Lost);
             return;
         }
         DestinyManager* pDestiny = pSE->DestinyMgr();
         if (!pDestiny) {
             _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
                  m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
+
             m_npc->TargetMgr()->ClearTarget(pSE);
+            //m_npc->TargetMgr()->OnTarget(pSE, TargMgr::Mode::Lost);
             return;
         }
         // Check to see if the target is not cloaked:
@@ -623,6 +634,7 @@ void ConcordAI::Attack(SystemEntity* pSE)
             _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) is cloaked.  Clear target and move on",
                  m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
             m_npc->TargetMgr()->ClearTarget(pSE);
+            //m_npc->TargetMgr()->OnTarget(pSE, TargMgr::Mode::Lost);
             return;
         }
 

@@ -30,6 +30,44 @@
 
 #include "inventory/ItemRef.h"
 
+namespace TargMgr {
+    namespace State {
+        enum {
+            Idle                = 0,
+            Locking             = 1,
+            Passive             = 2,
+            Locked              = 3
+        };
+    }
+    namespace Mode {
+        enum {
+            None                = 0,
+            Add                 = 1,
+            Lost                = 2,
+            Clear               = 3,
+            OtherAdd            = 4,
+            OtherLost           = 5,
+            LockedBy            = 6
+        };
+    }
+    namespace Msg {
+        enum {
+            NoMsg               = 0,
+            Locked              = 1,
+            Docking             = 2,
+            Jumping             = 3,
+            Cloaked             = 4,
+            WarpingOut          = 5,
+            StoppedTargeting    = 6,
+            Destroyed           = 7,
+            ClientReq           = 8,
+            InternalCall        = 9,
+            Deleted             = 10,
+            Shutdown            = 11
+        };
+    }
+}
+
 
 class MiningLaser;
 class ActiveModule;
@@ -44,32 +82,47 @@ public:
     ~TargetManager()                            { /* do nothing here */ }
 
     /* Common Methods for all objects */
-    void                Process();
+    bool                Process();
+    void                Unload();       // called on npcs from sysMgr when unloading system.
 
     // iterate thru the map of modules targeting this object and call AbortCycle on each.
     void                ClearModules();
     void                TargetsCleared();
     void                ClearFromTargets();
-    void                TargetTry(SystemEntity *who);
-    void                TargetLost(SystemEntity *who);
-    void                ClearTarget(SystemEntity *who);
-    void                TargetAdded(SystemEntity *who);
-    void                TargetedAdd(SystemEntity *who);
-    void                TargetedLost(SystemEntity *who);
+    void                TargetLost(SystemEntity *tSE);
+    void                ClearTarget(SystemEntity *tSE);
+    void                TargetAdded(SystemEntity *tSE);
+    void                TargetedAdd(SystemEntity *tSE);
+    void                TargetedLost(SystemEntity *tSE);
     void                ClearTargets(bool notify=true);
     void                ClearAllTargets(bool notify=true);
 
-    bool                TargetFail(SystemEntity* who);
-    bool                StartTargeting(SystemEntity* tSE, ShipItemRef sRef);
-
-    bool                IsTargetedBySomething() const   { return (!m_targetedBy.empty()); }
-
-    uint8               GetTotalTargets() const         { return (uint8)m_targets.size(); }
-
-    float               TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const;
-
     /* method to remove target without triggering anything else (target destroyed) */
     void                RemoveTarget(SystemEntity* tSE);
+
+    /*
+     *    OnTarget.mode
+     *        add - targeting successful
+     *        clear - clear all targets
+     *        lost - target lost (reason not used)
+     *            - Docking
+     *            - Cloaked
+     *        otheradd - somebody else has targeted you
+     *        otherlost - somebody else has stopped targeting you (reason not used)
+     *            - WarpingOut
+     *            - StoppedTargeting
+     *            - Destroyed
+     *
+     *    OnTargetClear - immediately removes all target info from ship, including pending targets
+     *        - this is done automagically when client jump, dock, or warp.  we just clean up our side
+     */
+    //void                OnTarget(SystemEntity* tSE, uint8 mode=TargMgr::Mode::None, uint8 msg=TargMgr::Msg::NoMsg);
+    //void                ClearTargets(uint8 msg=TargMgr::Msg::NoMsg);
+    // notify targeters this entity is gone
+    //void                ClearFromTargets(bool update=true, uint8 msg=TargMgr::Msg::NoMsg);
+
+
+    bool                StartTargeting(SystemEntity* tSE, ShipItemRef sRef);
 
     /* NPC AI Methods */
     bool                IsTargetedBy(SystemEntity *pSE);
@@ -87,58 +140,50 @@ public:
     void                AddTargetModule(ActiveModule* pMod);
     void                RemoveTargetModule(ActiveModule* pMod);
 
-    /* debugging methods */
-    void                Dump() const;
-    std::string         TargetList(uint16 &length, uint16 &count);
-
     /* Packet builders: */
     PyList*             GetTargets() const;
     PyList*             GetTargeters() const;
 
-    /* currently unused methods */
-    void                QueueTBDestinyEvent(PyTuple **up) const;    //queue a destiny event to all people targeting me.
-    void                QueueTBDestinyUpdate(PyTuple **up) const;    //queue a destiny update to all people targeting me.
+    void                QueueEvent(PyTuple **up) const;    //queue an event to all SEs targeting me.
+    void                QueueUpdate(PyTuple **up) const;   //queue an update to all SEs targeting me.
+
+    /* debugging methods */
+    void                Dump() const;
+    // called by .targlist (player command)
+    std::string         TargetList(uint16 &length, uint16 &count);
+
 
 protected:
 
-    //called in reaction to outgoing targeting events in other target managers.
-    //void TargetedByLocking(SystemEntity *from_who);
-    void                TargetedByLocked(SystemEntity *from_who);
-    void                TargetedByLost(SystemEntity *from_who);
+    float               TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const;
 
+    static const char*  GetModeName(uint8 mode);
+    static const char*  GetStateName(uint8 state);
+
+    //called in reaction to outgoing targeting events in other target managers.
+    void                TargetedByLocked(SystemEntity *tSE);
+    void                TargetedByLost(SystemEntity *tSE);
 
     class TargetEntry {
     public:
-        TargetEntry(SystemEntity* se)
-        : state(Idle), pSE(se), timer(0) {}
+        TargetEntry()
+        : state(TargMgr::State::Idle), timer(0) {}
 
-        void Dump() const;
+        void Dump(SystemEntity* pSE) const;
 
-        enum {
-            Idle = 0,
-            PassiveLocking,
-            Locking,
-            Locked
-        } state;
+        uint8 state;
 
-        SystemEntity *const pSE;
         Timer timer;
     };
 
     class TargetedByEntry {
     public:
-        TargetedByEntry(SystemEntity* se)
-        : state(Idle), pSE(se) {}
+        TargetedByEntry()
+        : state(TargMgr::State::Idle) {}
 
-        void Dump() const;
+        void Dump(SystemEntity* pSE) const;
 
-        enum {
-            Idle = 0,
-            Locking,
-            Locked
-        } state;
-
-        SystemEntity *const pSE;
+        uint8 state;
     };
 
 private:

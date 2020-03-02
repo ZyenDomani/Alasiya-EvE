@@ -104,6 +104,7 @@ void DroneAIMgr::Process() {
                 return;
             } else if (pTarget->SysBubble() == nullptr) {
                 m_pDrone->TargetMgr()->ClearTarget(pTarget);
+                //m_pDrone->TargetMgr()->OnTarget(pTarget, TargMgr::Mode::Lost);
                 return;
             }
             CheckDistance(pTarget);
@@ -196,9 +197,7 @@ void DroneAIMgr::CheckDistance(SystemEntity* pSE)
         if (m_state != DroneAI::State::Idle) {
             // target is no longer in npc's "sight range".  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?
-            m_pDrone->TargetMgr()->ClearTarget(pSE);
-            if (m_pDrone->TargetMgr()->HasNoTargets())
-                SetIdle();
+            ClearTarget(pSE);
         }
         return;
     } else if (dist < m_entityFlyRange) { //within weapon max (and within falloff)
@@ -222,6 +221,7 @@ void DroneAIMgr::ClearTargets() {
 
 void DroneAIMgr::ClearAllTargets() {
     m_pDrone->TargetMgr()->ClearAllTargets();
+    //m_pDrone->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::ClientReq);
 }
 
 void DroneAIMgr::Target(SystemEntity* pTarget) {
@@ -334,27 +334,35 @@ void DroneAIMgr::Attack(SystemEntity* pSE)
         if (!m_pDrone->SysBubble()->InBubble(pSE->GetPosition())) {
             _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
                  m_pDrone->GetName(), m_pDrone->GetID(), pSE->GetName(), pSE->GetID());
-            m_pDrone->TargetMgr()->ClearTarget(pSE);
+            ClearTarget(pSE);
             return;
         }
         DestinyManager* pDestiny = pSE->DestinyMgr();
         if (pDestiny == nullptr) {
             _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
                  m_pDrone->GetName(), m_pDrone->GetID(), pSE->GetName(), pSE->GetID());
-            m_pDrone->TargetMgr()->ClearTarget(pSE);
+            ClearTarget(pSE);
             return;
         }
         // Check to see if the target is not cloaked:
         if (pDestiny->IsCloaked()) {
             _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) is cloaked.  Clear target and move on",
                  m_pDrone->GetName(), m_pDrone->GetID(), pSE->GetName(), pSE->GetID());
-            m_pDrone->TargetMgr()->ClearTarget(pSE);
+            ClearTarget(pSE);
             return;
         }
 
         if (m_pDrone->TargetMgr()->CanAttack())
             AttackTarget(pSE);
     }
+}
+
+void DroneAIMgr::ClearTarget(SystemEntity* pSE) {
+    m_pDrone->TargetMgr()->ClearTarget(pSE);
+    //m_pDrone->TargetMgr()->OnTarget(pSE, TargMgr::Mode::Lost);
+
+    if (m_pDrone->TargetMgr()->HasNoTargets())
+        SetIdle();
 }
 
 //also check for special effects and write code to implement them

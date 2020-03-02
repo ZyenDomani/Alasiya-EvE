@@ -579,7 +579,6 @@ PyDict* ShipItem::GetShipInfo()
     for (auto cur : equipped) {
         Rsp_CommonGetInfo_Entry entry2;
         if (cur->Populate(entry2)) {
-            /*
             if (cur->categoryID() == EVEDB::invCategories::Charge) {
                 PyTuple* tuple = new PyTuple(3);
                     tuple->SetItem(0, new PyInt(cur->locationID()));
@@ -587,9 +586,8 @@ PyDict* ShipItem::GetShipInfo()
                     tuple->SetItem(2, new PyInt(cur->typeID()));
                 result->SetItem(tuple, new PyObject("util.KeyVal", entry2.Encode()));
             } else {
-                */
                 result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry2.Encode()));
-            //}
+            }
         } else
             _log( SHIP__ERROR, "%s(%u): Failed to load item %u for ShipGetInfo", name(), itemID(), cur->itemID());
     }
@@ -1395,6 +1393,7 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, bool merge/*false*/)
         if (chargeRef.get() == nullptr)
             return 0;
 
+        /** @todo check cargo capy before move */
         m_ModuleManager->UnloadCharge(fromFlag, merge);
         return chargeRef->itemID();
     }
@@ -2610,7 +2609,8 @@ void Ship::SetPilot(Client* pClient) {
 void Ship::Dock() {
     if (m_targMgr != nullptr) {
         m_targMgr->ClearModules();
-        m_targMgr->ClearAllTargets();
+        m_targMgr->ClearAllTargets(false);
+        //m_targMgr->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Docking);
     }
 
     m_shipRef->Dock();
@@ -2619,17 +2619,16 @@ void Ship::Dock() {
 void Ship::Jump() {
     if (m_targMgr != nullptr) {
         m_targMgr->ClearModules();
-        m_targMgr->ClearAllTargets();
+        m_targMgr->ClearAllTargets(false);
+        //m_targMgr->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Jumping);
     }
 
     m_shipRef->Jump();
 }
 
 void Ship::Warp() {
-    if (m_targMgr != nullptr) {
+    if (m_targMgr != nullptr)
         m_targMgr->ClearModules();
-        m_targMgr->ClearAllTargets();
-    }
 
     m_shipRef->Warp();
 }
@@ -2637,7 +2636,9 @@ void Ship::Warp() {
 void Ship::RemoveTarget(SystemEntity* pSE) {
     // target has been unlocked
     m_shipRef->GetModuleManager()->RemoveTarget(pSE);
+
     m_targMgr->ClearTarget(pSE);
+    //m_targMgr->OnTarget(pSE, TargMgr::Mode::Lost, TargMgr::Msg::StoppedTargeting);
 }
 
 void Ship::EncodeDestiny( Buffer& into) {

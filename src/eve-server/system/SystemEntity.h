@@ -82,7 +82,7 @@ class SystemEntity {
     friend class SystemBubble;    /* only to update m_bubble */
 public:
     SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~SystemEntity();
+    virtual ~SystemEntity()                             { /* do nothing here */ }
 
     /* Process Calls - Overridden as needed in derived classes */
     virtual void                Process();

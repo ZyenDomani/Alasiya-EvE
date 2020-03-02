@@ -117,8 +117,21 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     // this should be set according to npc size.
     if (m_maxAttackRange < 1000)
         m_maxAttackRange = 10000;
+
     // 'sight' range (undefined in db)
-    m_sightRange = 20000;
+    float radius = m_self->GetAttribute(AttrRadius).get_float();
+    if (radius < 30)
+        m_sightRange = 2500;
+    else if (radius < 60)
+        m_sightRange = 5000;
+    else if (radius < 150)
+        m_sightRange = 8000;
+    else if (radius < 280)
+        m_sightRange = 12000;
+    else if (radius < 550)
+        m_sightRange = 15000;
+    else
+        m_sightRange = 20000;
     if (m_maxAttackRange > m_sightRange)
         m_sightRange = m_maxAttackRange *2;
 
@@ -427,6 +440,9 @@ void NPCAIMgr::SetIdle() {
     if (m_state == NPCAI::State::Idle)
         return;
     // not doing anything....idle.
+
+    /** @todo need to clear out targets here */
+
     _log(NPC__AI_TRACE, "%s(%u): Idle: returning to idle.", \
          m_npc->GetName(), m_npc->GetID());
     m_state = NPCAI::State::Idle;
@@ -663,8 +679,9 @@ void NPCAIMgr::TargetLost(SystemEntity* pSE) {
                 _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) lost, but more targets remain.", \
                         m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
                 /** @todo engage weakest target in current list */
+                Attack(m_npc->TargetMgr()->GetFirstTarget(true));
             }
-        } break;
+        }
     }
 }
 
@@ -705,6 +722,7 @@ void NPCAIMgr::Attack(SystemEntity* pSE)
 
 void NPCAIMgr::ClearTarget(SystemEntity* pSE) {
     m_npc->TargetMgr()->ClearTarget(pSE);
+    //m_npc->TargetMgr()->OnTarget(pSE, TargMgr::Mode::Lost);
 
     if (m_npc->TargetMgr()->HasNoTargets())
         SetIdle();
@@ -818,7 +836,7 @@ float NPCAIMgr::GetTargetTime()
     return targetTime;
 }
 
-void NPCAIMgr::DisableRepTimers(bool shield, bool armor)
+void NPCAIMgr::DisableRepTimers(bool shield/*true*/, bool armor/*true*/)
 {
     if (armor)
         m_armorRepairTimer.Disable();

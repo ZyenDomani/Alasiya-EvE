@@ -95,18 +95,20 @@ void SentryAI::Process() {
                 DestinyManager* pDestiny(nullptr);
                 m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?  yes...later
                 for (auto cur : clientVec) {
+                    /** @todo  this needs work
                     if (cur->IsLogin() or cur->IsInvul() or cur->InPod())
                         continue;
-                    if (!cur->GetShipSE())
+                    if (!cur->GetShipTarget())
                         continue;
-                    if ((!cur->GetShipSE()->DestinyMgr()) or (!cur->GetShipSE()->SysBubble()))    // this shouldnt be needed, but whatever...
+                    if ((!cur->GetShipTarget()->DestinyMgr()) or (!cur->GetShipTarget()->SysBubble()))    // this shouldnt be needed, but whatever...
                         continue;
-                    pDestiny = cur->GetShipSE()->DestinyMgr();
+                    pDestiny = cur->GetShipTarget()->DestinyMgr();
                     if (pDestiny->IsCloaked() or pDestiny->IsWarping())
                         continue;
-                    if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_sightRange)
+                    if (m_npc->GetPosition().distance(cur->GetShipTarget()->GetPosition()) > m_sightRange)
                         continue;
-                    Target(cur->GetShipSE());
+                    Target(cur->GetShipTarget());
+                    */
                     return;
                 }
             } else {
@@ -126,7 +128,7 @@ void SentryAI::Process() {
                 SetIdle();
                 return;
             } else if (!pTarget->SysBubble()) {
-                m_npc->TargetMgr()->ClearTarget(pTarget);
+                ClearTarget(pTarget);
                 return;
             }
             CheckDistance(pTarget);
@@ -169,37 +171,40 @@ void SentryAI::SetSignaling(SystemEntity* pTarget) {
     m_state = State::Signaling;
 }
 
-void SentryAI::CheckDistance(SystemEntity* pSE)
+void SentryAI::CheckDistance(SystemEntity* pTarget)
 {
-    double dist = m_npc->GetPosition().distance(pSE->GetPosition());
-    if ((dist > m_sightRange) and (!m_npc->TargetMgr()->IsTargetedBy(pSE))) {
+    double dist = m_npc->GetPosition().distance(pTarget->GetPosition());
+    if ((dist > m_sightRange) and (!m_npc->TargetMgr()->IsTargetedBy(pTarget))) {
         _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
-                m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);
+                m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID(), dist);
         if (m_state != State::Idle) {
             // target is no longer in npc's "sight range" and is NOT targeting this npc.  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?  yes..later
             // if npc is targeted greater than this distance, it will chase
-            m_npc->TargetMgr()->ClearTarget(pSE);
-            if (m_npc->TargetMgr()->HasNoTargets())
-                SetIdle();
+            ClearTarget(pTarget);
         }
         return;
     }
 
-    SetEngaged(pSE);
+    SetEngaged(pTarget);
 
     if (!m_mainAttackTimer.Enabled())
         m_mainAttackTimer.Start(m_attackSpeed);
 
-    Attack(pSE);
+    Attack(pTarget);
 }
 
-void SentryAI::ClearTargets() {
-    m_npc->TargetMgr()->ClearTargets();
+void SentryAI::ClearTarget(SystemEntity* pTarget) {
+    m_npc->TargetMgr()->ClearTarget(pTarget);
+    //m_npc->TargetMgr()->OnTarget(pTarget, TargMgr::Mode::Lost);
+
+    if (m_npc->TargetMgr()->HasNoTargets())
+        SetIdle();
 }
 
 void SentryAI::ClearAllTargets() {
     m_npc->TargetMgr()->ClearAllTargets();
+    //m_npc->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::ClientReq);
 }
 
 void SentryAI::Target(SystemEntity* pTarget) {
@@ -268,21 +273,21 @@ void SentryAI::Attack(SystemEntity* pTarget)
         // Check to see if the target still in the bubble (Client warped out)
         if (!m_npc->SysBubble()->InBubble(pTarget->GetPosition())) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
-                    m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-            m_npc->TargetMgr()->ClearTarget(pTarget);
+                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
+            ClearTarget(pTarget);
             return;
         }
         if (!pTarget->DestinyMgr()) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
-                    m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-            m_npc->TargetMgr()->ClearTarget(pTarget);
+                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
+            ClearTarget(pTarget);
             return;
         }
         // Check to see if the target is not cloaked:
         if (pTarget->DestinyMgr()->IsCloaked()) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) is cloaked.  Clear target and move on",
-                    m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-            m_npc->TargetMgr()->ClearTarget(pTarget);
+                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
+            ClearTarget(pTarget);
             return;
         }
         if (m_npc->TargetMgr()->CanAttack())

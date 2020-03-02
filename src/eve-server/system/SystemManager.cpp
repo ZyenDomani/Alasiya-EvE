@@ -303,7 +303,7 @@ void SystemManager::UnloadSystem() {
             continue;
         }
         if (pSE->TargetMgr() != nullptr)
-            pSE->TargetMgr()->ClearAllTargets(false);
+            pSE->TargetMgr()->Unload();
         if (pSE->IsShipSE())
             pSE->GetShipSE()->GetShipItemRef()->LogOut();
         if (pSE->IsNPCSE()) {

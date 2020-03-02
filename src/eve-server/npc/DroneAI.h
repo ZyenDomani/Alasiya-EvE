@@ -79,8 +79,9 @@ public:
 
 protected:
     void Attack(SystemEntity* pTarget);
-    void AttackTarget(SystemEntity* pTarget);
     void SetEngaged(SystemEntity* pTarget);
+    void ClearTarget(SystemEntity* pTarget);
+    void AttackTarget(SystemEntity* pTarget);
     void CheckDistance(SystemEntity* pTarget);
 
     int8 m_state;

@@ -135,6 +135,9 @@ void Profile::AddTime(uint8 key, double value) {
         case 26:
             m_effects2.push_back(value);
             break;
+        case 27:
+            m_ontarget.push_back(value);
+            break;
         default:
             sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
             break;
@@ -148,7 +151,6 @@ void Profile::ClearAll()
     m_map.clear();
     m_client.clear();
     m_npc.clear();
-    m_drone.clear();
     m_bubbles.clear();
     m_items.clear();
     m_modules.clear();
@@ -156,6 +158,7 @@ void Profile::ClearAll()
     m_db.clear();
     m_ship.clear();
     m_targets.clear();
+    m_ontarget.clear();
     m_missile.clear();
     m_system.clear();
     m_entityS.clear();
@@ -216,6 +219,10 @@ void Profile::PrintProfile()
     std::printf("       Modules   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_modules.size()).c_str(),  h, l, a );
     GetRunTimes(m_ship, h, l, a);
     std::printf("          Ship   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_ship.size()).c_str(),  h, l, a );
+    //GetRunTimes(m_ontarget, h, l, a);
+    //std::printf("      OnTarget   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_ontarget.size()).c_str(),  h, l, a );
+    GetRunTimes(m_targets, h, l, a);
+    std::printf("    TargetProc   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_targets.size()).c_str(),  h, l, a );
     GetRunTimes(m_missile, h, l, a);
     std::printf("       Missile   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_missile.size()).c_str(), h, l, a );
     GetRunTimes(m_damage, h, l, a);

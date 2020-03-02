@@ -64,10 +64,7 @@ public:
     void Targeted(SystemEntity* pSE);
     void TargetLost(SystemEntity* pSE);
 
-    void ClearTargets()                                 { m_npc->TargetMgr()->ClearTargets(); }
-    void ClearAllTargets()                              { m_npc->TargetMgr()->ClearAllTargets(); }
-
-    void DisableRepTimers(bool shield, bool armor);
+    void DisableRepTimers(bool shield=true, bool armor=true);
 
     // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
     bool IsIdle()                                       { return (m_state == NPCAI::State::Idle); }

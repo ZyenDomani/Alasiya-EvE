@@ -49,8 +49,9 @@
 
 EntityList::EntityList()
 : m_services( nullptr ),
+m_targTimer(0, true),
 m_stampTimer(0, true),
-m_minutetimer(0, true),
+m_minuteTimer(0, true),
 m_startTime(0)
 {
     m_agents.clear();
@@ -76,8 +77,9 @@ void EntityList::Initialize() {
     m_startTime = GetFileTimeNow();
 
     /* start the timers */
+    m_targTimer.Start(250);     // testing targeting at 4/sec
     m_stampTimer.Start(1000);
-    m_minutetimer.Start(60000); // does this need to be accurate?
+    m_minuteTimer.Start(60000); // does this need to be accurate?
 
     m_clientSeedID = ServiceDB::SetClientSeed();
 
@@ -186,14 +188,24 @@ void EntityList::RemovePlayer(Client* pClient)
 
 void EntityList::Process() {
     Client* pClient(nullptr);
-    std::vector<Client*>::iterator itr = m_clients.begin();
-    while (itr != m_clients.end()) {
-        if ((*itr)->ProcessNet()) {
-            ++itr;
-        } else {
-            pClient = *itr;
-            itr = m_clients.erase(itr);
+    std::vector<Client*>::iterator citr = m_clients.begin(), cend = m_clients.end();
+    while (citr != cend) {
+        if ((*citr)->ProcessNet())
+            ++citr;
+        else {
+            pClient = *citr;
+            citr = m_clients.erase(citr);
             SafeDelete(pClient);
+        }
+    }
+
+    if (m_targTimer.Check()) {
+        std::unordered_map<SystemEntity*, TargetManager*>::iterator titr = m_targMgrs.begin(), tend = m_targMgrs.end();
+        while (titr != tend) {
+            if (titr->second->Process())
+                ++titr;
+            else
+                titr = m_targMgrs.erase(titr);
         }
     }
 
@@ -231,7 +243,7 @@ void EntityList::Process() {
         sBubbleMgr.Process();
 
         // these minute tics do not need to be precise
-        if (m_minutetimer.Check()) {
+        if (m_minuteTimer.Check()) {
             ++m_minutes;
             sMissionDataMgr.Process();  // 1m
 

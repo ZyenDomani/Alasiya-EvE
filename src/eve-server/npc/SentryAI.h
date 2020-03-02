@@ -48,11 +48,12 @@ public:
     double GetTrackingSpeed()                           { return m_trackingSpeed; }
 
 protected:
-    void Attack(SystemEntity* pTarget);
     void SetIdle();
+    void Attack(SystemEntity* pTarget);
     void SetEngaged(SystemEntity* pTarget);
-    void SetSignaling(SystemEntity* pTarget);
+    void ClearTarget(SystemEntity* pTarget);
     void AttackTarget(SystemEntity* pTarget);
+    void SetSignaling(SystemEntity* pTarget);
     void CheckDistance(SystemEntity* pTarget);
 
     double GetTargetTime();

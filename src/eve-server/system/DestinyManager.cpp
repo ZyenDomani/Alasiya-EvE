@@ -1565,10 +1565,11 @@ void DestinyManager::InitWarp() {
         mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_capNeeded);
         mySE->GetShipSE()->Warp();
         m_capNeeded = 0;
-    } else {
-        //clear targets
-        mySE->TargetMgr()->ClearAllTargets();
     }
+
+    //clear targets
+    mySE->TargetMgr()->ClearAllTargets();
+    //mySE->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::WarpingOut);
 
     WarpAccel(0);
 }
@@ -1702,6 +1703,7 @@ void DestinyManager::EntityRemoved(SystemEntity *pSE) {
 
 bool DestinyManager::IsTargetInvalid()
 {
+    /** @todo  this needs a good lookover */
     if (mySE->SystemMgr()->GetSE(m_targetEntity.first) == nullptr) {
         // Our target was removed
         Stop();
@@ -1711,13 +1713,13 @@ bool DestinyManager::IsTargetInvalid()
         return false;
     if (m_targetEntity.second->HasPilot()) {
         if (m_targetEntity.second->GetPilot()->IsDocked()) {  // Our target docked, so STOP
-            mySE->TargetMgr()->ClearTarget(m_targetEntity.second);
+            //mySE->TargetMgr()->ClearTarget(m_targetEntity.second);
             Stop();
             return true;
         }
     }
     if (m_targetEntity.second->DestinyMgr()->IsWarping()) { // The target is warping
-        mySE->TargetMgr()->ClearTarget(m_targetEntity.second);
+        //mySE->TargetMgr()->ClearTarget(m_targetEntity.second);
         Stop();
         return true;
     }
@@ -2425,6 +2427,13 @@ void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
         m_maxShipSpeed /= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100));
     m_activeSpeedFraction = m_activeSpeedFraction * 0.999;
     SetSpeedFraction(m_userSpeedFraction, true);
+    std::vector<PyTuple*> updates;
+    SetBallSpeed sbms;
+        sbms.entityID = mySE->GetID();
+        sbms.speed = m_maxShipSpeed;
+        updates.push_back(sbms.Encode());
+    SendDestinyUpdate(updates);
+    m_hasSentShipUpdates = true;    // just in case, as this is re-sent in BeginMovement()
 }
 
 //  called from Client::CreateShipSE(), Client::ResetAfterPodded(), NPC::NPC(), Concord::Concord(), Drone::Drone(), DestinyManager::UpdateNewShip()
@@ -2524,7 +2533,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
     m_ballMode = Destiny::Ball::Mode::MISSILE;
     m_stateStamp = sEntityList.GetStamp();
 
-    SystemEntity* pTarget = pMissile->GetTarget();
+    SystemEntity* pTarget = pMissile->GetTargetSE();
     m_targetPoint = GPoint(pTarget->GetPosition());
     m_targetEntity.first = pTarget->GetID();
     m_targetEntity.second = pTarget;
@@ -3054,7 +3063,7 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
     } else {
         _log( DESTINY__ERROR, "[%u] Cannot BubbleCast destiny update (u:%u, e:%u); entity (%u) is not in any bubble.", \
                 sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetID() );
-        EvE::traceStack();
+        //EvE::traceStack();
         sBubbleMgr.Add(mySE);
         mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
     }

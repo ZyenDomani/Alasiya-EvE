@@ -42,6 +42,8 @@ class EVENotificationStream;
 class SystemManager;
 class PyTuple;
 class PyServiceMgr;
+class SystemEntity;
+class TargetManager;
 
 typedef enum {
     NOTIF_DEST__LOCATION,
@@ -140,6 +142,11 @@ public:
     // this method will send notification to online members that have the role required for the notification sent.
     void CorpNotify(uint32 corpID, uint8 type, const char* notifyType, const char* idType, PyTuple* payload) const;
 
+    //testing target tics in <1hz
+    // add SE* and targMgr* to map
+    void AddTargMgr(SystemEntity* pSE, TargetManager* pTM)      { m_targMgrs.emplace(pSE, pTM); }
+    // remove SE* and targMgr* from map 
+    void DeleteTargMgr(SystemEntity* pSE)                       { m_targMgrs.erase(pSE); }
 
 protected:
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.
@@ -148,19 +155,23 @@ protected:
 
 private:
     Timer m_stampTimer;
-    Timer m_minutetimer;
+    Timer m_minuteTimer;
+    Timer m_targTimer;
 
     // connected clients (incomplete client class data)
     //  use this to delete Client*
     std::vector<Client*> m_clients;
     // logged-in players (complete client class data)
-    // DO NOT delete this Client*  use m_clients instead.
+    // DO NOT delete this Client*  (use m_clients instead.)
     std::map<uint32, Client*> m_players;
     std::set<int64> m_sessions;
     std::map<uint32, SystemManager*> m_systems;
     std::map<uint32, StationItemRef> m_stations;
     std::vector<std::string> m_anomIDs;
     std::map<uint32, Agent*> m_agents;
+
+    //testing target tics in <1hz
+    std::unordered_map<SystemEntity*, TargetManager*> m_targMgrs;
 
     // make list for corp members and their roles for easy access of notifications etc.
     typedef std::map<Client*, int64> corpRole;
