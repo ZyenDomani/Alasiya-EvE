@@ -126,6 +126,7 @@ public:
     void UpdateModules(EVEItemFlags flag);
     void UnloadModule(uint32 itemID)                    { m_ModuleManager->UnloadModule(itemID); }
     void UnloadAllModules()                             { m_ModuleManager->UnloadAllModules();  }
+    // this will test for active modules and throw where applicable
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
     void StripFitting();
     // this will remove all items from all ship cargo holds

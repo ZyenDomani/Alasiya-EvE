@@ -2416,7 +2416,6 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     m_hasSentShipUpdates = true;    // just in case, as this is re-sent in BeginMovement() (called from Orbit())
 
     SetSpeedFraction(m_userSpeedFraction, true);
-
 }
 
 void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)

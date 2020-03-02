@@ -588,10 +588,13 @@ uint32 ActiveModule::DoCycle()
 
 void ActiveModule::AbortCycle()
 {
+    if (m_ModuleState < Module::State::Deactivating)
+        return;
+
     _log(MODULE__TRACE, "%s calling AbortCycle() - m_stop:%s", m_modRef->name(), m_Stop?"true":"false");
-    // if stop is already set, let module finish cycle.. no, this can be exploited
-    //if (m_Stop and !now)
-   //     return;
+    // if stop is already set, let module finish cycle.
+    if (m_Stop)
+        return;
     // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destroyed, target left bubble, or miner deactivated by player:
     m_Stop = true;
     SetModuleState(Module::State::Deactivating);
@@ -601,12 +604,14 @@ void ActiveModule::AbortCycle()
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
+    if (m_ModuleState < Module::State::Deactivating)
+        return;
+
     _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->name());
     if ((m_ModuleState == Module::State::Activated) and (!abort)) {
         _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
                 m_modRef->name(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
         EvE::traceStack();
-   //     return;
     }
 
     std::vector<GenericModule*> modules;
@@ -1148,7 +1153,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             shipEff.error = PyStatic.NewNone();
 
     PyTuple* tuple = shipEff.Encode();
-    if (m_destinyMgr->IsWarping() or (m_bubble == nullptr))
+    if ((m_destinyMgr == nullptr) or (m_bubble == nullptr) or m_destinyMgr->IsWarping())
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     else
         m_bubble->BubblecastDestinyEvent(&tuple, "destiny");

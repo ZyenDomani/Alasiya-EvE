@@ -1401,6 +1401,16 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     if (!m_ModuleManager->VerifySlotExchange(slot1, slot2))
         throw PyException(MakeCustomError("Those locations are not compatible."));
 
+    // test for active module(s) before moving
+    GenericModule* pMod = GetModule(slot1);
+    if (pMod->IsActive())
+        throw PyException(MakeCustomError("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name()));
+    
+    pMod = GetModule(slot2);
+    if (pMod != nullptr)
+        if (pMod->IsActive())
+            throw PyException(MakeCustomError("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name()));
+
     // slot1 is occupied, as this is location module is from.
     InventoryItemRef modItemRef1 = GetModuleRef(slot1);
     if (modItemRef1.get() == nullptr) {

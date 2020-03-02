@@ -466,12 +466,12 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         throw PyException(MakeUserError("DeniedTargetEvadesSensors"));
     /** @todo SE->IsInvul() incomplete */
     if (tSE->IsInvul())
-        throw PyException( MakeUserError("DeniedTargetInvulnerable"));
+        throw PyException(MakeUserError("DeniedTargetInvulnerable"));
     /** @todo SE->IsFrozen() incomplete */
     if (tSE->IsFrozen()) {
         std::map<std::string, PyRep *> args;
         args["targetName"] = new PyString(tSE->GetName());
-        throw PyException( MakeUserError("DeniedTargetOtherFrozen", args));
+        throw PyException(MakeUserError("DeniedTargetOtherFrozen", args));
     }
     if ((mySE->SysBubble() == nullptr)
     or (tSE->SysBubble() == nullptr)) {
