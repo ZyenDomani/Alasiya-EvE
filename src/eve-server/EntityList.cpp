@@ -187,6 +187,8 @@ void EntityList::RemovePlayer(Client* pClient)
 
 
 void EntityList::Process() {
+    if (m_clients.empty())
+        return;
     Client* pClient(nullptr);
     std::vector<Client*>::iterator citr = m_clients.begin(), cend = m_clients.end();
     while (citr != cend) {
@@ -345,16 +347,17 @@ PyRep* EntityList::PyIsOnline(uint32 charID)
 Client* EntityList::FindClientByCharID(uint32 charID) const
 {
     std::map<uint32, Client*>::const_iterator itr = m_players.find(charID);
-    if (itr == m_players.end())
-        return nullptr;
+    if (itr != m_players.end())
+        return itr->second;
 
-    return itr->second;
+    return nullptr;
 }
 
 StationItemRef EntityList::GetStationByID(uint32 stationID) {
     std::map<uint32, StationItemRef>::iterator res = m_stations.find(stationID);
     if (res != m_stations.end())
         return res->second;
+
     return StationItemRef(nullptr);
 }
 
@@ -392,13 +395,13 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
     using namespace Notify::Types;
     //using namespace Corp::Role;
     // auto doesnt work here...dunno why yet.
-    corpRole::const_iterator itr = cItr->second.begin();
+    corpRole::const_iterator itr = cItr->second.begin(), end = cItr->second.end();
     switch (type) {
         case CorpNews:
         case CorpNewCEO: {
             // all members?
-            while (itr != cItr->second.end()) {
-                cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
+            while (itr != end) {
+                cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
         } break;
@@ -407,11 +410,11 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
         case CorpAppAccept: {
             // who else wants/needs this?
             // PersonnelManager is only role that can view corp applications
-            while (itr != cItr->second.end()) {
+            while (itr != end) {
                 //if ((itr->second &Corp::Role::Director) == Corp::Role::Director)
                 //    cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
                 if ((itr->second &Corp::Role::PersonnelManager) == Corp::Role::PersonnelManager)
-                    cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
         } break;
@@ -420,10 +423,10 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
             //  damn...dunno if i wanna do this one like this....hit db every loop here??  fukin nuts!
             // this is another vote for putting "corp shares" in character.corpData
             CorporationDB mdb;
-            while (itr != cItr->second.end()) {
+            while (itr != end) {
                 // if (itr->first->GetChar()->HasShares())  // not written, no underlying code yet
                 if (mdb.HasShares(itr->first->GetCharacterID(), corpID))
-                    cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
         } break;

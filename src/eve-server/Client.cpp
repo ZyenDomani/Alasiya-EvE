@@ -98,7 +98,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_showall = false;
     m_uncloak = false;
     m_beyonce = false;
-    m_autoStop = true;
+    m_autoStop = false;
     m_canThrow = false;
     m_packaged = false;
     m_portrait = false;
