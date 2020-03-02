@@ -245,6 +245,8 @@ Client::~Client() {
          *      6)  remove client from sysmgr/destiny/server
          */
 
+        sLog.Green("  Client::Logout()","%s (Acct:%u) logging out.", m_char->name(), GetUserID());
+
         if (!sConsole.IsDbError()) {
             ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
             ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), false);
