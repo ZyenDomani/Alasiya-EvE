@@ -290,12 +290,6 @@ bool Client::ProcessNet()
 
     PyPacket *p(nullptr);
     while ((p = PopPacket())) {
-        /*
-        if (is_log_enabled(CLIENT__IN_ALL)) {
-            _log(CLIENT__IN_ALL, "Received packet:");
-            PyLogDumpVisitor dumper(CLIENT__IN_ALL, CLIENT__IN_ALL);
-            p->Dump(CLIENT__IN_ALL, dumper);
-        }*/
         try {
             if (!DispatchPacket(p))
                 sLog.Error("Client", "%s: Failed to dispatch packet of type %s (%d).", m_char->itemName().c_str(), MACHONETMSG_TYPE_NAMES[ p->type ], (int)p->type);

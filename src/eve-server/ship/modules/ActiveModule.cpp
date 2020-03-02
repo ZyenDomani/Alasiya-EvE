@@ -230,34 +230,6 @@ void ActiveModule::Process()
             return;
         }
     }
-/*
-    if (m_needsCharge) {
-        // these shouldnt be needed anymore
-        if (m_ChargeState == Module::State::Unloaded) {
-            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but moduleState is unloaded.", m_modRef->name(), m_shipRef->name());
-            m_Stop = true;
-        }
-        if (!m_chargeLoaded) {
-            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but chargeLoaded is false.", m_modRef->name(), m_shipRef->name());
-            m_Stop = true;
-        }
-        if (m_chargeRef.get() == nullptr) {
-            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but chargeRef is NULL.", m_modRef->name(), m_shipRef->name());
-            m_Stop = true;
-        } else if (m_chargeRef->quantity() < 1) {
-            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but has 0 qty.", m_modRef->name(), m_shipRef->name());
-            m_Stop = true;
-            UnloadCharge();
-            DeactivateCycle(true);
-            // dont send msg to client about no loaded charge...just silently DeactivateCycle.
-            return;
-        }
-        if (m_Stop) {
-            m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->name());
-            DeactivateCycle(true);
-        }
-    }
-    */
 }
 
 void ActiveModule::RemoveTarget(SystemEntity* pSE) {
@@ -303,7 +275,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
         // if target is non-combatant deny attack
         if (sFxDataMgr.isOffensive(effectID))
-            if ((m_targetSE->IsItemEntity()) or (m_targetSE->IsStaticEntity()))
+            if (m_targetSE->IsItemEntity() or m_targetSE->IsStaticEntity() or m_targetSE->IsWreckSE())
                 // or (m_targetSE->IsLogin()))       // this is incomplete, so always returns false
             {
                 throw PyException(MakeCustomError("You cannot attack the %s.", m_targetSE->GetName()));
@@ -472,12 +444,11 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
 
     }
 
-
     // let module complete current cycle then shut it down.
     m_Stop = true;
 }
 
-void ActiveModule::SetSlaveData ( Ship* pShip ) {
+void ActiveModule::SetSlaveData( Ship* pShip ) {
     m_bubble = pShip->SysBubble();
     m_sysMgr = pShip->SystemMgr();
     m_targMgr = pShip->TargetMgr();
@@ -505,34 +476,23 @@ uint32 ActiveModule::DoCycle()
     }
     // not sure if this is entirely accurate...wip
     switch (m_modRef->groupID()) {
-        case EVEDB::invGroups::Artifacts_and_Prototypes: {
+        case EVEDB::invGroups::Projectile_Weapon:
+        case EVEDB::invGroups::Hybrid_Weapon:
+        case EVEDB::invGroups::Energy_Weapon: {
+            // turret weapons use specific code.
+            ApplyDamage();
         } break;
-        // these passive modules will need specific code
-        case EVEDB::invGroups::Missile_Launcher_Defender:
-        case EVEDB::invGroups::Countermeasure_Launcher:
-        case EVEDB::invGroups::Passive_Targeting_System: {
+        case EVEDB::invGroups::Missile_Launcher_Assault:
+        case EVEDB::invGroups::Missile_Launcher_Bomb:   // not sure here
+        case EVEDB::invGroups::Missile_Launcher_Citadel:
+        case EVEDB::invGroups::Missile_Launcher_Cruise:
+        case EVEDB::invGroups::Missile_Launcher_Heavy:
+        case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
+        case EVEDB::invGroups::Missile_Launcher_Rocket:
+        case EVEDB::invGroups::Missile_Launcher_Siege:
+        case EVEDB::invGroups::Missile_Launcher_Standard: {
+            LaunchMissile();
         } break;
-        // these active modules will need specific code
-        case EVEDB::invGroups::Cynosural_Field:
-        case EVEDB::invGroups::Covert_Cynosural_Field_Generator:
-        case EVEDB::invGroups::Automated_Targeting_System: {
-        } break;
-
-        // these im not sure about yet
-        case EVEDB::invGroups::ECM:
-        case EVEDB::invGroups::ECCM:
-        case EVEDB::invGroups::Gang_Coordinator:
-        case EVEDB::invGroups::Cloaking_Device:
-        case EVEDB::invGroups::Siege_Module:
-        case EVEDB::invGroups::Super_Weapon:
-        case EVEDB::invGroups::Interdiction_Sphere_Launcher:    // launch a sphere (like missile and probe)
-        case EVEDB::invGroups::Jump_Portal_Generator:
-        case EVEDB::invGroups::Remote_ECM_Burst:
-        case EVEDB::invGroups::Warp_Disrupt_Field_Generator:
-        case EVEDB::invGroups::Smart_Bomb:
-        case EVEDB::invGroups::ECM_Burst: {
-        } break;
-
         case EVEDB::invGroups::Capacitor_Booster:{
             ConsumeCharge();
             UpdateCharge(AttrCapacitorCharge, AttrCapacitorCapacity, AttrPowerTransferAmount, m_shipRef);
@@ -566,23 +526,6 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Armor_Repair_Unit: {
             UpdateDamage(AttrArmorDamage, AttrArmorDamageAmount, m_shipRef);
         } break;
-        case EVEDB::invGroups::Projectile_Weapon:
-        case EVEDB::invGroups::Hybrid_Weapon:
-        case EVEDB::invGroups::Energy_Weapon: {
-            // turret weapons still use specific code.
-            ApplyDamage();
-        } break;
-        case EVEDB::invGroups::Missile_Launcher_Assault:
-        case EVEDB::invGroups::Missile_Launcher_Bomb:   // not sure here
-        case EVEDB::invGroups::Missile_Launcher_Citadel:
-        case EVEDB::invGroups::Missile_Launcher_Cruise:
-        case EVEDB::invGroups::Missile_Launcher_Heavy:
-        case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
-        case EVEDB::invGroups::Missile_Launcher_Rocket:
-        case EVEDB::invGroups::Missile_Launcher_Siege:
-        case EVEDB::invGroups::Missile_Launcher_Standard: {
-            LaunchMissile();
-        } break;
         case EVEDB::invGroups::Missile_Launcher_Snowball: {
             LaunchSnowBall();
         } break;
@@ -603,6 +546,32 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Projected_ECCM:
         case EVEDB::invGroups::Remote_Sensor_Booster: {
         } break;
+        case EVEDB::invGroups::Artifacts_and_Prototypes: {
+        } break;
+        // these passive modules will need specific code
+        case EVEDB::invGroups::Missile_Launcher_Defender:
+        case EVEDB::invGroups::Countermeasure_Launcher:
+        case EVEDB::invGroups::Passive_Targeting_System: {
+        } break;
+        // these active modules will need specific code
+        case EVEDB::invGroups::Cynosural_Field:
+        case EVEDB::invGroups::Covert_Cynosural_Field_Generator:
+        case EVEDB::invGroups::Automated_Targeting_System: {
+        } break;
+        // these im not sure about yet
+        case EVEDB::invGroups::ECM:
+        case EVEDB::invGroups::ECCM:
+        case EVEDB::invGroups::Gang_Coordinator:
+        case EVEDB::invGroups::Cloaking_Device:
+        case EVEDB::invGroups::Siege_Module:
+        case EVEDB::invGroups::Super_Weapon:
+        case EVEDB::invGroups::Interdiction_Sphere_Launcher:    // launch a sphere (like missile and probe)
+        case EVEDB::invGroups::Jump_Portal_Generator:
+        case EVEDB::invGroups::Remote_ECM_Burst:
+        case EVEDB::invGroups::Warp_Disrupt_Field_Generator:
+        case EVEDB::invGroups::Smart_Bomb:
+        case EVEDB::invGroups::ECM_Burst: {
+        } break;
     }
 
     // do heat damage if overloaded...this will be handled in shipItem class
@@ -619,10 +588,10 @@ uint32 ActiveModule::DoCycle()
 
 void ActiveModule::AbortCycle()
 {
-    _log(MODULE__TRACE, "%s calling AbortCycle() - stop:%s", m_modRef->name(), m_Stop?"true":"false");
-    // if stop is already set, let module finish cycle
-    if (m_Stop)
-        return;
+    _log(MODULE__TRACE, "%s calling AbortCycle() - m_stop:%s", m_modRef->name(), m_Stop?"true":"false");
+    // if stop is already set, let module finish cycle.. no, this can be exploited
+    //if (m_Stop and !now)
+   //     return;
     // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destroyed, target left bubble, or miner deactivated by player:
     m_Stop = true;
     SetModuleState(Module::State::Deactivating);
@@ -723,6 +692,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
             if (IsSuccess()) {
                 _log(MODULE__DEBUG, "%s - DeactivateCycle() - Salvage successful.  deleting target %s.", m_modRef->name(), m_targetSE->GetName());
                 m_targMgr->RemoveTarget(m_targetSE);
+                //m_targMgr->OnTarget(m_targetSE, TargMgr::Mode::Lost, TargMgr::Msg::Destroyed);
                 // just in case other modules are targeting this object, let them know it was destroyed.
                 if (m_targetSE->TargetMgr() != nullptr)
                     m_targetSE->TargetMgr()->Destroyed();
@@ -879,10 +849,12 @@ void ActiveModule::UnloadCharge()
         // apply to containing module to properly remove effects
         sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
-        // unloading charge goes straight to attribMap, to send data to client without changing item qty
-        m_chargeRef->GetAttributeMap()->AlterChargeQuantity(0, false);
-        m_chargeRef->DeleteAttribute(AttrQuantity);
-        m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
+        if (m_chargeRef->quantity() > 0) {
+            // unloading charge goes straight to attribMap, to send data to client without changing item qty
+            m_chargeRef->GetAttributeMap()->AlterChargeQuantity(0, false);
+            m_chargeRef->DeleteAttribute(AttrQuantity);
+            m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
+        }
     }
 
     m_chargeLoaded = false;
@@ -899,6 +871,8 @@ void ActiveModule::ConsumeCharge() {
                 cur->GetLoadedChargeRef()->AlterChargeQuantity(-1);
     } else
         m_chargeRef->AlterChargeQuantity(-1);
+
+    /** @todo test here for 0 qty and deactivate as required */
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
@@ -1161,6 +1135,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             m_shipRef->GetPilot()->SendNotification("TargetNoLongerPresentGeneric", "charid", &tuple);
             */
             m_targetID = 0;
+            // this is wrong....need to find error msg and insert here, but client throws error on above msgs
+            shipEff.error = PyStatic.NewNone();
         /*
          * {'messageKey': 'TargetNoLongerPresent', 'dataID': 17881666, 'suppressable': False, 'bodyID': 258855, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1626}
          * u'TargetNoLongerPresentBody'}(u'{[item]moduleID.name} deactivates as the {[item]targetID.name} it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}, u'{[item]targetID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'targetID'}})

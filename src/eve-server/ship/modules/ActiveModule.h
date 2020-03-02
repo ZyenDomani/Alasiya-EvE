@@ -56,7 +56,7 @@ public:
 
     /* ActiveModule methods */
     virtual uint32      GetTargetID()           { return m_targetID; }
-    SystemEntity*       GetTarget()             { return m_targetSE; }
+    SystemEntity*       GetTargetSE()           { return m_targetSE; }
 
     void                LaunchProbe();
     void                LaunchMissile();

@@ -500,7 +500,7 @@ void Ship::Killed(Damage &fatal_blow) {
         AbortCycle();
         AbandonDrones();
 
-        // remove all charges (per packet data)
+        // remove all charges (per packet data)  ...why???
         GetShipItemRef()->UnloadAllModules();
 
         blob << "<items>";
@@ -531,6 +531,8 @@ void Ship::Killed(Damage &fatal_blow) {
 
                 blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() << " s=" << s ;
                 // all contained items have 50% chance of drop, except rigs, which do not survive
+                // todo:  add damage to item, if applicable, from ship explosion
+                //cur.second->SetAttribute(AttrDamage, 5);
                 if (IsRigSlot(cur.second->flag())) {
                     /* just avoiding survive check */;
                 } else if (IsEven(MakeRandomInt(0, 100))) {
@@ -539,8 +541,6 @@ void Ship::Killed(Damage &fatal_blow) {
                         d = MakeRandomInt(0, x);
                         x -= d;
                     }
-                    // todo:  add damage to item, if applicable, from ship explosion
-
                     // move item to vector for insertion into wreck later on
                     survivedItems.push_back(cur.second);
                 }

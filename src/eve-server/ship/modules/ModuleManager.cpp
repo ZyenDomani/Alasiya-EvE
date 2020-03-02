@@ -285,8 +285,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
     }
 
     EVEItemFlags flag = flagHangar;
-    bool inSpace = IsSolarSystem(pShipItem->locationID());
-    if (inSpace)
+    if (IsSolarSystem(pShipItem->locationID()))
         flag = flagCargoHold;
     pMod->AbortCycle();
     pMod->Offline();
@@ -780,6 +779,9 @@ void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
             pMod->GetSelf()->name(), chargeRef->name(), chargeRef->itemID(), (merge?"true":"false"));
 
     pMod->UnloadCharge();
+
+    if (chargeRef->quantity() < 1)
+        return;
 
     // move item and update client
     if (IsStation(pShipItem->locationID()))
