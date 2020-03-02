@@ -1101,7 +1101,6 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     result.description = m_itemName;
 
     // updated charge info...again  -allan 8Jan20
-    /*
     if ((m_type.categoryID() == EVEDB::invCategories::Charge)
     and IsModuleSlot(m_flag)) {
         PyTuple* tuple = new PyTuple(3);
@@ -1114,7 +1113,6 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         return true;
     }
-    */
 
     result.itemID = new PyInt(m_itemID);
 
