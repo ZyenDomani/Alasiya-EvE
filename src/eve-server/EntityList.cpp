@@ -187,11 +187,9 @@ void EntityList::RemovePlayer(Client* pClient)
 
 
 void EntityList::Process() {
-    if (m_clients.empty())
-        return;
     Client* pClient(nullptr);
-    std::vector<Client*>::iterator citr = m_clients.begin(), cend = m_clients.end();
-    while (citr != cend) {
+    std::vector<Client*>::iterator citr = m_clients.begin();
+    while (citr != m_clients.end()) {
         if ((*citr)->ProcessNet())
             ++citr;
         else {
