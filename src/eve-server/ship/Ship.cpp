@@ -60,10 +60,6 @@ uint32 ShipItem::CreateItemID( ItemData &data) {
 
 bool ShipItem::_Load()
 {
-    if (type().id() == EVEDB::invTypes::Capsule) {
-        m_loaded = true;
-        return true;
-    }
     if (m_loaded and (m_ModuleManager != nullptr))
         return true;
 
@@ -78,8 +74,7 @@ bool ShipItem::_Load()
     if (!pInventory->LoadContents())
         return false;
 
-    m_loaded = true;
-    return true;
+    return (m_loaded = true);
 }
 
 void ShipItem::Init()
