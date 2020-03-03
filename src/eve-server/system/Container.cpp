@@ -472,7 +472,10 @@ void WreckContainer::MakeSlimItemChange()
     mySE->SysBubble()->BubblecastDestinyUpdate(&updates, "destiny" );
 }
 
-
+// wrecks are invul.
+// for more information, see
+//      https://github.com/zhyrohaad/AlasiyaEvE/issues/100
+//      {forum post here, once available}
 WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system, const FactionData &data)
 : DynamicSystemEntity(self, services, system),
 m_deleteTimer(sConfig.rates.WorldDecay *60 *1000),

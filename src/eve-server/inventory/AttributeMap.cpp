@@ -325,7 +325,7 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
                       [PyFloat 104400]                  <<-  ??
                       [PyFloat 4860]                    <<-  ??
         */
-	return SendChanges(modChange.Encode());
+    return SendChanges(modChange.Encode());
 }
 
 bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {

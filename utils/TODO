@@ -3,12 +3,11 @@
 ****  Allan's EvEmu TODO LIST
 ****    12 January 2020
 
-
+*******************************************************
 **********  errors and other found shit...high priority
 
 after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
 01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
-
 
 destiny accel seems too slow.  not tracking properly.  need logging/testing
 
@@ -17,6 +16,7 @@ moving items to cargo makes ownerID=1 ...could be from market also
 items disappearing from cargo when dock/undock
 
 prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/effects/MoveTrace:20 & 37
+
 deny creating items < typeID 34
 
 new players in bubble not updated correctly for existing ship states (destiny state/mode shit?)
@@ -74,17 +74,29 @@ dungeon deco items need better placement
 
 client error (from arinya)
 UserError: [DeniedTargetInvulnerable.notify] None - Target is invulnerable. {}
+    - cant find this log template in client.  no clue here.
 
 fx warp speed data to client is wrong....see diff between fit window docked/in space
   - need to check formula again in client....seems to be a 3x multiplier in there somewhere....
 
-POS -eject/board for ships inside FF have no code to verify ship is INSIDE FF...just if bubble has FF
 
 skillqueueendtime in chardb wrong/invalid.  check setting
 
+
+charge attrQuantity needs a good lookover.
+    - make sure inventoryitem.quantity and attrQuantity are updated correctly
+
+*******************************************************
 ********  improvements
 
-create ,modify command to allow ingame setting of attributes
+closely examine target mgr and see what we can improve.
+    - test changing TargetEntry class (and enums) to struct
+    - verify entries are placed timely and appropriately
+    - multiple throw msgs not implemented (client msgs in dogmaim)
+    - update targ/npcai to inform npc of yellowbox instead of locked
+
+
+create ",modify" command to allow ingame setting of attributes
 
 add cache calls/data for systems that use it after debugging and testing completed
 
@@ -123,7 +135,7 @@ systemmgr - use kills object instead of db hit
 
 dbcore - query retry enables runaway server when query causes server disconnection (error)
     - should this be limited?
-    - note: it only happens for misformed queries (while testing) from what i've seen.
+    - note: it only happens for malformed queries (while testing) from what i've seen.
 
 char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.
@@ -194,7 +206,7 @@ player drones - skeleton started. needs functionality    -priority level: med-hi
 drones mass and maxspeed need attention
 drone ai needs:
   - assigned ship killed, need code to reset
-  - all states except idla
+  - all states except idle
 
 RAM code - implement invention, copy, re, tech    -priority level: low
 
@@ -248,10 +260,6 @@ market system....this needs a lot of attention
     - EVEYTHING is uint32 but we really dont need that
     - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client
 
-will need to go thru code and zero-initalize structs ( A a = A(); )    -priority level: low-med
- - classes built using xml have a c'tor that zero-initalizes all items in class
- - this is almost complete.  there may be a few more i havent found yet.
-
 InvBrokerService needs love
 mapservice  needs love
 CharMgrService  needs love
@@ -296,6 +304,8 @@ pause skill queue should clear training queue window
 
 verify m_repeat in active module activate code
 
+
+*******************************************************
 *****************  Fx shit
 
 ** idea  **  set leadership skill modifiers on char item, then have fleet boosts pull directly from char
@@ -304,10 +314,12 @@ verify m_repeat in active module activate code
 
 
 
+*******************************************************
 *****************  uk calls
   ** none at this time **  (almost all calls coded, albeit some only skeleton)
 
 
+*******************************************************
 *****************  xmlp shit
 
 (bloat fix)
@@ -315,13 +327,13 @@ look into using "CALL_", "RSP_" and "encode=true/false"/"decode=true/false" for 
   - this will be involved and rather time-consuming
 
 
+*******************************************************
 *****************  ideas for later
 
-change TargetMgr::Process call timer to use sub-Hz tics....increase timer resolution for faster response
 
-print version #s to local chat on login
+print version #s to local chat on login  (kinda need lsc working better for this one...)
 
-aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for multiple clients
+aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for all clients in system
 
 system mail not working.  this would be nice to have, as many systems could(will) use it    -priority level: low
 entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
@@ -331,8 +343,12 @@ drone chat window for drone specific msgs (using individual drone as sender)
 player command to show drones targeted by
 
 change warpstate variable in destiny from class (and using naked 'new') to struct?
+    - probably not.  current system works very well, and no mem leaks
 
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
+    - npc will attack drones based on class (find this info again)
+    - npc lost target <- this method needs better thought to pick next target
+    - should npc have 'pool' of available/preferred targets
 update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -priority level: low
 
 
@@ -343,6 +359,12 @@ rats should test for faction signals in system and set origin along that directi
 civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file.   -priority level: low
 
 expanded cargo modules update for specialized holds.   -priority level: low
+    - there are some client checks for updated hold capy
+     if attributeID in (const.attributeCapacity,
+         const.attributeDroneCapacity,
+         const.attributeShipMaintenanceBayCapacity,
+         const.attributeCorporateHangarCapacity):
+            sm.ScatterEvent('OnCapacityChange', itemKey)
 
 need to figure out how to load/queue assets for chars (on login or w/e)
     - this is needed for complete asset menu entries
@@ -363,6 +385,7 @@ update ValidateAddItem() to return >0 on error and use enums to determine/displa
 make log/config option for (en/dis)able client massive check.
 
 
+*******************************************************
 *****************   errata and miscellaneous bullshit
 
 add rule of 5 for Py* code (or =delete defaults)
@@ -466,7 +489,7 @@ better checks and reverts when creating corps fail - updated to not check for fa
 on rare occasions, RemoveCharge* calls send quantity as tuple(1).  this isnt implemented at this time, preferring to remove all loaded charges
 
 implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligable.
-    update for ~20+ or so points to make a difference in our attributes
+    update for ~20+ or so points to make a difference with our attributes
 
 turns use quanternion lerp curve (and mass/agility somehow)
 
@@ -487,6 +510,7 @@ system mem obj for jumpsHour isnt working and will take more thought/code
 
 
 
+*******************************************************
 ********************************
 website updates:
 replace/update outdated mysql_connect with newer mysqli_connect

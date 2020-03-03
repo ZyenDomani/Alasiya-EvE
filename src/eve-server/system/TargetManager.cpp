@@ -261,7 +261,7 @@ void TargetManager::ClearTargets(bool notify/*true*/) {
         if (cur.first->TargetMgr() != nullptr)
             cur.first->TargetMgr()->TargetedByLost(mySE);
         SafeDelete(cur.second);
-        _log(TARGET__INFO, "ClearTargets() - %s(%u) has cleared target %s(%u).",
+        _log(TARGET__TRACE, "ClearTargets() - %s(%u) has cleared target %s(%u).",
                 mySE->GetName(), mySE->GetID(), cur.first->GetName(), cur.first->GetID());
     }
 
@@ -342,7 +342,7 @@ void TargetManager::TargetedByLost(SystemEntity* pSE) {
     SafeDelete(itr->second);
     m_targetedBy.erase(itr);
     TargetedLost(pSE);
-    _log(TARGET__INFO, "%s(%u) is no longer locked by %s(%u)", \
+    _log(TARGET__TRACE, "%s(%u) is no longer locked by %s(%u)", \
             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
 }
 
@@ -383,7 +383,7 @@ void TargetManager::TargetedAdd(SystemEntity *tSE) {
     //first make sure they are not already in the list
     std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(tSE);
     if (itr != m_targetedBy.end()) {
-        _log(TARGET__TRACE, "Adding %s(%u) to %s(%u)'s locked list, but they're already in there.", \
+        _log(TARGET__INFO, "Adding %s(%u) to %s(%u)'s locked list, but they're already in there.", \
                 tSE->GetName(), tSE->GetID(), mySE->GetName(), mySE->GetID());
         return;
     } else {
@@ -493,19 +493,19 @@ SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/
             continue;
         //found it...
         if (need_locked and (itr->second->state != TargMgr::State::Locked)) {
-            _log(TARGET__WARNING, "Found target %u, but it is not locked.", targetID);
+            _log(TARGET__INFO, "Found target %u, but it is not locked.", targetID);
             continue;
         }
         _log(TARGET__INFO, "Found target %u: %s (nl? %s)", targetID, itr->first->GetName(), need_locked?"yes":"no");
         return itr->first;
     }
-    _log(TARGET__WARNING, "Unable to find target %u (nl? %s)", targetID, need_locked?"yes":"no");
+    _log(TARGET__INFO, "Unable to find target %u (nl? %s)", targetID, need_locked?"yes":"no");
     return nullptr;    //not found.
 }
 
 void TargetManager::AddTargetModule(ActiveModule* pMod)
 {
-    _log(TARGET__WARNING, "Adding %s:%s to %s's activeModule list.", \
+    _log(TARGET__INFO, "Adding %s:%s to %s's activeModule list.", \
             pMod->GetShipRef()->name(), pMod->GetSelf()->name(), mySE->GetName() );
     // i think this check is redundant...shouldnt be able to activate non-miner on roid.
     if (mySE->IsAsteroidSE())
@@ -517,7 +517,7 @@ void TargetManager::AddTargetModule(ActiveModule* pMod)
 
 void TargetManager::RemoveTargetModule(ActiveModule* pMod)
 {
-    _log(TARGET__WARNING, "Removing the %s on %s from %s's activeModule list.", \
+    _log(TARGET__INFO, "Removing the %s on %s from %s's activeModule list.", \
             pMod->GetSelf()->name(), pMod->GetShipRef()->name(), mySE->GetName() );
     m_modules.erase(pMod->itemID());
 }

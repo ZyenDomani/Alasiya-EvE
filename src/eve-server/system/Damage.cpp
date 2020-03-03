@@ -106,7 +106,7 @@ Damage::Damage(SystemEntity* pSE, bool fatal_blow/*false*/)
 
 bool SystemEntity::ApplyDamage(Damage &d) {
     double profileStartTime = GetTimeUSeconds();
-
+/*
     if (d.srcSE->IsNPCSE()) {
         _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
@@ -123,7 +123,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     } else {
         _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
     }
-
+*/
     int8 damageID = 0;
     switch (d.weaponRef->groupID()) {
         case EVEDB::invGroups::Missile_Launcher_Assault:
@@ -173,6 +173,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     // apply damage modifier from config
     d *= sConfig.rates.damageRate;
 
+    // this is calculated and created on every call...
     Damage DamageToShield = d.MultiplyDup(
         m_self->GetAttribute(AttrShieldKineticDamageResonance).get_float(),
         m_self->GetAttribute(AttrShieldThermalDamageResonance).get_float(),
@@ -267,7 +268,6 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 _log(DAMAGE__INFO, "%s(%u): %.2f damage has depleted our structure. Time to explode.",
                      GetName(), GetID(), hull_damage);
                 killed = true;
-                //m_self->SetAttribute(AttrDamage, m_self->GetAttribute(AttrHP));
             }
 
             // module damage.
@@ -326,8 +326,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 tuple->SetItem(1, new PyString(Dmg::Msg::Given[damageID]));
             tuple->SetItem(2, dict);
             d.srcSE->GetPilot()->QueueDestinyEvent(&tuple);
-        }
-        if (d.srcSE->IsDroneSE()) {
+        } else if (d.srcSE->IsDroneSE()) {
             // verify drone has owner set
             if (d.srcSE->GetDroneSE()->GetOwner() != nullptr) {
                 //  notify player of damage done by drone
