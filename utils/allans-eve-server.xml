@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 9.2 -->
+     Version: 9.5 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -37,7 +37,7 @@
     <server>
         <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
         <UseStackTrace>false</UseStackTrace><!-- bool -log client python error reports to evemu_client_stack_trace.txt-->
-        <NoobShipCheck>false</NoobShipCheck><!-- bool  -check for ship in hangar when docking in a pod -->
+        <NoobShipCheck>true</NoobShipCheck><!-- bool  -check for ship in hangar when docking in a pod -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
         <StackTrace>true</StackTrace><!-- bool  -(en/dis)ables sending StackTrace on client errors -->
         <maxPlayers>2500</maxPlayers>
@@ -48,7 +48,7 @@
         <DisableIGB>false</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
         <ModuleAutoOff>true</ModuleAutoOff><!-- bool  - automatically deactivate rr-type module when target is full -->
-        <ModuleDamageChance>0.35</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
+        <ModuleDamageChance>0.1</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
         <UnloadOnLinkAll>true</UnloadOnLinkAll>  <!-- bool - unload weapons and link when LinkAll button pressed -->
         <AllowNonPublished>true</AllowNonPublished>
         <BountyPayoutDelayed>false</BountyPayoutDelayed><!-- (en/dis)able system bounty payouts on timer (vs immediate) -->
@@ -60,6 +60,7 @@
 
     <world>
         <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
+        <!-- no longer used -->
         <gridUnload>true</gridUnload><!-- bool -->
         <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
         <!-- not implemented yet -->
@@ -69,11 +70,14 @@
         <loginMsg>true</loginMsg><!-- bool -->
         <mailDelay>5</mailDelay>
         <apWarptoDistance>1000</apWarptoDistance><!-- in meters - sets autopilot warp stop distance from object (15km default)-->
+        <saveOnMove>true</saveOnMove><!-- bool - save items when Move()'d -->
+        <saveOnUpdate>true</saveOnUpdate><!-- bool - save items when values or attributes updated -->
+        <shipBoardDistance>500</shipBoardDistance><!-- int  - max distance to board ship in space (3c default) -->
     </world>
 
     <rates>
         <secRate>1.0</secRate><!-- only used if != 1.0 -->
-        <damageRate>1.0</damageRate><!-- ALL damage multiplier.  DO NOT USE 0.0 -->
+        <damageRate>1.0</damageRate><!-- ALL damage multiplier.  Includes player drones.  DO NOT USE 0.0 -->
         <missileDamage>1.0</missileDamage><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
         <missileTime>1.0</missileTime><!--  ALL missiles multiplier.  DO NOT USE 0.0 -->
         <missileRoF>1.0</missileRoF><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
@@ -81,11 +85,13 @@
         <turretRoF>1.0</turretRoF><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
         <npcBountyMultiply>1.0</npcBountyMultiply><!-- only used if != 1.0 -->
         <corpCost>20000000</corpCost>
-        <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default - 250 max)-->
+        <medalCreateCost>8000000</medalCreateCost>
+        <medalAwardCost>5000000</medalAwardCost>
+        <WorldDecay>10</WorldDecay><!-- in minutes (2 hour default - 250 max)-->
         <NPCDecay>30</NPCDecay><!-- in minutes (30 min default) -->
         <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
         <!-- implemented only for salvage max items -->
-        <RateDropItem>2.0</RateDropItem><!--  only used if != 1.0 -->
+        <RateDropItem>1.0</RateDropItem><!--  only used if != 1.0 -->
         <!-- these rates are not implemented yet -->
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
         <!-- for repair system -->
@@ -96,7 +102,13 @@
         <!-- min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment. -->
         <TaxAmount>10000</TaxAmount><!-- default is 10000 isk.  less than this isnt worth the processing for corps -->
         <!-- min amount to be taxed.  received amounts less than this will not be taxed. -->
-       <TaxedAmount>200000</TaxedAmount><!-- live uses 100000.  default is 175000 -->
+        <TaxedAmount>200000</TaxedAmount><!-- live uses 100000.  default is 175000 -->
+        <!-- critical hit chances -->
+        <PlayerCritChance>0.02</PlayerCritChance><!-- default: 2% -->
+        <NpcCritChance>0.015</NpcCritChance><!-- default: 1.5% -->
+        <SentryCritChance>0.02</SentryCritChance><!-- default: 2% -->
+        <DroneCritChance>0.03</DroneCritChance><!-- default: 3% -->
+        <ConcordCritChance>0.05</ConcordCritChance><!-- default: 5% -->
     </rates>
 
     <market>
@@ -137,16 +149,16 @@
         <WarpFollowChance>0.15</WarpFollowChance><!-- chance for npc to follow warping player (15% default) -->
         <!-- npc podkilling not implemented yet -->
         <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
-        <TargetPodSec>0</TargetPodSec><!-- npc target/attack pod in truSec of this and lower -->
+        <TargetPodSec>0</TargetPodSec><!-- npc target/attack pod in truSec lower than this  -->
         <!-- Threat not implemented yet -->
         <ThreatRadius>1.0</ThreatRadius> <!-- used in conjunction with npc ai target switching -->
         <!-- Spawns are implemented -->
         <RoamingSpawns>true</RoamingSpawns><!-- bool -->
         <StaticSpawns>false</StaticSpawns><!-- bool -->
         <DefenderMissileChance>0</DefenderMissileChance><!-- chance to use defender.  overrides npc default from db. 0 default -->
-        <RoamingTimer>300</RoamingTimer><!-- time between spawn checks, in seconds  10m default -->
-        <StaticTimer>300</StaticTimer><!-- time between spawn checks, in seconds  15m default -->
-        <RespawnTimer>300</RespawnTimer><!-- time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
+        <RoamingTimer>300</RoamingTimer><!-- max time between spawn checks, in seconds  5m default -->
+        <StaticTimer>600</StaticTimer><!-- max time between spawn checks, in seconds  10m default -->
+        <RespawnTimer>300</RespawnTimer><!-- static time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
         <LootDropChance>0.75</LootDropChance><!-- % in whole #  chance for NPC to drop loot.  75% default -->
         <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
@@ -183,13 +195,13 @@
 
     <cosmic>
         <PIEnabled>true</PIEnabled><!-- bool -->
-        <AnomalyEnabled>false</AnomalyEnabled><!-- bool -->
-        <DungeonEnabled>false</DungeonEnabled><!-- bool -->
+        <AnomalyEnabled>true</AnomalyEnabled><!-- bool -->
+        <DungeonEnabled>true</DungeonEnabled><!-- bool -->
         <BeltEnabled>true</BeltEnabled><!-- bool -->
         <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
         <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  used to change default coded roid size (and the belt radius) -->
-        <WormHoleEnabled>false</WormHoleEnabled><!-- bool -->
-        <CiviliansEnabled>false</CiviliansEnabled><!-- bool -->
+        <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
+        <CiviliansEnabled>true</CiviliansEnabled><!-- bool -->
         <BumpEnabled>false</BumpEnabled><!-- bool -->
     </cosmic>
 
@@ -211,7 +223,7 @@
         <SpawnTest>true</SpawnTest><!-- bool - enables 5s respawn timer -->
         <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
         <UseProfiling>true</UseProfiling><!-- bool  - use internal memobj code profiling system -->
-        <ProfileTraceTime>250</ProfileTraceTime><!-- msec  profile time above this will print StackTrace  default: 250 -->
+        <ProfileTraceTime>5000</ProfileTraceTime><!-- msec  profile time above this will print StackTrace  default: 500 -->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
         <PositionHack>false</PositionHack><!-- bool -->
         <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown.  this is for ship and bubble tracking -->
@@ -227,14 +239,14 @@
     </threads>
 
     <database>
-        <host>localhost</host>
+        <host>localhost</host><!--  must be 'localhost' for socket connection -->
         <username>allan</username>
         <password>none</password>
-        <db>EVE_Crucible</db>
+        <db>Alasiya</db>
         <port>3306</port><!-- 3306 default -->
         <ssl>false</ssl><!-- bool   enable ssl for db connection (NOTE: NOT coded. DO NOT USE) -not needed when using socket under linux-->
         <compress>false</compress><!-- bool   compressed protocol for client server communication - not sure if needed. -->
-        <useSocket>true</useSocket><!-- bool  use socket connection instead of port (MUST be local) -->
+        <useSocket>true</useSocket><!-- bool  use socket connection instead of port (MUST be local)  (SIGPIPE hits on debug code) -->
         <autoReconnect>true</autoReconnect><!-- bool  enable auto Reconnect on lost connection -->
         <dbTimeout>2</dbTimeout><!-- seconds  timeout value for db response, in seconds  default: 2s  **NOT USED** -->
         <pingTime>10</pingTime><!-- minutes  ping db every x minutes  default: 10m  **NOT USED**  hard-coded to 10m -->
@@ -248,9 +260,15 @@
     </files>
 
     <net>
+        <!--  for internal network only-->
+        <port>26000</port>
+        <imageServer>192.168.1.14</imageServer>
+        <imageServerPort>26001</imageServerPort>
+
+        <!-- to allow external access to internal dev server (network server config'd to port-forward this one)
         <port>26005</port>
         <imageServer>eve.alasiya.net</imageServer>
-        <imageServerPort>26006</imageServerPort>
+        <imageServerPort>26006</imageServerPort> -->
     </net>
 
 </eve-server>

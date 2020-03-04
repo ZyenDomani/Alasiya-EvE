@@ -86,6 +86,10 @@ skillqueueendtime in chardb wrong/invalid.  check setting
 charge attrQuantity needs a good lookover.
     - make sure inventoryitem.quantity and attrQuantity are updated correctly
 
+check for item ownership before rename
+    send error if failed
+
+    
 *******************************************************
 ********  improvements
 
