@@ -765,48 +765,49 @@ PyResult Command_online(Client *who, CommandDB *db, PyServiceMgr *services, cons
         return(new PyString("All modules have been put Online"));
     }
     else
-        throw PyException(MakeCustomError("Command failed: You got the arguments all wrong!"));
+        throw PyException(MakeCustomError("Command failed: You got the arguments all wrong."));
 }
 
 PyResult Command_unload(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+// this means 'remove'
 
     if (args.argCount() >= 2 && args.argCount() <= 3)
     {
-        uint32 item=0,entity=0;
+        uint32 itemID=0,entityID=0;
 
         if (strcmp("me", args.arg(1).c_str())!=0)
             if (!args.isNumber(1))
             {
                 throw PyException(MakeCustomError("Argument 1 should be an entity ID or me (me=self)"));
             }
-            entity = atoi(args.arg(1).c_str());
+            entityID = atoi(args.arg(1).c_str());
 
         if (args.argCount() ==3)
         {
             if (strcmp("all", args.arg(2).c_str())!=0)
                 if (!args.isNumber(2))
                     throw PyException(MakeCustomError("Argument 2 should be an item ID or all"));
-                item = atoi(args.arg(2).c_str());
+                itemID = atoi(args.arg(2).c_str());
         }
 
         //select character
-        Client* tgt;
+        Client* tgt(nullptr);
         if (strcmp("me", args.arg(1).c_str())==0)
             tgt = who;
         else
         {
-            tgt = sEntityList.FindClientByCharID(entity);
+            tgt = sEntityList.FindClientByCharID( entityID );
 
             if (!tgt)
-                throw PyException(MakeCustomError("Unable to find character %u", entity));
+                throw PyException(MakeCustomError("Unable to find character %u", entityID ));
         }
 
         /// This doesn't seem like a valid requirement
         //if (tgt->IsInSpace())
-        //    throw PyException(MakeCustomError("Character needs to be docked!"));
+        //    throw PyException(MakeCustomError("Character needs to be docked."));
 
         if (args.argCount() == 3 && strcmp("all", args.arg(2).c_str())!=0)
-            tgt->GetShip()->UnloadModule(item);
+            tgt->GetShip()->GetModuleManager()->UnfitModule( itemID );
 
         if (args.argCount() == 3 && strcmp("all", args.arg(2).c_str())==0)
             tgt->GetShip()->UnloadAllModules();
@@ -814,7 +815,7 @@ PyResult Command_unload(Client *who, CommandDB *db, PyServiceMgr *services, cons
         return(new PyString("All Modules have been unloaded"));
     }
     else
-        throw PyException(MakeCustomError("Command failed: You got the arguments all wrong!"));
+        throw PyException(MakeCustomError("Command failed: You got the arguments all wrong."));
 }
 
 PyResult Command_repairmodules(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
@@ -833,7 +834,7 @@ PyResult Command_repairmodules(Client* who, CommandDB* db, PyServiceMgr* service
         target->GetShip()->RepairModules();
     }
 
-    return(new PyString("Modules repaired successful!"));
+    return(new PyString("Modules repaired successful."));
 }
 
 PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
@@ -850,7 +851,7 @@ PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const
     }
 
     if (args.arg(3) != "=") {
-        throw PyException(MakeCustomError("/dogma You didn't use an '=' in between your attribute name and value!"));
+        throw PyException(MakeCustomError("/dogma You didn't use an '=' in between your attribute name and value."));
     }
     if (!args.isNumber(4)) {
         throw PyException(MakeCustomError("/dogma The last argument must be a number"));

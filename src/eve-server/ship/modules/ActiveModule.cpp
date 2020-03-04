@@ -191,6 +191,7 @@ void ActiveModule::Process()
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
             m_chargeLoaded = true;
             SetChargeState(Module::State::Loaded);
+            m_chargeRef->AlterChargeQuantity(m_chargeRef->quantity());
         }
     }
 
@@ -250,7 +251,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     if (m_needsCharge and (!m_chargeLoaded or (m_chargeRef.get() == nullptr))) {
         _log(MODULE__TRACE, "ActiveModule::Activate - %s: needsCharge: %s, chargeLoaded: %s, chargeRef: %s", \
                 m_modRef->name(), m_needsCharge?"True":"False", m_chargeLoaded?"True":"False", \
-                m_chargeRef.get() == nullptr ? "(none)":"m_chargeRef->name()");
+                m_chargeRef.get() == nullptr ? "(none)": m_chargeRef->name());
         Clear();
         throw PyException(MakeCustomError("Your %s doesn't seem to be loaded.", m_modRef->name()));
     }
@@ -770,13 +771,14 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     if (pClient == nullptr) {
         _log(MODULE__WARNING, "ActiveModule::LoadCharge() for %s - Pilot is null.  Cannot load charge.", m_modRef->name());
         // these two are just in case...
-        m_chargeRef->DeleteAttribute(AttrQuantity);
+        //m_chargeRef->DeleteAttribute(AttrQuantity);
         m_chargeRef = InventoryItemRef(nullptr);
         m_chargeLoaded = false;
         SetChargeState(Module::State::Unloaded);
         return;  // make error here?
     }
 
+    uint8 oldQty = (m_chargeRef.get() == nullptr ? 0 : m_chargeRef->quantity());
     m_chargeRef = chargeRef;
     SetChargeState(Module::State::Loading);
 
@@ -805,22 +807,30 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
                 tmp->SetItem(0, module);
                 tmp->SetItem(1, new PyInt(m_chargeRef->typeID()));
                 tmp->SetItem(2, new PyInt(m_reloadTime));
-            pClient->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
+            pClient->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp);
             m_reloadTimer.Start(m_reloadTime);
+            /* this is a horrible hack...but simple once understood
+             *   when charge loading completed, new qty is sent to client, but the method will
+             * add the current qty to existing charge, which will screw up the qty count.
+             * to correct this, set new qty to previous qty here, then reload will add 'reloaded' qty
+             * and send this data to client, showing actual qty and having data correct here.
+             */
+            m_chargeRef->SetAttribute(AttrQuantity, (m_chargeRef->quantity() - oldQty), false);
         } else {
             // set immediately when docked
             m_chargeLoaded = true;
             SetChargeState(Module::State::Loaded);
         }
-
     } else {
+        // set immediately on login
         m_chargeLoaded = true;
         SetChargeState(Module::State::Loaded);
     }
-
-    // set quantity and save, as subsequent calls will reset charge attribs
-    m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
-    m_chargeRef->SaveAttributes();
+    if (!m_reloadTimer.Enabled()) {
+        // set quantity and save, as subsequent calls will reset charge attribs
+        m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
+        m_chargeRef->SaveAttributes();
+    }
 }
 
 //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
@@ -843,25 +853,21 @@ void ActiveModule::UnloadCharge()
             m_shipRef->SetAttribute(AttrCapacitorCharge, cap);
         }
 
+        m_modRef->ClearModifiers();
         for (auto it : m_chargeRef->type().m_stateFxMap) {
             fxData data = fxData();
             data.action = FX::Action::Invalid;
             data.srcRef = m_chargeRef;
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
-            m_modRef->ClearModifiers();
         }
 
         // apply to containing module to properly remove effects
         sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
-
-        if (m_chargeRef->quantity() > 0) {
-            // unloading charge goes straight to attribMap, to send data to client without changing item qty
-            m_chargeRef->GetAttributeMap()->AlterChargeQuantity(0, false);
-            m_chargeRef->DeleteAttribute(AttrQuantity);
-            m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
-        }
+        // send data to client and update item qty
+        m_chargeRef->AlterChargeQuantity(0, false);
     }
 
+    m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
     m_chargeLoaded = false;
     SetChargeState(Module::State::Unloaded);
 }
@@ -1055,7 +1061,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ;
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         ;
-
+/*  this may be a xbcast update
     if (IsValidTarget(m_targetID) and (m_destinyMgr != nullptr))
         m_destinyMgr->SendSpecialEffect(
                 m_shipRef->itemID(),
@@ -1069,7 +1075,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
                 (active ? true : false),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
                 (double)timeLeft,           // duration in ms
                 m_repeat);   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
-
+*/
     // Create Destiny Updates and GFx
     GodmaEnvironment ge;
         ge.selfID = m_modRef->itemID();
@@ -1079,7 +1085,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.area = new PyList();   // still dont know what this is.
         ge.effectID = m_effectID;
 
-    if (chgTypeID) {
+    if (chgTypeID > 0) {
         GodmaOther go;  // "other" means "charge" in evelang
             go.shipID = ge.shipID;
             go.slotID = m_modRef->flag();

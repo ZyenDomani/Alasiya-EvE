@@ -823,7 +823,11 @@ void ModuleManager::UnloadModule(uint32 itemID)
         _log(MODULE__ERROR, "ModuleManager::UnloadCharge() - module not found for %u", itemID);
         return;
     }
+    if (!pMod->IsLoaded())
+        return;
     InventoryItemRef iRef = pMod->GetLoadedChargeRef();
+    if (iRef.get() == nullptr)
+        return;
     pMod->UnloadCharge();
     if IsStation(pShipItem->locationID())
         iRef->Move(pShipItem->locationID(), flagHangar, true);
