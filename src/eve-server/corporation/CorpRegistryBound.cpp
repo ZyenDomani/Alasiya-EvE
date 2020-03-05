@@ -703,7 +703,8 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         return nullptr;
     }
 
-    //adding a corporation might affect eveStaticOwners, so we gotta invalidate the cache...
+    //adding a corporation will affect eveStaticOwners, so we gotta invalidate the cache...
+    //  call to db.AddCorporation() will update eveStaticOwners with new corp
     PyString* cache_name = new PyString( "config.StaticOwners" );
     m_manager->cache_service->InvalidateCache( cache_name );
     PySafeDecRef( cache_name );

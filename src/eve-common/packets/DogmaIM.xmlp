@@ -121,6 +121,7 @@
       <int name="repeat" /><!-- # times to repeat  make it ammo qty?  live sends 1000 -->
       <int name="randomSeed" none_marker="0"/><!--  cannot find where this is sent from server.  seed is 42. -->
       <raw name="error" /><!-- reason module is stopped, i.e. target gone    - GodmaError goes here -->
+      <!-- these next two are actually named args -->
       <!-- <long name="actualStopTime" /> -->
       <!-- <raw name="stall" /> -->
     </tupleInline>

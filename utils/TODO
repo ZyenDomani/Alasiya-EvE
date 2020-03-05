@@ -89,7 +89,7 @@ charge attrQuantity needs a good lookover.
 check for item ownership before rename
     send error if failed
 
-    
+
 *******************************************************
 ********  improvements
 
@@ -101,6 +101,7 @@ closely examine target mgr and see what we can improve.
 
 
 create ",modify" command to allow ingame setting of attributes
+    - groove has this functionality in his launcher
 
 add cache calls/data for systems that use it after debugging and testing completed
 
@@ -308,6 +309,7 @@ pause skill queue should clear training queue window
 
 verify m_repeat in active module activate code
 
+set station GoTo target to be dock elevation, NOT centerPoint
 
 *******************************************************
 *****************  Fx shit
@@ -316,6 +318,10 @@ verify m_repeat in active module activate code
 
 ***  errors
 
+***  other
+
+update all specialFX to use common call in DestinyManager code.
+this includes fx13 and fx10 calls
 
 
 *******************************************************
@@ -334,6 +340,9 @@ look into using "CALL_", "RSP_" and "encode=true/false"/"decode=true/false" for 
 *******************************************************
 *****************  ideas for later
 
+go thru all updated effect data and look for 'improved' ships to add to our data.
+    - specialized holds from rhea (not available in cruc)
+    - updated barges from current live patch (hot tanks)
 
 print version #s to local chat on login  (kinda need lsc working better for this one...)
 

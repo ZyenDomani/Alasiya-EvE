@@ -2161,7 +2161,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     pSession->SetLong("clientID", 0/*10000000000L * account_info.clientID + 888444*/);   /* this should be sent in rsp packet for "clientid".  not sure how yet.   */
     pSession->SetLong("sessionID", 0/*pSession->CreateSessionID()*/);
 
-    sLog.Green("  Client::Login()","Account \"%s\" (uid:%u) logging in from %s", aData.name.c_str(), aData.id, EVEClientSession::GetAddress().c_str());
+    sLog.Green("  Client::Login()","Account %u (%s) logging in from %s", aData.id, aData.name.c_str(), EVEClientSession::GetAddress().c_str());
 
     return true;
 }

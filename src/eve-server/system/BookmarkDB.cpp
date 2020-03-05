@@ -356,7 +356,7 @@ bool BookmarkDB::DeleteFolder(int32 folderID)
         sLog.Error( "BookmarkDB::DeleteFolder(1)", "Error in query: %s", err.c_str() );
 
     // these bms may have copies....cannot delete yet
-    if (!sDatabase.RunQuery(err, "UPDATE bookmarks SET ownerID = 1 WHERE folderID = %s", folderID))
+    if (!sDatabase.RunQuery(err, "UPDATE bookmarks SET ownerID = 1 WHERE folderID = %u", folderID))
         sLog.Error( "BookmarkDB::DeleteFolder(2)", "Error in query: %s", err.c_str() );
 
     return true;

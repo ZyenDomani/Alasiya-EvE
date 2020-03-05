@@ -882,8 +882,6 @@ void ActiveModule::ConsumeCharge() {
                 cur->GetLoadedChargeRef()->AlterChargeQuantity(-1);
     } else
         m_chargeRef->AlterChargeQuantity(-1);
-
-    /** @todo test here for 0 qty and deactivate as required */
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
@@ -1043,7 +1041,10 @@ bool ActiveModule::CanActivate()
 
 void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 {
-    int64 abortTime = GetFileTimeNow();
+    if (m_effectID < 1)
+        _log(EFFECTS__ERROR, "fxID = 0 for %s", m_modRef->name());
+
+    int64 abortTime(GetFileTimeNow());
     if (abort) {
         active = false;
         if ((m_effectID == EVEEffectID::miningLaser)
@@ -1053,15 +1054,15 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             abortTime += (3 * EvE::Time::Second);    // delay abort for 3s to simulate module "completing" its' cycle
     }
 
-    uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
-    uint32 timeLeft = GetRemainingCycleTimeMS();
-    EvilNumber cycleTime = EvilZero;
+    uint16 chgTypeID((m_chargeLoaded ? m_chargeRef->typeID() : 0));
+    uint32 timeLeft(GetRemainingCycleTimeMS());
+    EvilNumber cycleTime(EvilZero);
     // these are a bit weird...this HasAttribute() will set variable if attrib exists, but need to test each case.
     if (m_modRef->HasAttribute(AttrDuration, cycleTime))
         ;
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         ;
-/*  this may be a xbcast update
+
     if (IsValidTarget(m_targetID) and (m_destinyMgr != nullptr))
         m_destinyMgr->SendSpecialEffect(
                 m_shipRef->itemID(),
@@ -1075,27 +1076,29 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
                 (active ? true : false),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
                 (double)timeLeft,           // duration in ms
                 m_repeat);   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
-*/
+
+
     // Create Destiny Updates and GFx
     GodmaEnvironment ge;
-        ge.selfID = m_modRef->itemID();
-        ge.charID = m_shipRef->ownerID();
-        ge.shipID = m_shipRef->itemID();
-        ge.target = IsValidTarget(m_targetID) ? new PyInt(m_targetID) : PyStatic.NewNone();
-        ge.area = new PyList();   // still dont know what this is.
-        ge.effectID = m_effectID;
+        ge.selfID = m_modRef->itemID(); //ENV_IDX_SELF = 0
+        ge.charID = m_shipRef->ownerID();       //ENV_IDX_CHAR = 1
+        ge.shipID = m_shipRef->itemID();        //ENV_IDX_SHIP = 2
+        ge.target = IsValidTarget(m_targetID) ? new PyInt(m_targetID) : PyStatic.NewNone();     //ENV_IDX_TARGET = 3
+        ge.area = new PyList();         //ENV_IDX_AREA = 5 still dont know what this is.
+        ge.effectID = m_effectID;       //ENV_IDX_EFFECT = 6
 
     if (chgTypeID > 0) {
         GodmaOther go;  // "other" means "charge" in evelang
             go.shipID = ge.shipID;
             go.slotID = m_modRef->flag();
             go.chargeTypeID = chgTypeID;
-        ge.other = go.Encode();
+        ge.other = go.Encode();         //ENV_IDX_OTHER = 4
     } else {
-        ge.other = PyStatic.NewNone();
+        ge.other = PyStatic.NewNone();  //ENV_IDX_OTHER = 4
     }
 
     //timeLeft /= 1000;
+    //def OnGodmaShipEffect(self, itemID, effectID, t, start, active, environment, startTime, duration, repeat, randomSeed, error, actualStopTime = None, stall = True):
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;

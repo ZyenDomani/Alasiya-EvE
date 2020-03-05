@@ -872,7 +872,7 @@ void ModuleManager::UnloadAllModules()
 void ModuleManager::UpdateModules(std::vector<uint32> modVec)
 {
     if (is_log_enabled(MODULE__WARNING))
-        sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
+        sLog.Magenta("ModuleManager::UpdateModules()","testing");
     // this one is called from BoardShip() and Ship::Undock()
     pShipItem->SetAttribute(AttrCpuLoad,     EvilZero);
     pShipItem->SetAttribute(AttrPowerLoad,   EvilZero);
@@ -930,8 +930,6 @@ void ModuleManager::CharacterLeavingShip()
     if (pShipItem->IsPopped())
         return;
 
-    if (is_log_enabled(MODULE__WARNING))
-        sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
     //OfflineAll();
 
     /*  this is complicated and im gonna leave it alone for now
@@ -940,6 +938,8 @@ void ModuleManager::CharacterLeavingShip()
      * see if these can throw, else we'll have to do a bool return from calls and go from there.
      *
      * will also have to check current levels of hp and cargo AFTER pilot has been removed (lost skills)
+    if (is_log_enabled(MODULE__WARNING))
+        sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
      */
     //CheckNewHP();
     //CheckNewCargo();

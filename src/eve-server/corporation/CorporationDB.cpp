@@ -433,7 +433,7 @@ void CorporationDB::SetMedalStatus(uint32 charID, uint16 medalID, uint8 status)
 
 bool CorporationDB::IsTickerTaken(std::string ticker) {
     DBQueryResult res;
-    sDatabase.RunQuery(res, " SELECT corporationID FROM crpCorporation WHERE tickerName = %s", ticker.c_str());
+    sDatabase.RunQuery(res, " SELECT corporationID FROM crpCorporation WHERE tickerName = '%s'", ticker.c_str());
     return (res.GetRowCount() != 0);
 }
 
