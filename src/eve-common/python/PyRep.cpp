@@ -675,8 +675,8 @@ bool PyDict::visit( PyVisitor& v ) const
 
 void PyDict::clear()
 {
-    iterator cur = items.begin(), end = items.end();
-    for (; cur != end; ++cur) {
+    iterator cur = items.begin();
+    for (; cur != items.end(); ++cur) {
         PyDecRef( cur->first );
         PySafeDecRef( cur->second );
     }

@@ -67,8 +67,8 @@ void MissionDataMgr::Process()
 
         Agent* pAgent(nullptr);
         Client* pClient(nullptr);
-        std::multimap<uint32, MissionOffer>::iterator itr = m_offers.begin(), end = m_offers.end();
-        while (itr != end) {
+        std::multimap<uint32, MissionOffer>::iterator itr = m_offers.begin();
+        while (itr != m_offers.end()) {
             if (itr->second.expiryTime < GetFileTimeNow()) {
                 pAgent = sEntityList.GetAgent(itr->second.agentID);
                 pClient = sEntityList.FindClientByCharID(itr->first);

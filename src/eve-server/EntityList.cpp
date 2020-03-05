@@ -200,8 +200,8 @@ void EntityList::Process() {
     }
 
     if (m_targTimer.Check()) {
-        std::unordered_map<SystemEntity*, TargetManager*>::iterator titr = m_targMgrs.begin(), tend = m_targMgrs.end();
-        while (titr != tend) {
+        std::unordered_map<SystemEntity*, TargetManager*>::iterator titr = m_targMgrs.begin();
+        while (titr != m_targMgrs.end()) {
             if (titr->second->Process())
                 ++titr;
             else

@@ -1405,7 +1405,7 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     GenericModule* pMod = GetModule(slot1);
     if (pMod->IsActive())
         throw PyException(MakeCustomError("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name()));
-    
+
     pMod = GetModule(slot2);
     if (pMod != nullptr)
         if (pMod->IsActive())
@@ -1956,8 +1956,8 @@ void ShipItem::LinkAllWeapons()
     LinkWeaponLoop(weaponList);
 
     // remove empty masters from map
-    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.begin(), end = m_linkedWeapons.end();
-    while (itr != end) {
+    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.begin();
+    while (itr != m_linkedWeapons.end()) {
         if (itr->second.empty()) {
             if (is_log_enabled(MODULE__INFO))
                 _log(MODULE__INFO, "ShipItem::LinkAllWeapons() - %s(%s) has empty link list.  Removing.", \
@@ -1974,8 +1974,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
 {
     double start = GetTimeUSeconds();
     GenericModule* master(nullptr);
-    std::list< GenericModule*>::iterator itr = weaponList.begin(), end = weaponList.end();
-    while (itr != end) {
+    std::list< GenericModule*>::iterator itr = weaponList.begin();
+    while (itr != weaponList.end()) {
         if ((*itr)->IsLoaded()) {
             if (is_log_enabled(MODULE__INFO))
                 _log(MODULE__INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) IsLoaded.  Skipping.", \

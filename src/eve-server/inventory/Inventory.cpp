@@ -67,8 +67,8 @@ void Inventory::Unload()
     if (!sConsole.IsShutdown()) {
         std::vector<SaveData> items;
         items.clear();
-        std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin(), end = mContents.end();
-        while (itr != end) {
+        std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
+        while (itr != mContents.end()) {
             if (IsPlayerItem(itr->first)) {   // only save player items (except skills - saved in Character::SaveAll())
                 if (itr->second->flag() == flagSkill) {
                     sItemFactory.RemoveItem(itr->first);

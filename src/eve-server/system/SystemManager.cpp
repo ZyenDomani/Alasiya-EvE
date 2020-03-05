@@ -283,9 +283,9 @@ void SystemManager::UnloadSystem() {
 
     // remove static and dynamic entities
     //  not removing ship items and solar system object from ItemFactory.
-    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin(), end = m_entities.end();
+    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     SystemEntity* pSE(nullptr);
-    while (itr != end) {
+    while (itr != m_entities.end()) {
         if ((itr->first == 0) or (itr->second == nullptr)) {
             itr = m_entities.erase(itr);
             continue;

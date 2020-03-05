@@ -413,7 +413,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
      * {'FullPath': u'UI/Messages', 'messageID': 258478, 'label': u'SetNameInvalidBody'}(u"You can't rename that type of object.", None, None)
      * {'FullPath': u'UI/Messages', 'messageID': 258479, 'label': u'SetNameShipMustBePilotBody'}(u'You can only rename ships that you are currently piloting.', None, None)
      */
-    
+
     /** @todo if owner is corp, make sure char has permissions to rename corp items  */
     if (IsPlayerCorp(item->ownerID())) {
         if (item->ownerID() != call.client->GetCorporationID()) {
@@ -447,8 +447,8 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
         return nullptr;
     }
 
-    std::vector<int32>::const_iterator cur = args.items.begin();
-    for(; cur != args.items.end(); cur++) {
+    std::vector<int32>::const_iterator cur = args.items.begin(), end = args.items.end();
+    for(; cur != end; ++cur) {
         InventoryItemRef item = sItemFactory.GetItem( *cur );
         if (item.get() == nullptr) {
             _log(INV__ERROR, "%s: Unable to load item %u to delete it. Skipping.", call.client->GetName(), *cur);

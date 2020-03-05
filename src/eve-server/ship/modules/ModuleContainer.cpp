@@ -31,8 +31,8 @@ ModuleContainer::ModuleContainer(ShipItem* pShip) {
 
 ModuleContainer::~ModuleContainer()
 {
-    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin(), end = m_modules.end();
-    for (; itr != end; ++itr)
+    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+    for (; itr != m_modules.end(); ++itr)
         SafeDelete(itr->second);
 }
 
