@@ -155,8 +155,10 @@ public:
     /* loads attributes for this item */
     //bool LoadAttributes();
     double                  GetPackagedVolume();
-    /* only for loaded charges */
-    void AlterChargeQuantity(int16 qty=0, bool loaded=true);  // loaded=false will send 0 as new value
+    /* only for loaded charges
+     loaded=false will send 0 as new value
+     if qty of charge is <1, item is deleted */
+    void AlterChargeQuantity(int16 qty=0, bool loaded=true);
 
     /* specific functions for ShipItem, virtual here to allow generic class access */
     virtual void            SetPlayer(Client* pClient)  { /* do nothing here */ }

@@ -72,7 +72,7 @@ public:
     virtual bool        IsRigModule() const             { return false; }   // check this in m_rigSlot?
     virtual bool        IsSubSystemModule() const       { return false; }   // check this in m_subSystem?
 
-    bool                IsLoaded()                      { return m_chargeLoaded; }
+    bool                IsLoaded()                      { return (m_chargeLoaded and (m_chargeRef.get() != nullptr)); }
     bool                IsTurretModule()                { return m_turret; }
     bool                IsLauncherModule()              { return m_launcher; }
     bool                IsOverloaded()                  { return m_overLoaded; }
@@ -82,7 +82,7 @@ public:
     bool                IsActive()                      { return (m_ModuleState == Module::State::Activated ? true : m_ModuleState == Module::State::Deactivating ? true : false); }
     bool                IsLoading()                     { return m_ModuleState == Module::State::Loading; }
 
-    /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
+    /* generic access functions handled here, but set elsewhere. */
     bool                isOnline()                      { return m_modRef->IsOnline(); }
     bool                isLowPower()                    { return m_loPower; }
     bool                isHighPower()                   { return m_hiPower; }
@@ -95,7 +95,7 @@ public:
     uint32              groupID()                       { return m_modRef->groupID(); }
     EVEItemFlags        flag()                          { return m_modRef->flag(); }
 
-    void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }
+    void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }    // not used
     void SetModuleState(int8 state)                     { m_ModuleState = state; }
     void SetChargeState(int8 state)                     { m_ChargeState = state; }
     void SetLinked(bool set=false)                      { m_linked = set; }

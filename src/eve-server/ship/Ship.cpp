@@ -2292,9 +2292,11 @@ void ShipItem::LoadWeaponGroups()
         pSlave->SetLinked(true);
     }
 
-    if (error)
+    if (error) {
+        UnlinkAllWeapons();
         if (m_pilot != nullptr)
             m_pilot->SendErrorMsg("There was an error loading a weapon group master.  Ref: ServerError 06123");
+    }
 
     SafeDelete(res);
 }

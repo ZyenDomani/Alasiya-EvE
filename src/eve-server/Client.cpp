@@ -229,7 +229,7 @@ Client::~Client() {
     m_loaded = false;
 
     if (pShipSE != nullptr)
-        WarpOut();
+        WarpOut();      // need to make tests for this...it will segfault if m_char is invalid
 
     // LSC logout
     for (auto cur : m_channels)

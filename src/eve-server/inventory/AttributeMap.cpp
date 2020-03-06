@@ -293,7 +293,13 @@ uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
     else
         _log(ITEM__WARNING, "AlterChargeQuantity - Cannot find owner for %s", mItem.name());
 
-    return new_val.get_uint32();
+    if (loaded)
+        return new_val.get_uint32();
+
+    if (itr != mAttributes.end())
+        return itr->second.get_uint32();
+
+    return mItem.quantity();
 }
 
 // [eventName,] ownerID, itemID, attributeID, time, newValue, oldValue = change (unless attrib = quantity)

@@ -191,7 +191,6 @@ void ActiveModule::Process()
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
             m_chargeLoaded = true;
             SetChargeState(Module::State::Loaded);
-            m_chargeRef->AlterChargeQuantity(m_chargeRef->quantity());
         }
     }
 
@@ -684,12 +683,6 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
 
             result->SetItem(1, list);
             // Send results.
-            /*
-            std::vector<PyTuple*> events;
-            events.push_back(result);
-            std::vector<PyTuple*> updates;
-            m_destinyMgr->SendDestinyUpdate(updates, events, true);
-            */
             m_shipRef->GetPilot()->QueueDestinyEvent(&result);
         } break;
         //case EVEDB::invGroups::Data_Miner:
@@ -771,7 +764,6 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     if (pClient == nullptr) {
         _log(MODULE__WARNING, "ActiveModule::LoadCharge() for %s - Pilot is null.  Cannot load charge.", m_modRef->name());
         // these two are just in case...
-        //m_chargeRef->DeleteAttribute(AttrQuantity);
         m_chargeRef = InventoryItemRef(nullptr);
         m_chargeLoaded = false;
         SetChargeState(Module::State::Unloaded);
@@ -815,7 +807,8 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
              * to correct this, set new qty to previous qty here, then reload will add 'reloaded' qty
              * and send this data to client, showing actual qty and having data correct here.
              */
-            m_chargeRef->SetAttribute(AttrQuantity, (m_chargeRef->quantity() - oldQty), false);
+            //m_chargeRef->SetAttribute(AttrQuantity, oldQty);
+            m_chargeRef->AlterChargeQuantity(m_chargeRef->quantity(), false);
         } else {
             // set immediately when docked
             m_chargeLoaded = true;
@@ -828,7 +821,8 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     }
     if (!m_reloadTimer.Enabled()) {
         // set quantity and save, as subsequent calls will reset charge attribs
-        m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
+        //m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity());
+        m_chargeRef->AlterChargeQuantity(m_chargeRef->quantity(), false);
         m_chargeRef->SaveAttributes();
     }
 }
@@ -878,10 +872,13 @@ void ActiveModule::ConsumeCharge() {
         std::vector<GenericModule*> modules;
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
         for (auto cur : modules)
-            if (cur->IsLoaded()) // should we check for online also?  maybe later.  client may not allow group with one offline
+            if (/*cur->isOnline() and */cur->IsLoaded()) // should we check for online also?  maybe later.
                 cur->GetLoadedChargeRef()->AlterChargeQuantity(-1);
+                //m_chargeRef->AlterQuantity(-1, m_chargeLoaded);
     } else
-        m_chargeRef->AlterChargeQuantity(-1);
+        m_chargeRef->AlterChargeQuantity(-1, m_chargeLoaded);
+        //m_chargeRef->AlterQuantity(-1, m_chargeLoaded);
+
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
@@ -1097,7 +1094,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.other = PyStatic.NewNone();  //ENV_IDX_OTHER = 4
     }
 
-    //timeLeft /= 1000;
+    timeLeft /= 1000;
     //def OnGodmaShipEffect(self, itemID, effectID, t, start, active, environment, startTime, duration, repeat, randomSeed, error, actualStopTime = None, stall = True):
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -1106,7 +1103,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = (abort ? (abortTime /*/ EvE::Time::Second*/) : shipEff.timeNow); // - (timeLeft * EvE::Time::Second)));
+        shipEff.startTime = (abort ? (abortTime / EvE::Time::Second) : shipEff.timeNow - (timeLeft * EvE::Time::Second));
         shipEff.duration = (abort ? 2000 : timeLeft); //(active ? cycleTime.get_float() : timeLeft));  // duration in seconds
         shipEff.repeat = m_repeat;
         // will need to check and update for data miners here  (any other cases?)
