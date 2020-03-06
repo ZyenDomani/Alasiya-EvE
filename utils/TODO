@@ -83,12 +83,13 @@ fx warp speed data to client is wrong....see diff between fit window docked/in s
 skillqueueendtime in chardb wrong/invalid.  check setting
 
 
-charge attrQuantity needs a good lookover.
-    - make sure inventoryitem.quantity and attrQuantity are updated correctly
-
 check for item ownership before rename
     send error if failed
 
+go thru all updated effect data and look for 'improved' ships to add to our data.
+    - specialized holds from rhea (not available in cruc)
+    - updated barges from current live patch (hot tanks)
+current fx data incomplete at best.  missing multiple items/defs
 
 *******************************************************
 ********  improvements
@@ -98,7 +99,9 @@ closely examine target mgr and see what we can improve.
     - verify entries are placed timely and appropriately
     - multiple throw msgs not implemented (client msgs in dogmaim)
     - update targ/npcai to inform npc of yellowbox instead of locked
+rewrite completed, but reverted due to multiple errors and inconsistencies
 
+change/remove inventory quantity in favor of attrQuantity to avoid multiple datasets (as previously found in inv.position)
 
 create ",modify" command to allow ingame setting of attributes
     - groove has this functionality in his launcher
@@ -311,6 +314,14 @@ verify m_repeat in active module activate code
 
 set station GoTo target to be dock elevation, NOT centerPoint
 
+
+charge attrQuantity needs a good lookover.
+    - make sure inventoryitem.quantity and attrQuantity are updated correctly...they not
+    removed attrQuantity in favor of old style ixStackSize updates
+    this will need more time and testing to do properly
+    currently, fit window not updated with charge qty, but button is, and auto reload working
+
+
 *******************************************************
 *****************  Fx shit
 
@@ -339,10 +350,6 @@ look into using "CALL_", "RSP_" and "encode=true/false"/"decode=true/false" for 
 
 *******************************************************
 *****************  ideas for later
-
-go thru all updated effect data and look for 'improved' ships to add to our data.
-    - specialized holds from rhea (not available in cruc)
-    - updated barges from current live patch (hot tanks)
 
 print version #s to local chat on login  (kinda need lsc working better for this one...)
 
