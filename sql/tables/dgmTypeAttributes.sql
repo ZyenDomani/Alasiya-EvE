@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Feb 18, 2020 at 03:45 PM
+-- Generation Time: Mar 08, 2020 at 04:03 AM
 -- Server version: 10.0.36-MariaDB
 -- PHP Version: 5.6.36
 
@@ -26,7 +26,6 @@ SET time_zone = "+00:00";
 -- Table structure for table `dgmTypeAttributes`
 --
 
-DROP TABLE IF EXISTS `dgmTypeAttributes`;
 CREATE TABLE IF NOT EXISTS `dgmTypeAttributes` (
   `typeID` int(10) NOT NULL,
   `attributeID` smallint(5) NOT NULL,
@@ -353474,7 +353473,20 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (29245, 798, NULL, 0),
 (29245, 858, NULL, 1),
 (29245, 859, NULL, 1),
-(29245, 1006, NULL, 0.1);
+(29245, 1006, NULL, 0.1),
+(654, 1558, NULL, 43000),
+(656, 1556, NULL, 42000),
+(17476, 1556, NULL, 7000),
+(17478, 1556, NULL, 22000),
+(17480, 1556, NULL, 12000),
+(22544, 1556, NULL, 8500),
+(22546, 1556, NULL, 15000),
+(22548, 1556, NULL, 28000),
+(32880, 1556, NULL, 5000),
+(33683, 1556, NULL, 28000),
+(33685, 1556, NULL, 50000),
+(33687, 1556, NULL, 250000),
+(33697, 1556, NULL, 10000);
 
 --
 -- Indexes for dumped tables
