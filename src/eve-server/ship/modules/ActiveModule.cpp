@@ -770,7 +770,6 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         return;  // make error here?
     }
 
-    uint8 oldQty = (m_chargeRef.get() == nullptr ? 0 : m_chargeRef->quantity());
     m_chargeRef = chargeRef;
     SetChargeState(Module::State::Loading);
 
@@ -808,7 +807,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
              * and send this data to client, showing actual qty and having data correct here.
              */
             //m_chargeRef->SetAttribute(AttrQuantity, oldQty);
-            m_chargeRef->AlterChargeQuantity(m_chargeRef->quantity(), false);
+            m_chargeRef->AlterChargeQuantity(0);
         } else {
             // set immediately when docked
             m_chargeLoaded = true;
@@ -822,7 +821,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     if (!m_reloadTimer.Enabled()) {
         // set quantity and save, as subsequent calls will reset charge attribs
         //m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity());
-        m_chargeRef->AlterChargeQuantity(m_chargeRef->quantity(), false);
+        m_chargeRef->AlterChargeQuantity(0);
         m_chargeRef->SaveAttributes();
     }
 }
@@ -858,7 +857,7 @@ void ActiveModule::UnloadCharge()
         // apply to containing module to properly remove effects
         sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         // send data to client and update item qty
-        m_chargeRef->AlterChargeQuantity(0, false);
+        //m_chargeRef->AlterChargeQuantity(0, false);
     }
 
     m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
@@ -878,7 +877,6 @@ void ActiveModule::ConsumeCharge() {
     } else
         m_chargeRef->AlterChargeQuantity(-1, m_chargeLoaded);
         //m_chargeRef->AlterQuantity(-1, m_chargeLoaded);
-
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)

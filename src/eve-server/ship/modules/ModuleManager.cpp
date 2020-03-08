@@ -757,8 +757,9 @@ void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
     }
 
     if (!pMod->IsLoaded()) {
-        _log(MODULE__ERROR, "ModuleManager::UnloadCharge() - module %s at %s is not loaded", \
-                pMod->GetSelf()->name(), sDataMgr.GetFlagName(fromFlag));
+        if (!pMod->IsActive())
+            _log(MODULE__ERROR, "ModuleManager::UnloadCharge() - module %s at %s is not loaded", \
+                        pMod->GetSelf()->name(), sDataMgr.GetFlagName(fromFlag));
         return;
     }
 

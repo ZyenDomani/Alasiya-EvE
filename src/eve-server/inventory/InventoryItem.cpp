@@ -651,7 +651,8 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
         _log(INV__TRACE, "InventoryItem::Donate()  Updated flag on %s(%u) from %s to %s.", \
                 itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
 
-    ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
+    if (IsValidLocation(m_locationID))
+        ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
 
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {
@@ -715,7 +716,8 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     if (IsTempItem(m_itemID))
         return;
 
-    ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
+    if (IsValidLocation(m_locationID))
+        ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
 
     //notify about the changes.
     if (notify) {
@@ -813,11 +815,7 @@ void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAu
 
 void InventoryItem::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
     // update qty here and in attribMap
-    if (pAttributeMap->AlterChargeQuantity(qty, loaded) < 1) {
-        Delete();
-        return;
-    }
-    
+    pAttributeMap->AlterChargeQuantity(qty, loaded);
     AlterQuantity(qty, true);
 }
 
@@ -860,7 +858,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
         // this informs client of a stack change...still need to go over client code to verify exact spec on which one is used for what purpose....
         if (categoryID() == EVEDB::invCategories::Charge)
             changes[Inv::Update::StackSize] = new PyInt(old_qty);
-        else if (IsModuleSlot(m_flag))      //if (IsModuleSlot(m_flag))
+        else if (IsModuleSlot(m_flag))
             changes[Inv::Update::Quantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
         else
             changes[Inv::Update::StackSize] = new PyInt(old_qty);
@@ -1048,8 +1046,8 @@ void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
     into->SetField("instanceID",     new PyLong(shipID));  /* this is shipID (locationID) */
     into->SetField("flagID",         new PyInt(m_flag));
     into->SetField("typeID",         new PyInt(m_type.id()));
-    into->SetField("quantity",       new PyInt(m_quantity));
-    //into->SetField("quantity",       pAttributeMap->GetAttribute(AttrQuantity).GetPyObject()); // AttrQuantity is used for loaded charges
+    //into->SetField("quantity",       new PyInt(m_quantity));
+    into->SetField("quantity",       pAttributeMap->GetAttribute(AttrQuantity).GetPyObject()); // AttrQuantity is used for loaded charges
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const

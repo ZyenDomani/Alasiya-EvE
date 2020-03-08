@@ -244,7 +244,11 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         return;
     }
 
-    if (!m_shipRef->AddItemByFlag(m_holdFlag, oRef)) {
+    //if (!m_shipRef->AddItemByFlag(m_holdFlag, oRef)) {
+    // verify adding item to specified hold, then merge if applicable
+    if (m_shipRef->ValidateAddItem(m_holdFlag, oRef))
+        oRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
+    else {
         m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as it couldn't add ore to your cargohold.", m_modRef->name());
         _log(MINING__ERROR, "Could not add ore to hold for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );
         ActiveModule::DeactivateCycle(true);

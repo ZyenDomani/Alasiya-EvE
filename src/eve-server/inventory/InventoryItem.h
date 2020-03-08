@@ -126,7 +126,7 @@ public:
     // same as Move() but xfer ownership also
     void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map< int32, PyRep* >& changes);
-    // this is for stacking unloading charges and mined ore in ships cargo
+    // this is for stacking charges and mined ore in ships cargo
     void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     // this also updates volume of item
@@ -156,8 +156,12 @@ public:
     //bool LoadAttributes();
     double                  GetPackagedVolume();
     /* only for loaded charges
-     loaded=false will send 0 as new value
-     if qty of charge is <1, item is deleted */
+     * qty=0 will not change qty in InventoryItem
+     * qty >1 will add qty sent to InventoryItem.qty (additive)
+     * loaded=false will send 0 as new value
+     * qty=0 and loaded=true will send current InventoryItem.qty as new value
+     * if InventoryItem.qty <1, item is deleted
+     */
     void AlterChargeQuantity(int16 qty=0, bool loaded=true);
 
     /* specific functions for ShipItem, virtual here to allow generic class access */
@@ -169,7 +173,7 @@ public:
     void                    ToVirtual(uint32 locationID);    // this deletes item without updating client with 'this is deleted' data
 
     /**********************************************************************************************
-     * TEMPLATED LOADING INVOKATION EXPLANATION:
+     * TEMPLATED LOADING INVOKATION EXPLANATION:        (written by allan)
      * ItemCategory, ItemGroup, ItemType and Item classes and their children have special loading.
      *   Every such type has following methods: (with ShipItem being the exception)
      *
@@ -188,7 +192,7 @@ public:
      *    then add the created item to it's location's inventory.
      */
 
-    /*  Item Loading methods */
+    /*  Item Creating and Loading methods */
     /* calls _Ty::Load<_Ty>.  */
     static InventoryItemRef Load( uint32 itemID);
     /* creates new Item and calls item::_Load() */
