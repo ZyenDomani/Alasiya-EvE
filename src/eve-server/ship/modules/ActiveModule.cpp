@@ -857,7 +857,7 @@ void ActiveModule::UnloadCharge()
         // apply to containing module to properly remove effects
         sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         // send data to client and update item qty
-        //m_chargeRef->AlterChargeQuantity(0, false);
+        m_chargeRef->AlterChargeQuantity(0, false);
     }
 
     m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL

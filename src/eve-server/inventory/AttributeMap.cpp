@@ -263,6 +263,10 @@ uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
 
     if (loaded)
         new_val = old_val + qty;
+
+    if (old_val == new_val)
+        return new_val.get_uint32();
+
     Notify_OnModuleAttributeChange modChange;
     modChange.ownerID = mItem.ownerID();
     if (IsModuleSlot(mItem.flag())) {
