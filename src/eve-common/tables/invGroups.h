@@ -40,7 +40,7 @@ namespace EVEDB {
             Shield_Booster = 40,
             Shield_Transporter = 41,
             Capacitor_Recharger = 43,
-            Afterburner = 46,
+            Afterburner = 46,              // all mwd/ab grouped into Afterburner (gID 46)
             Cargo_Scanner = 47,
             Ship_Scanner = 48,
             Survey_Scanner = 49,
@@ -348,7 +348,7 @@ namespace EVEDB {
             System_Scanner = 472,
             Tracking_Array = 473,
             Acceleration_Gate_Keys = 474,
-            Microwarpdrive = 475,
+            Microwarpdrive = 475,               // all mwd/ab grouped into Afterburner (gID 46)
             Citadel_Torpedo = 476,
             Mining_Barge_Blueprint = 477,
             System_Scanner_Blueprint = 478,
