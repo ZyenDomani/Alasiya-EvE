@@ -437,10 +437,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
             }
     }
 
-<<<<<<< HEAD
     // caller destiny tests
-=======
->>>>>>> db22de618c03137dcd445e5f7d1cccc14f0e24bb
     DestinyManager* pMyDestiny = mySE->DestinyMgr();
     if (pMyDestiny == nullptr) {
         _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
@@ -451,12 +448,6 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (pMyDestiny->IsCloaked())
         throw PyException(MakeUserError("CantTargetWhileCloaked"));
        // throw PyException( MakeUserError("DeniedTargetingCloaked"));
-    if (pMyDestiny->IsWarping()) {
-        _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - warping.");
-        std::map<std::string, PyRep *> arg;
-        arg["targetName"] = new PyString(tSE->GetName());
-        throw PyException(MakeUserError("DeniedTargetSelfWarping", arg));
-    }
 
     // verify caller sysMgr
     SystemManager* pSysMgr = pClient->SystemMgr();
@@ -503,16 +494,13 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
             throw PyException(MakeUserError("DeniedTargetEvadesSensors"));
     }
 
-<<<<<<< HEAD
-    // this is to allow use of target name, after tSE is init 
+    // this is to allow use of target name, after tSE is init
     if (pMyDestiny->IsWarping()) {
         _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - warping.");
         std::map<std::string, PyRep *> arg;
         arg["targetName"] = new PyString(tSE->GetName());
         throw PyException(MakeUserError("DeniedTargetSelfWarping", arg));
     }
-=======
->>>>>>> db22de618c03137dcd445e5f7d1cccc14f0e24bb
     if (tSE->DestinyMgr() != nullptr) {
         if (tSE->DestinyMgr()->IsCloaked())
             throw PyException( MakeUserError("DeniedTargetingTargetCloaked"));
@@ -523,10 +511,8 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
             throw PyException( MakeUserError("DeniedTargetOtherWarping", arg ));
         }
     }
-<<<<<<< HEAD
-=======
 
->>>>>>> db22de618c03137dcd445e5f7d1cccc14f0e24bb
+    // target bubble tests
     if (tSE->SysBubble() == nullptr) {
         _log(DESTINY__ERROR, "Target %s does not have a bubble.", tSE->GetName());
         std::map<std::string, PyRep *> arg;
@@ -539,7 +525,6 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
             arg["target"] = new PyInt(tSE->GetID());
             throw PyException( MakeUserError("DeniedTargetReinforcedStructure", arg ));
         }
-
     if (tSE->SysBubble()->HasTower()) {
         TowerSE* ptSE = tSE->SysBubble()->GetTowerSE();
         if (ptSE->HasForceField())
