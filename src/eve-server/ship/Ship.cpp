@@ -2324,6 +2324,7 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
         ProcessShipEffects(update);
     } else {
         ClearModifiers();
+        pAttributeMap->SaveShipState();      // save ship damage as it's removed on next call
         ResetAttributes();
         ClearModuleModifiers();
         m_pilot->GetChar()->ResetModifiers();
@@ -2387,6 +2388,7 @@ void ShipItem::ResetEffects() {
     m_ModuleManager->OfflineAll();
 
     // reset attributes on char, ship, all modules and charges
+    pAttributeMap->SaveShipState();      // save ship damage as it's removed on next call
     ResetAttributes();
     m_pilot->GetChar()->ResetModifiers();
     std::vector< InventoryItemRef > modVec;
