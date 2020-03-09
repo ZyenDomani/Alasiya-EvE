@@ -160,6 +160,17 @@ PyResult EntityBound::Handle_CmdEngage(PyCallArgs &call) {
                 [PyIntegerVar 129756560847182701]
           [PyDict 0 kvp]
           */
+    /*
+    if (tSE->SysBubble()->HasTower()) {
+        TowerSE* ptSE = tSE->SysBubble()->GetTowerSE();
+        if (ptSE->HasForceField())
+            if (tSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()) {
+                std::map<std::string, PyRep *> arg;
+                arg["target"] = new PyInt(args.arg);
+                throw PyException( MakeUserError("DeniedDroneTargetForceField", arg ));
+            }
+    }
+        */
 
     _log(DRONE__TRACE, "EntityBound::Handle_CmdEngage()");
     call.Dump(DRONE__DUMP);

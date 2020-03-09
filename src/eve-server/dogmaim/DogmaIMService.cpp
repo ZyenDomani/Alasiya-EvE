@@ -466,11 +466,13 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         arg["target"] = new PyInt(args.arg);
         throw PyException(MakeUserError("DeniedTargetingAttemptFailed", arg));
     }
-    if (tSE->IsStaticEntity())
-        throw PyException(MakeUserError("DeniedTargetEvadesSensors"));
-    /** @todo SE->IsLogin() incomplete */
-    if (tSE->IsLogin())
-        throw PyException(MakeUserError("DeniedTargetEvadesSensors"));
+    if ((tSE->IsStaticEntity())
+    or (tSE->IsLogin())/** @todo SE->IsLogin() incomplete */
+    or (tSE->GetSelf()->HasAttribute(AttrUntargetable))) {
+        std::map<std::string, PyRep *> arg;
+        arg["targetName"] = new PyString(tSE->GetName());
+        throw PyException( MakeUserError("DeniedTargetEvadesSensors", arg ));
+    }
     /** @todo SE->IsInvul() incomplete */
     if (tSE->IsInvul())
         throw PyException(MakeUserError("DeniedTargetInvulnerable"));
@@ -480,18 +482,16 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         arg["targetName"] = new PyString(tSE->GetName());
         throw PyException(MakeUserError("DeniedTargetOtherFrozen", arg ));
     }
-    if (tSE->GetSelf()->HasAttribute(AttrUntargetable)) {
-        std::map<std::string, PyRep *> arg;
-        arg["targetName"] = new PyString(tSE->GetName());
-        throw PyException( MakeUserError("DeniedTargetEvadesSensors", arg ));
-    }
 
     if (tSE->HasPilot()) {
         /** @todo SE->IsInvul() incomplete */
         if ( tSE->GetPilot()->IsInvul())
             throw PyException(MakeUserError("DeniedTargetInvulnerable"));
-        if ( tSE->GetPilot()->IsSessionChange())
-            throw PyException(MakeUserError("DeniedTargetEvadesSensors"));
+        if ( tSE->GetPilot()->IsSessionChange()) {
+            std::map<std::string, PyRep *> arg;
+            arg["targetName"] = new PyString(tSE->GetName());
+            throw PyException( MakeUserError("DeniedTargetEvadesSensors", arg ));
+        }
     }
 
     // this is to allow use of target name, after tSE is init
@@ -522,7 +522,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (tSE->IsPOSSE())
         if (tSE->GetPOSSE()->IsReinforced()) {
             std::map<std::string, PyRep *> arg;
-            arg["target"] = new PyInt(tSE->GetID());
+            arg["target"] = new PyInt(args.arg);
             throw PyException( MakeUserError("DeniedTargetReinforcedStructure", arg ));
         }
     if (tSE->SysBubble()->HasTower()) {
@@ -530,7 +530,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         if (ptSE->HasForceField())
             if (tSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()) {
                 std::map<std::string, PyRep *> arg;
-                arg["target"] = new PyInt(tSE->GetID());
+                arg["target"] = new PyInt(args.arg);
                 arg["range"] = new PyInt(ptSE->GetSOI());
                 arg["item"] = new PyInt(ptSE->GetID());
                 throw PyException( MakeUserError("DeniedTargetForceField", arg ));
@@ -541,7 +541,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         if (is_log_enabled(TARGET__MESSAGE)) {
             GVector vectorToTarget( mySE->GetPosition(), tSE->GetPosition());
             _log(TARGET__MESSAGE, "AddTarget() - %s(%u) -> %s(%u) at range of %.2f meters.", \
-                        pClient->GetName(), pClient->GetCharacterID(), tSE->GetName(),tSE->GetID(), vectorToTarget.length() );
+            pClient->GetName(), pClient->GetCharacterID(), tSE->GetName(), args.arg, vectorToTarget.length() );
         }
 
     if (!mySE->TargetMgr()->StartTargeting( tSE, pClient->GetShip())) {
