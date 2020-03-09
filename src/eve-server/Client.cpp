@@ -404,9 +404,9 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     SetStateTimer(ClientState::csLogin, ClientTimers::LoginTimer);
 
-    m_loaded = true;
+    // figure out how to send MOTD and server data to logging-in player's local channel
 
-    return m_loaded;
+    return (m_loaded = true);
 }
 
 void Client::ProcessClient() {
@@ -602,7 +602,9 @@ void Client::WarpIn() {
     m_ship->SetCustomInfo(ci);
     if (!InPod())
         m_ship->SetFlag(flagAutoFit);
-    SetInvulTimer(ClientTimers::WarpInInvul);
+    m_invulTimer.Start(ClientTimers::WarpInInvul);
+    m_cloakTimer.Start(ClientTimers::JumpCloak);
+    pShipSE->DestinyMgr()->Cloak();
     return;
     /*
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
