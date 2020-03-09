@@ -9,13 +9,12 @@
 after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
 01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
 
-destiny accel seems too slow.  not tracking properly.  need logging/testing
-
 moving items to cargo makes ownerID=1 ...could be from market also
 
 items disappearing from cargo when dock/undock
 
-prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/effects/MoveTrace:20 & 37
+prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
+    - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
 
 deny creating items < typeID 34
 

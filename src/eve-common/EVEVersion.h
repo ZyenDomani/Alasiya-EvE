@@ -40,8 +40,8 @@ static const int32 EVEBirthday = 170472;
 
 /*  Allan's Static Definitions */
 static const char* const EVEMU_REVISION = "0.9.79-allan";
-static const char* const EVEMU_BUILD_DATE = "3 March 2020";
-static const float EVE_Build = 3.14;     /* this is for bug tracking on my forums.  -allan 3July15 */
+static const char* const EVEMU_BUILD_DATE = "9 March 2020";
+static const float EVE_Build = 3.15;     /* this is for bug tracking on my forums.  -allan 3July15 */
 /* match versions here with stated files for full support */
 static const float Config_Version = 9.5; /* eve-server.xml and EveServerConfig.cpp */
 static const float Log_Version = 9.8;    /* logtypes.h and log.ini */
