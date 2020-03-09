@@ -745,6 +745,12 @@ int main( int argc, char* argv[] )
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
 
+    // dont need to print access times for db access while loading server
+    //sProfile.PrintProfile();
+    sProfile.ClearAll();
+    sLog.Green(" Server Profiling","Profile Data Reset.");
+    std::printf("\n");     // spacer
+
     sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime) /1000);
     sLog.Error("       ServerInit", "Main Loop Starting.");
 
