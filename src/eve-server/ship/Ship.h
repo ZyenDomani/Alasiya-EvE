@@ -324,7 +324,7 @@ public:
 
     /* specific functions handled here. */
     void Dock();
-    void Jump();
+    void Jump();        // this sets ship cloak
     void Warp();
     void RemoveTarget(SystemEntity* pSE);
     void SetPassword(std::string pass)                  { m_towerPass = pass; }

@@ -2631,6 +2631,7 @@ void Ship::Jump() {
     }
 
     m_shipRef->Jump();
+    m_destiny->Cloak();
 }
 
 void Ship::Warp() {
