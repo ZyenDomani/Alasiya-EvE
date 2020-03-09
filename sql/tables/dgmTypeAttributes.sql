@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 08, 2020 at 04:03 AM
+-- Generation Time: Mar 09, 2020 at 09:04 AM
 -- Server version: 10.0.36-MariaDB
 -- PHP Version: 5.6.36
 
@@ -26,6 +26,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `dgmTypeAttributes`
 --
 
+DROP TABLE IF EXISTS `dgmTypeAttributes`;
 CREATE TABLE IF NOT EXISTS `dgmTypeAttributes` (
   `typeID` int(10) NOT NULL,
   `attributeID` smallint(5) NOT NULL,
@@ -97282,10 +97283,10 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22852, 268, NULL, 0.9),
 (22852, 269, NULL, 0.75),
 (22852, 270, NULL, 0.65),
-(22852, 271, NULL, 1),
-(22852, 272, NULL, 0.5),
-(22852, 273, NULL, 0.6),
-(22852, 274, NULL, 0.8),
+(22852, 271, NULL, 0.97),
+(22852, 272, NULL, 0.47),
+(22852, 273, NULL, 0.57),
+(22852, 274, NULL, 0.77),
 (22852, 277, 1, NULL),
 (22852, 278, 3, NULL),
 (22852, 279, 1, NULL),
@@ -103168,7 +103169,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24480, 9, 100000000, NULL),
 (24483, 3, 0, NULL),
 (24483, 9, 112500, NULL),
-(24483, 11, NULL, 605000),
+(24483, 11, 745000, NULL),
 (24483, 12, 6, NULL),
 (24483, 13, 5, NULL),
 (24483, 14, 5, NULL),
@@ -103176,7 +103177,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24483, 19, 1, NULL),
 (24483, 21, NULL, 0),
 (24483, 37, 90, NULL),
-(24483, 48, 700, NULL),
+(24483, 48, 825, NULL),
 (24483, 49, 0, NULL),
 (24483, 55, NULL, 3815028.903),
 (24483, 70, NULL, 0.0455),
