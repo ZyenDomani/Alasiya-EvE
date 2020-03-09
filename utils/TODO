@@ -76,8 +76,8 @@ UserError: [DeniedTargetInvulnerable.notify] None - Target is invulnerable. {}
     - cant find this log template in client.  no clue here.
 
 fx warp speed data to client is wrong....see diff between fit window docked/in space
-  - need to check formula again in client....seems to be a 3x multiplier in there somewhere....
-
+    - need to check formula again in client....seems to be a 3x multiplier in there somewhere....
+    - this also deals with fx data
 
 skillqueueendtime in chardb wrong/invalid.  check setting
 
@@ -313,13 +313,12 @@ verify m_repeat in active module activate code
 
 set station GoTo target to be dock elevation, NOT centerPoint
 
-
 charge attrQuantity needs a good lookover.
     - make sure inventoryitem.quantity and attrQuantity are updated correctly...they not
-    removed attrQuantity in favor of old style ixStackSize updates
     this will need more time and testing to do properly
-    currently, fit window not updated with charge qty, but button is, and auto reload working
 
+
+still many ClientErrorMgs not used/implemented
 
 *******************************************************
 *****************  Fx shit
