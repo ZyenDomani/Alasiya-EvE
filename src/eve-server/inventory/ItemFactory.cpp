@@ -298,8 +298,8 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr == m_items.end())
     {
-        if (IsTempItem(itemID)) {
-            _log(ITEM__WARNING, "ItemFactory::_GetItem() called on tempItem %u", itemID);
+        if (IsTempItem(itemID) or (itemID < minAgent)) {
+            _log(ITEM__WARNING, "ItemFactory::_GetItem() called on temp or invalid Item %u", itemID);
             return RefPtr<_Ty>();
         }
 
@@ -397,10 +397,7 @@ InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
 
 InventoryItemRef ItemFactory::SpawnTempItem(ItemData &data) {
     InventoryItemRef iRef = InventoryItem::SpawnTemp(data);
-    if (iRef.get() == nullptr)
-        return iRef;
 
-    // spawn successful; store the ref
     // we're not storing temp shit unless its needed (probably wont be)
     //m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     return iRef;
