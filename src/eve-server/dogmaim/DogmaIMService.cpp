@@ -412,13 +412,29 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     }
     /** @todo SE->IsFrozen() incomplete */
     if (mySE->IsFrozen()) {
-        std::map<std::string, PyRep *> args;
-        args["targetName"] = new PyString(mySE->GetName());
-        throw PyException( MakeUserError("DeniedTargetSelfFrozen", args));
+        std::map<std::string, PyRep *> arg;
+        arg["targetName"] = new PyString(mySE->GetName());
+        throw PyException( MakeUserError("DeniedTargetSelfFrozen", arg));
     }
     /** @todo SE->IsInvul() incomplete */
     if (mySE->IsInvul())
         throw PyException( MakeUserError("DeniedInvulnerable"));
+
+    if (mySE->SysBubble() == nullptr) {
+        _log(DESTINY__ERROR, "Client %s does not have a bubble.", pClient->GetName());
+        std::map<std::string, PyRep *> arg;
+        arg["target"] = new PyInt(args.arg);
+        throw PyException(MakeUserError("DeniedTargetingAttemptFailed", arg));
+    }
+    if (mySE->SysBubble()->HasTower()) {
+        TowerSE* ptSE = mySE->SysBubble()->GetTowerSE();
+        if (ptSE->HasForceField())
+            if (mySE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()) {
+                std::map<std::string, PyRep *> arg;
+                arg["target"] = new PyInt( args.arg);
+                throw PyException( MakeUserError("DeniedTargetingInsideField", arg ));
+            }
+    }
 
     DestinyManager* pMyDestiny = mySE->DestinyMgr();
     if (pMyDestiny == nullptr) {
@@ -430,6 +446,12 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (pMyDestiny->IsCloaked())
         throw PyException(MakeUserError("CantTargetWhileCloaked"));
        // throw PyException( MakeUserError("DeniedTargetingCloaked"));
+    if (pMyDestiny->IsWarping()) {
+        _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - warping.");
+        std::map<std::string, PyRep *> arg;
+        arg["targetName"] = new PyString(tSE->GetName());
+        throw PyException(MakeUserError("DeniedTargetSelfWarping", arg));
+    }
 
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
@@ -446,21 +468,8 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         arg["target"] = new PyInt(args.arg);
         throw PyException(MakeUserError("DeniedTargetingAttemptFailed", arg));
     }
-    if (pMyDestiny->IsWarping()) {
-        _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - warping.");
-        std::map<std::string, PyRep *> arg;
-        arg["targetName"] = new PyString(tSE->GetName());
-        throw PyException(MakeUserError("DeniedTargetSelfWarping", arg));
-    }
-    if (tSE->DestinyMgr()->IsWarping()) {
-        _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - target warping.");
-        std::map<std::string, PyRep *> arg;
-        arg["targetName"] = new PyString( tSE->GetName());
-        throw PyException(MakeUserError("DeniedTargetOtherWarping", arg));
-    }
     if (tSE->IsStaticEntity())
         throw PyException(MakeUserError("DeniedTargetEvadesSensors"));
-
     /** @todo SE->IsLogin() incomplete */
     if (tSE->IsLogin())
         throw PyException(MakeUserError("DeniedTargetEvadesSensors"));
@@ -469,28 +478,15 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         throw PyException(MakeUserError("DeniedTargetInvulnerable"));
     /** @todo SE->IsFrozen() incomplete */
     if (tSE->IsFrozen()) {
-        std::map<std::string, PyRep *> args;
-        args["targetName"] = new PyString(tSE->GetName());
-        throw PyException(MakeUserError("DeniedTargetOtherFrozen", args));
-    }
-    if ((mySE->SysBubble() == nullptr)
-    or (tSE->SysBubble() == nullptr)) {
-        _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), tSE->GetName());
         std::map<std::string, PyRep *> arg;
-        arg["target"] = new PyInt(args.arg);
-        throw PyException(MakeUserError("DeniedTargetingAttemptFailed", arg));
+        arg["targetName"] = new PyString(tSE->GetName());
+        throw PyException(MakeUserError("DeniedTargetOtherFrozen", arg ));
     }
-
-    if (mySE->SysBubble() != nullptr)
-        if (mySE->SysBubble()->HasTower()) {
-            TowerSE* ptSE = mySE->SysBubble()->GetTowerSE();
-            if (ptSE->HasForceField())
-                if (mySE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()) {
-                    std::map<std::string, PyRep *> args;
-                    args["target"] = new PyInt(tSE->GetID());
-                    throw PyException( MakeUserError("DeniedTargetingInsideField", args));
-                }
-        }
+    if (tSE->GetSelf()->HasAttribute(AttrUntargetable)) {
+        std::map<std::string, PyRep *> arg;
+        arg["targetName"] = new PyString(tSE->GetName());
+        throw PyException( MakeUserError("DeniedTargetEvadesSensors", arg ));
+    }
 
     if (tSE->HasPilot()) {
         /** @todo SE->IsInvul() incomplete */
@@ -500,37 +496,39 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
             throw PyException(MakeUserError("DeniedTargetEvadesSensors"));
     }
 
-    if (tSE->GetSelf()->HasAttribute(AttrUntargetable)) {
-        std::map<std::string, PyRep *> args;
-        args["targetName"] = new PyString(tSE->GetName());
-        throw PyException( MakeUserError("DeniedTargetEvadesSensors", args));
-    }
     if (tSE->DestinyMgr() != nullptr) {
         if (tSE->DestinyMgr()->IsCloaked())
             throw PyException( MakeUserError("DeniedTargetingTargetCloaked"));
         if (tSE->DestinyMgr()->IsWarping()) {
-            std::map<std::string, PyRep *> args;
-            args["targetName"] = new PyString(tSE->GetName());
-            throw PyException( MakeUserError("DeniedTargetOtherWarping", args));
+            _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - target warping.");
+            std::map<std::string, PyRep *> arg;
+            arg["targetName"] = new PyString(tSE->GetName());
+            throw PyException( MakeUserError("DeniedTargetOtherWarping", arg ));
         }
     }
 
+    if (tSE->SysBubble() == nullptr) {
+        _log(DESTINY__ERROR, "Target %s does not have a bubble.", tSE->GetName());
+        std::map<std::string, PyRep *> arg;
+        arg["target"] = new PyInt(args.arg);
+        throw PyException(MakeUserError("DeniedTargetingAttemptFailed", arg));
+    }
     if (tSE->IsPOSSE())
         if (tSE->GetPOSSE()->IsReinforced()) {
-            std::map<std::string, PyRep *> args;
-            args["target"] = new PyInt(tSE->GetID());
-            throw PyException( MakeUserError("DeniedTargetReinforcedStructure", args));
+            std::map<std::string, PyRep *> arg;
+            arg["target"] = new PyInt(tSE->GetID());
+            throw PyException( MakeUserError("DeniedTargetReinforcedStructure", arg ));
         }
 
     if (tSE->SysBubble()->HasTower()) {
         TowerSE* ptSE = tSE->SysBubble()->GetTowerSE();
         if (ptSE->HasForceField())
             if (tSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()) {
-                std::map<std::string, PyRep *> args;
-                args["target"] = new PyInt(tSE->GetID());
-                args["range"] = new PyInt(ptSE->GetSOI());
-                args["item"] = new PyInt(ptSE->GetID());
-                throw PyException( MakeUserError("DeniedTargetForceField", args));
+                std::map<std::string, PyRep *> arg;
+                arg["target"] = new PyInt(tSE->GetID());
+                arg["range"] = new PyInt(ptSE->GetSOI());
+                arg["item"] = new PyInt(ptSE->GetID());
+                throw PyException( MakeUserError("DeniedTargetForceField", arg ));
             }
     }
 
