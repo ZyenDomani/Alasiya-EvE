@@ -66,6 +66,13 @@ protected:
 
 #endif  // __EVEMU_NPC_ENTITY_H
 
+/*
+ * {'messageKey': 'MiningDronesDeactivatedAsteroidEmpty', 'dataID': 17883322, 'suppressable': False, 'bodyID': 259462, 'messageType': 'notify', 'urlAudio': 'wise:/msg_MiningDronesDeactivatedAsteroidEmpty_play', 'urlIcon': '', 'titleID': None, 'messageID': 1168}
+ * {'messageKey': 'MiningDronesDeactivatedCargoHoldFull', 'dataID': 17883265, 'suppressable': False, 'bodyID': 259442, 'messageType': 'notify', 'urlAudio': 'wise:/msg_MiningDronesDeactivatedCargoHoldFull_play', 'urlIcon': '', 'titleID': None, 'messageID': 1169}
+ * {'messageKey': 'MiningDronesDeactivatedCargoHoldNowFull', 'dataID': 17883243, 'suppressable': False, 'bodyID': 259434, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1170}
+ * {'messageKey': 'MiningDronesDeactivatedOutOfRange', 'dataID': 17883208, 'suppressable': False, 'bodyID': 259422, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1171}
+ */
+
 /* {'FullPath': u'UI/Messages', 'messageID': 258206, 'label': u'EntityDelegateInsideFieldBody'}(u'The drone cannot be delegated while you are inside an active force field.', None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 257373, 'label': u'DeniedDroneTargetForceFieldBody'}(u'Your drones cannot engage {[item]target.name} since it is within the range of a forcefield you are barred from entering.', None, {u'{[item]target.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
  * {'FullPath': u'UI/Messages', 'messageID': 259588, 'label': u'DroneCommandRequiresShipPilotedFleetMemberBody'}(u'To give this command to a drone requires that the active target be piloted and piloted by a fleet member.', None, None)

@@ -310,6 +310,7 @@ skillbar error only happens when training skill to l5 complete
 pause skill queue should clear training queue window
 
 verify m_repeat in active module activate code
+found mining msgs.  need to code 
 
 set station GoTo target to be dock elevation, NOT centerPoint
 

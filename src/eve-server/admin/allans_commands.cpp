@@ -727,7 +727,7 @@ PyResult Command_warpto(Client* pClient, CommandDB* db, PyServiceMgr* services, 
     pClient->GetShipSE()->DestinyMgr()->Halt();
 
     char reply[55];
-    snprintf(reply, 55, "Command Unavalible.\nShip Halted.");
+    snprintf(reply, 55, "Command Unavailible.\nShip Halted.");
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -913,5 +913,5 @@ PyResult Command_autostop(Client* pClient, CommandDB* db, PyServiceMgr* services
  * key = ballID
  * val = pos (vector probably best to use util.KeyVal)(uses val.x, val.y, val.z)
  *
- * It compares the balls trying to find position and velocity inconsitancies showing them in a model window
+ * It compares the balls trying to find position and velocity inconsistencies showing them in a model window
  */
