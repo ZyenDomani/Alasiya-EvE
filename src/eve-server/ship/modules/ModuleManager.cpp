@@ -509,7 +509,20 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         pMod->Online();
         return;
     }
+    /*{'FullPath': u'UI/Messages', 'messageID': 259628, 'label': u'InvalidTargetCanAlreadyTractoredBody'}(u'The {[item]module.name} cannot engage a tractor beam on that object as it is already being tractor beamed by something else.', None, {u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259629, 'label': u'InvalidTargetCanOwnerBody'}(u'The {[item]module.name} cannot engage a tractor beam on that object as it is not owned by you, a fellow fleet member or another member of a player corporation you belong to.', None, {u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259630, 'label': u'InvalidTargetGroupBody'}(u'Invalid target, can only activate this on {groupName}.', None, {u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'}})
+     */
+/*
+    if (effectID == 2255) // tractorBeamCan
+        if (pShipItem->GetPilot()->SystemMgr()->GetSE(targetID)->DestinyMgr()->IsTractored()) {
+            pShipItem->GetPilot()->SendErrorMsg("The %s cannot engage a tractor beam on that object as it is already being tractor beamed by something else.", m_targetSE->GetName()));
 
+        //std::map<std::string, PyRep *> args;
+        //args["module"]  = new PyInt(itemID);
+        //throw PyException(MakeUserError("InvalidTargetCanAlreadyTractored", args));
+        }
+*/
     if (!pMod->isOnline()) {
         // client wont allow activating an offline module.  this is catchall. (but should never hit)
         pShipItem->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
@@ -519,17 +532,9 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
             throw PyException(MakeUserError("DeniedActivateInWarp"));
     } else if (pDestiny->IsCloaked()) {
         throw PyException(MakeUserError("DeniedActivateCloaked"));
-    } else if (pDestiny->IsTractored()) {
-        std::map<std::string, PyRep *> args;
-        args["module"]  = new PyInt(itemID);
-        throw PyException(MakeUserError("InvalidTargetCanAlreadyTractored", args));
     } else if (pShipItem->GetPilot()->IsJump()) {
         throw PyException(MakeUserError("DeniedActivateInJump"));
     }
-    /*{'FullPath': u'UI/Messages', 'messageID': 259628, 'label': u'InvalidTargetCanAlreadyTractoredBody'}(u'The {[item]module.name} cannot engage a tractor beam on that object as it is already being tractor beamed by something else.', None, {u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259629, 'label': u'InvalidTargetCanOwnerBody'}(u'The {[item]module.name} cannot engage a tractor beam on that object as it is not owned by you, a fellow fleet member or another member of a player corporation you belong to.', None, {u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259630, 'label': u'InvalidTargetGroupBody'}(u'Invalid target, can only activate this on {groupName}.', None, {u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'}})
-     */
 
     if (!pMod->IsLinked() or pMod->IsMaster())
         pMod->Activate(effectID, targetID, repeat);
