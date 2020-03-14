@@ -2261,6 +2261,7 @@ PyResult DestinyManager::AttemptDockOperation() {
 void DestinyManager::DockingAccepted()
 {
     Stop();
+    UnCloak();
     Client *pClient = mySE->GetPilot();
     if (pClient != nullptr) {
         uint32 stationID = pClient->GetDockStationID();
@@ -2832,8 +2833,8 @@ void DestinyManager::SendCloakFx(bool apply/*false*/, bool module/*false*/) cons
         effect.isOffensive = 0;
         if (apply) {
             effect.guid = "effects.Cloaking";
-        effect.start = 1;
-        effect.active = 1;
+            effect.start = 1;
+            effect.active = 1;
         } else {
             effect.guid = "effects.Uncloak";
         }

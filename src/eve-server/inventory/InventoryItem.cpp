@@ -652,7 +652,8 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
                 itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
 
     if (IsValidLocation(m_locationID))
-        ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
+        SaveItem();
+        //ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
 
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {

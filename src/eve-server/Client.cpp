@@ -404,12 +404,15 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     SetStateTimer(ClientState::csLogin, ClientTimers::LoginTimer);
 
-    // figure out how to send MOTD and server data to logging-in player's local channel
+    // figure out how to send MOTD and server data to player's 'local' chat channel
 
     return (m_loaded = true);
 }
 
 void Client::ProcessClient() {
+    if (m_charCreation)
+        return;
+
     double profileStartTime = GetTimeUSeconds();
 
     // wtf is this for?
@@ -435,9 +438,6 @@ void Client::ProcessClient() {
         m_ship->SaveShip();
     }
     */
-    if (m_charCreation)
-        return;
-
     if (IsStation(m_locationID)) {
         if (m_stateTimer.Enabled())
             if (m_stateTimer.Check(false)) {
@@ -603,8 +603,8 @@ void Client::WarpIn() {
     if (!InPod())
         m_ship->SetFlag(flagAutoFit);
     m_invulTimer.Start(ClientTimers::WarpInInvul);
-    m_cloakTimer.Start(ClientTimers::JumpCloak);
-    pShipSE->DestinyMgr()->Cloak();
+    //m_cloakTimer.Start(ClientTimers::JumpCloak);
+    //pShipSE->DestinyMgr()->Cloak();
     return;
     /*
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.

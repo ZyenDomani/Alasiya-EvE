@@ -68,7 +68,9 @@ public:
     virtual bool HasPilot()                             { return (m_pilot != nullptr); }
     virtual Client* GetPilot()                          { return m_pilot; }
 
+    // add item to our inventory and set singleton where applicable
     virtual void AddItem(InventoryItemRef iRef);
+    // remove item from our inventory and call Remove() on module/charge 
     virtual void RemoveItem(InventoryItemRef iRef);
 
     bool HasModuleManager()                             { return (m_ModuleManager != nullptr); }

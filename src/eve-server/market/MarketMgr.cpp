@@ -337,17 +337,11 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
 
     double money = price * quantity;
     // send wallet blink event and record the transaction in their journal.
-    std::string reason = "DESC:  Buying items in ";
+    std::string reason = "DESC:  Buying market items in ";
     reason += stDataMgr.GetStationName(stationID).c_str();
-    // this will throw if funds not avalible.
-    AccountService::TranserFunds(
-                                 buyer->GetCharacterID(),
-                                 ownerID,
-                                 money,
-                                 reason.c_str(),
-                                 Journal::EntryType::MarketTransaction,
-                                 orderID,
-                                 Account::KeyType::Cash);
+    // this will throw if funds not available.
+    AccountService::TranserFunds(buyer->GetCharacterID(), ownerID, money, reason.c_str(),\
+                    Journal::EntryType::MarketTransaction, orderID, Account::KeyType::Cash);
 
     // after money is xferd, create and add item.
     ItemData idata(typeID, 1, stationID, flagAutoFit, quantity);
