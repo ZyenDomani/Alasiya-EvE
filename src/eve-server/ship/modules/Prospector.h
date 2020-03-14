@@ -19,6 +19,7 @@ public:
     virtual ~Prospector()                                 { /* do nothing here */ }
 
     virtual Prospector*         GetProspectModule()     { return this; }
+    virtual bool        IsProspectModule() const        { return true; }
 
     /* ActiveModule overrides */
     virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
@@ -27,6 +28,9 @@ public:
     virtual bool CanActivate();
 
     virtual bool IsSuccess()                            { return m_success; }
+
+    // this is to avoid problems when module timer hits after target destroyed.  may need to do more here.
+    void TargetDestroyed()                              { m_success = false; }
 
 protected:
     void SendFailure();

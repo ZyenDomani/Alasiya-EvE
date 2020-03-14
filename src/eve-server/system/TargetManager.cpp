@@ -43,6 +43,7 @@
 #include "ship/Ship.h"
 #include "ship/modules/ActiveModule.h"
 #include "ship/modules/MiningLaser.h"
+#include "ship/modules/Prospector.h"
 #include "system/TargetManager.h"
 #include "system/SystemEntity.h"
 #include "system/SystemBubble.h"
@@ -532,21 +533,24 @@ void TargetManager::Destroyed()
     for (auto cur : m_modules) {
         //  some modules should immediately cease cycle when target destroyed.  miners are NOT in this call
         switch (cur.second->groupID()) {
-            //case EVEDB::invGroups::Target_Painter:
-            //case EVEDB::invGroups::Tracking_Disruptor:
-            //case EVEDB::invGroups::Remote_Sensor_Damper:
-            //case EVEDB::invGroups::Remote_Sensor_Booster:
-            //case EVEDB::invGroups::Armor_Repair_Projector:
-            //case EVEDB::invGroups::Shield_Transporter:
-            //case EVEDB::invGroups::Energy_Vampire:
-            //case EVEDB::invGroups::Energy_Transfer_Array:
-            //case EVEDB::invGroups::Energy_Destabilizer:
-            //case EVEDB::invGroups::Projected_ECCM:
+            case EVEDB::invGroups::Target_Painter:
+            case EVEDB::invGroups::Tracking_Disruptor:
+            case EVEDB::invGroups::Remote_Sensor_Damper:
+            case EVEDB::invGroups::Remote_Sensor_Booster:
+            case EVEDB::invGroups::Armor_Repair_Projector:
+            case EVEDB::invGroups::Shield_Transporter:
+            case EVEDB::invGroups::Energy_Vampire:
+            case EVEDB::invGroups::Energy_Transfer_Array:
+            case EVEDB::invGroups::Energy_Destabilizer:
+            case EVEDB::invGroups::Tractor_Beam:
+            case EVEDB::invGroups::Projected_ECCM:
             case EVEDB::invGroups::Ship_Scanner:
-            case EVEDB::invGroups::Cargo_Scanner:{
-                // should we tell player about this target being destroyed?
+            case EVEDB::invGroups::Cargo_Scanner: {
                 cur.second->AbortCycle();
             } break;
+            case EVEDB::invGroups::Salvager:
+                // set success=false and fall thru
+                cur.second->GetProspectModule()->TargetDestroyed();
             default: {
                 cur.second->Deactivate(effect);
             } break;
@@ -707,12 +711,12 @@ void TargetManager::Dump() const {
             cur.second->Dump(cur.first);
     }
 
-    _log(TARGET__DUMP, "    Active Modules: (ship:module)");
+    _log(TARGET__DUMP, "    Active Modules: (ship:module(moduleID))");
     if (m_modules.empty()) {
         _log(TARGET__DUMP, "      *NONE*");
     } else {
         for (auto cur : m_modules)
-            _log(TARGET__DUMP, "\t\t %s: %s", cur.second->GetShipRef()->name(), cur.second->GetSelf()->name());
+            _log(TARGET__DUMP, "\t\t %s: %s(%u)", cur.second->GetShipRef()->name(), cur.second->GetSelf()->name(), cur.second->itemID());
     }
 }
 

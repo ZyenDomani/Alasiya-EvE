@@ -175,8 +175,8 @@ void Prospector::DropSalvage()
             iRef = sItemFactory.SpawnItem(iLoot);
             if (iRef.get() == nullptr) // we'll get over it...continue
                 continue;
-            iRef->Move(m_shipRef->itemID(), m_holdFlag, true);
-            m_shipRef->AddItem(iRef);
+            //iRef->Move(m_shipRef->itemID(), m_holdFlag, true);
+            iRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
             _log(MODULE__DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->itemName().c_str(), minDrop, maxDrop);
         }
     }

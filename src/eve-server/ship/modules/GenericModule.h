@@ -69,6 +69,7 @@ public:
     virtual bool        IsPassiveModule() const         { return false; }
     virtual bool        IsActiveModule() const          { return false; }
     virtual bool        IsMiningLaser() const           { return false; }
+    virtual bool        IsProspectModule() const        { return false; }
     virtual bool        IsRigModule() const             { return false; }   // check this in m_rigSlot?
     virtual bool        IsSubSystemModule() const       { return false; }   // check this in m_subSystem?
 
@@ -105,7 +106,7 @@ public:
     int8 GetChargeState()                               { return m_ChargeState; }
     InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
 
-	/* generic access functions to be handled in derived classes (must override) */
+    /* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* do nothing here */ }
     virtual void Deactivate(std::string effect="")      { /* do nothing here */ }
     virtual void AbortCycle()                           { /* do nothing here */ }

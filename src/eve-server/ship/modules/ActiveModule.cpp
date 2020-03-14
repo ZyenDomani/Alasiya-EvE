@@ -14,6 +14,7 @@
 #include "ship/Missile.h"
 #include "ship/modules/ActiveModule.h"
 #include "ship/modules/ModuleItem.h"
+#include "ship/modules/Prospector.h"
 #include "system/Container.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 
@@ -153,7 +154,7 @@ m_destinyMgr(nullptr)
 
 void ActiveModule::Clear()
 {
-    _log(MODULE__TRACE, "%s calling Clear()", m_modRef->name());
+    _log(MODULE__TRACE, "%s(%u) calling Clear()", m_modRef->name(), m_modRef->itemID());
     if (m_targetSE != nullptr)
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
@@ -209,26 +210,19 @@ void ActiveModule::Process()
         m_Stop = true;
 
     // check for module cycle timer.  if module is stopped, this will process the deactivation and set stop
-    if (m_timer.Check())
+    if (m_timer.Check()) {
+        if (m_needsTarget) {
+            if (m_targetSE == nullptr) {
+                DeactivateCycle(true);
+                return;
+            }
+            if (m_targetSE->GetID() != m_targetID) {
+                DeactivateCycle(true);
+                return;
+            }
+        }
+
         ProcessActiveCycle();
-
-    if (m_Stop)
-        return;
-
-    if (m_needsTarget) {
-        // these shouldnt be needed anymore
-        if (m_targetSE == nullptr) {
-            _log(MODULE__TRACE, "%s - targetSE == nullptr.  calling AbortCycle()", m_modRef->name());
-            m_shipRef->GetPilot()->SendErrorMsg("The target for your %s not found.  Aborting current cycle.", m_modRef->name());
-            AbortCycle();
-            return;
-        }
-        if (m_targetSE->GetID() != m_targetID) {
-            _log(MODULE__TRACE, "%s - targetSE != targetID.  calling AbortCycle()", m_modRef->name());
-            m_shipRef->GetPilot()->SendErrorMsg("Your %s has target mismatch.  Aborting current cycle.", m_modRef->name());
-            AbortCycle();
-            return;
-        }
     }
 }
 
@@ -349,59 +343,26 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         case EVEDB::invGroups::Microwarpdrive: {
             m_destinyMgr->SpeedBoost();
         } break;
-        case EVEDB::invGroups::Tractor_Beam: {
-            if (m_targetSE != nullptr) {
-                if (m_targetSE->DestinyMgr()->IsTractored()) {
-                    std::map<std::string, PyRep *> arg;
-                    arg["module"] = new PyInt(m_targetSE->GetID());
-                    Clear();
-                    throw PyException(MakeUserError("InvalidTargetCanAlreadyTractored", arg));
-                }
-                // test for ownership here...wip
-                // once crim shit is implemented, allow for tractoring no matter owner.
-                bool owner = false, fleet = false, corp = false, ally = false, war = false;
-                if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
-                    owner = true;
-                if (m_targetSE->GetCorporationID() == pShip->GetCorporationID())
-                    corp = true;
-                if (m_targetSE->GetAllianceID() == pShip->GetAllianceID())
-                    ally = true;
-                if (m_targetSE->GetWarFactionID() == pShip->GetWarFactionID())
-                    war = true;
-                if (m_shipRef->GetPilot()->InFleet())
-                    if (m_shipRef->GetPilot()->GetFleetID() == m_targetSE->GetFleetID())
-                        fleet = true;
-
-                if (owner or fleet or corp or ally or war) {
-                    m_targetSE->DestinyMgr()->TractorBeamStart(pShip, GetAttribute(AttrMaxTractorVelocity));
-                } else {
-                    std::map<std::string, PyRep *> arg;
-                    arg["module"] = new PyInt(m_targetSE->GetID());
-                    Clear();
-                    throw PyException(MakeUserError("InvalidTargetCanOwner", arg));
-                }
-            }
-        } break;
         case EVEDB::invGroups::Stasis_Web: {
             if (m_targetSE != nullptr)
                 m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
         } break;
     }
     /*def OnSpecialFX
-     if start and guid == 'effects.WarpScramble*':
-     if settings.user.ui.Get('notifyMessagesEnabled', 1) or eve.session.shipid in (shipID, targetID):
-         jammerName = sm.GetService('bracket').GetBracketName2(shipID)
-         targetName = sm.GetService('bracket').GetBracketName2(targetID)
-         if jammerName and targetName:
-            if eve.session.shipid == targetID:
-                 eve.Message('WarpScrambledBy', {'scrambler': jammerName})
-            elif eve.session.shipid == shipID:
-                 eve.Message('WarpScrambledSuccess', {'scrambled': targetName})
-            else:
-                eve.Message('WarpScrambledOtherBy', {'scrambler': jammerName,
-                'scrambled': targetName})
-        */
-
+     *     if start and guid == 'effects.WarpScramble*':
+     *     if settings.user.ui.Get('notifyMessagesEnabled', 1) or eve.session.shipid in (shipID, targetID):
+     *         jammerName = sm.GetService('bracket').GetBracketName2(shipID)
+     *         targetName = sm.GetService('bracket').GetBracketName2(targetID)
+     *         if jammerName and targetName:
+     *            if eve.session.shipid == targetID:
+     *                 eve.Message('WarpScrambledBy', {'scrambler': jammerName})
+     *            elif eve.session.shipid == shipID:
+     *                 eve.Message('WarpScrambledSuccess', {'scrambled': targetName})
+     *            else:
+     *                eve.Message('WarpScrambledOtherBy', {'scrambler': jammerName,
+     *                'scrambled': targetName})
+     */
+    
     --m_repeat;
     if (m_repeat < 1)
         m_Stop = true;
@@ -429,19 +390,8 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
 
     if (effect.compare("TargetDestroyed") == 0) {
         m_targetSE = nullptr;
-        /*
-        std::vector<GenericModule*> modules;
-        // dont use abort=true in case of salvage module.  it will cause endless loop
-        if (m_linkMaster) {
-            m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
-            for (auto cur : modules)
-                cur->GetActiveModule()->ShowEffect(false, false);
-        } else
-            ShowEffect(false, false);
-        */
-        // dont clear this yet so gfx processing will disable correctly
-        //m_targetID = 0;
-
+        if (IsProspectModule())
+            GetProspectModule()->TargetDestroyed();
     }
 
     // let module complete current cycle then shut it down.
@@ -591,15 +541,15 @@ void ActiveModule::AbortCycle()
     if (m_ModuleState < Module::State::Deactivating)
         return;
 
-    _log(MODULE__TRACE, "%s calling AbortCycle() - m_stop:%s", m_modRef->name(), m_Stop?"true":"false");
+    _log(MODULE__TRACE, "%s(%u) calling AbortCycle() - m_stop:%s", m_modRef->name(), m_modRef->itemID(), m_Stop?"true":"false");
     // if stop is already set, let module finish cycle.
     if (m_Stop)
         return;
     // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destroyed, target left bubble, or miner deactivated by player:
-    m_Stop = true;
     SetModuleState(Module::State::Deactivating);
     DeactivateCycle(true);
     m_timer.Disable();
+    m_Stop = true;
 }
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
@@ -607,7 +557,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     if (m_ModuleState < Module::State::Deactivating)
         return;
 
-    _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->name());
+    _log(MODULE__TRACE, "%s(%u) calling DeactivateCycle(%s)", m_modRef->name(), m_modRef->itemID(), abort?"true":"false");
     if ((m_ModuleState == Module::State::Activated) and (!abort)) {
         _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
                 m_modRef->name(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
@@ -626,9 +576,11 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     if (IsValidTarget(m_targetID)
     and (m_targetSE != nullptr))
         ApplyEffect(FX::State::Target, false);
-    else if (m_needsTarget)
-        _log(MODULE__WARNING, "%s - DeactivateCycle() - need target = true and targetID: %u, targSE: %x", \
+        /*
+    else if (m_needsTarget) {
+        _log(MODULE__INFO, "%s - DeactivateCycle() - need target = true and targetID: %u, targSE: %x", \
                 m_modRef->name(), m_targetID, m_targetSE);
+    } */
 
     switch (groupID()) {
         case EVEDB::invGroups::Tractor_Beam: {
@@ -688,16 +640,19 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         //case EVEDB::invGroups::Data_Miner:
         // some data containers will pop after successful access.  currently incomplete
         case EVEDB::invGroups::Salvager: {
+            if (m_targetSE == nullptr)
+                break;
             if (IsSuccess()) {
                 _log(MODULE__DEBUG, "%s - DeactivateCycle() - Salvage successful.  deleting target %s.", m_modRef->name(), m_targetSE->GetName());
                 m_targMgr->RemoveTarget(m_targetSE);
                 //m_targMgr->OnTarget(m_targetSE, TargMgr::Mode::Lost, TargMgr::Msg::Destroyed);
                 // just in case other modules are targeting this object, let them know it was destroyed.
-                if (m_targetSE->TargetMgr() != nullptr)
+                if (m_targetSE->TargetMgr() != nullptr) {
+                    m_targetSE->TargetMgr()->RemoveTargetModule(this);
                     m_targetSE->TargetMgr()->Destroyed();
+                }
                 m_targetSE->Delete();
                 SafeDelete(m_targetSE);
-                m_targetSE = nullptr;
             }
         } break;
         /*
@@ -834,7 +789,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 
 void ActiveModule::UnloadCharge()
 {
-    _log(MODULE__TRACE, "%s calling AM::UnloadCharge()", m_modRef->name());
+    _log(MODULE__TRACE, "%s(%u) calling AM::UnloadCharge()", m_modRef->name(), m_modRef->itemID());
 
     // make sure module isnt currently active
     Deactivate();
@@ -962,6 +917,30 @@ bool ActiveModule::CanActivate()
                     m_shipRef->GetPilot()->SendNotifyMsg("You cannot tractor the %s.", m_targetSE->GetName());
                     return false;
                 }
+
+                    // test for ownership here...wip
+                    // once crim shit is implemented, allow for tractoring no matter owner.
+                    bool owner = false, fleet = false, corp = false, ally = false, war = false;
+                    if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
+                        owner = true;
+                    if (m_targetSE->GetCorporationID() == m_shipRef->GetPilot()->GetCorporationID())
+                        corp = true;
+                    if (m_targetSE->GetAllianceID() == m_shipRef->GetPilot()->GetAllianceID())
+                        ally = true;
+                    if (m_targetSE->GetWarFactionID() == m_shipRef->GetPilot()->GetWarFactionID())
+                        war = true;
+                    if (m_shipRef->GetPilot()->InFleet())
+                        if (m_shipRef->GetPilot()->GetFleetID() == m_targetSE->GetFleetID())
+                            fleet = true;
+
+                    if (owner or fleet or corp or ally or war) {
+                        m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
+                    } else {
+                        std::map<std::string, PyRep *> arg;
+                        arg["module"] = new PyInt(m_targetSE->GetID());
+                        Clear();
+                        throw PyException(MakeUserError("InvalidTargetCanOwner", arg));
+                    }
             } break;
             case Shield_Transporter: {
                 range = GetAttribute(AttrShieldTransferRange).get_float();
@@ -1038,6 +1017,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 {
     if (m_effectID < 1)
         _log(EFFECTS__ERROR, "fxID = 0 for %s", m_modRef->name());
+    if (m_guidStr.empty())
+        _log(EFFECTS__ERROR, "guid empty for %s", m_modRef->name());
 
     int64 abortTime(GetFileTimeNow());
     if (abort) {
@@ -1105,7 +1086,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.duration = (abort ? 2000 : timeLeft); //(active ? cycleTime.get_float() : timeLeft));  // duration in seconds
         shipEff.repeat = m_repeat;
         // will need to check and update for data miners here  (any other cases?)
-        if ((groupID() == EVEDB::invGroups::Salvager) and (abort)) {
+        if ((groupID() == EVEDB::invGroups::Salvager) and IsSuccess()) {
             // Create Destiny Updates:
             PyTuple* type = new PyTuple(2);
                 type->SetItem(0, new PyInt(cacheSolarSystemObjects));
