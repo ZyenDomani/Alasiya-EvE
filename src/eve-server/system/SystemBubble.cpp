@@ -510,7 +510,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
         cur.second->EncodeDestiny( *destinyBuffer );
     }
 
-    if (addballs.slims->size() < 1) {
+    if (addballs.slims->empty()) {
         SafeDelete( destinyBuffer );
         return;
     }
@@ -848,7 +848,6 @@ void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::st
 }
 
 
-//send a set of destiny events and updates to every client in the bubble.
 void SystemBubble::BubblecastDestiny(std::vector<PyTuple *> &updates, std::vector<PyTuple *> &events, const char *desc) const {
     if (m_players.empty())
         return;
@@ -857,7 +856,6 @@ void SystemBubble::BubblecastDestiny(std::vector<PyTuple *> &updates, std::vecto
     BubblecastDestinyEvent(events, desc);
 }
 
-//send a set of destiny updates to every client in the bubble.
 void SystemBubble::BubblecastDestinyUpdate(std::vector<PyTuple *> &updates, const char *desc) const {
     for (std::vector<PyTuple *>::iterator cur = updates.begin(); cur != updates.end(); ++cur) {
         if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
@@ -868,7 +866,6 @@ void SystemBubble::BubblecastDestinyUpdate(std::vector<PyTuple *> &updates, cons
     updates.clear();
 }
 
-//send a set of destiny events to every client in the bubble.
 void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const char *desc) const {
     for (std::vector<PyTuple *>::iterator cur = events.begin(); cur != events.end(); ++cur) {
         if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
@@ -879,7 +876,6 @@ void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const 
     events.clear();
 }
 
-//send a destiny update to every client in the bubble.
 void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc ) const
 {
     for (auto cur : m_players) {
@@ -890,7 +886,6 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
     //PySafeDecRef(*payload);
 }
 
-//send a destiny update to every client in the bubble EXCLUDING the given SystemEntity 'pSE':
 void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const char* desc, SystemEntity* pSE ) const
 {
     for (auto cur : m_players) {
@@ -905,7 +900,6 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
     //PySafeDecRef(*payload);
 }
 
-//send a destiny event to every client in the bubble.
 void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc ) const
 {
     if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))

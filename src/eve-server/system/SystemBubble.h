@@ -100,13 +100,18 @@ public:
     void RemoveExclusive(SystemEntity* pSE);
     void AddBallExclusive(SystemEntity* about_who);
 
-    //consumes updates and events
-	void BubblecastDestiny(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, const char* desc) const;
-	void BubblecastDestinyUpdate(std::vector<PyTuple*> &updates, const char* desc) const;
-	void BubblecastDestinyEvent(std::vector<PyTuple*> &events, const char* desc) const;
-	void BubblecastDestinyUpdate(PyTuple** payload, const char* desc) const;
-	void BubblecastDestinyEvent(PyTuple** payload, const char* desc) const;
+    //send a set of destiny events and updates to every client in the bubble.
+    void BubblecastDestiny(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, const char* desc) const;
+    //send a set of destiny updates to every client in the bubble.
+    void BubblecastDestinyUpdate(std::vector<PyTuple*> &updates, const char* desc) const;
+    //send a set of destiny events to every client in the bubble.
+    void BubblecastDestinyEvent(std::vector<PyTuple*> &events, const char* desc) const;
+    //send a destiny update to every client in the bubble.
+    void BubblecastDestinyUpdate(PyTuple** payload, const char* desc) const;
+    //send a destiny event to every client in the bubble.
+    void BubblecastDestinyEvent(PyTuple** payload, const char* desc) const;
     void BubblecastSendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
+    //send a destiny update to every client in the bubble EXCLUDING the given SystemEntity 'pSE'
     void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pSE) const;
 
     bool InBubble(const GPoint &pt, bool inWarp=false) const;
