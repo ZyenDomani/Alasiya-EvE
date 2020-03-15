@@ -147,7 +147,7 @@ void Drone::Launch( Ship* pShipSE ) {
 
     m_system->AddEntity(this);
     m_system->GetAnomMgr()->AddAnomaly(m_self);
-    
+
     assert (m_bubble != nullptr);
 }
 
@@ -278,7 +278,7 @@ void Drone::EncodeDestiny( Buffer& into )
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
+        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
         data.maxVelocity = m_destiny->GetMaxVelocity();

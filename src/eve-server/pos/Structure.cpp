@@ -805,7 +805,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
         MassSector mass = MassSector();
             mass.cloak = 0;
             mass.corporationID = m_corpID;
-            mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
+            mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
             mass.harmonic = m_harmonic;
             mass.mass = m_self->type().mass();
         into.Append( mass );

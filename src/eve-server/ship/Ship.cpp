@@ -2142,7 +2142,6 @@ void ShipItem::UnlinkGroup(uint32 memberID)
                 SaveWeaponGroups();
                 return;
             }
-            ++itr2;
         }
     } else {
         // this module isnt master... loop thru all links to see if we can find it
@@ -2685,7 +2684,7 @@ void Ship::EncodeDestiny( Buffer& into) {
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
+        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
     into.Append( mass);
     DataSector data = DataSector();
         data.inertia = m_destiny->GetInertia();
