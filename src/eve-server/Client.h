@@ -403,7 +403,7 @@ protected:
 
     uint32 m_fleet;
     uint32 m_shipId;
-    uint32 m_toGate;
+    //uint32 m_toGate;
     uint32 m_locationID;
     uint32 m_moveSystemID;  // holder for jumping to 'systemID'.    timer based.
     uint32 m_dockStationID; // holder for docking to 'stationID'.  timer based.

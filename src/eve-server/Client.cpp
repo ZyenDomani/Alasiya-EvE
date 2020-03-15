@@ -109,7 +109,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_validSession = false;
     m_sessionChangeActive = false;
 
-    m_toGate = 0;
+    //m_toGate = 0;
     m_locationID = 0;
     m_moveSystemID = 0;
     m_timeEndTrain = 0;
@@ -171,7 +171,7 @@ m_nextNotifySequence(0)
     m_setStateSent = false;
     m_sessionChangeActive = false;
 
-    m_toGate = 0;
+    //m_toGate = 0;
     m_locationID = 0;
     m_moveSystemID = 0;
     m_timeEndTrain = 0;
@@ -490,8 +490,8 @@ void Client::ProcessClient() {
             _log(CLIENT__TIMER, "Client::ProcessClient():  Jump Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
             m_jumpTimer.Disable();
             SetBallPark();
-            pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
-            m_toGate = 0;
+            //pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
+            //m_toGate = 0;
             SetJumpTimers();    // starts invul and cloak timers
         }
 
@@ -1322,10 +1322,10 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     //  show gate animation in from gate.   -working -allan 15Nov15
     pShipSE->DestinyMgr()->SendGateActivity(fromGate);
 
-    m_toGate = toGate;
+    //m_toGate = toGate;
     StaticData toData = StaticData();
-    if (!sDataMgr.GetStaticInfo(m_toGate, toData)) {
-        sLog.Error("Client","%s: Failed to query system information for stargate %u", m_char->itemName().c_str(), toGate);
+    if (!sDataMgr.GetStaticInfo(toGate, toData)) {
+        sLog.Error("Client","%s: Failed to query data for stargate %u", m_char->itemName().c_str(), toGate);
         // send client msg about new system info failure
         return;
     }
