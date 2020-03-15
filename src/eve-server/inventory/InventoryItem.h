@@ -136,7 +136,8 @@ public:
 
     /* public-access data functions handled in base class. */
     void                    SaveItem();  //save the item to the DB.
-    void                    UpdateLocation();
+    void                    UpdateLocation();   // save item's location, owner, flag
+    void                   UpdateLocation(uint32 locID) { m_locationID = locID; }  // change item's location data (but not save to db)
 
     /* virtual functions default to base class and overridden as needed */
     virtual void            Delete();  //totally removes item from game and deletes from the DB.
