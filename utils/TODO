@@ -310,7 +310,7 @@ skillbar error only happens when training skill to l5 complete
 pause skill queue should clear training queue window
 
 verify m_repeat in active module activate code
-found mining msgs.  need to code 
+found mining msgs.  need to code
 
 set station GoTo target to be dock elevation, NOT centerPoint
 
@@ -327,6 +327,9 @@ still many ClientErrorMgs not used/implemented
 ** idea  **  set leadership skill modifiers on char item, then have fleet boosts pull directly from char
 
 ***  errors
+fx data needs NULL instead of 0 in most data.
+client uses "if x is None" in most (if not all) fx tests
+
 
 ***  other
 
