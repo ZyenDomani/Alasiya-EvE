@@ -8,16 +8,16 @@
 
 noob ships do not Init() correctly....  most attrs are 0
 
-npcs not getting destiny warpstate set
+npcs not getting destiny warpstate set (sometimes)
 
-arteroids have DestinyManager (remove this shit)
+asteroids have DestinyManager (remove this shit)
+    - currently OSE.  should we change them to ISE and add targMgr?
 
 after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
 01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
 
-moving items to cargo makes ownerID=1 ...could be from market also
-
 items disappearing from cargo when dock/undock
+    - no clue on this one....cant reproc
 
 prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
@@ -53,21 +53,6 @@ cant insure ships again.  (verified)
 check insurance payouts.   rounds full ship value up
 check trade - ships retain insurance
 
-dungeon spawn error....(and they white)
-11:20:49 [SpawnMsg] SpawnMgr::PrepSpawn() - faction: Angel Cartel, region 10000001. (config set false)
-11:20:49 [SpawnMsg] SpawnMgr::PrepSpawn() - m_factionGroups size is 21.
-11:20:49 [SpawnMsg] SpawnMgr::PrepSpawn() - spawnEntry - size: 5, class: Burrow(21).
-11:20:49 [SpawnMsg] SpawnMgr::PrepSpawn() - toSpawn size is 1.
-11:20:49 [SpawnMsg] SpawnMgr::MakeSpawn() - Creating spawn class Burrow for Angel Cartel in bubbleID 18 (anomaly = true).
-11:20:49 [SpawnPop] SpawnMgr::MakeSpawn - Spawning NPC type 2012 (750000001)
-11:20:49 [NPCTrace] Terrorist Leader(750000001): Added to system manager for Yuzier(30000007)
-11:20:49 [SpawnPop] SpawnMgr::MakeSpawn - Spawning NPC type 2012 (750000002)
-11:20:50 [NPCTrace] Terrorist Leader(750000002): Added to system manager for Yuzier(30000007)
-11:20:50 [SpawnPop] SpawnMgr::MakeSpawn - Spawning NPC type 2012 (750000003)
-11:20:50 [NPCTrace] Terrorist Leader(750000003): Added to system manager for Yuzier(30000007)
-11:20:50 [SpawnPop] SpawnMgr::MakeSpawn - Spawning NPC type 2012 (750000004)
-11:20:50 [NPCTrace] Terrorist Leader(750000004): Added to system manager for Yuzier(30000007)
-
 
 jetans dont check capy before jettison
 most cargoholds dont check capy
@@ -77,13 +62,10 @@ dungeon/anomaly items need tracking for removal on cleanup/shutdown
 dungeon deco items need better placement
 
 
-client error (from arinya)
-UserError: [DeniedTargetInvulnerable.notify] None - Target is invulnerable. {}
-    - cant find this log template in client.  no clue here.
-
 fx warp speed data to client is wrong....see diff between fit window docked/in space
     - need to check formula again in client....seems to be a 3x multiplier in there somewhere....
     - this also deals with fx data
+    - this screws up warp calcs and very obvious on short warps (< warp speeds)
 
 skillqueueendtime in chardb wrong/invalid.  check setting
 
