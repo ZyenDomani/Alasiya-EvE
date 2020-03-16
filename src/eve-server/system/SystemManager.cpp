@@ -1185,9 +1185,9 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         visibleEntities.emplace(cur.first, cur.second);
 
     // get our ship....no, our ship is (or should be) in bubble entities
-    std::map<uint32, SystemEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
-    if (itr != m_ticEntities.end())
-        visibleEntities.emplace(itr->first, itr->second);
+    //std::map<uint32, SystemEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
+    //if (itr != m_ticEntities.end())
+    //   visibleEntities.emplace(itr->first, itr->second);
 
     // query bubble to get dynamic entities
     pBubble->GetEntities(visibleEntities);

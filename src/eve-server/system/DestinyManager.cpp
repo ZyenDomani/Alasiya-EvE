@@ -141,7 +141,7 @@ void DestinyManager::ProcessState() {
         case Ball::Mode::STOP: {
             if (IsMoving()) {
                 MoveObject();
-                break;
+                return;
             }
             Stop();
         } break;
@@ -202,7 +202,7 @@ void DestinyManager::ProcessState() {
                                     mySE->GetName(), mySE->GetID());
                     }
                 }
-                break;
+                return;
             }
 
             // Updated warp alignment and speed check.  -allan  17nov15

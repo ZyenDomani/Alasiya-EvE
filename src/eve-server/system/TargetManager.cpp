@@ -569,13 +569,16 @@ void TargetManager::Depleted(MiningLaser* pMod)
         codelog(MODULE__ERROR, "Depleted() called by Non Astroid %s", mySE->GetName());
         return;
     }
-    // remove master module (easier here)
+    // remove master module here to avoid placement in map
     m_modules.erase(pMod->itemID());
 
     std::multimap<float, MiningLaser*> mMap;
     // iterate thru the map of modules and add to map as MiningLasers with their mining volume
-    for (auto cur : m_modules)
-        mMap.emplace(cur.second->GetMiningModule()->GetMiningVolume(), cur.second->GetMiningModule());
+    std::map<uint32, ActiveModule*>::iterator itr = m_modules.begin();
+    while (itr != m_modules.end()) {
+        mMap.emplace(itr->second->GetMiningModule()->GetMiningVolume(), itr->second->GetMiningModule());
+        itr = m_modules.erase(itr);     //remove module from map here to avoid segfault on rock delete
+    }
 
     // call Depleted() on master module with map of active modules
     pMod->Depleted(mMap);

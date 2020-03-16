@@ -135,7 +135,7 @@ public:
 
     /* class type tests, grouped by base class.  public for anyone to access. */
     /* Base */
-    virtual bool                isGlobal()              { return m_self->isGlobal(); }    // not all items have this attribute set
+    virtual bool                isGlobal()              { return true; } //m_self->isGlobal(); }    // not all items have this attribute set
     virtual bool                IsSystemEntity()        { return true; }
     virtual bool                IsInanimateSE()         { return false; }
     /* Static */
@@ -289,9 +289,9 @@ public:
     virtual StaticSystemEntity* GetStaticSE()           { return this; }
     /* class type tests. */
     /* Base */
+    virtual bool                isGlobal()              { return true; }    // just in case item->isGlobal() fails here...which it may
     virtual bool                IsInanimateSE()         { return true; }
     /* Static */
-    virtual bool                isGlobal()              { return true; }    // just in case item->isGlobal() fails here...which it may
     virtual bool                IsStaticEntity()        { return true; }
 
     /* SystemEntity interface */
@@ -363,6 +363,7 @@ public:
     virtual ItemSystemEntity*   GetItemSE()             { return this; }
     /* class type tests. */
     /* Base */
+    virtual bool                isGlobal()              { return false; }
     virtual bool                IsInanimateSE()         { return true; }
     /* Item */
     virtual bool                IsItemEntity()          { return true; }
@@ -387,6 +388,7 @@ public:
     virtual ObjectSystemEntity* GetObjectSE()           { return this; }
     /* class type tests. */
     /* Base */
+    virtual bool                isGlobal()              { return false; }
     virtual bool                IsInanimateSE()         { return true; }
     /* Object */
     virtual bool                IsObjectEntity()        { return true; }
@@ -447,6 +449,8 @@ public:
     /* class type pointer querys. */
     virtual DynamicSystemEntity* GetDynamicSE()         { return this; }
     /* class type tests. */
+    /* Base */
+    virtual bool                isGlobal()              { return false; }
     /* Dynamic */
     virtual bool                IsDynamicEntity()       { return true; }
 

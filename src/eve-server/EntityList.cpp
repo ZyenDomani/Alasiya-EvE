@@ -172,14 +172,9 @@ void EntityList::RemovePlayer(Client* pClient)
         if (pClient->IsValidSession()) {
             m_players.erase(pClient->GetCharacterID());
             // remove player from corp map, if applicable
-            if (IsPlayerCorp(pClient->GetCorporationID())) {
-                std::map<uint32, corpRole>::iterator itr = m_corpMembers.find(pClient->GetCorporationID());
-                if (itr != m_corpMembers.end()) {
-                    corpRole::iterator itr2 = itr->second.find(pClient);
-                    if (itr2 != itr->second.end())
-                        itr->second.erase(itr2);
-                }
-            }
+            std::map<uint32, corpRole>::iterator itr = m_corpMembers.find(pClient->GetCorporationID());
+            if (itr != m_corpMembers.end())
+                itr->second.erase(pClient);
         } else {
             m_players.erase(pClient->GetCharID());
         }
@@ -327,18 +322,15 @@ void EntityList::GetStationGuestList(uint32 stationID, std::vector<Client*> &res
 
 bool EntityList::IsOnline(uint32 charID)
 {
-    std::map<uint32, Client*>::const_iterator itr = m_players.find(charID);
-    if (itr == m_players.end())
+    if (m_players.find(charID) == m_players.end())
         return false;
     return true;
 }
 
 PyRep* EntityList::PyIsOnline(uint32 charID)
 {
-    std::map<uint32, Client*>::const_iterator itr = m_players.find(charID);
-    if (itr == m_players.end())
+    if (m_players.find(charID) == m_players.end())
         return PyStatic.NewFalse();
-
     return PyStatic.NewTrue();
 }
 
@@ -347,7 +339,6 @@ Client* EntityList::FindClientByCharID(uint32 charID) const
     std::map<uint32, Client*>::const_iterator itr = m_players.find(charID);
     if (itr != m_players.end())
         return itr->second;
-
     return nullptr;
 }
 
@@ -355,7 +346,6 @@ StationItemRef EntityList::GetStationByID(uint32 stationID) {
     std::map<uint32, StationItemRef>::iterator res = m_stations.find(stationID);
     if (res != m_stations.end())
         return res->second;
-
     return StationItemRef(nullptr);
 }
 
@@ -399,7 +389,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
         case CorpNewCEO: {
             // all members?
             while (itr != end) {
-                cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                cMap.insert(std::make_pair(itr->first->GetCharacterID(), itr->first));
                 ++itr;
             }
         } break;
@@ -410,9 +400,9 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
             // PersonnelManager is only role that can view corp applications
             while (itr != end) {
                 //if ((itr->second &Corp::Role::Director) == Corp::Role::Director)
-                //    cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                //    cMap.insert(std::make_pair(std::make_pair(itr->first->GetCharacterID(), itr->first)));
                 if ((itr->second &Corp::Role::PersonnelManager) == Corp::Role::PersonnelManager)
-                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                    cMap.insert(std::make_pair(itr->first->GetCharacterID(), itr->first));
                 ++itr;
             }
         } break;
@@ -424,7 +414,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
             while (itr != end) {
                 // if (itr->first->GetChar()->HasShares())  // not written, no underlying code yet
                 if (mdb.HasShares(itr->first->GetCharacterID(), corpID))
-                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                    cMap.insert(std::make_pair(itr->first->GetCharacterID(), itr->first));
                 ++itr;
             }
         } break;

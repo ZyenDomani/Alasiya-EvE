@@ -73,7 +73,11 @@ m_radius_hysteresis(radius + BUBBLE_HYSTERESIS_METERS) //255km
 
 SystemBubble::~SystemBubble()
 {
-    clear();
+    if (m_hasMarkers)
+        for (auto cur : m_markers) {
+            cur.second->Delete(); // delete marker cans here
+            SafeDelete(cur.second);
+        }
 }
 
 void SystemBubble::clear() {
@@ -82,6 +86,7 @@ void SystemBubble::clear() {
             cur.second->Delete(); // delete marker cans here
             SafeDelete(cur.second);
         }
+
     m_ice = false;
     m_belt = false;
     m_gate = false;
@@ -404,14 +409,18 @@ uint32 SystemBubble::CountNPCs() {
 
 bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const
 {
-    double distance = m_radius_hysteresis;
+    float radius = m_radius_hysteresis;
     if (inWarp)
-        distance *= 2;
+        radius *= 2;
 
-    if (m_center.distance(pt) < distance)
-        return true;
+    float distance = m_center.distance(pt);
 
-    return false;
+    bool check = false;
+    if (distance < radius )
+        check = true;
+
+    _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::InBubble(%u) - distance: %.1f, check: %s", m_bubbleID, distance, check?"true":"false");
+    return check;
 }
 
 void SystemBubble::PrintEntityList() {
@@ -747,7 +756,8 @@ void SystemBubble::SyncPos() {
 void SystemBubble::RemoveMarkers()
 {
     if (m_hasMarkers)
-        for (auto cur : m_markers){
+        for (auto cur : m_markers) {
+            m_system->RemoveEntity(cur.second);
             cur.second->Delete(); // delete marker cans here
             SafeDelete(cur.second);
         }
@@ -836,15 +846,17 @@ void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::st
 {
     ItemData idata(23, 1, m_systemID, flagAutoFit, name.c_str(), position, desc.c_str());
     CargoContainerRef iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata));
-    if (iRef.get() != nullptr) {
-        // create new container
-        FactionData jetcanData = FactionData();
-        ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
-        iRef->SetMySE(cSE);
-        cSE->AnchorContainer();
-        m_markers.emplace(iRef->itemID(), cSE);
-        Add(cSE);
-    }
+    if (iRef.get() == nullptr)
+        return;
+
+    // create new container
+    FactionData jetcanData = FactionData();
+    ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
+    iRef->SetMySE(cSE);
+    cSE->AnchorContainer();
+    m_markers.emplace(iRef->itemID(), cSE);
+    //Add(cSE);
+    m_system->AddEntity(cSE);
 }
 
 

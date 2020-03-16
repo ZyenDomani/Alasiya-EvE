@@ -48,8 +48,8 @@
 enum ClientTimers {
     DefaultTimer     = 1000,
     BoardTimer       = 600,
-    JumpTimer        = 500,
-    UndockTimer      = 1500,     // used to delay sending Destiny::State (client error fix)
+    JumpTimer        = 1800,    // used to delay sending Destiny::State (client error fix)
+    UndockTimer      = 1500,    // used to delay sending Destiny::State (client error fix)
     DockingTimer     = 1000,    // Timer to delay docking (as on live)
     JumpingTimer     = 4000,    // Timer to delay jumping
     MovingTimer      = 1000,
@@ -59,7 +59,7 @@ enum ClientTimers {
     JetcanTimer      = 600000,  // used to delay jetcan creation.  10min default
     LogoutTimer      = 10000,    // used to hold client object until WarpOut finishes
     LoginTimer       = 3000,
-    SessionTimer     = 10000,   // used to prevent multiple session changes from occuring too fast
+    SessionTimer     = 10000,   // used to prevent multiple session changes from occurring too fast
     DockInvul        = 3000,
     FleetTimer       = 1500,
     JumpInvul        = 15000,   // increased from 5s
