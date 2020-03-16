@@ -133,7 +133,7 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
      */
 
     if (!pClient->IsInSpace())
-        return nullptr;
+        throw PyException(MakeCustomError("You must be in space to list system inventory."));
 
     if (!pClient->GetShipSE()->SysBubble())
         if (pClient->IsInSpace())
@@ -147,6 +147,7 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     uint32 ratSpawns = pSys->GetRatSpawnCount();
     uint32 npcs = pSys->GetSysNPCCount();
     uint32 players = pSys->PlayerCount();
+    uint32 bubbles = sBubbleMgr.GetBubbleCount(pSys->GetID());
 
     std::map<uint32, SystemEntity*> into = pSys->GetEntities();
 
@@ -154,6 +155,7 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     str.clear();
     str << "System: %s(%u)<br>"; //42
     str << "Belts: %u<br>"; //20
+    str << "Bubbles: %u<br>"; //25
     str << "RoidSpawns: %u<br>"; //25
     str << "RatSpawns: %u<br>"; //18
     str << "Players: %u<br>"; //23
@@ -162,6 +164,15 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     for (auto cur : into) {
         if (cur.second == nullptr)
             continue;
+        str << cur.first << ": ";
+        std::string global = "(non-global)";
+        if (cur.second->isGlobal())
+            global = "(global)";
+        str << global.c_str();
+        if (cur.second->SysBubble() != nullptr)
+            str << " bubbleID: " << cur.second->SysBubble()->GetID() << "  "; // 13 + 27 + 40 for name (80)
+        else
+            str << " (no bubble)  "; // 13 + 27 + 40 for name (80)
         if (cur.second->DestinyMgr() != nullptr) {
             std::string modeStr = "Rigid";
             if (!cur.second->IsStaticEntity()) {
@@ -181,23 +192,18 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
                     case 12: modeStr = "Formation"; break;
                 }
             }
-            str << cur.first;
-            if (cur.second->isGlobal())
-                str << ": (global) ";
-            else
-                str << ": ";
+
             str << modeStr.c_str() << " (csf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
             str << cur.second->DestinyMgr()->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
-        } else {
-            str << cur.first << ": None (csf: 0) speed: 0 [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
-        }
+        } else
+            str << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
     }
 
     int count = into.size();
     int size = count * 90;
     size += 130;    // header
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), pSys->GetName(), pSys->GetID(), beltCount, roidSpawns, ratSpawns, npcs, players);
+    snprintf(reply, size, str.str().c_str(), pSys->GetName(), pSys->GetID(), beltCount, bubbles, roidSpawns, ratSpawns, npcs, players);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -348,8 +354,9 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
 
     DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
 
-    char reply[250];
-    snprintf(reply, 250,
+    char reply[300];
+    snprintf(reply, 300,
+             "Destiny Variable List for %s<br><br>" //60
              "ShipID: %u<br>"
              "Mass: %.2f<br>" //28
              "AlignTime: %.2f<br>" //27
@@ -362,8 +369,8 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              "CapNeed: %.2f<br>" //27
              "Agility: %.3f<br>" //27
              "Inertia: %.3f<br>", //27
-                pClient->GetShipID(), dm->GetMass(), dm->GetAlignTime(), dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() /10), dm->GetWarpTime(),
-                dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(), dm->GetAgility(), dm->GetInertia()
+                pClient->GetShipSE()->GetName(), pClient->GetShipID(), dm->GetMass(), dm->GetAlignTime(), dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() /10),
+                dm->GetWarpTime(), dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(), dm->GetAgility(), dm->GetInertia()
             );
 
     pClient->SendInfoModalMsg(reply);
@@ -447,7 +454,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
         inv->GetInventoryList(invMap);
         item = station.get();
     } else {
-        Command_list(pClient,db,services,args);
+        //Command_list(pClient,db,services,args);
         inventoryID = pClient->GetSystemID();
         SolarSystemRef system = sItemFactory.GetSolarSystem(inventoryID);
         if (system.get() == nullptr)
@@ -471,7 +478,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     int size = count * 90;
     size += 70;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), item->itemName().c_str(), inventoryID, inv, item, count);
+    snprintf(reply, size, str.str().c_str(), item->name(), inventoryID, inv, item, count);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -563,7 +570,7 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
 
     std::ostringstream str;
     str.clear();
-    str << "%u(%s) has %u attributes.<br><br>"; //70
+    str << "%s (%u) has %u attributes.<br><br>"; //70
 
     for (auto cur : attrMap) {
         str << cur.first << " ";  //15
@@ -578,7 +585,7 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     int size = count * 40;
     size += 70;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), itemID, iRef->itemName().c_str(), count);
+    snprintf(reply, size, str.str().c_str(), iRef->name(), itemID, count);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -696,9 +703,8 @@ PyResult Command_track(Client* pClient, CommandDB* db, PyServiceMgr* services, c
 
 PyResult Command_bubbletrack(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    bool tracking = sConfig.debug.BubbleTrack;
     std::string track = "enabled";
-    if (tracking) {
+    if (sConfig.debug.BubbleTrack) {
         sConfig.debug.BubbleTrack = false;
         track = "disabled";
         pClient->GetShipSE()->SysBubble()->RemoveMarkers();
@@ -836,7 +842,7 @@ PyResult Command_players(Client* pClient, CommandDB* db, PyServiceMgr* services,
     sEntityList.GetClients(cVec);
     std::ostringstream str;
     str.clear();
-    str << "Active Player List:   " << cVec.size() << " Online Players.<br>";
+    str << "Active Player List:<br>" << cVec.size() << " Online Players.<br>";
 
     for (auto cur : cVec) {
         str << cur->GetName();
