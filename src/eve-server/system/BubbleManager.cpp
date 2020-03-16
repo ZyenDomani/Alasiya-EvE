@@ -38,15 +38,13 @@
 
 
 BubbleManager::BubbleManager()
-: m_wanderTimer(30000),
-  m_emptyTimer(60000)
+: m_wanderTimer(0),
+  m_emptyTimer(0)
 {
     m_bubbleID = 0;
     m_bubbles.clear();
     m_bubbleMap.clear();
-    m_emptyTimer.Start(60000);
     m_wanderers.clear();
-    m_wanderTimer.Start(30000);
 }
 
 BubbleManager::~BubbleManager() {
@@ -54,7 +52,10 @@ BubbleManager::~BubbleManager() {
 }
 
 int BubbleManager::Initialize() {
-    /* just to create the singleton here */
+    // start timers
+    m_emptyTimer.Start(60000);  //60s
+    m_wanderTimer.Start(30000); //30s
+
     sLog.Blue("        BubbleMgr", "Bubble Manager Initialized.");
     return 1;
 }
@@ -94,7 +95,8 @@ void BubbleManager::Process() {
 
         if (!m_wanderers.empty()) {
             for (auto cur : m_wanderers) {
-                if (IsNaN(cur->x()) or IsNaN(cur->y()) or IsNaN(cur->z())) {
+                // do we really want to check this?
+                if (cur.GetPosition().isNaN() or cur.GetPosition().isInf() or cur.GetPosition().isZero()) {
                     // position error.  this will screw things up.  if haspilot, send error.
                     if (cur->HasPilot())
                         cur->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 35148<br>Please either dock or relog.");

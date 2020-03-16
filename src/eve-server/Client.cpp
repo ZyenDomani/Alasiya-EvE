@@ -314,6 +314,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     if (sEntityList.IsOnline(charID)) {
         sLog.Error("Client::SelectCharacter()", "Char %u already online.", charID);
         SendErrorMsg("That Character is already online.  Selection Failed.");
+        CloseClientConnection();
         return false;
     }
 
@@ -321,6 +322,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     if (!m_validSession){
         sLog.Error("Client::SelectCharacter()", "Failed to init session for char %u.", charID);
         SendErrorMsg("Unable to Initalize Character session.  Selection Failed.");
+        CloseClientConnection();
         return false;
     }
 
@@ -330,14 +332,17 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
     if (m_system == nullptr) {
         sLog.Error("Client::SelectCharacter()", "Failed to boot system %u for char %u.", m_SystemData.systemID, charID);
-        SendErrorMsg("Unable to boot SolarSystem %s(%u)", m_SystemData.name.c_str(), m_SystemData.systemID);
+        SendErrorMsg("SolarSystem %s(%u) - Boot Failure.", m_SystemData.name.c_str(), m_SystemData.systemID);
+        CloseClientConnection();
         return false;
     }
 
     m_char = sItemFactory.GetCharacter(charID);
     if (m_char.get() == nullptr) {
         sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", charID);
+        SendErrorMsg("Unable to locate Character.  Selection Failed.");
         sItemFactory.UnsetUsingClient();
+        CloseClientConnection();
         return false;
     }
 

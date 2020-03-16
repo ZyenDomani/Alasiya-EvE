@@ -475,7 +475,8 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     }
     /** @todo SE->IsInvul() incomplete */
     if (tSE->IsInvul())
-        throw PyException(MakeUserError("DeniedTargetInvulnerable"));
+        throw PyException(MakeCustomError("Cannot Engage %s as they are invulnerable.", tSE->GetName()));
+        //throw PyException(MakeUserError("DeniedTargetInvulnerable"));
     /** @todo SE->IsFrozen() incomplete */
     if (tSE->IsFrozen()) {
         std::map<std::string, PyRep *> arg;
@@ -486,7 +487,8 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (tSE->HasPilot()) {
         /** @todo SE->IsInvul() incomplete */
         if ( tSE->GetPilot()->IsInvul())
-            throw PyException(MakeUserError("DeniedTargetInvulnerable"));
+            throw PyException(MakeCustomError("Cannot Engage %s as they are invulnerable.", tSE->GetName()));
+        //throw PyException(MakeUserError("DeniedTargetInvulnerable"));
         if ( tSE->GetPilot()->IsSessionChange()) {
             std::map<std::string, PyRep *> arg;
             arg["targetName"] = new PyString(tSE->GetName());
@@ -494,7 +496,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         }
     }
 
-    // this is to allow use of target name, after tSE is init
+    // this is to allow use of target name, after tSE is init'd
     if (pMyDestiny->IsWarping()) {
         _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - warping.");
         std::map<std::string, PyRep *> arg;
