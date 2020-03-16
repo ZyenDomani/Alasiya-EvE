@@ -6,6 +6,12 @@
 *******************************************************
 **********  errors and other found shit...high priority
 
+noob ships do not Init() correctly....  most attrs are 0
+
+npcs not getting destiny warpstate set
+
+arteroids have DestinyManager (remove this shit)
+
 after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
 01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
 
@@ -214,6 +220,7 @@ drones mass and maxspeed need attention
 drone ai needs:
   - assigned ship killed, need code to reset
   - all states except idle
+mining methods will need updates to test for drones vs pilots
 
 RAM code - implement invention, copy, re, tech    -priority level: low
 
@@ -273,6 +280,7 @@ CharMgrService  needs love
 notificationMgr  needs love
 reproc  needs love
 certificateMgr needs looking at
+paperDollServer incomplete
 
 PlanetORBBound needs work now that customs offices are working
 PI Launch status need *some way* to tick for launch reentry
@@ -320,6 +328,19 @@ charge attrQuantity needs a good lookover.
 
 
 still many ClientErrorMgs not used/implemented
+
+noob mining ships to have ore hold?
+ibis, bantam, probe, ?
+
+check for map.emplace() calls that can be exchanged with map.insert() for faster times
+
+figure out how to check edges of bubbles when creating new
+    - figure out how to move bubble centers to avoid overlap
+
+set session change timer for expensive commands
+    - update
+    - syncpos
+    - others?
 
 *******************************************************
 *****************  Fx shit
