@@ -311,6 +311,12 @@ bool Client::ProcessNet()
 
 bool Client::SelectCharacter(int32 charID/*0*/)
 {
+    if (sEntityList.IsOnline(charID)) {
+        sLog.Error("Client::SelectCharacter()", "Char %u already online.", charID);
+        SendErrorMsg("That Character is already online.  Selection Failed.");
+        return false;
+    }
+
     InitSession(charID);
     if (!m_validSession){
         sLog.Error("Client::SelectCharacter()", "Failed to init session for char %u.", charID);
@@ -492,7 +498,6 @@ void Client::ProcessClient() {
             SetBallPark();
             //pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
             //m_toGate = 0;
-            SetJumpTimers();    // starts invul and cloak timers
         }
 
     if (pShipSE->DestinyMgr()->IsCloaked())
@@ -787,8 +792,10 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot, true);
 
+        if (pShipSE != nullptr)
+            pShipSE->ResetShipSystemMgr(m_system);
+
         SetDestiny(pt);
-        pShipSE->ResetShipSystemMgr(m_system);
 
         if (IsJump() and !m_autoPilot)
             pShipSE->DestinyMgr()->Stop();
@@ -817,8 +824,12 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
         CreateShipSE();
     }
 
-    _log(PLAYER__AP_TRACE, "Client::SetDestiny():  shipSystemID: %u, SystemID: %u, update: %s, jump: %s", \
-            pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", IsJump()?"true":"false");
+    if (pShipSE->SystemMgr()->GetID() != m_system->GetID())
+        _log(CLIENT__ERROR, "%s(%u) - Ship SysID of %u != Client SysID of %u.", GetName(), m_char->itemID(), pShipSE->SystemMgr()->GetID(), m_system->GetID());
+
+    _log(PLAYER__AP_TRACE, "Client::SetDestiny():  shipSystemID: %u, SystemID: %u, update: %s, updateShip: %s, jump: %s", \
+            pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
+            updateShip?"true":"false", IsJump()?"true":"false");
 
     if (pt.isZero()) {
         if (pShipSE->GetPosition().isZero())
@@ -1246,30 +1257,30 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
     std::string name =  m_char->itemName() + "'s Noob Ship";
     //create data for new rookie ship
     ItemData sData(shipID, m_char->itemID(), 0, flagAutoFit, name.c_str());
-    ItemData mData(itemCivilianMiner, m_char->itemID(), 0, flagAutoFit);
-    ItemData wData(gunID, m_char->itemID(), 0, flagAutoFit);
-    ItemData cData(itemTypeTrit, m_char->itemID(), 0, flagAutoFit, 100);
     //spawn rookie ship
     ShipItemRef sRef = sItemFactory.SpawnShip(sData);
-    InventoryItemRef mRef = sItemFactory.SpawnItem(mData);
-    InventoryItemRef wRef = sItemFactory.SpawnItem(wData);
-    InventoryItemRef cRef = sItemFactory.SpawnItem(cData);
-    // create and fit noob items in ship
     if (sRef.get() != nullptr) {
         // noob ships come pre-assembled (and "fully fit")
         sRef->ChangeSingleton(true);
         sRef->Move(stationID, flagHangar);
     }
+    // create and fit noob items in ship
+    ItemData mData(itemCivilianMiner, m_char->itemID(), 0, flagAutoFit);
+    InventoryItemRef mRef = sItemFactory.SpawnItem(mData);
     if (mRef.get() != nullptr) {
         mRef->ChangeSingleton(true);
         mRef->Move(sRef->itemID(), flagHiSlot0);
         mRef->SetAttribute(AttrOnline, EvilOne, false);
     }
+    ItemData wData(gunID, m_char->itemID(), 0, flagAutoFit);
+    InventoryItemRef wRef = sItemFactory.SpawnItem(wData);
     if (wRef.get() != nullptr) {
         wRef->ChangeSingleton(true);
         wRef->Move(sRef->itemID(), flagHiSlot1);
         wRef->SetAttribute(AttrOnline, EvilOne, false);
     }
+    ItemData cData(itemTypeTrit, m_char->itemID(), 0, flagAutoFit, 100);
+    InventoryItemRef cRef = sItemFactory.SpawnItem(cData);
     if (cRef.get() != nullptr)
         cRef->Move(sRef->itemID(), flagCargoHold);
     // save new ship and items
@@ -1362,6 +1373,8 @@ void Client::ExecuteJump() {
     MoveToLocation(m_moveSystemID, m_movePoint);
 
     m_jumpTimer.Start(ClientTimers::JumpTimer);
+    m_cloakTimer.Start(ClientTimers::JumpCloak);
+    m_invulTimer.Start(ClientTimers::JumpInvul);
 
     m_movePoint = NULL_ORIGIN;
     m_moveSystemID = 0;
