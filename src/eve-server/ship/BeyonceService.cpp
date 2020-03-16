@@ -452,11 +452,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
     std::string type = call.tuple->GetItem(0)->AsString()->content();
     if (type == "item" ) {
-		pSE = pSystem->GetSE(toID);
+        pSE = pSystem->GetSE(toID);
         if (pSE == nullptr) {
             codelog(CLIENT__ERROR, "%s: unable to find item location %u in %s(%u)", call.client->GetName(), toID, pSystem->GetName(), pSystem->GetID());
-			return PyStatic.NewNone();
-		}
+            return PyStatic.NewNone();
+        }
     } else if (type == "bookmark" ) {
         double x = 0.0, y = 0.0, z = 0.0;
         uint32 typeID = 0, locationID = 0;

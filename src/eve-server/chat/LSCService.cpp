@@ -352,6 +352,7 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
             }
         } else {
             ChannelJoinNotOK cjnok;
+            //{'FullPath': u'UI/Messages', 'messageID': 256739, 'label': u'LSCChannelIsJoinedBody'}(u'You are already in the channel ({displayName})', None, {u'{displayName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'displayName'}})
                 cjnok.Error = "LSCChannelIsJoined";
                 cjnok.rspDict = new PyDict();   // dunno what goes here...
             chjr.JoinRsp = cjnok.Encode();

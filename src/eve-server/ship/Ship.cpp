@@ -47,7 +47,7 @@ ShipItemRef ShipItem::Load( uint32 shipID)
 }
 
 ShipItemRef ShipItem::Spawn( ItemData &data) {
-    uint32 shipID = ShipItem::CreateItemID( data);
+    uint32 shipID = InventoryItem::CreateItemID(data);
     if (shipID == 0)
         return ShipItemRef(nullptr);
 

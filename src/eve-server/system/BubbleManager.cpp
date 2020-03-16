@@ -247,7 +247,7 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
 SystemBubble* BubbleManager::FindBubbleByID(uint32 systemID, uint16 bubbleID)
 {
     auto range = m_bubbleMap.equal_range(systemID);
-    for ( auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; ++itr)
         if (itr->second->GetID() == bubbleID)
             return itr->second;
     return nullptr;
@@ -256,7 +256,7 @@ SystemBubble* BubbleManager::FindBubbleByID(uint32 systemID, uint16 bubbleID)
 void BubbleManager::ClearSystemBubbles(uint32 systemID)
 {
     auto range = m_bubbleMap.equal_range(systemID);
-    for ( auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; ++itr)
         m_bubbles.remove(itr->second);
 
     m_bubbleMap.erase(systemID);
@@ -265,7 +265,7 @@ void BubbleManager::ClearSystemBubbles(uint32 systemID)
 void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB)
 {
     auto range = m_bubbleMap.equal_range(systemID);
-    for ( auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; ++itr)
         if (itr->second == pSB) {
             m_bubbleMap.erase(itr);
             return;
@@ -282,7 +282,7 @@ void BubbleManager::RemoveSpawnID(uint16 bubbleID, uint32 spawnID)
 {
     // is this right??
     auto range = m_spawnIDs.equal_range(bubbleID);
-    for ( auto itr = range.first; itr != range.second; ++itr )
+    for (auto itr = range.first; itr != range.second; ++itr )
         if (itr->second == spawnID) {
             m_spawnIDs.erase(itr);
             return;
@@ -295,4 +295,12 @@ uint32 BubbleManager::GetBeltID(uint16 bubbleID)
     if (itr == m_spawnIDs.end())
         return 0;
     return itr->second;
+}
+
+uint32 BubbleManager::GetBubbleCount(uint32 systemID) {
+    uint32 count = 0;
+    auto range = m_bubbleMap.equal_range(systemID);
+    for (auto itr = range.first; itr != range.second; ++itr)
+        ++count;
+    return count;
 }

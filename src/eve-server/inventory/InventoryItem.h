@@ -145,7 +145,9 @@ public:
     virtual InventoryItemRef Split(int32 qty, bool notify=true);
     virtual bool            Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
 
+    // add item to our inventory
     virtual void            AddItem(InventoryItemRef iRef);
+    // remove item from our inventory
     virtual void            RemoveItem(InventoryItemRef iRef);
 
     /* specific functions handled here */

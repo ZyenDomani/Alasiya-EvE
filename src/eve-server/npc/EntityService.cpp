@@ -228,6 +228,8 @@ PyResult EntityBound::Handle_CmdMine(PyCallArgs &call) {
     _log(DRONE__TRACE, "EntityBound::Handle_CmdMine()");
     call.Dump(DRONE__DUMP);
 
+    /** @todo MAKE CHECKS IN MINING LASER FOR DRONES BEFORE COMPLETING THIS FUNCTION  **/
+
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
     return new PyDict();
 }
@@ -245,6 +247,8 @@ PyResult EntityBound::Handle_CmdMineRepeatedly(PyCallArgs &call) {
     _log(DRONE__TRACE, "EntityBound::Handle_CmdMineRepeatedly()");
     call.Dump(DRONE__DUMP);
 
+    /** @todo MAKE CHECKS IN MINING LASER FOR DRONES BEFORE COMPLETING THIS FUNCTION  **/
+    
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
     return new PyDict();
 }

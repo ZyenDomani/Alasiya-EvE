@@ -83,6 +83,9 @@ public:
     void RemoveSpawnID(uint16 bubbleID, uint32 spawnID);
     uint32 GetBeltID(uint16 bubbleID);
 
+    // for .list command
+    uint32 GetBubbleCount(uint32 systemID);
+
 private:
     Timer m_emptyTimer;
     Timer m_wanderTimer;
