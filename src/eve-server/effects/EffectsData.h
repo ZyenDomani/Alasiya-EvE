@@ -62,7 +62,7 @@ struct Operand {
 };
 
 struct TypeEffects {
-    bool isDefault;
+    bool isDefault;     // used to calculate capacitor stability in fit window using dischargeAttributeID
     uint16 effectID;
 };
 

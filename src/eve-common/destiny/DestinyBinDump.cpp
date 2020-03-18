@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Rewrite:    Allan
 */
 
 #include "eve-common.h"
@@ -68,7 +69,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     len -= sizeof(BallHeader);
 
     if ((ballhead->entityID == 0) or (ballhead->entityID > 2147483647)) { // max int32
-        _log(into, "Error: Invalid entityID for ball - %lli", ballhead->entityID);
+        _log(into, "Error: Invalid entityID for ball %lli", ballhead->entityID);
         return 0;
     }
 
@@ -89,8 +90,8 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         len  -= name->name_len*sizeof(uint16);
     }
     */
-    _log(into, "entity: %i, mode: %s(%u) flags: %s", ballhead->entityID, modeNames[ballhead->mode], ballhead->mode, Destiny::GetFlagNames(ballhead->flags).c_str());
-    _log(into, "   pos: %.2f, %.2f, %.2f, radius: %.1f", ballhead->x, ballhead->y, ballhead->z, ballhead->radius);
+    _log(into, "entity: %lli, mode: %s(%u) flags: %s", ballhead->entityID, modeNames[ballhead->mode], ballhead->mode, Destiny::GetFlagNames(ballhead->flags).c_str());
+    _log(into, "   pos: %.2f, %.2f, %.2f, radius: %.1f", ballhead->posX, ballhead->posY, ballhead->posZ, ballhead->radius);
 
     if (ballhead->mode != Ball::Mode::RIGID) {
         const MassSector *masschunk = (const MassSector *) data;
@@ -102,14 +103,14 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     }
 
     //this seems a little strange, but this is how it works...
-    if (ballhead->flags & Ball::Flag::IsFree) {
+    if (ballhead->flags & Ball::Flag::IsFree == Ball::Flag::IsFree) {
         const DataSector *shipchunk = (const DataSector *) data;
         data += sizeof(DataSector);
         len -= sizeof(DataSector);
 
         _log(into, "   maxSpeed: %.2f, Velocity: %.2f, %.2f, %.2f IM: %.4f, SF: %.3f",
-            shipchunk->maxVelocity,
-            shipchunk->velocity_x, shipchunk->velocity_y, shipchunk->velocity_z,
+            shipchunk->maxSpeed,
+            shipchunk->velX, shipchunk->velY, shipchunk->velZ,
             shipchunk->inertia,
             shipchunk->speedfraction);
     }
@@ -143,33 +144,33 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const WARP_Struct *b = (const WARP_Struct *) data;
             data += sizeof(WARP_Struct);
             len -= sizeof(WARP_Struct);
-            _log(into, "       formID: %u, TargPt: %.2f, %.2f, %.2f start: %u", b->formationID, b->x, b->y, b->z, b->effectStamp);
-            _log(into, "       followRange: %.2f, followID: %lli, ownerID: %lli", b->followRange, b->followID, b->ownerID);
+            _log(into, "       formID: %u, TargPt: %.2f, %.2f, %.2f start: %i", b->formationID, b->targX, b->targY, b->targZ, b->effectStamp);
+            _log(into, "       followRange: %lli, followID: %lli, warpSpeed: %i", b->followRange, b->followID, b->speed);
         } break;
         case Ball::Mode::ORBIT: {
             const ORBIT_Struct *b = (const ORBIT_Struct *) data;
             data += sizeof(ORBIT_Struct);
             len -= sizeof(ORBIT_Struct);
-            _log(into, "       formID: %u, orbitID: %u, distance: %.1f", b->formationID, b->followID, b->followRange);
+            _log(into, "       formID: %u, targetID: %u, distance: %.1f", b->formationID, b->targetID, b->followRange);
         } break;
         case Ball::Mode::MISSILE: {
             const MISSILE_Struct *b = (const MISSILE_Struct *) data;
             data += sizeof(MISSILE_Struct);
             len -= sizeof(MISSILE_Struct);
-            _log(into, "       formID: %u, targetID: %lli, followRange: %.1f, ownerID: %lli, start: %u", b->formationID, b->followID, b->followRange, b->ownerID, b->effectStamp);
+            _log(into, "       formID: %u, targetID: %lli, followRange: %.1f, ownerID: %lli, start: %i", b->formationID, b->targetID, b->followRange, b->ownerID, b->effectStamp);
             _log(into, "       pos: %.2f, %.2f, %.2f", b->x, b->y, b->z);
         } break;
         case Ball::Mode::MUSHROOM: {
             const MUSHROOM_Struct *b = (const MUSHROOM_Struct *) data;
             data += sizeof(MUSHROOM_Struct);
             len -= sizeof(MUSHROOM_Struct);
-            _log(into, "       formID: %u, distance: %.2f, u125: %.3f, start: %u, ownerID: %lli", b->formationID, b->followRange, b->unknown125, b->effectStamp, b->ownerID);
+            _log(into, "       formID: %u, distance: %.2f, u125: %.3f, start: %i, ownerID: %lli", b->formationID, b->followRange, b->unknown125, b->effectStamp, b->ownerID);
         } break;
         case Ball::Mode::TROLL: {
             const TROLL_Struct *b = (const TROLL_Struct *) data;
             data += sizeof(TROLL_Struct);
             len -= sizeof(TROLL_Struct);
-            _log(into, "       formID: %u, start: %u", b->formationID, b->effectStamp);
+            _log(into, "       formID: %u, start: %i", b->formationID, b->effectStamp);
         } break;
         case Ball::Mode::FIELD: {
             const FIELD_Struct *b = (const FIELD_Struct *) data;
@@ -187,7 +188,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const FORMATION_Struct *b = (const FORMATION_Struct *) data;
             data += sizeof(FORMATION_Struct);
             len -= sizeof(FORMATION_Struct);
-            _log(into, "       formID: %u, followID: %lli, followRange: %.2f, start: %u", b->formationID, b->followID, b->followRange, b->effectStamp);
+            _log(into, "       formID: %u, followID: %lli, followRange: %.2f, start: %i", b->formationID, b->followID, b->followRange, b->effectStamp);
         } break;
         default:
             _log(into, "Error: Unknown ball mode %u!", ballhead->mode);

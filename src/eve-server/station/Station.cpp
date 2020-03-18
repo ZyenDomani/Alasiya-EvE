@@ -285,9 +285,9 @@ void StationSE::EncodeDestiny( Buffer& into )
     head.entityID = m_self->itemID();
         head.mode = Ball::Mode::RIGID;
         head.radius = GetRadius();
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
         head.flags = /*Ball::Flag::HasMiniBalls |*/ Ball::Flag::IsGlobal | Ball::Flag::IsMassive;
     into.Append( head );
     RIGID_Struct main;

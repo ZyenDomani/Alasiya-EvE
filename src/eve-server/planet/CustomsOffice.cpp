@@ -347,9 +347,9 @@ void CustomsSE::EncodeDestiny( Buffer& into )
     BallHeader head = BallHeader();
         head.entityID = m_cData.itemID;
         head.radius = GetRadius();
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
         head.mode = Ball::Mode::RIGID;
         head.flags = Ball::Flag::IsGlobal /*| Ball::Flag::IsMassive | HasMiniBalls*/;
     into.Append( head );

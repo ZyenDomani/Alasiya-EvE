@@ -2653,7 +2653,8 @@ void Ship::RemoveTarget(SystemEntity* pSE) {
 void Ship::EncodeDestiny( Buffer& into) {
     using namespace Destiny;
 
-    uint8 mode = Ball::Mode::STOP;
+    uint8 mode = m_destiny->GetState(); //Ball::Mode::STOP;
+    /*
     if (m_destiny->IsWarping())
         mode = Ball::Mode::WARP;
     else if (m_destiny->IsFollowing())
@@ -2671,9 +2672,9 @@ void Ship::EncodeDestiny( Buffer& into) {
         head.entityID = GetID();
         head.mode = mode;
         head.radius = GetRadius();
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
         if (m_self->HasPilot())
             head.flags = Ball::Flag::IsInteractive | Ball::Flag::IsFree;
         else
@@ -2688,10 +2689,10 @@ void Ship::EncodeDestiny( Buffer& into) {
     into.Append( mass);
     DataSector data = DataSector();
         data.inertia = m_destiny->GetInertia();
-        data.maxVelocity = m_destiny->GetMaxVelocity();
-        data.velocity_x = m_destiny->GetVelocity().x;
-        data.velocity_y = m_destiny->GetVelocity().y;
-        data.velocity_z = m_destiny->GetVelocity().z;
+        data.maxSpeed = m_destiny->GetMaxVelocity();
+        data.velX = m_destiny->GetVelocity().x;
+        data.velY = m_destiny->GetVelocity().y;
+        data.velZ = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data);
     switch (mode) {
@@ -2699,29 +2700,29 @@ void Ship::EncodeDestiny( Buffer& into) {
             GPoint target = m_destiny->GetTargetPoint();
             WARP_Struct warp;
                 warp.formationID = 0xFF;
-                warp.x = target.x;
-                warp.y = target.y;
-                warp.z = target.z;
-                warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+                warp.targX = target.x;
+                warp.targY = target.y;
+                warp.targZ = target.z;
+                warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
                 // warp timing.  see Ship::EncodeDestiny() for notes/updates
                 warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
                 warp.followRange = 0;   //this isnt right
                 warp.followID = 0;  //this isnt right
-            into.Append( warp);
+            into.Append(warp);
         }  break;
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
                 follow.followID = m_destiny->GetTargetID();
                 follow.followRange = m_destiny->GetFollowDistance();
                 follow.formationID = 0xFF;
-            into.Append( follow);
+            into.Append(follow);
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
-                orbit.followID = m_destiny->GetTargetID();
+                orbit.targetID = m_destiny->GetTargetID();
                 orbit.followRange = m_destiny->GetFollowDistance();
                 orbit.formationID = 0xFF;
-            into.Append( orbit);
+            into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
             GPoint target = m_destiny->GetTargetPoint();
@@ -2730,12 +2731,12 @@ void Ship::EncodeDestiny( Buffer& into) {
                 go.x = target.x;
                 go.y = target.y;
                 go.z = target.z;
-            into.Append( go);
+            into.Append(go);
         }  break;
         default: {
             STOP_Struct main;
                 main.formationID = 0xFF;
-            into.Append( main);
+            into.Append(main);
         } break;
     }
 
@@ -2756,7 +2757,7 @@ void Ship::EncodeDestiny( Buffer& into) {
     }
 
     _log(SE__DESTINY, "Ship::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
-            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velocity_x, data.velocity_y, data.velocity_z);
+            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);
 }
 
 void Ship::MakeDamageState(DoDestinyDamageState &into) {

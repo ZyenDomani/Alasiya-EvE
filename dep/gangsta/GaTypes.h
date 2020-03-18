@@ -184,12 +184,12 @@ namespace Ga
 
         GaVec3 slerp(Ga::GaVec3 v0, Ga::GaVec3 v1, double t);
 
-		//optimized checks for a very common case
+        //optimized checks for a very common case
         GaExpInl bool isZero() const {
-            return (x == 0.0f && y == 0.0f && z == 0.0f);
+            return ((x == 0.0f) and (y == 0.0f) and (z == 0.0f));
         }
         GaExpInl bool isNotZero() const {
-            return (x != 0.0f || y != 0.0f || z != 0.0f);
+            return ((x != 0.0f) or (y != 0.0f) or (z != 0.0f));
         }
         GaExpInl bool isNaN() const {
             return (isnan(x) or isnan(y) or isnan(z));

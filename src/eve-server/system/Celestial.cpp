@@ -140,9 +140,9 @@ void AnomalySE::EncodeDestiny(Buffer& into)
         head.entityID = m_self->itemID();
         head.mode = Ball::Mode::STOP;
         head.radius = m_radius;
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
         head.flags = 0;
     into.Append( head );
     MassSector mass = MassSector();
@@ -191,9 +191,9 @@ void WormholeSE::EncodeDestiny(Buffer& into)
         head.entityID = m_self->itemID();
         head.mode = Ball::Mode::STOP;
         head.radius = m_radius;
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
         head.flags = 0;
     into.Append( head );
     MassSector mass = MassSector();

@@ -91,9 +91,9 @@ void AsteroidSE::EncodeDestiny( Buffer& into )
         head.entityID = GetID();
         head.mode = Ball::Mode::RIGID;
         head.radius = GetRadius();
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
         head.flags = 0;
     into.Append( head );
     RIGID_Struct main;

@@ -173,9 +173,9 @@ void Missile::EncodeDestiny( Buffer& into )
         head.entityID = GetID();
         head.mode = Ball::Mode::MISSILE;
         head.radius = GetRadius();
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
         head.flags = Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
@@ -186,10 +186,10 @@ void Missile::EncodeDestiny( Buffer& into )
         mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
-        data.maxVelocity = m_speed;
-        data.velocity_x = m_destiny->GetVelocity().x;
-        data.velocity_y = m_destiny->GetVelocity().y;
-        data.velocity_z = m_destiny->GetVelocity().z;
+        data.maxSpeed = m_speed;
+        data.velX = m_destiny->GetVelocity().x;
+        data.velY = m_destiny->GetVelocity().y;
+        data.velZ = m_destiny->GetVelocity().z;
         data.inertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
@@ -197,7 +197,7 @@ void Missile::EncodeDestiny( Buffer& into )
         miss.ownerID = m_ownerID;
         miss.formationID = 0xFF;
         miss.effectStamp = m_destiny->GetStateStamp();
-        miss.followID = m_destiny->GetTargetID();
+        miss.targetID = m_destiny->GetTargetID();
         miss.followRange = (float)m_destiny->GetFollowDistance();
         miss.x = x();
         miss.y = y();

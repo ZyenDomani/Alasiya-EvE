@@ -121,23 +121,15 @@ void Concord::EncodeDestiny( Buffer& into ) const
 {
     using namespace Destiny;
 
-    uint8 mode = Ball::Mode::STOP;
-    if (m_destiny->IsWarping())
-        mode = Ball::Mode::WARP;
-    else if (m_destiny->IsFollowing())
-        mode = Ball::Mode::FOLLOW;
-    else if (m_destiny->IsOrbiting())
-        mode = Ball::Mode::ORBIT;
-    else if (m_destiny->IsMoving())
-        mode = Ball::Mode::GOTO;
+    uint8 mode = m_destiny->GetState(); //Ball::Mode::STOP;
 
     BallHeader head = BallHeader();
         head.entityID = GetID();
         head.mode = mode;
         head.radius = GetRadius();
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
         head.flags = Ball::Flag::IsMassive | Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
@@ -148,10 +140,10 @@ void Concord::EncodeDestiny( Buffer& into ) const
         mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
-        data.maxVelocity = m_destiny->GetMaxVelocity();
-        data.velocity_x = m_destiny->GetVelocity().x;
-        data.velocity_y = m_destiny->GetVelocity().y;
-        data.velocity_z = m_destiny->GetVelocity().z;
+        data.maxSpeed = m_destiny->GetMaxVelocity();
+        data.velX = m_destiny->GetVelocity().x;
+        data.velY = m_destiny->GetVelocity().y;
+        data.velZ = m_destiny->GetVelocity().z;
         data.inertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
@@ -160,10 +152,10 @@ void Concord::EncodeDestiny( Buffer& into ) const
             GPoint target = m_destiny->GetTargetPoint();
             WARP_Struct warp;
                 warp.formationID = 0xFF;
-                warp.x = target.x;
-                warp.y = target.y;
-                warp.z = target.z;
-                warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+                warp.targX = target.x;
+                warp.targY = target.y;
+                warp.targZ = target.z;
+                warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
                 // warp timing.  see Ship::EncodeDestiny() for notes/updates
                 warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
                 warp.followRange = 0;   //this isnt right
@@ -179,7 +171,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
-                orbit.followID = m_destiny->GetTargetID();
+                orbit.targetID = m_destiny->GetTargetID();
                 orbit.followRange = m_destiny->GetFollowDistance();
                 orbit.formationID = 0xFF;
             into.Append( orbit );

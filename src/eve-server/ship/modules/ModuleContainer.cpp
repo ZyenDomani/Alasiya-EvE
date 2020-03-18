@@ -231,7 +231,7 @@ uint16 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)
                     return slot;
             } break;
         case EVEEffectID::medPower: {
-            for (uint8 slot=flagMedSlot0; slot < (flagMedSlot0 + m_MediumSlots/*8*/); ++slot)
+            for (uint8 slot=flagMidSlot0; slot < (flagMidSlot0 + m_MediumSlots/*8*/); ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
             } break;
@@ -312,11 +312,11 @@ void ModuleContainer::GetModuleListOfRefsOrdered( std::vector< InventoryItemRef 
         if (m_modules[flag] != nullptr)
             modVec.push_back(m_modules[flag]->GetSelf());
     // low slots
-    for (uint8 flag = flagLowSlot0; flag < flagMedSlot0; ++flag)
+    for (uint8 flag = flagLowSlot0; flag < flagMidSlot0; ++flag)
         if (m_modules[flag] != nullptr)
             modVec.push_back(m_modules[flag]->GetSelf());
     // mid slots
-    for (uint8 flag = flagMedSlot0; flag < flagHiSlot0; ++flag)
+    for (uint8 flag = flagMidSlot0; flag < flagHiSlot0; ++flag)
         if (m_modules[flag] != nullptr)
             modVec.push_back(m_modules[flag]->GetSelf());
     // hi slots
@@ -333,11 +333,11 @@ void ModuleContainer::GetModuleListOfRefsOrderedRev( std::vector< InventoryItemR
         if (m_modules[flag] != nullptr)
             modVec.push_back(m_modules[flag]->GetSelf());
     // mid slots
-    for (uint8 flag = flagMedSlot0; flag < flagHiSlot0; ++flag)
+    for (uint8 flag = flagMidSlot0; flag < flagHiSlot0; ++flag)
         if (m_modules[flag] != nullptr)
             modVec.push_back(m_modules[flag]->GetSelf());
     // low slots
-    for (uint8 flag = flagLowSlot0; flag < flagMedSlot0; ++flag)
+    for (uint8 flag = flagLowSlot0; flag < flagMidSlot0; ++flag)
         if (m_modules[flag] != nullptr)
             modVec.push_back(m_modules[flag]->GetSelf());
     // rigs
@@ -366,15 +366,15 @@ void ModuleContainer::GetModulesInBank(EVEItemFlags flag, std::vector< GenericMo
                 if ( m_modules[slot] != nullptr )
                     modVec.push_back(m_modules[slot]);
         } break;
-        case flagMedSlot0:
-        case flagMedSlot1:
-        case flagMedSlot2:
-        case flagMedSlot3:
-        case flagMedSlot4:
-        case flagMedSlot5:
-        case flagMedSlot6:
-        case flagMedSlot7: {
-            for (uint8 slot=flagMedSlot0; slot < (flagMedSlot0 + 8); ++slot)
+        case flagMidSlot0:
+        case flagMidSlot1:
+        case flagMidSlot2:
+        case flagMidSlot3:
+        case flagMidSlot4:
+        case flagMidSlot5:
+        case flagMidSlot6:
+        case flagMidSlot7: {
+            for (uint8 slot=flagMidSlot0; slot < (flagMidSlot0 + 8); ++slot)
                 if ( m_modules[slot] != nullptr )
                     modVec.push_back(m_modules[slot]);
         } break;

@@ -409,6 +409,7 @@ update ValidateAddItem() to return >0 on error and use enums to determine/displa
 
 make log/config option for (en/dis)able client massive check.
 
+comment unused attrib defs
 
 *******************************************************
 *****************   errata and miscellaneous bullshit
@@ -437,7 +438,7 @@ ideas for holoscreen in CQ:
     - others?
     - more?
 
-change flagMed* to flagMid*
+review eve marshal 'visit' code.  use PyRep.type to determine opcode, instead of if/else loops
 
 OnItemsChanged is for multiple changes in a single return.  -priority level: low
     - look into how we can implement this return, if needed, instead of using multiple returns (consolidate packet sending)

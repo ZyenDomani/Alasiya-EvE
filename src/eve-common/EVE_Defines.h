@@ -294,7 +294,7 @@ maxDustCharacter = 2130000000
 ((flag >= flagHiSlot0) && (flag <= flagHiSlot7))
 
 #define IsMidSlot(flag) \
-((flag >= flagMedSlot0) && (flag <= flagMedSlot7))
+((flag >= flagMidSlot0) && (flag <= flagMidSlot7))
 
 #define IsLowSlot(flag) \
 ((flag >= flagLowSlot0) && (flag <= flagLowSlot7))

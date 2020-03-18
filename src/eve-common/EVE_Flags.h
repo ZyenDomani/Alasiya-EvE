@@ -33,14 +33,14 @@ enum EVEItemFlags {
     flagLowSlot6                    = 17,
     flagLowSlot7                    = 18,    //Low power slot 8
 
-    flagMedSlot0                    = 19,    //Medium power slot 1
-    flagMedSlot1                    = 20,
-    flagMedSlot2                    = 21,
-    flagMedSlot3                    = 22,
-    flagMedSlot4                    = 23,
-    flagMedSlot5                    = 24,
-    flagMedSlot6                    = 25,
-    flagMedSlot7                    = 26,    //Medium power slot 8
+    flagMidSlot0                    = 19,    //Medium power slot 1
+    flagMidSlot1                    = 20,
+    flagMidSlot2                    = 21,
+    flagMidSlot3                    = 22,
+    flagMidSlot4                    = 23,
+    flagMidSlot5                    = 24,
+    flagMidSlot6                    = 25,
+    flagMidSlot7                    = 26,    //Medium power slot 8
 
     flagHiSlot0                     = 27,    //High power slot 1
     flagHiSlot1                     = 28,
@@ -226,8 +226,8 @@ enum EVEItemFlags {
      flagLoSlot0 = 11
      flagLoSlot7 = 18
      flagLocked = 63
-     flagMedSlot0 = 19
-     flagMedSlot7 = 26
+     flagMidSlot0 = 19
+     flagMidSlot7 = 26
      flagNone = 0
      flagPilot = 57
      flagPlanetSurface = 150
@@ -299,7 +299,7 @@ static const EVEItemFlags flagNone = flagAutoFit;
 static const EVEItemFlags flagAnywhere = flagAutoFit;
 static const uint8 MAX_MODULE_COUNT = flagSlotLast - flagSlotFirst + 1;
 static const uint8 MAX_HIGH_SLOT_COUNT = flagHiSlot7 - flagHiSlot0 + 1;
-static const uint8 MAX_MEDIUM_SLOT_COUNT = flagMedSlot7 - flagMedSlot0 + 1;
+static const uint8 MAX_MID_SLOT_COUNT = flagMidSlot7 - flagMidSlot0 + 1;
 static const uint8 MAX_LOW_SLOT_COUNT = flagLowSlot7 - flagLowSlot0 + 1;
 static const uint8 MAX_RIG_COUNT = flagRigSlot7 - flagRigSlot0 + 1;
 static const uint8 MAX_ASSEMBLY_COUNT = flagSubSystem7 - flagSubSystem0 + 1;

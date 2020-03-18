@@ -1070,7 +1070,7 @@ void ModuleManager::GetActiveModules(uint8 rack, std::vector< GenericModule* >& 
             pModuleCont->GetModulesInBank(flagHiSlot0, modVecAll);
         } break;
         case EVEEffectID::medPower: {
-            pModuleCont->GetModulesInBank(flagMedSlot0, modVecAll);
+            pModuleCont->GetModulesInBank(flagMidSlot0, modVecAll);
         } break;
         case EVEEffectID::loPower: {
             pModuleCont->GetModulesInBank(flagLowSlot0, modVecAll);
@@ -1091,7 +1091,7 @@ void ModuleManager::GetActiveModulesHeat(uint8 rack, float& heat)
             pModuleCont->GetModulesInBank(flagHiSlot0, modVecAll);
         } break;
         case EVEEffectID::medPower: {
-            pModuleCont->GetModulesInBank(flagMedSlot0, modVecAll);
+            pModuleCont->GetModulesInBank(flagMidSlot0, modVecAll);
         } break;
         case EVEEffectID::loPower: {
             pModuleCont->GetModulesInBank(flagLowSlot0, modVecAll);
@@ -1117,7 +1117,7 @@ uint8 ModuleManager::GetActiveModulesCount(uint8 rack)
             pModuleCont->GetModulesInBank(flagHiSlot0, modVec);
         } break;
         case EVEEffectID::medPower: {
-            pModuleCont->GetModulesInBank(flagMedSlot0, modVec);
+            pModuleCont->GetModulesInBank(flagMidSlot0, modVec);
         } break;
         case EVEEffectID::loPower: {
             pModuleCont->GetModulesInBank(flagLowSlot0, modVec);

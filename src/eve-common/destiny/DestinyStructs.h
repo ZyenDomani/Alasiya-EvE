@@ -40,10 +40,10 @@ namespace Destiny {
                 WARP        = 3,
                 ORBIT       = 4,
                 MISSILE     = 5,
-                MUSHROOM    = 6,    //Expanding gravity wall
+                MUSHROOM    = 6,    //Expanding gravity wall (bomb?)
                 BOID        = 7,    //Swarm-like behavior, based on birds (flocks) but could also be herds, and schools
                 TROLL       = 8,    //used for jetcans and wrecks (only?). Free ball that will become fixed after a while.
-                MINIBALL    = 9,
+                MINIBALL    = 9,    //Guns/Sentry
                 FIELD       = 10,   //Force field ball
                 RIGID       = 11,   //A ball that will never move, stations, etc..
                 FORMATION   = 12
@@ -76,8 +76,8 @@ DST_WARPEXIT = 11
 */
     }
 
-/** @note  this file MUST use packed data.
- * client will not recognize it with byte-ordered padding
+/** @note  this file MUST use packed data, and variable types must remain as-is
+ * client will not recognize it with byte-ordered padding, and expects values to be at specific locations
  * (error: malformed packet)
  */
 #pragma pack(1)
@@ -96,9 +96,9 @@ struct BallHeader {
     int64 entityID;
     uint8 mode;
     float radius;
-    double x;
-    double y;
-    double z;
+    double posX;
+    double posY;
+    double posZ;
     uint8 flags;
 };
 
@@ -113,18 +113,18 @@ struct MassSector {
 
 //only included if the thing can move...
 struct DataSector {
-    float maxVelocity;
-    double velocity_x;
-    double velocity_y;
-    double velocity_z;
+    float maxSpeed;
+    double velX;        // these *MAY* be heading in degrees
+    double velY;
+    double velZ;
     float inertia;
     float speedfraction;
 };
 
 struct MiniBall {
-    double x;
-    double y;
-    double z;
+    double posX;
+    double posY;
+    double posZ;
     float radius;
 };
 
@@ -152,27 +152,27 @@ struct STOP_Struct {
 
 struct WARP_Struct {
     uint8  formationID;
-    double x;             //object+0xD0 (as a set of 3)
-    double y;
-    double z;
-    uint32 effectStamp;   //statestamp of when warp started
+    double targX;             //object+0xD0 (as a set of 3)
+    double targY;
+    double targZ;
+    int32 effectStamp;   //statestamp of when warp started
     int64 followRange;   //unknown   -4616189618054758400 when warp is initiated.  calculation unknown for other values (used during warp)
     int64 followID;      //unknown   4669471951536783360 when warp is initiated or ship enters new bubble (AddBalls), 0 otherwise
-    int64 ownerID;
+    int32 speed;
 };
 
 struct ORBIT_Struct {
     uint8  formationID;
-    uint32 followID;    //orbitID
+    uint32 targetID;
     double followRange;
 };
 
 struct MISSILE_Struct {
     uint8  formationID;
-    int64 followID;    //targetID
+    int64 targetID;
     float followRange;
     int64 ownerID;
-    uint32 effectStamp;
+    int32 effectStamp;
     double x;
     double y;
     double z;
@@ -182,7 +182,7 @@ struct MUSHROOM_Struct {
     uint8  formationID;
     float followRange;
     double unknown125;
-    uint32 effectStamp;
+    int32 effectStamp;
     int64 ownerID;
 };
 
@@ -205,7 +205,7 @@ struct FORMATION_Struct {
     uint8  formationID;
     int64 followID;
     float followRange;
-    uint32 effectStamp;  //statestamp of when warp started
+    int32 effectStamp;  //statestamp of when warp started
 };
 
 union SpecificSectors {

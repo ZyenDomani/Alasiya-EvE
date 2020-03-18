@@ -90,9 +90,9 @@ void Sentry::EncodeDestiny( Buffer& into )
         head.entityID = GetID();
         head.mode = Ball::Mode::STOP;
         head.radius = GetRadius();
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
         head.flags = Ball::Flag::IsMassive;
     into.Append( head );
     MassSector mass = MassSector();

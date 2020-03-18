@@ -284,6 +284,8 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
     for (auto cur : mMap)
         total += cur.first;
 
+    /** @todo check for mining drones here!!!  */
+
     InventoryItemRef roidRef = m_targetSE->GetSelf();
     float oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
     if (oreVolume <= 0) {
@@ -301,11 +303,11 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
     float roidQuantity = roidRef->GetAttribute(AttrQuantity).get_float();
 
     for (auto cur : mMap) {
-        if ((cur.first < oreVolume) or (cur.first <= 0)) {
+        if ((cur.first < oreVolume) or (cur.first < 0.1)) {
             _log(MINING__ERROR, "%s(%u) - Depleted() -  Mining Laser could not extract ore from %s(%u)", \
-                        cur.second->GetSelf()->itemName().c_str(), cur.second->GetSelf()->itemID(), roidRef->name(), m_targetSE->GetID() );
+                        cur.second->GetSelf()->name(), cur.second->GetSelf()->itemID(), roidRef->name(), m_targetSE->GetID() );
             cur.second->GetShipRef()->GetPilot()->SendNotifyMsg("Your %s deactivates because there was an error in it's processing.  Ref: ServerError 06428.",\
-                        cur.second->GetSelf()->itemName().c_str());
+                        cur.second->GetSelf()->name());
             cur.second->CancelOnError();
             continue;
         }
@@ -316,6 +318,14 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
 
         // create and add ore to cargo for this laser
         cur.second->AddOre(roidRef->typeID(), oreAmount);
+
+        // inform pilot of asteroid depleted  ...no clue if it actually works like this
+        PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyString("MiningItemDepleted"));
+        PyDict* dict = new PyDict();
+        dict->SetItemString("modulename", new PyString(cur.second->GetSelf()->itemName()));
+        tuple->SetItem(1, dict);
+        cur.second->GetShipRef()->GetPilot()->QueueDestinyEvent(&tuple);
     }
 
     // calculate ore for this laser

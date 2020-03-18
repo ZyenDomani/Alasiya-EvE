@@ -784,9 +784,9 @@ void StructureSE::EncodeDestiny( Buffer& into )
     BallHeader head = BallHeader();
         head.entityID = m_data.itemID;
         head.radius = GetRadius();
-        head.x = x();
-        head.y = y();
-        head.z = z();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
     if (m_tcu) {
         head.mode = Ball::Mode::STOP;
         head.flags = Ball::Flag::IsGlobal;
@@ -814,10 +814,10 @@ void StructureSE::EncodeDestiny( Buffer& into )
     if (m_data.state < EVEPOS::StructureStatus::Anchored) {
         DataSector data = DataSector();
             data.inertia = 1;
-            data.velocity_x = 0;
-            data.velocity_y = 0;
-            data.velocity_z = 0;
-            data.maxVelocity = 1;
+            data.velX = 0;
+            data.velY = 0;
+            data.velZ = 0;
+            data.maxSpeed = 1;
             data.speedfraction = 1;
         into.Append( data );
     }
