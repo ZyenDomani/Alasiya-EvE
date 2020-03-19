@@ -142,6 +142,8 @@ public:
     ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data);
     virtual ~ContainerSE();
 
+    /* Base */
+    virtual bool                isGlobal()              { return m_global; }
     /* class type pointer querys. */
     virtual ContainerSE* GetContSE()                    { return this; }
     /* class type tests. */
@@ -160,10 +162,14 @@ public:
     bool IsEmpty()                                      { return m_contRef->IsEmpty(); }
     bool IsAnchored()                                   { return m_contRef->IsAnchored(); }
 
+    void SetGlobal(bool set=false)                      { m_global = set; }
+
 protected:
     CargoContainerRef m_contRef;
 
     Timer m_deleteTimer;
+
+    bool m_global;      // for making bubble centers global
 
     double m_shieldCharge;
     double m_armorDamage;

@@ -845,16 +845,17 @@ void SystemBubble::MarkCenter()
 void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::string& desc)
 {
     ItemData idata(23, 1, m_systemID, flagAutoFit, name.c_str(), position, desc.c_str());
-    CargoContainerRef iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata));
-    if (iRef.get() == nullptr)
+    CargoContainerRef cRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata));
+    if ( cRef.get() == nullptr)
         return;
 
     // create new container
     FactionData jetcanData = FactionData();
-    ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
-    iRef->SetMySE(cSE);
+    ContainerSE* cSE = new ContainerSE( cRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
+    cRef->SetMySE(cSE);
     cSE->AnchorContainer();
-    m_markers.emplace(iRef->itemID(), cSE);
+    cSE->SetGlobal(true);
+    m_markers.emplace( cRef->itemID(), cSE);
     //Add(cSE);
     m_system->AddEntity(cSE);
 }

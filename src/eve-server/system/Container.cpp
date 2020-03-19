@@ -220,6 +220,8 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
     assert(m_targMgr != nullptr);
     assert(m_destiny != nullptr);
 
+    m_global = false;
+    
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
