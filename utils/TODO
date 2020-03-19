@@ -6,6 +6,8 @@
 *******************************************************
 **********  errors and other found shit...high priority
 
+ghost modules when removing from fit window while docked
+
 noob ships do not Init() correctly....  most attrs are 0
 
 npcs not getting destiny warpstate set (sometimes)
@@ -16,15 +18,10 @@ asteroids have DestinyManager (remove this shit)
 after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
 01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
 
-items disappearing from cargo when dock/undock
-    - no clue on this one....cant reproc
-
 prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
 
 deny creating items < typeID 34
-
-new players in bubble not updated correctly for existing ship states (destiny state/mode shit?)
 
 stackall in orehold puts stack in cargo...need to step thru this one
 
@@ -62,18 +59,13 @@ dungeon/anomaly items need tracking for removal on cleanup/shutdown
 dungeon deco items need better placement
 
 
-fx warp speed data to client is wrong....see diff between fit window docked/in space
-    - need to check formula again in client....seems to be a 3x multiplier in there somewhere....
-    - this also deals with fx data
-    - this screws up warp calcs and very obvious on short warps (< warp speeds)
-
 skillqueueendtime in chardb wrong/invalid.  check setting
 
 
 check for item ownership before rename
     send error if failed
 
-go thru all updated effect data and look for 'improved' ships to add to our data.
+go thru all updated effect data and look for 'improved' ship data to update ours
     - specialized holds from rhea (not available in cruc)
     - updated barges from current live patch (hot tanks)
 current fx data incomplete at best.  missing multiple items/defs
@@ -414,6 +406,10 @@ comment unused attrib defs
 *******************************************************
 *****************   errata and miscellaneous bullshit
 
+db code doesnt send None or NULL properly to client.
+    see bookmark data and effects
+
+
 add rule of 5 for Py* code (or =delete defaults)
 
 rework bulkdata code.
@@ -540,6 +536,6 @@ system mem obj for jumpsHour isnt working and will take more thought/code
 ********************************
 website updates:
 replace/update outdated mysql_connect with newer mysqli_connect
---  major updates needed in website code for python 3
+--  major updates needed in website code for php 7.3
 
 add version #s to site
