@@ -66,7 +66,7 @@
 
 enum DBTYPE
 {
-    //DBTYPE_EMPTY        = 0x00, // not supported  -client has this one defined
+    DBTYPE_EMPTY          = 0x00,
     //DBTYPE_NULL         = 0x01, // not supported
     DBTYPE_I2             = 0x02,
     DBTYPE_I4             = 0x03,

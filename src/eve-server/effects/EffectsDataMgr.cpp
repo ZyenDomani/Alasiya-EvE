@@ -121,11 +121,11 @@ void FxDataMgr::Populate()
             mEffect.npcUsageChanceAttributeID = row.GetInt(9);
             mEffect.npcActivationChanceAttributeID = row.GetInt(10);
             mEffect.fittingUsageChanceAttributeID = row.GetInt(11);
-            mEffect.durationAttributeID = row.GetInt(12);
-            mEffect.trackingSpeedAttributeID = row.GetInt(13);
-            mEffect.dischargeAttributeID = row.GetInt(14);
-            mEffect.rangeAttributeID = row.GetInt(15);
-            mEffect.falloffAttributeID = row.GetInt(16);
+            mEffect.durationAttributeID = (row.IsNull(12) ? 0 : row.GetInt(12));
+            mEffect.trackingSpeedAttributeID = (row.IsNull(13) ? 0 : row.GetInt(13));
+            mEffect.dischargeAttributeID = (row.IsNull(14) ? 0 : row.GetInt(14));
+            mEffect.rangeAttributeID = (row.IsNull(15) ? 0 : row.GetInt(15));
+            mEffect.falloffAttributeID = (row.IsNull(16) ? 0 : row.GetInt(16));
             mEffect.rangeChance = row.GetFloat(17);
             mEffect.electronicChance = row.GetFloat(18);
             mEffect.propulsionChance = row.GetFloat(19);

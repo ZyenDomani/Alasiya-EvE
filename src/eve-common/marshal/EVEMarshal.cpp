@@ -372,7 +372,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
                 unpacked.Append<uint16>( r->IsNone() ? 0 : r->AsInt()->value() );
             } break;
             case DBTYPE_I1: {
-                unpacked.Append<uint8>( r->IsNone() ? 0 : r->AsInt()->value() );
+                unpacked.Append<int8>( r->IsNone() ? 0 : r->AsInt()->value() );
             } break;
             case DBTYPE_UI1: {
                 unpacked.Append<uint8>( r->IsNone() ? 0 : r->AsInt()->value() );

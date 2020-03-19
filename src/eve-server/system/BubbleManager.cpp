@@ -213,6 +213,8 @@ void BubbleManager::Remove(SystemEntity *ent) {
  * of bubbles by [systemID, SystemBubble*] to search only bubbles in desired system,
  * greatly reducing the search time for many loaded systems.
  *
+ * UPDATE:  may test map{systemID/map{quadrant/SysBubble}} to further reduce loop times.
+ *              may not need this, or even be detrimental
  * NOTE:  these are only used here...
  */
 SystemBubble* BubbleManager::FindBubble(SystemEntity *ent) const {

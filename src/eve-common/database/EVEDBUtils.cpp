@@ -62,7 +62,7 @@ PyRep* DBColumnToPyRep( const DBResultRow& row, uint32 index )
 {
     /* check for valid column */
     if( row.IsNull( index ) )
-        return PyStatic.NewNone();
+        return PyStatic.NewNone();      // this doesnt work right.  client still sees this as 0 instead of None 
 
     const DBTYPE type = row.ColumnType( index );
     switch( type )
