@@ -73,7 +73,7 @@ m_passive(passive)
     PyCallable_REG_CALL(InventoryBound, TakeOutTrash);
 
     _log(INV__BIND, "Created InventoryBound object %p for %s(%u) and ownerID %u with flag %s  (passive: %s)", \
-            this, m_self->itemName().c_str(), m_itemID, ownerID, sDataMgr.GetFlagName(flag), (m_passive ? "true" : "false"));
+            this, m_self->name(), m_itemID, ownerID, sDataMgr.GetFlagName(flag), (m_passive ? "true" : "false"));
 }
 
 InventoryBound::~InventoryBound()
@@ -82,7 +82,7 @@ InventoryBound::~InventoryBound()
 }
 
 PyResult InventoryBound::Handle_GetItem(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::GetItem() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "Calling InventoryBound::GetItem() for %s(%u)", m_self->name(), m_itemID);
     return m_self->GetItem();
 }
 
@@ -93,7 +93,7 @@ PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call)
 }
 
 PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::DestroyFitting() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "Calling InventoryBound::DestroyFitting() for %s(%u)", m_self->name(), m_itemID);
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)){
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -120,7 +120,7 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
     }
 
     _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u) in %s.  Bound flag is %s", \
-            m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(stackFlag), sDataMgr.GetFlagName(m_flag));
+            m_self->name(), m_itemID, sDataMgr.GetFlagName(stackFlag), sDataMgr.GetFlagName(m_flag));
 
     //Stack Items contained in this inventory
     pInventory->StackAll(stackFlag, m_ownerID);
@@ -154,7 +154,7 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
 
     //  this is (should be) customs office
     if (m_self->groupID() != EVEDB::invGroups::Orbital_Infrastructure) {
-        _log(ITEM__ERROR, "%s: Called CustomsOffice xFer using non-co item %s(%u).", call.client->GetName(), m_self->itemName().c_str(), m_self->itemID());
+        _log(ITEM__ERROR, "%s: Called CustomsOffice xFer using non-co item %s(%u).", call.client->GetName(), m_self->name(), m_self->itemID());
         return nullptr;
     }
 
@@ -193,7 +193,7 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
      * 12:27:55 [InvDump]       [ 1]       None                     <- when set, this is quantity to move
      *
      */
-    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToHangar() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToHangar() for %s(%u)", m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
 
     Call_RemoveCharge args;
@@ -225,7 +225,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
      * 20:18:58 [InvDump]   preferMerge
      * 20:18:58 [InvDump]        Boolean: true
      */
-    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToCargo() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToCargo() for %s(%u)", m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
 
     uint32 quantity = 0;
@@ -247,7 +247,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
-    _log(INV__MESSAGE, "InventoryBound::MultiMerge() called by %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "InventoryBound::MultiMerge() called by %s(%u)", m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
     //Decode Args
     Call_MultiMerge args;
@@ -356,8 +356,8 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         quantity = 1;
 
     _log(INV__MESSAGE, "InventoryBound::Handle_Add() - moving %u %s(%u) from (%u:%s) to me(%s:%u:%s).", \
-            quantity, iRef->itemName().c_str(), args.itemID, args.containerID, sDataMgr.GetFlagName(iRef->flag()),\
-            m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag));
+            quantity, iRef->name(), args.itemID, args.containerID, sDataMgr.GetFlagName(iRef->flag()),\
+            m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
     std::vector<int32> items;
     items.push_back(args.itemID);
@@ -419,7 +419,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     }
 
     _log(INV__MESSAGE, "InventoryBound::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
-                args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag));
+                args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag), m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
     return MoveItems( call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, moveStack, capacity);
 }
@@ -559,7 +559,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         } else if (IsModuleSlot(fromFlag)) {
             // can we remove modules from an inactive ship?  not yet...
             if (pShip == nullptr)
-                throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", iRef->itemName().c_str()));
+                throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", iRef->name()));
 
             //if (IsSolarSystem(pShip->locationID()))
             //    throw PyException(MakeCustomError("You cannot remove modules in space."));
@@ -581,7 +581,6 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 return result.Encode();
             } else {
                 pShip->RemoveItem(iRef);
-                iRef->UpdateLocation(0);
             }
         }
 
@@ -713,7 +712,7 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
 
 // cannot find call to this in client code.
 PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::ReplaceCharges() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "Calling InventoryBound::ReplaceCharges() for %s(%u)", m_self->name(), m_itemID);
     Inventory_CallReplaceCharges args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -823,7 +822,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
 }
 */
     _log(INV__MESSAGE, "InventoryBound::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
-    call.client->GetName(), ownerID, m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(flag), (m_passive ? ":passive" : ""), \
+    call.client->GetName(), ownerID, m_self->name(), m_itemID, sDataMgr.GetFlagName(flag), (m_passive ? ":passive" : ""), \
     sDataMgr.GetFlagName(oldFlag));
 
     return pInventory->List(flag, ownerID);
@@ -913,25 +912,25 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_TakeOutTrash(PyCallArgs &call) {
     //TakeOutTrash([ invItem.itemID for invItem in invItems ])
-    _log(INV__MESSAGE, "%s Calling InventoryBound::TakeOutTrash() for %s(%u)", call.client->GetName(), m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "%s Calling InventoryBound::TakeOutTrash() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
-    _log(INV__MESSAGE, "%s Calling InventoryBound::SetPassword() for %s(%u)", call.client->GetName(), m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "%s Calling InventoryBound::SetPassword() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_ListDroneBay(PyCallArgs &call) {
-    _log(INV__MESSAGE, "%s Calling InventoryBound::ListDroneBay() for %s(%u)", call.client->GetName(), m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "%s Calling InventoryBound::ListDroneBay() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call) {
-    _log(POS__MESSAGE, "%s Calling InventoryBound::RunRefiningProcess() for %s(%u)", call.client->GetName(), m_self->itemName().c_str(), m_itemID);
+    _log(POS__MESSAGE, "%s Calling InventoryBound::RunRefiningProcess() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
     call.Dump(POS__DUMP);
     return nullptr;
 }

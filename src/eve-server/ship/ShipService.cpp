@@ -301,7 +301,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     // response should return ship modules, loaded charges, and linked weapons
     PyTuple* rsp = new PyTuple(3);
         rsp->SetItem(0, newShipRef->GetShipState());    //dict of ship modules
-        rsp->SetItem(1, newShipRef->GetChargeState());    //dict of ship charges
+        rsp->SetItem(1, newShipRef->GetChargeState());    //dict of flagID/chargeData{loc, flag, typeID}
         rsp->SetItem(2, newShipRef->GetLinkedWeapons()); // dict of linked modules
     if (is_log_enabled(CLIENT__INFO))
         rsp->Dump(CLIENT__INFO, "    ");

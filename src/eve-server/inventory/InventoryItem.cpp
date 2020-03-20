@@ -1037,18 +1037,15 @@ PyPackedRow* InventoryItem::GetChargeStatusRow(uint32 shipID) const {
         header->AddColumn("instanceID", DBTYPE_I8);
         header->AddColumn("flagID",     DBTYPE_I2);
         header->AddColumn("typeID",     DBTYPE_I4);
-        header->AddColumn("quantity",   DBTYPE_I4);
     PyPackedRow* row = new PyPackedRow( header);
     GetChargeStatusRow(shipID, row);
     return row;
 }
 
 void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
-    into->SetField("instanceID",     new PyLong(shipID));  /* this is shipID (locationID) */
+    into->SetField("instanceID",     new PyLong(shipID));  /* this is locationID */
     into->SetField("flagID",         new PyInt(m_flag));
     into->SetField("typeID",         new PyInt(m_type.id()));
-    //into->SetField("quantity",       new PyInt(m_quantity));
-    into->SetField("quantity",       pAttributeMap->GetAttribute(AttrQuantity).GetPyObject()); // AttrQuantity is used for loaded charges
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const

@@ -617,8 +617,8 @@ PyDict* ShipItem::GetShipState() {
     // Create entries for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
-    for (int i=0; i<moduleList.size(); ++i)
-        result->SetItem(new PyInt(moduleList.at(i)->itemID()), moduleList.at(i)->GetItemStatusRow());
+    for (auto cur : moduleList)
+        result->SetItem(new PyInt(cur->itemID()), cur->GetItemStatusRow());
 
     return result;
 }
@@ -634,13 +634,13 @@ PyList* ShipItem::ShipGetModuleList() {
     }
 
     PyList* result = new PyList();
-    PyTuple* module = new PyTuple(2);
     // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
-    for (int i=0; i<moduleList.size(); ++i) {
-        module->SetItem(0, new PyInt(moduleList.at(i)->typeID()));
-        module->SetItem(1, new PyInt(moduleList.at(i)->itemID()));
+    for (auto cur : moduleList) {
+        PyTuple* module = new PyTuple(2);
+        module->SetItem(0, new PyInt(cur->typeID()));
+        module->SetItem(1, new PyInt(cur->itemID()));
         result->AddItem(module);
     }
 
@@ -648,7 +648,6 @@ PyList* ShipItem::ShipGetModuleList() {
 }
 
 PyDict* ShipItem::GetChargeState() {
-    /*  this is correct */
     if (!pInventory->ContentsLoaded()) {
         if (!pInventory->LoadContents()) {
             _log(INV__ERROR, "%s(%u): Failed to load contents for GetShipState", name(), itemID());
@@ -669,11 +668,9 @@ PyDict* ShipItem::GetChargeState() {
         return result;
 
     // Create entries in "shipState" dictionary for loaded charges on ship:
-    PyDict* chargeDict = new PyDict();
     for (auto cur : charges)
-        chargeDict->SetItem(new PyInt((uint16)cur.first), cur.second->GetChargeStatusRow(itemID()));
+        result->SetItem(new PyInt((uint16)cur.first), cur.second->GetChargeStatusRow(itemID()));
 
-    result->SetItem(new PyInt(itemID()), chargeDict);
     return result;
 }
 
@@ -2202,7 +2199,6 @@ PyRep* ShipItem::GetLinkedWeapons()
 {
     if (m_linkedWeapons.empty())
         return PyStatic.NewNone();
-    //return new BuiltinSet();  <<<----  old return (pre-'linked groups')
 
     PyDict* result = new PyDict();
     for (auto cur : m_linkedWeapons) {
@@ -2794,12 +2790,12 @@ PyDict* Ship::MakeSlimItem() {
     m_self->GetMyInventory()->GetItemsByFlagRange(flagHiSlot0, flagHiSlot7, items);
     //m_self->GetMyInventory()->GetItemsByFlagRange(flagSubSystem0, flagSubSystem7, items);
     if (!items.empty()) {
-        PyList *l = new PyList();
+        PyList *list = new PyList();
         for (auto cur : items) {
-            l->AddItem(new_tuple(cur->itemID(), cur->typeID()));
+            list->AddItem(new_tuple(cur->itemID(), cur->typeID()));
         }
 
-        slim->SetItemString("modules", l);
+        slim->SetItemString("modules", list );
     }
 
     if (is_log_enabled(DESTINY__DEBUG)) {
