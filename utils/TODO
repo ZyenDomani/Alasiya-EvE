@@ -6,8 +6,6 @@
 *******************************************************
 **********  errors and other found shit...high priority
 
-ghost modules when removing from fit window while docked
-
 noob ships do not Init() correctly....  most attrs are 0
 
 npcs not getting destiny warpstate set (sometimes)
@@ -21,20 +19,12 @@ after unloading module using ungroup, tried loading charge to newly-ungrouped mo
 prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
 
-deny creating items < typeID 34
-
-stackall in orehold puts stack in cargo...need to step thru this one
-
-    /** @todo  check this for cargo other than hangar....stackall in ore hold puts ore in cargo */
-
 module add/remove isnt fully thought out at this point.
     - will need complete walk thru to verify proper operation
     - module states need a good lookover
 moving mwd from one slot to another throws groupfit limited error
 when moving module slots, module is offlined after refit
 check charge flag - getting segfault on flagAutoFit for chargeRef in fx
-
-ship modules in slim item may be incomplete.  search client for GetTurretSets
 
 InvBrokerBound::Handle_GetInventoryFromId
     - this sets inventory flag when bound object created....needs more thought to finish code
@@ -69,6 +59,8 @@ go thru all updated effect data and look for 'improved' ship data to update ours
     - specialized holds from rhea (not available in cruc)
     - updated barges from current live patch (hot tanks)
 current fx data incomplete at best.  missing multiple items/defs
+isDefault used to send to activate for effectID
+
 
 *******************************************************
 ********  improvements
@@ -80,10 +72,9 @@ closely examine target mgr and see what we can improve.
     - update targ/npcai to inform npc of yellowbox instead of locked
 rewrite completed, but reverted due to multiple errors and inconsistencies
 
-change/remove inventory quantity in favor of attrQuantity to avoid multiple datasets (as previously found in inv.position)
-
-create ",modify" command to allow ingame setting of attributes
+create ".modify" command to allow ingame setting of attributes
     - groove has this functionality in his launcher
+    - this is done already, but incomplete.  search for ".dogma" command
 
 add cache calls/data for systems that use it after debugging and testing completed
 
@@ -92,6 +83,7 @@ change current variable creation from
 to
   A() a(0);
 as this will negate creating a temp object in assign op
+this is mostly done.  few seldom-used items left
 
 write new methods for List() and Move() for bookmarks where owner != player
 currently, all bookmarks are donated to calling player when moved into cargo/hangar
@@ -123,6 +115,8 @@ systemmgr - use kills object instead of db hit
 dbcore - query retry enables runaway server when query causes server disconnection (error)
     - should this be limited?
     - note: it only happens for malformed queries (while testing) from what i've seen.
+DBResultToIntIntDict uses isNull test to set var to 0
+    - this should be PyNone as appropriate
 
 char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.
@@ -259,7 +253,7 @@ paperDollServer incomplete
 PlanetORBBound needs work now that customs offices are working
 PI Launch status need *some way* to tick for launch reentry
 
-store/board ship (cap ship hangar) not coded
+store/board ship in cap ship hangar not coded
 
 ship selfdestruct not coded
 
@@ -291,22 +285,13 @@ skillbar error only happens when training skill to l5 complete
 
 pause skill queue should clear training queue window
 
-verify m_repeat in active module activate code
-found mining msgs.  need to code
-
 set station GoTo target to be dock elevation, NOT centerPoint
-
-charge attrQuantity needs a good lookover.
-    - make sure inventoryitem.quantity and attrQuantity are updated correctly...they not
-    this will need more time and testing to do properly
-
 
 still many ClientErrorMgs not used/implemented
 
 noob mining ships to have ore hold?
 ibis, bantam, probe, ?
 
-check for map.emplace() calls that can be exchanged with map.insert() for faster times
 
 figure out how to check edges of bubbles when creating new
     - figure out how to move bubble centers to avoid overlap

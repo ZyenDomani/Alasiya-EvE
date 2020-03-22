@@ -249,23 +249,23 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
     return false;
 }
 
-uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
+void AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
     EvilNumber old_val = EvilZero, new_val = EvilZero;
     AttrMapItr itr = mAttributes.find(AttrQuantity);
     if (itr != mAttributes.end()) {
         old_val = itr->second;
         itr->second = old_val + qty;
     } else {
-        _log(ITEM__WARNING, "%s doesnt have AttrQuantity properly initialized.", mItem.name());
         old_val = (EvilNumber)mItem.quantity();
         mAttributes.emplace(AttrQuantity, old_val + qty);
+        _log(ITEM__WARNING, "%s is initializing AttrQuantity to %u.", mItem.name(), old_val.get_uint32() + qty);
     }
 
     if (loaded)
         new_val = old_val + qty;
 
     if (old_val == new_val)
-        return new_val.get_uint32();
+        return;
 
     Notify_OnModuleAttributeChange modChange;
     modChange.ownerID = mItem.ownerID();
@@ -277,7 +277,7 @@ uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
         itemKey->SetItem(2, new PyInt(mItem.typeID()));
         modChange.itemKey = itemKey;
     } else {
-        _log(ITEM__WARNING, "%s calling AlterChargeQuantity() but isnt a charge.", mItem.name());
+        _log(ITEM__WARNING, "%s calling AlterChargeQuantity() but isnt loaded.", mItem.name());
         modChange.itemKey = new PyInt(mItem.itemID());
     }
     modChange.attributeID = AttrQuantity;
@@ -296,14 +296,6 @@ uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
         pClient->QueueDestinyEvent(&change);
     else
         _log(ITEM__WARNING, "AlterChargeQuantity - Cannot find owner for %s", mItem.name());
-
-    if (loaded)
-        return new_val.get_uint32();
-
-    if (itr != mAttributes.end())
-        return itr->second.get_uint32();
-
-    return mItem.quantity();
 }
 
 // [eventName,] ownerID, itemID, attributeID, time, newValue, oldValue = change (unless attrib = quantity)

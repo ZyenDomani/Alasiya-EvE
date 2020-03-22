@@ -68,7 +68,7 @@ public:
     void CopyAttributes(std::map<uint16, EvilNumber>& attrMap);
 
     /* only for loaded charges */
-    uint32 AlterChargeQuantity(int16 qty=0, bool loaded=true);  // loaded=false will send 0 as new value
+    void AlterChargeQuantity(int16 qty = 0, bool loaded = true);  // loaded=false will send 0 as new value
 
 
     /**

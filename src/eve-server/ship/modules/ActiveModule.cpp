@@ -362,7 +362,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
      *                eve.Message('WarpScrambledOtherBy', {'scrambler': jammerName,
      *                'scrambled': targetName})
      */
-    
+
     --m_repeat;
     if (m_repeat < 1)
         m_Stop = true;
@@ -828,10 +828,8 @@ void ActiveModule::ConsumeCharge() {
         for (auto cur : modules)
             if (/*cur->isOnline() and */cur->IsLoaded()) // should we check for online also?  maybe later.
                 cur->GetLoadedChargeRef()->AlterChargeQuantity(-1);
-                //m_chargeRef->AlterQuantity(-1, m_chargeLoaded);
     } else
         m_chargeRef->AlterChargeQuantity(-1, m_chargeLoaded);
-        //m_chargeRef->AlterQuantity(-1, m_chargeLoaded);
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)

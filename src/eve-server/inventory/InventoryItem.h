@@ -130,9 +130,9 @@ public:
     void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     // this also updates volume of item
-    bool                    AlterQuantity(int32 qty_change, bool notify=false);
-    bool                    SetQuantity(int32 qty_new, bool notify=false);
-    bool                    SetFlag(EVEItemFlags new_flag, bool notify=false);
+    bool                    AlterQuantity(int32 qty, bool notify=false);
+    bool                    SetQuantity(int32 qty, bool notify=false);
+    bool                    SetFlag(EVEItemFlags flag, bool notify=false);
 
     /* public-access data functions handled in base class. */
     void                    SaveItem();  //save the item to the DB.
