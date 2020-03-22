@@ -612,7 +612,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
         for (auto wingID : wingIDs) {
             if (!IsWing(wingID))
                 continue;
-            bData.armored = 0; bData.info = 0; bData.leader = 0; bData.mining = 0; bData.siege = 0; bData.skirmish = 0;
+            bData = BoostData();
             if (fBoost) {
                 bData.armored   = fData.armored;
                 bData.info      = fData.info;
@@ -642,7 +642,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
         for (auto wingID : wing) {
             if (!IsWing(wingID))
                 continue;
-            bData.armored = 0; bData.info = 0; bData.leader = 0; bData.mining = 0; bData.siege = 0; bData.skirmish = 0;
+            bData = BoostData();
             if (fBoost) {
                 bData.armored   = fData.armored;
                 bData.info      = fData.info;
@@ -672,7 +672,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
         for (auto squadID : squad) {
             if (!IsSquad(squadID))
                 continue;
-            bData.armored = 0; bData.info = 0; bData.leader = 0; bData.mining = 0; bData.siege = 0; bData.skirmish = 0;
+            bData = BoostData();
             if (fBoost) {
                 bData.armored   = fData.armored;
                 bData.info      = fData.info;

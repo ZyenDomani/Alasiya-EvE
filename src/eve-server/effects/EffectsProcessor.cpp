@@ -197,22 +197,18 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             // this isnt complete.
             fxData arg1 = fxData();
                 arg1.srcRef = data.srcRef;
-                arg1.math = arg1.targLoc = arg1.fxSrc = arg1.targAttr = arg1.srcAttr = arg1.grpID = arg1.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), arg1, pMod);
             fxData arg2 = fxData();
                 arg2.srcRef = data.srcRef;
-                arg2.math = arg2.targLoc = arg2.fxSrc = arg2.targAttr = arg2.srcAttr = arg2.grpID = arg2.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), arg2, pMod);
             data.result = (arg1.result + arg2.result);
         } break;
         case Operands::GTE: {  //39    %(arg1)s>=%(arg2)s
             fxData arg1 = fxData();
                 arg1.srcRef = data.srcRef;
-                arg1.math = arg1.targLoc = arg1.fxSrc = arg1.targAttr = arg1.srcAttr = arg1.grpID = arg1.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), arg1, pMod);
             fxData arg2 = fxData();
                 arg2.srcRef = data.srcRef;
-                arg2.math = arg2.targLoc = arg2.fxSrc = arg2.targAttr = arg2.srcAttr = arg2.grpID = arg2.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), arg2, pMod);
             //  this needs work
             //if (arg1.srcRef->GetAttribute(arg1.srcAttr) >= arg2.targLoc->GetAttribute(arg2.targAttr))
