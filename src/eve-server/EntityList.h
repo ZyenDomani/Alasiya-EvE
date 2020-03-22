@@ -86,7 +86,7 @@ public:
     void GetStationGuestList(uint32 stationID, std::vector<Client* > &result) const;
 
     // for main loop thread sleeping
-    bool HasClients()                                   { return (m_players.size() == 0 ? false : true); }
+    bool HasClients()                                   { return !m_players.empty(); }
 
     Agent* GetAgent(uint32 agentID);
 
@@ -107,7 +107,6 @@ public:
 
     /* stamp shit here */
     uint32 GetStamp()                                   { return m_stamp; }
-    bool IsTicActive()                                  { return m_stampTimer.Check(false); }
     void TicCompleted()                                 { ++m_stamp; }
     uint32 GetMinutes()                                 { return m_minutes; }
 
@@ -145,7 +144,7 @@ public:
     //testing target tics in <1hz
     // add SE* and targMgr* to map
     void AddTargMgr(SystemEntity* pSE, TargetManager* pTM)      { m_targMgrs.emplace(pSE, pTM); }
-    // remove SE* and targMgr* from map 
+    // remove SE* and targMgr* from map
     void DeleteTargMgr(SystemEntity* pSE)                       { m_targMgrs.erase(pSE); }
 
 protected:
