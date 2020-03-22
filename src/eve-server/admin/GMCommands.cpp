@@ -181,6 +181,8 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         throw PyException(MakeCustomError("Argument 3 should be an item type ID"));
 
     typeID = atoi(args.arg(3).c_str());
+    if (typeID < 34)
+        throw PyException(MakeCustomError("Invalid Type ID."));
 
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You must be in space to spawn things."));

@@ -423,10 +423,13 @@ static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr 
     if (args.isNumber(1)) {
         typeID = atoi(args.arg(1).c_str());
     } else {
+        // this hits db directly, so test for possible sql injection code
+        for (const auto cur : badCharsSearch)
+            if (EvE::icontains(args.arg(1), cur))
+                throw PyException( MakeCustomError("Name contains invalid characters"));
         std::map<uint32_t, std::string> matches;
-        if (!db->ItemSearch(args.arg(1).c_str(), matches)) {
+        if (!db->ItemSearch(args.arg(1).c_str(), matches))
             throw PyException(MakeCustomError("Item not found"));
-        }
 
         if (matches.size() > 1) {
             auto c = matches.begin();
@@ -435,13 +438,12 @@ static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr 
                 _log(COMMAND__MESSAGE, "Got match: %s\n", c->second.c_str());
 
                 // POSIX standard btw
-                if (strcasecmp(c->second.c_str(), args.arg(1).c_str()) == 0) {
+                if (strcasecmp(c->second.c_str(), args.arg(1).c_str()) == 0)
                     typeID = c->first;
-                }
             }
-            if (typeID == -1) {
+            if (typeID == -1)
                 throw PyException(MakeCustomError("Item name is ambiguous.  Please use a full item name"));
-            }
+
         } else if (matches.size() == 1) {
             auto cur = matches.begin();
             _log(COMMAND__MESSAGE,
@@ -450,10 +452,11 @@ static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr 
             typeID = cur->first;
         }
     }
-    if (typeID == -1) {
+    if (typeID == -1)
         throw PyException(MakeCustomError("Unable to find valid type to create"));
-    }
 
+    if (typeID < 34)
+        throw PyException(MakeCustomError("Invalid Type ID."));
 
     int qty = 1;
     if (2 < args.argCount()) {
