@@ -334,9 +334,10 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     // Create size map, sorted from the greatest to the smallest value:
     std::multimap< uint8, uint32, std::greater< uint8 > > sizeMap;
     uint32 cc = header->ColumnCount();
-    size_t sum = 0;
+    size_t sum(0);
+    uint8 size(0);
 
-    for( uint32 i = 0; i < cc; ++i ) {
+    for( uint32 i(0); i < cc; ++i ) {
         uint8 size = DBTYPE_GetSizeBits( header->GetColumnType( i ) );
 
         sizeMap.insert( std::make_pair( size, i ) );

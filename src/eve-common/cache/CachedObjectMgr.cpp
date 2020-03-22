@@ -502,6 +502,7 @@ PySubStream* CachedObjectMgr::LoadCachedFile( const char* abs_fname, const char*
     fclose( f );
     sLog.Debug("CachedObjMgr","Loaded cache file for '%s': length %u", oname, file_length );
 
+    /** @todo Mem leak.  `new PyBuffer()` never freed */
     PySubStream* res = new PySubStream( new PyBuffer( &buf ) );
     SafeDelete( buf );
     return res;

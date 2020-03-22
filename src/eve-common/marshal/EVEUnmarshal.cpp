@@ -225,14 +225,14 @@ PyRep* UnmarshalStream::LoadIntegerVar()
 
     if( sizeof( int32 ) >= len )
     {
-        int32 intval = 0;
+        int32 intval(0);
         memcpy( &intval, &*data, len );
 
         return new PyInt( intval );
     }
     else if( sizeof( int64 ) >= len )
     {
-        int64 intval = 0;
+        int64 intval(0);
         memcpy( &intval, &*data, len );
 
         return new PyLong( intval );
@@ -338,7 +338,7 @@ PyRep* UnmarshalStream::LoadTuple()
     const uint32 count = ReadSizeEx();
     PyTuple* tuple = new PyTuple( count );
 
-    for( uint32 i = 0; i < count; i++ )
+    for( uint32 i(0); i < count; i++ )
     {
         PyRep* rep = LoadRep();
         if( NULL == rep )
@@ -390,7 +390,7 @@ PyRep* UnmarshalStream::LoadList()
     const uint32 count = ReadSizeEx();
     PyList* list = new PyList( count );
 
-    for( uint32 i = 0; i < count; i++ )
+    for( uint32 i(0); i < count; i++ )
     {
         PyRep* rep = LoadRep();
         if( NULL == rep )
@@ -422,7 +422,7 @@ PyRep* UnmarshalStream::LoadDict()
     const uint32 count = ReadSizeEx();
     PyDict* dict = new PyDict;
 
-    for( uint32 i = 0; i < count; i++ )
+    for( uint32 i(0); i < count; i++ )
     {
         PyRep* value = LoadRep();
         if( NULL == value )
@@ -531,9 +531,9 @@ PyRep* UnmarshalStream::LoadPackedRow()
     // Create size map, sorted from the greatest to the smallest value
     std::multimap< uint8, uint32, std::greater< uint8 > > sizeMap;
     uint32 cc = row->header()->ColumnCount();
-    size_t sum = 0;
+    size_t sum(0);
 
-    for( uint32 i = 0; i < cc; i++ )
+    for( uint32 i(0); i < cc; i++ )
     {
         uint8 size = DBTYPE_GetSizeBits( row->header()->GetColumnType( i ) );
 
@@ -546,7 +546,7 @@ PyRep* UnmarshalStream::LoadPackedRow()
     unpacked.Resize<uint8>( sum );
 
     Buffer::const_iterator<uint8> unpackedItr = unpacked.begin<uint8>();
-    uint8 bitOffset = 0;
+    uint8 bitOffset(0);
 
     std::multimap< uint8, uint32, std::greater< uint8 > >::iterator cur, end;
     cur = sizeMap.begin();

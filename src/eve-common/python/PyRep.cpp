@@ -978,10 +978,11 @@ PyTuple* PyObjectEx_Type2::_CreateHeader( PyTuple* args, PyDict* keywords, bool 
     PyTuple* body = new PyTuple( 2 );
         body->SetItem( 0, args );
         body->SetItem( 1, keywords );
+        /*
     if (enclosed) {
         PyTuple* head = new PyTuple( 1 );
             head->SetItem( 0, body );
-    }
+    } */
 
     return body; // head;
 }
@@ -995,10 +996,11 @@ PyTuple* PyObjectEx_Type2::_CreateHeader( PyToken* args, PyDict* keywords, bool 
     PyTuple* body = new PyTuple( 2 );
         body->SetItem( 0, args );
         body->SetItem( 1, keywords );
+        /*
     if (enclosed) {
         PyTuple* head = new PyTuple( 1 );
             head->SetItem( 0, body );
-    }
+    } */
 
     return body; // head;
 }

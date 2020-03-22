@@ -47,7 +47,7 @@ DBRowDescriptor::DBRowDescriptor( const DBQueryResult& res )
 {
     uint32 cc = res.ColumnCount();
 
-    for( uint32 i = 0; i < cc; i++ )
+    for( uint32 i(0); i < cc; ++i )
         AddColumn( res.ColumnName( i ), res.ColumnType( i ) );
 }
 
@@ -56,7 +56,7 @@ DBRowDescriptor::DBRowDescriptor( const DBResultRow& row )
 {
     uint32 cc = row.ColumnCount();
 
-    for( uint32 i = 0; i < cc; i++ )
+    for( uint32 i(0); i < cc; ++i )
         AddColumn( row.ColumnName( i ), row.ColumnType( i ) );
 }
 
@@ -80,7 +80,7 @@ uint32 DBRowDescriptor::FindColumn( const char* name ) const
     uint32 cc = ColumnCount();
     PyString* stringName = new PyString( name );
 
-    for( uint32 i = 0; i < cc; i++ )
+    for( uint32 i(0); i < cc; ++i )
     {
         if( stringName->hash() == GetColumnName( i )->hash() )
         {
@@ -182,7 +182,7 @@ PyDict* CRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 
     //uint32 cc = rowDesc->ColumnCount();
     //PyList* columns = new PyList( cc );
-    //for( uint32 i = 0; i < cc; i++ )
+    //for( uint32 i(0); i < cc; ++i )
     //    columns->SetItem( i,  new PyString( *rowDesc->GetColumnName( i ) ) );
     //keywords->SetItemString( "columns", columns ); //The Type_2 i had no longer used this
 
