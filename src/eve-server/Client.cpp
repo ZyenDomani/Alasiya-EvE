@@ -439,7 +439,7 @@ void Client::ProcessClient() {
     if (m_sessionTimer.Check(false)) {
         _log(CLIENT__TIMER, "Client::ProcessClient():  SetSessionChange to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_sessionTimer.Disable();
-        SetSessionChange();
+        m_sessionChangeActive = false;
     }
 
     /* Check Character Save Timer Expiry:  (not currently used  -allan 17May16)
@@ -832,9 +832,9 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
     if (pShipSE->SystemMgr()->GetID() != m_system->GetID())
         _log(CLIENT__ERROR, "%s(%u) - Ship SysID of %u != Client SysID of %u.", GetName(), m_char->itemID(), pShipSE->SystemMgr()->GetID(), m_system->GetID());
 
-    _log(PLAYER__AP_TRACE, "Client::SetDestiny():  shipSystemID: %u, SystemID: %u, update: %s, updateShip: %s, jump: %s", \
+    _log(PLAYER__AP_TRACE, "Client::SetDestiny():  shipSystemID: %u, SystemID: %u, update: %s, updateShip: %s, jump: %s, cloak: %s", \
             pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
-            updateShip?"true":"false", IsJump()?"true":"false");
+            updateShip?"true":"false", IsJump()?"true":"false", pShipSE->DestinyMgr()->IsCloaked()?"true":"false");
 
     if (pt.isZero()) {
         if (pShipSE->GetPosition().isZero())

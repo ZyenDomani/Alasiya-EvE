@@ -280,7 +280,7 @@ public:
     void SetBeyonce(bool beyonce=false)                 { m_beyonce = beyonce; }
     void SetBubbleWait(bool wait=false)                 { m_bubbleWait = wait; }
     void SetStateSent(bool set=false)                   { m_setStateSent = set; }
-    void SetSessionTimer()                              { SetSessionChange(true); m_sessionTimer.Start(ClientTimers::SessionTimer); }
+    void SetSessionTimer()                              { m_sessionChangeActive = true; m_sessionTimer.Start(ClientTimers::SessionTimer); }
     void SetSessionChange(bool set=false)               { m_sessionChangeActive = set; }
     void SetBallPark();
     void SetJumpTimers();
