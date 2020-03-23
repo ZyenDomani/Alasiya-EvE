@@ -120,16 +120,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         }
     }
 
-    //RuntimeError: ('_Prime called with unsupported data type', <type 'NoneType'>)
-    /** @todo  see what we can do about this....old error  */
-    //if (res.ColumnCount())
-        return DBResultToTupleSet(res);
-    /*
-    PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, PyStatic.NewNone());
-    tuple->SetItem(1, PyStatic.NewNone());
-    return tuple;*/
-    return nullptr;
+    return DBResultToTupleSet(res);
 }
 
 PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityIDs) {

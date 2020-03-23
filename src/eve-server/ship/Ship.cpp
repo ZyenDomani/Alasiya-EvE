@@ -85,7 +85,7 @@ void ShipItem::LogOut()
 
     pInventory->Unload();
 
-    // remove ship item from factory master list here, as *something* changes ship postion when saving items from factory.
+    // remove ship item from factory master list here, as *something* changes ship position when saving items from factory.
     sItemFactory.RemoveItem(m_itemID);
 
     // remove ship item from its' container's inventory list also.
