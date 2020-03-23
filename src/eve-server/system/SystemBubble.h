@@ -123,7 +123,9 @@ public:
     bool HasWarpBubble()                                { return m_hasBubble; }
     void SetWarpBubble(bool set=false)                  { m_hasBubble = set; }
     /* for SetState */
-    void GetEntities(std::map< uint32, SystemEntity* >& into) const;
+    void GetEntities(std::map< uint32, SystemEntity* >& into) const;    // this one only sends visible entities
+    /* for ??? */
+    void GetAllEntities(std::map< uint32, SystemEntity* >& into) const; // this one gets all entities regardless of visibility
     /* for targeting purposes */
     void GetPlayers(std::vector<Client*> &into) const;
     /* for scanning */

@@ -235,9 +235,8 @@ void SystemBubble::Add(SystemEntity* pSE)
 
         Client* pClient(pSE->GetPilot());
         SendAddBalls( pSE );
-        if (!pClient->IsJump())
-            if (!m_players.empty())
-                AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
+        if (!m_players.empty())
+            AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
 
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
     } else {
@@ -355,9 +354,22 @@ void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
     if (m_dynamicEntities.empty())
         return;
 
+    for (auto cur : m_dynamicEntities) {
+        if (cur.second->DestinyMgr()->IsCloaked())
+            continue;
+        into.emplace(cur.first, cur.second);
+    }
+}
+
+void SystemBubble::GetAllEntities ( std::map< uint32, SystemEntity* >& into ) const
+{
+    if (m_dynamicEntities.empty())
+        return;
+
     for (auto cur : m_dynamicEntities)
         into.emplace(cur.first, cur.second);
 }
+
 
 void SystemBubble::GetEntityVec(std::vector< SystemEntity* >& into) const
 {
@@ -608,6 +620,9 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
 void SystemBubble::AddBallExclusive( SystemEntity* pSE ) {
     if (!m_system->IsLoaded())
         return;
+    if (pSE->DestinyMgr()->IsCloaked())
+        return;
+
     Buffer* destinyBuffer = new Buffer();
 
     //create AddBalls header
@@ -673,8 +688,7 @@ void SystemBubble::RemoveBall(SystemEntity *about_who) {
     PySafeDecRef( tmp );
 }
 
-
-// this *should* only be called from DestinyManager::Cloak()
+// this *should* only be called from DestinyMgr::Cloak() and DestinyMgr::Jump()
 void SystemBubble::RemoveBallExclusive(SystemEntity *about_who) {
     RemoveBallFromBP removeball;
         removeball.entityID = about_who->GetID();
@@ -900,12 +914,13 @@ void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const 
 
 void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc ) const
 {
+    if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
+        (*payload)->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
     for (auto cur : m_players) {
         _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
         cur.second->QueueDestinyUpdate(payload);
     }
-    //PySafeDecRef(*payload);
 }
 
 void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const char* desc, SystemEntity* pSE ) const
@@ -919,7 +934,6 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
             cur.second->QueueDestinyUpdate(payload);
         }
     }
-    //PySafeDecRef(*payload);
 }
 
 void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc ) const
@@ -931,7 +945,6 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
         PyIncRef(*payload);
         cur.second->QueueDestinyEvent(payload);
     }
-    //PySafeDecRef(*payload);
 }
 
 void SystemBubble::BubblecastSendNotification(const char* notifyType, const char* idType, PyTuple** payload, bool seq)
@@ -941,5 +954,4 @@ void SystemBubble::BubblecastSendNotification(const char* notifyType, const char
         PyIncRef(*payload);
         cur.second->SendNotification( notifyType, idType, payload, seq );
     }
-    //PySafeDecRef(*payload);
 }
