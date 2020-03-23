@@ -60,6 +60,47 @@ m_destinyMgr(nullptr)
         }
     }
 
+    // this is an internal variable only.
+    m_reloadTime = GetAttribute(AttrReloadTime).get_uint32();
+    // set default of 4s for turrets, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
+    if (m_needsCharge)  {
+        if (m_reloadTime < 1) {
+            switch (mRef->groupID()) {
+                case EVEDB::invGroups::Projectile_Weapon: {
+                    m_reloadTime = 4000;
+                } break;
+                case EVEDB::invGroups::Missile_Launcher_Snowball:
+                case EVEDB::invGroups::Scan_Probe_Launcher: {
+                    m_reloadTime = 5000;
+                } break;
+                case EVEDB::invGroups::Missile_Launcher_Cruise:
+                case EVEDB::invGroups::Missile_Launcher_Rocket:
+                case EVEDB::invGroups::Missile_Launcher_Siege:
+                case EVEDB::invGroups::Missile_Launcher_Standard:
+                case EVEDB::invGroups::Missile_Launcher_Heavy:
+                case EVEDB::invGroups::Missile_Launcher_Assault:
+                case EVEDB::invGroups::Missile_Launcher_Defender:
+                case EVEDB::invGroups::Missile_Launcher_Citadel:
+                case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
+                case EVEDB::invGroups::Missile_Launcher_Bomb: {
+                    m_reloadTime = 7000;
+                } break;
+                default: {
+                    m_reloadTime = 10000;
+                } break;
+            }
+        }
+    }
+
+    //Clear();
+    //GM_Modules = 353,
+
+    if (m_reloadTime > 0)
+        _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums", mRef->name(), mRef->itemID(), m_reloadTime);
+
+    if (!m_shipRef->HasPilot())
+        return;
+
     // these groups receive a 3% increase in scan range on Alasiya
     switch (mRef->groupID()) {
         case EVEDB::invGroups::Ship_Scanner: {
@@ -112,44 +153,65 @@ m_destinyMgr(nullptr)
         } break;
         */
     }
+}
 
-    // this is an internal variable only.
-    m_reloadTime = GetAttribute(AttrReloadTime).get_uint32();
-    // set default of 4s for turrets, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
-    if (m_needsCharge)  {
-        if (m_reloadTime < 1) {
-            switch (mRef->groupID()) {
-                case EVEDB::invGroups::Projectile_Weapon: {
-                    m_reloadTime = 4000;
-                } break;
-                case EVEDB::invGroups::Missile_Launcher_Snowball:
-                case EVEDB::invGroups::Scan_Probe_Launcher: {
-                    m_reloadTime = 5000;
-                } break;
-                case EVEDB::invGroups::Missile_Launcher_Cruise:
-                case EVEDB::invGroups::Missile_Launcher_Rocket:
-                case EVEDB::invGroups::Missile_Launcher_Siege:
-                case EVEDB::invGroups::Missile_Launcher_Standard:
-                case EVEDB::invGroups::Missile_Launcher_Heavy:
-                case EVEDB::invGroups::Missile_Launcher_Assault:
-                case EVEDB::invGroups::Missile_Launcher_Defender:
-                case EVEDB::invGroups::Missile_Launcher_Citadel:
-                case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
-                case EVEDB::invGroups::Missile_Launcher_Bomb: {
-                    m_reloadTime = 7000;
-                } break;
-                default: {
-                    m_reloadTime = 10000;
-                } break;
-            }
-        }
+void ActiveModule::Update()
+{
+    if (!m_shipRef->HasPilot())
+        return;
+
+    // these groups receive a 3% increase in scan range on Alasiya
+    switch (m_modRef->groupID()) {
+        case EVEDB::invGroups::Ship_Scanner: {
+            ResetAttribute(AttrShipScanRange);
+            float range = GetAttribute(AttrShipScanRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrShipScanRange, range);
+        } break;
+        case EVEDB::invGroups::Cargo_Scanner: {
+            ResetAttribute(AttrCargoScanRange);
+            float range = GetAttribute(AttrCargoScanRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrCargoScanRange, range);
+        } break;
+        case EVEDB::invGroups::Survey_Scanner: {
+            ResetAttribute(AttrSurveyScanRange);
+            float range = GetAttribute(AttrSurveyScanRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrSurveyScanRange, range);
+        } break;
+        case EVEDB::invGroups::Shield_Transporter: {
+            ResetAttribute(AttrShieldTransferRange);
+            float range = GetAttribute(AttrShieldTransferRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrShieldTransferRange, range);
+        } break;
+        case EVEDB::invGroups::Energy_Vampire:
+        case EVEDB::invGroups::Energy_Transfer_Array: {
+            ResetAttribute(AttrPowerTransferRange);
+            float range = GetAttribute(AttrPowerTransferRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrPowerTransferRange, range);
+        } break;
+        case EVEDB::invGroups::Energy_Destabilizer: {
+            ResetAttribute(AttrEnergyDestabilizationRange);
+            float range = GetAttribute(AttrEnergyDestabilizationRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrEnergyDestabilizationRange, range);
+        } break;
+        case EVEDB::invGroups::Salvager:
+        case EVEDB::invGroups::Target_Painter:
+        case EVEDB::invGroups::Tracking_Disruptor:
+        case EVEDB::invGroups::Gas_Cloud_Harvester:
+        case EVEDB::invGroups::Remote_Sensor_Damper:
+        case EVEDB::invGroups::Remote_Sensor_Booster:
+        case EVEDB::invGroups::Armor_Repair_Projector: {
+            ResetAttribute(AttrMaxRange);
+            float range = GetAttribute(AttrMaxRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrMaxRange, range);
+        } break;
     }
-
-    //Clear();
-    //GM_Modules = 353,
-
-    if (m_reloadTime > 0)
-        _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums", mRef->name(), mRef->itemID(), m_reloadTime);
 }
 
 void ActiveModule::Clear()

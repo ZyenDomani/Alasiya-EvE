@@ -28,18 +28,36 @@ Prospector::Prospector(ModuleItemRef mRef, ShipItemRef sRef)
     else if (m_modRef->groupID() == EVEDB::invGroups::Data_Miner)
         m_dataMiner = true;
 
-    // increase scan speed by level of survey skill
-    float cycleTime = GetAttribute(AttrDuration).get_float();
-    cycleTime *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Survey, true))));
-    SetAttribute(AttrDuration, cycleTime);
-
     m_accessChance = 0;
 
     m_holdFlag = flagCargoHold;
     if (m_shipRef->HasAttribute(AttrSalvageHoldCapacity))
         m_holdFlag = flagSalvageHold;
 
+    if (!m_shipRef->HasPilot())
+        return;
+
     pChar = m_shipRef->GetPilot()->GetChar().get();
+
+    // increase scan speed by level of survey skill
+    float cycleTime = GetAttribute(AttrDuration).get_float();
+    cycleTime *= (1 + (0.03 * (pChar->GetSkillLevel(EvESkill::Survey, true))));
+    SetAttribute(AttrDuration, cycleTime);
+}
+
+void Prospector::Update()
+{
+    if (!m_shipRef->HasPilot())
+        return;
+
+    pChar = m_shipRef->GetPilot()->GetChar().get();
+
+    // increase scan speed by level of survey skill
+    float cycleTime = GetAttribute(AttrDuration).get_float();
+    cycleTime *= (1 + (0.03 * (pChar->GetSkillLevel(EvESkill::Survey, true))));
+    SetAttribute(AttrDuration, cycleTime);
+
+    ActiveModule::Update();
 }
 
 void Prospector::Activate(uint16 effectID, uint32 targetID, int16 repeat)

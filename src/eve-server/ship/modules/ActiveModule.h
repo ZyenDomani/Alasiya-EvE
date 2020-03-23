@@ -47,6 +47,7 @@ public:
     virtual uint32      DoCycle();
 
     /* functions to be handled in derived classes as needed */
+    virtual void        Update();  // this is used to set char mods on active modules created before pilot entered ship
     virtual void        ApplyDamage()                   { /* do nothing here */ }
     virtual uint16      GetReloadTime()                 { return m_reloadTime; }
     // this is a check for those active modules that need it (mining, weapons) and overridden as needed

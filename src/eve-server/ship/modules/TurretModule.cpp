@@ -32,6 +32,9 @@ void TurretModule::LoadCharge(InventoryItemRef cRef)
 {
     ActiveModule::LoadCharge(cRef);
 
+    if (m_chargeRef.get() == nullptr)
+        return;
+
     m_crystalDmg        = m_chargeRef->GetAttribute(AttrDamage).get_float();
     m_crystalDmgAmount  = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
     m_crystalDmgChance  = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();

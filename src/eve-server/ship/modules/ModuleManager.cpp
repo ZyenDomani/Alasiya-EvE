@@ -329,8 +329,9 @@ bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
         if (pMod == nullptr)
             return false;
 
-        pShipItem->GetPilot()->SendErrorMsg("You cannot add %s to %s because %s is already there.", \
-                mRef->name(), sDataMgr.GetFlagName(flag), pMod->GetSelf()->name());
+        if (pShipItem->HasPilot())
+            pShipItem->GetPilot()->SendErrorMsg("You cannot add %s to %s because %s is already there.", \
+                    mRef->name(), sDataMgr.GetFlagName(flag), pMod->GetSelf()->name());
         // change this to use movemodule?
         return false;
     }
@@ -343,18 +344,22 @@ bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
     if (!pModuleCont->AddModule(flag, pMod))
         return false; // error here?
 
+    if (!pShipItem->HasPilot())
+        return true;
+
     // update available slots
     if (pMod->isHighPower()) {
+        bool update = !pShipItem->GetPilot()->IsLogin();
         if (pMod->isTurretFitted()) {
             // apply config modifier, if applicable
             mRef->MultiplyAttribute(AttrSpeed, sConfig.rates.turretRoF);
             uint8 count = pShipItem->GetAttribute(AttrTurretSlotsLeft).get_uint32() -1;
-            pShipItem->SetAttribute(AttrTurretSlotsLeft, count, !pShipItem->GetPilot()->IsLogin());
+            pShipItem->SetAttribute(AttrTurretSlotsLeft, count, update);
         } else if (pMod->isLauncherFitted()) {
             // apply config modifier, if applicable
             mRef->MultiplyAttribute(AttrSpeed, sConfig.rates.missileRoF);
             uint8 count = pShipItem->GetAttribute(AttrLauncherSlotsLeft).get_uint32() -1;
-            pShipItem->SetAttribute(AttrLauncherSlotsLeft, count, !pShipItem->GetPilot()->IsLogin());
+            pShipItem->SetAttribute(AttrLauncherSlotsLeft, count, update);
         }
         --m_HighSlots;
     } else if (pMod->isMediumPower()) {
@@ -364,8 +369,9 @@ bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
     } else if (pMod->isSubSystem()) {
         --m_SubSystemSlots;
     } else if (pMod->isRig()) {
-        pShipItem->SetAttribute(AttrUpgradeLoad, (pShipItem->GetAttribute(AttrUpgradeLoad) + pMod->GetAttribute(AttrUpgradeCost)), !pShipItem->GetPilot()->IsLogin());
-        pShipItem->SetAttribute(AttrUpgradeSlotsLeft, (pShipItem->GetAttribute(AttrUpgradeSlotsLeft) -1), !pShipItem->GetPilot()->IsLogin());
+        bool update = !pShipItem->GetPilot()->IsLogin();
+        pShipItem->SetAttribute(AttrUpgradeLoad, (pShipItem->GetAttribute(AttrUpgradeLoad) + pMod->GetAttribute(AttrUpgradeCost)), update);
+        pShipItem->SetAttribute(AttrUpgradeSlotsLeft, (pShipItem->GetAttribute(AttrUpgradeSlotsLeft) -1), update);
     }
 
     if (m_initalized)
@@ -897,8 +903,10 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
         std::vector< GenericModule* > modList;
         SortModulesBySlotDec(modVec, modList);
         /** @todo check this.  may have to rework */
-        for (auto cur : modList)
+        for (auto cur : modList) {
+            cur->Update();
             cur->Online();
+        }
     }
 }
 

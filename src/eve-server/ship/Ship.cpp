@@ -23,7 +23,7 @@
 ShipItem::ShipItem(uint32 shipID, const ItemType &type, const ItemData &data)
 : InventoryItem(shipID, type, data),
 m_pilot(nullptr),
-m_ModuleManager(nullptr)
+m_ModuleManager(new ModuleManager(this))
 {
     m_isPopped = false;
     m_loaded = false;
@@ -32,6 +32,7 @@ m_ModuleManager(nullptr)
     m_onlineModuleVec.clear();
     m_targetRef = InventoryItemRef(nullptr);
     pInventory = new Inventory(InventoryItemRef(this));
+
     _log(ITEM__TRACE, "Created ShipItem for %s(%u).", name(), itemID());
 }
 
@@ -74,22 +75,16 @@ bool ShipItem::_Load()
     if (!pInventory->LoadContents())
         return false;
 
+    Init();
+
     return (m_loaded = true);
 }
 
 void ShipItem::Init()
 {
-    // create the module manager if not already done
-    if (m_ModuleManager == nullptr)
-        m_ModuleManager = new ModuleManager(this);
-
     // pods have 57 attribs and 0 effects
     if (m_type.groupID() == EVEDB::invGroups::Capsule) {
         InitPod();
-        return;
-    }
-    if (m_pilot->GetChar().get() == nullptr) {
-        _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", name(), itemID());
         return;
     }
 
@@ -105,8 +100,9 @@ void ShipItem::InitPod() {
     m_ModuleManager->Initialize();
 
     // pod will always be full when activated
-    if (m_pilot->IsInSpace())
-        Heal();
+    if (m_pilot != nullptr)
+        if (m_pilot->IsInSpace())
+            Heal();
 }
 
 void ShipItem::LogOut()
@@ -484,10 +480,6 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                     return false;
                 }
                 if (iRef->categoryID() == EVEDB::invCategories::Charge) {
-                    if (m_ModuleManager == nullptr){
-                        m_ModuleManager = new ModuleManager(this);
-                        m_ModuleManager->Initialize();
-                    }
                     GenericModule* pMod = m_ModuleManager->GetModule(flag);
                     if (pMod != nullptr) {
                         // note:  this is also checked in client before calling Load()
@@ -610,10 +602,6 @@ PyDict* ShipItem::GetShipState() {
     if (pInventory->GetSingleItemByFlag(flagPilot, iRefPilot))
         result->SetItem(new PyInt(iRefPilot->itemID()), iRefPilot->GetItemStatusRow());
 
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
     // Create entries for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
@@ -627,10 +615,6 @@ PyList* ShipItem::ShipGetModuleList() {
     if (!pInventory->LoadContents()) {
         _log(INV__ERROR, "%s(%u): Failed to load contents for ShipGetModuleList", name(), itemID());
         return nullptr;
-    }
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
     }
 
     PyList* result = new PyList();
@@ -653,10 +637,6 @@ PyDict* ShipItem::GetChargeState() {
             _log(INV__ERROR, "%s(%u): Failed to load contents for GetShipState", name(), itemID());
             return nullptr;
         }
-    }
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
     }
 
     /* get list of charges loaded in ship modules (*all slots*) */
@@ -728,8 +708,7 @@ void ShipItem::SaveShip()
 {
     SaveItem();                         // Save ship info
     pAttributeMap->SaveShipState();      // save ship damage
-    if (m_ModuleManager != nullptr)
-        m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
+    m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
 }
 
 bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
@@ -807,11 +786,6 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
 void ShipItem::ProcessModules() {
     if (m_pilot->IsDocked())
         return;
-    if (m_ModuleManager == nullptr){
-        _log(MODULE__ERROR, "ProcessModules() - %s(%u) has no module manager.", name(), itemID());
-        EvE::traceStack();
-        return;
-    }
 
     m_ModuleManager->Process();
 }
@@ -829,10 +803,7 @@ void ShipItem::Eject()
 
 void ShipItem::Dock() {
     m_isDocking = true;
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
+
     m_ModuleManager->DeactivateAllModules();
     m_onlineModuleVec.clear();
     // remove ship effects and char skill effects for docking.
@@ -843,11 +814,6 @@ void ShipItem::Undock() {
     m_isUndocking = true;
 
     //HorribleFittingProblems
-
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
 
     ResetEffects();
     //ProcessEffects(true, true);
@@ -864,18 +830,10 @@ void ShipItem::Undock() {
 }
 
 void ShipItem::Warp() {
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
     m_ModuleManager->ShipWarping();
 }
 
 void ShipItem::Jump() {
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
     m_ModuleManager->ShipJumping();
 }
 /* {'messageKey': 'JumpAlreadyHaveStationClone', 'dataID': 17882749, 'suppressable': False, 'bodyID': 259250, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1009}
@@ -1012,19 +970,11 @@ void ShipItem::SetShipHull(float fraction)
 /* Begin new Module Manager Interface */
 void ShipItem::GetModuleRefVec(std::vector< InventoryItemRef >& iRefVec)
 {
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
     m_ModuleManager->GetModuleListOfRefsAsc(iRefVec);
 }
 
 InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
 {
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
     GenericModule* pMod = m_ModuleManager->GetModule(flag);
     if (pMod != nullptr)
         return pMod->GetSelf();
@@ -1034,10 +984,6 @@ InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
 
 InventoryItemRef ShipItem::GetModuleRef(uint32 modID)
 {
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
     GenericModule* pMod = m_ModuleManager->GetModule(modID);
     if (pMod != nullptr)
         return pMod->GetSelf();
@@ -1297,10 +1243,6 @@ uint32 ShipItem::AddItemByFlag(EVEItemFlags flag, InventoryItemRef iRef, Client*
         return 0;
 
     if (IsModuleSlot(flag)) {
-        if (m_ModuleManager == nullptr) {
-            m_ModuleManager = new ModuleManager(this);
-            m_ModuleManager->Initialize();
-        }
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             iRef->ChangeSingleton(false, false);
             m_ModuleManager->LoadCharge(iRef, flag);
@@ -1354,11 +1296,6 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
 
     // check to see if item is currently in a module slot.
     if (IsModuleSlot(iRef->flag())) {
-        if (m_ModuleManager == nullptr) {
-            m_ModuleManager = new ModuleManager(this);
-            m_ModuleManager->Initialize();
-        }
-
         if (IsRigSlot(iRef->flag()))
             m_ModuleManager->UninstallRig(iRef->itemID());
         else if (iRef->categoryID() == EVEDB::invCategories::Charge)
@@ -1375,10 +1312,6 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
 uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, bool merge/*false*/)
 {
     if (IsModuleSlot(fromFlag)) {
-        if (m_ModuleManager == nullptr) {
-            m_ModuleManager = new ModuleManager(this);
-            m_ModuleManager->Initialize();
-        }
         GenericModule* pMod = m_ModuleManager->GetModule(fromFlag);
         if (pMod == nullptr)
             throw PyException( MakeCustomError("Module was not found in %s.", sDataMgr.GetFlagName(fromFlag)));
@@ -1807,19 +1740,11 @@ void ShipItem::RemoveRig(InventoryItemRef iRef) {
 
 void ShipItem::OnlineAll()
 {
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
     m_ModuleManager->OnlineAll();
 }
 
 void ShipItem::OfflineAll()
 {
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
     m_ModuleManager->OfflineAll();
 }
 
@@ -1830,11 +1755,6 @@ void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
 
 void ShipItem::StripFitting()
 {
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
-
     UnlinkAllWeapons();
 
     EVEItemFlags flag = flagCargoHold;
@@ -2404,11 +2324,6 @@ void ShipItem::PrepForUndock() {
 
 std::string ShipItem::GetShipDNA()
 {
-    if (m_ModuleManager == nullptr){
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
-
     /* ship dna is shorthand notation to describe a ship and it's fittings purely thru the use of typeIDs and quantities
      *
      * the format is as follows:
