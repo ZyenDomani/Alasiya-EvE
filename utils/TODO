@@ -54,6 +54,9 @@ skillqueueendtime in chardb wrong/invalid.  check setting
 
 check for item ownership before rename
     send error if failed
+    multiple checks still need to be written
+    verify OnCfgDataChanged vs OnItemNameChange
+    Structure items have throw.  not sure if this is valid
 
 go thru all updated effect data and look for 'improved' ship data to update ours
     - specialized holds from rhea (not available in cruc)
