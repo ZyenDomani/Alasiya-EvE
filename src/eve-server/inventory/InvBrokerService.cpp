@@ -395,18 +395,19 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
     return result;
 }
 
+// this cannot throw, returns nothing.
 PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     CallSetLabel args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     sItemFactory.SetUsingClient( call.client );
     InventoryItemRef item = sItemFactory.GetItem( args.itemID );
     if (item.get() == nullptr) {
         codelog(INV__ERROR, "%s: Unable to load item %u", call.client->GetName(), args.itemID);
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     /*
@@ -417,27 +418,34 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     /** @todo if owner is corp, make sure char has permissions to rename corp items  */
     if (IsPlayerCorp(item->ownerID())) {
         if (item->ownerID() != call.client->GetCorporationID()) {
-            _log(INV__ERROR, "%u(%u) tried to rename CorpItem %s(%u) but owned by %u.", \
-                call.client->GetName(), call.client->GetCharacterID(), item->itemName().c_str(), item->itemID(), item->ownerID());
-            return PyStatic.NewNone();
+            _log(INV__ERROR, "%u(%u) tried to rename CorpItem %s(%u) owned by %u.", \
+                    call.client->GetName(), call.client->GetCharacterID(), item->itemName().c_str(), \
+                    item->itemID(), item->ownerID());
+            call.client->SendErrorMsg("You are not allowed to rename that.");
+            return nullptr;
         }
     } else if (IsCharacter(item->ownerID())) {
         if (item->ownerID() != call.client->GetCharacterID()) {
-            _log(INV__ERROR, "%u(%u) tried to rename PlayerItem %s(%u) but owned by %u.", \
-            call.client->GetName(), call.client->GetCharacterID(), item->itemName().c_str(), item->itemID(), item->ownerID());
-            return PyStatic.NewNone();
+            _log(INV__ERROR, "%u(%u) tried to rename PlayerItem %s(%u) owned by %u.", \
+                    call.client->GetName(), call.client->GetCharacterID(), item->itemName().c_str(), \
+                    item->itemID(), item->ownerID());
+            call.client->SendErrorMsg("You are not allowed to rename that.");
+            return nullptr;
         }
     } else {
         // error here....
+        call.client->SendErrorMsg("You are not allowed to rename that.");
+        return nullptr;
     }
 
     item->Rename(PyRep::StringContent(args.itemName));
 
-    // Release the item factory now that the ItemFactory is finished being used:
+    // Release the ItemFactory
     sItemFactory.UnsetUsingClient();
 
-    // returns None()
-    return PyStatic.NewNone();
+    //OnItemNameChange
+
+    return nullptr;
 }
 
 PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
