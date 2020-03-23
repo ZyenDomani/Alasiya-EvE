@@ -154,7 +154,7 @@ void StructureItem::RemoveItem(InventoryItemRef iRef)
     InventoryItem::RemoveItem(iRef);
 }
 
-void StructureItem::Rename ( std::string name ) {
+void StructureItem::Rename( std::string name ) {
     if (mySE->GetPOSSE()->GetState() > EVEPOS::EntityState::Unanchored) {
         InventoryItem::Rename ( name );
         mySE->GetPOSSE()->SendSlimUpdate();

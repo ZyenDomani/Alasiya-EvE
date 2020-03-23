@@ -141,7 +141,7 @@ void GenericModule::Online()
                 data.action = FX::Action::Invalid;
                 data.srcRef = m_chargeRef;
                 sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
-           }
+            }
         }
     }
 

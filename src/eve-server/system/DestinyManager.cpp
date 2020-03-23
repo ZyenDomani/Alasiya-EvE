@@ -2263,23 +2263,24 @@ void DestinyManager::DockingAccepted()
     Stop();
     UnCloak();
     Client *pClient = mySE->GetPilot();
-    if (pClient != nullptr) {
-        uint32 stationID = pClient->GetDockStationID();
-        SystemEntity *pSE = mySE->SystemMgr()->GetSE(stationID);
-        if (pSE != nullptr) {
-            const GPoint stationPos = pSE->GetPosition();
-            OnDockingAccepted oda;
-                oda.ship_x = m_position.x;
-                oda.ship_y = m_position.y;
-                oda.ship_z = m_position.z;
-                oda.station_x = stationPos.x;
-                oda.station_y = stationPos.y;
-                oda.station_z = stationPos.z;
-                oda.stationID = stationID;
-            PyTuple* ev = oda.Encode();
-            pClient->SendNotification("OnDockingAccepted", "charid", &ev);
-        }
-    }
+    if (pClient == nullptr)
+        return;
+
+    SystemEntity *pSE = mySE->SystemMgr()->GetSE(pClient->GetDockStationID());
+    if (pSE == nullptr)
+        return;
+
+    const GPoint stationPos = pSE->GetPosition();
+    OnDockingAccepted oda;
+        oda.ship_x = m_position.x;
+        oda.ship_y = m_position.y;
+        oda.ship_z = m_position.z;
+        oda.station_x = stationPos.x;
+        oda.station_y = stationPos.y;
+        oda.station_z = stationPos.z;
+        oda.stationID = pClient->GetDockStationID();
+    PyTuple* ev = oda.Encode();
+    pClient->SendNotification("OnDockingAccepted", "charid", &ev);
 }
 
 void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
