@@ -2285,7 +2285,7 @@ void DestinyManager::DockingAccepted()
 
 void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     _log(DESTINY__TRACE, "Destiny::SetPosition() called by %s (%u)", mySE->GetName(), mySE->GetID());
-    
+
     m_position = pt;
 
     // this sets InventoryItemRef.m_position correctly, which is used for all position references
@@ -2636,6 +2636,7 @@ void DestinyManager::Jump()
 {
     m_cloaked = true;
     //SendCloakFx(true);
+    mySE->SysBubble()->RemoveExclusive(mySE);
 }
 
 void DestinyManager::Cloak() {
