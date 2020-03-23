@@ -52,7 +52,6 @@ namespace Destiny {
                 TooClose = 4,
                 TooFar = 5
             };
-
         }
     }
 }
