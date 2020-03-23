@@ -784,7 +784,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         m_chargeRef = InventoryItemRef(nullptr);
         m_chargeLoaded = false;
         SetChargeState(Module::State::Unloaded);
-        return;  // make error here?
+        return;
     }
 
     m_chargeRef = chargeRef;

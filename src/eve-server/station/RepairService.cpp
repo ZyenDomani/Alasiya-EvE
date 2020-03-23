@@ -270,8 +270,12 @@ void RepairService::GetDamageReports(uint32 itemID, Inventory* pInv, PyList* lis
             return;
     }
     itemRefVec.push_back(iRef);
-    if (iRef->IsShipItem())
-        iRef->GetShipItem()->GetModuleRefVec(itemRefVec);
+    if (iRef->IsShipItem()) {
+        if (iRef->GetShipItem()->IsActive())
+            iRef->GetShipItem()->GetModuleRefVec(itemRefVec);
+        else
+            iRef->GetShipItem()->GetModuleItemVec(itemRefVec);
+    }
 
     for (auto cur : itemRefVec) {
         RepairItemData rid;

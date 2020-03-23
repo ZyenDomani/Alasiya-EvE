@@ -54,14 +54,13 @@ ModuleManager::ModuleManager(ShipItem *const pShip)
 : pShipItem(pShip),
 m_initalized(false),
 pModuleCont(new ModuleContainer(pShip)),
-m_rigScanBonus(1.0f)
+m_rigScanBonus(1.0f),
+m_LowSlots(0),
+m_MidSlots(0),
+m_HighSlots(0),
+m_SubSystemSlots(0)
 {
     assert(pShip != nullptr);
-
-    m_LowSlots = pShip->GetAttribute(AttrLowSlots).get_uint32();
-    m_MidSlots = pShip->GetAttribute(AttrMedSlots).get_uint32();
-    m_HighSlots = pShip->GetAttribute(AttrHiSlots).get_uint32();
-    m_SubSystemSlots = pShip->GetAttribute(AttrSubSystemSlot).get_uint32();
 }
 
 ModuleManager::~ModuleManager()
@@ -75,6 +74,12 @@ bool ModuleManager::Initialize() {
         return true;
 
     _log(MODULE__TRACE, "ModuleManager::Initialize() - ship %s", pShipItem->name() );
+
+    m_LowSlots = pShipItem->GetAttribute(AttrLowSlots).get_uint32();
+    m_MidSlots = pShipItem->GetAttribute(AttrMedSlots).get_uint32();
+    m_HighSlots = pShipItem->GetAttribute(AttrHiSlots).get_uint32();
+    m_SubSystemSlots = pShipItem->GetAttribute(AttrSubSystemSlot).get_uint32();
+
     // Load modules, charges, rigs and subsystems into ship's ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
     // this will order by mod, charge, cargo

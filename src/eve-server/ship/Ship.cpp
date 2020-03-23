@@ -27,6 +27,7 @@ m_ModuleManager(new ModuleManager(this))
 {
     m_isPopped = false;
     m_loaded = false;
+    m_isActive = false;
     m_isDocking = false;
     m_isUndocking = false;
     m_onlineModuleVec.clear();
@@ -75,34 +76,7 @@ bool ShipItem::_Load()
     if (!pInventory->LoadContents())
         return false;
 
-    Init();
-
     return (m_loaded = true);
-}
-
-void ShipItem::Init()
-{
-    // pods have 57 attribs and 0 effects
-    if (m_type.groupID() == EVEDB::invGroups::Capsule) {
-        InitPod();
-        return;
-    }
-
-    InitAttribs();
-
-    m_ModuleManager->Initialize();
-
-    // load linked weapons (if available)
-    LoadWeaponGroups();
-}
-
-void ShipItem::InitPod() {
-    m_ModuleManager->Initialize();
-
-    // pod will always be full when activated
-    if (m_pilot != nullptr)
-        if (m_pilot->IsInSpace())
-            Heal();
 }
 
 void ShipItem::LogOut()
@@ -136,6 +110,7 @@ void ShipItem::SetPlayer(Client* pClient) {
         // should we check for cargo and damage after char leaves ship?  maybe later
         m_onlineModuleVec.clear();
         m_pilot = nullptr;
+        m_isActive = false;
         return;
     }
 
@@ -162,6 +137,33 @@ void ShipItem::SetPlayer(Client* pClient) {
             }
         }
     }
+}
+
+void ShipItem::Init()
+{
+    // pods have 57 attribs and 0 effects
+    if (m_type.groupID() == EVEDB::invGroups::Capsule) {
+        InitPod();
+        return;
+    }
+
+    InitAttribs();
+
+    m_isActive = true;
+
+    m_ModuleManager->Initialize();
+
+    // load linked weapons (if available)
+    LoadWeaponGroups();
+}
+
+void ShipItem::InitPod() {
+    m_ModuleManager->Initialize();
+
+    // pod will always be full when activated
+    if (m_pilot != nullptr)
+        if (m_pilot->IsInSpace())
+            Heal();
 }
 
 void ShipItem::InitAttribs()
@@ -965,6 +967,14 @@ void ShipItem::SetShipHull(float fraction)
         newHullDamage = 0;
 
     SetAttribute(AttrDamage, newHullDamage);
+}
+
+void ShipItem::GetModuleItemVec( std::vector< InventoryItemRef >& iRefVec ) {
+    std::map<uint32, InventoryItemRef> invList;
+    pInventory->GetInventoryList(invList);
+    for (auto cur : invList)
+        if (IsModuleSlot(cur.second->flag()))
+            iRefVec.push_back(cur.second);
 }
 
 /* Begin new Module Manager Interface */

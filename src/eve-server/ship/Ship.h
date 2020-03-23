@@ -141,6 +141,7 @@ public:
     void RepairModules()                                { m_ModuleManager->RepairModules(); }
 
     void AbortCycle()                                   { m_ModuleManager->AbortCycle(); }
+    bool IsActive()                                     { return m_isActive; }
     bool IsDocking()                                    { return m_isDocking; }
     bool IsUndocking()                                  { return m_isUndocking; }
     void SetDocked()                                    { m_isDocking = false; }
@@ -162,7 +163,10 @@ public:
     void DamageModule(uint32 modID, float amt=1)        { m_ModuleManager->DamageModule(modID, amt); }
     void DamageRandModule()                             { m_ModuleManager->DamageRandModule(); }
 
-    void GetModuleRefVec(std::vector<InventoryItemRef>& iRefVec);
+    // get list of fitted modules
+    void GetModuleRefVec(std::vector<InventoryItemRef>& iRefVec); // for active ships
+    // get list of fitted modules
+    void GetModuleItemVec(std::vector<InventoryItemRef>& iRefVec); // for inactive ships
     GenericModule* GetModule(EVEItemFlags flag)         { return m_ModuleManager->GetModule(flag); }
     InventoryItemRef GetModuleRef(EVEItemFlags flag);
     InventoryItemRef GetModuleRef(uint32 modID);
@@ -276,9 +280,10 @@ private:
 
     void ProcessShipEffects(bool update=false);
 
-    bool m_isPopped;
-    bool m_isDocking;
-    bool m_isUndocking;
+    bool m_isActive :1;
+    bool m_isPopped :1;
+    bool m_isDocking :1;
+    bool m_isUndocking :1;
 };
 
 /**
