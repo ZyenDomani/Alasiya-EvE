@@ -70,7 +70,7 @@ public:
 
     // add item to our inventory and set singleton where applicable
     virtual void AddItem(InventoryItemRef iRef);
-    // remove item from our inventory and call Remove() on module/charge 
+    // remove item from our inventory and call Remove() on module/charge
     virtual void RemoveItem(InventoryItemRef iRef);
 
     bool HasModuleManager()                             { return (m_ModuleManager != nullptr); }
@@ -119,7 +119,6 @@ public:
     void OfflineAll();
     void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
     void Deactivate(int32 itemID, std::string effectName) { m_ModuleManager->Deactivate(itemID, effectName); }
-    void DeactivateAllModules();
     void Overload(uint32 itemID)                        { m_ModuleManager->Overload(itemID); }
     void CancelOverloading(uint32 itemID)               { m_ModuleManager->DeOverload(itemID); }
     void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);

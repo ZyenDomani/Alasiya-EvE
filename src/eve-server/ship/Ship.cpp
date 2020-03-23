@@ -829,7 +829,11 @@ void ShipItem::Eject()
 
 void ShipItem::Dock() {
     m_isDocking = true;
-    DeactivateAllModules();
+    if (m_ModuleManager == nullptr) {
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
+    }
+    m_ModuleManager->DeactivateAllModules();
     m_onlineModuleVec.clear();
     // remove ship effects and char skill effects for docking.
     ProcessEffects();
@@ -845,7 +849,8 @@ void ShipItem::Undock() {
         m_ModuleManager->Initialize();
     }
 
-    ProcessEffects(true, true);
+    ResetEffects();
+    //ProcessEffects(true, true);
 
     // Heal Ship completely on test server
     //if (sConfig.debug.IsTestServer)
@@ -1821,15 +1826,6 @@ void ShipItem::OfflineAll()
 void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
 {
     _log(MODULE__ERROR, "ReplaceCharges() called by %s(%u).  It still needs to be written.", name(), itemID());
-}
-
-void ShipItem::DeactivateAllModules()
-{
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
-    m_ModuleManager->DeactivateAllModules();
 }
 
 void ShipItem::StripFitting()
