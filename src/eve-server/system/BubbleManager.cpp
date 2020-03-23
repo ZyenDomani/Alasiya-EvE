@@ -39,9 +39,9 @@
 
 BubbleManager::BubbleManager()
 : m_wanderTimer(0),
-  m_emptyTimer(0)
+m_emptyTimer(0),
+m_bubbleID(0)
 {
-    m_bubbleID = 0;
     m_bubbles.clear();
     m_bubbleMap.clear();
     m_wanderers.clear();
@@ -189,7 +189,6 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
 }
 
 void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint &newCenter) {
-    /** @todo  need to write a method that will check for other bubbles within (radius) of this one, and if found, move centers to (2r) away. */
     shipVelocity.normalize();
     newCenter += (shipVelocity * (BUBBLE_RADIUS_METERS /2));
 }
@@ -238,8 +237,26 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
     // TODO check edges of bubbles....should NOT overlap.
     SystemBubble* pBubble(nullptr);
     pBubble = FindBubble(sysMgr->GetID(), pos);
-    if (pBubble == nullptr) {
-        pBubble = new SystemBubble(sysMgr, pos, BUBBLE_RADIUS_METERS);
+    if (pBubble == nullptr)
+        pBubble = MakeBubble(sysMgr, pos);
+
+    return pBubble;
+}
+
+SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
+    // determine if pos is within 2x diameter of another bubble. (overlap)
+    std::vector<SystemBubble*> bVec;
+    auto range = m_bubbleMap.equal_range(sysMgr->GetID());
+    for ( auto itr = range.first; itr != range.second; ++itr )
+        if (itr->second->IsOverlap(pos)) {
+            GVector dir(pos, itr->second->GetCenter());
+            dir.normalize();
+            pos = itr->second->GetCenter() + dir * (BUBBLE_RADIUS_METERS *2);  // move pos away from center
+        }
+
+    SystemBubble* pBubble(nullptr);
+    pBubble = new SystemBubble(sysMgr, pos, BUBBLE_RADIUS_METERS);
+    if (pBubble != nullptr) {
         m_bubbles.push_back(pBubble);
         m_bubbleMap.emplace(sysMgr->GetID(), pBubble);
         if (sConfig.debug.BubbleTrack)

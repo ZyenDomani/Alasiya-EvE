@@ -413,14 +413,21 @@ bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const
     if (inWarp)
         radius *= 2;
 
-    float distance = m_center.distance(pt);
+    if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
+        float distance = m_center.distance(pt);
+        bool check = false;
+        if (distance < radius )
+            check = true;
 
-    bool check = false;
-    if (distance < radius )
-        check = true;
+        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::InBubble(%u) - distance: %.1f, check: %s", m_bubbleID, distance, check?"true":"false");
+        return check;
+    }
 
-    _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::InBubble(%u) - distance: %.1f, check: %s", m_bubbleID, distance, check?"true":"false");
-    return check;
+    return (m_center.distance(pt) < radius);
+}
+
+bool SystemBubble::IsOverlap( const GPoint& pt ) const {
+    return (m_center.distance(pt) < (m_radius * 2));
 }
 
 void SystemBubble::PrintEntityList() {
@@ -513,6 +520,8 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     addballs.slims = new PyList();
 
     for (auto cur : m_dynamicEntities) {
+        if (cur.second->DestinyMgr()->IsCloaked())
+            continue;
         if (!cur.second->IsMissileSE() or !cur.second->IsFieldSE())
             addballs.damageDict[cur.first] = cur.second->MakeDamageState();
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur.second->MakeSlimItem() ) );

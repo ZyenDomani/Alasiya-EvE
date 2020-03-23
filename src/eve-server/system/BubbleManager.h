@@ -29,7 +29,7 @@
 #include <unordered_map>
 #include "system/SystemEntity.h"
 
-static const float BUBBLE_RADIUS_METERS = 250000.0f;       // EVE retail uses 250km and allows grid manipulation  NOTE:  this is based on testing for best results.  -allan
+static const float BUBBLE_RADIUS_METERS = 300000.0f;       // EVE retail uses 250km and allows grid manipulation  NOTE:  this is based on testing for best results.  -allan
 static const float BUBBLE_HYSTERESIS_METERS = 5000.0f;     // How far out of the existing bubble a ship needs to fly before being placed into a new or different bubble
 
 class SystemBubble;
@@ -64,8 +64,8 @@ public:
     //call to find the bubble containing the GPoint specified, if no bubble does, return NULL
     SystemBubble* FindBubble(uint32 systemID, const GPoint &pos) const;
     SystemBubble* FindBubbleByID(uint32 systemID, uint16 bubbleID);
-    //find the bubble containing the GPoint specified.  will create new bubble if none found.
-    //  this is prefered method to create new bubble.
+    //find the bubble containing the GPoint specified.  will call create to make new bubble if none found.
+    //  this is preferred method to create new bubble.
     SystemBubble* GetBubble(SystemManager* sysMgr, const GPoint &pos);
     //call to calculate new bubble's center from entity's velocity:
     void NewBubbleCenter(GVector shipVelocity, GPoint& newBubbleCenter);
@@ -85,6 +85,9 @@ public:
 
     // for .list command
     uint32 GetBubbleCount(uint32 systemID);
+
+protected:
+    SystemBubble* MakeBubble(SystemManager* sysMgr, GPoint pos);
 
 private:
     Timer m_emptyTimer;

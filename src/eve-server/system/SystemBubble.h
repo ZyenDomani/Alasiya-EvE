@@ -115,6 +115,7 @@ public:
     void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pSE) const;
 
     bool InBubble(const GPoint &pt, bool inWarp=false) const;
+    bool IsOverlap(const GPoint &pt) const;
     void MarkCenter();
     void RemoveMarkers();
 
