@@ -106,24 +106,28 @@ Damage::Damage(SystemEntity* pSE, bool fatal_blow/*false*/)
 
 bool SystemEntity::ApplyDamage(Damage &d) {
     double profileStartTime = GetTimeUSeconds();
-/*
-    if (d.srcSE->IsNPCSE()) {
-        _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+
+    /** @todo  need to run thru this to see if we can speed it up any... */
+
+    if (is_log_enabled(DAMAGE__MESSAGE)) {
+        if (d.srcSE->IsNPCSE()) {
+            _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
-    } else if (d.srcSE->IsDroneSE()){
-        _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+        } else if (d.srcSE->IsDroneSE()){
+            _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
-    } else if (d.srcSE->HasPilot()) {
-        _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from %s's %s(%u) using %s(%u) %s with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+        } else if (d.srcSE->HasPilot()) {
+            _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from %s's %s(%u) using %s(%u) %s with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetPilot()->GetName(), d.srcSE->GetName(), d.srcSE->GetID(), \
                     d.weaponRef->itemName().c_str(), d.weaponRef->itemID(), (d.chargeRef ? d.chargeRef->itemName().c_str() : ""), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
-    } else {
-        _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
+        } else {
+            _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
+        }
     }
-*/
+
     int8 damageID = 0;
     switch (d.weaponRef->groupID()) {
         case EVEDB::invGroups::Missile_Launcher_Assault:
@@ -227,7 +231,11 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             if (HasPilot()) {
                 if ((available_armor /m_self->GetAttribute(AttrArmorHP).get_float()) < m_self->GetAttribute(AttrArmorUniformity).get_float()) {
                     float new_damage = d.GetTotal() * 0.01;
-                    m_self->SetAttribute(AttrDamage, new_damage);
+                    float hull_damage = m_self->GetAttribute(AttrDamage).get_float() + new_damage;
+                    _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f leakthru damage to structure. New structure damage: %.2f",
+                         GetName(), GetID(), new_damage, hull_damage);
+                    m_self->SetAttribute(AttrDamage, hull_damage);
+                    // remove this leakthru damage from armor damage
                     armor_damage -= new_damage;
                 }
             }
