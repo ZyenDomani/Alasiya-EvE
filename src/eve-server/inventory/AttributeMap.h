@@ -67,8 +67,14 @@ public:
     void ResetAttribute(uint16 attrID, bool notify=false);
     void CopyAttributes(std::map<uint16, EvilNumber>& attrMap);
 
-    /* only for loaded charges */
-    void AlterChargeQuantity(int16 qty = 0, bool loaded = true);  // loaded=false will send 0 as new value
+    /* only for loaded charges
+     * qty=0 will not change qty in InventoryItem
+     * qty >1 will add qty sent to InventoryItem.qty (additive)
+     * loaded=false will send 0 as new value
+     * qty=0 and loaded=true will send current InventoryItem.qty as new value
+     * if InventoryItem.qty <1, item is deleted
+     */
+    void AlterChargeQuantity(int16 qty = 0, bool loaded = true);
 
 
     /**

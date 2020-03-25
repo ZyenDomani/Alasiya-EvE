@@ -58,7 +58,7 @@ enum ClientTimers {
     ProcTimer        = 1000,    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
     JetcanTimer      = 600000,  // used to delay jetcan creation.  10min default
     LogoutTimer      = 10000,    // used to hold client object until WarpOut finishes
-    LoginTimer       = 3000,
+    LoginTimer       = 4000,    // delay before sending SetState when client logs in undocked
     SessionTimer     = 10000,   // used to prevent multiple session changes from occurring too fast
     DockInvul        = 3000,
     FleetTimer       = 1500,
