@@ -567,17 +567,9 @@ PyDict* ShipItem::GetShipInfo()
     //encode each one...
     for (auto cur : equipped) {
         Rsp_CommonGetInfo_Entry entry2;
-        if (cur->Populate(entry2)) {
-            if (cur->categoryID() == EVEDB::invCategories::Charge) {
-                PyTuple* tuple = new PyTuple(3);
-                    tuple->SetItem(0, new PyInt(cur->locationID()));
-                    tuple->SetItem(1, new PyInt(cur->flag()));
-                    tuple->SetItem(2, new PyInt(cur->typeID()));
-                result->SetItem(tuple, new PyObject("util.KeyVal", entry2.Encode()));
-            } else {
-                result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry2.Encode()));
-            }
-        } else
+        if (cur->Populate(entry2))
+            result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry2.Encode()));
+        else
             _log( SHIP__ERROR, "%s(%u): Failed to load item %u for ShipGetInfo", name(), itemID(), cur->itemID());
     }
 

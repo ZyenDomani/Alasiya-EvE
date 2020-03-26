@@ -817,30 +817,17 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
                 tmp->SetItem(2, new PyInt(m_reloadTime));
             pClient->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp);
             m_reloadTimer.Start(m_reloadTime);
-            /* this is a horrible hack...but simple once understood
-             *   when charge loading completed, new qty is sent to client, but the method will
-             * add the current qty to existing charge, which will screw up the qty count.
-             * to correct this, set new qty to previous qty here, then reload will add 'reloaded' qty
-             * and send this data to client, showing actual qty and having data correct here.
-             */
-            //m_chargeRef->SetAttribute(AttrQuantity, oldQty);
-            m_chargeRef->AlterChargeQuantity(0);
-        } else {
-            // set immediately when docked
-            m_chargeLoaded = true;
-            SetChargeState(Module::State::Loaded);
         }
-    } else {
-        // set immediately on login
+    }
+
+    if (!m_reloadTimer.Enabled()) {
+        // set immediately on login or when docked
         m_chargeLoaded = true;
         SetChargeState(Module::State::Loaded);
     }
-    if (!m_reloadTimer.Enabled()) {
-        // set quantity and save, as subsequent calls will reset charge attribs
-        //m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity());
-        m_chargeRef->AlterChargeQuantity(0);
-        m_chargeRef->SaveAttributes();
-    }
+    
+    // send qty change
+    m_chargeRef->AlterChargeQuantity(0);
 }
 
 //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})

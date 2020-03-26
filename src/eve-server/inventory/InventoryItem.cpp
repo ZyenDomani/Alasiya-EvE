@@ -817,7 +817,8 @@ void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAu
 void InventoryItem::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
     // update qty here and in attribMap
     pAttributeMap->AlterChargeQuantity(qty, loaded);
-    AlterQuantity(qty, true);
+    // need to call this to keep m_quantity updated correctly
+    AlterQuantity(qty);
 }
 
 bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
@@ -1098,7 +1099,6 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     PySafeDecRef(result.itemID);
     PySafeDecRef(result.invItem);
     result.time = GetFileTimeNow();
-    result.invItem = GetItemRow();
     // this is for me, to display item name in logs.  not sure if client will react to it being here...nope
     result.description = m_itemName;
 
@@ -1110,13 +1110,14 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
             tuple->SetItem(1, new PyInt(m_flag));
             tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
-        //result.invItem = PyStatic.NewNone();
+        result.invItem = PyStatic.NewNone();
         for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; ++itr)
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         return true;
     }
 
     result.itemID = new PyInt(m_itemID);
+    result.invItem = GetItemRow();
 
     if (m_type.categoryID() == EVEDB::invCategories::Skill) {
         result.attributes[AttrSkillTimeConstant] = GetAttribute(AttrSkillTimeConstant).GetPyObject();
