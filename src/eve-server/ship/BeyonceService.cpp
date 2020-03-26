@@ -78,6 +78,8 @@ public:
         PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughCorporationStructure);
 
         pClient->SetBeyonce(true);
+        if (pClient->IsLogin() and !pClient->IsSetStateSent())
+            pClient->SetBallPark();
     }
 
     virtual ~BeyonceBound()
