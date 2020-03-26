@@ -103,7 +103,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     }
 
     //this seems a little strange, but this is how it works...
-    if (ballhead->flags & Ball::Flag::IsFree == Ball::Flag::IsFree) {
+    if ((ballhead->flags & Ball::Flag::IsFree) == Ball::Flag::IsFree) {
         const DataSector *shipchunk = (const DataSector *) data;
         data += sizeof(DataSector);
         len -= sizeof(DataSector);

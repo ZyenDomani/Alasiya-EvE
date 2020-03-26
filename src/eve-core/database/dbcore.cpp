@@ -525,14 +525,14 @@ void DBQueryResult::Reset()
 
 bool DBQueryResult::IsUnsigned( uint32 index ) const
 {
-    return (mFields[index]->flags & UNSIGNED_FLAG == UNSIGNED_FLAG);
+    return ((mFields[index]->flags & UNSIGNED_FLAG) == UNSIGNED_FLAG);
 }
 
 bool DBQueryResult::IsBinary( uint32 index ) const
 {
     // According to MySQL C API Documentation, binary string
     // fields like BLOB or VAR_BINARY have charset "63".
-    return (mFields[ index ]->charsetnr == 63);
+    return (mFields[index]->charsetnr == 63);
 }
 
 void DBQueryResult::SetResult( MYSQL_RES* res, uint32 colCount )

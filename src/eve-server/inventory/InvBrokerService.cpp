@@ -206,7 +206,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
     }
     sItemFactory.UnsetUsingClient();
     if (iRef.get() == nullptr) {
-        _log(INV__ERROR, "GetInventoryFromId() - Unable to load inventory for itemID %u", args.arg1);
+        _log(INV__ERROR, "GetInventoryFromId() - Unable to get inventoryItem for itemID %u", args.arg1);
         // send error to player?
         return nullptr;
     }
@@ -248,7 +248,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
         case EVEDB::invCategories::Ship: {
             // should we test for ships and hangar types here?   yes.
             if (iRef->HasAttribute(AttrHasCorporateHangars))
-                flag = flagCargoHold;
+                flag = flagCargoHold;   // this is also corp hangar 1
             else
                 flag = flagCargoHold;
         } break;

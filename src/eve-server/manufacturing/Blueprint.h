@@ -48,7 +48,7 @@ public:
     const ItemType&         productType()         const { return m_productType; }
     uint8                   techLevel()           const { return m_data.techLevel; }
     uint16                  wasteFactor()         const { return m_data.wasteFactor; }
-    uint32                  productTypeID()       const { return productType().id(); }
+    uint16                  productTypeID()       const { return productType().id(); }
     uint32                  productionTime()      const { return m_data.productionTime; }
     uint32                  researchCopyTime()    const { return m_data.researchCopyTime; }
     uint32                  researchTechTime()    const { return m_data.researchTechTime; }
@@ -57,8 +57,8 @@ public:
     uint32                 researchMaterialTime() const { return m_data.researchMaterialTime; }
     uint32                 productivityModifier() const { return m_data.productivityModifier; }
     uint32             researchProductivityTime() const { return m_data.researchProductivityTime; }
-    uint32                parentBlueprintTypeID() const { return (m_parentBlueprintType ? 0 : parentBlueprintType()->id()); }
-    double           chanceOfReverseEngineering() const { return m_data.chanceOfReverseEngineering; }
+    uint16                parentBlueprintTypeID() const { return (m_parentBlueprintType == nullptr ? 0 : parentBlueprintType()->id()); }
+    float            chanceOfReverseEngineering() const { return m_data.chanceOfReverseEngineering; }
 
 protected:
     BlueprintType(uint32 _id, const ItemGroup& _group, const TypeData& _data, const BlueprintType *_parentBlueprintType, const ItemType& _productType, const BlueprintTypeData& _bpData);
@@ -85,13 +85,13 @@ protected:
         const BlueprintType* parentBlueprintType(nullptr);
         if (bpData.parentBlueprintTypeID) {
             parentBlueprintType = sItemFactory.GetBlueprintType( bpData.parentBlueprintTypeID );
-            if (!parentBlueprintType)
+            if (parentBlueprintType == nullptr)
                 return nullptr;
         }
 
         // obtain product type
         const ItemType* productType = sItemFactory.GetType( bpData.productTypeID );
-        if (!productType)
+        if (productType == nullptr)
             return nullptr;
 
         return new BlueprintType(typeID, group, data, parentBlueprintType, *productType, bpData );

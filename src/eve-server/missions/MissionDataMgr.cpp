@@ -456,9 +456,10 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
                     cVec.push_back(it->second);
             }
             cData = cVec[MakeRandomInt(0, (cVec.size() -1))];
-            if ((cData.raceID) and (cData.raceID & raceID != raceID)) {
+            // verify mission race acceptable
+            if ((cData.raceID) and ((cData.raceID & raceID) != raceID)) {
                 for (auto cur :cVec) {
-                    if (cur.raceID & raceID == raceID)
+                    if ((cur.raceID & raceID) == raceID)
                         cData = cur;
                 }
             }
