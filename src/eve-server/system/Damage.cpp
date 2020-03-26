@@ -107,8 +107,6 @@ Damage::Damage(SystemEntity* pSE, bool fatal_blow/*false*/)
 bool SystemEntity::ApplyDamage(Damage &d) {
     double profileStartTime = GetTimeUSeconds();
 
-    /** @todo  need to run thru this to see if we can speed it up any... */
-
     if (is_log_enabled(DAMAGE__MESSAGE)) {
         if (d.srcSE->IsNPCSE()) {
             _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\

@@ -205,8 +205,7 @@ PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call)
 
 
 PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
-    // called when client doesnt have item info (bad data?)
-    // seems to be called when charge qty changes and charge not in sublocation
+    // called when item 'row' info not in shipState data from GetAllInfo() return
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
