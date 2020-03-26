@@ -122,7 +122,7 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 {
 	PyList* colors = data->GetItemString("colors")->AsList();
 	PyList::const_iterator color_cur = colors->begin();
-	for (; color_cur != colors->end(); color_cur++) {
+	for (; color_cur != colors->end(); ++color_cur) {
 		if ((*color_cur)->IsObjectEx()) {
 			PyObjectEx_Type2* color_obj = (PyObjectEx_Type2*)(*color_cur)->AsObjectEx();
 			PyTuple* color_tuple = color_obj->GetArgs()->AsTuple();
@@ -136,61 +136,60 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 			//[5] gloss
 
 			m_db.SetAvatarColors(ownerID,
-							PyRep::IntegerValue(color_tuple->GetItem(1)),
-                            PyRep::IntegerValue(color_tuple->GetItem(2)),
-                            PyRep::IntegerValue(color_tuple->GetItem(3)),
-								color_tuple->GetItem(4)->AsFloat()->value(),
-								color_tuple->GetItem(5)->AsFloat()->value());
-
+                                            PyRep::IntegerValue(color_tuple->GetItem(1)),
+                                            PyRep::IntegerValue(color_tuple->GetItem(2)),
+                                            PyRep::IntegerValue(color_tuple->GetItem(3)),
+                                            color_tuple->GetItem(4)->AsFloat()->value(),
+                                            color_tuple->GetItem(5)->AsFloat()->value());
 		}
 	}
 
     PyObjectEx* appearance = data->GetItemString("appearance")->AsObjectEx();
-	PyObjectEx_Type2* app_obj = (PyObjectEx_Type2*)appearance;
-	PyTuple* app_tuple = app_obj->GetArgs()->AsTuple();
+    PyObjectEx_Type2* app_obj = (PyObjectEx_Type2*)appearance;
+    PyTuple* app_tuple = app_obj->GetArgs()->AsTuple();
 
-	m_db.SetAvatar(ownerID, app_tuple->GetItem(1));
+    m_db.SetAvatar(ownerID, app_tuple->GetItem(1));
 
     PyList* modifiers = data->GetItemString("modifiers")->AsList();
-	PyList::const_iterator modif_cur = modifiers->begin();
-	for (; modif_cur != modifiers->end(); modif_cur++) {
-		if ((*modif_cur)->IsObjectEx()) {
-			PyObjectEx_Type2* modif_obj = (PyObjectEx_Type2*)(*modif_cur)->AsObjectEx();
-			PyTuple* modif_tuple = modif_obj->GetArgs()->AsTuple();
+    PyList::const_iterator modif_cur = modifiers->begin();
+    for (; modif_cur != modifiers->end(); ++modif_cur) {
+        if ((*modif_cur)->IsObjectEx()) {
+            PyObjectEx_Type2* modif_obj = (PyObjectEx_Type2*)(*modif_cur)->AsObjectEx();
+            PyTuple* modif_tuple = modif_obj->GetArgs()->AsTuple();
 
-			//color tuple data structure
-			//[0] PyToken
-			//[1] modifierLocationID
-			//[2] paperdollResourceID
-			//[3] paperdollResourceVariation
-			m_db.SetAvatarModifiers(ownerID,
-										modif_tuple->GetItem(1),
-										modif_tuple->GetItem(2),
-										modif_tuple->GetItem(3));
-		}
-	}
+            //color tuple data structure
+            //[0] PyToken
+            //[1] modifierLocationID
+            //[2] paperdollResourceID
+            //[3] paperdollResourceVariation
+            m_db.SetAvatarModifiers(ownerID,
+                                    modif_tuple->GetItem(1),
+                                    modif_tuple->GetItem(2),
+                                    modif_tuple->GetItem(3));
+        }
+    }
 
     PyList* sculpts = data->GetItemString("sculpts")->AsList();
-	PyList::const_iterator sculpt_cur = sculpts->begin();
-	for (; sculpt_cur != sculpts->end(); sculpt_cur++) {
-		if ((*sculpt_cur)->IsObjectEx()) {
-			PyObjectEx_Type2* sculpt_obj = (PyObjectEx_Type2*)(*sculpt_cur)->AsObjectEx();
-			PyTuple* sculpt_tuple = sculpt_obj->GetArgs()->AsTuple();
+    PyList::const_iterator sculpt_cur = sculpts->begin();
+    for (; sculpt_cur != sculpts->end(); sculpt_cur++) {
+        if ((*sculpt_cur)->IsObjectEx()) {
+            PyObjectEx_Type2* sculpt_obj = (PyObjectEx_Type2*)(*sculpt_cur)->AsObjectEx();
+            PyTuple* sculpt_tuple = sculpt_obj->GetArgs()->AsTuple();
 
-			//sculpts tuple data structure
-			//[0] PyToken
-			//[1] sculptLocationID
-			//[2] weightUpDown
-			//[3] weightLeftRight
-			//[4] weightForwardBack
-			m_db.SetAvatarSculpts(ownerID,
-									sculpt_tuple->GetItem(1),
-									sculpt_tuple->GetItem(2),
-									sculpt_tuple->GetItem(3),
-									sculpt_tuple->GetItem(4));
+            //sculpts tuple data structure
+            //[0] PyToken
+            //[1] sculptLocationID
+            //[2] weightUpDown
+            //[3] weightLeftRight
+            //[4] weightForwardBack
+            m_db.SetAvatarSculpts(ownerID,
+                                sculpt_tuple->GetItem(1),
+                                sculpt_tuple->GetItem(2),
+                                sculpt_tuple->GetItem(3),
+                                sculpt_tuple->GetItem(4));
 
-		}
-	}
+        }
+    }
 }
 
 
@@ -273,10 +272,10 @@ Character::Character(
     assert(m_singleton);
 
     m_loaded = false;
+    m_fleetData = CharFleetData();
+    m_freePoints = 0;
 
     if (!IsAgent(m_itemID)) {
-        m_fleetData = CharFleetData();
-        m_freePoints = 0;
         m_loginTime = sEntityList.GetStamp();
         pInventory = new Inventory(InventoryItemRef(this));
     }
@@ -622,7 +621,8 @@ uint8 Character::GetSPPerMin(Skill* skill)
 int64 Character::GetEndOfTraining() const {
     InventoryItemRef item;
     if (pInventory->GetSingleItemByFlag(flagSkillInTraining, item))
-        return item->GetAttribute(AttrExpiryTime).get_int();
+        if (item.get() != nullptr)
+            return item->GetAttribute(AttrExpiryTime).get_int();
     return 0;
 }
 
@@ -795,7 +795,7 @@ void Character::UpdateSkillQueue() {
                 _log(SKILL__TRACE, "%s:%s(%u) Begin Time Check for Training to Level %u.  CurrentSP %u, previous EndTime %lli", \
                         itemName().c_str(), skill->itemName().c_str(), skill->typeID(), level, currentSP, endTime);
 
-            // see if EndTime is set for persistance.  if not, use startTime to calculate and set endTime
+            // see if EndTime is set for persistence.  if not, use startTime to calculate and set endTime
             if (endTime == 0) {
                 startTime = skill->GetAttribute(AttrSkillStartTime).get_int();    // will only be used in case of crash
                 if (startTime == 0)
@@ -846,8 +846,10 @@ void Character::UpdateSkillQueue() {
         }
 
         level = skill->GetAttribute(AttrSkillLevel).get_uint32() +1;
+        if (level > 4)
+            level = 5;
         if (endTime == 0) {
-            // this should only hit if we changed skill training
+            // this should only hit on login and if we changed skill training
             currentSP = skill->GetAttribute(AttrSkillPoints).get_uint32();
             startTime = skill->GetAttribute(AttrSkillStartTime).get_int();
             if (startTime == 0) {
@@ -863,9 +865,13 @@ void Character::UpdateSkillQueue() {
             skill->SaveItem();
 
             if (is_log_enabled(SKILL__INFO))
-                _log(SKILL__INFO, "%s:%s(%u) endTime = 0 - Update Values:  currentSP %u, startTime %lli, endTime %lli, timeNow: %lli", \
+                _log(SKILL__INFO, "%s:%s(%u) endTime = 0 - Updated Values:  currentSP %u, startTime %lli, endTime %lli, timeNow: %lli", \
                         itemName().c_str(), skill->itemName().c_str(), skill->typeID(), currentSP, startTime, endTime, currTime);
         }
+
+        // time test is off.  not sure why yet, so we hack to check sp
+        if (currentSP >= skill->GetSPForLevel(level))
+            endTime = EvEMath::Skill::EndTime(currentSP, skill->GetSPForLevel(level), GetSPPerMin(skill), startTime);
 
         if (endTime < currTime) {
             if (endTime == 0) {
@@ -941,7 +947,7 @@ void Character::UpdateSkillQueue() {
             break;  // this skill is still in training.  break out of while() loop
         }
 
-        // previous queued skill complete. reset variables (keeping EndTime for persistance) and advance loop iteration
+        // previous queued skill complete. reset variables (keeping EndTime for persistence) and advance loop iteration
         skill = nullptr;
         level = 0;
         currentSP = 0;
@@ -962,10 +968,11 @@ void Character::UpdateSkillQueue() {
 }
 
 void Character::UpdateSkillQueueEndTime() {
+    QueuedSkill qs = QueuedSkill();
     std::map<uint16, uint8> flatSkillQueue;
-    std::map<uint16, uint8>::iterator itr = flatSkillQueue.end();
+    std::map<uint16, uint8>::iterator itr;
     for (auto cur : m_skillQueue) {
-        QueuedSkill qs = cur;
+        qs = cur;
         itr = flatSkillQueue.find(qs.typeID);
         if (itr != flatSkillQueue.end()) {
             if (itr->second < qs.level)
@@ -987,6 +994,8 @@ void Character::UpdateSkillQueueEndTime() {
         _log(SKILL__QUEUE, "%s(%u):  UpdateSkillQueueEndTime() - time remaining %im", itemName().c_str(), m_itemID, chrMinRemaining);
 
     chrMinRemaining = (chrMinRemaining * EvE::Time::Minute) + GetFileTimeNow();
+    if (chrMinRemaining < 0)
+        chrMinRemaining = 0;
     m_db.UpdateSkillQueueEndTime(chrMinRemaining, m_itemID);
 }
 

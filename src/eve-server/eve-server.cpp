@@ -781,14 +781,14 @@ int main( int argc, char* argv[] )
         m_run = sConsole.Process();
 
         /* do the stuff for thread sleeping */
-        if (sEntityList.HasClients()) {     // how much of a proc hit is this?  change/remove it?
+        //if (sEntityList.HasClients()) {     // how much of a proc hit is this?  change/remove it?
             start = GetTickCount() - start;
             if (m_sleepTime > start)
                 std::this_thread::sleep_for(std::chrono::milliseconds(start));
             //else
             //    sLog.Warning("Server", "Overrun");    // this is just curiosity...happens VERY seldom
-        } else /* if no clients, let server idle longer*/
-            std::this_thread::sleep_for(std::chrono::milliseconds(m_idle));
+        //} else /* if no clients, let server idle longer*/
+        //    std::this_thread::sleep_for(std::chrono::milliseconds(m_idle));
     }
 
     /*

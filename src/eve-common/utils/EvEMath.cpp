@@ -27,6 +27,8 @@ int64 EvEMath::Skill::StartTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, in
 
 int64 EvEMath::Skill::EndTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow)
 {
+    if (currentSP >= nextSP)
+        return 0;
     return ((((nextSP - currentSP) / SPMin) * EvE::Time::Minute) + timeNow);
 }
 
