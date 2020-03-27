@@ -37,7 +37,6 @@
 
 /* TODO:
 * - set ship->basePrice to use history market value from marketProxy!
-* - send eveMail detailing coverage on InsureShip
 */
 
 class InsuranceBound
@@ -103,7 +102,7 @@ PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
     if (type != nullptr)
         return new PyFloat(type->basePrice() /15);
 
-    return PyStatic.NewNone();
+    return PyStatic.NewZero();
 }
 
 PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
@@ -112,7 +111,7 @@ PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
     if (type != nullptr)
         return new PyFloat(type->basePrice() /15);
 
-    return PyStatic.NewNone();
+    return PyStatic.NewZero();
 }
 
 PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
@@ -134,19 +133,17 @@ PyResult InsuranceService::Handle_GetContractForShip( PyCallArgs& call ) {
 }
 
 PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
-	Call_InsureShip args;
+    call.Dump(SERVICE__CALL_DUMP);
+    Call_InsureShip args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
     InventoryItemRef shipRef = sItemFactory.GetItem(args.shipID);
-    if (shipRef.get() == nullptr)
+    if (shipRef.get() == nullptr)       // make error here
         return nullptr;
 
-    /* added check for groupID 237 (rookie ship - items 588, 596, 601, 606) as they cannot be insured.
-     *   may not need this, as client will not try to insure rookie ships
-     */
     if (shipRef->groupID() == EVEDB::invGroups::Rookieship) {
         call.client->SendInfoModalMsg("You cannot insure Rookie ships.");
         return PyStatic.NewNone();
@@ -202,18 +199,17 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     uint8 numWeeks = 12;
 
     if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->itemName().c_str(), call.client->GetCharacterID(), fraction, shipRef->type().basePrice(), args.isCorp, numWeeks)) {
-        //  it sucessfully added, now, have the player pay for the insurance
+        //  it successfully added, now, have the player pay for the insurance
         std::string reason = "Insurance Premium on ";
         reason += call.client->GetShip()->itemName();
         reason += ".  Reference ID : xxxxx";     // put contractID here
         AccountService::TranserFunds(call.client->GetCharacterID(), ownerSCC, args.amount, reason, Journal::EntryType::Insurance);
-	} else {
-        //call.client->SendErrorMsg("Failed to install new insurance contract.");
+    } else {
         throw PyException(MakeUserError("InsureShipFailed"));
     }
 
     // TODO:  send mail detailing insurance coverage and length of coverage
-
+    // this works...mail is saved in db, but player not notified and cant see msg.
     const std::string subject = "New Ship Insurance"; //std::string("New application from ") + call.client->GetName(),
     std::string body = "Dear valued customer,<br>";
             body += "Congratulations on the insurance on your ship. A very wise choice indeed.<br>";
