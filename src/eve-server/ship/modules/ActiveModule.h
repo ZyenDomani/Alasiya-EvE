@@ -30,8 +30,8 @@ public:
 
     /* GenericModule overrides */
     virtual void        Process();
-    virtual void        LoadCharge(InventoryItemRef charge);
-    virtual void        UnloadCharge();
+    virtual void        LoadCharge(InventoryItemRef charge);    // this does not add chargeRef to module
+    virtual void        UnloadCharge();                         // this does not remove chargeRef from module
     virtual void        Overload();
     virtual void        AbortCycle();
     virtual void        DeOverload();

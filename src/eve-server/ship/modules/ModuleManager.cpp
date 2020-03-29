@@ -81,21 +81,20 @@ bool ModuleManager::Initialize() {
     m_RigSlots = pShipItem->GetAttribute(AttrRigSlots).get_uint32();
     m_SubSystemSlots = pShipItem->GetAttribute(AttrSubSystemSlot).get_uint32();
 
-    // modules
+    // modules - 3 banks of 8 slots each
     for (uint8 flag = flagLowSlot0; flag < flagFixedSlot; ++flag)
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
-    // rigs
+    // rigs - one bank of 3 slots
     for (uint8 flag = flagRigSlot0; flag < flagRigSlot3; ++flag)
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
-    //subsystems
+    //subsystems - one bank of 5 slots
     for (uint8 flag = flagSubSystem0; flag < flagSubSystem5; ++flag)
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
 
-    // Load modules, charges, rigs and subsystems into ship's ModuleContainer:
+    // Load modules, charges, rigs and subsystems into module maps:
     std::vector<InventoryItemRef> itemVec;
     // this will order by mod, charge, cargo
     pShipItem->GetMyInventory()->GetInventoryVec(itemVec);
-
     GenericModule* pMod(nullptr);
     for (auto cur : itemVec) {
         // this is a hack.  dont know why any ship item would have flagAutoFit set, but have seen random errors where charges are set to flagAutoFit
@@ -447,7 +446,7 @@ bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
         if (pMod == nullptr)
             return false;
 
-        if (pShipItem->HasPilot())
+        if (pShipItem->HasPilot() and !pShipItem->GetPilot()->IsLogin())
             pShipItem->GetPilot()->SendErrorMsg("You cannot add %s to %s because %s is already there.", \
                     mRef->name(), sDataMgr.GetFlagName(flag), pMod->GetSelf()->name());
         // change this to use movemodule?

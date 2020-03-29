@@ -1032,23 +1032,23 @@ void InventoryItem::GetItemStatusRow( PyPackedRow* into ) const {
     into->SetField( "incapacitated", new PyBool( (HasAttribute(AttrIsIncapacitated) ? GetAttribute(AttrIsIncapacitated).get_bool() : false) ));
 }
 
-/*  this is charge info for the module in question  */
+/*  charge info for specific module  */
 PyPackedRow* InventoryItem::GetChargeStatusRow(uint32 shipID) const {
     DBRowDescriptor* header = new DBRowDescriptor;
         header->AddColumn("instanceID", DBTYPE_I8);
         header->AddColumn("flagID",     DBTYPE_I2);
         header->AddColumn("typeID",     DBTYPE_I4);
-        header->AddColumn("quantity",   DBTYPE_I4);
+        //header->AddColumn("quantity",   DBTYPE_I4);
     PyPackedRow* row = new PyPackedRow( header);
     GetChargeStatusRow(shipID, row);
     return row;
 }
 
 void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
-    into->SetField("instanceID",     new PyLong(shipID));  /* this is locationID */
+    into->SetField("instanceID",     new PyLong(shipID));  // locationID
     into->SetField("flagID",         new PyInt(m_flag));
     into->SetField("typeID",         new PyInt(m_type.id()));
-    into->SetField("quantity",       pAttributeMap->GetAttribute(AttrQuantity).GetPyObject());
+    //into->SetField("quantity",       pAttributeMap->GetAttribute(AttrQuantity).GetPyObject());
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const
@@ -1150,9 +1150,9 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
 
     for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; ++itr) {
         //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
-        //if ((*itr).first == AttrWarpSpeedMultiplier)
-        //    result.attributes[AttrWarpSpeedMultiplier] = new PyFloat((*itr).second.get_float() /3);
-        //else
+        if ((*itr).first == AttrWarpSpeedMultiplier)
+            result.attributes[AttrWarpSpeedMultiplier] = new PyFloat((*itr).second.get_float() /3);
+        else
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
     }
 

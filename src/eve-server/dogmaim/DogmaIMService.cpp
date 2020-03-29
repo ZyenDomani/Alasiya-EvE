@@ -657,8 +657,8 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         rspShipState->items[1] = pClient->GetShip()->GetChargeState();      // loaded charges
         rspShipState->items[2] = pClient->GetShip()->GetLinkedWeapons();    // linked weapons
     rsp->SetItemString("shipState", rspShipState);
-    if (is_log_enabled(CLIENT__INFO))
-        rsp->Dump(CLIENT__INFO, "     ");
+    if (is_log_enabled(SHIP__STATE))
+        rsp->Dump(SHIP__STATE, "     ");
     sItemFactory.UnsetUsingClient();
     return new PyObject("util.KeyVal", rsp );
 }
@@ -783,7 +783,7 @@ PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
     // slaveID = self.remoteDogmaLM.UnlinkModule(shipID, moduleID)
     sLog.Warning("DogmaIMBound::Handle_UnlinkModule()", "size=%u", call.tuple->size());
-    call.Dump(SHIP__INFO);
+    call.Dump(SHIP__MESSAGE);
 
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
@@ -812,7 +812,7 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
     //info = self.remoteDogmaLM.MergeModuleGroups(shipID, masterID, slaveID)
     sLog.Warning("DogmaIMBound::Handle_MergeModuleGroups()", "size=%u", call.tuple->size());
-    call.Dump(SHIP__INFO);
+    call.Dump(SHIP__MESSAGE);
 
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
@@ -846,7 +846,7 @@ PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
     //info = self.remoteDogmaLM.PeelAndLink(shipID, masterID, slaveID)
     sLog.Warning("DogmaIMBound::Handle_PeelAndLink()", "size=%u", call.tuple->size());
-    call.Dump(SHIP__INFO);
+    call.Dump(SHIP__MESSAGE);
 
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
@@ -964,7 +964,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
     //  return self.statemanager.Deactivate(self.itemID, self.effectName)
     //  dogmaLM.Deactivate(itemID, const.effectOnlineForStructures)
     sLog.Warning("DogmaIMBound::Handle_Deactivate()", "size=%u", call.tuple->size());
-    call.Dump(SHIP__INFO);
+    call.Dump(SHIP__MESSAGE);
 
     Client* pClient(call.client);
 

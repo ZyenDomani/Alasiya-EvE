@@ -156,6 +156,9 @@ void ShipItem::Init()
 
     // load linked weapons (if available)
     LoadWeaponGroups();
+
+    SetShipShield(1.0);
+    SetShipCapacitorLevel(1.0);
 }
 
 void ShipItem::InitPod() {
@@ -574,9 +577,9 @@ PyDict* ShipItem::GetShipInfo()
             _log( SHIP__ERROR, "%s(%u): Failed to load item %u for ShipGetInfo", name(), itemID(), cur->itemID());
     }
 
-    if (is_log_enabled(SHIP__MESSAGE)) {
-        _log(SHIP__MESSAGE, "ShipItem::GetShipInfo() decoded:");
-        result->Dump(SHIP__MESSAGE, "    ");
+    if (is_log_enabled(SHIP__INFO)) {
+        _log(SHIP__INFO, "ShipItem::GetShipInfo() decoded:");
+        result->Dump(SHIP__INFO, "    ");
     }
     return result;
 }
@@ -1842,11 +1845,11 @@ void ShipItem::LinkWeapon(GenericModule* pMaster, GenericModule* pSlave)
         std::list<GenericModule*> slaves;
         slaves.push_back(pSlave);
         m_linkedWeapons[pMaster] = slaves;
+        pMaster->SetLinked(true);
+        pMaster->SetLinkMaster(true);
     } else {
         itr->second.push_back(pSlave);
     }
-    pMaster->SetLinked(true);
-    pMaster->SetLinkMaster(true);
     pSlave->SetLinked(true);
 }
 
@@ -1897,10 +1900,11 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
     GenericModule* master(nullptr);
     std::list< GenericModule*>::iterator itr = weaponList.begin();
     while (itr != weaponList.end()) {
-        if ((*itr)->IsLoaded()) {
+        if ((*itr)->IsLoaded() or (*itr)->IsLoading()) {
             if (is_log_enabled(MODULE__INFO))
                 _log(MODULE__INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) IsLoaded.  Skipping.", \
                     (*itr)->GetSelf()->name(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID());
+            m_pilot->SendErrorMsg("You cannot group the %s while loaded with %s", (*itr)->GetSelf()->name(), (*itr)->GetLoadedChargeRef()->name());
             itr = weaponList.erase(itr);
         } else if (master == nullptr) {
             // lets check if this module will match a master already in list before making new master...
@@ -2350,7 +2354,7 @@ std::string ShipItem::GetShipDNA()
     if (type().id() == EVEDB::invTypes::Capsule) {
         std::stringstream dna;
         dna << type().id() << ":";
-        _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
+        _log(SHIP__MESSAGE, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
         return dna.str();
     }
 
@@ -2389,7 +2393,7 @@ std::string ShipItem::GetShipDNA()
     dna << type().id() << ":";
     dna << subSys.str() << modHi.str() << modMid.str() << modLow.str() << modRig.str() << charges.str() << drones.str();
 
-    _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
+    _log(SHIP__MESSAGE, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
     return dna.str();
 }
 
@@ -2411,7 +2415,7 @@ m_processTimer(SHIP_PROCESS_TICK_MS)
     m_towerPass = "";
     m_podShipID = 0;
     m_processTimer.Start(m_processTimerTick);
-    _log(SHIP__INFO, "Created ShipSE %p for item %u", this, self->itemID());
+    _log(SHIP__TRACE, "Created ShipSE %p for item %u", this, self->itemID());
 }
 
 double Ship::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
