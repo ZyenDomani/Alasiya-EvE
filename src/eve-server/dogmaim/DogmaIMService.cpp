@@ -678,7 +678,7 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
     /* args.shipID
      * args.masterID
@@ -706,7 +706,7 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     if (!IsPlayerItem(arg.arg))
@@ -733,7 +733,7 @@ PyResult DogmaIMBound::Handle_DestroyWeaponBank(PyCallArgs& call) {
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     if (!IsPlayerItem(args.arg1) or !IsPlayerItem(args.arg2))
@@ -759,7 +759,7 @@ PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     if (!IsPlayerItem(arg.arg))
@@ -777,11 +777,11 @@ PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
         return nullptr;
     }
     sRef->UnlinkAllWeapons();
-    return nullptr;
+    return sRef->GetLinkedWeapons();
 }
 
 PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
-    //UnlinkModule(shipID, moduleID)
+    // slaveID = self.remoteDogmaLM.UnlinkModule(shipID, moduleID)
     sLog.Warning("DogmaIMBound::Handle_UnlinkModule()", "size=%u", call.tuple->size());
     call.Dump(SHIP__INFO);
 
@@ -817,7 +817,7 @@ PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
     /* args.shipID
      * args.masterID
@@ -837,8 +837,42 @@ PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
         return nullptr;
     }
 
-    // locate and link all weapons on ship, if possible.
+    // merge slaveID group into masterID group
     sRef->MergeModuleGroups(args.masterID, args.slaveID);
+
+    return sRef->GetLinkedWeapons();
+}
+
+PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
+    //info = self.remoteDogmaLM.PeelAndLink(shipID, masterID, slaveID)
+    sLog.Warning("DogmaIMBound::Handle_PeelAndLink()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__INFO);
+
+    Call_Dogma_LinkWeapons args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
+    }
+    /* args.shipID
+     * args.masterID
+     * args.slaveID
+     */
+    if (!IsPlayerItem(args.shipID))
+        return nullptr;
+    SystemManager* pSysMgr(call.client->SystemMgr());
+    ShipItemRef sRef(nullptr);
+    if (call.client->IsDocked())
+        sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.shipID);
+    else
+        sRef = pSysMgr->GetShipFromInventory(args.shipID);
+    if (sRef.get() == nullptr) {
+        _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
+        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
+        return nullptr;
+    }
+
+    // remove slaveID from existing group and add to masterID group
+    sRef->PeelAndLink(args.masterID, args.slaveID);
     return sRef->GetLinkedWeapons();
 }
 
@@ -1097,15 +1131,6 @@ PyResult DogmaIMBound::Handle_StopModuleRepair(PyCallArgs& call) {
     call.client->GetShip()->StopModuleRepair(args.arg);
 
     // returns nothing
-    return nullptr;
-}
-
-// dunno what this is
-PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
-    //info = self.remoteDogmaLM.PeelAndLink(shipID, masterID, slaveID)
-    sLog.Warning("DogmaIMBound::Handle_PeelAndLink()", "size=%u", call.tuple->size());
-    call.Dump(SHIP__INFO);
-
     return nullptr;
 }
 

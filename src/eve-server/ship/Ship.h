@@ -242,8 +242,9 @@ public:
     uint8 GetLoadedLinkedCount(GenericModule* pMod);
     bool HasLinkedWeapons()                             { return (!m_linkedWeapons.empty()); }
     void LinkAllWeapons();
-    void LinkWeapon(uint32 masterID, uint32 slaveID);       // this should throw if applicable
-    void MergeModuleGroups(uint32 masterID, uint32 slaveID);  // this should throw if applicable
+    void LinkWeapon(uint32 masterID, uint32 slaveID);           // this should not throw
+    void PeelAndLink(uint32 masterID, uint32 slaveID);          // this should not throw
+    void MergeModuleGroups(uint32 masterID, uint32 slaveID);    // this should not throw
     uint32 UnlinkWeapon(uint32 moduleID);
     void UnlinkGroup(uint32 memberID);
     void UnlinkAllWeapons();

@@ -124,6 +124,7 @@ void ShipItem::SetPlayer(Client* pClient) {
     if (IsSolarSystem(m_locationID)) {
         ProcessEffects(true, true);
         SetFlag(flagAutoFit);
+        /*  not sure if we're gonna keep this in here....
         if (pClient->IsLogin()) {
             if (sConfig.debug.IsTestServer) {
                 // Heal Ship completely on test server
@@ -135,7 +136,7 @@ void ShipItem::SetPlayer(Client* pClient) {
                     SetShipCapacitorLevel(1.0);
                 }
             }
-        }
+        } */
     }
 }
 
@@ -1854,6 +1855,11 @@ void ShipItem::MergeModuleGroups(uint32 masterID, uint32 slaveID)
     _log(MODULE__ERROR, "MergeModuleGroups() called by %s(%u).  It still needs to be written.", name(), itemID());
 }
 
+void ShipItem::PeelAndLink(uint32 masterID, uint32 slaveID)
+{
+    _log(MODULE__ERROR, "PeelAndLink() called by %s(%u).  It still needs to be written.", name(), itemID());
+}
+
 void ShipItem::LinkAllWeapons()
 {
     std::list< GenericModule* > weaponList;
@@ -1960,7 +1966,6 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
  */
 uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
 {
-    /** @todo this will need a bit more logic work... */
     GenericModule* pMod1 = m_ModuleManager->GetModule(moduleID);
     if (pMod1 == nullptr)
         return 0; // make error here?
@@ -1977,24 +1982,19 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
     if (itr != m_linkedWeapons.end()) {
         uint32 slaveID = itr->second.front()->itemID();
         UnlinkGroup(moduleID);
+        PyTuple* tuple = new PyTuple(3);
+            tuple->SetItem(0, new PyString("OnWeaponGroupDestroyed"));
+            tuple->SetItem(1, new PyInt(m_itemID));
+            tuple->SetItem(2, new PyInt(moduleID));
+        m_pilot->QueueDestinyEvent(&tuple);
         return slaveID;
-    } else {
-        // this module isnt master... loop thru all links and see if we can find it
-        for (auto cur : m_linkedWeapons) {
-            std::list<GenericModule*>::iterator itr2 = cur.second.begin();
-            while (itr2 != cur.second.end()) {
-                if ((*itr2) == pMod1) {
-                    UnlinkWeapon(cur.first->itemID(), moduleID);
-                    return moduleID;
-                }
-                ++itr2;
-            }
-        }
     }
 
-    SaveWeaponGroups();
-    //default.  not sure how client will act with this here
-    return moduleID;
+    //  OnWeaponBanksChanged
+    //  OnWeaponGroupDestroyed
+
+    // client will throw "KeyError: 0" here.  dont know how to prevent it
+    return 0;
 }
 
 void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
