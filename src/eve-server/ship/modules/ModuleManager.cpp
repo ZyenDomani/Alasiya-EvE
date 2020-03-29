@@ -180,31 +180,31 @@ uint16 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
 {
     switch (slotBank) {
         case EVEEffectID::loPower: {
-            uint8 max = flagLowSlot0 + m_LowSlots/*8*/;
+            uint8 max = flagLowSlot0 + pShipItem->GetAttribute(AttrLowSlots).get_uint32();
             for (uint8 slot=flagLowSlot0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
         } break;
         case EVEEffectID::medPower: {
-            uint8 max = flagMidSlot0 + m_MidSlots/*8*/;
+            uint8 max = flagMidSlot0 + pShipItem->GetAttribute(AttrMedSlots).get_uint32();
             for (uint8 slot=flagMidSlot0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
         } break;
         case EVEEffectID::hiPower: {
-            uint8 max = flagHiSlot0 + m_HighSlots/*8*/;
+            uint8 max = flagHiSlot0 + pShipItem->GetAttribute(AttrHiSlots).get_uint32();
             for (uint8 slot=flagHiSlot0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
         } break;
         case EVEEffectID::rigSlot: {
-            uint8 max = flagRigSlot0 + m_RigSlots/*3*/;
+            uint8 max = flagRigSlot0 + pShipItem->GetAttribute(AttrRigSlots).get_uint32();
             for (uint8 slot=flagRigSlot0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
         } break;
         case EVEEffectID::subSystem: {
-            uint8 max = flagSubSystem0 + m_SubSystemSlots/*5*/;
+            uint8 max = flagSubSystem0 + pShipItem->GetAttribute(AttrSubSystemSlot).get_uint32();
             for (uint8 slot=flagSubSystem0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
