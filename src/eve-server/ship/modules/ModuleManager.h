@@ -30,7 +30,6 @@
 
 
 #include "PyService.h"
-#include "ship/modules/ModuleContainer.h"
 
 class GenericModule;
 class SystemEntity;
@@ -47,11 +46,14 @@ public:
     bool IsSlotOccupied(EVEItemFlags flag);
     uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
 
-     // verify slot avalibe
-    // will throw if no slots avalible
+    void CargoFull();
+    void RemoveTarget(SystemEntity* pSE);
+
+     // verify slot available
+    // will throw if no slots available
     void CheckSlotFitLimited(EVEItemFlags flag);
     // verify module isnt group limited
-    // will throw if group is fitLimited and already has one fit.
+    // will throw if group is over fitLimited.
     void CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef);
 
     // returns vector of fitted GenericModule* in specified flag's bank
@@ -94,7 +96,6 @@ public:
     // this will remove charge items from all modules
     void UnloadAllModules();
     void UnloadWeapons();
-    void StripModules();
     void UpdateModules(std::vector<uint32> modVec);
     void UpdateModules(EVEItemFlags flag);
     bool VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2);
@@ -104,9 +105,6 @@ public:
     void ShipJumping();
     void Process();
     void AbortCycle();
-
-    GenericModule* GetModule(EVEItemFlags flag)         { return pModuleCont->GetModule(flag); }      // faster than GetModule(itemID)
-    GenericModule* GetModule(uint32 itemID)             { return pModuleCont->GetModule(itemID); }    // slower than GetModule(flag)
 
     InventoryItemRef GetLoadedChargeOnModule(EVEItemFlags flag);
     InventoryItemRef GetLoadedChargeOnModule(InventoryItemRef moduleRef);
@@ -132,31 +130,37 @@ public:
     void GetActiveModulesHeat(uint8 rack, float &heat);
     // returns # of active non-ol'd modules for this rack
     uint8 GetActiveModulesCount(uint8 rack);
+    uint8 GetFittedModuleCountByGroup(uint16 groupID);
 
     // scan method to check for scanning rigs.
     float GetRigScanBonus()                             { return m_rigScanBonus; }
 
-    void RemoveTarget(SystemEntity* pSE)                { pModuleCont->RemoveTarget(pSE); }
+    GenericModule* GetModule(EVEItemFlags flag);        // faster than GetModule(itemID)
+    GenericModule* GetModule(uint32 itemID);            // slower than GetModule(flag)
+    GenericModule* GetRandModule();
 
-    void CargoFull()                                    { pModuleCont->CargoFull(); }
 
 
 private:
+    void addModuleRef(EVEItemFlags flag, GenericModule* pMod);
+    void deleteModuleRef(EVEItemFlags flag, GenericModule* pMod);
+
     bool m_initalized;
 
     ShipItem* pShipItem;
 
-    ModuleContainer* pModuleCont;      // Module objects container  - map of module slots [slot/Mod*]
-
     uint8 m_LowSlots;
     uint8 m_MidSlots;
     uint8 m_HighSlots;
+    uint8 m_RigSlots;
     uint8 m_SubSystemSlots;
 
     // dont like this, but best way to do it...
     float m_rigScanBonus;
 
-    std::map<EVEItemFlags, InventoryItemRef> m_charges; // flag, chargeItem
+    std::map<uint16, uint8> m_modByGroup;               // groupID, count
+    std::map<uint8, GenericModule*> m_modules;          // slot, module
+    std::map<EVEItemFlags, InventoryItemRef> m_charges; // slot, chargeItem
 };
 
 

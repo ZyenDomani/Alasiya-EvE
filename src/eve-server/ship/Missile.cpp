@@ -33,6 +33,7 @@
 #include "system/DestinyManager.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"
+#include "ship/modules/GenericModule.h"
 #include "system/Damage.h"
 
 Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SystemEntity* tSE, SystemEntity* pSE, GenericModule* pMod)

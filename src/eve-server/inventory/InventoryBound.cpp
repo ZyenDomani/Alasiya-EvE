@@ -34,6 +34,7 @@
 #include "planet/Planet.h"
 #include "planet/Colony.h"
 #include "pos/Structure.h"
+#include "ship/modules/GenericModule.h"
 #include "system/BookmarkDB.h"
 #include "system/Container.h"
 #include "system/SystemManager.h"
@@ -614,7 +615,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 if (iRef->categoryID() == EVEDB::invCategories::Module) {
                     toFlag = pShip->FindAvailableModuleSlot(iRef);
                     if (toFlag == flagIllegal) {
-                        pClient->SendNotifyMsg("Your ship has no availible slots to fit this module.  Putting the %s in your CargoHold.", iRef->name());
+                        pClient->SendNotifyMsg("Your ship has no available slots to fit this module.  Putting the %s in your CargoHold.", iRef->name());
                         toFlag = flagCargoHold;
                     }
                 } else {

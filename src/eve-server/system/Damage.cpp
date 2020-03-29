@@ -38,6 +38,7 @@
 #include "npc/NPCAI.h"
 #include "npc/Drone.h"
 #include "ship/Ship.h"
+#include "ship/modules/GenericModule.h"
 #include "system/Container.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
