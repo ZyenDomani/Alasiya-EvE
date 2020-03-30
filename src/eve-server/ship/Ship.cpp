@@ -1983,22 +1983,28 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
         return 0;
     }
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod1);
-    if (itr != m_linkedWeapons.end()) {
-        uint32 slaveID = itr->second.front()->itemID();
-        UnlinkGroup(moduleID);
-        PyTuple* tuple = new PyTuple(3);
-            tuple->SetItem(0, new PyString("OnWeaponGroupDestroyed"));
-            tuple->SetItem(1, new PyInt(m_itemID));
-            tuple->SetItem(2, new PyInt(moduleID));
-        m_pilot->QueueDestinyEvent(&tuple);
-        return slaveID;
-    }
+    if (itr == m_linkedWeapons.end())
+        return 0;
 
-    //  OnWeaponBanksChanged
-    //  OnWeaponGroupDestroyed
+    // weird shit here, but this works...
 
-    // client will throw "KeyError: 0" here.  dont know how to prevent it
-    return 0;
+    // get first linked moduleID
+    uint32 slaveID = itr->second.front()->itemID();
+    // delete group
+    UnlinkGroup(moduleID);
+    // make packet for master and first slave (slaveID)
+    PyList* slaves = new PyList();
+        slaves->AddItem(new PyInt(slaveID));
+    PyDict* result = new PyDict();
+        result->SetItem(new PyInt(moduleID), slaves);
+    PyTuple* tuple = new PyTuple(3);
+        tuple->SetItem(0, new PyString("OnWeaponBanksChanged"));
+        tuple->SetItem(1, new PyInt(m_itemID));
+        tuple->SetItem(2, result);
+    // send 'new' group data  to client
+    m_pilot->QueueDestinyEvent(&tuple);
+    // return slaveID, which client will use to delete it's map and continue processing
+    return slaveID;
 }
 
 void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
@@ -2075,6 +2081,13 @@ void ShipItem::UnlinkGroup(uint32 memberID)
             }
         }
     }
+    /*  not needed here, but kept for reference
+    PyTuple* tuple = new PyTuple(3);
+    tuple->SetItem(0, new PyString("OnWeaponGroupDestroyed"));
+    tuple->SetItem(1, new PyInt(m_itemID));
+    tuple->SetItem(2, new PyInt(moduleID));
+    m_pilot->QueueDestinyEvent(&tuple);
+    */
 }
 
 void ShipItem::UnlinkAllWeapons()
