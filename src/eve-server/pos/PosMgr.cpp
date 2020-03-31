@@ -706,6 +706,9 @@ PyResult PosMgrBound::Handle_AssumeStructureControl(PyCallArgs &call) {
         02:02:07 [POS:Dump]      Tuple: 1 elements
         02:02:07 [POS:Dump]       [ 0]    Integer: 140000311
 
+        'OnAssumeStructureControl',
+        'OnRelinquishStructureControl',
+
     */
     _log(POS__TRACE,  "PosMgrBound::Handle_AssumeStructureControl()");
     call.Dump(POS__DUMP);

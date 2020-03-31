@@ -301,9 +301,7 @@ void RepairService::GetDamageReports(uint32 itemID, Inventory* pInv, PyList* lis
 }
 
 PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
-    /**
-     *                sm.RemoteSvc('repairSvc').UnasembleItems(dict(validIDsByStationID), skipChecks)
-     */
+    // sm.RemoteSvc('repairSvc').UnasembleItems(dict(validIDsByStationID), skipChecks)
 
     /*
      * 15:17:44 [PhysicsInfo]  Call_UnasembleItems
@@ -339,7 +337,7 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
     PyList *pList(nullptr);
     PyTuple *tuple(nullptr);
     InventoryItemRef iRef(nullptr);
-    uint32 itemID = 0; //,locationID = 0,  itemLoc = 0;
+    uint32 itemID(0); //,locationID = 0,  itemLoc = 0;
 
     if (args.list->size() > 0)
         ;  // skipChecks is populated....do something constructive here
@@ -356,8 +354,8 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
                 tuple = (*listItr)->AsTuple();
                 if (tuple != nullptr) {
                     // Get the itemID.
-                    itemID = tuple->GetItem(0)->AsInt()->value();
-                    //itemLoc = tuple->GetItem(1)->AsInt()->value();
+                    itemID = PyRep::IntegerValue(tuple->GetItem(0));
+                    //itemLoc = PyRep::IntegerValue(tuple->GetItem(1));
                     iRef = sItemFactory.GetItem(itemID);
                     if (iRef.get() != nullptr) {
                         // Add type exceptions here.

@@ -593,22 +593,21 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
 {
-    //sLog.Warning("DogmaIMBound::Handle_GetAllInfo()", "size=%u", call.tuple->size());
-    //call.Dump(SERVICE__CALL_DUMP);
-    /* added more return data and updated logic (almost complete and mostly accurate) -allan 26Mar16 */
-    /* Start the Code */
+    // added more return data and updated logic (almost complete and mostly accurate) -allan 26Mar16
+    // completed.  -allan 7Jan19
+    // Start the Code
     Client* pClient(call.client);
 
-    Call_TwoBoolArgs args; /* arg1: getCharInfo, arg2: getShipInfo */
+    Call_TwoBoolArgs args; // arg1: getCharInfo, arg2: getShipInfo
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
-	/* Create the response dictionary */
+    // Create the response dictionary
     PyDict* rsp = new PyDict();
     rsp->SetItemString("activeShipID", new PyInt(pClient->GetShipID()));
-    /* Setting "locationInfo" in the Dictionary */
+    // Set "locationInfo" in the Dictionary
     /** @todo  havent found a populated item in packet logs
      *
         def ProcessLocationInfo(self, cData):
@@ -618,11 +617,11 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
      */
     rsp->SetItemString("locationInfo", PyStatic.NewNone());
 
-    /* Setting "shipModifiedCharAttribs" in the Dictionary */
+    // Set "shipModifiedCharAttribs" in the Dictionary
     /** @todo  havent found a populated item in packet logs */
     rsp->SetItemString("shipModifiedCharAttribs", PyStatic.NewNone());
 
-    /* Setting "charInfo" in the Dictionary  -fixed 24Mar16 */
+    // Set "charInfo" in the Dictionary  -fixed 24Mar16
     sItemFactory.SetUsingClient(pClient);
     if (args.arg1) {
         PyDict* charResult = pClient->GetChar()->GetCharInfo();
@@ -635,7 +634,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     } else  // fixed
         rsp->SetItemString("charInfo", new PyDict());
 
-    /* Setting "shipInfo" in the Dictionary  -fixed 26Mar16 */
+    // Set "shipInfo" in the Dictionary  -fixed 26Mar16
     if (args.arg2) {
         PyDict* shipResult = pClient->GetShip()->GetShipInfo();
         if (shipResult == nullptr) {
@@ -647,7 +646,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     } else
         rsp->SetItemString("shipInfo", new PyDict());
 
-    /* Setting "shipState" in the Dictionary  -fixed 26Mar16  -UD to add linked weapons 7Jan19 */
+    // Set "shipState" in the Dictionary  -fixed 26Mar16  -UD to add linked weapons 7Jan19
     if (pClient->GetShip().get() == nullptr) {
         _log(SERVICE__ERROR, "Unable to build shipState for %u", pClient->GetShipID());
         return PyStatic.NewNone();

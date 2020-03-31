@@ -825,7 +825,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         m_chargeLoaded = true;
         SetChargeState(Module::State::Loaded);
     }
-    
+
     // send qty change
     m_chargeRef->AlterChargeQuantity(0);
 }
@@ -1033,6 +1033,10 @@ bool ActiveModule::CanActivate()
             case Survey_Scanner: {
                 range = GetAttribute(AttrSurveyScanRange).get_float();
             } break;
+            'OnShipScanCompleted',
+            'OnJamStart',
+            'OnJamEnd',
+            'OnCargoScanComplete',
             */
             default: {
                 // make error here with group
