@@ -156,9 +156,6 @@ void ShipItem::Init()
 
     // load linked weapons (if available)
     LoadWeaponGroups();
-
-    SetShipShield(1.0);
-    SetShipCapacitorLevel(1.0);
 }
 
 void ShipItem::InitPod() {
@@ -913,6 +910,7 @@ void ShipItem::SetShipCapacitorLevel(float fraction)
     if ((newCapacitorCharge - 0.5f) < 0)
         newCapacitorCharge = 0;
 
+    _log(SHIP__MESSAGE, "SetShipCapacitorLevel() to %.1f%%.  new value is %.1f", fraction, newCapacitorCharge.get_float());
     SetAttribute(AttrCapacitorCharge, newCapacitorCharge);
 }
 
@@ -928,6 +926,7 @@ void ShipItem::SetShipShield(float fraction)
     if ((newShieldCharge - 0.2f) < 0)
         newShieldCharge = 0;
 
+    _log(SHIP__MESSAGE, "SetShipShield() to %.1f%%.  new value is %.1f", fraction, newShieldCharge.get_float());
     SetAttribute(AttrShieldCharge, newShieldCharge);
 }
 
@@ -945,6 +944,7 @@ void ShipItem::SetShipArmor(float fraction)
     if ((newArmorDamage - 0.2f) < 0)
         newArmorDamage = 0;
 
+    _log(SHIP__MESSAGE, "SetShipArmor() to %.1f%%.  new value is %.1f", fraction, newArmorDamage.get_float());
     SetAttribute(AttrArmorDamage, newArmorDamage);
 }
 
@@ -962,6 +962,7 @@ void ShipItem::SetShipHull(float fraction)
     if ((newHullDamage - 0.2f) < 0)
         newHullDamage = 0;
 
+    _log(SHIP__MESSAGE, "SetShipHull() to %.1f%%.  new value is %.1f", fraction, newHullDamage.get_float());
     SetAttribute(AttrDamage, newHullDamage);
 }
 
@@ -1992,6 +1993,7 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
     uint32 slaveID = itr->second.front()->itemID();
     // delete group
     UnlinkGroup(moduleID);
+    LinkWeapon(moduleID, slaveID);
     // make packet for master and first slave (slaveID)
     PyList* slaves = new PyList();
         slaves->AddItem(new PyInt(slaveID));
@@ -2000,9 +2002,12 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
     PyTuple* tuple = new PyTuple(3);
         tuple->SetItem(0, new PyString("OnWeaponBanksChanged"));
         tuple->SetItem(1, new PyInt(m_itemID));
-        tuple->SetItem(2, result);
+        tuple->SetItem(2, result);      //GetLinkedWeapons()
     // send 'new' group data  to client
     m_pilot->QueueDestinyEvent(&tuple);
+    // send immediately (otherwise it will wait until after this call returns, which negates this hack
+    //m_pilot->FlushQueue();
+
     // return slaveID, which client will use to delete it's map and continue processing
     return slaveID;
 }
@@ -2042,7 +2047,7 @@ void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
     }
 }
 
-void ShipItem::UnlinkGroup(uint32 memberID)
+void ShipItem::UnlinkGroup(uint32 memberID, bool update/*false*/)
 {
     GenericModule* pMod1 = m_ModuleManager->GetModule(memberID);
     if (pMod1 == nullptr)
@@ -2065,6 +2070,13 @@ void ShipItem::UnlinkGroup(uint32 memberID)
             if (itr->second.empty()) {
                 m_linkedWeapons.erase(itr);
                 SaveWeaponGroups();
+                if (update) {
+                    PyTuple* tuple = new PyTuple(3);
+                        tuple->SetItem(0, new PyString("OnWeaponGroupDestroyed"));
+                        tuple->SetItem(1, new PyInt(m_itemID));
+                        tuple->SetItem(2, new PyInt(memberID));
+                    m_pilot->QueueDestinyEvent(&tuple);
+                }
                 return;
             }
         }
@@ -2074,20 +2086,13 @@ void ShipItem::UnlinkGroup(uint32 memberID)
             std::list<GenericModule*>::iterator itr2 = cur.second.begin();
             while (itr2 != cur.second.end()) {
                 if ((*itr2) == pMod1) {
-                    UnlinkGroup(cur.first->itemID());
+                    UnlinkGroup(cur.first->itemID(), update);
                     return;
                 }
                 ++itr2;
             }
         }
     }
-    /*  not needed here, but kept for reference
-    PyTuple* tuple = new PyTuple(3);
-    tuple->SetItem(0, new PyString("OnWeaponGroupDestroyed"));
-    tuple->SetItem(1, new PyInt(m_itemID));
-    tuple->SetItem(2, new PyInt(moduleID));
-    m_pilot->QueueDestinyEvent(&tuple);
-    */
 }
 
 void ShipItem::UnlinkAllWeapons()

@@ -423,6 +423,10 @@ void ModuleManager::UnfitModule(uint32 itemID)
         flag = flagCargoHold;
     pMod->AbortCycle();
     pMod->Offline();
+
+    if (pMod->IsLinked())
+        pShipItem->UnlinkGroup(itemID, true);
+
     if (pMod->IsLoaded()) {
         //{'FullPath': u'UI/Messages', 'messageID': 260011, 'label': u'CannotRemoveModuleWithLoadedChargesBody'}(u'You cannot remove a module while it is still loaded with charges.', None, None)
         //{'FullPath': u'UI/Messages', 'messageID': 258471, 'label': u'CannotRemoveActivatedModuleBody'}(u'You cannot remove a module while it is still activated.', None, None)

@@ -246,7 +246,7 @@ public:
     void PeelAndLink(uint32 masterID, uint32 slaveID);          // this should not throw
     void MergeModuleGroups(uint32 masterID, uint32 slaveID);    // this should not throw
     uint32 UnlinkWeapon(uint32 moduleID);
-    void UnlinkGroup(uint32 memberID);
+    void UnlinkGroup(uint32 memberID, bool update=false);
     void UnlinkAllWeapons();
     PyRep* GetLinkedWeapons();
     void OfflineGroup(GenericModule* pMod);
