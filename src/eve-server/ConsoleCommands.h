@@ -74,7 +74,6 @@ private:
     bool m_haltServer;
     bool m_dbError;
 
-    void GetUpTime(uint8& w, uint8& d, uint8& h, uint8& m, uint8& s);
     void SendMessage(const char *msg);
     void Status(std::string& state, int64& threads, float& vm_usage, float& resident_set, float& user, float& kernel);
 

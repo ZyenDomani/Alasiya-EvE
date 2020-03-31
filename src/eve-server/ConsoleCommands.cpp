@@ -163,12 +163,10 @@ bool ConsoleCommand::Process() {
                     sLog.Warning("      Turret Dmg","Normal.");
             } else if (strncmp(buf, "v", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Version:");
-                sLog.Warning("     Server Build", " %.2f", EVE_Build );
                 sLog.Warning("  Server Revision", " %s", EVEMU_REVISION );
                 sLog.Warning("       Build Date", " %s", EVEMU_BUILD_DATE );
             } else if (strncmp(buf, "i", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Information:");
-                sLog.Warning("     Server Build", " %.2f", EVE_Build );
                 sLog.Warning("  Server Revision", " %s", EVEMU_REVISION );
                 sLog.Warning("       Build Date", " %s", EVEMU_BUILD_DATE );
                 //  memory
@@ -180,18 +178,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("     Memory Usage", " RSS: %.3fMb  VM: %.3fMb", rss, vm );
                 sLog.Warning("    Server Status", "  S: %s | T: %d(%u) | U: %.2f | K: %.2f", \
                 state.data(), threads, aThreads, user, kernel );
-                uint8 w = 0, d = 0, h = 0, m = 0, s = 0;
-                GetUpTime(w, d, h, m, s);
-                if (w)
-                    sLog.Warning("    Server UpTime", " %u W, %u D, %u H, %u M, %u S.", w, d, h, m, s );
-                else if (d)
-                    sLog.Warning("    Server UpTime", " %u D, %u H, %u M, %u S.", d, h, m, s );
-                else if (h)
-                    sLog.Warning("    Server UpTime", " %u H, %u M, %u S.", h, m, s );
-                else if (m)
-                    sLog.Warning("    Server UpTime", " %u M, %u S.", m, s );
-                else
-                    sLog.Warning("    Server UpTime", " %u S.", s );
+                sLog.Warning("    Server UpTime", " %s", sEntityList.GetUpTime());
                 //  loaded items
                 sLog.Warning("     Loaded Items", " %u", sItemFactory.Count());
                 //  loaded NPCs
@@ -236,19 +223,8 @@ bool ConsoleCommand::Process() {
                     sLog.Error("   Server Profile", "Profiling is turned off.");
                     return true;
                 }
-                sLog.Warning("   Server Profile", "Current Stamp: %u.", sEntityList.GetStamp());
-                uint8 w = 0, d = 0, h = 0, m = 0, s = 0;
-                GetUpTime(w, d, h, m, s);
-                if (w)
-                    sLog.Warning("    Server UpTime", " %u W, %u D, %u H, %u M, %u S.", w, d, h, m, s );
-                else if (d)
-                    sLog.Warning("    Server UpTime", " %u D, %u H, %u M, %u S.", d, h, m, s );
-                else if (h)
-                    sLog.Warning("    Server UpTime", " %u H, %u M, %u S.", h, m, s );
-                else if (m)
-                    sLog.Warning("    Server UpTime", " %u M, %u S.", m, s );
-                else
-                    sLog.Warning("    Server UpTime", " %u S.", s );
+                sLog.Warning("    Current Stamp", " %u", sEntityList.GetStamp());
+                sLog.Warning("    Server UpTime", " %s", sEntityList.GetUpTime());
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
                 sProfile.PrintProfile();
@@ -309,20 +285,6 @@ bool ConsoleCommand::Process() {
         free (buf);
         return true;
     }
-}
-
-void ConsoleCommand::GetUpTime(uint8& w, uint8& d, uint8& h, uint8& m, uint8& s) {
-    uint32 seconds = sEntityList.GetStamp() - 1000;
-    float minutes = seconds/60;
-    float hours = minutes/60;
-    float days = hours/24;
-    float weeks = days/7;
-
-    s = fmod(seconds,60);
-    m = fmod(minutes,60);
-    h = fmod(hours,24);
-    d = fmod(days,7);
-    w = fmod(weeks,4);
 }
 
 void ConsoleCommand::SendMessage(const char* msg) {

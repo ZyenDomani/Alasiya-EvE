@@ -366,6 +366,37 @@ std::string EntityList::GetAnomalyID()
     return res;
 }
 
+const char* EntityList::GetUpTime() {
+
+    uint8 w = 0, d = 0, h = 0, m = 0, s = 0;
+    uint32 seconds = m_stamp - 1000;
+    float minutes = seconds/60;
+    float hours = minutes/60;
+    float days = hours/24;
+    float weeks = days/7;
+
+    s = fmod(seconds,60);
+    m = fmod(minutes,60);
+    h = fmod(hours,24);
+    d = fmod(days,7);
+    w = fmod(weeks,4);
+
+    std::ostringstream uptime;
+    if (w)
+        uptime << itoa(w) << "w" << itoa(d) << "d" << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+    else if (d)
+        uptime << itoa(d) << "d" << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+    else if (h)
+        uptime << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+    else if (m)
+        uptime << itoa(m) << "m" << itoa(s) << "s";
+    else
+        uptime << itoa(s) << "s";
+
+    return uptime.str().c_str();
+}
+
+
 // this is my answer to the crazy looping of Multicast shit...
 void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, const char* idType, PyTuple* payload) const
 {

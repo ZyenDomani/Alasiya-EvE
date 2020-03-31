@@ -210,11 +210,10 @@ int main( int argc, char* argv[] )
 
     std::printf("\n");     // spacer
     /* display server config data */
-    sLog.Log(" Supported Client"," %s", EVEProjectVersion);
-    sLog.Log("   Client Version"," %.2f", EVEVersionNumber);
-    sLog.Log("     Client Build"," %d", EVEBuildVersion);
-    sLog.Log("         MachoNet"," %u", MachoNetVersion);
-    sLog.Log("     Server Build", " %.2f", EVE_Build );
+    sLog.Log(" Supported Client", " %s", EVEProjectVersion);
+    sLog.Log("   Client Version", " %.2f", EVEVersionNumber);
+    sLog.Log("     Client Build", " %d", EVEBuildVersion);
+    sLog.Log("         MachoNet", " %u", MachoNetVersion);
     sLog.Log("  Server Revision", " %s", EVEMU_REVISION );
     sLog.Log("       Build Date", " %s", EVEMU_BUILD_DATE );
     sLog.Log("   Config Version", " %.1f", Config_Version );
@@ -256,13 +255,14 @@ int main( int argc, char* argv[] )
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
         sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", m_sleepTime);
     }
+    /* removed code for this  25 March 2020
     uint16 m_idle = sConfig.server.idleSleepTime;       // default 1s.  max 65.535s
     if (m_idle == 1000)
         sLog.Green("  Idle Sleep Time","Default at 1000ms.");
     else {
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
         sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", m_idle);
-    }
+    } */
     std::printf("\n");     // spacer
 
     /* Custom config file options
@@ -781,14 +781,9 @@ int main( int argc, char* argv[] )
         m_run = sConsole.Process();
 
         /* do the stuff for thread sleeping */
-        //if (sEntityList.HasClients()) {     // how much of a proc hit is this?  change/remove it?
-            start = GetTickCount() - start;
-            if (m_sleepTime > start)
-                std::this_thread::sleep_for(std::chrono::milliseconds(start));
-            //else
-            //    sLog.Warning("Server", "Overrun");    // this is just curiosity...happens VERY seldom
-        //} else /* if no clients, let server idle longer*/
-        //    std::this_thread::sleep_for(std::chrono::milliseconds(m_idle));
+        start = GetTickCount() - start;
+        if (m_sleepTime > start)
+            std::this_thread::sleep_for(std::chrono::milliseconds(start));
     }
 
     /*

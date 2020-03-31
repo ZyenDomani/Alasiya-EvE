@@ -107,7 +107,6 @@ public:
 
     /* stamp shit here */
     uint32 GetStamp()                                   { return m_stamp; }
-    void TicCompleted()                                 { ++m_stamp; }
     uint32 GetMinutes()                                 { return m_minutes; }
 
     void Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const;
@@ -146,6 +145,8 @@ public:
     void AddTargMgr(SystemEntity* pSE, TargetManager* pTM)      { m_targMgrs.emplace(pSE, pTM); }
     // remove SE* and targMgr* from map
     void DeleteTargMgr(SystemEntity* pSE)                       { m_targMgrs.erase(pSE); }
+
+    const char* GetUpTime();
 
 protected:
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.
