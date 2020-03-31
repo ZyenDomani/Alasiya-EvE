@@ -116,7 +116,7 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
 		dict->SetItemString("beyonce", PyStatic.NewNone());
 		dict->SetItemString("BSD", PyStatic.NewNone());
 		dict->SetItemString("cache", PyStatic.NewNone());
-		dict->SetItemString("CalendarProxy", PyStatic.NewNone());
+		dict->SetItemString("calendarProxy", PyStatic.NewNone());
 		dict->SetItemString("corporationSvc", PyStatic.NewNone());
 		dict->SetItemString("corpStationMgr", PyStatic.NewNone());
 		dict->SetItemString("corpmgr", PyStatic.NewNone());

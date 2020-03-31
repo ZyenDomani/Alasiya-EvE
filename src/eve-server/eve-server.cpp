@@ -583,7 +583,7 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("bookmark", new BookmarkService(&pyServMgr));
     pyServMgr.RegisterService("browserLockdownSvc", new BrowserLockdownService(&pyServMgr));
     pyServMgr.RegisterService("bulkMgr", new BulkMgrService(&pyServMgr));
-    pyServMgr.RegisterService("CalendarProxy", new CalendarProxy(&pyServMgr));
+    pyServMgr.RegisterService("calendarProxy", new CalendarProxy(&pyServMgr));
     pyServMgr.RegisterService("calendarMgr", new CalendarMgrService(&pyServMgr));
     pyServMgr.RegisterService("certificateMgr", new CertificateMgrService(&pyServMgr));
     pyServMgr.RegisterService("charFittingMgr", new CharFittingMgr(&pyServMgr));

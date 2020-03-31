@@ -31,7 +31,7 @@
 PyCallable_Make_InnerDispatcher(CalendarProxy)
 
 CalendarProxy::CalendarProxy(PyServiceMgr *mgr)
-: PyService(mgr, "CalendarProxy"),
+: PyService(mgr, "calendarProxy"),
   m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
