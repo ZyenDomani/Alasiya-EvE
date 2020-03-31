@@ -36,9 +36,14 @@ check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?
 also check containers for contents and remove/deny before repack
 
-cant insure ships again.  (verified)
 check insurance payouts.   rounds full ship value up
-check trade - ships retain insurance
+check trade - ships retain insurance)
+20:41:06 [Bound] InsuranceBound::InsureShip()
+20:41:06 [AcctTrace] TranserFunds() - from: 90000000, to: 1000132, entry: 19, refID: 0, amount: 0.33, fKey: 1000, tKey: 1000
+20:41:06 [AcctTrace] TranserFunds() - toID: 1000132 is neither player nor player corp.
+20:41:06 [SvcMsg] New messageID: 1
+20:41:06 [SvcMsg] Delivered message from 1000132 to recipient 90000000
+
 
 
 jetans dont check capy before jettison
@@ -47,9 +52,6 @@ seems entire item/cargo shit is wonky
 
 dungeon/anomaly items need tracking for removal on cleanup/shutdown
 dungeon deco items need better placement
-
-
-skillqueueendtime in chardb wrong/invalid.  check setting
 
 
 check for item ownership before rename
@@ -65,8 +67,13 @@ current fx data incomplete at best.  missing multiple items/defs
 isDefault used to send to activate for effectID
 
 
+error:
+"turret not fitted on shipID (npc)"
+
 *******************************************************
 ********  improvements
+
+go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
 
 closely examine target mgr and see what we can improve.
     - test changing TargetEntry class (and enums) to struct
@@ -192,6 +199,7 @@ drone ai needs:
   - assigned ship killed, need code to reset
   - all states except idle
 mining methods will need updates to test for drones vs pilots
+move mining item depleted call to targmgr
 
 RAM code - implement invention, copy, re, tech    -priority level: low
 
@@ -260,6 +268,8 @@ store/board ship in cap ship hangar not coded
 
 ship selfdestruct not coded
 
+update eject to call Stop() then reset ship data to default
+
 0 AS landmarkNameID
 
 authentication and session still need work, but i dont fully understand them
@@ -285,6 +295,7 @@ attribMap has open db calls
 OSE::Killed() unfinished.
 
 skillbar error only happens when training skill to l5 complete
+check sending 275 (attrTimeConst) as float
 
 pause skill queue should clear training queue window
 
