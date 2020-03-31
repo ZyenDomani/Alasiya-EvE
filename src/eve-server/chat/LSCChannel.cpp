@@ -24,6 +24,7 @@
 */
 
 #include "eve-server.h"
+#include "EVEVersion.h"
 
 #include "Client.h"
 #include "ConsoleCommands.h"
@@ -193,24 +194,44 @@ void LSCChannel::SendMessage(Client * c, const char * message, bool self/*false*
 // to send system msgs, senderID should be 1 (system owner)
 
     MulticastTarget mct;
-    OnLSC_SendMessage sm;
-
     if (self) {
         mct.characters.insert(c->GetCharacterID());
     } else {
-        std::map<uint32, LSCChannelChar>::iterator cur;
-        cur = m_chars.begin();
-        for(; cur != m_chars.end(); cur++)
-            mct.characters.insert( cur->first );
+        std::map<uint32, LSCChannelChar>::iterator itr = m_chars.begin();
+        for(; itr != m_chars.end(); ++itr)
+            mct.characters.insert( itr->first );
     }
 
+    OnLSC_SendMessage sm;
     sm.sender = _MakeSenderInfo(c);
     sm.channelID = EncodeID();
     sm.message = message;
-    sm.member_count = (int32)m_chars.size();
+    sm.member_count = m_chars.size();
 
     PyTuple *answer = sm.Encode();
     sEntityList.Multicast("OnLSC", GetTypeString(), &answer, mct);
+}
+
+void LSCChannel::SendServerMOTD(Client* pClient) {
+    std::string msg = "<br>Welcome to Alasiya's EvEmu Server";
+    //msg += pClient->GetCharName();
+    msg += ".<br>Server Version: ";
+    msg += EVEMU_REVISION;
+    msg += "<br>Revision Date: ";
+    msg += EVEMU_BUILD_DATE;
+    msg += "<br>Uptime: ";
+    msg += sEntityList.GetUpTime();
+    msg += "<br>Current Population: ";
+    msg += itoa(sEntityList.GetClientCount());
+
+    OnLSC_SendMessage sm;
+    sm.sender = _FakeSenderInfo();
+    sm.channelID = EncodeID();
+    sm.message = msg;
+    sm.member_count = m_chars.size();
+
+    PyTuple *answer = sm.Encode();
+    pClient->SendNotification("OnLSC", GetTypeString(), &answer);
 }
 
 bool LSCChannel::IsJoined(uint32 charID) {

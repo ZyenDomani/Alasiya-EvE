@@ -415,7 +415,9 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     SetStateTimer(ClientState::csLogin, ClientTimers::LoginTimer);
 
-    // figure out how to send MOTD and server data to player's 'local' chat channel
+    // set ship cap and shields to full
+    m_ship->SetShipShield(1.0);
+    m_ship->SetShipCapacitorLevel(1.0);
 
     return (m_loaded = true);
 }
@@ -457,6 +459,8 @@ void Client::ProcessClient() {
                     case ClientState::csLogin: {
                         _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Login");
                         m_login = false;
+                        // send MOTD and server data to player's 'local' chat channel
+                        m_services.lsc_service->SendServerMOTD(this);
                     } break;
                     case ClientState::csIdle: {
                         _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Idle");
@@ -550,6 +554,8 @@ void Client::ProcessClient() {
                     SetBallPark();
                     m_login = false;
                     m_clientState = ClientState::csIdle;
+                    // send MOTD and server data to player's 'local' chat channel
+                    m_services.lsc_service->SendServerMOTD(this);
                 } break;
                 case ClientState::csJump: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Jump");
@@ -654,6 +660,9 @@ void Client::SetAutoPilot(bool set/*false*/)
     // itemID=10644  flag=*module*  not published - not in client data
     m_autoPilot = set;
     _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
+
+    //OnAutoPilotOn
+    //OnAutoPilotOff
 }
 
 void Client::EnterSystem(uint32 systemID)

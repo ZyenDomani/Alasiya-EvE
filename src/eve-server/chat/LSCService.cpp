@@ -34,6 +34,7 @@
 #include "chat/LSCService.h"
 #include "fleet/FleetService.h"
 
+
 /** @todo
  * LSC system todo list...
  * to implement...
@@ -166,7 +167,7 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
 
 PyResult LSCService::Handle_GetRookieHelpChannel(PyCallArgs &call) {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_GetRookieHelpChannel()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_GetRookieHelpChannel()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -176,7 +177,7 @@ PyResult LSCService::Handle_GetRookieHelpChannel(PyCallArgs &call) {
 PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
 {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_CreateChannel()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_CreateChannel()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -275,7 +276,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
 
 PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_JoinChannels()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_JoinChannels()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -369,7 +370,7 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
 PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
 {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_SendMessage()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_SendMessage()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -422,7 +423,7 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
 PyResult LSCService::Handle_AccessControl(PyCallArgs& call)
 {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_AccessControl()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_AccessControl()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
     /*  args passed as channelID, charID, mode
@@ -474,7 +475,7 @@ PyResult LSCService::Handle_AccessControl(PyCallArgs& call)
 PyResult LSCService::Handle_Invite(PyCallArgs &call)
 {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_Invite()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_Invite()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -563,7 +564,7 @@ PyResult LSCService::Handle_Invite(PyCallArgs &call)
 PyResult LSCService::Handle_Configure(PyCallArgs& call)
 {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_Configure()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_Configure()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
     /*
@@ -691,7 +692,7 @@ PyResult LSCService::Handle_Configure(PyCallArgs& call)
 
 PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_LeaveChannel()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_LeaveChannel()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -747,7 +748,7 @@ PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
 
 PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_LeaveChannels()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_LeaveChannels()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -817,7 +818,7 @@ PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
 PyResult LSCService::Handle_DestroyChannel(PyCallArgs& call)
 {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White("LSCService::Handle_DestroyChannel()", "size=%u", call.tuple->size());
+        sLog.Warning("LSCService::Handle_DestroyChannel()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -905,8 +906,8 @@ PyResult LSCService::Handle_GetMember(PyCallArgs &call) {
 
 void LSCService::CharacterLogin(Client* pClient)
 {
-    CreateSystemChannel((int32)pClient->GetCorporationID());
-    CreateSystemChannel((int32)pClient->GetAllianceID());
+    CreateSystemChannel(pClient->GetCorporationID());
+    CreateSystemChannel(pClient->GetAllianceID());
 }
 
 void LSCService::SystemUnload(uint32 systemID, uint32 constID, uint32 regionID)
@@ -1131,7 +1132,7 @@ void LSCService::CreateStaticChannels() {
     str << "<url=fitting:16238:25861;4:1319;2:31370;1:31083;2:4435;2:5973;1:24348;4::>Caldari</url><color=0xffffffff> - </color>";
     str << "<url=fitting:16240:31083;2:25861;4:8135;1:31370;1:1319;2:4435;1:5973;1:24348;4::>Gallente</url><color=0xffffffff> - </color>";
     str << "<url=fitting:16242:25861;4:1319;2:31370;1:31083;2:6001;1:4435;2:24348;4::>Minmatar</url><color=0xffffffff> </color><br><br>";
-    /*  this suggests t2 shit which isnt avalible yet
+    /*  this suggests t2 shit which isnt available yet
     str << "<b><color=0xff00ff00>Omegas</color></b><color=0xffffffff> - You should be able to use a </color><url=showinfo:2998>Noctis</url>";
     str << "<color=0xffffffff>, </color><url=showinfo:30836>Salvager II's</url><color=0xffffffff> &amp; </color><url=showinfo:4250>Tractor Beam II's</url><br>";
     */
@@ -1151,6 +1152,13 @@ void LSCService::CreateStaticChannels() {
     str << "<br><color=0xffffffff>Welcome to the</color> <color=0xff00ffff>GM Command</color><color=0xffffffff> channel.<br><br>";
     str << "This channel is intended for using dot commands.</color>";
     CreateChannel(2900000000, 1, "Command", str.str().c_str(), nullptr, "command", LSC::Type::custom, cspa, 0, 0, true);
+}
+
+void LSCService::SendServerMOTD(Client* pClient)
+{
+    std::map<int32, LSCChannel*>::iterator itr = m_channels.find(pClient->GetSystemID());
+    if (itr != m_channels.end())
+        itr->second->SendServerMOTD(pClient);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

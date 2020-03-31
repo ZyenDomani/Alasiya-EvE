@@ -111,6 +111,7 @@ public:
 
     void Evacuate(Client * c);
     void SendMessage(Client * c, const char * message, bool self = false);
+    void SendServerMOTD(Client* pClient);
 
     void GetChannelInfo(int32 * channelID, uint32 * ownerID, std::string &displayName, std::string &motd, std::string &comparisonKey,
             bool * memberless, std::string &password, bool * mailingList, uint32 * cspa, uint32 * temporary);

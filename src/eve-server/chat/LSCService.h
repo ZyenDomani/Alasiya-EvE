@@ -49,6 +49,7 @@ public:
 
     PyResult ExecuteCommand(Client *from, const char *msg);
     void CharacterLogin(Client *pClient);
+    void SendServerMOTD(Client* pClient);
 
     void CreateSystemChannel(int32 channelID);
     void SystemUnload(uint32 systemID, uint32 constID, uint32 regionID);
