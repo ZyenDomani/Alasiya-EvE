@@ -254,12 +254,17 @@ market system....this needs a lot of attention
     - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client
 
 InvBrokerService needs love
+    IBB::List() incomplete
 mapservice  needs love
 CharMgrService  needs love
 notificationMgr  needs love
 reproc  needs love
 certificateMgr needs looking at
 paperDollServer incomplete
+factionWarMgr incomplete
+ShipService incomplete
+InvBound still needs work
+lots of Corp* shit still incomplete
 
 PlanetORBBound needs work now that customs offices are working
 PI Launch status need *some way* to tick for launch reentry
@@ -321,8 +326,6 @@ set session change timer for expensive commands
 ** idea  **  set leadership skill modifiers on char item, then have fleet boosts pull directly from char
 
 ***  errors
-fx data needs NULL instead of 0 in most data.
-client uses "if x is None" in most (if not all) fx tests
 
 
 ***  other
@@ -343,6 +346,11 @@ this includes fx13 and fx10 calls
 look into using "CALL_", "RSP_" and "encode=true/false"/"decode=true/false" for including/omitting the bloated encode/decode sections
   - this will be involved and rather time-consuming
 
+*******************************************************
+*****************  db shit
+
+all PackedRows are marshalled into a buffer, where None is inserted as zero.
+    - this negates client conditional checks like using "if x is None:" because 0 returns false in that check
 
 *******************************************************
 *****************  ideas for later
