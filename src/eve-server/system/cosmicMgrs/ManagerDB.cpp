@@ -106,7 +106,7 @@ PyObjectEx *ManagerDB::GetOperands() {
     return DBResultToCIndexedRowset(res, "operandID");
 }
 
-void ManagerDB::ListAllCorpFactions(std::map<uint32, uint32> &into) {
+void ManagerDB::LoadCorpFactions(std::map<uint32, uint32> &into) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT corporationID,factionID FROM crpNPCCorporations" )) {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -116,7 +116,7 @@ void ManagerDB::ListAllCorpFactions(std::map<uint32, uint32> &into) {
     DBResultToUIntUIntDict(res, into);
 }
 
-void ManagerDB::ListAllFactionStationCounts(std::map<uint32, uint32> &into) {
+void ManagerDB::LoadFactionStationCounts(std::map<uint32, uint32> &into) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT factionID, COUNT(DISTINCT staStations.stationID) FROM crpNPCCorporations"
         " LEFT JOIN staStations USING (corporationID)"
@@ -129,7 +129,7 @@ void ManagerDB::ListAllFactionStationCounts(std::map<uint32, uint32> &into) {
     DBResultToUIntUIntDict(res, into);
 }
 
-void ManagerDB::ListAllFactionSystemCounts(std::map<uint32, uint32> &into) {
+void ManagerDB::LoadFactionSystemCounts(std::map<uint32, uint32> &into) {
     DBQueryResult res;
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID, COUNT(solarSystemID) FROM mapSolarSystems GROUP BY factionID"))
@@ -141,7 +141,7 @@ void ManagerDB::ListAllFactionSystemCounts(std::map<uint32, uint32> &into) {
     DBResultToUIntUIntDict(res, into);
 }
 
-void ManagerDB::ListAllFactionRegions(std::map<int32, PyRep *> &into) {
+void ManagerDB::LoadFactionRegions(std::map<int32, PyRep *> &into) {
     DBQueryResult res;
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID,regionID FROM mapRegions WHERE factionID IS NOT NULL"))
@@ -152,7 +152,7 @@ void ManagerDB::ListAllFactionRegions(std::map<int32, PyRep *> &into) {
     DBResultToIntIntlistDict(res, into);
 }
 
-void ManagerDB::ListAllFactionConstellations(std::map<int32, PyRep *> &into) {
+void ManagerDB::LoadFactionConstellations(std::map<int32, PyRep *> &into) {
     DBQueryResult res;
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID,constellationID FROM mapConstellations WHERE factionID IS NOT NULL" ))
@@ -163,7 +163,7 @@ void ManagerDB::ListAllFactionConstellations(std::map<int32, PyRep *> &into) {
     DBResultToIntIntlistDict(res, into);
 }
 
-void ManagerDB::ListAllFactionSolarSystems(std::map<int32, PyRep *> &into) {
+void ManagerDB::LoadFactionSolarSystems(std::map<int32, PyRep *> &into) {
     DBQueryResult res;
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID,solarSystemID FROM mapSolarSystems WHERE factionID IS NOT NULL"))
@@ -174,7 +174,7 @@ void ManagerDB::ListAllFactionSolarSystems(std::map<int32, PyRep *> &into) {
     DBResultToIntIntlistDict(res, into);
 }
 
-void ManagerDB::ListAllFactionRaces(std::map<int32, PyRep *> &into) {
+void ManagerDB::LoadFactionRaces(std::map<int32, PyRep *> &into) {
     DBQueryResult res;
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID,raceID FROM facRaces WHERE factionID IS NOT NULL"))
@@ -185,7 +185,7 @@ void ManagerDB::ListAllFactionRaces(std::map<int32, PyRep *> &into) {
     DBResultToIntIntlistDict(res, into);
 }
 
-PyDict* ManagerDB::ListAllNPCCorpInfo() {
+PyDict* ManagerDB::LoadNPCCorpInfo() {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"

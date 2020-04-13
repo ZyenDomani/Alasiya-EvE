@@ -27,7 +27,7 @@ public:
     int                 Initialize();
 
     void                Clear();
-    void                Close()                         { Clear(); }
+    void                Close();
 
     void                GetInfo();
 

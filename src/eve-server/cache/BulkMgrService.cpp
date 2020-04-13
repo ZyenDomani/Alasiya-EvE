@@ -163,19 +163,19 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
         res->SetItemString("type", new PyInt(updateBulkStatusHashMismatch));
         // make list of fileIDs to send to client.
         PyList* list = new PyList();
-            list->AddItem(new PyInt(800002));
-            list->AddItem(new PyInt(800003));
-            list->AddItem(new PyInt(800004));
-            list->AddItem(new PyInt(800005));
-            list->AddItem(new PyInt(800006));
-            list->AddItem(new PyInt(800007));
+            list->AddItem(new PyInt(800002));   //cacheDogmaOperands
+            list->AddItem(new PyInt(800003));   //cacheDogmaExpressions
+            list->AddItem(new PyInt(800004));   //cacheDogmaAttributes
+            list->AddItem(new PyInt(800005));   //cacheDogmaEffects
+            list->AddItem(new PyInt(800006));   //cacheDogmaTypeAttributes
+            list->AddItem(new PyInt(800007));   //cacheDogmaTypeEffects
         res->SetItemString("data", list);
     } else {
         res->SetItemString("type", new PyInt(updateBulkStatusOK));
     }
 
     res->SetItemString("version", new PyInt(bulkDataChangeID));
-    res->SetItemString("allowUnsubmitted", new PyBool(false));
+    res->SetItemString("allowUnsubmitted", PyStatic.NewFalse());
 
     /*
     res->SetItemString("data", new PyList(0));
@@ -239,10 +239,10 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
         bulksEndingInChunk->AddItem(new PyInt(800005));
         // will have to determine what files are needed using hash, and then how to arrange and send this data correctly
         response->SetItem(2, new PyInt(sBulkDB.GetNumChunks()));    //numberOfChunks
-        response->SetItem(3, new PyInt(0));                         //chunkSetID
+        response->SetItem(3, PyStatic.NewZero());                   //chunkSetID
     } else if (args.toGet->IsList()) {
         PyList::const_iterator itr = args.toGet->AsList()->begin(), end = args.toGet->AsList()->end();
-        uint8 setID = 1;
+        uint8 setID(1);
         while (itr != end) {
             switch ((*itr)->AsInt()->value()) {
                 case 800002: {
@@ -287,9 +287,9 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
     if (bulksEndingInChunk->size() > 0)
         response->SetItem(1, bulksEndingInChunk);
     else
-        response->SetItem(1, new PyNone());
+        response->SetItem(1, PyStatic.NewNone());
 
-    response->SetItem(4, new PyBool(false));                //allowUnsubmitted isnt supported (yet)
+    response->SetItem(4, PyStatic.NewFalse());     //allowUnsubmitted isnt supported (yet)
 
     if (is_log_enabled(BULKDATA__TRACE))
         response->Dump(BULKDATA__TRACE, "  ");
@@ -374,7 +374,7 @@ PyResult BulkMgrService::Handle_GetAllBulkIDs(PyCallArgs &call)
      *        PyList of fileIDs of updated data files to be sent to client in bulk
      */
 
-    // hard-code a list of 'new' dgm fileIDs here. (updated and edited dogma data from 'Rhea' expansion)
+    // hard-code a list of 'new' dgm fileIDs here. (updated and edited dogma data)
     // this can also be used to update other data files as needed
     PyList* list = new PyList();
         list->AddItem(new PyInt(800002));   //cacheDogmaOperands

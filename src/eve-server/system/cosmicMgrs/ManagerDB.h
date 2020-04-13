@@ -39,15 +39,15 @@ public:
     static void GetTypeAttributes(DBQueryResult& res);
     static void GetRAMRequirements(DBQueryResult& res);
 
-    static void ListAllCorpFactions(std::map<uint32, uint32> &into);
-    static void ListAllFactionStationCounts(std::map<uint32, uint32> &into);
-    static void ListAllFactionSystemCounts(std::map<uint32, uint32> &into);
-    static void ListAllFactionRegions(std::map<int32, PyRep *> &into);
-    static void ListAllFactionConstellations(std::map<int32, PyRep *> &into);
-    static void ListAllFactionSolarSystems(std::map<int32, PyRep *> &into);
-    static void ListAllFactionRaces(std::map<int32, PyRep *> &into);
+    static void LoadCorpFactions(std::map<uint32, uint32> &into);
+    static void LoadFactionStationCounts(std::map<uint32, uint32> &into);
+    static void LoadFactionSystemCounts(std::map<uint32, uint32> &into);
+    static void LoadFactionRegions(std::map<int32, PyRep *> &into);
+    static void LoadFactionConstellations(std::map<int32, PyRep *> &into);
+    static void LoadFactionSolarSystems(std::map<int32, PyRep *> &into);
+    static void LoadFactionRaces(std::map<int32, PyRep *> &into);
 
-    static PyDict* ListAllNPCCorpInfo();
+    static PyDict* LoadNPCCorpInfo();
     static PyObject* GetEntryTypes();
     static PyObject* GetKeyMap();
     static PyObject* GetNPCDivisions();

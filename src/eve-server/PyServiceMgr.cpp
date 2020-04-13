@@ -54,7 +54,6 @@ PyServiceMgr::~PyServiceMgr() {
 void PyServiceMgr::Close() {
     for (auto cur : m_svcList)
         SafeDelete(cur.second);
-    m_svcList.clear();
 
     PyBoundObject* bo(nullptr);
     for (auto cur : m_boundObjects) {
@@ -64,7 +63,8 @@ void PyServiceMgr::Close() {
                     bo->GetName(), bo->m_nodeID, bo->m_bindID);
         SafeDelete(bo);
     }
-    m_boundObjects.clear();
+
+    sLog.Warning("     PyServiceMgr", "Services Manager has been closed." );
 }
 
 void PyServiceMgr::Initalize(double startTime)

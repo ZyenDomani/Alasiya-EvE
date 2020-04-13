@@ -53,6 +53,23 @@ StaticDataMgr::~StaticDataMgr()
     //Clear();
 }
 
+void StaticDataMgr::Close()
+{
+    PySafeDecRef(m_keyMap);
+    PySafeDecRef(m_agents);
+    PySafeDecRef(m_operands);
+    PySafeDecRef(m_billTypes);
+    PySafeDecRef(m_entryTypes);
+    PySafeDecRef(m_factionInfo);
+    PySafeDecRef(m_npcDivisions);
+
+    for (auto cur : m_bpMatlData)
+        PySafeDecRef(cur.second);
+
+    sLog.Warning("    StaticDataMgr", "Static Data Manager has been closed." );
+}
+
+
 int StaticDataMgr::Initialize()
 {
     Populate();
@@ -96,6 +113,7 @@ void StaticDataMgr::Clear()
 void StaticDataMgr::Populate()
 {
     double beginTime = GetTimeMSeconds();
+    double startTime = GetTimeMSeconds();
 
     m_keyMap = ManagerDB::GetKeyMap();
     if (m_keyMap == nullptr)
@@ -121,23 +139,28 @@ void StaticDataMgr::Populate()
     if (m_npcDivisions == nullptr)
         sLog.Error("    StaticDataMgr", "m_npcDivisions is null");
 
+    sLog.Cyan("    StaticDataMgr", "Base Static data sets loaded in %.3fms.", (GetTimeMSeconds() - startTime));
+
+    startTime = GetTimeMSeconds();
     GetFactionInfoRsp rsp;
-    ManagerDB::ListAllCorpFactions(rsp.factionIDbyNPCCorpID);
-    ManagerDB::ListAllFactionStationCounts(rsp.factionStationCount);
-    ManagerDB::ListAllFactionSystemCounts(rsp.factionSolarSystemCount);
-    ManagerDB::ListAllFactionRegions(rsp.factionRegions);
-    ManagerDB::ListAllFactionConstellations(rsp.factionConstellations);
-    ManagerDB::ListAllFactionSolarSystems(rsp.factionSolarSystems);
-    ManagerDB::ListAllFactionRaces(rsp.factionRaces);
-    rsp.npcCorpInfo = ManagerDB::ListAllNPCCorpInfo();
+    ManagerDB::LoadCorpFactions(rsp.factionIDbyNPCCorpID);
+    ManagerDB::LoadFactionStationCounts(rsp.factionStationCount);
+    ManagerDB::LoadFactionSystemCounts(rsp.factionSolarSystemCount);
+    ManagerDB::LoadFactionRegions(rsp.factionRegions);
+    ManagerDB::LoadFactionConstellations(rsp.factionConstellations);
+    ManagerDB::LoadFactionSolarSystems(rsp.factionSolarSystems);
+    ManagerDB::LoadFactionRaces(rsp.factionRaces);
+    rsp.npcCorpInfo = ManagerDB::LoadNPCCorpInfo();
     m_factionInfo = rsp.Encode();
     if (m_factionInfo == nullptr)
         sLog.Error("    StaticDataMgr", "m_factionInfo is null");
+    else
+        sLog.Cyan("    StaticDataMgr", "Faction data sets loaded in %.3fms.", (GetTimeMSeconds() - startTime));
 
-    double startTime = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
+    startTime = GetTimeMSeconds();
     ManagerDB::GetSystemData(*res);
     while (res->GetRow(row)) {
         //SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems
@@ -1053,7 +1076,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
                 into->SetField((uint32)2, from->GetField(2));
             }
             Manufacturing->SetItemString("extras", rowset);     // have to build a crowset for this
-        rsp->SetItem(PyStatic.NewOne(), new PyObject("util.KeyVal", Manufacturing));
+        rsp->SetItem(new PyInt(1), new PyObject("util.KeyVal", Manufacturing));
     }
     if (tech) {        //activityResearchingTechnology = 2
         // not used.  not defined in client.  no data for this activity

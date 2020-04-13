@@ -236,9 +236,9 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
                 }
         } else if (IsCharacter(entry.ownerID)) {
             if (sDatabase.RunQuery(res2,
-                        "SELECT c.corporationID, co.allianceID, co.warFactionID FROM chrCharacters AS c"
-                        " LEFT JOIN crpCorporation AS co USING (corporationID)"
-                        " WHERE c.characterID = %u", entry.ownerID))
+                "SELECT c.corporationID, co.allianceID, co.warFactionID FROM chrCharacters AS c"
+                " LEFT JOIN crpCorporation AS co USING (corporationID)"
+                " WHERE c.characterID = %u", entry.ownerID))
             {
                 if (res2.GetRow(row2)) {
                     entry.corporationID = row2.GetUInt(0);

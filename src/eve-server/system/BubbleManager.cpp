@@ -63,9 +63,8 @@ int BubbleManager::Initialize() {
 void BubbleManager::clear() {
     for (auto cur : m_bubbles)
         SafeDelete(cur);
-
-    m_bubbles.clear();
-    m_bubbleMap.clear();
+    
+    sLog.Warning("        BubbleMgr", "Bubble Manager has been closed." );
 }
 
 void BubbleManager::Process() {

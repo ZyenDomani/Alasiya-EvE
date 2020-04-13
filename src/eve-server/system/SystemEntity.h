@@ -41,7 +41,6 @@ class ContainerSE;
 class Damage;
 class Drone;
 class NPC;
-class Player;
 class Sentry;
 class SystemBubble;
 class SystemManager;
@@ -221,7 +220,7 @@ public:
     /* public generic functions handled in base class. */
     void                        DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner);
     void                        AwardSecurityStatus(InventoryItemRef iRef, Character* pChar);
-    void                        SendDamageStateChanged();
+    void                        SendDamageStateChanged();  /* this uses targetMgr update to send to all interested parties */
     bool                        ApplyDamage(Damage &d); /* This method is defined in Damage.cpp */
     double                      DistanceTo2(const SystemEntity* other);
     PyTuple*                    MakeDamageState();

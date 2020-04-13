@@ -30,19 +30,26 @@ BulkDB::~BulkDB()
 
 void BulkDB::Close()
 {
+    for (auto cur : m_bulkData)
+        PyDecRef(cur.second);
+
+    for (auto cur : m_bulkDataChunks)
+        PyDecRef(cur.second);
+
     m_bulkData.clear();
     m_bulkDataChunks.clear();
+    sLog.Warning("      BulkDataMgr", "Bulk Data Manager has been closed." );
 }
 
 
 /* updated files to send to client in bulkdata
  *
     dgmOperands = 800002,                -74
-    dgmExpressions = 800003,             -17757
+    dgmExpressions = 800003,             -17758
     dgmAttributes = 800004,              -1791
-    dgmEffects = 800005,                 -3548
-    dgmTypeAttributes = 800006,          -359049
-    dgmTypeEffects = 800007,             -34076
+    dgmEffects = 800005,                 -2854
+    dgmTypeAttributes = 800006,          -353290
+    dgmTypeEffects = 800007,             -33777
     dgmUnits = 800009,                   -57
     invBlueprintTypes = 1200001          -3292      // may not need this one...no, data is updated thru server call
     actKeyTypes = 2001100001             -22
@@ -64,7 +71,7 @@ void BulkDB::Initialize()
     m_bulkData.insert(std::pair<uint8, PyRep*>(1, GetDogmaAttribs()));
     m_bulkData.insert(std::pair<uint8, PyRep*>(2, GetDogmaEffects()));
 
-    for (int i = 1; i < m_chunks; i++) {
+    for (int i = 1; i < m_chunks; ++i) {
         switch (i) {
             case 1:
             case 2: {
@@ -217,22 +224,83 @@ PyRep* BulkDB::GetDogmaAttribs()
 }
 
 PyRep* BulkDB::GetDogmaEffects()
-{   //3537
+{   //2854
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
-        "SELECT effectID, effectName, displayNameID, descriptionID, dataID, effectCategory, preExpression, postExpression, description, guid, "
-        "isOffensive, isAssistance, durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, "
-        "disallowAutoRepeat, published, displayName, isWarpSafe, rangeChance, electronicChance, propulsionChance, distribution, sfxName, "
-        "npcUsageChanceAttributeID, npcActivationChanceAttributeID, fittingUsageChanceAttributeID, iconID, modifierInfo FROM dgmEffects"))
+        "SELECT effectID, effectName, displayNameID, descriptionID, dataID, effectCategory, preExpression, postExpression,"
+        " description, guid, isOffensive, isAssistance, durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID,"
+        " rangeAttributeID, falloffAttributeID, disallowAutoRepeat, published, displayName, isWarpSafe, rangeChance,"
+        " electronicChance, propulsionChance, distribution, sfxName, npcUsageChanceAttributeID, "
+        " npcActivationChanceAttributeID, fittingUsageChanceAttributeID, iconID, modifierInfo FROM dgmEffects"))
     {
         _log(DATABASE__ERROR, "Error in GetDogmaEffects: %s",res.error.c_str());
         return nullptr;
     }
+
     return DBResultToCRowset(res);
+    /*  this doesnt work right.... AttributeError: EveConfig instance has no attribute 'dgmeffects'
+    PyList* list = new PyList();
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        PyDict* dict = new PyDict();
+        dict->SetItemString("effectID",                         new PyInt(row.GetInt(0)));
+        dict->SetItemString("effectName",                       new PyString(row.GetText(1)));
+        dict->SetItemString("displayNameID",                    new PyInt(row.GetInt(2)));
+        dict->SetItemString("descriptionID",                    new PyInt(row.GetInt(3)));
+        dict->SetItemString("dataID",                           new PyInt(row.GetInt(4)));
+        dict->SetItemString("effectCategory",                   new PyInt(row.GetInt(5)));
+        dict->SetItemString("preExpression",                    new PyInt(row.GetInt(6)));
+        dict->SetItemString("postExpression",                   new PyInt(row.GetInt(7)));
+        dict->SetItemString("description",                      new PyString(row.GetText(8)));
+        dict->SetItemString("guid",                             new PyString(row.GetText(9)));
+        dict->SetItemString("isOffensive",                      new PyBool(row.GetBool(10)));
+        dict->SetItemString("isAssistance",                     new PyBool(row.GetBool(11)));
+        dict->SetItemString("disallowAutoRepeat",               new PyBool(row.GetBool(17)));
+        dict->SetItemString("published",                        new PyBool(row.GetBool(18)));
+        dict->SetItemString("displayName",                      new PyString(row.GetText(19)));
+        dict->SetItemString("isWarpSafe",                       new PyBool(row.GetBool(20)));
+        dict->SetItemString("rangeChance",                      new PyBool(row.GetBool(21)));
+        dict->SetItemString("electronicChance",                 new PyBool(row.GetBool(22)));
+        dict->SetItemString("propulsionChance",                 new PyBool(row.GetBool(23)));
+        dict->SetItemString("distribution",                     new PyInt(row.GetInt(24)));
+        dict->SetItemString("sfxName",                          new PyString(row.GetText(25)));
+        dict->SetItemString("npcUsageChanceAttributeID",        new PyInt(row.GetInt(26)));
+        dict->SetItemString("npcActivationChanceAttributeID",   new PyInt(row.GetInt(27)));
+        dict->SetItemString("fittingUsageChanceAttributeID",    new PyInt(row.GetInt(28)));
+        dict->SetItemString("iconID",                           new PyInt(row.GetInt(29)));
+        dict->SetItemString("modifierInfo",                     new PyString(row.GetText(30)));
+
+        // these can be null
+        if (row.IsNull(12))
+            dict->SetItemString("durationAttributeID",          PyStatic.NewNone());
+        else
+            dict->SetItemString("durationAttributeID",          new PyInt(row.GetInt(12)));
+        if (row.IsNull(13))
+            dict->SetItemString("trackingSpeedAttributeID",     PyStatic.NewNone());
+        else
+            dict->SetItemString("trackingSpeedAttributeID",     new PyInt(row.GetInt(13)));
+        if (row.IsNull(14))
+            dict->SetItemString("dischargeAttributeID",         PyStatic.NewNone());
+        else
+            dict->SetItemString("dischargeAttributeID",         new PyInt(row.GetInt(14)));
+        if (row.IsNull(15))
+            dict->SetItemString("rangeAttributeID",             PyStatic.NewNone());
+        else
+            dict->SetItemString("rangeAttributeID",             new PyInt(row.GetInt(15)));
+        if (row.IsNull(16))
+            dict->SetItemString("falloffAttributeID",           PyStatic.NewNone());
+        else
+            dict->SetItemString("falloffAttributeID",           new PyInt(row.GetInt(16)));
+
+        list->AddItem(new PyObject("util.KeyVal", dict));
+    }
+
+    return list;
+    */
 }
 
 PyRep* BulkDB::GetExpressions(uint8 chunkID)    // 2 chunks
-{   //17757
+{   //17758
     DBQueryResult res;
     std::ostringstream q;
     q << " SELECT expressionID, operandID, arg1, arg2, expressionValue, description, expressionName, expressionTypeID, expressionGroupID, expressionAttributeID";
@@ -255,7 +323,7 @@ PyRep* BulkDB::GetExpressions(uint8 chunkID)    // 2 chunks
 }
 
 PyRep* BulkDB::GetDogmaTypeEffects(uint8 chunkID)   // 4 chunks
-{   //34076
+{   //33777
     DBQueryResult res;
     std::ostringstream q;
     q << "SELECT typeID,effectID,isDefault FROM dgmTypeEffects";
@@ -283,7 +351,7 @@ PyRep* BulkDB::GetDogmaTypeEffects(uint8 chunkID)   // 4 chunks
 }
 
 PyRep* BulkDB::GetDogmaTypeAttribs(uint8 chunkID)   // 36 chunks
-{   //359049
+{   //353290
     DBQueryResult res;
     std::ostringstream q;
     q << "SELECT typeID, attributeID, IF(valueInt IS NULL, valueFloat, valueInt) AS value FROM dgmTypeAttributes";

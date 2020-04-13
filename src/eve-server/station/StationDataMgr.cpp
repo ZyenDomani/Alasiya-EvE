@@ -14,7 +14,10 @@
 
 StationDataMgr::StationDataMgr()
 {
-    Clear();
+    m_serviceMask.clear();
+    m_stationData.clear();
+    m_stationPyData.clear();
+    m_stationOfficeData.clear();
 }
 
 StationDataMgr::~StationDataMgr()
@@ -32,7 +35,10 @@ int StationDataMgr::Initialize()
 void StationDataMgr::Close()
 {
     /** @todo put a save method here which will save anything changed before shutdown */
-    Clear();
+    for (auto cur : m_stationPyData)
+        PySafeDecRef(cur.second);
+
+    sLog.Warning("   StationDataMgr", "StationData Manager has been closed." );
 }
 
 

@@ -23,7 +23,7 @@ void StatisticMgr::Close()
 {
     // save current data to db before exit.
     SaveData();
-    ClearAll();
+    sLog.Warning("     StatisticMgr", "Statistics Manager has been closed." );
 }
 
 int StatisticMgr::Initialize()

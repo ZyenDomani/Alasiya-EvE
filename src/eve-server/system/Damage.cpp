@@ -358,7 +358,6 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             }
         }
 
-        // this uses targetMgr update to send to all interested parties
         SendDamageStateChanged();
     }
 

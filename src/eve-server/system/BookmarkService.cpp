@@ -79,7 +79,7 @@ PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
     PyTuple* result = new PyTuple(2);
         result->SetItem(0, m_db.GetBookmarks(call.client->GetCharacterID()));
         result->SetItem(1, m_db.GetFolders(call.client->GetCharacterID()));
-    //result->Dump(BOOKMARK__RSP_DUMP, "    ");
+    result->Dump(BOOKMARK__RSP_DUMP, "    ");
     return result;
 }
 

@@ -28,6 +28,10 @@ m_pseudoSecurities(nullptr)
 
 MapData::~MapData()
 {
+}
+
+void MapData::Close()
+{
     PySafeDecRef(m_stationExtraInfo);
     PySafeDecRef(m_pseudoSecurities);
 }

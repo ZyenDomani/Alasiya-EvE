@@ -793,7 +793,7 @@ int main( int argc, char* argv[] )
 
     /** @todo  update this to have a ShutDown() method, with these items.
      * also look into calling it when a signal is caught, for cleanup.
-     * @note  these are order-dependant...
+     * @note  these are order-dependent...
      */
     sLog.Warning("   ServerShutdown", "Main loop has stopped." );
     sLog.Error("   ServerShutdown", "Alasiya EvEmu Server is Offline." );
@@ -806,32 +806,30 @@ int main( int argc, char* argv[] )
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
     /* Close the MarketMgr */
-    sLog.Warning("   ServerShutdown", "Shutting down Market Manager." );
     sMktMgr.Close();
     /* Close the bulk data manager */
-    sLog.Warning("   ServerShutdown", "Closing the BulkData Manager." );
     sBulkDB.Close();
     /* Close the station data manager */
-    sLog.Warning("   ServerShutdown", "Closing the StationData Manager." );
     stDataMgr.Close();
+    /* Close the map data manager */
+    sMapData.Close();
     /* Close the static data manager */
-    sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
     sDataMgr.Close();
+    /* Close the statistics manager */
     sStatMgr.Close();
+    /* Close the standings manager */
     sStandingMgr.Close();
     sLog.Warning("   ServerShutdown", "Saving Items." );
     if (!sConsole.IsDbError())
         sItemFactory.SaveItems();
     /* Close the entity list */
-    sLog.Warning("   ServerShutdown", "Closing the Entity List." );
     sEntityList.Close();
     /* Close the service manager */
-    sLog.Warning("   ServerShutdown", "Closing the Services Manager." );
     pyServMgr.Close();
     /* Shut down the Item system */
     sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
     sItemFactory.Close();
-    sLog.Warning("   ServerShutdown", "Closing the Bubble Manager." );
+    /* Close the bubble manager */
     sBubbleMgr.clear();
     /* Close the command dispatcher */
     command_dispatcher.Close();

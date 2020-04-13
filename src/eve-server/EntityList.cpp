@@ -121,10 +121,7 @@ void EntityList::Close()
         SafeDelete(cur.second);
     }
 
-    m_systems.clear();
-    m_clients.clear();
-    m_players.clear();
-    m_stations.clear();
+    sLog.Warning("       EntityList", "Entity List has been closed." );
 }
 
 /* m_clients is used to search for online players and numerous other things.

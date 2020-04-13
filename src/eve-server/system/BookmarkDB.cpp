@@ -318,7 +318,7 @@ bool BookmarkDB::UpdateBookmark(uint32 bookmarkID, uint32 ownerID, std::string m
 
 uint32 BookmarkDB::SaveNewFolder(std::string folderName, uint32 ownerID)
 {
-    uint32 folderID = 0;
+    uint32 folderID(0);
     std::string eName = "";
     sDatabase.DoEscapeString( eName, folderName.c_str());
 
