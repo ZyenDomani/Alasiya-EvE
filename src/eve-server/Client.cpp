@@ -65,7 +65,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_system(nullptr),
   m_services(services),
   m_movePoint(NULL_ORIGIN),
-  m_clientState(ClientState::csIdle),
+  m_clientState(Player::State::Idle),
   m_stateTimer(0),
   m_jumpTimer(0),
   m_pingTimer(PING_INTERVAL_MS),
@@ -134,7 +134,7 @@ pSession(oth.pSession),
 m_system(oth.SystemMgr()),
 m_services(oth.services()),
 m_movePoint(NULL_ORIGIN),
-m_clientState(ClientState::csIdle),
+m_clientState(Player::State::Idle),
 m_stateTimer(0),
 m_jumpTimer(0),
 m_pingTimer(PING_INTERVAL_MS),
@@ -413,7 +413,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     UpdateSkillTraining();
 
-    SetStateTimer(ClientState::csLogin, ClientTimers::LoginTimer);
+    SetStateTimer(Player::State::Login, Player::Timer::Login);
 
     // set ship cap and shields to full
     m_ship->SetShipShield(1.0);
@@ -456,23 +456,23 @@ void Client::ProcessClient() {
             if (m_stateTimer.Check(false)) {
                 m_stateTimer.Disable();
                 switch (m_clientState) {
-                    case ClientState::csLogin: {
+                    case Player::State::Login: {
                         _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Login");
                         m_login = false;
                         // send MOTD and server data to player's 'local' chat channel
                         m_services.lsc_service->SendServerMOTD(this);
                     } break;
-                    case ClientState::csIdle: {
+                    case Player::State::Idle: {
                         _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Idle");
                     } break;
-                    case ClientState::csLogout: {
+                    case Player::State::Logout: {
                         _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Logout");
                     } break;
-                    case ClientState::csKilled: {
+                    case Player::State::Killed: {
                         _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Killed");
                     } break;
                 }
-                m_clientState = ClientState::csIdle;
+                m_clientState = Player::State::Idle;
                 _log(AUTOPILOT__TRACE, "ProcessClient() - Docked - m_clientState set to Idle");
             }
         if (sConfig.debug.UseProfiling)
@@ -514,7 +514,7 @@ void Client::ProcessClient() {
             _log(CLIENT__TIMER, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
             m_cloakTimer.Disable();
             pShipSE->DestinyMgr()->UnCloak();
-            //m_clientState = ClientState::csIdle;
+            //m_clientState = Player::State::Idle;
             //_log(AUTOPILOT__TRACE, "ProcessClient() - Cloaked - m_clientState set to Idle");
         }
 
@@ -523,46 +523,46 @@ void Client::ProcessClient() {
             _log(CLIENT__TIMER, "Client::ProcessClient(): state timer hit: timenow %u", m_stateTimer.GetCurrentTime());
             m_stateTimer.Disable();
             switch (m_clientState) {
-                case ClientState::csIdle: {
+                case Player::State::Idle: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Idle");
                     // this shouldnt hit...error
                 } break;
-                case ClientState::csDock: {
+                case Player::State::Dock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Dock");
                     DockToStation();
                 } break;
-                case ClientState::csUndock: {
+                case Player::State::Undock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Undock");
                     SetBallPark();
-                    m_clientState = ClientState::csIdle;
+                    m_clientState = Player::State::Idle;
                 } break;
-                case ClientState::csKilled: {
+                case Player::State::Killed: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Killed");
                     // live does NOT resend destiny state when killed.  see csBoard notes.
                     SendSessionChange();
-                    m_clientState = ClientState::csIdle;
+                    m_clientState = Player::State::Idle;
                 } break;
-                case ClientState::csBoard: {
+                case Player::State::Board: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Board");
                     // calling OnSessionChanged() in client with shipid in change will update ego with new ship.
                     // NOTE: all items must be in same bubble.
                     SendSessionChange();
-                    m_clientState = ClientState::csIdle;
+                    m_clientState = Player::State::Idle;
                 } break;
-                case ClientState::csLogin: {
+                case Player::State::Login: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Login");
                     SetBallPark();
                     m_login = false;
-                    m_clientState = ClientState::csIdle;
+                    m_clientState = Player::State::Idle;
                     // send MOTD and server data to player's 'local' chat channel
                     m_services.lsc_service->SendServerMOTD(this);
                 } break;
-                case ClientState::csJump: {
+                case Player::State::Jump: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Jump");
                     ExecuteJump();
-                    m_clientState = ClientState::csIdle;
+                    m_clientState = Player::State::Idle;
                 } break;
-                case ClientState::csLogout: {
+                case Player::State::Logout: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Logout");
                     // can we use this to allow WarpOut?
                 } break;
@@ -618,8 +618,8 @@ void Client::WarpIn() {
     m_ship->SetCustomInfo(ci);
     if (!InPod())
         m_ship->SetFlag(flagAutoFit);
-    m_invulTimer.Start(ClientTimers::WarpInInvul);
-    //m_cloakTimer.Start(ClientTimers::JumpCloak);
+    m_invulTimer.Start(Player::Timer::WarpInInvul);
+    //m_cloakTimer.Start(Player::Timer::JumpCloak);
     //pShipSE->DestinyMgr()->Cloak();
     return;
     /*
@@ -644,7 +644,7 @@ void Client::WarpOut() {
     DestroyShipSE();
     return;
     /*
-    SetInvulTimer(ClientTimers::WarpOutInvul);
+    SetInvulTimer(Player::Timer::WarpOutInvul);
     // We are logging out, so we need to warp to a random spot 1Mm away:
     GPoint warpToPoint(m_ship->position());
     warpToPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
@@ -783,7 +783,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             OnCharNoLongerInStation();
 
         if (IsFleet(m_fleet)) {
-            m_fleetTimer.Start(ClientTimers::FleetTimer);
+            m_fleetTimer.Start(Player::Timer::Fleet);
             if (IsFleetBooster()) {
                 std::list<int32> wing, squad;
                 wing.clear();
@@ -865,9 +865,9 @@ void Client::SetBallPark() {
     m_bubbleWait = false;   // allow client processing of subsquent destiny msgs
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
-    if (m_clientState == ClientState::csUndock)
+    if (m_clientState == Player::State::Undock)
         pShipSE->DestinyMgr()->Undock(m_movePoint);
-    if (m_clientState == ClientState::csJump)
+    if (m_clientState == Player::State::Jump)
         pShipSE->DestinyMgr()->Jump();
     if (!m_setStateSent and m_beyonce)  // MUST have beyonce before sending setstate data.
         pShipSE->DestinyMgr()->SendSetState();
@@ -892,7 +892,7 @@ void Client::DockToStation() {
     // ap cleared on client side when docking.
     m_autoPilot = false;
     m_setStateSent = false;
-    m_clientState = ClientState::csIdle;
+    m_clientState = Player::State::Idle;
     _log(AUTOPILOT__TRACE, "DockToStation()() - m_clientState set to Idle");
     pShipSE->DestinyMgr()->DockingAccepted();
     m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
@@ -942,8 +942,8 @@ void Client::UndockFromStation() {
      *  ***** 9sec from hitting undock to space view on live. *****
      */
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
-    SetInvulTimer(ClientTimers::UndockInvul);
-    SetStateTimer(ClientState::csUndock, ClientTimers::UndockTimer);
+    SetInvulTimer(Player::Timer::UndockInvul);
+    SetStateTimer(Player::State::Undock, Player::Timer::Undock);
     SetSessionTimer();
 
     m_ship->SetUndocking(false);
@@ -1071,7 +1071,7 @@ void Client::Board(Ship* newShipSE)
     }
 
     UpdateNewShip();
-    //SetStateTimer(ClientState::csBoard, ClientTimers::BoardTimer);
+    //SetStateTimer(Player::State::Board, Player::Timer::Board);
     SendSessionChange();
 }
 
@@ -1144,7 +1144,7 @@ void Client::Eject()
     pShipSE = newShipSE;
 
     UpdateNewShip();
-    //SetStateTimer(ClientState::csBoard, ClientTimers::BoardTimer);
+    //SetStateTimer(Player::State::Board, Player::Timer::Board);
     SendSessionChange();
 }
 
@@ -1187,7 +1187,7 @@ void Client::ResetAfterPopped(GPoint& position)
     pShipSE = newShipSE;
 
     UpdateNewShip();
-    //SetStateTimer(ClientState::csKilled, ClientTimers::KilledTimer);
+    //SetStateTimer(Player::State::Killed, Player::Timer::Killed);
     SendSessionChange();
 }
 
@@ -1332,7 +1332,7 @@ PyRep *Client::GetAggressors() const {
 }
 
 void Client::StargateJump(uint32 fromGate, uint32 toGate) {
-    if ((m_clientState != csIdle) or m_stateTimer.Enabled()) {
+    if ((m_clientState != Player::State::Idle) or m_stateTimer.Enabled()) {
         sLog.Error("Client","%s: StargateJump called when a move is already pending. Ignoring.", m_char->itemName().c_str());
         // send client msg about state change in progress
         return;
@@ -1371,12 +1371,12 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     m_ship->SetCustomInfo(ci);
 */
     //delay the move 4sec so they can see the JumpOut animation
-    SetStateTimer(ClientState::csJump, ClientTimers::JumpingTimer);
+    SetStateTimer(Player::State::Jump, Player::Timer::Jumping);
 }
 
 void Client::ExecuteJump() {
     if (m_movePoint == NULL_ORIGIN) {   // this is part of infant AP hack
-        m_clientState = ClientState::csIdle;
+        m_clientState = Player::State::Idle;
         _log(AUTOPILOT__TRACE, "ExecuteJump() - movePoint = null; state set to Idle");
         return;
     }
@@ -1386,26 +1386,26 @@ void Client::ExecuteJump() {
 
     MoveToLocation(m_moveSystemID, m_movePoint);
 
-    m_jumpTimer.Start(ClientTimers::JumpTimer);
-    m_cloakTimer.Start(ClientTimers::JumpCloak);
-    m_invulTimer.Start(ClientTimers::JumpInvul);
+    m_jumpTimer.Start(Player::Timer::Jump);
+    m_cloakTimer.Start(Player::Timer::JumpCloak);
+    m_invulTimer.Start(Player::Timer::JumpInvul);
 
     m_movePoint = NULL_ORIGIN;
     m_moveSystemID = 0;
 }
 
 void Client::SetJumpTimers() {
-    m_cloakTimer.Start(ClientTimers::JumpCloak);
-    m_invulTimer.Start(ClientTimers::JumpInvul);
+    m_cloakTimer.Start(Player::Timer::JumpCloak);
+    m_invulTimer.Start(Player::Timer::JumpInvul);
 }
 
-void Client::SetInvulTimer(uint32 time/*ClientTimers::DefaultTimer*/)
+void Client::SetInvulTimer(uint32 time/*Player::Timer::Default*/)
 {
     _log(CLIENT__TIMER, "%s: InvulTimer set at %ums.  timenow %u", m_char->itemName().c_str(), time, m_invulTimer.GetCurrentTime());
     m_invulTimer.Start(time);
 }
 
-void Client::SetStateTimer(ClientState state, uint32 time/*ClientTimers::DefaultTimer*/)
+void Client::SetStateTimer( int8 state, uint32 time/*Player::Timer::Default*/)
 {
     if (m_stateTimer.Enabled()) {
         _log(CLIENT__ERROR, "%s: SetStateTimer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_stateTimer.GetRemainingTime());
@@ -1435,17 +1435,17 @@ void Client::JumpOutEffect(uint32 locationID)
                 pShipSE->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", locationID);
 }
 
-std::string Client::GetStateName(ClientState state)
+std::string Client::GetStateName(int8 state)
 {
     switch (state) {
-        case csIdle:    return "Idle";
-        case csJump:    return "Jump";
-        case csDock:    return "Dock";
-        case csUndock:  return "Undock";
-        case csKilled:  return "Killed";
-        case csLogout:  return "Logout";
-        case csBoard:   return "Board";
-        case csLogin:   return "Login";
+        case Player::State::Idle:    return "Idle";
+        case Player::State::Jump:    return "Jump";
+        case Player::State::Dock:    return "Dock";
+        case Player::State::Undock:  return "Undock";
+        case Player::State::Killed:  return "Killed";
+        case Player::State::Logout:  return "Logout";
+        case Player::State::Board:   return "Board";
+        case Player::State::Login:   return "Login";
     }
     return "Undefined";
 }
@@ -1861,7 +1861,7 @@ void Client::SendSessionChange()
         packet->Dump(CLIENT__OUT_ALL, dumper);
     }
 
-    FastQueuePacket(packet);
+    QueuePacket(packet);
 }
 
 void Client::FlushQueue() {
@@ -1927,7 +1927,6 @@ void Client::_SendQueuedUpdates() {
             if (is_log_enabled(CLIENT__QUEUE_DUMP))
                 t->Dump(CLIENT__QUEUE_DUMP, "");
             SendNotification("DoDestinyUpdate", "clientID", &t);
-            PyDecRef(t);
         } else {
             DoDestinyUpdateMain dum;
                 dum.updates = m_destinyUpdateQueue;
@@ -1937,7 +1936,6 @@ void Client::_SendQueuedUpdates() {
             if (is_log_enabled(CLIENT__QUEUE_DUMP))
                 t->Dump(CLIENT__QUEUE_DUMP, "");
             SendNotification("DoDestinyUpdate", "clientID", &t);
-            PyDecRef(t);
         }
     } else if (!m_destinyEventQueue->empty()) {
         Notify_OnMultiEvent nom;
@@ -1946,7 +1944,6 @@ void Client::_SendQueuedUpdates() {
         if (is_log_enabled(CLIENT__QUEUE_DUMP))
             t->Dump(CLIENT__QUEUE_DUMP, "");
         SendNotification("OnMultiEvent", "charid", &t);
-        PyDecRef(t);
     } //else nothing to be sent ...
 
     // clear the queues now, after the packets have been sent
@@ -2021,7 +2018,7 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
         packet->Dump(CLIENT__NOTIFY_DUMP, dumper);
     }
 
-    FastQueuePacket(packet);
+    QueuePacket(packet);
 }
 
 /************************************************************************/
@@ -2154,13 +2151,13 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     /** @todo  check this character/account for newbie status and revoke as needed before account update.  */
 
     /* marshaled Python string "None" */
-    static const uint8 handshakeFunc[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };
+    //static const uint8 handshakeFunc[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };
 
     /* send our handshake */
     CryptoServerHandshake server_shake;
     //server_shake.context = ??
     server_shake.serverChallenge = "";
-    server_shake.func_marshaled_code = new PyBuffer(handshakeFunc, handshakeFunc + sizeof(handshakeFunc));
+    server_shake.func_marshaled_code = new PyBuffer(marshaledNone, marshaledNone + sizeof(marshaledNone));
     server_shake.verification = new PyBool(false);
     server_shake.cluster_usercount = sEntityList.GetClientCount(); //GetUserCount();
     server_shake.proxy_nodeid = 0xFFAA;
@@ -2256,10 +2253,7 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, int64 client
         packet->named_payload->SetItemString("channel", new PyString(channel));
     }
 
-    if (packet == nullptr)
-        return;     // in the case of empty return packets (segfault)
-
-    FastQueuePacket(packet);
+    QueuePacket(packet);
 }
 
 void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_TYPE msgType, MACHONETERR_TYPE errCode, PyRep** payload)
@@ -2284,7 +2278,7 @@ void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_T
     payload = nullptr;
 
     packet->payload = e.Encode();
-    FastQueuePacket(packet);
+    QueuePacket(packet);
 }
 
 void Client::_SendPingRequest()
@@ -2308,7 +2302,7 @@ void Client::_SendPingRequest()
     packet->payload = new_tuple(new PyList()); //times
     packet->named_payload = new PyDict();
 
-    FastQueuePacket(packet);
+    QueuePacket(packet);
 }
 
 void Client::_SendPingResponse(const PyAddress& source, int64 callID)
@@ -2330,11 +2324,11 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
      *        So the next piece of code "fake's" it, with a slight delay on the received packet time.
      */
     PyList* pingList = new PyList();
-    PyTuple* pingTuple;
+    PyTuple* pingTuple(nullptr);
 
     pingTuple = new PyTuple(3);
     pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 20));        // this should be the time the packet was received (we cheat here a bit)
-    pingTuple->SetItem(1, new PyLong(Win32TimeNow()));             // this is the time the packet is (handled/writen) by the (proxy/server) so we're cheating a bit again.
+    pingTuple->SetItem(1, new PyLong(Win32TimeNow()));             // this is the time the packet is (handled/written) by the (proxy/server) so we're cheating a bit again.
     pingTuple->SetItem(2, new PyString("proxy::handle_message"));
     pingList->AddItem(pingTuple);
 
@@ -2373,7 +2367,7 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
     packet->payload->SetItem(0, pingList);
 
     // Don't clone so it eats the ret object upon sending.
-    FastQueuePacket(packet);
+    QueuePacket(packet);
 }
 
 /************************************************************************/

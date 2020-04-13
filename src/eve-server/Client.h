@@ -44,45 +44,51 @@
 
 #include "../eve-common/EVE_Missions.h"
 
-//  -updated 18Dec16
-enum ClientTimers {
-    DefaultTimer     = 1000,
-    BoardTimer       = 600,
-    JumpTimer        = 1800,    // used to delay sending Destiny::State (client error fix)
-    UndockTimer      = 1500,    // used to delay sending Destiny::State (client error fix)
-    DockingTimer     = 1000,    // Timer to delay docking (as on live)
-    JumpingTimer     = 4000,    // Timer to delay jumping
-    MovingTimer      = 1000,
-    ScanningTimer    = 10000,   // used to delay scan results based on skills, items, and other shit
-    KilledTimer      = 800,    // used to reset ego after killed or otherwise changing ships
-    ProcTimer        = 1000,    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
-    JetcanTimer      = 600000,  // used to delay jetcan creation.  10min default
-    LogoutTimer      = 10000,    // used to hold client object until WarpOut finishes
-    LoginTimer       = 4000,    // delay before sending SetState when client logs in undocked
-    SessionTimer     = 10000,   // used to prevent multiple session changes from occurring too fast
-    DockInvul        = 3000,
-    FleetTimer       = 1500,
-    JumpInvul        = 15000,   // increased from 5s
-    WarpOutInvul     = 5000,
-    WarpInInvul      = 18000,   // increased from 10s
-    UndockInvul      = 20000,
-    RestoringInvul   = 60000,
-    JumpCloak        = 30000,
-    LoginCloak       = 20000,
-    UnCloak          = 5000     // not implemented yet
-};
+//  -updated 18Dec16  -again 12Apr20
+namespace Player {
+    namespace Timer {
+        enum {
+            Default             = 1000,
+            Board               = 600,
+            Jump                = 1800,    // used to delay sending Destiny::State (client error fix)
+            Undock              = 1500,    // used to delay sending Destiny::State (client error fix)
+            Docking             = 1000,    //  to delay docking (as on live)
+            Jumping             = 4000,    //  to delay jumping
+            Moving              = 1000,
+            Scanning            = 10000,   // used to delay scan results based on skills, items, and other shit
+            Killed              = 800,    // used to reset ego after killed or otherwise changing ships
+            Proc                = 1000,    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
+            Jetcan              = 600000,  // used to delay jetcan creation.  10min default
+            Logout              = 10000,    // used to hold client object until WarpOut finishes
+            Login               = 4000,    // delay before sending SetState when client logs in undocked
+            Session             = 10000,   // used to prevent multiple session changes from occurring too fast
+            DockInvul           = 3000,
+            Fleet               = 1500,
+            JumpInvul           = 15000,   // increased from 5s
+            WarpOutInvul        = 5000,
+            WarpInInvul         = 18000,   // increased from 10s
+            UndockInvul         = 20000,
+            RestoringInvul      = 60000,
+            JumpCloak           = 30000,
+            LoginCloak          = 20000,
+            UnCloak             = 5000     // not implemented yet
+        };
+    }
 
-enum ClientState {
-    csIdle = 1,
-    csJump = 2,
-    csDock = 3,
-    csUndock = 4,
-    csKilled = 5,
-    csLogout = 6,
-    csBoard  = 7,
-    csLogin  = 8,
-    csUncloak = 9
-};
+    namespace State {
+        enum {
+            Idle        = 1,
+            Jump        = 2,
+            Dock        = 3,
+            Undock      = 4,
+            Killed      = 5,
+            Logout      = 6,
+            Board       = 7,
+            Login       = 8,
+            Uncloak     = 9
+        };
+    }
+}
 
 class CryptoChallengePacket;
 class EVENotificationStream;
@@ -243,8 +249,8 @@ public:
     void MoveToLocation(uint32 location, const GPoint &pt);
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
-    void SetInvulTimer(uint32 time=ClientTimers::DefaultTimer);
-    void SetStateTimer(ClientState state, uint32 time=ClientTimers::DefaultTimer);
+    void SetInvulTimer(uint32 time=Player::Timer::Default);
+    void SetStateTimer(int8 state, uint32 time=Player::Timer::Default);
     void SetDestiny(const GPoint& pt, bool update=false);
     void UpdateSkillTraining();
     ShipItemRef SpawnNewRookieShip(uint32 stationID);
@@ -262,10 +268,10 @@ public:
     bool InPod()                                        { return (m_ship->groupID() == EVEDB::invGroups::Capsule); }
     bool IsInSpace()                                    { return IsSolarSystem(m_locationID); }
     bool IsDocked()                                     { return IsStation(m_locationID); }
-    bool IsDock()                                       { return (m_clientState == ClientState::csDock); }
-    bool IsIdle()                                       { return (m_clientState == ClientState::csIdle); }
-    bool IsJump()                                       { return (m_clientState == ClientState::csJump); }
-    bool IsBoard()                                      { return (m_clientState == ClientState::csBoard); }
+    bool IsDock()                                       { return (m_clientState == Player::State::Dock); }
+    bool IsIdle()                                       { return (m_clientState == Player::State::Idle); }
+    bool IsJump()                                       { return (m_clientState == Player::State::Jump); }
+    bool IsBoard()                                      { return (m_clientState == Player::State::Board); }
     bool IsInvul()                                      { return m_invul; }
     bool IsLogin()                                      { return m_login; }
     bool IsUndock()                                     { return m_undock; }
@@ -280,7 +286,7 @@ public:
     void SetBeyonce(bool beyonce=false)                 { m_beyonce = beyonce; }
     void SetBubbleWait(bool wait=false)                 { m_bubbleWait = wait; }
     void SetStateSent(bool set=false)                   { m_setStateSent = set; }
-    void SetSessionTimer()                              { m_sessionChangeActive = true; m_sessionTimer.Start(ClientTimers::SessionTimer); }
+    void SetSessionTimer()                              { m_sessionChangeActive = true; m_sessionTimer.Start(Player::Timer::Session); }
     void SetSessionChange(bool set=false)               { m_sessionChangeActive = set; }
     void SetBallPark();
     void SetJumpTimers();
@@ -296,7 +302,7 @@ public:
     bool IsJetcanAvalible();
     // return time remaining in seconds
     uint32 JetcanTime()                                 { return (m_jetcanTimer.GetRemainingTime() /1000); }
-    void StartJetcanTimer()                             { m_jetcanTimer.Start(ClientTimers::JetcanTimer); }
+    void StartJetcanTimer()                             { m_jetcanTimer.Start(Player::Timer::Jetcan); }
 
     void SetShowAll(bool set=false)                     { m_showall = set; }
     bool IsShowall()                                    { return m_showall; }
@@ -428,7 +434,7 @@ protected:
 
     int64                   m_timeEndTrain;
 
-    ClientState             m_clientState;
+    int8                    m_clientState;
 
     /********************************************************************/
     /* EVEClientSession interface                                       */
@@ -497,7 +503,7 @@ private:
     bool DoDestinyUpdate();
     std::list<PyTuple*> mDogmaMessages;
 
-    std::string GetStateName(ClientState state);
+    std::string GetStateName(int8 state);
 };
 
 #endif
