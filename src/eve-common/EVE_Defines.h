@@ -16,14 +16,14 @@
 #define bulkDataBranch          4
 //  bulkDataChangeID yyyymmddr
 //  where r=revision, dd=day, mm=month, yyyy=year
-#define bulkDataChangeID        202003191
+#define bulkDataChangeID        201042020
 
 //  define number of rentable offices in stations (config option later?)
 //  this replaces the hard-coded count previously used in station.h
 #define maxRentableOffices      10
 
 //  defines based on itemID, per client
-#define maxNonCapitalModuleSize 500
+#define maxNonCapModuleSize     500
 
 #define minCharType             1373
 #define maxCharType             1386

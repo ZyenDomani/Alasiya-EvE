@@ -63,35 +63,18 @@ void EVEClientSession::Reset() {
     mPacketHandler = &EVEClientSession::_HandleVersion;
 }
 
-// this isnt used.
-void EVEClientSession::QueuePacket( const PyPacket* p ) {
-    if (p == nullptr)
-        return;
-
-    PyPacket* packet(p->Clone());
-    if (packet == nullptr) {
-        sLog.Error("QueuePacket", "Unable to clone a PyPacket");
-        return;
-    }
-
-    FastQueuePacket(packet);
-}
-
-void EVEClientSession::FastQueuePacket( PyPacket* packet ) {
+void EVEClientSession::QueuePacket( PyPacket* packet ) {
     if (packet == nullptr)
         return;
 
     PyRep* res(packet->Encode());
 
     if (res == nullptr) {
-        sLog.Error("FastQueuePacket", "%s: Failed to encode a Fast queue packet.", GetAddress().c_str());
+        sLog.Error("QueuePacket", "%s: Failed to encode a packet.", GetAddress().c_str());
         return;
     }
 
     mNet->QueueRep( res );
-
-    // cleanup
-    //SafeDelete( packet );
 }
 
 PyPacket* EVEClientSession::PopPacket() {

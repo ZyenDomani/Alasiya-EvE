@@ -93,8 +93,7 @@ protected:
     /**
      * @brief Decrements reference count of object by one.
      *
-     * If reference count of object reaches zero, object
-     * is deleted.
+     * If reference count of object reaches zero, object is deleted.
      */
     void DecRef() const
     {
@@ -121,8 +120,7 @@ protected:
 /**
  * @brief Reference-counting-based smart pointer.
  *
- * This smart pointer cares about acquiring/releasing reference
- * of the stored object..
+ * This smart pointer cares about acquiring/releasing reference of the stored object.
  *
  * NOTE:  this class DOES increment count on creation (whereas RefObject does not)
  *

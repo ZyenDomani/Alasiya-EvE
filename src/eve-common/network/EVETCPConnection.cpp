@@ -122,8 +122,7 @@ bool EVETCPConnection::RecvData( char* errbuf )
     if( !TCPConnection::RecvData( errbuf ) )
         return false;
 
-    if( mTimeoutTimer.Check() )
-    {
+    if( mTimeoutTimer.Check() ) {
         if (errbuf != nullptr)
             snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "Connection timeout" );
         return false;

@@ -72,5 +72,12 @@
 #include "utils/utils_string.h"
 #include "utils/utils_time.h"
 #include "utils/Util.h"
+// defines
+#include "EVE_Consts.h"
+#include "EVE_Defines.h"
+#include "EVE_Flags.h"
+#include "EVE_Roles.h"
+#include "EVE_Skills.h"
+#include "EVE_Typedefs.h"
 
 #endif /* !__EVE_COMMON_H__INCL__ */

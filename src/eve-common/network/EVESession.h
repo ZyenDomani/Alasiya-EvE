@@ -74,17 +74,11 @@ public:
     void Reset();
 
     /**
-     * @brief Queues new packet.
-     *
-     * @param[in] p Packed to be queued.
-     */
-    void QueuePacket( const PyPacket* p );
-    /**
      * @brief Queues new packet, retaking ownership.
      *
      * @param[in] p Packed to be queued.
      */
-    void FastQueuePacket( PyPacket* p );
+    void QueuePacket( PyPacket* packet );
 
     /**
      * @brief Pops new packet from queue.

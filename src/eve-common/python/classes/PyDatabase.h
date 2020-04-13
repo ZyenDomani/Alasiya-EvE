@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Bloody.Rabbit
+    Updates:    Allan
 */
 
 #ifndef __PY_DATABASE_H__INCL__
@@ -99,6 +100,7 @@ public:
     void AddColumn( const char* name, DBTYPE type );
 
 protected:
+    virtual ~DBRowDescriptor();
     // Helper functions:
     PyTuple* _GetColumnList() const;
     PyTuple* _GetColumn(size_t index) const;
@@ -146,6 +148,7 @@ public:
     PyPackedRow* NewRow();
 
 protected:
+    virtual ~CRowSet();
     DBRowDescriptor* _GetRowDesc() const;
     //PyList* _GetColumnList() const;
 
@@ -193,6 +196,7 @@ public:
     PyPackedRow* NewRow( PyRep* key );
 
 protected:
+    virtual ~CIndexedRowSet();
     DBRowDescriptor* _GetRowDesc() const;
     //PyList* _GetColumnList() const;
 
@@ -224,13 +228,13 @@ public:
     size_t GetKeyCount() const { return dict().size(); }
 
 	CRowSet* GetRowset( PyRep *key) const { return (CRowSet*)(dict().GetItem( key )); }
-	
+
     /**
      * @param[in] Index of row to be returned.
      *
      * @return Row with given index.
      */
-    PyPackedRow* GetRow( PyRep* key, uint32 index ) 
+    PyPackedRow* GetRow( PyRep* key, uint32 index )
 		const { return GetRowset(key)->GetRow( index )->AsPackedRow(); }
 
     /**
@@ -239,6 +243,7 @@ public:
     CRowSet* NewRowset( PyRep* key );
 
 protected:
+    virtual ~CFilterRowSet();
     DBRowDescriptor* _GetRowDesc() const;
     //PyList* _GetColumnList() const;
 

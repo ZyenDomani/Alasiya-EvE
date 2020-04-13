@@ -16,6 +16,9 @@ static const char hexList[]     = "0123456789ABCDEF";
 static const char alphaList[]   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static const char asciiList[]   = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*()[]{};:'<>?";
 
+/* marshaled Python string "None" */
+static const uint8 marshaledNone[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };
+
 static const uint16 SHIP_PROCESS_TICK_MS = 5000;    // 5s
 
 static const GPoint NULL_ORIGIN(0,0,0);  // common place for a zero-value gpoint

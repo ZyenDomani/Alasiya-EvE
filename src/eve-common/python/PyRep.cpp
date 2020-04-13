@@ -1108,12 +1108,12 @@ bool PySubStream::visit( PyVisitor& v ) const
 
 void PySubStream::EncodeData() const
 {
-    if ((decoded() == nullptr) or (data() != nullptr))
+    if ((mDecoded == nullptr) or (mData != nullptr))
         return;
 
     Buffer* buf = new Buffer;
-    if (!Marshal( decoded(), *buf ) ) {
-        sLog.Error( "Marshal", "Failed to marshal rep %p.", decoded() );
+    if (!Marshal( mDecoded, *buf ) ) {
+        sLog.Error( "Marshal", "Failed to marshal rep %p.", mDecoded );
 
         SafeDelete( buf );
         return;
@@ -1125,10 +1125,10 @@ void PySubStream::EncodeData() const
 
 void PySubStream::DecodeData() const
 {
-    if ((data() == nullptr) or (decoded() != nullptr))
+    if ((mData == nullptr) or (mDecoded != nullptr))
         return;
 
-    mDecoded = Unmarshal( data()->content() );
+    mDecoded = Unmarshal( mData->content() );
 }
 
 /************************************************************************/

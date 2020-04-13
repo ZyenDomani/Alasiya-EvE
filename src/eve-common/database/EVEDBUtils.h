@@ -38,13 +38,6 @@ class PyObjectEx;
 class PyPackedRow;
 class DBRowDescriptor;
 
-/*typedef enum {
-    StringContentsInteger,
-    StringContentsReal,
-    StringContentsString,
-    StringContentsUnknown
-} StringContentsType;
-StringContentsType ClassifyStringContents(const char *str);*/
 
 void DBResultToIntIntDict(DBQueryResult &result, std::map<int32, int32> &into);
 void DBResultToUIntUIntDict(DBQueryResult &result, std::map<uint32, uint32> &into);
