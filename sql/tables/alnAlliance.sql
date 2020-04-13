@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `alnAlliance`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `alnAlliance` (
   `allianceID` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `name` text NOT NULL,
+  `allianceName` text NOT NULL,
   `typeID` int(11) NOT NULL DEFAULT '32',
   `shortName` varchar(20) NOT NULL,
   `executorCorpID` int(11) NOT NULL,

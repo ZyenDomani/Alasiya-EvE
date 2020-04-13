@@ -400,10 +400,10 @@ PyRep* ServiceDB::LookupOwners(const char *match, bool exact) {
     sDatabase.RunQuery(res,
         "SELECT"
         "  characterID AS ownerID,"
-        "  name AS ownerName,"
+        "  characterName AS ownerName,"
         "  1 AS groupID"
         " FROM chrCharacters"
-        " WHERE name %s '%s'", (exact?"=":"LIKE"), matchEsc.c_str());
+        " WHERE characterName %s '%s'", (exact?"=":"LIKE"), matchEsc.c_str());
 
     sDatabase.RunQuery(res,
         "SELECT"
@@ -424,10 +424,10 @@ PyRep* ServiceDB::LookupOwners(const char *match, bool exact) {
     sDatabase.RunQuery(res,
         "SELECT"
         "  allianceID AS ownerID,"
-        "  name AS ownerName,"
+        "  allianceName AS ownerName,"
         "  32 AS groupID"
         " FROM alnAlliance"
-        " WHERE name %s '%s'", (exact?"=":"LIKE"), matchEsc.c_str());
+        " WHERE allianceName %s '%s'", (exact?"=":"LIKE"), matchEsc.c_str());
 
     sDatabase.RunQuery(res,
         "SELECT"
@@ -542,11 +542,11 @@ PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
     PyDict* dict = new PyDict();
     for (auto cur : itemIDs) {
         if (IsCharacter(cur))
-            sDatabase.RunQuery(res, "SELECT characterID, name, typeID FROM chrCharacters WHERE characterID = %u", cur);
+            sDatabase.RunQuery(res, "SELECT characterID, characterName, typeID FROM chrCharacters WHERE characterID = %u", cur);
         else if (IsPlayerCorp(cur))
             sDatabase.RunQuery(res, "SELECT corporationID, corporationName, typeID FROM crpCorporation WHERE corporationID = %u", cur);
         else if (IsAlliance(cur))
-            sDatabase.RunQuery(res, "SELECT allianceID, name, typeID FROM alnAlliance WHERE allianceID = %u", cur);
+            sDatabase.RunQuery(res, "SELECT allianceID, allianceName, typeID FROM alnAlliance WHERE allianceID = %u", cur);
         else
             ; // make error
         if (res.GetRow(row)) {

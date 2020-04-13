@@ -93,7 +93,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         if (!sDatabase.RunQuery(res,
             "SELECT "
             "  characterID as ownerID,"
-            "  name as ownerName,"
+            "  characterName as ownerName,"
             "  typeID,"
             "  gender,"
             "  NULL AS ownerNameID"

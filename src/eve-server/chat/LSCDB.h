@@ -54,7 +54,7 @@ public:
     std::string GetSolarSystemName(uint32 id) { return GetChannelName(id, "mapSolarSystems", "solarSystemName", "solarSystemID"); }
     std::string GetCorporationName(uint32 id) { return GetChannelName(id, "crpCorporation", "corporationName", "corporationID"); }
     std::string GetAllianceName(uint32 id) { return GetChannelName(id, "alnAlliance", "shortName", "allianceID"); }
-    std::string GetCharacterName(uint32 id) { return GetChannelName(id, "chrCharacters", "name", "charID"); }
+    std::string GetCharacterName(uint32 id) { return GetChannelName(id, "chrCharacters", "characterName", "charID"); }
 
     int32 GetChannelID(std::string &name);
 

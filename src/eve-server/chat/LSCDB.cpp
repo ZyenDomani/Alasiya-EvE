@@ -33,11 +33,11 @@ void LSCDB::GetChannelNames(uint32 charID, std::vector<std::string> & names) {
 
     if (!sDatabase.RunQuery(res,
         "SELECT"
-        "    chrCharacters.name, "
-        "    crpCorporation.corporationName "
-        " FROM chrCharacters "
-        "  LEFT JOIN crpCorporation USING (corporationID) "
-        " WHERE chrCharacters.characterID = %u ", charID))
+        "    ch.characterName, "
+        "    cr.corporationName "
+        " FROM chrCharacters AS ch"
+        "  LEFT JOIN crpCorporation AS cr USING (corporationID) "
+        " WHERE ch.characterID = %u ", charID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;

@@ -123,7 +123,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         //use chrCharacters
         if (!sDatabase.RunQuery(res,
             "SELECT"
-            "  name, typeID, 1 AS ownerID, solarSystemID, flag, 0 AS contraband,"
+            "  characterName, typeID, 1 AS ownerID, solarSystemID, flag, 0 AS contraband,"
             "  1 AS singleton, 1 AS quantity, 0 AS x, 0 AS y, 0 AS z, '' AS customInfo"
             " FROM chrCharacters"
             " WHERE characterID=%u", itemID))

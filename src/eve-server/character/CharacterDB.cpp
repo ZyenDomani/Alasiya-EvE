@@ -40,7 +40,7 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
     uint32 charID = 0;
     if (!sDatabase.RunQueryLID(err, charID,
         "INSERT INTO chrCharacters"
-        "  (accountID, name, typeID, locationID, description, balance, aurBalance,"
+        "  (accountID, characterName, typeID, locationID, description, balance, aurBalance,"
         "   logonDateTime, baseID, corpAccountKey, createDateTime, title,"
         "   ancestryID, bloodlineID, raceID, careerID, schoolID, careerSpecialityID, gender,"
         "   stationID, solarSystemID, constellationID, regionID, freeRespecs)"
@@ -223,7 +223,7 @@ PyRep *CharacterDB::GetCharacterList(uint32 accountID) {
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "  characterID,"
-        "  name AS characterName,"
+        "  characterName,"
         "  deletePrepareDateTime,"
         "  gender,"
         "  typeID"
@@ -283,7 +283,7 @@ PyRep* CharacterDB::ValidateCharNameRep(std::string name)
     std::string eName;
     sDatabase.DoEscapeString(eName, name.c_str());
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT characterID FROM chrCharacters WHERE name LIKE '%s' ", eName.c_str() );
+    sDatabase.RunQuery(res, "SELECT characterID FROM chrCharacters WHERE characterName LIKE '%s' ", eName.c_str() );
     if (res.GetRowCount() > 0)  // name exists
         return new PyInt(-101);
 
@@ -363,7 +363,7 @@ void CharacterDB::ValidateCharName(std::string name)
     std::string eName;
     sDatabase.DoEscapeString(eName, name.c_str());
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT characterID FROM chrCharacters WHERE name LIKE '%s' ", eName.c_str() );
+    sDatabase.RunQuery(res, "SELECT characterID FROM chrCharacters WHERE characterName LIKE '%s' ", eName.c_str() );
     if (res.GetRowCount() > 0)  // name exists
         throw PyException( MakeUserError("CharNameInvalidTaken"));
 
@@ -472,7 +472,7 @@ PyRep *CharacterDB::GetCharPublicInfo(uint32 characterID) {
     if (!sDatabase.RunQuery(res,
         "SELECT "       // fixed DB Query   -allan 11Jan14   -update 20April16
         "  ch.typeID,"
-        "  ch.name AS characterName,"
+        "  ch.characterName,"
         "  ch.corporationID,"
         "  ch.raceID,"
         "  ch.bloodlineID,"
@@ -531,7 +531,7 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
         "  ch.baseID,"
         "  co.allianceID,"
         "  co.warFactionID,"
-        "  ch.name"         //20
+        "  ch.characterName"         //20
         " FROM chrCharacters AS ch"
         "    LEFT JOIN crpCorporation AS co USING (corporationID) "
         " WHERE characterID = %u", characterID))
@@ -627,7 +627,7 @@ PyRep *CharacterDB::GetInfoWindowDataForChar(uint32 characterID) {
 std::string CharacterDB::GetCharName(uint32 characterID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT name FROM chrCharacters WHERE characterID=%u", characterID)) {
+    if (!sDatabase.RunQuery(res, "SELECT characterName FROM chrCharacters WHERE characterID=%u", characterID)) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return "";
     }
@@ -1472,12 +1472,12 @@ PyRep* CharacterDB::GetBounty(uint32 charID, uint32 ownerID) {
 PyRep* CharacterDB::GetTopBounties() {
     DBQueryResult res;
     sDatabase.RunQuery(res,
-                       "SELECT c.characterID, c.bounty, c.online, o.name AS ownerName"
+                       "SELECT c.characterID, c.bounty, c.online, o.characterName AS ownerName"
                        " FROM webBounties AS b"
                        " LEFT JOIN chrCharacters AS c ON c.characterID = b.characterID"
                        " LEFT JOIN chrCharacters AS o ON o.characterID = b.ownerID"
                        " ORDER BY c.bounty DESC"
-                       " LIMIT 15");
+                       " LIMIT 10");    /** @todo config variable? */
     return DBResultToRowset(res);
 }
 

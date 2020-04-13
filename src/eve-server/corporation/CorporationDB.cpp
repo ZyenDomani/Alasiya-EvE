@@ -791,7 +791,7 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         "  titleMask,"
         "  startDateTime AS rowDate,"
         "  blockRoles,"
-        "  name"
+        "  characterName"
         " FROM chrCharacters"
         " WHERE characterID = %u", charID))
     {
@@ -828,7 +828,7 @@ void CorporationDB::GetMembers(uint32 corpID, DBQueryResult& res)
         "  corpAccountKey,"
         //"  %f AS rowDate,"
         "  blockRoles,"
-        "  name"
+        "  characterName"
         " FROM chrCharacters"
         " WHERE corporationID = %u", corpID))
     {
@@ -874,7 +874,7 @@ void CorporationDB::GetMembersPaged(uint32 corpID, uint8 page, DBQueryResult& re
         "  corpAccountKey, "
         "  baseID,"
         "  blockRoles,"
-        "  name"
+        "  characterName"
         " FROM chrCharacters"
         //"  LEFT JOIN entity AS clone ON clone.ownerID = characterID"
         " WHERE corporationID = %u"
@@ -1094,7 +1094,7 @@ PyObject *CorporationDB::GetEveOwners(uint32 corpID) {
     if (!sDatabase.RunQuery( res,
         "SELECT"
         " characterID AS ownerID,"
-        " name AS ownerName,"
+        " characterName AS ownerName,"
         " typeID,"
         " gender"
         " FROM chrCharacters"

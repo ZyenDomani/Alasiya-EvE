@@ -66,7 +66,7 @@ PyRep *SearchDB::Query(std::string string, std::vector<int> *searchID, uint32 ch
                     "SELECT"
                     "   characterID AS ownerID"
                     " FROM chrCharacters"
-                    " WHERE name LIKE '%s' ", string.c_str() );
+                    " WHERE characterName LIKE '%s' ", string.c_str() );
                 id = "ownerID";
                 break;
             case 3: //searchResultCorporation = 3
@@ -172,7 +172,7 @@ PyRep *SearchDB::QuickQuery(std::string string, std::vector<int> *searchID, uint
                 sDatabase.RunQuery(res,
                     "SELECT characterID"
                     " FROM chrCharacters"
-                    " WHERE name LIKE '%s' ", string.c_str() );
+                    " WHERE characterName LIKE '%s' ", string.c_str() );
                 break;
             case 3: //searchResultCorporation = 3
                 sDatabase.RunQuery(res,

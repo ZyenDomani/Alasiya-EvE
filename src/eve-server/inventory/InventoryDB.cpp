@@ -435,7 +435,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
             "   shipID,"
             "   capsuleID,"
             "   flag,"
-            "   name,"
+            "   characterName,"
             "   skillPoints,"
             "   typeID"
             " FROM chrCharacters"

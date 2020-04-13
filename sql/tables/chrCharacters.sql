@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS `chrCharacters`;
 CREATE TABLE `chrCharacters` (
   `characterID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `accountID` int(10) unsigned DEFAULT NULL,
-  `name` text NOT NULL,
+  `characterName` text NOT NULL,
   `title` text NOT NULL,
   `description` text NOT NULL,
   `typeID` int(6) NOT NULL DEFAULT '0',
