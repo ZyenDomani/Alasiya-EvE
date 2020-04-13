@@ -66,11 +66,6 @@ void CharUnboundMgrService::GetCharacterData(uint32 characterID, std::map< std::
     m_db.GetCharacterData(characterID, characterDataMap);
 }
 
-PyResult CharUnboundMgrService::Handle_GetCharactersToSelect(PyCallArgs &call)
-{
-    return m_db.GetCharacterList(call.client->GetUserID());
-}
-
 PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
 {
     return m_db.ValidateCharNameRep(PyRep::StringContent(call.tuple->GetItem(0)));
@@ -81,15 +76,20 @@ PyResult CharUnboundMgrService::Handle_GetCharacterToSelect(PyCallArgs &call)
     return m_db.GetCharSelectInfo(PyRep::IntegerValue(call.tuple->GetItem(0)));
 }
 
-PyResult CharUnboundMgrService::Handle_PrepareCharacterForDelete(PyCallArgs &call)
+PyResult CharUnboundMgrService::Handle_GetCharactersToSelect(PyCallArgs &call)
 {
-    return new PyLong(m_db.PrepareCharacterForDelete(call.client->GetUserID(), PyRep::IntegerValue(call.tuple->GetItem(0))));
+    return m_db.GetCharacterList(call.client->GetUserID());
 }
 
 PyResult CharUnboundMgrService::Handle_DeleteCharacter(PyCallArgs &call)
 {
     m_db.DeleteCharacter(PyRep::IntegerValue(call.tuple->GetItem(0)));
     return nullptr;
+}
+
+PyResult CharUnboundMgrService::Handle_PrepareCharacterForDelete(PyCallArgs &call)
+{
+    return new PyLong(m_db.PrepareCharacterForDelete(call.client->GetUserID(), PyRep::IntegerValue(call.tuple->GetItem(0))));
 }
 
 PyResult CharUnboundMgrService::Handle_CancelCharacterDeletePrepare(PyCallArgs &call)
@@ -104,12 +104,13 @@ PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call
      * returning false will allow creating a 3ed character.
      */
     if (sConfig.character.allow3edChar)
-        return new PyBool(false);
-    return new PyBool(true);
+        return PyStatic.NewFalse();
+    return PyStatic.NewTrue();
 }
 
+//  called from petitioner (but only when session.characterID is None)
 PyResult CharUnboundMgrService::Handle_GetCharacterInfo(PyCallArgs &call) {
-    // not sure why this is used....
+    // chars = sm.RemoteSvc('charUnboundMgr').GetCharacterInfo()
     _log(CLIENT__ERROR, "Called GetCharacterInfo");
     //   characterID, characterName
 

@@ -974,7 +974,6 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
             sEntityList.Multicast("OnItemChange", "corpid", &tmp, mct);
         }
     }
-    PySafeDecRef(tmp);
     /** @todo change isnt being PyDecRef'd as it should here */
    // for (auto cur : changes)
     //    PySafeDecRef(cur.second);

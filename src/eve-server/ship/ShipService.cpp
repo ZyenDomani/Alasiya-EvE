@@ -810,7 +810,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     return tuple;
 }
 
-/**     ***********************************************************************
+/** ***********************************************************************
  * @note   these below are partially coded
  */
 
@@ -912,7 +912,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 }
 
 
-/**     ***********************************************************************
+/** ***********************************************************************
  * @note   these do absolutely nothing at this time....
  */
 

@@ -354,143 +354,6 @@ PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
     return nullptr;
 }
 
-PyResult CharMgrService::Handle_GetSettingsInfo( PyCallArgs& call ) {
-  /**
-    def UpdateSettingsStatistics(self):
-        code, verified = macho.Verify(sm.RemoteSvc('charMgr').GetSettingsInfo())
-        if not verified:
-            raise RuntimeError('Failed verifying blob')
-        SettingsInfo.func_code = marshal.loads(code)
-        ret = SettingsInfo()
-        if len(ret) > 0:
-            sm.RemoteSvc('charMgr').LogSettings(ret)
-    */
-
-    // Called in file "carbon/client/script/ui/services/settingsSvc.py"
-    // This should return a marshaled python function.
-    // It returns a tuple containing a dict that is then sent to
-    // charMgr::LogSettings if the tuple has a length greater than zero.
-    PyTuple* res = new PyTuple( 2 );
-    // This returns an empty tuple
-    unsigned char code[] = {
-            0x63,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x43,0x00,0x00,
-            0x00,0x73,0x0a,0x00,0x00,0x00,0x64,0x01,0x00,0x7d,0x00,0x00,0x7c,0x00,0x00,0x53,
-            0x28,0x02,0x00,0x00,0x00,0x4e,0x28,0x00,0x00,0x00,0x00,0x28,0x00,0x00,0x00,0x00,
-            0x28,0x01,0x00,0x00,0x00,0x74,0x03,0x00,0x00,0x00,0x74,0x75,0x70,0x28,0x00,0x00,
-            0x00,0x00,0x28,0x00,0x00,0x00,0x00,0x73,0x10,0x00,0x00,0x00,0x2e,0x2f,0x6d,0x61,
-            0x6b,0x65,0x5a,0x65,0x72,0x6f,0x52,0x65,0x74,0x2e,0x70,0x79,0x74,0x08,0x00,0x00,
-            0x00,0x72,0x65,0x74,0x54,0x75,0x70,0x6c,0x65,0x0c,0x00,0x00,0x00,0x73,0x04,0x00,
-            0x00,0x00,0x00,0x01,0x06,0x02
-        };
-    int codeLen = sizeof(code) / sizeof(*code);
-    std::string codeString(code, code + codeLen);
-    res->items[ 0 ] = new PyString(codeString);
-
-    // error code? 0 = no error
-    // if called with any value other than zero the exception output will show 'Verified = False'
-    // if called with zero 'Verified = True'
-    /*  Just a note
-     * due to the client being in placebo mode, the verification code in evecrypto just checks if the signature is 0.
-     * when the client is in cryptoapi mode it verifies the signature is signed by CCP's rsa key.
-     */
-
-    res->items[ 1 ] = new PyInt( 0 );
-    return res;
-}
-
-//  this is a return call from client after GetSettingsInfo
-PyResult CharMgrService::Handle_LogSettings( PyCallArgs& call ) {
-  /*
-    [PyTuple 1 items]
-      [PyTuple 2 items]
-        [PyInt 0]
-        [PySubStream 734 bytes]
-          [PyTuple 4 items]
-            [PyInt 1]
-            [PyString "LogSettings"]
-            [PyTuple 1 items]
-              [PyDict 36 kvp]
-                [PyString "locale"]
-                [PyString "en_US"]
-                [PyString "shadowquality"]
-                [PyInt 1]
-                [PyString "video_vendorid"]
-                [PyIntegerVar 4318]
-                [PyString "dronemodelsenabled"]
-                [PyInt 1]
-                [PyString "loadstationenv2"]
-                [PyInt 1]
-                [PyString "video_deviceid"]
-                [PyIntegerVar 3619]
-                [PyString "camerashakesenabled"]
-                [PyInt 1]
-                [PyString "interiorshaderquality"]
-                [PyInt 0]
-                [PyString "presentation_interval"]
-                [PyInt 1]
-                [PyString "windowed_resolution"]
-                [PyString "1440x900"]
-                [PyString "explosioneffectssenabled"]
-                [PyInt 1]
-                [PyString "uiscalingfullscreen"]
-                [PyFloat 1]
-                [PyString "lod"]
-                [PyInt 1]
-                [PyString "audioenabled"]
-                [PyInt 1]
-                [PyString "voiceenabled"]
-                [PyInt 1]
-                [PyString "autodepth_stencilformat"]
-                [PyInt 75]
-                [PyString "hdrenabled"]
-                [PyInt 1]
-                [PyString "backbuffer_format"]
-                [PyInt 22]
-                [PyString "effectssenabled"]
-                [PyInt 1]
-                [PyString "breakpadUpload"]
-                [PyInt 1]
-                [PyString "windowed"]
-                [PyBool True]
-                [PyString "transgaming"]
-                [PyBool False]
-                [PyString "missilesenabled"]
-                [PyInt 1]
-                [PyString "sunocclusion"]
-                [PyInt 1]
-                [PyString "optionalupgrade"]
-                [PyInt 0]
-                [PyString "uiscalingwindowed"]
-                [PyFloat 1]
-                [PyString "textureqality"]
-                [PyInt 0]
-                [PyString "interiorgraphicsquality"]
-                [PyInt 0]
-                [PyString "antialiasing"]
-                [PyInt 2]
-                [PyString "defaultDockingView"]
-                [PyString "hangar"]
-                [PyString "turretsenabled"]
-                [PyInt 1]
-                [PyString "advancedcamera"]
-                [PyInt 0]
-                [PyString "postprocessing"]
-                [PyInt 1]
-                [PyString "fixedwindow"]
-                [PyBool False]
-                [PyString "shaderquality"]
-                [PyInt 3]
-                [PyString "fullscreen_resolution"]
-                [PyString "1440x900"]
-            [PyDict 1 kvp]
-              [PyString "machoVersion"]
-              [PyInt 1]
-    */
-  sLog.Warning( "CharMgrService::Handle_LogSettings()", "size= %u", call.tuple->size() );
-    call.Dump(CHARACTER__TRACE);
- return nullptr;
-}
-
 PyResult CharMgrService::Handle_GetCharacterDescription(PyCallArgs &call)
 {
     //takes characterID
@@ -526,6 +389,147 @@ PyResult CharMgrService::Handle_SetCharacterDescription(PyCallArgs &call)
     }
     c->SetDescription(args.arg.c_str());
 
+    return nullptr;
+}
+
+/** ***********************************************************************
+ * @note   these below are partially coded
+ */
+
+PyResult CharMgrService::Handle_GetSettingsInfo( PyCallArgs& call ) {
+    /**
+     *    def UpdateSettingsStatistics(self):
+     *        code, verified = macho.Verify(sm.RemoteSvc('charMgr').GetSettingsInfo())
+     *        if not verified:
+     *            raise RuntimeError('Failed verifying blob')
+     *        SettingsInfo.func_code = marshal.loads(code)
+     *        ret = SettingsInfo()
+     *        if len(ret) > 0:
+     *            sm.RemoteSvc('charMgr').LogSettings(ret)
+     */
+
+    // Called in file "carbon/client/script/ui/services/settingsSvc.py"
+    // This should return a marshaled python function.
+    // It returns a tuple containing a dict that is then sent to
+    // charMgr::LogSettings if the tuple has a length greater than zero.
+    PyTuple* res = new PyTuple( 2 );
+    // This returns an empty tuple
+    unsigned char code[] = {
+        0x63,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x43,0x00,0x00,
+        0x00,0x73,0x0a,0x00,0x00,0x00,0x64,0x01,0x00,0x7d,0x00,0x00,0x7c,0x00,0x00,0x53,
+        0x28,0x02,0x00,0x00,0x00,0x4e,0x28,0x00,0x00,0x00,0x00,0x28,0x00,0x00,0x00,0x00,
+        0x28,0x01,0x00,0x00,0x00,0x74,0x03,0x00,0x00,0x00,0x74,0x75,0x70,0x28,0x00,0x00,
+        0x00,0x00,0x28,0x00,0x00,0x00,0x00,0x73,0x10,0x00,0x00,0x00,0x2e,0x2f,0x6d,0x61,
+        0x6b,0x65,0x5a,0x65,0x72,0x6f,0x52,0x65,0x74,0x2e,0x70,0x79,0x74,0x08,0x00,0x00,
+        0x00,0x72,0x65,0x74,0x54,0x75,0x70,0x6c,0x65,0x0c,0x00,0x00,0x00,0x73,0x04,0x00,
+        0x00,0x00,0x00,0x01,0x06,0x02
+    };
+    int codeLen = sizeof(code) / sizeof(*code);
+    std::string codeString(code, code + codeLen);
+    res->items[ 0 ] = new PyString(codeString);
+
+    // error code? 0 = no error
+    // if called with any value other than zero the exception output will show 'Verified = False'
+    // if called with zero 'Verified = True'
+    /*  Just a note
+     * due to the client being in placebo mode, the verification code in evecrypto just checks if the signature is 0.
+     * when the client is in cryptoapi mode it verifies the signature is signed by CCP's rsa key.
+     */
+
+    res->items[ 1 ] = new PyInt( 0 );
+    return res;
+}
+
+//  this is a return call from client after GetSettingsInfo
+PyResult CharMgrService::Handle_LogSettings( PyCallArgs& call ) {
+    /*
+     *    [PyTuple 1 items]
+     *      [PyTuple 2 items]
+     *        [PyInt 0]
+     *        [PySubStream 734 bytes]
+     *          [PyTuple 4 items]
+     *            [PyInt 1]
+     *            [PyString "LogSettings"]
+     *            [PyTuple 1 items]
+     *              [PyDict 36 kvp]
+     *                [PyString "locale"]
+     *                [PyString "en_US"]
+     *                [PyString "shadowquality"]
+     *                [PyInt 1]
+     *                [PyString "video_vendorid"]
+     *                [PyIntegerVar 4318]
+     *                [PyString "dronemodelsenabled"]
+     *                [PyInt 1]
+     *                [PyString "loadstationenv2"]
+     *                [PyInt 1]
+     *                [PyString "video_deviceid"]
+     *                [PyIntegerVar 3619]
+     *                [PyString "camerashakesenabled"]
+     *                [PyInt 1]
+     *                [PyString "interiorshaderquality"]
+     *                [PyInt 0]
+     *                [PyString "presentation_interval"]
+     *                [PyInt 1]
+     *                [PyString "windowed_resolution"]
+     *                [PyString "1440x900"]
+     *                [PyString "explosioneffectssenabled"]
+     *                [PyInt 1]
+     *                [PyString "uiscalingfullscreen"]
+     *                [PyFloat 1]
+     *                [PyString "lod"]
+     *                [PyInt 1]
+     *                [PyString "audioenabled"]
+     *                [PyInt 1]
+     *                [PyString "voiceenabled"]
+     *                [PyInt 1]
+     *                [PyString "autodepth_stencilformat"]
+     *                [PyInt 75]
+     *                [PyString "hdrenabled"]
+     *                [PyInt 1]
+     *                [PyString "backbuffer_format"]
+     *                [PyInt 22]
+     *                [PyString "effectssenabled"]
+     *                [PyInt 1]
+     *                [PyString "breakpadUpload"]
+     *                [PyInt 1]
+     *                [PyString "windowed"]
+     *                [PyBool True]
+     *                [PyString "transgaming"]
+     *                [PyBool False]
+     *                [PyString "missilesenabled"]
+     *                [PyInt 1]
+     *                [PyString "sunocclusion"]
+     *                [PyInt 1]
+     *                [PyString "optionalupgrade"]
+     *                [PyInt 0]
+     *                [PyString "uiscalingwindowed"]
+     *                [PyFloat 1]
+     *                [PyString "textureqality"]
+     *                [PyInt 0]
+     *                [PyString "interiorgraphicsquality"]
+     *                [PyInt 0]
+     *                [PyString "antialiasing"]
+     *                [PyInt 2]
+     *                [PyString "defaultDockingView"]
+     *                [PyString "hangar"]
+     *                [PyString "turretsenabled"]
+     *                [PyInt 1]
+     *                [PyString "advancedcamera"]
+     *                [PyInt 0]
+     *                [PyString "postprocessing"]
+     *                [PyInt 1]
+     *                [PyString "fixedwindow"]
+     *                [PyBool False]
+     *                [PyString "shaderquality"]
+     *                [PyInt 3]
+     *                [PyString "fullscreen_resolution"]
+     *                [PyString "1440x900"]
+     *            [PyDict 1 kvp]
+     *              [PyString "machoVersion"]
+     *              [PyInt 1]
+     */
+    sLog.Warning( "CharMgrService::Handle_LogSettings()", "size= %u", call.tuple->size() );
+    call.Dump(CHARACTER__TRACE);
     return nullptr;
 }
 
@@ -579,6 +583,71 @@ PyResult CharMgrService::Handle_AddOwnerNote( PyCallArgs& call ) {
     15:54:45 [SvcCall]     Argument 'machoVersion':
     15:54:45 [SvcCall]         Integer field: 1
 
+    10:41:26 W CharMgrService::Handle_GetOwnerNoteLabels(): size= 0
+    10:41:26 [CharDebug]   Call Arguments:
+    10:41:26 [CharDebug]      Tuple: Empty
+    10:41:26 [CharDebug]  Named Arguments:
+    10:41:26 [CharDebug]   machoVersion
+    10:41:26 [CharDebug]        Integer: 1
+    10:41:39 [Service] charMgr::AddOwnerNote()
+    10:41:39 W CharMgrService::Handle_AddOwnerNote(): size=2
+    10:41:39 [CharDebug]   Call Arguments:
+    10:41:39 [CharDebug]      Tuple: 2 elements
+    10:41:39 [CharDebug]       [ 0]    WString: 'N:testing this shit'
+    10:41:39 [CharDebug]       [ 1]     String: '<br>'
+    10:41:39 [CharDebug]  Named Arguments:
+    10:41:39 [CharDebug]   machoVersion
+    10:41:39 [CharDebug]        Integer: 1
+
+    /../carbon/client/script/ui/control/buttons.py(245) OnClick
+    /client/script/ui/shared/neocom/notepad.py(706) NewNote
+    /client/script/ui/shared/neocom/notepad.py(581) ShowNote
+    id = 'None'
+    self = form.Notepad object at 0x4052ac30, name=notepad, destroyed=False>
+    force = 0
+        t = 'N'
+        noteID = ['N', 'None']
+        ValueError: invalid literal for int() with base 10: 'None'
+
+    /client/script/ui/shared/neocom/notepad.py(802) OnClick
+    /client/script/ui/shared/neocom/notepad.py(581) ShowNote
+    id = 'None'
+    self = form.Notepad object at 0x4052ac30, name=notepad, destroyed=False>
+    force = 0
+        t = 'N'
+        noteID = ['N', 'None']
+        ValueError: invalid literal for int() with base 10: 'None'
+
+    10:57:20 W CharMgrService::Handle_AddOwnerNote(): size=2
+    10:57:20 [CharDebug]   Call Arguments:
+    10:57:20 [CharDebug]      Tuple: 2 elements
+    10:57:20 [CharDebug]       [ 0]    WString: 'N:new note in new folder'
+    10:57:20 [CharDebug]       [ 1]     String: '<br>'
+    10:57:20 [CharDebug]  Named Arguments:
+    10:57:20 [CharDebug]   machoVersion
+    10:57:20 [CharDebug]        Integer: 1
+
+    /client/script/ui/shared/neocom/notepad.py(706) NewNote
+    /client/script/ui/shared/neocom/notepad.py(581) ShowNote
+    id = 'None'
+    self = form.Notepad object at 0x4052ac30, name=notepad, destroyed=False>
+    force = 0
+        t = 'N'
+        noteID = ['N', 'None']
+        ValueError: invalid literal for int() with base 10: 'None'
+
+    on notepad close....
+    10:58:09 [Service] charMgr::AddOwnerNote()
+    10:58:09 W CharMgrService::Handle_AddOwnerNote(): size=2
+    10:58:09 [CharDebug]   Call Arguments:
+    10:58:09 [CharDebug]      Tuple: 2 elements
+    10:58:09 [CharDebug]       [ 0]     String: 'S:Folders'
+    10:58:09 [CharDebug]       [ 1]    WString: '1::F::0::Main|2::F::0::added folder|3::N::2::None|'
+    10:58:09 [CharDebug]  Named Arguments:
+    10:58:09 [CharDebug]   machoVersion
+    10:58:09 [CharDebug]        Integer: 1
+
+    
     */
 
   sLog.Warning( "CharMgrService::Handle_AddOwnerNote()", "size=%u ", call.tuple->size());
