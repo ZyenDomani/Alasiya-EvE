@@ -2484,6 +2484,7 @@ void Ship::Process() {
             else if ((Capacity - newCharge) < 0.3)
                 newCharge = Capacity;
             m_self->SetAttribute(AttrShieldCharge, newCharge);
+            SendDamageStateChanged();
             _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
         }
 

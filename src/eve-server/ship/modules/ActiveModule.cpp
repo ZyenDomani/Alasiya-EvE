@@ -899,6 +899,9 @@ void ActiveModule::UpdateCharge(uint16 attrID, uint16 testAttrID, uint16 srcAttr
             Deactivate();
     }
     iRef->SetAttribute(attrID, newValue);
+
+    if (attrID == AttrShieldCharge)
+        m_shipRef->GetPilot()->GetShipSE()->SendDamageStateChanged();
 }
 
 void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRef iRef)
@@ -911,6 +914,7 @@ void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRe
             Deactivate();
     }
     iRef->SetAttribute(attrID, newValue);
+    m_shipRef->GetPilot()->GetShipSE()->SendDamageStateChanged();
 }
 
 // not used
