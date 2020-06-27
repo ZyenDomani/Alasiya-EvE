@@ -563,7 +563,6 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
     /*  this needs to check all boosters to update squad boost levels
      *   we will also check current levels to see if members need to be updated
      */
-    Character* pChar(nullptr);
     std::vector< uint32 > wingIDs, squadIDs;
     std::map<Ship*, BoostData> memberUpdateMap;
 
@@ -580,18 +579,20 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
             if (m_fleetWings.count(fleetID) <= fItr->second.leader->GetChar()->GetSkillLevel(EvESkill::FleetCommand)) {
                 if ((fItr->second.booster != nullptr) and (fItr->second.booster->IsInSpace()))
                     if (fItr->second.leader->GetSystemID() == fItr->second.booster->GetSystemID()) {
-                        pChar = fItr->second.booster->GetChar().get();
+                        Character* pChar = fItr->second.booster->GetChar().get();
                         if (pChar != nullptr) {
-                            if ((pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1)
-                            or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
-                            or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1))) {
+                            if (pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1))
                                 fData.armored   = pChar->GetSkillLevel(EvESkill::ArmoredWarfare);
+                            if (pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1))
                                 fData.info      = pChar->GetSkillLevel(EvESkill::InformationWarfare);
-                                fData.mining    = pChar->GetSkillLevel(EvESkill::MiningForeman);
+                            if (pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1))
                                 fData.siege     = pChar->GetSkillLevel(EvESkill::SiegeWarfare);
+                            if (pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1))
                                 fData.skirmish  = pChar->GetSkillLevel(EvESkill::SkirmishWarfare);
+                            if (pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1))
+                                fData.mining    = pChar->GetSkillLevel(EvESkill::MiningForeman);
+                            if (fData.armored or fData.info or fData.leader or fData.mining or fData.siege or fData.skirmish)
                                 fBoost = true;
-                            }
                         }
                     }
                 // this is for FC only.  will always get own skill, and here they get their fleet boost, also
@@ -703,7 +704,6 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
 void FleetService::SetWingBoostData(uint32 wingID, BoostData& bData)
 {
     bool boost = false;
-    Character* pChar(nullptr);
     int8 leader = 0, armored = 0, info = 0, mining = 0, siege = 0, skirmish = 0;
     std::map<uint32, WingData>::iterator wItr = m_wingDataMap.find(wingID);
     if (wItr == m_wingDataMap.end())
@@ -712,18 +712,19 @@ void FleetService::SetWingBoostData(uint32 wingID, BoostData& bData)
         if (m_wingSquads.count(wingID) <= wItr->second.leader->GetChar()->GetSkillLevel(EvESkill::WingCommand)) {
             if ((wItr->second.booster != nullptr) and (wItr->second.booster->IsInSpace()))
                 if (wItr->second.leader->GetSystemID() == wItr->second.booster->GetSystemID()) {
-                    pChar = wItr->second.booster->GetChar().get();
+                    Character* pChar = wItr->second.booster->GetChar().get();
                     if (pChar != nullptr) {
-                        if ((pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1)
-                        or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
-                        or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1))) {
-                            leader      = wItr->second.leader->GetChar()->GetSkillLevel(EvESkill::Leadership);    // this applies ONLY to self
+                        leader = wItr->second.leader->GetChar()->GetSkillLevel(EvESkill::Leadership);    // this applies ONLY to self
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1))
                             armored     = pChar->GetSkillLevel(EvESkill::ArmoredWarfare);
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1))
                             info        = pChar->GetSkillLevel(EvESkill::InformationWarfare);
-                            mining      = pChar->GetSkillLevel(EvESkill::MiningForeman);
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1))
                             siege       = pChar->GetSkillLevel(EvESkill::SiegeWarfare);
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1))
                             skirmish    = pChar->GetSkillLevel(EvESkill::SkirmishWarfare);
-                        }
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1))
+                            mining      = pChar->GetSkillLevel(EvESkill::MiningForeman);
                     }
                     boost = true;
                     wItr->second.boost.armored  = ((armored < bData.armored)   ? bData.armored   : armored);
@@ -758,7 +759,6 @@ void FleetService::SetWingBoostData(uint32 wingID, BoostData& bData)
 
 void FleetService::SetSquadBoostData(uint32 squadID, BoostData bData, bool& sboost)
 {
-    Character* pChar(nullptr);
     int8 leader = 0, armored = 0, info = 0, mining = 0, siege = 0, skirmish = 0;
     std::map<uint32, SquadData>::iterator sItr = m_squadDataMap.find(squadID);
     if (sItr == m_squadDataMap.end())
@@ -767,18 +767,19 @@ void FleetService::SetSquadBoostData(uint32 squadID, BoostData bData, bool& sboo
         if (sItr->second.members.size() <= (sItr->second.leader->GetChar()->GetSkillLevel(EvESkill::Leadership) * 2)) {
             if ((sItr->second.booster != nullptr) and (sItr->second.booster->IsInSpace()))
                 if (sItr->second.leader->GetSystemID() == sItr->second.booster->GetSystemID()) {
-                    pChar = sItr->second.booster->GetChar().get();
+                    Character* pChar = sItr->second.booster->GetChar().get();
                     if (pChar != nullptr) {
-                        if ((pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1)
-                        or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
-                        or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1))) {
-                            leader      = sItr->second.leader->GetChar()->GetSkillLevel(EvESkill::Leadership);
+                        leader = sItr->second.leader->GetChar()->GetSkillLevel(EvESkill::Leadership);    // this applies ONLY to self
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1))
                             armored     = pChar->GetSkillLevel(EvESkill::ArmoredWarfare);
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1))
                             info        = pChar->GetSkillLevel(EvESkill::InformationWarfare);
-                            mining      = pChar->GetSkillLevel(EvESkill::MiningForeman);
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1))
                             siege       = pChar->GetSkillLevel(EvESkill::SiegeWarfare);
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1))
                             skirmish    = pChar->GetSkillLevel(EvESkill::SkirmishWarfare);
-                        }
+                        if (pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1))
+                            mining      = pChar->GetSkillLevel(EvESkill::MiningForeman);
                     }
                     sItr->second.boost.armored  = ((armored < bData.armored)   ? bData.armored   : armored);
                     sItr->second.boost.info     = ((info < bData.info)         ? bData.info      : info);
