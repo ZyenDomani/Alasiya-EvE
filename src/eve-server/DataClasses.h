@@ -1,7 +1,7 @@
 
 /**
  * @name DataClasses.h
- *  data container classes that cannot be trivally constructed/destructed
+ *  data container classes that cannot be trivially constructed/destructed
  *
  * @author: allan
  * @date 4 January 2018

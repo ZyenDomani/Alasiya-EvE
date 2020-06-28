@@ -2,7 +2,7 @@ Alasiya EvE Source Code Class definitions and descriptions
 these are modeled after EvEmu code, and highly modified/updated from official
 official source should eventually use these, as they are conceived, designed, and updated from years of testing
 
-** this data is still incomplete, but better  4 jan 20 **
+** this data is still incomplete, but better  27 June 20 **
 
 ** NOTE:  items prefixed with an ampersand are not in official branch **
     - see notes at end of this file for differences between branches (incomplete)
@@ -15,7 +15,7 @@ official source should eventually use these, as they are conceived, designed, an
 * names for systems used by ccp
 DogmaIM
     item instance manager
-    processes item physical changes
+    processes item property changes
     very blurry line between DogmaIM and DogmaLM
 
 DogmaLM
@@ -263,13 +263,24 @@ Inventory
 
 
 & CosmicManager
-    multiple classes to manage aspects of System belts and anomalies
+    multiple classes to manage specific aspects of Systems
+    Anomaly
+        anomaly creation and destruction
+    Belt
+        asteroid manager
+    Civilian (singleton)
+        non-interactive NPC ships
+    Dungeon
+        dungeon spawning
+    Spawn
+        npc spawning
+    Wormhole (singleton)
+        universe-wide wormhole management
 
 
 & Effects
     specific system to process effects
     this includes skill, module, ship, attribute, and system effects
-    this class uses data from Rhea expansion, and still needs minor tweaks to work with Crucible client
 
 
 DogmaLM (Location Manager)
@@ -282,7 +293,7 @@ Agent
 
 
 
-& POS - Player Owned Structure
+& POS_ - Player Owned Structure (with subclasses)
     Manager
         processes all calls and returns of POS systems
 
@@ -300,7 +311,7 @@ Agent
     Reactor
         item used to produce goods at POS system
 
-    Weapon
+    Weapon_
         pos weapon module
 
         Array
@@ -339,16 +350,24 @@ BookmarkManager
 
 
 & StaticDataMgr
+    handles loading and storage of static game data for entire server into easily-accessed memory objects
 
 & StatisticMgr
+     server information system for managing and saving trivial game data
 
 & Profile
+    lightweight profiling code specifically for timing sections of running EvEmu application
+    this code is very basic, and very specific.
 
 & DataClasses
+    data containers that cannot be trivially constructed or destroyed (not POD)
 
 & Colony
+    class for management of Planetary Interaction items
 
 & MapData
+    a group of methods and functions to get map info.
+      this is mostly used for getting random points in system, system jumps, and misc mission destination info
 
 
 
@@ -378,6 +397,8 @@ DumpGenerator
 
 ** Problems in Official branch (Alasiya corrections or updates) **
 * 'wrong' being an opportune word here, based on testing and client code review *
+NOTE:  i am in no way criticizing or bashing any of the original developers of these systems.
+    this is only pointing out what i have found/fixed over years of coding and testing this server and it's systems
 
 Memory Management (wip)
     i should say "the complete lack of"
@@ -389,7 +410,8 @@ BulkManager (rewrite - hacked to update client static data based on updated serv
 Client (major updates - needs refactoring)
     this should be a control implementation for network data processing and client/server communication only
     currently, both branches have multiple cross-contamination of network, communication, and player functions in the Client class
-    one of the original developers started separating this into a Client class for network processing/communication, and a Player class for game function calls  but never completed it, and his work was lost
+    one of the original developers started separating this into a Client class for network processing/communication and a Player class for game function calls.
+    this was never completed and his work was lost (as far as i am aware at this time)
 
 SystemEntity (complete rewrite)
     incomplete base class for all game objects
@@ -406,7 +428,7 @@ AttributeManager (complete rewrite)
     incomplete
     problematic
     too generic
-    this implementation was not very well thought out
+    this implementation was not very well thought out for it's intended uses
 
 EvilNumber (major update and completion)
     bloated and incomplete
@@ -416,7 +438,7 @@ EvilNumber (major update and completion)
     (mine is rewritten to use class variables for both integer and float types, explicitly initialized to 0, to avoid 'trash data' in uninitialized union)
 
 PyRep (update and refactor)
-    code bloat - each PyRep object has a copy of type data and other misc things that would be better in a header
+    cleaned up initalizers, iterators, returns, and code checks
 
 XMLP Generators (major update and refactoring)
     lots of redundant coding
