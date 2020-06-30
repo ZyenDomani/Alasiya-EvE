@@ -63,7 +63,7 @@ int BubbleManager::Initialize() {
 void BubbleManager::clear() {
     for (auto cur : m_bubbles)
         SafeDelete(cur);
-    
+
     sLog.Warning("        BubbleMgr", "Bubble Manager has been closed." );
 }
 
@@ -158,14 +158,13 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
         pSE->DestinyMgr()->SetPosition(sGP.GetRandPointOnPlanet(pSE->SystemMgr()->GetID()));
     }
 
-    SystemBubble* pBubble(nullptr);
     GPoint center(pSE->GetPosition());
     if (isPostWarp) {
         // Calculate new bubble's center based on entity's velocity and current position
         NewBubbleCenter( pSE->GetVelocity(), center );
     }
 
-    pBubble = GetBubble(pSE->SystemMgr(), center);
+    SystemBubble* pBubble(GetBubble(pSE->SystemMgr(), center));
     if (pBubble != nullptr) {
         if (pSE->SysBubble() != nullptr) {
             if (pBubble->GetSystemID() != pSE->SystemMgr()->GetID()) {
@@ -234,8 +233,7 @@ SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &pos) cons
 SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
 {
     // TODO check edges of bubbles....should NOT overlap.
-    SystemBubble* pBubble(nullptr);
-    pBubble = FindBubble(sysMgr->GetID(), pos);
+    SystemBubble* pBubble(FindBubble(sysMgr->GetID(), pos));
     if (pBubble == nullptr)
         pBubble = MakeBubble(sysMgr, pos);
 
@@ -253,8 +251,7 @@ SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
             pos = itr->second->GetCenter() + dir * (BUBBLE_RADIUS_METERS *2);  // move pos away from center
         }
 
-    SystemBubble* pBubble(nullptr);
-    pBubble = new SystemBubble(sysMgr, pos, BUBBLE_RADIUS_METERS);
+    SystemBubble* pBubble = new SystemBubble(sysMgr, pos, BUBBLE_RADIUS_METERS);
     if (pBubble != nullptr) {
         m_bubbles.push_back(pBubble);
         m_bubbleMap.emplace(sysMgr->GetID(), pBubble);
