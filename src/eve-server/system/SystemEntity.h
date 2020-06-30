@@ -278,7 +278,9 @@ protected:
 };
 
 
-/* Static / Non-Mobile / Non-Destructable / Celestial Objects - Suns, Planets, Moons, Belts, Gates, Stations   - no TargetMgr or DestinyMgr*/
+/* Static / Non-Mobile / Non-Destructable / Celestial Objects
+ * - Suns, Planets, Moons, Belts, Gates, Static NPC Stations
+ *- no TargetMgr or DestinyMgr*/
 class StaticSystemEntity : public SystemEntity {
 public:
     StaticSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -352,7 +354,9 @@ protected:
 };
 
 
-/* Non-Static / Non-Mobile / Non-Destructible / Celestial Objects - Containers, DeadSpace, ForceFields, ScanProbes  - no TargetMgr or DestinyMgr*/
+/* Non-Static / Non-Mobile / Non-Destructible / Celestial Objects
+ * - Containers, DeadSpace, ForceFields, ScanProbes
+ *- no TargetMgr or DestinyMgr*/
 class ItemSystemEntity : public SystemEntity {
 public:
     ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -377,7 +381,29 @@ private:
     uint16 m_keyType;
 };
 
-/* Non-Static / Non-Mobile / Destructible / Celestial Objects - POS Structures, Outposts, Deployables, empty Ships, Asteroids  - has TargetMgr*/
+/* POS ForceField */
+class FieldSE
+: public ItemSystemEntity
+{
+public:
+    FieldSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
+    virtual ~FieldSE()                             { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual FieldSE*            GetFieldSE()            { return this; }
+    /* class type tests. */
+    virtual bool                IsFieldSE()             { return true; }
+
+    /* SystemEntity interface */
+    virtual void                EncodeDestiny( Buffer& into );
+
+    virtual PyDict*             MakeSlimItem();
+
+};
+
+/* Non-Static / Non-Mobile / Destructible / Celestial Objects
+ * - POS Structures, Outposts, Deployables, empty Ships, Asteroids
+ *- has TargetMgr  no DestinyMgr*/
 class ObjectSystemEntity : public SystemEntity {
 public:
     ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -417,29 +443,11 @@ public:
     virtual bool                IsDeployableSE()        { return true; }
 };
 
-/* POS ForceField */
-class FieldSE
-: public ObjectSystemEntity
-{
-public:
-    FieldSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
-    virtual ~FieldSE()                             { /* Do nothing here */ }
-
-    /* class type pointer querys. */
-    virtual FieldSE*            GetFieldSE()            { return this; }
-    /* class type tests. */
-    virtual bool                IsFieldSE()             { return true; }
-
-    /* SystemEntity interface */
-    virtual void                EncodeDestiny( Buffer& into );
-
-    virtual PyDict*             MakeSlimItem();
-
-};
 
 
-
-/* Non-Static / Mobile / Destructible / Celestial Objects - Drones, Ships, Missiles, Wrecks  - has TargetMgr*/
+/* Non-Static / Mobile / Destructible / Celestial Objects
+ *- Drones, Ships, Missiles, Wrecks
+ * - has TargetMgr and DestinyMgr*/
 class DynamicSystemEntity : public SystemEntity {
 public:
     DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);

@@ -99,6 +99,8 @@ void WormholeMgr::Create(CosmicSignature& sig)
     sig.sigItemID = iRef->itemID();
     // add signal to system
     pSysMgr->AddEntity(cSE);
+    //  this shows as an anomaly when clicking on WH in space.
+    //  figure out how to remove from view, but still in system for other things to function properly
 
     /*
      * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80

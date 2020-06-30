@@ -286,7 +286,7 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
     }
 
     if (!sFltSvc.SaveInviteData(args.charID, data)) {
-        call.client->SendNotifyMsg("%s is invited to another fleet.  That invite must be rejected bfore another can be issued.", pClient->GetChar()->itemName().c_str());
+        call.client->SendNotifyMsg("%s is invited to another fleet.  That invite must be rejected before another can be issued.", pClient->GetCharName().c_str());
         return PyStatic.NewNone();
     }
 
@@ -309,8 +309,8 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
     }
     pClient->SendNotification("OnFleetInvite", "clientID", &tuple, true);
 
-    // this returns none
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
@@ -409,7 +409,8 @@ PyResult FleetBound::Handle_ChangeWingName(PyCallArgs &call) {
     else
         _log(FLEET__ERROR, "ChangeWingName - args.name is of the wrong type: '%s'.  Expected PyString or PyWString.", args.name->TypeString());
 
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_ChangeSquadName(PyCallArgs &call) {
@@ -430,7 +431,8 @@ PyResult FleetBound::Handle_ChangeSquadName(PyCallArgs &call) {
     else
         _log(FLEET__ERROR, "ChangeSquadName - args.name is of the wrong type: '%s'.  Expected PyString or PyWString.", args.name->TypeString());
 
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_SetOptions(PyCallArgs &call) {
@@ -445,7 +447,8 @@ PyResult FleetBound::Handle_SetOptions(PyCallArgs &call) {
 
     sFltSvc.UpdateOptions(m_fleetID, isFreeMove, isRegistered, isVoiceEnabled);
 
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_GetJoinRequests(PyCallArgs &call) {
@@ -488,7 +491,8 @@ PyResult FleetBound::Handle_RejectJoinRequest(PyCallArgs &call) {
 
     pClient->SendInfoModalMsg("Your fleet join request was denied by %s", call.client->GetName());
 
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_GetFleetComposition(PyCallArgs &call) {
@@ -550,6 +554,7 @@ PyResult FleetBound::Handle_SendBroadcast(PyCallArgs &call) {
 
     sFltSvc.FleetBroadcast(call.client, args.itemID, Fleet::BCast::Scope::Universe, args.group, args.msg);
 
+    // returns nothing
     return nullptr;
 }
 
@@ -564,6 +569,7 @@ PyResult FleetBound::Handle_UpdateMemberInfo(PyCallArgs &call) {
     sLog.Warning("FleetBound", "Handle_UpdateMemberInfo() size=%u", call.tuple->size() );
     //call.Dump(FLEET__DUMP);
 
+    // returns nothing
     return nullptr;
 }
 
@@ -574,6 +580,7 @@ PyResult FleetBound::Handle_SetMotdEx(PyCallArgs &call) {
 
     sFltSvc.SetMOTD(m_fleetID, PyRep::StringContent(call.tuple->AsTuple()->GetItem(0)));
 
+    // returns nothing
     return nullptr;
 }
 
@@ -592,8 +599,8 @@ PyResult FleetBound::Handle_LeaveFleet(PyCallArgs &call) {
 
     sFltSvc.LeaveFleet(call.client);
 
-    // returns none
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
@@ -626,8 +633,8 @@ PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
         return PyStatic.NewNone();
     sFltSvc.UpdateMember(arg.arg, m_fleetID, -1, -1, pCharNew->fleetJob(), Fleet::Role::FleetLeader, pCharNew->fleetBooster());
 
-    // returns none
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
@@ -723,6 +730,7 @@ PyResult FleetBound::Handle_KickMember(PyCallArgs &call) {
 
     sFltSvc.LeaveFleet(sEntityList.FindClientByCharID(arg.arg));
 
+    // returns boolean
     return PyStatic.NewTrue();
 }
 
@@ -792,7 +800,8 @@ PyResult FleetBound::Handle_AddToVoiceChat(PyCallArgs &call) {
 
     //sConfig.chat.EnableVoiceChat;
 
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_SetVoiceMuteStatus(PyCallArgs &call) {
@@ -800,7 +809,8 @@ PyResult FleetBound::Handle_SetVoiceMuteStatus(PyCallArgs &call) {
     sLog.Warning("FleetBound", "Handle_SetVoiceMuteStatus() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_ExcludeFromVoiceMute(PyCallArgs &call) {
@@ -808,13 +818,14 @@ PyResult FleetBound::Handle_ExcludeFromVoiceMute(PyCallArgs &call) {
     sLog.Warning("FleetBound", "Handle_ExcludeFromVoiceMute()) size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetBound::Handle_Reconnect(PyCallArgs &call) {
     // no args
     sLog.Warning("FleetBound", "Handle_Reconnect()) size=%u", call.tuple->size() );
 
-    // no return from this
+    // returns nothing
     return nullptr;
 }

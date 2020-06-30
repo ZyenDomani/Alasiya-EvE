@@ -115,6 +115,9 @@ PyResult FleetManager::Handle_GetActiveStatus(PyCallArgs &call) {
     PySafeDecRef(rsp.squads);
     rsp.squads = squads;
 
+    if (is_log_enabled(FLEET__DEBUG))
+        rsp.Dump(FLEET__DEBUG);
+    
     return rsp.Encode();
 }
 

@@ -8,7 +8,7 @@
 
 noob ships do not Init() correctly....  most attrs are 0
 
-npcs not getting destiny warpstate set (sometimes)
+npcs not getting destiny warpstate set (sometimes - this is cause of rats not warping into belts)
 
 asteroids have DestinyManager (remove this shit)
     - currently OSE.  should we change them to ISE and add targMgr?
@@ -26,18 +26,12 @@ moving mwd from one slot to another throws groupfit limited error
 when moving module slots, module is offlined after refit
 check charge flag - getting segfault on flagAutoFit for chargeRef in fx
 
-InvBrokerBound::Handle_GetInventoryFromId
-    - this sets inventory flag when bound object created....needs more thought to finish code
-    - there is NO checks for corp usage yet.
-    - suspect many error msgs in client for this, but none are found/coded yet
-    - wtf does 'passive' mean??  only called for char and ship during 'Prime'.  "dont load item" maybe?
-
 check repack/reproc ships for insurance and delete if applicable
-    - does client need update when insurance deleted?
+    - does client need update when insurance deleted?  no...ins is queried when needed
 also check containers for contents and remove/deny before repack
 
 check insurance payouts.   rounds full ship value up
-check trade - ships retain insurance)
+check trade - ships retain insurance
 20:41:06 [Bound] InsuranceBound::InsureShip()
 20:41:06 [AcctTrace] TranserFunds() - from: 90000000, to: 1000132, entry: 19, refID: 0, amount: 0.33, fKey: 1000, tKey: 1000
 20:41:06 [AcctTrace] TranserFunds() - toID: 1000132 is neither player nor player corp.
@@ -87,13 +81,6 @@ create ".modify" command to allow ingame setting of attributes
 
 add cache calls/data for systems that use it after debugging and testing completed
 
-change current variable creation from
-  A() a = 0;
-to
-  A() a(0);
-as this will negate creating a temp object in assign op
-this is mostly done.  few seldom-used items left
-
 write new methods for List() and Move() for bookmarks where owner != player
 currently, all bookmarks are donated to calling player when moved into cargo/hangar
 
@@ -105,13 +92,13 @@ look over and correct loading with partial stacks (see UserError at MM::LoadChar
 change AddBalance (et al) to TransferFunds()
 
 check client's locationID vs stationID.
-    - multiple calls in client test for these as separate values (tested separately)
+    - multiple calls in client will test for these as separate values (tested separately)
     - verify our use of these is correct....
     - most tests use locationID first, then stationID2
 
 replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
-    - this is applicable for corporation notifications only, as CorpNotify() checks corp settings to determine recepients
-    - MultiCast() updated to remove the dumb shit.  safe to use for typical shit as intended now.  should be good to ~5k+ clients w/o noticable lag
+    - this is applicable for corporation notifications only, as CorpNotify() checks corp settings to determine recipients
+    - MultiCast() updated to remove the dumb shit.  safe to use for typical shit as intended now.  should be good to ~5k+ clients w/o noticeable lag
 
 systemmgr - use kills object instead of db hit
     - hit this object to avoid db hits for every kill
@@ -120,10 +107,12 @@ systemmgr - use kills object instead of db hit
     - add kill tracking to systeMgr
     - use systemMgr to update/track kills/hour data and update db as needed (use 15m call above)
     - load kill times when system boots.  use 15m timer call (from EntityList) to update data
+    ** tried this...didnt work correctly.  disabled code
 
 dbcore - query retry enables runaway server when query causes server disconnection (error)
     - should this be limited?
     - note: it only happens for malformed queries (while testing) from what i've seen.
+
 DBResultToIntIntDict uses isNull test to set var to 0
     - this should be PyNone as appropriate
 
@@ -141,7 +130,14 @@ RefObjects - MEMORY MANAGEMENT!!
 Py* objects that have string as key need 'delete' called on string when destroyed per valgrind...cannot find ref to this error now
 Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
 
-InvBrokerBound::Handle_GetInventory incomplete
+InvBrokerBound::Handle_GetInventory
+    - incomplete
+InvBrokerBound::Handle_GetInventoryFromId
+    - this sets inventory flag when bound object created....needs more thought to finish code
+    - there is NO checks for corp usage yet.
+    - suspect many error msgs in client for this, but none are found/coded yet
+    - wtf does 'passive' mean??  only called for char and ship during 'Prime'.  "dont load item" maybe?
+
 
 pi working.  currently rewriting process code  -priority level: lo
     - check/rewrite planet xml code as needed (minor improvement)
@@ -157,9 +153,8 @@ dungeon mgr - factionID of "region sov" needs to be written to determine region 
 fleet boosts - apply directly to ship/modules when calculated
     - apply either when undocking or as fleet is created and use OnModuleAttributeChange packet
     - this will give proper data to client when GetAllInfo() is sent
-many fleet error msgs in client unused - noted in fleetdata.h
-few fleet calls not coded
-determine how to save fleetID for wrecks (SE has fleetID member...may save id to item.customdata)
+    - many fleet error msgs in client unused - noted in fleetdata.h
+    - determine how to save fleetID for wrecks (SE has fleetID member...may save id to item.customdata)
 
 scoop object needs a bit of attention
 
@@ -216,9 +211,10 @@ pos - started. drop, anchor, unanchor, online, offline working but no in-class c
 
 lsc system better, but incomplete and needs revisiting    -priority level: med-hi
     - may need xmlp code instead of muddled python decoding
-    -  whole system needs update or possible rewrite
+    - whole system needs update or possible rewrite
 
 link/unlink need a bit more logic work (as per notes in code)
+
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
 raceMask isnt implemented yet...will need more thought/coding
@@ -298,7 +294,7 @@ attribMap has open db calls
 
 OSE::Killed() unfinished.
 
-skillbar error only happens when training skill to l5 complete
+skillbar error only happens when training skill to L5 complete
 check sending 275 (attrTimeConst) as float
 
 pause skill queue should clear training queue window
@@ -311,13 +307,6 @@ noob mining ships to have ore hold?
 ibis, bantam, probe, ?
 
 
-figure out how to check edges of bubbles when creating new
-    - figure out how to move bubble centers to avoid overlap
-
-set session change timer for expensive commands
-    - update
-    - syncpos
-    - others?
 
 *******************************************************
 *****************  Fx shit
@@ -353,8 +342,6 @@ all PackedRows are marshalled into a buffer, where None is inserted as zero.
 
 *******************************************************
 *****************  ideas for later
-
-print version #s to local chat on login  (kinda need lsc working better for this one...)
 
 ***  look into using sql prepared statements for oft-used queries
 
@@ -414,9 +401,6 @@ comment unused attrib defs
 *******************************************************
 *****************   errata and miscellaneous bullshit
 
-db code doesnt send None or NULL properly to client.
-    see bookmark data and effects
-
 
 add rule of 5 for Py* code (or =delete defaults)
 
@@ -426,6 +410,8 @@ will need to look into this and determine how they use those files and the check
 as this is still beyond me, it may take a while.
 till then, we'll have to used the hacked system.
 after all, it works
+
+object cache system still not understood or fully utilized. (part of bulkdata shit)
 
 item flags are stored in db as 'entity.flag', but client wants 'flagID'.
 look into changing our code to conform.  most objects are built in-code and use flagID already, but some items need "flag AS flagID" in sql query.
@@ -494,7 +480,7 @@ InventoryBound  incomplete
 dynamic system items not inserted into itemfactory map
 static items not being removed from itemfactory map upon system unload
 
-began putting specific throw msgs in approprate common/EVE_*.h files if available,
+began putting specific throw msgs in appropriate common/EVE_*.h files if available,
 else src/*/*.h files
 
 Ref: ServerError numbers are a bit whacky.  others are just wrong.
@@ -508,15 +494,17 @@ Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed  ..
 
 player error msgs - pool of msgs adjusted for character secstatus or standings with corp/sov holder, a la sphereScript's speech files
 
-object cache system still not understood or fully utilized.
-
 when cynos are implemented, remember to update mapDynamicData for counts on both fields and generators
 
-stations have a reprocessingHangarFlag.  implement this for RAM shit (they are all 4, but whatever)  -priority level: low
+stations have a reprocessingHangarFlag.
+implement this for RAM shit (they are all 4, but whatever)  -priority level: low
+- could this be changed by player?
 
-better checks and reverts when creating corps fail - updated to not check for failure when adding data to evestaticowners, walletdivisions and corpshares
+better checks and reverts when creating corps fail
+- updated to not check for failure when adding data to evestaticowners, walletdivisions and corpshares
 
-on rare occasions, RemoveCharge* calls send quantity as tuple(1).  this isnt implemented at this time, preferring to remove all loaded charges
+on rare occasions, RemoveCharge* calls send quantity as tuple(1).
+this isnt implemented at this time, preferring to remove all loaded charges
 
 implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligable.
     update for ~20+ or so points to make a difference with our attributes
@@ -543,7 +531,6 @@ system mem obj for jumpsHour isnt working and will take more thought/code
 *******************************************************
 ********************************
 website updates:
-replace/update outdated mysql_connect with newer mysqli_connect
---  major updates needed in website code for php 7.3
 
 add version #s to site
+

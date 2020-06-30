@@ -242,7 +242,6 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
 
 SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
     // determine if pos is within 2x diameter of another bubble. (overlap)
-    std::vector<SystemBubble*> bVec;
     auto range = m_bubbleMap.equal_range(sysMgr->GetID());
     for ( auto itr = range.first; itr != range.second; ++itr )
         if (itr->second->IsOverlap(pos)) {

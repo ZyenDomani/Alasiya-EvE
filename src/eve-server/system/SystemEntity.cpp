@@ -446,16 +446,60 @@ void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
     }
 }
 
+FieldSE::FieldSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
+: ItemSystemEntity(self, services, system)
+{
+    m_warID = data.factionID;
+    m_allyID = data.allianceID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
+}
+
+void FieldSE::EncodeDestiny( Buffer& into )
+{
+    using namespace Destiny;
+    BallHeader head = BallHeader();
+        head.entityID = m_self->itemID();
+        head.mode = (m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Mode::FIELD : Ball::Mode::STOP);
+        head.radius = m_radius;
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
+        head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Flag::IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
+    into.Append( head );
+    MassSector mass = MassSector();
+        mass.mass = 10000000000;    // as seen in packets
+        mass.cloak = 0;
+        mass.harmonic = m_harmonic;
+        mass.corporationID = m_corpID;
+        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
+    into.Append( mass );
+    if (head.mode == Ball::Mode::FIELD) {
+        FIELD_Struct main;
+        main.formationID = 0xFF;
+        into.Append( main );
+    } else if (head.mode == Ball::Mode::STOP) {
+        STOP_Struct main;
+        main.formationID = 0xFF;
+        into.Append( main );
+    }
+
+    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+}
+
+PyDict *FieldSE::MakeSlimItem()
+{
+    return SystemEntity::MakeSlimItem();
+}
+
 
 /* Non-Static / Non-Mobile / Destructible / Celestial Objects - POS Structures, Outposts, Deployables, empty Ships, Asteroids */
 ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
     m_targMgr = new TargetManager(this);
-    m_destiny = new DestinyManager(this);
 
     assert(m_targMgr != nullptr);
-    assert(m_destiny != nullptr);
 }
 
 ObjectSystemEntity::~ObjectSystemEntity()
@@ -468,7 +512,6 @@ ObjectSystemEntity::~ObjectSystemEntity()
         }
 
     SafeDelete(m_targMgr);
-    SafeDelete(m_destiny);
 }
 
 void ObjectSystemEntity::EncodeDestiny( Buffer& into )
@@ -550,52 +593,6 @@ DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, System
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-}
-
-FieldSE::FieldSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
-: ObjectSystemEntity(self, services, system)
-{
-    m_warID = data.factionID;
-    m_allyID = data.allianceID;
-    m_corpID = data.corporationID;
-    m_ownerID = data.ownerID;
-}
-
-void FieldSE::EncodeDestiny( Buffer& into )
-{
-    using namespace Destiny;
-    BallHeader head = BallHeader();
-        head.entityID = m_self->itemID();
-        head.mode = (m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Mode::FIELD : Ball::Mode::STOP);
-        head.radius = m_radius;
-        head.posX = x();
-        head.posY = y();
-        head.posZ = z();
-        head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Flag::IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
-    into.Append( head );
-    MassSector mass = MassSector();
-        mass.mass = 10000000000;    // as seen in packets
-        mass.cloak = 0;
-        mass.harmonic = m_harmonic;
-        mass.corporationID = m_corpID;
-        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
-    into.Append( mass );
-    if (head.mode == Ball::Mode::FIELD) {
-        FIELD_Struct main;
-            main.formationID = 0xFF;
-        into.Append( main );
-    } else if (head.mode == Ball::Mode::STOP) {
-        STOP_Struct main;
-            main.formationID = 0xFF;
-        into.Append( main );
-    }
-
-    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-}
-
-PyDict *FieldSE::MakeSlimItem()
-{
-    return SystemEntity::MakeSlimItem();
 }
 
 

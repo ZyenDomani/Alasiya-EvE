@@ -402,7 +402,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
     if (price == args.newPrice)
         return nullptr;
 
-    if (isBuy) {  // GiveCash
+    if (isBuy) {  // fix this to use Acct::TransferFunds()
         double money = (price - args.newPrice) * quantity;
         if (!call.client->AddBalance(money, Account::CreditType::ISK))
             return nullptr;
@@ -437,7 +437,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     }
 
 
-    if (isBuy) { // GiveCash
+    if (isBuy) { //  fix this to use Acct::TransferFunds()
         double money = price * quantity;
         if (!call.client->AddBalance(money))
             return nullptr;

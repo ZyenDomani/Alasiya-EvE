@@ -280,6 +280,7 @@ public:
     bool IsBubbleWait()                                 { return m_bubbleWait; }
     bool IsSetStateSent()                               { return m_setStateSent; }
     bool IsSessionChange()                              { return m_sessionChangeActive; }
+    uint32 GetSessionChangeTime()                       { return m_sessionTimer.GetRemainingTime() /1000; }
 
     void SetInvul(bool invul=false)                     { m_invul = invul; }
     void SetUndock(bool undock=false)                   { m_undock = undock; }

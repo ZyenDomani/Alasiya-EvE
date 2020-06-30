@@ -724,8 +724,14 @@ PyResult Command_syncloc(Client* pClient, CommandDB* db, PyServiceMgr* services,
         pClient->SetDestiny(NULL_ORIGIN);
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
+    if (pClient->IsSessionChange()) {
+        pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
+                                  pClient->GetSessionChangeTime());
+        return;
+    }
 
     pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
+    pClient->SetSessionTimer();
 
     return new PyString("Position synchronized.");
 }
@@ -738,8 +744,14 @@ PyResult Command_syncpos(Client* pClient, CommandDB* db, PyServiceMgr* services,
         pClient->SetDestiny(NULL_ORIGIN);
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
+    if (pClient->IsSessionChange()) {
+        pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
+                                  pClient->GetSessionChangeTime());
+        return;
+    }
 
     pClient->GetShipSE()->SysBubble()->SyncPos();
+    pClient->SetSessionTimer();
 
     return new PyString("All Positions synchronized.");
 }
@@ -751,6 +763,11 @@ PyResult Command_update(Client *pClient, CommandDB *db, PyServiceMgr *services, 
         pClient->SetDestiny(NULL_ORIGIN);
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
+    if (pClient->IsSessionChange()) {
+        pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
+                                  pClient->GetSessionChangeTime());
+        return;
+    }
 
     pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
 
@@ -763,6 +780,7 @@ PyResult Command_update(Client *pClient, CommandDB *db, PyServiceMgr *services, 
 
     pClient->SetStateSent(false);
     pClient->GetShipSE()->DestinyMgr()->SendSetState();
+    pClient->SetSessionTimer();
     return new PyString("Update sent.");
 }
 
@@ -773,9 +791,15 @@ PyResult Command_sendstate(Client *pClient, CommandDB *db, PyServiceMgr *service
         pClient->SetDestiny(NULL_ORIGIN);
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
+    if (pClient->IsSessionChange()) {
+        pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
+                                  pClient->GetSessionChangeTime());
+        return;
+    }
 
     pClient->SetStateSent(false);
     pClient->GetShipSE()->DestinyMgr()->SendSetState();
+    pClient->SetSessionTimer();
     return new PyString("Update sent.");
 }
 
