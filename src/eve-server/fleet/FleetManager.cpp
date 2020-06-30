@@ -51,19 +51,19 @@ FLEET__DUMP
 FLEET__BIND_DUMP
 */
 PyResult FleetManager::Handle_ForceLeaveFleet(PyCallArgs &call) {
-    sLog.White("FleetManager", "Handle_ForceLeaveFleet() size=%u", call.tuple->size() );
+    sLog.Warning("FleetManager", "Handle_ForceLeaveFleet() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     sFltSvc.LeaveFleet(call.client);
 
-    // returns none
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult FleetManager::Handle_GetActiveStatus(PyCallArgs &call) {
   //   self.activeStatus = sm.RemoteSvc('fleetMgr').GetActiveStatus()
     // have seen this return PyNone in logs.  dont know why...bad fleetID maybe?
-    sLog.White("FleetManager", "Handle_GetActiveStatus() size=%u", call.tuple->size() );
+    sLog.Warning("FleetManager", "Handle_GetActiveStatus() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
   /*
@@ -128,7 +128,7 @@ PyResult FleetManager::Handle_BroadcastToBubble(PyCallArgs &call) {
      * 00:06:49 [FleetDump]         [ 1] Integer field: 3           <-- groupID
      * 00:06:49 [FleetDump]         [ 2] Integer field: 140006694   <-- charID
      */
-    sLog.White("FleetManager", "Handle_BroadcastToSysBubble() size=%u", call.tuple->size() );
+    sLog.Warning("FleetManager", "Handle_BroadcastToSysBubble() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     SendBroadCastCall args;
@@ -144,7 +144,7 @@ PyResult FleetManager::Handle_BroadcastToBubble(PyCallArgs &call) {
 
 PyResult FleetManager::Handle_BroadcastToSystem(PyCallArgs &call) {
   //     sm.RemoteSvc('fleetMgr').BroadcastToSystem(name, self.broadcastScope, itemID)
-    sLog.White("FleetManager", "Handle_BroadcastToSystem() size=%u", call.tuple->size() );
+    sLog.Warning("FleetManager", "Handle_BroadcastToSystem() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     SendBroadCastCall args;
@@ -162,7 +162,7 @@ PyResult FleetManager::Handle_AddToWatchlist(PyCallArgs &call) {
     /**
      *        sm.RemoteSvc('fleetMgr').AddToWatchlist(charID, fav)
      */
-    sLog.White("FleetManager", "Handle_AddToWatchlist() size=%u", call.tuple->size() );
+    sLog.Warning("FleetManager", "Handle_AddToWatchlist() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     return nullptr;
@@ -172,7 +172,7 @@ PyResult FleetManager::Handle_RemoveFromWatchlist(PyCallArgs &call) {
     /**
      *        sm.RemoteSvc('fleetMgr').RemoveFromWatchlist(charID, fav)
      */
-    sLog.White("FleetManager", "Handle_RemoveFromWatchlist() size=%u", call.tuple->size() );
+    sLog.Warning("FleetManager", "Handle_RemoveFromWatchlist() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     return nullptr;
@@ -180,16 +180,17 @@ PyResult FleetManager::Handle_RemoveFromWatchlist(PyCallArgs &call) {
 
 PyResult FleetManager::Handle_RegisterForDamageUpdates(PyCallArgs &call) {
     /**
-     *        sm.RemoteSvc('fleetMgr').RegisterForDamageUpdates(fav)
+        fav = self.GetWatchlistMembers()
+        sm.RemoteSvc('fleetMgr').RegisterForDamageUpdates(fav)
      *
      *        17:38:00 [SvcCall] Service fleetMgr: calling RegisterForDamageUpdates
      *        17:38:00 [SvcCall]   Call Arguments:
      *        17:38:00 [SvcCall]       Tuple: 1 elements
      *        17:38:00 [SvcCall]         [ 0] List: Empty
      */
-    sLog.White("FleetManager", "Handle_RegisterForDamageUpdates() size=%u", call.tuple->size() );
+    sLog.Warning("FleetManager", "Handle_RegisterForDamageUpdates() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    // returns none
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }

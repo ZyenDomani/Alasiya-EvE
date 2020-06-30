@@ -45,7 +45,6 @@ check trade - ships retain insurance)
 20:41:06 [SvcMsg] Delivered message from 1000132 to recipient 90000000
 
 
-
 jetans dont check capy before jettison
 most cargoholds dont check capy
 seems entire item/cargo shit is wonky
@@ -356,6 +355,8 @@ all PackedRows are marshalled into a buffer, where None is inserted as zero.
 *****************  ideas for later
 
 print version #s to local chat on login  (kinda need lsc working better for this one...)
+
+***  look into using sql prepared statements for oft-used queries
 
 aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for all clients in system
 

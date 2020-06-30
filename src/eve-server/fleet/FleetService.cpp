@@ -1509,7 +1509,7 @@ void FleetService::SendFleetUpdate(uint32 fleetID, const char* notifyType, PyTup
         if (cur == nullptr)
             continue;
         PySafeIncRef(payload);
-        cur->SendNotification(notifyType, "*fleetid", payload, true);    // this sends "*fleetid" update to all fleet memebers and is sequenced
+        cur->SendNotification(notifyType, "*fleetid", payload, true);    // this sends "*fleetid" update to all fleet members and is sequenced
     }
 }
 

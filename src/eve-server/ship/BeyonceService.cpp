@@ -71,11 +71,14 @@ public:
         PyCallable_REG_CALL(BeyonceBound, CmdWarpToStuffAutopilot); //*
         PyCallable_REG_CALL(BeyonceBound, CmdAbandonLoot);
 
+        PyCallable_REG_CALL(BeyonceBound, CmdFleetRegroup);
+        PyCallable_REG_CALL(BeyonceBound, CmdFleetTagTarget);
         PyCallable_REG_CALL(BeyonceBound, CmdBeaconJumpFleet);
         PyCallable_REG_CALL(BeyonceBound, CmdBeaconJumpAlliance);
         PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughFleet);
         PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughAlliance);
         PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughCorporationStructure);
+
 
         pClient->SetBeyonce(true);
         if (pClient->IsLogin() and !pClient->IsSetStateSent())
@@ -106,6 +109,8 @@ public:
     PyCallable_DECL_CALL(CmdWarpToStuffAutopilot);
     PyCallable_DECL_CALL(CmdAbandonLoot);
 
+    PyCallable_DECL_CALL(CmdFleetRegroup);
+    PyCallable_DECL_CALL(CmdFleetTagTarget);
     PyCallable_DECL_CALL(CmdJumpThroughFleet);
     PyCallable_DECL_CALL(CmdBeaconJumpFleet);
     PyCallable_DECL_CALL(CmdBeaconJumpAlliance);
@@ -845,6 +850,84 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
  * @note   these do absolutely nothing at this time....
  */
 
+
+/** @todo these will need work....
+ *    def BridgeToMember(self, charID):
+ *        beaconStuff = sm.GetService('fleet').GetActiveBeaconForChar(charID)
+ *        if beaconStuff is None:
+ *            return
+ *        self.BridgeToBeacon(charID, beaconStuff)
+ *
+ *    def BridgeToBeaconAlliance(self, solarSystemID, beaconID):
+ *        bp = sm.StartService('michelle').GetRemotePark()
+ *        if bp is None:
+ *            return
+ *        bp.CmdBridgeToStructure(beaconID, solarSystemID)
+ *
+ *    def BridgeToBeacon(self, charID, beacon):
+ *        solarsystemID, beaconID = beacon
+ *        bp = sm.StartService('michelle').GetRemotePark()
+ *        if bp is None:
+ *            return
+ *        bp.CmdBridgeToMember(charID, beaconID, solarsystemID)
+ *
+ *    def JumpThroughFleet(self, otherCharID, otherShipID):
+ *        bp = sm.StartService('michelle').GetRemotePark()
+ *        if bp is None:
+ *            return
+ *        bridge = sm.GetService('fleet').GetActiveBridgeForShip(otherShipID)
+ *        if bridge is None:
+ *            return
+ *        solarsystemID, beaconID = bridge
+ *        self.LogNotice('Jump Through Fleet', otherCharID, otherShipID, beaconID, solarsystemID)
+ *        sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughFleet, otherCharID, otherShipID, beaconID, solarsystemID)
+ *
+ *    def JumpThroughAlliance(self, otherShipID):
+ *        bp = sm.StartService('michelle').GetRemotePark()
+ *        if bp is None:
+ *            return
+ *        bridge = sm.StartService('pwn').GetActiveBridgeForShip(otherShipID)
+ *        if bridge is None:
+ *            return
+ *        solarsystemID, beaconID = bridge
+ *        self.LogNotice('Jump Through Alliance', otherShipID, beaconID, solarsystemID)
+ *        sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughAlliance, otherShipID, beaconID, solarsystemID)
+ *
+ *    def JumpToMember(self, charid):
+ *        beaconStuff = sm.GetService('fleet').GetActiveBeaconForChar(charid)
+ *        if beaconStuff is None:
+ *            return
+ *        self.JumpToBeaconFleet(charid, beaconStuff)
+ *
+ *    def JumpToBeaconFleet(self, charid, beacon):
+ *        solarsystemID, beaconID = beacon
+ *        bp = sm.StartService('michelle').GetRemotePark()
+ *        if bp is None:
+ *            return
+ *        self.LogNotice('Jump To Beacon Fleet', charid, beaconID, solarsystemID)
+ *        for wnd in uicore.registry.GetWindows()[:]:
+ *            if getattr(wnd, '__guid__', None) == 'form.CorpHangarArray':
+ *                wnd.CloseByUser()
+ *
+ *        sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdBeaconJumpFleet, charid, beaconID, solarsystemID)
+ *
+ *    def JumpToBeaconAlliance(self, solarSystemID, beaconID):
+ *        bp = sm.StartService('michelle').GetRemotePark()
+ *        if bp is None:
+ *            return
+ *        self.LogNotice('Jump To Beacon Alliance', beaconID, solarSystemID)
+ *        sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdBeaconJumpAlliance, beaconID, solarSystemID)
+ *
+ *    def ActivateGridSmartBomb(self, charid, effect):
+ *        beaconStuff = sm.GetService('fleet').GetActiveBeaconForChar(charid)
+ *        if beaconStuff is None:
+ *            return
+ *        solarsystemID, beaconID = beaconStuff
+ *        bp = sm.StartService('michelle').GetRemotePark()
+ *        if bp is None:
+ *            return
+ *        effect.Activate(beaconID, False)
+ */
 PyResult BeyonceBound::Handle_CmdJumpThroughFleet(PyCallArgs &call) {
     // sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughFleet, otherCharID, otherShipID, beaconID, solarsystemID)
     _log(SHIP__WARNING, "BeyonceBound::Handle_CmdJumpThroughFleet");
@@ -876,6 +959,20 @@ PyResult BeyonceBound::Handle_CmdBeaconJumpFleet(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdBeaconJumpAlliance(PyCallArgs &call) {
     // sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdBeaconJumpAlliance, beaconID, solarSystemID)
     _log(SHIP__WARNING, "BeyonceBound::Handle_CmdBeaconJumpAlliance");
+    call.Dump(SHIP__WARNING);
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdFleetRegroup(PyCallArgs &call) {
+    // not sure what this is supposed to do yet
+    _log(SHIP__WARNING, "BeyonceBound::Handle_CmdFleetRegroup");
+    call.Dump(SHIP__WARNING);
+    return nullptr;
+}
+
+PyResult BeyonceBound::Handle_CmdFleetTagTarget(PyCallArgs &call) {
+    // bp.CmdFleetTagTarget(itemID, tag)
+    _log(SHIP__WARNING, "BeyonceBound::Handle_CmdFleetTagTarget");
     call.Dump(SHIP__WARNING);
     return PyStatic.NewNone();
 }

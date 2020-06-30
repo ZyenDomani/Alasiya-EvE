@@ -63,6 +63,15 @@ PyResult BillMgr::Handle_GetCorporationBillsReceivable(PyCallArgs &call)
     return m_db.GetCorporationBills(call.client->GetCorporationID(), false);
 }
 
+
+PyResult BillMgr::Handle_SendAutomaticPaySettings(PyCallArgs &call) {
+    //    sm.RemoteSvc('billMgr').SendAutomaticPaySettings(self.automaticPaymentSettings)
+    sLog.Warning("BillMgr", "Handle_SendAutomaticPaySettings() size=%u", call.tuple->size() );
+
+    // returns nothing
+    return nullptr;
+}
+
 //00:29:03 L BillMgr::Handle_GetAutomaticPaySettings(): size= 0
 PyResult BillMgr::Handle_GetAutomaticPaySettings(PyCallArgs &call) {
     //    ambSettings = sm.RemoteSvc('billMgr').GetAutomaticPaySettings()

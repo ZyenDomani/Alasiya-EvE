@@ -45,28 +45,7 @@
  *
  */
 
-#ifdef WIN32
-    //only VC2003+ has variadic macro support
-    // 1200 = vc6
-    // 1300 = vc2003
-    // 1310 = vc8
-    //NOTE: per-mob toggling of log messages cannot work without variadic macros!
-    #if (_MSC_VER <= 1310)
-        #define NO_VARIADIC_MACROS
-    #endif
-
-    #ifdef NO_VARIADIC_MACROS
-        /*
-        uncomment this to disable debug logging all together on windows
-        this is here because logging has a decent amount of overhead
-        on windows since we must make the call and build the variable
-        argument list before checking to see if the type is enabled.
-        */
-        #define DISABLE_LOGSYS
-    #endif
-#else
-    #include <execinfo.h>
-#endif
+#include <execinfo.h>
 
 
 #define LOG_CATEGORY(category) LOG_ ##category ,

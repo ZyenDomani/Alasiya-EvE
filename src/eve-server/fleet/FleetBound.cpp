@@ -88,7 +88,7 @@ PyResult FleetBound::Handle_GetFleetID(PyCallArgs &call) {
 PyResult FleetBound::Handle_Init(PyCallArgs &call) {
     //self.fleet.Init(self.GetMyShipTypeID())
     // this only sends ship typeID when inspace.
-    sLog.White("FleetBound", "Handle_Init() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_Init() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
 /*
@@ -243,7 +243,7 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
 }
 
 PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
-    sLog.White("FleetBound", "Handle_Invite() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_Invite() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     FleetInviteCall args;
@@ -314,7 +314,7 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
 }
 
 PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
-    sLog.White("FleetBound", "Handle_AcceptInvite() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_AcceptInvite() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     Character* pChar = call.client->GetChar().get();
@@ -360,7 +360,7 @@ PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
 }
 
 PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
-    sLog.White("FleetBound", "Handle_RejectInvite() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_RejectInvite() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     Character* pChar = call.client->GetChar().get();
@@ -393,7 +393,7 @@ PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_ChangeWingName(PyCallArgs &call) {
           //   self.fleet.ChangeWingName(wingID, ret[:MAX_NAME_LENGTH])
-    sLog.White("FleetBound", "Handle_ChangeWingName() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_ChangeWingName() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     RenameCall args;
@@ -414,7 +414,7 @@ PyResult FleetBound::Handle_ChangeWingName(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_ChangeSquadName(PyCallArgs &call) {
           //   self.fleet.ChangeSquadName(squadID, ret[:MAX_NAME_LENGTH])
-    sLog.White("FleetBound", "Handle_ChangeSquadName() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_ChangeSquadName() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     RenameCall args;
@@ -435,7 +435,7 @@ PyResult FleetBound::Handle_ChangeSquadName(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_SetOptions(PyCallArgs &call) {
           //   self.fleet.SetOptions(options)
-    sLog.White("FleetBound", "Handle_SetOptions() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_SetOptions() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     PyDict* dict = call.tuple->AsTuple()->GetItem(0)->AsObject()->arguments()->AsDict();
@@ -454,7 +454,7 @@ PyResult FleetBound::Handle_GetJoinRequests(PyCallArgs &call) {
      * 20:12:59 [FleetDump]   Call Arguments:
      * 20:12:59 [FleetDump]       Tuple: Empty
      */
-    sLog.White("FleetBound", "Handle_GetJoinRequests() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_GetJoinRequests() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     std::vector<Client*> cVec;
@@ -474,7 +474,7 @@ PyResult FleetBound::Handle_GetJoinRequests(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_RejectJoinRequest(PyCallArgs &call) {
     //    self.fleet.RejectJoinRequest(charID)
-    sLog.White("FleetBound", "Handle_RejectJoinRequest() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_RejectJoinRequest() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
@@ -492,7 +492,7 @@ PyResult FleetBound::Handle_RejectJoinRequest(PyCallArgs &call) {
 }
 
 PyResult FleetBound::Handle_GetFleetComposition(PyCallArgs &call) {
-    sLog.White("FleetBound", "Handle_GetFleetComposition() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_GetFleetComposition() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     Character* pChar(nullptr);
@@ -530,7 +530,7 @@ PyResult FleetBound::Handle_GetFleetComposition(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_GetWings(PyCallArgs &call) {
          //    self.fleet.GetWings()
-    sLog.White("FleetBound", "Handle_GetWings() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_GetWings() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     return sFltSvc.GetWings(m_fleetID);
@@ -539,7 +539,7 @@ PyResult FleetBound::Handle_GetWings(PyCallArgs &call) {
 // this is fleet-wide
 PyResult FleetBound::Handle_SendBroadcast(PyCallArgs &call) {
          //    self.fleet.SendBroadcast(name, self.broadcastScope, itemID)
-    sLog.White("FleetBound", "Handle_SendBroadcast() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_SendBroadcast() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     SendBroadCastCall args;
@@ -561,7 +561,7 @@ PyResult FleetBound::Handle_UpdateMemberInfo(PyCallArgs &call) {
      * 13:26:54 [FleetDump]       Tuple: 1 elements
      * 13:26:54 [FleetDump]         [ 0] (None)
      */
-    sLog.White("FleetBound", "Handle_UpdateMemberInfo() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_UpdateMemberInfo() size=%u", call.tuple->size() );
     //call.Dump(FLEET__DUMP);
 
     return nullptr;
@@ -569,7 +569,7 @@ PyResult FleetBound::Handle_UpdateMemberInfo(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_SetMotdEx(PyCallArgs &call) {
          //    self.fleet.SetMotdEx(motd)
-    sLog.White("FleetBound", "Handle_SetMotdEx() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_SetMotdEx() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     sFltSvc.SetMOTD(m_fleetID, PyRep::StringContent(call.tuple->AsTuple()->GetItem(0)));
@@ -579,7 +579,7 @@ PyResult FleetBound::Handle_SetMotdEx(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_GetMotd(PyCallArgs &call) {
     //   self.motd = self.fleet.GetMotd()
-    sLog.White("FleetBound", "Handle_GetMotd() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_GetMotd() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     return sFltSvc.GetMOTD(m_fleetID);
@@ -587,7 +587,7 @@ PyResult FleetBound::Handle_GetMotd(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_LeaveFleet(PyCallArgs &call) {
     //    self.fleet.LeaveFleet()
-    sLog.White("FleetBound", "Handle_LeaveFleet() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_LeaveFleet() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     sFltSvc.LeaveFleet(call.client);
@@ -598,7 +598,7 @@ PyResult FleetBound::Handle_LeaveFleet(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
     /* self.fleet.MakeLeader(charID)  */
-    sLog.White("FleetBound", "Handle_MakeLeader() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_MakeLeader() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
@@ -632,7 +632,7 @@ PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
     /*self.fleet.SetBooster(charID, roleBooster):  */
-    sLog.White("FleetBound", "Handle_SetBooster() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_SetBooster() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     SetBoosterCall args;
@@ -683,7 +683,7 @@ PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_MoveMember(PyCallArgs &call) {
     /*  self.fleet.MoveMember(charID, wingID, squadID, role, roleBooster)::  */
-    sLog.White("FleetBound", "Handle_MoveMember() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_MoveMember() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     MoveMemberCall args;
@@ -712,7 +712,7 @@ PyResult FleetBound::Handle_KickMember(PyCallArgs &call) {
      *        else:
      *            self.fleet.KickMember(charID)
      */
-    sLog.White("FleetBound", "Handle_KickMember() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_KickMember() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
@@ -728,7 +728,7 @@ PyResult FleetBound::Handle_KickMember(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_CreateWing(PyCallArgs &call) {
     /*  wingID = self.fleet.CreateWing()  */
-    sLog.White("FleetBound", "Handle_CreateWing() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_CreateWing() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     return sFltSvc.CreateWing(m_fleetID);
@@ -736,7 +736,7 @@ PyResult FleetBound::Handle_CreateWing(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_CreateSquad(PyCallArgs &call) {
     /* self.fleet.CreateSquad(wingID)  */
-    sLog.White("FleetBound", "Handle_CreateSquad() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_CreateSquad() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
@@ -753,7 +753,7 @@ PyResult FleetBound::Handle_CreateSquad(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_DeleteWing(PyCallArgs &call) {
     /*    self.fleet.DeleteWing(wingID)  */
-    sLog.White("FleetBound", "Handle_DeleteWing() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_DeleteWing() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
@@ -770,7 +770,7 @@ PyResult FleetBound::Handle_DeleteWing(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_DeleteSquad(PyCallArgs &call) {
     /* self.fleet.DeleteSquad(squadID)  */
-    sLog.White("FleetBound", "Handle_DeleteSquad() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_DeleteSquad() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
@@ -787,7 +787,7 @@ PyResult FleetBound::Handle_DeleteSquad(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_AddToVoiceChat(PyCallArgs &call) {
     //    self.fleet.AddToVoiceChat(channelName)
-    sLog.White("FleetBound", "Handle_AddToVoiceChat() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_AddToVoiceChat() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     //sConfig.chat.EnableVoiceChat;
@@ -797,7 +797,7 @@ PyResult FleetBound::Handle_AddToVoiceChat(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_SetVoiceMuteStatus(PyCallArgs &call) {
     //    self.fleet.SetVoiceMuteStatus(status, channel)
-    sLog.White("FleetBound", "Handle_SetVoiceMuteStatus() size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_SetVoiceMuteStatus() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     return PyStatic.NewNone();
@@ -805,7 +805,7 @@ PyResult FleetBound::Handle_SetVoiceMuteStatus(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_ExcludeFromVoiceMute(PyCallArgs &call) {
     //    self.fleet.ExcludeFromVoiceMute(charid, channel)
-    sLog.White("FleetBound", "Handle_ExcludeFromVoiceMute()) size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_ExcludeFromVoiceMute()) size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
     return PyStatic.NewNone();
@@ -813,7 +813,7 @@ PyResult FleetBound::Handle_ExcludeFromVoiceMute(PyCallArgs &call) {
 
 PyResult FleetBound::Handle_Reconnect(PyCallArgs &call) {
     // no args
-    sLog.White("FleetBound", "Handle_Reconnect()) size=%u", call.tuple->size() );
+    sLog.Warning("FleetBound", "Handle_Reconnect()) size=%u", call.tuple->size() );
 
     // no return from this
     return nullptr;
