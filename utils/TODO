@@ -10,9 +10,6 @@ noob ships do not Init() correctly....  most attrs are 0
 
 npcs not getting destiny warpstate set (sometimes - this is cause of rats not warping into belts)
 
-asteroids have DestinyManager (remove this shit)
-    - currently OSE.  should we change them to ISE and add targMgr?
-
 after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
 01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
 
@@ -90,6 +87,8 @@ check/fix loading linked weapons
 look over and correct loading with partial stacks (see UserError at MM::LoadCharge)
 
 change AddBalance (et al) to TransferFunds()
+    - only used by market service.  will need more code to implement.
+    ** market service needs rewrite anyway.  will fix at that time.
 
 check client's locationID vs stationID.
     - multiple calls in client will test for these as separate values (tested separately)
@@ -268,8 +267,6 @@ store/board ship in cap ship hangar not coded
 
 ship selfdestruct not coded
 
-update eject to call Stop() then reset ship data to default
-
 0 AS landmarkNameID
 
 authentication and session still need work, but i dont fully understand them
@@ -285,8 +282,6 @@ ship scanner disables after trying to scan while warping (which tells you it can
 update conescan (dscan from ship) to use args.  these will determine what is found from scanning (currently shows everything in bubble as POC)
 
 journal - killing rats descriptions are a bit off...gives itemID (no name)
-
-account - alter balance should be changed to xfer funds where applicable
 
 many unimplemented salvage error msgs noted in prospector.h
 
