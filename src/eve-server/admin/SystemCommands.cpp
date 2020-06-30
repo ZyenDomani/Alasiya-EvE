@@ -727,7 +727,7 @@ PyResult Command_syncloc(Client* pClient, CommandDB* db, PyServiceMgr* services,
     if (pClient->IsSessionChange()) {
         pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
                                   pClient->GetSessionChangeTime());
-        return;
+        return new PyString("SessionChange Active.  Request Denied.");
     }
 
     pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
@@ -747,7 +747,7 @@ PyResult Command_syncpos(Client* pClient, CommandDB* db, PyServiceMgr* services,
     if (pClient->IsSessionChange()) {
         pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
                                   pClient->GetSessionChangeTime());
-        return;
+        return new PyString("SessionChange Active.  Request Denied.");
     }
 
     pClient->GetShipSE()->SysBubble()->SyncPos();
@@ -766,7 +766,7 @@ PyResult Command_update(Client *pClient, CommandDB *db, PyServiceMgr *services, 
     if (pClient->IsSessionChange()) {
         pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
                                   pClient->GetSessionChangeTime());
-        return;
+        return new PyString("SessionChange Active.  Request Denied.");
     }
 
     pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
@@ -794,7 +794,7 @@ PyResult Command_sendstate(Client *pClient, CommandDB *db, PyServiceMgr *service
     if (pClient->IsSessionChange()) {
         pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
                                   pClient->GetSessionChangeTime());
-        return;
+        return new PyString("SessionChange Active.  Request Denied.");
     }
 
     pClient->SetStateSent(false);
