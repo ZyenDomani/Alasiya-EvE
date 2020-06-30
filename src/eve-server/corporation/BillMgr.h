@@ -50,6 +50,7 @@ protected:
     PyCallable_DECL_CALL(PayCorporationBill);
     PyCallable_DECL_CALL(GetCorporationBills);
     PyCallable_DECL_CALL(GetCorporationBillsReceivable);
+    PyCallable_DECL_CALL(SendAutomaticPaySettings);
     PyCallable_DECL_CALL(GetAutomaticPaySettings);
 };
 

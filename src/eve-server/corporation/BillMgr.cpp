@@ -46,6 +46,7 @@ BillMgr::BillMgr(PyServiceMgr *mgr)
     PyCallable_REG_CALL(BillMgr, GetCorporationBills);
     PyCallable_REG_CALL(BillMgr, GetCorporationBillsReceivable);
     PyCallable_REG_CALL(BillMgr, GetAutomaticPaySettings);
+    PyCallable_REG_CALL(BillMgr, SendAutomaticPaySettings);
 }
 
 BillMgr::~BillMgr() {
