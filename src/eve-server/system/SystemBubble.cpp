@@ -189,7 +189,7 @@ void SystemBubble::Add(SystemEntity* pSE)
     }
 
     pSE->m_bubble = this;
-    // global entitys also in SystemMgr's static list.  this is used for SystemBubble->IsEmpty() deletion check
+    // global entities also in SystemMgr's static list.  this is used for SystemBubble->IsEmpty() deletion check
     if (pSE->IsStaticEntity() or pSE->isGlobal()) {
         _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is static or global.", pSE->GetName(), pSE->GetID() );
         // all static and global entities (stations, gates, asteroid fields, cyno fields, etc) are put into bubble's staticEntity map
@@ -532,8 +532,9 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     addballs.slims = new PyList();
 
     for (auto cur : m_dynamicEntities) {
-        if (cur.second->DestinyMgr()->IsCloaked())
-            continue;
+        if (cur.second->DestinyMgr() != nullptr)
+            if (cur.second->DestinyMgr()->IsCloaked())
+                continue;
         if (!cur.second->IsMissileSE() or !cur.second->IsFieldSE())
             addballs.damageDict[cur.first] = cur.second->MakeDamageState();
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur.second->MakeSlimItem() ) );
