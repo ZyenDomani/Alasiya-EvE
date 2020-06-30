@@ -43,11 +43,14 @@ protected:
 
     CorporationDB m_db;
 
+    PyCallable_DECL_CALL(CharPayBill);
+    PyCallable_DECL_CALL(CharGetBills);
     PyCallable_DECL_CALL(GetBillTypes);
+    PyCallable_DECL_CALL(CharGetBillsReceivable);
+    PyCallable_DECL_CALL(PayCorporationBill);
     PyCallable_DECL_CALL(GetCorporationBills);
     PyCallable_DECL_CALL(GetCorporationBillsReceivable);
     PyCallable_DECL_CALL(GetAutomaticPaySettings);
-    
 };
 
 #endif

@@ -38,7 +38,11 @@ BillMgr::BillMgr(PyServiceMgr *mgr)
   m_dispatch(new Dispatcher(this)) {
     _SetCallDispatcher(m_dispatch);
 
+    PyCallable_REG_CALL(BillMgr, CharPayBill);
+    PyCallable_REG_CALL(BillMgr, CharGetBills);
+    PyCallable_REG_CALL(BillMgr, CharGetBillsReceivable);
     PyCallable_REG_CALL(BillMgr, GetBillTypes);
+    PyCallable_REG_CALL(BillMgr, PayCorporationBill);
     PyCallable_REG_CALL(BillMgr, GetCorporationBills);
     PyCallable_REG_CALL(BillMgr, GetCorporationBillsReceivable);
     PyCallable_REG_CALL(BillMgr, GetAutomaticPaySettings);
@@ -64,10 +68,38 @@ PyResult BillMgr::Handle_GetCorporationBillsReceivable(PyCallArgs &call)
 }
 
 
+PyResult BillMgr::Handle_CharPayBill(PyCallArgs &call) {
+    //   sm.RemoteSvc('billMgr').CharPayBill(bill.billID)
+    sLog.Warning("BillMgr", "Handle_CharPayBill() size=%u", call.tuple->size() );
+    // returns nothing
+    return nullptr;
+}
+
+PyResult BillMgr::Handle_CharGetBills(PyCallArgs &call) {
+    //   return sm.RemoteSvc('billMgr').CharGetBills()
+    sLog.Warning("BillMgr", "Handle_CharGetBills() size=%u", call.tuple->size() );
+    // returns nothing
+    return nullptr;
+}
+
+PyResult BillMgr::Handle_CharGetBillsReceivable(PyCallArgs &call) {
+    //   bills = sm.RemoteSvc('billMgr').CharGetBillsReceivable()
+    sLog.Warning("BillMgr", "Handle_CharGetBillsReceivable() size=%u", call.tuple->size() );
+    // returns nothing
+    return nullptr;
+}
+
+PyResult BillMgr::Handle_PayCorporationBill(PyCallArgs &call) {
+    //  sm.RemoteSvc('billMgr').PayCorporationBill(bill.billID, fromAccountKey=eve.session.corpAccountKey)
+    sLog.Warning("BillMgr", "Handle_PayCorporationBill() size=%u", call.tuple->size() );
+    // returns nothing
+    return nullptr;
+}
+
+
 PyResult BillMgr::Handle_SendAutomaticPaySettings(PyCallArgs &call) {
     //    sm.RemoteSvc('billMgr').SendAutomaticPaySettings(self.automaticPaymentSettings)
     sLog.Warning("BillMgr", "Handle_SendAutomaticPaySettings() size=%u", call.tuple->size() );
-
     // returns nothing
     return nullptr;
 }
