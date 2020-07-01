@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 9.8
+ Log Version: 9.9
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -345,6 +345,7 @@ LOG_TYPE( INV, TRACE, DISABLED, "InvTrace" )
 LOG_TYPE( INV, DUMP, DISABLED, "InvDump" )
 LOG_TYPE( INV, BIND, DISABLED, "InvBind" )
 LOG_TYPE( INV, LIST, DISABLED, "InvList" )
+LOG_TYPE( INV, CAPY, DISABLED, "InvCapy" )
 
 LOG_CATEGORY( ITEM )
 LOG_TYPE( ITEM, ERROR,   ENABLED, "ItemError" )
@@ -537,6 +538,7 @@ LOG_TYPE( SHIP, INFO, DISABLED, "ShipInfo" )
 LOG_TYPE( SHIP, TRACE, DISABLED, "ShipTrace" )
 LOG_TYPE( SHIP, HEAT, DISABLED, "ShipHeat" )
 LOG_TYPE( SHIP, STATE, DISABLED, "ShipState" )
+LOG_TYPE( SHIP, RECHARGE, DISABLED, "ShipCharge" )
 
 LOG_CATEGORY( SKILL )
 LOG_TYPE( SKILL, ERROR, ENABLED, "SkillError" )

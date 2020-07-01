@@ -600,10 +600,12 @@ uint32 ActiveModule::DoCycle()
 
 void ActiveModule::AbortCycle()
 {
+    _log(MODULE__TRACE, "%s(%u) calling AbortCycle() - state: %s, m_stop:%s", \
+            m_modRef->name(), m_modRef->itemID(), GetModuleStateName(m_ModuleState), m_Stop?"true":"false");
+
     if (m_ModuleState < Module::State::Deactivating)
         return;
 
-    _log(MODULE__TRACE, "%s(%u) calling AbortCycle() - m_stop:%s", m_modRef->name(), m_modRef->itemID(), m_Stop?"true":"false");
     // if stop is already set, let module finish cycle.
     if (m_Stop)
         return;

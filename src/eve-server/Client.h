@@ -43,52 +43,7 @@
 #include "system/SystemGPoint.h"
 
 #include "../eve-common/EVE_Missions.h"
-
-//  -updated 18Dec16  -again 12Apr20
-namespace Player {
-    namespace Timer {
-        enum {
-            Default             = 1000,
-            Board               = 600,
-            Jump                = 1800,    // used to delay sending Destiny::State (client error fix)
-            Undock              = 1500,    // used to delay sending Destiny::State (client error fix)
-            Docking             = 1000,    //  to delay docking (as on live)
-            Jumping             = 4000,    //  to delay jumping
-            Moving              = 1000,
-            Scanning            = 10000,   // used to delay scan results based on skills, items, and other shit
-            Killed              = 800,    // used to reset ego after killed or otherwise changing ships
-            Proc                = 1000,    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
-            Jetcan              = 600000,  // used to delay jetcan creation.  10min default
-            Logout              = 10000,    // used to hold client object until WarpOut finishes
-            Login               = 4000,    // delay before sending SetState when client logs in undocked
-            Session             = 10000,   // used to prevent multiple session changes from occurring too fast
-            DockInvul           = 3000,
-            Fleet               = 1500,
-            JumpInvul           = 15000,   // increased from 5s
-            WarpOutInvul        = 5000,
-            WarpInInvul         = 18000,   // increased from 10s
-            UndockInvul         = 20000,
-            RestoringInvul      = 60000,
-            JumpCloak           = 30000,
-            LoginCloak          = 20000,
-            UnCloak             = 5000     // not implemented yet
-        };
-    }
-
-    namespace State {
-        enum {
-            Idle        = 1,
-            Jump        = 2,
-            Dock        = 3,
-            Undock      = 4,
-            Killed      = 5,
-            Logout      = 6,
-            Board       = 7,
-            Login       = 8,
-            Uncloak     = 9
-        };
-    }
-}
+#include "../eve-common/EVE_Player.h"
 
 class CryptoChallengePacket;
 class EVENotificationStream;
@@ -135,7 +90,6 @@ public:
     PyServiceMgr&           services() const            { return m_services; }
     // this should never be null
     SystemManager*          SystemMgr() const           { return m_system; }
-    bool                    IsClient() const            { return true; }
     // used in msgs and other places where a const char* is needed instead of me forgetting to use .c_str()
     const char*             GetName() const             { return (m_char.get() != nullptr ? m_char->itemName().c_str() : "(null)"); }
 
@@ -154,7 +108,7 @@ public:
 
     int32 GetUserID() const                             { return pSession->GetCurrentInt( "userid" ); }
     int32 GetAccountType() const                        { return pSession->GetCurrentInt( "userType" ); }
-    // these below need Session initalized before use (which we dont do for char creation due to errors)
+    // these below need Session initialized before use (which we dont do for char creation due to errors)
     int32 GetCharacterID() const                        { return pSession->GetCurrentInt( "charid" ); }
     int32 GetStationID() const                          { return pSession->GetCurrentInt( "stationid" ); }
     int32 GetStationID2() const                         { return pSession->GetCurrentInt( "stationid2" ); }
@@ -249,8 +203,10 @@ public:
     void MoveToLocation(uint32 location, const GPoint &pt);
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
-    void SetInvulTimer(uint32 time=Player::Timer::Default);
-    void SetStateTimer(int8 state, uint32 time=Player::Timer::Default);
+    void SetCloakTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
+    void SetInvulTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
+    void SetBallParkTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
+    void SetStateTimer(int8 state, uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetDestiny(const GPoint& pt, bool update=false);
     void UpdateSkillTraining();
     ShipItemRef SpawnNewRookieShip(uint32 stationID);
@@ -290,7 +246,6 @@ public:
     void SetSessionTimer()                              { m_sessionChangeActive = true; m_sessionTimer.Start(Player::Timer::Session); }
     void SetSessionChange(bool set=false)               { m_sessionChangeActive = set; }
     void SetBallPark();
-    void SetJumpTimers();
     void StargateJump(uint32 fromGate, uint32 toGate);
 
     bool IsAutoPilot()                                  { return m_autoPilot; }
@@ -298,6 +253,8 @@ public:
 
     void JumpInEffect();
     void JumpOutEffect(uint32 locationID);
+
+    void CheckBallparkTimer();
 
     //jetcan timer
     bool IsJetcanAvalible();
@@ -416,7 +373,6 @@ protected:
     uint32 m_dockStationID; // holder for docking to 'stationID'.  timer based.
 
     Timer m_stateTimer;      // state timer to consolidate timers
-    Timer m_jumpTimer;       // this is to properly send SetState data after a delay (cant do it correctly otherwise)
     Timer m_pingTimer;
     Timer m_scanTimer;       // used to delay scan results based on skills, items, and other shit
     Timer m_cloakTimer;
@@ -425,7 +381,8 @@ protected:
     Timer m_clientTimer;     // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
     Timer m_jetcanTimer;     // used to delay jetcan creation.  3min default
     Timer m_logoutTimer;     // used to hold client object until WarpOut finishes
-    Timer m_sessionTimer;    // used to prevent multiple session changes from occuring too fast
+    Timer m_sessionTimer;    // used to prevent multiple session changes from occurring too fast
+    Timer m_ballparkTimer;   // this is to properly send SetState data after a delay (cant do it correctly otherwise)
 
     GPoint m_movePoint;
     GPoint m_dockPoint;

@@ -346,8 +346,8 @@ SystemEntity* const SystemBubble::GetEntity(uint32 entityID) const {
 }
 
 void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
-    /* updated to send ONLY dynamic entities to the following:         -allan 14Feb15
-     *    SystemManager::MakeSetState()   --for player entering new system  <-- no. 24Dec17  <- yes ??2018
+    /* updated to send non-cloaked dynamic entities to the following:         -allan 14Feb15
+     *    SystemManager::MakeSetState()   --for player entering new system
      *    Command_killallnpcs()           --GM command
      *    StructureSE::InitData()         --Get TowerSE for pos items
      */
@@ -361,7 +361,7 @@ void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
     }
 }
 
-void SystemBubble::GetAllEntities ( std::map< uint32, SystemEntity* >& into ) const
+void SystemBubble::GetAllEntities(std::map< uint32, SystemEntity* >& into) const
 {
     if (m_dynamicEntities.empty())
         return;

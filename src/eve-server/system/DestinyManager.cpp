@@ -2453,7 +2453,7 @@ Battleships 0.155
      *  these attribs are set from ship item when shipSE created.  DO NOT modify anything here
      * this is also called when fleet boosts are updated.
      */
-    /** @todo check for movemement when fleet boosts are applied and this is called */
+    /** @todo check for movement when fleet boosts are applied and this is called */
     InventoryItemRef sRef = mySE->GetSelf();
     m_mass = sRef->GetAttribute(AttrMass).get_float();
     m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
@@ -2466,7 +2466,7 @@ Battleships 0.155
     if (sRef->HasAttribute(AttrMaxVelocity))
         m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
     if (sRef->HasAttribute(AttrWarpCapacitorNeed))
-        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_float();
+        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_float() *10;
 
     if (mySE->IsNPCSE() or mySE->IsDroneSE())
         m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
@@ -2634,21 +2634,28 @@ void DestinyManager::UpdateOldShip(Ship* pShipSE)
 
 void DestinyManager::Jump()
 {
+    Halt();
     m_cloaked = true;
-    //SendCloakFx(true);
-    mySE->SysBubble()->RemoveExclusive(mySE);
+    if (mySE->SysBubble() != nullptr)
+        mySE->SysBubble()->RemoveExclusive(mySE);
 }
 
 void DestinyManager::Cloak() {
+    if (m_cloaked)
+        return;
     m_cloaked = true;
     SendCloakFx(true);
-    mySE->SysBubble()->RemoveExclusive(mySE);
+    if (mySE->SysBubble() != nullptr)
+        mySE->SysBubble()->RemoveExclusive(mySE);
 }
 
 void DestinyManager::UnCloak() {
+    if (!m_cloaked)
+        return;
     m_cloaked = false;
     SendCloakFx();
-    mySE->SysBubble()->AddBallExclusive(mySE);
+    if (mySE->SysBubble() != nullptr)
+        mySE->SysBubble()->AddBallExclusive(mySE);
 }
 
 void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)

@@ -128,6 +128,7 @@ public:
     void Stop();
     void Halt();     // puts entity at 0 velocity
     void Eject();   // avoid numerous other redirect calls
+    void SetCloak(bool set=false)                       { m_cloaked = set; }
 
     /* TractorBeam */
     void TractorBeamStop();

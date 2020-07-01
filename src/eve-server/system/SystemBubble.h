@@ -148,8 +148,10 @@ protected:
     const double m_radius;
     const double m_radius_hysteresis;
 
+    // remove all balls in bubble for this SE
     void RemoveBall(SystemEntity* about_who);
     void RemoveBalls(SystemEntity* to_who);
+    // remove this ball from bubble.  update all clients in bubble this SE has left.
     void RemoveBallExclusive(SystemEntity* about_who);
 
     void MarkBubble(const GPoint& position, std::string& name, std::string& desc);

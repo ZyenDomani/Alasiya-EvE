@@ -404,8 +404,8 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     }
 
     sItemFactory.SetUsingClient( call.client );
-    InventoryItemRef item = sItemFactory.GetItem( args.itemID );
-    if (item.get() == nullptr) {
+    InventoryItemRef iRef = sItemFactory.GetItem( args.itemID );
+    if (iRef.get() == nullptr) {
         codelog(INV__ERROR, "%s: Unable to load item %u", call.client->GetName(), args.itemID);
         return nullptr;
     }
@@ -416,19 +416,19 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
      */
 
     /** @todo if owner is corp, make sure char has permissions to rename corp items  */
-    if (IsPlayerCorp(item->ownerID())) {
-        if (item->ownerID() != call.client->GetCorporationID()) {
+    if (IsPlayerCorp(iRef->ownerID())) {
+        if (iRef->ownerID() != call.client->GetCorporationID()) {
             _log(INV__ERROR, "%u(%u) tried to rename CorpItem %s(%u) owned by %u.", \
-                    call.client->GetName(), call.client->GetCharacterID(), item->itemName().c_str(), \
-                    item->itemID(), item->ownerID());
+                    call.client->GetName(), call.client->GetCharacterID(), iRef->itemName().c_str(), \
+                    iRef->itemID(), iRef->ownerID());
             call.client->SendErrorMsg("You are not allowed to rename that.");
             return nullptr;
         }
-    } else if (IsCharacter(item->ownerID())) {
-        if (item->ownerID() != call.client->GetCharacterID()) {
+    } else if (IsCharacter(iRef->ownerID())) {
+        if (iRef->ownerID() != call.client->GetCharacterID()) {
             _log(INV__ERROR, "%u(%u) tried to rename PlayerItem %s(%u) owned by %u.", \
-                    call.client->GetName(), call.client->GetCharacterID(), item->itemName().c_str(), \
-                    item->itemID(), item->ownerID());
+                    call.client->GetName(), call.client->GetCharacterID(), iRef->itemName().c_str(), \
+                    iRef->itemID(), iRef->ownerID());
             call.client->SendErrorMsg("You are not allowed to rename that.");
             return nullptr;
         }
@@ -438,12 +438,14 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
         return nullptr;
     }
 
-    item->Rename(PyRep::StringContent(args.itemName));
+    iRef->Rename(PyRep::StringContent(args.itemName));
 
     // Release the ItemFactory
     sItemFactory.UnsetUsingClient();
 
     //OnItemNameChange
+    // need to also check pos rename code.
+    //  this needs investigating to verify
 
     return nullptr;
 }
@@ -523,7 +525,7 @@ PyResult InvBrokerBound::Handle_AssembleCargoContainer(PyCallArgs &call) {
 }
 
 PyResult InvBrokerBound::Handle_BreakPlasticWrap(PyCallArgs &call) {
-    // ConfirmBreakCourierPackage   - this is for courier contarcts
+    // ConfirmBreakCourierPackage   - this is for courier contracts
     sLog.Warning( "InvBrokerBound::Handle_BreakPlasticWrap()", "size= %u", call.tuple->size() );
     call.Dump(INV__DUMP);
 

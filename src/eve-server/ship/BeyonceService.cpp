@@ -144,6 +144,10 @@ PyBoundObject* BeyonceService::CreateBoundObject(Client* pClient, const PyRep* b
 }
 
 PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
+    // this is only called when player enters new system and calls to bind new beyonce
+    if (!call.client->IsSetStateSent())
+        call.client->CheckBallparkTimer();
+    
     //vicious crap.
     PyTuple* res = new PyTuple( 2 );
         Beyonce_Formation f;

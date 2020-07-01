@@ -67,7 +67,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_movePoint(NULL_ORIGIN),
   m_clientState(Player::State::Idle),
   m_stateTimer(0),
-  m_jumpTimer(0),
+  m_ballparkTimer(0),
   m_pingTimer(PING_INTERVAL_MS),
   m_scanTimer(0),
   m_cloakTimer(0),
@@ -136,7 +136,7 @@ m_services(oth.services()),
 m_movePoint(NULL_ORIGIN),
 m_clientState(Player::State::Idle),
 m_stateTimer(0),
-m_jumpTimer(0),
+m_ballparkTimer(0),
 m_pingTimer(PING_INTERVAL_MS),
 m_scanTimer(0),
 m_cloakTimer(0),
@@ -414,6 +414,8 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     UpdateSkillTraining();
 
     SetStateTimer(Player::State::Login, Player::Timer::Login);
+    SetInvulTimer(Player::Timer::WarpInInvul);
+    //SetCloakTimer(Player::Timer::LoginCloak);
 
     // set ship cap and shields to full
     m_ship->SetShipShield(1.0);
@@ -457,23 +459,23 @@ void Client::ProcessClient() {
                 m_stateTimer.Disable();
                 switch (m_clientState) {
                     case Player::State::Login: {
-                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Login");
+                        _log(CLIENT__TIMER, "ProcessClient()::IsDocked()::CheckState():  case: Login");
                         m_login = false;
                         // send MOTD and server data to player's 'local' chat channel
                         m_services.lsc_service->SendServerMOTD(this);
                     } break;
                     case Player::State::Idle: {
-                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Idle");
+                        _log(CLIENT__TIMER, "ProcessClient()::IsDocked()::CheckState():  case: Idle");
                     } break;
                     case Player::State::Logout: {
-                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Logout");
+                        _log(CLIENT__TIMER, "ProcessClient()::IsDocked()::CheckState():  case: Logout");
                     } break;
                     case Player::State::Killed: {
-                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Killed");
+                        _log(CLIENT__TIMER, "ProcessClient()::IsDocked()::CheckState():  case: Killed");
                     } break;
                 }
                 m_clientState = Player::State::Idle;
-                _log(AUTOPILOT__TRACE, "ProcessClient() - Docked - m_clientState set to Idle");
+                _log(AUTOPILOT__TRACE, "ProcessClient()::IsDocked() - m_clientState set to Idle");
             }
         if (sConfig.debug.UseProfiling)
             sProfile.AddTime(clientProfile, GetTimeUSeconds() - profileStartTime);
@@ -481,13 +483,13 @@ void Client::ProcessClient() {
     }
 
     if (pShipSE == nullptr) {
-        sLog.Error("Client::ProcessClient()","%s: InSpace with no shipSE.  LocationID %u", m_char->itemName().c_str(), m_locationID);
+        sLog.Error("ProcessClient()","%s: InSpace with no shipSE.  LocationID %u", m_char->itemName().c_str(), m_locationID);
         return;
     }
 
     if (m_invul)
         if (m_invulTimer.Check(false)) {
-            _log(CLIENT__TIMER, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            _log(CLIENT__TIMER, "ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
             m_invulTimer.Disable();
             SetInvul(false);
             SetUndock(false);
@@ -495,23 +497,21 @@ void Client::ProcessClient() {
 
     if (m_scanTimer.Enabled())
         if (m_scanTimer.Check(false)) {
-            _log(CLIENT__TIMER, "Client::ProcessClient():  Scan Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
+            _log(CLIENT__TIMER, "ProcessClient():  Scan Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
             m_scanTimer.Disable();
             m_scan->ProcessScan(m_scanProbe);
         }
 
-    if (m_jumpTimer.Enabled())
-        if (m_jumpTimer.Check(false)) {
-            _log(CLIENT__TIMER, "Client::ProcessClient():  Jump Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
-            m_jumpTimer.Disable();
+    if (m_ballparkTimer.Enabled())
+        if (m_ballparkTimer.Check(false)) {
+            _log(CLIENT__TIMER, "ProcessClient():  Ballpark Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
+            m_ballparkTimer.Disable();
             SetBallPark();
-            //pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
-            //m_toGate = 0;
         }
 
     if (pShipSE->DestinyMgr()->IsCloaked())
         if (m_cloakTimer.Check(false)) {
-            _log(CLIENT__TIMER, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            _log(CLIENT__TIMER, "ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
             m_cloakTimer.Disable();
             pShipSE->DestinyMgr()->UnCloak();
             //m_clientState = Player::State::Idle;
@@ -520,37 +520,38 @@ void Client::ProcessClient() {
 
     if (m_stateTimer.Enabled())
         if (m_stateTimer.Check(false)) {
-            _log(CLIENT__TIMER, "Client::ProcessClient(): state timer hit: timenow %u", m_stateTimer.GetCurrentTime());
+            _log(CLIENT__TIMER, "ProcessClient(): state timer hit: timenow %u", m_stateTimer.GetCurrentTime());
             m_stateTimer.Disable();
             switch (m_clientState) {
                 case Player::State::Idle: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Idle");
+                    _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Idle");
                     // this shouldnt hit...error
                 } break;
                 case Player::State::Dock: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Dock");
+                    _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Dock");
                     DockToStation();
                 } break;
                 case Player::State::Undock: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Undock");
+                    _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Undock");
+                    pShipSE->DestinyMgr()->Undock(m_movePoint);
                     SetBallPark();
                     m_clientState = Player::State::Idle;
                 } break;
                 case Player::State::Killed: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Killed");
+                    _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Killed");
                     // live does NOT resend destiny state when killed.  see csBoard notes.
                     SendSessionChange();
                     m_clientState = Player::State::Idle;
                 } break;
                 case Player::State::Board: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Board");
+                    _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Board");
                     // calling OnSessionChanged() in client with shipid in change will update ego with new ship.
                     // NOTE: all items must be in same bubble.
                     SendSessionChange();
                     m_clientState = Player::State::Idle;
                 } break;
                 case Player::State::Login: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Login");
+                    _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Login");
                     SetBallPark();
                     m_login = false;
                     m_clientState = Player::State::Idle;
@@ -558,16 +559,16 @@ void Client::ProcessClient() {
                     m_services.lsc_service->SendServerMOTD(this);
                 } break;
                 case Player::State::Jump: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Jump");
+                    _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Jump");
                     ExecuteJump();
                     m_clientState = Player::State::Idle;
                 } break;
                 case Player::State::Logout: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Logout");
+                    _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Logout");
                     // can we use this to allow WarpOut?
                 } break;
                 default: {
-                    sLog.Error("Client::ProcessClient()","%s: State timer expired with invalid state: %s.", m_char->itemName().c_str(), GetStateName(m_clientState).c_str());
+                    sLog.Error("ProcessClient()","%s: State timer expired with invalid state: %s.", m_char->itemName().c_str(), GetStateName(m_clientState).c_str());
                     //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
                 } break;
             }
@@ -618,9 +619,6 @@ void Client::WarpIn() {
     m_ship->SetCustomInfo(ci);
     if (!InPod())
         m_ship->SetFlag(flagAutoFit);
-    m_invulTimer.Start(Player::Timer::WarpInInvul);
-    //m_cloakTimer.Start(Player::Timer::JumpCloak);
-    //pShipSE->DestinyMgr()->Cloak();
     return;
     /*
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
@@ -853,6 +851,9 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
     } else
         pShipSE->DestinyMgr()->SetPosition(pt, update);
 
+    //if (m_login)
+    //    pShipSE->DestinyMgr()->SetCloak(true);
+
     m_system->AddEntity(pShipSE);
 
     if (updateShip)
@@ -862,15 +863,38 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
 void Client::SetBallPark() {
     _log(PLAYER__AP_TRACE, "Client::SetBallPark():  State: %s, SetState: %s, Beyonce: %s", \
                 GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", m_beyonce?"true":"false");
-    m_bubbleWait = false;   // allow client processing of subsquent destiny msgs
+    m_bubbleWait = false;   // allow client processing of subsequent destiny msgs
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
-    if (m_clientState == Player::State::Undock)
-        pShipSE->DestinyMgr()->Undock(m_movePoint);
-    if (m_clientState == Player::State::Jump)
-        pShipSE->DestinyMgr()->Jump();
-    if (!m_setStateSent and m_beyonce)  // MUST have beyonce before sending setstate data.
+    if (!m_beyonce and !m_login and !m_undock) {
+        m_bubbleWait = true;    // wait on proc destiny msgs
+        CheckBallparkTimer();
+        SetBallParkTimer(Player::Timer::Default);    // set timer 1s to wait for beyonce
+        return;
+    }
+    if (!m_setStateSent and m_beyonce) {  // MUST have beyonce before sending state data.
         pShipSE->DestinyMgr()->SendSetState();
+        m_ballparkTimer.Disable();
+        if (IsJump()) {
+            SetInvulTimer(Player::Timer::JumpInvul);
+            // dont use timer method here...
+            m_cloakTimer.Start(Player::Timer::JumpCloak);
+        }
+    }
+}
+
+void Client::CheckBallparkTimer() {
+    if (!m_ballparkTimer.Enabled())
+        sLog.Error("CheckBallparkTimer()", "BallPark Timer is disabled.");
+    else
+        sLog.Warning("CheckBallparkTimer()", "BallPark Time remaining %ums", m_ballparkTimer.GetRemainingTime());
+    _log(CLIENT__TIMER, "CheckBallparkTimer():  State: %s, SetState: %s, Beyonce: %s, Login: %s", \
+            GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", \
+            m_beyonce?"true":"false", m_login?"true":"false");
+    _log(CLIENT__TIMER, "CheckBallparkTimer():  invul: %s, cloak: %s, bubblewait: %s", m_invul?"true":"false", \
+        pShipSE == nullptr? "ship null": pShipSE->DestinyMgr() == nullptr? "destiny null": pShipSE->DestinyMgr()->IsCloaked()?"true":"false", \
+        m_bubbleWait?"true":"false");
+
 }
 
 void Client::MoveToPosition(const GPoint &pt) {
@@ -1382,37 +1406,94 @@ void Client::ExecuteJump() {
     }
 
     pShipSE->Jump();
-    m_invul = true;
 
     MoveToLocation(m_moveSystemID, m_movePoint);
 
-    m_jumpTimer.Start(Player::Timer::Jump);
-    m_cloakTimer.Start(Player::Timer::JumpCloak);
-    m_invulTimer.Start(Player::Timer::JumpInvul);
-
+    SetBallParkTimer(Player::Timer::Jump);
+    
     m_movePoint = NULL_ORIGIN;
     m_moveSystemID = 0;
 }
 
-void Client::SetJumpTimers() {
-    m_cloakTimer.Start(Player::Timer::JumpCloak);
-    m_invulTimer.Start(Player::Timer::JumpInvul);
+void Client::SetBallParkTimer(uint32 time/*Player::Timer::Default*/)
+{
+    if (time == 0) {
+        m_ballparkTimer.Disable();
+        _log(CLIENT__TIMER, "%s: Ballpark Timer Disabled");
+        return;
+    }
+
+    if (m_ballparkTimer.Enabled()) {
+        _log(CLIENT__ERROR, "%s: Ballpark Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_ballparkTimer.GetRemainingTime());
+        EvE::traceStack();
+        return;
+    }
+
+    _log(CLIENT__TIMER, "%s: Ballpark Timer set at %ums.  timenow %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
+    m_ballparkTimer.Start(time);
+}
+
+void Client::SetCloakTimer(uint32 time/*Player::Timer::Default*/)
+{
+    if (time == 0) {
+        m_cloakTimer.Disable();
+        if (pShipSE != nullptr)
+            if (pShipSE->DestinyMgr() != nullptr)
+                pShipSE->DestinyMgr()->UnCloak();
+        _log(CLIENT__TIMER, "%s: Cloak Timer Disabled");
+        return;
+    }
+
+    if (m_cloakTimer.Enabled()) {
+        _log(CLIENT__ERROR, "%s: Cloak Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_cloakTimer.GetRemainingTime());
+        EvE::traceStack();
+        return;
+    }
+
+    _log(CLIENT__TIMER, "%s: Cloak Timer set at %ums.  timenow %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
+    m_cloakTimer.Start(time);
+    if (m_login)
+        return;
+    if (pShipSE != nullptr)
+        if (pShipSE->DestinyMgr() != nullptr)
+            pShipSE->DestinyMgr()->Cloak();
 }
 
 void Client::SetInvulTimer(uint32 time/*Player::Timer::Default*/)
 {
-    _log(CLIENT__TIMER, "%s: InvulTimer set at %ums.  timenow %u", m_char->itemName().c_str(), time, m_invulTimer.GetCurrentTime());
+    if (time == 0) {
+        SetInvul(false);
+        m_invulTimer.Disable();
+        _log(CLIENT__TIMER, "%s: Invul Timer Disabled");
+        return;
+    }
+
+    if (m_invulTimer.Enabled()) {
+        _log(CLIENT__ERROR, "%s: Invul Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_invulTimer.GetRemainingTime());
+        EvE::traceStack();
+        return;
+    }
+
+    _log(CLIENT__TIMER, "%s: Invul Timer set at %ums.  timenow %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
     m_invulTimer.Start(time);
+    SetInvul(true);
 }
 
 void Client::SetStateTimer( int8 state, uint32 time/*Player::Timer::Default*/)
 {
+    if (time == 0) {
+        m_stateTimer.Disable();
+        _log(CLIENT__TIMER, "%s: State Timer Disabled");
+        return;
+    }
+
     if (m_stateTimer.Enabled()) {
-        _log(CLIENT__ERROR, "%s: SetStateTimer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_stateTimer.GetRemainingTime());
+        _log(CLIENT__ERROR, "%s: State Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_stateTimer.GetRemainingTime());
         EvE::traceStack();
         return;
     }
-    _log(CLIENT__TIMER, "%s: StateTimer set from %s to %s at %ums.  current time: %u", m_char->itemName().c_str(), \
+
+    _log(CLIENT__TIMER, "%s: State Timer set from %s to %s at %ums.  current time: %u", m_char->itemName().c_str(), \
             GetStateName(m_clientState).c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
     m_clientState = state;
     m_stateTimer.Start(time);
