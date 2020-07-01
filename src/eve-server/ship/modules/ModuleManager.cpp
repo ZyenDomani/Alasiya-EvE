@@ -362,24 +362,23 @@ bool ModuleManager::InstallSubSystem(ModuleItemRef mRef, EVEItemFlags flag)
 
 void ModuleManager::CheckSlotFitLimited(EVEItemFlags flag)
 {
-    // todo change to switch?
     if (IsRigSlot(flag))
-        return;
-    if (IsHiSlot(flag)) {
+        if (m_RigSlots)
+            return;
+    if (IsHiSlot(flag))
         if (m_HighSlots)
             return;
-    } else if (IsMidSlot(flag)) {
+    if (IsMidSlot(flag))
         if (m_MidSlots)
             return;
-    } else if (IsLowSlot(flag)) {
+    if (IsLowSlot(flag))
         if (m_LowSlots)
             return;
-    } else if (IsSubSystem(flag)) {
+    if (IsSubSystem(flag))
         if (m_SubSystemSlots)
             return;
-    }
 
-    throw PyException( MakeUserError("NoFreeShipSlots"));
+    throw PyException(MakeUserError("NoFreeShipSlots"));
 }
 
 void ModuleManager::CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef)

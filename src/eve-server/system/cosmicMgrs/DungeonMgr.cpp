@@ -119,7 +119,7 @@ void DungeonDataMgr::Populate()
 void DungeonDataMgr::AddDungeon(ActiveDungeon& dungeon)
 {
     activeDungeons.emplace(dungeon.systemID, dungeon);
-    _log(COSMIC_MGR__MESSAGE, "Added Dungeon %u (%u) in systemID %u to active dungeon list.", dungeon.dunItemID, dungeon.dunTemplateID, dungeon.systemID);
+    _log(COSMIC_MGR__DEBUG, "Added Dungeon %u (%u) in systemID %u to active dungeon list.", dungeon.dunItemID, dungeon.dunTemplateID, dungeon.systemID);
     //ManagerDB::SaveActiveDungeon(dungeon);
 }
 
@@ -592,7 +592,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 
     uint32 templateID = (sig.dungeonType *10000) + (sec *1000) + (type *100) + (level *10) + faction;
 
-    _log(COSMIC_MGR__MESSAGE, "DungeonMgr::MakeDungeon() - Calling Create for type %s(%u) using templateID %u", \
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::MakeDungeon() - Calling Create for type %s(%u) using templateID %u", \
             sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, templateID);
 
     return Create(templateID, sig);
@@ -806,7 +806,7 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
         if (count < 1)
             continue;
 
-        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::AddDecoToVector() - %s(%u):  faction %u, group %u, type %u, level %u, count %u, baseLvl %u",\
+        _log(COSMIC_MGR__DEBUG, "DungeonMgr::AddDecoToVector() - %s(%u):  faction %u, group %u, type %u, level %u, count %u, baseLvl %u",\
                     sDunDataMgr.GetDungeonType(dunType).c_str(), dunType, factionID, \
                     cur, type, level, count, origLevel);
 

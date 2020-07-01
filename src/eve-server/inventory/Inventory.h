@@ -38,7 +38,7 @@ class Inventory
 {
     friend class InventoryItem;
 public:
-    Inventory(InventoryItemRef item);
+    Inventory(InventoryItemRef iRef);
     virtual ~Inventory() noexcept                       { /* do nothing here*/ }
 
     void Reset();

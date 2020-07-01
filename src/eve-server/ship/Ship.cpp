@@ -444,7 +444,13 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                 return false;
             }
         } break;
-        case flagHangar: {    //AttrCorporateHangarCapacity
+        case flagHangar:
+        case flagCorpHangar2:
+        case flagCorpHangar3:
+        case flagCorpHangar4:
+        case flagCorpHangar5:
+        case flagCorpHangar6:
+        case flagCorpHangar7: {    //AttrCorporateHangarCapacity
             if (GetAttribute(AttrHasCorporateHangars) == 0) {
                 pClient->SendErrorMsg("Your %s has no corporate hangars.", name());
                 return false;
@@ -456,23 +462,13 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             if ((iRef->categoryID() != EVEDB::invCategories::Module)
             and (iRef->categoryID() != EVEDB::invCategories::Charge)
             and (iRef->categoryID() != EVEDB::invCategories::Subsystem)) {
-                pClient->SendErrorMsg("%s cannot be fitted onto a ship. Only hardware modules can be fitted.", iRef->name());
+                pClient->SendErrorMsg("%s cannot be fitted onto a ship. Only hardware modules may be fitted.", iRef->name());
                 return false;
             }
 
-            if (IsRigSlot(flag)) {
-                if (pClient->IsClient())
-                    if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
-                        pClient->SendErrorMsg("You do not have the required skills to fit this %s", iRef->name());
-                        return false;
-                    }
-            } else if (IsSubSystem(flag)) {
-                if (pClient->IsClient())
-                    if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
-                        pClient->SendErrorMsg("You do not have the required skills to fit this %s", iRef->name());
-                        return false;
-                    }
-            } else if (IsModuleSlot(flag)) {
+            if ((IsRigSlot(flag))
+            or  (IsSubSystem(flag))
+            or  (IsModuleSlot(flag))) {
                 if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
                     pClient->SendErrorMsg("You do not have the required skills to fit this %s.  Ref: ServerError 25163.", iRef->name());
                     return false;
@@ -508,6 +504,9 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                         return false;
                     }
                 }
+            } else {
+                sLog.Error("Ship::ValidateAddItem", "testing flag %s to add %s of cat %s has reached the end.",
+                    sDataMgr.GetFlagName(flag), iRef->name(), iRef->category().name().c_str());
             }
         }
     }
@@ -2485,7 +2484,7 @@ void Ship::Process() {
                 newCharge = Capacity;
             m_self->SetAttribute(AttrShieldCharge, newCharge);
             SendDamageStateChanged();
-            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
+            _log(SHIP__RECHARGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
         }
 
         // cap
@@ -2498,7 +2497,7 @@ void Ship::Process() {
             else if ((Capacity - newCharge) < 0.3)
                 newCharge = Capacity;
             m_self->SetAttribute(AttrCapacitorCharge, newCharge);
-            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Cap Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
+            _log(SHIP__RECHARGE, "Ship::Process(): %s(%u) - New Cap Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
         }
         // profile timer for the ship recharge shit
         if (sConfig.debug.UseProfiling)

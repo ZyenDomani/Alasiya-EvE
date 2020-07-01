@@ -451,6 +451,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 case EVEDB::invGroups::Mobile_Projectile_Sentry:
                 case EVEDB::invGroups::Mobile_Laser_Sentry:
                 case EVEDB::invGroups::Mobile_Hybrid_Sentry: {
+                    // flag 27 = hislot0 using ammo capy
                 } break;
                 case EVEDB::invGroups::Electronic_Warfare_Battery:
                 case EVEDB::invGroups::Sensor_Dampening_Battery:
@@ -478,11 +479,13 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             switch (m_self->groupID()) {
                 case EVEDB::invGroups::Station: {
                     // standard station hangar
-                    if ((toFlag == flagCorpMarket)
-                    or (toFlag == flagImpounded)
-                    or (toFlag == flagDelivery)) {
+                    if (toFlag == flagCorpMarket)
                         donating = true;
-                    } else if (toFlag == flagLocked) {
+                    if (toFlag == flagImpounded)
+                        donating = true;
+                    if (toFlag == flagDelivery)
+                        donating = true;
+                    if (toFlag == flagLocked) {
                         ; // do tests here for moving locked items (corp role config and ??)
                     }
                 } break;
@@ -567,6 +570,8 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
             // verify module isnt active here (before we get too far in processing)
             GenericModule* pMod = pShip->GetModule(fromFlag);
+            if (pMod == nullptr)
+                throw PyException(MakeCustomError("That module was not found.  Chances are this is a server error, and either docking or reloging will correct it."));
             if (pMod->IsActive())
                 throw PyException(MakeCustomError("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name()));
 

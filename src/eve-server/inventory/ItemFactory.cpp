@@ -300,6 +300,8 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
     {
         if (IsTempItem(itemID) or (itemID < minAgent)) {
             _log(ITEM__WARNING, "ItemFactory::_GetItem() called on temp or invalid Item %u", itemID);
+            //if (sConfig.server.StackTrace)
+            //    EvE::traceStack();
             return RefPtr<_Ty>();
         }
 
