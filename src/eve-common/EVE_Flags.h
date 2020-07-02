@@ -15,7 +15,7 @@ enum EVEItemFlags {
     flagWallet                      = 1,
     flagFactory                     = 2,  // dunno what this is for
     flagWardrobe                    = 3,  // dunno what this is for  clothes?
-    flagHangar                      = 4,
+    flagHangar                      = 4,  // station hangar and ship corp hangar 1
     flagCargoHold                   = 5,    //AttrCapacity
     flagBriefcase                   = 6,  // dunno what this is for
     flagSkill                       = 7,
@@ -149,7 +149,7 @@ enum EVEItemFlags {
     flagSubSystem6                  = 131,    //Sub system slot 6
     flagSubSystem7                  = 132,    //Sub system slot 7
 
-    flagFuelBay                     = 133,  //AttrFuelCargoCapacity or AttrFuelBayCapacity ?
+    flagFuelBay                     = 133,  //AttrFuelBayCapacity  this is not cargo, but ship fuel
     flagOreHold                     = 134,
     flagGasHold                     = 135,
     flagMineralHold                 = 136,

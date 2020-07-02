@@ -153,7 +153,7 @@ PyRep *CorporationDB::GetCorpInfo(uint32 corpID) {
 
 PyObject *CorporationDB::GetCorporation(uint32 corpID) {
     // called by corp member. different from GetCorporations() below
-    //  not sure what the differece between them is/should be
+    //  not sure what the difference between them is/should be
     std::string table = "crpWalletDivisons";
     if (IsNPCCorp(corpID))
         table = "crpNPCWalletDivisons";

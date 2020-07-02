@@ -1977,7 +1977,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
         float capNeeded = m_mass * m_warpCapacitorNeed * adjDistance;
         capNeeded *= (1 - (0.1 *(pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation, true))));
 
-        if (capNeeded < 5)
+        if (capNeeded > 5)
             _log(DESTINY__WARNING, "Warp Cap need for %s(%u) is %0.4f", mySE->GetName(), mySE->GetID(), capNeeded);
 
         //  check if ship has enough capacitor to warp full distance
@@ -2466,7 +2466,7 @@ Battleships 0.155
     if (sRef->HasAttribute(AttrMaxVelocity))
         m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
     if (sRef->HasAttribute(AttrWarpCapacitorNeed))
-        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_float() *10;
+        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_float() *2;
 
     if (mySE->IsNPCSE() or mySE->IsDroneSE())
         m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();

@@ -328,10 +328,12 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
 
     switch (flag) {
         case flagCargoHold:
+            // everything can be stored in general cargo
+            //  update this later to disallow specialized items?
             return true;
         case flagDroneBay: {
             if (iRef->categoryID() != EVEDB::invCategories::Drone) {
-                pClient->SendErrorMsg("Item Cannot be stowed in the Drone Bay");
+                pClient->SendErrorMsg("%s cannot be stowed in the Drone Bay", iRef->group().name().c_str());
                 return false;
             }
         } break;
@@ -358,7 +360,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
         } break;
 
         // not sure if all of these flag* are used.  if not, *may* update dgmData to add them....later.
-        case flagFuelBay: {    //  AttrFuelBayCapacity        [dunno on this one - AttrFuelCargoCapacity]
+        case flagFuelBay: {    //  AttrFuelBayCapacity
             if (iRef->groupID() != EVEDB::invGroups::FuelBlock) {
                 pClient->SendErrorMsg("Only fuel blocks may be placed into the fuel bay.");
                 return false;
