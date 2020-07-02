@@ -631,7 +631,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
             if (IsModuleSlot(toFlag))
                 m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef); // this will throw if it fails
-            else if (IsCargoHoldFlag(toFlag) or IsHangarFlag(toFlag))
+            else if (IsCargoHoldFlag(toFlag) or IsHangarFlag(toFlag) or (toFlag == flagDroneBay))
                 pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
 
             // check adding item to ship...if it fails, return to previous container
