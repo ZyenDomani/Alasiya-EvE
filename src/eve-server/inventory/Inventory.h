@@ -46,22 +46,23 @@ public:
     void AddItem(InventoryItemRef iRef);
     void RemoveItem(InventoryItemRef iRef);
     void DeleteContents();
-    void GetInventoryList(std::map<uint32, InventoryItemRef> &inventory);
+    void GetInventoryList(std::map<uint32, InventoryItemRef> &invMap);
     // this method also sorts in order - cargo, modules, charge, subsystems.
     void GetInventoryVec(std::vector<InventoryItemRef> &itemVec);
     void StackAll(EVEItemFlags flag, uint32 ownerID = 0);
 
     bool IsEmpty()                                      { return mContents.empty(); }
     bool LoadContents();
-    // this will throw if it fails.
-    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const;
+    // this checks for available space for iRef by flag
+    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const;// this will throw if it fails.
     bool ContentsLoaded() const                         { return mContentsLoaded; }
     bool ContainsItem(uint32 itemID) const              { return mContents.find( itemID ) != mContents.end(); }
     bool ContainsTypeQty(uint16 typeID, uint32 qty=0) const;
     bool ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit) const;
 
     double GetCapacity(EVEItemFlags flag) const;
-    double GetStoredVolume(EVEItemFlags flag) const;
+    double GetStoredVolume(EVEItemFlags flag, bool combined=true) const;
+    double GetCorpHangerCapyUsed() const;
     double GetRemainingCapacity(EVEItemFlags flag) const { return GetCapacity( flag ) - GetStoredVolume( flag ); }
 
     InventoryItemRef GetByID(uint32 id) const;
@@ -83,6 +84,9 @@ public:
 
     /* for station shit */
     void GetInvForOwner(uint32 ownerID, std::vector<InventoryItemRef> &items);
+
+    /* for debug command */
+    void GetCargoList(std::multimap<uint8, InventoryItemRef> &cargoMap);     // returns map of cargoFlag:iRef
 
 protected:
     bool GetItems(OwnerData od, std::vector< uint32 >& into);

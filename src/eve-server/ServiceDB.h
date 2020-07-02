@@ -75,6 +75,10 @@ public:
     // tests for invalid characters
     static bool ValidateAccountName(CryptoChallengePacket& ccp, std::string& failMsg);
 
+    // get corp hangar names for `.cargo` command
+    static void GetCorpHangarNames(uint32 corpID, std::map<uint8, std::string> &hangarNames);
+
+
 protected:
     void ProcessStringChange(const char* key, const std::string& oldValue, std::string newValue, PyDict* notif, std::vector< std::string >& dbQ);
     void ProcessRealChange(const char * key, double oldValue, double newValue, PyDict * notif, std::vector<std::string> & dbQ);

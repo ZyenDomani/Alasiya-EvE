@@ -20,17 +20,19 @@
           " - shows other current destiny variables")
  COMMAND( shutdown, Acct::Role::GMH,
           " - save all items, kick all connections, and halt server. immediate command." )
- COMMAND( beltlist, Acct::Role::PROGRAMMER,
+ COMMAND( beltlist, Acct::Role::PLAYER,
           " - list all roids in current belt's inventory." )
  COMMAND( inventory, Acct::Role::PROGRAMMER,
           " - list all items in current location's inventory (either station or solsystem)." )
- COMMAND( shipinventory, Acct::Role::PROGRAMMER,
+ COMMAND( cargo, Acct::Role::PLAYER,
+          " - gives list of cargo contents and volumes in all holds")
+ COMMAND( shipinventory, Acct::Role::PLAYER,
           " - list all items in current ship's inventory." )
- COMMAND( showsession, Acct::Role::PROGRAMMER,
+ COMMAND( showsession, Acct::Role::PLAYER,
           " - list current session values." )
  COMMAND( skilllist, Acct::Role::PROGRAMMER,
           " - list all skills loaded for character." )
- COMMAND( shipdna, Acct::Role::PROGRAMMER,
+ COMMAND( shipdna, Acct::Role::PLAYER,
           " - show current ship DNA." )
  COMMAND( targlist, Acct::Role::PROGRAMMER,
           " - show current ship target list." )

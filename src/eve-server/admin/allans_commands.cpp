@@ -894,6 +894,140 @@ PyResult Command_autostop(Client* pClient, CommandDB* db, PyServiceMgr* services
     return new PyString(reply);
 }
 
+PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    /* this command is used to debug inventory
+     *   -allan 2Jul20
+     */
+
+    std::map<uint16, EVEItemFlags> cargoAttrToFlag;
+    cargoAttrToFlag[AttrDroneCapacity] = flagDroneBay;
+    cargoAttrToFlag[AttrHasShipMaintenanceBay] = flagShipHangar;
+    cargoAttrToFlag[AttrFuelBayCapacity] = flagFuelBay;
+    cargoAttrToFlag[AttrOreHoldCapacity] = flagOreHold;
+    cargoAttrToFlag[AttrGasHoldCapacity] = flagGasHold;
+    cargoAttrToFlag[AttrAmmoHoldCapacity] = flagAmmoHold;
+    cargoAttrToFlag[AttrShipHoldCapacity] = flagShipHold;
+    cargoAttrToFlag[AttrMineralHoldCapacity] = flagMineralHold;
+    cargoAttrToFlag[AttrSalvageHoldCapacity] = flagSalvageHold;
+    cargoAttrToFlag[AttrSmallShipHoldCapacity] = flagSmallShipHold;
+    cargoAttrToFlag[AttrMediumShipHoldCapacity] = flagMediumShipHold;
+    cargoAttrToFlag[AttrLargeShipHoldCapacity] = flagLargeShipHold;
+    cargoAttrToFlag[AttrIndustrialShipHoldCapacity] = flagIndustrialShipHold;
+    cargoAttrToFlag[AttrCommandCenterHoldCapacity] = flagCommandCenterHold;
+    cargoAttrToFlag[AttrPlanetaryCommoditiesHoldCapacity] = flagPlanetaryCommoditiesHold;
+    cargoAttrToFlag[AttrQuafeHoldCapacity] = flagQuafeBay;
+
+    uint32 qty = 0, count = 0, corp = 0;
+    std::multimap<uint8, InventoryItemRef> cargoMap;
+    uint32 inventoryID = pClient->GetShipID();
+    ShipItemRef ship = sItemFactory.GetShip(inventoryID);
+    Inventory* inv = ship->GetMyInventory();
+    inv->GetCargoList(cargoMap);
+
+    std::ostringstream str;
+    str.clear();
+    str << "Reported Cargo in %s(%u)  [LineCount:%u]<br>"; //60
+    str << "Hold Name    Volume in m3. Stored/Total<br>"; //40
+    str << "    Qty  ItemName  (volume each)  stack volume<br>"; //50
+
+    // get available cargo holds in ship and list contents
+
+    // all ships have flagCargoHold
+    ++count;
+    str << "<br>" << sDataMgr.GetFlagName(flagCargoHold);
+    str << "    " << inv->GetStoredVolume(flagCargoHold);
+    str << "/" << inv->GetCapacity(flagCargoHold) << "<br>";
+    if (cargoMap.find(flagCargoHold) == cargoMap.end()) {
+        ++count;
+        str << "  Empty<br>";
+    } else {
+        qty = 0;
+        auto range = cargoMap.equal_range(flagCargoHold);
+        for ( auto itr = range.first; itr != range.second; ++itr ) {
+            ++count;
+            qty = itr->second->quantity();
+            str << "    " << qty << " " << itr->second->itemName();
+            str << "  (" << itr->second->type().volume() << ") " << itr->second->type().volume() *qty << "<br>";
+        }
+    }
+
+    // loop thru cargo list
+    for (auto cur : cargoAttrToFlag) {
+        if (ship->HasAttribute(cur.first) and (ship->GetAttribute(cur.first) > EvilZero)) {
+            ++count;
+            str << "<br>" << sDataMgr.GetFlagName(cur.second);
+            str << "    " << inv->GetStoredVolume(cur.second);
+            str << "/" << inv->GetCapacity(cur.second) << "<br>";
+            if (cargoMap.find(cur.second) == cargoMap.end()) {
+                ++count;
+                str << "  Empty<br>";
+            } else {
+                qty = 0;
+                auto range = cargoMap.equal_range(cur.second);
+                for ( auto itr = range.first; itr != range.second; ++itr ) {
+                    ++count;
+                    qty = itr->second->quantity();
+                    str << "    " << qty << " " << itr->second->itemName();
+                    str << "  (" << itr->second->type().volume() << ") " << itr->second->type().volume() *qty << "<br>";
+                }
+            }
+        }
+    }
+
+    // check for corp hangars
+    if (ship->HasAttribute(AttrHasCorporateHangars)) {
+        ++count;
+        corp = 190;
+        std::map<uint8, std::string> hangarNames;
+        ServiceDB::GetCorpHangarNames(pClient->GetCorporationID(), hangarNames);
+        str << "<br><br>Corp Hangars share capacity. (currently incomplete)<br>"; // 20
+        str << "Currently using " << inv->GetCorpHangerCapyUsed() << " of " << inv->GetCapacity(flagHangar) << "m3<br>"; //40
+        str << "Hold Name    Volume Stored in m3.<br>"; //40
+        str << "    Qty  ItemName  (volume each)  stack volume<br>"; //50
+        str << "<br>" << hangarNames[flagHangar] << "    " << inv->GetStoredVolume(flagHangar, false) << "<br>";
+        if (cargoMap.find(flagHangar) == cargoMap.end()) {
+            ++count;
+            str << "  Empty<br>";
+        } else {
+            qty = 0;
+            auto range = cargoMap.equal_range(flagHangar);
+            for ( auto itr = range.first; itr != range.second; ++itr ) {
+                ++count;
+                qty = itr->second->quantity();
+                str << "    " << qty << " " << itr->second->itemName();
+                str << "  (" << itr->second->type().volume() << ") " << itr->second->type().volume() *qty << "<br>";
+            }
+        }
+        for (uint8 i = flagCorpHangar2; i < flagSecondaryStorage; ++i) {
+            ++count;
+            str << "<br>" << hangarNames[i]; //sDataMgr.GetFlagName(i);
+            str << "    " << inv->GetStoredVolume((EVEItemFlags)i, false) << "<br>";
+            if (cargoMap.find(i) == cargoMap.end()) {
+                ++count;
+                str << "  Empty<br>";
+            } else {
+                qty = 0;
+                auto range = cargoMap.equal_range(i);
+                for ( auto itr = range.first; itr != range.second; ++itr ) {
+                    ++count;
+                    qty = itr->second->quantity();
+                    str << "    " << qty << " " << itr->second->itemName();
+                    str << "  (" << itr->second->type().volume() << ") " << itr->second->type().volume() *qty << "<br>";
+                }
+            }
+        }
+    }
+
+    int size = count * 100;
+    size += 150;
+    size += corp;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), ship->name(), ship->itemID(), count);
+
+    pClient->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
 
 /* groove's new command.....
  *    /fit [me|itemID] [typeID] [flag=slot]

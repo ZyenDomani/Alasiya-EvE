@@ -375,9 +375,9 @@ InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) cons
         return InventoryItemRef(nullptr);
 }
 
-void Inventory::GetInventoryList(std::map<uint32, InventoryItemRef> &inventory) {
+void Inventory::GetInventoryList( std::map< uint32, InventoryItemRef >& invMap ) {
     for (auto cur : mContents)
-        inventory.insert(std::pair<uint32, InventoryItemRef>(cur.first, cur.second));
+        invMap.insert(std::pair<uint32, InventoryItemRef>(cur.first, cur.second));
 }
 
 uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
@@ -499,10 +499,10 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
     }
 }
 
-double Inventory::GetStoredVolume(EVEItemFlags flag) const
+double Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
 {
     double totalVolume(0.0);
-    if (IsHangarFlag(flag)) {
+    if (IsHangarFlag(flag) and combined) {
         for (auto cur : mContents)
             if (IsHangarFlag(cur.second->flag()))
                 totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
@@ -688,3 +688,17 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
 //{'FullPath': u'UI/Messages', 'messageID': 259210, 'label': u'NotEnoughDroneBaySpaceOverloadBody'}(u'The drone bay is overloaded and cannot be made to fit {item}. It is currently only capable of fitting {maximum} units and it is currently jammed full with {used} units.', None, {u'{maximum}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{used}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}})
 //{'FullPath': u'UI/Messages', 'messageID': 259213, 'label': u'NotEnoughSpaceOverloadBody'}(u'The storage area is overloaded and cannot be made to fit any {item}. It is currently only capable of fitting {maximum} units and it is currently jammed full with {used} units.', None, {u'{maximum}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{used}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}})
 //{'FullPath': u'UI/Messages', 'messageID': 259183, 'label': u'NoSpaceForThatOverloadBody'}(u"You can't add the {[item]item.name} as there simply isn't enough room for it to fit. The container is currently only capable of fitting {[numeric]maximum} units and it is currently jammed full with {[numeric]used} units.", None, {u'{[numeric]used}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{[numeric]maximum}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}})
+
+
+void Inventory::GetCargoList(std::multimap< uint8, InventoryItemRef >& cargoMap) {
+    for (auto cur : mContents)
+        cargoMap.insert(std::pair<uint8, InventoryItemRef>(cur.second->flag(), cur.second));
+}
+
+double Inventory::GetCorpHangerCapyUsed() const {
+    double totalVolume(0.0);
+    for (auto cur : mContents)
+        if (IsHangarFlag(cur.second->flag()))
+            totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
+    return totalVolume;
+}

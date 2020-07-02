@@ -560,3 +560,32 @@ PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
 
     return dict;
 }
+
+void ServiceDB::GetCorpHangarNames(uint32 corpID, std::map<uint8, std::string> &hangarNames) {
+
+    std::string table = "crpWalletDivisons";
+    if (IsNPCCorp(corpID))
+        table = "crpNPCWalletDivisons";
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        " SELECT division1,division2,division3,division4,division5,division6,division7"
+        " FROM %s"
+        " WHERE corporationID = %u", table.c_str(), corpID))
+    {
+        codelog(CORP__DB_ERROR, "Error in retrieving corporation's data (%u)", corpID);
+        return;
+    }
+
+    DBResultRow row;
+    if (res.GetRow(row)) {
+        hangarNames.emplace(flagHangar, row.GetText(0));
+        hangarNames.emplace(flagCorpHangar2, row.GetText(1));
+        hangarNames.emplace(flagCorpHangar3, row.GetText(2));
+        hangarNames.emplace(flagCorpHangar4, row.GetText(3));
+        hangarNames.emplace(flagCorpHangar5, row.GetText(4));
+        hangarNames.emplace(flagCorpHangar6, row.GetText(5));
+        hangarNames.emplace(flagCorpHangar7, row.GetText(6));
+    } else {
+        _log(CORP__DB_ERROR, "CorpID %u has no division data.", corpID);
+    }
+}

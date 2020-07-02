@@ -829,11 +829,11 @@ enum EveAttrEnum {
     AttrWarcruiserCPUBonus = 904,
     AttrTacklerBonus = 905,
     AttrDisallowEarlyDeactivation = 906,        // not used, but would be helpful
-    AttrHasShipMaintenanceBay = 907,
+    AttrHasShipMaintenanceBay = 907,            //flagShipHangar  AttrShipMaintenanceBayCapacity
     AttrShipMaintenanceBayCapacity = 908,
     AttrMaxShipGroupActiveID = 909,
     AttrMaxShipGroupActive = 910,
-    AttrHasCorporateHangars = 911,
+    AttrHasCorporateHangars = 911,              //flagHangar, flagCorpHangar2-7  AttrCorporateHangarCapacity
     AttrCorporateHangarCapacity = 912,
     AttrGallenteNavyBonus = 913,
     AttrGallenteNavyBonusMultiplier = 914,
@@ -1000,7 +1000,7 @@ enum EveAttrEnum {
     AttrCpuPenaltyPercent = 1082,
     AttrArmorHpBonus2 = 1083,
     AttrVelocityBonus2 = 1084,
-    AttrHasFuelCargo = 1085,
+    AttrHasFuelCargo = 1085,                    // flagFuelBay     AttrFuelCargoCapacity
     AttrFuelCargoCapacity = 1086,
     AttrBoosterness = 1087,
     AttrExpiryTime = 1088,
