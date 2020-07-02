@@ -129,6 +129,10 @@ RefObjects - MEMORY MANAGEMENT!!
 Py* objects that have string as key need 'delete' called on string when destroyed per valgrind...cannot find ref to this error now
 Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
 
+Inventory
+    - all Inventory-by-Flag methods will get expensive as they loop thru entire contents to search for flag
+    - update to use m_usedVolumeByFlag container?
+    -   this will add another add/remove/check to the system
 InvBrokerBound::Handle_GetInventory
     - incomplete
 InvBrokerBound::Handle_GetInventoryFromId
