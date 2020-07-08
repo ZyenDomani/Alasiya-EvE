@@ -588,8 +588,8 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
     double capacity = GetRemainingCapacity(flag);
     float volume = iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float();
 
-    _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's available capy of %f to add %u %s at %f (%f each)",
-         m_self->name(), capacity, iRef->quantity(), iRef->name(), volume, iRef->GetAttribute(AttrVolume).get_float());
+    _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %f to add %u %s at %f (%f each)",
+         m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), volume, iRef->GetAttribute(AttrVolume).get_float());
 
     // check capy for single unit
     if (capacity < iRef->GetAttribute(AttrVolume).get_float()) {
@@ -689,6 +689,20 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
 //{'FullPath': u'UI/Messages', 'messageID': 259213, 'label': u'NotEnoughSpaceOverloadBody'}(u'The storage area is overloaded and cannot be made to fit any {item}. It is currently only capable of fitting {maximum} units and it is currently jammed full with {used} units.', None, {u'{maximum}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{used}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}})
 //{'FullPath': u'UI/Messages', 'messageID': 259183, 'label': u'NoSpaceForThatOverloadBody'}(u"You can't add the {[item]item.name} as there simply isn't enough room for it to fit. The container is currently only capable of fitting {[numeric]maximum} units and it is currently jammed full with {[numeric]used} units.", None, {u'{[numeric]used}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{[numeric]maximum}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}})
 
+bool Inventory::HasAvailableSpace ( EVEItemFlags flag, InventoryItemRef iRef ) const {
+
+    double capacity = GetRemainingCapacity(flag);
+    float volume = iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float();
+
+    _log(INV__CAPY, "Inventory::HasAvailableSpace() - Testing %s's %s available capy of %f to add %u %s at %f (%f each)",
+         m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), volume, iRef->GetAttribute(AttrVolume).get_float());
+
+    // check capy for all units
+    if (volume > capacity)
+        return false;
+
+    return true;
+}
 
 void Inventory::GetCargoList(std::multimap< uint8, InventoryItemRef >& cargoMap) {
     for (auto cur : mContents)

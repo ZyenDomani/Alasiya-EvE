@@ -55,6 +55,8 @@ public:
     bool LoadContents();
     // this checks for available space for iRef by flag
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const;// this will throw if it fails.
+    // this checks for available space for iRef by flag
+    bool HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) const;   //  this will not throw
     bool ContentsLoaded() const                         { return mContentsLoaded; }
     bool ContainsItem(uint32 itemID) const              { return mContents.find( itemID ) != mContents.end(); }
     bool ContainsTypeQty(uint16 typeID, uint32 qty=0) const;

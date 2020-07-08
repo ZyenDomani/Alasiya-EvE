@@ -183,7 +183,8 @@ void Prospector::DropSalvage()
         }
 
         InventoryItemRef iRef(nullptr);
-        uint32 quantity = 0, minDrop = drop, maxDrop = (drop * 3 /*sConfig.rates.RateDropItem*/);
+        Inventory* sInv(m_shipRef->GetMyInventory());
+        uint32 quantity = 0, minDrop = drop, maxDrop = (drop * sConfig.rates.DropSalvage);
         for (auto cur : list) {
             // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
             if (IsEven(MakeRandomInt(0,10)))
@@ -193,9 +194,15 @@ void Prospector::DropSalvage()
             iRef = sItemFactory.SpawnItem(iLoot);
             if (iRef.get() == nullptr) // we'll get over it...continue
                 continue;
-            //iRef->Move(m_shipRef->itemID(), m_holdFlag, true);
-            iRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
-            _log(MODULE__DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->itemName().c_str(), minDrop, maxDrop);
+            if (sInv->HasAvailableSpace(m_holdFlag, iRef)) {
+                //iRef->Move(m_shipRef->itemID(), m_holdFlag, true);
+                iRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
+                _log(MODULE__DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->itemName().c_str(), minDrop, maxDrop);
+            } else {
+                _log(MODULE__DEBUG, "Prospector::DropSalvage - %s's %s is full.", m_shipRef->name(), sDataMgr.GetFlagName(m_holdFlag));
+                m_shipRef->GetPilot()->SendNotifyMsg("Your %s is full.  Remaining salvage is lost.", sDataMgr.GetFlagName(m_holdFlag));
+                break;
+            }
         }
     }
 
@@ -240,7 +247,7 @@ void Prospector::DropSalvage()
 
 void Prospector::DropItems()
 {
-    // this will be for data miners and hacking/archeology shit.  dunno what all we'll need at this point.
+    // this will be for data miners and hacking/archaeology shit.  dunno what all we'll need at this point.
     //  update StaticDataMgr for these items also.
 }
 
