@@ -27,6 +27,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "ConsoleCommands.h"
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "planet/PlanetDB.h"
@@ -221,7 +222,7 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
     assert(m_destiny != nullptr);
 
     m_global = false;
-    
+
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
@@ -239,6 +240,14 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
 
 ContainerSE::~ContainerSE()
 {
+    if (m_targMgr != nullptr)
+        if (!sConsole.IsShutdown()) {
+            m_targMgr->ClearModules();
+            m_targMgr->ClearAllTargets(false);
+            //m_targMgr->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Destroyed);
+        }
+
+    SafeDelete(m_targMgr);
     SafeDelete(m_destiny);
 }
 
@@ -497,8 +506,9 @@ m_contRef(self)
 
 WreckSE::~WreckSE()
 {
-    SafeDelete(m_targMgr);
-    SafeDelete(m_destiny);
+    // these are cleared in base class
+    //SafeDelete(m_targMgr);
+    //SafeDelete(m_destiny);
 }
 
 void WreckSE::Process() {
@@ -558,19 +568,19 @@ PyDict *WreckSE::MakeSlimItem() {
     PyTuple* nameID = new PyTuple(2);
         nameID->SetItem(0,  new PyString("UI/Inflight/WreckNameShipName"));
     PyDict* shipName = new PyDict;
-        shipName->SetItem("shipName", new PyInt(0));
+        shipName->SetItem("shipName", new PyInt(0));    // does this need data here?
         nameID->SetItem(1, shipName);
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
         if (m_abandoned or (m_fleetID)) { // this is ONLY for abandoned wrecks or wrecks from fleet ops
-            PyTuple* tuple1 = new PyTuple(4);
-                tuple1->SetItem(0,              new PyInt(m_ownerID));
-                tuple1->SetItem(1,              IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-                tuple1->SetItem(2,              IsFleet(m_fleetID) ? new PyInt(m_fleetID) : PyStatic.NewNone());
-                tuple1->SetItem(3,              new PyBool(false)); // what is this??
-            slim->SetItemString("lootRights",   tuple1);
+            PyTuple* loot = new PyTuple(4);
+                loot->SetItem(0,                new PyInt(m_ownerID));
+                loot->SetItem(1,                IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+                loot->SetItem(2,                IsFleet(m_fleetID) ? new PyInt(m_fleetID) : PyStatic.NewNone());
+                loot->SetItem(3,                new PyBool(false)); // what is this??
+            slim->SetItemString("lootRights",   loot );
         }
         slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
         slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());

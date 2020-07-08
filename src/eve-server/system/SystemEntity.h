@@ -242,7 +242,7 @@ public:
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
     virtual void                UpdateDamage()          { /* Do nothing here */ }
     virtual bool                LoadExtras()            { return true; }
-    // this will remove SE* from system and call Delete() on it's itemRef.
+    // this will remove SE* from system and call Delete() on it's itemRef for non-containers.
     //caller MUST call SafeDelete() on SE after this returns.
     virtual void                Delete();
 
