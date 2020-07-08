@@ -297,12 +297,16 @@ int main( int argc, char* argv[] )
         sLog.Yellow("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
     else
         sLog.Green("          Bountys","Normal.");
-    if (sConfig.rates.RateDropItem != 1.0)
-        sLog.Yellow("       Item Drops","Modified at %.0f%%.", (sConfig.rates.RateDropItem *100) );
+    if (sConfig.rates.DropItem != 1)
+        sLog.Yellow("       Item Drops","Modified at %ux.", sConfig.rates.DropItem );
     else
         sLog.Green("       Item Drops","Normal.");
-    if (sConfig.rates.RateDropMoney != 1.0)
-        sLog.Yellow("      Isk Rewards","Modified at %.0f%%.", (sConfig.rates.RateDropMoney *100) );
+    if (sConfig.rates.DropSalvage != 1)
+        sLog.Yellow("    Salvage Drops","Modified at %ux.", sConfig.rates.DropSalvage );
+    else
+        sLog.Green("    Salvage Drops","Normal.");
+    if (sConfig.rates.DropMoney != 1.0)
+        sLog.Yellow("      Isk Rewards","Modified at %.0f%%.", (sConfig.rates.DropMoney *100) );
     else
         sLog.Green("      Isk Rewards","Normal.");
     if (sConfig.rates.damageRate != 1.0)

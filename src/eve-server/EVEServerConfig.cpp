@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.5
+    Version:    9.6
 */
 
 
@@ -92,8 +92,9 @@ EVEServerConfig::EVEServerConfig()
     rates.medalCreateCost = 5000000;
     rates.WorldDecay = 120 /*m*/;
     rates.NPCDecay = 90 /*m*/;
-    rates.RateDropItem = 1.0;//N
-    rates.RateDropMoney = 1.0;
+    rates.DropItem = 1;//N
+    rates.DropMoney = 1.0;//N
+    rates.DropSalvage = 1;//P
     rates.RepairCost = 1.0;
     rates.ShipRepairModifier = 0.0000075;
     rates.ModuleRepairModifier = 0.00125;
@@ -394,8 +395,9 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "medalCreateCost",      rates.medalCreateCost );
     AddValueParser( "WorldDecay",           rates.WorldDecay );
     AddValueParser( "NPCDecay",             rates.NPCDecay );
-    AddValueParser( "RateDropItem",         rates.RateDropItem );
-    AddValueParser( "RateDropMoney",        rates.RateDropMoney );
+    AddValueParser( "DropItem",             rates.DropItem );
+    AddValueParser( "DropMoney",            rates.DropMoney );
+    AddValueParser( "DropSalvage",          rates.DropSalvage );
     AddValueParser( "RepairCost",           rates.RepairCost );
     AddValueParser( "ShipRepairModifier",   rates.ShipRepairModifier );
     AddValueParser( "ModuleRepairModifier", rates.ModuleRepairModifier );
@@ -423,8 +425,9 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "medalCreateCost" );
     RemoveParser( "WorldDecay" );
     RemoveParser( "NPCDecay" );
-    RemoveParser( "RateDropItem" );
-    RemoveParser( "RateDropMoney" );
+    RemoveParser( "DropItem" );
+    RemoveParser( "DropMoney" );
+    RemoveParser( "DropSalvage" );
     RemoveParser( "RepairCost" );
     RemoveParser( "ShipRepairModifier" );
     RemoveParser( "ModuleRepairModifier" );

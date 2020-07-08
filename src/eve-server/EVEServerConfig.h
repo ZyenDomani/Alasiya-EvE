@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.5
+    Version:    9.6
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -109,8 +109,9 @@ public:
         float turretRoF;
         // Decay timer for wreck deletion (garbage collection)
         float NPCDecay;
-        float RateDropItem;
-        float RateDropMoney;
+        uint8 DropItem;
+        float DropMoney;
+        uint8 DropSalvage;
         float RepairCost;
         float ShipRepairModifier;
         float ModuleRepairModifier;
