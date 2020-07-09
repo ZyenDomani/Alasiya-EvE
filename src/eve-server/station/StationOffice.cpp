@@ -63,19 +63,11 @@ StationOfficeRef StationOffice::Spawn( ItemData& idata, OfficeData& odata) {
     return StationOffice::Load(officeID );
 }
 
-void StationOffice::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const {
+void StationOffice::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const {
     if (!m_loaded)
         return; // make error here?
-    if (flag == flagCargoHold )  {
-        EvilNumber capacityUsed(0);
-        std::vector<InventoryItemRef> items;
-        pInventory->GetItemsByFlag(flag, items);
-        for (auto cur : items)
-            capacityUsed += cur->GetAttribute(AttrVolume);
-        capacityUsed += item->GetAttribute(AttrVolume);
-        if (capacityUsed > GetAttribute(AttrCapacity) )
-            ; /** @todo make error msg here */  //  PyException(MakeCustomError("Not enough cargo space!") );
-    }
+
+    pInventory->HasAvailableSpace(flag, iRef);
 }
 
 PyObject *StationOffice::StationOfficeGetInfo() {
@@ -100,21 +92,21 @@ void StationOffice::AddItem(InventoryItemRef iRef)
 {
     if (!m_loaded)
         return; // make error here?
-        
+
     if (iRef.get() == nullptr)
         return;
-    
+
     InventoryItem::AddItem(iRef);
-    
+
 }
 
 void StationOffice::RemoveItem(InventoryItemRef iRef)
 {
     if (!m_loaded)
         return; // make error here?
-        
+
     if (iRef.get() == nullptr)
         return;
-    
+
     InventoryItem::RemoveItem(iRef);
 }
