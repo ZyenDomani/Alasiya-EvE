@@ -11,6 +11,7 @@
 #include "eve-server.h"
 
 #include "PyServiceMgr.h"
+#include "StaticDataMgr.h"
 #include "StatisticMgr.h"
 #include "character/Character.h"
 #include "ship/Ship.h"
@@ -244,18 +245,30 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         return;
     }
 
-    //if (!m_shipRef->AddItemByFlag(m_holdFlag, oRef)) {
-    // verify adding item to specified hold, then merge if applicable
-    if (m_shipRef->ValidateAddItem(m_holdFlag, oRef))
-        oRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
-    else {
-        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as it couldn't add ore to your cargohold.", m_modRef->name());
+    bool oreError = true;
+    // verify item to hold, and available space
+    if (m_shipRef->ValidateAddItem(m_holdFlag, oRef)) {
+        if (m_shipRef->GetMyInventory()->HasAvailableSpace(m_holdFlag, oRef)) {
+            oreError = false;
+            oRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
+        }
+    }
+
+    // add data to StatisticMgr
+    sStatMgr.Add(Stat::oreMined, oreAmount);
+
+    if (oreError) {
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as it couldn't add the %s to your %s.", \
+                m_modRef->name(), oRef->name(), sDataMgr.GetFlagName(m_holdFlag));
         _log(MINING__ERROR, "Could not add ore to hold for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );
         ActiveModule::DeactivateCycle(true);
         return;
     }
 
-    if (m_chargeLoaded and (m_crystalDmgChance > 0.0f))
+    if (!m_chargeLoaded)
+        return;
+
+    if (m_crystalDmgChance > 0.0f)
         if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
             m_crystalDmg += m_crystalDmgAmount;
             if (m_crystalDmg > 0.99f) {
@@ -268,9 +281,6 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
                 m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
             }
         }
-
-    // add data to StatisticMgr
-    sStatMgr.Add(Stat::oreMined, oreAmount);
 }
 
 void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
@@ -293,7 +303,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
 
         // send error and deactivate all active modules here
         for (auto cur : mMap) {
-            cur.second->GetShipRef()->GetPilot()->SendNotifyMsg("Your %s deactivates because there was a processing error.  Ref: ServerError 06428.", \
+            cur.second->GetShipRef()->GetPilot()->SendNotifyMsg("Your %s deactivates because there was a processing error.  Ref: ServerError 03123.", \
                         cur.second->GetSelf()->itemName().c_str());
             cur.second->CancelOnError();
         }
@@ -321,10 +331,10 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
 
         // inform pilot of asteroid depleted  ...no clue if it actually works like this
         PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, new PyString("MiningItemDepleted"));  //OnNotify
+            tuple->SetItem(0, new PyString("MiningItemDepleted"));  //OnNotify
         PyDict* dict = new PyDict();
-        dict->SetItemString("modulename", new PyString(cur.second->GetSelf()->itemName()));
-        tuple->SetItem(1, dict);
+            dict->SetItemString("modulename", new PyString(cur.second->GetSelf()->itemName()));
+            tuple->SetItem(1, dict);
         cur.second->GetShipRef()->GetPilot()->QueueDestinyEvent(&tuple);
     }
 
