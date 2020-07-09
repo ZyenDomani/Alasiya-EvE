@@ -46,9 +46,10 @@ class ShipBound
 public:
     PyCallable_Make_Dispatcher(ShipBound)
 
-    ShipBound(PyServiceMgr *mgr, ShipDB& db)
+    ShipBound(PyServiceMgr *mgr, ShipDB& db, ShipItem* ship)
     : PyBoundObject(mgr),
       m_db(db),
+      pShip(ship),
       m_dispatch(new Dispatcher(this))
     {
         _SetCallDispatcher(m_dispatch);
@@ -101,6 +102,10 @@ public:
 protected:
     ShipDB& m_db;
     Dispatcher *const m_dispatch;
+
+private:
+    ShipItem* pShip;
+
 };
 
 PyCallable_Make_InnerDispatcher(ShipService)
@@ -119,10 +124,11 @@ ShipService::~ShipService() {
     delete m_dispatch;
 }
 
+/** @todo do we need more ship data here?  */
 PyBoundObject *ShipService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     _log(CLIENT__MESSAGE, "ShipService bind request");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
-    return new ShipBound(m_manager, m_db);
+    return new ShipBound(m_manager, m_db, pClient->GetShip().get());
 }
 
 /* only called in space */
@@ -605,32 +611,29 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     Client* pClient(call.client);
     SystemManager* pSysMgr(pClient->SystemMgr());
     std::vector<int32>::const_iterator cur = args.ints.begin();
-    for(; cur != args.ints.end(); cur++) {
+    for(; cur != args.ints.end(); ++cur) {
         SystemEntity* pDroneSE = pSysMgr->GetSE(*cur);
         if (pDroneSE == nullptr) {
-            _log(SERVICE__ERROR, "%s: Unable to find drone %u to scoop.", pClient->GetName(), *cur);
+            _log(SERVICE__ERROR, "%s: Unable to find droneSE %u to scoop.", pClient->GetName(), *cur);
             continue;
         }
 
         InventoryItemRef iRef(pDroneSE->GetSelf());
+        if (iRef.get() == nullptr) {
+            _log(SERVICE__ERROR, "%s: Unable to find droneItem %u to scoop.", pClient->GetName(), *cur);
+            continue;
+        }
 
         // Check to see that this is really a drone:
         pClient->GetShip()->ValidateAddItem(flagDroneBay, iRef);
 
-        /** @todo check ownership/control. */
+        // check ownership/control
+        if (pDroneSE->GetDroneSE()->IsEnabled())
+            if (pDroneSE->GetDroneSE()->GetOwner() != pClient)
+                throw PyException(MakeCustomError("The %s is under another pilot's control.  Cannot scoop.", pDroneSE->GetName()));
 
         // Check drone bay capacity:
-        double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagDroneBay);
-        double volume = iRef->GetAttribute(AttrVolume).get_float();
-        if (capacity < volume)
-            throw PyException(MakeCustomError("%s is too large to fit in Drone bay remaining space.", iRef->name()));
-        //{'FullPath': u'UI/Messages', 'messageID': 259191, 'label': u'NotEnoughDroneBaySpaceBody'}(u'{[numeric]volume} units would be required to complete this operation. Destination container only has {[numeric]available} units available.', None, {u'{[numeric]volume}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'volume'}, u'{[numeric]available}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'available'}})
-        //{'FullPath': u'UI/Messages', 'messageID': 259210, 'label': u'NotEnoughDroneBaySpaceOverloadBody'}(u'The drone bay is overloaded and cannot be made to fit {item}. It is currently only capable of fitting {maximum} units and it is currently jammed full with {used} units.', None, {u'{maximum}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{used}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}})
-        //{'FullPath': u'UI/Messages', 'messageID': 258737, 'label': u'ShipDronesOverloadedBody'}(u'You cannot do that because you have somehow overloaded your drone bay.', None, None)
-        //{'FullPath': u'UI/Messages', 'messageID': 258904, 'label': u'ShipDronesOverloaded2Body'}(u'You cannot do that because you have somehow overloaded your drone bay. It fits {[numeric]canHave, decimalPlaces=2} units but somehow {[numeric]have, decimalPlaces=2} has been squeezed in.', None, {u'{[numeric]have, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'have'}, u'{[numeric]canHave, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'canHave'}})
-        //{'FullPath': u'UI/Messages', 'messageID': 258499, 'label': u'CannotMixDronesBody'}(u'You can not mix different types of drones in the same group', None, None)
-
-        else {
+        if (pClient->GetShip()->GetMyInventory()->ValidateAddItem(flagDroneBay, iRef)) {  // this will throw if it fails
             // We have enough Drone bay capacity to hold the drone,
             // so take ownership of it and move it into the Drone bay:
             iRef->ChangeOwner(pClient->GetCharacterID(), true);
@@ -641,6 +644,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         }
     }
 
+    /** @todo complete error msgs here */
     // returns error on error else none
     return PyStatic.NewNone();
 }

@@ -507,8 +507,8 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                     }
                 }
             } else {
-                sLog.Error("Ship::ValidateAddItem", "testing flag %s to add %s of cat %s has reached the end.",
-                    sDataMgr.GetFlagName(flag), iRef->name(), iRef->category().name().c_str());
+                sLog.Error("Ship::ValidateAddItem", "testing of %s to add %u %s of cat %s has reached the end.",
+                    sDataMgr.GetFlagName(flag),iRef->quantity(), iRef->name(), iRef->category().name().c_str());
             }
         }
     }
