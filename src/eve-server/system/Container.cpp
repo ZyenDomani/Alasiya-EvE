@@ -448,6 +448,9 @@ void WreckContainer::ValidateAddItem( EVEItemFlags flag, InventoryItemRef item )
 {
     // throw();
         //  no code here.  should NOT be able to add items to a wreck container.
+    //_log(INV__ERROR, "Adding item to wreck.");
+    sLog.Error("ValidateAddItem", "Adding item to wreck");
+    EvE::traceStack();
 }
 
 void WreckContainer::RemoveItem(InventoryItemRef iRef)
