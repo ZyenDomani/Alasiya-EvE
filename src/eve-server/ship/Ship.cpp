@@ -1125,7 +1125,7 @@ void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
     if (ValidateAddItem(flag, cRef)) {   // update this to return >0 on error.  use enum for error type, and set msgs here
         m_ModuleManager->LoadCharge(cRef, flag);
     } else {
-        throw PyException( MakeCustomError("Failed to load %s into the %s.  %s returned to cargo.", cRef->name(), pMod->GetSelf()->name(), cRef->name()));
+        throw PyException( MakeCustomError("Failed to load %s into the %s.  The %s was returned to cargo.", cRef->name(), pMod->GetSelf()->name(), cRef->name()));
         /*  this doesnt work right....comment for now.
         std::map<std::string, PyRep *> args;
         args["charge"] = new PyInt(iRef->itemID());
@@ -2587,15 +2587,6 @@ void Ship::EncodeDestiny( Buffer& into) {
     using namespace Destiny;
 
     uint8 mode = m_destiny->GetState(); //Ball::Mode::STOP;
-    /*
-    if (m_destiny->IsWarping())
-        mode = Ball::Mode::WARP;
-    else if (m_destiny->IsFollowing())
-        mode = Ball::Mode::FOLLOW;
-    else if (m_destiny->IsOrbiting())
-        mode = Ball::Mode::ORBIT;
-    else if (m_destiny->IsMoving())
-        mode = Ball::Mode::GOTO;
 /*
     NameStruct name;
         name.name = GetName();
@@ -2761,6 +2752,8 @@ void Ship::RemoveBoost()
     m_shipRef->SetAttribute(AttrArmorHP, m_oldArmor);
     m_shipRef->SetAttribute(AttrInetia, m_oldInertia);
     m_shipRef->SetAttribute(AttrShieldCapacity, m_oldShield);
+    m_shipRef->SetAttribute(AttrScanResolution, m_oldScanRes);
+    m_shipRef->SetAttribute(AttrMaxTargetRange, m_oldTargetRange);
 
     m_destiny->UpdateShipVariables();
 
@@ -2777,18 +2770,18 @@ void Ship::ApplyBoost(BoostData& bData)
 
     _log( FLEET__TRACE, "Ship::ApplyBoost() - %s(%u)", GetName(), GetID());
 
-    m_boost = bData;
-    m_oldArmor = m_shipRef->GetAttribute(AttrArmorHP).get_uint32();
-    m_oldInertia = m_shipRef->GetAttribute(AttrInetia).get_float();
-    m_oldShield = m_shipRef->GetAttribute(AttrShieldCapacity).get_uint32();
-    m_oldScanRes = m_shipRef->GetAttribute(AttrScanResolution).get_uint32();
-    m_oldTargetRange = m_shipRef->GetAttribute(AttrMaxTargetRange).get_uint32();
+    m_boost             = bData;
+    m_oldArmor          = m_shipRef->GetAttribute(AttrArmorHP).get_uint32();
+    m_oldInertia        = m_shipRef->GetAttribute(AttrInetia).get_float();
+    m_oldShield         = m_shipRef->GetAttribute(AttrShieldCapacity).get_uint32();
+    m_oldScanRes        = m_shipRef->GetAttribute(AttrScanResolution).get_uint32();
+    m_oldTargetRange    = m_shipRef->GetAttribute(AttrMaxTargetRange).get_uint32();
 
-    uint16 armorHP = m_oldArmor * (1 + (0.02 * m_boost.armored)); // 2% increase/level
-    uint16 shieldHP = m_oldShield * (1 + (0.02 *  m_boost.siege));// 2% increase/level
-    uint16 scanRes = m_oldScanRes * (1 + (0.02 *  m_boost.leader));// 2% increase/level
-    uint32 targRange = m_oldTargetRange * (1 + (0.02 *  m_boost.info));// 2% increase/level
-    double inertia = m_oldInertia * (1 - (0.02 *  m_boost.skirmish));// 2% decrease/level
+    uint16 armorHP      = m_oldArmor       * (1 + (0.02 * m_boost.armored)); // 2% increase/level
+    uint16 shieldHP     = m_oldShield      * (1 + (0.02 * m_boost.siege));// 2% increase/level
+    uint16 scanRes      = m_oldScanRes     * (1 + (0.02 * m_boost.leader));// 2% increase/level
+    uint32 targRange    = m_oldTargetRange * (1 + (0.02 * m_boost.info));// 2% increase/level
+    double inertia      = m_oldInertia     * (1 - (0.02 * m_boost.skirmish));// 2% decrease/level
 
     m_shipRef->SetAttribute(AttrInetia, inertia);   // lower inertia = lower agility = faster ship
     m_shipRef->SetAttribute(AttrArmorHP, armorHP);
@@ -2823,13 +2816,12 @@ bool Ship::LaunchDrone(InventoryItemRef drone) {
     position.MakeRandomPointOnSphere(500.0);
     drone->SetPosition(position);
 
-    //now we create an entity to represent it.
+    //now we create an SE to represent it.
     FactionData data = FactionData();
-    data.allianceID = pChar->allianceID();
-    data.corporationID = pChar->corporationID();
-    data.factionID = pChar->warFactionID();
-    data.ownerID = pChar->itemID();
-
+        data.allianceID = pChar->allianceID();
+        data.corporationID = pChar->corporationID();
+        data.factionID = pChar->warFactionID();
+        data.ownerID = pChar->itemID();
     Drone* pDrone = new Drone(drone, m_services, m_system, data);
 
     // ship will launch all drones pilot has skill for
@@ -2840,9 +2832,9 @@ bool Ship::LaunchDrone(InventoryItemRef drone) {
     AttrDroneBandwidthLoad = 1273, <-- ship attribute  (current used)
     */
     //  if ship doesnt have bandwidth for drone, it will not online (inert)
-    uint16 load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32();
-    load += drone->GetAttribute(AttrDroneBandwidthUsed).get_uint32();
-    if (load <= m_shipRef->GetAttribute(AttrDroneBandwidth).get_uint32()) {
+    EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
+    load += drone->GetAttribute(AttrDroneBandwidthUsed);
+    if (load <= m_shipRef->GetAttribute(AttrDroneBandwidth)) {
         pDrone->GetAI()->SetIdle();
         m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
     } else {
@@ -2861,9 +2853,9 @@ bool Ship::LaunchDrone(InventoryItemRef drone) {
 void Ship::ScoopDrone(SystemEntity* pDroneSE) {
     m_drones.erase(pDroneSE->GetID());
     pDroneSE->GetDroneSE()->StateChange();
-    uint16 load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32();
-    load -= pDroneSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed).get_uint32();
-    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false);
+    EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
+    load -= pDroneSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
+    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
 }
 
 void Ship::UpdateDrones(std::map<int16, int8> &attribs) {
@@ -2877,15 +2869,16 @@ void Ship::UpdateDrones(std::map<int16, int8> &attribs) {
 }
 
 void Ship::AbandonDrones() {
-    uint16 load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32();
+    SystemEntity* pSE(nullptr);
+    EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
     for (auto cur : m_drones) {
-        SystemEntity* pSE = m_system->GetSE(cur.first);
+        pSE = m_system->GetSE(cur.first);
         if (pSE != nullptr)
             if (pSE->IsDroneSE()) {
                 pSE->GetDroneSE()->Offline();
-                load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed).get_uint32();
+                load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
             }
     }
-    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false);
+    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
 }
 //AttrDroneControlDistance
