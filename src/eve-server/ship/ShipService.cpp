@@ -124,8 +124,14 @@ ShipService::~ShipService() {
     delete m_dispatch;
 }
 
-/** @todo do we need more ship data here?  */
+/** @todo do we need more data here?  */
 PyBoundObject *ShipService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
+    /*
+     * 23:08:44 [ClientMsg] ShipService bind request
+     * 23:08:44 [ClientMsg]      Tuple: 2 elements
+     * 23:08:44 [ClientMsg]       [ 0]    Integer: 60014137     <<-- locationID
+     * 23:08:44 [ClientMsg]       [ 1]    Integer: 15           <<-- location's groupID
+     */
     _log(CLIENT__MESSAGE, "ShipService bind request");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
     return new ShipBound(m_manager, m_db, pClient->GetShip().get());
@@ -352,8 +358,8 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
             _log(MODULE__INFO, "Dumping 'onlineModules' List");
             onlineModules->Dump(MODULE__INFO, "   ");
         }
-        PyDict::const_iterator cur = onlineModules->begin();
-        for (; cur != onlineModules->end(); ++cur)
+        PyDict::const_iterator cur = onlineModules->begin(), end = onlineModules->end();
+        for (; cur != end; ++cur)
             pShip->AddModuleToOnlineVec(cur->second->AsInt()->value());
     }
 
@@ -546,7 +552,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
 
     Client* pClient(call.client);
     SystemManager* pSysMgr(pClient->SystemMgr());
-    if ( pSysMgr == nullptr) {
+    if (pSysMgr == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager.", pClient->GetName());
         return PyStatic.NewNone();
     }
@@ -562,7 +568,6 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         if (pSE->GetContSE()->IsAnchored())
             throw PyException(MakeCustomError("%s is anchored.  Cannot scoop.", pSE->GetName()));
 
-    /** @todo check ownership of this object, ie does this character/corporation own this object? */
     // check drones for other pilots control
     if (pSE->IsDroneSE())
         if (pSE->GetDroneSE()->IsEnabled())
@@ -575,13 +580,8 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    //AttrDroneBaySlotsLeft
     // Check cargo bay capacity:
-    double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagCargoHold);
-    double volume = iRef->GetAttribute(AttrVolume).get_float();
-    if (capacity < volume)
-        throw PyException(MakeCustomError("%s is too large to fit in remaining Cargo bay capacity.", iRef->name()));
-    else {
+    if (pClient->GetShip()->GetMyInventory()->ValidateAddItem(flagCargoHold, iRef)) {  // this will throw if it fails
         // We have enough Cargo bay capacity to hold the item being scooped,
         // so take ownership of it and move it into the cargo bay:
         iRef->ChangeOwner(pClient->GetCharacterID(), true);
@@ -624,6 +624,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
             continue;
         }
 
+        //AttrDroneBaySlotsLeft??
         // Check to see that this is really a drone:
         pClient->GetShip()->ValidateAddItem(flagDroneBay, iRef);
 
