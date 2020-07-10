@@ -64,6 +64,7 @@ public:
     bool InstallSubSystem(ModuleItemRef mRef, EVEItemFlags flag);
     bool AddModule(ModuleItemRef mRef, EVEItemFlags flag);
     void UnfitModule(uint32 itemID);// this will remove charge items from modules
+    void UnfitModule(EVEItemFlags flag);// this will remove charge items from modules
     void Online(uint32 itemID);
     void Offline(uint32 itemID);
     void Online(EVEItemFlags flag);
@@ -161,6 +162,7 @@ private:
     std::map<uint16, uint8> m_modByGroup;               // groupID, count
     std::map<uint8, GenericModule*> m_modules;          // slot, module
     std::map<EVEItemFlags, InventoryItemRef> m_charges; // slot, chargeItem
+    // std::map<EVEItemFlags, ChargeData> m_charges;       // slot, ChargeData {typeID, qty}
 };
 
 

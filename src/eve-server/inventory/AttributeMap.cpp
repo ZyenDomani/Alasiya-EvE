@@ -324,7 +324,7 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
                     [PyList 4 items]
                       [PyFloat 526.692785423517]        <<- old value
                       [PyIntegerVar 129756563391382864] <<- old time?
-                      [PyFloat 104400]                  <<-  ??
+                      [PyFloat 104400]                  <<- recharge time ??
                       [PyFloat 4860]                    <<-  ??
         */
     return SendChanges(modChange.Encode());

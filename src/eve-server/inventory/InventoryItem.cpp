@@ -731,7 +731,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     }
 }
 
-InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
+InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*true*/) {
     if (qty < 1) {
         _log(ITEM__ERROR, "%s (%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
@@ -741,7 +741,7 @@ InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
         return InventoryItemRef(nullptr);
     }
 
-    ItemData idata(m_type.id(), m_ownerID, 0, flagAutoFit, qty);
+    ItemData idata(m_type.id(), m_ownerID, 0, m_flag, qty);
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
     if (iRef.get() == nullptr)
         return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.

@@ -83,7 +83,7 @@ PyObject *StationOffice::StationOfficeGetInfo() {
     if (!Populate( entry ) )
         return nullptr;    //print already done.
 
-        result.items[ m_itemID ] = entry.Encode();
+    result.items[ m_itemID ] = entry.Encode();
 
     return result.Encode();
 }
@@ -97,7 +97,6 @@ void StationOffice::AddItem(InventoryItemRef iRef)
         return;
 
     InventoryItem::AddItem(iRef);
-
 }
 
 void StationOffice::RemoveItem(InventoryItemRef iRef)

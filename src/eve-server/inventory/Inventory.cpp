@@ -588,7 +588,7 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
     double capacity = GetRemainingCapacity(flag);
     float volume = iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float();
 
-    _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %f to add %u %s at %f (%f each)",
+    _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %.2f to add %u %s at %.2f (%.3f each)",
          m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), volume, iRef->GetAttribute(AttrVolume).get_float());
 
     // check capy for single unit

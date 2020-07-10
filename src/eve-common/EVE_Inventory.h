@@ -29,7 +29,7 @@ namespace Inv {
 
     namespace Update {
         //these are used with the OnItemChange packet to update client's item data (and trigger other actions)
-        // updated for change in crucible.  -allan 16May16
+        // updated for crucible.  -allan 16May16
         enum {
             Item          = 0,    //also ixLauncherCapacity?
             Type          = 1,    //also ixLauncherUsed = 1,

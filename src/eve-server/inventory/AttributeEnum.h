@@ -24,7 +24,7 @@
     Updates:    Allan
 */
 
-/** @todo  remove or comment unused items here */
+/** @todo  remove or comment unused items here ? */
 
 #ifndef AttributeEnum_h__
 #define AttributeEnum_h__

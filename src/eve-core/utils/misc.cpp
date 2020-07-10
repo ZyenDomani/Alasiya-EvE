@@ -200,3 +200,31 @@ bool EvE::icontains(std::string data, std::string toSearch, size_t pos/*0*/)
     return (data.find(toSearch, pos) != std::string::npos);
 }
 
+const char* EvE::FormatTime(uint32 time) {
+    uint8 w = 0, d = 0, h = 0, m = 0, s = 0;
+    uint32 seconds = time;
+    float minutes = seconds/60;
+    float hours = minutes/60;
+    float days = hours/24;
+    float weeks = days/7;
+
+    s = fmod(seconds,60);
+    m = fmod(minutes,60);
+    h = fmod(hours,24);
+    d = fmod(days,7);
+    w = fmod(weeks,4);
+
+    std::ostringstream uptime;
+    if (w)
+        uptime << itoa(w) << "w" << itoa(d) << "d" << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+    else if (d)
+        uptime << itoa(d) << "d" << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+    else if (h)
+        uptime << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+    else if (m)
+        uptime << itoa(m) << "m" << itoa(s) << "s";
+    else
+        uptime << itoa(s) << "s";
+
+    return uptime.str().c_str();
+}

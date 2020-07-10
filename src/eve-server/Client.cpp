@@ -888,13 +888,13 @@ void Client::CheckBallparkTimer() {
         sLog.Error("CheckBallparkTimer()", "BallPark Timer is disabled.");
     else
         sLog.Warning("CheckBallparkTimer()", "BallPark Time remaining %ums", m_ballparkTimer.GetRemainingTime());
+    
     _log(CLIENT__TIMER, "CheckBallparkTimer():  State: %s, SetState: %s, Beyonce: %s, Login: %s", \
             GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", \
             m_beyonce?"true":"false", m_login?"true":"false");
     _log(CLIENT__TIMER, "CheckBallparkTimer():  invul: %s, cloak: %s, bubblewait: %s", m_invul?"true":"false", \
         pShipSE == nullptr? "ship null": pShipSE->DestinyMgr() == nullptr? "destiny null": pShipSE->DestinyMgr()->IsCloaked()?"true":"false", \
         m_bubbleWait?"true":"false");
-
 }
 
 void Client::MoveToPosition(const GPoint &pt) {
@@ -1410,7 +1410,7 @@ void Client::ExecuteJump() {
     MoveToLocation(m_moveSystemID, m_movePoint);
 
     SetBallParkTimer(Player::Timer::Jump);
-    
+
     m_movePoint = NULL_ORIGIN;
     m_moveSystemID = 0;
 }

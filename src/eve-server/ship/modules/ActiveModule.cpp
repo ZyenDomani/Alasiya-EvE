@@ -621,7 +621,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     if (m_ModuleState < Module::State::Deactivating)
         return;
 
-    _log(MODULE__TRACE, "%s(%u) calling DeactivateCycle(%s)", m_modRef->name(), m_modRef->itemID(), abort?"true":"false");
+    _log(MODULE__TRACE, "%s(%u) calling DeactivateCycle(abort: %s)", m_modRef->name(), m_modRef->itemID(), abort?"true":"false");
     if ((m_ModuleState == Module::State::Activated) and (!abort)) {
         _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
                 m_modRef->name(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
@@ -802,8 +802,8 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
      *          [PyFloat 10000]                 << reloadTime (ms)
      */
     if (!pClient->IsLogin()) {
-        // GM::Online does this when client logs in...this is to avoid dupe calls
         // process new charge's effects (load timer will determine if fx are applied based on existing charge)
+        // GM::Online proc fx when client logs in...this is to avoid dupe calls
         for (auto it : m_chargeRef->type().m_stateFxMap) {
             fxData data = fxData();
             data.action = FX::Action::Invalid;
