@@ -35,7 +35,7 @@
 #include "system/SystemManager.h"
 #include "station/Station.h"
 
-/** @todo this is actually DogmaLM (Location Manager) for bound objecs... */
+/** @todo this is actually DogmaLM (Location Manager) for bound objects... */
 class DogmaIMBound
 : public PyBoundObject
 {
@@ -325,7 +325,11 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     else
         sRef->LoadCharge(cRef, pMod->flag());
 
-    return nullptr;
+    // returns nodeID and timestamp
+    PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    return tuple;
 }
 
 PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
@@ -342,11 +346,11 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
         return nullptr;
     }
     /*
-    args.chargeLocationID
+    args.shipID
+    args.masterID
     args.chargeTypeID
     args.itemIDs
-    args.masterID
-    args.shipID
+    args.chargeLocationID
     args.qty
     */
     if (args.itemIDs.empty())
@@ -369,9 +373,14 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     else
         sRef->LoadCharge(sItemFactory.GetItem(args.itemIDs.at(0)), pMod->flag());
 
+    // not sure why im not using this, as call is to load bank...
     //sRef->LoadChargesToBank(pMod->flag(), args.itemIDs);
 
-    return nullptr;
+    // returns nodeID and timestamp
+    PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    return tuple;
 }
 
 PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
