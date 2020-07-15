@@ -46,8 +46,8 @@ SystemBubble::SystemBubble(SystemManager* pSystem, const GPoint& center, double 
 m_center(center),
 m_radius(radius),
 m_towerSE(nullptr),
-m_spawnTimer(0),
-m_radius_hysteresis(radius + BUBBLE_HYSTERESIS_METERS) //255km
+m_centerSE(nullptr),
+m_spawnTimer(0)
 {
     m_ice = false;
     m_belt = false;
@@ -191,7 +191,7 @@ void SystemBubble::Add(SystemEntity* pSE)
     pSE->m_bubble = this;
     // global entities also in SystemMgr's static list.  this is used for SystemBubble->IsEmpty() deletion check
     if (pSE->IsStaticEntity() or pSE->isGlobal()) {
-        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is static or global.", pSE->GetName(), pSE->GetID() );
+        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is static or global or both.", pSE->GetName(), pSE->GetID() );
         // all static and global entities (stations, gates, asteroid fields, cyno fields, etc) are put into bubble's staticEntity map
         m_entities[pSE->GetID()] = pSE;
         return;
@@ -204,7 +204,8 @@ void SystemBubble::Add(SystemEntity* pSE)
         return;
     }
 
-    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u", pSE->GetID(), m_bubbleID);
+    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u.  Dist to center: %.2f", \
+            pSE->GetID(), m_bubbleID, m_center.distance(pSE->GetPosition()));
 
     if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
         GPoint startPoint( pSE->GetPosition() );
@@ -355,8 +356,9 @@ void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
         return;
 
     for (auto cur : m_dynamicEntities) {
-        if (cur.second->DestinyMgr()->IsCloaked())
-            continue;
+        if (cur.second->DestinyMgr() != nullptr)
+            if (cur.second->DestinyMgr()->IsCloaked())
+                continue;
         into.emplace(cur.first, cur.second);
     }
 }
@@ -421,24 +423,33 @@ uint32 SystemBubble::CountNPCs() {
 
 bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const
 {
-    float radius = m_radius_hysteresis;
-    if (inWarp)
-        radius *= 2;
-
     if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
         float distance = m_center.distance(pt);
         bool check = false;
-        if (distance < radius )
+        if (distance < m_radius +5000)  // 5k is the grey area between bubbles
             check = true;
 
-        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::InBubble(%u) - distance: %.1f, check: %s", m_bubbleID, distance, check?"true":"false");
+        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::InBubble(%u) - center: %.1f,%.1f,%.1f - distance: %.1f, check: %s", \
+                m_center.x, m_center.y, m_center.z, m_bubbleID, distance, check?"true":"false");
         return check;
     }
 
-    return (m_center.distance(pt) < radius);
+    return (m_center.distance(pt) < m_radius);
 }
 
-bool SystemBubble::IsOverlap( const GPoint& pt ) const {
+bool SystemBubble::IsOverlap( const GPoint& pt ) const
+{
+    if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
+        float distance = m_center.distance(pt);
+        bool check = false;
+        if (distance < m_radius *2 +10)
+            check = true;
+
+        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::IsOverlap(%u) - center: %.1f,%.1f,%.1f - distance: %.1f, check: %s", \
+                m_center.x, m_center.y, m_center.z, m_bubbleID, distance, check?"true":"false");
+        return check;
+    }
+
     return (m_center.distance(pt) < (m_radius * 2));
 }
 
@@ -786,6 +797,7 @@ void SystemBubble::RemoveMarkers()
             SafeDelete(cur.second);
         }
     m_markers.clear();
+    m_centerSE = nullptr;
     m_hasMarkers = false;
 }
 
@@ -801,7 +813,7 @@ void SystemBubble::MarkCenter()
     std::string str = "BubbleID: ", desc = "Bubble Center";
     str += itoa(m_bubbleID);
     str += " Center";
-    MarkBubble(m_center, str, desc);
+    MarkBubble(m_center, str, desc, true);
 
     // create jetcan to mark bubble x
     GPoint center = m_center;
@@ -866,7 +878,7 @@ void SystemBubble::MarkCenter()
     m_hasMarkers = true;
 }
 
-void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::string& desc)
+void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::string& desc, bool center/*false*/)
 {
     ItemData idata(23, 1, m_systemID, flagAutoFit, name.c_str(), position, desc.c_str());
     CargoContainerRef cRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata));
@@ -880,8 +892,9 @@ void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::st
     cSE->AnchorContainer();
     cSE->SetGlobal(true);
     m_markers.emplace( cRef->itemID(), cSE);
-    //Add(cSE);
     m_system->AddEntity(cSE);
+    if (center)
+        m_centerSE = cSE;
 }
 
 

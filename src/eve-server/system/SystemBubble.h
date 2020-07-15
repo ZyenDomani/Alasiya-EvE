@@ -35,6 +35,7 @@
 class Client;
 class SetState;
 class PyTuple;
+class ContainerSE;
 class SystemEntity;
 class SystemManager;
 class Timer;
@@ -78,15 +79,16 @@ public:
 
     /* used for bubble management */
     bool IsEmpty() const                                { return (m_entities.empty() ? m_dynamicEntities.empty() : false); }
-    bool HasPlayers() const                             { return m_players.empty(); }
-    bool HasStatics() const                             { return m_entities.empty(); }
-    bool HasDynamics() const                            { return m_dynamicEntities.empty(); }
+    bool HasPlayers() const                             { return !m_players.empty(); }
+    bool HasStatics() const                             { return !m_entities.empty(); }
+    bool HasDynamics() const                            { return !m_dynamicEntities.empty(); }
     double x() const                                    { return m_center.x; }
     double y() const                                    { return m_center.y; }
     double z() const                                    { return m_center.z; }
     uint16 GetID()                                      { return m_bubbleID; }
     uint32 GetSystemID()                                { return m_systemID; }
     GPoint GetCenter()                                  { return m_center; }
+    ContainerSE* GetCenterMarker()                      { return m_centerSE; }
 
     void clear();
     void PrintEntityList();
@@ -146,7 +148,6 @@ public:
 protected:
     const GPoint m_center;
     const double m_radius;
-    const double m_radius_hysteresis;
 
     // remove all balls in bubble for this SE
     void RemoveBall(SystemEntity* about_who);
@@ -154,17 +155,18 @@ protected:
     // remove this ball from bubble.  update all clients in bubble this SE has left.
     void RemoveBallExclusive(SystemEntity* about_who);
 
-    void MarkBubble(const GPoint& position, std::string& name, std::string& desc);
+    void MarkBubble(const GPoint& position, std::string& name, std::string& desc, bool center=false);
 
 private:
     TowerSE* m_towerSE;
     SystemManager* m_system;
+    ContainerSE* m_centerSE;
 
     bool m_hasMarkers :1;
     bool m_hasBubble :1;       // for warp disruption bubbles (placeholder for later)
 
     uint16 m_bubbleID;
-	uint32 m_systemID;
+    uint32 m_systemID;
 
     std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
     std::map<uint32, SystemEntity*> m_markers;          // bubble marker cans.  we do own these.
