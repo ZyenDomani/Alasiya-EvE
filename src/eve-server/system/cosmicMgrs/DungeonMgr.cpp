@@ -43,7 +43,7 @@ void DungeonDataMgr::Populate()
     ManagerDB::GetDunTemplates(*res);
     while (res->GetRow(row)) {
         // SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates
-        DunTemplate dtemplates = DunTemplate();
+        Dungeon::Template dtemplates = Dungeon::Template();
         dtemplates.dunName = row.GetText(1);
         dtemplates.dunRoomID = row.GetInt(4);
         dtemplates.dunEntryID = row.GetInt(2);
@@ -55,7 +55,7 @@ void DungeonDataMgr::Populate()
     ManagerDB::GetDunRoomData(*res);
     while (res->GetRow(row)) {
         // SELECT dunRoomID, dunGroupID, xpos, ypos, zpos FROM dunRoomData
-        DunRoomData drooms = DunRoomData();
+        Dungeon::RoomData drooms = Dungeon::RoomData();
         drooms.dunGroupID = row.GetInt(1);
         drooms.x = row.GetInt(2);
         drooms.y = row.GetInt(3);
@@ -67,7 +67,7 @@ void DungeonDataMgr::Populate()
     ManagerDB::GetDunGroupData(*res);
     while (res->GetRow(row)) {
         // SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, t.radius, d.xpos, d.ypos, d.zpos FROM dunGroupData
-        DunGroupData dgroups = DunGroupData();
+        Dungeon::GroupData dgroups = Dungeon::GroupData();
         dgroups.typeID = row.GetInt(1);
         dgroups.typeName = row.GetText(3);
         dgroups.typeGrpID = row.GetInt(4);
@@ -83,7 +83,7 @@ void DungeonDataMgr::Populate()
     ManagerDB::GetDunEntryData(*res);
     while (res->GetRow(row)) {
         //SELECT dunEntryID, xpos, ypos, zpos FROM dunEntryData
-        DunEntryData dentry = DunEntryData();
+        Dungeon::EntryData dentry = Dungeon::EntryData();
         dentry.x = row.GetInt(1);
         dentry.y = row.GetInt(2);
         dentry.z = row.GetInt(3);
@@ -95,7 +95,7 @@ void DungeonDataMgr::Populate()
     ManagerDB::GetDunSpawnInfo(*res);
     while (res->GetRow(row)) {
         //SELECT dunRoomSpawnID, dunRoomSpawnType, xpos, ypos, zpos
-        DunRoomSpawnInfo spawn = DunRoomSpawnInfo();
+        Dungeon::RoomSpawnInfo spawn = Dungeon::RoomSpawnInfo();
         spawn.dunRoomSpawnID = row.GetInt(0);
         spawn.dunRoomSpawnType = row.GetInt(1);
         spawn.x = row.GetInt(2);
@@ -116,21 +116,21 @@ void DungeonDataMgr::Populate()
               entrys.size(), rooms.size(), groups.size(), templates.size(), (GetTimeMSeconds() - start));
 }
 
-void DungeonDataMgr::AddDungeon(ActiveDungeon& dungeon)
+void DungeonDataMgr::AddDungeon(Dungeon::ActiveData& dungeon)
 {
     activeDungeons.emplace(dungeon.systemID, dungeon);
     _log(COSMIC_MGR__DEBUG, "Added Dungeon %u (%u) in systemID %u to active dungeon list.", dungeon.dunItemID, dungeon.dunTemplateID, dungeon.systemID);
     //ManagerDB::SaveActiveDungeon(dungeon);
 }
 
-void DungeonDataMgr::GetDungeons(std::vector< ActiveDungeon >& dunList)
+void DungeonDataMgr::GetDungeons(std::vector<Dungeon::ActiveData>& dunList)
 {
     for (auto cur : activeDungeons)
         dunList.push_back(cur.second);
 }
 
-bool DungeonDataMgr::GetTemplate(uint32 templateID, DunTemplate& dTemplate) {
-    std::map<uint32, DunTemplate>::iterator itr = templates.find(templateID);
+bool DungeonDataMgr::GetTemplate(uint32 templateID, Dungeon::Template& dTemplate) {
+    std::map<uint32, Dungeon::Template>::iterator itr = templates.find(templateID);
     if (itr == templates.end()) {
         _log(COSMIC_MGR__ERROR, "DungeonDataMgr - templateID %u not found.", templateID);
         return false;
@@ -233,7 +233,7 @@ void DungeonMgr::Process() {
 
 void DungeonMgr::Load()
 {
-    std::vector<ActiveDungeon> dungeons;
+    std::vector<Dungeon::ActiveData> dungeons;
     ManagerDB::GetSavedDungeons(m_system->GetID(), dungeons);
     /** @todo this will need more work as the system matures...
     for(auto dungeon : dungeons) {
@@ -249,13 +249,13 @@ void DungeonMgr::Load()
         }
         _log(COSMIC_MGR__TRACE, "DungeonMgr::Load() - Loaded dungeon %u, type %u for %s(%u)", dungeon.dungeonID, dungeon.typeID, m_system->GetName(), m_systemID );
         sBubbleMgr.Add( asteroidObj );
-        sDunDataMgr.AddDungeon(std::pair<uint32, ActiveDungeon*>(m_system->GetID(), dungeon));
+        sDunDataMgr.AddDungeon(std::pair<uint32, Dungeon::ActiveData*>(m_system->GetID(), dungeon));
     } */
 }
 
 bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 {
-    DunTemplate dTemplate;
+    Dungeon::Template dTemplate;
     if (!sDunDataMgr.GetTemplate(templateID, dTemplate))
         return false;
 
@@ -272,7 +272,6 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         sig.sigName += dTemplate.dunName;
     }
 
-    GPoint pos(sig.x, sig.y, sig.z);
     // spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
     /** @todo make specific table for dungeon items:  dungeonID, systemID, entity shit if we decide to keep them. */
     /*
@@ -281,7 +280,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     info += " in ";
     info += m_system->GetName();
     */
-    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos/*, info*/);
+    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), sig.position/*, info*/);
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), iData);
     if (iRef.get() == nullptr) // make error and exit
         return false;
@@ -315,7 +314,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
      */
 
     int16 x=0, y=0, z=0;
-    DunGroupData grp;
+    Dungeon::GroupData grp;
     auto roomRange = sDunDataMgr.rooms.equal_range(dTemplate.dunRoomID);
     for (auto it = roomRange.first; it != roomRange.second; ++it) {
         x = it->second.x;
@@ -361,11 +360,11 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     uint32 systemID = m_system->GetID();
     std::vector<uint32> items;
     GPoint pos2(NULL_ORIGIN);
-    std::vector<DunGroupData>::iterator itr = m_anomalyItems.begin(), end = m_anomalyItems.end();
+    std::vector<Dungeon::GroupData>::iterator itr = m_anomalyItems.begin(), end = m_anomalyItems.end();
     while (itr != end) {
-        pos2.x = sig.x + itr->x;
-        pos2.y = sig.y + itr->y;
-        pos2.z = sig.z + itr->z;
+        pos2.x = sig.position.x + itr->x;
+        pos2.y = sig.position.y + itr->y;
+        pos2.z = sig.position.z + itr->z;
         // typeID, ownerID, locationID, flag, name, &_position
         ItemData dData(itr->typeID, sig.ownerID, systemID, flagAutoFit, itr->typeName.c_str(), pos2);
         iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), dData);
@@ -381,7 +380,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     }
 
     if (dTemplate.dunSpawnClass > 0)
-        m_spawnMgr->DoSpawnForAnomaly(sBubbleMgr.FindBubble(m_system->GetID(), pos), dTemplate.dunSpawnClass);
+        m_spawnMgr->DoSpawnForAnomaly(sBubbleMgr.FindBubble(m_system->GetID(), sig.position), dTemplate.dunSpawnClass);
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created for %s with %u items.", \
               sig.sigItemID, sig.sigName.c_str(), m_anomalyItems.size());
@@ -646,9 +645,7 @@ struct CosmicSignature {
     uint16 sigGroupID;
     uint16 scanGroupID;
     uint16 scanAttributeID;
-    double x;
-    double y;
-    double z;
+    GPoint position;
 };
 */
 void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
@@ -815,7 +812,7 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
         double degreeSeparation = (250/level);
         // make 1-20 random items in the anomaly based on system trusec
         for (uint8 i=0; i < level; ++i) {
-            DunGroupData grp = DunGroupData();
+            Dungeon::GroupData grp = Dungeon::GroupData();
             step = MakeRandomInt(1,count);
             std::advance(it,step);      // this is some fancy shit here
             grp.typeID = it->second.typeID;

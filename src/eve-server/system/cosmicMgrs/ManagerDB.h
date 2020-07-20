@@ -10,6 +10,7 @@
 #define _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 
 
+#include "EVE_Dungeon.h"
 #include "EVE_Scanning.h"
 #include "EntityList.h"
 #include "POD_containers.h"
@@ -79,10 +80,10 @@ public:
     static void GetDunTemplates(DBQueryResult& res);
     static void GetDunGroupData(DBQueryResult& res);
     static void GetDunSpawnInfo(DBQueryResult& res);
-    static void SaveActiveDungeon(ActiveDungeon& dun);
+    static void SaveActiveDungeon(Dungeon::ActiveData& dun);
     static void ClearDungeons();
     static void ClearDungeons(uint32 systemID);
-    static bool GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& into);
+    static bool GetSavedDungeons(uint32 systemID, std::vector< Dungeon::ActiveData >& into);
 
     /* anomaly manager */
     void SaveAnomaly(CosmicSignature& sig);

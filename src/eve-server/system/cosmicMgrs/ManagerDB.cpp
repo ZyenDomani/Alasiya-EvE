@@ -305,7 +305,7 @@ void ManagerDB::SaveAnomaly(CosmicSignature& sig)
         " (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)"
         " VALUES ('%s', %u, %u, '%s', %u, %u, %u, %u, %u, %f, %f, %f)", \
             sig.sigID.c_str(), sig.sigItemID, sig.dungeonType, sig.sigName.c_str(), sig.systemID, sig.sigTypeID, sig.sigGroupID, \
-            sig.scanGroupID, sig.scanAttributeID, sig.x, sig.y, sig.z )) {
+            sig.scanGroupID, sig.scanAttributeID, sig.position.x, sig.position.y, sig.position.z )) {
         _log(DATABASE__ERROR, "SaveActiveDungeon - unable to save dungeon");
         }
 }
@@ -443,7 +443,8 @@ void ManagerDB::CreateRoidItemID(ItemData& idata, AsteroidData& adata)
     sDatabase.RunQueryLID(err, adata.itemID,
         "INSERT INTO sysAsteroids (itemName,typeID,systemID,beltID,quantity,radius,x, y, z)"
         " VALUES ('%s', %u, %u, %u, %f, %f, %f, %f, %f)",
-                adata.itemName.c_str(), adata.typeID, adata.systemID, adata.beltID, adata.quantity, adata.radius, adata.x, adata.y, adata.z );
+                          adata.itemName.c_str(), adata.typeID, adata.systemID, adata.beltID, adata.quantity, adata.radius,
+                          adata.position.x, adata.position.y, adata.position.z );
 }
 
 bool ManagerDB::GetAsteroidData(uint32 asteroidID, AsteroidData& dbData)
@@ -466,9 +467,8 @@ bool ManagerDB::GetAsteroidData(uint32 asteroidID, AsteroidData& dbData)
         dbData.beltID = row.GetInt(3);
         dbData.quantity = row.GetDouble(4);
         dbData.radius = row.GetDouble(5);
-        dbData.x = row.GetDouble(6);
-        dbData.y = row.GetDouble(7);
-        dbData.z = row.GetDouble(8);
+        GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
+        dbData.position = pos;
         return true;
     } else
         dbData = AsteroidData();
@@ -499,9 +499,8 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< As
         entry.beltID = row.GetInt(4);
         entry.quantity = row.GetDouble(5);
         entry.radius = row.GetDouble(6);
-        entry.x = row.GetDouble(7);
-        entry.y = row.GetDouble(8);
-        entry.z = row.GetDouble(9);
+        GPoint pos(row.GetDouble(7), row.GetDouble(8), row.GetDouble(9));
+        entry.position = pos;
         into.push_back(entry);
     }
 
@@ -550,7 +549,7 @@ void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& ro
             Inserts << ", ";
         // itemID and attributeID keys.
         Inserts << "(" << cur.itemID << ", '" << cur.itemName << "', " << cur.typeID << ", " << systemID << ", " << cur.beltID << ", ";
-        Inserts << cur.quantity << ", " << cur.radius << ", " << cur.x << ", " << cur.y << ", " << cur.z << ")";
+        Inserts << cur.quantity << ", " << cur.radius << ", " << cur.position.x << ", " << cur.position.y << ", " << cur.position.z << ")";
     }
     // did we get at least 1 insert?
     if (!first) {
@@ -612,7 +611,7 @@ void ManagerDB::GetDunTemplates(DBQueryResult& res)
         _log(DATABASE__ERROR, "Error in GetDunTemplates query: %s", res.error.c_str());
 }
 
-bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& into)
+bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< Dungeon::ActiveData >& into)
 {
     DBQueryResult res;
 
@@ -628,7 +627,7 @@ bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& 
     _log(DATABASE__RESULTS, "GetSavedDungeons returned %u items", res.GetRowCount());
     DBResultRow row;
     while(res.GetRow(row)) {
-        ActiveDungeon entry = ActiveDungeon();
+        Dungeon::ActiveData entry = Dungeon::ActiveData();
             entry.systemID = row.GetInt(0);
             entry.state = row.GetInt(1);
             entry.dunItemID = 0;
@@ -643,7 +642,7 @@ bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& 
     return !into.empty();
 }
 
-void ManagerDB::SaveActiveDungeon(ActiveDungeon& dun)
+void ManagerDB::SaveActiveDungeon(Dungeon::ActiveData& dun)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err,

@@ -14,14 +14,14 @@
 #define _EVEMU_SYSTEM_DUNGEONMGR_H
 
 #include <unordered_map>
-#include "POD_containers.h"
+#include "EVE_Dungeon.h"
 #include "system/SystemGPoint.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 
 /*
- * struct ActiveDungeon {
+ * struct Dungeon::ActiveData {
  *    uint32 systemID;
  *    uint32 dungeonID;
  *    uint8 dunTemplateID;
@@ -44,21 +44,21 @@ public:
     // Initializes the Table:
     int Initialize();
 
-    void AddDungeon(ActiveDungeon& dungeon);
-    void GetDungeons(std::vector<ActiveDungeon>& dunList);
+    void AddDungeon(Dungeon::ActiveData& dungeon);
+    void GetDungeons(std::vector<Dungeon::ActiveData>& dunList);
 
-    bool GetTemplate(uint32 templateID, DunTemplate& dTemplate);
+    bool GetTemplate(uint32 templateID, Dungeon::Template& dTemplate);
 
     uint32 GetDungeonID()                               { return ++m_dungeonID; }
 
     std::string GetDungeonType(int8 typeID);
 
 protected:
-    typedef std::map<uint32, DunTemplate> DunTemplateDef;                       //templateID/data
-    typedef std::unordered_multimap<uint32, ActiveDungeon> ActiveDungeonDef;    //systemID/data
-    typedef std::unordered_multimap<uint32, DunRoomData> DunRoomsDef;           //roomID/data
-    typedef std::unordered_multimap<uint32, DunEntryData> DunEntryDef;          //entryID/data
-    typedef std::unordered_multimap<uint32, DunGroupData> DunGroupsDef;         //groupID/data
+    typedef std::map<uint32, Dungeon::Template> DunTemplateDef;                       //templateID/data
+    typedef std::unordered_multimap<uint32, Dungeon::ActiveData> ActiveDungeonDef;    //systemID/data
+    typedef std::unordered_multimap<uint32, Dungeon::RoomData> DunRoomsDef;           //roomID/data
+    typedef std::unordered_multimap<uint32, Dungeon::EntryData> DunEntryDef;          //entryID/data
+    typedef std::unordered_multimap<uint32, Dungeon::GroupData> DunGroupsDef;         //groupID/data
 
     DunTemplateDef templates;         // templateID/data
 
@@ -111,7 +111,7 @@ protected:
     /* we do not own any of these */
 private:
     bool m_initalized;
-    
+
     AnomalyMgr* m_anomMgr;
     SpawnMgr* m_spawnMgr;
     SystemManager* m_system;
@@ -123,7 +123,7 @@ private:
     void AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<uint16>& groupVec);
 
 
-    std::vector<DunGroupData> m_anomalyItems;
+    std::vector<Dungeon::GroupData> m_anomalyItems;
 
     std::map<uint32, std::vector<uint32>> m_dungeonList;  // this holds all items associated with the key 'dungeonID' in this system
 

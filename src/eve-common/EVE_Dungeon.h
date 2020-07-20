@@ -145,6 +145,69 @@ namespace Dungeon {
             FacWarLoyaltyPointsGranted = 48
         };
     }
+
+    /* POD structure for active dungeon */
+    struct ActiveData {
+        uint8 state;
+        uint32 systemID;
+        uint32 dunItemID;
+        uint32 dunTemplateID;
+        int64 dunExpiryTime;
+        double x;
+        double y;
+        double z;
+    };
+    
+    /* POD structure entries for dungeon data */
+    struct Template {
+        uint8 dunTypeID;
+        uint8 dunSpawnClass;
+        uint16 dunEntryID;
+        int32 dunRoomID;
+        std::string dunName;
+    };
+
+    struct RoomInfo {
+        uint8 dunRoomType;
+        uint8 dunRoomCategory;
+        uint8 dunRoomSpawnID;
+        uint8 dunRoomSpawnType;
+        uint16 dunRoomID;
+    };
+
+    struct RoomData {
+        int16 x;
+        int16 y;
+        int16 z;
+        int32 dunGroupID;
+    };
+
+    struct GroupData {
+        uint8 typeCatID;    // this is categoryID of the itemType, and needed to simplify create/spawn code
+        int16 typeID;
+        int16 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
+        int16 x;
+        int16 y;
+        int16 z;
+        uint16 radius;
+        std::string typeName;
+    };
+
+    struct RoomSpawnInfo {
+        int16 x;
+        int16 y;
+        int16 z;
+        uint16 dunRoomSpawnID;
+        uint16 dunRoomSpawnType;
+    };
+
+    struct EntryData {
+        int16 x;
+        int16 y;
+        int16 z;
+        uint16 dunEntryID;
+    };
+
 }
 
 /*
