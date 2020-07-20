@@ -1,10 +1,11 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    12 January 2020
+****    10 July 2020
 
 *******************************************************
 **********  errors and other found shit...high priority
+
 
 noob ships do not Init() correctly....  most attrs are 0
 
@@ -16,12 +17,23 @@ after unloading module using ungroup, tried loading charge to newly-ungrouped mo
 prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
 
+ShipItem::AddItemByFlag --  this needs a walkthru to verify usage and proper operation
+
 module add/remove isnt fully thought out at this point.
     - will need complete walk thru to verify proper operation
     - module states need a good lookover
 moving mwd from one slot to another throws groupfit limited error
 when moving module slots, module is offlined after refit
 check charge flag - getting segfault on flagAutoFit for chargeRef in fx
+check reload times for non-weapon modules
+check/fix loading linked weapons
+    - look over and correct loading with partial stacks (see UserError at MM::LoadCharge)
+    - reloading grouped weapons should divide evenly between modules.
+        it currently fills modules in slot order.
+
+all MM and ship calls need to verify throw status
+    - test with Client->CanThrow() to verify throwable status
+
 
 check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?  no...ins is queried when needed
@@ -36,11 +48,6 @@ check trade - ships retain insurance
 20:41:06 [SvcMsg] Delivered message from 1000132 to recipient 90000000
 
 
-jetans dont check capy before jettison
-most cargoholds dont check capy
-seems entire item/cargo shit is wonky
-
-dungeon/anomaly items need tracking for removal on cleanup/shutdown
 dungeon deco items need better placement
 
 
@@ -55,6 +62,8 @@ go thru all updated effect data and look for 'improved' ship data to update ours
     - updated barges from current live patch (hot tanks)
 current fx data incomplete at best.  missing multiple items/defs
 isDefault used to send to activate for effectID
+go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
+put EVEEffectID enum into namespace
 
 
 error:
@@ -65,12 +74,16 @@ error:
 
 go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
 
+jettison now checks for can capy.
+    - will need to code new can when current can is full.
+    - currently throws error to client and msg in console.
+
 closely examine target mgr and see what we can improve.
     - test changing TargetEntry class (and enums) to struct
     - verify entries are placed timely and appropriately
     - multiple throw msgs not implemented (client msgs in dogmaim)
     - update targ/npcai to inform npc of yellowbox instead of locked
-rewrite completed, but reverted due to multiple errors and inconsistencies
+rewrite completed, but reverted due to multiple errors and inconsistencies (m_targMgr->OnTarget())
 
 create ".modify" command to allow ingame setting of attributes
     - groove has this functionality in his launcher
@@ -83,8 +96,6 @@ currently, all bookmarks are donated to calling player when moved into cargo/han
 
 finish DestinyManager::SendCloakFx()
 
-check/fix loading linked weapons
-look over and correct loading with partial stacks (see UserError at MM::LoadCharge)
 
 change AddBalance (et al) to TransferFunds()
     - only used by market service.  will need more code to implement.
@@ -129,10 +140,7 @@ RefObjects - MEMORY MANAGEMENT!!
 Py* objects that have string as key need 'delete' called on string when destroyed per valgrind...cannot find ref to this error now
 Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
 
-Inventory
-    - all Inventory-by-Flag methods will get expensive as they loop thru entire contents to search for flag
-    - update to use m_usedVolumeByFlag container?
-    -   this will add another add/remove/check to the system
+
 InvBrokerBound::Handle_GetInventory
     - incomplete
 InvBrokerBound::Handle_GetInventoryFromId
@@ -141,6 +149,16 @@ InvBrokerBound::Handle_GetInventoryFromId
     - suspect many error msgs in client for this, but none are found/coded yet
     - wtf does 'passive' mean??  only called for char and ship during 'Prime'.  "dont load item" maybe?
 
+DogmaIMBound::Handle_Activate
+    - need to complete POS/Container cases and verify we're not missing anything
+DogmaIMBound::Handle_Deactivate
+    - same as above
+DogmaIMBound::Handle_OverloadRack
+DogmaIMBound::Handle_StopOverloadRack
+    - both incomplete
+
+GetMyInventory()->ContainsTypeByFlag
+    - should this check for items in holds other than default cargoHold?
 
 pi working.  currently rewriting process code  -priority level: lo
     - check/rewrite planet xml code as needed (minor improvement)
@@ -158,8 +176,7 @@ fleet boosts - apply directly to ship/modules when calculated
     - this will give proper data to client when GetAllInfo() is sent
     - many fleet error msgs in client unused - noted in fleetdata.h
     - determine how to save fleetID for wrecks (SE has fleetID member...may save id to item.customdata)
-
-scoop object needs a bit of attention
+    - MiningLaser::GetMiningVolume() uses calc's in method for boost.  this is in contrast with data in client (from GetAllInfo)
 
 petition system missing most calls
     - this system hasnt been started
@@ -187,8 +204,22 @@ missions/agents - agents working. courier missions working. currently ~50 missio
 next up is security missions.  will need dungeon work for these.   -priority level: hi
 
 anomaly system - working. may need revisit after other systems mature.   -priority level: med
+    - sig data needs work and common add/create method for scanning
+    - verify AddAnomaly() calls for all items
+    - add map for .showall function on scanner
+
+added notes on scanner groupNames in anomalyMgr.cpp and more data in EVE_Scanner.h
+    - field descriptions found in packets/Scan.xmlp
+ship scanner disables after trying to scan while warping (which tells you it cant be done)
+update conescan (dscan from ship) to use args.  these will determine what is found from scanning (currently shows everything in bubble as POC)
+when using .showall or .bubbletrack, the items need to be put into anomalymgr map for objects
+    - need to get items from anomalyMgr instead of sysmgr and bubblemgr (currently using both)
+anomalies need a groupID that's NOT "unknown"
+check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
+anomaly settings by config variables (for later)
 
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
+
 
 player drones - skeleton started. needs functionality    -priority level: med-hi
 drones mass and maxspeed need attention
@@ -236,7 +267,7 @@ corp items not updating in db when moved (could be all items as we're not saving
 dividends incomplete
 decorations list doesnt include recipients.  also time is shown as elapsed
 contacts incomplete
-StationOffice::ValidateAddItem incomplete
+StationOffice::ValidateAddItem incomplete (but unused)
 
 alliances?  not yet.  need other shit finished first.
 started coding alliance db
@@ -282,15 +313,9 @@ map::GetIncursionGlobalReport()
 expeditions.  not sure how to do this one.
 dungeonExplorationMgr::GetMyEscalatingPathDetails()
 
-added notes on scanner groupNames in anomalyMgr code
-ship scanner disables after trying to scan while warping (which tells you it cant be done)
-update conescan (dscan from ship) to use args.  these will determine what is found from scanning (currently shows everything in bubble as POC)
-
 journal - killing rats descriptions are a bit off...gives itemID (no name)
 
 many unimplemented salvage error msgs noted in prospector.h
-
-attribMap has open db calls
 
 OSE::Killed() unfinished.
 
@@ -306,6 +331,13 @@ still many ClientErrorMgs not used/implemented
 noob mining ships to have ore hold?
 ibis, bantam, probe, ?
 
+go thru classes and rename per class type...
+    -  *Item  for items
+    -  *SE  for system entities
+
+finish dot commands
+    - add options for commands
+    - .tr still needs lots of work.  basic code is done
 
 
 *******************************************************
@@ -334,16 +366,20 @@ this includes fx13 and fx10 calls
 look into using "CALL_", "RSP_" and "encode=true/false"/"decode=true/false" for including/omitting the bloated encode/decode sections
   - this will be involved and rather time-consuming
 
+  <elementDef name="GodmaError"><!-- more to this than template has here.  fix later  -->
+
 *******************************************************
 *****************  db shit
 
 all PackedRows are marshalled into a buffer, where None is inserted as zero.
-    - this negates client conditional checks like using "if x is None:" because 0 returns false in that check
+    - this negates client conditional checks like using "if x is None:" because x=0 returns false in that check
 
 *******************************************************
 *****************  ideas for later
 
 ***  look into using sql prepared statements for oft-used queries
+
+****  make safe save method to verify and save data on segfault
 
 aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for all clients in system
 
@@ -400,6 +436,25 @@ comment unused attrib defs
 
 *******************************************************
 *****************   errata and miscellaneous bullshit
+error with char location on login......
+backtrace() returned 15 addresses
+/srv/games/eve/Dev/bin/eve-server(_ZN3EvE10traceStackEv+0x1f) [0xfd7766]
+/srv/games/eve/Dev/bin/eve-server(_ZN13InventoryItem11SetPositionERK6GPoint+0x70) [0xbdaadc]
+/srv/games/eve/Dev/bin/eve-server(_ZN6Client14MoveToLocationEjRK6GPoint+0x57f) [0x94b555]
+/srv/games/eve/Dev/bin/eve-server(_ZN6Client15SelectCharacterEi+0x595) [0x9497df]
+/srv/games/eve/Dev/bin/eve-server(_ZN21CharUnboundMgrService24Handle_SelectCharacterIDER10PyCallArgs+0x114) [0xa8b7a4]
+/srv/games/eve/Dev/bin/eve-server(_ZN20PyCallableDispatcherI21CharUnboundMgrServiceE8DispatchERKSsR10PyCallArgs+0x12e) [0xa8fc10]
+/srv/games/eve/Dev/bin/eve-server(_ZN10PyCallable4CallERKSsR10PyCallArgs+0x43) [0x9914e3]
+/srv/games/eve/Dev/bin/eve-server(_ZN9PyService4CallERKSsR10PyCallArgs+0x168) [0x993ca8]
+/srv/games/eve/Dev/bin/eve-server(_ZN6Client14Handle_CallReqEP8PyPacketR12PyCallStream+0x2d8) [0x955d84]
+/srv/games/eve/Dev/bin/eve-server(_ZN19EVEPacketDispatcher14DispatchPacketEP8PyPacket+0x27e) [0xe63454]
+/srv/games/eve/Dev/bin/eve-server(_ZN6Client10ProcessNetEv+0x55) [0x94912b]
+/srv/games/eve/Dev/bin/eve-server(_ZN10EntityList7ProcessEv+0x4b) [0x96e471]
+/srv/games/eve/Dev/bin/eve-server(main+0x5180) [0x93855c]
+/lib64/libc.so.6(__libc_start_main+0xf0) [0x7ffff6463050]
+/srv/games/eve/Dev/bin/eve-server() [0x933259]
+22:09:28 [InvTrace] Inventory::RemoveItem() - Ibaria(30000053) does not contain Allan(90000000) in AutoFit.
+22:09:28 [InvTrace] Inventory::AddItem() - Updated Ibaria III - Thukker Mix Warehouse(60014137) to contain (1) Allan(90000000) in AutoFit.
 
 
 add rule of 5 for Py* code (or =delete defaults)
@@ -510,8 +565,6 @@ implants....update existing data for more bonus.  as we are running ~60 on char 
     update for ~20+ or so points to make a difference with our attributes
 
 turns use quanternion lerp curve (and mass/agility somehow)
-
-check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
 
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend
