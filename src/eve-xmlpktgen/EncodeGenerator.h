@@ -85,5 +85,4 @@ private:
     const char* mName;
 };
 
-
 #endif

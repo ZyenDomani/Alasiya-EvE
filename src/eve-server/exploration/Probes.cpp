@@ -305,7 +305,7 @@ void ProbeSE::RecoverProbe(PyList* list)
 
 void ProbeSE::SendNewProbe()
 {
-    SSR_ObjectEx_Pos ssr_oed;
+    ScanResultPos ssr_oed;
         ssr_oed.x = GetPosition().x;
         ssr_oed.y = GetPosition().y;
         ssr_oed.z = GetPosition().z;
@@ -344,11 +344,11 @@ void ProbeSE::SendWarpStart(float travelTime/*0*/)
 {
     // OnProbeWarpStart(self, probeID, fromPos, toPos, startTime, duration)
     PyToken* token = new PyToken("foo.Vector3");
-    SSR_ObjectEx_Pos posFrom;
+    ScanResultPos posFrom;
         posFrom.x = m_self->position().x;
         posFrom.y = m_self->position().y;
         posFrom.z = m_self->position().z;
-    SSR_ObjectEx_Pos posTo;
+    ScanResultPos posTo;
         posTo.x = m_destination.x;
         posTo.y = m_destination.y;
         posTo.z = m_destination.z;

@@ -166,6 +166,41 @@ private:
     uint16  m_nebulaType;
 };
 
+namespace WormHole {
+    namespace Class {
+        enum {
+            Unknown1    = 0,
+            Unknown2    = 1,
+            Unknown3    = 2,
+            Unknown4    = 3,
+            Dangerous1  = 4,
+            Dangerous2  = 5,
+            Deadly      = 6,
+            HiSec       = 7,
+            LoSec       = 8,
+            NullSec     = 9
+        };
+    }
+
+    namespace Age {
+        enum {
+            New = 0,
+            Adolescent = 1,
+            Decaying = 2,
+            Closing = 3
+        };
+    }
+
+    namespace Size {
+        // these are fuzzy logic
+        enum {
+            Full = 10,
+            Reduced = 5,
+            Disrupted = 1
+        };
+    }
+}
+
 #endif /* !__CELESTIAL__H__INCL__ */
 
 

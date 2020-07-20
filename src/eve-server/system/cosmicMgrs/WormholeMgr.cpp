@@ -15,6 +15,7 @@
 #include "PyServiceMgr.h"
 #include "StaticDataMgr.h"
 #include "inventory/InventoryItem.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
 #include "system/SystemManager.h"
 
@@ -69,60 +70,43 @@ void WormholeMgr::Process() {
 
 void WormholeMgr::Create(CosmicSignature& sig)
 {
+    // this really isnt needed.  may need later
     if (sig.dungeonType != Dungeon::Type::Wormhole)
         return;
 
     /** @note  this creates a k162 for deco only at this time.
      * it is more POC than usable
      */
+    /*
+     * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
+     * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
+     */
+    // set sigStrenth based on wh type and location
+    // default to 1/25 for now (base default is 1/80)
+    sig.sigStrength = 0.04;
+
+    // create k162 here
     sig.sigName = "WormHole K162 (deco only)";
-    GPoint pos(sig.x, sig.y, sig.z);
-    // create and spawn and save actual anomaly item
-    // typeID, ownerID, locationID, flag, name, &_position
-    ItemData aData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
-    InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), aData);
-    if (iRef.get() == nullptr) // make error and exit
+    GPoint pos(sig.position);
+    ItemData wData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
+    InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), wData);
+    if (iRef.get() == nullptr) // we'll survive...anomaly is temp item, so not worried about deleting it here.
         return;
 
+    // verify system is loaded
     SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sig.systemID);
     if (pSysMgr == nullptr) {
         _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - Boot failure for system %u", sig.systemID);
         return;
     }
 
-    CelestialSE* cSE = new CelestialSE(iRef, *(pSysMgr->GetServiceMgr()), pSysMgr);
-    if (cSE == nullptr) {
-        _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - SE Create failure for %s(%u)", iRef->itemName().c_str(), iRef->itemID());
-        return;
-    }
-    // set itemID to return to anomaly mgr after creation succedes
-    sig.sigItemID = iRef->itemID();
-    // add signal to system
-    pSysMgr->AddEntity(cSE);
-    //  this shows as an anomaly when clicking on WH in space.
-    //  figure out how to remove from view, but still in system for other things to function properly
-
-    /*
-     * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
-     * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
-     */
-
-    // set sigStrenth based on wh type and location
-    // default to 1/25 for now (base defauilt is 1/80)
-    sig.sigStrength = 0.04;
-
-    // create k162 here
-    pos += 25000;   // move 25k for WormHole position
-    ItemData wData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
-    iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), wData);
-    if (iRef.get() == nullptr) // we'll survive...anomaly is temp item, so not worried about deleting it here.
-        return;
-
     CelestialSE* wSE = new CelestialSE(iRef, *(pSysMgr->GetServiceMgr()), pSysMgr);
     if (wSE == nullptr) {
         _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - SE Create failure for %s(%u)", iRef->itemName().c_str(), iRef->itemID());
         return;
     }
+    // set itemID to return to anomaly mgr after creation succeeds
+    sig.sigItemID = iRef->itemID();
     // add wormhole to system
     pSysMgr->AddEntity(wSE);
     // add exit to vector
@@ -145,15 +129,12 @@ void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
     //default to 1/80
     sig.sigStrength = 0.0125;
 
-    // determine owner - default to rogue drones
-    sig.ownerID = 500022;
+    // determine owner - default to sleeper drones.  may change later
+    sig.ownerID = factionSleepers;
     if (MakeRandomFloat() > 0.1) // 10% chance to be rogue drones
         sig.ownerID = sDataMgr.GetRegionRatFaction(pToSys->GetRegionID());
 
-    GPoint pos = m_gp.GetAnomalyPoint(pToSys);
-        sig.x = pos.x;
-        sig.y = pos.y;
-        sig.z = pos.z;
+    sig.position = m_gp.GetAnomalyPoint(pToSys);
 
     // send data to Create() for processing
     Create(sig);
