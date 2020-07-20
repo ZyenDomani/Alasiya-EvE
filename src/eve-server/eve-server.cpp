@@ -897,6 +897,7 @@ static void CatchSignal( int sig_num )
     sLog.Error( "    Signal System", "Caught signal: %d", sig_num );
     if (sConfig.server.StackTrace)
         EvE::traceStack();
+    //SafeSave();
     m_run = false;
     //CleanUp();
 }

@@ -114,7 +114,7 @@ PyResult PetitionerService::Handle_GetCategories( PyCallArgs& call )
     uint8 size = call.tuple->size();
     sLog.White( "PetitionerService::Handle_GetCategories()", "size=%u ", size );
 
-    PyList* result = new PyList;
+    PyList* result = new PyList();
     result->AddItemString( "Test Cat" );
     result->AddItemString( "Test Cat2" );
 
@@ -126,12 +126,12 @@ PyResult PetitionerService::Handle_GetCategoryHierarchicalInfo( PyCallArgs& call
     uint8 size = call.tuple->size();
     sLog.White( "PetitionerService::Handle_GetCategoryHierarchicalInfo()", "size=%u ", size );
 
-    return new PyList;
+    return new PyList();
 }
 
 //00:28:58 L PetitionerService::Handle_GetUnreadMessages(): size=0
 PyResult PetitionerService::Handle_GetUnreadMessages( PyCallArgs& call )
 {
     //unknown...
-    return new PyList;
+    return new PyList();
 }

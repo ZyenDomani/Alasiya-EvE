@@ -49,7 +49,7 @@ PyResult Command_translocate(Client* pClient, CommandDB* db, PyServiceMgr* servi
     return Command_tr(pClient,db,services,args);
 }
 
-/*   hardcoded menu translocates
+/*   hardcoded menu translocates in client
  * ('/tr me ' + str(mapItem.itemID),)   << mapItem
  * ('/tr me ' + str(charID),)           << charItem
  * ('/tr me ' + str(itemID),)           << slimItem

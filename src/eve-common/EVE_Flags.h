@@ -50,6 +50,7 @@ enum EVEItemFlags {
     flagHiSlot5                     = 32,
     flagHiSlot6                     = 33,
     flagHiSlot7                     = 34,    //High power slot 8
+    
     flagFixedSlot                   = 35,
 
     //factory stuff:
