@@ -118,33 +118,41 @@ public:
     bool                    IsOnline()                  { return GetAttribute(AttrOnline).get_bool(); }
 
     /* public-access generic functions handled in base class. */
-    void                    SetPosition(const GPoint pos);     // change coords of item
+    void                    SetPosition(const GPoint& pos);     // change coords of item
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
-    // Move() will remove item from old location, add to new location and (optionally) notify client of changes
-    void                    Move(uint32 new_location, EVEItemFlags flag=flagAutoFit, bool notify=false);
+    // remove item from old location, add to new location and (optionally) notify client of changes
+    void                    Move(uint32 new_location=0, EVEItemFlags flag=flagAutoFit, bool notify=false);
     // same as Move() but xfer ownership also
-    void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify=true);
+    void                    Donate(uint32 new_owner=1, uint32 new_location=0, EVEItemFlags new_flag=flagAutoFit, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map< int32, PyRep* >& changes);
     // this is for stacking charges, mined ore, and salvage in ship's cargo
-    void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);
+    void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);  // will test for existing types
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     // this also updates volume of item
     bool                    AlterQuantity(int32 qty, bool notify=false);
     bool                    SetQuantity(int32 qty, bool notify=false);
+    // send qty of 0 to client, which will trigger item removal without adding to 'new' location
+    // this is used for loading charges from cargo where we update charge flag in server, but dont send update to client
+    void                    ZeroQuantity(EVEItemFlags flag);
+    // sets new flag, if different, saves update to db, and (optionally) notifies client of change
     bool                    SetFlag(EVEItemFlags flag, bool notify=false);
 
     /* public-access data functions handled in base class. */
     void                    SaveItem();  //save the item to the DB.
     void                    UpdateLocation();   // save item's location, owner, flag
-    void                   UpdateLocation(uint32 locID) { m_locationID = locID; }  // change item's location data (but not save to db)
+    void                   UpdateLocation(uint32 locID) { m_locationID = locID; }  // change item's locationID without saving
 
     /* virtual functions default to base class and overridden as needed */
     virtual void            Delete();  //totally removes item from game and deletes from the DB.
-    // makes new stack of 'qty' and returns ref of new stack, or null if failed
-    virtual InventoryItemRef Split(int32 qty, bool notify=true);
+    // makes new stack of 'qty', then returns ref of new stack, or null if failed
+    // notify=true will update client for qty change and new stack
+    virtual InventoryItemRef Split(int32 qty, bool notify=true, bool silent=false);     // combines stacks of identical typeIDs
     virtual bool            Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
-
+    // same as Move() but doesnt remove item from previous location
+    // used for moving charges to/from ship without calling Remove()
+    virtual void            Relocate(uint32 locID=0, EVEItemFlags flag=flagAutoFit);
+    
     // add item to our inventory
     virtual void            AddItem(InventoryItemRef iRef);
     // remove item from our inventory
@@ -158,14 +166,6 @@ public:
     /* loads attributes for this item */
     //bool LoadAttributes();
     double                  GetPackagedVolume();
-    /* only for loaded charges
-     * qty=0 will not change qty in InventoryItem
-     * qty >1 will add qty sent to InventoryItem.qty (additive)
-     * loaded=false will send 0 as new value
-     * qty=0 and loaded=true will send current InventoryItem.qty as new value
-     * if InventoryItem.qty <1, item is deleted
-     */
-    void AlterChargeQuantity(int16 qty=0, bool loaded=true);
 
     /* specific functions for ShipItem, virtual here to allow generic class access */
     virtual void            SetPlayer(Client* pClient)  { /* do nothing here */ }

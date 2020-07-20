@@ -239,7 +239,7 @@ void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
         ge.charID = m_ownerID;
         ge.shipID = m_cData.itemID;
         ge.target = PyStatic.NewNone();
-        ge.other = PyStatic.NewNone();
+        ge.subLoc = PyStatic.NewNone();
         ge.area = new PyList();
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
@@ -549,9 +549,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         wreckEntity.itemName = wreck_name;
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = 3962;
-        wreckEntity.x = wreckPosition.x;
-        wreckEntity.y = wreckPosition.y;
-        wreckEntity.z = wreckPosition.z;
+        wreckEntity.position = wreckPosition;
 
     if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
         sLog.Error("CustomsSE::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", 3962);

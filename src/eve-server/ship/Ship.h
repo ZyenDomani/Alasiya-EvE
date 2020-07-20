@@ -90,7 +90,6 @@ public:
     /*
      * Primary public packet builders:
      */
-    PyDict* ShipGetInfo();
     PyDict* GetShipInfo();
     PyDict* GetShipState();
     PyList* ShipGetModuleList();
@@ -252,7 +251,6 @@ public:
     void OfflineGroup(GenericModule* pMod);
     void DamageGroup(GenericModule* pMod);
     // to load with ammo
-    void LoadLinkedWeapons(InventoryItemRef cRef, GenericModule* pMod);
     void LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs);
     void GetLinkedWeaponMods(EVEItemFlags flag, std::vector<GenericModule*> &modules);
 
@@ -297,15 +295,15 @@ class Missile;
 class SystemManager;
 class ServiceDB;
 
-class Ship
+class ShipSE
 : public DynamicSystemEntity
 {
 public:
-    Ship(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
-    virtual ~Ship()                                     { /* do nothing here */ }
+    ShipSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
+    virtual ~ShipSE()                                   { /* do nothing here */ }
 
     /* class type pointer querys. */
-    virtual Ship* GetShipSE()                           { return this; }
+    virtual ShipSE* GetShipSE()                         { return this; }
     /* class type tests. */
     virtual bool IsShipSE()                             { return true; }
 
@@ -363,7 +361,7 @@ public:
     double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
 
     void AbandonDrones();
-    bool LaunchDrone(InventoryItemRef drone);
+    bool LaunchDrone(InventoryItemRef dRef);
     void ScoopDrone(SystemEntity* pDroneSE);
 
 protected:

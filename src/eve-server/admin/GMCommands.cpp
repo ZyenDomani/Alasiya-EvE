@@ -218,9 +218,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         entity.itemID = item->itemID();
         entity.itemName = actualTypeName;
         entity.typeID = actualTypeID;
-        entity.x = loc.x;
-        entity.y = loc.y;
-        entity.z = loc.z;
+        entity.position = loc;
         /** @todo need to get faction info here... */
         entity.allianceID = 1;
         entity.corporationID = 1;
@@ -351,9 +349,7 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
         entity.itemID = item->itemID();
         entity.itemName = actualTypeName;
         entity.typeID = actualTypeID;
-        entity.x = loc.x;
-        entity.y = loc.y;
-        entity.z = loc.z;
+        entity.position = loc;
         // set owner data according to type and location
         switch (actualCategoryID) {
             case EVEDB::invCategories::Entity: {

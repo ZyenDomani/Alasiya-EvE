@@ -54,27 +54,30 @@ bool AttributeMap::Load(bool reset/*false*/) {
     /* First, we copy default attributes values from our itemType, loaded into memObj when type is loaded */
     mItem.type().CopyAttributes(mItem);
 
-    /* Then we load saved attribs from the db, if any, to update the defaults with items current (saved) values*/
-    DBQueryResult res;
-    if (IsCharacter(mItem.itemID())) {
-        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID()))
-            _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
-    } else {
-        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID()))
-            _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
-    }
+    // check for temp items.  they arent saved to db
+    if (!IsTempItem(mItem.itemID())) {
+        /* load saved attribs from the db, if any, to update the defaults with items current (saved) values*/
+        DBQueryResult res;
+        if (IsCharacter(mItem.itemID())) {
+            if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID()))
+                _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
+        } else {
+            if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID()))
+                _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
+        }
 
-    DBResultRow row;
-    EvilNumber value = EvilNumber();
-    while (res.GetRow(row)) {
-        if (row.IsNull(1)) {
-            if (row.IsNull(2))
-                value = EvilZero;
-            else
-                value = row.GetDouble(2);
-        } else
-            value = row.GetInt64(1);
-        SetAttribute(row.GetUInt(0), value, false);
+        DBResultRow row;
+        EvilNumber value = EvilNumber();
+        while (res.GetRow(row)) {
+            if (row.IsNull(1)) {
+                if (row.IsNull(2))
+                    value = EvilZero;
+                else
+                    value = row.GetDouble(2);
+            } else
+                value = row.GetInt64(1);
+            SetAttribute(row.GetUInt(0), value, false);
+        }
     }
     /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
     if (is_log_enabled(ITEM__DEBUG))
@@ -122,7 +125,7 @@ bool AttributeMap::Save() {
             owner = true;
         } break;
         case EVEDB::invCategories::Charge: {    // remember, crystals and lenses are charges, too.
-            charge = true;
+            //charge = true;
             damage = true;
         } break;
         case EVEDB::invCategories::Module:      // save online state for modules
@@ -214,7 +217,7 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify
     if (itr == mAttributes.end())
         return; // it doesnt exist...nothing to do.
 
-    EvilNumber oldValue = itr->second;
+    EvilNumber oldValue(itr->second);
     itr->second *= num;
 
     if (notify)
@@ -249,55 +252,6 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
     return false;
 }
 
-void AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
-    EvilNumber old_val = EvilZero, new_val = EvilZero;
-    AttrMapItr itr = mAttributes.find(AttrQuantity);
-    if (itr != mAttributes.end()) {
-        old_val = itr->second;
-        itr->second = old_val + qty;
-    } else {
-        old_val = (EvilNumber)mItem.quantity();
-        mAttributes.emplace(AttrQuantity, old_val + qty);
-        _log(ITEM__WARNING, "%s is initializing AttrQuantity to %u.", mItem.name(), old_val.get_uint32() + qty);
-    }
-
-    if (loaded)
-        new_val = old_val + qty;
-
-    if (old_val == new_val)
-        return;
-
-    Notify_OnModuleAttributeChange modChange;
-    modChange.ownerID = mItem.ownerID();
-    if (IsModuleSlot(mItem.flag())) {
-        // locationID, flag, typeID = itemKey
-        PyTuple* itemKey = new PyTuple(3);
-        itemKey->SetItem(0, new PyInt(mItem.locationID()));
-        itemKey->SetItem(1, new PyInt(mItem.flag()));
-        itemKey->SetItem(2, new PyInt(mItem.typeID()));
-        modChange.itemKey = itemKey;
-    } else {
-        _log(ITEM__WARNING, "%s calling AlterChargeQuantity() but isnt loaded.", mItem.name());
-        modChange.itemKey = new PyInt(mItem.itemID());
-    }
-    modChange.attributeID = AttrQuantity;
-    modChange.time = GetFileTimeNow();
-    modChange.newValue = new_val.GetPyObject();
-    modChange.oldValue = old_val.GetPyObject();
-    PyTuple* change = modChange.Encode();
-
-    if (is_log_enabled(MODULE__DUMP)) {
-        _log(MODULE__DUMP, "AlterChargeQuantity dump:");
-        change->Dump(MODULE__DUMP, "    ");
-    }
-
-    Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
-    if (pClient != nullptr)
-        pClient->QueueDestinyEvent(&change);
-    else
-        _log(ITEM__WARNING, "AlterChargeQuantity - Cannot find owner for %s", mItem.name());
-}
-
 // [eventName,] ownerID, itemID, attributeID, time, newValue, oldValue = change (unless attrib = quantity)
 bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_val) {
     // check for internal skill time data
@@ -305,9 +259,20 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
         return true;
     if (old_val == new_val)
         return true;
+
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
+
+    if (IsFittingSlot(mItem.flag()) and (mItem.categoryID() == EVEDB::invCategories::Charge)) {
+        // locationID, flag, typeID = itemKey
+        PyTuple* itemKey = new PyTuple(3);
+            itemKey->SetItem(0, new PyInt(mItem.locationID()));
+            itemKey->SetItem(1, new PyInt(mItem.flag()));
+            itemKey->SetItem(2, new PyInt(mItem.typeID()));
+        modChange.itemKey = itemKey;
+    } else
         modChange.itemKey = new PyInt(mItem.itemID());
+
         modChange.attributeID = attrID;
         modChange.time = GetFileTimeNow();
         modChange.newValue = new_val.GetPyObject();
@@ -335,7 +300,16 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
         return true;
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
+    if (IsFittingSlot(mItem.flag()) and (mItem.categoryID() == EVEDB::invCategories::Charge)) {
+        // locationID, flag, typeID = itemKey
+        PyTuple* itemKey = new PyTuple(3);
+            itemKey->SetItem(0, new PyInt(mItem.locationID()));
+            itemKey->SetItem(1, new PyInt(mItem.flag()));
+            itemKey->SetItem(2, new PyInt(mItem.typeID()));
+        modChange.itemKey = itemKey;
+    } else
         modChange.itemKey = new PyInt(mItem.itemID());
+
         modChange.attributeID = attrID;
         modChange.time = GetFileTimeNow();
         modChange.newValue = num.GetPyObject();
@@ -378,6 +352,7 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
         return false;
     }
 
+    // avoid flooding the client on login
     if (pClient->IsLogin())
         return true;
 

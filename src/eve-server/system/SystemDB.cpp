@@ -153,9 +153,8 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.typeID        = row.GetInt(3);
         entry.groupID       = row.GetInt(4);
         entry.categoryID    = (EVEItemCategories)row.GetInt(5);
-        entry.x             = row.GetDouble(6);
-        entry.y             = row.GetDouble(7);
-        entry.z             = row.GetDouble(8);
+        GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
+        entry.position      = pos;
         entry.planetID      = atoi(row.GetText(9));
 
         if (IsCorp(entry.ownerID)) {
@@ -223,9 +222,8 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.ownerID       = row.GetInt(3);
         entry.groupID       = row.GetInt(4);
         entry.categoryID    = (EVEItemCategories)row.GetInt(5);
-        entry.x             = row.GetDouble(6);
-        entry.y             = row.GetDouble(7);
-        entry.z             = row.GetDouble(8);
+        GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
+        entry.position      = pos;
 
         if (IsCorp(entry.ownerID)) {
             entry.corporationID = entry.ownerID;

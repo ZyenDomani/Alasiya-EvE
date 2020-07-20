@@ -63,7 +63,7 @@ class StructureSE;
 class CustomsSE;
 class DeployableSE;
 class AsteroidSE;
-class Ship;
+class ShipSE;
 class DungeonSE;
 
 class TowerSE;
@@ -129,7 +129,7 @@ public:
     virtual NPC*                GetNPCSE()              { return nullptr; }
     virtual Drone*              GetDroneSE()            { return nullptr; }
     virtual Missile*            GetMissileSE()          { return nullptr; }
-    virtual Ship*               GetShipSE()             { return nullptr; }
+    virtual ShipSE*             GetShipSE()             { return nullptr; }
     virtual Concord*            GetConcordSE()          { return nullptr; }
 
     /* class type tests, grouped by base class.  public for anyone to access. */

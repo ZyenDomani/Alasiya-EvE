@@ -63,9 +63,9 @@ namespace Ga
 			return GaVec3(x / s,y / s,z / s);
 		}
 
-		GaExpInl GaVec3 operator*(const GaVec3 &s) const
+		GaExpInl GaVec3 operator*(const GaVec3 &oth) const
 		{
-			return GaVec3(x * s.x,y * s.y,z * s.z);
+                    return GaVec3(x * oth.x,y * oth.y,z * oth.z);
 		}
 
 		GaExpInl GaVec3& operator=(const GaVec3& oth)

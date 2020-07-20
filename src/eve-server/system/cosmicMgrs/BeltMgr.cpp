@@ -195,9 +195,7 @@ void BeltMgr::Save() {
         entry.beltID = cur.first;
         entry.radius = cur.second->GetRadius();
         entry.quantity = ((25000 * log(entry.radius)) - 112404.8);   // quantity in m^3
-        entry.x = cur.second->x();
-        entry.y = cur.second->y();
-        entry.z = cur.second->z();
+        entry.position = cur.second->GetPosition();
         roids.push_back(entry);
     }
 
@@ -224,9 +222,7 @@ struct CosmicSignature {
     uint16 sigGroupID;
     uint16 scanGroupID;
     uint16 scanAttributeID;
-    double x;
-    double y;
-    double z;
+    GPoint position;
 };
 */
 
@@ -387,9 +383,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         adata.typeID = typeID;
         adata.quantity = quantity;
         adata.radius = radius;
-        adata.x = position.x;
-        adata.y = position.y;
-        adata.z = position.z;
+        adata.position = position;
     ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
     InventoryItemRef itemRef = sItemFactory.SpawnAsteroid(idata, adata);
     if (itemRef.get() == nullptr)

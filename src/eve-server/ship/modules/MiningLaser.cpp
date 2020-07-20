@@ -53,6 +53,9 @@ void MiningLaser::LoadCharge(InventoryItemRef charge)
 {
     ActiveModule::LoadCharge(charge);
 
+    if (m_chargeRef.get() == nullptr)
+        return;
+
     m_crystalDmg = m_chargeRef->GetAttribute(AttrDamage).get_float();
     m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
     m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
@@ -81,7 +84,7 @@ bool MiningLaser::CanActivate()
         return false;
     }
 
-    if (m_chargeLoaded and (m_crystalRoidGrp == 0)) {
+    if (m_chargeLoaded and (m_chargeRef.get() != nullptr) and (m_crystalRoidGrp == 0)) {
         m_crystalDmg = m_chargeRef->GetAttribute(AttrDamage).get_float();
         m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
         m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
@@ -265,7 +268,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         return;
     }
 
-    if (!m_chargeLoaded)
+    if (!m_chargeLoaded or (m_chargeRef.get() == nullptr))
         return;
 
     if (m_crystalDmgChance > 0.0f)
@@ -327,7 +330,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
         double oreAmount = roidQuantity * percent;
 
         // create and add ore to cargo for this laser
-        cur.second->AddOre(roidRef->typeID(), oreAmount);
+        cur.second->AddOreAndDeactivate(roidRef->typeID(), oreAmount);
 
         // inform pilot of asteroid depleted  ...no clue if it actually works like this
         PyTuple* tuple = new PyTuple(2);
@@ -341,20 +344,20 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
     // calculate ore for this laser
     percent = GetMiningVolume() /total;
     // create and add ore to cargo for this laser
-    AddOre(roidRef->typeID(), roidQuantity * percent, false);
+    AddOreAndDeactivate(roidRef->typeID(), roidQuantity * percent, false);
 }
 
-void MiningLaser::AddOre(uint16 typeID, float amt, bool slave/*true*/) {
+void MiningLaser::AddOreAndDeactivate(uint16 typeID, float amt, bool slave/*true*/) {
 
     ItemData idata(typeID, m_shipRef->ownerID(), 0, flagAutoFit, amt);
     InventoryItemRef oRef = sItemFactory.SpawnItem( idata );
     if (oRef.get() == nullptr) {
-        _log(MINING__ERROR, "AddOre() - Could not create mined ore for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );
+        _log(MINING__ERROR, "AddOreAndDeactivate() - Could not create mined ore for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );
         return;
     }
 
     if (!m_shipRef->AddItemByFlag(m_holdFlag, oRef))
-        _log(MINING__ERROR, "AddOre() - Could not add ore to hold for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );
+        _log(MINING__ERROR, "AddOreAndDeactivate() - Could not add ore to hold for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );
 
     // send pilot msg about depletion for this module
     m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates; Its target has been depleted.", m_modRef->name());
@@ -376,7 +379,7 @@ float MiningLaser::GetMiningVolume()
     // fleet involvement enhances mining amount using MiningForeman of highest member (3%/lvl)
     // this should apply to modules/ship when boost activated, but this is easier at this time.
     //  downside is client will have the original, lower cycle amount as this isnt set in module
-    Ship* pShip = m_shipRef->GetPilot()->GetShipSE();
+    ShipSE* pShip = m_shipRef->GetPilot()->GetShipSE();
     if (pShip != nullptr)
         if (pShip->IsBoosted())
             cycleVol *= (1 + (0.03 * pShip->GetMiningBoostAmount())); // 3% increase/level

@@ -37,6 +37,7 @@
 #include "ship/modules/ModuleManager.h"
 #include "ship/modules/ModuleFactory.h"
 #include "ship/modules/ActiveModule.h"
+#include "station/Station.h"
 #include "system/DestinyManager.h"
 
 /*
@@ -82,16 +83,22 @@ bool ModuleManager::Initialize() {
     m_SubSystemSlots = pShipItem->GetAttribute(AttrSubSystemSlot).get_uint32();
 
     // modules - 3 banks of 8 slots each
-    for (uint8 flag = flagLowSlot0; flag < flagFixedSlot; ++flag)
+    for (uint8 flag = flagLowSlot0; flag < flagFixedSlot; ++flag) {
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
+        m_fittings.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
+    }
     // rigs - one bank of 3 slots
-    for (uint8 flag = flagRigSlot0; flag < flagRigSlot3; ++flag)
+    for (uint8 flag = flagRigSlot0; flag < flagRigSlot3; ++flag) {
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
+        m_systems.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
+    }
     //subsystems - one bank of 5 slots
-    for (uint8 flag = flagSubSystem0; flag < flagSubSystem5; ++flag)
+    for (uint8 flag = flagSubSystem0; flag < flagSubSystem5; ++flag) {
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
+        m_systems.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
+    }
 
-    // Load modules, charges, rigs and subsystems into module maps:
+    // Load modules, rigs and subsystems into module maps:
     std::vector<InventoryItemRef> itemVec;
     // this will order by mod, charge, cargo
     pShipItem->GetMyInventory()->GetInventoryVec(itemVec);
@@ -99,7 +106,7 @@ bool ModuleManager::Initialize() {
     for (auto cur : itemVec) {
         // this is a hack.  dont know why any ship item would have flagAutoFit set, but have seen random errors where charges are set to flagAutoFit
         if (cur->flag() == flagAutoFit) {
-            _log(MODULE__ERROR, "MM::Initialize() - (module to load) %s(%u) has flagAutoFit set in ship %s",\
+            _log(MODULE__ERROR, "MM::Initialize() - %s(%u) has flagAutoFit set in ship %s",\
                     cur->name(), cur->itemID(), pShipItem->name() );
             // put that bitch back in cargo
             cur->SetFlag(flagCargoHold);
@@ -122,10 +129,11 @@ bool ModuleManager::Initialize() {
                         // put that bitch back in cargo
                         cur->SetFlag(flagCargoHold);
                     } else {
-                        _log(MODULE__TRACE, "MM::Initialize() - ship %s loading %s(%u) into %s(%u) at %s.",\
-                                pShipItem->name(), cur->name(), cur->itemID(), \
-                                pMod->GetSelf()->name(), pMod->GetSelf()->itemID(), sDataMgr.GetFlagName(cur->flag()));
+                        _log(MODULE__TRACE, "MM::Initialize() - ship %s loading %s(%u) at %s with %s(%u).",\
+                                pShipItem->name(), pMod->GetSelf()->name(), pMod->GetSelf()->itemID(), \
+                                sDataMgr.GetFlagName(cur->flag()), cur->name(), cur->itemID());
                         pMod->LoadCharge(cur);
+                        cur->SetQuantity(cur->quantity());
                         m_charges.emplace(cur->flag(), cur);
                     }
                     pMod = nullptr;
@@ -138,8 +146,16 @@ bool ModuleManager::Initialize() {
 }
 
 void ModuleManager::LoadOnline() {
-    // must proc modules in order of (subsys -> rig -> high -> mid -> low) for proper fx application
-    std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();
+    // must proc modules in order of (subsys -> rig -> low -> mid -> high) for proper fx application
+    // online subsystems, then rigs before hi,mid,lo slots
+    std::map<uint8, GenericModule*>::reverse_iterator ritr = m_systems.rbegin(), rend = m_systems.rend();
+    while (ritr != rend) {
+        if (ritr->second != nullptr)
+            ritr->second->Online();
+            ++ritr;
+    }
+    // process lo,mid,hi slots in that order.
+    std::map<uint8, GenericModule*>::iterator itr = m_fittings.begin(), end = m_fittings.end();
     while (itr != end) {
         if (itr->second != nullptr)
             if (itr->second->GetAttribute(AttrOnline).get_bool())
@@ -152,12 +168,14 @@ void ModuleManager::Process()
 {
     double profileStartTime = GetTimeUSeconds();
 
-    // proc modules in order of (subsys -> rig -> high -> mid -> low) for proper fx application
-    std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();
+    // proc modules in order of (low -> mid -> high) for proper fx application
+    // NOTE: rigs and subsystems dont need proc tic.
+    std::map<uint8, GenericModule*>::iterator itr = m_fittings.begin(), end = m_fittings.end();
     while (itr != end) {
         if (itr->second != nullptr)
-            itr->second->Process();
-        ++itr;
+            if (itr->second->GetAttribute(AttrOnline).get_bool())
+                itr->second->Process();
+            ++itr;
     }
 
     if (sConfig.debug.UseProfiling)
@@ -173,6 +191,11 @@ void ModuleManager::RemoveTarget(SystemEntity* pSE) {
     for (auto cur : m_modules)
         if (cur.second != nullptr)
             cur.second->RemoveTarget(pSE);
+        /*
+    for (auto cur : m_fittings)
+        if (cur.second != nullptr)
+            cur.second->RemoveTarget(pSE);
+        */
 }
 
 uint16 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
@@ -676,19 +699,22 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
 void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
 {
     GenericModule* pMod = GetModule(itemID);
-    if (pMod != nullptr) {
-        // test for effectName "online", which is sent thru rclick menu in HUD to offline module
-        if (effectName.compare("online") == 0) {
-            _log(MODULE__TRACE, "MM::Deactivate() - %s Offlining - '%s'", pMod->GetSelf()->name(), effectName.c_str());
-            pMod->Offline();
-            return;
-        }
-        if (pMod->GetModuleState() != Module::State::Activated)  // we dont need an error msgs here....this is acceptable, as the module may not be active
-            return;
-        _log(MODULE__TRACE, "MM::Deactivate() - %s Deactivating - '%s'", pMod->GetSelf()->name(), effectName.c_str());
-        pMod->Deactivate(effectName);
-    } else
+    if (pMod == nullptr) {
         _log(MODULE__ERROR, "MM::Deactivate() - Called on module %u that is not loaded.", itemID );
+        return;
+    }
+
+    // test for effectName "online", which is sent thru rclick menu in HUD to offline module
+    if (effectName.compare("online") == 0) {
+        _log(MODULE__TRACE, "MM::Deactivate() - %s Offlining - '%s'", pMod->GetSelf()->name(), effectName.c_str());
+        pMod->Offline();
+        return;
+    }
+    if (pMod->GetModuleState() != Module::State::Activated)  // we dont need an error msgs here....this is acceptable, as the module may not be active
+        return;
+
+    _log(MODULE__TRACE, "MM::Deactivate() - %s Deactivating - '%s'", pMod->GetSelf()->name(), effectName.c_str());
+    pMod->Deactivate(effectName);
 }
 
 void ModuleManager::Overload(uint32 itemID)
@@ -845,47 +871,57 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 {
     GenericModule* pMod = GetModule(flag);
     if (pMod == nullptr) {
-        _log(MODULE__ERROR, "MM::LoadCharge() - module not found at slot %i", flag);
+        _log(MODULE__ERROR, "MM::LoadCharge() - module not found at %s", sDataMgr.GetFlagName(flag));
         return;
     }
     float modCapacity = pMod->GetAttribute(AttrCapacity).get_float();
     float chargeVolume = chargeRef->GetAttribute(AttrVolume).get_float();
 
-    if (pMod->IsLoaded()) {
-        if (chargeRef->typeID() == pMod->GetLoadedChargeRef()->typeID())
+    bool loaded = pMod->IsLoaded();
+
+    if (loaded) {
+        if (chargeRef->typeID() == pMod->GetLoadedChargeRef()->typeID()) {
             modCapacity -= (chargeVolume * pMod->GetLoadedChargeRef()->quantity());
-        else
-            UnloadCharge(flag, true); // change charges
-    }
+            _log(MODULE__TRACE, "MM::LoadCharge() - %s reloading with same type. remaining capy:%.2f", pMod->GetSelf()->name(), modCapacity);
+        } else {
+            // change charges
+            UnloadCharge(flag, true);
+            loaded = false;
+            // update module capy
+            modCapacity = pMod->GetAttribute(AttrCapacity).get_float();
+            _log(MODULE__TRACE, "MM::LoadCharge() - %s reloading with different type. empty capy:%.2f", pMod->GetSelf()->name(), modCapacity);
+        }
+    } else
+        _log(MODULE__TRACE, "MM::LoadCharge() - %s not loaded. capy:%.2f", pMod->GetSelf()->name(), modCapacity);
+
     //{'FullPath': u'UI/Messages', 'messageID': 256676, 'label': u'CannotLoadNotEnoughChargesBody'}(u'There are not enough charges to fully load all of your modules. Some of your modules have been left partially loaded or empty.', None, None)
 
     // check quantities
     if (modCapacity < chargeVolume)
         return;
+
     int32 loadQty = floor((modCapacity / chargeVolume));
     if (loadQty < 1)
         return;
-    InventoryItemRef oRef(chargeRef);   // make copy of chargeRef
+
     if (loadQty < chargeRef->quantity()) {
-        chargeRef = chargeRef->Split(loadQty);
+        chargeRef = chargeRef->Split(loadQty, false);
         if (chargeRef.get() == nullptr) {
-            // make error here
-            chargeRef = oRef;
+            // make error here?
             return;
         }
     }
 
-    if (pMod->IsLoaded()) {
-        pMod->GetLoadedChargeRef()->Merge(chargeRef);
-        pMod->GetLoadedChargeRef()->GetAttributeMap()->AlterChargeQuantity(loadQty, true);
-    } else {
-        chargeRef->Donate(pShipItem->ownerID(), pShipItem->itemID(), flag, true);
-        pMod->LoadCharge(chargeRef);
+    // when sending charge item change with locationID or flagID, client will correctly add as sublocation
+    chargeRef->Move(pShipItem->itemID(), flag, true);
+
+    pMod->LoadCharge(chargeRef);
+
+    if (!loaded) {
+        // if module wasnt previously loaded, add to ship inventory and charge map
+        pShipItem->AddItem(chargeRef);
         m_charges.emplace(flag, chargeRef);
     }
-
-    // change back to orig chargeRef incase of Merge(), which deletes item
-    chargeRef = oRef;   // oRef copy is deleted upon return (out of scope)
 }
 
 void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
@@ -896,28 +932,23 @@ void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
         return;
     }
 
+    _log(MODULE__TRACE, "%s(%u) calling MM::UnloadCharge(%s)", pMod->GetSelf()->name(), pMod->itemID(), (merge?"true":"false"));
+
+    // verify no charge at flag in map
+    m_charges.erase(fromFlag);
+
     if (!pMod->IsLoaded()) {
-        if (!pMod->IsActive())
-            _log(MODULE__ERROR, "MM::UnloadCharge() - module %s at %s is not loaded", \
-                        pMod->GetSelf()->name(), sDataMgr.GetFlagName(fromFlag));
+        _log(MODULE__ERROR, "MM::UnloadCharge() - %s at %s is not loaded", \
+                pMod->GetSelf()->name(), sDataMgr.GetFlagName(fromFlag));
         return;
     }
 
-    InventoryItemRef chargeRef(nullptr);
-    std::map<EVEItemFlags, InventoryItemRef>::iterator itr = m_charges.find(fromFlag);
-    if (itr == m_charges.end())
-        chargeRef = pMod->GetLoadedChargeRef();
-    else {
-        chargeRef = itr->second;
-        m_charges.erase(itr);
-    }
+    InventoryItemRef chargeRef(pMod->GetLoadedChargeRef());
     if (chargeRef.get() == nullptr) {
         _log(MODULE__ERROR, "MM::UnloadCharge() - charge not found in chargeList or on module %s at %s", \
                 pMod->GetSelf()->name(), sDataMgr.GetFlagName(fromFlag));
         return;
     }
-    _log(MODULE__TRACE, "MM::UnloadCharge() - %s unloading %s(%u) (merge:%s)",\
-            pMod->GetSelf()->name(), chargeRef->name(), chargeRef->itemID(), (merge?"true":"false"));
 
     pMod->UnloadCharge();
 
@@ -925,18 +956,21 @@ void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
         return;
 
     // move item and update client
-    //if (IsStation(pShipItem->locationID()))
-    //    chargeRef->Move(pShipItem->locationID(), flagHangar, true);
-    //  this causes errors when removing charges.  module icons dont update when using this (bad return)
-    //else if (merge and pShipItem->GetMyInventory()->ContainsTypeByFlag(chargeRef->typeID(), flagCargoHold))
-    //    chargeRef->MergeTypesInCargo(pShipItem, flagCargoHold);
-    //else
-        chargeRef->SetFlag(flagCargoHold, true);
-}
+    chargeRef->SetAttribute(AttrQuantity, EvilZero);
+    chargeRef->DeleteAttribute(AttrQuantity);
 
-void ModuleManager::GetLoadedCharges(std::map< EVEItemFlags, InventoryItemRef >& charges)
-{
-    charges = m_charges;
+    if (IsStation(pShipItem->locationID())) {
+        StationItemRef sRef = sEntityList.GetStationByID(pShipItem->locationID());
+        if (sRef.get() != nullptr) {
+            InventoryItemRef iRef = sRef->GetMyInventory()->GetItemByTypeFlag(chargeRef->typeID(), flagHangar);
+            if (iRef.get() != nullptr) {
+                iRef->Merge(chargeRef);
+            } else
+                chargeRef->Relocate(pShipItem->locationID(), flagHangar);
+        } else
+            chargeRef->Relocate(pShipItem->locationID(), flagHangar);
+    } else
+        chargeRef->MergeTypesInCargo(pShipItem, flagCargoHold);
 }
 
 InventoryItemRef ModuleManager::GetLoadedChargeOnModule(EVEItemFlags flag) {
@@ -950,13 +984,6 @@ InventoryItemRef ModuleManager::GetLoadedChargeOnModule(InventoryItemRef moduleR
     return GetLoadedChargeOnModule(moduleRef->flag());
 }
 
-bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
-{
-    if (!IsSlotOccupied(slot1) or !IsSlotOccupied(slot2))
-        return true;
-    return (GetModule(slot1)->GetModulePowerLevel() == GetModule(slot2)->GetModulePowerLevel());
-}
-
 void ModuleManager::UnloadModule(uint32 itemID)
 {
     GenericModule* pMod = GetModule(itemID);
@@ -966,36 +993,17 @@ void ModuleManager::UnloadModule(uint32 itemID)
     }
     if (!pMod->IsLoaded())
         return;
-    InventoryItemRef iRef = pMod->GetLoadedChargeRef();
-    if (iRef.get() == nullptr)
-        return;
-    pMod->UnloadCharge();
-    if IsStation(pShipItem->locationID())
-        iRef->Move(pShipItem->locationID(), flagHangar, true);
-    else if (pShipItem->GetMyInventory()->ContainsTypeByFlag(iRef->typeID(), flagCargoHold))
-        iRef->MergeTypesInCargo(pShipItem, flagCargoHold);
-    else
-        iRef->SetFlag(flagCargoHold, true);
+
+    UnloadCharge(pMod->flag(), true);
 }
 
 void ModuleManager::UnloadWeapons()
 {
     std::map<uint8, GenericModule*>::iterator mItr;
-    std::map<EVEItemFlags, InventoryItemRef>::iterator cItr;
     for (EVEItemFlags i = flagHiSlot0; 1 < flagFixedSlot; i+1) {
         mItr = m_modules.find((uint8)i);
         if (mItr->second != nullptr)
-            mItr->second->UnloadCharge();
-        cItr = m_charges.find(i);
-        if (cItr != m_charges.end()) {
-            if IsStation(pShipItem->locationID())
-                cItr->second->Move(pShipItem->locationID(), flagHangar, true);
-            else if (pShipItem->GetMyInventory()->ContainsTypeByFlag(cItr->second->typeID(), flagCargoHold))
-                cItr->second->MergeTypesInCargo(pShipItem, flagCargoHold);
-            else
-                cItr->second->SetFlag(flagCargoHold, true);
-            m_charges.erase(cItr);
-        }
+            UnloadCharge(mItr->second->flag(), true);
     }
 }
 
@@ -1006,12 +1014,8 @@ void ModuleManager::UnloadAllModules()
             cur.second->UnloadCharge();
     // can this be called when docked?
     bool docked = IsStation(pShipItem->locationID());
-    for (auto cur : m_charges) {
-        if (docked)
-            cur.second->Move(pShipItem->locationID(), flagHangar, true);
-        else
-            cur.second->SetFlag(flagCargoHold, true);
-    }
+    for (auto cur : m_charges)
+        UnloadCharge(cur.second->flag(), true);
 
     m_charges.clear();
 }
@@ -1159,7 +1163,7 @@ void ModuleManager::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& modV
 
 void ModuleManager::GetModuleListOfRefsOrdered( std::vector< InventoryItemRef >& modVec )
 {
-    // this is to list all ship modules by order of fx proc....subsys, rig, low, mid, hi
+    // this is to list all ship modules by order of subsys, rig, low, mid, hi
     // subsystems
     for (uint8 flag = flagSubSystem0; flag < flagSubSystem5; ++flag)
         if (m_modules[flag] != nullptr)
@@ -1184,7 +1188,7 @@ void ModuleManager::GetModuleListOfRefsOrdered( std::vector< InventoryItemRef >&
 
 void ModuleManager::GetModuleListOfRefsOrderedRev( std::vector< InventoryItemRef >& modVec ) {
 
-    // this is to list all ship modules by order of fx proc....hi, mid, low, rig, subsys
+    // this is to list all ship modules by order of hi, mid, low, rig, subsys
     // hi slots
     for (uint8 flag = flagHiSlot0; flag < flagFixedSlot; ++flag)
         if (m_modules[flag] != nullptr)
@@ -1348,7 +1352,19 @@ uint8 ModuleManager::GetFittedModuleCountByGroup(uint16 groupID)
 
 void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod)
 {
+    // add module to main map
     m_modules.at(flag) = pMod;
+    // add module to proc maps
+    if (IsFittingSlot(flag))
+        m_fittings.at(flag) = pMod;
+    else if (IsRigSlot(flag))
+        m_systems.at(flag) = pMod;
+    else if (IsSubSystem(flag))
+        m_systems.at(flag) = pMod;
+    else {  // error here.
+        sLog.Error("MM::addModuleRef()", "sent flag '%s'", sDataMgr.GetFlagName(flag));
+        return;
+    }
 
     _log(MODULE__TRACE, "MM::addModuleRef() - adding %s in %s to map.", pMod->GetSelf()->name(), sDataMgr.GetFlagName(flag));
 
@@ -1389,7 +1405,19 @@ void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod)
 
 void ModuleManager::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
 {
+    // remove module from main map
     m_modules.at(flag) = nullptr;
+    // remove module from proc maps
+    if (IsFittingSlot(flag))
+        m_fittings.at(flag) = nullptr;
+    else if (IsRigSlot(flag))
+        m_systems.at(flag) = nullptr;
+    else if (IsSubSystem(flag))
+        m_systems.at(flag) = nullptr;
+    else {  // error here.
+        sLog.Error("MM::deleteModuleRef()", "sent flag '%s'", sDataMgr.GetFlagName(flag));
+        return;
+    }
 
     _log(MODULE__TRACE, "MM::deleteModuleRef() - removing %s from %s.", pMod->GetSelf()->name(), sDataMgr.GetFlagName(flag));
 
@@ -1423,6 +1451,13 @@ void ModuleManager::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
         pShipItem->SetAttribute(AttrUpgradeLoad, (pShipItem->GetAttribute(AttrUpgradeLoad) - pMod->GetAttribute(AttrUpgradeCost)));
         pShipItem->SetAttribute(AttrUpgradeSlotsLeft, pShipItem->GetAttribute(AttrUpgradeSlotsLeft) +1);
     }
+}
+
+bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
+{
+    if (!IsSlotOccupied(slot1) or !IsSlotOccupied(slot2))
+        return true;
+    return (GetModule(slot1)->GetModulePowerLevel() == GetModule(slot2)->GetModulePowerLevel());
 }
 
 /*

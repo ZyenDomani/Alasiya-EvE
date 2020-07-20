@@ -138,7 +138,7 @@ void Drone::RemoveDrone() {
     delete this;
 }
 
-void Drone::Launch( Ship* pShipSE ) {
+void Drone::Launch(ShipSE* pShipSE) {
     m_online = true;
     m_pShipSE = pShipSE;
 
@@ -151,7 +151,7 @@ void Drone::Launch( Ship* pShipSE ) {
     assert (m_bubble != nullptr);
 }
 
-void Drone::Online(Ship* pShipSE/*nullptr*/) {
+void Drone::Online(ShipSE* pShipSE/*nullptr*/) {
     StateChange(true);
 
     if (pShipSE == nullptr)
@@ -413,9 +413,7 @@ void Drone::Killed(Damage &fatal_blow) {
         wreckEntity.itemName = wreck_name;
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = wreckTypeID;
-        wreckEntity.x = wreckPosition.x;
-        wreckEntity.y = wreckPosition.y;
-        wreckEntity.z = wreckPosition.z;
+        wreckEntity.position = wreckPosition;
 
     if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
         sLog.Error("Drone::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);

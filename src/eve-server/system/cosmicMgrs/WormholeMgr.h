@@ -50,7 +50,7 @@ private:
 
     bool m_initalized;
 
-    // as system matures, this will definately need to be updated
+    // as system matures, this will definitely need to be updated
     std::vector<uint32>         m_wormholes;   //exitID
 
 };

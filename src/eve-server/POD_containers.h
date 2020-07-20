@@ -167,46 +167,33 @@ struct AsteroidData {
     uint32 beltID;
     double quantity;
     double radius;
-    double x;
-    double y;
-    double z;
+    GPoint position;
     std::string itemName;
 };
 
-/* POD structure for asteroid distrubtion methods by group */
+/* POD structure for asteroid distribution methods by group */
 struct OreTypeChance {
     uint16 typeID;
     float chance;
 };
 
-/* POD structure for active dungeon */
-struct ActiveDungeon {
-    uint8 state;
-    uint32 systemID;
-    uint32 dunItemID;
-    uint32 dunTemplateID;
-    int64 dunExpiryTime;
-    double x;
-    double y;
-    double z;
-};
-
 /* POD structure for cosmic signatures/anomalies */
 struct CosmicSignature {
-    uint8 dungeonType;
-    uint16 sigTypeID;
-    uint16 sigGroupID;
-    uint16 scanGroupID;
-    uint16 scanAttributeID;
+    uint8 dungeonType;          // internal for creation checks
+    // typeID of signal
+    uint16 sigTypeID;           // type name if scanGroupID is not sig or anom and certainty > 0.75
+    // groupID of signal
+    uint16 sigGroupID;          // group name if scanGroupID is not sig or anom and certainty > 0.25
+    // groupID of signature...must be one of sig, anom, ship, drone, structure
+    uint16 scanGroupID;         // ship,drone and structure uses sigGroupID for group name
+    uint16 scanAttributeID;     // group naming data if scanGroupID is anom or sig and certainty > 0.25
     uint32 ownerID;
     uint32 systemID;
-    uint32 sigItemID;   // itemID of this entry
+    uint32 sigItemID;           // itemID of this entry
     float sigStrength;
-    double x;
-    double y;
-    double z;
-    std::string sigID;  // this is unique xxx-nnn id displayed in scanner
-    std::string sigName;
+    GPoint position;
+    std::string sigID;          // this is unique xxx-nnn id displayed in scanner.  can be other values
+    std::string sigName;        // site name if scanGroupID is sig or anom and certainty > 0.75
 };
 
 /* POD structure for spawn groups */
@@ -430,9 +417,7 @@ struct DBSystemDynamicEntity {
     uint32 ownerID;
     uint32 corporationID;
     uint32 planetID;
-    double x;
-    double y;
-    double z;
+    GPoint position;
     std::string itemName;
 };
 
@@ -444,57 +429,6 @@ struct DBGPointEntity {
     double y;
     double z;
     GPoint position;
-};
-
-/* POD structure entries for dungeon data */
-/** @todo these need their own namespace */
-struct DunTemplate {
-    uint8 dunTypeID;
-    uint8 dunSpawnClass;
-    uint16 dunEntryID;
-    int32 dunRoomID;
-    std::string dunName;
-};
-
-struct DunRoomInfo {
-    uint8 dunRoomType;
-    uint8 dunRoomCategory;
-    uint8 dunRoomSpawnID;
-    uint8 dunRoomSpawnType;
-    uint16 dunRoomID;
-};
-
-struct DunRoomData {
-    int16 x;
-    int16 y;
-    int16 z;
-    int32 dunGroupID;
-};
-
-struct DunGroupData {
-    uint8 typeCatID;    // this is categoryID of the itemType, and needed to simplify create/spawn code
-    int16 typeID;
-    int16 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
-    int16 x;
-    int16 y;
-    int16 z;
-    uint16 radius;
-    std::string typeName;
-};
-
-struct DunRoomSpawnInfo {
-    int16 x;
-    int16 y;
-    int16 z;
-    uint16 dunRoomSpawnID;
-    uint16 dunRoomSpawnType;
-};
-
-struct DunEntryData {
-    int16 x;
-    int16 y;
-    int16 z;
-    uint16 dunEntryID;
 };
 
 /* POD structure for decoded probe data */

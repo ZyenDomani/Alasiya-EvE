@@ -108,7 +108,7 @@ void SuperWeapon::StopCycle(bool abort)
         ge.charID = m_shipRef->ownerID();
         ge.shipID = m_shipRef->itemID();
         ge.target = PyStatic.NewNone();
-        ge.other = PyStatic.NewNone();
+        ge.subLoc = PyStatic.NewNone();
         ge.area = new PyList;
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
@@ -226,7 +226,7 @@ void SuperWeapon::_ShowCycle()
         ge.charID = m_shipRef->ownerID();
         ge.shipID = m_shipRef->itemID();;
         ge.targetID = 0;
-        ge.other = sDataMgr.NewNone();
+        ge.subLoc = sDataMgr.NewNone();
         ge.area = new PyList;
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;

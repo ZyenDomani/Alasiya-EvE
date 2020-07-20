@@ -564,7 +564,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
      *   we will also check current levels to see if members need to be updated
      */
     std::vector< uint32 > wingIDs, squadIDs;
-    std::map<Ship*, BoostData> memberUpdateMap;
+    std::map<ShipSE*, BoostData> memberUpdateMap;
 
     bool fBoost = false;
     int8 armored = 0, info = 0, leader = 0, mining = 0, siege = 0, skirmish = 0;

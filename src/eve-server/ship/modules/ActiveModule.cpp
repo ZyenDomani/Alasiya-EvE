@@ -66,11 +66,13 @@ m_destinyMgr(nullptr)
     if (m_needsCharge)  {
         if (m_reloadTime < 1) {
             switch (mRef->groupID()) {
-                case EVEDB::invGroups::Projectile_Weapon: {
+                case EVEDB::invGroups::Sensor_Booster:
+                case EVEDB::invGroups::Projectile_Weapon:
+                case EVEDB::invGroups::Tracking_Disruptor:{
                     m_reloadTime = 4000;
                 } break;
-                case EVEDB::invGroups::Missile_Launcher_Snowball:
-                case EVEDB::invGroups::Scan_Probe_Launcher: {
+                case EVEDB::invGroups::Scan_Probe_Launcher:
+                case EVEDB::invGroups::Missile_Launcher_Snowball: {
                     m_reloadTime = 5000;
                 } break;
                 case EVEDB::invGroups::Missile_Launcher_Cruise:
@@ -252,8 +254,12 @@ void ActiveModule::Process()
             // apply charge effects here after loading is complete, but only for empty modules (no previous charge fx)
             if (!m_chargeLoaded)
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+
+            //m_chargeRef->SetQuantity(m_loadQty, true);
+            m_chargeRef->SetAttribute(AttrQuantity, m_loadQty, true);
+            m_loadQty = 0;
+            m_ChargeState = Module::State::Loaded;
             m_chargeLoaded = true;
-            SetChargeState(Module::State::Loaded);
         }
     }
 
@@ -369,7 +375,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     //this is only used in ShowEffect.  do we really need it?
     m_guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
 
-    Ship* pShip = m_shipRef->GetPilot()->GetShipSE();
+    ShipSE* pShip = m_shipRef->GetPilot()->GetShipSE();
     m_bubble = pShip->SysBubble();
     m_sysMgr = pShip->SystemMgr();
     m_targMgr = pShip->TargetMgr();
@@ -437,8 +443,10 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
 void ActiveModule::Deactivate(std::string effect/*""*/)
 {
-    if (m_ModuleState != Module::State::Activated)
+    if (m_ModuleState != Module::State::Activated) {
+        _log(MODULE__TRACE, "ActiveModule::Deactivate - %s called Deactivate but is currently %s.", m_modRef->name(), GetModuleStateName(m_ModuleState));
         return;
+    }
 
     _log(MODULE__TRACE, "ActiveModule::Deactivate(%s) - module %s(%u) remaining time %ums.", \
             effect.c_str(), m_modRef->name(), m_modRef->itemID(), GetRemainingCycleTimeMS());
@@ -460,7 +468,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     m_Stop = true;
 }
 
-void ActiveModule::SetSlaveData( Ship* pShip ) {
+void ActiveModule::SetSlaveData(ShipSE* pShip) {
     m_bubble = pShip->SysBubble();
     m_sysMgr = pShip->SystemMgr();
     m_targMgr = pShip->TargetMgr();
@@ -774,6 +782,8 @@ void ActiveModule::SetTimer(uint32 time) {
 
 void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 {
+    _log(MODULE__TRACE, "%s(%u) calling AM::LoadCharge()", m_modRef->name(), m_modRef->itemID());
+
     if (chargeRef.get() == nullptr) {
         _log(MODULE__WARNING, "ActiveModule::LoadCharge() for %s - Cannot find charge to load into this module", m_modRef->name());
         return;
@@ -782,54 +792,65 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     Client* pClient = m_shipRef->GetPilot();
     if (pClient == nullptr) {
         _log(MODULE__WARNING, "ActiveModule::LoadCharge() for %s - Pilot is null.  Cannot load charge.", m_modRef->name());
-        // these two are just in case...
+        // these are just in case...
         m_chargeRef = InventoryItemRef(nullptr);
         m_chargeLoaded = false;
-        SetChargeState(Module::State::Unloaded);
+        m_ChargeState = Module::State::Unloaded;
         return;
     }
 
-    m_chargeRef = chargeRef;
-    SetChargeState(Module::State::Loading);
+    if (m_ChargeState == Module::State::Loaded)
+        m_ChargeState == Module::State::Reloading;
+    else
+        m_ChargeState = Module::State::Loading;
 
-    /*  **** this sets "reload blink" status on weapon button
-     * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
-     *  {returns}
-     *        [PyTuple 3 items]
-     *          [PyTuple 1 items]
-     *            [PyIntegerVar 1005885547063]  << moduleID (can be multiple, but not coded for multiples yet)
-     *          [PyInt 203]                     << chargeTypeID
-     *          [PyFloat 10000]                 << reloadTime (ms)
-     */
     if (!pClient->IsLogin()) {
         // process new charge's effects (load timer will determine if fx are applied based on existing charge)
         // GM::Online proc fx when client logs in...this is to avoid dupe calls
-        for (auto it : m_chargeRef->type().m_stateFxMap) {
+        for (auto it : chargeRef->type().m_stateFxMap) {
             fxData data = fxData();
             data.action = FX::Action::Invalid;
-            data.srcRef = m_chargeRef;
+            data.srcRef = chargeRef;
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
         }
         if (pClient->IsInSpace()) {
+            m_loadQty = chargeRef->quantity();
+            if (m_chargeRef.get() != nullptr)
+                m_loadQty += m_chargeRef->quantity();
+
+            /*  **** this sets "reload blink" status on weapon button
+             * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
+             *  {returns}
+             *        [PyTuple 3 items]
+             *          [PyTuple 1 items]
+             *            [PyIntegerVar 1005885547063]  << moduleID (can be multiple, but not coded for multiples yet)
+             *          [PyInt 203]                     << chargeTypeID
+             *          [PyFloat 10000]                 << reloadTime (ms)
+             */
             PyTuple* module = new PyTuple(1);
                 module->SetItem(0, new PyInt(m_modRef->itemID()));
             PyTuple* tmp = new PyTuple(3);
                 tmp->SetItem(0, module);
-                tmp->SetItem(1, new PyInt(m_chargeRef->typeID()));
+                tmp->SetItem(1, new PyInt(chargeRef->typeID()));
                 tmp->SetItem(2, new PyInt(m_reloadTime));
             pClient->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp);
             m_reloadTimer.Start(m_reloadTime);
         }
     }
 
+    m_chargeRef = chargeRef;
+
     if (!m_reloadTimer.Enabled()) {
+        // apply charge effects only for empty modules (no previous charge fx)
+        if (!m_chargeLoaded)
+            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+
         // set immediately on login or when docked
         m_chargeLoaded = true;
-        SetChargeState(Module::State::Loaded);
+        m_ChargeState = Module::State::Loaded;
+        // send qty change
+        //m_chargeRef->SetQuantity(chargeRef->quantity(), true);
     }
-
-    // send qty change
-    m_chargeRef->AlterChargeQuantity(0);
 }
 
 //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
@@ -862,13 +883,11 @@ void ActiveModule::UnloadCharge()
 
         // apply to containing module to properly remove effects
         sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
-        // send data to client and update item qty
-        m_chargeRef->AlterChargeQuantity(0, false);
     }
 
     m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
+    m_ChargeState = Module::State::Unloaded;
     m_chargeLoaded = false;
-    SetChargeState(Module::State::Unloaded);
 }
 
 void ActiveModule::ConsumeCharge() {
@@ -877,10 +896,10 @@ void ActiveModule::ConsumeCharge() {
         std::vector<GenericModule*> modules;
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
         for (auto cur : modules)
-            if (/*cur->isOnline() and */cur->IsLoaded()) // should we check for online also?  maybe later.
-                cur->GetLoadedChargeRef()->AlterChargeQuantity(-1);
+            if (cur->isOnline() and cur->IsLoaded())
+                cur->GetLoadedChargeRef()->AlterQuantity(-1, cur->IsLoaded());
     } else
-        m_chargeRef->AlterChargeQuantity(-1, m_chargeLoaded);
+        m_chargeRef->AlterQuantity(-1, m_chargeLoaded);
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
@@ -1121,13 +1140,13 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.effectID = m_effectID;       //ENV_IDX_EFFECT = 6
 
     if (chgTypeID > 0) {
-        GodmaOther go;  // "other" means "charge" in evelang
-            go.shipID = ge.shipID;
-            go.slotID = m_modRef->flag();
-            go.chargeTypeID = chgTypeID;
-        ge.other = go.Encode();         //ENV_IDX_OTHER = 4
+        GodmaSubLoc gsl;  // subLocation is for charges loaded into modules on ship
+            gsl.shipID = ge.shipID;
+            gsl.slotID = m_modRef->flag();
+            gsl.chargeTypeID = chgTypeID;
+        ge.subLoc = gsl.Encode();         //ENV_IDX_OTHER = 4
     } else {
-        ge.other = PyStatic.NewNone();  //ENV_IDX_OTHER = 4
+        ge.subLoc = PyStatic.NewNone();  //ENV_IDX_OTHER = 4
     }
 
     timeLeft /= 1000;
@@ -1195,11 +1214,45 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             shipEff.error = PyStatic.NewNone();
 
     PyTuple* tuple = shipEff.Encode();
+    if (is_log_enabled(EFFECTS__DUMP))
+        tuple->Dump(EFFECTS__DUMP, "");
     if ((m_destinyMgr == nullptr) or (m_bubble == nullptr) or m_destinyMgr->IsWarping())
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     else
         m_bubble->BubblecastDestinyEvent(&tuple, "destiny");
 }
+/*
+                  [PyTuple 12 items]
+                    [PyString "OnGodmaShipEffect"]
+                    [PyIntegerVar 1005902575207]
+                    [PyInt 27]
+                    [PyIntegerVar 129756563776224944]
+                    [PyInt 0]
+                    [PyInt 0]
+                    [PyList 7 items]
+                      [PyIntegerVar 1005902575207]
+                      [PyIntegerVar 649670823]
+                      [PyIntegerVar 1005885567714]
+                      [PyNone]
+                      [PyNone]
+                      [PyList 0 items]
+                      [PyInt 27]
+                    [PyIntegerVar 129756563680133184]
+                    [PyFloat 9600]
+                    [PyBool True]
+                    [PyNone]
+                    [PyTuple 2 items]
+                      [PyString "NotEnoughEnergy"]
+                      [PyDict 3 kvp]
+                        [PyString "need"]
+                        [PyFloat 160]
+                        [PyString "got"]
+                        [PyFloat 99.9814376484626]
+                        [PyString "effectname"]
+                        [PyTuple 2 items]
+                          [PyInt 4]
+                          [PyInt 3530]
+                          */
 
 void ActiveModule::LaunchMissile()
 {

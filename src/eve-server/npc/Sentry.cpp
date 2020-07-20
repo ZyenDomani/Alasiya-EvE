@@ -208,9 +208,7 @@ void Sentry::Killed(Damage &fatal_blow) {
         wreckEntity.itemName = wreck_name;
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = wreckTypeID;
-        wreckEntity.x = wreckPosition.x;
-        wreckEntity.y = wreckPosition.y;
-        wreckEntity.z = wreckPosition.z;
+        wreckEntity.position = wreckPosition;
 
     if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
         sLog.Error("Sentry::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);

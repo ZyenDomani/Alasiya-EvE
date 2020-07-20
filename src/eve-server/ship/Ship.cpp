@@ -81,6 +81,7 @@ bool ShipItem::_Load()
 
 void ShipItem::LogOut()
 {
+    SetAttribute(AttrOnline, EvilZero, false);
     SaveShip();
 
     pInventory->Unload();
@@ -103,6 +104,7 @@ void ShipItem::SetPlayer(Client* pClient) {
     if (m_pilot == pClient)
         return;
     if (pClient == nullptr) {
+        SetAttribute(AttrOnline, EvilZero, false);
         if (m_pilot != nullptr)
             pInventory->RemoveItem(m_pilot->GetChar());
         // remove ship effects and char skill effects for char leaving ship here.
@@ -170,6 +172,7 @@ void ShipItem::InitPod() {
 void ShipItem::InitAttribs()
 {
     // Create default dynamic attributes in the AttributeMap
+    SetAttribute(AttrOnline,                            EvilOne, false);
     SetAttribute(AttrVolume,                            GetPackagedVolume(), false);
     SetAttribute(AttrCpuLoad,                           EvilZero, false);
     SetAttribute(AttrPowerLoad,                         EvilZero, false);
@@ -317,468 +320,6 @@ double ShipItem::GetRemainingVolumeByFlag(EVEItemFlags flag) const {
     return (pInventory->GetCapacity(flag) - pInventory->GetStoredVolume(flag));
 }
 
-bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)
-{
-    // if *this ship isnt active, it wont have a pilot to send errors to.  test and set as needed.
-    if (pClient == nullptr) {
-        if (m_pilot == nullptr)
-            return false;
-        pClient = m_pilot;
-    }
-
-    switch (flag) {
-        case flagCargoHold:
-            // everything can be stored in general cargo
-            //  update this later to disallow specialized items?
-            return true;
-        case flagDroneBay: {
-            if (iRef->categoryID() != EVEDB::invCategories::Drone) {
-                pClient->SendErrorMsg("%s cannot be stowed in the Drone Bay", iRef->group().name().c_str());
-                return false;
-            }
-        } break;
-        case flagShipHangar: {    //AttrShipMaintenanceBayCapacity
-            if (!HasAttribute(AttrHasShipMaintenanceBay)) {
-                pClient->SendErrorMsg("Your %s has no ship maintenance bay.", name());
-                return false;
-            }
-            if (typeID() == EVEDB::invTypes::Rorqual)
-                if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
-                and (iRef->groupID() != EVEDB::invGroups::Exhumer)
-                and (iRef->groupID() != EVEDB::invGroups::Industrial)
-                and (iRef->groupID() != EVEDB::invGroups::TransportShip)
-                and (iRef->groupID() != EVEDB::invGroups::Freighter)
-                and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
-                and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
-                    pClient->SendErrorMsg("Only indy ships may be placed into this ship's maintenance ship hold.");
-                    return false;
-                }
-            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                pClient->SendErrorMsg("Only ships may be placed into the maintenance bay.");
-                return false;
-            }
-        } break;
-
-        // not sure if all of these flag* are used.  if not, *may* update dgmData to add them....later.
-        case flagFuelBay: {    //  AttrFuelBayCapacity
-            if (iRef->groupID() != EVEDB::invGroups::FuelBlock) {
-                pClient->SendErrorMsg("Only fuel blocks may be placed into the fuel bay.");
-                return false;
-            }
-        } break;
-        case flagOreHold: {
-            if (iRef->categoryID() != EVEDB::invCategories::Asteroid) {
-                pClient->SendErrorMsg("Only mined ore may be placed into the ore hold.");
-                return false;
-            }
-        } break;
-/*
-        case flagGasHold: {
-            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                pClient->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
-                return false;
-            }
-        } break;
-*/
-        case flagMineralHold: {
-            if (iRef->groupID() != EVEDB::invGroups::Mineral) {
-                pClient->SendErrorMsg("Only refined minerals may be placed into the mineral hold.");
-                return false;
-            }
-        } break;
-        case flagSalvageHold: {
-            if (iRef->groupID() != EVEDB::invGroups::Salvage_Materials) {
-                pClient->SendErrorMsg("Only salvaged materials may be placed into the salvage bay.");
-                return false;
-            }
-        } break;
-        case flagShipHold: {
-            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                pClient->SendErrorMsg("Only ships may be placed into the ship hold.");
-                return false;
-            }
-        } break;
-
-        /** @todo need to figure out how to separate ships into s/m/l/i for these.... */
-        case flagSmallShipHold: {
-            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                pClient->SendErrorMsg("Only small ships may be placed into the ship's small ship hold.");
-                return false;
-            }
-        } break;
-        case flagMediumShipHold: {
-            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                pClient->SendErrorMsg("Only medium ships may be placed into the ship's medium ship hold.");
-                return false;
-            }
-        } break;
-        case flagLargeShipHold: {
-            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                pClient->SendErrorMsg("Only large ships may be placed into the ship's large ship hold.");
-                return false;
-            }
-        } break;
-        case flagIndustrialShipHold: {
-            if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
-            and (iRef->groupID() != EVEDB::invGroups::Exhumer)
-            and (iRef->groupID() != EVEDB::invGroups::Industrial)
-            and (iRef->groupID() != EVEDB::invGroups::TransportShip)
-            and (iRef->groupID() != EVEDB::invGroups::Freighter)
-            and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
-            and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
-                pClient->SendErrorMsg("Only indy ships may be placed into the ship's industrial ship hold.");
-                return false;
-            }
-        } break;
-        case flagAmmoHold: {
-            if ((iRef->groupID() != EVEDB::invGroups::Ammo)
-            and (iRef->groupID() != EVEDB::invGroups::Frequency_Crystal)
-            and (iRef->groupID() != EVEDB::invGroups::Mining_Crystal)
-            and (iRef->groupID() != EVEDB::invGroups::Mercoxit_Mining_Crystal)
-            and (iRef->groupID() != EVEDB::invGroups::Advanced_Beam_Laser_Crystal)
-            and (iRef->groupID() != EVEDB::invGroups::Advanced_Pulse_Laser_Crystal)
-            and (iRef->groupID() != EVEDB::invGroups::Advanced_Artillery_Ammo)
-            and (iRef->groupID() != EVEDB::invGroups::Advanced_Autocannon_Ammo)
-            and (iRef->groupID() != EVEDB::invGroups::Advanced_Blaster_Ammo)
-            and (iRef->groupID() != EVEDB::invGroups::Advanced_Railgun_Ammo)
-            and (iRef->groupID() != EVEDB::invGroups::Hybrid_Ammo)) {
-                pClient->SendErrorMsg("Only ammunition and crystals may be placed into the ammo bay.");
-                return false;
-            }
-        } break;
-        case flagHangar:
-        case flagCorpHangar2:
-        case flagCorpHangar3:
-        case flagCorpHangar4:
-        case flagCorpHangar5:
-        case flagCorpHangar6:
-        case flagCorpHangar7: {    //AttrCorporateHangarCapacity
-            if (GetAttribute(AttrHasCorporateHangars) == 0) {
-                pClient->SendErrorMsg("Your %s has no corporate hangars.", name());
-                return false;
-            }
-        } break;
-        default: {
-            // {'FullPath': u'UI/Messages', 'messageID': 259450, 'label': u'ItemNotHardwareBody'}(u'{[item]itemname.name} cannot be fitted onto a ship. Only hardware modules can be fitted.', None, {u'{[item]itemname.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'itemname'}})
-
-            if ((iRef->categoryID() != EVEDB::invCategories::Module)
-            and (iRef->categoryID() != EVEDB::invCategories::Charge)
-            and (iRef->categoryID() != EVEDB::invCategories::Subsystem)) {
-                pClient->SendErrorMsg("%s cannot be fitted onto a ship. Only hardware modules may be fitted.", iRef->name());
-                return false;
-            }
-
-            if ((IsRigSlot(flag))
-            or  (IsSubSystem(flag))
-            or  (IsModuleSlot(flag))) {
-                if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
-                    pClient->SendErrorMsg("You do not have the required skills to fit this %s.  Ref: ServerError 25163.", iRef->name());
-                    return false;
-                }
-                if (!ValidateItemSpecifics(iRef)) {
-                    pClient->SendErrorMsg("Your ship cannot equip the %s.<br>The %s group is not allowed on your %s.", \
-                            iRef->name(), iRef->group().name().c_str(), m_type.name().c_str());
-                    return false;
-                }
-                if (iRef->categoryID() == EVEDB::invCategories::Charge) {
-                    GenericModule* pMod = m_ModuleManager->GetModule(flag);
-                    if (pMod != nullptr) {
-                        // note:  this is also checked in client before calling Load()
-                        if (iRef->HasAttribute(AttrChargeSize))
-                            if (pMod->GetAttribute(AttrChargeSize) != iRef->GetAttribute(AttrChargeSize)) {
-                                sLog.Error("Ship::ValidateAddItem", "Charge size %u for %s does not match Module size %u for %s.",\
-                                        iRef->GetAttribute(AttrChargeSize).get_uint32(), iRef->name(),\
-                                        pMod->GetAttribute(AttrChargeSize).get_uint32(), pMod->GetSelf()->name());
-                                pClient->SendErrorMsg("Incorrect charge size for this module.");
-                                return false;
-                            }
-                        if ((pMod->GetAttribute(AttrChargeGroup1) != iRef->groupID())
-                        and (pMod->GetAttribute(AttrChargeGroup2) != iRef->groupID())
-                        and (pMod->GetAttribute(AttrChargeGroup3) != iRef->groupID())
-                        and (pMod->GetAttribute(AttrChargeGroup4) != iRef->groupID())
-                        and (pMod->GetAttribute(AttrChargeGroup5) != iRef->groupID())) {
-                            pClient->SendErrorMsg("Incorrect charge type for this module.");
-                            return false;
-                        }
-                    // NOTE: Module Manager will check for actual room to load charges and make stack splits, or reject loading altogether
-                    } else {
-                        pClient->SendErrorMsg("There is no module in %s.  Ref: ServerError 25162.", sDataMgr.GetFlagName(flag));
-                        return false;
-                    }
-                }
-            } else {
-                sLog.Error("Ship::ValidateAddItem", "testing of %s to add %u %s of cat %s has reached the end.",
-                    sDataMgr.GetFlagName(flag),iRef->quantity(), iRef->name(), iRef->category().name().c_str());
-            }
-        }
-    }
-    return true;
-}
-
-// this one is called from ShipGetInfo
-/** @note  cannot find this in client code....no longer used? */
-PyDict* ShipItem::ShipGetInfo() {
-    if (!pInventory->LoadContents()) {
-        _log( SHIP__ERROR, "%s(%u): Failed to load contents for ShipGetInfo", name(), itemID());
-        return nullptr;
-    }
-
-    Rsp_CommonGetInfo_Entry entry;
-    //first populate the ship.
-    if (!Populate( entry))
-        return nullptr;    //print already done.
-
-    PyDict* result = new PyDict();
-    result->SetItem(new PyInt( itemID()), new PyObject("util.KeyVal", entry.Encode()));
-    //now encode contents...
-    std::vector<InventoryItemRef> equipped;
-    //find all the equipped items and rigs
-    uint8 mod = pInventory->GetItemsByFlagRange( flagLowSlot0, flagFixedSlot, equipped);
-    uint8 rig = pInventory->GetItemsByFlagRange( flagRigSlot0, flagRigSlot7, equipped);
-    //encode an entry for each one.
-    for (auto cur : equipped) {
-        if (cur->Populate(entry))
-            result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry.Encode()));
-        else
-            _log( SHIP__ERROR, "%s(%u): Failed to load item %u for ShipGetInfo", name(), itemID(), cur->itemID());
-    }
-    return result;
-}
-
-// this one is called from GetAllInfo
-PyDict* ShipItem::GetShipInfo()
-{
-    if (!pInventory->LoadContents())  {
-        _log( INV__ERROR, "%s(%u): Failed to load contents for ShipGetInfo", name(), itemID());
-        return nullptr;
-    }
-
-    //first populate the ship...
-    Rsp_CommonGetInfo_Entry entry;
-    if (!Populate( entry))
-        return nullptr;
-
-    PyDict* result = new PyDict();
-    result->SetItem(new PyInt( itemID()), new PyObject("util.KeyVal", entry.Encode()));
-
-    //get contents...
-    std::vector<InventoryItemRef> equipped;
-    //get modules
-    pInventory->GetItemsByFlagRange( flagLowSlot0, flagFixedSlot, equipped);
-    pInventory->GetItemsByFlagRange( flagRigSlot0, flagRigSlot3, equipped);
-    //encode each one...
-    for (auto cur : equipped) {
-        Rsp_CommonGetInfo_Entry entry2;
-        if (cur->Populate(entry2))
-            result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry2.Encode()));
-        else
-            _log( SHIP__ERROR, "%s(%u): Failed to load item %u for ShipGetInfo", name(), itemID(), cur->itemID());
-    }
-
-    if (is_log_enabled(SHIP__INFO)) {
-        _log(SHIP__INFO, "ShipItem::GetShipInfo() decoded:");
-        result->Dump(SHIP__INFO, "    ");
-    }
-    return result;
-}
-
-PyDict* ShipItem::GetShipState() {
-    if (!pInventory->ContentsLoaded()) {
-        if (!pInventory->LoadContents()) {
-            _log(INV__ERROR, "%s(%u): Failed to load contents for GetShipState", name(), itemID());
-            return nullptr;
-        }
-    }
-    // Create new dictionary for shipState:
-    PyDict *result = new PyDict();
-    // Create entry for ShipItem itself:
-    result->SetItem(new PyInt(itemID()), GetItemStatusRow());
-    // Check for and Create entry for pilot:
-    InventoryItemRef iRefPilot(nullptr);
-    if (pInventory->GetSingleItemByFlag(flagPilot, iRefPilot))
-        result->SetItem(new PyInt(iRefPilot->itemID()), iRefPilot->GetItemStatusRow());
-
-    // Create entries for ALL modules, rigs, and subsystems present on ship:
-    std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
-    for (auto cur : moduleList)
-        result->SetItem(new PyInt(cur->itemID()), cur->GetItemStatusRow());
-
-    return result;
-}
-
-PyList* ShipItem::ShipGetModuleList() {
-    if (!pInventory->LoadContents()) {
-        _log(INV__ERROR, "%s(%u): Failed to load contents for ShipGetModuleList", name(), itemID());
-        return nullptr;
-    }
-
-    PyList* result = new PyList();
-    // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
-    std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
-    for (auto cur : moduleList) {
-        PyTuple* module = new PyTuple(2);
-        module->SetItem(0, new PyInt(cur->typeID()));
-        module->SetItem(1, new PyInt(cur->itemID()));
-        result->AddItem(module);
-    }
-
-    return result;
-}
-
-PyDict* ShipItem::GetChargeState() {
-    if (!pInventory->ContentsLoaded()) {
-        if (!pInventory->LoadContents()) {
-            _log(INV__ERROR, "%s(%u): Failed to load contents for GetShipState", name(), itemID());
-            return nullptr;
-        }
-    }
-
-    /* get list of charges loaded in ship modules (*all slots*) */
-    std::map< EVEItemFlags, InventoryItemRef > charges;
-    m_ModuleManager->GetLoadedCharges(charges);
-
-    PyDict *result = new PyDict();
-    if (charges.empty())
-        return result;
-
-    // Create entries in "shipState" dictionary for loaded charges on ship:
-    for (auto cur : charges)
-        result->SetItem(new PyInt((uint16)cur.first), cur.second->GetChargeStatusRow(itemID()));
-
-    return result;
-}
-
-bool ShipItem::ValidateBoardShip(CharacterRef character) {
-
-    bool result = false;
-    EvilNumber skillTypeID = EvilZero;
-
-    if (HasAttribute(AttrRequiredSkill1, skillTypeID)) {
-        if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill1Level).get_uint32()))
-            result = true;
-        if (HasAttribute(AttrRequiredSkill2, skillTypeID)) {
-            if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill2Level).get_uint32())) {
-                result = true;
-            } else {
-                return false;
-            }
-            if (HasAttribute(AttrRequiredSkill3, skillTypeID)) {
-                if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill3Level).get_uint32())) {
-                    result = true;
-                } else {
-                    return false;
-                }
-                if (HasAttribute(AttrRequiredSkill4, skillTypeID)) {
-                    if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill4Level).get_uint32())) {
-                        result = true;
-                    } else {
-                        return false;
-                    }
-                    if (HasAttribute(AttrRequiredSkill5, skillTypeID)) {
-                        if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill5Level).get_uint32())) {
-                            result = true;
-                        } else {
-                            return false;
-                        }
-                        if (HasAttribute(AttrRequiredSkill6, skillTypeID)) {
-                            if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill6Level).get_uint32())) {
-                                result = true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    } else {
-        result = true;
-    }
-
-    return result;
-}
-
-void ShipItem::SaveShip()
-{
-    SaveItem();                         // Save ship info
-    pAttributeMap->SaveShipState();      // save ship damage
-    m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
-}
-
-bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
-{
-    bool result = false;
-    EvilNumber fitID = 0;
-    uint16 groupID = m_type.groupID();
-    // If a ship group restriction is specified, the item must be able to fit to at least one ship group.
-    _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Beginning the group validation for %s(%u):", iRef->name(), iRef->itemID());
-    if (iRef->HasAttribute(AttrCanFitShipGroup1, fitID)) {
-        if (fitID == groupID)
-            result = true;
-        if (iRef->HasAttribute(AttrCanFitShipGroup2, fitID)) {
-            if (fitID == groupID)
-                result = true;
-            if (iRef->HasAttribute(AttrCanFitShipGroup3, fitID)) {
-                if (fitID == groupID)
-                    result = true;
-                if (iRef->HasAttribute(AttrCanFitShipGroup4, fitID)) {
-                    if (fitID == groupID)
-                        result = true;
-                    if (iRef->HasAttribute(AttrCanFitShipGroup5, fitID)) {
-                        if (fitID == groupID)
-                            result = true;
-                        if (iRef->HasAttribute(AttrCanFitShipGroup6, fitID)) {
-                            if (fitID == groupID)
-                                result = true;
-                            if (iRef->HasAttribute(AttrCanFitShipGroup7, fitID)) {
-                                if (fitID == groupID)
-                                    result = true;
-                                if (iRef->HasAttribute(AttrCanFitShipGroup8, fitID)) {
-                                    if (fitID == groupID)
-                                        result = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    } else {
-        result = true;
-    }
-
-    _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Group Validation returning %s.", (result ? "true" : "false"));
-
-    if (result) {
-        _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Beginning the type validation for %s(%u):", iRef->name(), iRef->itemID());
-
-        uint16 typeID = m_type.id();
-        if (iRef->HasAttribute(AttrCanFitShipType1, fitID)) {
-            result = false;
-            if (fitID == typeID)
-                result = true;
-            if (iRef->HasAttribute(AttrCanFitShipType2, fitID)) {
-                if (fitID == typeID)
-                    result = true;
-                if (iRef->HasAttribute(AttrCanFitShipType3, fitID)) {
-                    if (fitID == typeID)
-                        result = true;
-                    if (iRef->HasAttribute(AttrCanFitShipType4, fitID)) {
-                        if (fitID == typeID)
-                            result = true;
-                    }
-                }
-            }
-        }
-
-        _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Type Validation returning %s.", (result ? "true" : "false"));
-    }
-
-    return result;
-}
-
 void ShipItem::ProcessModules() {
     if (m_pilot->IsDocked())
         return;
@@ -892,79 +433,92 @@ void ShipItem::Heal()
     m_ModuleManager->RepairModules();
 }
 
+void ShipItem::AddItem(InventoryItemRef iRef)
+{
+    if (iRef.get() == nullptr)
+        return;
+
+    InventoryItem::AddItem(iRef);
+
+    if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge))
+        iRef->ChangeSingleton(true); // make singleton
+}
+
+uint32 ShipItem::AddItemByFlag(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)
+{
+    if (iRef.get() == nullptr)
+        return 0;
+
+    if (flag == flagAutoFit) {
+        // make error.  nothing at this point should be "autoFit"
+        codelog(SHIP__ERROR, "ShipItem::AddItem() - flag = flagAutoFit.");
+        if (sConfig.debug.IsTestServer)
+            EvE::traceStack();
+        flag = flagCargoHold;   //default to cargo (cause this is a ship)
+    }
+    // CantFitModuleToThatShip
+    // u'CantFitModuleToThatShipBody'}(u"You can't fit {item} to {ship}", None, {u'{ship}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'ship'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+
+    if (!ValidateAddItem(flag, iRef, pClient))
+        return 0;
+
+    if (IsModuleSlot(flag)) {
+        if (iRef->categoryID() == EVEDB::invCategories::Charge) {
+            iRef->ChangeSingleton(false, false);
+            m_ModuleManager->LoadCharge(iRef, flag);
+            iRef = m_ModuleManager->GetLoadedChargeOnModule(flag);
+            if (iRef.get() == nullptr)
+                return 0;
+            return iRef->itemID();
+        } else if (iRef->categoryID() == EVEDB::invCategories::Module) {
+            ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
+            mRef->ChangeSingleton(true, false);
+            // rigs are classed in the module category.  check here and call appropriate method as needed.
+            if (IsRigSlot(flag)) {
+                if (!m_ModuleManager->InstallRig(mRef, flag))
+                    return 0;
+            } else if (!m_ModuleManager->AddModule(mRef, flag))
+                return 0;
+        } else if (iRef->categoryID() == EVEDB::invCategories::Subsystem) {
+            ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
+            //mRef->SetOnline(true);  // is this needed here?
+            mRef->ChangeSingleton(true, false);
+            if (!m_ModuleManager->InstallSubSystem(mRef, flag))
+                return 0;
+        }
+        //m_ModuleManager->UpdateModules(flag);
+    }
+
+    iRef->Move(m_itemID, flag, true);
+    return iRef->itemID();
+}
+
+void ShipItem::RemoveItem(InventoryItemRef iRef)
+{
+    if (iRef.get() == nullptr)
+        return;
+
+    InventoryItem::RemoveItem(iRef);
+
+    if (m_pilot == nullptr)
+        return;
+
+    // check to see if item is currently in a module slot.
+    if (IsModuleSlot(iRef->flag())) {
+        if (IsRigSlot(iRef->flag()))
+            m_ModuleManager->UninstallRig(iRef->itemID());
+        else if (iRef->categoryID() == EVEDB::invCategories::Charge)
+            m_ModuleManager->UnloadCharge(iRef->flag());
+        else
+            m_ModuleManager->UnfitModule(iRef->itemID());
+        //m_ModuleManager->UpdateModules(iRef->flag());
+    }
+}
+
 void ShipItem::AddModuleToOnlineVec(uint32 modID)
 {
     m_onlineModuleVec.push_back(modID);
     _log(MODULE__INFO, "Added ModuleID %u to Online List", modID);
-}
-
-//  Updated fractional ship defense settings.  -allan 1Feb15
-void ShipItem::SetShipCapacitorLevel(float fraction)
-{
-    if (fraction > 1.0) fraction = 1.0;
-    if (fraction < 0.0) fraction = 0.0;
-
-    EvilNumber newCapacitorCharge(EvilZero);
-    newCapacitorCharge = GetAttribute(AttrCapacitorCapacity) * fraction;
-    if ((newCapacitorCharge + 0.5f) > GetAttribute(AttrCapacitorCapacity).get_float())
-        newCapacitorCharge = GetAttribute(AttrCapacitorCapacity);
-    if ((newCapacitorCharge - 0.5f) < 0)
-        newCapacitorCharge = 0;
-
-    _log(SHIP__MESSAGE, "SetShipCapacitorLevel() to %.1f%%.  new value is %.1f", fraction, newCapacitorCharge.get_float());
-    SetAttribute(AttrCapacitorCharge, newCapacitorCharge);
-}
-
-void ShipItem::SetShipShield(float fraction)
-{
-    if (fraction > 1.0) fraction = 1.0;
-    if (fraction < 0.0) fraction = 0.0;
-
-    EvilNumber newShieldCharge(EvilZero);
-    newShieldCharge = GetAttribute(AttrShieldCapacity) * fraction;
-    if ((newShieldCharge + 0.2f) > GetAttribute(AttrShieldCapacity).get_float())
-        newShieldCharge = GetAttribute(AttrShieldCapacity);
-    if ((newShieldCharge - 0.2f) < 0)
-        newShieldCharge = 0;
-
-    _log(SHIP__MESSAGE, "SetShipShield() to %.1f%%.  new value is %.1f", fraction, newShieldCharge.get_float());
-    SetAttribute(AttrShieldCharge, newShieldCharge);
-}
-
-void ShipItem::SetShipArmor(float fraction)
-{
-    fraction = 1 - fraction;
-
-    if (fraction > 1.0) fraction = 1.0;
-    if (fraction < 0.0) fraction = 0.0;
-
-    EvilNumber newArmorDamage(EvilZero);
-    newArmorDamage = GetAttribute(AttrArmorHP) * fraction;
-    if ((newArmorDamage + 0.2f) > GetAttribute(AttrArmorHP).get_float())
-        newArmorDamage = GetAttribute(AttrArmorHP);
-    if ((newArmorDamage - 0.2f) < 0)
-        newArmorDamage = 0;
-
-    _log(SHIP__MESSAGE, "SetShipArmor() to %.1f%%.  new value is %.1f", fraction, newArmorDamage.get_float());
-    SetAttribute(AttrArmorDamage, newArmorDamage);
-}
-
-void ShipItem::SetShipHull(float fraction)
-{
-    fraction = 1 - fraction;
-
-    if (fraction > 1.0) fraction = 1.0;
-    if (fraction < 0.0) fraction = 0.0;
-
-    EvilNumber newHullDamage(EvilZero);
-    newHullDamage = GetAttribute(AttrHP) * fraction;
-    if ((newHullDamage + 0.2f) > GetAttribute(AttrHP).get_float())
-        newHullDamage = GetAttribute(AttrHP);
-    if ((newHullDamage - 0.2f) < 0)
-        newHullDamage = 0;
-
-    _log(SHIP__MESSAGE, "SetShipHull() to %.1f%%.  new value is %.1f", fraction, newHullDamage.get_float());
-    SetAttribute(AttrDamage, newHullDamage);
 }
 
 void ShipItem::GetModuleItemVec( std::vector< InventoryItemRef >& iRefVec ) {
@@ -997,6 +551,145 @@ InventoryItemRef ShipItem::GetModuleRef(uint32 modID)
         return pMod->GetSelf();
 
     return InventoryItemRef(nullptr);
+}
+
+void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
+{
+    if (cRef.get() == nullptr)
+        throw PyException(MakeUserError("CantFindChargeToAdd"));
+
+    if (!IsFittingSlot(flag))
+        throw PyException(MakeCustomError("Destination is not weapon."));
+
+    if (IsFittingSlot(cRef->flag())) {
+        _log(MODULE__TRACE, "ShipItem::LoadCharge - Trying to load %s from %s to %s.", \
+                    cRef->name(), sDataMgr.GetFlagName(cRef->flag()), sDataMgr.GetFlagName(flag));
+        throw PyException(MakeUserError("CantMoveChargesBetweenModules"));
+    }
+
+    GenericModule* pMod = m_ModuleManager->GetModule(flag);
+    if (pMod == nullptr)
+        throw PyException(MakeUserError("ModuleNoLongerPresentForCharges"));
+
+    if (pMod->IsActive()) {
+        throw PyException(MakeCustomError("You cannot load active modules."));
+        /*
+        std::map<std::string, PyRep *> args;
+        args["chargeType"] = new PyInt(iRef->typeID());
+        throw PyException( MakeUserError("LoadingChargeSlotAlready", args));  */
+        /*LoadingChargeSlotAlreadyBody'}(u'You cannot load the {[item]chargeType.name} because the module is already involved in another loading operation.'
+         * , None, {u'{[item]chargeType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'chargeType'}})
+         */
+    }
+    if (pMod->GetModuleState() == Module::State::Loading) {
+        std::map<std::string, PyRep *> args;
+        args["chargeType"] = new PyInt(cRef->typeID());
+        throw PyException(MakeUserError("LoadingChargeSlotAlready", args));
+        //throw PyException( MakeUserError("LoadingChargeAlready", args));
+        /*LoadingChargeAlreadyBody'}(u'Some or all of {[item]chargeType.name} is already being loaded into a module.
+         * If you wish to load what remains, you will have to wait until this is finished.',
+         * None, {u'{[item]chargeType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'chargeType'}})
+         */
+    }
+
+    if (ValidateAddItem(flag, cRef)) {   // update this to return >0 on error.  use enum for error type, and set msgs here
+        m_ModuleManager->LoadCharge(cRef, flag);
+    } else {
+        throw PyException(MakeCustomError("Failed to load %s into the %s.  The %s was returned to cargo.", cRef->name(), pMod->GetSelf()->name(), cRef->name()));
+        /*  this doesnt work right....comment for now.
+        std::map<std::string, PyRep *> args;
+        args["charge"] = new PyInt(iRef->itemID());
+        throw PyException( MakeUserError("ChargeLoadingFailedWithRefund"));
+        */
+        /* ChargeLoadingFailedWithRefundBody'}(u'Your {[item]charge.name} failed to load and was returned to your cargo.',
+         * None, {u'{[item]charge.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'charge'}})
+         */
+    }
+}
+/*
+ * ChargeRequiresLauncher
+ * DragDropCharge ??
+
+ * IncompatibleChargeGroup1  {'FullPath': u'UI/Messages', 'messageID': 259621, 'label': u'IncompatibleChargeGroup1Body'}(u'You cannot load {ammoGroup} into a {[item]moduleName.name}, this module needs to be loaded with {group1}.', None, {u'{ammoGroup}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'ammoGroup'}, u'{[item]moduleName.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}, u'{group1}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'group1'}})
+NotEnoughChargeSpace  {'FullPath': u'UI/Messages', 'messageID': 259162, 'label': u'NotEnoughChargeSpaceBody'}(u'There is not enough space to add those charges. There is only {[numeric]capacity, decimalPlaces=2} {[numeric]capacity -> "unit", "units"} of space, but the charges require {[numeric]volume, decimalPlaces=2} {[numeric]volume -> "unit", "units"}.', None, {u'{[numeric]capacity, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'capacity'}, u'{[numeric]capacity -> "unit", "units"}': {'conditionalValues': [u'unit', u'units'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'capacity'}, u'{[numeric]volume, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'volume'}, u'{[numeric]volume -> "unit", "units"}': {'conditionalValues': [u'unit', u'units'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'volume'}})
+{'FullPath': u'UI/Messages', 'messageID': 257216, 'label': u'NoSuitableModulesBody'}(u'These charges cannot be fitted to any of the currently fitted modules', None, None)
+
+ */
+
+void ShipItem::LoadChargesToBank(EVEItemFlags flag, std::vector< int32 >& chargeIDs)
+{
+    int8 pos = 0;
+    InventoryItemRef cRef(nullptr);
+    std::vector<GenericModule*> modVec;
+    m_ModuleManager->GetModulesInBank(flag, modVec);
+    for (auto cur : modVec) {
+        if (pos +1 > chargeIDs.size())
+            return;
+        cRef = sItemFactory.GetItem(chargeIDs[pos]);
+        if (cRef.get() == nullptr) {
+            ++pos;
+            continue;
+        }
+        if (IsCargoHoldFlag(cRef->flag()) or IsHangarFlag(cRef->flag()))
+            LoadCharge(cRef, cur->flag());
+        else
+            ++pos;
+    }
+}
+
+void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs)
+{
+    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
+    if (itr == m_linkedWeapons.end())
+        return;
+
+    int8 pos = 0;
+    InventoryItemRef cRef = sItemFactory.GetItem(chargeIDs[pos]);
+    if (cRef.get() == nullptr)
+        throw PyException(MakeUserError("CantFindChargeToAdd"));
+
+    int8 size = chargeIDs.size();
+    //load charge in master
+    if (ValidateAddItem(pMod->flag(), cRef))
+        m_ModuleManager->LoadCharge(cRef, pMod->flag());
+    // loop thru slaves and load charge(s)
+    std::list<GenericModule*>::iterator itr2 = itr->second.begin();
+    while ((itr2 != itr->second.end()) and (pos <= size)) {
+        cRef = sItemFactory.GetItem(chargeIDs[pos]);
+        if (cRef.get() == nullptr){
+            ++pos;
+        } else if (IsCargoHoldFlag(cRef->flag()) or IsHangarFlag(cRef->flag())) {
+            if (ValidateAddItem((*itr2)->flag(), cRef))
+                m_ModuleManager->LoadCharge(cRef, (*itr2)->flag());
+            ++itr2;
+        } else {
+            ++pos;
+        }
+    }
+}
+
+//{'FullPath': u'UI/Messages', 'messageID': 257270, 'label': u'NotEnoughCargoSpaceToUnloadBankBody'}(u'There is not enough cargo space left to unload the charges in the weapon bank. Try freeing up some space and try again.', None, None)
+
+// only called from client call.  can throw
+uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, bool merge/*false*/)
+{
+    if (IsFittingSlot(fromFlag)) {
+        GenericModule* pMod = m_ModuleManager->GetModule(fromFlag);
+        if (pMod == nullptr)
+            throw PyException( MakeCustomError("Module was not found in %s.", sDataMgr.GetFlagName(fromFlag)));
+
+        if (pMod->IsActive())
+            throw PyException( MakeUserError("CannotAccessChargeWhileInUse"));
+
+        InventoryItemRef chargeRef = pMod->GetLoadedChargeRef();
+        if (chargeRef.get() == nullptr)
+            return 0;
+
+        /** @todo check cargo capy before move */
+        m_ModuleManager->UnloadCharge(fromFlag, merge);
+        return chargeRef->itemID();
+    }
+    return 0;
 }
 
 void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
@@ -1076,266 +769,11 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
     else if (iRef->type().HasEffect(EVEEffectID::subSystem))
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::subSystem);
     else if (iRef->type().HasEffect(EVEEffectID::rigSlot))
-       slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
     else
         codelog(SHIP__ERROR, "ShipItem::FindAvailableModuleSlot() - iRef %s has no bank effect.", iRef->name());
 
     return (EVEItemFlags)slotFound;
-}
-
-void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
-{
-    if (cRef.get() == nullptr)
-        throw PyException( MakeUserError("CantFindChargeToAdd"));
-
-    if (!IsModuleSlot(flag))
-        throw PyException( MakeCustomError("Destination is not weapon."));
-
-    if (IsModuleSlot(cRef->flag())) {
-        _log(MODULE__TRACE, "ShipItem::LoadCharge - Trying to load %s from %s to %s.", \
-                    cRef->name(), sDataMgr.GetFlagName(cRef->flag()), sDataMgr.GetFlagName(flag));
-        throw PyException( MakeUserError("CantMoveChargesBetweenModules"));
-    }
-
-    GenericModule* pMod = m_ModuleManager->GetModule(flag);
-    if (pMod == nullptr)
-        throw PyException( MakeUserError("ModuleNoLongerPresentForCharges"));
-
-    if (pMod->IsActive()) {
-        throw PyException( MakeCustomError("Your %s is currently active and cannot be loaded at this time.", pMod->GetSelf()->name()));
-        /*
-        std::map<std::string, PyRep *> args;
-        args["chargeType"] = new PyInt(iRef->typeID());
-        throw PyException( MakeUserError("LoadingChargeSlotAlready", args));  */
-        /*LoadingChargeSlotAlreadyBody'}(u'You cannot load the {[item]chargeType.name} because the module is already involved in another loading operation.'
-         * , None, {u'{[item]chargeType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'chargeType'}})
-         */
-    }
-    if (pMod->GetModuleState() == Module::State::Loading) {
-        std::map<std::string, PyRep *> args;
-        args["chargeType"] = new PyInt(cRef->typeID());
-        throw PyException( MakeUserError("LoadingChargeSlotAlready", args));
-        //throw PyException( MakeUserError("LoadingChargeAlready", args));
-        /*LoadingChargeAlreadyBody'}(u'Some or all of {[item]chargeType.name} is already being loaded into a module.
-         * If you wish to load what remains, you will have to wait until this is finished.',
-         * None, {u'{[item]chargeType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'chargeType'}})
-         */
-    }
-
-    if (ValidateAddItem(flag, cRef)) {   // update this to return >0 on error.  use enum for error type, and set msgs here
-        m_ModuleManager->LoadCharge(cRef, flag);
-    } else {
-        throw PyException( MakeCustomError("Failed to load %s into the %s.  The %s was returned to cargo.", cRef->name(), pMod->GetSelf()->name(), cRef->name()));
-        /*  this doesnt work right....comment for now.
-        std::map<std::string, PyRep *> args;
-        args["charge"] = new PyInt(iRef->itemID());
-        throw PyException( MakeUserError("ChargeLoadingFailedWithRefund"));
-        */
-        /* ChargeLoadingFailedWithRefundBody'}(u'Your {[item]charge.name} failed to load and was returned to your cargo.',
-         * None, {u'{[item]charge.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'charge'}})
-         */
-    }
-}
-/*
- * ChargeRequiresLauncher
- * DragDropCharge ??
-
- * IncompatibleChargeGroup1  {'FullPath': u'UI/Messages', 'messageID': 259621, 'label': u'IncompatibleChargeGroup1Body'}(u'You cannot load {ammoGroup} into a {[item]moduleName.name}, this module needs to be loaded with {group1}.', None, {u'{ammoGroup}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'ammoGroup'}, u'{[item]moduleName.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}, u'{group1}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'group1'}})
-NotEnoughChargeSpace  {'FullPath': u'UI/Messages', 'messageID': 259162, 'label': u'NotEnoughChargeSpaceBody'}(u'There is not enough space to add those charges. There is only {[numeric]capacity, decimalPlaces=2} {[numeric]capacity -> "unit", "units"} of space, but the charges require {[numeric]volume, decimalPlaces=2} {[numeric]volume -> "unit", "units"}.', None, {u'{[numeric]capacity, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'capacity'}, u'{[numeric]capacity -> "unit", "units"}': {'conditionalValues': [u'unit', u'units'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'capacity'}, u'{[numeric]volume, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'volume'}, u'{[numeric]volume -> "unit", "units"}': {'conditionalValues': [u'unit', u'units'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'volume'}})
-{'FullPath': u'UI/Messages', 'messageID': 257216, 'label': u'NoSuitableModulesBody'}(u'These charges cannot be fitted to any of the currently fitted modules', None, None)
-
- */
-
-void ShipItem::LoadChargesToBank(EVEItemFlags flag, std::vector< int32 >& chargeIDs)
-{
-    int8 pos = 0;
-    InventoryItemRef iRef(nullptr);
-    std::vector<GenericModule*> modVec;
-    m_ModuleManager->GetModulesInBank(flag, modVec);
-    for (auto cur : modVec) {
-        if (pos +1 > chargeIDs.size())
-            return;
-        iRef = sItemFactory.GetItem(chargeIDs[pos]);
-        if (iRef.get() == nullptr) {
-            ++pos;
-            continue;
-        }
-        if (iRef->flag() == flagCargoHold)
-            LoadCharge(iRef, cur->flag());
-        else
-            ++pos;
-    }
-}
-
-void ShipItem::LoadLinkedWeapons(InventoryItemRef cRef, GenericModule* pMod)
-{
-    if (cRef.get() == nullptr)
-        throw PyException( MakeUserError("CantFindChargeToAdd"));
-
-    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
-    if (itr == m_linkedWeapons.end()) {
-        if (m_pilot->CanThrow())
-            throw PyException( MakeUserError("ModuleNoLongerPresentForCharges"));
-        return;
-    }
-
-    /** @todo  this needs to be updated to NOT throw.  needs more thought */
-    //load charge in master
-    LoadCharge(cRef, pMod->flag());
-    // loop thru slaves and load charge(s)
-    std::list<GenericModule*>::iterator itr2 = itr->second.begin();
-    while (itr2 != itr->second.end()) {
-        LoadCharge(cRef, (*itr2)->flag());
-        ++itr2;
-    }
-}
-
-void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs)
-{
-    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
-    if (itr == m_linkedWeapons.end())
-        return;
-
-    int8 pos = 0, size = chargeIDs.size();
-    InventoryItemRef cRef = sItemFactory.GetItem(chargeIDs[pos]);
-    if (cRef.get() == nullptr)
-        return;  // make error for charge not found?
-
-    /** @todo  this needs to be updated to NOT throw.  needs more thought */
-    //load charge in master
-    LoadCharge(cRef, pMod->flag());
-    // loop thru slaves and load charge(s)
-    std::list<GenericModule*>::iterator itr2 = itr->second.begin();
-    while ((itr2 != itr->second.end()) and (pos <= size)) {
-        cRef = sItemFactory.GetItem(chargeIDs[pos]);
-        if (cRef.get() == nullptr){
-            ++pos;
-        } else if (cRef->flag() == flagCargoHold) {
-            LoadCharge(cRef, (*itr2)->flag());
-            ++itr2;
-        } else {
-            ++pos;
-        }
-    }
-}
-
-void ShipItem::AddItem(InventoryItemRef iRef)
-{
-    if (iRef.get() == nullptr)
-        return;
-
-    InventoryItem::AddItem(iRef);
-
-    if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
-        // make singleton
-        iRef->ChangeSingleton(true);
-    }
-}
-
-uint32 ShipItem::AddItemByFlag(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)
-{
-    if (iRef.get() == nullptr)
-        return 0;
-
-    if (flag == flagAutoFit) {
-        // make error.  nothing at this point should be "autoFit"
-        codelog(SHIP__ERROR, "ShipItem::AddItem() - flag = flagAutoFit.");
-        if (sConfig.debug.IsTestServer)
-            EvE::traceStack();
-        flag = flagCargoHold;   //default to cargo (cause this is a ship)
-    }
-    // CantFitModuleToThatShip
-    // u'CantFitModuleToThatShipBody'}(u"You can't fit {item} to {ship}", None, {u'{ship}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'ship'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
-
-    if (!ValidateAddItem(flag, iRef, pClient))
-        return 0;
-
-    if (IsModuleSlot(flag)) {
-        if (iRef->categoryID() == EVEDB::invCategories::Charge) {
-            iRef->ChangeSingleton(false, false);
-            m_ModuleManager->LoadCharge(iRef, flag);
-            iRef = m_ModuleManager->GetLoadedChargeOnModule(flag);
-            if (iRef.get() == nullptr)
-                return 0;
-        } else if (iRef->categoryID() == EVEDB::invCategories::Module) {
-            ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
-            mRef->ChangeSingleton(true, false);
-            // rigs are classed in the module category.  check here and call appropriate method as needed.
-            if (IsRigSlot(flag)) {
-                if (!m_ModuleManager->InstallRig(mRef, flag))
-                    return 0;
-            } else if (!m_ModuleManager->AddModule(mRef, flag))
-                return 0;
-        } else if (iRef->categoryID() == EVEDB::invCategories::Subsystem) {
-            ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
-            //mRef->SetOnline(true);  // is this needed here?
-            mRef->ChangeSingleton(true, false);
-            if (!m_ModuleManager->InstallSubSystem(mRef, flag))
-                return 0;
-        }
-        //m_ModuleManager->UpdateModules(flag);
-    }
-
-    // cannot stack assembled items
-    /*  this disallows splitting stacks in cargo.  remove for now.
-    if (iRef->singleton()) {
-        iRef->Move(m_itemID, flag, true);
-    } else if (IsCargoHoldFlag(flag) or IsHangarFlag(flag)) {
-        if (pInventory->ContainsTypeByFlag(iRef->typeID(), flag))
-            iRef->MergeTypesInCargo(this, flag);
-        else
-            iRef->Move(m_itemID, flag, true);
-    } else */
-        iRef->Move(m_itemID, flag, true);
-
-	return iRef->itemID();
-}
-
-void ShipItem::RemoveItem(InventoryItemRef iRef)
-{
-    if (iRef.get() == nullptr)
-        return;
-
-    // remove item from our inventory
-    InventoryItem::RemoveItem(iRef);
-
-    if (m_pilot == nullptr)
-        return;
-
-    // check to see if item is currently in a module slot.
-    if (IsModuleSlot(iRef->flag())) {
-        if (IsRigSlot(iRef->flag()))
-            m_ModuleManager->UninstallRig(iRef->itemID());
-        else if (iRef->categoryID() == EVEDB::invCategories::Charge)
-            m_ModuleManager->UnloadCharge(iRef->flag());
-        else
-            m_ModuleManager->UnfitModule(iRef->itemID());
-        //m_ModuleManager->UpdateModules(iRef->flag());
-    }
-}
-
-//{'FullPath': u'UI/Messages', 'messageID': 257270, 'label': u'NotEnoughCargoSpaceToUnloadBankBody'}(u'There is not enough cargo space left to unload the charges in the weapon bank. Try freeing up some space and try again.', None, None)
-
-// only called from client call.  can throw
-uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, bool merge/*false*/)
-{
-    if (IsModuleSlot(fromFlag)) {
-        GenericModule* pMod = m_ModuleManager->GetModule(fromFlag);
-        if (pMod == nullptr)
-            throw PyException( MakeCustomError("Module was not found in %s.", sDataMgr.GetFlagName(fromFlag)));
-
-        if (pMod->IsActive())
-            throw PyException( MakeUserError("CannotAccessChargeWhileInUse"));
-
-        InventoryItemRef chargeRef = pMod->GetLoadedChargeRef();
-        if (chargeRef.get() == nullptr)
-            return 0;
-
-        /** @todo check cargo capy before move */
-        m_ModuleManager->UnloadCharge(fromFlag, merge);
-        return chargeRef->itemID();
-    }
-    return 0;
 }
 
 // this can throw for now...
@@ -1354,36 +792,30 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
         if (pMod->IsActive())
             throw PyException(MakeCustomError("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name()));
 
-    // slot1 is occupied, as this is location module is from.
+    // slot1 is occupied, as this is where module is from.
     InventoryItemRef modItemRef1 = GetModuleRef(slot1);
     if (modItemRef1.get() == nullptr) {
         _log(MODULE__TRACE, "ShipItem::MoveModuleSlot - modItemRef1 is null.");
         throw PyException(MakeCustomError("The module to move was not found."));
     }
     InventoryItemRef chargeItemRef1 = m_ModuleManager->GetLoadedChargeOnModule(slot1);
-    if (chargeItemRef1.get() != nullptr)
-        m_ModuleManager->UnloadCharge(slot1);
     RemoveItem(modItemRef1);
 
     if (m_ModuleManager->IsSlotOccupied(slot2)) {
         // dropped-on slot is occupied.  proceed with moving the module currently in this slot.
         InventoryItemRef modItemRef2 = GetModuleRef(slot2);
         InventoryItemRef chargeItemRef2 = m_ModuleManager->GetLoadedChargeOnModule(slot2);
-        if (chargeItemRef2.get() != nullptr)
-            m_ModuleManager->UnloadCharge(slot2);
         RemoveItem(modItemRef2);
         AddItemByFlag(slot1, modItemRef2);
-        // due to checks in other move methods, we have to re-add to ship inv here.
-        InventoryItem::AddItem(modItemRef2);
-        m_ModuleManager->Online(slot1);
+        if (modItemRef2->GetAttribute(AttrOnline).get_bool())
+            m_ModuleManager->Online(slot1);
         if (chargeItemRef2.get() != nullptr)
             m_ModuleManager->LoadCharge(chargeItemRef2, slot1);
     }
 
     AddItemByFlag(slot2, modItemRef1);
-    // due to checks in other move methods, we have to re-add to ship inv here.
-    InventoryItem::AddItem(modItemRef1);
-    m_ModuleManager->Online(slot2);
+    if (modItemRef1->GetAttribute(AttrOnline).get_bool())
+        m_ModuleManager->Online(slot2);
 
     if (chargeItemRef1.get() != nullptr)
         m_ModuleManager->LoadCharge(chargeItemRef1, slot2);
@@ -1402,9 +834,78 @@ void ShipItem::UpdateModules()
 void ShipItem::UpdateModules(EVEItemFlags flag)
 {
     // List of callees to put this function into context as to what it should be doing:
-    // Ship::AddItem()
+    // ShipSE::AddItem()
     // Client::MoveItem()               - something has been moved into or out of the ship, recheck all modules for... some reason
     m_ModuleManager->UpdateModules(flag);
+}
+
+//  Updated fractional ship defense settings.  -allan 1Feb15
+void ShipItem::SetShipCapacitorLevel(float fraction)
+{
+    if (fraction > 1.0) fraction = 1.0;
+    if (fraction < 0.0) fraction = 0.0;
+
+    EvilNumber newCapacitorCharge(EvilZero);
+    newCapacitorCharge = GetAttribute(AttrCapacitorCapacity) * fraction;
+    if ((newCapacitorCharge + 0.5f) > GetAttribute(AttrCapacitorCapacity).get_float())
+        newCapacitorCharge = GetAttribute(AttrCapacitorCapacity);
+    if ((newCapacitorCharge - 0.5f) < 0)
+        newCapacitorCharge = 0;
+
+    _log(SHIP__MESSAGE, "SetShipCapacitorLevel() to %.1f%%.  new value is %.1f", fraction, newCapacitorCharge.get_float());
+    SetAttribute(AttrCapacitorCharge, newCapacitorCharge);
+}
+
+void ShipItem::SetShipShield(float fraction)
+{
+    if (fraction > 1.0) fraction = 1.0;
+    if (fraction < 0.0) fraction = 0.0;
+
+    EvilNumber newShieldCharge(EvilZero);
+    newShieldCharge = GetAttribute(AttrShieldCapacity) * fraction;
+    if ((newShieldCharge + 0.2f) > GetAttribute(AttrShieldCapacity).get_float())
+        newShieldCharge = GetAttribute(AttrShieldCapacity);
+    if ((newShieldCharge - 0.2f) < 0)
+        newShieldCharge = 0;
+
+    _log(SHIP__MESSAGE, "SetShipShield() to %.1f%%.  new value is %.1f", fraction, newShieldCharge.get_float());
+    SetAttribute(AttrShieldCharge, newShieldCharge);
+}
+
+void ShipItem::SetShipArmor(float fraction)
+{
+    fraction = 1 - fraction;
+
+    if (fraction > 1.0) fraction = 1.0;
+    if (fraction < 0.0) fraction = 0.0;
+
+    EvilNumber newArmorDamage(EvilZero);
+    newArmorDamage = GetAttribute(AttrArmorHP) * fraction;
+    if ((newArmorDamage + 0.2f) > GetAttribute(AttrArmorHP).get_float())
+        newArmorDamage = GetAttribute(AttrArmorHP);
+    if ((newArmorDamage - 0.2f) < 0)
+        newArmorDamage = 0;
+
+    _log(SHIP__MESSAGE, "SetShipArmor() to %.1f%%.  new value is %.1f", fraction, newArmorDamage.get_float());
+    SetAttribute(AttrArmorDamage, newArmorDamage);
+}
+
+void ShipItem::SetShipHull(float fraction)
+{
+    fraction = 1 - fraction;
+
+    if (fraction > 1.0) fraction = 1.0;
+    if (fraction < 0.0) fraction = 0.0;
+
+    EvilNumber newHullDamage(EvilZero);
+    newHullDamage = GetAttribute(AttrHP) * fraction;
+    if ((newHullDamage + 0.2f) > GetAttribute(AttrHP).get_float())
+        newHullDamage = GetAttribute(AttrHP);
+    if ((newHullDamage - 0.2f) < 0)
+        newHullDamage = 0;
+
+    _log(SHIP__MESSAGE, "SetShipHull() to %.1f%%.  new value is %.1f", fraction, newHullDamage.get_float());
+    SetAttribute(AttrDamage, newHullDamage);
 }
 
 // not used
@@ -1504,6 +1005,35 @@ void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, in
         m_targetRef = InventoryItemRef(nullptr);
 
     m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat);
+}
+
+void ShipItem::OnlineAll()
+{
+    m_ModuleManager->OnlineAll();
+}
+
+void ShipItem::OfflineAll()
+{
+    m_ModuleManager->OfflineAll();
+}
+
+void ShipItem::SaveShip()
+{
+    SaveItem();                         // Save ship info
+    pAttributeMap->SaveShipState();     // save ship damage
+    m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
+}
+
+void ShipItem::RemoveRig(InventoryItemRef iRef) {
+    if (iRef.get() == nullptr)
+        return;
+    m_ModuleManager->UninstallRig(iRef->itemID());
+    iRef->Move(itemID(), flagCargoHold, true);
+}
+
+void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
+{
+    _log(MODULE__ERROR, "ReplaceCharges() called by %s(%u).  It still needs to be written.", name(), itemID());
 }
 
 
@@ -1737,28 +1267,6 @@ void ShipItem::HeatDamageCheck(GenericModule* pMod)
 
     for (auto cur : modVec)
         DamageModule(cur);
-}
-
-void ShipItem::RemoveRig(InventoryItemRef iRef) {
-    if (iRef.get() == nullptr)
-        return;
-    m_ModuleManager->UninstallRig(iRef->itemID());
-    iRef->Move(itemID(), flagCargoHold, true);
-}
-
-void ShipItem::OnlineAll()
-{
-    m_ModuleManager->OnlineAll();
-}
-
-void ShipItem::OfflineAll()
-{
-    m_ModuleManager->OfflineAll();
-}
-
-void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
-{
-    _log(MODULE__ERROR, "ReplaceCharges() called by %s(%u).  It still needs to be written.", name(), itemID());
 }
 
 void ShipItem::StripFitting()
@@ -2416,9 +1924,440 @@ std::string ShipItem::GetShipDNA()
     return dna.str();
 }
 
+bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)
+{
+    // if *this ship isnt active, it wont have a pilot to send errors to.  test and set as needed.
+    if (pClient == nullptr) {
+        if (m_pilot == nullptr)
+            return false;
+        pClient = m_pilot;
+    }
+
+    switch (flag) {
+        case flagCargoHold:
+            // everything can be stored in general cargo
+            //  update this later to disallow specialized items?
+            return true;
+        case flagDroneBay: {
+            if (iRef->categoryID() != EVEDB::invCategories::Drone) {
+                pClient->SendErrorMsg("%s cannot be stowed in the Drone Bay", iRef->group().name().c_str());
+                return false;
+            }
+        } break;
+        case flagShipHangar: {    //AttrShipMaintenanceBayCapacity
+            if (!HasAttribute(AttrHasShipMaintenanceBay)) {
+                pClient->SendErrorMsg("Your %s has no ship maintenance bay.", name());
+                return false;
+            }
+            if (typeID() == EVEDB::invTypes::Rorqual)
+                if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
+                    and (iRef->groupID() != EVEDB::invGroups::Exhumer)
+                    and (iRef->groupID() != EVEDB::invGroups::Industrial)
+                    and (iRef->groupID() != EVEDB::invGroups::TransportShip)
+                    and (iRef->groupID() != EVEDB::invGroups::Freighter)
+                    and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
+                    and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
+                    pClient->SendErrorMsg("Only indy ships may be placed into this ship's maintenance ship hold.");
+                return false;
+                    }
+                    if (iRef->categoryID() != EVEDB::invCategories::Ship) {
+                        pClient->SendErrorMsg("Only ships may be placed into the maintenance bay.");
+                        return false;
+                    }
+        } break;
+
+        // not sure if all of these flag* are used.  if not, *may* update dgmData to add them....later.
+        case flagFuelBay: {    //  AttrFuelBayCapacity
+            if (iRef->groupID() != EVEDB::invGroups::FuelBlock) {
+                pClient->SendErrorMsg("Only fuel blocks may be placed into the fuel bay.");
+                return false;
+            }
+        } break;
+        case flagOreHold: {
+            if (iRef->categoryID() != EVEDB::invCategories::Asteroid) {
+                pClient->SendErrorMsg("Only mined ore may be placed into the ore hold.");
+                return false;
+            }
+        } break;
+        /*
+         *        case flagGasHold: {
+         *            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
+         *                pClient->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+         *                return false;
+    }
+    } break;
+    */
+        case flagMineralHold: {
+            if (iRef->groupID() != EVEDB::invGroups::Mineral) {
+                pClient->SendErrorMsg("Only refined minerals may be placed into the mineral hold.");
+                return false;
+            }
+        } break;
+        case flagSalvageHold: {
+            if (iRef->groupID() != EVEDB::invGroups::Salvage_Materials) {
+                pClient->SendErrorMsg("Only salvaged materials may be placed into the salvage bay.");
+                return false;
+            }
+        } break;
+        case flagShipHold: {
+            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
+                pClient->SendErrorMsg("Only ships may be placed into the ship hold.");
+                return false;
+            }
+        } break;
+
+        /** @todo need to figure out how to separate ships into s/m/l/i for these.... */
+        case flagSmallShipHold: {
+            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
+                pClient->SendErrorMsg("Only small ships may be placed into the ship's small ship hold.");
+                return false;
+            }
+        } break;
+        case flagMediumShipHold: {
+            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
+                pClient->SendErrorMsg("Only medium ships may be placed into the ship's medium ship hold.");
+                return false;
+            }
+        } break;
+        case flagLargeShipHold: {
+            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
+                pClient->SendErrorMsg("Only large ships may be placed into the ship's large ship hold.");
+                return false;
+            }
+        } break;
+        case flagIndustrialShipHold: {
+            if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
+                and (iRef->groupID() != EVEDB::invGroups::Exhumer)
+                and (iRef->groupID() != EVEDB::invGroups::Industrial)
+                and (iRef->groupID() != EVEDB::invGroups::TransportShip)
+                and (iRef->groupID() != EVEDB::invGroups::Freighter)
+                and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
+                and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
+                pClient->SendErrorMsg("Only indy ships may be placed into the ship's industrial ship hold.");
+            return false;
+                }
+        } break;
+        case flagAmmoHold: {
+            if ((iRef->groupID() != EVEDB::invGroups::Ammo)
+                and (iRef->groupID() != EVEDB::invGroups::Frequency_Crystal)
+                and (iRef->groupID() != EVEDB::invGroups::Mining_Crystal)
+                and (iRef->groupID() != EVEDB::invGroups::Mercoxit_Mining_Crystal)
+                and (iRef->groupID() != EVEDB::invGroups::Advanced_Beam_Laser_Crystal)
+                and (iRef->groupID() != EVEDB::invGroups::Advanced_Pulse_Laser_Crystal)
+                and (iRef->groupID() != EVEDB::invGroups::Advanced_Artillery_Ammo)
+                and (iRef->groupID() != EVEDB::invGroups::Advanced_Autocannon_Ammo)
+                and (iRef->groupID() != EVEDB::invGroups::Advanced_Blaster_Ammo)
+                and (iRef->groupID() != EVEDB::invGroups::Advanced_Railgun_Ammo)
+                and (iRef->groupID() != EVEDB::invGroups::Hybrid_Ammo)) {
+                pClient->SendErrorMsg("Only ammunition and crystals may be placed into the ammo bay.");
+                return false;
+                }
+        } break;
+        case flagHangar:
+        case flagCorpHangar2:
+        case flagCorpHangar3:
+        case flagCorpHangar4:
+        case flagCorpHangar5:
+        case flagCorpHangar6:
+        case flagCorpHangar7: {    //AttrCorporateHangarCapacity
+            if (GetAttribute(AttrHasCorporateHangars) == 0) {
+                pClient->SendErrorMsg("Your %s has no corporate hangars.", name());
+                return false;
+            }
+        } break;
+        default: {
+            // {'FullPath': u'UI/Messages', 'messageID': 259450, 'label': u'ItemNotHardwareBody'}(u'{[item]itemname.name} cannot be fitted onto a ship. Only hardware modules can be fitted.', None, {u'{[item]itemname.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'itemname'}})
+
+            if ((iRef->categoryID() != EVEDB::invCategories::Module)
+                and (iRef->categoryID() != EVEDB::invCategories::Charge)
+                and (iRef->categoryID() != EVEDB::invCategories::Subsystem)) {
+                pClient->SendErrorMsg("%s cannot be fitted onto a ship. Only hardware modules may be fitted.", iRef->name());
+            return false;
+                }
+
+                if (IsModuleSlot(flag)) {
+                    if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
+                        pClient->SendErrorMsg("You do not have the required skills to fit this %s.  Ref: ServerError 25163.", iRef->name());
+                        return false;
+                    }
+                    if (!ValidateItemSpecifics(iRef)) {
+                        pClient->SendErrorMsg("Your ship cannot equip the %s.<br>The %s group is not allowed on your %s.", \
+                        iRef->name(), iRef->group().name().c_str(), m_type.name().c_str());
+                        return false;
+                    }
+                    if (iRef->categoryID() == EVEDB::invCategories::Charge) {
+                        GenericModule* pMod = m_ModuleManager->GetModule(flag);
+                        if (pMod != nullptr) {
+                            // note:  this is also checked in client before calling Load()
+                            if (iRef->HasAttribute(AttrChargeSize))
+                                if (pMod->GetAttribute(AttrChargeSize) != iRef->GetAttribute(AttrChargeSize)) {
+                                    sLog.Error("ShipItem::ValidateAddItem", "Charge size %u for %s does not match Module size %u for %s.",\
+                                    iRef->GetAttribute(AttrChargeSize).get_uint32(), iRef->name(),\
+                                    pMod->GetAttribute(AttrChargeSize).get_uint32(), pMod->GetSelf()->name());
+                                    pClient->SendErrorMsg("Incorrect charge size for this module.");
+                                    return false;
+                                }
+                                if ((pMod->GetAttribute(AttrChargeGroup1) != iRef->groupID())
+                                    and (pMod->GetAttribute(AttrChargeGroup2) != iRef->groupID())
+                                    and (pMod->GetAttribute(AttrChargeGroup3) != iRef->groupID())
+                                    and (pMod->GetAttribute(AttrChargeGroup4) != iRef->groupID())
+                                    and (pMod->GetAttribute(AttrChargeGroup5) != iRef->groupID())) {
+                                    pClient->SendErrorMsg("Incorrect charge type for this module.");
+                                return false;
+                                    }
+                                    // NOTE: Module Manager will check for actual room to load charges and make stack splits, or reject loading altogether
+                        } else {
+                            pClient->SendErrorMsg("There is no module in %s.  Ref: ServerError 25162.", sDataMgr.GetFlagName(flag));
+                            return false;
+                        }
+                    }
+                } else {
+                    sLog.Error("ShipItem::ValidateAddItem", "testing of %s to add %u %s of cat %s has reached the end.",
+                               sDataMgr.GetFlagName(flag),iRef->quantity(), iRef->name(), iRef->category().name().c_str());
+                }
+        }
+    }
+    return true;
+}
+
+// this one is called from GetAllInfo
+PyDict* ShipItem::GetShipInfo()
+{
+    if (!pInventory->LoadContents())  {
+        _log( INV__ERROR, "%s(%u): Failed to load contents for ShipGetInfo", name(), itemID());
+        return nullptr;
+    }
+
+    //first populate the ship...
+    Rsp_CommonGetInfo_Entry entry;
+    if (!Populate( entry))
+        return nullptr;
+
+    PyDict* result = new PyDict();
+    result->SetItem(new PyInt( itemID()), new PyObject("util.KeyVal", entry.Encode()));
+
+    //get modules and charges
+    std::vector<InventoryItemRef> equipped;
+    pInventory->GetItemsByFlagRange( flagLowSlot0, flagHiSlot7, equipped);
+    pInventory->GetItemsByFlagRange( flagRigSlot0, flagRigSlot2, equipped);
+    pInventory->GetItemsByFlagRange( flagSubSystem0, flagSubSystem4, equipped);
+    //encode each one...
+    for (auto cur : equipped) {
+        Rsp_CommonGetInfo_Entry entry2;
+        if (cur->Populate(entry2)) {
+            if (cur->categoryID() == EVEDB::invCategories::Charge) {
+                PyTuple* tuple = new PyTuple(3);
+                    tuple->SetItem(0, new PyInt(cur->locationID()));
+                    tuple->SetItem(1, new PyInt(cur->flag()));
+                    tuple->SetItem(2, new PyInt(cur->typeID()));
+                result->SetItem(tuple, new PyObject("util.KeyVal", entry2.Encode()));
+        } else
+            result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry2.Encode()));
+        } else
+            _log( SHIP__ERROR, "%s(%u): Failed to Populate() %s(%u) for ShipGetInfo", \
+                        name(), itemID(), cur->name(), cur->itemID());
+    }
+
+    if (is_log_enabled(SHIP__INFO)) {
+        _log(SHIP__INFO, "ShipItem::GetShipInfo() decoded:");
+        result->Dump(SHIP__INFO, "    ");
+    }
+    return result;
+}
+
+PyDict* ShipItem::GetShipState() {
+    if (!pInventory->ContentsLoaded()) {
+        if (!pInventory->LoadContents()) {
+            _log(INV__ERROR, "%s(%u): Failed to load contents for GetShipState", name(), itemID());
+            return nullptr;
+        }
+    }
+    // Create new dictionary for shipState:
+    PyDict *result = new PyDict();
+    // Create entry for ShipItem itself:
+    result->SetItem(new PyInt(itemID()), GetItemStatusRow());
+    // Check for and Create entry for pilot:
+    InventoryItemRef iRefPilot(nullptr);
+    if (pInventory->GetSingleItemByFlag(flagPilot, iRefPilot))
+        result->SetItem(new PyInt(iRefPilot->itemID()), iRefPilot->GetItemStatusRow());
+
+    // Create entries for ALL modules, rigs, and subsystems present on ship:
+    std::vector<InventoryItemRef> moduleList;
+    m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
+    for (auto cur : moduleList)
+        result->SetItem(new PyInt(cur->itemID()), cur->GetItemStatusRow());
+
+    return result;
+}
+
+PyDict* ShipItem::GetChargeState() {
+    if (!pInventory->ContentsLoaded()) {
+        if (!pInventory->LoadContents()) {
+            _log(INV__ERROR, "%s(%u): Failed to load contents for GetShipState", name(), itemID());
+            return nullptr;
+        }
+    }
+
+    /* get list of all charges loaded in modules */
+    std::map< EVEItemFlags, InventoryItemRef > charges;
+    m_ModuleManager->GetLoadedCharges(charges);
+
+    PyDict *result = new PyDict();
+    if (charges.empty())
+        return result;
+
+    // Create entries in "shipState" dictionary for loaded charges on ship:
+    for (auto cur : charges)
+        result->SetItem(new PyInt((uint16)cur.first), cur.second->GetChargeStatusRow(itemID()));
+
+    return result;
+}
+
+PyList* ShipItem::ShipGetModuleList() {
+    if (!pInventory->LoadContents()) {
+        _log(INV__ERROR, "%s(%u): Failed to load contents for ShipGetModuleList", name(), itemID());
+        return nullptr;
+    }
+
+    PyList* result = new PyList();
+    // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
+    std::vector<InventoryItemRef> moduleList;
+    m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
+    for (auto cur : moduleList) {
+        PyTuple* module = new PyTuple(2);
+        module->SetItem(0, new PyInt(cur->typeID()));
+        module->SetItem(1, new PyInt(cur->itemID()));
+        result->AddItem(module);
+    }
+
+    return result;
+}
+
+bool ShipItem::ValidateBoardShip(CharacterRef character) {
+
+    bool result = false;
+    EvilNumber skillTypeID(EvilZero);
+
+    if (HasAttribute(AttrRequiredSkill1, skillTypeID)) {
+        if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill1Level).get_uint32()))
+            result = true;
+        if (HasAttribute(AttrRequiredSkill2, skillTypeID)) {
+            if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill2Level).get_uint32())) {
+                result = true;
+            } else {
+                return false;
+            }
+            if (HasAttribute(AttrRequiredSkill3, skillTypeID)) {
+                if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill3Level).get_uint32())) {
+                    result = true;
+                } else {
+                    return false;
+                }
+                if (HasAttribute(AttrRequiredSkill4, skillTypeID)) {
+                    if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill4Level).get_uint32())) {
+                        result = true;
+                    } else {
+                        return false;
+                    }
+                    if (HasAttribute(AttrRequiredSkill5, skillTypeID)) {
+                        if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill5Level).get_uint32())) {
+                            result = true;
+                        } else {
+                            return false;
+                        }
+                        if (HasAttribute(AttrRequiredSkill6, skillTypeID)) {
+                            if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill6Level).get_uint32())) {
+                                result = true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        result = true;
+    }
+
+    return result;
+}
+
+bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
+{
+    bool result = false;
+    EvilNumber fitID = 0;
+    uint16 groupID = m_type.groupID();
+    // If a ship group restriction is specified, the item must be able to fit to at least one ship group.
+    _log(SHIP__TRACE, "ShipItem::ValidateItemSpecifics - Beginning the group validation for %s(%u):", iRef->name(), iRef->itemID());
+    if (iRef->HasAttribute(AttrCanFitShipGroup1, fitID)) {
+        if (fitID == groupID)
+            result = true;
+        if (iRef->HasAttribute(AttrCanFitShipGroup2, fitID)) {
+            if (fitID == groupID)
+                result = true;
+            if (iRef->HasAttribute(AttrCanFitShipGroup3, fitID)) {
+                if (fitID == groupID)
+                    result = true;
+                if (iRef->HasAttribute(AttrCanFitShipGroup4, fitID)) {
+                    if (fitID == groupID)
+                        result = true;
+                    if (iRef->HasAttribute(AttrCanFitShipGroup5, fitID)) {
+                        if (fitID == groupID)
+                            result = true;
+                        if (iRef->HasAttribute(AttrCanFitShipGroup6, fitID)) {
+                            if (fitID == groupID)
+                                result = true;
+                            if (iRef->HasAttribute(AttrCanFitShipGroup7, fitID)) {
+                                if (fitID == groupID)
+                                    result = true;
+                                if (iRef->HasAttribute(AttrCanFitShipGroup8, fitID)) {
+                                    if (fitID == groupID)
+                                        result = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        result = true;
+    }
+
+    _log(SHIP__TRACE, "ShipItem::ValidateItemSpecifics - Group Validation returning %s.", (result ? "true" : "false"));
+
+    if (result) {
+        _log(SHIP__TRACE, "ShipItem::ValidateItemSpecifics - Beginning the type validation for %s(%u):", iRef->name(), iRef->itemID());
+
+        uint16 typeID = m_type.id();
+        if (iRef->HasAttribute(AttrCanFitShipType1, fitID)) {
+            result = false;
+            if (fitID == typeID)
+                result = true;
+            if (iRef->HasAttribute(AttrCanFitShipType2, fitID)) {
+                if (fitID == typeID)
+                    result = true;
+                if (iRef->HasAttribute(AttrCanFitShipType3, fitID)) {
+                    if (fitID == typeID)
+                        result = true;
+                    if (iRef->HasAttribute(AttrCanFitShipType4, fitID)) {
+                        if (fitID == typeID)
+                            result = true;
+                    }
+                }
+            }
+        }
+
+        _log(SHIP__TRACE, "ShipItem::ValidateItemSpecifics - Type Validation returning %s.", (result ? "true" : "false"));
+    }
+
+    return result;
+}
+
 
 /* DynamicSystemEntity representing ship object in space */
-Ship::Ship(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
+ShipSE::ShipSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
 : DynamicSystemEntity(self, services, pSystem),
 m_shipRef(ShipItemRef::StaticCast(self)),
 m_processTimerTick(SHIP_PROCESS_TICK_MS),   //5s
@@ -2437,7 +2376,7 @@ m_processTimer(SHIP_PROCESS_TICK_MS)
     _log(SHIP__TRACE, "Created ShipSE %p for item %u", this, self->itemID());
 }
 
-double Ship::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
+double ShipSE::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
 {
     // C = Cmax * [ 1 + ( SQRT(C0/Cmax) - 1) * EXP((t0-t1)/tau) ] ^ 2
     // dC/dt = (SQRT(C/Cmax) - C/Cmax) * 2 * Cmax / tau
@@ -2461,7 +2400,7 @@ double Ship::CalculateRechargeRate(double Capacity, double Current, double Recha
     return (Cmax2_tau * (sC_Cmax - C_Cmax));
 }
 
-void Ship::Process() {
+void ShipSE::Process() {
     if (m_killed)
         return;
     /*  Enable base call to Process Targeting and Movement  */
@@ -2486,7 +2425,7 @@ void Ship::Process() {
                 newCharge = Capacity;
             m_self->SetAttribute(AttrShieldCharge, newCharge);
             SendDamageStateChanged();
-            _log(SHIP__RECHARGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
+            _log(SHIP__RECHARGE, "ShipSE::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
         }
 
         // cap
@@ -2499,7 +2438,7 @@ void Ship::Process() {
             else if ((Capacity - newCharge) < 0.3)
                 newCharge = Capacity;
             m_self->SetAttribute(AttrCapacitorCharge, newCharge);
-            _log(SHIP__RECHARGE, "Ship::Process(): %s(%u) - New Cap Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
+            _log(SHIP__RECHARGE, "ShipSE::Process(): %s(%u) - New Cap Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
         }
         // profile timer for the ship recharge shit
         if (sConfig.debug.UseProfiling)
@@ -2513,7 +2452,7 @@ void Ship::Process() {
     m_shipRef->ProcessModules();
 }
 
-void Ship::DamageRandModule(float chance)
+void ShipSE::DamageRandModule(float chance)
 {
     if (chance == 0)
         return;
@@ -2521,7 +2460,7 @@ void Ship::DamageRandModule(float chance)
         m_shipRef->DamageRandModule();
 }
 
-void Ship::PayInsurance() {
+void ShipSE::PayInsurance() {
     if (m_self->groupID() == EVEDB::invGroups::Rookieship)
         return;
     std::string reason = "Insurance payment for loss of ship ";
@@ -2530,12 +2469,12 @@ void Ship::PayInsurance() {
     ShipDB::DeleteInsuranceByShipID(m_self->itemID());
 }
 
-void Ship::ResetShipSystemMgr(SystemManager* pSystem)
+void ShipSE::ResetShipSystemMgr(SystemManager* pSystem)
 {
     m_system = pSystem;
 }
 
-void Ship::SetPilot(Client* pClient) {
+void ShipSE::SetPilot(Client* pClient) {
     m_self->SetPlayer(pClient);
     if (pClient == nullptr) {
         m_allyID = 0;
@@ -2547,7 +2486,7 @@ void Ship::SetPilot(Client* pClient) {
     m_corpID = pClient->GetCorporationID();
 }
 
-void Ship::Dock() {
+void ShipSE::Dock() {
     if (m_targMgr != nullptr) {
         m_targMgr->ClearModules();
         m_targMgr->ClearAllTargets(false);
@@ -2557,7 +2496,7 @@ void Ship::Dock() {
     m_shipRef->Dock();
 }
 
-void Ship::Jump() {
+void ShipSE::Jump() {
     if (m_targMgr != nullptr) {
         m_targMgr->ClearModules();
         m_targMgr->ClearAllTargets(false);
@@ -2568,14 +2507,14 @@ void Ship::Jump() {
     m_destiny->Jump();
 }
 
-void Ship::Warp() {
+void ShipSE::Warp() {
     if (m_targMgr != nullptr)
         m_targMgr->ClearModules();
 
     m_shipRef->Warp();
 }
 
-void Ship::RemoveTarget(SystemEntity* pSE) {
+void ShipSE::RemoveTarget(SystemEntity* pSE) {
     // target has been unlocked
     m_shipRef->GetModuleManager()->RemoveTarget(pSE);
 
@@ -2583,7 +2522,7 @@ void Ship::RemoveTarget(SystemEntity* pSE) {
     //m_targMgr->OnTarget(pSE, TargMgr::Mode::Lost, TargMgr::Msg::StoppedTargeting);
 }
 
-void Ship::EncodeDestiny( Buffer& into) {
+void ShipSE::EncodeDestiny( Buffer& into) {
     using namespace Destiny;
 
     uint8 mode = m_destiny->GetState(); //Ball::Mode::STOP;
@@ -2628,7 +2567,7 @@ void Ship::EncodeDestiny( Buffer& into) {
                 warp.targY = target.y;
                 warp.targZ = target.z;
                 warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-                // warp timing.  see Ship::EncodeDestiny() for notes/updates
+                // warp timing.  see ShipSE::EncodeDestiny() for notes/updates
                 warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
                 warp.followRange = 0;   //this isnt right
                 warp.followID = 0;  //this isnt right
@@ -2680,11 +2619,11 @@ void Ship::EncodeDestiny( Buffer& into) {
         case 12: modeStr = "Formation"; break;
     }
 
-    _log(SE__DESTINY, "Ship::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
+    _log(SE__DESTINY, "ShipSE::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
             GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);
 }
 
-void Ship::MakeDamageState(DoDestinyDamageState &into) {
+void ShipSE::MakeDamageState(DoDestinyDamageState &into) {
     into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
     into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() +7;
     into.timestamp = GetFileTimeNow();
@@ -2692,7 +2631,7 @@ void Ship::MakeDamageState(DoDestinyDamageState &into) {
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
 }
 
-PyDict* Ship::MakeSlimItem() {
+PyDict* ShipSE::MakeSlimItem() {
     _log(SE__SLIMITEM, "MakeSlimItem for Ship %s(%u)", m_self->name(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",               new PyLong(m_self->itemID()));
@@ -2719,21 +2658,21 @@ PyDict* Ship::MakeSlimItem() {
     //m_self->GetMyInventory()->GetItemsByFlagRange(flagSubSystem0, flagSubSystem7, items);
     if (!items.empty()) {
         PyList *list = new PyList();
-        for (auto cur : items) {
+        for (auto cur : items)
             list->AddItem(new_tuple(cur->itemID(), cur->typeID()));
-        }
 
         slim->SetItemString("modules", list );
     }
 
     if (is_log_enabled(DESTINY__DEBUG)) {
-        _log( DESTINY__DEBUG, "Ship::MakeSlimItem() - %s(%u)", GetName(), GetID());
+        _log( DESTINY__DEBUG, "ShipSE::MakeSlimItem() - %s(%u)", GetName(), GetID());
         slim->Dump(DESTINY__DEBUG, "     ");
     }
+
     return slim;
 }
 
-void Ship::ClearBoostData()
+void ShipSE::ClearBoostData()
 {
     m_oldArmor       = 0;
     m_oldShield      = 0;
@@ -2745,9 +2684,9 @@ void Ship::ClearBoostData()
     m_boosted = false;
 }
 
-void Ship::RemoveBoost()
+void ShipSE::RemoveBoost()
 {
-    _log( FLEET__TRACE, "Ship::RemoveBoost() - %s(%u)", GetName(), GetID());
+    _log( FLEET__TRACE, "ShipSE::RemoveBoost() - %s(%u)", GetName(), GetID());
 
     m_shipRef->SetAttribute(AttrArmorHP, m_oldArmor);
     m_shipRef->SetAttribute(AttrInetia, m_oldInertia);
@@ -2760,7 +2699,7 @@ void Ship::RemoveBoost()
     ClearBoostData();
 }
 
-void Ship::ApplyBoost(BoostData& bData)
+void ShipSE::ApplyBoost(BoostData& bData)
 {
     // note:  mining boost applied in mining module code
 
@@ -2768,7 +2707,7 @@ void Ship::ApplyBoost(BoostData& bData)
     if (m_boosted)
         RemoveBoost();
 
-    _log( FLEET__TRACE, "Ship::ApplyBoost() - %s(%u)", GetName(), GetID());
+    _log( FLEET__TRACE, "ShipSE::ApplyBoost() - %s(%u)", GetName(), GetID());
 
     m_boost             = bData;
     m_oldArmor          = m_shipRef->GetAttribute(AttrArmorHP).get_uint32();
@@ -2795,26 +2734,26 @@ void Ship::ApplyBoost(BoostData& bData)
 }
 //{'FullPath': u'UI/Messages', 'messageID': 257802, 'label': u'DronesDroppedBecauseOfBandwidthModificationBody'}(u'The drone control bandwidth of your ship has been modified causing you to lose the ability to control some drones.', None, None)
 
-bool Ship::LaunchDrone(InventoryItemRef drone) {
+bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     if (GetPilot()->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() <= m_drones.size()) {
         std::map<std::string, PyRep *> arg;
-        arg["typeID"] = new PyInt(drone->typeID());
+        arg["typeID"] = new PyInt(dRef->typeID());
         throw PyException(MakeUserError("NoDroneManagementAbilitiesLeft", arg));
         //{'FullPath': u'UI/Messages', 'messageID': 259140, 'label': u'NoDroneManagementAbilitiesLeftBody'}(u'You cannot launch {[item]item.name} because you are already controlling {[numeric]limit} drones, as much as you have skill to.', None, {u'{[numeric]limit}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'limit'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
     }
 
     // add drone to launched drone map (whether onlined or not)
-    m_drones.emplace(drone->itemID(), drone.get());
+    m_drones.emplace(dRef->itemID(), dRef.get());
 
     Character* pChar = GetPilot()->GetChar().get();
-    sLog.Magenta("Ship::LaunchDrone()","%s: Launching drone %u",  pChar->name(), drone->itemID());
+    sLog.Magenta("ShipSE::LaunchDrone()","%s: Launching drone %u",  pChar->name(), dRef->itemID());
 
-    drone->Move(GetLocationID(), flagAutoFit, true);
-    drone->ChangeSingleton(true);
+    dRef->Move(GetLocationID(), flagAutoFit, true);
+    dRef->ChangeSingleton(true);
 
     GPoint position(GetPosition());
     position.MakeRandomPointOnSphere(500.0);
-    drone->SetPosition(position);
+    dRef->SetPosition(position);
 
     //now we create an SE to represent it.
     FactionData data = FactionData();
@@ -2822,7 +2761,7 @@ bool Ship::LaunchDrone(InventoryItemRef drone) {
         data.corporationID = pChar->corporationID();
         data.factionID = pChar->warFactionID();
         data.ownerID = pChar->itemID();
-    Drone* pDrone = new Drone(drone, m_services, m_system, data);
+    Drone* pDrone = new Drone(dRef, m_services, m_system, data);
 
     // ship will launch all drones pilot has skill for
     pDrone->Launch(this);
@@ -2833,14 +2772,14 @@ bool Ship::LaunchDrone(InventoryItemRef drone) {
     */
     //  if ship doesnt have bandwidth for drone, it will not online (inert)
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
-    load += drone->GetAttribute(AttrDroneBandwidthUsed);
+    load += dRef->GetAttribute(AttrDroneBandwidthUsed);
     if (load <= m_shipRef->GetAttribute(AttrDroneBandwidth)) {
         pDrone->GetAI()->SetIdle();
         m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
     } else {
         std::map<std::string, PyRep *> arg;
-        arg["droneName"] = new PyString(drone->name());
-        arg["droneBandwidthUsed"] = new PyInt(drone->GetAttribute(AttrDroneBandwidthUsed).get_uint32());
+        arg["droneName"] = new PyString( dRef->name());
+        arg["droneBandwidthUsed"] = new PyInt( dRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32());
         arg["bandwidthLeft"] = new PyInt(m_shipRef->GetAttribute(AttrDroneBandwidth).get_uint32() - m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32());
         throw PyException(MakeUserError("MaxBandwidthExceeded2", arg));
     }
@@ -2850,7 +2789,7 @@ bool Ship::LaunchDrone(InventoryItemRef drone) {
     return true;
 }
 
-void Ship::ScoopDrone(SystemEntity* pDroneSE) {
+void ShipSE::ScoopDrone(SystemEntity* pDroneSE) {
     m_drones.erase(pDroneSE->GetID());
     pDroneSE->GetDroneSE()->StateChange();
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
@@ -2858,7 +2797,7 @@ void Ship::ScoopDrone(SystemEntity* pDroneSE) {
     m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
 }
 
-void Ship::UpdateDrones(std::map<int16, int8> &attribs) {
+void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
     // update drones in space with new attrib settings
     for (auto cur : m_drones) {
         cur.second->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
@@ -2868,7 +2807,7 @@ void Ship::UpdateDrones(std::map<int16, int8> &attribs) {
     }
 }
 
-void Ship::AbandonDrones() {
+void ShipSE::AbandonDrones() {
     SystemEntity* pSE(nullptr);
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
     for (auto cur : m_drones) {

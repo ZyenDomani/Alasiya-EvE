@@ -40,7 +40,7 @@ public:
 
     // specific ProcessCycle call for depleted rocks
     void Depleted(std::multimap<float, MiningLaser*> &mMap);
-    void AddOre(uint16 typeID, float amt, bool slave=true);
+    void AddOreAndDeactivate(uint16 typeID, float amt, bool slave=true);
 
     void CancelOnError()                                { ActiveModule::DeactivateCycle(true); }
 

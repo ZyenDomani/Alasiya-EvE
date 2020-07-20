@@ -63,8 +63,10 @@ public:
     void UninstallRig(uint32 itemID);
     bool InstallSubSystem(ModuleItemRef mRef, EVEItemFlags flag);
     bool AddModule(ModuleItemRef mRef, EVEItemFlags flag);
-    void UnfitModule(uint32 itemID);// this will remove charge items from modules
-    void UnfitModule(EVEItemFlags flag);// this will remove charge items from modules
+    // this will deactivate, offline and remove charges from module
+    void UnfitModule(uint32 itemID);
+    // this will deactivate, offline and remove charges from module
+    void UnfitModule(EVEItemFlags flag);
     void Online(uint32 itemID);
     void Offline(uint32 itemID);
     void Online(EVEItemFlags flag);
@@ -94,8 +96,9 @@ public:
     void UnloadCharge(EVEItemFlags fromFlag, bool merge=false);
     // unload charge from module by itemID
     void UnloadModule(uint32 itemID);
-    // this will remove charge items from all modules
+    // this will remove charges from all modules
     void UnloadAllModules();
+    // this will remove charges from weapons only
     void UnloadWeapons();
     void UpdateModules(std::vector<uint32> modVec);
     void UpdateModules(EVEItemFlags flag);
@@ -110,7 +113,9 @@ public:
     InventoryItemRef GetLoadedChargeOnModule(EVEItemFlags flag);
     InventoryItemRef GetLoadedChargeOnModule(InventoryItemRef moduleRef);
 
-    void GetLoadedCharges(std::map<EVEItemFlags, InventoryItemRef> &charges);
+    void GetLoadedCharges(std::map<EVEItemFlags, InventoryItemRef> &charges)
+                                                        { charges = m_charges; }
+
     void GetWeapons(std::list<GenericModule*>& weaponList);
 
     void GetShipRigs(std::vector< uint32 >& modVec);
@@ -160,9 +165,10 @@ private:
     float m_rigScanBonus;
 
     std::map<uint16, uint8> m_modByGroup;               // groupID, count
-    std::map<uint8, GenericModule*> m_modules;          // slot, module
+    std::map<uint8, GenericModule*> m_modules;          // slot, module (for all slots)
+    std::map<uint8, GenericModule*> m_systems;          // slot, module (for rigs and subsystems)
+    std::map<uint8, GenericModule*> m_fittings;          // slot, module (for hi,mid,lo slots)
     std::map<EVEItemFlags, InventoryItemRef> m_charges; // slot, chargeItem
-    // std::map<EVEItemFlags, ChargeData> m_charges;       // slot, ChargeData {typeID, qty}
 };
 
 

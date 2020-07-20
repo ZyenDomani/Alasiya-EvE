@@ -367,7 +367,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     return killed;
 }
 
-void Ship::Killed(Damage &fatal_blow) {
+void ShipSE::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
 
@@ -442,9 +442,7 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.itemName = wreck_name;
             wreckEntity.ownerID = killerID;
             wreckEntity.typeID = wreckTypeID;
-            wreckEntity.x = wreckPosition.x;
-            wreckEntity.y = wreckPosition.y;
-            wreckEntity.z = wreckPosition.z;
+            wreckEntity.position = wreckPosition;
 
         if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
@@ -585,9 +583,7 @@ void Ship::Killed(Damage &fatal_blow) {
             corpseEntity.itemName = corpse_name;
             corpseEntity.ownerID = 1;   //would this be 'owned' by killer?
             corpseEntity.typeID = corpseTypeID;
-            corpseEntity.x = wreckPosition.x;
-            corpseEntity.y = wreckPosition.y;
-            corpseEntity.z = wreckPosition.z;
+            corpseEntity.position = wreckPosition;
             if (!m_system->BuildDynamicEntity(corpseEntity)) {
                 sLog.Error("Ship::Killed()", "Spawning Corpse Failed: typeID or typeName not supported: '%u'", corpseTypeID);
             } else if (is_log_enabled(PHYSICS__TRACE)) {
@@ -638,9 +634,7 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.itemName = wreck_name;
             wreckEntity.ownerID = pPilot->GetCharacterID();
             wreckEntity.typeID = wreckTypeID;
-            wreckEntity.x = wreckPosition.x;
-            wreckEntity.y = wreckPosition.y;
-            wreckEntity.z = wreckPosition.z;
+            wreckEntity.position = wreckPosition;
         if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
             wreckItemRef->Delete();

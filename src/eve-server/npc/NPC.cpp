@@ -358,7 +358,7 @@ void NPC::Killed(Damage &fatal_blow) {
         _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                 GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
-    if (MakeRandomFloat() < sConfig.npc.LootDropChance)
+    if ((MakeRandomFloat() < sConfig.npc.LootDropChance) or (m_allyID == factionRogueDrones))
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     // add wreck to system's AnomalyMgr
@@ -374,9 +374,7 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckEntity.itemName = wreck_name;
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = wreckTypeID;
-        wreckEntity.x = wreckPosition.x;
-        wreckEntity.y = wreckPosition.y;
-        wreckEntity.z = wreckPosition.z;
+        wreckEntity.position = wreckPosition;
 
     if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
         sLog.Error("NPC::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);

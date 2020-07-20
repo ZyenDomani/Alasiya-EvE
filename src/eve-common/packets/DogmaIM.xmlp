@@ -133,13 +133,13 @@
       <int name="charID" none_marker="0" default="0" />
       <int name="shipID" none_marker="0" default="0" />
       <raw name="target" /> <!-- targetID or PyNone-->
-      <raw name="other" /> <!-- GodmaOther goes here with charge data or PyNone-->
+      <raw name="subLoc" /> <!-- GodmaSubLoc goes here with charge data or PyNone-->
       <raw name="area" /><!-- ALWAYS a PyList, even empty -->
       <int name="effectID" none_marker="0" default="0" />
     </listInline>
   </elementDef>
 
-  <elementDef name="GodmaOther">
+  <elementDef name="GodmaSubLoc">
     <tupleInline>
       <int name="shipID" />
       <int name="slotID" />

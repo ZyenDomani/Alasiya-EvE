@@ -41,7 +41,7 @@ class AnomalyMgr
       void LoadAnomalies();
 
       //  assign sigID and add to anom list to allow showing on scanner
-      void AddAnomaly(InventoryItemRef iRef);
+      void AddAnomaly(InventoryItemRef iRef, uint32 id=0);
       void RemoveAnomaly(uint32 itemID);
       // list for ship scanner
       void GetAnomalyList(std::vector< CosmicSignature >& sig);
@@ -73,22 +73,23 @@ private:
 
     // internal data counters   hard-capped at 256/128
     uint8 m_maxSigs;    // max total for this system
-    // < 0 (where possible) means "not allowed"
     uint16 m_Anoms; // system total, including pos, wrecks, ships.  65535 *should* be large enough
     uint8 m_Sigs; // total probe-needed items, hard-capped at 256
     // these should be fine soft-capped at 128
-    int8 m_WH;
-    int8 m_Grav;
-    int8 m_Mag;
-    int8 m_Ladar;
-    int8 m_Radar;
-    int8 m_Unrated; // simple combat sites, no probe needed
-    int8 m_Complex; // DED sites
+    int8 m_WH;    // < 0 means "not allowed"
+    int8 m_Grav; // < 0 means "not allowed"
+    int8 m_Mag; // < 0 means "not allowed"
+    int8 m_Ladar; // < 0 means "not allowed"
+    int8 m_Radar; // < 0 means "not allowed"
+    // simple combat sites, no probe needed
+    int8 m_Unrated;  // < 0 means "not allowed"
+    // DED sites
+    int8 m_Complex;  // < 0 means "not allowed"
 
 
-    std::map<uint32, CosmicSignature> m_sigByItemID;
-    std::map<uint32, CosmicSignature> m_anomByItemID;
-    std::map<std::string, CosmicSignature> m_sigBySigID;
+    std::map<uint32, CosmicSignature> m_sigByItemID;            // signatures in system - need probes to scan down
+    std::map<uint32, CosmicSignature> m_anomByItemID;           // anomalies in system - no probes needed
+    std::map<std::string, CosmicSignature> m_sigBySigID;        // map for all signatures in system
 
 };
 

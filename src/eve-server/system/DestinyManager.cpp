@@ -892,15 +892,15 @@ void DestinyManager::MoveObject() {
         std::ostringstream oss;
         oss << timeStamp;
         ItemData idata(23, 1, mySE->GetLocationID(), flagAutoFit, oss.str().c_str(), m_position, "Position Test");
-        // temp items isnt working right (segfaults in bubble->add()) revert to previous item creation/saving
-        CargoContainerRef iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnItem(InventoryItem::CreateTempItemID(idata), idata));
-        //CargoContainerRef iRef = CargoContainerRef::StaticCast(InventoryItem::Spawn(idata));
+        CargoContainerRef iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
         if (iRef.get() != nullptr) {
             // create new container
             FactionData data = FactionData();
             ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
+            if (cSE == nullptr)
+                return;
             iRef->SetMySE(cSE);
-            mySE->SystemMgr()->AddEntity(cSE);
+            mySE->SystemMgr()->AddMarker(cSE);
         }
     }
 }
@@ -2211,6 +2211,9 @@ void DestinyManager::SetUndockSpeed() {
     m_activeSpeedFraction = 1.0f;
     m_currentSpeedFraction = 1.0f;
 
+    if (m_ballMode == Destiny::Ball::Mode::MISSILE)
+        return;
+
     m_ballMode = Destiny::Ball::Mode::GOTO;
     std::vector<PyTuple*> updates;
     SetBallVelocity bv;
@@ -2284,7 +2287,12 @@ void DestinyManager::DockingAccepted()
 }
 
 void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
-    _log(DESTINY__TRACE, "Destiny::SetPosition() called by %s (%u)", mySE->GetName(), mySE->GetID());
+    _log(DESTINY__TRACE, "Destiny::SetPosition() called by %s(%u)", mySE->GetName(), mySE->GetID());
+
+    if (pt.isZero()) {
+        _log(DESTINY__TRACE, "Destiny::SetPosition() - %s(%u) point is zero", mySE->GetName(), mySE->GetID());
+        EvE::traceStack();
+    }
 
     m_position = pt;
 
@@ -2293,7 +2301,6 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
 
     //according to packet sniffs, this is only used for 'Structure' and 'Probe" items.  'update' is for syncing client position data with ours
     if (mySE->IsPOSSE() or mySE->IsProbeSE() or update) {
-        update = false;
         SetBallPosition du;
             du.entityID = mySE->GetID();
             du.x = m_position.x;
@@ -2605,7 +2612,7 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     SendBallInteractive(newShipRef, true);
 }
 
-void DestinyManager::UpdateOldShip(Ship* pShipSE)
+void DestinyManager::UpdateOldShip(ShipSE* pShipSE)
 {
     if (pShipSE->IsDead())
         return;

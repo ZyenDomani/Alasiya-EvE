@@ -30,8 +30,12 @@ public:
 
     /* GenericModule overrides */
     virtual void        Process();
-    virtual void        LoadCharge(InventoryItemRef charge);    // this does not add chargeRef to module
-    virtual void        UnloadCharge();                         // this does not remove chargeRef from module
+    // this will not add chargeRef to module.
+    // must NOT throw
+    virtual void        LoadCharge(InventoryItemRef charge);
+    // this will not remove chargeRef from module.
+    // must NOT throw
+    virtual void        UnloadCharge();
     virtual void        Overload();
     virtual void        AbortCycle();
     virtual void        DeOverload();
@@ -82,7 +86,7 @@ protected:
     void                UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRef iRef);
 
     /* for linked weapons */
-    void                SetSlaveData(Ship* pShip);
+    void                SetSlaveData(ShipSE* pShip);
 
     /* for modules that use charges */
     void                ConsumeCharge();                // common code to reduce ammo by one unit.
@@ -106,6 +110,7 @@ private:
 
     bool                m_Stop :1;
 
+    uint8               m_loadQty;
     std::string         m_guidStr;
 
 };

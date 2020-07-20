@@ -96,7 +96,7 @@ public:
     uint32              groupID()                       { return m_modRef->groupID(); }
     EVEItemFlags        flag()                          { return m_modRef->flag(); }
 
-    void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }    // not used
+    void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }
     void SetModuleState(int8 state)                     { m_ModuleState = state; }
     void SetChargeState(int8 state)                     { m_ChargeState = state; }
     void SetLinked(bool set=false)                      { m_linked = set; }
@@ -110,10 +110,10 @@ public:
     virtual void Process()                              { /* do nothing here */ }
     virtual void Deactivate(std::string effect="")      { /* do nothing here */ }
     virtual void AbortCycle()                           { /* do nothing here */ }
-    // this will not physically add charge to module,
+    // this will not add chargeRef to module.
     // must NOT throw
     virtual void LoadCharge(InventoryItemRef charge)    { /* do nothing here */ }
-    // this will not physically remove charge from module,
+    // this will not remove chargeRef from module.
     // must NOT throw
     virtual void UnloadCharge()                         { /* do nothing here */ }
     // this will physically add charge to module,

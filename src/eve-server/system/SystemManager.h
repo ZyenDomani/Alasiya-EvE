@@ -114,11 +114,12 @@ public:
 
     bool BuildDynamicEntity(const DBSystemDynamicEntity& entity, uint32 launcherID=0);
 
-    void AddNPC(NPC* who);
-    void RemoveNPC(NPC* who);
-    void AddEntity(SystemEntity* who);
-    void RemoveEntity(SystemEntity* who);   // this also removes SE* from bubble and sig from AnomalyMgr (if applicable)
+    void AddNPC(NPC* pNPC);
+    void RemoveNPC(NPC* pNPC);
+    void AddEntity(SystemEntity* pSE);
+    void RemoveEntity(SystemEntity* pSE);   // this also removes SE* from bubble and sig from AnomalyMgr (if applicable)
     void AddClient(Client* pClient, bool count=false, bool jump=false);
+    void AddMarker(SystemEntity* pSE, bool sendBall=false);    // rather specific here.
     void RemoveClient(Client* pClient, bool count=false, bool jump=false);
     void SetDockCount(Client* pClient, bool docked=false);
 

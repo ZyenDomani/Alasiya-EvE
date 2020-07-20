@@ -96,6 +96,7 @@ void Inventory::Unload()
         ItemDB::SaveItems(items);
     }
     mContents.clear();
+    m_contentsByFlag.clear();
     mContentsLoaded = false;
 }
 
@@ -162,9 +163,9 @@ bool Inventory::LoadContents() {
             od.ownerID = pClient->GetCharID();
     }
 
-    _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory %u(%p) with owner %u", m_myID, this , od.ownerID);
+    _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory of %s(%u) with owner %u", m_self->name(), m_myID, od.ownerID);
     if (!GetItems(od, items)) {
-        _log(INV__ERROR, "Inventory::LoadContents() - Failed to get items of inventory %u", m_myID);
+        _log(INV__ERROR, "Inventory::LoadContents() - Failed to get inventory items for %s(%u)", m_self->name(), m_myID);
         if ((pClient != nullptr) and IsStation(m_myID))
             pClient->RemoveStationHangar(m_myID);
         return false;
@@ -190,12 +191,14 @@ bool Inventory::LoadContents() {
 }
 
 void Inventory::AddItem(InventoryItemRef iRef) {
+    //segfault check
     if (iRef.get() == nullptr)
-        return;    //segfault check
+        return;
+
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     std::pair <std::_Rb_tree_iterator <std::pair <const uint32, InventoryItemRef > >, bool > test;
     if (itr == mContents.end())
-        test = mContents.insert(std::make_pair(iRef->itemID(), iRef));
+        test = mContents.emplace(iRef->itemID(), iRef);
 
     if (test.second)
         _log(INV__TRACE, "Inventory::AddItem() - Updated %s(%u) to contain (%u) %s(%u) in %s.", \
@@ -203,11 +206,15 @@ void Inventory::AddItem(InventoryItemRef iRef) {
     else
         _log(INV__TRACE, "Inventory::AddItem() - %s(%u) already contains %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+
+    m_contentsByFlag.emplace(iRef->flag(), iRef);
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
+    //segfault check
     if (iRef.get() == nullptr)
-        return;    //segfault check
+        return;
+
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     if (itr != mContents.end()) {
         mContents.erase(itr);
@@ -216,6 +223,12 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     } else
         _log(INV__TRACE,"Inventory::RemoveItem() - %s(%u) does not contain %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+/*
+    auto range = m_contentsByFlag.equal_range(iRef->flag());
+    for ( auto itr = range.first; itr != range.second; ++itr )
+        if (itr->second == iRef)
+            m_contentsByFlag.erase(itr);
+        */
 }
 
 void Inventory::DeleteContents()
@@ -231,6 +244,7 @@ void Inventory::DeleteContents()
     }
 
     mContents.clear();
+    m_contentsByFlag.clear();
     mContentsLoaded = false;
 }
 
@@ -289,8 +303,16 @@ void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
 
 std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef> &itemVec)
 {
-    //15:53:09 L Inventory::SortVector: 41 items sorted in 0.177us with 480 loops.
+    // my sort
+    //15:53:09 [ItemTrace] Inventory::SortVector: 41 items sorted in 0.177us with 480 loops.  <<-- dunno when/where this was run
+    //15:40:20 [ItemTrace] Inventory::SortVector() - 30 items sorted in 28.250us with 87 loops.i
+    //22:09:28 [InvTrace] Inventory::SortVector() - 47 items sorted in 129.250us with 644 loops.
 
+
+    // std::swap
+    //12:57:36 [ItemTrace] Inventory::SortVector() - 21 items sorted in 16.000us with 60 loops.
+    //13:00:55 [ItemTrace] Inventory::SortVector() - 15 items sorted in 20.750us with 28 loops.
+    //13:01:20 [ItemTrace] Inventory::SortVector() - 19 items sorted in 46.000us with 90 loops.
     /* sorts a vector of items by category, with loaded modules first (in slot order), then loaded charges (in slot order), then cargo
      * if there is only one item, no sorting required...
      *  this should only be called by ships
@@ -299,28 +321,29 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     if (itemVec.size() < 2)
         return itemVec;
 
-    uint16 count = 0;
-    double start = 0.0;
-    if (sConfig.debug.IsTestServer)
-        if (sConfig.debug.UseProfiling)
-            start = GetTimeUSeconds();
+    uint16 count(0);
+    double start(GetTimeUSeconds());
 
     //begin basic sort
-    bool done = false;
-    InventoryItemRef tmp;
+    bool done(false);
+    InventoryItemRef tmp(nullptr);
 
     while (!done) { //check if sorted
         done = true;  //assume sorted
-        for (int i = 0, i2 = 1; (i < itemVec.size()) && (i2 < itemVec.size()); ++i, ++i2) { //iterate though list
+        //iterate though list
+        for (int i = 0, i2 = 1; (i < itemVec.size()) && (i2 < itemVec.size()); ++i, ++i2) {
             if ((IsModuleSlot(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) {
-                if (itemVec[i]->categoryID() > itemVec[i2]->categoryID()) {  //check if each pair is sorted by category.  subsystems > charges > modules
+                //check if each pair is sorted by category.  subsystems > charges > modules
+                if (itemVec[i]->categoryID() > itemVec[i2]->categoryID()) {
                     //it's not, so flip the values
+                    //std::swap(itemVec[i],itemVec[i2]);  // this is ~100x slower on dev server
                     tmp = itemVec[i];
                     itemVec[i] = itemVec[i2];
                     itemVec[i2] = tmp;
                     done = false;  //we weren't sorted, so now go back and check if we are
                 }
-            } else if ((IsCargoHoldFlag(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) { //check if each pair is sorted by flag.  cargo > module
+            //check if each pair is sorted by flag.  cargo > module
+            } else if ((IsCargoHoldFlag(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) {
                 //it's not, so flip the values
                 tmp = itemVec[i];
                 itemVec[i] = itemVec[i2];
@@ -332,8 +355,8 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     }
 
     if (sConfig.debug.IsTestServer)
-        if (sConfig.debug.UseProfiling)
-            _log(ITEM__TRACE, "Inventory::SortVector() - %u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
+        _log(INV__TRACE, "Inventory::SortVector() - %u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
+
     return itemVec;  //returns sorted list
 }
 
@@ -367,31 +390,31 @@ InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
 }
 
 InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const {
-    for (auto cur : mContents)
-        if ((cur.second->typeID() == typeID)
-            and (cur.second->flag() == flag))
-            return cur.second;
+    auto range = m_contentsByFlag.equal_range(flag);
+    for ( auto itr = range.first; itr != range.second; ++itr )
+        if (itr->second->typeID() == typeID)
+            return itr->second;
 
-        return InventoryItemRef(nullptr);
+    return InventoryItemRef(nullptr);
 }
 
 void Inventory::GetInventoryList( std::map< uint32, InventoryItemRef >& invMap ) {
     for (auto cur : mContents)
-        invMap.insert(std::pair<uint32, InventoryItemRef>(cur.first, cur.second));
+        invMap.emplace(cur.first, cur.second);
 }
 
 uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
-    for (auto cur : mContents)
-        if (cur.second->flag() == flag)
-            items.push_back(cur.second);
+    auto range = m_contentsByFlag.equal_range(flag);
+    for ( auto itr = range.first; itr != range.second; ++itr )
+            items.push_back(itr->second);
     return items.size();
 }
 
 bool Inventory::GetTypesByFlag(EVEItemFlags flag, std::map< uint16, InventoryItemRef >& items)
 {
-    for (auto cur : mContents)
-        if (cur.second->flag() == flag)
-            items.emplace(cur.second->typeID(), cur.second);
+    auto range = m_contentsByFlag.equal_range(flag);
+    for ( auto itr = range.first; itr != range.second; ++itr )
+        items.emplace(itr->second->typeID(), itr->second);
 
     if (items.size() > 0)
         return true;
@@ -412,22 +435,21 @@ InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
 }
 
 bool Inventory::GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef& iRef) const {
-    for (auto cur : mContents)
-        if (cur.second->flag() == flag) {
-            iRef = cur.second;
-            return true;
-        }
+    auto range = m_contentsByFlag.equal_range(flag);
+    for ( auto itr = range.first; itr != range.second; ++itr ) {
+        iRef = itr->second;
+        return true;
+    }
     return false;
 }
 
 bool Inventory::IsEmptyByFlag(EVEItemFlags flag) const {
-    for (auto cur : mContents)
-        if (cur.second->flag() == flag)
-            return false;
-    return true;
+    return m_contentsByFlag.find(flag) == m_contentsByFlag.end();
 }
 
-uint32 Inventory::GetItemsByFlagRange(EVEItemFlags lowflag, EVEItemFlags highflag, std::vector<InventoryItemRef> &items) const {
+uint32 Inventory::GetItemsByFlagRange(EVEItemFlags lowflag, EVEItemFlags highflag, std::vector<InventoryItemRef> &items) const
+{
+    // i dont yet see a better way to do this one...
     uint32 count = 0;
     for (auto cur : mContents)
         if (cur.second->flag() >= lowflag && cur.second->flag() <= highflag) {
@@ -437,7 +459,9 @@ uint32 Inventory::GetItemsByFlagRange(EVEItemFlags lowflag, EVEItemFlags highfla
     return count;
 }
 
-uint32 Inventory::GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const {
+uint32 Inventory::GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const
+{
+    // i dont yet see a better way to do this one...
     uint32 count = 0;
     for (auto cur : mContents)
         if (flags.find(cur.second->flag()) != flags.end()) {
@@ -492,7 +516,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
         if ((ownerID == 0) or (ownerID == iRef->ownerID())) {
             tItr = types.find(iRef->typeID());
             if (tItr == types.end())
-                types.insert(std::make_pair(iRef->typeID(), iRef));
+                types.emplace(std::make_pair(iRef->typeID(), iRef));
             else // found another stack of this type.  merge it.
                 tItr->second->Merge(iRef);  // this call will remove item from mContents.  does not invalidate the iterator.
         }
@@ -507,10 +531,10 @@ double Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) cons
             if (IsHangarFlag(cur.second->flag()))
                 totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
     } else {
-        for (auto cur : mContents)
-            if (cur.second->flag() == flag)
-                totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
-                // This formula is a hybrid of both old and new ones...and it works \o/
+        auto range = m_contentsByFlag.equal_range(flag);
+        for ( auto itr = range.first; itr != range.second; ++itr )
+            totalVolume += itr->second->quantity() * itr->second->GetAttribute(AttrVolume).get_float();
+            // This formula is a hybrid of both old and new ones...and it works \o/
     }
     return totalVolume;
 }
@@ -706,7 +730,7 @@ bool Inventory::HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) cons
 
 void Inventory::GetCargoList(std::multimap< uint8, InventoryItemRef >& cargoMap) {
     for (auto cur : mContents)
-        cargoMap.insert(std::pair<uint8, InventoryItemRef>(cur.second->flag(), cur.second));
+        cargoMap.emplace(cur.second->flag(), cur.second);
 }
 
 double Inventory::GetCorpHangerCapyUsed() const {

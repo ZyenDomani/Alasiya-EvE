@@ -73,9 +73,9 @@ public:
     Client* GetOwner()                                  { return m_pClient; }
     DroneAIMgr* GetAI()                                 { return m_AI; }
 
-    void Launch(Ship* pShipSE);           //add drone entity to system
+    void Launch(ShipSE* pShipSE);           //add drone entity to system
     //begin idle orbit around assigned ship
-    void Online(Ship* pShipSE=nullptr);         //  if nullptr sent, assign to controlling ship
+    void Online(ShipSE* pShipSE=nullptr);         //  if nullptr sent, assign to controlling ship
     void Offline();
     void StateChange(bool online=false);
 
@@ -105,15 +105,15 @@ public:
     void Disable()                                      { m_online = false; }
     bool IsEnabled()                                    { return m_online; }
 
-    void AssignShip(Ship* pSE)                          { m_AI->AssignShip(pSE); }
+    void AssignShip(ShipSE* pSE)                          { m_AI->AssignShip(pSE); }
     void SetTarget(SystemEntity* pSE = nullptr)         { (pSE == nullptr ? 0 : m_targetID = pSE->GetID()); }
 
-    Ship* GetHomeShip()                                 { return m_pShipSE; }
+    ShipSE* GetHomeShip()                                 { return m_pShipSE; }
 
 protected:
     Client* m_pClient;          //we do not own this
     DroneAIMgr* m_AI;           //we do own this
-    Ship* m_pShipSE;            //we do not own this
+    ShipSE* m_pShipSE;            //we do not own this
     SystemManager* m_system;    //we do not own this
 
 private:

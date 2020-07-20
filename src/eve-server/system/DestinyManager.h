@@ -61,7 +61,7 @@ class Missile;
 class PyRep;
 class PyList;
 class PyTuple;
-class Ship;
+class ShipSE;
 class SystemBubble;
 class SystemEntity;
 class SystemManager;
@@ -177,7 +177,7 @@ public:
     void SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool isGlobal=false) const;
     void SendBallInteractive(const ShipItemRef shipRef, bool set = false) const;
     void UpdateNewShip(const ShipItemRef newShipRef);
-    void UpdateOldShip(Ship* pShipSE);
+    void UpdateOldShip(ShipSE* pShipSE);
     void SendJettisonPacket() const;
     void SendAnchorDrop() const;
     void SendAnchorLift() const;

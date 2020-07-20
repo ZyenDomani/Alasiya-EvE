@@ -77,6 +77,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_logoutTimer(0),
   m_jetcanTimer(0),
   m_sessionTimer(0),
+  m_uncloakTimer(0),
   m_destinyEventQueue(new PyList()),
   m_destinyUpdateQueue(new PyList()),
   m_nextNotifySequence(0)
@@ -146,6 +147,7 @@ m_clientTimer(0),
 m_logoutTimer(0),
 m_jetcanTimer(0),
 m_sessionTimer(0),
+m_uncloakTimer(0),
 m_destinyEventQueue(new PyList()),
 m_destinyUpdateQueue(new PyList()),
 m_nextNotifySequence(0)
@@ -358,7 +360,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_ship = sItemFactory.GetShip(m_shipId);
     if (m_ship.get() == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %u.  Picking new ship...", m_shipId, charID);
+        sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %u.  Selecting new ship...", m_shipId, charID);
         PickAlternateShip();    // incase shipID wasnt set correctly in db (seen on 'bad' Damage::Killed())
         m_ship = sItemFactory.GetShip(m_shipId);
         if (m_ship.get() == nullptr) {
@@ -518,6 +520,13 @@ void Client::ProcessClient() {
             //_log(AUTOPILOT__TRACE, "ProcessClient() - Cloaked - m_clientState set to Idle");
         }
 
+    if (m_uncloak)
+        if (m_uncloakTimer.Check(false)) {
+            _log(CLIENT__TIMER, "ProcessClient():  SetUncloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            m_uncloakTimer.Disable();
+            SetUncloak(false);
+        }
+
     if (m_stateTimer.Enabled())
         if (m_stateTimer.Check(false)) {
             _log(CLIENT__TIMER, "ProcessClient(): state timer hit: timenow %u", m_stateTimer.GetCurrentTime());
@@ -552,11 +561,12 @@ void Client::ProcessClient() {
                 } break;
                 case Player::State::Login: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Login");
-                    SetBallPark();
                     m_login = false;
+                    SetBallPark();
                     m_clientState = Player::State::Idle;
                     // send MOTD and server data to player's 'local' chat channel
                     m_services.lsc_service->SendServerMOTD(this);
+                    //m_ship->GetModuleManager()->UpdateChargeQty();
                 } break;
                 case Player::State::Jump: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Jump");
@@ -689,9 +699,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     m_locationID = locationID;
     // get data for new system.  this checks for stationID sent as locationID, so is safe here.
     sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
-    uint32 stationID(0);
-    if (IsStation(m_locationID))
-        stationID = m_locationID;
 
     m_bubbleWait = false;           // allow client processing of subsequent destiny msgs
 
@@ -733,8 +740,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         // register ourselves with new system manager (this wont hit on login)
         m_system->AddClient(this, count, IsJump());
     }
-
-    m_char->SetLocation(stationID, m_SystemData);
 
     /** @todo  verify 'pt' is within system boundaries */
     m_ship->SetPosition(pt);
@@ -818,6 +823,11 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     if (!m_login)
         m_ship->SaveShip(); // this saves everything on ship
 
+    uint32 stationID(0);
+    if (IsStation(m_locationID))
+        stationID = m_locationID;
+    m_char->SetLocation(stationID, m_SystemData);
+
     UpdateSession();
     SendSessionChange();
 }
@@ -888,7 +898,7 @@ void Client::CheckBallparkTimer() {
         sLog.Error("CheckBallparkTimer()", "BallPark Timer is disabled.");
     else
         sLog.Warning("CheckBallparkTimer()", "BallPark Time remaining %ums", m_ballparkTimer.GetRemainingTime());
-    
+
     _log(CLIENT__TIMER, "CheckBallparkTimer():  State: %s, SetState: %s, Beyonce: %s, Login: %s", \
             GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", \
             m_beyonce?"true":"false", m_login?"true":"false");
@@ -979,7 +989,7 @@ void Client::CreateShipSE() {
         data.corporationID = GetCorporationID();
         data.factionID = GetWarFactionID();
         data.ownerID = GetCharacterID();
-    pShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system, data);
+    pShipSE = new ShipSE(m_ship, *(m_system->GetServiceMgr()), m_system, data);
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), m_char->itemID());
 }
 
@@ -1052,7 +1062,7 @@ void Client::BoardShip(ShipItemRef newShipRef)
     SetSessionTimer();
 }
 
-void Client::Board(Ship* newShipSE)
+void Client::Board(ShipSE* newShipSE)
 {
     CheckShipRef(newShipSE->GetShipItemRef());
 
@@ -1060,7 +1070,7 @@ void Client::Board(Ship* newShipSE)
         m_ship->SetPosition(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
         // cannot use DestroyShipSE() for this.  it removes current shipSE, with pilot, like pilot is leaving bubble.
-        Ship* oldShipSE = pShipSE;
+        ShipSE* oldShipSE = pShipSE;
         // set vars to new ship
         SetShip(newShipSE->GetShipItemRef());
         pShipSE = newShipSE;
@@ -1153,7 +1163,7 @@ void Client::Eject()
         data.factionID = GetWarFactionID();
         data.allianceID = GetAllianceID();
         data.corporationID = GetCorporationID();
-    Ship* newShipSE = new Ship(m_pod, *(m_system->GetServiceMgr()), m_system, data);
+    ShipSE* newShipSE = new ShipSE(m_pod, *(m_system->GetServiceMgr()), m_system, data);
     if (newShipSE == nullptr) {
         _log(PLAYER__ERROR, "%s Eject() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
         // we should probably send char to their clone station if this happens....
@@ -1187,7 +1197,7 @@ void Client::ResetAfterPopped(GPoint& position)
         data.corporationID = GetCorporationID();
         data.factionID = GetWarFactionID();
         data.ownerID = GetCharacterID();
-    Ship* newShipSE = new Ship(m_pod, *(m_system->GetServiceMgr()), m_system, data);
+    ShipSE* newShipSE = new ShipSE(m_pod, *(m_system->GetServiceMgr()), m_system, data);
     if (newShipSE == nullptr) {
         _log(PLAYER__ERROR, "%s ResetAfterPopped() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
         // we should probably send char to their clone station if this happens....
@@ -1457,6 +1467,26 @@ void Client::SetCloakTimer(uint32 time/*Player::Timer::Default*/)
     if (pShipSE != nullptr)
         if (pShipSE->DestinyMgr() != nullptr)
             pShipSE->DestinyMgr()->Cloak();
+}
+
+void Client::SetUncloakTimer(uint32 time/*Player::Timer::Default*/)
+{
+    if (time == 0) {
+        m_uncloakTimer.Disable();
+        SetUncloak(false);
+        _log(CLIENT__TIMER, "%s: Uncloak Timer Disabled");
+        return;
+    }
+
+    if (m_uncloakTimer.Enabled()) {
+        _log(CLIENT__ERROR, "%s: Uncloak Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_cloakTimer.GetRemainingTime());
+        EvE::traceStack();
+        return;
+    }
+
+    _log(CLIENT__TIMER, "%s: Uncloak Timer set at %ums.  timenow %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
+    m_uncloakTimer.Start(time);
+    SetUncloak(true);
 }
 
 void Client::SetInvulTimer(uint32 time/*Player::Timer::Default*/)

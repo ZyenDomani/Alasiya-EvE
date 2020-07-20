@@ -164,7 +164,7 @@ public:
     std::string GetCharName()                           { return m_char->itemName(); }
     uint32 GetCharID()                                  { return (m_char.get() != nullptr ? m_char->itemID() : 0); }   // only used during char creation
     ShipItemRef GetShip() const                         { return m_ship; }
-    Ship* GetShipSE()                                   { return pShipSE; }
+    ShipSE* GetShipSE()                                 { return pShipSE; }
     ShipItemRef GetPod() const                          { return m_pod; }
     uint32 GetPodID() const                             { return m_pod->itemID(); }
     double GetBounty() const                            { return m_char->bounty(); }
@@ -184,7 +184,7 @@ public:
     void ResetAfterPodded();
     void ResetAfterPopped(GPoint& position);  //  delete killed ship, reset player to pod, add pod to system
     void Eject();       // only called in space
-    void Board(Ship* newShipSE); // only called when in space
+    void Board(ShipSE* newShipSE); // only called when in space
     void BoardShip(ShipItemRef newShipRef); // only called when docked
 private:
     // ship MUST be added to system BEFORE update (need sysMgr, sysBubble, DestinyMgr)
@@ -205,6 +205,7 @@ public:
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
     void SetCloakTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetInvulTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
+    void SetUncloakTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetBallParkTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetStateTimer(int8 state, uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetDestiny(const GPoint& pt, bool update=false);
@@ -241,6 +242,7 @@ public:
     void SetInvul(bool invul=false)                     { m_invul = invul; }
     void SetUndock(bool undock=false)                   { m_undock = undock; }
     void SetBeyonce(bool beyonce=false)                 { m_beyonce = beyonce; }
+    void SetUncloak(bool uncloak=false)                 { m_uncloak = uncloak; }
     void SetBubbleWait(bool wait=false)                 { m_bubbleWait = wait; }
     void SetStateSent(bool set=false)                   { m_setStateSent = set; }
     void SetSessionTimer()                              { m_sessionChangeActive = true; m_sessionTimer.Start(Player::Timer::Session); }
@@ -334,7 +336,7 @@ protected:
     CharacterRef m_char;
     PyServiceMgr& m_services;
     SystemGPoint m_SGP;     // interface to my variable 3-d point generating system  (which isnt finished yet... -allan)
-    Ship* pShipSE;
+    ShipSE* pShipSE;
     TradeSession* m_TS;
     ClientSession* pSession;
     SystemManager* m_system;    //we do not own this
@@ -375,7 +377,8 @@ protected:
     Timer m_stateTimer;      // state timer to consolidate timers
     Timer m_pingTimer;
     Timer m_scanTimer;       // used to delay scan results based on skills, items, and other shit
-    Timer m_cloakTimer;
+    Timer m_cloakTimer;      // used for tracking jump cloak
+    Timer m_uncloakTimer;    // used for tracking ship actions after cloak module deactivated
     Timer m_invulTimer;
     Timer m_fleetTimer;      // used to apply fleet boost on undock and jump when applicable
     Timer m_clientTimer;     // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)

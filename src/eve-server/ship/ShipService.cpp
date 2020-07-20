@@ -154,7 +154,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     Client* pClient = call.client;
 
-    Ship* pShipSE =  pClient->GetShipSE();
+    ShipSE* pShipSE =  pClient->GetShipSE();
     if (pShipSE == nullptr)
         throw PyException(MakeCustomError("Invalid Ship.  Ref: ServerError xxxxx"));
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
@@ -313,7 +313,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     // response should return ship modules, loaded charges, and linked weapons
     PyTuple* rsp = new PyTuple(3);
         rsp->SetItem(0, newShipRef->GetShipState());    //dict of ship modules
-        rsp->SetItem(1, newShipRef->GetChargeState());    //dict of flagID/chargeData{loc, flag, typeID}
+        rsp->SetItem(1, newShipRef->GetChargeState());    //dict of flagID/subLocation{loc, flag, typeID}
         rsp->SetItem(2, newShipRef->GetLinkedWeapons()); // dict of linked modules
     if (is_log_enabled(CLIENT__INFO))
         rsp->Dump(CLIENT__INFO, "    ");
@@ -491,9 +491,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 iRef->SetPosition(location + iRef->radius() + radius);
                 iRef->ChangeOwner(entity.ownerID);
 
-                entity.x = iRef->position().x;
-                entity.y = iRef->position().y;
-                entity.z = iRef->position().z;
+                entity.position = iRef->position();
 
                 if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
                     entity.planetID = pSystem->GetClosestPlanetID(location);
@@ -583,16 +581,17 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     // Check cargo bay capacity:
     if (pClient->GetShip()->GetMyInventory()->ValidateAddItem(flagCargoHold, iRef)) {  // this will throw if it fails
         // We have enough Cargo bay capacity to hold the item being scooped,
-        // so take ownership of it and move it into the cargo bay:
+        // so take ownership of it
         iRef->ChangeOwner(pClient->GetCharacterID(), true);
-        pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagCargoHold);
-        pSysMgr->RemoveEntity(pSE);
         // perform data cleanup for structures
         if (pSE->IsPOSSE())
             pSE->GetPOSSE()->Scoop();
         // perform data cleanup for drones
         if (pSE->IsDroneSE())
             pClient->GetShipSE()->ScoopDrone(pSE);
+        // move it into the cargo bay:
+        pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagCargoHold);
+        pSysMgr->RemoveEntity(pSE);
         // delete SE since item is no longer in space
         SafeDelete(pSE);
     }
@@ -806,9 +805,26 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
             pClient->StartJetcanTimer();
         }
-        /** @todo  check current can for capacity limits. */
-        //if over limit create new can?  reject remainging cargo?  delete?  crash?  run thru station naked?
-        pClient->MoveItem(cur, (ccRef ? ccRef->itemID() : jcRef->itemID()), flagAutoFit);
+        // check current can for capacity limits.
+        //if over limit create new can?  reject remaining cargo?  delete?  crash?  run thru station naked?
+        if (ccRef.get() != nullptr) {
+            if (ccRef->GetMyInventory()->HasAvailableSpace(flagAutoFit, iRef)) {
+                pClient->MoveItem(cur, ccRef->itemID(), flagAutoFit);
+            } else {
+                _log(ITEM__WARNING, "%s: CargoContainer %u is full.", pClient->GetName(), ccRef->itemID());
+                throw PyException(MakeCustomError("Your Cargo Container is full.  Some items were not transferred."));
+            }
+        } else if (jcRef.get() != nullptr) {
+            if (jcRef->GetMyInventory()->HasAvailableSpace(flagAutoFit, iRef)) {
+                pClient->MoveItem(cur, jcRef->itemID(), flagAutoFit);
+            } else {
+                _log(ITEM__WARNING, "%s: Jetcan %u is full.", pClient->GetName(), jcRef->itemID());
+                throw PyException(MakeCustomError("Your jetcan is full.  Some items were not transferred."));
+            }
+        } else {
+            _log(ITEM__ERROR, "Jettison call for %s - no CC or Jcan.", pClient->GetName());
+            throw PyException(MakeCustomError("Item container not found.", cRef->typeID()));
+        }
         continue;
     }
 

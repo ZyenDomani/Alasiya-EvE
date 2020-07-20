@@ -75,7 +75,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
         ge.charID = m_ownerID;
         ge.shipID = pClient->GetShipID();
         ge.target = PyStatic.NewNone();
-        ge.other = PyStatic.NewNone();
+        ge.subLoc = PyStatic.NewNone();
         ge.area = new PyList();
         ge.effectID = 16;
     Notify_OnGodmaShipEffect shipEff;

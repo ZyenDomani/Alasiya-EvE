@@ -30,6 +30,8 @@ TurretModule::TurretModule(ModuleItemRef mRef, ShipItemRef sRef)
 
 void TurretModule::LoadCharge(InventoryItemRef cRef)
 {
+    _log(MODULE__TRACE, "%s calling TM::LoadCharge()", m_modRef->name());
+
     ActiveModule::LoadCharge(cRef);
 
     if (m_chargeRef.get() == nullptr)
@@ -43,6 +45,7 @@ void TurretModule::LoadCharge(InventoryItemRef cRef)
 void TurretModule::UnloadCharge()
 {
     _log(MODULE__TRACE, "%s calling TM::UnloadCharge()", m_modRef->name());
+
     m_crystalDmg        = 0;
     m_crystalDmgAmount  = 0;
     m_crystalDmgChance  = 0;

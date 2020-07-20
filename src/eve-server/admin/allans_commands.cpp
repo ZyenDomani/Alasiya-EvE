@@ -458,7 +458,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
         inventoryID = pClient->GetSystemID();
         SolarSystemRef system = sItemFactory.GetSolarSystem(inventoryID);
         if (system.get() == nullptr)
-            throw PyException(MakeCustomError("Cannot find Station Reference for systemID %u", inventoryID));
+            throw PyException(MakeCustomError("Cannot find System Reference for systemID %u", inventoryID));
         inv = system->GetMyInventory();
         if (inv == nullptr)
             throw PyException(MakeCustomError("Cannot find inventory for locationID %u", inventoryID));
@@ -704,17 +704,70 @@ PyResult Command_track(Client* pClient, CommandDB* db, PyServiceMgr* services, c
 PyResult Command_bubbletrack(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     std::string track = "enabled";
+    std::string type = "bubble";
+
     if (sConfig.debug.BubbleTrack) {
         sConfig.debug.BubbleTrack = false;
         track = "disabled";
-        pClient->GetShipSE()->SysBubble()->RemoveMarkers();
     } else {
         sConfig.debug.BubbleTrack = true;
-        pClient->GetShipSE()->SysBubble()->MarkCenter();
     }
 
-    char reply[30];
-    snprintf(reply, 30, "Bubble Tracking is %s.", track.c_str());
+    // begin argument processing
+    int locationID = 0;
+    if (args.argCount() < 2) {
+        if (sConfig.debug.BubbleTrack) {
+            pClient->GetShipSE()->SysBubble()->MarkCenter();
+        } else {
+            pClient->GetShipSE()->SysBubble()->RemoveMarkers();
+        }
+    } else if (args.argCount() == 2) { // single arg - help, bubble, system, universe, {invalid}
+        if (strcmp(args.arg(1).c_str(), "help") == 0) {
+            //  {.bubbletrack help}  will display the following list of options in notification window
+            std::ostringstream str; // for 'help' printing
+            str << ".bubbletrack [arg]<br>"; //22
+            str << "no args = mark current bubble.<br>"; //35
+            str << "arg = help|bubble|system|universe<br>"; //40
+            str << "arg = help - display this information.<br>"; //45
+            str << "arg = bubble - mark current bubble.<br>"; //42
+            str << "arg = system - mark all bubbles in current system.  center markers are global.<br>";  //80
+            str << "arg = universe - mark all bubbles in all systems.  center markers are global.<br>"; //80
+            str << "typical use is .bubbletrack with no args to mark current bubble.<br>";  //70
+            str << "'system' and 'universe' are used to show bubbles using solarsystem map from scan window (using '.showall').<br>";  //110
+            int size = 520;
+            char reply[size];
+            snprintf(reply, size, str.str().c_str());
+            pClient->SendInfoModalMsg(reply);
+            return nullptr;
+        } else if (strcmp(args.arg(1).c_str(), "bubble") == 0) {
+            if (sConfig.debug.BubbleTrack) {
+                pClient->GetShipSE()->SysBubble()->MarkCenter();
+            } else {
+                pClient->GetShipSE()->SysBubble()->RemoveMarkers();
+            }
+        } else if (strcmp(args.arg(1).c_str(), "system") == 0) {
+            type = "system";
+            if (sConfig.debug.BubbleTrack) {
+                sBubbleMgr.MarkCenters(pClient->GetSystemID());
+            } else {
+                sBubbleMgr.RemoveMarkers(pClient->GetSystemID());
+            }
+        } else if (strcmp(args.arg(1).c_str(), "universe") == 0) {
+            type = "universe";
+            if (sConfig.debug.BubbleTrack) {
+                sBubbleMgr.MarkCenters();
+            } else {
+                sBubbleMgr.RemoveMarkers();
+            }
+        }else {
+            throw PyException(MakeCustomError("BubbleTrack: Unrecognized Argument."));
+        }
+    } else {
+        throw PyException(MakeCustomError("BubbleTrack: Too Many Arguments."));
+    }
+
+    char reply[45];
+    snprintf(reply, 45, "Bubble Tracking for %s is %s.", type.c_str(), track.c_str());
 
     pClient->SendNotifyMsg(reply);
     return new PyString(reply);
