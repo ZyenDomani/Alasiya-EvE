@@ -118,7 +118,7 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
     // bookmarks = self.bookmarkMgr.DeleteFolder(folderID)
     call.Dump(BOOKMARK__CALL_DUMP);
 
-    uint32 folderID = PyRep::IntegerValue(call.tuple->GetItem( 0 ));
+    uint32 folderID = PyRep::IntegerValueU32(call.tuple->GetItem( 0 ));
 
     // call db to get list of bmIDs in deleted folder.  return result with this data
     std::vector< int32 > bmIDs;
@@ -156,7 +156,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
 
     // Check for presence of folderID in the packet
     if (call.byname.find("folderID") != call.byname.end())
-        data.folderID = PyRep::IntegerValue(call.byname.find("folderID")->second);
+        data.folderID = PyRep::IntegerValueU32(call.byname.find("folderID")->second);
 
     if (IsPlayerItem(args.itemID)) {      // entity #'s above 140m are player-owned.  player is in ship
         data.typeID = EVEDB::invTypes::SolarSystem;
@@ -228,7 +228,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
     data.point = ManagerDB::GetAnomalyPos(args.resultID);
 
     if (call.byname.find("folderID") != call.byname.end())
-        data.folderID = PyRep::IntegerValue(call.byname.find("folderID")->second);
+        data.folderID = PyRep::IntegerValueU32(call.byname.find("folderID")->second);
 
     m_db.SaveNewBookmark(data);
 

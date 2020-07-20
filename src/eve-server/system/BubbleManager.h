@@ -86,6 +86,16 @@ public:
     // for .list command
     uint32 GetBubbleCount(uint32 systemID);
 
+    // for .bubbletrack command
+    void MarkCenters(); // for all bubbles, across all systems
+    void RemoveMarkers();// for all bubbles, across all systems
+    void MarkCenters(uint32 systemID); // for bubbles in given system
+    void RemoveMarkers(uint32 systemID);// for bubbles in given system
+
+    // for showing bubble centers in scan window (using .showall)
+    void GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom);
+    void GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSignature>& anom);
+
 protected:
     SystemBubble* MakeBubble(SystemManager* sysMgr, GPoint pos);
 

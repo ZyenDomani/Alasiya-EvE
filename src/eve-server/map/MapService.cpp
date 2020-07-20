@@ -115,8 +115,8 @@ PyResult MapService::Handle_GetStationCount(PyCallArgs &call)
 }
 
 PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
-    int32 int1 = PyRep::IntegerValue(call.tuple->GetItem(0));
-    int32 int2 = PyRep::IntegerValue(call.tuple->GetItem(1));
+    uint8 int1 = PyRep::IntegerValueU32(call.tuple->GetItem(0));
+    uint8 int2 = PyRep::IntegerValueU32(call.tuple->GetItem(1));
     if (is_log_enabled(SERVICE__CALLS))
         sLog.Cyan( "MapService::Handle_GetHistory()", "type: %i, timeframe: %i", int1, int2 );
 

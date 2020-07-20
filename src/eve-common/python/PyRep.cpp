@@ -134,6 +134,21 @@ int64 PyRep::IntegerValue(PyRep* pRep)
     return 0;
 }
 
+uint32 PyRep::IntegerValueU32(PyRep* pRep) {
+    if (pRep == nullptr)
+        return 0;
+    else if (pRep->IsInt())
+        return pRep->AsInt()->value();
+    else if (pRep->IsLong())
+        return pRep->AsLong()->value();
+    else if (pRep->IsFloat())
+        return pRep->AsFloat()->value();
+    else if (pRep->IsBool())
+        return pRep->AsBool()->value();
+
+    return 0;
+}
+
 
 /************************************************************************/
 /* PyRep Integer Class                                                  */

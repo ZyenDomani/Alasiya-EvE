@@ -339,7 +339,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
 
     uint32 flag(0);
     if (call.byname.find("flag") != call.byname.cend())
-        flag = PyRep::IntegerValue(call.byname.find("flag")->second);
+        flag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
     uint32 qty(0);
     if (call.byname.find("qty") != call.byname.cend())
         qty = PyRep::IntegerValue(call.byname.find("qty")->second);
@@ -403,7 +403,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     }
     uint32 flag(0);
     if (call.byname.find("flag") != call.byname.cend())
-        flag = PyRep::IntegerValue(call.byname.find("flag")->second);
+        flag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
 
     PyDict* dict = new PyDict();
         dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(args.contID));

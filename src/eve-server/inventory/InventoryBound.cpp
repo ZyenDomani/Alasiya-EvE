@@ -59,7 +59,6 @@ m_passive(passive)
     PyCallable_REG_CALL(InventoryBound, Add);
     PyCallable_REG_CALL(InventoryBound, MultiAdd);
     PyCallable_REG_CALL(InventoryBound, GetItem);
-    PyCallable_REG_CALL(InventoryBound, ReplaceCharges);
     PyCallable_REG_CALL(InventoryBound, RemoveChargeToCargo);
     PyCallable_REG_CALL(InventoryBound, RemoveChargeToHangar);
     PyCallable_REG_CALL(InventoryBound, MultiMerge);
@@ -169,10 +168,10 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
     PyDict* dictIn = args.importData->AsDict();
     std::map<uint32, uint16> importItems, exportItems;
     for (PyDict::const_iterator itr = dictIn->begin(); itr != dictIn->end(); ++itr)
-        importItems[PyRep::IntegerValue(itr->first)] = PyRep::IntegerValue(itr->second);
+        importItems[PyRep::IntegerValueU32(itr->first)] = PyRep::IntegerValue(itr->second);
     PyDict* dictOut = args.exportData->AsDict();
     for (PyDict::const_iterator itr = dictOut->begin(); itr != dictOut->end(); ++itr)
-        exportItems[PyRep::IntegerValue(itr->first)] = PyRep::IntegerValue(itr->second);
+        exportItems[PyRep::IntegerValueU32(itr->first)] = PyRep::IntegerValue(itr->second);
 
     // ok, so from here, we need to get officeRef->officeSE->planet->colony to make xfer....crazy shit
     StructureItemRef sRef = StructureItemRef::StaticCast(m_self);
@@ -318,7 +317,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
     uint16 toFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
-        toFlag = PyRep::IntegerValue(call.byname.find("flag")->second);
+        toFlag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
     if (toFlag == flagLocked) {
         // corp role 'equip config' can move locked items (per client)
         _log(INV__ERROR, "InventoryBound::Handle_Add() - item %u from %u sent flagLocked.  continuing but this needs to be fixed.", \
@@ -351,7 +350,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
     float capacity = 0.0f;
     if (call.byname.find("capacity") != call.byname.end())
-        capacity = PyRep::IntegerValue(call.byname.find("capacity")->second);
+        capacity = PyRep::IntegerValueU32(call.byname.find("capacity")->second);
 
     if (quantity < 1)
         quantity = 1;
@@ -387,7 +386,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 
     uint16 toFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
-        toFlag = PyRep::IntegerValue(call.byname.find("flag")->second);
+        toFlag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
 
     int32 quantity = 1;
     if (call.byname.find("qty") != call.byname.end())
@@ -401,7 +400,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 
     float capacity = 0.0f;
     if (call.byname.find("capacity") != call.byname.end())
-        capacity = PyRep::IntegerValue(call.byname.find("capacity")->second);
+        capacity = PyRep::IntegerValueU32(call.byname.find("capacity")->second);
 
     if (capacity > 1)
         moveStack = true;
@@ -715,50 +714,6 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
     return items;  //returns sorted list
 }
 
-
-// cannot find call to this in client code.
-PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::ReplaceCharges() for %s(%u)", m_self->name(), m_itemID);
-    Inventory_CallReplaceCharges args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return nullptr;
-    }
-
-    //validate flag.
-    if (!IsModuleSlot(args.flag)) {
-        _log(INV__ERROR, "%s: Invalid flag %i", call.client->GetName(), args.flag);
-        return nullptr;
-    }
-
-    // returns new ref
-    InventoryItemRef iRef = pInventory->GetByID( args.itemID );
-    if (iRef.get() == nullptr) {
-        _log(INV__ERROR, "%s: Unable to find charge %i", call.client->GetName(), args.itemID);
-        return nullptr;
-    }
-
-    if ((iRef->ownerID() != call.client->GetCharacterID())
-    or (iRef->ownerID() != call.client->GetCorporationID())) {
-        _log(INV__ERROR, "Character %u tried to load charge %u of character %u.", call.client->GetCharacterID(), iRef->itemID(), iRef->ownerID());
-        return nullptr;
-    }
-
-    if (iRef->quantity() < args.quantity) {
-        _log(INV__WARNING, "%s: Item %u: Requested quantity (%i) exceeds actual quantity (%i), using actual.", call.client->GetName(), args.itemID, args.quantity, iRef->quantity());
-    } else if (iRef->quantity() > args.quantity) {
-        iRef = iRef->Split(args.quantity);  // split item and get new item reference
-        if (iRef.get() == nullptr) {
-            _log(INV__ERROR, "%s: Unable to split charge %i into %i", call.client->GetName(), args.itemID, args.quantity);
-            return nullptr;
-        }
-    }
-
-    call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, iRef );
-
-    return PyStatic.NewOne();
-}
-
 /**     ***********************************************************************
  * @note   these below are partially coded
  */
@@ -771,7 +726,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     // this item was originally bound to this flag, but can send specific flag on rare occasions...not sure of criteria
     EVEItemFlags flag = m_flag, oldFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
-        flag = (EVEItemFlags)PyRep::IntegerValue(call.byname.find("flag")->second);
+        flag = (EVEItemFlags)PyRep::IntegerValueU32(call.byname.find("flag")->second);
 
     if (call.tuple->size() > 0) {
         Call_List arg;

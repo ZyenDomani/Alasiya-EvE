@@ -399,9 +399,6 @@ InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
 
 InventoryItemRef ItemFactory::SpawnTempItem(ItemData &data) {
     InventoryItemRef iRef = InventoryItem::SpawnTemp(data);
-
-    // we're not storing temp shit unless its needed (probably wont be)
-    //m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     return iRef;
 }
 

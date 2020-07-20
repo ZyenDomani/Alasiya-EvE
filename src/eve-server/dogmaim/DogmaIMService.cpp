@@ -35,7 +35,10 @@
 #include "system/SystemManager.h"
 #include "station/Station.h"
 
-/** @todo this is actually DogmaLM (Location Manager) for bound objects... */
+/** this is either DogmaLM (Location Manager) or DogmaIM (Instance Manager) for bound objects.
+ * it depends on the object, location, and calling function
+ *    i see no reason to change it at this point.
+ */
 class DogmaIMBound
 : public PyBoundObject
 {
@@ -59,7 +62,6 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, UnlinkAllModules);
         PyCallable_REG_CALL(DogmaIMBound, OverloadRack);
         PyCallable_REG_CALL(DogmaIMBound, StopOverloadRack);
-        PyCallable_REG_CALL(DogmaIMBound, ShipGetInfo);
         PyCallable_REG_CALL(DogmaIMBound, CharGetInfo);
         PyCallable_REG_CALL(DogmaIMBound, ItemGetInfo);
         PyCallable_REG_CALL(DogmaIMBound, GetAllInfo);
@@ -97,7 +99,6 @@ public:
     PyCallable_DECL_CALL(UnlinkAllModules);
     PyCallable_DECL_CALL(OverloadRack);
     PyCallable_DECL_CALL(StopOverloadRack);
-    PyCallable_DECL_CALL(ShipGetInfo);
     PyCallable_DECL_CALL(CharGetInfo);
     PyCallable_DECL_CALL(ItemGetInfo);
     PyCallable_DECL_CALL(GetAllInfo);
@@ -169,10 +170,6 @@ PyBoundObject* DogmaIMService::CreateBoundObject(Client *pClient, const PyRep* b
 
 PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
     return call.client->GetChar()->GetCharInfo();
-}
-
-PyResult DogmaIMBound::Handle_ShipGetInfo(PyCallArgs& call) {
-    return call.client->GetShip()->ShipGetInfo();
 }
 
 PyResult DogmaIMBound::Handle_ClearTargets(PyCallArgs& call) {
@@ -313,17 +310,12 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
 
     // Get Reference to Ship and Charge
     ShipItemRef sRef = call.client->GetShip();
-    InventoryItemRef cRef = sItemFactory.GetItem(args.itemID);
-    if (cRef.get() == nullptr)
-        throw PyException(MakeUserError("CantFindChargeToAdd"));
     GenericModule* pMod = sRef->GetModule(sItemFactory.GetItem(args.moduleIDs[0])->flag());
     if (pMod == nullptr)
         throw PyException(MakeUserError("ModuleNoLongerPresentForCharges"));
 
-    if (pMod->IsLinked())
-        sRef->LoadLinkedWeapons(cRef, pMod);
-    else
-        sRef->LoadCharge(cRef, pMod->flag());
+    InventoryItemRef cRef = sItemFactory.GetItem(args.itemID);
+    sRef->LoadCharge(cRef, pMod->flag());
 
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
@@ -413,7 +405,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         return rsp.Encode();
     }
     // caller ship tests
-    Ship* mySE = pClient->GetShipSE();
+    ShipSE* mySE = pClient->GetShipSE();
     if ( mySE->TargetMgr() == nullptr) {
         std::map<std::string, PyRep *> arg;
         arg["target"] = new PyInt(args.arg);
@@ -562,8 +554,8 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     }
 
     Rsp_Dogma_AddTarget rsp;
-    rsp.flag = true;    // false - immediate target lock in client, true - wait for OnTarget::add from server for lock
-    rsp.targetList.push_back(args.arg); // not used in return
+    rsp.flag = true;    // false = immediate target lock in client, true = wait for OnTarget::add from server for lock
+    rsp.targetList.push_back(args.arg); // not used in client
     return rsp.Encode();
 }
 
@@ -623,8 +615,11 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
             for locationID, datas in cData.iteritems():
         --still dont know what 'datas' are
         ** this has *something* to do with POS
-     */
-    rsp->SetItemString("locationInfo", PyStatic.NewNone());
+        */
+    if (args.arg2)
+        rsp->SetItemString("locationInfo", new PyDict());
+    else
+        rsp->SetItemString("locationInfo", PyStatic.NewNone());
 
     // Set "shipModifiedCharAttribs" in the Dictionary
     /** @todo  havent found a populated item in packet logs */
@@ -640,7 +635,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
             return PyStatic.NewNone();
         }
         rsp->SetItemString("charInfo", charResult);
-    } else  // fixed
+    } else
         rsp->SetItemString("charInfo", new PyDict());
 
     // Set "shipInfo" in the Dictionary  -fixed 26Mar16
@@ -662,7 +657,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     }
     PyTuple* rspShipState = new PyTuple(3);
         rspShipState->items[0] = pClient->GetShip()->GetShipState();        // fitted module list
-        rspShipState->items[1] = pClient->GetShip()->GetChargeState();      // loaded charges
+        rspShipState->items[1] = pClient->GetShip()->GetChargeState();      // loaded charges (subLocation)
         rspShipState->items[2] = pClient->GetShip()->GetLinkedWeapons();    // linked weapons
     rsp->SetItemString("shipState", rspShipState);
     if (is_log_enabled(SHIP__STATE))
@@ -1052,19 +1047,18 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
 // this one is called from Deactivate() when module is OL
 PyResult DogmaIMBound::Handle_StopOverload(PyCallArgs& call)
 {
-    // return self.GetDogmaLM().StopOverload(itemID, effectID)
-
     Client* pClient(call.client);
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     //  cancel overload then deactivate module
     pClient->GetShip()->CancelOverloading(args.arg1);
     pClient->GetShip()->Deactivate(args.arg1, sFxDataMgr.GetEffectName(args.arg2));
-    return nullptr;
+    // returns none
+    return PyStatic.NewNone();
 }
 
 PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
@@ -1165,7 +1159,7 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
 
     std::map<int16, int8> attribs;
     for (PyDict::const_iterator itr = dict->begin(); itr != dict->end(); ++itr)
-        attribs[PyRep::IntegerValue(itr->first)] = PyRep::IntegerValue(itr->second);
+        attribs[PyRep::IntegerValueU32(itr->first)] = PyRep::IntegerValue(itr->second);
 
     call.client->GetShipSE()->UpdateDrones(attribs);
 

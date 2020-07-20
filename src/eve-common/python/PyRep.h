@@ -204,6 +204,9 @@ public:
     // this is used when PyRep can be either Int or Long
     // None returns 0, Float is converted to int64
     static int64 IntegerValue(PyRep* pRep);
+    // this is used when PyRep can be either Int or Long
+    // None returns 0. Returned as unsigned 32b int
+    static uint32 IntegerValueU32(PyRep* pRep);
 
 protected:
     PyRep( PyType t );

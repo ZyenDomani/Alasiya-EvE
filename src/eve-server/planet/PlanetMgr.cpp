@@ -116,7 +116,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
 {
     // the return here is used to break out of loop if needed.  return false = continue
     using namespace EVEDB::invGroups;
-    uint32 typeID = PyRep::IntegerValue(nc.command_data->GetItem(1));
+    uint32 typeID = PyRep::IntegerValueU32(nc.command_data->GetItem(1));
     uint32 groupID = sItemFactory.GetType(typeID)->groupID();
     switch (groupID) {
         case Command_Centers: {

@@ -25,7 +25,7 @@ namespace Player {
             Proc                = 1000,    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
             Jetcan              = 600000,  // used to delay jetcan creation.  10min default
             Logout              = 10000,    // used to hold client object until WarpOut finishes
-            Login               = 4000,    // delay before sending SetState when client logs in undocked
+            Login               = 3000,    // delay before sending SetState when client logs in undocked
             Session             = 10000,   // used to prevent multiple session changes from occurring too fast
             DockInvul           = 3000,
             Fleet               = 1500,

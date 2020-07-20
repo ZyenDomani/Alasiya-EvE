@@ -28,6 +28,8 @@
 #include <functional>
 #include "eve-server.h"
 
+#include "EntityList.h"
+#include "EVE_Scanning.h"
 #include "EVEServerConfig.h"
 #include "system/BubbleManager.h"
 #include "system/Container.h"
@@ -54,7 +56,7 @@ BubbleManager::~BubbleManager() {
 int BubbleManager::Initialize() {
     // start timers
     m_emptyTimer.Start(60000);  //60s
-    m_wanderTimer.Start(30000); //30s
+    m_wanderTimer.Start(60000); //60s
 
     sLog.Blue("        BubbleMgr", "Bubble Manager Initialized.");
     return 1;
@@ -79,7 +81,7 @@ void BubbleManager::Process() {
             cur->Process();
     }
 
-    if (m_wanderTimer.Check()) {    //30s
+    if (m_wanderTimer.Check()) {    //60s
         m_wanderers.clear();
         std::list<SystemBubble*>::iterator itr = m_bubbles.begin();
         while (itr != m_bubbles.end()) {
@@ -210,8 +212,6 @@ void BubbleManager::Remove(SystemEntity *ent) {
  * of bubbles by [systemID, SystemBubble*] to search only bubbles in desired system,
  * greatly reducing the search time for many loaded systems.
  *
- * UPDATE:  may test map{systemID/map{quadrant/SysBubble}} to further reduce loop times.
- *              may not need this, or even be detrimental
  * NOTE:  these are only used here...
  */
 SystemBubble* BubbleManager::FindBubble(SystemEntity *ent) const {
@@ -221,6 +221,9 @@ SystemBubble* BubbleManager::FindBubble(SystemEntity *ent) const {
 SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &pos) const {
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
+    _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::FindBubble() - Searching point %.1f, %.1f, %.1f in system %u.", \
+                pos.x, pos.y, pos.z, systemID);
+
     auto range = m_bubbleMap.equal_range(systemID);
     for ( auto itr = range.first; itr != range.second; ++itr )
         if (itr->second->InBubble(pos))
@@ -232,7 +235,6 @@ SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &pos) cons
 
 SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
 {
-    // TODO check edges of bubbles....should NOT overlap.
     SystemBubble* pBubble(FindBubble(sysMgr->GetID(), pos));
     if (pBubble == nullptr)
         pBubble = MakeBubble(sysMgr, pos);
@@ -241,13 +243,16 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
 }
 
 SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
-    // determine if pos is within 2x diameter of another bubble. (overlap)
+    // determine if new center (pos) is within 2x radius of another bubble center. (overlap)
     auto range = m_bubbleMap.equal_range(sysMgr->GetID());
     for ( auto itr = range.first; itr != range.second; ++itr )
         if (itr->second->IsOverlap(pos)) {
-            GVector dir(pos, itr->second->GetCenter());
+            GVector dir(itr->second->GetCenter(), pos);
             dir.normalize();
-            pos = itr->second->GetCenter() + dir * (BUBBLE_RADIUS_METERS *2);  // move pos away from center
+            _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::MakeBubble()::IsOverlap() - dir: %.3f,%.3f,%.3f", dir.x, dir.y, dir.z);
+            // move pos away from center
+            pos = itr->second->GetCenter() + (dir * (BUBBLE_RADIUS_METERS *2));
+            break;
         }
 
     SystemBubble* pBubble = new SystemBubble(sysMgr, pos, BUBBLE_RADIUS_METERS);
@@ -319,4 +324,74 @@ uint32 BubbleManager::GetBubbleCount(uint32 systemID) {
     for (auto itr = range.first; itr != range.second; ++itr)
         ++count;
     return count;
+}
+
+void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
+    ContainerSE* cSE(nullptr);
+    for (auto cur : m_bubbleMap) {
+        cSE = cur.second->GetCenterMarker();
+        if (cSE == nullptr)
+            continue;
+        CosmicSignature sig = CosmicSignature();
+            sig.ownerID = cSE->GetOwnerID();
+            sig.sigID = cSE->GetSelf()->customInfo();           // result.id
+            sig.sigItemID = cSE->GetID();
+            sig.sigName = cSE->GetName();                       // result.DungeonName
+            //sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;  // result.groupID
+            sig.sigStrength = 100.0;
+            //sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;     // result.typeID
+            sig.systemID = cur.first;
+            sig.position = cSE->GetPosition();
+            sig.scanAttributeID = AttrScanMagnetometricStrength;   // result.strengthAttributeID
+            sig.scanGroupID = Scanning::Group::Signature;
+        anom.push_back(sig);
+        cSE = nullptr;
+    }
+}
+
+void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSignature>& anom) {
+    ContainerSE* cSE(nullptr);
+    auto range = m_bubbleMap.equal_range(systemID);
+    for (auto itr = range.first; itr != range.second; ++itr) {
+        cSE = itr->second->GetCenterMarker();
+        if (cSE == nullptr)
+            continue;
+        CosmicSignature sig = CosmicSignature();
+            sig.ownerID = cSE->GetOwnerID();
+            sig.sigID = cSE->GetSelf()->customInfo();
+            sig.sigItemID = cSE->GetID();
+            sig.sigName = cSE->GetName();
+            //sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
+            sig.sigStrength = 100.0;
+            //sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
+            sig.systemID = systemID;
+            sig.position = cSE->GetPosition();
+            sig.scanAttributeID = AttrScanMagnetometricStrength;
+            sig.scanGroupID = Scanning::Group::Signature;
+        anom.push_back(sig);
+        cSE = nullptr;
+    }
+}
+
+
+void BubbleManager::MarkCenters() {
+    for (auto cur : m_bubbleMap)
+        cur.second->MarkCenter();
+}
+
+void BubbleManager::RemoveMarkers() {
+    for (auto cur : m_bubbleMap)
+        cur.second->RemoveMarkers();
+}
+
+void BubbleManager::MarkCenters(uint32 systemID) {
+    auto range = m_bubbleMap.equal_range(systemID);
+    for (auto itr = range.first; itr != range.second; ++itr)
+        itr->second->MarkCenter();
+}
+
+void BubbleManager::RemoveMarkers(uint32 systemID) {
+    auto range = m_bubbleMap.equal_range(systemID);
+    for (auto itr = range.first; itr != range.second; ++itr)
+        itr->second->RemoveMarkers();
 }

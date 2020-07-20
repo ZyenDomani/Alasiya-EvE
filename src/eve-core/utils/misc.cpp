@@ -216,15 +216,15 @@ const char* EvE::FormatTime(uint32 time) {
 
     std::ostringstream uptime;
     if (w)
-        uptime << itoa(w) << "w" << itoa(d) << "d" << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+        uptime << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
     else if (d)
-        uptime << itoa(d) << "d" << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+        uptime << d << "d" << h << "h" << m << "m" << s << "s";
     else if (h)
-        uptime << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+        uptime << h << "h" << m << "m" << s << "s";
     else if (m)
-        uptime << itoa(m) << "m" << itoa(s) << "s";
+        uptime << m << "m" << s << "s";
     else
-        uptime << itoa(s) << "s";
+        uptime << s << "s";
 
     return uptime.str().c_str();
 }

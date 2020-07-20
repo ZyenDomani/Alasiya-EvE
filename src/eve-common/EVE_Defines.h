@@ -154,8 +154,9 @@ maxDustCharacter = 2130000000
  (itemID >= minValidLocation)
 
 #define IsValidOwner(itemID) \
-(((itemID >= minNPCCorporation) && (itemID <= maxNPCCorporation))) \
-|| ((itemID >= minPCCorporation) && (itemID < minAlliance)))
+((itemID == 1) || ((itemID >= minNPCCorporation) && (itemID <= maxNPCCorporation)) \
+|| ((itemID >= minPCCorporation) && (itemID < minAlliance)) \
+|| ((itemID >= minCharacter) && (itemID <= maxCharacter)))
 
 #define IsCharacterLocation(itemID) \
  (itemID >= minValidCharLocation)
@@ -217,11 +218,11 @@ maxDustCharacter = 2130000000
 #define IsSolarSystem(itemID) \
 ((itemID >= minSolarSystem) && (itemID < maxSolarSystem))
 
-#define IsKSpace(itemID) \
-((itemID >= minSolarSystem) && (itemID < minWHSolarSystem))
-
 #define IsWSpace(itemID) \
 ((itemID >= minWHSolarSystem) && (itemID < maxWHSolarSystem))
+
+#define IsKSpace(itemID) \
+((itemID >= minSolarSystem) && (itemID < minWHSolarSystem))
 
 #define IsCelestial(itemID) \
 ((itemID >= minUniverseCelestial) && (itemID < minStargate))
@@ -271,11 +272,6 @@ maxDustCharacter = 2130000000
 #define IsTempItem(itemID) \
  (((itemID >= minTempItemID) && (itemID < minPIStructure)) || (itemID >= minNPC))
 
-#define IsModuleSlot(flag) \
-(((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) \
-  || ((flag >= flagRigSlot0) && (flag <= flagRigSlot7)) \
-  || ((flag >= flagSubSystem0) && (flag<=flagSubSystem7)))
-
 #define IsCargoHoldFlag(flag) \
 ((flag == flagCargoHold) || (flag == flagSecondaryStorage) || (flag == flagShipHangar) \
   || ((flag >= flagFuelBay) && (flag <= flagAmmoHold)))
@@ -289,6 +285,14 @@ maxDustCharacter = 2130000000
 
 #define IsOfficeFlag(flag) \
 ((flag >= flagCorpMarket) && (flag <= flagDelivery))
+
+#define IsModuleSlot(flag) \
+(((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) \
+  || ((flag >= flagRigSlot0) && (flag <= flagRigSlot7)) \
+  || ((flag >= flagSubSystem0) && (flag<=flagSubSystem7)))
+
+#define IsFittingSlot(flag) \
+((flag >= flagLowSlot0) && (flag <= flagHiSlot7))
 
 #define IsHiSlot(flag) \
 ((flag >= flagHiSlot0) && (flag <= flagHiSlot7))

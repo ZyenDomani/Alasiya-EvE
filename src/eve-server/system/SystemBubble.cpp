@@ -810,16 +810,15 @@ void SystemBubble::MarkCenter()
     if (m_hasMarkers)
         return;
     // create jetcan to mark bubble center
-    std::string str = "BubbleID: ", desc = "Bubble Center";
+    std::string str = "Center Marker for Bubble #", desc = "Bubble Center"; //itoa(m_bubbleID);
     str += itoa(m_bubbleID);
-    str += " Center";
     MarkBubble(m_center, str, desc, true);
 
     // create jetcan to mark bubble x
     GPoint center = m_center;
-    center.x += BUBBLE_RADIUS_METERS;
+    center.x += BUBBLE_RADIUS_METERS -5;
     str.clear();
-    str = "BubbleID: ";
+    str = "Bubble #";
     str += itoa(m_bubbleID);
     str += " +X";
     desc = "Bubble x";
@@ -827,9 +826,9 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble -x
     center = m_center;
-    center.x -= BUBBLE_RADIUS_METERS;
+    center.x -= BUBBLE_RADIUS_METERS -5;
     str.clear();
-    str = "BubbleID: ";
+    str = "Bubble #";
     str += itoa(m_bubbleID);
     str += " -X";
     desc = "Bubble -x";
@@ -837,9 +836,9 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble y
     center = m_center;
-    center.y += BUBBLE_RADIUS_METERS;
+    center.y += BUBBLE_RADIUS_METERS -5;
     str.clear();
-    str = "BubbleID: ";
+    str = "Bubble #";
     str += itoa(m_bubbleID);
     str += " +Y";
     desc = "Bubble y";
@@ -847,9 +846,9 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble -y
     center = m_center;
-    center.y -= BUBBLE_RADIUS_METERS;
+    center.y -= BUBBLE_RADIUS_METERS -5;
     str.clear();
-    str = "BubbleID: ";
+    str = "Bubble #";
     str += itoa(m_bubbleID);
     str +=  " -Y";
     desc = "Bubble -y";
@@ -857,9 +856,9 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble z
     center = m_center;
-    center.z += BUBBLE_RADIUS_METERS;
+    center.z += BUBBLE_RADIUS_METERS -5;
     str.clear();
-    str = "BubbleID: ";
+    str = "Bubble #";
     str += itoa(m_bubbleID);
     str += " +Z";
     desc = "Bubble z";
@@ -867,9 +866,9 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble -z
     center = m_center;
-    center.z -= BUBBLE_RADIUS_METERS;
+    center.z -= BUBBLE_RADIUS_METERS -5;
     str.clear();
-    str = "BubbleID: ";
+    str = "Bubble #";
     str += itoa(m_bubbleID);
     str +=  " -Z";
     desc = "Bubble -z";
@@ -880,21 +879,30 @@ void SystemBubble::MarkCenter()
 
 void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::string& desc, bool center/*false*/)
 {
+    // create new container item
     ItemData idata(23, 1, m_systemID, flagAutoFit, name.c_str(), position, desc.c_str());
-    CargoContainerRef cRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata));
-    if ( cRef.get() == nullptr)
+    CargoContainerRef cRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
+    if ( cRef.get() == nullptr) {
+        _log(DESTINY__WARNING, "MarkBubble() could not create Item for %s (%s)", name.c_str(), desc.c_str());
         return;
+    }
 
-    // create new container
+    // create SE for item
     FactionData jetcanData = FactionData();
     ContainerSE* cSE = new ContainerSE( cRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
+    if (cSE == nullptr) {
+        _log(DESTINY__WARNING, "MarkBubble() could not create SE for %s (%s)", name.c_str(), desc.c_str());
+        return;
+    }
     cRef->SetMySE(cSE);
     cSE->AnchorContainer();
-    cSE->SetGlobal(true);
-    m_markers.emplace( cRef->itemID(), cSE);
-    m_system->AddEntity(cSE);
-    if (center)
+    if (center) {
+        // only setting centers as global
+        cSE->SetGlobal(true);
         m_centerSE = cSE;
+    }
+    m_markers.emplace( cRef->itemID(), cSE);
+    m_system->AddMarker(cSE, center);
 }
 
 

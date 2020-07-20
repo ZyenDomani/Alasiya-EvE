@@ -104,7 +104,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
 
     std::string response = "";
-    uint8 actionID = PyRep::IntegerValue(args.arg);
+    uint8 actionID = PyRep::IntegerValueU32(args.arg);
     bool missionQuit = false, missionCompleted = false, missionDeclined = false;
 
     PyTuple* agentSays = new PyTuple(2);
@@ -469,7 +469,7 @@ PyResult AgentBound::Handle_GetMissionKeywords(PyCallArgs &call) {
         return nullptr;
     }
 
-    uint32 contentID = PyRep::IntegerValue(args.arg);
+    uint32 contentID = PyRep::IntegerValueU32(args.arg);
     if (contentID == 0)
         return PyStatic.NewNone();
     */

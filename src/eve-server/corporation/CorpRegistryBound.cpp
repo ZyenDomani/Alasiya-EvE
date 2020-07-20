@@ -145,7 +145,7 @@ PyResult SparseCorpOfficeListBound::Handle_SelectByUniqueColumnValues(PyCallArgs
     call.Dump(CORP__WARNING);   //so this will dump on all calls
 
     std::string str = PyRep::StringContent(call.tuple->GetItem(0));
-    uint32 locationID = PyRep::IntegerValue(call.tuple->GetItem(1)->AsList()->GetItem(0));
+    uint32 locationID = PyRep::IntegerValueU32(call.tuple->GetItem(1)->AsList()->GetItem(0));
 
     std::vector<OfficeData> data;
     if (str.compare("officeID") == 0)

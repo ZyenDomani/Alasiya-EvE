@@ -136,7 +136,7 @@ PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
     double balance = 0;
     int16 accountKey = call.client->GetCorpAccountKey();
     if (call.byname.find("accountKey") != call.byname.end())
-        accountKey = PyRep::IntegerValue(call.byname.find("accountKey")->second);
+        accountKey = PyRep::IntegerValueU32(call.byname.find("accountKey")->second);
 
     if (isCorp)
         balance = AccountDB::GetCorpBalance( call.client->GetCorporationID(), accountKey);

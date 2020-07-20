@@ -199,7 +199,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
              */
 
             PyDict* dict = call.byname["installedItem"]->AsDict();
-            installedItem = sItemFactory.GetItem( PyRep::IntegerValue(dict->GetItemString("itemID")) );
+            installedItem = sItemFactory.GetItem( PyRep::IntegerValueU32(dict->GetItemString("itemID")) );
             if (installedItem.get() == nullptr) {
                 // make error here.....
                 throw(PyException(MakeUserError("RamActivityRequiresABlueprint")));
@@ -286,7 +286,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     sRamMthd.MaterialSkillsCheck(call.client, args.runs, pathBomLocation, rsp, reqItems);
 
 	// quoteOnly is sent for all jobs before installation to approve price and timeframe
-    if (PyRep::IntegerValue(call.byname["quoteOnly"])) {
+    if (PyRep::IntegerValueU32(call.byname["quoteOnly"])) {
         _log(MANUF__INFO, "quoteOnly = true");
         sRamMthd.EncodeBillOfMaterials(reqItems, rsp.materialMultiplier, rsp.charMaterialMultiplier, args.runs, rsp.bom);
         sRamMthd.EncodeMissingMaterials(reqItems, pathBomLocation, call.client, rsp.materialMultiplier, rsp.charMaterialMultiplier, args.runs, rsp.missingMaterials);
@@ -383,14 +383,14 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         int16 outputType = 0, baseItemType = 0, decryptorType = 0;
         if (call.byname.find("inventionItems") != call.byname.end()) {
             PyDict* dict = call.byname["inventionItems"]->AsDict();
-            outputType = PyRep::IntegerValue(dict->GetItemString("outputType"));
-            baseItemType = PyRep::IntegerValue(dict->GetItemString("baseItemType"));
-            decryptorType = PyRep::IntegerValue(dict->GetItemString("decryptorType"));
+            outputType = PyRep::IntegerValueU32(dict->GetItemString("outputType"));
+            baseItemType = PyRep::IntegerValueU32(dict->GetItemString("baseItemType"));
+            decryptorType = PyRep::IntegerValueU32(dict->GetItemString("decryptorType"));
         }
         // this is populated for t2 bpc
         if (call.byname.find("inventionOutputItemID") != call.byname.end()) {
             // this is the bp typeID to create....should we test to see if they're the same?
-            outputType = PyRep::IntegerValue(call.byname["inventionOutputItemID"]);
+            outputType = PyRep::IntegerValueU32(call.byname["inventionOutputItemID"]);
         }
     }
 

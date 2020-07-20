@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
+    Updates:    Allan
 */
 
 
@@ -52,7 +53,6 @@ public:
     // this will delete existing regardless of save state
     static void SaveWeaponGroups(uint32 shipID, std::multimap<uint32, uint32>& data);
     static void ClearWeaponGroups(uint32 shipID);
-
 };
 
 #endif

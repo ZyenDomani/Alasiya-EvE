@@ -371,7 +371,12 @@ void DroneAIMgr::ClearTarget(SystemEntity* pSE) {
 
 void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
     /** @todo  not all drones use lazors...fix this */
-    std::string guid = "effects.Laser";
+    //  woot!! --> group:1010        cat:8       Compact Citadel Torpedo         Citadel torpedoes for fighter-bombers
+
+    // effects are listed in EVE_Effects.h
+    //  NOTE: drones are called 'entities' in client; EVE_Effects has 'entityxxx' for gfx 
+    std::string guid = "effects.Laser"; // client looks for 'turret' in ship.ball.modules for 'effects.laser'
+    //effects.ProjectileFiredForEntities
     m_pDrone->DestinyMgr()->SendSpecialEffect(m_pDrone->GetSelf()->itemID(),
                                              m_pDrone->GetSelf()->itemID(),
                                              m_pDrone->GetSelf()->typeID(), //m_pDrone->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),

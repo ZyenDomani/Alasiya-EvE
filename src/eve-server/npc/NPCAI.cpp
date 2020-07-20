@@ -736,8 +736,13 @@ void NPCAIMgr::AttackTarget(SystemEntity* pSE) {
         return;
     // put checks here for point/tackle
 
-    m_destiny->SendSpecialEffect(m_self->itemID(), m_self->itemID(), m_self->typeID(), pSE->GetID(), 0,"effects.Laser",1,1,1,m_attackSpeed,0);
-    //m_self->GetAttribute(AttrGfxTurretID).get_uint32()    // graphicID for turret for drone type ships
+    // effects are listed in EVE_Effects.h
+    std::string guid = "effects.Laser"; // client looks for 'turret' in ship.ball.modules for 'effects.laser'
+    m_destiny->SendSpecialEffect(m_self->itemID(),
+                                 m_self->itemID(),
+                                 m_self->typeID(),     //m_self->GetAttribute(AttrGfxTurretID).get_uint32()    // graphicID for turret for drone type ships
+                                 pSE->GetID(),
+                                 0,guid,1,1,1,m_attackSpeed,0);
 
     Damage d(m_npc,
              m_self,

@@ -117,8 +117,8 @@ PyResult CharMgrBound::Handle_ListStationBlueprintItems( PyCallArgs& call )
      *  none that i see so far...
      * this could be diff between station and pos   will need to check later
      */
-    uint32 locationID = PyRep::IntegerValue(call.tuple->GetItem(0));
-    uint32 stationID = PyRep::IntegerValue(call.tuple->GetItem(1));
+    uint32 locationID = PyRep::IntegerValueU32(call.tuple->GetItem(0));
+    uint32 stationID = PyRep::IntegerValueU32(call.tuple->GetItem(1));
 
     uint32 ownerID = m_ownerID;
     bool forCorp = PyRep::IntegerValue(call.tuple->GetItem(2));
@@ -647,7 +647,7 @@ PyResult CharMgrService::Handle_AddOwnerNote( PyCallArgs& call ) {
     10:58:09 [CharDebug]   machoVersion
     10:58:09 [CharDebug]        Integer: 1
 
-    
+
     */
 
   sLog.Warning( "CharMgrService::Handle_AddOwnerNote()", "size=%u ", call.tuple->size());

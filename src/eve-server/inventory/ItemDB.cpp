@@ -181,11 +181,11 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
 }
 
 uint32 ItemDB::NewItem(const ItemData &data) {
-    // check for common error ('common' is relative.)
-    if (IsNaN(data.position.x) or IsNaN(data.position.y) or IsNaN(data.position.z))
+    // check for common errors ('common' is relative.)
+    if (data.position.isNaN() or data.position.isInf())
         return 0;  // make error here?
 
-        DBerror err;
+    DBerror err;
     uint32 uid = 0;
 
     std::string nameEsc, customInfoEsc;
@@ -270,8 +270,14 @@ void ItemDB::SaveItems(std::vector<SaveData>& data)
     Inserts << " (itemID, typeID, ownerID, locationID, flag, contraband, singleton, quantity, x, y, z, customInfo)";
     bool first = true;
     for (auto cur : data) {
-        if (IsNaN(cur.position.x) or IsNaN(cur.position.y) or IsNaN(cur.position.z))
+        if (cur.position.isNaN() or cur.position.isInf()) {
+            _log(DATABASE__ERROR, "ItemDB::SaveItems() - %u has invalid position", cur.itemID);
             continue;
+        }
+        if (cur.locationID == 0) {
+            _log(DATABASE__ERROR, "ItemDB::SaveItems() - %u has invalid location", cur.itemID);
+            continue;
+        }
         if (first) {
             Inserts << " VALUES ";
             first = false;

@@ -369,7 +369,7 @@ void InventoryDB::DeleteTrackingCans()
 {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%Position Test%'");  // 90.63s on main, 0.037s on dev
-    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%Bubble%'");         // 66.75s on main, 0.036s on dev
+    //sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemName LIKE '%Bubble%'");         // 66.75s on main, 0.036s on dev
 }
 
 bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
