@@ -738,11 +738,12 @@ void NPCAIMgr::AttackTarget(SystemEntity* pSE) {
 
     // effects are listed in EVE_Effects.h
     std::string guid = "effects.Laser"; // client looks for 'turret' in ship.ball.modules for 'effects.laser'
-    m_destiny->SendSpecialEffect(m_self->itemID(),
-                                 m_self->itemID(),
-                                 m_self->typeID(),     //m_self->GetAttribute(AttrGfxTurretID).get_uint32()    // graphicID for turret for drone type ships
-                                 pSE->GetID(),
-                                 0,guid,1,1,1,m_attackSpeed,0);
+    uint32 gfxID = 0;
+    if (m_self->HasAttribute(AttrGfxTurretID))// graphicID for turret for drone type ships
+        gfxID = m_self->GetAttribute(AttrGfxTurretID).get_uint32();
+    m_destiny->SendSpecialEffect(m_self->itemID(), m_self->itemID(), m_self->typeID(),
+                                 pSE->GetID(),0,guid,1,1,
+                                 1,m_attackSpeed,0,gfxID);
 
     Damage d(m_npc,
              m_self,
@@ -785,11 +786,16 @@ void NPCAIMgr::LaunchMissile(uint16 typeID, SystemEntity* pSE)
         return;  // make error here
 
     // modify missile based on npc attribs
-    missileRef->MultiplyAttribute(AttrMaxVelocity, m_self->GetAttribute(AttrMissileEntityVelocityMultiplier));
-    missileRef->MultiplyAttribute(AttrExplosionDelay, m_self->GetAttribute(AttrMissileEntityFlightTimeMultiplier));
-    missileRef->MultiplyAttribute(AttrAoeVelocity, m_self->GetAttribute(AttrMissileEntityAoeVelocityMultiplier));
-    missileRef->MultiplyAttribute(AttrAoeCloudSize, m_self->GetAttribute(AttrMissileEntityAoeCloudSizeMultiplier));
-    missileRef->MultiplyAttribute(AttrAoeFalloff, m_self->GetAttribute(AttrMissileEntityAoeFalloffMultiplier));
+    if (m_self->HasAttribute(AttrMissileEntityVelocityMultiplier))
+        missileRef->MultiplyAttribute(AttrMaxVelocity, m_self->GetAttribute(AttrMissileEntityVelocityMultiplier));
+    if (m_self->HasAttribute(AttrMissileEntityFlightTimeMultiplier))    // this may be wrong
+        missileRef->MultiplyAttribute(AttrExplosionDelay, m_self->GetAttribute(AttrMissileEntityFlightTimeMultiplier));
+    if (m_self->HasAttribute(AttrMissileEntityAoeVelocityMultiplier))
+        missileRef->MultiplyAttribute(AttrAoeVelocity, m_self->GetAttribute(AttrMissileEntityAoeVelocityMultiplier));
+    if (m_self->HasAttribute(AttrMissileEntityAoeCloudSizeMultiplier))
+        missileRef->MultiplyAttribute(AttrAoeCloudSize, m_self->GetAttribute(AttrMissileEntityAoeCloudSizeMultiplier));
+    if (m_self->HasAttribute(AttrMissileEntityAoeFalloffMultiplier))
+        missileRef->MultiplyAttribute(AttrAoeFalloff, m_self->GetAttribute(AttrMissileEntityAoeFalloffMultiplier));
 
     SystemManager* pSystem = m_npc->SystemMgr();
     // Missile(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, InventoryItemRef module, SystemEntity* target, ShipItem* ship);

@@ -2741,6 +2741,23 @@ void DestinyManager::TractorBeamStop()
     SendDestinyUpdate(updates);
 }
 
+/*
+                  [PyTuple 2 items]
+                    [PyInt 62696]
+                    [PyTuple 2 items]
+                      [PyString "OnSpecialFX"]
+                      [PyTuple 10 items]
+                        [PyIntegerVar 9000000000001190976]
+                        [PyNone]
+                        [PyNone]
+                        [PyNone]
+                        [PyNone]
+                        [PyList 0 items]
+                        [PyString "effects.Jettison"]
+                        [PyInt 0]
+                        [PyInt 1]
+                        [PyInt 0]
+                        */
 void DestinyManager::SendJettisonPacket() const {
     OnSpecialFX10 effect;
         effect.entityID = mySE->GetID();
@@ -2781,7 +2798,7 @@ void DestinyManager::SendAnchorDrop() const {
         effect.isOffensive = 0;
         effect.start = 1;
         effect.active = 1;
-        effect.duration_ms = -1;
+        effect.duration = -1;
         effect.repeat = 0;
         effect.startTime = GetFileTimeNow();
     PyTuple* up = effect.Encode();
@@ -2797,7 +2814,7 @@ void DestinyManager::SendAnchorLift() const {
         effect.isOffensive = 0;
         effect.start = 1;
         effect.active = 0;
-        effect.duration_ms = -1;
+        effect.duration = -1;
         effect.repeat = 0;
         effect.startTime = GetFileTimeNow();
     PyTuple* up = effect.Encode();
@@ -2890,9 +2907,11 @@ void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::
     SendSingleDestinyUpdate(&up);   // consumed
 }
 
+// def OnSpecialFX(shipID, moduleID, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration = -1, repeat = None, startTime = None, graphicInfo = None):
+
 void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID,
                                        uint32 chargeTypeID, std::string guid, bool isOffensive, bool start,
-                                       bool isActive, double duration, uint32 repeat, int32 graphicInfo/*0*/) const
+                                       bool isActive, int32 duration, uint32 repeat, int32 graphicInfo/*0*/) const
 {
     //TODO need to figure out what 'area' is....
     std::vector<int32, std::allocator<int32> > area;
@@ -2900,20 +2919,41 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.entityID = entityID;
         effect.moduleID = moduleID;
         effect.moduleTypeID = moduleTypeID;
-        effect.targetID = targetID;
-        effect.chargeTypeID = chargeTypeID;
-        effect.area = area;
+        effect.targetID = targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID);
+        effect.chargeTypeID = chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID);
+        effect.area = area;     // this is unused variable in client.  send None.
         effect.guid = guid;
         effect.isOffensive = isOffensive;
         effect.start = start;
         effect.active = isActive;
-        effect.duration_ms = duration;
+        effect.duration = duration;
         effect.repeat = repeat;
         effect.startTime = GetFileTimeNow();
-        effect.graphicInfo = graphicInfo;
+        effect.graphicInfo = graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo);
     PyTuple *up = effect.Encode();
     SendSingleDestinyUpdate(&up);   // consumed
 }
+/*
+                  [PyTuple 2 items]
+                    [PyInt 62565]
+                    [PyTuple 2 items]
+                      [PyString "OnSpecialFX"]
+                      [PyTuple 14 items]
+                        [PyIntegerVar 9000000000001190096]
+                        [PyIntegerVar 9000000000001190096]
+                        [PyInt 11931]
+                        [PyNone]
+                        [PyNone]
+                        [PyList 0 items]
+                        [PyString "effects.ShieldBoosting"]
+                        [PyBool False]
+                        [PyInt 1]
+                        [PyInt 1]
+                        [PyFloat 5000]
+                        [PyInt 1]
+                        [PyIntegerVar 129756560173255648]
+                        [PyNone]
+                */
 
 void DestinyManager::SendJumpOut(uint32 gateID) const {
     OnSpecialFX10 effect;

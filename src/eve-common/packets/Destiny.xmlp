@@ -382,32 +382,32 @@ DST_WARPEXIT = 11
         <tupleInline>
             <!-- 0: shipID -->
             <int name="entityID" />
-            <!-- 1: moduleID -->
+            <!-- 1: moduleID (shipID for NPC) -->
             <int name="moduleID" default="0" none_marker="0" />
             <!-- 2: moduleTypeID -->
             <int name="moduleTypeID" default="0" none_marker="0" />
-            <!-- 3: targetID -->
-            <int name="targetID" default="0" none_marker="0" />
-            <!-- 4: chargeTypeID -->
-            <int name="chargeTypeID" default="0" none_marker="0" />
+            <!-- 3: targetID or None -->
+            <raw name="targetID" />
+            <!-- 4: chargeTypeID or None -->
+            <raw name="chargeTypeID" />
             <!-- 5: area, completely unknown contents, probably not really an listInt -->
             <listInt name="area" />
             <!-- 6: guid: see scripts/parklife/fxSequencer.py -->
             <string name="guid" />
-            <!-- 7: isOffensive: saw 0 -->
+            <!-- 7: isOffensive -->
             <bool name="isOffensive" default="false" />
-            <!-- 8: start: saw 1 -->
+            <!-- 8: start -->
             <int name="start" />
-            <!-- 9: active: saw 0 -->
+            <!-- 9: active -->
             <int name="active" />
             <!-- 10: duration in milliseconds (optional) -->
-            <real name="duration_ms" default="-1" none_marker="0" />
+            <int name="duration" default="-1" none_marker="0" />
             <!-- 11: repeat (optional) (really defaults to None, but -1 seems to work too) -->
             <int name="repeat" default="0" none_marker="0" />
             <!-- 12: startTime (optional) -->
             <long name="startTime" default="0" none_marker="0" />
-            <!-- 13: graphicInfo (optional)  - not sure what this is yet.  -->
-            <int name="graphicInfo" default="0" none_marker="0" />
+            <!-- 13: graphicInfo or None  - not sure what this is yet.  -->
+            <raw name="graphicInfo" />
         </tupleInline>
       </tupleInline>
   </elementDef>

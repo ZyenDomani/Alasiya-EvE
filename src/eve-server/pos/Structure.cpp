@@ -380,7 +380,6 @@ void StructureSE::Process() {
         switch (m_procState) {
             case ProcState::Unanchoring: {
                 SendSlimUpdate();
-                /** @todo  change SendSpecialEffect to SendSpecialEffect10 */
                 m_destiny->SendSpecialEffect(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.AnchorLift",0,0,0,-1,0);
                 m_db.UpdateBaseData(m_data);
             } break;
@@ -936,7 +935,7 @@ void StructureSE::GetEffectState(PyList& into) {
         effect.moduleTypeID = m_self->typeID();
         effect.targetID = 0;
         effect.chargeTypeID = 0;
-        effect.duration_ms = -1;
+        effect.duration = -1;
         effect.area = area;
         effect.guid = "effects.StructureOnline"; // this is sent in destiny::SetState.  check for actual effect of this pos
         effect.isOffensive = false;                     /** @todo (Allan) this should be boolean */

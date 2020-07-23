@@ -374,14 +374,17 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
     //  woot!! --> group:1010        cat:8       Compact Citadel Torpedo         Citadel torpedoes for fighter-bombers
 
     // effects are listed in EVE_Effects.h
-    //  NOTE: drones are called 'entities' in client; EVE_Effects has 'entityxxx' for gfx 
+    //  NOTE: drones are called 'entities' in client; EVE_Effects has 'entityxxx' for gfx
     std::string guid = "effects.Laser"; // client looks for 'turret' in ship.ball.modules for 'effects.laser'
     //effects.ProjectileFiredForEntities
+    uint32 gfxID = 0;
+    if (m_pDrone->GetSelf()->HasAttribute(AttrGfxTurretID))// graphicID for turret for drone type ships
+        gfxID = m_pDrone->GetSelf()->GetAttribute(AttrGfxTurretID).get_uint32();
     m_pDrone->DestinyMgr()->SendSpecialEffect(m_pDrone->GetSelf()->itemID(),
                                              m_pDrone->GetSelf()->itemID(),
                                              m_pDrone->GetSelf()->typeID(), //m_pDrone->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
                                              pTarget->GetID(),
-                                             0,guid,1,1,1,m_attackSpeed,0);
+                                             0,guid,1,1,1,m_attackSpeed,0,gfxID);
 
     Damage d(m_pDrone,
              m_pDrone->GetSelf(),
