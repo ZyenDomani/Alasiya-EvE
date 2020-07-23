@@ -39,8 +39,8 @@ static const char* const EVEProjectCodename = "EVE-EVE-TRANQUILITY";
 static const int32 EVEBirthday = 170472;
 
 /*  Allan's Static Definitions */
-static const char* const EVEMU_REVISION = "0.58.49";
-static const char* const EVEMU_BUILD_DATE = "02 July 2020";
+static const char* const EVEMU_REVISION = "0.62.31";
+static const char* const EVEMU_BUILD_DATE = "21 July 2020";
 /* match versions here with stated files for full support */
 static const float Config_Version = 9.6; /* eve-server.xml and EveServerConfig.cpp */
 static const float Log_Version = 9.9;    /* logtypes.h and log.ini */

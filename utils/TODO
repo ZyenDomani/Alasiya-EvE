@@ -34,6 +34,7 @@ check/fix loading linked weapons
 all MM and ship calls need to verify throw status
     - test with Client->CanThrow() to verify throwable status
 
+check into making module tics faster (like targetMgr)
 
 check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?  no...ins is queried when needed
@@ -64,13 +65,17 @@ current fx data incomplete at best.  missing multiple items/defs
 isDefault used to send to activate for effectID
 go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
 put EVEEffectID enum into namespace
-
+turn fx sending on and follow calls to verify proper OnSpecialFX data
+    - found and added client fx classification data to destinyMgr.h
+    - remove xmlp data for specialFX and build packet in code?
+    - remove specialFX10.  easier if specialFX is built in code, else send None...still not sure on what we can NOT send
 
 error:
 "turret not fitted on shipID (npc)"
 
 *******************************************************
 ********  improvements
+
 
 go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
 
@@ -268,6 +273,8 @@ dividends incomplete
 decorations list doesnt include recipients.  also time is shown as elapsed
 contacts incomplete
 StationOffice::ValidateAddItem incomplete (but unused)
+KeeperService will need work (accel gates)
+
 
 alliances?  not yet.  need other shit finished first.
 started coding alliance db
@@ -436,23 +443,11 @@ comment unused attrib defs
 
 *******************************************************
 *****************   errata and miscellaneous bullshit
+
+17908 - nerf bat???
+
+
 error with char location on login......
-backtrace() returned 15 addresses
-/srv/games/eve/Dev/bin/eve-server(_ZN3EvE10traceStackEv+0x1f) [0xfd7766]
-/srv/games/eve/Dev/bin/eve-server(_ZN13InventoryItem11SetPositionERK6GPoint+0x70) [0xbdaadc]
-/srv/games/eve/Dev/bin/eve-server(_ZN6Client14MoveToLocationEjRK6GPoint+0x57f) [0x94b555]
-/srv/games/eve/Dev/bin/eve-server(_ZN6Client15SelectCharacterEi+0x595) [0x9497df]
-/srv/games/eve/Dev/bin/eve-server(_ZN21CharUnboundMgrService24Handle_SelectCharacterIDER10PyCallArgs+0x114) [0xa8b7a4]
-/srv/games/eve/Dev/bin/eve-server(_ZN20PyCallableDispatcherI21CharUnboundMgrServiceE8DispatchERKSsR10PyCallArgs+0x12e) [0xa8fc10]
-/srv/games/eve/Dev/bin/eve-server(_ZN10PyCallable4CallERKSsR10PyCallArgs+0x43) [0x9914e3]
-/srv/games/eve/Dev/bin/eve-server(_ZN9PyService4CallERKSsR10PyCallArgs+0x168) [0x993ca8]
-/srv/games/eve/Dev/bin/eve-server(_ZN6Client14Handle_CallReqEP8PyPacketR12PyCallStream+0x2d8) [0x955d84]
-/srv/games/eve/Dev/bin/eve-server(_ZN19EVEPacketDispatcher14DispatchPacketEP8PyPacket+0x27e) [0xe63454]
-/srv/games/eve/Dev/bin/eve-server(_ZN6Client10ProcessNetEv+0x55) [0x94912b]
-/srv/games/eve/Dev/bin/eve-server(_ZN10EntityList7ProcessEv+0x4b) [0x96e471]
-/srv/games/eve/Dev/bin/eve-server(main+0x5180) [0x93855c]
-/lib64/libc.so.6(__libc_start_main+0xf0) [0x7ffff6463050]
-/srv/games/eve/Dev/bin/eve-server() [0x933259]
 22:09:28 [InvTrace] Inventory::RemoveItem() - Ibaria(30000053) does not contain Allan(90000000) in AutoFit.
 22:09:28 [InvTrace] Inventory::AddItem() - Updated Ibaria III - Thukker Mix Warehouse(60014137) to contain (1) Allan(90000000) in AutoFit.
 
@@ -547,7 +542,7 @@ create data needed for killboard, and integrate killboard into site  -priority l
 
 Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed  ....not working right.  later.
 
-player error msgs - pool of msgs adjusted for character secstatus or standings with corp/sov holder, a la sphereScript's speech files
+player agent/error msgs - pool of msgs adjusted for character secstatus or standings with corp/sov holder, a la sphereScript's speech files
 
 when cynos are implemented, remember to update mapDynamicData for counts on both fields and generators
 
@@ -557,9 +552,6 @@ implement this for RAM shit (they are all 4, but whatever)  -priority level: low
 
 better checks and reverts when creating corps fail
 - updated to not check for failure when adding data to evestaticowners, walletdivisions and corpshares
-
-on rare occasions, RemoveCharge* calls send quantity as tuple(1).
-this isnt implemented at this time, preferring to remove all loaded charges
 
 implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligable.
     update for ~20+ or so points to make a difference with our attributes
@@ -579,7 +571,8 @@ system mem obj for jumpsHour isnt working and will take more thought/code
 15:32:10 [ItemMsg] type 3779 (group: 1042, cat: 43) called _LoadType, but is not handled.
 15:32:10 [ItemMsg] type 2329 (group: 1034, cat: 43) called _LoadType, but is not handled.
 
-
+fix all call.decode errors to common msg...
+codelog(SERVICE__ERROR, "**call name**: Failed to decode arguments.");
 
 *******************************************************
 ********************************
