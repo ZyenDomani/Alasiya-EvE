@@ -108,7 +108,15 @@ SolarSystem::SolarSystem(
   m_radius(_ssData.radius),
   m_securityClass(_ssData.securityClass)
 {
+    pInventory = new Inventory(InventoryItemRef(this));
+
     _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, itemName().c_str(), itemID());
+}
+
+SolarSystem::~SolarSystem() {
+    if (pInventory != nullptr)
+        pInventory->Unload();
+    SafeDelete(pInventory);
 }
 
 SolarSystemRef SolarSystem::Load( uint32 solarSystemID)

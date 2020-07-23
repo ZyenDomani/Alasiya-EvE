@@ -51,7 +51,6 @@ CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, con
   m_celestialIndex( 0 ),
   m_orbitIndex( 0 )
   {
-      pInventory = new Inventory(InventoryItemRef(this));
       _log(ITEM__TRACE, "Created Default CelestialObject %p for item %s (%u).", this, itemName().c_str(), itemID());
 }
 
@@ -61,16 +60,8 @@ CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, con
   m_security(_cData.security),
   m_celestialIndex(_cData.celestialIndex),
   m_orbitIndex(_cData.orbitIndex)
-  {
-      pInventory = new Inventory(InventoryItemRef(this));
-      _log(ITEM__TRACE, "Created CelestialObject %p for %s (%u) with radius of %.1f.", this, itemName().c_str(), itemID(), m_radius);
-}
-
-CelestialObject::~CelestialObject()
 {
-    if (pInventory != nullptr)
-        pInventory->Unload();
-    SafeDelete(pInventory);
+      _log(ITEM__TRACE, "Created CelestialObject %p for %s (%u) with radius of %.1f.", this, itemName().c_str(), itemID(), m_radius);
 }
 
 CelestialObjectRef CelestialObject::Load( uint32 celestialID)

@@ -127,12 +127,12 @@ protected:
         // SolarSystem stuff:
         const SolarSystemData &_ssData
     );
-    virtual ~SolarSystem()                              { /* do nothing here */ }
+    virtual ~SolarSystem();
 
     /*
      * Member functions:
      */
-    using CelestialObject::_Load;
+    using InventoryItem::_Load;
     virtual bool _Load();
 
     // Template loader:

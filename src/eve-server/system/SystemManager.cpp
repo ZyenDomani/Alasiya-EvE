@@ -274,13 +274,6 @@ void SystemManager::UnloadSystem() {
     // inform MarketBot of system unloading to remove system stations from proc loop.
     //sMktBotMgr.RemoveSystem();
 
-    // system is being unloaded.  pay bounties now
-    PayBounties();
-    // unload belts, which saves and removes roids from system
-    m_beltMgr->ClearAll();
-    // close anomaly mgr, which saves and removes sigs from system
-    m_anomMgr->Close();
-
     // remove static and dynamic entities
     //  not removing ship items and solar system object from ItemFactory.
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
@@ -343,6 +336,13 @@ void SystemManager::UnloadSystem() {
 
     // set system inactive for system status page
     MapDB::SetSystemActive(m_data.systemID, false);
+
+    // system is being unloaded.  pay bounties now
+    PayBounties();
+    // unload belts, which saves and removes roids from system
+    m_beltMgr->ClearAll();
+    // close anomaly mgr, which saves and removes sigs from system
+    m_anomMgr->Close();
 
     /** @todo finish this for lsc */
     m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);

@@ -58,19 +58,22 @@ StationType *StationType::Load( uint32 stationTypeID)
 StationItem::StationItem(uint32 stationID, const StationType& type, const ItemData& data, const CelestialObjectData& cData)
 : CelestialObject(stationID, type, data, cData),
 m_officePyData(nullptr),
-m_stationType(type)
+m_stationType(type),
+m_stationID(stationID)
 {
-    m_loaded = false;
-    m_stationID = stationID;
+    pInventory = new Inventory(InventoryItemRef(this));
 
-    m_officeMap.clear();
-    m_guestList.clear();
+    m_loaded = false;
 
     _log(ITEM__TRACE, "Created Station for item %s (%u).", itemName().c_str(), itemID());
 }
 
 StationItem::~StationItem()
 {
+    if (pInventory != nullptr)
+        pInventory->Unload();
+    SafeDelete(pInventory);
+
     m_officeMap.clear();
     m_guestList.clear();
     PySafeDecRef(m_officePyData);
@@ -84,6 +87,9 @@ StationItemRef StationItem::Load( uint32 stationID)
 bool StationItem::_Load() {
     if (!pInventory->LoadContents())
         return false;
+
+    m_officeMap.clear();
+    m_guestList.clear();
 
     stDataMgr.GetStationData(m_stationID, m_data);
     stDataMgr.LoadOffices(m_stationID, m_officeMap);
