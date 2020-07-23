@@ -904,9 +904,9 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZe
     int32 old_qty = m_quantity;
     m_quantity = qty;
 
-    if (m_quantity > EVEMU_MAX_SHORT_ID) {
+    if (m_quantity > maxEveItem) {
         codelog(ITEM__ERROR, "II::SetQuantity() - %s(%u): quantity overflow", m_itemName.c_str(), m_itemID);
-        m_quantity = EVEMU_MAX_SHORT_ID -1;
+        m_quantity = maxEveItem -1;
         if (IsCharacter(m_ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
             if (pClient != nullptr)

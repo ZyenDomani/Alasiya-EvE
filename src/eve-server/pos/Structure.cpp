@@ -925,24 +925,19 @@ void StructureSE::GetEffectState(PyList& into) {
     and (m_data.state != EVEPOS::StructureStatus::Operating))
         return;
 
-    std::vector<int32, std::allocator<int32> > area;
     OnSpecialFX13 effect;
         if (m_module)
-            effect.entityID = m_data.towerID;            /* control tower id */
+            effect.entityID = m_data.towerID;    /* control tower id */
         else
             effect.entityID = m_data.itemID;     /* control tower id */
         effect.moduleID = m_data.itemID;         /* structure/module id as part of above tower system */
         effect.moduleTypeID = m_self->typeID();
-        effect.targetID = 0;
-        effect.chargeTypeID = 0;
         effect.duration = -1;
-        effect.area = area;
         effect.guid = "effects.StructureOnline"; // this is sent in destiny::SetState.  check for actual effect of this pos
-        effect.isOffensive = false;                     /** @todo (Allan) this should be boolean */
+        effect.isOffensive = false;
         effect.start = 1;
         effect.active = 1;
-        effect.repeat = 0;
-        effect.startTime = m_data.timestamp;             /* time this effect started */
+        effect.startTime = m_data.timestamp;     /* time this effect started */
     into.AddItem(effect.Encode());
 }
 

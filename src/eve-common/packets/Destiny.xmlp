@@ -360,8 +360,8 @@ DST_WARPEXIT = 11
             <int name="targetID" default="0" none_marker="0" />
             <!-- 4: chargeTypeID -->
             <int name="chargeTypeID" default="0" none_marker="0" />
-            <!-- 5: completely unknown contents, probably not really an listInt -->
-            <listInt name="area" />
+            <!-- 5: area, completely unknown contents, empty PyList in packets -->
+            <list name="area" />
             <!-- 6: see scripts/parklife/fxSequencer.py -->
             <string name="guid"/>
             <!-- 7: isOffensive: soft boolean -->
@@ -390,8 +390,8 @@ DST_WARPEXIT = 11
             <raw name="targetID" />
             <!-- 4: chargeTypeID or None -->
             <raw name="chargeTypeID" />
-            <!-- 5: area, completely unknown contents, probably not really an listInt -->
-            <listInt name="area" />
+            <!-- 5: area, completely unknown contents, empty PyList in packets -->
+            <list name="area" />
             <!-- 6: guid: see scripts/parklife/fxSequencer.py -->
             <string name="guid" />
             <!-- 7: isOffensive -->

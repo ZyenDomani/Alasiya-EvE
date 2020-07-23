@@ -103,7 +103,7 @@ bool AttributeMap::Save() {
     if (IsStaticItem(mItem.itemID()))
         return true;
 
-    bool skill = false, damage = false, owner = false, module = false, charge = false;
+    bool skill = false, damage = false, owner = false, module = false;
     switch (mItem.categoryID()) {
         case EVEDB::invCategories::Asteroid:    // asteroids and blueprints are NOT saved here
         case EVEDB::invCategories::Blueprint: {
@@ -124,14 +124,11 @@ bool AttributeMap::Save() {
         case EVEDB::invCategories::Deployable: {
             owner = true;
         } break;
-        case EVEDB::invCategories::Charge: {    // remember, crystals and lenses are charges, too.
-            //charge = true;
-            damage = true;
-        } break;
         case EVEDB::invCategories::Module:      // save online state for modules
             module = true;            // we're falling thru on purpose here to save module damage
-        case EVEDB::invCategories::Subsystem:
-        case EVEDB::invCategories::Drone: {     // this may need more.  check once system is working
+        case EVEDB::invCategories::Charge:   // remember, crystals and lenses are charges, too.
+        case EVEDB::invCategories::Drone:     // this may need more.  check once system is working
+        case EVEDB::invCategories::Subsystem: {
             damage = true;
         } break;
     }
@@ -147,9 +144,6 @@ bool AttributeMap::Save() {
                 save = true;
         if (damage)
             if (itr->first == AttrDamage)
-                save = true;
-        if (charge)
-            if (itr->first == AttrQuantity)
                 save = true;
         if (module)
             if (itr->first == AttrOnline)
@@ -187,12 +181,13 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
         if (notify) {
             Add(attrID, num);
         } else if ((attrID == AttrQuantity) and is_log_enabled(ITEM__CHANGE)) {
-            if (num.isFloat())
+            if (num.isFloat()) {
                 _log(ITEM__CHANGE, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
                         attrID, num.get_float(), mItem.itemName().c_str(), mItem.itemID());
-            else
+            } else {
                 _log(ITEM__CHANGE, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
                     attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
+            }
         }
 
         return;
@@ -205,19 +200,21 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
         Change(attrID, itr->second, num);
     else if ((attrID == AttrQuantity) and is_log_enabled(ITEM__CHANGE)) {
         if (itr->second.isFloat()) {
-            if (num.isFloat())
+            if (num.isFloat()) {
                 _log(ITEM__CHANGE, "Changing Attribute %u from %.2f to %.2f for %s(%u)", \
                         attrID, itr->second.get_float(), num.get_float(), mItem.itemName().c_str(), mItem.itemID());
-            else
+            } else {
                 _log(ITEM__CHANGE, "Changing Attribute %u from %.2f to %lli for %s(%u)", \
                         attrID, itr->second.get_float(), num.get_int(), mItem.itemName().c_str(), mItem.itemID());
+            }
         } else {
-            if (num.isFloat())
+            if (num.isFloat()) {
                 _log(ITEM__CHANGE, "Changing Attribute %u from %lli to %.2f for %s(%u)", \
                         attrID, itr->second.get_int(), num.get_float(), mItem.itemName().c_str(), mItem.itemID());
-            else
+            } else {
                 _log(ITEM__CHANGE, "Changing Attribute %u from %lli to %lli for %s(%u)", \
                         attrID, itr->second.get_int(), num.get_int(), mItem.itemName().c_str(), mItem.itemID());
+            }
         }
     }
 
@@ -294,19 +291,21 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
 
     if (is_log_enabled(ITEM__CHANGE)) {
         if (old_val.isFloat()) {
-            if (new_val.isFloat())
+            if (new_val.isFloat()) {
                 _log(ITEM__CHANGE, "Changing Attribute %u from %.2f to %.2f for %s(%u)", \
                         attrID, old_val.get_float(), new_val.get_float(), mItem.itemName().c_str(), mItem.itemID());
-            else
+            } else {
                 _log(ITEM__CHANGE, "Changing Attribute %u from %.2f to %lli for %s(%u)", \
                         attrID, old_val.get_float(), new_val.get_int(), mItem.itemName().c_str(), mItem.itemID());
+            }
         } else {
-            if (new_val.isFloat())
+            if (new_val.isFloat()) {
                 _log(ITEM__CHANGE, "Changing Attribute %u from %lli to %.2f for %s(%u)", \
                         attrID, old_val.get_int(), new_val.get_float(), mItem.itemName().c_str(), mItem.itemID());
-            else
+            } else {
                 _log(ITEM__CHANGE, "Changing Attribute %u from %lli to %lli for %s(%u)", \
                         attrID, old_val.get_int(), new_val.get_int(), mItem.itemName().c_str(), mItem.itemID());
+            }
         }
     }
 
@@ -354,12 +353,13 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
         return true;
 
     if (is_log_enabled(ITEM__CHANGE)) {
-        if (num.isFloat())
+        if (num.isFloat()) {
             _log(ITEM__CHANGE, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
                     attrID, num.get_float(), mItem.itemName().c_str(), mItem.itemID());
-        else
+        } else {
             _log(ITEM__CHANGE, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
                     attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
+        }
     }
 
     Notify_OnModuleAttributeChange modChange;

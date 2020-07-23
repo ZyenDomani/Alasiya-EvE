@@ -99,10 +99,8 @@ void ItemFactory::Close()
         SafeDelete(cur.second);
     m_categories.clear();
     // items
-    /*
-    for (auto cur : m_items)
-        delete(cur.second.get());
-    */
+    //for (auto cur : m_items)
+    //    delete(cur.second.get());
     m_items.clear();
     // Set Client pointer to NULL
     m_pClient = nullptr;
@@ -144,10 +142,16 @@ void ItemFactory::SaveItems() {
     sLog.Warning("        SaveItems", "Saved %u Dynamic Items in %.3fms.", count, (GetTimeMSeconds() -startTime) );
 }
 
-void ItemFactory::RemoveItem(uint32 itemID) {
-    if (IsTempItem(itemID))
+void ItemFactory::AddItem(InventoryItemRef iRef)
+{
+    if (iRef->itemID() < minAgent) {
+        sLog.Warning("ItemFactory::AddItem()", "Trying to Add invalid UID %u for %s", iRef->itemID(), iRef->name());
         return;
+    }
+    m_items.emplace(iRef->itemID(), iRef);
+}
 
+void ItemFactory::RemoveItem(uint32 itemID) {
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr == m_items.end())
         _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found", itemID );
@@ -155,7 +159,27 @@ void ItemFactory::RemoveItem(uint32 itemID) {
         m_items.erase( itr );
 }
 
-Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
+uint32 ItemFactory::GetNextTempID()
+{
+    if ( m_nextTempID < EVEMU_PLANET_PIN_ID )
+        ++m_nextTempID;
+    else
+        m_nextTempID = EVEMU_TEMP_ENTITY_ID;
+
+    return m_nextTempID;
+}
+
+uint32 ItemFactory::GetNextMissileID()
+{
+    return ++m_nextMissileID;
+}
+
+uint32 ItemFactory::GetNextNPCID()
+{
+    return ++m_nextNPCID;
+}
+
+Inventory* ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     // do we need to check trade containers here?
     if (!IsValidLocation(itemID))
         return nullptr;
@@ -494,33 +518,3 @@ ModuleItemRef ItemFactory::SpawnModule(ItemData& data)
 
     return iRef;
 }
-
-void ItemFactory::AddItem(InventoryItemRef iRef)
-{
-    if (iRef->itemID() < minAgent) {
-        sLog.Warning("ItemFactory::AddItem()", "Trying to Add invalid item %s with UID %u", iRef->name(), iRef->itemID());
-        return;
-    }
-    m_items.emplace(iRef->itemID(), iRef);
-}
-
-uint32 ItemFactory::GetNextTempID()
-{
-    if ( m_nextTempID < EVEMU_PLANET_PIN_ID )
-		++m_nextTempID;
-    else
-        m_nextTempID = EVEMU_TEMP_ENTITY_ID;
-
-    return m_nextTempID;
-}
-
-uint32 ItemFactory::GetNextMissileID()
-{
-    return ++m_nextMissileID;
-}
-
-uint32 ItemFactory::GetNextNPCID()
-{
-    return ++m_nextNPCID;
-}
-

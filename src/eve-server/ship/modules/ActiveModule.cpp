@@ -363,11 +363,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_Stop = false;
     m_repeat = repeat;
 
-    // there may be others here...this isnt right.  modules dont show activated using 'other' effectID
-    //if (effectID == EVEEffectID::useMissiles)   //operation defined by charge (use charge's default effectID)
-    //    m_effectID = m_chargeRef->type().GetDefaultEffect();
-    //else
-        m_effectID = effectID;
+    m_effectID = effectID;
 
     if (!CanActivate()) {
         Clear();
@@ -551,7 +547,6 @@ uint32 ActiveModule::DoCycle()
             LaunchSnowBall();
         } break;
         case EVEDB::invGroups::Scan_Probe_Launcher: {
-            /** @todo  test for active probes vs skills here */
             LaunchProbe();
         } break;
         // these neither require nor consume charges
@@ -898,7 +893,7 @@ void ActiveModule::ConsumeCharge() {
             if (cur->isOnline() and cur->IsLoaded())
                 cur->GetLoadedChargeRef()->AlterQuantity(-1, cur->IsLoaded());
     } else
-        m_chargeRef->AlterQuantity(-1, m_chargeLoaded);
+        m_chargeRef->AlterQuantity(-1, false);  // only used in space.  dont send ixStacksize update
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
@@ -1091,60 +1086,58 @@ bool ActiveModule::CanActivate()
 void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 {
     if (m_effectID < 1)
-        _log(EFFECTS__ERROR, "fxID = 0 for %s", m_modRef->name());
-
-    std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
-    if (guidStr.empty())
-        _log(EFFECTS__ERROR, "guid empty for %s using effectID %u", m_modRef->name(), m_effectID);
+        _log(EFFECTS__ERROR, "fxID = 0 for %s.", m_modRef->name());
 
     int64 abortTime(GetFileTimeNow());
     if (abort) {
         active = false;
         if ((m_effectID == EVEEffectID::miningLaser)
-        or (m_effectID == EVEEffectID::miningClouds))
+            or (m_effectID == EVEEffectID::miningClouds))
             abortTime += (5 * EvE::Time::Second);    // delay abort for 5s to simulate module "completing" its' cycle and dumping ore to cargo
         else
             abortTime += (3 * EvE::Time::Second);    // delay abort for 3s to simulate module "completing" its' cycle
     }
 
+    uint16 effectID = m_effectID;
+    // there may be others here like this...this is ONLY for OnSpecialFX data
+    if (m_effectID == EVEEffectID::useMissiles)   //operation defined by charge (use charge's default effectID)
+        effectID = m_chargeRef->type().GetDefaultEffect();
+    std::string guidStr = sFxDataMgr.GetEffectGuid(effectID);
+    if (guidStr.empty())
+        _log(EFFECTS__ERROR, "guid empty for %s using effectID %u", m_modRef->name(), effectID);
+
     uint16 chgTypeID((m_chargeLoaded ? m_chargeRef->typeID() : 0));
     uint32 timeLeft(GetRemainingCycleTimeMS());
-    EvilNumber cycleTime(EvilZero);
-    // these are a bit weird...this HasAttribute() will set variable if attrib exists, but need to test each case.
-    if (m_modRef->HasAttribute(AttrDuration, cycleTime))
-        ;
-    else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
-        ;
 
-    if (IsValidTarget(m_targetID) and (m_destinyMgr != nullptr))
+    if (m_destinyMgr != nullptr)
         m_destinyMgr->SendSpecialEffect(
                 m_shipRef->itemID(),
                 m_modRef->itemID(),
                 m_modRef->typeID(),
-                m_targetID,
+                IsValidTarget(m_targetID) ? m_targetID : m_shipRef->itemID(),
                 chgTypeID,
                 guidStr,
                 sFxDataMgr.isOffensive(m_effectID),
-                (active ? true : false),   // start    - if (start = 0) THEN remove effect
-                (active ? true : false),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
-                timeLeft,           // duration in ms
-                m_repeat);   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
+                active,         // start    - if (start = 0) THEN remove effect
+                active,         // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
+                timeLeft,       // duration in ms
+                m_repeat);      // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
 
 
     // Create Destiny Updates and GFx
     GodmaEnvironment ge;
-        ge.selfID = m_modRef->itemID(); //ENV_IDX_SELF = 0
+        ge.selfID = m_modRef->itemID();         //ENV_IDX_SELF = 0
         ge.charID = m_shipRef->ownerID();       //ENV_IDX_CHAR = 1
         ge.shipID = m_shipRef->itemID();        //ENV_IDX_SHIP = 2
         ge.target = IsValidTarget(m_targetID) ? new PyInt(m_targetID) : PyStatic.NewNone();     //ENV_IDX_TARGET = 3
-        ge.area = new PyList();         //ENV_IDX_AREA = 5 still dont know what this is.
-        ge.effectID = m_effectID;       //ENV_IDX_EFFECT = 6
+        ge.area = new PyList();                 //ENV_IDX_AREA = 5 still dont know what this is.
+        ge.effectID = m_effectID;               //ENV_IDX_EFFECT = 6
 
     if (chgTypeID > 0) {
         GodmaSubLoc gsl;  // subLocation is for charges loaded into modules on ship
             gsl.shipID = ge.shipID;
             gsl.slotID = m_modRef->flag();
-            gsl.chargeTypeID = chgTypeID;
+            gsl.typeID = chgTypeID;
         ge.subLoc = gsl.Encode();         //ENV_IDX_OTHER = 4
     } else {
         ge.subLoc = PyStatic.NewNone();  //ENV_IDX_OTHER = 4
@@ -1160,7 +1153,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
         shipEff.startTime = (abort ? (abortTime / EvE::Time::Second) : shipEff.timeNow - (timeLeft * EvE::Time::Second));
-        shipEff.duration = (abort ? 2000 : timeLeft); //(active ? cycleTime.get_float() : timeLeft));  // duration in seconds
+        shipEff.duration = (abort ? 2000 : timeLeft);  // duration in seconds
         shipEff.repeat = m_repeat;
         // will need to check and update for data miners here  (any other cases?)
         if ((groupID() == EVEDB::invGroups::Salvager) and IsSuccess()) {

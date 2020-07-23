@@ -54,14 +54,12 @@ bool ModuleItem::_Load()
     return true;
 }
 
-/** @todo this should be part of GM::Online() code */
 void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
     _log(MODULE__DEBUG, "ModuleItem::SetOnline() - set module %s(%u) to %s", \
                     m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
 
-    //m_modifiers.clear();
-    //if (!isRig)   // rigs DO NOT get isOnline attrib set.
-    SetAttribute(AttrOnline, (online?1:0));
+    if (!isRig)   // rigs DO NOT get isOnline attrib set.
+        SetAttribute(AttrOnline, (online?1:0));
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
     if (pClient == nullptr) {

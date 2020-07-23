@@ -5,6 +5,63 @@
  *
  */
 
+/*
+ *******************************
+ *********   ITEM CLASSES BASED ON UniqueIdetifier (UID)
+ *  <0    private chat channels
+ *   1    static chat channels
+ *  1k    temp Planet Structures (PinIDs - sent from client)
+ * 100k    bookmark folders  ** not implemented yet
+ * 350k    market groups
+ * 500k    Factions
+ *  1m    NPC Corp
+ * 2m1    trial-friendly chat channels
+ *  3m    Agent
+ *  9m    Universe (not sure)
+ * 10m    K-Space Region  (Known space)
+ * 11m    W-Space Region  (Wormhole space)
+ * 12m    A-Space Region  (Abyssal space - not in crucible)
+ * 20m    K-Space Constellation
+ * 20m    W-Space Constellation
+ * 20m    A-Space Constellation
+ * 30m    K-Space Solar System
+ * 31m    W-Space  Solar System
+ * 32m    A-Space  Solar System
+ * 40m    Celestial  (star:multiple_types,groupID=6, planet:multiple_types,groupID=7, moon:typeID=14,groupID=8; belt:typeID=15,groupID=9)
+ * 50m    Stargate  (groupid 10)
+ * 60m    Stations  (groupid 15, catid 3)
+ * 61m    Outposts   ** need to put Outpost creation here @ 61m, and save in mapDenormalize table.
+ * 64m    Trading     ** containers for trade.  this is the inventory item all traded items are contained in, but separate, ofc.
+ * 66m    OfficeFolder
+ * 68m    FactoryFolder
+ * 70m    UniverseAsteroid  ** this is NON-targetable, NON-selectable roids.  deco only
+ * 80m    Control Bunker (to 80m1)  ** not sure what this is yet
+ * 81m    Promenades (WIS shit)
+ * 82m    Planatary Districts
+ * 90m    PlayerCharacters   (-1 = max NPC Item)
+ * 98m    PlayerCorps
+ * 99m    Alliance
+ * 100m    Station Office      ** corp officeID.  used for locationID of items in corp hangar, based on flag.
+ * 110m    temp SEs
+ * 130m    Planet Structures (PinIDs)
+ * 135m    Customs Offices (67253 planets)  ** 1004746013567 on live
+ * 140m    saved DSEs, player items
+ * 450m    asteroid SEs
+ * 500m    player drones
+ * 600m    bookmarks - player created  ** 1130462570 on live
+ * 635m    bookmarks - mission created  ** not implemented yet
+ * 650m    blueprints ** not implemented yet   ** 1007111250519 on live
+ *** begin temp, non-saved UIDs
+ * 750m    npcs and jetcans used as tracking markers
+ * 950m    fleetIDs
+ * 960m    wingIDs
+ * 970m    squadIDs
+ *  1b    temp DSEs (missiles only at this time)  ** 9000000000001190696 on live
+ * 1b2    dungeon SEs
+ * 2b1    max int32
+ * 9e0    fake items
+ */
+
 
 #ifndef EVE_DEFINES_H
 #define EVE_DEFINES_H
@@ -74,7 +131,7 @@
 #define maxFactoryFolder        69999999
 #define minUniverseAsteroid     70000000        // deco only - not targetable, no bracket in overview
 #define maxUniverseAsteroid     79999999
-#define minControlBunker        80000000
+#define minControlBunker        80000000        // not sure what this is yet.
 #define maxControlBunker        80099999
 #define maxNPCItem              89999999
 #define minCharacter            90000000        // client NPC def ends here
@@ -84,13 +141,15 @@
 #define minOffice               100000000
 #define maxOffice               109999999
 #define minTempItemID           110000000
-#define minPIStructure          130000000
+#define minPIStructure          130000000       // Planet Structures
 #define minCustomsOffice        135000000
 #define minPlayerItem           140000000
 #define maxPlayerItem           300000000
 #define minAsteroidItem         450000000
 #define minDroneItem            500000000
 #define minBookmark             600000000
+#define minMissionBookmark      635000000
+#define minBlueprint            650000000
 #define minNPC                  750000000
 #define minFleet                950000000
 #define maxFleet                959000000
@@ -103,25 +162,11 @@
 
 #define maxHangarCapy           9000000000000000
 
-#define minFakeItem             9000000000000000000
+#define minFakeItem             9000000000000000000     // min missileID on live.  not needed here?
 
 
-/*
-DSTLOCALBALLS = 0x0C0000000h  (3,221,225,472 decimal)      unknown where this is from
-missile itemID's  dec = 9,000,000,000,000,000,000    hex = 0x7CE66C50E2840000h        from packet sniff
-*/
+//  DSTLOCALBALLS = 0x0C0000000h  (3,221,225,472 decimal)      unknown where this is from
 
-/*
-maxInt = 2147483647
-maxBigint = 9223372036854775807L
-minPlayerOwner = 90000000
-maxPlayerOwner = 2147483647
-minFakeClientItem = 17000000000000000000L
-
-minDustUser = 1000000000
-minDustCharacter = 2100000000
-maxDustCharacter = 2130000000
-*/
 
 //  allan's static defines to ease code checks
 #define staOfficeOffset                 6000000
@@ -134,9 +179,12 @@ maxDustCharacter = 2130000000
 #define EVEMU_SQUAD_ID                970000000
 #define EVEMU_MISSILE_ID             1000000000
 #define EVEMU_DUNGEON_ID             1200000000
+
 #define EVEMU_MAX_SHORT_ID           2147483647
 #define EVEMU_MAX_LONG_ID   9223372036854775807     // max int64.
 
+
+// defines for common test cases
 #define IsTempPinID(pinID) \
  (pinID <= 1000)
 

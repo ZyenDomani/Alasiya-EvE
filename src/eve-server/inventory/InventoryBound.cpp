@@ -762,8 +762,8 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
 }
 */
     _log(INV__MESSAGE, "InventoryBound::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
-    call.client->GetName(), ownerID, m_self->name(), m_itemID, sDataMgr.GetFlagName(flag), (m_passive ? ":passive" : ""), \
-    sDataMgr.GetFlagName(oldFlag));
+            call.client->GetName(), ownerID, m_self->name(), m_itemID, sDataMgr.GetFlagName(flag), \
+            (m_passive ? ":passive" : ""), sDataMgr.GetFlagName(oldFlag));
 
     return pInventory->List(flag, ownerID);
 }

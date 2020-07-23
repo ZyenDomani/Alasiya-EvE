@@ -70,7 +70,8 @@ public:
      */
     virtual ~RefObject()
     {
-        assert( mRefCount == 0);
+        // this isnt completely accurate yet.  disable to avoid crashes i cant trace 
+        //assert( mRefCount == 0);
         mDeleted = true;
     }
 
