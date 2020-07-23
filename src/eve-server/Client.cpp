@@ -566,7 +566,6 @@ void Client::ProcessClient() {
                     m_clientState = Player::State::Idle;
                     // send MOTD and server data to player's 'local' chat channel
                     m_services.lsc_service->SendServerMOTD(this);
-                    //m_ship->GetModuleManager()->UpdateChargeQty();
                 } break;
                 case Player::State::Jump: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Jump");
@@ -889,7 +888,8 @@ void Client::SetBallPark() {
             SetInvulTimer(Player::Timer::JumpInvul);
             // dont use timer method here...
             m_cloakTimer.Start(Player::Timer::JumpCloak);
-        }
+        } else
+            m_ship->GetModuleManager()->UpdateChargeQty();  //  <<<< huge hack here....cant find another way to do it yet.
     }
 }
 
@@ -1439,7 +1439,7 @@ void Client::SetBallParkTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Ballpark Timer set at %ums.  timenow %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Ballpark Timer set at %ums.  timenow %u", m_char->name(), time, m_ballparkTimer.GetCurrentTime());
     m_ballparkTimer.Start(time);
 }
 
@@ -1460,7 +1460,7 @@ void Client::SetCloakTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Cloak Timer set at %ums.  timenow %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Cloak Timer set at %ums.  timenow %u", m_char->name(), time, m_cloakTimer.GetCurrentTime());
     m_cloakTimer.Start(time);
     if (m_login)
         return;
@@ -1484,7 +1484,7 @@ void Client::SetUncloakTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Uncloak Timer set at %ums.  timenow %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Uncloak Timer set at %ums.  timenow %u", m_char->name(), time, m_uncloakTimer.GetCurrentTime());
     m_uncloakTimer.Start(time);
     SetUncloak(true);
 }

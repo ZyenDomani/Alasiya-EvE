@@ -110,10 +110,10 @@ public:
     virtual void Process()                              { /* do nothing here */ }
     virtual void Deactivate(std::string effect="")      { /* do nothing here */ }
     virtual void AbortCycle()                           { /* do nothing here */ }
-    // this will not add chargeRef to module.
+    // this will not move charge item.
     // must NOT throw
     virtual void LoadCharge(InventoryItemRef charge)    { /* do nothing here */ }
-    // this will not remove chargeRef from module.
+    // this will not move charge item.
     // must NOT throw
     virtual void UnloadCharge()                         { /* do nothing here */ }
     // this will physically add charge to module,

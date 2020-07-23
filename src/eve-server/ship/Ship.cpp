@@ -508,7 +508,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
         if (IsRigSlot(iRef->flag()))
             m_ModuleManager->UninstallRig(iRef->itemID());
         else if (iRef->categoryID() == EVEDB::invCategories::Charge)
-            m_ModuleManager->UnloadCharge(iRef->flag());
+            m_ModuleManager->UnloadModule(iRef->flag());
         else
             m_ModuleManager->UnfitModule(iRef->itemID());
         //m_ModuleManager->UpdateModules(iRef->flag());
@@ -671,25 +671,21 @@ void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& charge
 //{'FullPath': u'UI/Messages', 'messageID': 257270, 'label': u'NotEnoughCargoSpaceToUnloadBankBody'}(u'There is not enough cargo space left to unload the charges in the weapon bank. Try freeing up some space and try again.', None, None)
 
 // only called from client call.  can throw
-uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, bool merge/*false*/)
+void ShipItem::RemoveCharge(EVEItemFlags fromFlag)
 {
     if (IsFittingSlot(fromFlag)) {
         GenericModule* pMod = m_ModuleManager->GetModule(fromFlag);
         if (pMod == nullptr)
-            throw PyException( MakeCustomError("Module was not found in %s.", sDataMgr.GetFlagName(fromFlag)));
+            throw PyException( MakeCustomError("Module was not found at %s.", sDataMgr.GetFlagName(fromFlag)));
 
         if (pMod->IsActive())
             throw PyException( MakeUserError("CannotAccessChargeWhileInUse"));
 
-        InventoryItemRef chargeRef = pMod->GetLoadedChargeRef();
-        if (chargeRef.get() == nullptr)
-            return 0;
+        if (!pMod->IsLoaded())
+            throw PyException( MakeCustomError("Your %s is not loaded.", pMod->GetSelf()->name()));
 
-        /** @todo check cargo capy before move */
-        m_ModuleManager->UnloadCharge(fromFlag, merge);
-        return chargeRef->itemID();
+        m_ModuleManager->UnloadCharge(pMod);
     }
-    return 0;
 }
 
 void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
@@ -1381,7 +1377,7 @@ void ShipItem::LinkAllWeapons()
     // remove current links
     for (auto cur : weaponList) {
         if (sConfig.server.UnloadOnLinkAll)
-            m_ModuleManager->UnloadCharge(cur->flag(), true);
+            m_ModuleManager->UnloadCharge(cur);
         cur->SetLinked(false);
         cur->SetLinkMaster(false);
     }
@@ -2138,9 +2134,9 @@ PyDict* ShipItem::GetShipInfo()
 
     //get modules and charges
     std::vector<InventoryItemRef> equipped;
-    pInventory->GetItemsByFlagRange( flagLowSlot0, flagHiSlot7, equipped);
-    pInventory->GetItemsByFlagRange( flagRigSlot0, flagRigSlot2, equipped);
-    pInventory->GetItemsByFlagRange( flagSubSystem0, flagSubSystem4, equipped);
+    pInventory->GetItemsByFlagRange(flagLowSlot0, flagHiSlot7, equipped);
+    pInventory->GetItemsByFlagRange(flagRigSlot0, flagRigSlot2, equipped);
+    pInventory->GetItemsByFlagRange(flagSubSystem0, flagSubSystem4, equipped);
     //encode each one...
     for (auto cur : equipped) {
         Rsp_CommonGetInfo_Entry entry2;

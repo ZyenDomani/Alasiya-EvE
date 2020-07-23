@@ -182,68 +182,39 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
-    // newItemID = inv.RemoveChargeToHangar(itemKey, quantity)
-    /*
-     * 12:27:55 [InvDump]   Call Arguments:
-     * 12:27:55 [InvDump]      Tuple: 2 elements
-     * 12:27:55 [InvDump]       [ 0]  Tuple: 3 elements
-     * 12:27:55 [InvDump]       [ 0]   [ 0]    Integer: 140000877   <- shipID OR chargeID  (could be either)
-     * 12:27:55 [InvDump]       [ 0]   [ 1]    Integer: 27          <- flagID
-     * 12:27:55 [InvDump]       [ 0]   [ 2]    Integer: 181         <- typeID
-     * 12:27:55 [InvDump]       [ 1]       None                     <- when set, this is quantity to move
-     *
-     */
-    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToHangar() for %s(%u)", m_self->name(), m_itemID);
-    call.Dump(INV__DUMP);
-
     Call_RemoveCharge args;
     if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewZero();
+        return PyStatic.NewNone();
     }
 
-    uint32 quantity = 0;
-    if (call.tuple->size() == 2)
-        quantity = PyRep::IntegerValue(call.tuple->GetItem(1));
+    /** @todo determine if this is needed, and implement if so */
+    //uint32 quantity = 0;
+    //if (call.tuple->size() == 2)
+    //    quantity = PyRep::IntegerValue(call.tuple->GetItem(1));
 
-    // this return is (sometimes) used by client to call InventoryBound::MultiAdd() to complete the remove process
-    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID));
+    // this call is used to remove sublocation (charge) items, which is virtual to real.
+    //  since our code does this, we will return "None" here to avoid client subsequently calling MultiAdd() or MultiMerge()
+    call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID);
+    return PyStatic.NewNone();
 }
 
 PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
-    // newItemID = inv.RemoveChargeToCargo(itemKey, quantity, preferMerge=preferMerge)
-    /*
-     * 20:18:58 [InvMsg] Calling InventoryBound::RemoveChargeToCargo() for Thrasher(140002044)
-     * 20:18:58 [InvDump]   Call Arguments:
-     * 20:18:58 [InvDump]      Tuple: 2 elements
-     * 20:18:58 [InvDump]       [ 0]  Tuple: 3 elements
-     * 20:18:58 [InvDump]       [ 0]   [ 0]    Integer: 140002044   <- shipID OR chargeID  (could be either)
-     * 20:18:58 [InvDump]       [ 0]   [ 1]    Integer: 31          <- flagID
-     * 20:18:58 [InvDump]       [ 0]   [ 2]    Integer: 178         <- typeID
-     * 20:18:58 [InvDump]       [ 1]       None                     <- when set, this is quantity to move
-     * 20:18:58 [InvDump]  Named Arguments:
-     * 20:18:58 [InvDump]   preferMerge
-     * 20:18:58 [InvDump]        Boolean: true
-     */
-    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToCargo() for %s(%u)", m_self->name(), m_itemID);
-    call.Dump(INV__DUMP);
-
-    uint32 quantity = 0;
-    if (call.tuple->size() == 2)
-        quantity = PyRep::IntegerValue(call.tuple->GetItem(1));
-
     Call_RemoveCharge args;
     if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewZero();
+        return PyStatic.NewNone();
     }
 
-    bool merge = false;
-    if (call.byname.find("preferMerge") != call.byname.end())
-        merge = call.byname.find("preferMerge")->second->AsBool()->value();
+    /** @todo determine if this is needed, and implement if so */
+    //uint32 quantity = 0;
+    //if (call.tuple->size() == 2)
+    //    quantity = PyRep::IntegerValue(call.tuple->GetItem(1));
 
-    // this return is (sometimes) used by client to call InventoryBound::MultiAdd() to complete the remove process
-    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, merge));
+    // this call is used to remove sublocation (charge) items, which is virtual to real.
+    //  since our code does this, we will return "None" here to avoid client subsequently calling MultiAdd() or MultiMerge()
+    call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID);
+    return PyStatic.NewNone();
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
@@ -344,8 +315,10 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     // we're not dividing the stack, so check for removing loaded charges
     } else if ((iRef->categoryID() == EVEDB::invCategories::Charge) and (IsModuleSlot(iRef->flag()))) {
         moveStack = true;
+        quantity = iRef->quantity();
     } else if (call.client->IsInSpace() and (toFlag == flagCargoHold) and (quantity == 0)) {
         moveStack = true;
+        quantity = iRef->quantity();
     }
 
     float capacity = 0.0f;
@@ -538,6 +511,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         }
 
         if (iRef->typeID() == EVEDB::invTypes::Bookmark) {
+            // update this to keep owner/creator and other data
             iRef->Donate(m_ownerID, m_itemID, toFlag);
             continue;
         }
@@ -585,6 +559,11 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 result.arg = iRef->itemID();
                 return result.Encode();
             } else {
+                // are we just unloading charges?
+                if (iRef->categoryID() == EVEDB::invCategories::Charge) {
+                    pShip->UnloadModule(pMod);
+                    return nullptr;
+                }
                 pShip->RemoveItem(iRef);
             }
         }

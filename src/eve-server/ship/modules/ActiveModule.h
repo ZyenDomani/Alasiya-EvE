@@ -30,10 +30,10 @@ public:
 
     /* GenericModule overrides */
     virtual void        Process();
-    // this will not add chargeRef to module.
+    // this will not move charge item.
     // must NOT throw
     virtual void        LoadCharge(InventoryItemRef charge);
-    // this will not remove chargeRef from module.
+    // this will not move charge item.
     // must NOT throw
     virtual void        UnloadCharge();
     virtual void        Overload();
@@ -111,7 +111,6 @@ private:
     bool                m_Stop :1;
 
     uint8               m_loadQty;
-    std::string         m_guidStr;
 
 };
 

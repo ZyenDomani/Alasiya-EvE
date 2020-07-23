@@ -35,7 +35,6 @@ m_destinyMgr(nullptr)
 
     m_repeat = 1000;    //arbitrary.
 
-    m_guidStr = "";
     m_targetID = 0;
     m_effectID = 0;
 
@@ -229,7 +228,6 @@ void ActiveModule::Clear()
     m_repeat = 1;
     m_targetID = 0;
     m_effectID = 0;
-    m_guidStr = "";
     m_bubble = nullptr;
     m_sysMgr = nullptr;
     m_targMgr = nullptr;
@@ -255,8 +253,8 @@ void ActiveModule::Process()
             if (!m_chargeLoaded)
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 
-            //m_chargeRef->SetQuantity(m_loadQty, true);
-            m_chargeRef->SetAttribute(AttrQuantity, m_loadQty, true);
+            //m_chargeRef->SetQuantity(m_loadQty, true);                // OIC
+            m_chargeRef->SetAttribute(AttrQuantity, m_loadQty, true);   // OMAC
             m_loadQty = 0;
             m_ChargeState = Module::State::Loaded;
             m_chargeLoaded = true;
@@ -364,7 +362,12 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
     m_Stop = false;
     m_repeat = repeat;
-    m_effectID = effectID;
+
+    // there may be others here...this isnt right.  modules dont show activated using 'other' effectID
+    //if (effectID == EVEEffectID::useMissiles)   //operation defined by charge (use charge's default effectID)
+    //    m_effectID = m_chargeRef->type().GetDefaultEffect();
+    //else
+        m_effectID = effectID;
 
     if (!CanActivate()) {
         Clear();
@@ -372,8 +375,6 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     }
 
     m_isWarpSafe = sFxDataMgr.isWarpSafe(m_effectID);
-    //this is only used in ShowEffect.  do we really need it?
-    m_guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
 
     ShipSE* pShip = m_shipRef->GetPilot()->GetShipSE();
     m_bubble = pShip->SysBubble();
@@ -848,8 +849,6 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         // set immediately on login or when docked
         m_chargeLoaded = true;
         m_ChargeState = Module::State::Loaded;
-        // send qty change
-        //m_chargeRef->SetQuantity(chargeRef->quantity(), true);
     }
 }
 
@@ -1093,8 +1092,10 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 {
     if (m_effectID < 1)
         _log(EFFECTS__ERROR, "fxID = 0 for %s", m_modRef->name());
-    if (m_guidStr.empty())
-        _log(EFFECTS__ERROR, "guid empty for %s", m_modRef->name());
+
+    std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
+    if (guidStr.empty())
+        _log(EFFECTS__ERROR, "guid empty for %s using effectID %u", m_modRef->name(), m_effectID);
 
     int64 abortTime(GetFileTimeNow());
     if (abort) {
@@ -1122,11 +1123,11 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
                 m_modRef->typeID(),
                 m_targetID,
                 chgTypeID,
-                m_guidStr,
+                guidStr,
                 sFxDataMgr.isOffensive(m_effectID),
                 (active ? true : false),   // start    - if (start = 0) THEN remove effect
                 (active ? true : false),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
-                (double)timeLeft,           // duration in ms
+                timeLeft,           // duration in ms
                 m_repeat);   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
 
 

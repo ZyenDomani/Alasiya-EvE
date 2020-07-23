@@ -125,6 +125,7 @@ public:
     void UpdateModules();       // called when undocking to online modules in OnlineModuleList sent from client
     void UpdateModules(EVEItemFlags flag);
     void UnloadModule(uint32 itemID)                    { m_ModuleManager->UnloadModule(itemID); }
+    void UnloadModule(GenericModule* pMod)              { m_ModuleManager->UnloadModule(pMod); }
     void UnloadAllModules()                             { m_ModuleManager->UnloadAllModules();  }
     // this will test for active modules and throw where applicable
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
@@ -181,7 +182,8 @@ public:
     void LoadCharge(InventoryItemRef cRef, EVEItemFlags flag);
     // this can throw. returns nothing
     void LoadChargesToBank(EVEItemFlags flag, std::vector<int32>& chargeIDs);
-    uint32 RemoveCharge(EVEItemFlags fromFlag, bool merge=false);
+    // called by client for subLocation (charge) removal
+    void RemoveCharge(EVEItemFlags fromFlag);
     /* end new module manager interface */
 
     // Tactical Interface:

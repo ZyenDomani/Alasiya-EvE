@@ -93,9 +93,13 @@ public:
     void LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag);
     // this will remove charge item from module and update client
     // must NOT throw
-    void UnloadCharge(EVEItemFlags fromFlag, bool merge=false);
+    void UnloadCharge(GenericModule* pMod);
     // unload charge from module by itemID
     void UnloadModule(uint32 itemID);
+    // unload charge from module by flag
+    void UnloadModule(EVEItemFlags flag);
+    // unload charge from module by module*
+    void UnloadModule(GenericModule* pMod);
     // this will remove charges from all modules
     void UnloadAllModules();
     // this will remove charges from weapons only
@@ -146,9 +150,13 @@ public:
     GenericModule* GetRandModule();
 
 
+    // huge fucking hack to set charge qty in fit window when in space
+    void UpdateChargeQty();
 
 private:
+    // adds module ref to map, modifies rof if applicable, sets maps for fit-by-group, adjusts slot count
     void addModuleRef(EVEItemFlags flag, GenericModule* pMod);
+    // removes module ref from maps and adjusts slot count
     void deleteModuleRef(EVEItemFlags flag, GenericModule* pMod);
 
     bool m_initalized;
@@ -167,7 +175,7 @@ private:
     std::map<uint16, uint8> m_modByGroup;               // groupID, count
     std::map<uint8, GenericModule*> m_modules;          // slot, module (for all slots)
     std::map<uint8, GenericModule*> m_systems;          // slot, module (for rigs and subsystems)
-    std::map<uint8, GenericModule*> m_fittings;          // slot, module (for hi,mid,lo slots)
+    std::map<uint8, GenericModule*> m_fittings;         // slot, module (for hi,mid,lo slots)
     std::map<EVEItemFlags, InventoryItemRef> m_charges; // slot, chargeItem
 };
 
