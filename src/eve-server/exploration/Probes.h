@@ -34,6 +34,10 @@ public:
     ProbeItem(uint32 itemID, const ItemType &_type, const ItemData &_data);
     virtual ~ProbeItem()                                { /* Do nothing here */ }
 
+    /* virtual functions default to base class and overridden as needed */
+    virtual void            Delete();  //totally removes item from game and deletes from the DB.
+
+    
     static ProbeItemRef Load( uint32 itemID);
     static ProbeItemRef Spawn( ItemData &data);
 

@@ -58,6 +58,22 @@ ProbeItemRef ProbeItem::Spawn(ItemData& data)
     return ProbeItem::Load(itemID);
 }
 
+void ProbeItem::Delete() {
+    // remove from current container's inventory.
+    // this should be SolarSystem, but just in case, run tests anyway
+    if (IsValidLocation(m_locationID)) {
+        InventoryItemRef iRef = sItemFactory.GetItem(m_locationID);
+        if (iRef.get() != nullptr)
+            iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
+        else
+            _log(ITEM__ERROR, "ProbeItem::Delete() - Cant find location %u containing %s.", m_locationID, m_itemName.c_str());
+    }
+
+    // remove from DB
+    ItemDB::DeleteItem(m_itemID);
+}
+
+
 ProbeSE::ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system, InventoryItemRef moduleRef, ShipItemRef shipRef)
 : DynamicSystemEntity(self, services, system),
 m_scan(nullptr),
