@@ -2798,8 +2798,6 @@ void DestinyManager::SendAnchorDrop() const {
         effect.isOffensive = 0;
         effect.start = 1;
         effect.active = 1;
-        effect.duration = -1;
-        effect.repeat = 0;
         effect.startTime = GetFileTimeNow();
     PyTuple* up = effect.Encode();
     SendSingleDestinyUpdate(&up);   // consumed
@@ -2813,9 +2811,6 @@ void DestinyManager::SendAnchorLift() const {
         effect.guid = "effects.AnchorLift";
         effect.isOffensive = 0;
         effect.start = 1;
-        effect.active = 0;
-        effect.duration = -1;
-        effect.repeat = 0;
         effect.startTime = GetFileTimeNow();
     PyTuple* up = effect.Encode();
     SendSingleDestinyUpdate(&up);   // consumed
@@ -2893,13 +2888,11 @@ void DestinyManager::SendCloakFx(bool apply/*false*/, bool module/*false*/) cons
 
 void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string guid, bool isOffensive, bool start, bool isActive) const
 {
-    //TODO need to figure out what 'area' is....
-	std::vector<int32, std::allocator<int32> > area;
     OnSpecialFX10 effect;
         effect.entityID = entityID;
         effect.targetID = targetID;
         effect.guid = guid;
-        effect.area = area;
+        effect.area = new PyList();     // this is unused variable in client.
         effect.isOffensive = isOffensive;
         effect.start = start;
         effect.active = isActive;
@@ -2913,15 +2906,12 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
                                        uint32 chargeTypeID, std::string guid, bool isOffensive, bool start,
                                        bool isActive, int32 duration, uint32 repeat, int32 graphicInfo/*0*/) const
 {
-    //TODO need to figure out what 'area' is....
-    std::vector<int32, std::allocator<int32> > area;
     OnSpecialFX13 effect;
         effect.entityID = entityID;
         effect.moduleID = moduleID;
         effect.moduleTypeID = moduleTypeID;
         effect.targetID = targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID);
         effect.chargeTypeID = chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID);
-        effect.area = area;     // this is unused variable in client.  send None.
         effect.guid = guid;
         effect.isOffensive = isOffensive;
         effect.start = start;
