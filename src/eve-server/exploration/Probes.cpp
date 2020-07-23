@@ -1,6 +1,6 @@
  /**
   * @name ProbeItems.cpp
-  *     ProbeItem SE class for Alasiya EvEmu
+  *     Probe Item/SE class for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          10 March 2018
@@ -155,7 +155,7 @@ m_returnTimer(0)
     // implants
     // since we dont have these, im gonna leave it off for now.
 
-    // fudge scan strength to make my fomulas work right...wip
+    // fudge scan strength to make my formulas work right...wip
     m_scanStrength /= 10;
 
 /*
@@ -350,7 +350,7 @@ void ProbeSE::SendStateChange(uint8 state)
 
 void ProbeSE::SendRemoveProbe()
 {
-    m_destiny->SetPosition(NULL_ORIGIN);
+    //m_destiny->SetPosition(NULL_ORIGIN);
     PyTuple* ev = new PyTuple(1);
         ev->SetItem(0, new PyLong(m_self->itemID()));
     m_client->SendNotification("OnRemoveProbe", "clientID", &ev);  // this is sequenced

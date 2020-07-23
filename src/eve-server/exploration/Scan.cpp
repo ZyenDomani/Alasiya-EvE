@@ -18,6 +18,7 @@
  * SCAN__INFO
  * SCAN__TRACE
  * SCAN__DUMP
+ * SCAN__RSPDUMP
  */
 
 #include "eve-server.h"
@@ -31,9 +32,9 @@
 #include "system/cosmicMgrs/AnomalyMgr.h"
 
 Scan::Scan(Client* pClient)
+: m_client(pClient),
+  m_system(pClient->SystemMgr())
 {
-    m_client = pClient;
-    m_system = pClient->SystemMgr();
     m_probeScan = false;
 }
 
@@ -93,6 +94,17 @@ void Scan::ProcessScan(bool useProbe/*false*/)
 PyRep* Scan::ConeScan(Call_ConeScan args) {
     /** @todo  this needs to use given args to determine objects found... */
     //  WORKING CODE...DONT FUCK WITH THIS!!  -allan 7Dec15
+    /*
+     * 01:16:27 [Bound] ScanBound::ConeScan()
+     * 01:16:27 [ScanTrace] ScanBound::Handle_ConeScan() - size= 5
+     * 01:16:27 [ScanDump]   Call Arguments:
+     * 01:16:27 [ScanDump]      Tuple: 5 elements
+     * 01:16:27 [ScanDump]       [ 0]       Real: 6.283185      <- ScanAngle
+     * 01:16:27 [ScanDump]       [ 1]    Integer: 10000000      <- range
+     * 01:16:27 [ScanDump]       [ 2]       Real: 0.000000      <- x
+     * 01:16:27 [ScanDump]       [ 3]       Real: 0.000000      <- y
+     * 01:16:27 [ScanDump]       [ 4]       Real: -1.000000     <- z
+     */
     std::vector<SystemEntity*> vector;
     if (m_client->IsShowall())
         m_client->SystemMgr()->GetCurrentEntities(vector);
@@ -112,19 +124,23 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
 }
 
 void Scan::RequestScans(PyDict* dict) {
-    _log(SCAN__INFO, "Scan::RequestScans() called by %s in system %u", m_client->GetName(), m_client->GetSystemID());
-
     uint16 duration = m_client->GetShip()->GetAttribute(AttrScanSpeed).get_uint32();
-    if (dict == nullptr) {
+    if ((dict == nullptr) or dict->empty()) {
+        _log(SCAN__INFO, "Scan::RequestScans() called by %s in %s using ship scanner.", \
+                m_client->GetName(), m_client->GetSystemName().c_str());
+
         OnSystemScanStarted ossst;
-        ossst.timestamp = GetFileTimeNow();
-        ossst.duration = duration;
-        ossst.scanProbesDict = new PyDict();
+            ossst.timestamp = GetFileTimeNow();
+            ossst.duration = duration;
+            ossst.scanProbesDict = new PyDict();
         PyTuple* ev = ossst.Encode();
         m_client->SendNotification("OnSystemScanStarted", "charid", &ev);
         m_client->SetScanTimer(duration);
         return;
     }
+
+    _log(SCAN__INFO, "Scan::RequestScans() called by %s in %s using %u probes.",\
+            m_client->GetName(), m_client->GetSystemName().c_str(), dict->size());
 
     uint32 probeID = 0;
     PyDict::const_iterator cItr = dict->begin();
@@ -133,7 +149,8 @@ void Scan::RequestScans(PyDict* dict) {
         probeID = PyRep::IntegerValueU32(cItr->first);  // key
         std::map<uint32, ProbeSE*>::iterator pItr = m_probeMap.find(probeID);
         if (pItr == m_probeMap.end()) {
-            _log(SCAN__ERROR, "Probe %u wasnt found in the probeMap for %s(%u)", probeID, m_client->GetName(), m_client->GetCharacterID());
+            _log(SCAN__ERROR, "Probe %u wasnt found in the probeMap for %s(%u)", probeID, \
+                    m_client->GetName(), m_client->GetCharacterID());
             continue;  // make error here?
         }
 
@@ -141,21 +158,20 @@ void Scan::RequestScans(PyDict* dict) {
         if (!args.Decode(cItr->second)) { // value
             _log(SERVICE__ERROR, "Scan::RequestScans::DecodeProbeData: Failed to decode arguments.");
             // make error here
-            return;
+            continue;
         }
 
+        ProbeData data = ProbeData();
+            data.state = args.state;    // do we need this?
+            data.expiry = args.expiry;
+            data.rangeStep = args.rangeStep;
+            data.scanRange = args.scanRange;
+        // set probe target
         PyObjectEx* obj = args.destination->AsObjectEx();
         PyTuple* dest = obj->header()->AsTuple()->GetItem(1)->AsTuple();
-
-        ProbeData data = ProbeData();
-        data.state = args.state;    // do we need this?
-        data.expiry = args.expiry;
-        data.rangeStep = args.rangeStep;
-        data.scanRange = args.scanRange;
-        // set probe target
-        data.dest.x = dest->GetItem(0)->AsFloat()->value();
-        data.dest.y = dest->GetItem(1)->AsFloat()->value();
-        data.dest.z = dest->GetItem(2)->AsFloat()->value();
+            data.dest.x = dest->GetItem(0)->AsFloat()->value();
+            data.dest.y = dest->GetItem(1)->AsFloat()->value();
+            data.dest.z = dest->GetItem(2)->AsFloat()->value();
         pItr->second->UpdateProbe(data);
     }
 
@@ -211,7 +227,7 @@ void Scan::SystemScanStarted(uint16 duration)
         ossst.duration = duration;
         ossst.scanProbesDict = probeDict;
     PyTuple* ev = ossst.Encode();
-    ev->Dump(SCAN__DUMP, "p-    ");
+    ev->Dump(SCAN__RSPDUMP, "sss-    ");
     m_client->SendNotification("OnSystemScanStarted", "charid", &ev, false);
 }
 
@@ -260,7 +276,7 @@ void Scan::ShipScanResult() {
         osss.systemScanResult = resultList;
         osss.absentTargets = mtList;
     PyTuple* ev = osss.Encode();
-    ev->Dump(SCAN__DUMP, "    ");
+    ev->Dump(SCAN__RSPDUMP, "ssr-    ");
     m_client->SendNotification("OnSystemScanStopped", "charid", &ev);
 }
 
@@ -368,7 +384,7 @@ void Scan::ProbeScanResult()
         osssp.systemScanResult = resultList;
         osssp.absentTargets = absentList;
     PyTuple* ev = osssp.Encode();
-    ev->Dump(SCAN__DUMP, "p-    ");
+    ev->Dump(SCAN__RSPDUMP, "psr-    ");
     m_client->SendNotification("OnSystemScanStopped", "charid", &ev);
 }
 

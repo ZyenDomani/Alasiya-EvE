@@ -1,6 +1,6 @@
  /**
   * @name Probes.h
-  *     Probe SE class for Alasiya EvEmu
+  *     Probe Item/SE class for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          10 March 2018
@@ -10,12 +10,6 @@
 #ifndef EVEMU_EXPLORE_PROBES_H_
 #define EVEMU_EXPLORE_PROBES_H_
 
-/*  this class is in charge of creating/destroying and maintaining
- * anomaly types in it's system.
- *
- *  a new iteration of this class is created for each system as that system is booted.
- */
-
 
 #include "EVEServerConfig.h"
 #include "../../eve-common/EVE_Scanning.h"
@@ -24,7 +18,7 @@
 
 
 /**
- * InventoryItem for generic celestial object.
+ * InventoryItem for probe object.
  */
 class ProbeItem
 : public InventoryItem
@@ -35,9 +29,9 @@ public:
     virtual ~ProbeItem()                                { /* Do nothing here */ }
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void            Delete();  //totally removes item from game and deletes from the DB.
+    virtual void Delete();  //totally removes item from game and deletes from the DB.
 
-    
+
     static ProbeItemRef Load( uint32 itemID);
     static ProbeItemRef Spawn( ItemData &data);
 
