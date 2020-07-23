@@ -6,6 +6,10 @@
 *******************************************************
 **********  errors and other found shit...high priority
 
+dont send Online(16) for rigs....
+    - StartEffect: Online Effect being started on a type that doesn't have it 140023442 31213 16
+
+    
 
 noob ships do not Init() correctly....  most attrs are 0
 
@@ -164,6 +168,7 @@ DogmaIMBound::Handle_StopOverloadRack
 
 GetMyInventory()->ContainsTypeByFlag
     - should this check for items in holds other than default cargoHold?
+    - finish contents-by-flag map for this method
 
 pi working.  currently rewriting process code  -priority level: lo
     - check/rewrite planet xml code as needed (minor improvement)
@@ -244,7 +249,6 @@ pos - started. drop, anchor, unanchor, online, offline working but no in-class c
     - structures need 'state' and 'status' variables looked over and possibibly reset/fixed.  status is EVEPOS::StructureStatus and sent in slimItem.  state is EVEPOS::EntityState
     - reinforceValue data is in pos/Structure.h
     - mgrDB needs looking over for data types
-    - inventory needs work for capy checks
     - add checks for necessary items before online can be processed
     - timers (anchor/online) arent updated to client properly (non-persistent)
 
@@ -343,8 +347,14 @@ go thru classes and rename per class type...
     -  *SE  for system entities
 
 finish dot commands
+    - model commands on .tr where applicable/appropriate
     - add options for commands
-    - .tr still needs lots of work.  basic code is done
+    - .tr still needs lots of work.  basic code is done and working
+
+
+implement remaining UIDs as noted in EVE_Defines.h
+
+look into OnSessionMutated to see if we can implement it properly
 
 
 *******************************************************
