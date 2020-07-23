@@ -46,12 +46,11 @@
 
 ItemFactory::ItemFactory()
 :m_pClient(nullptr),
-// Initialize ID Authority variables:
-m_nextTempID(EVEMU_TEMP_ENTITY_ID),
-m_nextNPCID(EVEMU_NPC_ID),
-m_nextMissileID(EVEMU_MISSILE_ID)
+m_nextTempID(0),
+m_nextNPCID(0),
+m_nextMissileID(0),
+m_db(nullptr)
 {
-    m_db = new InventoryDB();
 }
 
 ItemFactory::~ItemFactory()
@@ -70,6 +69,16 @@ int ItemFactory::Initialize()
 
     if (sConfig.debug.DeleteTrackingCans)
         InventoryDB::DeleteTrackingCans();
+
+    m_items.clear();
+
+    // Initialize ID Authority variables:
+    m_nextTempID = EVEMU_TEMP_ENTITY_ID;
+    m_nextNPCID = EVEMU_NPC_ID;
+    m_nextMissileID = EVEMU_MISSILE_ID;
+
+
+    m_db = new InventoryDB();
 
     sLog.Blue("      ItemFactory", "Item Factory Initialized.");
     return 1;
@@ -392,7 +401,7 @@ ModuleItemRef ItemFactory::GetModuleItem(uint32 moduleID)
 InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
     InventoryItemRef iRef = InventoryItem::Spawn(data);
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
@@ -405,7 +414,7 @@ InventoryItemRef ItemFactory::SpawnTempItem(ItemData &data) {
 BlueprintRef ItemFactory::SpawnBlueprint(ItemData &data, BlueprintData &bpData) {
     BlueprintRef iRef = Blueprint::Spawn(data, bpData);
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
@@ -418,7 +427,7 @@ CharacterRef ItemFactory::SpawnCharacter(CharacterData &charData, CorpData &corp
 ShipItemRef ItemFactory::SpawnShip(ItemData &data) {
     ShipItemRef iRef = ShipItem::Spawn(data);
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
@@ -427,7 +436,7 @@ SkillRef ItemFactory::SpawnSkill(ItemData &data)
 {
     SkillRef iRef = Skill::Spawn( data );
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
@@ -436,7 +445,7 @@ StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
 {
     StructureItemRef iRef = StructureItem::Spawn( data );
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
@@ -445,7 +454,7 @@ AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
 {
     AsteroidItemRef iRef = AsteroidItem::Spawn( idata, adata );
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
@@ -454,7 +463,7 @@ StationOfficeRef ItemFactory::SpawnOffice(ItemData &idata, OfficeData& odata)
 {
     StationOfficeRef iRef = StationOffice::Spawn( idata, odata );
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
@@ -463,7 +472,7 @@ CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
 {
     CargoContainerRef iRef = CargoContainer::Spawn( data );
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
@@ -472,7 +481,7 @@ WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
 {
     WreckContainerRef iRef = WreckContainer::Spawn( data );
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
@@ -481,13 +490,17 @@ ModuleItemRef ItemFactory::SpawnModule(ItemData& data)
 {
     ModuleItemRef iRef = ModuleItem::Spawn( data );
     if (iRef.get() != nullptr)
-        m_items.insert(std::make_pair(iRef->itemID(), iRef));
+        AddItem(iRef);
 
     return iRef;
 }
 
 void ItemFactory::AddItem(InventoryItemRef iRef)
 {
+    if (iRef->itemID() < minAgent) {
+        sLog.Warning("ItemFactory::AddItem()", "Trying to Add invalid item %s with UID %u", iRef->name(), iRef->itemID());
+        return;
+    }
     m_items.emplace(iRef->itemID(), iRef);
 }
 
@@ -495,10 +508,10 @@ uint32 ItemFactory::GetNextTempID()
 {
     if ( m_nextTempID < EVEMU_PLANET_PIN_ID )
 		++m_nextTempID;
-	else
+    else
         m_nextTempID = EVEMU_TEMP_ENTITY_ID;
 
-	return m_nextTempID;
+    return m_nextTempID;
 }
 
 uint32 ItemFactory::GetNextMissileID()

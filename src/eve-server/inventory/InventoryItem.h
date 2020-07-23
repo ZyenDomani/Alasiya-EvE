@@ -131,10 +131,7 @@ public:
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     // this also updates volume of item
     bool                    AlterQuantity(int32 qty, bool notify=false);
-    bool                    SetQuantity(int32 qty, bool notify=false);
-    // send qty of 0 to client, which will trigger item removal without adding to 'new' location
-    // this is used for loading charges from cargo where we update charge flag in server, but dont send update to client
-    void                    ZeroQuantity(EVEItemFlags flag);
+    bool                    SetQuantity(int32 qty, bool notify=false, bool deleteOnZero=true);
     // sets new flag, if different, saves update to db, and (optionally) notifies client of change
     bool                    SetFlag(EVEItemFlags flag, bool notify=false);
 
@@ -152,10 +149,12 @@ public:
     // same as Move() but doesnt remove item from previous location
     // used for moving charges to/from ship without calling Remove()
     virtual void            Relocate(uint32 locID=0, EVEItemFlags flag=flagAutoFit);
-    
-    // add item to our inventory
+
+    // add itemRef to our inventory.
+    // does not move item
     virtual void            AddItem(InventoryItemRef iRef);
-    // remove item from our inventory
+    // remove itemRef from our inventory.
+    // does not move item
     virtual void            RemoveItem(InventoryItemRef iRef);
 
     /* specific functions handled here */

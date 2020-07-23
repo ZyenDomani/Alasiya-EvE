@@ -170,7 +170,7 @@ protected:
     bool m_anchorable : 1;
     bool m_fittableNonSingleton : 1;
     bool m_published : 1;
-    
+
     const uint16 m_id;
     const ItemCategory *m_category;
 
@@ -253,6 +253,7 @@ public:
 
     /* new effects processing system */
     void GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const;
+    uint16 GetDefaultEffect() const                     { return m_defaultID; }
 
     bool HasEffect(uint16 effectID) const;
     bool HasReqSkill(const uint16 skillID) const;
@@ -324,14 +325,10 @@ public:
     std::unordered_multimap<int8, Effect> m_stateFxMap; // k,v map of state, data   -to search by state
 
 private:
-    std::map<uint16, uint8> m_reqSkillMap;              // k,v map of required skill, level for this ItemType, if any.
-    std::map<uint16, EvilNumber> m_AttributeMap;        // k,v map of attributeID, value
-
+    const ItemGroup *m_group;
     bool m_published;
     const uint16 m_id;
-    const ItemGroup *m_group;
-    std::string m_name;
-    std::string m_description;
+    uint16 m_defaultID;
     uint32 m_portionSize;
     uint32 m_marketGroupID;
     double m_basePrice;
@@ -341,6 +338,11 @@ private:
     double m_volume;
     double m_capacity;
     EVERace m_raceID;
+    std::string m_name;
+    std::string m_description;
+
+    std::map<uint16, uint8> m_reqSkillMap;              // k,v map of required skill, level for this ItemType, if any.
+    std::map<uint16, EvilNumber> m_AttributeMap;        // k,v map of attributeID, value
 
 };
 

@@ -223,6 +223,10 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     msg += sEntityList.GetUpTime();
     msg += "<br>Current Population: ";
     msg += itoa(sEntityList.GetClientCount());
+    msg += "<br><br>Character Options:";
+    msg += "<br>Module AutoStop: ";
+    msg += (pClient->AutoStop() ? "On" : "Off");
+    msg += "<br>ShowAll: Off";
 
     OnLSC_SendMessage sm;
     sm.sender = _FakeSenderInfo();

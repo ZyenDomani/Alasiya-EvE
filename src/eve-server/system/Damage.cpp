@@ -504,7 +504,7 @@ void ShipSE::Killed(Damage &fatal_blow) {
         AbandonDrones();
 
         // remove all charges (per packet data)  ...why???
-        GetShipItemRef()->UnloadAllModules();
+        //GetShipItemRef()->UnloadAllModules();
 
         blob << "<items>";
         /* killBlob contains destroyed/dropped items. u'<items><i t=3651 f=0 d=0 x=1/><i t=3634 f=0 d=0 x=1/></items>'  -allan 13July17

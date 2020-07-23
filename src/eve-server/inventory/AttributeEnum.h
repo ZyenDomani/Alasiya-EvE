@@ -591,7 +591,7 @@ enum EveAttrEnum {
     AttrAimedLaunch = 644,
     AttrMissileEntityVelocityMultiplier = 645,
     AttrMissileEntityFlightTimeMultiplier = 646,
-    AttrMissileEntityArmingTimeMultiplier = 647,
+    AttrMissileEntityArmingTimeMultiplier = 647,        // no types use this
     AttrShieldTUNEBonus = 648,
     AttrCloakingCpuNeedBonus = 649,
     AttrMaxStructureDistance = 650,

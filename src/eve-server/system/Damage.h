@@ -82,7 +82,7 @@ public:
     }
 
     SystemEntity*           srcSE;     //we do not own this.
-    uint16                  effectID;
+    uint16                  effectID;   // why is this here?
     InventoryItemRef        weaponRef;
     InventoryItemRef        chargeRef;    // May be null.
 

@@ -199,7 +199,8 @@ ItemType::ItemType(
   m_mass(_data.mass),
   m_volume(_data.volume),
   m_capacity(_data.capacity),
-  m_raceID(_data.race)
+  m_raceID(_data.race),
+  m_defaultID(0)
 {
     // assert for data consistency
     assert(_data.groupID == _group.id());
@@ -235,7 +236,7 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Blueprint: {
             return BlueprintType::_LoadType<BlueprintType>(typeID, group, data );
         }
-        case EVEDB::invCategories::Ship: 
+        case EVEDB::invCategories::Ship:
         case EVEDB::invCategories::Accessories:  // clone, voucher, outpost improvement/upgrade, plex
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Celestial:
@@ -344,8 +345,10 @@ void ItemType::LoadEffects()
     sFxDataMgr.GetTypeEffect(m_id, typeEffMap);
 
     for (auto cur : typeEffMap) {
-        Effect mEffect = sFxDataMgr.GetEffect(cur.effectID);
-        m_stateFxMap.insert(std::pair<int8, Effect>(mEffect.effectState, mEffect));
+        Effect mEffect(sFxDataMgr.GetEffect(cur.effectID));
+        m_stateFxMap.emplace(mEffect.effectState, mEffect);
+        if (cur.isDefault)
+            m_defaultID = cur.effectID;
     }
 }
 

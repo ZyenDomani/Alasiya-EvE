@@ -14,7 +14,7 @@
 
 // bulkdata version
 #define bulkDataBranch          4
-//  bulkDataChangeID yyyymmddr
+//  bulkDataChangeID rddmmyyyy
 //  where r=revision, dd=day, mm=month, yyyy=year
 #define bulkDataChangeID        201042020
 
@@ -30,11 +30,13 @@
 
 #define minEveMarketGroup       0
 #define maxStaticChannel        1000
-#define maxDustMarketGroup      399999
+#define minJunkyardID           1000
+#define maxJunkyardID           1999
 #define minBMFolder             100000
 #define maxBMFolder             300000
 #define maxEveMarketGroup       350000
 #define minDustMarketGroup      350001
+#define maxDustMarketGroup      399999
 #define minFaction              500000
 #define maxFaction              999999
 #define minNPCCorporation       1000000

@@ -69,7 +69,7 @@ m_customInfo(_data.customInfo)
     // placeholder for fx timestamp, once implemented
     m_timestamp = 0;
 
-    _log(ITEM__TRACE, "Created Generic Item %p for item %s (%u).", this, m_itemName.c_str(), m_itemID);
+    _log(ITEM__TRACE, "II::C'tor - Created Generic Item %p for item %s (%u).", this, m_itemName.c_str(), m_itemID);
 }
 
 InventoryItem::~InventoryItem() noexcept
@@ -141,7 +141,7 @@ uint32 InventoryItem::CreateItemID(ItemData &data) {
     // obtain type of new item
     const ItemType *iType = sItemFactory.GetType(data.typeID);
     if (iType == nullptr) {
-        codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
+        codelog(ITEM__ERROR, "II::CreateItemID() - Invalid type returned for typeID %u", data.typeID);
         return 0;
     }
     // fix the name (if empty)
@@ -150,7 +150,7 @@ uint32 InventoryItem::CreateItemID(ItemData &data) {
 
     if (data.locationID == 0)
         if (is_log_enabled(ITEM__TRACE)) {
-            _log(ITEM__MESSAGE, "LocationID = 0 for item");
+            _log(ITEM__MESSAGE, "II::CreateItemID() - LocationID = 0 for item");
             EvE::traceStack();
         }
 
@@ -158,10 +158,11 @@ uint32 InventoryItem::CreateItemID(ItemData &data) {
     return ItemDB::NewItem(data);
 }
 
-/* This Spawn function is meant for in-memory only items created from the following categorys...
+/* This Spawn function is meant for in-memory only items created from the following categories...
  *  EVEDB::invCategories::Entity (for npcs)
  *  EVEDB::invCategories::Charge (for launched missiles only)
  *  EVEDB::invCategories::Container (for Position Tracking only)
+ *  all dungeon/anomaly items
  *
  * these items meant to never be saved to database
  * and be thrown away on server shutdown.
@@ -172,16 +173,17 @@ uint32 InventoryItem::CreateTempItemID(ItemData &data) {
     // this also checks that the type is valid
     const ItemType *iType = sItemFactory.GetType(data.typeID);
     if (iType == nullptr) {
-        codelog(ITEM__ERROR, "Invalid ItemType returned for typeID %u", data.typeID);
+        codelog(ITEM__ERROR, "II::CreateTempItemID() - Invalid ItemType returned for typeID %u", data.typeID);
         return 0;
     }
 
-    // fix the name (if empty)
+    // fix the name if empty
     if (data.name.empty())
         data.name = iType->name();
 
     // Get a new Entity ID from ItemFactory's ID Authority:
-    if (iType->categoryID() == EVEDB::invCategories::Entity) // may need more testing to verify that ONLY NPC's and jetcan markers use this method
+    // may need more testing to verify that ONLY NPC's and jetcan markers use this method
+    if (iType->categoryID() == EVEDB::invCategories::Entity)
         return sItemFactory.GetNextNPCID();
 
     if (data.flag == EVEItemFlags::flagMissile)
@@ -192,7 +194,7 @@ uint32 InventoryItem::CreateTempItemID(ItemData &data) {
 
 bool InventoryItem::_Load() {
     if (!pAttributeMap->Load()) {
-        _log(ITEM__WARNING, "%s (%u): Failed to load attribute map.", m_itemName.c_str(), m_itemID);
+        _log(ITEM__WARNING, "II::_Load() - Failed to load attribute map for %s(%u).", m_itemName.c_str(), m_itemID);
         return false;
     }
 
@@ -343,12 +345,12 @@ RefPtr<_Ty> InventoryItem::_LoadItem(uint32 itemID, const ItemType &type, const 
                     _log(ITEM__WARNING, "item %u (type %u, group %u) defaulting to generic InventoryItem.", itemID, type.id(), type.groupID());
                 } break;
                 default: {
-                    _log(ITEM__WARNING, "item %u (type %u, group %u,  cat %u) is not handled in InventoryItem::_LoadItem::Entity.", itemID, type.id(), type.groupID(), type.categoryID());
+                    _log(ITEM__WARNING, "item %u (type %u, group %u,  cat %u) is not handled in II::_LoadItem::Entity.", itemID, type.id(), type.groupID(), type.categoryID());
                 }
             }
         }
         default: {
-            _log(ITEM__WARNING, "item %u (type %u, group %u,  cat %u) is not handled in InventoryItem::_LoadItem.", itemID, type.id(), type.groupID(), type.categoryID());
+            _log(ITEM__WARNING, "item %u (type %u, group %u,  cat %u) is not handled in II::_LoadItem.", itemID, type.id(), type.groupID(), type.categoryID());
         } break;
     }
     // Generic item, create one:
@@ -368,7 +370,7 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
     // obtain type of new item
     const ItemType *iType = sItemFactory.GetType(data.typeID);
     if (iType == nullptr) {
-        codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
+        codelog(ITEM__ERROR, "II::Spawn() - Invalid type returned for typeID %u", data.typeID);
         return InventoryItemRef(nullptr);
     }
 
@@ -393,7 +395,7 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
         case EVEDB::invCategories::Accessories: // this is for bookmark vouchers
         case EVEDB::invCategories::Asteroid:  // ore is "asteroid" also.....i forgot about that
         case EVEDB::invCategories::Reaction: {
-            _log(ITEM__WARNING, "InventoryItem::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
+            _log(ITEM__WARNING, "II::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID(data);
             return InventoryItem::SpawnItem(itemID, data);
@@ -503,7 +505,7 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             return stationRef;
             } else if (iType->groupID() == EVEDB::invGroups::Station_Services) {
                 // this should never hit...throw error
-                codelog(INV__ERROR, "InventoryItem::Spawn called for unhandled item type %u, cat %u in locID: %u.", iType->id(), iType->categoryID(), data.locationID);
+                codelog(INV__ERROR, "II::Spawn called for unhandled item type %u, cat %u in locID: %u.", iType->id(), iType->categoryID(), data.locationID);
             }
         } break;
         case EVEDB::invCategories::Celestial: {
@@ -527,7 +529,7 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
     }
 
     // log error and return nullref for items not handled here
-    _log(ITEM__WARNING, "InventoryItem::Spawn item not handled - type %u, grp %u, cat %u.", iType->id(), iType->groupID(), iType->categoryID());
+    _log(ITEM__WARNING, "II::Spawn item not handled - type %u, grp %u, cat %u.", iType->id(), iType->groupID(), iType->categoryID());
     return InventoryItemRef(nullptr);
 }
 
@@ -547,24 +549,34 @@ void InventoryItem::RemoveItem(InventoryItemRef iRef)
 }
 
 void InventoryItem::Delete() {
-    if (!IsNPCCorp(ownerID())) {
-        //first, get out of client's sight.
-        //this also removes us from our inventory.
+    // get out of client's sight.
+    if (!IsNPCCorp(m_ownerID) and m_ownerID > 1)
         Move(0, flagAutoFit, true);
+    else {
+        // remove from current container's inventory
+        if (IsValidLocation(m_locationID)) {
+            InventoryItemRef iRef = sItemFactory.GetItem(m_locationID);
+            if (iRef.get() != nullptr)
+                iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
+            else
+                _log(ITEM__ERROR, "II::Delete() - Cant find location %u containing %s.", m_locationID, m_itemName.c_str());
+        }
     }
 
-    if (pAttributeMap != nullptr)   // should never be null, but just in case
-        pAttributeMap->Delete();
-    //take ourself out of the DB
+    // remove from DB
     ItemDB::DeleteItem(m_itemID);
-    //delete ourselves from factory cache
+    // remove from factory cache
     sItemFactory.RemoveItem(m_itemID);
 }
 
 void InventoryItem::ToVirtual(uint32 locationID)
 {
-    if (pInventory != nullptr)  // just in case
-        pInventory->RemoveItem(InventoryItemRef(this));
+    InventoryItemRef iRef = sItemFactory.GetItemContainer(m_itemID, false);
+    if (iRef.get() != nullptr) {
+        Inventory* pInv = iRef->GetMyInventory();
+        if (pInventory != nullptr)  // just in case...this isnt right...this item wont be in it's own inventory
+            pInventory->RemoveItem(InventoryItemRef(this));
+    }
     if (pAttributeMap != nullptr)   // should never be null, but just in case
         pAttributeMap->Delete();
 
@@ -614,12 +626,12 @@ void InventoryItem::Rename(std::string name)
 void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEItemFlags new_flag/*flagAutoFit*/, bool notify/*true*/)
 {
     if (!IsValidOwner(new_owner)) {
-        _log(ITEM__ERROR, "Item::Donate() - %u is invalid owner", new_owner);
+        _log(ITEM__ERROR, "II::Donate() - %u is invalid owner", new_owner);
         return;
     }
 
     if (!IsValidLocation(new_location)) {
-        _log(ITEM__ERROR, "Item::Donate() - %u is invalid location", new_location);
+        _log(ITEM__ERROR, "II::Donate() - %u is invalid location", new_location);
         return;
     }
 
@@ -637,7 +649,7 @@ void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEI
             if (iRef.get() != nullptr)
                 iRef->RemoveItem(InventoryItemRef(this));
             else
-                _log(ITEM__ERROR, "Donate(): Location %u not found. Could not remove %s from it's inventory.", m_locationID, itemName().c_str());
+                _log(ITEM__ERROR, "II::Donate() - Cant find location %u containing %s.", m_locationID, m_itemName.c_str());
         }
     }
 
@@ -652,12 +664,12 @@ void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEI
         if (iRef.get() != nullptr)
             iRef->AddItem(InventoryItemRef(this));
         else
-            _log(ITEM__ERROR, "Donate(): Location %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
+            _log(ITEM__ERROR, "II::Donate() - Cant find location %u containing %s.", m_locationID, m_itemName.c_str());
     }
 
     if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
-        _log(INV__TRACE, "InventoryItem::Donate()  Updated flag on %s(%u) from %s to %s.", \
-                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
+        _log(INV__TRACE, "II::Donate() - Updated flag on %s(%u) from %s to %s.", \
+                m_itemName.c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
 
     SaveItem();
     //ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
@@ -699,7 +711,7 @@ void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagAu
             if (iRef.get() != nullptr)
                 iRef->RemoveItem(InventoryItemRef(this));
             else
-                _log(ITEM__ERROR, "Move(): Location %u not found. Could not remove %s from it's inventory.", m_locationID, itemName().c_str());
+                _log(ITEM__ERROR, "II::Move() - Cant find location %u containing %s.", m_locationID, m_itemName.c_str());
         }
     }
 
@@ -714,13 +726,13 @@ void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagAu
             if (iRef.get() != nullptr)
                 iRef->AddItem(InventoryItemRef(this));
             else
-                _log(ITEM__ERROR, "Move(): Location %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
+                _log(ITEM__ERROR, "II::Move() - Cant find location %u to add %s.", m_locationID, m_itemName.c_str());
         }
     }
 
     if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
-        _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
-                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
+        _log(INV__TRACE, "II::Move() - Updated flag on %s(%u) from %s to %s.", \
+                m_itemName.c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
 
     if (IsTempItem(m_itemID))
         return;
@@ -741,11 +753,11 @@ void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagAu
 
 InventoryItemRef InventoryItem::Split( int32 qty, bool notify/*true*/, bool silent/*false*/) {
     if (qty < 1) {
-        _log(ITEM__ERROR, "%s(%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty);
+        _log(ITEM__ERROR, "II::Split() - %s(%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
     }
     if (!AlterQuantity(-qty, notify)) {
-        _log(ITEM__ERROR, "%s(%u): Failed to remove quantity %i during split.", m_itemName.c_str(), m_itemID, qty);
+        _log(ITEM__ERROR, "II::Split() - %s(%u): Failed to remove quantity of %i during split.", m_itemName.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
     }
 
@@ -779,13 +791,14 @@ void InventoryItem::Relocate(uint32 locID, EVEItemFlags flag) {
             if (iRef.get() != nullptr)
                 iRef->AddItem(InventoryItemRef(this));
             else
-                _log(ITEM__ERROR, "Move(): Location %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
+                _log(ITEM__ERROR, "II::Relocate(): new location %u not found for %s.",
+                        m_locationID, m_itemName.c_str());
         }
     }
 
     if ((old_flag != flag) and is_log_enabled(INV__TRACE))
-        _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
-        itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(flag));
+        _log(INV__TRACE, "II::Relocate()  Updated flag on %s(%u) from %s to %s.", \
+                m_itemName.c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(flag));
 
     if (IsValidLocation(m_locationID))
         ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
@@ -799,7 +812,6 @@ void InventoryItem::Relocate(uint32 locID, EVEItemFlags flag) {
     SendItemChange(m_ownerID, changes);   //changes is consumed
 }
 
-
 bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify/*true*/) {
     if (to_merge.get() == nullptr)
         return false;
@@ -808,7 +820,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
         throw PyException(MakeCustomError("You cannot stack assembled items."));
 
     if (m_type.id() != to_merge->typeID()) {
-        _log(ITEM__WARNING, "%s (%u): Asked to merge with %s (%u).", m_itemName.c_str(), m_itemID, to_merge->itemName().c_str(), to_merge->itemID());
+        _log(ITEM__WARNING, "II::Merge() - %s (%u): Asked to merge with %s (%u).", m_itemName.c_str(), m_itemID, to_merge->name(), to_merge->itemID());
         return false;
     }
 
@@ -817,7 +829,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
 
     // AlterQuantity will delete items with qty < 1
     if (!to_merge->AlterQuantity(-qty, notify)) {
-        _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %u.", to_merge->itemName().c_str(), to_merge->itemID(), qty);
+        _log(ITEM__ERROR, "II::Merge() - %s (%u): Failed to remove quantity %u.", to_merge->name(), to_merge->itemID(), qty);
         if (IsCharacter(m_ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
             if (pClient != nullptr)
@@ -865,12 +877,15 @@ void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAu
 }
 
 bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
-    if ((qty == 0) and !notify)
-        return true;
+    if (qty == 0) {
+        _log(ITEM__WARNING, "II::AlterQuantity() - Sent qty=0 for %s(%u)", m_itemName.c_str(), m_itemID);
+        EvE::traceStack();
+        return false;
+    }
 
     int32 new_qty = m_quantity + qty;
     if (new_qty < 0) {
-        codelog(ITEM__ERROR, "%s (%u): Tried to remove %i from stack of %i for ownerID %u.", m_itemName.c_str(), m_itemID, qty, m_quantity, m_ownerID);
+        codelog(ITEM__ERROR, "II::AlterQuantity() - %s(%u): Tried to remove %i from stack of %i for ownerID %u.", m_itemName.c_str(), m_itemID, qty, m_quantity, m_ownerID);
         // make player error msg here.....
         Delete();
         return false;
@@ -879,10 +894,10 @@ bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
     return SetQuantity(new_qty, notify);
 }
 
-bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
+bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZero/*true*/) {
     //if an object is singleton, there is only one, and it shouldn't be able to alter qty
     if (m_singleton) {
-        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i; the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
+        _log(ITEM__ERROR, "II::SetQuantity() - %s(%u): Failed to set quantity %i; the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
         // make player error msg here.....
         return false;
     }
@@ -890,17 +905,14 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
     m_quantity = qty;
 
     if (m_quantity > EVEMU_MAX_SHORT_ID) {
-        codelog(ITEM__ERROR, "%s(%u): quantity overflow", m_itemName.c_str(), m_itemID);
+        codelog(ITEM__ERROR, "II::SetQuantity() - %s(%u): quantity overflow", m_itemName.c_str(), m_itemID);
         m_quantity = EVEMU_MAX_SHORT_ID -1;
         if (IsCharacter(m_ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
             if (pClient != nullptr)
-                pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.<br>If you try to add any more to this stack, you will lose items.  This is your only warning.", itemName().c_str());
+                pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.<br>If you try to add any more to this stack, you will lose items.  This is your only warning.", m_itemName.c_str());
         }
     }
-
-    if (IsFittingSlot(m_flag) and (m_type.categoryID() == EVEDB::invCategories::Charge))
-        SetAttribute(AttrQuantity, m_quantity, notify);
 
     if (notify) {
         std::map<int32, PyRep *> changes;
@@ -908,8 +920,16 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
+    // how are we gonna do modules owned by corp here???
+    if (IsFittingSlot(m_flag) and (m_type.categoryID() == EVEDB::invCategories::Charge))
+        if (IsCharacter(m_ownerID)/* or IsPlayerCorp(m_ownerID)*/) {
+            Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+            SetAttribute(AttrQuantity, m_quantity, pClient == nullptr ? notify : pClient->IsInSpace());
+        }
+
     if (m_quantity < 1) {
-        Delete();
+        if (deleteOnZero)
+            Delete();
         return true;
     }
 
@@ -917,17 +937,6 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
         SaveItem();
 
     return true;
-}
-
-void InventoryItem::ZeroQuantity(EVEItemFlags flag) {
-    std::map<int32, PyRep *> changes;
-    changes[Inv::Update::StackSize] = PyStatic.NewZero();
-    SendItemChange(m_ownerID, changes);
-
-    m_flag = flag;
-
-    if (sConfig.world.saveOnUpdate)
-        SaveItem();
 }
 
 bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
@@ -1240,8 +1249,8 @@ void InventoryItem::SetCustomInfo(const char *ci) {
 
 void InventoryItem::SetPosition(const GPoint& pos)
 {
-    if (pos.isZero()) {
-        _log(DESTINY__TRACE, "InventoryItem::SetPosition() - %s(%u) point is zero", m_itemName.c_str(), m_itemID);
+    if (pos.isZero() and IsSolarSystem(m_locationID)) {
+        _log(DESTINY__TRACE, "II::SetPosition() - %s(%u) point is zero", m_itemName.c_str(), m_itemID);
         EvE::traceStack();
     }
 

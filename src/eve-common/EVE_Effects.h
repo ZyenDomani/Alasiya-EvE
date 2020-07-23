@@ -38,6 +38,7 @@ enum EVEEffectID {
     ecmBurst =   53,     // effects.ECMBurst
     miningLaser =   67,     // effects.miningLaser  ** this gfx is a long burst from module, with short pauses
     surveyScan =   81,     // effects.SurveyScan
+    useMissiles = 101,          // not actually an effect, but means "use charge's effectID"
     fofMissileLaunching =   104,     // effects.MissileDeployment
     turretWeaponRangeTrackingSpeedMultiplyActivate =   123,     // effects.TurretWeaponRangeTrackingSpeedMultiplyActivate
     scanStrengthBonusTarget =   124,     // effects.ScanStrengthBonusTarget
