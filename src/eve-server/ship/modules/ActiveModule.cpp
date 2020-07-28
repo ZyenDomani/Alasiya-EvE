@@ -30,6 +30,7 @@ m_targetSE(nullptr),
 m_destinyMgr(nullptr)
 {
     m_Stop = true;
+    m_usesCharge = false;
     m_needsCharge = false;
     m_needsTarget = false;
 
@@ -54,6 +55,7 @@ m_destinyMgr(nullptr)
             case EVEDB::invGroups::Tracking_Disruptor:
             // t2 mining laser can be used without charge by using default extraction rate
             case EVEDB::invGroups::Frequency_Mining_Laser: {
+                m_usesCharge = true;
                 m_needsCharge = false;
             } break;
         }
@@ -61,29 +63,45 @@ m_destinyMgr(nullptr)
 
     // this is an internal variable only.
     m_reloadTime = GetAttribute(AttrReloadTime).get_uint32();
-    // set default of 4s for turrets, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
-    if (m_needsCharge)  {
+    /* our defaults:
+     *  4s for turrets and scrips
+     *  5s for snowball and probe launchers
+     *  6s for miners and remote scripts
+     *  7s for missile launchers
+     * 10s for others.
+     */
+    if (m_needsCharge or m_usesCharge)  {
         if (m_reloadTime < 1) {
             switch (mRef->groupID()) {
+                case EVEDB::invGroups::Tracking_Link:
+                case EVEDB::invGroups::Projected_ECCM:
                 case EVEDB::invGroups::Sensor_Booster:
+                case EVEDB::invGroups::Signal_Amplifier:
+                case EVEDB::invGroups::Tracking_Enhancer:
+                case EVEDB::invGroups::Tracking_Computer:
                 case EVEDB::invGroups::Projectile_Weapon:
-                case EVEDB::invGroups::Tracking_Disruptor:{
+                case EVEDB::invGroups::Tracking_Disruptor: {
                     m_reloadTime = 4000;
                 } break;
                 case EVEDB::invGroups::Scan_Probe_Launcher:
                 case EVEDB::invGroups::Missile_Launcher_Snowball: {
                     m_reloadTime = 5000;
                 } break;
+                case EVEDB::invGroups::Remote_Sensor_Damper:
+                case EVEDB::invGroups::Remote_Sensor_Booster:
+                case EVEDB::invGroups::Frequency_Mining_Laser: {
+                    m_reloadTime = 6000;
+                } break;
+                case EVEDB::invGroups::Missile_Launcher_Bomb:
+                case EVEDB::invGroups::Missile_Launcher_Heavy:
+                case EVEDB::invGroups::Missile_Launcher_Siege:
                 case EVEDB::invGroups::Missile_Launcher_Cruise:
                 case EVEDB::invGroups::Missile_Launcher_Rocket:
-                case EVEDB::invGroups::Missile_Launcher_Siege:
-                case EVEDB::invGroups::Missile_Launcher_Standard:
-                case EVEDB::invGroups::Missile_Launcher_Heavy:
                 case EVEDB::invGroups::Missile_Launcher_Assault:
-                case EVEDB::invGroups::Missile_Launcher_Defender:
                 case EVEDB::invGroups::Missile_Launcher_Citadel:
-                case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
-                case EVEDB::invGroups::Missile_Launcher_Bomb: {
+                case EVEDB::invGroups::Missile_Launcher_Standard:
+                case EVEDB::invGroups::Missile_Launcher_Defender:
+                case EVEDB::invGroups::Missile_Launcher_Heavy_Assault: {
                     m_reloadTime = 7000;
                 } break;
                 default: {
@@ -96,8 +114,11 @@ m_destinyMgr(nullptr)
     //Clear();
     //GM_Modules = 353,
 
-    if (m_reloadTime > 0)
-        _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums", mRef->name(), mRef->itemID(), m_reloadTime);
+    if (m_reloadTime or m_usesCharge)
+        _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums. (uses charge: %s", \
+                mRef->name(), mRef->itemID(), m_reloadTime, m_usesCharge?"true":"false");
+    else
+        _log(MODULE__TRACE, "%s(%u) does not use reload time.", mRef->name(), mRef->itemID());
 
     if (!m_shipRef->HasPilot())
         return;
@@ -795,10 +816,17 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         return;
     }
 
-    if (m_ChargeState == Module::State::Loaded)
+    m_loadQty = chargeRef->quantity();
+
+    if (m_ChargeState == Module::State::Loaded) {
         m_ChargeState == Module::State::Reloading;
-    else
+        if (m_chargeRef.get() != nullptr)
+            m_loadQty += m_chargeRef->quantity();
+        // dont change chargeRef if we're just reloading. new chargeRef is deleted on merge
+    } else {
         m_ChargeState = Module::State::Loading;
+        m_chargeRef = chargeRef;
+    }
 
     if (!pClient->IsLogin()) {
         // process new charge's effects (load timer will determine if fx are applied based on existing charge)
@@ -810,10 +838,6 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
         }
         if (pClient->IsInSpace()) {
-            m_loadQty = chargeRef->quantity();
-            if (m_chargeRef.get() != nullptr)
-                m_loadQty += m_chargeRef->quantity();
-
             /*  **** this sets "reload blink" status on weapon button
              * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
              *  {returns}
@@ -834,8 +858,6 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         }
     }
 
-    m_chargeRef = chargeRef;
-
     if (!m_reloadTimer.Enabled()) {
         // apply charge effects only for empty modules (no previous charge fx)
         if (!m_chargeLoaded)
@@ -844,6 +866,9 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         // set immediately on login or when docked
         m_chargeLoaded = true;
         m_ChargeState = Module::State::Loaded;
+        // this will only hit for login and docked ships.  dont send OMAC to client
+        chargeRef->SetAttribute(AttrQuantity, m_loadQty, false);
+        m_loadQty = 0;
     }
 }
 
