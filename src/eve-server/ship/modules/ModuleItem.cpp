@@ -68,6 +68,9 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
         return;
     }
 
+    if (pClient->IsUndock())
+        return;
+
     GodmaEnvironment ge;
         ge.selfID = m_itemID;
         ge.charID = m_ownerID;
@@ -84,13 +87,13 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
         shipEff.active = online;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-    if (HasAttribute(AttrDuration)) {
+    if (HasAttribute(AttrDuration))
         shipEff.duration = (online ? GetAttribute(AttrDuration).get_float() : 0.0);
-    } else if (HasAttribute(AttrSpeed)) {
+    else if (HasAttribute(AttrSpeed))
         shipEff.duration = (online ? GetAttribute(AttrSpeed).get_float() : 0.0);
-    } else {
+    else
         shipEff.duration = 0.0;
-    }
+
         shipEff.repeat = (online ? 1 : 0);
         shipEff.error = PyStatic.NewNone();
     PyList* events = new PyList();

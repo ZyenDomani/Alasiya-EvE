@@ -130,12 +130,14 @@ void GenericModule::Online()
     ProcessEffects(FX::State::Passive, true);
     ProcessEffects(FX::State::Online, true);
     if (m_ChargeState == Module::State::Loaded) {
-        if (m_chargeRef.get() == nullptr) {
+        if (!m_chargeLoaded) {
+            _log(MODULE__ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeLoaded = false.", \
+                    itemID(), m_modRef->name());
+        } else if (m_chargeRef.get() == nullptr) {
             _log(MODULE__ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
                     itemID(), m_modRef->name());
         } else {
             _log(MODULE__MESSAGE, "GenericModule::Online() - module %u(%s) loading charge fx for %s.", itemID(), m_modRef->name(), m_chargeRef->name());
-            m_chargeLoaded = true;
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data = fxData();
                 data.action = FX::Action::Invalid;
@@ -148,7 +150,7 @@ void GenericModule::Online()
     // update available ship resources.
     m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed, !m_shipRef->IsUndocking());
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed, !m_shipRef->IsUndocking());
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), !m_shipRef->IsUndocking());
 }
 
 void GenericModule::Offline()
@@ -158,6 +160,11 @@ void GenericModule::Offline()
         SetAttribute(AttrOnline, EvilZero, !m_shipRef->IsUndocking());
         return;
     }
+
+    //if (m_shipRef->GetPilot()->GetShipSE()->IsDead()) //  SE->IsDead() for all SEs
+    if (m_shipRef->IsPopped())                          // only for player ships
+        return;
+
     switch(m_ModuleState) {
         case Module::State::Unfitted: {
             m_modRef->SetOnline(false, isRig());
@@ -169,7 +176,7 @@ void GenericModule::Offline()
             _log(MODULE__WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->name());
             return;
         }
-            // these two should only be called for activeModules...
+        // these two should only be called for activeModules...
         case Module::State::Deactivating: {
             _log(MODULE__MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",itemID(), m_modRef->name());
             if (IsActiveModule())
