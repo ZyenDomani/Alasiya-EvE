@@ -119,7 +119,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_lpMap.clear();
     m_channels.clear();
     m_hangarLoaded.clear();
-    mDogmaMessages.clear();
 
     // Start handshake
     Reset();
@@ -182,7 +181,6 @@ m_nextNotifySequence(0)
     m_lpMap.clear();
     m_channels.clear();
     m_hangarLoaded.clear();
-    mDogmaMessages.clear();
 
     sLog.Error("Client()", "Client copy c'tor called.");
     EvE::traceStack();
@@ -566,7 +564,8 @@ void Client::ProcessClient() {
                     m_clientState = Player::State::Idle;
                     // send MOTD and server data to player's 'local' chat channel
                     m_services.lsc_service->SendServerMOTD(this);
-                } break;
+                    m_ship->GetModuleManager()->UpdateChargeQty();  //  <<<< huge hack here....cant find another way to do it yet.
+                    } break;
                 case Player::State::Jump: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Jump");
                     ExecuteJump();
@@ -888,8 +887,7 @@ void Client::SetBallPark() {
             SetInvulTimer(Player::Timer::JumpInvul);
             // dont use timer method here...
             m_cloakTimer.Start(Player::Timer::JumpCloak);
-        } else
-            m_ship->GetModuleManager()->UpdateChargeQty();  //  <<<< huge hack here....cant find another way to do it yet.
+        }
     }
 }
 

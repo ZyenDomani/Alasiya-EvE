@@ -215,8 +215,6 @@ public:
     void AddStationHangar(uint32 stationID);
     void RemoveStationHangar(uint32 stationID);
 
-    double GetPropulsionStrength() const;
-
     //destiny stuff...
     void SetDockStationID(uint32 stationID)             { m_dockStationID = stationID; };
     void SetDockPoint(GPoint &pt)                       { m_dockPoint = pt; }
@@ -290,9 +288,6 @@ public:
     void QueueDestinyEvent(PyTuple** multiEvent);
     void FlushQueue();
 
-    bool ApplyDamage(Damage &d);
-    void Killed(Damage &fatal_blow);
-
     //  mission
     void RemoveMissionItem(uint16 typeID, uint32 qty);
     bool ContainsTypeQty(uint16 typeID, uint32 qty) const;
@@ -342,8 +337,6 @@ protected:
     SystemManager* m_system;    //we do not own this
 
     //void _AwardBounty(SystemEntity *who);
-    /** @todo finish this... */
-    void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
     void ExecuteJump();
     void DestroyShipSE();
 
@@ -455,14 +448,6 @@ private:
     uint32 m_nextNotifySequence;
 
     std::map<uint32, uint32>    m_lpMap;    // corpID/points
-
-    /************************************************************************/
-    /* new system for MultiEvents      (fix for docked pilot reporting)     */
-    /************************************************************************/
-    bool ScatterEvent(const char* event_name, PyRep* packet);
-
-    bool DoDestinyUpdate();
-    std::list<PyTuple*> mDogmaMessages;
 
     std::string GetStateName(int8 state);
 };

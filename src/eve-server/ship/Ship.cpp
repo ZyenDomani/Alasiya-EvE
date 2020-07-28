@@ -355,9 +355,9 @@ void ShipItem::Undock() {
     ResetEffects();
     //ProcessEffects(true, true);
 
-    // Heal Ship completely on test server
-    //if (sConfig.debug.IsTestServer)
-    //    Heal();
+    // horrible hack to set charge qty in fit window
+    // on the off-chance player opens the fit window
+    m_ModuleManager->UpdateChargeQty();
 
     // Recharge shields and cap if session change isnt active (undocking too fast)
     if (!m_pilot->IsSessionChange()) {
