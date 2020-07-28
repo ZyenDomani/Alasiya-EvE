@@ -108,11 +108,13 @@ public:
     // this will return owner's name from any type of ID...system, region, station, player item, etc.
     std::string         GetOwnerName(int32 ownerID);
 
-
     const char*         GetProcStateName(int8 state);
 
     uint32              GetWreckFaction(uint32 typeID);
 
+    // common place for *FULL* DBRowDescriptor Header creation.
+    //  this way all users are using the exact same data
+    DBRowDescriptor* CreateHeader();
 
 protected:
     void                Populate();

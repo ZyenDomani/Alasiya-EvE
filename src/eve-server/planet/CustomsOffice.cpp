@@ -531,14 +531,6 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
         GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
-    DropLoot(wreckItemRef, m_self->groupID(), killerID);
-    // add wreck to system's AnomalyMgr
-    m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
-
-    if (survivedItems.size())
-        for (auto cur: survivedItems)
-            cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
-
     DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = killer->GetAllianceID();
         wreckEntity.categoryID = EVEDB::invCategories::Celestial;
@@ -557,4 +549,9 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         return;
     }
     m_destiny->SendJettisonPacket();
+
+    DropLoot(wreckItemRef, m_self->groupID(), killerID);
+
+    for (auto cur: survivedItems)
+        cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
 }

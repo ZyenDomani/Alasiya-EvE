@@ -218,7 +218,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
-    _log(INV__MESSAGE, "InventoryBound::MultiMerge() called by %s(%u)", m_self->name(), m_itemID);
+    _log(INV__MESSAGE, "IB::MultiMerge() called by %s(%u)", m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
     //Decode Args
     Call_MultiMerge args;
@@ -271,12 +271,12 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
  */
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     if (is_log_enabled(INV__DUMP)) {
-        _log(INV__DUMP, "InventoryBound::Handle_Add() size= %u", call.tuple->size());
+        _log(INV__DUMP, "IB::Handle_Add() size= %u", call.tuple->size());
         call.Dump(INV__DUMP);
     }
 
     if (call.tuple->items.size() != 2) {
-        _log(INV__ERROR, "InventoryBound::Handle_Add()  Unexpected number of elements in tuple: %u (should be 2).", call.tuple->items.size() );
+        _log(INV__ERROR, "IB::Handle_Add()  Unexpected number of elements in tuple: %u (should be 2).", call.tuple->items.size() );
         return nullptr;
     }
 
@@ -291,7 +291,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         toFlag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
     if (toFlag == flagLocked) {
         // corp role 'equip config' can move locked items (per client)
-        _log(INV__ERROR, "InventoryBound::Handle_Add() - item %u from %u sent flagLocked.  continuing but this needs to be fixed.", \
+        _log(INV__ERROR, "IB::Handle_Add() - item %u from %u sent flagLocked.  continuing but this needs to be fixed.", \
                 args.itemID, args.containerID);
         toFlag = flagCargoHold;
     }
@@ -307,7 +307,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         // split stack, move original ref, leave remainder here with new item
         InventoryItemRef newItem = iRef->Split(iRef->quantity() -quantity);
         if (newItem.get() == nullptr) {
-            _log(INV__ERROR, "InventoryBound::Handle_Add() - Error splitting item %u. Skipping.", iRef->itemID());
+            _log(INV__ERROR, "IB::Handle_Add() - Error splitting item %u. Skipping.", iRef->itemID());
             return nullptr;
         }
         iRef = newItem;
@@ -328,7 +328,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     if (quantity < 1)
         quantity = 1;
 
-    _log(INV__MESSAGE, "InventoryBound::Handle_Add() - moving %u %s(%u) from (%u:%s) to me(%s:%u:%s).", \
+    _log(INV__MESSAGE, "IB::Handle_Add() - moving %u %s(%u) from (%u:%s) to me(%s:%u:%s).", \
             quantity, iRef->name(), args.itemID, args.containerID, sDataMgr.GetFlagName(iRef->flag()),\
             m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
@@ -341,12 +341,12 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 // this call is for moving items to *THIS* inventory
 PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     if (is_log_enabled(INV__DUMP)) {
-        _log(INV__DUMP, "InventoryBound::Handle_MultiAdd() size= %u", call.tuple->size());
+        _log(INV__DUMP, "IB::Handle_MultiAdd() size= %u", call.tuple->size());
         call.Dump(INV__DUMP);
     }
 
     if (call.tuple->items.size() != 2) {
-        _log(INV__ERROR, "InventoryBound::Handle_MultiAdd()  Unexpected number of elements in tuple: %u (should be 2).", call.tuple->items.size() );
+        _log(INV__ERROR, "IB::Handle_MultiAdd()  Unexpected number of elements in tuple: %u (should be 2).", call.tuple->items.size() );
         return nullptr;
     }
 
@@ -391,7 +391,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         args.itemIDs = CatSortItems(itemVec);
     }
 
-    _log(INV__MESSAGE, "InventoryBound::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
+    _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag), m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
     return MoveItems( call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, moveStack, capacity);
@@ -408,7 +408,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         // specific container-type categories that may move items in/out
         case EVEDB::invCategories::Trading: {
             // this shouldnt hit.  trading is handled in separate system
-            codelog(INV__ERROR, "InventoryBound::MoveItems() - Trading Category called.");
+            codelog(INV__ERROR, "IB::MoveItems() - Trading Category called.");
             EvE::traceStack();
         } break;
         case EVEDB::invCategories::Structure: {
@@ -506,7 +506,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
         iRef = sItemFactory.GetItem(*itr);
         if (iRef.get() == nullptr) {
-            _log(INV__ERROR, "InventoryBound::MoveItems() - item %i not found.  continuing.", (*itr));
+            _log(INV__ERROR, "IB::MoveItems() - item %i not found.  continuing.", (*itr));
             continue;
         }
 
@@ -526,7 +526,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             if (quantity < 1)
                 quantity = iRef->quantity();    // assume all.
         } else if (quantity < 1) {
-            _log(INV__ERROR, "InventoryBound::MoveItems() - Quantity < 1.  Setting quantity = 1.");
+            _log(INV__ERROR, "IB::MoveItems() - Quantity < 1.  Setting quantity = 1.");
             quantity = 1;
         }
 
@@ -571,16 +571,16 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         if (!moveStack and (quantity < iRef->quantity())) {
             InventoryItemRef newItem = iRef->Split(quantity);
             if (newItem.get() == nullptr) {
-                _log(INV__ERROR, "InventoryBound::MoveItems() - Error splitting item %u. Skipping.", iRef->itemID());
+                _log(INV__ERROR, "IB::MoveItems() - Error splitting item %u. Skipping.", iRef->itemID());
                 continue;
             }
             iRef = newItem;
             if (iRef.get() == nullptr) {
-                _log(INV__ERROR, "InventoryBound::MoveItems() - Error getting split item. Skipping.");
+                _log(INV__ERROR, "IB::MoveItems() - Error getting split item. Skipping.");
                 continue;
             }
             if (iRef->quantity() > quantity) {
-                _log(INV__ERROR, "InventoryBound::MoveItems() - Split item %u qty(%u) > requested qty of %u.  Continuing.", \
+                _log(INV__ERROR, "IB::MoveItems() - Split item %u qty(%u) > requested qty of %u.  Continuing.", \
                             iRef->itemID(), iRef->quantity(), quantity);
             }
         }
@@ -619,7 +619,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 if (contRef.get() != nullptr)
                     contRef->AddItem(iRef);
                 else
-                    _log(INV__ERROR, "InventoryBound::MoveItems() - previous container for item %i not found.  continuing.", (*itr));
+                    _log(INV__ERROR, "IB::MoveItems() - previous container for item %i not found.  continuing.", (*itr));
                 continue;
             }
         } else if (customs) {
@@ -688,7 +688,7 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
 
     if (sConfig.debug.IsTestServer)
         if (sConfig.debug.UseProfiling)
-            sLog.Warning("InventoryBound::CatSortItems", "%u items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
+            sLog.Warning("IB::CatSortItems", "%u items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
 
     return items;  //returns sorted list
 }
@@ -714,6 +714,10 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
         if (flag != arg.flag)
             flag = (EVEItemFlags)arg.flag;
     }
+
+    _log(INV__MESSAGE, "IB::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
+            call.client->GetName(), ownerID, m_self->name(), m_itemID, sDataMgr.GetFlagName(flag), \
+            (m_passive ? ":passive" : ""), sDataMgr.GetFlagName(oldFlag));
 
     // check for owner type of this inventory for reference checks
     if (IsOffice(m_itemID)) {
@@ -761,9 +765,6 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
         ; // calling char is not member of corp.  send error?
 }
 */
-    _log(INV__MESSAGE, "InventoryBound::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
-            call.client->GetName(), ownerID, m_self->name(), m_itemID, sDataMgr.GetFlagName(flag), \
-            (m_passive ? ":passive" : ""), sDataMgr.GetFlagName(oldFlag));
 
     return pInventory->List(flag, ownerID);
 }
@@ -797,7 +798,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
     }
 
     if ( args.bmIDs->size() < 1 ) {
-        sLog.Error( "InventoryBound::Handle_CreateBookmarkVouchers()", "%s: args.bmIDs->size() == 0.  Expected size > 0.", call.client->GetName() );
+        sLog.Error( "IB::Handle_CreateBookmarkVouchers()", "%s: args.bmIDs->size() == 0.  Expected size > 0.", call.client->GetName() );
     } else {
         BookmarkDB m_db;
         PyList::const_iterator itr = args.bmIDs->begin();

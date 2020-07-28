@@ -99,8 +99,8 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
      * 01:16:27 [ScanTrace] ScanBound::Handle_ConeScan() - size= 5
      * 01:16:27 [ScanDump]   Call Arguments:
      * 01:16:27 [ScanDump]      Tuple: 5 elements
-     * 01:16:27 [ScanDump]       [ 0]       Real: 6.283185      <- ScanAngle
-     * 01:16:27 [ScanDump]       [ 1]    Integer: 10000000      <- range
+     * 01:16:27 [ScanDump]       [ 0]       Real: 6.283185      <- ScanAngle in rads
+     * 01:16:27 [ScanDump]       [ 1]    Integer: 10000000      <- range in m
      * 01:16:27 [ScanDump]       [ 2]       Real: 0.000000      <- x
      * 01:16:27 [ScanDump]       [ 3]       Real: 0.000000      <- y
      * 01:16:27 [ScanDump]       [ 4]       Real: -1.000000     <- z

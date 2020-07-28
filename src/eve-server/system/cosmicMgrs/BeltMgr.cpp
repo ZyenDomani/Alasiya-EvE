@@ -68,7 +68,8 @@ void BeltMgr::ClearBelt(uint16 bubbleID)
 }
 
 void BeltMgr::ClearAll() {
-    Save();
+    // disabled till i get roid uid right
+    //Save();
     for (auto cur : m_asteroids) {
         m_system->RemoveEntity(cur.second);
         //cur.second->Delete();

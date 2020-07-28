@@ -147,7 +147,6 @@ void SystemEntity::Killed(Damage& fatal_blow)
         // remove TargMgr here to avoid redundant calls upon object deletion
         SafeDelete(m_targMgr);
     }
-    m_killed = true;
     Delete();
 }
 

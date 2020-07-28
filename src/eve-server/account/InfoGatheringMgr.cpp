@@ -56,7 +56,7 @@ PyResult InfoGatheringMgr::Handle_GetStateAndConfig(PyCallArgs &call) {
     rsp->SetItemString("infoTypesOncePerRun", new PyNone());
     rsp->SetItemString("infoTypeParameters", new PyNone());
 
-    PyList *infoTypes = new PyList;
+    PyList *infoTypes = new PyList();
     infoTypes->AddItemInt(999); //Adding a value that was not in live so when its checks list it will always return false for now.
 
     rsp->SetItemString("infoTypes", new PyObjectEx_Type1( new PyToken("__builtin__.set"), new_tuple(infoTypes)));

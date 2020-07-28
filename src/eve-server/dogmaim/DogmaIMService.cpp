@@ -215,7 +215,10 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
         return PyStatic.NewNone();
     }
 
-    return itemRef->ItemGetInfo();
+    PyObject* obj = itemRef->ItemGetInfo();
+    if (is_log_enabled(ITEM__DEBUG))
+        obj->Dump(ITEM__DEBUG, "    ");
+    return obj;
 }
 
 PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {

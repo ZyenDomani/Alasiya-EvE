@@ -31,6 +31,7 @@
 #include "EntityList.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
+#include "StaticDataMgr.h"
 #include "account/AccountService.h"
 #include "station/TradeService.h"
 #include "system/SystemManager.h"
@@ -478,16 +479,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
 
 PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
     TradeSession* pTSes = call.client->GetTradeSession();
-    DBRowDescriptor* header = new DBRowDescriptor;
-        header->AddColumn( "itemID",     DBTYPE_I8 );
-        header->AddColumn( "typeID",     DBTYPE_I4 );
-        header->AddColumn( "ownerID",    DBTYPE_I4 );
-        header->AddColumn( "locationID", DBTYPE_I8 );
-        header->AddColumn( "flagID",     DBTYPE_I2 );
-        header->AddColumn( "quantity",   DBTYPE_I4 );
-        header->AddColumn( "groupID",    DBTYPE_I2 );
-        header->AddColumn( "categoryID", DBTYPE_I4 );
-        header->AddColumn( "customInfo", DBTYPE_STR );
+    DBRowDescriptor* header = sDataMgr.CreateHeader();
     PyPackedRow* row = new PyPackedRow( header );
         row->SetField( "itemID",        new PyLong(pTSes->m_tradeSession.containerID));
         row->SetField( "typeID",        new PyInt(53));     // type Trade Window
@@ -513,17 +505,7 @@ PyResult TradeBound::Handle_List(PyCallArgs &call) {
     TradeSession* pTSes = call.client->GetTradeSession();
     PyList* list = new PyList();
 
-    DBRowDescriptor* header = new DBRowDescriptor;
-        header->AddColumn( "itemID",     DBTYPE_I8 );
-        header->AddColumn( "typeID",     DBTYPE_I4 );
-        header->AddColumn( "ownerID",    DBTYPE_I4 );
-        header->AddColumn( "locationID", DBTYPE_I8 );
-        header->AddColumn( "flagID",     DBTYPE_I2 );
-        header->AddColumn( "stacksize",  DBTYPE_I4 );
-        header->AddColumn( "groupID",    DBTYPE_I2 );
-        header->AddColumn( "singleton",  DBTYPE_BOOL );
-        header->AddColumn( "categoryID", DBTYPE_I4 );
-        header->AddColumn( "customInfo", DBTYPE_STR );
+    DBRowDescriptor* header = m_TSvc->CreateHeader();
     for (auto itr : pTSes->m_tradelist) {
         PyPackedRow* row = new PyPackedRow( header );
             row->SetField( "itemID",        new PyLong(itr.itemID));

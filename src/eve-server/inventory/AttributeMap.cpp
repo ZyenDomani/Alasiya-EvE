@@ -309,6 +309,12 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
         }
     }
 
+    if (IsCharacter(mItem.ownerID())) {
+        Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
+        if (pClient->IsDocked())
+            return true;
+    }
+
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
 
@@ -360,6 +366,12 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
             _log(ITEM__CHANGE, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
                     attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
         }
+    }
+
+    if (IsCharacter(mItem.ownerID())) {
+        Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
+        if (pClient->IsDocked())
+            return true;
     }
 
     Notify_OnModuleAttributeChange modChange;

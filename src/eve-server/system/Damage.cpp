@@ -288,6 +288,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         if (m_killed)
             return true;
 
+        m_killed = true;
+
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
 
@@ -428,10 +430,6 @@ void ShipSE::Killed(Damage &fatal_blow) {
             _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                     GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
-        DropLoot(wreckItemRef, m_self->groupID(), killerID);
-        // add wreck to system's AnomalyMgr
-        m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
-
         DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
@@ -448,8 +446,13 @@ void ShipSE::Killed(Damage &fatal_blow) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
             ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
             wreckItemRef->Delete();
+            return;
         }
+
         m_destiny->SendJettisonPacket();
+        // wreck was created successfully.  drop loot and add to wreck.
+        DropLoot(wreckItemRef, m_self->groupID(), killerID);
+
         return;
     }
 
@@ -616,14 +619,6 @@ void ShipSE::Killed(Damage &fatal_blow) {
             _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
             GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
-        DropLoot(wreckItemRef, groupID, killerID);
-
-        // add wreck to system's AnomalyMgr
-        m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
-
-        for (auto cur: survivedItems)
-            cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
-
         DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
@@ -635,10 +630,16 @@ void ShipSE::Killed(Damage &fatal_blow) {
             wreckEntity.ownerID = pPilot->GetCharacterID();
             wreckEntity.typeID = wreckTypeID;
             wreckEntity.position = wreckPosition;
+
         if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
             wreckItemRef->Delete();
             return;
         }
+
+        DropLoot(wreckItemRef, groupID, killerID);
+
+        for (auto cur: survivedItems)
+            cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
     }
 }

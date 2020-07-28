@@ -31,6 +31,7 @@
 
 #include "EntityList.h"
 #include "PyServiceCD.h"
+#include "StaticDataMgr.h"
 #include "inventory/InvBrokerService.h"
 #include "inventory/InventoryBound.h"
 #include "station/StationDataMgr.h"
@@ -110,21 +111,7 @@ PyResult InvBrokerService::Handle_GetItemDescriptor(PyCallArgs &call) {
 	/**
             self.__itemhdr = sm.RemoteSvc('invbroker').GetItemDescriptor()
             */
-
-    PyList* keywords = new PyList();
-        keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
-        keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
-    DBRowDescriptor* header = new DBRowDescriptor(keywords);
-        header->AddColumn( "itemID",     DBTYPE_I8 );
-        header->AddColumn( "typeID",     DBTYPE_I4 );
-        header->AddColumn( "ownerID",    DBTYPE_I4 );
-        header->AddColumn( "locationID", DBTYPE_I8 );
-        header->AddColumn( "flagID",     DBTYPE_I2 );
-        header->AddColumn( "quantity",   DBTYPE_I4 );
-        header->AddColumn( "groupID",    DBTYPE_I2 );
-        header->AddColumn( "categoryID", DBTYPE_I4 );
-        header->AddColumn( "customInfo", DBTYPE_STR );
-    return header;
+    return sDataMgr.CreateHeader();
 }
 
 InvBrokerService::~InvBrokerService() {

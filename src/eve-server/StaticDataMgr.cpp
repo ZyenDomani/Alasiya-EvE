@@ -926,6 +926,23 @@ return {10000001: (500019,),
     */
 }
 
+DBRowDescriptor* StaticDataMgr::CreateHeader() {
+    PyList *keywords = new PyList();
+        keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
+        keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
+    DBRowDescriptor* header = new DBRowDescriptor(keywords);
+        header->AddColumn("itemID",     DBTYPE_I8);
+        header->AddColumn("typeID",     DBTYPE_I4);
+        header->AddColumn("ownerID",    DBTYPE_I4);
+        header->AddColumn("locationID", DBTYPE_I4);
+        header->AddColumn("flagID",     DBTYPE_I2);
+        header->AddColumn("quantity",   DBTYPE_I4);
+        header->AddColumn("groupID",    DBTYPE_I2);
+        header->AddColumn("categoryID", DBTYPE_I4);
+        header->AddColumn("customInfo", DBTYPE_STR);
+    return header;
+}
+
 PyDict* StaticDataMgr::GetBPMatlData(uint16 typeID)
 {
     auto itr = m_bpMatlData.find(typeID);
@@ -957,7 +974,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     PyList* matlListInvent = new PyList();
     PyList* skillListInvent = new PyList();
 
-    DBRowDescriptor* header = new DBRowDescriptor;
+    DBRowDescriptor* header = new DBRowDescriptor();
         header->AddColumn( "quantity",          DBTYPE_I4 );
         header->AddColumn( "requiredTypeID",    DBTYPE_I4 );
         header->AddColumn( "damagePerJob",      DBTYPE_R4 );

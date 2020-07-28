@@ -1,30 +1,14 @@
 /*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
+ *  ModuleManager.cpp
+ *
+ *      this class manages all aspects of modules and charges loaded in ships
+ *
+ * Author: Allan
+ * Started: 30Mar16
+ *
+ *      loosely based on original evemu code by Aknor Jaden and Luck
+ */
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Aknor Jaden, Luck
-    Rewrite:    Allan
-*/
-
-/* updates to implement basic memory management (remove naked 'new')  -allan 30Mar16 */
 
 #include "eve-server.h"
 
@@ -115,8 +99,8 @@ bool ModuleManager::Initialize() {
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
-                    _log(MODULE__TRACE, "MM::Initialize() - ship %s loading %s(%u) to %s.",\
-                            pShipItem->name(), cur->name(), cur->itemID(), sDataMgr.GetFlagName(cur->flag()));
+                    _log(MODULE__TRACE, "MM::Initialize() - loading %s(%u) to %s.",\
+                            cur->name(), cur->itemID(), sDataMgr.GetFlagName(cur->flag()));
                     ModuleItemRef mRef = ModuleItemRef::StaticCast(cur);
                     AddModule(mRef, cur->flag());
                 } break;
@@ -129,8 +113,15 @@ bool ModuleManager::Initialize() {
                         // put that bitch back in cargo
                         cur->SetFlag(flagCargoHold);
                     } else {
-                        _log(MODULE__TRACE, "MM::Initialize() - ship %s loading %s(%u) at %s with %s(%u).",\
-                                pShipItem->name(), pMod->GetSelf()->name(), pMod->GetSelf()->itemID(), \
+                        if (pMod->IsLoaded()) {
+                            _log(MODULE__TRACE, "MM::Initialize() - %s at %s is already loaded.  Moving %s to cargo.",\
+                                    pMod->GetSelf()->name(), sDataMgr.GetFlagName(cur->flag()), cur->name());
+                            // put that bitch back in cargo
+                            cur->SetFlag(flagCargoHold);
+                            continue;
+                        }
+                        _log(MODULE__TRACE, "MM::Initialize() - loading %s(%u) at %s with %s(%u).",\
+                                pMod->GetSelf()->name(), pMod->GetSelf()->itemID(), \
                                 sDataMgr.GetFlagName(cur->flag()), cur->name(), cur->itemID());
                         pMod->LoadCharge(cur);
                         //cur->SetQuantity(cur->quantity());    //OIC
@@ -350,6 +341,8 @@ void ModuleManager::UninstallRig(uint32 itemID)
         return;
     }
 
+    _log(MODULE__TRACE, "%s(%u) calling MM::UninstallRig()", pMod->GetSelf()->name(), pMod->itemID());
+
     pMod->Offline();
 
     if (pMod->groupID() == EVEDB::invGroups::Rig_Electronics) {
@@ -441,16 +434,16 @@ void ModuleManager::UnfitModule(uint32 itemID)
         return;
     }
 
+    _log(MODULE__TRACE, "%s(%u) calling MM::UnfitModule(itemID)", pMod->GetSelf()->name(), pMod->itemID());
+
     pMod->AbortCycle();
-    pMod->Offline();
+    if (pMod->IsLoaded())
+         UnloadCharge(pMod);
 
     if (pMod->IsLinked())
         pShipItem->UnlinkGroup(itemID, true);
 
-    //{'FullPath': u'UI/Messages', 'messageID': 260011, 'label': u'CannotRemoveModuleWithLoadedChargesBody'}(u'You cannot remove a module while it is still loaded with charges.', None, None)
-    //{'FullPath': u'UI/Messages', 'messageID': 258471, 'label': u'CannotRemoveActivatedModuleBody'}(u'You cannot remove a module while it is still activated.', None, None)
-    if (pMod->IsLoaded())
-         UnloadCharge(pMod);
+    pMod->Offline();
 
     deleteModuleRef(pMod->flag(), pMod);
     // delete the GenericModule object (but not the ModuleItem object)
@@ -464,16 +457,16 @@ void ModuleManager::UnfitModule(EVEItemFlags flag) {
         return;
     }
 
+    _log(MODULE__TRACE, "%s(%u) calling MM::UnfitModule(flag)", pMod->GetSelf()->name(), pMod->itemID());
+
     pMod->AbortCycle();
-    pMod->Offline();
+    if (pMod->IsLoaded())
+        UnloadCharge(pMod);
 
     if (pMod->IsLinked())
         pShipItem->UnlinkGroup(pMod->itemID(), true);
 
-    //{'FullPath': u'UI/Messages', 'messageID': 260011, 'label': u'CannotRemoveModuleWithLoadedChargesBody'}(u'You cannot remove a module while it is still loaded with charges.', None, None)
-    //{'FullPath': u'UI/Messages', 'messageID': 258471, 'label': u'CannotRemoveActivatedModuleBody'}(u'You cannot remove a module while it is still activated.', None, None)
-    if (pMod->IsLoaded())
-        UnloadCharge(pMod);
+    pMod->Offline();
 
     deleteModuleRef(flag, pMod);
     // delete the GenericModule object (but not the ModuleItem object)
@@ -513,7 +506,7 @@ bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
             pMod->Online();
 
     // verify module's singleton flag is set
-    mRef->ChangeSingleton(true, true);
+    mRef->ChangeSingleton(true, pShipItem->HasPilot()?pShipItem->GetPilot()->IsInSpace():false);
 
     return true;
     /*
@@ -725,8 +718,8 @@ void ModuleManager::Overload(uint32 itemID)
         _log(MODULE__ERROR, "MM::Overload() - Called on module %u that is not loaded.", itemID);
         return;
     }
-    pMod->Overload();
     _log(MODULE__TRACE, "MM::Overload() - %s Overloading...", pMod->GetSelf()->name());
+    pMod->Overload();
 }
 
 void ModuleManager::DeOverload(uint32 itemID)
@@ -736,8 +729,8 @@ void ModuleManager::DeOverload(uint32 itemID)
         _log(MODULE__ERROR, "MM::DeOverload() - Called on module %u that is not loaded.", itemID);
         return;
     }
-    pMod->DeOverload();
     _log(MODULE__TRACE, "MM::DeOverload() - %s DeOverload...", pMod->GetSelf()->name());
+    pMod->DeOverload();
 }
 
 void ModuleManager::DamageModule(uint32 itemID, float amount)
@@ -906,32 +899,36 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         return;
 
     if (loadQty < chargeRef->quantity()) {
-        chargeRef = chargeRef->Split(loadQty, false);
+        chargeRef = chargeRef->Split(loadQty, false, true);
         if (chargeRef.get() == nullptr) {
             // make error here?
             return;
         }
-    }
+    } else
+        loadQty = chargeRef->quantity();
 
-    /* while in space, loaded charges are set in a "SubLocation" in client.
+    /* loaded charges are set in a "SubLocation" in client.
      * they then become a nullItem, with only type and qty references.
-     * the sublocation is identified as an itemKey(shipID, flagID, typeID)
-     * all updates for that charge (which seems to be only attrib changes), are referenced to that itemKey as itemID(tuple)
-     * when sending charge item change with locationID or flagID, client will correctly add as sublocation when in space
+     * the sublocation is identified as a tuple of itemKey(shipID, flagID, typeID)
+     * all updates for that charge (which seems to be only attrib changes), are referenced using it's itemKey
+     * when sending charge item change with locationID or flagID, client will correctly add as sublocation
+     *    when in space, but only for the first update.  subsusquent changes need to use OnModuleAttributeChange (OMAC)
      *
-     * when docked, it appears charges are real items and using itemID(uint32) and not the SubLocation/itemKey format
-     *
+     * when docked, List() sends charges as invItem, and client doesnt process that as a sublocation.  (OMAC method)
+     * because of this, OMAC isn't used when docked, and OnItemChange (OIC) is the process client will correctly process.
      */
-    chargeRef->Move(pShipItem->itemID(), flag, true);
-    if (loaded)
-        loadQty += pMod->GetLoadedChargeRef()->quantity();
-    chargeRef->SetAttribute(AttrQuantity, loadQty, false);
 
+    // this will enable module loading blink if ship in space, even on reload/fillup
     pMod->LoadCharge(chargeRef);
 
-    if (!loaded) {
-        // if module wasnt previously loaded, add to ship inventory and charge map
-        pShipItem->AddItem(chargeRef);
+    if (loaded) {
+        //  merge addt'l charges with currently loaded charges (fillup)
+        pMod->GetLoadedChargeRef()->Merge(chargeRef, loadQty, false);
+    } else {
+        // if module wasnt previously loaded, add to ship's inventory and charge map
+        chargeRef->Move(pShipItem->itemID(), flag, pShipItem->HasPilot());
+        chargeRef->SetQuantity(loadQty);
+        //pShipItem->AddItem(chargeRef);
         m_charges.emplace(flag, chargeRef);
     }
 }
@@ -963,35 +960,24 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
 
     pMod->UnloadCharge();
 
-    /* to trigger client to remove and clear out a loaded charge, send a qty=0 update using either
-     *  OnModuleAttributeChange thru Godma when in space or OnItemChange thru InventoryItem when docked
-     */
-
     // if charge is depleted, update has already been sent to client thru OMAC
     if (chargeRef->quantity() < 1)
         return;
 
-    // in case we're merging into existing stack, get current qty
-    int16 qty(chargeRef->quantity());
+    // at this point, we are changing a loaded charge.  remove charge from module, check for stacking, update client.
+    /* to trigger client to remove and clear out a loaded charge, send a qty=0 update using either
+     *  OnModuleAttributeChange thru Godma when in space or OnItemChange thru InventoryItem when docked
+     */
 
-    if (IsSolarSystem(pShipItem->locationID()))
-        chargeRef->SetAttribute(AttrQuantity, EvilZero);    // OMAC
-    //else
-    //    chargeRef->SetQuantity(0, true, false);         // OIC
-        //  ^^^ this isnt working right when docked.  use Delete() or Merge() instead to remove item
-
-    // at this point, we are removing a loaded charge, so add amount to existing (merge) or make new stack
     if (IsStation(pShipItem->locationID())) {
         StationItemRef sRef = sEntityList.GetStationByID(pShipItem->locationID());
         if (sRef.get() != nullptr) {
             InventoryItemRef iRef = sRef->GetMyInventory()->GetByTypeFlag(chargeRef->typeID(), flagHangar);
             if (iRef.get() != nullptr) {
                 // merge with existing item
-                iRef->AlterQuantity(qty, true);
-                //iRef->Merge(chargeRef);
-                // quietly modify charge to prevent client notifications upon deletion
-                chargeRef->ChangeOwner(1);
-                chargeRef->Delete();
+                iRef->Merge(chargeRef);         // OIC  preferred
+                //iRef->AlterQuantity(chargeRef->quantity() + iRef->quantity(), true);
+                //chargeRef->SetQuantity(0, true);         // OIC alternate
                 return;
             } else
                 chargeRef->Relocate(pShipItem->locationID(), flagHangar);
@@ -1002,6 +988,7 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
             chargeRef->Relocate(pShipItem->locationID(), flagHangar);
         }
     } else {
+        chargeRef->SetAttribute(AttrQuantity, EvilZero);    // OMAC
         /*
         EVEItemFlags flag = flagCargoHold;
         // check for existence of ammohold...not yet.  only one ship has it (cockroach)
@@ -1015,11 +1002,10 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
             InventoryItemRef iRef = pShipItem->GetMyInventory()->GetByTypeFlag(chargeRef->typeID(), flagCargoHold);
             if (iRef.get() != nullptr) {
                 // merge with existing item
-                iRef->AlterQuantity(qty, true);
-                //iRef->Merge(chargeRef);
-                // quietly modify charge to prevent client notifications upon deletion
-                chargeRef->ChangeOwner(1);
+                // in case we're merging into existing stack, get current qty
+                int16 qty(chargeRef->quantity());
                 chargeRef->Delete();
+                iRef->AlterQuantity(qty, true);
                 return;
             }
 
@@ -1030,8 +1016,6 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
             if (pShipItem->HasPilot())
                 pShipItem->GetPilot()->SendNotifyMsg("Your cargo is full, so your %s was jettisoned and lost.", chargeRef->name());
 
-            // quietly modify charge to prevent client notifications upon deletion
-            //chargeRef->ChangeOwner(1);
             chargeRef->Delete();
         }
     }
@@ -1048,29 +1032,33 @@ InventoryItemRef ModuleManager::GetLoadedChargeOnModule(InventoryItemRef moduleR
     return GetLoadedChargeOnModule(moduleRef->flag());
 }
 
-void ModuleManager::UnloadModule(uint32 itemID)
-{
+void ModuleManager::UnloadModule(uint32 itemID) {
     GenericModule* pMod = GetModule(itemID);
     if (pMod == nullptr) {
         _log(MODULE__ERROR, "MM::UnloadModule() - module not found for %u", itemID);
         return;
     }
 
+    _log(MODULE__TRACE, "%s(%u) calling MM::UnloadModule(item)", pMod->GetSelf()->name(), pMod->itemID());
+
     UnloadCharge(pMod);
 }
 
-void ModuleManager::UnloadModule(EVEItemFlags flag)
-{
+void ModuleManager::UnloadModule(EVEItemFlags flag) {
     GenericModule* pMod = GetModule(flag);
     if (pMod == nullptr) {
         _log(MODULE__ERROR, "MM::UnloadModule() - module not found at %s", sDataMgr.GetFlagName(flag));
         return;
     }
 
+    _log(MODULE__TRACE, "%s(%u) calling MM::UnloadModule(flag)", pMod->GetSelf()->name(), pMod->itemID());
+
     UnloadCharge(pMod);
 }
 
 void ModuleManager::UnloadModule(GenericModule* pMod) {
+    _log(MODULE__TRACE, "%s(%u) calling MM::UnloadModule(mod)", pMod->GetSelf()->name(), pMod->itemID());
+
     UnloadCharge(pMod);
 }
 
@@ -1553,6 +1541,5 @@ void ModuleManager::UpdateChargeQty() {
     for (auto cur : m_charges) {
         cur.second->AlterQuantity(+1, false);
         cur.second->AlterQuantity(-1, false);
-        //cur.second->SetQuantity(cur.second->quantity(), true);        //changes charges from itemKey to itemID
     }
 }

@@ -82,7 +82,7 @@ public:
     InventoryItemRef GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit);
 
     /* Primary packet builders */
-    CRowSet* List( EVEItemFlags flag, uint32 ownerID = 0 ) const;
+    CRowSet* List(EVEItemFlags flag, uint32 ownerID = 0) const;
 
     /* for station shit */
     void GetInvForOwner(uint32 ownerID, std::vector<InventoryItemRef> &items);
@@ -92,7 +92,7 @@ public:
 
 protected:
     bool GetItems(OwnerData od, std::vector< uint32 >& into);
-    void List( CRowSet* into, EVEItemFlags flag, uint32 ownerID = 0 ) const;
+    void List(CRowSet* into, EVEItemFlags flag, uint32 ownerID=0) const;
 
     InventoryDB m_db;
     InventoryItemRef m_self;

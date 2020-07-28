@@ -144,7 +144,8 @@ public:
     virtual void            Delete();  //totally removes item from game and deletes from the DB.
     // makes new stack of 'qty', then returns ref of new stack, or null if failed
     // notify=true will update client for qty change and new stack
-    virtual InventoryItemRef Split(int32 qty, bool notify=true, bool silent=false);     // combines stacks of identical typeIDs
+    virtual InventoryItemRef Split(int32 qty, bool notify=true, bool silent=false);
+    // combines stacks of identical typeIDs
     virtual bool            Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
     // same as Move() but doesnt remove item from previous location
     // used for moving charges to/from ship without calling Remove()

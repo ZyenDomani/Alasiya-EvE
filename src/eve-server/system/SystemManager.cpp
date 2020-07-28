@@ -274,6 +274,13 @@ void SystemManager::UnloadSystem() {
     // inform MarketBot of system unloading to remove system stations from proc loop.
     //sMktBotMgr.RemoveSystem();
 
+    // system is being unloaded.  pay bounties now
+    PayBounties();
+    // unload belts, which saves and removes roids from system
+    m_beltMgr->ClearAll();
+    // close anomaly mgr, which saves and removes sigs from system
+    m_anomMgr->Close();
+
     // remove static and dynamic entities
     //  not removing ship items and solar system object from ItemFactory.
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
@@ -336,13 +343,6 @@ void SystemManager::UnloadSystem() {
 
     // set system inactive for system status page
     MapDB::SetSystemActive(m_data.systemID, false);
-
-    // system is being unloaded.  pay bounties now
-    PayBounties();
-    // unload belts, which saves and removes roids from system
-    m_beltMgr->ClearAll();
-    // close anomaly mgr, which saves and removes sigs from system
-    m_anomMgr->Close();
 
     /** @todo finish this for lsc */
     m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);
@@ -531,8 +531,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             ShipItemRef ship = sItemFactory.GetShip( entity.itemID );
             if (ship.get() == nullptr)
                 return nullptr;
-            // add abandoned ship to system's AnomalyMgr
-            sysMgr.GetAnomMgr()->AddAnomaly(ship);
             /** @todo make error msg here */
             ShipSE* sSE = new ShipSE(ship, *(sysMgr.GetServiceMgr()), &sysMgr, data);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ShipSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -543,8 +541,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             if (deployable.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
-            // add deployable to system's AnomalyMgr
-            sysMgr.GetAnomMgr()->AddAnomaly(deployable);
             deployable->SetAttribute(AttrRadius, deployable->type().radius());     // Can you set this somehow from the type class ?
             DeployableSE* dSE = new DeployableSE(deployable, *(sysMgr.GetServiceMgr()), &sysMgr, data);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DeployableSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -557,8 +553,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             if (structure.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
-            // add structure to system's AnomalyMgr
-            sysMgr.GetAnomMgr()->AddAnomaly(structure);
             StructureSE* pSSE(nullptr);
             switch(entity.groupID) {
                 case EVEDB::invGroups::Control_Tower: {
@@ -619,8 +613,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             if (structure.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
-            // add structure to system's AnomalyMgr
-            sysMgr.GetAnomMgr()->AddAnomaly(structure);
             // ihub will need it's own se class
             //if (entity.groupID == EVEDB::invGroups::Infrastructure_Hubs)
             StructureSE* sSE = new StructureSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
@@ -661,8 +653,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                     if (wreck.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    // add wreck to system's AnomalyMgr
-                    sysMgr.GetAnomMgr()->AddAnomaly(wreck);
                     WreckSE* wSE = new WreckSE(wreck, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     wreck->GetMyInventory()->LoadContents();
                     wreck->SetMySE(wSE);
@@ -678,8 +668,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                     if (contRef.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    // add container to system's AnomalyMgr
-                    sysMgr.GetAnomMgr()->AddAnomaly(contRef);
                     ContainerSE* cSE = new ContainerSE(contRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     contRef->GetMyInventory()->LoadContents();
                     contRef->SetMySE(cSE);
@@ -713,8 +701,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                     if (celestial.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    // add celestial to system's AnomalyMgr
-                    sysMgr.GetAnomMgr()->AddAnomaly(celestial);
                     CelestialSE* cSE = new CelestialSE(celestial, *(sysMgr.GetServiceMgr()), &sysMgr);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making CelestialSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return cSE;
@@ -724,8 +710,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                     if (celestial.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    // add celestial to system's AnomalyMgr
-                    sysMgr.GetAnomMgr()->AddAnomaly(celestial);
                     WormholeSE* wSE = new WormholeSE(celestial, *(sysMgr.GetServiceMgr()), &sysMgr);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WormholeSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return wSE;
@@ -736,8 +720,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                     if (celestial.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    // add celestial to system's AnomalyMgr
-                    sysMgr.GetAnomMgr()->AddAnomaly(celestial);
                     AnomalySE* aSE = new AnomalySE(celestial, *(sysMgr.GetServiceMgr()), &sysMgr);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making AnomalySE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return aSE;
@@ -818,8 +800,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 if (sentryRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */
-                // add sentry to system's AnomalyMgr
-                sysMgr.GetAnomMgr()->AddAnomaly(sentryRef);
                 Sentry* SentrySE = new Sentry(sentryRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making SentrySE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return SentrySE;
@@ -840,8 +820,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             if (drone.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
-            // add drone to system's AnomalyMgr
-            sysMgr.GetAnomMgr()->AddAnomaly(drone);
             Drone* dSE = new Drone(drone, *(sysMgr.GetServiceMgr()), &sysMgr, data);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DroneSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
@@ -998,6 +976,8 @@ void SystemManager::AddEntity(SystemEntity* pSE) {
         //AddItemToInventory( pSE->GetSelf() );
     }
     sBubbleMgr.Add(pSE);
+    // add item to our AnomalyMgr
+    m_anomMgr->AddSignal(pSE->GetSelf());
 }
 
 void SystemManager::RemoveEntity(SystemEntity* pSE) {
@@ -1020,7 +1000,7 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     m_staticEntities.erase(itemID);
 
     // remove from anomaly map, if exists
-    m_anomMgr->RemoveAnomaly(itemID);
+    m_anomMgr->RemoveSignal(itemID);
 }
 
 void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/) {
@@ -1277,7 +1257,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     into.droneState = pBubble->GetDroneState(); //SystemDB::GetSolDroneState( m_data.systemID );
 
     /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */
-    DBRowDescriptor* header = new DBRowDescriptor;
+    DBRowDescriptor* header = new DBRowDescriptor();
         header->AddColumn( "itemID",     DBTYPE_I8 );
         header->AddColumn( "typeID",     DBTYPE_I4 );
         header->AddColumn( "ownerID",    DBTYPE_I4 );

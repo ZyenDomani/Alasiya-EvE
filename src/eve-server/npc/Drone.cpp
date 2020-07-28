@@ -146,7 +146,6 @@ void Drone::Launch(ShipSE* pShipSE) {
     m_controllerOwnerID = pShipSE->GetOwnerID();
 
     m_system->AddEntity(this);
-    m_system->GetAnomMgr()->AddAnomaly(m_self);
 
     assert (m_bubble != nullptr);
 }
@@ -399,9 +398,6 @@ void Drone::Killed(Damage &fatal_blow) {
     if (is_log_enabled(PHYSICS__TRACE))
         _log(PHYSICS__TRACE, "Drone::Killed() - Drone %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
         GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
-
-    // add wreck to system's AnomalyMgr
-    m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
 
     DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());

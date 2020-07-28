@@ -751,7 +751,7 @@ void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagAu
     }
 }
 
-InventoryItemRef InventoryItem::Split( int32 qty, bool notify/*true*/, bool silent/*false*/) {
+InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*true*/, bool silent/*false*/) {
     if (qty < 1) {
         _log(ITEM__ERROR, "II::Split() - %s(%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
@@ -766,7 +766,9 @@ InventoryItemRef InventoryItem::Split( int32 qty, bool notify/*true*/, bool sile
     if (iRef.get() == nullptr)
         return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
 
-    if (!silent)
+    if (silent)
+        iRef->ChangeOwner(ownerSystem); // this will negate charge item change sending later
+    else
         iRef->Move(m_locationID, m_flag, notify);
 
     return iRef;
@@ -964,6 +966,14 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     bool old_singleton = m_singleton;
     m_singleton = singleton;
 
+    //verify quantity is -1 for singletons
+    if (m_singleton)
+        if (m_quantity > 1) {
+            _log(ITEM__WARNING, "%s(%u) is changing singleton to %s and qty is currently %u", \
+                    m_itemName.c_str(), m_itemID, singleton?"On":"Off");
+            m_quantity = -1;
+        }
+
     if (sConfig.world.saveOnUpdate)
         SaveItem();
 
@@ -1063,13 +1073,12 @@ void InventoryItem::SaveItem()
     pAttributeMap->Save();
 }
 
-void InventoryItem::UpdateLocation()
-{
+void InventoryItem::UpdateLocation() {
     ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
 }
 
 PyPackedRow* InventoryItem::GetItemStatusRow() const {
-    DBRowDescriptor* header = new DBRowDescriptor;
+    DBRowDescriptor* header = new DBRowDescriptor();
         header->AddColumn("instanceID",    DBTYPE_I8);
         header->AddColumn("online",        DBTYPE_BOOL);
         header->AddColumn("damage",        DBTYPE_R8);
@@ -1096,7 +1105,7 @@ void InventoryItem::GetItemStatusRow(PyPackedRow* into ) const {
 
 /*  charge info for specific module  */
 PyPackedRow* InventoryItem::GetChargeStatusRow(uint32 shipID) const {
-    DBRowDescriptor* header = new DBRowDescriptor;
+    DBRowDescriptor* header = new DBRowDescriptor();
         header->AddColumn("instanceID", DBTYPE_I8);
         header->AddColumn("flagID",     DBTYPE_I2);
         header->AddColumn("typeID",     DBTYPE_I4);
@@ -1115,21 +1124,7 @@ void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
 
 PyPackedRow* InventoryItem::GetItemRow() const
 {
-    PyList *keywords = new PyList();
-        keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
-        keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
-
-    DBRowDescriptor* header = new DBRowDescriptor(keywords);
-        header->AddColumn("itemID",     DBTYPE_I8);
-        header->AddColumn("typeID",     DBTYPE_I4);
-        header->AddColumn("ownerID",    DBTYPE_I4);
-        header->AddColumn("locationID", DBTYPE_I4);
-        header->AddColumn("flagID",     DBTYPE_I2);
-        header->AddColumn("quantity",   DBTYPE_I4);
-        header->AddColumn("groupID",    DBTYPE_I2);
-        header->AddColumn("categoryID", DBTYPE_I4);
-        header->AddColumn("customInfo", DBTYPE_STR);
-
+    DBRowDescriptor* header = sDataMgr.CreateHeader();
     PyPackedRow* row = new PyPackedRow(header);
     GetItemRow(row);
 
@@ -1143,15 +1138,15 @@ void InventoryItem::GetItemRow(PyPackedRow* into ) const
         if (sItemFactory.GetBlueprint(m_itemID)->copy())
             qty = -2;
 
-    into->SetField("itemID",       new PyLong(m_itemID ));
-    into->SetField("typeID",       new PyInt(m_type.id() ));
-    into->SetField("ownerID",      new PyInt(m_ownerID ));
-    into->SetField("locationID",   new PyInt(m_locationID ));
-    into->SetField("flagID",       new PyInt(m_flag ));
-    into->SetField("quantity",     new PyInt(qty ));
-    into->SetField("groupID",      new PyInt(type().groupID() ));
-    into->SetField("categoryID",   new PyInt(type().categoryID() ));
-    into->SetField("customInfo",   new PyString(m_customInfo ));
+    into->SetField("itemID",       new PyLong(m_itemID));
+    into->SetField("typeID",       new PyInt(m_type.id()));
+    into->SetField("ownerID",      new PyInt(m_ownerID));
+    into->SetField("locationID",   new PyInt(m_locationID));
+    into->SetField("flagID",       new PyInt(m_flag));
+    into->SetField("quantity",     new PyInt(qty));
+    into->SetField("groupID",      new PyInt(type().groupID()));
+    into->SetField("categoryID",   new PyInt(type().categoryID()));
+    into->SetField("customInfo",   new PyString(m_customInfo));
 }
 
 bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )

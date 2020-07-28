@@ -102,6 +102,22 @@ PyResult FactionWarMgrService::Handle_GetWarFactions(PyCallArgs &call) {
 
 PyResult FactionWarMgrService::Handle_GetFWSystems( PyCallArgs& call )
 {
+    /*
+      [PySubStream 3625 bytes]
+        [PyDict 171 kvp]
+          [PyInt 30002813]
+          [PyDict 2 kvp]
+            [PyString "occupierID"]
+            [PyInt 500001]
+            [PyString "factionID"]
+            [PyInt 500001]
+          [PyInt 30005295]
+          [PyDict 2 kvp]
+            [PyString "occupierID"]
+            [PyInt 500004]
+            [PyString "factionID"]
+            [PyInt 500004]
+            */
     ObjectCachedMethodID method_id( GetName(), "GetFacWarSystems" );
 
     if( !m_manager->cache_service->IsCacheLoaded( method_id ) )

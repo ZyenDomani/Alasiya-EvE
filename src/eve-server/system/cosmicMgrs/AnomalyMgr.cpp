@@ -420,64 +420,19 @@ GPoint AnomalyMgr::GetAnomalyPos(std::string& sigID)
 }
 
 
-void AnomalyMgr::AddAnomaly(InventoryItemRef iRef, uint32 id/*0*/)
+void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
 {
     if (!m_initalized)
         return;
 
-    // registration method for pos items, wrecks and abandoned ships
-    // creation method for missions, escalations and ??
-    /*
-     * namespace Scanning {
-     * //  -allan 7Jul14
-     *    namespace Group {
-     *        enum {
-     *            Scrap         = 1,      //wrecks in system (filter only)
-     *            Signature     = 4,      //advanced anomaly.  need probes to scan
-     *            Ship          = 8,      //ships
-     *            Structure     = 16,     //all pos structures
-     *            DroneOrProbe  = 32,     //player items
-     *            Celestial     = 64,     //includes belts and forcefields  (filter only)
-     *            Anomaly       = 128     //detected using ship sensors
-     *        };
-     *    }
-     * }
+    /** @todo finish this once probe scanning is completed.
      *
-     * these are used to determine groupName in scan results.
-     * -- from client --
-     *  exploration = result.sigGroupID in anomaly, signature
-     *  if certainty > probeResultGood (0.25)
-     *      if exploration
-     *          result.groupName = self.GetExplorationSiteType(result.strengthAttributeID)
-     *      else
-     *          result.groupName = result.groupID.name
-     *      if certainty > probeResultInformative (0.75)
-     *          if exploration
-     *              result.typeName = result.dungeonName
-     *          else
-     *              result.typeName = result.typeID.name or "Cosmic Anomaly"
-     *
-     *  these 5 defined in GetExplorationSiteType()
-     *     AttrScanRadarStrength = 208,            //Radar Site (scanning/exploration)
-     *     AttrScanLadarStrength = 209,            //Ladar Site (scanning/exploration)
-     *     AttrScanMagnetometricStrength = 210,    //Magnetometric Site (scanning/exploration)
-     *     AttrScanGravimetricStrength = 211,      //Gravimetric Site (scanning/exploration)
-     *     AttrScanAllStrength = 1136,             //Unknown Site  (scanning/exploration)
-     *
-     *     AttrScanStrengthSignatures = 1117,
-     *     AttrScanStrengthDronesProbes = 1118,
-     *     AttrScanStrengthScrap = 1119,
-     *     AttrScanStrengthShips = 1120,
-     *     AttrScanStrengthStructures = 1121,
-     *     AttrScanGenericStrength = 1169,      // not used
-     *     AttrScanWormholeStrength = 1908,         // not used
-     *
-     *  sig groups defined as sig, anom, ship, structure, drone
-     *    these are also the 5 filter groups
-     *
+     * ALL items sent here by SysMgr.
+     * AnomMgr will determine what is added and it's base sigStrength.
+     * this ist sill WIP.
      */
 
-    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::AddAnomaly() - adding %s to anomaly list.", iRef->itemName().c_str());
+    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::AddSignal() - adding %s to anomaly list.", iRef->itemName().c_str());
 
     //  WIP....see Scan.xmlp and EVE_Scanning.h for client data
 
@@ -490,13 +445,13 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef, uint32 id/*0*/)
             sig.sigID = sEntityList.GetAnomalyID();
         sig.sigItemID = iRef->itemID();
         sig.sigName = iRef->itemName();
-        sig.sigStrength = 100.0;    // determine how to calculate this
+        sig.sigStrength = 100.0;    // this will be calculated in switch() block below...
         sig.systemID = m_system->GetID();
         sig.position = iRef->position();
 
     // if scanGroupID is anom or sig, use scanAttributeID to determine site type (in client code)
     // scanGroupID must be one of the 5 groups coded in client (sig, anom, ship, drone, structure)
-    // scanGroupID of sig and anom are cached on client side
+    // scanGroupID of sig and anom are cached on client side (min time is 5m)
     switch (iRef->categoryID()) {
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure:
@@ -550,9 +505,9 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef, uint32 id/*0*/)
 
 }
 
-void AnomalyMgr::RemoveAnomaly(uint32 itemID)
+void AnomalyMgr::RemoveSignal(uint32 itemID)
 {
-    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::RemoveAnomaly() - removing %u from anomaly list.", itemID);
+    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::RemoveSignal() - removing %u from anomaly list.", itemID);
     // for sigs in map
     std::map<uint32, CosmicSignature>::iterator itr = m_sigByItemID.find(itemID);
     if (itr != m_sigByItemID.end()) {
