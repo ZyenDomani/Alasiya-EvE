@@ -73,7 +73,7 @@
 #define bulkDataBranch          4
 //  bulkDataChangeID rddmmyyyy
 //  where r=revision, dd=day, mm=month, yyyy=year
-#define bulkDataChangeID        201042020
+#define bulkDataChangeID        107232020
 
 //  define number of rentable offices in stations (config option later?)
 //  this replaces the hard-coded count previously used in station.h
