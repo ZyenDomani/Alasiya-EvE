@@ -9,7 +9,7 @@
 dont send Online(16) for rigs....
     - StartEffect: Online Effect being started on a type that doesn't have it 140023442 31213 16
 
-    
+
 
 noob ships do not Init() correctly....  most attrs are 0
 
@@ -80,6 +80,11 @@ error:
 *******************************************************
 ********  improvements
 
+go thru and verify all uses of itemDescriptor header/packet follow the outline in GetItemDescriptor
+
+pypacket building isnt completely right....some things dont need to be that deep.
+some returns are put instead of substruct, and others dont have the 2 tuples that follow substruct.
+no clue on criteria or exactly what goes where yet.
 
 go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
 
