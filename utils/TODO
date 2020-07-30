@@ -300,7 +300,6 @@ market system....this needs a lot of attention
     - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client
 
 InvBrokerService needs love
-    IBB::List() incomplete
 mapservice  needs love
 CharMgrService  needs love
 notificationMgr  needs love
@@ -536,7 +535,7 @@ move *data calls from inventoryDB into static data mgr  -priority level: low
 GetChar()->HasShares())  // not written, no underlying code yet
 
 InventoryBound  incomplete
-  Handle_List()
+  Handle_List()  -- this will need lots of work for t3 ships and corp usage
   ListDroneBay()
   SetPassword()
   RunRefiningProcess()
