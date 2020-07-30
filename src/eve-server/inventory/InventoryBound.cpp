@@ -701,8 +701,16 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     if (pInventory == nullptr)
         return PyStatic.NewNone();
 
+    _log(INV__DUMP, "IB::List() dump.");
+    call.Dump(INV__DUMP);
+
     uint32 ownerID = m_ownerID;
-    // this item was originally bound to this flag, but can send specific flag on rare occasions...not sure of criteria
+    /* this item was originally bound to this flag, but can send specific flag on occasion
+     * usually flag is set for subLocation, shipHangar, POS items, and CCHold
+        def GetSubSystemInFlag(self, shipID, flagID):
+            items = shipInv.List(flagID)
+     */
+
     EVEItemFlags flag = m_flag, oldFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
         flag = (EVEItemFlags)PyRep::IntegerValueU32(call.byname.find("flag")->second);
@@ -727,6 +735,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
             ; // calling char is not member of corp.  send error?
     } else if (IsPlayerItem(m_itemID)) {
         // this is probably a ship calling for all items
+        //  is also used for t3 ships, POS, subLocations, and possibly others that are 'player items'
         flag = flagAnywhere;
         /*
     } else if (IsPlayerCorp(m_itemID)) {
@@ -853,6 +862,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_TakeOutTrash(PyCallArgs &call) {
     //TakeOutTrash([ invItem.itemID for invItem in invItems ])
+    sLog.Error("IB::TakeOutTrash", "Character '%s', self: '%s'(%u)", call.client->GetName(), m_self->name(), m_itemID);
     _log(INV__MESSAGE, "%s Calling InventoryBound::TakeOutTrash() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
     return nullptr;
@@ -865,6 +875,8 @@ PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_ListDroneBay(PyCallArgs &call) {
+    // i dont think this one is used....
+    sLog.Error("IB::ListDroneBay", "Character '%s', self: '%s'(%u)", call.client->GetName(), m_self->name(), m_itemID);
     _log(INV__MESSAGE, "%s Calling InventoryBound::ListDroneBay() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
     return nullptr;

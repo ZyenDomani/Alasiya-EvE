@@ -142,9 +142,9 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void            Delete();  //totally removes item from game and deletes from the DB.
-    // makes new stack of 'qty', then returns ref of new stack, or null if failed
-    // notify=true will update client for qty change and new stack
-    virtual InventoryItemRef Split(int32 qty, bool notify=true, bool silent=false);
+    // makes new stack of 'qty', then returns ref of new stack and update client for qty change
+    // notify=true will update client for the new stack.  failure will return nullptr
+    virtual InventoryItemRef Split(int32 qty=0, bool notify=true, bool silent=false);
     // combines stacks of identical typeIDs
     virtual bool            Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
     // same as Move() but doesnt remove item from previous location

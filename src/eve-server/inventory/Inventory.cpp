@@ -271,7 +271,8 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
     } else if (m_self->categoryID() == EVEDB::invCategories::Ship) {
         bool space = IsSolarSystem(m_self->locationID());
         for (auto cur : mContents) {
-            // module charges not sent like this in space
+            // this also fills module/charges in fit window when docked.
+            //  charges not sent like this in space (uses subLocation sent via shipInfo())
             if (space and IsFittingSlot(cur.second->flag()))
                 if (cur.second->categoryID() == EVEDB::invCategories::Charge)
                     continue;

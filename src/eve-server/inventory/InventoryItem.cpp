@@ -379,22 +379,22 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             assert(0);  // this needs to make a serious error here....these CANNOT be called from here using the generic InventoryItem::Spawn() method
         } break;
         //! TODO not handled....use generic item
+        case EVEDB::invCategories::Bonus:               // no clue what this is
+        case EVEDB::invCategories::Implant:
+        case EVEDB::invCategories::Trading:
+        case EVEDB::invCategories::Asteroid:            // ore is "asteroid" also
+        case EVEDB::invCategories::Material:            // includes minerals
+        case EVEDB::invCategories::Reaction:
+        case EVEDB::invCategories::Commodity:
+        case EVEDB::invCategories::Accessories:         // this is for bookmark vouchers
+        case EVEDB::invCategories::AncientRelics:       // t3 bpc from sleepers
+        // these *may* need their own class
         case EVEDB::invCategories::Subsystem:
         case EVEDB::invCategories::Decryptors:
         case EVEDB::invCategories::StructureUpgrade:
-            // these next 3 *may* need their own class
         case EVEDB::invCategories::PlanetaryInteraction:
         case EVEDB::invCategories::PlanetaryResources:
-        case EVEDB::invCategories::PlanetaryCommodities:
-        case EVEDB::invCategories::Material:    // includes minerals
-        case EVEDB::invCategories::Trading:
-        case EVEDB::invCategories::Bonus:
-        case EVEDB::invCategories::Commodity:
-        case EVEDB::invCategories::Implant:
-        case EVEDB::invCategories::AncientRelics:   // t3 bpc from sleepers
-        case EVEDB::invCategories::Accessories: // this is for bookmark vouchers
-        case EVEDB::invCategories::Asteroid:  // ore is "asteroid" also.....i forgot about that
-        case EVEDB::invCategories::Reaction: {
+        case EVEDB::invCategories::PlanetaryCommodities: {
             _log(ITEM__WARNING, "II::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID(data);
@@ -427,7 +427,7 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
                     uint32 itemID = InventoryItem::CreateItemID(data);
                     return InventoryItem::SpawnItem(itemID, data);
                 } break;
-                case EVEDB::invGroups::Sentry_Gun:
+                case EVEDB::invGroups::Sentry_Gun:      // these are not saved
                 case EVEDB::invGroups::Temporary_Cloud:
                 default: {  // *should*  be all npcs
                     // use temp items and NOT save to db.
@@ -437,11 +437,10 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             }
         } break;
         case EVEDB::invCategories::Drone: {
-            if (!sConfig.testing.EnableDrones) {
-                // disable drones
+            if (!sConfig.testing.EnableDrones)
                 return InventoryItemRef(nullptr);
-            }
-        }   // allow fallthru if drones are enabled  - may need specific DroneItem later.
+            //return DroneItem::Spawn(data);
+        } // allow fallthru until DroneItem is written
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Deployable: {
             // Spawn generic item:
@@ -751,7 +750,7 @@ void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagAu
     }
 }
 
-InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*true*/, bool silent/*false*/) {
+InventoryItemRef InventoryItem::Split(int32 qty/*0*/, bool notify/*true*/, bool silent/*false*/) {
     if (qty < 1) {
         _log(ITEM__ERROR, "II::Split() - %s(%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
@@ -766,9 +765,9 @@ InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*true*/, bool silen
     if (iRef.get() == nullptr)
         return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
 
-    if (silent)
-        iRef->ChangeOwner(ownerSystem); // this will negate charge item change sending later
-    else
+    if (!silent)
+        //iRef->ChangeOwner(ownerSystem); // this will negate charge item change sending later
+    //else
         iRef->Move(m_locationID, m_flag, notify);
 
     return iRef;

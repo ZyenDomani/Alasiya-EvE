@@ -60,7 +60,6 @@ public:
         PyCallable_REG_CALL(InvBrokerBound, GetInventory);
         PyCallable_REG_CALL(InvBrokerBound, SetLabel);
         PyCallable_REG_CALL(InvBrokerBound, TrashItems);
-        PyCallable_REG_CALL(InvBrokerBound, List);
         PyCallable_REG_CALL(InvBrokerBound, AssembleCargoContainer);
         PyCallable_REG_CALL(InvBrokerBound, BreakPlasticWrap);
         PyCallable_REG_CALL(InvBrokerBound, TakeOutTrash);
@@ -81,7 +80,6 @@ public:
     PyCallable_DECL_CALL(GetInventory);
     PyCallable_DECL_CALL(SetLabel);
     PyCallable_DECL_CALL(TrashItems);
-    PyCallable_DECL_CALL(List);
     PyCallable_DECL_CALL(AssembleCargoContainer);
     PyCallable_DECL_CALL(BreakPlasticWrap);
     PyCallable_DECL_CALL(TakeOutTrash);
@@ -151,13 +149,13 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
     }
     if (item->ownerID() == call.client->GetCharacterID())
         _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is owned by calling character %s(%u) ", \
-                    item->itemName().c_str(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
+                    item->name(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
     else if ((item->ownerID() != call.client->GetCharacterID()) and IsSolarSystem(args.arg2))
         _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is in space and not owned by calling character %s(%u) ", \
-                    item->itemName().c_str(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
+                    item->name(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
     else {
         _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is not owned by calling character %s(%u) ", \
-                    item->itemName().c_str(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
+                    item->name(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
         if (call.client->CanThrow())
             throw PyException(MakeUserError("CantDoThatWithSomeoneElsesStuff"));
     }
@@ -197,6 +195,8 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
         // send error to player?
         return nullptr;
     }
+
+    // this can send locationID as named arg.  not sure if we need it, possible test cases (usually stationID)
 
     // use container's owner as ownerID
     uint32 ownerID = iRef->ownerID();
@@ -278,8 +278,6 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
     //we just bind up a new inventory object for container requested and give it back to them.
     InventoryBound* ib = new InventoryBound(m_manager, iRef, flag, ownerID, passive);
     PyRep* result = m_manager->BindObject(call.client, ib);
-
-    // returns nodeid and timestamp
     return result;
 }
 
@@ -406,7 +404,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     if (IsPlayerCorp(iRef->ownerID())) {
         if (iRef->ownerID() != call.client->GetCorporationID()) {
             _log(INV__ERROR, "%u(%u) tried to rename CorpItem %s(%u) owned by %u.", \
-                    call.client->GetName(), call.client->GetCharacterID(), iRef->itemName().c_str(), \
+                    call.client->GetName(), call.client->GetCharacterID(), iRef->name(), \
                     iRef->itemID(), iRef->ownerID());
             call.client->SendErrorMsg("You are not allowed to rename that.");
             return nullptr;
@@ -414,7 +412,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     } else if (IsCharacter(iRef->ownerID())) {
         if (iRef->ownerID() != call.client->GetCharacterID()) {
             _log(INV__ERROR, "%u(%u) tried to rename PlayerItem %s(%u) owned by %u.", \
-                    call.client->GetName(), call.client->GetCharacterID(), iRef->itemName().c_str(), \
+                    call.client->GetName(), call.client->GetCharacterID(), iRef->name(), \
                     iRef->itemID(), iRef->ownerID());
             call.client->SendErrorMsg("You are not allowed to rename that.");
             return nullptr;
@@ -468,25 +466,6 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
 /**     ***********************************************************************
  * @note   these do absolutely nothing at this time....
  */
-
-PyResult InvBrokerBound::Handle_List(PyCallArgs &call) {
-/**
-        inv = invCache.GetInventoryFromId(activeShipID, locationID=session.stationid2)
-        shipCargo = inv.List()
-
-        inv = sm.GetService('invCache').GetInventoryFromId(self.containerID)
-        for item in inv.List(const.flagSpecializedMaterialBay)  <-- for customs gantry upgrade
-
-        shipInv = sm.GetService('invCache').GetInventoryFromId(session.shipid)
-        invList = shipInv.List(const.flagSpecializedCommandCenterHold)
-        invList.extend(shipInv.List(const.flagCargo))
-            */
-
-    sLog.Error( "InvBrokerBound::Handle_List()", "size= %u", call.tuple->size() );
-    call.Dump(INV__DUMP);
-
-    return nullptr;
-}
 
 PyResult InvBrokerBound::Handle_AssembleCargoContainer(PyCallArgs &call) {
     /* invMgr.AssembleCargoContainer(invItem.itemID, None, 0.0)
