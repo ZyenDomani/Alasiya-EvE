@@ -899,7 +899,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         return;
 
     if (loadQty < chargeRef->quantity()) {
-        chargeRef = chargeRef->Split(loadQty, false, true);
+        chargeRef = chargeRef->Split(loadQty, true, true);
         if (chargeRef.get() == nullptr) {
             // make error here?
             return;
@@ -912,10 +912,10 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
      * the sublocation is identified as a tuple of itemKey(shipID, flagID, typeID)
      * all updates for that charge (which seems to be only attrib changes), are referenced using it's itemKey
      * when sending charge item change with locationID or flagID, client will correctly add as sublocation
-     *    when in space, but only for the first update.  subsusquent changes need to use OnModuleAttributeChange (OMAC)
+     *    when in space, but only for the first update.  subsequent changes need to use OnModuleAttributeChange (OMAC)
      *
      * when docked, List() sends charges as invItem, and client doesnt process that as a sublocation.  (OMAC method)
-     * because of this, OMAC isn't used when docked, and OnItemChange (OIC) is the process client will correctly process.
+     * because of this, OMAC isn't used when docked, and OnItemChange (OIC) is the update client will correctly process.
      */
 
     // this will enable module loading blink if ship in space, even on reload/fillup
@@ -925,9 +925,13 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         //  merge addt'l charges with currently loaded charges (fillup)
         pMod->GetLoadedChargeRef()->Merge(chargeRef, loadQty, false);
     } else {
+        bool inSpace = false;
+        if (pShipItem->HasPilot())
+            inSpace = pShipItem->GetPilot()->IsInSpace();
+        chargeRef->SetQuantity(loadQty, inSpace);
         // if module wasnt previously loaded, add to ship's inventory and charge map
-        chargeRef->Move(pShipItem->itemID(), flag, pShipItem->HasPilot());
-        chargeRef->SetQuantity(loadQty);
+        if (!inSpace)
+            chargeRef->Move(pShipItem->itemID(), flag, pShipItem->HasPilot());
         //pShipItem->AddItem(chargeRef);
         m_charges.emplace(flag, chargeRef);
     }
@@ -980,12 +984,12 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
                 //chargeRef->SetQuantity(0, true);         // OIC alternate
                 return;
             } else
-                chargeRef->Relocate(pShipItem->locationID(), flagHangar);
+                chargeRef->Move(pShipItem->locationID(), flagHangar, true);
         } else { // this will be an error.  cant find station ship is docked in
             _log(MODULE__ERROR, "MM::UnloadCharge() - Station %u not found for ship %u owned by %s",\
                     pShipItem->locationID(), pShipItem->itemID(), \
                     pShipItem->HasPilot()? pShipItem->GetPilot()->GetName():itoa(pShipItem->ownerID()));
-            chargeRef->Relocate(pShipItem->locationID(), flagHangar);
+            chargeRef->Move(pShipItem->locationID(), flagHangar, true);
         }
     } else {
         chargeRef->SetAttribute(AttrQuantity, EvilZero);    // OMAC
