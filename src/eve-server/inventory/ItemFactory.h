@@ -145,6 +145,7 @@ public:
      */
     uint32                  GetNextNPCID();
     uint32                  GetNextTempID();
+    uint32                  GetNextDroneID();
     uint32                  GetNextMissileID();
 
 
@@ -170,6 +171,7 @@ private:
     // these hold the next valid ID for in-memory only objects
     uint32 m_nextNPCID;
     uint32 m_nextTempID;
+    uint32 m_nextDroneID;
     uint32 m_nextMissileID;
 
 };

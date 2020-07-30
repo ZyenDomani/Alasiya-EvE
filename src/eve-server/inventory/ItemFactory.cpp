@@ -48,6 +48,7 @@ ItemFactory::ItemFactory()
 :m_pClient(nullptr),
 m_nextTempID(0),
 m_nextNPCID(0),
+m_nextDroneID(0),
 m_nextMissileID(0),
 m_db(nullptr)
 {
@@ -76,6 +77,7 @@ int ItemFactory::Initialize()
     m_nextTempID = EVEMU_TEMP_ENTITY_ID;
     m_nextNPCID = EVEMU_NPC_ID;
     m_nextMissileID = EVEMU_MISSILE_ID;
+    m_nextDroneID = EVEMU_DRONE_ID;
 
 
     m_db = new InventoryDB();
@@ -144,8 +146,8 @@ void ItemFactory::SaveItems() {
 
 void ItemFactory::AddItem(InventoryItemRef iRef)
 {
-    if (IsTempItem(iRef->itemID()))
-        return;
+    //if (IsTempItem(iRef->itemID()))
+    //    return;
 
     if (iRef->itemID() < minAgent) {
         sLog.Warning("ItemFactory::AddItem()", "Trying to Add invalid UID %u for %s", iRef->itemID(), iRef->name());
@@ -155,7 +157,7 @@ void ItemFactory::AddItem(InventoryItemRef iRef)
 }
 
 void ItemFactory::RemoveItem(uint32 itemID) {
-    if (IsTempItem(itemID) or (itemID < minAgent))
+    if (itemID < minAgent)
         return;
 
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
@@ -175,14 +177,18 @@ uint32 ItemFactory::GetNextTempID()
     return m_nextTempID;
 }
 
-uint32 ItemFactory::GetNextMissileID()
-{
-    return ++m_nextMissileID;
-}
-
 uint32 ItemFactory::GetNextNPCID()
 {
     return ++m_nextNPCID;
+}
+
+uint32 ItemFactory::GetNextDroneID() {
+    return ++m_nextDroneID;
+}
+
+uint32 ItemFactory::GetNextMissileID()
+{
+    return ++m_nextMissileID;
 }
 
 Inventory* ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
@@ -337,8 +343,8 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr == m_items.end())
     {
-        if (IsTempItem(itemID) or (itemID < minAgent)) {
-            _log(ITEM__WARNING, "ItemFactory::_GetItem() called on temp or invalid Item %u", itemID);
+        if (itemID < minAgent) {
+            _log(ITEM__WARNING, "ItemFactory::_GetItem() called on invalid Item %u", itemID);
             //if (sConfig.server.StackTrace)
             //    EvE::traceStack();
             return RefPtr<_Ty>();
@@ -350,8 +356,7 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
             return RefPtr<_Ty>();
 
         //we keep the original ref.
-        itr = m_items.insert( std::make_pair( itemID, item ) ).first;
-
+        itr = m_items.insert(std::make_pair(itemID, item)).first;
     }
     // return to the user.
     return RefPtr<_Ty>::StaticCast( itr->second );
