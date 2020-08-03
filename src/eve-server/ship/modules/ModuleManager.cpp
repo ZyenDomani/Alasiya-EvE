@@ -918,23 +918,18 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
      * because of this, OMAC isn't used when docked, and OnItemChange (OIC) is the update client will correctly process.
      */
 
-    // this will enable module loading blink if ship in space, even on reload/fillup
-    pMod->LoadCharge(chargeRef);
-
     if (loaded) {
         //  merge addt'l charges with currently loaded charges (fillup)
         pMod->GetLoadedChargeRef()->Merge(chargeRef, loadQty, false);
     } else {
-        bool inSpace = false;
-        if (pShipItem->HasPilot())
-            inSpace = pShipItem->GetPilot()->IsInSpace();
-        chargeRef->SetQuantity(loadQty, inSpace);
         // if module wasnt previously loaded, add to ship's inventory and charge map
-        if (!inSpace)
-            chargeRef->Move(pShipItem->itemID(), flag, pShipItem->HasPilot());
-        //pShipItem->AddItem(chargeRef);
+        chargeRef->Move(pShipItem->itemID(), flag, pShipItem->HasPilot());
+        //chargeRef->SetQuantity(loadQty, pShipItem->HasPilot() == nullptr?false:pShipItem->GetPilot()->IsInSpace());
         m_charges.emplace(flag, chargeRef);
     }
+
+    // this will enable module loading blink if ship in space, even on reload/fillup
+    pMod->LoadCharge(chargeRef);
 }
 
 void ModuleManager::UnloadCharge(GenericModule* pMod)

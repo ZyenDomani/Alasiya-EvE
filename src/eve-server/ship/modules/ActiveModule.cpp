@@ -1356,7 +1356,7 @@ void ActiveModule::LaunchProbe()
         return; // make error here
 
     pProbe->SendNewProbe();
-    pSystem->AddEntity(pProbe);
+    pSystem->AddEntity(pProbe, false);
     pClient->scan()->AddProbe(pProbe);
 
     // Reduce ammo charge by 1 unit:
