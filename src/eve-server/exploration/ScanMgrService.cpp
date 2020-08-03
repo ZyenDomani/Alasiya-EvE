@@ -28,11 +28,11 @@
 #include "Client.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
-#include "exploration/ScanMgrService.h"
 #include "Probes.h"
+#include "exploration/ScanMgrService.h"
 #include "system/DestinyManager.h"
-#include <system/SystemManager.h>
-#include <system/SystemBubble.h>
+#include "system/SystemManager.h"
+#include "system/SystemBubble.h"
 
 /* SCAN__ERROR
  * SCAN__WARNING
@@ -187,14 +187,6 @@ PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
     return PyStatic.NewNone();
 }
 
-PyResult ScanBound::Handle_ReconnectToLostProbes( PyCallArgs& call ) {
-    // no args
-    //  will have to test against client launcher vs probe m_moduleID
-    // will have to write *something* to loop thru active probes in system for this....
-
-    return PyStatic.NewNone();
-}
-
 PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {
     //successProbeIDs = sm.RemoteSvc('scanMgr').GetSystemScanMgr().RecoverProbes(probeIDs)
     _log(SCAN__TRACE, "ScanBound::Handle_RecoverProbes() - size= %u", call.tuple->size() );
@@ -238,6 +230,14 @@ PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
     if (pSE != nullptr)
         pSE->Delete();
     SafeDelete(pSE);
+
+    return PyStatic.NewNone();
+}
+
+PyResult ScanBound::Handle_ReconnectToLostProbes( PyCallArgs& call ) {
+    // no args
+    //  will have to test against client launcher vs probe m_moduleID
+    // will have to write *something* to loop thru active probes in system for this....
 
     return PyStatic.NewNone();
 }

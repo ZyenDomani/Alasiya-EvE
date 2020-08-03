@@ -80,7 +80,8 @@ m_scan(nullptr),
 m_client(shipRef->GetPilot()),
 m_lifeTimer(0),
 m_stateTimer(0),
-m_returnTimer(0)
+m_returnTimer(0),
+m_scanShips(false)
 {
     m_warID = m_client->GetWarFactionID();
     m_allyID = m_client->GetAllianceID();
@@ -92,9 +93,15 @@ m_returnTimer(0)
     m_moduleRef = moduleRef;
     m_secStatus = m_client->GetSecurityRating();
 
-    m_expiry = GetFileTimeNow() + (EvE::Time::Hour *2);  // 2h default lifespan  any way to increase this?
-    m_lifeTimer.Start((EvE::Time::Hour *2) /100000);  // convert 2h to ms
+    if (self->HasAttribute(AttrProbeCanScanShips))
+        m_scanShips = self->GetAttribute(AttrProbeCanScanShips).get_bool();
 
+    // set probe lifetime
+    // m_expiry = GetFileTimeNow() + (EvE::Time::Hour *2);  // 2h default lifespan
+    m_expiry = GetFileTimeNow() + self->GetAttribute(AttrExplosionDelay).get_float() *1000000; // ms to filetime
+    m_lifeTimer.Start(self->GetAttribute(AttrExplosionDelay).get_uint32());
+
+    // set str and deviation
     m_scanStrength = self->GetAttribute(AttrBaseSensorStrength).get_int();
     m_scanDeviation = self->GetAttribute(AttrBaseMaxScanDeviation).get_float();
 
@@ -105,7 +112,7 @@ m_returnTimer(0)
     // i think we may have to do probe modifiers here....they are not being done thru fx system
     Character* pChar = m_client->GetChar().get();
 
-    // not sure about this one yet....
+    // not sure about this one yet....moon survey.  will need special initializers here
     if (self->groupID() == EVEDB::invGroups::Survey_Probe) {
         // 5% reduction to flight time?  10% for t2 ship
     }
@@ -158,12 +165,9 @@ m_returnTimer(0)
     // fudge scan strength to make my formulas work right...wip
     m_scanStrength /= 10;
 
-/*
- * Astrometrics (3x, 450k ISK): +5% scan strength per level, −5% max scan deviation per level, −5% scan probe scan time per level
- * Astrometric Rangefinding (8x, 450k ISK): +5% probe scan strength
- * Astrometric Pinpointing (5x, 450k ISK): −5% maximum scan deviation
- * Astrometric Acquisition (5x, 450k ISK): −5% scan time
- */
+    _log(SCAN__DEBUG, "Created ProbeSE for %u. timeNow: %.0f, expiry: %lli, scan Str: %.5f, deviation: %.5f, range: %.2f, ship: %s", \
+    m_self->itemID(), GetFileTimeNow(), m_expiry, m_scanStrength, m_scanDeviation, m_scanRange, m_scanShips?"true":"false");
+}
 
     /*
     AttrScanRange = 765,
@@ -203,14 +207,16 @@ m_returnTimer(0)
     AttrScanGravimetricStrengthModifier = 1567,
     AttrScanMagnetometricStrengthModifier = 1568,
     */
-}
+
 
 void ProbeSE::Process()
 {
     SystemEntity::Process();
-    // this may not work right....will need to test.
+    // this may not work right....it doesnt.  look into.
     if (m_lifeTimer.Check()) {
+        SendRemoveProbe();
         Delete();
+        delete(this);
         return;
     }
     if (m_returnTimer.Check()) {
@@ -221,15 +227,17 @@ void ProbeSE::Process()
         SendRemoveProbe();
         m_scan->RemoveProbe(this);
         m_system->RemoveEntity(this);
+        // should we stack these??
         m_self->Move(m_client->GetShipID(), flagCargoHold, true);
         return;
     }
     if (m_stateTimer.Check()) {
         m_stateTimer.Disable();
         _log(SCAN__DEBUG, "ProbeSE::Process() state timer hit for probeID %u  state: %s", m_self->itemID(), GetStateName(m_state).c_str());
-        sBubbleMgr.Add(this);
         if (m_state == Probe::State::Warping)
             SendWarpEnd();
+        m_self->SetPosition(m_destination);
+        sBubbleMgr.Add(this);   // is this right here?
         m_state = Probe::State::Idle;
         SendStateChange(m_state);
     }
@@ -280,15 +288,20 @@ void ProbeSE::UpdateProbe(ProbeData& data)
     m_rangeStep = data.rangeStep;
     m_destination = data.dest;
 
-    float time = 1, dist = GetPosition().distance(m_destination);
+    float time = 1, dist = GetPosition().distance(m_destination) *10;   // not sure why this doesnt work right w/o the x10
     if (dist > BUBBLE_RADIUS_METERS){
         m_state = Probe::State::Warping;
-        time += floor(dist / (m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() *ONE_AU_IN_METERS));
+        float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float();
+        time = dist / (wsm *ONE_AU_IN_METERS);
         SendWarpStart(time);
     } else if (dist > 2500) {
         m_state = Probe::State::Moving;
-        time += floor(dist / m_self->GetAttribute(AttrMaxVelocity).get_float());
+        uint32 mv = m_self->GetAttribute(AttrMaxVelocity).get_uint32();
+        time = dist / mv;
     }
+
+    if (time < 1)
+        time = 1;
 
     SendStateChange(m_state);
     m_bubble->Remove(this);
@@ -317,6 +330,8 @@ void ProbeSE::RecoverProbe(PyList* list)
     m_returnTimer.Start(time *1000);
     SendStateChange(Probe::State::Returning);
     //NotAllProbesReturnedSuccessfully
+    _log(SCAN__DEBUG, "ProbeSE::RecoverProbe()  Probe %u returning.  Return time is %.3fs", \
+                GetID(), time);
 }
 
 void ProbeSE::SendNewProbe()
@@ -472,7 +487,6 @@ float ProbeSE::GetRangeModifier(float dist)
         case 4:  return dist * 0.625;
         case 3:  return dist * 0.75;
         case 2:  return dist * 0.875;
-        //case 1:  return dist;
     }
     return dist;
 }
@@ -487,7 +501,7 @@ float ProbeSE::GetScanStrength()
         case 4:  return m_scanStrength * 0.625;
         case 3:  return m_scanStrength * 0.75;
         case 2:  return m_scanStrength * 0.875;
-        //case 1:  return m_scanStrength;
+        case 1:  return m_scanStrength * 1.125;
     }
     return m_scanStrength;
 }

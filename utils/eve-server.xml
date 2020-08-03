@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-Version: 9.6 -->
+Version: 9.7 -->
 
 <!--
 unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -209,6 +209,15 @@ boolean can use either 0/1 OR true/false.
         <BumpEnabled>false</BumpEnabled><!-- bool -->
     </cosmic>
 
+    <exploring><!--  control amount of specific sites per system (adjusted by truSec) -->
+        <Gravametric>5</Gravametric><!-- integer  -1 to disable.  max 128.  default 5 -->
+        <Magnetometric>3</Magnetometric><!-- integer  -1 to disable.  max 128.  default 3 -->
+        <Ladar>6</Ladar><!-- integer  -1 to disable.  max 128.  default 6 -->
+        <Radar>6</Radar><!-- integer  -1 to disable.  max 128.  default 6 -->
+        <Unrated>8</Unrated><!-- integer  -1 to disable.  max 128.  default 8 -->
+        <Complex>4</Complex><!-- integer  -1 to disable.  max 128.  default 4 -->
+    </exploring>
+    
     <testing><!-- switches for various incomplete/testing code sections -->
         <ShipHeat>true</ShipHeat><!-- bool -->
         <EnableDrones>true</EnableDrones><!-- bool -->

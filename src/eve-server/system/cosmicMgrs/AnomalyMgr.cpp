@@ -37,13 +37,11 @@
  */
 
 /*
- * # Cosmic Mgr Logging:
- * COSMIC_MGR=1
- * COSMIC_MGR__ERROR=1
- * COSMIC_MGR__WARNING=1
- * COSMIC_MGR__MESSAGE=0
- * COSMIC_MGR__DEBUG=1
- * COSMIC_MGR__TRACE=0
+ * COSMIC_MGR__ERROR
+ * COSMIC_MGR__WARNING
+ * COSMIC_MGR__MESSAGE
+ * COSMIC_MGR__DEBUG
+ * COSMIC_MGR__TRACE
  */
 AnomalyMgr::AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc)
 :m_services(svc),
@@ -62,14 +60,16 @@ m_anomTimer(0)
 
 AnomalyMgr::~AnomalyMgr()
 {
+    // this shouldnt be needed...SysMgr should handle all objects in their systems
+    /*
     InventoryItemRef iRef(nullptr);
     for (auto sig : m_sigByItemID) {
         iRef = sItemFactory.GetItem(sig.first);
         if (iRef.get() == nullptr)
             continue;
-        //m_system->RemoveItemFromInventory(iRef);
         iRef->Delete();
     }
+    */
 }
 
 bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr) {
@@ -130,17 +130,16 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
         m_anomTimer.Start(120000);  // 2m
     }
 
-    // will these be static, var by system, var by trusec, config options, other???
+    m_WH = 0;
     m_Sigs = 0;
     m_Anoms = 0;
-    // these can use config option to (en/dis)able individual types
-    m_WH = 0;
-    m_Grav = 0;
-    m_Mag = 0;
-    m_Ladar = 0;
-    m_Radar = 0;
-    m_Unrated = 0;
-    m_Complex = 0;
+    // these use config option to (en/dis)able individual types
+    m_Grav = sConfig.exploring.Gravametric;
+    m_Mag = sConfig.exploring.Magnetometric;
+    m_Ladar = sConfig.exploring.Ladar;
+    m_Radar = sConfig.exploring.Radar;
+    m_Unrated = sConfig.exploring.Unrated;
+    m_Complex = sConfig.exploring.Complex;
 
     /* load current data?, start timers, process current data, and create new items, if needed */
     /** @todo all anomalies are currently temp items.  if/when we start saving them, create new table and itemIDs*/
@@ -170,6 +169,8 @@ void AnomalyMgr::Process() {
 
 void AnomalyMgr::Close()
 {
+    _log(COSMIC_MGR__MESSAGE, "Closing AnomalyMgr for %s(%u).", m_system->GetName(), m_system->GetID());
+/*
     InventoryItemRef iRef(nullptr);
     for (auto sig : m_sigByItemID) {
         iRef = sItemFactory.GetItem(sig.first);
@@ -178,19 +179,20 @@ void AnomalyMgr::Close()
         m_system->RemoveItemFromInventory(iRef);
         iRef->Delete();
     }
+    */
 }
 
 void AnomalyMgr::LoadAnomalies() {
-	//. is this needed?  probably not.  make em all dynamic
-	// check for existing data and load accordingly.
-	// this will only hit on system load
+    //. is this needed?  probably not.  make em all dynamic
+    // check for existing data and load accordingly.
+    // this will only hit on system load
 
-	// get loaded type data and save in memobj for later use
+    // get loaded type data and save in memobj for later use
 }
 
 void AnomalyMgr::SaveAnomaly()
 {
-	//. same as above...not needed but used for testing for now.
+    // same as above...not needed but used for testing for now.
     //will have to rewrite scan system to use data from here
     for (auto sig : m_sigByItemID)
         m_mdb.SaveAnomaly(sig.second);
@@ -238,8 +240,11 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
     else  // mission or escalation being called.  would either of those go thru here?  im thinking not.
         sig.dungeonType = typeID;
 
-    if (sig.dungeonType == 0)
-        return;     // make error here?
+    if (sig.dungeonType == 0) {
+        _log(COSMIC_MGR__ERROR, "Dungeon Type returned 0 for %s in %s(%u)", \
+                    sig.sigName.c_str(), m_system->GetName(), m_system->GetID());
+        return;
+    }
 
     sig.position = m_gp.GetAnomalyPoint(m_system);
 
@@ -250,24 +255,24 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         case Wormhole: {    // 6
             // enable WH to be warped to...they are deco only at this time.
             //  once working, these will be by probe only, and removed from anomaly list
-            sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
-            sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
-            sig.scanGroupID = Scanning::Group::Anomaly;
+            sig.sigTypeID = EVEDB::invTypes::CosmicSignature;
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
             // hand off to WHMgr for creation and exit after return
             sWHMgr.Create(sig);
             // creation failure will set itemID to 0
             if (sig.sigItemID) {
                 m_sigBySigID.emplace(sig.sigID, sig);
-                /*m_sigByItemID*/m_anomByItemID.emplace(sig.sigItemID, sig);    // update later...
+                m_sigByItemID.emplace(sig.sigItemID, sig);    // update later...
                 //m_mdb.SaveAnomaly(sig);
             }
             return;
         } break;
         case Gravimetric: { // 2
-            sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly; //dont need probes or skills for anomalies..these will
-            sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
-            sig.scanGroupID = Scanning::Group::Anomaly;
+            sig.sigTypeID = EVEDB::invTypes::CosmicSignature; //dont need probes or skills for anomalies..these will
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanGravimetricStrength;
         } break;
         case Magnetometric: { // 3,
@@ -293,6 +298,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanAllStrength;
+            sig.sigStrength = 1.0f;
         } break;
         case Mission:       // 1
             sig.sigTypeID = EVEDB::invTypes::CosmicSignature;
@@ -425,16 +431,11 @@ void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
     if (!m_initalized)
         return;
 
-    /** @todo finish this once probe scanning is completed.
-     *
-     * ALL items sent here by SysMgr.
-     * AnomMgr will determine what is added and it's base sigStrength.
-     * this ist sill WIP.
+    /* ALL SEs sent here by SysMgr except Globals and NPCs
+     * we will determine here what is added and it's base sigStrength.
+     * this is sill WIP.
+     *   see Scan.xmlp and EVE_Scanning.h for client data
      */
-
-    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::AddSignal() - adding %s to anomaly list.", iRef->itemName().c_str());
-
-    //  WIP....see Scan.xmlp and EVE_Scanning.h for client data
 
     CosmicSignature sig = CosmicSignature();
         sig.dungeonType = Dungeon::Type::Anomaly;
@@ -445,9 +446,15 @@ void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
             sig.sigID = sEntityList.GetAnomalyID();
         sig.sigItemID = iRef->itemID();
         sig.sigName = iRef->itemName();
-        sig.sigStrength = 100.0;    // this will be calculated in switch() block below...
         sig.systemID = m_system->GetID();
         sig.position = iRef->position();
+        // this will be wrong for capital ships and larger (maybe bs also)
+        sig.sigStrength = iRef->GetAttribute(AttrSignatureRadius).get_float() /1000;
+
+/* Signal Strength Base Data
+ * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
+ * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
+ */
 
     // if scanGroupID is anom or sig, use scanAttributeID to determine site type (in client code)
     // scanGroupID must be one of the 5 groups coded in client (sig, anom, ship, drone, structure)
@@ -461,12 +468,17 @@ void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
             sig.sigGroupID = iRef->groupID();
             sig.scanGroupID = Scanning::Group::Structure;
             sig.scanAttributeID = AttrScanStrengthStructures;
+            //sig.sigStrength = 1.0;
+            m_sigByItemID.emplace(sig.sigItemID, sig);
         } break;
         case EVEDB::invCategories::Ship: {
+            //511     shipScanResistance
             sig.sigTypeID = iRef->typeID();
             sig.sigGroupID = iRef->groupID();
             sig.scanGroupID = Scanning::Group::Ship;
             sig.scanAttributeID = AttrScanStrengthShips;
+            //sig.sigStrength = 1.0;
+            m_sigByItemID.emplace(sig.sigItemID, sig);
         } break;
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Charge:          // probes, missiles (at time of scan), and ??
@@ -475,13 +487,12 @@ void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
             sig.sigGroupID = iRef->groupID();
             sig.scanGroupID = Scanning::Group::DroneOrProbe;
             sig.scanAttributeID = AttrScanStrengthDronesProbes;
+            sig.sigStrength = 0.0667;
+            m_sigByItemID.emplace(sig.sigItemID, sig);
         } break;
-        case EVEDB::invCategories::Asteroid:{
-            sig.sigTypeID = iRef->typeID();
-            sig.sigGroupID = iRef->groupID();
-            sig.scanGroupID = Scanning::Group::Signature;
-            sig.scanAttributeID = AttrScanAllStrength;  // Unknown
-        } break;
+        case EVEDB::invCategories::Asteroid:{   // this wont hit (addSignal=false)
+            return;     // we're not adding roids to list
+        };
         case EVEDB::invCategories::Entity:
         case EVEDB::invCategories::Celestial:       //wrecks
         default:  {
@@ -489,43 +500,52 @@ void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
+            //sig.sigStrength = 1.0;      // this will need to be adjusted for entity/celestial types
+            m_sigByItemID.emplace(sig.sigItemID, sig);
         } break;
     }
 
-    // add new sig to sysSigMaps
+    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::AddSignal() - adding %s to anomaly list as %s with %.5f sigStrength.", \
+                iRef->itemName().c_str(), GetScanGroupName(sig.sigTypeID), sig.sigStrength *100);
+
+    // add new sig to our map
     m_sigBySigID.emplace(sig.sigID, sig);
-
-    // this code is to sort items by type (sig/anom) and determine use of probes.
-    //  right now, we're not using this, and ALL sigs can be scanned by ship scanners
-
-    //if (sig.sigTypeID == EVEDB::invTypes::CosmicAnomaly)
-        m_anomByItemID.emplace(sig.sigItemID, sig);
-    //else
-    //    m_sigByItemID.emplace(sig.sigItemID, sig);
-
 }
 
 void AnomalyMgr::RemoveSignal(uint32 itemID)
 {
     _log(COSMIC_MGR__DEBUG, "AnomalyMgr::RemoveSignal() - removing %u from anomaly list.", itemID);
-    // for sigs in map
+    // remove sig from our map
     std::map<uint32, CosmicSignature>::iterator itr = m_sigByItemID.find(itemID);
     if (itr != m_sigByItemID.end()) {
-        std::map<std::string, CosmicSignature>::iterator itr2 = m_sigBySigID.find(itr->second.sigID);
+        auto itr2 = m_sigBySigID.find(itr->second.sigID);
         if (itr2 != m_sigBySigID.end())
             m_sigBySigID.erase(itr2);
-        m_system->RemoveItemFromInventory(sItemFactory.GetItem(itr->first));
         m_sigByItemID.erase(itr);
     } else {
         // for anoms in map
         itr = m_anomByItemID.find(itemID);
         if (itr != m_anomByItemID.end()) {
-            std::map<std::string, CosmicSignature>::iterator itr2 = m_sigBySigID.find(itr->second.sigID);
+            auto itr2 = m_sigBySigID.find(itr->second.sigID);
             if (itr2 != m_sigBySigID.end())
                 m_sigBySigID.erase(itr2);
-            m_system->RemoveItemFromInventory(sItemFactory.GetItem(itr->first));
             m_anomByItemID.erase(itr);
         }
     }
 }
 
+
+const char* AnomalyMgr::GetScanGroupName(uint8 groupID/*0*/) {
+    using namespace Scanning::Group;
+    switch(groupID) {
+        case Scrap:             return "Scrap";
+        case Signature:         return "Signature";
+        case Structure:         return "Structure";
+        case DroneOrProbe:      return "Drone/Probe";
+        case Celestial:         return "Celestial";
+        case Anomaly:           return "Anomaly";
+        case 0:                 return "Zero";
+        default:                return "Invalid";
+    }
+    return "None";
+}

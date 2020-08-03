@@ -255,7 +255,7 @@ void DungeonMgr::Load()
 
 bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 {
-    Dungeon::Template dTemplate;
+    Dungeon::Template dTemplate = Dungeon::Template();
     if (!sDunDataMgr.GetTemplate(templateID, dTemplate))
         return false;
 
@@ -285,7 +285,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     if (iRef.get() == nullptr) // make error and exit
         return false;
     CelestialSE* cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
-    m_system->AddEntity(cSE);
+    m_system->AddEntity(cSE, false);
     sig.sigItemID = iRef->itemID();
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - %s using templateID %u and roomID %i", sig.sigName.c_str(), templateID, dTemplate.dunRoomID);
@@ -342,7 +342,6 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         if (chance < 0.01)
             chance = 0.01;
         std::unordered_multimap<float, uint16> roidTypes;
-        //std::vector< DunGroupData >::iterator itr = m_anomalyItems.begin(), end = m_anomalyItems.end();
         for (auto cur : m_anomalyItems)
             roidTypes.emplace(chance, cur.typeID);
 
@@ -374,7 +373,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         //sItemFactory.AddItem(iRef);
         // should ALL of these be CelestialSEs?
         cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
-        m_system->AddEntity(cSE);
+        m_system->AddEntity(cSE, false);
         items.push_back(iRef->itemID());
         ++itr;
     }
@@ -416,9 +415,9 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 {
     float secRating = m_system->GetSystemSecurityRating();
     int8 sec = 1; // > 0.6
-    if (secRating < 0.1)
+    if (secRating < -0.2)
         sec = 3;
-    else if (secRating < 0.4)
+    else if (secRating < 0.2)
         sec = 4;
     else if (secRating < 0.6)
         sec = 2;
@@ -432,17 +431,6 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     switch (sig.dungeonType) {
         case Gravimetric: {       // 2
             faction = 8;  // region rat
-            if (sec == 1) {
-                sig.sigStrength = 0.2; // 1/5
-                type = MakeRandomInt(0,5);
-            } else if (sec == 2) {
-                sig.sigStrength = 0.0667; // 1/15
-                type = MakeRandomInt(0,3);
-            } else if (sec == 3) {
-                sig.sigStrength = 0.04; // 1/25
-                type = MakeRandomInt(0,2);
-            }
-
             // all roid types can spawn in grav sites.
             level = MakeRandomFloat();
             if (level < 0.1) {
@@ -451,6 +439,21 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 level = 2;
             } else {
                 level = 1;
+            }
+
+            // sigStrength depends on roid types as well as trueSec
+            if (sec == 1) {             // hi sec
+                sig.sigStrength = 0.2 /level;  // 1/5 base
+                type = MakeRandomInt(0,5);
+            } else if (sec == 2) {      // lo sec
+                sig.sigStrength = 0.1 /level; // 1/10 base
+                type = MakeRandomInt(0,3);
+            } else if (sec == 4) {      // mid sec
+                sig.sigStrength = 0.0667 /level; // 1/15 base
+                type = MakeRandomInt(0,2);
+            } else {                    // null sec
+                sig.sigStrength = 0.05 /level; // 1/20 base
+                type = MakeRandomInt(0,2);
             }
         } break;
         case Magnetometric: {     // 3
@@ -469,7 +472,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                     type = MakeRandomInt(1,4);
                     sig.sigStrength = 0.05; // 1/20
                 }
-            } else {    // hi and lo sec
+            } else {    // hi, mid and lo sec
                 type = MakeRandomInt(1,8);
                 if (level < 0.3) {   // 20% to be relic site
                     level = 1;
@@ -527,34 +530,25 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         case Anomaly: {           // 7
             type = MakeRandomInt(1,5);
             // if anomaly is non-drone, set template variables for types.
+            //   looking over this again (years later) it dont make much sense.
+            //   will have to look deeper when i have time.
             if (faction != 6) {
                 faction = 8;
                 if (sec == 1) {
                     if (type == 1) {
                         level = GetRandLevel();
-                        sig.sigStrength = 0.0667; // 1/15
-                    } else {
-                        sig.sigStrength = 0.2; // 1/5
                     }
                 } else if (sec == 2) {
                     if (type == 2) {
                         level = GetRandLevel();
-                        sig.sigStrength = 0.05; // 1/20
                     } else if (type == 4) {
                         level = GetRandLevel();
-                        sig.sigStrength = 0.025; // 1/40
-                    } else {
-                        sig.sigStrength = 0.1; // 1/10
                     }
                 } else if (sec == 3) {
                     if (type == 1) {
                         level = GetRandLevel();
-                        sig.sigStrength = 0.025; // 1/40
                     } else if (type == 3) {
                         level = GetRandLevel();
-                        sig.sigStrength = 0.0167; // 1/60
-                    } else {
-                        sig.sigStrength = 0.05; // 1/20
                     }
                 }
             }

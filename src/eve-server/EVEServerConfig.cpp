@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.6
+    Version:    9.7
 */
 
 
@@ -168,6 +168,14 @@ EVEServerConfig::EVEServerConfig()
     cosmic.WormHoleEnabled = false;
     cosmic.CiviliansEnabled = false;
     cosmic.BumpEnabled = false;
+
+    // exploring
+    exploring.Gravametric = 5;
+    exploring.Magnetometric = 3;
+    exploring.Ladar = 6;
+    exploring.Radar = 6;
+    exploring.Unrated = 8;
+    exploring.Complex = 4;
 
     // standings
     //  - mission
@@ -675,6 +683,26 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
     RemoveParser( "WormHoleEnabled" );
     RemoveParser( "CiviliansEnabled" );
     RemoveParser( "BumpEnabled" );
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessExploring ( const TiXmlElement* ele ) {
+    AddValueParser( "Radar",                exploring.Radar );
+    AddValueParser( "Ladar",                exploring.Ladar );
+    AddValueParser( "Unrated",              exploring.Unrated );
+    AddValueParser( "Complex",              exploring.Complex );
+    AddValueParser( "Gravametric",          exploring.Gravametric );
+    AddValueParser( "Magnetometric",        exploring.Magnetometric );
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "Radar" );
+    RemoveParser( "Ladar" );
+    RemoveParser( "Unrated" );
+    RemoveParser( "Complex" );
+    RemoveParser( "Gravametric" );
+    RemoveParser( "Magnetometric" );
 
     return result;
 }

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.6
+    Version:    9.7
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -262,6 +262,16 @@ public:
         float roidRadiusMultiplier;
     } cosmic;
 
+    // From exploring
+    struct {
+        int8 Gravametric;
+        int8 Magnetometric;
+        int8 Ladar;
+        int8 Radar;
+        int8 Unrated;
+        int8 Complex;
+    } exploring;
+
     // From <standings>
     struct {
         float MissionBonus;
@@ -332,6 +342,7 @@ protected:
     bool ProcessNet( const TiXmlElement* ele );
     bool ProcessThreads( const TiXmlElement* ele );
     bool ProcessCosmic( const TiXmlElement* ele );
+    bool ProcessExploring( const TiXmlElement* ele );
     bool ProcessStandings( const TiXmlElement* ele );
     bool ProcessChat( const TiXmlElement* ele );
     bool ProcessCrime( const TiXmlElement* ele );

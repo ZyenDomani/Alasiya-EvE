@@ -27,6 +27,7 @@
 #ifndef __SYSTEMMANAGER_H_INCL__
 #define __SYSTEMMANAGER_H_INCL__
 
+#include "system/SystemGPoint.h"
 #include "system/BubbleManager.h"
 #include "system/SolarSystem.h"
 #include "system/SystemDB.h"
@@ -81,7 +82,7 @@ public:
     const std::string& GetNameStr() const               { return m_data.name; }
     const char* GetName() const                         { return m_data.name.c_str(); }
     const char* GetSystemSecurityClass()                { return m_data.securityClass.c_str(); }
-    const double GetSystemSecurityRating()              { return m_data.securityRating; }
+    const float GetSystemSecurityRating()               { return m_data.securityRating; }
 
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
     Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
@@ -116,7 +117,7 @@ public:
 
     void AddNPC(NPC* pNPC);
     void RemoveNPC(NPC* pNPC);
-    void AddEntity(SystemEntity* pSE);
+    void AddEntity(SystemEntity* pSE, bool addSignal=true);    // add entity to system, and (optionally) add signal to AnomalyMgr
     void RemoveEntity(SystemEntity* pSE);   // this also removes SE* from bubble and sig from AnomalyMgr (if applicable)
     void AddClient(Client* pClient, bool count=false, bool jump=false);
     void AddMarker(SystemEntity* pSE, bool sendBall=false);    // rather specific here.
@@ -171,10 +172,12 @@ private:
     PyServiceMgr& m_services;
     SolarSystemRef m_solarSystemRef;
 
+    SystemGPoint mGP;
+
     // static system data
     SystemData m_data;
 
-    float m_secValue;
+    float m_secValue;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
 
     // for dynamic data system  -allan 10June2019
     SystemKillData m_killData;

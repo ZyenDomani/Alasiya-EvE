@@ -28,7 +28,9 @@
 #include "EVEServerConfig.h"
 #include "account/AccountService.h"
 #include "chat/LSCService.h"
+#include "npc/Drone.h"
 #include "npc/NPC.h"
+#include "npc/Sentry.h"
 #include "packets/Destiny.h"
 #include "planet/Planet.h"
 #include "planet/Moon.h"
@@ -39,8 +41,6 @@
 #include "pos/Structure.h"
 #include "pos/Tower.h"
 #include "pos/Weapon.h"
-#include "npc/Drone.h"
-#include "npc/Sentry.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
@@ -454,6 +454,9 @@ bool SystemManager::LoadSystemDynamics() {
         }
         _log(ITEM__TRACE, "SystemManager::LoadSystemDynamics() - Loaded dynamic entity %u of type %u for %s(%u)", \
                     cur.itemID, cur.typeID, m_data.name.c_str(), m_data.systemID);
+        if (pSE->GetPosition().isZero())
+            pSE->SetPosition(mGP.GetRandPointOnPlanet(m_data.systemID));
+            //pSE->SetPosition(mGP.GetRandPointOnMoon(m_data.systemID));
         AddEntity(pSE);
     }
     _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %u Dynamic System entities loaded for %s(%u)", entities.size(), m_data.name.c_str(),m_data.systemID);
@@ -478,6 +481,9 @@ bool SystemManager::LoadPlayerDynamics() {
         }
         _log(ITEM__TRACE, "SystemManager::LoadPlayerDynamics() - Loaded dynamic entity %u of type %u for %s(%u)", \
                     cur.itemID, cur.typeID, m_data.name.c_str(),m_data.systemID);
+        if (pSE->GetPosition().isZero())
+            pSE->SetPosition(mGP.GetRandPointOnMoon(m_data.systemID));
+            //pSE->SetPosition(mGP.GetRandPointOnPlanet(m_data.systemID));
         AddEntity(pSE);
     }
     _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %u Dynamic Player entities loaded for %s(%u)", \
@@ -750,6 +756,16 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 contRef->SetMySE(cSE);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return cSE;
+            } else if ((entity.groupID == EVEDB::invGroups::Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Protective_Sentry_Gun)
+                or (entity.groupID == EVEDB::invGroups::Destructible_Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Mobile_Sentry_Gun))
+            {
+                InventoryItemRef sentryRef = sItemFactory.GetItem( entity.itemID );
+                if (sentryRef.get() == nullptr)
+                    return nullptr;
+                /** @todo make error msg here */
+                Sentry* SentrySE = new Sentry(sentryRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
+                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making SentrySE for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                return SentrySE;
             }
             // Check for NPC ships/drones here (category 11):   NOT player drones (different category [18])
             else if((entity.groupID == EVEDB::invGroups::Police_Drone) or (entity.groupID == EVEDB::invGroups::Pirate_Drone) or (entity.groupID == EVEDB::invGroups::LCO_Drone)
@@ -793,16 +809,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 sEntityList.AddNPC();
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making NPCSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return npcSE;
-            } else if ((entity.groupID == EVEDB::invGroups::Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Protective_Sentry_Gun)
-                or (entity.groupID == EVEDB::invGroups::Destructible_Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Mobile_Sentry_Gun))
-            {
-                InventoryItemRef sentryRef = sItemFactory.GetItem( entity.itemID );
-                if (sentryRef.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */
-                Sentry* SentrySE = new Sentry(sentryRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making SentrySE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return SentrySE;
             }
             // may have to create unique class for Billboard (EVEDB::invGroups::Billboard)
             else {
@@ -824,8 +830,28 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DroneSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
         } break;
+        case EVEDB::invCategories::Charge: {
+            InventoryItemRef iRef = sItemFactory.GetItem( entity.itemID );
+            if (iRef.get() == nullptr)
+                return nullptr;
+            /** @todo make error msg here */
+            switch (entity.groupID) {
+                case EVEDB::invGroups::Scanner_Probe: {
+                    //these probes are abandoned.  create generic ISE until captured.
+                    ItemSystemEntity* iSE = new ItemSystemEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
+                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ISE for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    return iSE;
+                } break;
+                case EVEDB::invGroups::Survey_Probe: {
+                    sLog.Warning("BuildEntity", "Called for Survey_Probe");
+                } break;
+                case EVEDB::invGroups::Warp_Disruption_Probe: {
+                    sLog.Warning("BuildEntity", "Called for Warp_Disruption_Probe");
+                } break;
+            }
+        } break;
     }
-    codelog(SERVICE__ERROR, "Unhandled dynamic entity category %d for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
+    sLog.Warning("BuildEntity", "Unhandled dynamic entity category %d for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
     EvE::traceStack();
     return nullptr;
 }
@@ -932,7 +958,7 @@ void SystemManager::AddNPC(NPC* pNPC) {
         m_npcs[itemID] = pNPC;
 
     _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", pNPC->GetName(), pNPC->GetID(), m_data.name.c_str(), m_data.systemID);
-    AddEntity(pNPC);
+    AddEntity(pNPC, false);
     sEntityList.AddNPC();
 }
 
@@ -949,12 +975,13 @@ void SystemManager::RemoveNPC(NPC* pNPC) {
     pNPC->RemoveNPC();   // this deletes NPC from DB.  NPC's dont jump, so no reason to remove from system unless killed
 }
 
-void SystemManager::AddEntity(SystemEntity* pSE) {
+void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
     if (pSE == nullptr)
         return;
     uint32 itemID = pSE->GetID();
     if (m_entities.find(itemID) != m_entities.end()) {
         _log(ITEM__WARNING, "%s(%u): Called AddEntity(), but they're already in %s(%u).  Check bubble.", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+        return;
     } else {
         _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
         m_entities[itemID] = pSE;
@@ -970,32 +997,28 @@ void SystemManager::AddEntity(SystemEntity* pSE) {
         if (!IsStaticItem(itemID)) {
             m_entityChanged = true;
             m_ticEntities[itemID] = pSE;
-        }
+        } else
+            addSignal = false;
+
         // Add Entity's Item Ref to Solar System Dynamic Inventory:
         m_solarSystemRef->AddItemToInventory( pSE->GetSelf() );
         //AddItemToInventory( pSE->GetSelf() );
     }
     sBubbleMgr.Add(pSE);
     // add item to our AnomalyMgr
-    m_anomMgr->AddSignal(pSE->GetSelf());
+    if (addSignal)
+        m_anomMgr->AddSignal(pSE->GetSelf());
 }
 
 void SystemManager::RemoveEntity(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
     sBubbleMgr.Remove(pSE);
+    // Remove Entity's Item Ref from Solar System Dynamic Inventory:
+    RemoveItemFromInventory( pSE->GetSelf() );
+
+    // remove entity from our maps
     uint32 itemID = pSE->GetID();
-
-    auto itr = m_entities.find(itemID);
-    if (itr != m_entities.end()) {
-        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-        m_entities.erase(itr);
-        m_entityChanged = true;
-        // Remove Entity's Item Ref from Solar System Dynamic Inventory:
-        RemoveItemFromInventory( pSE->GetSelf() );
-    } else
-        _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-
     m_ticEntities.erase(itemID);
     m_staticEntities.erase(itemID);
 
@@ -1342,10 +1365,13 @@ void SystemManager::RemoveItemFromInventory(InventoryItemRef iRef)
     // just in case this is called from elsewhere (which it may be), make sure we remove entity from our map.
     auto itr = m_entities.find(iRef->itemID());
     if (itr != m_entities.end()) {
+        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", iRef->name(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
         m_entities.erase(itr);
         m_entityChanged = true;
-    }
-    _log(ITEM__TRACE, "SystemManager::RemoveItemFromInventory() - removing item %s(%u) from inventory of %s(%u)", iRef->itemName().c_str(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
+    } else
+        _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", \
+                iRef->name(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
+
     m_solarSystemRef->RemoveItemFromInventory( iRef );
 }
 
@@ -1456,7 +1482,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         sig.ownerID = cur.second->GetOwnerID();
         sig.sigID = sEntityList.GetAnomalyID();         // result.id
         sig.sigItemID = cur.first;
-        sig.sigStrength = 100.0;
+        sig.sigStrength = 1.0;
         sig.systemID = m_data.systemID;
         sig.position = cur.second->GetPosition();
         // if scanGroupID is anom or sig, use scanAttributeID to determine site type (in client code)

@@ -117,6 +117,7 @@ public:
     GPoint GetDestination()                             { return m_destination; }
     std::string GetStateName(uint8 state);
 
+    bool CanScanShips()                                 { return m_scanShips; }
 
 private:
     Timer m_lifeTimer;
@@ -130,6 +131,8 @@ private:
 
     ShipItemRef m_shipRef;
     InventoryItemRef m_moduleRef;
+
+    bool m_scanShips;
 
     uint8 m_state;
     uint8 m_rangeStep;

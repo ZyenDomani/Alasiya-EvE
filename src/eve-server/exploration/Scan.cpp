@@ -300,7 +300,7 @@ void Scan::ProbeScanResult()
             ssr.deviation = 0;     /* 0 for anomalies */
             ssr.degraded = false;
             ssr.probeID = new PyInt(m_client->GetShipID());
-            ssr.certainty = 1;
+            ssr.certainty = anoms.sigStrength;
             ssr.pos = new PyNone();
         ScanResultPos ssr_oed;
             ssr_oed.x = anoms.position.x;
@@ -363,7 +363,6 @@ void Scan::ProbeScanResult()
             oed_tuple->SetItem(0, token);
             oed_tuple->SetItem(1, ssr_oed.Encode());
         spd.pos = new PyObjectEx(false, oed_tuple);  // oed goes here
-        PyIncRef(spd.pos);
         spd.destination = spd.pos;
         spd.probeID = cur.first;
         spd.state = cur.second->GetState();
@@ -419,7 +418,7 @@ struct CosmicSignature {
     // this will use actual distance from signal to probe.  later, we will 'adjust' distance based on deviation
     for (auto cur : m_probeMap) {
         dist = cur.second->GetPosition().distance(data.sig.position);
-        _log(SCAN__DEBUG, "Scan::GetProbeDataForSig()  distance from probe %u to signal %s -> %.2f", cur.first, data.sig.sigName.c_str(), dist);
+        _log(SCAN__DEBUG, "Scan::GetProbeDataForSig()  distance from probe %u to signal '%s' -> %.2f", cur.first, data.sig.sigName.c_str(), dist);
         if (cur.second->GetScanRange() > dist)
             probeVec.push_back(cur.second);
     }
@@ -471,7 +470,7 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec, GPoi
 {
     uint8 probeCount = probeVec.size();
     float probeMultiplier = 0.0f;
-    switch(probeVec.size()) {
+    switch(probeCount) {
         //  new style...already calculated (in python) for 1 to 8 probes...
         case 1: probeMultiplier = 0.25774312594204907; break;
         case 2: probeMultiplier = 0.5130245854773758; break;
@@ -483,6 +482,7 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec, GPoi
         case 8: probeMultiplier = 1.1666968137637062; break;
     }
 
+    /** @todo  why did i put this switch here???
     // NOTE: cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther
     switch(data.sig.scanGroupID) {
         case Scanning::Group::Anomaly: //detected using ship sensors  - will not hit here.
@@ -506,38 +506,37 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec, GPoi
                     break;
             }
         } break;
-
-    }
+    }  */
 
     /** @todo...determine probe angles to target (for >1 probe) to modify scan strength of probe.  */
     data.deviation = 0;
     float scanStrength = 0, rangeMod = 0, dist = 0;
-    if (probeVec.size() > 1) {
+    if (probeCount > 1) {
         /*  loop thru probes and get range mods and sigStrength for each.
          *  combine all probe's data to get good sum based on probe range and strength
          */
         int8 count = 0;
         float probeSig = 0;
         for (auto cur : probeVec) {
-            dist = (cur->GetPosition().distance(point) /ONE_AU_IN_METERS);
-            rangeMod = log(-(pow(dist /32, 2))); //cur->GetRangeModifier(dist);
+            dist = cur->GetPosition().distance(point);
+            rangeMod = cur->GetRangeModifier(dist);     //log(-(pow(dist /32, 2)));
             scanStrength = cur->GetScanStrength();
             data.deviation += cur->GetDeviation();  // combine deviation (for now...may find a better way later.)
             probeSig = data.sig.sigStrength * scanStrength * probeMultiplier * rangeMod;
             data.certainty += probeSig;
             _log(SCAN__TRACE, "Scan::GetSignalData()  Probe #%u - dist: %.4fAU,  rangeMod: %.5f, scanStrength: %.5f, multiplier: %.5f, probeSig: %.5f", \
-                    ++count, dist, rangeMod, scanStrength, probeMultiplier, probeSig);
+                    ++count, dist /ONE_AU_IN_METERS, rangeMod, scanStrength, probeMultiplier, probeSig);
         }
         // get average deviation from all probes
         data.deviation /= count;
     } else {
-        dist = (probeVec.at(0)->GetPosition().distance(point) /ONE_AU_IN_METERS);
-        rangeMod = log(-(pow(dist /32, 2))); //probeVec.at(0)->GetRangeModifier(dist);
+        dist = (probeVec.at(0)->GetPosition().distance(point));
+        rangeMod = probeVec.at(0)->GetRangeModifier(dist);      //log(-(pow(dist /32, 2)));
         scanStrength = probeVec.at(0)->GetScanStrength();
         data.deviation = probeVec.at(0)->GetDeviation();
         data.certainty = data.sig.sigStrength * scanStrength * probeMultiplier * rangeMod /2;
         _log(SCAN__TRACE, "Scan::GetSignalData()  single - dist: %.4fAU, rangeMod: %.5f, scanStrength: %.5f, multiplier: %.5f", \
-                dist, rangeMod, scanStrength, probeMultiplier);
+                dist /ONE_AU_IN_METERS, rangeMod, scanStrength, probeMultiplier);
     }
 
     // set minimum to 0.01%  nothing less will show in client
@@ -553,7 +552,7 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec, GPoi
     point.MakeRandomPointOnSphereLayer(data.deviation /2, data.deviation);
     data.sig.position = point;
 
-    _log(SCAN__TRACE, "Scan::GetSignalData() - certainty for signal %s (%s) is %.5f (sigStrength:%.2f) \n Deviation: %.0f (%.3f AU)", \
+    _log(SCAN__TRACE, "Scan::GetSignalData() - certainty for signal %s(%s) is %.5f (sigStrength:%.5f) \n Deviation: %.0f (%.3f AU)", \
             data.sig.sigName.c_str(), data.sig.sigID.c_str(), data.certainty, data.sig.sigStrength, data.deviation, (data.deviation / ONE_AU_IN_METERS));
 }
 
