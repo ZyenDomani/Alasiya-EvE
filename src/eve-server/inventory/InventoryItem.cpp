@@ -733,7 +733,7 @@ void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagAu
         _log(INV__TRACE, "II::Move() - Updated flag on %s(%u) from %s to %s.", \
                 m_itemName.c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
 
-    if (IsTempItem(m_itemID))
+    if (IsTempItem(m_itemID) or IsNPC(m_itemID))
         return;
 
     if (IsValidLocation(m_locationID))

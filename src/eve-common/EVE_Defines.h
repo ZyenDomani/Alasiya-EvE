@@ -151,6 +151,7 @@
 #define minMissionBookmark      635000000
 #define minBlueprint            650000000
 #define minNPC                  750000000
+#define maxNPC                  760000000
 #define minFleet                950000000
 #define maxFleet                959000000
 #define minWing                 960000000
@@ -287,7 +288,7 @@
 ((itemID >= minStation) && (itemID < minOutpost))
 
 #define IsNPC(itemID) \
-((itemID >= minNPC) && (itemID < minFleet))
+((itemID >= minNPC) && (itemID <= maxNPC))
 
 #define IsOutpost(itemID) \
 ((itemID >= minOutpost) && (itemID < minTradeCont))
@@ -320,7 +321,7 @@
  || (itemID >= minCustomsOffice))
 
 #define IsTempItem(itemID) \
- (((itemID >= minTempItemID) && (itemID < minPIStructure)) || (itemID >= minNPC))
+ ((itemID >= minTempItemID) && (itemID < minPIStructure))
 
 #define IsCargoHoldFlag(flag) \
 ((flag == flagCargoHold) || (flag == flagSecondaryStorage) || (flag == flagShipHangar) \

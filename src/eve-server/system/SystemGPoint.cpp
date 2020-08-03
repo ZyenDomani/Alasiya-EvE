@@ -17,7 +17,7 @@
 #include "system/SystemManager.h"
 
 /**
- *   the pupose of this class is to have a common location with methods used to define
+ *   the purpose of this class is to have a common location with methods used to define
  *      random points in solar systems based on planet and moon positions.
  *   GetRandPointOnPlanet() will query solar systems for planets, pick a random planet,
  *      and define a coordnate within that planet's bubble.
@@ -33,7 +33,7 @@
  *   these methods will also be used for random npc spawns and their warping/movement.
  *
  *   class DBGPointEntity has index, itemID, radius, and position, and is found in SystemDB.
- *      see copy of class decelaration below
+ *      see copy of class declaration below
  *
  *  NOTE i seem to remember that ALL COSMIC SPAWNS are within 6au from planets.
  *       ....cant find that info now.  -allan 31Jul14

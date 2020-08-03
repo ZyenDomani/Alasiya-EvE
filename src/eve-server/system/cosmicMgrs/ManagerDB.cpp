@@ -274,7 +274,10 @@ void ManagerDB::GetOreBySSC(DBQueryResult& res)
 void ManagerDB::GetSystemData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems"))
+        "SELECT mss.solarSystemID, mss.solarSystemName, mss.constellationID, mss.regionID, mss.securityClass, md.security"
+        " FROM mapSolarSystems AS mss"
+        " LEFT JOIN mapDenormalize AS md ON (md.itemID = mss.solarSystemID)"
+    ))
         codelog(DATABASE__ERROR, "Error in GetSystemInfo query: %s", res.error.c_str());
 }
 

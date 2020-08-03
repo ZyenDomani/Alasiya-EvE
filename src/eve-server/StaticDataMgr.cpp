@@ -170,7 +170,7 @@ void StaticDataMgr::Populate()
         sysData.constellationID   = row.GetInt(2);
         sysData.regionID          = row.GetInt(3);
         sysData.securityClass     = (row.IsNull(4) ? "0" : row.GetText(4));
-        sysData.securityRating    = row.GetFloat(5);
+        sysData.securityRating    = row.GetFloat(5);    // this gives system trueSec
         m_systemData.emplace(row.GetInt(0), sysData);
     }
     sLog.Cyan("    StaticDataMgr", "%u Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - startTime));

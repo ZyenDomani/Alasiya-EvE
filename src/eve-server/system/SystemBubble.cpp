@@ -218,10 +218,7 @@ void SystemBubble::Add(SystemEntity* pSE)
         //    EvE::traceStack();
     }
 
-    if (IsTempItem(pSE->GetID())) {
-        if (!m_players.empty())
-            AddBallExclusive(pSE);
-    } else if (pSE->HasPilot()) {
+    if (pSE->HasPilot()) {
         // Set spawn timer for this bubble, if needed
         if (m_belt) {
             // check for roids and load/spawn as needed.

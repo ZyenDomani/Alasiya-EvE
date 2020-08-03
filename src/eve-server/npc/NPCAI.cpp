@@ -411,16 +411,15 @@ void NPCAIMgr::SetWander()
     SystemBubble* pBubble = m_npc->SysBubble();
 
     // wandering.  nothing to shoot.  look for target.
-    if (m_npc->SysBubble()->HasDynamics()) {
+    if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission()) {
+        return;
+    } else if (pBubble->HasDynamics() and pBubble->IsBelt()) {
         // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
-        SystemEntity* pSE = m_npc->SysBubble()->GetRandomEntity();
+        SystemEntity* pSE = pBubble->GetRandomEntity();
         if (pSE == nullptr)
-            pSE = m_npc->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()));
+            pSE = m_npc->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(pBubble->GetID()));
         if (pSE == nullptr) {
             _log(NPC__ERROR, "%s(%u): Wandering:  No Target or beltSE found.", m_npc->GetName(), m_npc->GetID());
-            //disallow warpout if anomaly, incursion or mission rat
-            if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission())
-                return;
             // nothing here...leave bubble
             WarpOut();
             return;
@@ -463,7 +462,7 @@ void NPCAIMgr::SetIdle() {
         return;
 
     //disallow warpout by NOT setting timer.
-    if (sConfig.npc.WarpOut > 1)
+    if (sConfig.npc.WarpOut > 0)
         if (m_npc->GetSpawnMgr() != nullptr)
             m_warpOutTimer.Start(sConfig.npc.WarpOut *1000); // s to ms
 }

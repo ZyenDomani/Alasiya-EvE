@@ -57,6 +57,7 @@ protected:
     SystemGPoint m_gp;
 
     uint8 GetDungeonType();
+    const char* GetScanGroupName(uint8 groupID=0);
 
 private:
     /* we do not own any of these (our sysmgr does) */

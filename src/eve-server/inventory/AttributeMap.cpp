@@ -55,7 +55,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
     mItem.type().CopyAttributes(mItem);
 
     // check for temp items.  they arent saved to db
-    if (!IsTempItem(mItem.itemID())) {
+    if (!IsTempItem(mItem.itemID()) and !IsNPC(mItem.itemID())) {
         /* load saved attribs from the db, if any, to update the defaults with items current (saved) values*/
         DBQueryResult res;
         if (IsCharacter(mItem.itemID())) {

@@ -23,8 +23,8 @@ class SystemGPoint {
       const GPoint GetAnomalyPoint(SystemManager* pSys);
       const GPoint Get2RandPlanets(uint32 systemID);// incomplete
       const GPoint Get3RandPlanets(uint32 systemID);// incomplete
-      const GPoint GetRandPointOnPlanet(uint32 systemID);
       const GPoint GetRandPointOnMoon(uint32 systemID);
+      const GPoint GetRandPointOnPlanet(uint32 systemID);
       const GPoint GetRandPointInSystem(uint32 systemID, int64 distance);// incomplete
 
   protected:

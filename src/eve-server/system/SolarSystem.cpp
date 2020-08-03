@@ -85,12 +85,9 @@ SolarSystemData::SolarSystemData(
  */
 SolarSystem::SolarSystem(
     uint32 _solarSystemID,
-    // InventoryItem stuff:
     const ItemType &_type,
     const ItemData &_data,
-    // CelestialObject stuff:
     const CelestialObjectData &_cData,
-    // SolarSystem stuff:
     const SolarSystemData &_ssData)
 : CelestialObject(_solarSystemID, _type, _data, _cData),
   m_minPosition(_ssData.minPosition),
@@ -110,7 +107,7 @@ SolarSystem::SolarSystem(
 {
     pInventory = new Inventory(InventoryItemRef(this));
 
-    _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, itemName().c_str(), itemID());
+    _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, m_itemName.c_str(), m_itemID);
 }
 
 SolarSystem::~SolarSystem() {
@@ -124,23 +121,21 @@ SolarSystemRef SolarSystem::Load( uint32 solarSystemID)
     return InventoryItem::Load<SolarSystem>(solarSystemID);
 }
 
-bool SolarSystem::_Load() {
-    // not sure if this is needed here.
-    //  system mgr *should* load contents
-    //if (!pInventory->LoadContents())
-    //    return false;
-
+bool SolarSystem::_Load()
+{
     return CelestialObject::_Load();
 }
 
-// unload...loop thru currently loaded inventory and call RemoveItem for each.
-
 void SolarSystem::AddItemToInventory(InventoryItemRef iRef)
 {
+    _log(ITEM__TRACE, "SS::AddItemToInventory() - removing item %s(%u) from inventory of %s(%u)",\
+            iRef->itemName().c_str(), iRef->itemID(), m_itemName.c_str(), m_itemID);
     AddItem( iRef );
 }
 
 void SolarSystem::RemoveItemFromInventory( InventoryItemRef iRef )
 {
+    _log(ITEM__TRACE, "SS::RemoveItemFromInventory() - removing item %s(%u) from inventory of %s(%u)",\
+            iRef->itemName().c_str(), iRef->itemID(), m_itemName.c_str(), m_itemID);
     RemoveItem( iRef );
 }

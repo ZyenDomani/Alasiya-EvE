@@ -146,8 +146,8 @@ void ItemFactory::SaveItems() {
 
 void ItemFactory::AddItem(InventoryItemRef iRef)
 {
-    //if (IsTempItem(iRef->itemID()))
-    //    return;
+    if (IsTempItem(iRef->itemID()))
+        return;
 
     if (iRef->itemID() < minAgent) {
         sLog.Warning("ItemFactory::AddItem()", "Trying to Add invalid UID %u for %s", iRef->itemID(), iRef->name());
@@ -157,7 +157,7 @@ void ItemFactory::AddItem(InventoryItemRef iRef)
 }
 
 void ItemFactory::RemoveItem(uint32 itemID) {
-    if (itemID < minAgent)
+    if (IsTempItem(itemID) or (itemID < minAgent))
         return;
 
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );

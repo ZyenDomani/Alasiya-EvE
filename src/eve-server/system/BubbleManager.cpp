@@ -338,7 +338,7 @@ void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
             sig.sigItemID = cSE->GetID();
             sig.sigName = cSE->GetName();                       // result.DungeonName
             //sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;  // result.groupID
-            sig.sigStrength = 100.0;
+            sig.sigStrength = 1.0;
             //sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;     // result.typeID
             sig.systemID = cur.first;
             sig.position = cSE->GetPosition();
@@ -362,7 +362,7 @@ void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSi
             sig.sigItemID = cSE->GetID();
             sig.sigName = cSE->GetName();
             //sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
-            sig.sigStrength = 100.0;
+            sig.sigStrength = 1.0;
             //sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
             sig.systemID = systemID;
             sig.position = cSE->GetPosition();

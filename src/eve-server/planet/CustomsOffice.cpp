@@ -44,8 +44,6 @@ m_system(system)
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
 
-    sRef->SetAttribute(AttrIsGlobal, 1, false);
-
     // zero-init data
     m_cData = EVEPOS::CustomsData();
     m_oData = EVEPOS::OrbitalData();
@@ -69,6 +67,8 @@ void CustomsSE::Init()
         InitData();
         m_db.SaveCustomsData(m_cData, m_oData);
     }
+
+    m_self->SetAttribute(AttrIsGlobal, EvilOne, false);
 
     // this should be based on state/status
     m_self->SetFlag(flagStructureActive);
@@ -272,11 +272,11 @@ void CustomsSE::SendSlimUpdate()
         slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("posTimestamp",             new PyLong(m_cData.timestamp));
         slim->SetItemString("posState",                 new PyInt(m_cData.state));
-        slim->SetItemString("incapacitated",            new PyInt(0));
-        slim->SetItemString("posDelayTime",             new PyInt(0)); // fix this
+        slim->SetItemString("incapacitated",            PyStatic.NewZero());
+        slim->SetItemString("posDelayTime",             PyStatic.NewZero()); // fix this
     PyTuple* shipData = new PyTuple(2);
         shipData->SetItem(0,                            new PyLong(m_cData.itemID));
-        shipData->SetItem(1,                            new PyObject( "foo.SlimItem", slim));
+        shipData->SetItem(1,                            new PyObject("foo.SlimItem", slim));
     PyTuple* sItem = new PyTuple(2);
         sItem->SetItem(0,                               new PyString("OnSlimItemChange"));
         sItem->SetItem(1,                               shipData);

@@ -31,8 +31,6 @@
  *
  *  this class is also in charge of all dynamic WH data in the db
  *
- * WH groupID: 988
- *      70 items in db
  */
 
 WormholeMgr::WormholeMgr()
@@ -80,10 +78,32 @@ void WormholeMgr::Create(CosmicSignature& sig)
     /*
      * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
      * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
+     *    Base sigStrength (modified for Alasiya)
+     * k-space
+     * 1/10 = exit(k162), hi>hi(a641), lo>c3(x702), lo>lo(x944)
+     * 1/15 = hi>c1(z971)
+     * 1/20 = hi>c2(r943),lo>c1(r943)
+     * 1/25 = hi>c3(x702),hi>lo(r051),null>c3(x702),null>lo(n944)
+     * 1/40 = hi>c4(o128),lo>c4(o128),lo>hi(b449),hi>null(v283),null>c1(z971),null>hi(b449)
+     * 1/45 = null>c2(r943),null>c4(o128)
+     * 1/60 = hi>c5(m555),lo>c5(n432),lo>null(s199),null>c5(n432)
+     * 1/80 = hi>c6(b041)
+     *
+     * w-space
+     * 1/10 = c1*hi(n110),c1>c1(h121),c2*hi(b274),c2>c1(z647),c3*lo(u210),c3>c3(n968),c4*c3(c247),c5*c5(h296),c5>null(z142),c6*c5(v911),c6>null(z142)
+     * 1/15 = c1>c2(c125),c2>c2(d382),c3>c43(t405),c4*c4(x877),c5*c6(v753),c6*c6(w237)
+     * 1/20 = c1*lo(j244),c1>c3(o883),c2*lo(a239),c2>c3(o477),c3*hi(d845),c3>c1(v301),c4*c1(p060),c5>lo(c140),c6*c3(l477),c6>lo(c140)
+     * 1/25 = c1>c4(m609),c2>c4(y683),c3>c2(i182),c4*c2(n766),c6*c4(z457)
+     * 1/40 = c1*null(z060),c1>c5(l614),c2*null(e545),c2>c5(n062),c3*null(k346),c3>c5(n770),c4*c5(h900),c5*c1(y790),c5>hi(d792),c6*c1(q317),c6>hi(d792)
+     * 1/45 = c2>c6(r474),c3>c6(a982)
+     * 1/60 = c5*c3(m267),c5*c4(e175),
+     * 1/80 = c1>c6(s804),c4*c6(u574),c5*c2(d364),c6*c2(g024)
+     *
+     * note: * instead of > means static
+     * wh to class 1,2,3,4 have 16h lifetime
+     * others have 24h lifetime
      */
-    // set sigStrenth based on wh type and location
-    // default to 1/25 for now (base default is 1/80)
-    sig.sigStrength = 0.04;
+    sig.sigStrength = 0.1;
 
     // create k162 here
     sig.sigName = "WormHole K162 (deco only)";
@@ -107,7 +127,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     }
     // set itemID to return to anomaly mgr after creation succeeds
     sig.sigItemID = iRef->itemID();
-    // add wormhole to system
+    // add wormhole to system (which also adds signal to AnomalyMgr)
     pSysMgr->AddEntity(wSE);
     // add exit to vector
     m_wormholes.push_back(iRef->itemID());
@@ -142,6 +162,9 @@ void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
     _log(COSMIC_MGR__TRACE, "WormholeMgr::CreateExit() - Creating Exit from %s(%u) to %s(%u)", \
                 pFromSys->GetName(), pFromSys->GetID(), pToSys->GetName(), pToSys->GetID());
 }
+
+//SELECT `locationID`, `wormholeClassID` FROM `mapLocationWormholeClasses`
+
 
 /** @todo  our db is missing data for these.  search newer db files for updated data  */
 
@@ -180,6 +203,18 @@ void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
 1412    wormholeTargetSystem9   4   0   Specific target system 9 for wormholes  7
 1457   wormholeTargetDistribution  4   0   This is the distribution ID of the target wormhole distribution     7
     */
+
+/* WH groupID: 988
+ *      70 items in db
+ *
+ * graphicIDs - 3715 (lt blue, red center)
+ *              2017
+ *              2013
+ *              2010
+ *              2009 (dark, single point center with light to rbottom)
+ *              2008
+ *              2007
+ */
 
 /* typeID   typeName    graphicID
 30463   Test wormhole   2907
