@@ -116,6 +116,7 @@ public:
     CargoContainerRef       GetCargoContainer(uint32 containerID);
     WreckContainerRef       GetWreckContainer(uint32 containerID);
     CelestialObjectRef      GetCelestialObject(uint32 celestialID);
+    ProbeItemRef            GetProbeItem(uint32 probeID);
 
 
     /**
@@ -138,6 +139,7 @@ public:
     StructureItemRef        SpawnStructure(ItemData &data);
     CargoContainerRef       SpawnCargoContainer(ItemData &data);
     WreckContainerRef       SpawnWreckContainer(ItemData &data);
+    ProbeItemRef            SpawnProbe(ItemData &data);
     /** @todo  add PI item spawners here */
 
     /*

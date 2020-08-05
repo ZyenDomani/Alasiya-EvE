@@ -68,7 +68,7 @@ void Scan::ProcessScan(bool useProbe/*false*/)
     bool idle = true;
     uint16 ntime = 0, duration = m_client->GetShip()->GetAttribute(AttrDuration).get_int();
     if (duration < 1000)
-        duration = 10000;    // 10s default probe scan time.
+        duration = 7000;    // 7s default probe scan time.
     for (auto cur : m_probeMap) {
         if (cur.second->IsMoving()) {
             idle = false;
@@ -255,7 +255,7 @@ void Scan::ShipScanResult() {
             ssr.deviation = 0;     /* for scan probes */
             ssr.degraded = false;  /* dunno what this does.  have only seen 'false' in packets */
             ssr.probeID = new PyInt(m_client->GetShipID());
-            ssr.certainty = 1;
+            ssr.certainty = anoms.sigStrength;
             ssr.pos = new PyNone();
         ScanResultPos ssr_oed;
             ssr_oed.x = anoms.position.x;
@@ -268,13 +268,11 @@ void Scan::ShipScanResult() {
         resultList->AddItem(ssr.Encode());
     }
 
-    // dict and list are both empty for now.
-    PyDict* probeDict = new PyDict();
-    PyList* mtList = new PyList();
     OnSystemScanStopped osss;
-        osss.scanProbesDict = probeDict; // this seems to be just a list of probeIDs
         osss.systemScanResult = resultList;
-        osss.absentTargets = mtList;
+        // probeDict and absentTargets are both empty when using ship sensors to scan.
+        osss.scanProbesDict = new PyDict();
+        osss.absentTargets = new PyList();
     PyTuple* ev = osss.Encode();
     ev->Dump(SCAN__RSPDUMP, "ssr-    ");
     m_client->SendNotification("OnSystemScanStopped", "charid", &ev);
@@ -539,16 +537,16 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec, GPoi
                 dist /ONE_AU_IN_METERS, rangeMod, scanStrength, probeMultiplier);
     }
 
-    // set minimum to 0.01%  nothing less will show in client
+    // set minimum to 0.01% ...nothing less will show in client
     if (data.certainty < 0.0001)
         data.certainty = 0.0001;
-
-    data.deviation *= (1 - (data.certainty > 1.0f ? 0.98 : data.certainty));
 
     if (data.certainty > 0.99)
         sStatMgr.Increment(Stat::sitesScanned);
 
     // modify reported signal position based on deviation
+    //  *** this should take skills into account also.
+    data.deviation *= (1 - (data.certainty > 1.0f ? 0.999 : data.certainty));
     point.MakeRandomPointOnSphereLayer(data.deviation /2, data.deviation);
     data.sig.position = point;
 

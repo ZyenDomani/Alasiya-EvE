@@ -98,7 +98,7 @@ m_scanShips(false)
 
     // set probe lifetime
     // m_expiry = GetFileTimeNow() + (EvE::Time::Hour *2);  // 2h default lifespan
-    m_expiry = GetFileTimeNow() + self->GetAttribute(AttrExplosionDelay).get_float() *1000000; // ms to filetime
+    m_expiry = GetFileTimeNow() + (self->GetAttribute(AttrExplosionDelay).get_float() *10000); // ms to filetime
     m_lifeTimer.Start(self->GetAttribute(AttrExplosionDelay).get_uint32());
 
     // set str and deviation
@@ -219,28 +219,30 @@ void ProbeSE::Process()
         delete(this);
         return;
     }
-    if (m_returnTimer.Check()) {
-        m_returnTimer.Disable();
-        _log(SCAN__DEBUG, "ProbeSE::Process() return timer hit for probeID %u", m_self->itemID());
-        sBubbleMgr.Add(this);
-        SendWarpEnd();
-        SendRemoveProbe();
-        m_scan->RemoveProbe(this);
-        m_system->RemoveEntity(this);
-        // should we stack these??
-        m_self->Move(m_client->GetShipID(), flagCargoHold, true);
-        return;
-    }
-    if (m_stateTimer.Check()) {
-        m_stateTimer.Disable();
-        _log(SCAN__DEBUG, "ProbeSE::Process() state timer hit for probeID %u  state: %s", m_self->itemID(), GetStateName(m_state).c_str());
-        if (m_state == Probe::State::Warping)
+    if (m_returnTimer.Enabled())
+        if (m_returnTimer.Check()) {
+            m_returnTimer.Disable();
+            _log(SCAN__DEBUG, "ProbeSE::Process() return timer hit for probeID %u", m_self->itemID());
+            sBubbleMgr.Add(this);
             SendWarpEnd();
-        m_self->SetPosition(m_destination);
-        sBubbleMgr.Add(this);   // is this right here?
-        m_state = Probe::State::Idle;
-        SendStateChange(m_state);
-    }
+            SendRemoveProbe();
+            m_scan->RemoveProbe(this);
+            m_system->RemoveEntity(this);
+            // should we stack these??
+            m_self->Move(m_client->GetShipID(), flagCargoHold, true);
+            return;
+        }
+    if (m_stateTimer.Enabled())
+        if (m_stateTimer.Check()) {
+            m_stateTimer.Disable();
+            _log(SCAN__DEBUG, "ProbeSE::Process() state timer hit for probeID %u  state: %s", m_self->itemID(), GetStateName(m_state).c_str());
+            if (m_state == Probe::State::Warping)
+                SendWarpEnd();
+            m_self->SetPosition(m_destination);
+            sBubbleMgr.Add(this);   // is this right here?
+            m_state = Probe::State::Idle;
+            SendStateChange(m_state);
+        }
 }
 
 bool ProbeSE::IsMoving()
@@ -288,7 +290,7 @@ void ProbeSE::UpdateProbe(ProbeData& data)
     m_rangeStep = data.rangeStep;
     m_destination = data.dest;
 
-    float time = 1, dist = GetPosition().distance(m_destination) *10;   // not sure why this doesnt work right w/o the x10
+    float time = 1, dist = GetPosition().distance(m_destination);// *10;   // not sure why this doesnt work right w/o the x10
     if (dist > BUBBLE_RADIUS_METERS){
         m_state = Probe::State::Warping;
         float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float();
@@ -446,10 +448,10 @@ std::string ProbeSE::GetStateName(uint8 state)
 /** @todo  change these to double for higher precision? */
 float ProbeSE::GetDeviation()
 {
-    //Max Deviation = (Scan Range/Base Scan Range) × Base Maximum Deviation × (1 - Pinpointing Skill/10)
     float maxDeviation = m_scanRange /m_self->GetAttribute(AttrBaseScanRange).get_float();
     maxDeviation *= m_scanDeviation;
-    maxDeviation *= (1 - (m_client->GetChar()->GetSkillLevel(EvESkill::AstrometricPinpointing) /10));
+    // fudge this to allow skill to perform better (the purpose of skill)
+    maxDeviation *= (1 - (0.15 * m_client->GetChar()->GetSkillLevel(EvESkill::AstrometricPinpointing))); //15%/lvl
     return maxDeviation;
 }
 
