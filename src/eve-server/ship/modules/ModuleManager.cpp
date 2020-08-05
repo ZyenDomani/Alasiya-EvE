@@ -899,7 +899,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         return;
 
     if (loadQty < chargeRef->quantity()) {
-        chargeRef = chargeRef->Split(loadQty, true, true);
+        chargeRef = chargeRef->Split(loadQty, false, true);
         if (chargeRef.get() == nullptr) {
             // make error here?
             return;
@@ -920,7 +920,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 
     if (loaded) {
         //  merge addt'l charges with currently loaded charges (fillup)
-        pMod->GetLoadedChargeRef()->Merge(chargeRef, loadQty, false);
+        pMod->GetLoadedChargeRef()->Merge(chargeRef, loadQty);
     } else {
         // if module wasnt previously loaded, add to ship's inventory and charge map
         chargeRef->Move(pShipItem->itemID(), flag, pShipItem->HasPilot());

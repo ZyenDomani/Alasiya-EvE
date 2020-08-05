@@ -765,11 +765,10 @@ InventoryItemRef InventoryItem::Split(int32 qty/*0*/, bool notify/*true*/, bool 
     if (iRef.get() == nullptr)
         return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
 
-    if (!silent)
-        //iRef->ChangeOwner(ownerSystem); // this will negate charge item change sending later
-    //else
-        iRef->Move(m_locationID, m_flag, notify);
-
+    if (silent)
+        return iRef;
+        
+    iRef->Move(m_locationID, m_flag, notify);
     return iRef;
 }
 
