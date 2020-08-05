@@ -2553,7 +2553,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
     m_shipHeading = moveVector;
 
     SetUndockSpeed();   /* sets all needed variables for max velocity */
-    mySE->SystemMgr()->AddEntity(pMissile);
+    mySE->SystemMgr()->AddEntity(pMissile, false); // we are not adding missiles to anomaly map
 
     std::vector<PyTuple*> updates;
     SetBallSpeed maxspeed;
