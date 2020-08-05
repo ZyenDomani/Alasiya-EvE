@@ -50,7 +50,6 @@ m_bubbleID(0)
 }
 
 BubbleManager::~BubbleManager() {
-    clear();
 }
 
 int BubbleManager::Initialize() {

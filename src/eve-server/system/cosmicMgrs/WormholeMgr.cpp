@@ -127,12 +127,13 @@ void WormholeMgr::Create(CosmicSignature& sig)
     }
     // set itemID to return to anomaly mgr after creation succeeds
     sig.sigItemID = iRef->itemID();
-    // add wormhole to system (which also adds signal to AnomalyMgr)
-    pSysMgr->AddEntity(wSE);
+    // add wormhole to system (signal added to AnomalyMgr on successful return)
+    pSysMgr->AddEntity(wSE, false);
     // add exit to vector
     m_wormholes.push_back(iRef->itemID());
 
-    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created %s in %s(%u)", iRef->itemName().c_str(), pSysMgr->GetName(), sig.systemID);
+    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created %s in %s(%u) with %.3f% sigStrength.", \
+            iRef->itemName().c_str(), pSysMgr->GetName(), sig.systemID, sig.sigStrength *100);
 }
 
 void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)

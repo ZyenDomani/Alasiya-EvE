@@ -51,7 +51,7 @@ public:
 
     uint32 GetDungeonID()                               { return ++m_dungeonID; }
 
-    std::string GetDungeonType(int8 typeID);
+    const char* GetDungeonType(int8 typeID);
 
 protected:
     typedef std::map<uint32, Dungeon::Template> DunTemplateDef;                       //templateID/data

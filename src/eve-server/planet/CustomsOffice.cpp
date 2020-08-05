@@ -63,7 +63,7 @@ void CustomsSE::Init()
 
     // pull saved data from db
     if (!m_db.GetCustomsData(m_cData, m_oData)) {
-        _log(POS__MESSAGE, "CustomsSE::Init() - %s(%u) has no saved data.  Initalizing default set.", m_self->itemName().c_str(), m_cData.itemID);
+        _log(POS__MESSAGE, "CustomsSE::Init() - %s(%u) has no saved data.  Initializing default set.", m_self->itemName().c_str(), m_cData.itemID);
         InitData();
         m_db.SaveCustomsData(m_cData, m_oData);
     }

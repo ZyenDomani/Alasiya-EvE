@@ -208,6 +208,8 @@ public:
 
     float GetRadTic()                                   { return m_orbitRadTic; }
 
+    // set all movement vars for missile and add to system
+    //  this is used by all entities (pc, npc, drone, sentry, pos, etc)
     void MakeMissile(Missile* missile);
 
 protected:

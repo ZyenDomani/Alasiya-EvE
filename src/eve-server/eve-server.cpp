@@ -677,7 +677,7 @@ int main( int argc, char* argv[] )
     /** @note  this is NOT used correctly yet...  */
     //sLog.Green("       ServerInit", "Priming cached objects.");
     //pyServMgr.cache_service->PrimeCache();
-    sLog.Green("       ServerInit", "Initalizing BulkData");
+    sLog.Green("       ServerInit", "Initializing BulkData");
     if (sConfig.server.BulkDataOD)
         sLog.Yellow("      BulkDataMgr", "PreLoading Disabled. BulkData will load on first call.");
     else

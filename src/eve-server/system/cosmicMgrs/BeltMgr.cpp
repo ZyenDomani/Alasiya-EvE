@@ -10,7 +10,7 @@
 
  /** @note  roid save/load uses InventoryItem::Load(), which saves/reads from entity table, which we DONT want for roids.
   * for now, save and load are disabled, roids are temp items, and use generic InventoryItem class.
-  * this will have to be revisited and corrected to properly implement persistant roids/belts
+  * this will have to be revisited and corrected to properly implement persistent roids/belts
   */
 
 
@@ -36,7 +36,7 @@ m_initialized(false)
 void BeltMgr::Init(uint32 regionID)
 {
     if (!sConfig.cosmic.BeltEnabled) {
-        _log(COSMIC_MGR__MESSAGE, "BeltMgr System Disabled.  Not Initalizing Belt Manager for %s(%u)", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "BeltMgr System Disabled.  Not Initializing Belt Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return;
     }
 
@@ -122,6 +122,9 @@ void BeltMgr::SetActive(uint16 bubbleID, bool active/*true*/)
 }
 
 void BeltMgr::Process() {
+    if (!m_initialized)
+        return;
+    
     if (m_respawnTimer.Check()) {
         for (auto cur : m_spawned)
             if (!cur.second) {
@@ -339,7 +342,8 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     else
         itr->second = false;
 
-    _log(COSMIC_MGR__TRACE, "BeltMgr::SpawnBelt - Belt spawned with %u roids of %s in beltID %u for %s(%u)", pcs, (ice?"ice":"ore"), beltID, m_system->GetName(), m_systemID );
+    _log(COSMIC_MGR__TRACE, "BeltMgr::SpawnBelt - Belt spawned with %u roids of %s in %s %u for %s(%u)", \
+            pcs, (ice?"ice":"ore"), (anomaly?"anomalyID":"beltID"), beltID, m_system->GetName(), m_systemID );
 }
 
 uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, uint16>& roids) {

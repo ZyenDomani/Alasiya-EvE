@@ -139,7 +139,7 @@ bool DungeonDataMgr::GetTemplate(uint32 templateID, Dungeon::Template& dTemplate
     return true;
 }
 
-std::string DungeonDataMgr::GetDungeonType(int8 typeID)
+const char* DungeonDataMgr::GetDungeonType(int8 typeID)
 {
     switch (typeID) {
         case Dungeon::Type::Mission:        return "Mission";
@@ -184,12 +184,12 @@ bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
     m_spawnMgr = spawnMgr;
 
     if (m_anomMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. anomMgr == nullptr.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__ERROR, "System Init Fault. anomMgr == nullptr.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return m_initalized;
     }
 
     if (m_spawnMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return m_initalized;
     }
 
@@ -199,17 +199,17 @@ bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
     }
 
     if (!sConfig.cosmic.AnomalyEnabled) {
-        _log(COSMIC_MGR__MESSAGE, "Anomaly System Disabled.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "Anomaly System Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return true;
     }
 
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
-        _log(COSMIC_MGR__MESSAGE, "SpawnMgr Disabled.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "SpawnMgr Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return true;
     }
 
     if (!sConfig.cosmic.BeltEnabled) {
-        _log(COSMIC_MGR__MESSAGE, "BeltMgr Disabled.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "BeltMgr Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return true;
     }
 
@@ -586,7 +586,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     uint32 templateID = (sig.dungeonType *10000) + (sec *1000) + (type *100) + (level *10) + faction;
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::MakeDungeon() - Calling Create for type %s(%u) using templateID %u", \
-            sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, templateID);
+            sDunDataMgr.GetDungeonType(sig.dungeonType), sig.dungeonType, templateID);
 
     return Create(templateID, sig);
 }
@@ -798,7 +798,7 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
             continue;
 
         _log(COSMIC_MGR__DEBUG, "DungeonMgr::AddDecoToVector() - %s(%u):  faction %u, group %u, type %u, level %u, count %u, baseLvl %u",\
-                    sDunDataMgr.GetDungeonType(dunType).c_str(), dunType, factionID, \
+                    sDunDataMgr.GetDungeonType(dunType), dunType, factionID, \
                     cur, type, level, count, origLevel);
 
         auto groupRange = sDunDataMgr.groups.equal_range(cur);

@@ -110,20 +110,20 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 
     if (is_log_enabled(DAMAGE__MESSAGE)) {
         if (d.srcSE->IsNPCSE()) {
-            _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+            _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
         } else if (d.srcSE->IsDroneSE()){
-            _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+            _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
         } else if (d.srcSE->HasPilot()) {
-            _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from %s's %s(%u) using %s(%u) %s with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+            _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from %s's %s(%u) using %s(%u) %s with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetPilot()->GetName(), d.srcSE->GetName(), d.srcSE->GetID(), \
                     d.weaponRef->itemName().c_str(), d.weaponRef->itemID(), (d.chargeRef ? d.chargeRef->itemName().c_str() : ""), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
         } else {
-            _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
+            _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
         }
     }
 

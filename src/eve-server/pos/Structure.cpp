@@ -298,7 +298,7 @@ void StructureSE::Init()
     }
 
     if (!m_db.GetBaseData(m_data)) {
-        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no saved data.  Initalizing default set.", m_self->itemName().c_str(), m_data.itemID);
+        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no saved data.  Initializing default set.", m_self->itemName().c_str(), m_data.itemID);
         InitData();
         m_db.SaveBaseData(m_data);
     }

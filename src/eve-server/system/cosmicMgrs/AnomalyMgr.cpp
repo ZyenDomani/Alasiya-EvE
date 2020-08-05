@@ -334,8 +334,9 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
 
     //m_mdb.SaveAnomaly(sig);
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal type %s(%u) for %s in system %u", \
-                sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, sig.sigName.c_str(), sig.systemID);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal %s(%u) for %s in %s(%u) with %.3f%% sigStrength.", \
+            sDunDataMgr.GetDungeonType(sig.dungeonType), sig.dungeonType, \
+            sig.sigName.c_str(), m_system->GetName(), sig.systemID, sig.sigStrength *100);
 }
 
 uint8 AnomalyMgr::GetDungeonType()
@@ -377,7 +378,9 @@ uint8 AnomalyMgr::GetDungeonType()
             ++m_Sigs;
         } break;
         case Wormhole: {   // 6
-            if (m_WH != 0) // cap at 1 per system, except k162...which ISNT created in this system (it's an exit, from WMS)
+            // cap at 1 per system, except k162...which ISNT created in this system (it's an exit, from WMS)
+            //  this will need updating and be controlled by WMS.  it will have full control of WH amounts/locations
+            if (m_WH != 0)
                 return GetDungeonType();
 
             ++m_WH;
@@ -403,7 +406,7 @@ uint8 AnomalyMgr::GetDungeonType()
         } break;
     }
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::GetDungeonType() - Returning %s(%u)", sDunDataMgr.GetDungeonType(typeID).c_str(), typeID);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::GetDungeonType() - Returning %s(%u)", sDunDataMgr.GetDungeonType(typeID), typeID);
     return typeID;
 }
 
@@ -505,8 +508,8 @@ void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
         } break;
     }
 
-    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::AddSignal() - adding %s to anomaly list as %s with %.5f sigStrength.", \
-                iRef->itemName().c_str(), GetScanGroupName(sig.sigTypeID), sig.sigStrength *100);
+    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::AddSignal() - adding %s to anomaly list as %s(%u) with %.3f%% sigStrength.", \
+                iRef->itemName().c_str(), GetScanGroupName(sig.scanGroupID), sig.scanGroupID, sig.sigStrength *100);
 
     // add new sig to our map
     m_sigBySigID.emplace(sig.sigID, sig);
