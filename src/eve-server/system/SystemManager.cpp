@@ -207,8 +207,9 @@ bool SystemManager::LoadCosmicMgrs()
 bool SystemManager::ProcessTic() {
     double profileStartTime = GetTimeUSeconds();
 
-    /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid when SE->Process() returns
-     *      because Process() will add/remove from the map as needed (new objects, destroyed objects, moved objects, etc)
+    /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid
+     *      when SE->Process() returns because Process() will add/remove from the map as needed
+     *      (new objects, destroyed objects, moved objects, etc)
      *  std::map internally orders items by key(itemID here), so use an int var to hold last-processed itemID (mLast).
      *  when iteration starts over, increment until cur > mLast and continue from there to end of list.
      */
@@ -1482,9 +1483,11 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         sig.ownerID = cur.second->GetOwnerID();
         sig.sigID = sEntityList.GetAnomalyID();         // result.id
         sig.sigItemID = cur.first;
-        sig.sigStrength = 1.0;
+        sig.sigStrength = 1.0f;
         sig.systemID = m_data.systemID;
         sig.position = cur.second->GetPosition();
+        sig.sigGroupID = cur.second->GetGroupID();      // result.groupID
+        sig.sigTypeID = cur.second->GetTypeID();        // result.typeID
         // if scanGroupID is anom or sig, use scanAttributeID to determine site type (in client code)
         // scanGroupID must be one of the 5 groups coded in client (sig, anom, ship, drone, structure)
         // scanGroupID of sig and anom are cached on client side
@@ -1493,8 +1496,6 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
             case EVEDB::invCategories::Charge: { // probes, missiles (at time of scan), and ??
                 sig.scanAttributeID = AttrScanStrengthDronesProbes;   // result.strengthAttributeID
                 sig.scanGroupID = Scanning::Group::DroneOrProbe;
-                sig.sigGroupID = cur.second->GetGroupID();      // result.groupID
-                sig.sigTypeID = cur.second->GetTypeID();        // result.typeID
             } break;
             case EVEDB::invCategories::Orbitals:
             case EVEDB::invCategories::Structure:
@@ -1502,14 +1503,10 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
             case EVEDB::invCategories::SovereigntyStructure: {
                 sig.scanAttributeID = AttrScanStrengthStructures;   // result.strengthAttributeID
                 sig.scanGroupID = Scanning::Group::Structure;
-                sig.sigGroupID = cur.second->GetGroupID();      // result.groupID
-                sig.sigTypeID = cur.second->GetTypeID();        // result.typeID
             } break;
             case EVEDB::invCategories::Ship: {
                 sig.scanAttributeID = AttrScanStrengthShips;   // result.strengthAttributeID
                 sig.scanGroupID = Scanning::Group::Ship;
-                sig.sigGroupID = cur.second->GetGroupID();      // result.groupID
-                sig.sigTypeID = cur.second->GetTypeID();        // result.typeID
             } break;
             case EVEDB::invCategories::Entity: {
                 sig.scanAttributeID = AttrScanStrengthSignatures;       // result.strengthAttributeID
