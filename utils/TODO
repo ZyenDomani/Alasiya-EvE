@@ -232,11 +232,14 @@ when using .showall or .bubbletrack, the items need to be put into anomalymgr ma
     - need to get items from anomalyMgr instead of sysmgr and bubblemgr (currently using both)
 anomalies need a groupID that's NOT "unknown"
 check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
-probes position wrong.  not updated properly?  **not updated AT ALL.**
+probe/scan proc calls done on client timer.  this needs change/rewrite/something else
     should we use destiny to move probes?
+set probe life timer is now correct, and using db data for lifetime.
+probes in space are showing in scan window...can get to 100% with 5 probes, but position still wrong
 figure out how to remove YOUR active probes from scan
-signal str on anomaly when using probe wrong
-determine when probes are abandoned and add to anom list
+probe shows "warp/move" then "scanning" (as it should) on first pull.
+    after first scan, probe will show warp/move as needed, then straight to 'idle'.
+    all subsequent runs are move/idle.  does not show 'scanning' again after first time.
 
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 
