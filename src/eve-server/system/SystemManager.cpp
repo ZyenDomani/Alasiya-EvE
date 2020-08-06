@@ -1483,7 +1483,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         sig.ownerID = cur.second->GetOwnerID();
         sig.sigID = sEntityList.GetAnomalyID();         // result.id
         sig.sigItemID = cur.first;
-        sig.sigStrength = 1.0f;
+        sig.sigStrength = 0.9f; // these arent warpable yet
         sig.systemID = m_data.systemID;
         sig.position = cur.second->GetPosition();
         sig.sigGroupID = cur.second->GetGroupID();      // result.groupID

@@ -236,11 +236,12 @@ void Scan::ShipScanResult() {
     /** @todo  see client code to verify what it expects, and what it can calculate */
     // client scan data found in EVE_Scanning.h
     std::vector<CosmicSignature> anom;
-    m_system->GetAnomMgr()->GetAnomalyList(anom);
     if (m_client->IsShowall()) {
         m_system->GetAllEntities(anom);
+        // bubble centers only populate when bubble markers are enabled.
         sBubbleMgr.GetBubbleCenterMarkers(m_system->GetID(), anom);
-    }
+    } else
+        m_system->GetAnomMgr()->GetAnomalyList(anom);
 
     PyList* resultList = new PyList();
     // NOTE. cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther

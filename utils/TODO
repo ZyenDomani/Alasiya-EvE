@@ -240,8 +240,11 @@ figure out how to remove YOUR active probes from scan
 probe shows "warp/move" then "scanning" (as it should) on first pull.
     after first scan, probe will show warp/move as needed, then straight to 'idle'.
     all subsequent runs are move/idle.  does not show 'scanning' again after first time.
+return works correctly, as does destroy
 
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
+    moved to signature from anomaly.
+    having trouble scanning it down. (cant get higher than 1%)
 
 
 player drones - skeleton started. needs functionality    -priority level: med-hi
