@@ -147,8 +147,9 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
         _log(INV__ERROR, "GetContainerContents() - Unable to load inventory for itemID %u in locationID %u", args.arg1, args.arg2);
         return nullptr;
     }
+    /** @todo this will need lots-o-work for corp usage, and the List() function, as well.  */
     if (item->ownerID() == call.client->GetCharacterID())
-        _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is owned by calling character %s(%u) ", \
+        _log(INV__MESSAGE, "Handle_GetContainerContents() -  %s(%u) is owned by calling character %s(%u) ", \
                     item->name(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
     else if ((item->ownerID() != call.client->GetCharacterID()) and IsSolarSystem(args.arg2))
         _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is in space and not owned by calling character %s(%u) ", \

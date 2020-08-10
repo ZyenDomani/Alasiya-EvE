@@ -952,6 +952,15 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
      *   -allan 2Jul20
      */
 
+    // check for pod...no cargo
+    if (pClient->GetShip()->typeID() == itemTypeCapsule) {
+        char reply[21];
+        snprintf(reply, 21, "You Pod has no cargo.");
+        pClient->SendInfoModalMsg(reply);
+        return nullptr;
+    }
+
+    // build attr-to-flag map
     std::map<uint16, EVEItemFlags> cargoAttrToFlag;
     cargoAttrToFlag[AttrDroneCapacity] = flagDroneBay;
     cargoAttrToFlag[AttrHasShipMaintenanceBay] = flagShipHangar;
@@ -972,20 +981,19 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
 
     uint32 qty = 0, count = 0, corp = 0;
     std::multimap<uint8, InventoryItemRef> cargoMap;
-    uint32 inventoryID = pClient->GetShipID();
-    ShipItemRef ship = sItemFactory.GetShip(inventoryID);
-    Inventory* inv = ship->GetMyInventory();
+    ShipItemRef shipRef = pClient->GetShip();
+    Inventory* inv = shipRef->GetMyInventory();
     inv->GetCargoList(cargoMap);
 
     std::ostringstream str;
     str.clear();
-    str << "Reported Cargo in %s(%u)  [LineCount:%u]<br>"; //60
+    str << "Reported Cargo in %s (%u)  [LineCount:%u]<br>"; //60
     str << "Hold Name    Volume in m3. Stored/Total<br>"; //40
     str << "    Qty  ItemName  (volume each)  stack volume<br>"; //50
 
-    // get available cargo holds in ship and list contents
+    // get available cargo holds in ship and list contents for each
 
-    // all ships have flagCargoHold
+    // all ships have flagCargoHold (except pod)
     ++count;
     str << "<br>" << sDataMgr.GetFlagName(flagCargoHold);
     str << "    " << inv->GetStoredVolume(flagCargoHold);
@@ -1004,9 +1012,9 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
         }
     }
 
-    // loop thru cargo list
+    // loop thru cargo list in all possible holds
     for (auto cur : cargoAttrToFlag) {
-        if (ship->HasAttribute(cur.first) and (ship->GetAttribute(cur.first) > EvilZero)) {
+        if ( shipRef->HasAttribute(cur.first) and ( shipRef->GetAttribute(cur.first) > EvilZero)) {
             ++count;
             str << "<br>" << sDataMgr.GetFlagName(cur.second);
             str << "    " << inv->GetStoredVolume(cur.second);
@@ -1028,9 +1036,10 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     }
 
     // check for corp hangars
-    if (ship->HasAttribute(AttrHasCorporateHangars)) {
+    if ( shipRef->HasAttribute(AttrHasCorporateHangars)) {
         ++count;
         corp = 190;
+        // get corp's hangar names instead of default flag names
         std::map<uint8, std::string> hangarNames;
         ServiceDB::GetCorpHangarNames(pClient->GetCorporationID(), hangarNames);
         str << "<br><br>Corp Hangars share capacity. (currently incomplete)<br>"; // 20
@@ -1075,7 +1084,7 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     size += 150;
     size += corp;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), ship->name(), ship->itemID(), count);
+    snprintf(reply, size, str.str().c_str(), shipRef->name(), shipRef->itemID(), count);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
