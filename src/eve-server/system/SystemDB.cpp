@@ -79,7 +79,7 @@ PyPackedRow* SystemDB::GetSolarSystem(uint32 ssid) {
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: no solarsystem for id %d", ssid);
+        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: no solarsystem for id %u", ssid);
         return nullptr;
     }
 
@@ -130,9 +130,9 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
         " WHERE e.locationID = %u"
-        "  AND g.categoryID NOT IN (%d, %d, %d, %d)"    // not Characters, stations, or roids
+        "  AND g.categoryID NOT IN (%u,%u,%u,%u)"    // not Characters, stations, or roids
         "  AND (e.ownerID = 1"      // get dynamics owned by the system -include abandonded ships
-        "  OR g.categoryID IN (%u, %u))"   // or orbitals and SOV structs owned by pc corps
+        "  OR g.categoryID IN (%u,%u))"   // or orbitals and SOV structs owned by pc corps
         "  ORDER BY e.itemID",
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
@@ -201,13 +201,14 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
         " WHERE e.locationID = %u"
-        "  AND g.categoryID IN (%d, %d, %d, %d, %d, %d, %d)"
+        "  AND g.categoryID IN (%u,%u,%u,%u,%u,%u,%u,%u)"
         "  AND e.ownerID != 1"  // get dynamics not owned by the system
         " ORDER BY e.itemID",   // should we order by category?  or group?
         systemID, Celestial/*2*/,   // Celestial is for containers (wrecks, jetcans, lsc)
+        Charge /*8*/,   // this is for probes and spheres launched from ship (abandonded)
         Deployable/*22*/,           // include deployed items owned by players or corps
         Drone/*18*/, Entity/*11*/,  // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
-        /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/ )) {
+        /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/)) {
             codelog(DATABASE__ERROR, "Error in LoadPlayerDynamicEntities query: %s", res.error.c_str());
             return false;
     }
