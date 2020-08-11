@@ -63,6 +63,7 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void Killed(Damage &fatal_blow);
+    virtual void Abandon();     // reset all owner info and bubblecast new data
 
     virtual void TargetAdded(SystemEntity *who);
     virtual void TargetLost(SystemEntity *who);
@@ -74,10 +75,11 @@ public:
     DroneAIMgr* GetAI()                                 { return m_AI; }
 
     void Launch(ShipSE* pShipSE);           //add drone entity to system
-    //begin idle orbit around assigned ship
     void Online(ShipSE* pShipSE=nullptr);         //  if nullptr sent, assign to controlling ship
     void Offline();
-    void StateChange(bool online=false);
+    void StateChange();
+    //begin idle orbit around assigned ship
+    void IdleOrbit(ShipSE* pShipSE=nullptr);
 
     void SaveDrone();
     void RemoveDrone();
@@ -105,10 +107,10 @@ public:
     void Disable()                                      { m_online = false; }
     bool IsEnabled()                                    { return m_online; }
 
-    void AssignShip(ShipSE* pSE)                          { m_AI->AssignShip(pSE); }
+    void AssignShip(ShipSE* pSE)                        { m_AI->AssignShip(pSE); }
     void SetTarget(SystemEntity* pSE = nullptr)         { (pSE == nullptr ? 0 : m_targetID = pSE->GetID()); }
 
-    ShipSE* GetHomeShip()                                 { return m_pShipSE; }
+    ShipSE* GetHomeShip()                               { return m_pShipSE; }
 
 protected:
     Client* m_pClient;          //we do not own this

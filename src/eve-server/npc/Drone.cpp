@@ -133,13 +133,12 @@ void Drone::SaveDrone() {
 }
 
 void Drone::RemoveDrone() {
-    /** @todo (Allan) this may need more here */
+    // this seems to work properly
     m_self->Delete();
     delete this;
 }
 
 void Drone::Launch(ShipSE* pShipSE) {
-    m_online = true;
     m_pShipSE = pShipSE;
 
     m_controllerID = pShipSE->GetID();
@@ -151,24 +150,41 @@ void Drone::Launch(ShipSE* pShipSE) {
 }
 
 void Drone::Online(ShipSE* pShipSE/*nullptr*/) {
-    StateChange(true);
+    m_online = true;
+    StateChange();
 
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
-    AssignShip(pShipSE);
+    m_AI->AssignShip(pShipSE);
+}
+
+void Drone::Offline() {
+    // this is called by abandon also
+    m_destiny->Stop();
+    m_AI->AssignShip(nullptr);
+    m_online = false;
+    StateChange();
+}
+
+void Drone::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
+    if (pShipSE == nullptr)
+        pShipSE = m_pShipSE;
+
+    if (!m_online)
+        return;         // error here?
+
+    // TODO:  fix these speeds
     // set speed and begin orbit
     m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
 }
 
-void Drone::Offline() {
-    m_destiny->Stop();
-    AssignShip(nullptr);
-    StateChange();
+void Drone::Abandon() {
+    SystemEntity::Abandon();
+    Offline();
 }
-
 
 /*   when drone is scooped up....
  *
@@ -184,9 +200,9 @@ void Drone::Offline() {
  *                        [PyNone]
  */
 
-void Drone::StateChange(bool online/*false*/) {
+void Drone::StateChange() {
     //OnDroneStateChange(droneID, ownerID, controllerID, activityState, droneTypeID, controllerOwnerID, targetID)
-    if (online) {
+    if (m_online) {
         OnDroneStateChange du;
             du.droneID = m_self->itemID();
             du.ownerID = m_ownerID;

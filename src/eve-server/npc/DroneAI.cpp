@@ -76,16 +76,17 @@ void DroneAIMgr::Process() {
      *   Departing2        = 5,  // leaving.  different from Departing
      *   Pursuit           = 6,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
      *   Fleeing           = 7,  // running away
-     *   Operating         = 9,  // whats diff from engaged here?
+     *   Operating         = 9,  // whats diff from engaged here?  mining maybe?
      *   Engaged           = 10, // non-combat? - needs targetID
      *   // internal only
      *   Unknown           = 8,  // as stated
      *   Guarding          = 11,
      *   Assisting         = 12,
-     *   Incapacitated     = 13  //
+     *   Incapacitated     = 13  // out of control range, but online
      */
 
     // test for drone attributes here - aggressive, focus fire, attack/follow
+    // test for control distance here also.  offline drones outside this  (AttrDroneControlDistance)
     switch(m_state) {
         case DroneAI::State::Invalid: {
             // check everything in this state.   return to ship?
@@ -164,13 +165,14 @@ void DroneAIMgr::SetIdle() {
          m_pDrone->GetName(), m_pDrone->GetID());
     m_state = DroneAI::State::Idle;
 
-    // orbit assigned ship
-    m_pDrone->Online(m_assignedShip);
-
+    // disable ewar timers
     m_webifierTimer.Disable();
     m_beginFindTarget.Disable();
     m_mainAttackTimer.Disable();
     m_warpScramblerTimer.Disable();
+
+    // orbit assigned ship
+    m_pDrone->IdleOrbit(m_assignedShip);
 }
 
 void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
@@ -397,7 +399,7 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
             );
 
     d *= m_pDrone->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
-    d *= sConfig.rates.damageRate;
+    d *= sConfig.rates.damageRate;      /** @todo this should be a separate config value */
     pTarget->ApplyDamage(d);
 }
 
@@ -409,7 +411,7 @@ std::string DroneAIMgr::GetStateName(int8 stateID)
         case DroneAI::State::Combat:          return "Combat";
         case DroneAI::State::Mining:          return "Mining";
         case DroneAI::State::Approaching:     return "Approaching";
-        case DroneAI::State::Departing:       return "Departing";
+        case DroneAI::State::Departing:       return "Returning to ship";
         case DroneAI::State::Departing2:      return "Departing2";
         case DroneAI::State::Pursuit:         return "Pursuit";
         case DroneAI::State::Engaged:         return "Engaged";
