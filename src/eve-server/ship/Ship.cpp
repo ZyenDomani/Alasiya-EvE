@@ -107,7 +107,7 @@ void ShipItem::SetPlayer(Client* pClient) {
         SetAttribute(AttrOnline, EvilZero, false);
         if (m_pilot != nullptr)
             pInventory->RemoveItem(m_pilot->GetChar());
-        // remove ship effects and char skill effects for char leaving ship here.
+        // remove ship effects and char skill effects for char leaving ship.
         ProcessEffects(false);
         // should we check for cargo and damage after char leaves ship?  maybe later
         m_onlineModuleVec.clear();
@@ -122,9 +122,11 @@ void ShipItem::SetPlayer(Client* pClient) {
 
     Init();
 
+    // proc effects when changing ships, or on login.
+    ProcessEffects(true, IsSolarSystem(m_locationID));
+
     // this hits on login and when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
     if (IsSolarSystem(m_locationID)) {
-        ProcessEffects(true, true);
         SetFlag(flagAutoFit);
         /*  not sure if we're gonna keep this in here....
         if (pClient->IsLogin()) {
@@ -161,6 +163,17 @@ void ShipItem::Init()
 }
 
 void ShipItem::InitPod() {
+    SetAttribute(AttrOnline,                            EvilOne, false);
+    SetAttribute(AttrVolume,                            GetPackagedVolume(), false);
+    SetAttribute(AttrCpuLoad,                           EvilZero, false);
+    SetAttribute(AttrPowerLoad,                         EvilZero, false);
+
+    // Check for existence of attributes.  if not loaded then set them to default values:
+    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, EvilZero, false);
+    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, EvilZero, false);
+    // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
+    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrShieldCharge,  GetAttribute(AttrShieldCapacity), false);
+
     m_ModuleManager->Initialize();
 
     // pod will always be full when activated
@@ -316,8 +329,8 @@ void ShipItem::Delete() {
 
 /** @todo this will need more work to correctly check hold capacity for offline/unloaded ships */
 double ShipItem::GetRemainingVolumeByFlag(EVEItemFlags flag) const {
-    // updated to use inventory  -allan 26Jul16  -fixed 22Nov18
-    return (pInventory->GetCapacity(flag) - pInventory->GetStoredVolume(flag));
+    // updated to use inventory  -allan 26Jul16  -fixed 22Nov18  -updated to new call 08Aug20
+    return pInventory->GetRemainingCapacity(flag);
 }
 
 void ShipItem::ProcessModules() {
@@ -1755,9 +1768,9 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
         Ship       //ship effect
         Subsystem  //module effect
         Rigs       //module effect
-        Hi         //module effect
-        Mid        //module effect
         Low        //module effect
+        Mid        //module effect
+        Hi         //module effect
     */
     if (add) {
         m_pilot->GetChar()->ProcessEffects(this);
@@ -1938,6 +1951,13 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             if (iRef->categoryID() != EVEDB::invCategories::Drone) {
                 pClient->SendErrorMsg("%s cannot be stowed in the Drone Bay", iRef->group().name().c_str());
                 return false;
+            }
+            if (m_type.groupID() == EVEDB::invGroups::Supercarrier) {
+                // these can only carry fighters and fighter/bombers in drone bay.  enforce that here.
+                if ((iRef->groupID() != EVEDB::invGroups::Fighter_Bomber) and (iRef->groupID() != EVEDB::invGroups::Fighter_Drone)) {
+                    pClient->SendErrorMsg("The %s can only carry fighter drones in it's Drone Bay.  The %s is not allowed.", name(), iRef->name());
+                    return false;
+                }
             }
         } break;
         case flagShipHangar: {    //AttrShipMaintenanceBayCapacity
@@ -2731,16 +2751,6 @@ void ShipSE::ApplyBoost(BoostData& bData)
 //{'FullPath': u'UI/Messages', 'messageID': 257802, 'label': u'DronesDroppedBecauseOfBandwidthModificationBody'}(u'The drone control bandwidth of your ship has been modified causing you to lose the ability to control some drones.', None, None)
 
 bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
-    if (GetPilot()->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() <= m_drones.size()) {
-        std::map<std::string, PyRep *> arg;
-        arg["typeID"] = new PyInt(dRef->typeID());
-        throw PyException(MakeUserError("NoDroneManagementAbilitiesLeft", arg));
-        //{'FullPath': u'UI/Messages', 'messageID': 259140, 'label': u'NoDroneManagementAbilitiesLeftBody'}(u'You cannot launch {[item]item.name} because you are already controlling {[numeric]limit} drones, as much as you have skill to.', None, {u'{[numeric]limit}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'limit'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
-    }
-
-    // add drone to launched drone map (whether onlined or not)
-    m_drones.emplace(dRef->itemID(), dRef.get());
-
     Character* pChar = GetPilot()->GetChar().get();
     sLog.Magenta("ShipSE::LaunchDrone()","%s: Launching drone %u",  pChar->name(), dRef->itemID());
 
@@ -2759,35 +2769,33 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
         data.ownerID = pChar->itemID();
     Drone* pDrone = new Drone(dRef, m_services, m_system, data);
 
-    // ship will launch all drones pilot has skill for
+    // tell new drone it's being launched.
     pDrone->Launch(this);
+    // add drone to launched drone map (whether onlined or not)
+    m_drones.emplace(dRef->itemID(), dRef.get());
+
     /*
     AttrDroneBandwidth = 1271,     <-- ship attribute  (total)
     AttrDroneBandwidthUsed = 1272, <-- drone attribute
     AttrDroneBandwidthLoad = 1273, <-- ship attribute  (current used)
     */
-    //  if ship doesnt have bandwidth for drone, it will not online (inert)
+    //  if ship doesnt have bandwidth for drone, it will not online after launch (inert)
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
     load += dRef->GetAttribute(AttrDroneBandwidthUsed);
     if (load <= m_shipRef->GetAttribute(AttrDroneBandwidth)) {
+        pDrone->Online();
         pDrone->GetAI()->SetIdle();
         m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
-    } else {
-        std::map<std::string, PyRep *> arg;
-        arg["droneName"] = new PyString( dRef->name());
-        arg["droneBandwidthUsed"] = new PyInt( dRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32());
-        arg["bandwidthLeft"] = new PyInt(m_shipRef->GetAttribute(AttrDroneBandwidth).get_uint32() - m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32());
-        throw PyException(MakeUserError("MaxBandwidthExceeded2", arg));
+        return true;
     }
     //{'FullPath': u'UI/Messages', 'messageID': 258031, 'label': u'MaxBandwidthExceededBody'}(u"You don't have enough bandwidth to launch {droneName}. You need {bandwidthNeeded} Mbit/s but {droneName} requires {droneBandwidthUsed} Mbit/s.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}, u'{bandwidthNeeded}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthNeeded'}})
     //{'FullPath': u'UI/Messages', 'messageID': 258041, 'label': u'MaxBandwidthExceeded2Body'}(u"You don't have enough bandwidth to launch {droneName}. You need {droneBandwidthUsed} Mbit/s but only have {bandwidthLeft} Mbit/s available.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{bandwidthLeft}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthLeft'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}})
-
-    return true;
+    return false;
 }
 
 void ShipSE::ScoopDrone(SystemEntity* pDroneSE) {
     m_drones.erase(pDroneSE->GetID());
-    pDroneSE->GetDroneSE()->StateChange();
+    pDroneSE->GetDroneSE()->Offline();
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
     load -= pDroneSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
     m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
@@ -2810,7 +2818,7 @@ void ShipSE::AbandonDrones() {
         pSE = m_system->GetSE(cur.first);
         if (pSE != nullptr)
             if (pSE->IsDroneSE()) {
-                pSE->GetDroneSE()->Offline();
+                pSE->GetDroneSE()->Abandon();
                 load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
             }
     }

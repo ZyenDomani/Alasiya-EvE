@@ -365,6 +365,8 @@ public:
     void AbandonDrones();
     bool LaunchDrone(InventoryItemRef dRef);
     void ScoopDrone(SystemEntity* pDroneSE);
+    // returns current count of drones in space for this ship
+    uint8 DroneCount()                                  { return m_drones.size(); }
 
 protected:
     ShipItemRef m_shipRef;
