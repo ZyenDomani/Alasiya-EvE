@@ -256,6 +256,7 @@ void SystemEntity::Abandon()
     m_fleetID = 0;
     m_ownerID = 1;
     m_self->ChangeOwner(1); // update this to use system owner?    not sure.  logs show this as "1" for all non-player items
+    /** @todo  should this have a slimupdate or bubblecast or something?  */
 }
 
 

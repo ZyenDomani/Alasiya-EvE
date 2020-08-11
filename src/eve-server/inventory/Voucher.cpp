@@ -71,43 +71,7 @@ PyResult VoucherService::Handle_GetObject( PyCallArgs& call ) {
     // this is how i return objects for method chaining
     //we just bind up a new voucher object for item requested and give it back to them.
     VoucherBound *vb = new VoucherBound(m_manager, iRef);
-    PyRep *result = m_manager->BindObject(call.client, vb );
-    return result;
-
-    // this isnt working right...
-    PyList* header = new PyList();
-        header->AddItemString("itemID");
-        header->AddItemString("typeID");
-        header->AddItemString("ownerID");
-        header->AddItemString("locationID");
-        header->AddItemString("flagID");
-        header->AddItemString("quantity");
-        header->AddItemString("groupID");
-        header->AddItemString("categoryID");
-        header->AddItemString("customInfo");
-    dict->SetItemString("header", header);
-    PyDict* data = new PyDict();
-        data->SetItemString( "itemID",       new PyInt(iRef->itemID()));
-        data->SetItemString( "typeID",       new PyInt(iRef->type().id()));
-        data->SetItemString( "ownerID",      new PyInt(iRef->ownerID()));
-        data->SetItemString( "locationID",   new PyInt(iRef->locationID()));
-        data->SetItemString( "flagID",       new PyInt(iRef->flag()));
-        data->SetItemString( "quantity",     new PyInt(iRef->quantity()));
-        data->SetItemString( "groupID",      new PyInt(iRef->type().groupID()));
-        data->SetItemString( "categoryID",   new PyInt(iRef->type().categoryID()));
-        data->SetItemString( "customInfo",   new PyString(iRef->customInfo()));
-    dict->SetItemString("data", data );
-
-    dict->SetItemString("description",   new PyString(BookmarkDB::GetBookmarkName(atoi(iRef->customInfo().c_str()))));
-
-    return new PyObject("util.Row", dict);
-    /*
-     * /client/script/ui/shared/container.py(514) SortIconsBy
-     * /client/script/ui/util/uix.py(283) GetItemName
-     * /../carbon/common/script/sys/row.py(33) __getattr__
-     *        self = <error printing value: KeyError('line',)>        name = 'GetDescription'
-     * AttributeError: GetDescription
-     */
+    return m_manager->BindObject(call.client, vb );
 }
 
 
@@ -132,14 +96,8 @@ VoucherBound::~VoucherBound()
 }
 
 PyResult VoucherBound::Handle_GetDescription(PyCallArgs &call) {
-    /*   name = voucher.GetDescription()
-        name, _desc = sm.GetService('addressbook').UnzipMemo(voucher.GetDescription())
-        */
+    //   name = voucher.GetDescription()
 
     // get bookmark name (memo) as stored in db.  item.customInfo is bookmarkID this item is copied from
     return new PyString(BookmarkDB::GetBookmarkName(atoi(m_itemRef->customInfo().c_str())));
-
-    // this gives error in client ui/control/editplaintext.py(221) InsertText
-    //AttributeError: 'tuple' object has no attribute 'find'
-    //return BookmarkDB::GetBookmarkDescription(atoi(m_itemRef->customInfo().c_str()));
 }

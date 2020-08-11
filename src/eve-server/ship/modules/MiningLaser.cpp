@@ -167,8 +167,8 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
 {
     float cycleVol = GetMiningVolume();
 
-	InventoryItemRef roidRef = m_targetSE->GetSelf();
-	// verify gas clouds have volume attr.
+    InventoryItemRef roidRef = m_targetSE->GetSelf();
+    // verify gas clouds have volume attr.
     float oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
 
     if ((cycleVol < oreVolume) or (cycleVol <= 0) or (oreVolume <= 0)) {
@@ -201,7 +201,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         else
             oreAmount = 0;
         // check for other lasers running, and deactivate them also.
-        // the ship will tell all miners cargo is full, and they automagically deactivate.
+        // the ship will tell all miners the current hold is full, and they automagically deactivate.
         // this is a feature.
         m_shipRef->CargoFull();
 
