@@ -218,17 +218,25 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     if (itr != mContents.end()) {
         mContents.erase(itr);
-        _log(INV__TRACE, "Inventory::RemoveItem() - Updated %s(%u) to no longer contain %s(%u) in %s.", \
+        _log(INV__TRACE, "Inventory::RemoveItem(1) - Updated %s(%u) to no longer contain %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     } else
-        _log(INV__TRACE,"Inventory::RemoveItem() - %s(%u) does not contain %s(%u) in %s.", \
+        _log(INV__TRACE,"Inventory::RemoveItem(1) - %s(%u) does not contain %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
-/*
+
+    /** @todo @note  this isnt working right, and im not sure why yet...  */
     auto range = m_contentsByFlag.equal_range(iRef->flag());
-    for ( auto itr = range.first; itr != range.second; ++itr )
-        if (itr->second == iRef)
-            m_contentsByFlag.erase(itr);
-        */
+    for (auto cur = range.first; cur != range.second; ++cur) {
+        if (cur->second == iRef) {
+            m_contentsByFlag.erase(cur);
+            _log(INV__TRACE, "Inventory::RemoveItem(2) - %s(%u) removed from %s(%u) flagMap at %s.", \
+                    iRef->name(), iRef->itemID(), m_self->name(), m_myID, sDataMgr.GetFlagName(iRef->flag()));
+            return;
+        }
+    }
+
+    _log(INV__TRACE,"Inventory::RemoveItem(2) - %s(%u) flagMap does not contain %s(%u) in %s.", \
+            m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
 void Inventory::DeleteContents()
@@ -661,7 +669,7 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
             } else if (IsSpecialHoldFlag(flag)) {
                 args["item"] = new PyInt(iRef->itemID());
                 args["maximum"] = new PyInt(GetCapacity(flag));
-                args["used"] = new PyInt(capacity);
+                args["used"] = new PyInt(GetStoredVolume(flag));
                 throw PyException(MakeUserError("NotEnoughSpecialBaySpaceOverload", args));
             } else if (IsModuleSlot(flag)) {
                 args["capacity"] = new PyFloat(GetCapacity(flag));
@@ -669,17 +677,17 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
             } else if (IsHangarFlag(flag)) {
                 args["item"] = new PyString(iRef->itemName());
                 args["maximum"] = new PyInt(GetCapacity(flag));
-                args["used"] = new PyInt(capacity);
+                args["used"] = new PyInt(GetStoredVolume(flag));
                 throw PyException(MakeUserError("NotEnoughSpaceOverload", args));
             } else if (flag == flagDroneBay) {
                 args["item"] = new PyString(iRef->itemName());
                 args["maximum"] = new PyInt(GetCapacity(flag));
-                args["used"] = new PyInt(capacity);
+                args["used"] = new PyInt(GetStoredVolume(flag));
                 throw PyException(MakeUserError("NotEnoughDroneBaySpaceOverload", args));
             } else {
                 args["item"] = new PyInt(iRef->itemID());
                 args["maximum"] = new PyInt(GetCapacity(flag));
-                args["used"] = new PyInt(capacity);
+                args["used"] = new PyInt(GetStoredVolume(flag));
                 throw PyException(MakeUserError("NoSpaceForThatOverload", args));
             }
         }
@@ -702,7 +710,7 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
         } else if (IsHangarFlag(flag)) {
             args["item"] = new PyString(iRef->itemName());
             args["maximum"] = new PyInt(GetCapacity(flag));
-            args["used"] = new PyInt(capacity);
+            args["used"] = new PyInt(GetStoredVolume(flag));
             throw PyException(MakeUserError("NotEnoughCargoSpaceOverload", args));
         } else {
             args["itemTypeName"] = new PyInt(iRef->itemID());
