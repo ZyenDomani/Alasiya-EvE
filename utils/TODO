@@ -1,15 +1,12 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    10 July 2020
+****    9 August 2020
+
+    note:  this whole file needs to be reorganized
 
 *******************************************************
 **********  errors and other found shit...high priority
-
-dont send Online(16) for rigs....
-    - StartEffect: Online Effect being started on a type that doesn't have it 140023442 31213 16
-
-
 
 noob ships do not Init() correctly....  most attrs are 0
 
@@ -38,7 +35,7 @@ check/fix loading linked weapons
 all MM and ship calls need to verify throw status
     - test with Client->CanThrow() to verify throwable status
 
-check into making module tics faster (like targetMgr)
+check into making module tics faster (like targetMgr) for sub-tic timer calls/checks
 
 check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?  no...ins is queried when needed
@@ -80,6 +77,10 @@ error:
 *******************************************************
 ********  improvements
 
+check data sent for bound objects to see what we can use.
+    verify members for bound objects.  we may need to add few more to avoid redirects (cant find data on effectiveness of static member vs multi-redirect call)
+    client sends some data we dont necessarily need, due to server differences between us and live
+
 go thru and verify all uses of itemDescriptor header/packet follow the outline in GetItemDescriptor
 
 pypacket building isnt completely right....some things dont need to be that deep.
@@ -105,6 +106,7 @@ create ".modify" command to allow ingame setting of attributes
 
 add cache calls/data for systems that use it after debugging and testing completed
 
+bookmarks in cargo have name correctly (bm 'memo' is it's player-given name), but mouseover shows  ` - {memo}` ....  what is blank space before '-'??
 write new methods for List() and Move() for bookmarks where owner != player
 currently, all bookmarks are donated to calling player when moved into cargo/hangar
 
@@ -162,6 +164,16 @@ InvBrokerBound::Handle_GetInventoryFromId
     - there is NO checks for corp usage yet.
     - suspect many error msgs in client for this, but none are found/coded yet
     - wtf does 'passive' mean??  only called for char and ship during 'Prime'.  "dont load item" maybe?
+
+InventoryBound  incomplete
+  Handle_List()  -- this will need lots of work for t3 ships and corp usage
+  ListDroneBay()
+  SetPassword()
+  RunRefiningProcess()
+  TakeOutTrash()
+
+...speaking of t3 ships....
+ShipBound::Handle_AssembleShip is partially coded.  needs work for t3
 
 DogmaIMBound::Handle_Activate
     - need to complete POS/Container cases and verify we're not missing anything
@@ -244,11 +256,14 @@ return works correctly, as does destroy
 
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
     moved to signature from anomaly.
-    having trouble scanning it down. (cant get higher than 1%)
 
 
 player drones - skeleton started. needs functionality    -priority level: med-hi
+rename Drone to DroneSE to follow updated core naming convention
 drones mass and maxspeed need attention
+does controller and controllerownerid change when assigning drone to other pilots?
+ShipSE::LaunchDrone() needs bit of work.  drones are online and set to orbit after launch, before BW test
+    -Drone::Launch() also needs updating after above is completed.
 drone ai needs:
   - assigned ship killed, need code to reset
   - all states except idle
@@ -262,7 +277,7 @@ contact list - no notification when contacts login.  no initial contact status w
 pos - started. drop, anchor, unanchor, online, offline working but no in-class checks. all tower mgnt tabs work and save. rest is wip.   -priority level: low
     - pos items in hangars still return true from IsPOSSE(), and throw weird errors because of this....needs more thought to properly implement (system is still young)
     - towers (and maybe others) must use orbitalState in slimItem.  this is EVEPOS::EntityState sent to client.  also uses OnSlimItemUpdated.  search client for this
-    - structures need 'state' and 'status' variables looked over and possibibly reset/fixed.  status is EVEPOS::StructureStatus and sent in slimItem.  state is EVEPOS::EntityState
+    - structures need 'state' and 'status' variables looked over and possibly reset/fixed.  status is EVEPOS::StructureStatus and sent in slimItem.  state is EVEPOS::EntityState
     - reinforceValue data is in pos/Structure.h
     - mgrDB needs looking over for data types
     - add checks for necessary items before online can be processed
@@ -309,6 +324,13 @@ market system....this needs a lot of attention
     - db hits abound
     - EVEYTHING is uint32 but we really dont need that
     - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client
+    ** error...
+21:29:11 [Service] marketProxy::PlaceCharOrder()
+21:29:11 [AcctTrace] TranserFunds() - from: 90000000, to: 1000160, entry: 2, refID: 125, amount: 500.00, fKey: 1000, tKey: 1000
+21:29:11 [AcctTrace] TranserFunds() - toID: 1000160 is neither player nor player corp.
+21:29:11 [InvTrace] Inventory::LoadContents() - Loading inventory of Ragnarok(140023615) with owner 1   <<< owner 1 here??  any why we loading?
+21:29:11 [InvTrace] II::Donate() - Updated flag on Ragnarok(140023615) from AutoFit to Hangar.
+
 
 InvBrokerService needs love
 mapservice  needs love
@@ -319,7 +341,7 @@ certificateMgr needs looking at
 paperDollServer incomplete
 factionWarMgr incomplete
 ShipService incomplete
-InvBound still needs work
+
 lots of Corp* shit still incomplete
 
 PlanetORBBound needs work now that customs offices are working
@@ -370,6 +392,8 @@ finish dot commands
 implement remaining UIDs as noted in EVE_Defines.h
 
 look into OnSessionMutated to see if we can implement it properly
+
+look into adding cargo mass to ship mass for maneuvering adjustments (fully loaded should be heavy)
 
 
 *******************************************************
@@ -471,6 +495,7 @@ comment unused attrib defs
 
 17908 - nerf bat???
 
+i have a sneaky suspicion 'throw' isnt used properly throughout the entire codebase
 
 error with char location on login......
 22:09:28 [InvTrace] Inventory::RemoveItem() - Ibaria(30000053) does not contain Allan(90000000) in AutoFit.
@@ -544,13 +569,6 @@ jump clones - when i start this, need to check into diff between active clone an
 move *data calls from inventoryDB into static data mgr  -priority level: low
 
 GetChar()->HasShares())  // not written, no underlying code yet
-
-InventoryBound  incomplete
-  Handle_List()  -- this will need lots of work for t3 ships and corp usage
-  ListDroneBay()
-  SetPassword()
-  RunRefiningProcess()
-  TakeOutTrash()
 
 dynamic system items not inserted into itemfactory map
 static items not being removed from itemfactory map upon system unload
