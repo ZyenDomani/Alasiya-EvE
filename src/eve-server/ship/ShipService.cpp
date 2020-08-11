@@ -404,14 +404,14 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
     uint8 qty = 0;
     uint32 itemID = 0;
-    double radius = pClient->GetShipSE()->GetRadius();
+    double radius = pShip->radius();
 
     InventoryItemRef iRef(nullptr);
     PyDict* dict = new PyDict();
     for (uint32 i = 0; i < PyToDropList->size(); ++i) {
         dropped = false;
         PyList* list = new PyList();
-        GPoint location(pClient->GetShipSE()->GetPosition());
+        GPoint location(pShip->position());
         location.MakeRandomPointOnSphereLayer(500,1500);
         qty = PyToDropList->items.at(i)->AsTuple()->items.at(1)->AsInt()->value();
         itemID = PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value();
@@ -426,20 +426,27 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 if (!sConfig.testing.EnableDrones) {
                     throw PyException(MakeCustomError("Drones are disabled."));
                 }
+
                 if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() < 1) {
                     std::map<std::string, PyRep *> arg;
                     arg["typeID"] = new PyInt(iRef->typeID());
                     throw PyException(MakeUserError("NoDroneManagementAbilities", arg));
                     //{'FullPath': u'UI/Messages', 'messageID': 259203, 'label': u'NoDroneManagementAbilitiesBody'}(u'You cannot launch {[item]typeID.nameWithArticle} because you do not have the ability to control any drones.', None, {u'{[item]typeID.nameWithArticle}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'nameWithArticle', 'args': 0, 'kwargs': {}, 'variableName': 'typeID'}})
                 }
+                if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() <= pClient->GetShipSE()->DroneCount()) {
+                    std::map<std::string, PyRep *> arg;
+                    arg["item"] = new PyInt(iRef->typeID());
+                    arg["limit"] = new PyInt(pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32());
+                    throw PyException(MakeUserError("NoDroneManagementAbilitiesLeft", arg));
+                    //{'FullPath': u'UI/Messages', 'messageID': 259140, 'label': u'NoDroneManagementAbilitiesLeftBody'}(u'You cannot launch {[item]item.name} because you are already controlling {[numeric]limit} drones, as much as you have skill to.', None, {u'{[numeric]limit}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'limit'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+                }
+
                 if (iRef->flag() != flagDroneBay) {
                     std::map<std::string, PyRep *> arg;
                     arg["item"] = new PyInt(iRef->typeID());
                     throw PyException(MakeUserError("DropItemNotInDroneBay", arg));
                     // {'FullPath': u'UI/Messages', 'messageID': 259680, 'label': u'DropItemNotInDroneBayBody'}(u'{[item]item.name} cannot be dropped because it is not in your drone bay.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
                 }
-
-                /** @todo check char skills to launch this drone */
 
                 // This item is a drone, so launch it into space:
                 if (qty > 1) {
@@ -456,6 +463,12 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                             dropped = true;
                             shipDrop = true;
                             list->AddItem(new PyInt(newItem->itemID()));
+                        } else {
+                            std::map<std::string, PyRep *> arg;
+                            arg["droneName"] = new PyString( newItem->name());
+                            arg["droneBandwidthUsed"] = new PyInt( newItem->GetAttribute(AttrDroneBandwidthUsed).get_uint32());
+                            arg["bandwidthLeft"] = new PyInt(pShip->GetAttribute(AttrDroneBandwidth).get_uint32() - pShip->GetAttribute(AttrDroneBandwidthLoad).get_uint32());
+                            throw PyException(MakeUserError("MaxBandwidthExceeded2", arg));
                         }
                     }
                 } else {
@@ -463,6 +476,12 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                         dropped = true;
                         shipDrop = true;
                         list->AddItem(new PyInt(iRef->itemID()));
+                    } else {
+                        std::map<std::string, PyRep *> arg;
+                        arg["droneName"] = new PyString( iRef->name());
+                        arg["droneBandwidthUsed"] = new PyInt( iRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32());
+                        arg["bandwidthLeft"] = new PyInt(pShip->GetAttribute(AttrDroneBandwidth).get_uint32() - pShip->GetAttribute(AttrDroneBandwidthLoad).get_uint32());
+                        throw PyException(MakeUserError("MaxBandwidthExceeded2", arg));
                     }
                 }
             } break;
@@ -498,7 +517,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSystem, entity);
                 if (pSE == nullptr) {
                     //couldnt create entity.  move item back to orig location and continue
-                    iRef->Donate(pClient->GetCharacterID(), pClient->GetShipID(), flagCargoHold);
+                    iRef->Donate(pClient->GetCharacterID(), pShip->itemID(), flagCargoHold);
                     continue;
                 }
 
@@ -872,30 +891,36 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     //Call_AssembleShipWithName argsNamed;
 
     std::vector<int32> itemIDList;
-    bool completeTech3Assembly = false;
+    bool t3Ship = false;
     if (call.tuple->GetItem(0)->IsList()) {
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
         }
         itemIDList = args.items;
-    } else if (call.tuple->GetItem(0)->IsInt() &&
-        call.tuple->GetItem(1)->IsString()) {
-        // This block is for how DNA calls AssembleShip
-        // @TODO Ignoring name
-        // Can't get xmlpktgen to pickup the change so.. lol
-        //if (!argsNamed.Decode(&call.tuple)) {
-        //    codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        //    return nullptr;
-        //}
-        itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
-        } else { // Because we check for the second item in the list being string we get here for t3 ship assembly
+    } else if (call.byname.find("subSystems") != call.byname.end()) {
+        ; // this is a list of subsystems for t3 assembly
+        t3Ship = true;
+    } else if (call.tuple->size() == 2) {
+        if (call.tuple->GetItem(0)->IsInt()
+        and call.tuple->GetItem(1)->IsString()) {
+            // This block is for how DNA calls AssembleShip
+            // @TODO Ignoring name
+            // Can't get xmlpktgen to pickup the change so.. lol
+            //if (!argsNamed.Decode(&call.tuple)) {
+            //    codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+            //    return nullptr;
+            //}
+            itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
+        } else
+            sLog.Error("AssembleShip", "tuple size == 2 and ([0] != int and [1] != string) or some shit like that.");
+    } else { // Because we check for the second item in the list being string we get here for t3 ship assembly
             sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
             throw PyException(MakeCustomError("Modular ships are not implemented yet." ) );
             return nullptr;
             //Call_AssembleShipTech3 argsT3;
             //argsT3.item;
-        }
+    }
 
         ShipItemRef ship(nullptr);
         for (auto cur : itemIDList) {
@@ -919,7 +944,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 
             ship->ChangeSingleton(true, true);
 
-            if (completeTech3Assembly) {
+            if ( t3Ship ) {
                 std::vector<uint32> subSystemList;
                 // Move the five specified subsystems to the newly assembled Tech 3 ship
                 InventoryItemRef subSystemItem(nullptr);
