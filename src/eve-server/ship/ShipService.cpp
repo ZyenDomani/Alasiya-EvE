@@ -850,10 +850,6 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     return tuple;
 }
 
-/** ***********************************************************************
- * @note   these below are partially coded
- */
-
 PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 
     /* 13:05:41 [BindDump] NodeID: 888444 BindID: 129 calling AssembleShip in service manager 'ShipBound'
@@ -890,17 +886,34 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     Call_AssembleShip args;
     //Call_AssembleShipWithName argsNamed;
 
-    std::vector<int32> itemIDList;
     bool t3Ship = false;
-    if (call.tuple->GetItem(0)->IsList()) {
+    std::vector<int32> itemIDList;
+    PyList* subSystemList(nullptr);
+    if (call.byname.find("subSystems") != call.byname.end()) {
+        /*
+         * 21:29:15 [Bound] ShipBound::AssembleShip()
+         * 21:29:15 [CollectCallDump]   Call Arguments:
+         * 21:29:15 [CollectCallDump]      Tuple: 1 elements
+         * 21:29:15 [CollectCallDump]       [ 0]    Integer: 140023628
+         * 21:29:15 [CollectCallDump]  Named Arguments:
+         * 21:29:15 [CollectCallDump]   subSystems
+         * 21:29:15 [CollectCallDump]       List: 5 elements
+         * 21:29:15 [CollectCallDump]       [ 0]    Integer: 140023637
+         * 21:29:15 [CollectCallDump]       [ 1]    Integer: 140023638
+         * 21:29:15 [CollectCallDump]       [ 2]    Integer: 140023635
+         * 21:29:15 [CollectCallDump]       [ 3]    Integer: 140023634
+         * 21:29:15 [CollectCallDump]       [ 4]    Integer: 140023636
+         */
+        // this is a list of subsystems for t3 assembly
+        t3Ship = true;
+        itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
+        subSystemList = call.byname.find("subsystems")->second->AsList();
+    } else if (call.tuple->GetItem(0)->IsList()) {
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
         }
         itemIDList = args.items;
-    } else if (call.byname.find("subSystems") != call.byname.end()) {
-        ; // this is a list of subsystems for t3 assembly
-        t3Ship = true;
     } else if (call.tuple->size() == 2) {
         if (call.tuple->GetItem(0)->IsInt()
         and call.tuple->GetItem(1)->IsString()) {
@@ -914,48 +927,51 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
             itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
         } else
             sLog.Error("AssembleShip", "tuple size == 2 and ([0] != int and [1] != string) or some shit like that.");
-    } else { // Because we check for the second item in the list being string we get here for t3 ship assembly
-            sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
-            throw PyException(MakeCustomError("Modular ships are not implemented yet." ) );
-            return nullptr;
-            //Call_AssembleShipTech3 argsT3;
-            //argsT3.item;
+    } else {
+        sLog.Error( "Handle_AssembleShip", "end of conditional" );
+        return nullptr;
     }
 
-        ShipItemRef ship(nullptr);
-        for (auto cur : itemIDList) {
-            ship = sItemFactory.GetShip(cur);
+    ShipItemRef ship(nullptr);
+    for (auto cur : itemIDList) {
+        ship = sItemFactory.GetShip(cur);
 
+        if (ship.get() == nullptr) {
+            _log(ITEM__ERROR, "Failed to load ship %u to assemble.", cur);
+            continue;
+        }
+
+        //check if the ship is a stack
+        if (ship->quantity() > 1) {
+            // Split the stack into a new inventory item with quantity of one, cast to ShipItemRef then assembled:
+            // original item stack will be left with qty-1 at original location
+            ship = ShipItemRef::StaticCast(ship->Split(1, true));
             if (ship.get() == nullptr) {
-                _log(ITEM__ERROR, "Failed to load ship %u to assemble.", cur);
+                _log(ITEM__ERROR, "Failed to split stack to assemble ship %u.", cur);
                 continue;
             }
+        }
 
-            //check if the ship is a stack
-            if (ship->quantity() > 1) {
-                // Split the stack into a new inventory item with quantity of one, cast to ShipItemRef then assembled:
-                // original item stack will be left with qty-1 at original location
-                ship = ShipItemRef::StaticCast(ship->Split(1, true));
-                if (ship.get() == nullptr) {
-                    _log(ITEM__ERROR, "Failed to split stack to assemble ship %u.", cur);
-                    continue;
-                }
-            }
+        ship->ChangeSingleton(true, true);
 
-            ship->ChangeSingleton(true, true);
-
-            if ( t3Ship ) {
-                std::vector<uint32> subSystemList;
-                // Move the five specified subsystems to the newly assembled Tech 3 ship
-                InventoryItemRef subSystemItem(nullptr);
-                for (auto cur : subSystemList) {
-                    subSystemItem = sItemFactory.GetItem(cur);
-                    subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()), true);
-                }
+        if ( t3Ship ) {
+            // Move the five specified subsystems to the newly assembled Tech 3 ship
+            InventoryItemRef subSystemItem(nullptr);
+            PyList::const_iterator itr = subSystemList->begin(), end = subSystemList->end();
+            while (itr != end) {
+                subSystemItem = sItemFactory.GetItem(PyRep::IntegerValueU32(*itr));
+                if (subSystemItem.get() != nullptr)
+                    subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()), false);
+                ++itr;
             }
         }
-        return nullptr;
+    }
+    return nullptr;
 }
+
+/** ***********************************************************************
+ * @note   these below are partially coded
+ */
 
 
 /** ***********************************************************************
