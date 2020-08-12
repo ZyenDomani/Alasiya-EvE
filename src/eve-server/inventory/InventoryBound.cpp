@@ -813,13 +813,13 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
         PyList::const_iterator itr = args.bmIDs->begin();
         for (; itr != args.bmIDs->end(); ++itr) {
             //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
-            ItemData iData( 51, call.client->GetCharacterID(), 0, flagAutoFit, 1, itoa((*itr)->AsInt()->value()));
+            ItemData iData( 51, call.client->GetCharacterID(), 0, flagAutoFit, 1, itoa(PyRep::IntegerValueU32(*itr)));
             InventoryItemRef iRef = sItemFactory.SpawnItem( iData );
             if (iRef.get() == nullptr) {
-                codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), (*itr)->AsInt()->value());
+                codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), PyRep::IntegerValueU32(*itr));
                 continue;
             }
-            //iRef->Rename(itoa(BookmarkDB::GetBookmarkName((*itr)->AsInt()->value())));
+            //iRef->Rename(itoa(BookmarkDB::GetBookmarkName(PyRep::IntegerValueU32(*itr))));
             iRef->Move(locationID, (EVEItemFlags)args.flag, true);
             /*
             PyDict* dict = new PyDict();
@@ -839,10 +839,10 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
                 PyDict* dict = new PyDict();
                 // may need more here.  not sure yet
                 //dict->SetItemString("description", new PyString(BookmarkDB::GetBookmarkName(atoi(iRef->customInfo().c_str()))));
-                dict->SetItemString("bookmarkID", new PyInt((*itr)->AsInt()->value()));
+                dict->SetItemString("bookmarkID", new PyInt(PyRep::IntegerValueU32(*itr)));
                 deleted->AddItem(new PyObject("util.KeyVal", dict));
                 // change owner in db to remove bm from current owner's pnp window
-                m_db.ChangeOwner((*itr)->AsInt()->value());
+                m_db.ChangeOwner(PyRep::IntegerValueU32(*itr));
             }
         }
     }

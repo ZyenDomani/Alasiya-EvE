@@ -218,11 +218,11 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
         if (list == nullptr)
             continue;
         // type:  1 = ribbon, 2 = medal
-        Corp::MedalData args2;
-        args2.part = PyRep::IntegerValue(list->GetItem(0));
-        args2.graphic = PyRep::StringContent(list->GetItem(1));
-        args2.color = PyRep::IntegerValue(list->GetItem(2));
-        dataList.push_back(args2);
+        Corp::MedalData data = Corp::MedalData();
+        data.part = PyRep::IntegerValue(list->GetItem(0));
+        data.graphic = PyRep::StringContent(list->GetItem(1));
+        data.color = PyRep::IntegerValue(list->GetItem(2));
+        dataList.push_back( data );
     }
 
     // this will either save data or it wont...

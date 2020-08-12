@@ -136,12 +136,12 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
      */
 
     InventoryItemRef iRef(nullptr);
-    double cost = 0, total = 0;
-    uint32 damage = 0;
+    double cost(0), total(0);
+    uint32 damage(0);
     std::vector<InventoryItemRef> itemRefVec;
-    PyList::const_iterator itr = args.itemIDs->begin();
-    for (; itr != args.itemIDs->end(); ++itr) {
-        iRef = sItemFactory.GetItem((*itr)->AsInt()->value());
+    PyList::const_iterator itr = args.itemIDs->begin(), end = args.itemIDs->end();
+    for (; itr != end; ++itr) {
+        iRef = sItemFactory.GetItem(PyRep::IntegerValueU32(*itr));
         if (iRef.get() == nullptr)
             continue;
 

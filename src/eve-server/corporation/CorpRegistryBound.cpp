@@ -660,7 +660,7 @@ PyResult CorpRegistryBound::Handle_GetMembersByIds(PyCallArgs &call) {
 
     PyList* list = new PyList();
     for (PyList::const_iterator itr = args.memberIDs->begin(); itr != args.memberIDs->end(); ++itr)
-        list->AddItem(new PyObject("util.KeyVal", m_db.GetMember((*itr)->AsInt()->value())));
+        list->AddItem(new PyObject("util.KeyVal", m_db.GetMember(PyRep::IntegerValueU32(*itr))));
 
     if (is_log_enabled(CORP__RSP_DUMP))
         list->Dump(CORP__RSP_DUMP, "");

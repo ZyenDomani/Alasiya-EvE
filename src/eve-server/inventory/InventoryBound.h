@@ -75,7 +75,6 @@ protected:
     std::vector< int32 > CatSortItems(std::vector< InventoryItemRef >& itemVec);
 
     PyRep* MoveItems(Client* pClient, std::vector< int32 >& items, EVEItemFlags toFlag, int32 quantity, bool manyFlags, float capacity);
-
 };
 
 #endif//_INVENTORY_BOUND_H

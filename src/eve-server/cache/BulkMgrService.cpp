@@ -244,7 +244,7 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
         PyList::const_iterator itr = args.toGet->AsList()->begin(), end = args.toGet->AsList()->end();
         uint8 setID(1);
         while (itr != end) {
-            switch ((*itr)->AsInt()->value()) {
+            switch (PyRep::IntegerValueU32(*itr)) {
                 case 800002: {
                     toBeChanged->SetItem(new PyInt(800002), sBulkDB.GetBulkData(0));
                     bulksEndingInChunk->AddItem(new PyInt(800002));
