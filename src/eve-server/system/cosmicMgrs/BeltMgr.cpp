@@ -62,14 +62,14 @@ void BeltMgr::RegisterBelt(InventoryItemRef itemRef)
     m_spawned.insert(std::pair<uint32, bool>(beltID, false));
 }
 
+//not used
 void BeltMgr::ClearBelt(uint16 bubbleID)
 {
     //ClearAll();
 }
 
 void BeltMgr::ClearAll() {
-    // disabled till i get roid uid right
-    //Save();
+    Save();
     for (auto cur : m_asteroids) {
         m_system->RemoveEntity(cur.second);
         //cur.second->Delete();
@@ -124,7 +124,7 @@ void BeltMgr::SetActive(uint16 bubbleID, bool active/*true*/)
 void BeltMgr::Process() {
     if (!m_initialized)
         return;
-    
+
     if (m_respawnTimer.Check()) {
         for (auto cur : m_spawned)
             if (!cur.second) {
@@ -190,7 +190,13 @@ void BeltMgr::Save() {
     double start = GetTimeUSeconds();
     std::vector<AsteroidData> roids;
     roids.clear();
+    uint16 save(0), skip(0);
     for (auto cur : m_asteroids) {
+        // we are not saving anomaly belts (yet.  small belts in anomalies will become their own grav sites (wip))
+        if (IsTempItem(cur.first)) {
+            ++skip;
+            continue;
+        }
         AsteroidData entry = AsteroidData();
         entry.itemID = cur.second->GetID();
         entry.itemName = cur.second->GetName();
@@ -201,10 +207,12 @@ void BeltMgr::Save() {
         entry.quantity = ((25000 * log(entry.radius)) - 112404.8);   // quantity in m^3
         entry.position = cur.second->GetPosition();
         roids.push_back(entry);
+        ++save;
     }
 
     m_db.SaveSystemRoids(m_systemID, roids);
-    _log(COSMIC_MGR__TRACE, "BeltMgr::Save - Saving %u Asteroids for %s(%u) took %.3fus", roids.size(), m_system->GetName(), m_systemID, (GetTimeUSeconds() - start));
+    _log(COSMIC_MGR__TRACE, "BeltMgr::Save - Saving %u Asteroids for %s(%u) took %.3fus.  Skipped %u temp anomaly asteroids.", \
+            save, m_system->GetName(), m_systemID, (GetTimeUSeconds() - start), skip);
 }
 
 void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list)
@@ -390,11 +398,15 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         adata.radius = radius;
         adata.position = position;
     ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
-    InventoryItemRef itemRef = sItemFactory.SpawnAsteroid(idata, adata);
-    if (itemRef.get() == nullptr)
+    InventoryItemRef iRef(nullptr);
+    if (IsTempItem(beltID))
+        iRef = AsteroidItem::SpawnTemp(idata, adata);   // create temp item for anomaly belt
+    else
+        iRef = sItemFactory.SpawnAsteroid(idata, adata);
+    if (iRef.get() == nullptr)
         return;
 
-    AsteroidSE* pASE = new AsteroidSE(itemRef, *(m_system->GetServiceMgr()), m_system );
+    AsteroidSE* pASE = new AsteroidSE( iRef, *(m_system->GetServiceMgr()), m_system );
     if (pASE == nullptr)
         return;
 
@@ -409,7 +421,7 @@ void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
     // this doesnt work right.  not sure why yet.
     auto range = m_asteroids.equal_range(beltID);
     for (auto itr = range.first; itr != range.second; ++itr) {
-        if (pASE == itr->second) {
+        if (itr->second == pASE) {
             m_asteroids.erase(itr);
             return;
         }
@@ -427,12 +439,11 @@ void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
 
 void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap<float, uint16>& roidDist)
 {
-    // put this in db or mem map?   ....neither.  here is fine.
-    // caldari=1, minmatar=2, amarr=3, gallente=4, none=5
+    // get map region for ice distro
     switch (quarter) {
-        case 1: {
+        case 1: {       // caldari
             if (secStatus < 0.0) {
-                roidDist.insert(std::pair<float,uint32>(0.2, 16265));   // White Glaze - caldari
+                roidDist.insert(std::pair<float,uint32>(0.2, 16265));    // White Glaze - caldari
                 roidDist.insert(std::pair<float,uint32>(0.16, 16266));   // Glare Crust - all < 0.4
                 roidDist.insert(std::pair<float,uint32>(0.16, 16267));   // Dark Glitter - all but gallente < 0.1
                 roidDist.insert(std::pair<float,uint32>(0.16, 17976));   // Pristine White Glaze - caldari < 0.0
@@ -446,12 +457,12 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
                 roidDist.insert(std::pair<float,uint32>(0.75, 16265));   // White Glaze - caldari
                 roidDist.insert(std::pair<float,uint32>(0.25, 16266));   // Glare Crust - all < 0.4
             } else {
-                roidDist.insert(std::pair<float,uint32>(1.0, 16265));   // White Glaze - caldari
+                roidDist.insert(std::pair<float,uint32>(1.0, 16265));    // White Glaze - caldari
             }
         } break;
-        case 2: {
+        case 2: {       // minmatar
             if (secStatus < 0.0) {
-                roidDist.insert(std::pair<float,uint32>(0.2, 16263));   // Glacial Mass - minmatar
+                roidDist.insert(std::pair<float,uint32>(0.2, 16263));    // Glacial Mass - minmatar
                 roidDist.insert(std::pair<float,uint32>(0.16, 16266));   // Glare Crust - all < 0.4
                 roidDist.insert(std::pair<float,uint32>(0.16, 16267));   // Dark Glitter - all but gallente < 0.1
                 roidDist.insert(std::pair<float,uint32>(0.16, 17977));   // Smooth Glacial Mass - minmatar < 0.0
@@ -465,12 +476,12 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
                 roidDist.insert(std::pair<float,uint32>(0.75, 16263));   // Glacial Mass - minmatar
                 roidDist.insert(std::pair<float,uint32>(0.25, 16266));   // Glare Crust - all < 0.4
             } else {
-                roidDist.insert(std::pair<float,uint32>(1.0, 16263));   // Glacial Mass - minmatar
+                roidDist.insert(std::pair<float,uint32>(1.0, 16263));    // Glacial Mass - minmatar
             }
         } break;
-        case 3: {
+        case 3: {       //amarr
             if (secStatus < 0.0) {
-                roidDist.insert(std::pair<float,uint32>(0.2, 16262));   // Clear Icicle - amarr
+                roidDist.insert(std::pair<float,uint32>(0.2, 16262));    // Clear Icicle - amarr
                 roidDist.insert(std::pair<float,uint32>(0.16, 16266));   // Glare Crust - all < 0.4
                 roidDist.insert(std::pair<float,uint32>(0.16, 16267));   // Dark Glitter - all but gallente < 0.1
                 roidDist.insert(std::pair<float,uint32>(0.16, 17978));   // Enriched Clear Icicle - amarr < 0.0
@@ -484,12 +495,12 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
                 roidDist.insert(std::pair<float,uint32>(0.75, 16262));   // Clear Icicle - amarr
                 roidDist.insert(std::pair<float,uint32>(0.25, 16266));   // Glare Crust - all < 0.4
             } else {
-                roidDist.insert(std::pair<float,uint32>(1.0, 16262));   // Clear Icicle - amarr
+                roidDist.insert(std::pair<float,uint32>(1.0, 16262));    // Clear Icicle - amarr
             }
         } break;
-        case 4: {
+        case 4: {       //gallente
             if (secStatus < 0.0) {
-                roidDist.insert(std::pair<float,uint32>(0.3, 16264));   // Blue Ice - gallente
+                roidDist.insert(std::pair<float,uint32>(0.3, 16264));    // Blue Ice - gallente
                 roidDist.insert(std::pair<float,uint32>(0.17, 16266));   // Glare Crust - all < 0.4
                 roidDist.insert(std::pair<float,uint32>(0.17, 17975));   // Thick Blue Ice - gallente < 0.0
                 roidDist.insert(std::pair<float,uint32>(0.17, 16268));   // Gelidus - all < 0.0
@@ -498,20 +509,20 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
                 roidDist.insert(std::pair<float,uint32>(0.75, 16264));   // Blue Ice - gallente
                 roidDist.insert(std::pair<float,uint32>(0.25, 16266));   // Glare Crust - all < 0.4
             } else {
-                roidDist.insert(std::pair<float,uint32>(1.0, 16264));   // Blue Ice - gallente
+                roidDist.insert(std::pair<float,uint32>(1.0, 16264));    // Blue Ice - gallente
             }
         } break;
-        case 5: {
+        case 5: {       // none?  no region quarter?
             if (secStatus < 0.0) {
-                roidDist.insert(std::pair<float,uint32>(0.4, 16266));   // Glare Crust - all < 0.4
-                roidDist.insert(std::pair<float,uint32>(0.2, 16267));   // Dark Glitter - all but gallente < 0.1
-                roidDist.insert(std::pair<float,uint32>(0.2, 16268));   // Gelidus - all < 0.0
-                roidDist.insert(std::pair<float,uint32>(0.2, 16269));   // Krystallos - all < 0.0
+                roidDist.insert(std::pair<float,uint32>(0.4, 16266));    // Glare Crust - all < 0.4
+                roidDist.insert(std::pair<float,uint32>(0.2, 16267));    // Dark Glitter - all but gallente < 0.1
+                roidDist.insert(std::pair<float,uint32>(0.2, 16268));    // Gelidus - all < 0.0
+                roidDist.insert(std::pair<float,uint32>(0.2, 16269));    // Krystallos - all < 0.0
             } else if (secStatus < 0.1) {
                 roidDist.insert(std::pair<float,uint32>(0.75, 16266));   // Glare Crust - all < 0.4
                 roidDist.insert(std::pair<float,uint32>(0.25, 16267));   // Dark Glitter - all but gallente < 0.1
             } else if (secStatus < 0.4) {
-                roidDist.insert(std::pair<float,uint32>(1.0, 16266));   // Glare Crust - all < 0.4
+                roidDist.insert(std::pair<float,uint32>(1.0, 16266));    // Glare Crust - all < 0.4
             }
         } break;
     }

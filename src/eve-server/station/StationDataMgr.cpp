@@ -38,7 +38,7 @@ void StationDataMgr::Close()
     for (auto cur : m_stationPyData)
         PySafeDecRef(cur.second);
 
-    sLog.Warning("   StationDataMgr", "StationData Manager has been closed." );
+    sLog.Warning("   StationDataMgr", "Station Data Manager has been closed." );
 }
 
 

@@ -40,8 +40,10 @@ public:
     AsteroidItem(const ItemType& type, const ItemData& idata, const AsteroidData& adata);
     virtual ~AsteroidItem()                             { /* Do nothing here */ }
 
-    static AsteroidItemRef Load( uint32 asteroidID);
-    static AsteroidItemRef Spawn( ItemData &idata, AsteroidData& adata);
+    static AsteroidItemRef Load(uint32 asteroidID);
+    static AsteroidItemRef Spawn(ItemData &idata, AsteroidData& adata);
+    static AsteroidItemRef SpawnTemp(ItemData &idata, AsteroidData& adata);
+
 
     double      radius() const                          { return m_data.radius; }
 
@@ -96,7 +98,7 @@ public:
 
     /* specific functions handled in this class. */
     void Grow();
-    void SetMgr(BeltMgr* beltMgr, uint32 beltID) { m_beltMgr = beltMgr; m_beltID = beltID; }
+    void SetMgr(BeltMgr* beltMgr, uint32 beltID)        { m_beltMgr = beltMgr; m_beltID = beltID; }
 
 protected:
 
@@ -104,7 +106,6 @@ private:
     BeltMgr* m_beltMgr;
     Timer m_growTimer;
     uint32 m_beltID;
-
 };
 
 #endif /* !__ASTEROID__H__INCL__ */

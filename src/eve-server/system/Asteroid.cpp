@@ -1,27 +1,12 @@
 /*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
+ * Asteroid.cpp
+ *
+ * asteroid item and entity classes for Alasiya EvEmu
+ *
+ * Original file/code by Zhur
+ * Rewrite:     Allan
+ */
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:     Allan
-*/
 
 #include "eve-server.h"
 
@@ -45,7 +30,7 @@ AsteroidItemRef AsteroidItem::Load( uint32 asteroidID)
     return InventoryItem::Load<AsteroidItem>(asteroidID );
 }
 
-AsteroidItemRef AsteroidItem::Spawn( ItemData& idata, AsteroidData& adata) {
+AsteroidItemRef AsteroidItem::Spawn(ItemData& idata, AsteroidData& adata) {
     const ItemType *type = sItemFactory.GetType(adata.typeID);
     if (type == nullptr)
         return AsteroidItemRef(nullptr);
@@ -65,6 +50,26 @@ AsteroidItemRef AsteroidItem::Spawn( ItemData& idata, AsteroidData& adata) {
 
     return roidRef;
 }
+
+AsteroidItemRef AsteroidItem::SpawnTemp(ItemData& idata, AsteroidData& adata) {
+    const ItemType *type = sItemFactory.GetType(adata.typeID);
+    if (type == nullptr)
+        return AsteroidItemRef(nullptr);
+
+    idata.name = type->name();
+    adata.itemName = type->name();
+    adata.itemID == sItemFactory.GetNextTempID();
+
+    AsteroidItemRef roidRef = AsteroidItemRef(new AsteroidItem(*type, idata, adata));
+    roidRef->SetAttribute(AttrRadius,    adata.radius);
+    roidRef->SetAttribute(AttrQuantity,  adata.quantity);
+    roidRef->SetAttribute(AttrVolume,    type->volume());
+    roidRef->SetAttribute(AttrMass,      type->mass() * adata.quantity);
+
+    return roidRef;
+}
+
+//iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), iData);
 
 AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
 : ObjectSystemEntity(self, services, system),
