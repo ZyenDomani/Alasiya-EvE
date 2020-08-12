@@ -395,6 +395,7 @@ look into OnSessionMutated to see if we can implement it properly
 
 look into adding cargo mass to ship mass for maneuvering adjustments (fully loaded should be heavy)
 
+F11 map - universe not showing region connecting (jump) lines (should be green for region jumps)
 
 *******************************************************
 *****************  Fx shit
