@@ -101,8 +101,8 @@ PyResult ConfigService::Handle_GetMultiAllianceShortNamesEx(PyCallArgs &call) {
 
 
 PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // now working correctly  -allan  25April
-  _log(CACHE__DUMP,  "ConfigService::Handle_GetMultiLocationsEx" );
-  call.Dump(CACHE__DUMP);
+    _log(CACHE__DUMP,  "ConfigService::Handle_GetMultiLocationsEx" );
+    call.Dump(CACHE__DUMP);
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());

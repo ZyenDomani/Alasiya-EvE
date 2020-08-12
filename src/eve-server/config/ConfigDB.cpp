@@ -143,7 +143,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     asteroidItems.clear();
 
     for (auto cur : entityIDs) {
-        if (cur == 0) {
+        if (cur == 0 or IsTempItem(cur)) {
             //sLog.Error("GetMultiLocationsEx", "Sent 0.");
             continue;
         }
@@ -206,14 +206,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
         }
     }
 
-    //if (res.ColumnCount())
-        return DBResultToTupleSet(res);
-    /*
-    PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, PyStatic.NewNone());
-    tuple->SetItem(1, PyStatic.NewNone());
-    return tuple;*/
-    return nullptr;
+    return DBResultToTupleSet(res);
 }
 
 PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)
@@ -225,9 +218,7 @@ PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)
         codelog(DATABASE__ERROR, "Error in GetMultiStationEx query: %s", res.error.c_str());
     }
 
-    //if (res.ColumnCount())
-        return DBResultToTupleSet(res);
-    return nullptr;
+    return DBResultToTupleSet(res);
 }
 
 
@@ -493,10 +484,14 @@ PyObject *ConfigDB::GetMapOffices(uint32 solarSystemID) {
 PyObject *ConfigDB::GetMapConnections(uint32 id, bool sol, bool reg, bool con, uint16 cel, uint16 _c) {
   sLog.Warning ("ConfigDB::GetMapConnections", "DB query - System:%u, Sol:%u, Reg:%u, Con:%u, Cel:%u, _c:%u", id, sol, reg, con, cel, _c);
     const char *key = "fromsol";
-    if (sol) key = "fromsol";
-    else if (reg) key = "fromreg";
-    else if (con) key = "fromcon";
-    else sLog.Error ("ConfigDB::GetMapConnections()", "Bad argument (id: %u, sol: %u, reg: %u, con: %u) passed to key.", id, sol, reg, con );
+    if (sol)
+        key = "fromsol";
+    else if (reg)
+        key = "fromreg";
+    else if (con)
+        key = "fromcon";
+    else
+        sLog.Error ("ConfigDB::GetMapConnections()", "Bad argument (id: %u, sol: %u, reg: %u, con: %u) passed to key.", id, sol, reg, con );
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
