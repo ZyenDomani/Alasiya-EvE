@@ -363,6 +363,10 @@ int main( int argc, char* argv[] )
         sLog.Green("  Module Auto-Off","Enabled.");
     else
         sLog.Warning("  Module Auto-Off","Disabled.");
+    if (sConfig.server.AsteroidsOnDScan)
+        sLog.Green("  DScan Asteroids","Enabled.");
+    else
+        sLog.Warning("  DScan Asteroids","Disabled.");
     if (sConfig.cosmic.BumpEnabled)
         sLog.Green("Bumping Mechanics","Enabled.");
     else

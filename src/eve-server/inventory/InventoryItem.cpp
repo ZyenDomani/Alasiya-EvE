@@ -460,7 +460,7 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             InventoryItemRef itemRef;
             switch (data.flag) {
                 case EVEItemFlags::flagMissile: {
-                    // Spawn launched missile item in EVEMU_MISSILE_ID range and does NOT save missile to db
+                    // Spawn launched missile item in MISSILE_ID range and does NOT save missile to db
                     itemID = InventoryItem::CreateTempItemID(data);
                     itemRef = InventoryItem::SpawnItem(itemID, data);
                 } break;
@@ -517,7 +517,7 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             } else if (iType->groupID() == EVEDB::invGroups::Wreck) {
                 return WreckContainer::Spawn(data);
             } else if (iType->groupID() == EVEDB::invGroups::Force_Field) {
-                // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
+                // Spawn force field item in TEMP_ENTITY_ID range and does NOT save Force_Field to db
                 uint32 itemID = InventoryItem::CreateTempItemID(data);
                 return InventoryItem::SpawnItem(itemID, data);
             } else {
@@ -767,7 +767,7 @@ InventoryItemRef InventoryItem::Split(int32 qty/*0*/, bool notify/*true*/, bool 
 
     if (silent)
         return iRef;
-        
+
     iRef->Move(m_locationID, m_flag, notify);
     return iRef;
 }

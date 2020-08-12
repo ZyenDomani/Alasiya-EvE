@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.7
+    Version:    9.8
 */
 
 
@@ -64,6 +64,7 @@ EVEServerConfig::EVEServerConfig()
     server.BountyPayoutDelayed = false; // this system isnt working yet.  disable by default
     server.BountyPayoutTimer = 20/*m*/;
     server.LoadOldMissions = false;
+    server.AsteroidsOnDScan = false;
 
     // world
     world.chatLogs = false;//N
@@ -271,6 +272,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "character",   &EVEServerConfig::ProcessCharacter );
     AddMemberParser( "npc",         &EVEServerConfig::ProcessNPC );
     AddMemberParser( "cosmic",      &EVEServerConfig::ProcessCosmic );
+    AddMemberParser( "exploring",   &EVEServerConfig::ProcessExploring );
     AddMemberParser( "crime",       &EVEServerConfig::ProcessCrime );
     AddMemberParser( "standings",   &EVEServerConfig::ProcessStandings );
     AddMemberParser( "chat",        &EVEServerConfig::ProcessChat );
@@ -294,6 +296,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "character" );
     RemoveParser( "npc" );
     RemoveParser( "cosmic" );
+    RemoveParser( "exploring" );
     RemoveParser( "crime" );
     RemoveParser( "standings" );
     RemoveParser( "chat" );
@@ -330,6 +333,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "BountyPayoutDelayed",  server.BountyPayoutDelayed );
     AddValueParser( "BountyPayoutTimer",    server.BountyPayoutTimer );
     AddValueParser( "LoadOldMissions",      server.LoadOldMissions );
+    AddValueParser( "AsteroidsOnDScan",     server.AsteroidsOnDScan );
 
     const bool result = ParseElementChildren( ele );
 
@@ -351,6 +355,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "BountyPayoutDelayed" );
     RemoveParser( "BountyPayoutTimer" );
     RemoveParser( "LoadOldMissions" );
+    RemoveParser( "AsteroidsOnDScan" );
 
     return result;
 }

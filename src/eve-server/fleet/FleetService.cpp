@@ -52,9 +52,9 @@ void FleetService::Initialize(PyServiceMgr* svc)
     m_fleetAdvertMap.clear();
 
     //  these will have to be incremented individually, then stored according to fleet
-    m_fleetID = EVEMU_FLEET_ID;  //950000000
-    m_wingID = EVEMU_WING_ID;   //960000000
-    m_squadID = EVEMU_SQUAD_ID; //970000000
+    m_fleetID = FLEET_ID;  //950000000
+    m_wingID = WING_ID;   //960000000
+    m_squadID = SQUAD_ID; //970000000
 
     m_initalized = true;
     sLog.Blue("     FleetService", "Fleet Service Initialized.");

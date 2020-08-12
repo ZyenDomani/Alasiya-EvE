@@ -74,9 +74,11 @@
                 <dictInlineEntry key="groupID">
                     <int name="groupID" />
                 </dictInlineEntry>
+                <!--
                 <dictInlineEntry key="categoryID">
                     <int name="categoryID" />
                 </dictInlineEntry>
+                -->
             </dictInline>
         </objectInline>
     </elementDef>

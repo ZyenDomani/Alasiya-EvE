@@ -21,7 +21,7 @@
 
 DungeonDataMgr::DungeonDataMgr()
 {
-    m_dungeonID = EVEMU_DUNGEON_ID;
+    m_dungeonID = DUNGEON_ID;
 }
 
 int DungeonDataMgr::Initialize()
@@ -285,6 +285,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     if (iRef.get() == nullptr) // make error and exit
         return false;
     CelestialSE* cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
+    // dont add signal thru sysMgr.  signal is added when this returns to anomMgr
     m_system->AddEntity(cSE, false);
     sig.sigItemID = iRef->itemID();
 
@@ -369,8 +370,6 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), dData);
         if (iRef.get() == nullptr) // we'll survive...
             continue;
-        // add item to itemFactory. nope...see above
-        //sItemFactory.AddItem(iRef);
         // should ALL of these be CelestialSEs?
         cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
         m_system->AddEntity(cSE, false);

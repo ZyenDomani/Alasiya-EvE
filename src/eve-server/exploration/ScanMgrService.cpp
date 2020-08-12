@@ -66,17 +66,14 @@ public:
 
     }
         /**
-        return sm.RemoteSvc('scanMgr').GetSystemScanMgr().ConeScan(scanangle, scanRange, x, y, z)
 
         return sm.RemoteSvc('scanMgr').GetSystemScanMgr().ReconnectToLostProbes()
 
         successProbeIDs = sm.RemoteSvc('scanMgr').GetSystemScanMgr().RecoverProbes(probeIDs)
 
-        scanMan = sm.RemoteSvc('scanMgr').GetSystemScanMgr()
-        scanMan.RequestScans(probes)
+        sm.RemoteSvc('scanMgr').GetSystemScanMgr().RequestScans(probes)
 
-        scanMan = sm.RemoteSvc('scanMgr').GetSystemScanMgr()
-        scanMan.DestroyProbe(probeID)
+        sm.RemoteSvc('scanMgr').GetSystemScanMgr().DestroyProbe(probeID)
 
         */
 
@@ -158,6 +155,8 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
     if (m_client->scan() == nullptr)
         m_client->SetScan(new Scan(m_client));
 
+    /** @todo  2s reset time on dscan */
+    
     return m_client->scan()->ConeScan(args);
 }
 

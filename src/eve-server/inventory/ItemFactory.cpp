@@ -75,11 +75,11 @@ int ItemFactory::Initialize()
     m_items.clear();
 
     // Initialize ID Authority variables:
-    m_nextTempID = EVEMU_TEMP_ENTITY_ID;
-    m_nextNPCID = EVEMU_NPC_ID;
-    m_nextMissileID = EVEMU_MISSILE_ID;
-    m_nextDroneID = EVEMU_DRONE_ID;
-
+    m_nextTempID = TEMP_ENTITY_ID;
+    m_nextNPCID = NPC_ID;
+    m_nextMissileID = MISSILE_ID;
+    m_nextDroneID = DRONE_ID;
+    //m_nextAsteroidID = ASTEROID_ID;
 
     m_db = new InventoryDB();
 
@@ -172,10 +172,10 @@ void ItemFactory::RemoveItem(uint32 itemID) {
 
 uint32 ItemFactory::GetNextTempID()
 {
-    if (m_nextTempID < EVEMU_PLANET_PIN_ID)
+    if (m_nextTempID < PLANET_PIN_ID)
         ++m_nextTempID;
     else
-        m_nextTempID = EVEMU_TEMP_ENTITY_ID;
+        m_nextTempID = TEMP_ENTITY_ID;
 
     return m_nextTempID;
 }
@@ -344,8 +344,7 @@ template<class _Ty>
 RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
 {
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
-    if (itr == m_items.end())
-    {
+    if (itr == m_items.end()) {
         if (itemID < minAgent) {
             _log(ITEM__WARNING, "ItemFactory::_GetItem() called on invalid Item %u", itemID);
             //if (sConfig.server.StackTrace)

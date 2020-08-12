@@ -58,7 +58,6 @@ void Scan::ProcessScan(bool useProbe/*false*/)
         return;
     }
     if (m_probeScan) {
-        _log(SCAN__TRACE, "Scan::ProcessScan() - m_probeScan = true for %s in system %u", m_client->GetName(), m_client->GetSystemID());
         for (auto cur : m_probeMap) // may not need this
             cur.second->SendStateChange(Probe::State::Idle);
         ProbeScanResult();
@@ -75,15 +74,14 @@ void Scan::ProcessScan(bool useProbe/*false*/)
             ntime = cur.second->GetMoveTime() *100;
             if (ntime < duration)
                 duration = ntime;
-        }
+        } else
+            cur.second->SendStateChange(Probe::State::Idle);
     }
     if (idle) {
-        //duration *= (1 - (0.05 * m_client->GetChar()->GetSkillLevel(EvESkill::Astrometrics)));           // −5% scan probe scan time per level
-        //duration *= (1 - (0.1 * m_client->GetChar()->GetSkillLevel(EvESkill::AstrometricAcquisition)));  // −10% scan probe scan time per level
         m_probeScan = true;
         SystemScanStarted(duration);
         for (auto cur : m_probeMap) {
-            //cur.second->SendStateChange(Probe::State::Scanning);
+            cur.second->SendStateChange(Probe::State::Scanning);
             cur.second->StartStateTimer(duration);
         }
     }
@@ -105,22 +103,60 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
      * 01:16:27 [ScanDump]       [ 3]       Real: 0.000000      <- y
      * 01:16:27 [ScanDump]       [ 4]       Real: -1.000000     <- z
      */
-    std::vector<SystemEntity*> vector;
-    if (m_client->IsShowall())
-        m_client->SystemMgr()->GetCurrentEntities(vector);
-    else
-        m_client->GetShipSE()->SysBubble()->GetEntityVec(vector);
+    // NOTE:  max distance is 14.4AU or maxInt (2417482647 in km)
+    // get all points
+    /* to find if a point is inside a cone... (will need work/testing)
+     * U = unit vector along cone axis (sent from client, decoded as x,y,z)
+     * VR = vector from cone vertex(V) to test point(R).
+     * Uvr = unit vector of cone vertex to test point (normalized VR)
+     * DP = Uvr dot U (dot product of Uvr and U).  this will give cosine of angle between VR and U
+     * acDP = arc cosine of DP to give angle
+     * test acDP < cone angle = point is inside cone.
+     */
+    bool test = false;
+    float dot(0), acDP(0), angle(args.ScanAngle/2);
+    std::vector<SystemEntity*> seVec;
+    const GPoint vertex(m_client->GetShipSE()->GetPosition());
+    const GPoint U(args.x, args.y, args.z);
+    m_client->SystemMgr()->DScan(args.range, vertex, seVec);
+    _log(SCAN__TRACE, "ConeScan() - query returned %u objects within range.  angle is %.3f", seVec.size(), angle);
     PyList* list = new PyList();
-    for (auto cur : vector) {
-        DirectionScanResult res;
+    for (auto cur : seVec ) {
+        GVector VR(vertex, cur->GetPosition());
+        VR.normalize();
+        dot = U.dotProduct(VR);
+        acDP = acos(dot);
+        if (acDP < angle) {
+            test = true;
+            DirectionScanResult res;
             res.id         = cur->GetID();
             res.typeID     = cur->GetSelf()->typeID();
             res.groupID    = cur->GetSelf()->groupID();
-            res.categoryID = cur->GetSelf()->categoryID();  // this may not be needed.  client code only asks for id,type,group
-        list->AddItem(res.Encode());
+            list->AddItem(res.Encode());
+        }
+        _log(SCAN__TRACE, "ConeScan() - tested %s(%u).  dot %.5f, acDP %.5f, result %s", cur->GetName(), cur->GetID(), dot, acDP, test?"true":"false");
+        test = false;
     }
 
     return list;
+
+    /* alt method to determine point inside cone
+     * x = cone tip
+     * dir = normalized axis vector, from tip to base
+     * h = height
+     * r = base radius
+     * p = point to test
+     * project p onto dir to find points distance along axis
+     * test_dist = dot(p - x, dir)
+     * reject values outside (0 <= test_dist <= h)
+     *
+     * calculate point's orthogonal distance from cone axis
+     * orth_dist = length((p - x) - (test_dist * dir))
+     * calculate cone radius at point distance
+     * cone_radius = (test_dist / h) *r
+     * compare point distance from axis to cone radius at that point on axis
+     * is_inside = (orth_dist < cone_radius)
+     */
 }
 
 void Scan::RequestScans(PyDict* dict) {

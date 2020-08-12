@@ -158,6 +158,7 @@
 #define maxWing                 969000000
 #define minSquad                970000000
 #define maxSquad                979000000
+#define minMissile              1000000000
 #define minDungeon              1200000000
 #define maxEveItem              2147483647      // max int32
 
@@ -169,23 +170,24 @@
 //  DSTLOCALBALLS = 0x0C0000000h  (3,221,225,472 decimal)      unknown where this is from
 
 
-//  allan's static defines to ease code checks
-#define staOfficeOffset                 6000000
-#define EVEMU_TEMP_ENTITY_ID          110000000
-#define EVEMU_PLANET_PIN_ID           130000000
-#define EVEMU_DRONE_ID                500000000
-#define EVEMU_NPC_ID                  750000000
-#define EVEMU_FLEET_ID                950000000
-#define EVEMU_WING_ID                 960000000
-#define EVEMU_SQUAD_ID                970000000
-#define EVEMU_MISSILE_ID             1000000000
-#define EVEMU_DUNGEON_ID             1200000000
+//  static defines to ease code checks
+#define staOfficeOffset           6000000
+#define TEMP_ENTITY_ID          110000000
+#define PLANET_PIN_ID           130000000
+#define ASTEROID_ID             450000000
+#define DRONE_ID                500000000
+#define NPC_ID                  750000000
+#define FLEET_ID                950000000
+#define WING_ID                 960000000
+#define SQUAD_ID                970000000
+#define MISSILE_ID             1000000000
+#define DUNGEON_ID             1200000000
 
-#define EVEMU_MAX_SHORT_ID           2147483647
-#define EVEMU_MAX_LONG_ID   9223372036854775807     // max int64.
+#define MAX_SHORT_ID           2147483647
+#define MAX_LONG_ID   9223372036854775807     // max int64.
 
 
-// defines for common test cases
+// defines based on UID
 #define IsTempPinID(pinID) \
  (pinID <= 1000)
 
@@ -246,11 +248,14 @@
 #define IsOffice(itemID) \
 ((itemID >= minOffice) && (itemID < minTempItemID))
 
-#define IsAsteroid(itemID) \
-((itemID >= minAsteroidItem) && (itemID < EVEMU_DRONE_ID))
-
 #define IsPlayerItem(itemID) \
 ((itemID > minPlayerItem) && (itemID < maxPlayerItem))
+
+#define IsAsteroid(itemID) \
+((itemID >= minAsteroidItem) && (itemID < minDroneItem))
+
+#define IsDrone(itemID) \
+((itemID >= minDroneItem) && (itemID < minBookmark))
 
 // this covers all static items
 #define IsStaticItem(itemID) \
@@ -376,6 +381,11 @@
 
 #define SlotToFlag(slot) \
 ((EVEItemFlags)(flagSlotFirst + slot))
+
+
+#define IsDScanImmune(itemID) \
+(((itemID >= minNPC) && (itemID <= maxNPC)) \
+|| ((itemID >= minTempItemID) && (itemID < minPIStructure)) \
 
 
 /*

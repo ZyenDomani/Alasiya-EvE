@@ -140,8 +140,8 @@ public:
 
     SystemEntity* GetClosestMoonSE(const GPoint& myPos);
 
-    // this returns entities in system for display on ship dscanner when enabled.
-    void GetCurrentEntities(std::vector< SystemEntity* >& vector);
+    // this returns entities in range for display on dscan.
+    void DScan(int64 range, const GPoint& pos, std::vector< SystemEntity* >& vector);
     // this returns entities in system for display on Groove's Entity Map in client
     PyRep* GetCurrentEntities();
     // this returns entities in system for display on ship scanner when enabled.

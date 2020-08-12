@@ -703,7 +703,7 @@ Client* EntityList::FindClientByName(const char* name) const {
 void EntityList::RegisterSID(int64 &sessionID) {
     /*  this whole method is just made up...eventually it will return a unique long long */
     /* max for int64 = 9223372036854775807 */
-    if (sessionID >= EVEMU_MAX_LONG_ID) {
+    if (sessionID >= MAX_LONG_ID) {
         sessionID /= EvE::Trig::Pi;
         RegisterSID(sessionID);
     }

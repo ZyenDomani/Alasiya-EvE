@@ -1442,11 +1442,47 @@ void SystemManager::GetClientList(std::vector< Client* >& cVec)
         cVec.push_back(cur.second);
 }
 
-void SystemManager::GetCurrentEntities(std::vector< SystemEntity* >& vector)
+void SystemManager::DScan(int64 range, const GPoint& pos, std::vector<SystemEntity*>& vector )
 {
-    /** @todo this will need to put entity's sigID into anomaly map for Scan::WarpTo object */
-    for (auto cur : m_ticEntities)
-        vector.push_back(cur.second);
+    /** @todo finish this for correct dscan entity reporting
+     * all ships (not cloaked)
+     * all celestials
+     * all structures
+     * wrecks
+     * drones
+     * probes (core and combat only, i think)
+     * spheres and bubbles (ewar shit)
+     * some npcs ('normal' like rats dont show)
+     * clouds(groups 227 & 711) and asteroids are coded in client but not included here (yet)
+     *   group 227 only shown if role_mod or role_gml
+     *
+     * may not be in this version, but check for "scan inhibitor" POS module; ships in it are invis to dscan
+     * AttrDScanImmune is from rhea expansion.  may be able to implement here.
+     */
+    for (auto cur : m_entities) {
+        // these dont show on dscan
+        if (IsTempItem(cur.first))
+            continue;
+        if (IsAsteroid(cur.first))
+            if (!sConfig.server.AsteroidsOnDScan)
+                continue;
+        if (IsNPC(cur.first))
+            continue;
+        if (cur.second->IsDeployableSE())       // not sure if this is right or not
+            continue;
+        if (cur.second->IsShipSE()) {
+            if (cur.second->GetGroupID() == EVEDB::invGroups::CovertOps)
+                continue;
+            if (cur.second->GetGroupID() == EVEDB::invGroups::CombatRecon)
+                continue;
+        }
+        if (cur.second->DestinyMgr() != nullptr)
+            if (cur.second->DestinyMgr()->IsCloaked())
+                continue;
+        // made it this far.  add item to scan list
+        if (pos.distance(cur.second->GetPosition()) < range)
+            vector.push_back(cur.second);
+    }
 }
 
 PyRep* SystemManager::GetCurrentEntities()
@@ -1460,7 +1496,7 @@ PyRep* SystemManager::GetCurrentEntities()
     PyList* list = new PyList();
     for (auto cur : m_ticEntities) {
         PyDict* dict = new PyDict();
-            dict->SetItemString("itemID", new PyInt(cur.second->GetID()));
+            dict->SetItemString("itemID", new PyInt(cur.first));
             dict->SetItemString("ownerName", new PyString(sDataMgr.GetOwnerName(cur.second->GetOwnerID())));
             dict->SetItemString("typeID", new PyInt(cur.second->GetTypeID()));
             dict->SetItemString("catID", new PyInt(cur.second->GetCategoryID()));
