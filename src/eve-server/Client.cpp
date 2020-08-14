@@ -1413,6 +1413,8 @@ void Client::ExecuteJump() {
         return;
     }
 
+    //OnScannerInfoRemoved  - no args.  flushes scan data in client
+    SendNotification("OnScannerInfoRemoved", "charid", new_tuple(PyStatic.NewZero()), true);  // this is sequenced
     pShipSE->Jump();
 
     MoveToLocation(m_moveSystemID, m_movePoint);

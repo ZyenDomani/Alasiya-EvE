@@ -296,7 +296,8 @@ public:
     //  scan
     Scan* scan()                                        { return m_scan; }
     void SetScan(Scan* pScan)                           { m_scan = pScan; }
-    // set scan timer in ms  this is used in scan.cpp after time calc's are done
+    // set scan timer in ms
+    // this is used in scan.cpp after time calc's are done
     void SetScanTimer(uint16 time, bool useProbe=false) { m_scanTimer.Start(time);  m_scanProbe = useProbe; }
 
     //  trade
