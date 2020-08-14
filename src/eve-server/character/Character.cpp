@@ -331,8 +331,9 @@ void Character::VerifySP()
     std::vector<InventoryItemRef> skillList;
     GetSkillsList(skillList);
     for (auto cur : skillList) {
-        SkillRef::StaticCast(cur)->VerifySP();
+        // verify attribs first, to correct SP as float (still have rare popups)
         SkillRef::StaticCast(cur)->VerifyAttribs();
+        SkillRef::StaticCast(cur)->VerifySP();
     }
 }
 

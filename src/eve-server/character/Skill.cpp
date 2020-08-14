@@ -136,10 +136,14 @@ void Skill::VerifyAttribs()
 {
     if (!m_singleton)
         ChangeSingleton(true, true);
-    if (GetAttribute(AttrSkillLevel).get_type() != evil_number_int)
+    if (GetAttribute(AttrSkillLevel).get_type() != evil_number_int) {
+        _log(SKILL__INFO, "Skill %s level type != int.  Fixing...", itemName().c_str());
         SetAttribute(AttrSkillLevel, GetAttribute(AttrSkillLevel).get_uint32(), false);
-    if (GetAttribute(AttrSkillPoints).get_type() != evil_number_int)
+    }
+    if (GetAttribute(AttrSkillPoints).get_type() != evil_number_int) {
+        _log(SKILL__INFO, "Skill %s sp type != int.  Fixing...", itemName().c_str());
         SetAttribute(AttrSkillPoints, GetAttribute(AttrSkillPoints).get_uint32());
+    }
     // is this needed?
     //if (m_flag != flagSkillInTraining)
     //    SetAttribute(AttrExpiryTime, EvilZerof);
