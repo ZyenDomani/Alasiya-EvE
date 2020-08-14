@@ -1,6 +1,8 @@
 #ifndef EVEDB_invGroups_H__
 #define EVEDB_invGroups_H__
 
+/** @todo  this is still missing groups */
+
 namespace EVEDB {
     namespace invGroups {
         typedef enum {

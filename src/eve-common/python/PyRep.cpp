@@ -64,7 +64,7 @@ const char* const s_mTypeString[] =
  *         however, i dont fully understand it enough to implement better memMgmt at this time
  *              -allan 10Jan19
  *
- *      -- possibably rewrite to use shared_ptr/unique_ptr, then we can remove the RefObject inheritance here.
+ *      -- possibly rewrite to use shared_ptr/unique_ptr, then we can remove the RefObject inheritance here.
  */
 
 /************************************************************************/

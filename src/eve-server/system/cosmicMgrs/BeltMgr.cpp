@@ -650,3 +650,7 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
         mposition.z = radius * cos(phi);// + (roidradius /3);
         mposition.y = MakeRandomInt(-secRad, secRad);
     */
+
+    /* idea...
+     * huge rock in center, with smaller rocks in 'orbit' at various angles
+     */

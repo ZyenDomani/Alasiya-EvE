@@ -21,7 +21,7 @@ namespace Scanning {
             Ship          = 8,      //abandoned ships
             Structure     = 16,     //all pos structures
             DroneOrProbe  = 32,     //player items
-            Celestial     = 64,     //unknown  (client filter only)
+            Celestial     = 64,     //static system entity  (client filter only)
             Anomaly       = 128     //detected using ship sensors
         };
     }
