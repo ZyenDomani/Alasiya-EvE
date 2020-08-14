@@ -883,9 +883,6 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     if (call.tuple->empty())
         return nullptr;
 
-    Call_AssembleShip args;
-    //Call_AssembleShipWithName argsNamed;
-
     bool t3Ship = false;
     std::vector<int32> itemIDList;
     PyList* subSystemList(nullptr);
@@ -903,12 +900,16 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
          * 21:29:15 [CollectCallDump]       [ 2]    Integer: 140023635
          * 21:29:15 [CollectCallDump]       [ 3]    Integer: 140023634
          * 21:29:15 [CollectCallDump]       [ 4]    Integer: 140023636
+         *
+         * 16:31:52 W AssembleShip: byname call is Invalid Type
+         *
          */
-        // this is a list of subsystems for t3 assembly
+        // this is a list of subSystems for t3 assembly
         t3Ship = true;
-        itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
-        subSystemList = call.byname.find("subsystems")->second->AsList();
+        itemIDList.push_back(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
+        subSystemList = call.byname.find("subSystems")->second->AsList();
     } else if (call.tuple->GetItem(0)->IsList()) {
+        Call_AssembleShip args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
@@ -924,7 +925,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
             //    codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             //    return nullptr;
             //}
-            itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
+            itemIDList.push_back(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
         } else
             sLog.Error("AssembleShip", "tuple size == 2 and ([0] != int and [1] != string) or some shit like that.");
     } else {
@@ -952,19 +953,24 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
             }
         }
 
-        ship->ChangeSingleton(true, true);
-
         if ( t3Ship ) {
+            if (subSystemList == nullptr) {
+                // send error here, then exit
+                sLog.Error("AssembleShip", "subSystemList == nullptr for %s", call.client->GetName());
+                return nullptr;
+            }
             // Move the five specified subsystems to the newly assembled Tech 3 ship
             InventoryItemRef subSystemItem(nullptr);
             PyList::const_iterator itr = subSystemList->begin(), end = subSystemList->end();
             while (itr != end) {
                 subSystemItem = sItemFactory.GetItem(PyRep::IntegerValueU32(*itr));
                 if (subSystemItem.get() != nullptr)
-                    subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()), false);
+                    subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_uint32()), true);
                 ++itr;
             }
         }
+
+        ship->ChangeSingleton(true, true);
     }
     return nullptr;
 }
