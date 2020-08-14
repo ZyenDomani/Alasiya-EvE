@@ -195,8 +195,8 @@ void Profile::PrintProfile()
     std::printf("       Concord   %u times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_concord.size(), h, l, a );
     */
 
-    GetRunTimes(m_db, h, l, a);
-    std::printf("            DB   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_db.size()).c_str(),  h, l, a );
+    std::printf("\n");     // spacer
+    sLog.Warning("   Server Profile", "Loop Calls");
     GetRunTimes(m_entityS, h, l, a);
     std::printf("    EntityList   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_entityS.size()).c_str(),  h, l, a );
     GetRunTimes(m_client, h, l, a);
@@ -207,14 +207,8 @@ void Profile::PrintProfile()
     std::printf("       Bubbles   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_bubbles.size()).c_str(),  h, l, a );
     GetRunTimes(m_destiny, h, l, a);
     std::printf("       Destiny   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_destiny.size()).c_str(),  h, l, a );
-    GetRunTimes(m_effects1, h, l, a);
-    std::printf(" Parse Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects1.size()).c_str(),  h, l, a );
-    GetRunTimes(m_effects2, h, l, a);
-    std::printf(" Apply Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects2.size()).c_str(),  h, l, a );
     GetRunTimes(m_npc, h, l, a);
     std::printf("           NPC   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_npc.size()).c_str(),  h, l, a );
-    GetRunTimes(m_itemload, h, l, a);
-    std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_itemload.size()).c_str(),  h, l, a );
     GetRunTimes(m_modules, h, l, a);
     std::printf("       Modules   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_modules.size()).c_str(),  h, l, a );
     GetRunTimes(m_ship, h, l, a);
@@ -227,10 +221,6 @@ void Profile::PrintProfile()
     std::printf("       Missile   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_missile.size()).c_str(), h, l, a );
     GetRunTimes(m_damage, h, l, a);
     std::printf("        Damage   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_damage.size()).c_str(), h, l, a );
-    GetRunTimes(m_loot, h, l, a);
-    std::printf("          Loot   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_loot.size()).c_str(), h, l, a );
-    GetRunTimes(m_salvage, h, l, a);
-    std::printf("       Salvage   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_salvage.size()).c_str(), h, l, a );
     if (sConfig.npc.RoamingSpawns or sConfig.npc.StaticSpawns) {
         GetRunTimes(m_spawn, h, l, a);
         std::printf("        Spawns   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_spawn.size()).c_str(), h, l, a );
@@ -241,13 +231,26 @@ void Profile::PrintProfile()
         std::printf("    Collisions   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_collision.size()).c_str(), h, l, a );
     } else
         std::printf("    Collisions   Disabled.\n");
-
     if (sConfig.testing.EnableDrones) {
         GetRunTimes(m_drone, h, l, a);
         std::printf("        Drones   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_drone.size()).c_str(), h, l, a );
     } else
         std::printf("        Drones   Disabled.\n");
 
+    std::printf("\n");     // spacer
+    sLog.Warning("   Server Profile", "Periodic Calls");
+    GetRunTimes(m_db, h, l, a);
+    std::printf("            DB   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_db.size()).c_str(),  h, l, a );
+    GetRunTimes(m_effects1, h, l, a);
+    std::printf(" Parse Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects1.size()).c_str(),  h, l, a );
+    GetRunTimes(m_effects2, h, l, a);
+    std::printf(" Apply Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects2.size()).c_str(),  h, l, a );
+    GetRunTimes(m_itemload, h, l, a);
+    std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_itemload.size()).c_str(),  h, l, a );
+    GetRunTimes(m_loot, h, l, a);
+    std::printf("          Loot   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_loot.size()).c_str(), h, l, a );
+    GetRunTimes(m_salvage, h, l, a);
+    std::printf("       Salvage   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_salvage.size()).c_str(), h, l, a );
     if (sConfig.cosmic.PIEnabled) {
         GetRunTimes(m_colony, h, l, a);
         std::printf("        Colony   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_colony.size()).c_str(), h, l, a );
@@ -259,14 +262,14 @@ void Profile::PrintProfile()
 
 void Profile::GetRunTimes(std::vector< double >& container, double& h, double& l, double& a)
 {
-    uint32 size = container.size();
-    if (!size) {
+    if (container.empty()) {
         h = 0;
         l = 0;
         a = 0;
         return;
     }
 
+    uint32 size = container.size();
     double total = 0.0, lo = 0.0, hi = 0.0;
     for (uint32 i = 0; i < size; ++i) {
         total += container.at(i);
