@@ -3074,6 +3074,7 @@ void DestinyManager::SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self
 }
 
 void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vector<PyTuple*>& events, bool self_only/*false*/) const {
+    // this check shouldnt be needed...
     if (!mySE->SystemMgr()->IsLoaded())
         return;
     if (self_only) {
@@ -3110,8 +3111,9 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
     } else {
         _log( DESTINY__ERROR, "[%u] Cannot BubbleCast destiny update (u:%u, e:%u); entity (%u) is not in any bubble.", \
                 sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetID() );
-        //EvE::traceStack();
-        sBubbleMgr.Add(mySE);
-        mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
+        if (sConfig.debug.IsTestServer)
+            EvE::traceStack();
+        //sBubbleMgr.Add(mySE);
+        //mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
     }
 }
