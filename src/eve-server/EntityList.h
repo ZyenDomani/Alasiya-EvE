@@ -40,6 +40,7 @@ class Client;
 class PyAddress;
 class EVENotificationStream;
 class SystemManager;
+class ProbeSE;
 class PyTuple;
 class PyServiceMgr;
 class SystemEntity;
@@ -109,17 +110,8 @@ public:
     uint32 GetStamp()                                   { return m_stamp; }
     uint32 GetMinutes()                                 { return m_minutes; }
 
-    void Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const;
-    void Broadcast(const PyAddress &dest, EVENotificationStream &noti) const;
-    void Multicast(const char* notifyType, const char* idType, PyTuple** in_payload, NotificationDestination target, uint32 target_id, bool seq = true);
-    void Multicast(const char* notifyType, const char* idType, PyTuple** payload, const MulticastTarget &mcset, bool seq=true);
-    void Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const;
-    void Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true) const;
-    void Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true);
     // gets Client* for all ingame players
     void GetClients(std::vector<Client* > &result) const;
-
-    uint32 GetConnections()                             { return m_connections; }
 
     void AddStation(uint32 stationID, StationItemRef itemRef);
     void RemoveStation(uint32 stationID);
@@ -135,18 +127,36 @@ public:
 
     void ResetStartTime()                               { m_startTime = GetFileTimeNow(); }
     int64 GetStartTime()                                { return m_startTime; }
+    const char* GetUpTime();
+    uint32 GetConnections()                             { return m_connections; }
+
 
     // new shit for replacing current crazy notification sending
     // this method will send notification to online members that have the role required for the notification sent.
+    /** @todo this works very well, and will be used as template for other notification methods */
     void CorpNotify(uint32 corpID, uint8 type, const char* notifyType, const char* idType, PyTuple* payload) const;
+    // current crazy notification sending methods
+    /** @todo this shit needs removal, after new notification methods are completed */
+    void Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const;
+    void Broadcast(const PyAddress &dest, EVENotificationStream &noti) const;
+    void Multicast(const char* notifyType, const char* idType, PyTuple** in_payload, NotificationDestination target, uint32 target_id, bool seq = true);
+    void Multicast(const char* notifyType, const char* idType, PyTuple** payload, const MulticastTarget &mcset, bool seq=true);
+    void Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const;
+    void Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true) const;
+    void Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true);
 
     //testing target tics in <1hz
     // add SE* and targMgr* to map
-    void AddTargMgr(SystemEntity* pSE, TargetManager* pTM)      { m_targMgrs.emplace(pSE, pTM); }
+    void AddTargMgr(SystemEntity* pSE, TargetManager* pTM)
+                                                        { m_targMgrs.emplace(pSE, pTM); }
     // remove SE* and targMgr* from map
-    void DeleteTargMgr(SystemEntity* pSE)                       { m_targMgrs.erase(pSE); }
+    void DeleteTargMgr(SystemEntity* pSE)               { m_targMgrs.erase(pSE); }
 
-    const char* GetUpTime();
+    // add ProbeSE* to map
+    void AddProbe(uint32 probeID, ProbeSE* pSE)         { m_probes[probeID] = pSE; }
+    // remove ProbeSE* from map
+    void RemoveProbe(uint32 probeID)                    { m_probes.erase(probeID); }
+
 
 protected:
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.
@@ -172,6 +182,8 @@ private:
 
     //testing target tics in <1hz
     std::unordered_map<SystemEntity*, TargetManager*> m_targMgrs;
+    // also running scan probes at sub-hz tics
+    std::map<uint32, ProbeSE*> m_probes;
 
     // make list for corp members and their roles for easy access of notifications etc.
     typedef std::map<Client*, int64> corpRole;

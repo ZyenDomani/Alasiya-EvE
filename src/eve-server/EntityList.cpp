@@ -34,6 +34,7 @@
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
 #include "agents/Agent.h"
+#include "exploration/Probes.h"
 #include "map/MapDB.h"
 #include "market/MarketMgr.h"
 //#include "market/MarketBotMgr.h"
@@ -77,8 +78,8 @@ void EntityList::Initialize() {
     m_startTime = GetFileTimeNow();
 
     /* start the timers */
-    m_targTimer.Start(250);     // testing targeting at 4/sec
-    m_stampTimer.Start(1000);
+    m_targTimer.Start(250);     // testing targeting and scan probes at 4/sec
+    m_stampTimer.Start(1000);   // 1hz tic timer
     m_minuteTimer.Start(60000); // does this need to be accurate?
 
     m_clientSeedID = ServiceDB::SetClientSeed();
@@ -160,6 +161,8 @@ void EntityList::AddPlayer(Client* pClient)
             }
         } else {
             m_players.emplace(pClient->GetCharID(), pClient);
+            // make note about invalid session and failure to add player to corp roles.
+            //   this is nbd if player is in npc corp or in player corp with no roles
         }
 }
 
@@ -198,6 +201,13 @@ void EntityList::Process() {
                 ++titr;
             else
                 titr = m_targMgrs.erase(titr);
+        }
+        std::map<uint32, ProbeSE*>::iterator pitr = m_probes.begin();
+        while (pitr != m_probes.end()) {
+            if (pitr->second->ProcessTic())
+                ++pitr;
+            else
+                pitr = m_probes.erase(pitr);
         }
     }
 
@@ -283,6 +293,15 @@ SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
     return pSM;
 }
 
+// cannot put add/remove station in header due to incomplete StationItemRef class
+void EntityList::AddStation(uint32 stationID, StationItemRef itemRef) {
+    m_stations[stationID] = itemRef;
+}
+
+void EntityList::RemoveStation(uint32 stationID) {
+    m_stations.erase(stationID);
+}
+
 Agent* EntityList::GetAgent(uint32 agentID) {
     std::map<uint32, Agent*>::iterator res = m_agents.find(agentID);
     if (res != m_agents.end())
@@ -295,14 +314,6 @@ Agent* EntityList::GetAgent(uint32 agentID) {
     }
     m_agents[agentID] = pAgent;
     return pAgent;
-}
-
-void EntityList::AddStation(uint32 stationID, StationItemRef itemRef) {
-    m_stations[stationID] = itemRef;
-}
-
-void EntityList::RemoveStation(uint32 stationID) {
-    m_stations.erase(stationID);
 }
 
 void EntityList::GetClients(std::vector<Client*> &result) const {

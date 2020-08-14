@@ -73,7 +73,7 @@ public:
     virtual ~ProbeSE()                                  { /* Do nothing here */ }
 
     /* Process Calls - Overridden as needed in derived classes */
-    virtual void                Process();
+    virtual bool ProcessTic();
 
     /* class type pointer querys. */
     virtual ProbeSE*            GetProbeSE()            { return this; }
@@ -115,7 +115,7 @@ public:
     float GetScanStrength();
 
     GPoint GetDestination()                             { return m_destination; }
-    std::string GetStateName(uint8 state);
+    const char* GetStateName(uint8 state);
 
     bool CanScanShips()                                 { return m_scanShips; }
 

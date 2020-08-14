@@ -156,7 +156,7 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
         m_client->SetScan(new Scan(m_client));
 
     /** @todo  2s reset time on dscan */
-    
+
     return m_client->scan()->ConeScan(args);
 }
 
@@ -188,18 +188,17 @@ PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
 
 PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {
     //successProbeIDs = sm.RemoteSvc('scanMgr').GetSystemScanMgr().RecoverProbes(probeIDs)
-    _log(SCAN__TRACE, "ScanBound::Handle_RecoverProbes() - size= %u", call.tuple->size() );
-    call.Dump(SCAN__DUMP);
+    // list of probes successfully scooped to cargo
+    // this is tested and added in Probe::RecoverProbe()
+    PyList* list = new PyList();
 
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception
-        return PyStatic.NewNone();
+        return list;
     }
 
-    // list of probes successfully scooped to cargo
-    PyList* list = new PyList();
     SystemEntity* pSE(nullptr);
     for (auto cur : args.ints) {
         pSE = m_client->SystemMgr()->GetSE(cur);

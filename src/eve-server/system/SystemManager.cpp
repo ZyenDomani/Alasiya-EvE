@@ -175,9 +175,7 @@ bool SystemManager::BootSystem() {
     //start minute timer
     m_minutetimer.Start(60000);
 
-    m_loaded = true;
-
-    return m_loaded;
+    return (m_loaded = true);
 }
 
 bool SystemManager::LoadCosmicMgrs()
@@ -993,9 +991,12 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
             m_staticEntities[itemID] = pSE;
             if (m_loaded)   // only update when system is already loaded
                 SendStaticBall(pSE);
-        }
-        // *most* dynamic items need proc tics.  add to proc list
-        if (!IsStaticItem(itemID)) {
+        } else if (pSE->IsProbeSE()) {
+            // probes are now running sub-hz tics, so dont add to proc list.
+            addSignal = false;  // redundant...called with AddSignal=false
+            sEntityList.AddProbe(itemID, pSE->GetProbeSE());
+        } else if (!IsStaticItem(itemID)) {
+            // *most* dynamic items need proc tics.  add to proc list
             m_entityChanged = true;
             m_ticEntities[itemID] = pSE;
         } else

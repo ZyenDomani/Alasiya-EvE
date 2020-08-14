@@ -24,6 +24,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "EntityList.h"
 #include "StatisticMgr.h"
 #include "exploration/Scan.h"
 #include "Probes.h"
@@ -42,15 +43,16 @@ void Scan::AddProbe(ProbeSE* pProbe)
 {
     pProbe->SetScan(this);
     m_probeMap.emplace(pProbe->GetID(), pProbe);
+    //sEntityList.AddProbe(pProbe->GetID(), pProbe);  << redundant - called in sysMgr::Add()
 }
 
 void Scan::RemoveProbe(ProbeSE* pProbe)
 {
+    //sEntityList.RemoveProbe(pProbe->GetID()); << redundant - called in Probe::Remove()
     m_probeMap.erase(pProbe->GetID());
-    pProbe->RemoveScan();
+    //pProbe->RemoveScan();
 }
 
-// this will need it's own timer call....not sure how yet.
 void Scan::ProcessScan(bool useProbe/*false*/)
 {
     if (!useProbe) {
@@ -58,20 +60,19 @@ void Scan::ProcessScan(bool useProbe/*false*/)
         return;
     }
     if (m_probeScan) {
-        for (auto cur : m_probeMap) // may not need this
-            cur.second->SendStateChange(Probe::State::Idle);
         ProbeScanResult();
+        m_probeScan = false;
         return;
     }
 
     bool idle = true;
-    uint16 ntime = 0, duration = m_client->GetShip()->GetAttribute(AttrDuration).get_int();
+    uint16 ntime = 0, duration = m_client->GetShip()->GetAttribute(AttrDuration).get_uint32();
     if (duration < 1000)
-        duration = 7000;    // 7s default probe scan time.
+        duration = 8000;    // 8s default probe scan time.
     for (auto cur : m_probeMap) {
         if (cur.second->IsMoving()) {
             idle = false;
-            ntime = cur.second->GetMoveTime() *100;
+            ntime = cur.second->GetMoveTime();
             if (ntime < duration)
                 duration = ntime;
         } else
@@ -79,30 +80,19 @@ void Scan::ProcessScan(bool useProbe/*false*/)
     }
     if (idle) {
         m_probeScan = true;
-        SystemScanStarted(duration);
         for (auto cur : m_probeMap) {
             cur.second->SendStateChange(Probe::State::Scanning);
             cur.second->StartStateTimer(duration);
         }
+        SystemScanStarted(duration);
     }
     m_client->SetScanTimer(duration, true);
 }
 
 
 PyRep* Scan::ConeScan(Call_ConeScan args) {
-    /** @todo  this needs to use given args to determine objects found... */
     //  WORKING CODE...DONT FUCK WITH THIS!!  -allan 7Dec15
-    /*
-     * 01:16:27 [Bound] ScanBound::ConeScan()
-     * 01:16:27 [ScanTrace] ScanBound::Handle_ConeScan() - size= 5
-     * 01:16:27 [ScanDump]   Call Arguments:
-     * 01:16:27 [ScanDump]      Tuple: 5 elements
-     * 01:16:27 [ScanDump]       [ 0]       Real: 6.283185      <- ScanAngle in rads
-     * 01:16:27 [ScanDump]       [ 1]    Integer: 10000000      <- range in m
-     * 01:16:27 [ScanDump]       [ 2]       Real: 0.000000      <- x
-     * 01:16:27 [ScanDump]       [ 3]       Real: 0.000000      <- y
-     * 01:16:27 [ScanDump]       [ 4]       Real: -1.000000     <- z
-     */
+
     // NOTE:  max distance is 14.4AU or maxInt (2417482647 in km)
     // get all points
     /* to find if a point is inside a cone... (will need work/testing)
@@ -139,24 +129,6 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
     }
 
     return list;
-
-    /* alt method to determine point inside cone
-     * x = cone tip
-     * dir = normalized axis vector, from tip to base
-     * h = height
-     * r = base radius
-     * p = point to test
-     * project p onto dir to find points distance along axis
-     * test_dist = dot(p - x, dir)
-     * reject values outside (0 <= test_dist <= h)
-     *
-     * calculate point's orthogonal distance from cone axis
-     * orth_dist = length((p - x) - (test_dist * dir))
-     * calculate cone radius at point distance
-     * cone_radius = (test_dist / h) *r
-     * compare point distance from axis to cone radius at that point on axis
-     * is_inside = (orth_dist < cone_radius)
-     */
 }
 
 void Scan::RequestScans(PyDict* dict) {
@@ -583,6 +555,10 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec, GPoi
 
     // modify reported signal position based on deviation
     //  *** this should take skills into account also.
+    /** @todo  i dont think this is correct.....
+                      [PyString "deviation"]
+                      [PyFloat 3194135252444.99]
+     */
     data.deviation *= (1 - (data.certainty > 1.0f ? 0.999 : data.certainty));
     point.MakeRandomPointOnSphereLayer(data.deviation /2, data.deviation);
     data.sig.position = point;
