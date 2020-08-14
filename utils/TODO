@@ -1,12 +1,15 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    9 August 2020
+****    12 August 2020
 
     note:  this whole file needs to be reorganized
 
 *******************************************************
 **********  errors and other found shit...high priority
+
+skill training is still fucked up.  needs a good walkthru with a shitton of molesting to verify operation
+
 
 noob ships do not Init() correctly....  most attrs are 0
 
@@ -19,6 +22,8 @@ prop mod destiny call - update ship speed to AccelTime math isnt right...see cru
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
 
 ShipItem::AddItemByFlag --  this needs a walkthru to verify usage and proper operation
+
+scan probe load isnt updating qty in cargo.
 
 module add/remove isnt fully thought out at this point.
     - will need complete walk thru to verify proper operation
@@ -53,6 +58,9 @@ check trade - ships retain insurance
 dungeon deco items need better placement
 
 
+00:13:48 [CMgr Debug] AnomalyMgr::AddSignal() - adding Probe to anomaly list as Invalid(8) with 4.100% sigStrength.
+    - "Probe" here is a ship (minmatar frigate)
+
 check for item ownership before rename
     send error if failed
     multiple checks still need to be written
@@ -73,6 +81,15 @@ turn fx sending on and follow calls to verify proper OnSpecialFX data
 
 error:
 "turret not fitted on shipID (npc)"
+
+can you repack t3 ships??
+when t3 ship killed, pilot will lose sp in a required skill for each of the 5 subsystems.
+    not sure how this is determined, or how many sp lost.
+
+JumpCloneService needs work to allow capital ships `show info` tab to work in space.
+    - this class is barely above skeleton code, and hardly researched.
+    - jump clones arent even close to implementation, so its be nbd so far.
+
 
 *******************************************************
 ********  improvements
