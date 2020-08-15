@@ -66,7 +66,7 @@ void Scan::ProcessScan(bool useProbe/*false*/)
     }
 
     bool idle = true;
-    uint16 ntime = 0, duration = m_client->GetShip()->GetAttribute(AttrDuration).get_uint32();
+    uint16 ntime(0), duration = m_client->GetShip()->GetAttribute(AttrScanSpeed).get_uint32();
     if (duration < 1000)
         duration = 8000;    // 8s default probe scan time.
     for (auto cur : m_probeMap) {
@@ -86,6 +86,8 @@ void Scan::ProcessScan(bool useProbe/*false*/)
         }
         SystemScanStarted(duration);
     }
+    _log(SCAN__TRACE, "ProcessScan() - %u probes, duration: %u, idle: %s", \
+                m_probeMap.size(), duration, idle?"true":"false");
     m_client->SetScanTimer(duration, true);
 }
 
@@ -150,7 +152,7 @@ void Scan::RequestScans(PyDict* dict) {
     _log(SCAN__INFO, "Scan::RequestScans() called by %s in %s using %u probes.",\
             m_client->GetName(), m_client->GetSystemName().c_str(), dict->size());
 
-    uint32 probeID = 0;
+    uint32 probeID(0);
     PyDict::const_iterator cItr = dict->begin();
     for (; cItr != dict->end(); ++cItr) {
         // find probe in map....

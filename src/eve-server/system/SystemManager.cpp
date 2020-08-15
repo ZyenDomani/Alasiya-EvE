@@ -28,6 +28,7 @@
 #include "EVEServerConfig.h"
 #include "account/AccountService.h"
 #include "chat/LSCService.h"
+#include "exploration/Probes.h"
 #include "npc/Drone.h"
 #include "npc/NPC.h"
 #include "npc/Sentry.h"
@@ -830,16 +831,18 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             return dSE;
         } break;
         case EVEDB::invCategories::Charge: {
-            InventoryItemRef iRef = sItemFactory.GetItem( entity.itemID );
-            if (iRef.get() == nullptr)
-                return nullptr;
-            /** @todo make error msg here */
             switch (entity.groupID) {
                 case EVEDB::invGroups::Scanner_Probe: {
-                    //these probes are abandoned.  create generic ISE until captured.
-                    ItemSystemEntity* iSE = new ItemSystemEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
-                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ISE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    return iSE;
+                    ProbeItemRef pRef = sItemFactory.GetProbeItem(entity.itemID);
+                    if (pRef.get() == nullptr)
+                        return nullptr;
+                        /** @todo make error msg here */
+                    // make sure these are owned by eve system
+                    pRef->ChangeOwner(1);
+                    //these probes are abandoned and offline.  give them 5h lifetime
+                    ProbeSE* pSE = new ProbeSE(pRef, *(sysMgr.GetServiceMgr()), &sysMgr);
+                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ProbeSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    return pSE;
                 } break;
                 case EVEDB::invGroups::Survey_Probe: {
                     sLog.Warning("BuildEntity", "Called for Survey_Probe");
@@ -850,7 +853,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             }
         } break;
     }
-    sLog.Warning("BuildEntity", "Unhandled dynamic entity category %d for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
+    sLog.Warning("BuildEntity", "Unhandled dynamic entity category %u for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
     EvE::traceStack();
     return nullptr;
 }
@@ -1004,12 +1007,11 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
 
         // Add Entity's Item Ref to Solar System Dynamic Inventory:
         m_solarSystemRef->AddItemToInventory( pSE->GetSelf() );
-        //AddItemToInventory( pSE->GetSelf() );
     }
     sBubbleMgr.Add(pSE);
     // add item to our AnomalyMgr
     if (addSignal)
-        m_anomMgr->AddSignal(pSE->GetSelf());
+        m_anomMgr->AddSignal(pSE);
 }
 
 void SystemManager::RemoveEntity(SystemEntity* pSE) {

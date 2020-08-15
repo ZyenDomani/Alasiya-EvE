@@ -112,16 +112,14 @@ ScanMgrService::~ScanMgrService() {
     delete m_dispatch;
 }
 
-//02:17:50 L ScanMgrService::Handle_GetSystemScanMgr(): size= 0
 PyResult ScanMgrService::Handle_GetSystemScanMgr( PyCallArgs& call ) {
-    Client* pClient = call.client;
-    DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
     }
 
-    ScanBound* pSB = new ScanBound(m_manager, pClient);
+    ScanBound* pSB = new ScanBound(m_manager, call.client);
     PyRep* result = m_manager->BindObject(call.client, pSB);
     return result;
 }
@@ -129,8 +127,8 @@ PyResult ScanMgrService::Handle_GetSystemScanMgr( PyCallArgs& call ) {
 PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
     //result = sm.GetService('scanSvc').ConeScan(self.scanangle, rnge * 1000, vec.x, vec.y, vec.z)
     //return sm.RemoteSvc('scanMgr').GetSystemScanMgr().ConeScan(scanangle, scanRange, x, y, z)
-    _log(SCAN__TRACE, "ScanBound::Handle_ConeScan() - size= %u", call.tuple->size() );
-    call.Dump(SCAN__DUMP);
+    //_log(SCAN__TRACE, "ScanBound::Handle_ConeScan() - size= %u", call.tuple->size() );
+    //call.Dump(SCAN__DUMP);
 
     Call_ConeScan args;
     if (!args.Decode(&call.tuple)) {
@@ -141,17 +139,16 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
 
     DestinyManager* pDestiny = m_client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
+        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", m_client->GetName());
         return PyStatic.NewNone();
     } else if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't scan while warping");
         return PyStatic.NewNone();
     }
 
-    if (m_client->GetShipSE()->SysBubble() == nullptr) {
-        // make error here and return
-        return PyStatic.NewNone();
-    }
+    if (m_client->GetShipSE()->SysBubble() == nullptr)
+        sBubbleMgr.Add(m_client->GetShipSE());
+
     if (m_client->scan() == nullptr)
         m_client->SetScan(new Scan(m_client));
 
@@ -172,6 +169,9 @@ PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
         call.client->SendNotifyMsg( "You can't scan while warping");
         return PyStatic.NewNone();
     }
+
+    if (m_client->GetShipSE()->SysBubble() == nullptr)
+        sBubbleMgr.Add(m_client->GetShipSE());
 
     if (m_client->scan() == nullptr)
         m_client->SetScan(new Scan(m_client));
@@ -221,7 +221,7 @@ PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     SystemEntity* pSE(m_client->SystemMgr()->GetSE(arg.arg));
@@ -229,7 +229,7 @@ PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
         pSE->Delete();
     SafeDelete(pSE);
 
-    return PyStatic.NewNone();
+    return nullptr;
 }
 
 PyResult ScanBound::Handle_ReconnectToLostProbes( PyCallArgs& call ) {
@@ -237,5 +237,5 @@ PyResult ScanBound::Handle_ReconnectToLostProbes( PyCallArgs& call ) {
     //  will have to test against client launcher vs probe m_moduleID
     // will have to write *something* to loop thru active probes in system for this....
 
-    return PyStatic.NewNone();
+    return nullptr;
 }

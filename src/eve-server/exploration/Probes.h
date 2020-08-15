@@ -69,6 +69,9 @@ class Scan;
 
 class ProbeSE : public DynamicSystemEntity {
 public:
+    // abandoned probe c'tor
+    ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system);
+    // launched probe c'tor
     ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system, InventoryItemRef moduleRef, ShipItemRef shipRef);
     virtual ~ProbeSE()                                  { /* Do nothing here */ }
 
@@ -88,10 +91,11 @@ public:
     /* specific functions handled in this class. */
     void RecoverProbe(PyList* list);
     void UpdateProbe(ProbeData& data);
+    // removes probe from system, scan map, and sends RemoveProbe call to client
+    void RemoveProbe();
     void SendNewProbe();
     void SendSlimChange();
     void SendStateChange(uint8 state);
-    void SendRemoveProbe();
     void SendWarpStart(float travelTime);
     void SendWarpEnd();
 
@@ -103,8 +107,8 @@ public:
     uint8 GetState()                                    { return m_state; }
     uint8 GetRangeStep()                                { return m_rangeStep; }
 
-    // remaining move time in ds
-    uint16 GetMoveTime()                                { return m_stateTimer.GetRemainingTime() /100; }
+    // remaining move time in ms
+    uint16 GetMoveTime()                                { return m_stateTimer.GetRemainingTime(); }
     int64 GetExpiryTime()                               { return m_expiry; }
 
     float GetDeviation();

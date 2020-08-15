@@ -97,9 +97,12 @@ m_scanShips(false)
         m_scanShips = self->GetAttribute(AttrProbeCanScanShips).get_bool();
 
     // set probe lifetime
-    // m_expiry = GetFileTimeNow() + (EvE::Time::Hour *2);  // 2h default lifespan
     m_expiry = GetFileTimeNow() + (self->GetAttribute(AttrExplosionDelay).get_float() *10000); // ms to filetime
-    m_lifeTimer.Start(self->GetAttribute(AttrExplosionDelay).get_uint32());
+    if (m_expiry < GetFileTimeNow()) {
+        m_expiry = GetFileTimeNow() + (EvE::Time::Minute *30);  // 30m default lifespan
+        m_lifeTimer.Start(30*60*1000);        // 30m to ms
+    } else
+        m_lifeTimer.Start(self->GetAttribute(AttrExplosionDelay).get_uint32());
 
     // set str and deviation
     m_scanStrength = self->GetAttribute(AttrBaseSensorStrength).get_int();
@@ -154,18 +157,21 @@ m_scanShips(false)
 
     // modules (launchers)
     if (moduleRef->HasAttribute(AttrScanStrengthBonus))
-        m_scanStrength *= moduleRef->GetAttribute(AttrScanStrengthBonus).get_float();
+        m_scanStrength *= (1 + moduleRef->GetAttribute(AttrScanStrengthBonus).get_float());
 
     // rigs
     m_scanStrength *= shipRef->GetModuleManager()->GetRigScanBonus();
 
     // implants
-    // since we dont have these, im gonna leave it off for now.
+    // this is just a placeholder.  not sure if this will be how it works yet
+    //  also, the bonus will be determined by the implant fx, which would be set in attrib.
+    if (pChar->HasAttribute(AttrScanStrengthBonus))
+        m_scanStrength *= (1 + pChar->GetAttribute(AttrScanStrengthBonus).get_float());
 
     // fudge scan strength to make my formulas work right...wip
     m_scanStrength /= 10;
 
-    _log(SCAN__DEBUG, "Created ProbeSE for %u. timeNow: %.0f, expiry: %lli, scan Str: %.5f, deviation: %.5f, range: %.2f, ship: %s", \
+    _log(SCAN__DEBUG, "Created ProbeSE for %u. timeNow: %.0f, expiry: %lli, scan Str: %.4f, deviation: %.5f, range: %.2f, ship: %s", \
     m_self->itemID(), GetFileTimeNow(), m_expiry, m_scanStrength, m_scanDeviation, m_scanRange, m_scanShips?"true":"false");
 }
 
@@ -174,23 +180,21 @@ m_scanShips(false)
     AttrMinScanDeviation = 787,
     AttrMaxScanDeviation = 788,
     AttrScanAnalyzeCount = 791,
-    AttrScanStrengthBonus = 846,  this is on char
     AttrScanGravimetricStrengthPercent = 1027,
     AttrScanLadarStrengthPercent = 1028,
     AttrScanMagnetometricStrengthPercent = 1029,
     AttrScanRadarStrengthPercent = 1030,
-    AttrScanProbeStrength = 1116,
-    AttrScanStrengthSignatures = 1117,
-    AttrScanStrengthDronesProbes = 1118,
-    AttrScanStrengthScrap = 1119,
-    AttrScanStrengthShips = 1120,
-    AttrScanStrengthStructures = 1121,
-    AttrMaxScanGroups = 1122,
-    AttrScanDuration = 1123,     How long this probe has to scan until it can obtain results. (mt data)
+    AttrScanProbeStrength = 1116,         (no db data)
+    AttrScanStrengthSignatures = 1117,         (no db data)
+    AttrScanStrengthDronesProbes = 1118,         (no db data)
+    AttrScanStrengthScrap = 1119,         (no db data)
+    AttrScanStrengthShips = 1120,         (no db data)
+    AttrScanStrengthStructures = 1121,         (no db data)
+    AttrMaxScanGroups = 1122,         (no db data)
+    AttrScanDuration = 1123,     How long this probe has to scan until it can obtain results. (no db data)
     AttrScanResolutionMultiplierSet = 1135,
     AttrScanAllStrength = 1136,
-    AttrMaxScanDeviationModifier = 1156,    this is on char
-    AttrScanFrequencyResult = 1161,
+    AttrScanFrequencyResult = 1161,             (no db data)
     AttrScanGenericStrength = 1169,
     AttrProbeCanScanShips = 1413,
     AttrScanGravimetricStrengthMultiplier = 1473,
@@ -200,20 +204,61 @@ m_scanShips(false)
     AttrSignatureRadiusBonusMultiplier = 1477,
     AttrMaxTargetRangeBonusMultiplier = 1478,
     AttrScanResolutionBonusMultiplier = 1479,
+    AttrScanStrengthBonusModule
+
+    // these are char attribs
+    AttrScanStrengthBonus = 846,
+    AttrMaxScanDeviationModifier = 1156,
 
     // these 4 are implants
     AttrScanRadarStrengthModifier = 1565,
     AttrScanLadarStrengthModifier = 1566,
     AttrScanGravimetricStrengthModifier = 1567,
     AttrScanMagnetometricStrengthModifier = 1568,
+
+    // new shit from rhea
+    AttrScanStrengthBonusModule = 1907,
     */
 
+// abandoned probe c'tor
+ProbeSE::ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system)
+: DynamicSystemEntity(self, services, system),
+m_scan(nullptr),
+m_client(nullptr),
+m_shipRef(nullptr),
+m_moduleRef(nullptr),
+m_secStatus(0),
+m_lifeTimer(0),
+m_stateTimer(0),
+m_returnTimer(0),
+m_scanShips(false)
+{
+    m_state = Probe::State::Inactive;
+
+    if (self->HasAttribute(AttrProbeCanScanShips))
+        m_scanShips = self->GetAttribute(AttrProbeCanScanShips).get_bool();
+
+    // set probe lifetime of 5h
+    m_expiry = GetFileTimeNow() + (EvE::Time::Hour *5);  // 5h abandoned lifespan
+    m_lifeTimer.Start(5*60*60*1000);        // 5h to ms
+
+    // set str and deviation
+    m_scanStrength = self->GetAttribute(AttrBaseSensorStrength).get_int();
+    m_scanDeviation = self->GetAttribute(AttrBaseMaxScanDeviation).get_float();
+
+    // this isnt used like this, just placeholders to init variables
+    m_rangeStep = self->GetAttribute(AttrRangeFactor).get_int();
+    m_scanRange = self->GetAttribute(AttrBaseScanRange).get_float();
+
+    _log(SCAN__DEBUG, "Created Abandoned ProbeSE for %u. timeNow: %.0f, expiry: %lli, scan Str: %.4f, deviation: %.5f, range: %.2f, ship: %s", \
+            m_self->itemID(), GetFileTimeNow(), m_expiry, m_scanStrength, \
+            m_scanDeviation, m_scanRange, m_scanShips?"true":"false");
+}
 
 bool ProbeSE::ProcessTic()
 {
-    // this may not work right....it doesnt.  look into.
     if (m_lifeTimer.Check()) {
-        SendRemoveProbe();
+        RemoveProbe();
         Delete();
         delete(this);
         // delete from entity map
@@ -225,11 +270,8 @@ bool ProbeSE::ProcessTic()
             _log(SCAN__DEBUG, "ProbeSE::Process() return timer hit for probeID %u", m_self->itemID());
             if (m_state == Probe::State::Warping)
                 SendWarpEnd();
-            SendRemoveProbe();
-            m_scan->RemoveProbe(this);
-            m_system->RemoveEntity(this);
-            // should we stack these??
-            m_self->Move(m_client->GetShipID(), flagCargoHold, true);
+            RemoveProbe();
+            m_self->MergeTypesInCargo(m_shipRef.get(), flagCargoHold);
             delete(this);
             // delete from entity map
             return false;
@@ -289,7 +331,9 @@ void ProbeSE::UpdateProbe(ProbeData& data)
 
 void ProbeSE::RecoverProbe(PyList* list)
 {
-    m_destination = m_client->GetShipSE()->GetPosition() +250;
+    if (m_client == nullptr)
+        return;
+    m_destination = m_shipRef->position() +250;
     float time(1), dist = GetPosition().distance(m_destination);
     if (dist > BUBBLE_RADIUS_METERS){
         float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS /4);
@@ -300,7 +344,7 @@ void ProbeSE::RecoverProbe(PyList* list)
         time = EvE::max(dist / mv, 1);
     }
 
-    /** @todo  verify probe status and controller before adding to "successful list" */
+    /** @todo  verify probe status and controller before adding to "recover success list" */
     // add to list if still controlled by player
     list->AddItem(new PyInt(m_self->itemID()));
     m_returnTimer.Start(time *1000);
@@ -337,17 +381,25 @@ void ProbeSE::SendStateChange(uint8 state)
 
     _log(SCAN__DEBUG, "ProbeSE::SendStateChange()  Probe %u changing state to %s.", GetID(), GetStateName(state));
     m_state = state;
+    if (m_client == nullptr)
+        return;
     PyTuple* tuple = new PyTuple(2);
         tuple->SetItem(0, new PyLong(m_self->itemID()));
         tuple->SetItem(1, new PyInt(state));
     m_client->SendNotification("OnProbeStateChanged", "clientID", &tuple);  // this is sequenced
 }
 
-void ProbeSE::SendRemoveProbe()
+void ProbeSE::RemoveProbe()
 {
-    // remove from bubble
-    m_bubble->Remove(this);
+    // remove from system
+    m_system->RemoveEntity(this);
+    // remove from scan map
+    m_scan->RemoveProbe(this);
+    // set item loc to null
+    m_self->SetPosition(NULL_ORIGIN);
 
+    if (m_client == nullptr)
+        return;
     PyTuple* ev = new PyTuple(1);
         ev->SetItem(0, new PyLong(m_self->itemID()));
     m_client->SendNotification("OnRemoveProbe", "clientID", &ev);  // this is sequenced
@@ -382,12 +434,17 @@ void ProbeSE::SendWarpStart(float travelTime/*0*/)
         tuple->SetItem(3, new PyLong(GetFileTimeNow()));    //startTime
         tuple->SetItem(4, new PyFloat(travelTime));         //duration in ms
     m_client->SendNotification("OnProbeWarpStart", "clientID", &tuple);  // this is sequenced
+
+    // not sure if this will work right...slimItem is removed when probe warps out
+    //SendSlimChange();
 }
 
 void ProbeSE::SendWarpEnd()
 {
+    m_self->SetPosition(m_destination);
     sBubbleMgr.Add(this);
-    m_destiny->SetPosition(m_destination);
+    if (m_client == nullptr)
+        return;
     PyTuple* tuple = new PyTuple(1);
         tuple->SetItem(0, new PyLong(m_self->itemID()));
     m_client->SendNotification("OnProbeWarpEnd", "clientID", &tuple);  // this is sequenced
@@ -412,7 +469,8 @@ float ProbeSE::GetDeviation()
     float maxDeviation = m_scanRange /m_self->GetAttribute(AttrBaseScanRange).get_float();
     maxDeviation *= m_scanDeviation;
     // fudge this to allow skill to perform better (the purpose of skill)
-    maxDeviation *= (1 - (0.15 * m_client->GetChar()->GetSkillLevel(EvESkill::AstrometricPinpointing))); //15%/lvl
+    if (m_client != nullptr)
+        maxDeviation *= (1 - (0.15 * m_client->GetChar()->GetSkillLevel(EvESkill::AstrometricPinpointing))); //15%/lvl
     return maxDeviation;
 }
 
@@ -479,7 +537,7 @@ PyDict* ProbeSE::MakeSlimItem()
     slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
     slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
     slim->SetItemString("numLaunchers",             PyStatic.NewOne());
-    slim->SetItemString("sourceModuleID",           new PyInt(m_moduleRef->itemID()));
+    slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()): PyStatic.NewNone());
     slim->SetItemString("securityStatus",           new PyFloat(m_secStatus));
     return slim;
 }
@@ -503,9 +561,9 @@ void ProbeSE::SendSlimChange()
         slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
         slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("numLaunchers",             PyStatic.NewOne());
-        slim->SetItemString("sourceModuleID",           new PyInt(m_moduleRef->itemID()));
+        slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()):PyStatic.NewNone());
         slim->SetItemString("securityStatus",           new PyFloat(m_secStatus));
-        slim->SetItemString("warpingAway",              PyStatic.NewTrue());    // this is sent when probe warps
+        slim->SetItemString("warpingAway",              m_state == Probe::State::Returning ? PyStatic.NewFalse() : PyStatic.NewTrue());    // this is sent when probe warps
     PyTuple* probeData = new PyTuple(2);
         probeData->SetItem(0, new PyLong(m_self->itemID()));
         probeData->SetItem(1, new PyObject("foo.SlimItem", slim));

@@ -41,7 +41,7 @@ class AnomalyMgr
       void LoadAnomalies();
 
       //  assign sigID and add to anom list to allow showing on scanner
-      void AddSignal(InventoryItemRef iRef, uint32 id=0);
+      void AddSignal(SystemEntity* pSE, uint32 id = 0);
       void RemoveSignal(uint32 itemID);
       // list for ship scanner
       void GetAnomalyList(std::vector< CosmicSignature >& sig);

@@ -15,6 +15,7 @@
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
 #include "StaticDataMgr.h"
+#include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
@@ -334,9 +335,9 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
 
     //m_mdb.SaveAnomaly(sig);
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal %s(%u) for %s in %s(%u) with %.3f%% sigStrength.", \
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Created Signal %s(%u) for %s in %s(%u), bubbleID %u with %.3f%% sigStrength.", \
             sDunDataMgr.GetDungeonType(sig.dungeonType), sig.dungeonType, \
-            sig.sigName.c_str(), m_system->GetName(), sig.systemID, sig.sigStrength *100);
+            sig.sigName.c_str(), m_system->GetName(), sig.systemID, sig.bubbleID, sig.sigStrength *100);
 }
 
 uint8 AnomalyMgr::GetDungeonType()
@@ -429,7 +430,7 @@ GPoint AnomalyMgr::GetAnomalyPos(std::string& sigID)
 }
 
 
-void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
+void AnomalyMgr::AddSignal(SystemEntity* pSE, uint32 id/*0*/)
 {
     if (!m_initalized)
         return;
@@ -439,7 +440,9 @@ void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
      * this is sill WIP.
      *   see Scan.xmlp and EVE_Scanning.h for client data
      */
-
+    InventoryItemRef iRef = pSE->GetSelf();
+    if (iRef.get() == nullptr)
+        return; // we'll get over it.
     CosmicSignature sig = CosmicSignature();
         sig.dungeonType = Dungeon::Type::Anomaly;
         sig.ownerID = iRef->ownerID();
@@ -453,6 +456,9 @@ void AnomalyMgr::AddSignal(InventoryItemRef iRef, uint32 id/*0*/)
         sig.position = iRef->position();
         // this will be wrong for capital ships and larger (maybe bs also)
         sig.sigStrength = iRef->GetAttribute(AttrSignatureRadius).get_float() /1000;
+        // get bubbleID, which is only used for .siglist command
+
+        sig.bubbleID = pSE->SysBubble()->GetID();
 
 /* Signal Strength Base Data
  * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
