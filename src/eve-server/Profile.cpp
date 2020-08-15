@@ -195,8 +195,8 @@ void Profile::PrintProfile()
     std::printf("       Concord   %u times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_concord.size(), h, l, a );
     */
 
-    std::printf("\n");     // spacer
-    sLog.Warning("   Server Profile", "Loop Calls");
+    //std::printf("\n");     // spacer
+    std::printf("\tLoop Calls\n");
     GetRunTimes(m_entityS, h, l, a);
     std::printf("    EntityList   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_entityS.size()).c_str(),  h, l, a );
     GetRunTimes(m_client, h, l, a);
@@ -237,8 +237,8 @@ void Profile::PrintProfile()
     } else
         std::printf("        Drones   Disabled.\n");
 
-    std::printf("\n");     // spacer
-    sLog.Warning("   Server Profile", "Periodic Calls");
+    //std::printf("\n");     // spacer
+    std::printf("\tPeriodic Calls\n");
     GetRunTimes(m_db, h, l, a);
     std::printf("            DB   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_db.size()).c_str(),  h, l, a );
     GetRunTimes(m_effects1, h, l, a);

@@ -348,7 +348,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_char->SetClient(this);
 
-    // register with our system manager AFTER character is constructed
+    // register with our system manager AFTER character is constructed and initialized
     m_system->AddClient(this, true);
 
     // this will eventually check for d/c timer and rejoin existing fleet if applicable

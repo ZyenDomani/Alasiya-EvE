@@ -128,6 +128,7 @@ public:
     uint8 GetFittedModuleCountByGroup(uint16 groupID);
 
     // scan method to check for scanning rigs.
+    // this is set as % with 100% being 1.0
     float GetRigScanBonus()                             { return m_rigScanBonus; }
 
     GenericModule* GetModule(EVEItemFlags flag);        // faster than GetModule(itemID)

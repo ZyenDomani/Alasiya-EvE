@@ -126,7 +126,7 @@ public:
     // same as Move() but xfer ownership also
     void                    Donate(uint32 new_owner=1, uint32 new_location=0, EVEItemFlags new_flag=flagAutoFit, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map< int32, PyRep* >& changes);
-    // this is for stacking charges, mined ore, and salvage in ship's cargo
+    // this is for stacking recovered probes, mined ore, and salvage in ship's cargo
     void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);  // will test for existing types
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     // this also updates volume of item
