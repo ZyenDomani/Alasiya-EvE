@@ -59,6 +59,7 @@ public:
     void CheckBubble(SystemEntity* ent);
     //call when an entity is added to the system.
     void Add(SystemEntity* pSE, bool isPostWarp = false);
+    SystemBubble* GetBubbleByID(uint16 bubbleID);
     //call to find the bubble containing the SystemEntity specified, if no bubble does, return NULL
     SystemBubble* FindBubble(SystemEntity *ent) const;
     //call to find the bubble containing the GPoint specified, if no bubble does, return NULL

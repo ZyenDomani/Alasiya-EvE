@@ -15,9 +15,10 @@
 #include "PyServiceMgr.h"
 #include "StaticDataMgr.h"
 #include "inventory/InventoryItem.h"
+#include "system/SystemBubble.h"
+#include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
-#include "system/SystemManager.h"
 
 /*  this class will need to keep track of all WH in universe, what systems they connect to, and how long they last.
  *
@@ -129,6 +130,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     sig.sigItemID = iRef->itemID();
     // add wormhole to system (signal added to AnomalyMgr on successful return)
     pSysMgr->AddEntity(wSE, false);
+    sig.bubbleID = wSE->SysBubble()->GetID();
     // add exit to vector
     m_wormholes.push_back(iRef->itemID());
 

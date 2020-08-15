@@ -39,11 +39,11 @@ PyResult Command_siglist(Client* pClient, CommandDB* db, PyServiceMgr* services,
     std::ostringstream str;
     str.clear();
     str << "There are currently %u active signatures.<br>"; //50
-    str << "LocationID aID iID 'Name'<br>"; //30
+    str << "LocationID (bubbleID) aID iID 'Name'<br>"; //30
 
     for (auto sigs : sig) {
         // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
-        str << sigs.systemID << " " << sigs.sigID.c_str() << " " << sigs.sigItemID << " '" << sigs.sigName.c_str() << "'<br>"; //100
+        str << sigs.systemID << " (" << sigs.bubbleID << ") " << sigs.sigID.c_str() << " " << sigs.sigItemID << " '" << sigs.sigName.c_str() << "'<br>"; //100
     }
 
     int size = count * 100;
@@ -1085,6 +1085,36 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     size += corp;
     char reply[size];
     snprintf(reply, size, str.str().c_str(), shipRef->name(), shipRef->itemID(), count);
+
+    pClient->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_bubblewarp(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!pClient->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!pClient->GetShipSE()->SysBubble())
+        throw PyException(MakeCustomError("You're not in a bubble."));
+    if (!pClient->GetShipSE()->DestinyMgr())
+        throw PyException(MakeCustomError("You have no destiny manager."));
+
+    if (!args.isNumber(1))
+        throw PyException(MakeCustomError("Argument 1 must be a valid bubbleID."));
+    uint16 bubbleID = atoi(args.arg(1).c_str());
+    SystemBubble* pBubble = sBubbleMgr.GetBubbleByID(bubbleID);
+    if (pBubble == nullptr)
+        throw PyException(MakeCustomError("Bubble %u not found.", bubbleID));
+
+    if (pBubble->GetSystemID() != pClient->GetSystemID())
+        throw PyException(MakeCustomError("Cannot warp to bubble %u because it is in %s and you are in %s", \
+                    bubbleID, pBubble->GetSystem()->GetName(), pClient->GetSystemName().c_str()));
+
+    pClient->GetShipSE()->DestinyMgr()->WarpTo(pBubble->GetCenter());
+
+    int size(50);
+    char reply[size];
+    snprintf(reply, size, "Ship Initalized warp to bubbleID %u", bubbleID);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);

@@ -241,6 +241,13 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
     return pBubble;
 }
 
+SystemBubble* BubbleManager::GetBubbleByID(uint16 bubbleID) {
+    for (auto cur : m_bubbles)
+        if (cur->GetID() == bubbleID)
+            return cur;
+    return nullptr;
+}
+
 SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
     // determine if new center (pos) is within 2x radius of another bubble center. (overlap)
     auto range = m_bubbleMap.equal_range(sysMgr->GetID());

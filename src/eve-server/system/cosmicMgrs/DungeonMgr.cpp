@@ -14,10 +14,11 @@
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
 #include "StaticDataMgr.h"
+#include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
+#include "system/cosmicMgrs/BeltMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
-#include "BeltMgr.h"
-#include "SpawnMgr.h"
+#include "system/cosmicMgrs/SpawnMgr.h"
 
 DungeonDataMgr::DungeonDataMgr()
 {
@@ -285,9 +286,12 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     if (iRef.get() == nullptr) // make error and exit
         return false;
     CelestialSE* cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
+    if (cSE == nullptr)
+        return false;   //  we'll get over it.
     // dont add signal thru sysMgr.  signal is added when this returns to anomMgr
     m_system->AddEntity(cSE, false);
     sig.sigItemID = iRef->itemID();
+    sig.bubbleID = cSE->SysBubble()->GetID();
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - %s using templateID %u and roomID %i", sig.sigName.c_str(), templateID, dTemplate.dunRoomID);
 
@@ -484,7 +488,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             if (level == 3)
                 faction = 6;  // drone
             else if (faction == 6) {
-                // cannot be drone here.  set to region pirate
+                // lvls 1&2 cannot be drone.  set to region pirate
                 faction = GetFaction(sDataMgr.GetRegionRatFaction(m_system->GetRegionID()));
             }
         } break;
