@@ -899,9 +899,13 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         return;
 
     if (loadQty < chargeRef->quantity()) {
-        chargeRef = chargeRef->Split(loadQty, false, true);
+        InventoryItemRef cRef(chargeRef);
+        chargeRef = chargeRef->Split(loadQty, true, true);
         if (chargeRef.get() == nullptr) {
-            // make error here?
+            _log(MODULE__ERROR, "");
+            if (pShipItem->HasPilot())
+                pShipItem->GetPilot()->SendNotifyMsg("Could not split stack of %s.  %s was not reloaded.", \
+                        cRef->name(), pMod->GetSelf()->name());
             return;
         }
     } else
