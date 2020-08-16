@@ -127,7 +127,7 @@ void StatisticMgr::PrintInfo()
     sLog.Cyan("     StatisticMgr", " PC Shots Fired: %u", m_data.pcShots);
     sLog.Cyan("     StatisticMgr", " PC Missiles Fired: %u", m_data.pcMissiles);
     sLog.Cyan("     StatisticMgr", " Scan Probes Launched: %u", m_data.probesLaunched);
-    sLog.Cyan("     StatisticMgr", " Cosmic Signatures Scanned: %u", m_data.sitesScanned);
+    sLog.Cyan("     StatisticMgr", " Cosmic Signals Scanned: %u", m_data.sitesScanned);
     sLog.Cyan("     StatisticMgr", " PC Bounties Paid: %.2f isk", m_data.pcBounties);
     sLog.Cyan("     StatisticMgr", " NPC Bounties Paid: %.2f isk", m_data.npcBounties);
     sLog.Cyan("     StatisticMgr", " Ore Mined: %.2f m3", m_data.oreMined);
