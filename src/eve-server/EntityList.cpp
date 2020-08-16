@@ -56,10 +56,12 @@ m_minuteTimer(0, true),
 m_startTime(0)
 {
     m_agents.clear();
+    m_probes.clear();
     m_clients.clear();
     m_players.clear();
     m_systems.clear();
     m_stations.clear();
+    m_targMgrs.clear();
     m_corpMembers.clear();
 
     m_npcs = 0;
