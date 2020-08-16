@@ -19,8 +19,8 @@
 
 
 AsteroidItem::AsteroidItem(const ItemType& type, const ItemData& idata, const AsteroidData& adata)
-: InventoryItem( adata.itemID, type, idata ),
-m_data( adata )
+: InventoryItem(adata.itemID, type, idata),
+m_data(adata)
 {
     _log(ITEM__TRACE, "Created AsteroidItem for %s(%u).", adata.itemName.c_str(), adata.itemID);
 }
@@ -58,7 +58,7 @@ AsteroidItemRef AsteroidItem::SpawnTemp(ItemData& idata, AsteroidData& adata) {
 
     idata.name = type->name();
     adata.itemName = type->name();
-    adata.itemID == sItemFactory.GetNextTempID();
+    adata.itemID = sItemFactory.GetNextTempID();
 
     AsteroidItemRef roidRef = AsteroidItemRef(new AsteroidItem(*type, idata, adata));
     roidRef->SetAttribute(AttrRadius,    adata.radius);
