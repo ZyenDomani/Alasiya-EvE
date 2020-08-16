@@ -134,7 +134,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     // add exit to vector
     m_wormholes.push_back(iRef->itemID());
 
-    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created %s in %s(%u) with %.3f% sigStrength.", \
+    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created %s in %s(%u) with %.3f%% sigStrength.", \
             iRef->itemName().c_str(), pSysMgr->GetName(), sig.systemID, sig.sigStrength *100);
 }
 
