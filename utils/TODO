@@ -34,7 +34,10 @@ check/fix loading linked weapons
     - look over and correct loading with partial stacks (see UserError at MM::LoadCharge)
     - reloading grouped weapons should divide evenly between modules.
         it currently fills modules in slot order.
+charge loading using OIC for probe qty change to show in cargo.
+    this sets charge as item in slot, not subloc, which fucks up counts (consume charge doesnt hit for item)
 
+    
 all MM and ship calls need to verify throw status
     - test with Client->CanThrow() to verify throwable status
 
