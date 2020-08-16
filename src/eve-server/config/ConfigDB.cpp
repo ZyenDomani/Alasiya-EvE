@@ -37,10 +37,10 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     owner.clear();
 
     for (auto cur : entityIDs) {
-        //if (cur == 0) {
-            //sLog.Error("GetMultiOwnersEx", "Sent 0.");
-        //    continue;
-        //}
+        if (cur == 0) {
+            sLog.Error("GetMultiOwnersEx", "Sent 0.");
+            continue;
+        }
         if (IsCorp(cur))
             corp.push_back(cur);
         else if (IsAlliance(cur))
