@@ -120,7 +120,7 @@ public:
     void AddEntity(SystemEntity* pSE, bool addSignal=true);    // add entity to system, and (optionally) add signal to AnomalyMgr
     void RemoveEntity(SystemEntity* pSE);   // this also removes SE* from bubble and sig from AnomalyMgr (if applicable)
     void AddClient(Client* pClient, bool count=false, bool jump=false);
-    void AddMarker(SystemEntity* pSE, bool sendBall=false);    // rather specific here.
+    void AddMarker(SystemEntity* pSE, bool sendBall=false, bool addSignal=false);    // rather specific here.
     void RemoveClient(Client* pClient, bool count=false, bool jump=false);
     void SetDockCount(Client* pClient, bool docked=false);
 

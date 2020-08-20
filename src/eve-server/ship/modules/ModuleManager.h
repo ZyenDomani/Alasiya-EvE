@@ -128,7 +128,7 @@ public:
     uint8 GetFittedModuleCountByGroup(uint16 groupID);
 
     // scan method to check for scanning rigs.
-    // this is set as % with 100% being 1.0
+    // this is set as % with 1.0 being 100%
     float GetRigScanBonus()                             { return m_rigScanBonus; }
 
     GenericModule* GetModule(EVEItemFlags flag);        // faster than GetModule(itemID)
@@ -155,8 +155,8 @@ private:
     uint8 m_RigSlots;
     uint8 m_SubSystemSlots;
 
-    // dont like this, but best way to do it...
-    float m_rigScanBonus;
+    // dont like this, but best way to do it...need to set attrib for this, either on char or ship
+    float m_rigScanBonus;       // fuzzy logic as %
 
     std::map<uint16, uint8> m_modByGroup;               // groupID, count
     std::map<uint8, GenericModule*> m_modules;          // slot, module (for all slots)

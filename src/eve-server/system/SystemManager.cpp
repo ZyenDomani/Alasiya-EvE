@@ -1019,7 +1019,7 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
         return;
     sBubbleMgr.Remove(pSE);
     // Remove Entity's Item Ref from Solar System Dynamic Inventory:
-    RemoveItemFromInventory( pSE->GetSelf() );
+    RemoveItemFromInventory(pSE->GetSelf());
 
     // remove entity from our maps
     uint32 itemID = pSE->GetID();
@@ -1030,7 +1030,7 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     m_anomMgr->RemoveSignal(itemID);
 }
 
-void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/) {
+void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/, bool addSignal/*false*/) {
     if (pSE == nullptr)
         return;
 
@@ -1039,6 +1039,8 @@ void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/) {
     //m_solarSystemRef->AddItemToInventory(pSE->GetSelf());
 
     sBubbleMgr.Add(pSE);
+    if (addSignal)
+        m_anomMgr->AddSignal(pSE);
     if (sendBall) {
         // modified from SendStaticBall()
         if (m_clients.empty())

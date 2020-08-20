@@ -598,16 +598,15 @@ DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, System
 
 /* Non-Static / Mobile / Destructible / Celestial Objects - PC's, NPC's, Drones, Ships, Missiles, Wrecks  */
 DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: SystemEntity(self, services, system)
+: SystemEntity(self, services, system),
+m_invul(false),
+m_frozen(false)
 {
     m_targMgr = new TargetManager(this);
     m_destiny = new DestinyManager(this);
 
     assert(m_targMgr != nullptr);
     assert(m_destiny != nullptr);
-
-    m_invul = false;
-    m_frozen = false;
 }
 
 DynamicSystemEntity::~DynamicSystemEntity()

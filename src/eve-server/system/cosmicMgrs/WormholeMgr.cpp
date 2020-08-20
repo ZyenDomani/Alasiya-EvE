@@ -76,6 +76,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     /** @note  this creates a k162 for deco only at this time.
      * it is more POC than usable
      */
+
     /*
      * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
      * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
@@ -107,7 +108,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     sig.sigStrength = 0.1;
 
     // create k162 here
-    sig.sigName = "WormHole K162 (deco only)";
+    sig.sigName = "WormHole K162";
     GPoint pos(sig.position);
     ItemData wData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), wData);

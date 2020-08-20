@@ -149,7 +149,7 @@ uint32 InventoryItem::CreateItemID(ItemData &data) {
         data.name = iType->name();
 
     if (data.locationID == 0)
-        if (is_log_enabled(ITEM__TRACE)) {
+        if (is_log_enabled(ITEM__MESSAGE)) {
             _log(ITEM__MESSAGE, "II::CreateItemID() - LocationID = 0 for item");
             EvE::traceStack();
         }
@@ -914,7 +914,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZe
         }
     }
 
-    if (notify) {
+    if (notify or (IsCargoHoldFlag(m_flag) and (m_type.categoryID() == EVEDB::invCategories::Charge))) {
         std::map<int32, PyRep *> changes;
         changes[Inv::Update::StackSize] = new PyInt(old_qty);
         SendItemChange(m_ownerID, changes); //changes is consumed

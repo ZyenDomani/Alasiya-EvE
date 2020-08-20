@@ -262,9 +262,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     if (pSE == nullptr)
         return;
 
-    bool ice = false;
-    if (pSE->GetTypeID() == 17774)
-        ice = true;
+    bool ice = (pSE->GetTypeID() == 17774);
 
     float secRating = m_system->GetSystemSecurityRating();
     float secValue = m_system->GetSecValue();
