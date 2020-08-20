@@ -923,6 +923,7 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
     // check for turning angle.  returns true if angle is enough to change movement variables
     // create isosceles triangle where legs are current direction and destination, then find angle between legs
     //  it will set m_radians in the range of [-pi,pi].
+    /** @todo revisit this to verify angle calcs */
     GVector toVec(m_position, m_targetPoint);
     toVec.normalize();
     float dot = toVec.dotProduct(m_shipHeading);
@@ -2204,12 +2205,12 @@ void DestinyManager::SetUndockSpeed() {
     m_changeDelay = true;   // skip a single tic before making change
     m_shipMaxAccelTime = 0.5f;
     m_prevSpeedFraction = 0.0f;
-    m_userSpeedFraction = 1.0f;
+    m_userSpeedFraction = 1.1f;
     m_maxSpeed = m_maxShipSpeed;
     m_velocity = m_shipHeading * m_maxSpeed;
     // may need to tweak these for larger ships...
-    m_activeSpeedFraction = 1.0f;
-    m_currentSpeedFraction = 1.0f;
+    m_activeSpeedFraction = 1.1f;
+    m_currentSpeedFraction = 1.1f;
 
     if (m_ballMode == Destiny::Ball::Mode::MISSILE)
         return;

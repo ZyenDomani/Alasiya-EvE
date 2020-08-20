@@ -491,8 +491,8 @@ void Client::ProcessClient() {
         if (m_invulTimer.Check(false)) {
             _log(CLIENT__TIMER, "ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
             m_invulTimer.Disable();
-            SetInvul(false);
-            SetUndock(false);
+            m_invul = false;
+            m_undock = false;
         }
 
     if (m_scanTimer.Enabled())
@@ -522,7 +522,7 @@ void Client::ProcessClient() {
         if (m_uncloakTimer.Check(false)) {
             _log(CLIENT__TIMER, "ProcessClient():  SetUncloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
             m_uncloakTimer.Disable();
-            SetUncloak(false);
+            m_uncloak = false;
         }
 
     if (m_stateTimer.Enabled())
@@ -889,6 +889,8 @@ void Client::SetBallPark() {
             m_cloakTimer.Start(Player::Timer::JumpCloak);
         }
     }
+    if (m_undock)
+        pShipSE->DestinyMgr()->SetSpeedFraction();
 }
 
 void Client::CheckBallparkTimer() {
@@ -2025,7 +2027,6 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         m_packaged = true;
         m_destinyUpdateQueue->AddItem(act.Encode());
     }
-    //PyDecRef(*update);
 }
 
 void Client::_SendQueuedUpdates() {
