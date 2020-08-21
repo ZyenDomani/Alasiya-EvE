@@ -62,7 +62,7 @@ INCLUDE( "DetectScm" )
 # override the setup.
 #
 # Switch to the C++11 standard (required)
-SET( CMAKE_CXX_FLAGS "-std=gnu++11 -march=native -fabi-version=6 ${CMAKE_CXX_FLAGS}" )
+SET( CMAKE_CXX_FLAGS "-std=gnu++11 -march=native -Werror=return-type -fabi-version=6 ${CMAKE_CXX_FLAGS}" )
 # -Wall -Wextra -Weffc++
 # -pg -ggdb -pedantic
 # -fsanitize=thread  -fsanitize=address
