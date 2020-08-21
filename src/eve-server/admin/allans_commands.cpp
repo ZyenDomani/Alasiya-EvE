@@ -24,6 +24,7 @@
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
+#include "testing/test.h"
 
 
 PyResult Command_siglist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
@@ -31,25 +32,26 @@ PyResult Command_siglist(Client* pClient, CommandDB* db, PyServiceMgr* services,
      *   will list all anomalies, by systemID.
      */
 
+    AnomalyMgr* pAM = pClient->SystemMgr()->GetAnomMgr();
     std::vector<CosmicSignature> sig;
-    pClient->SystemMgr()->GetAnomMgr()->GetSignatureList(sig);
+    pAM->GetAnomalyList(sig);
+    pAM->GetSignatureList(sig);
 
     int count = sig.size();
-
     std::ostringstream str;
     str.clear();
-    str << "There are currently %u active signatures.<br>"; //50
-    str << "LocationID (bubbleID) aID iID 'Name'<br>"; //30
+    str << "There are currently %u active signals in %s(%u)<br>"; //80
+    str << "aID iID bubbleID type 'Name'<br>"; //30
 
     for (auto sigs : sig) {
         // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
-        str << sigs.systemID << " (" << sigs.bubbleID << ") " << sigs.sigID.c_str() << " " << sigs.sigItemID << " '" << sigs.sigName.c_str() << "'<br>"; //100
+        str << sigs.sigID.c_str() << " "  << sigs.sigItemID << " " << sigs.bubbleID << " " << pAM->GetScanGroupName(sigs.scanGroupID) << " '" << sigs.sigName.c_str() << "'<br>"; //120
     }
 
-    int size = count * 100;
-    size += 80;
+    int size(120);
+    size += count * 120;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), count);
+    snprintf(reply, size, str.str().c_str(), count, pClient->SystemMgr()->GetName(), pClient->SystemMgr()->GetID());
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -1102,7 +1104,7 @@ PyResult Command_bubblewarp(Client* pClient, CommandDB* db, PyServiceMgr* servic
     if (!args.isNumber(1))
         throw PyException(MakeCustomError("Argument 1 must be a valid bubbleID."));
     uint16 bubbleID = atoi(args.arg(1).c_str());
-    SystemBubble* pBubble = sBubbleMgr.GetBubbleByID(bubbleID);
+    SystemBubble* pBubble = sBubbleMgr.FindBubbleByID(bubbleID);
     if (pBubble == nullptr)
         throw PyException(MakeCustomError("Bubble %u not found.", bubbleID));
 
@@ -1120,6 +1122,18 @@ PyResult Command_bubblewarp(Client* pClient, CommandDB* db, PyServiceMgr* servic
     return new PyString(reply);
 }
 
+PyResult Command_runtest(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!pClient->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+
+    int size(30);
+    char reply[size];
+    snprintf(reply, size, "Running posTest()");
+
+    testing::posTest(pClient);
+    return nullptr;
+}
 
 /* groove's new command.....
  *    /fit [me|itemID] [typeID] [flag=slot]

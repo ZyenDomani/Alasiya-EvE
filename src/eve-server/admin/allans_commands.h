@@ -60,3 +60,5 @@
           " - sets repair, boost, and ?? modules to stop when target full")
  COMMAND( bubblewarp, Acct::Role::GMH,
           " - begin warp to given bubbleID in current ship.")
+ COMMAND( runtest, Acct::Role::PROGRAMMER,
+          " - run testing::posTest()." )

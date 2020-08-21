@@ -899,7 +899,7 @@ void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::st
         m_centerSE = cSE;
     }
     m_markers.emplace( cRef->itemID(), cSE);
-    m_system->AddMarker(cSE, center);
+    m_system->AddEntity(cSE, center);
 }
 
 

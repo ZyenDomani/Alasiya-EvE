@@ -28,6 +28,7 @@
 #include <functional>
 #include "eve-server.h"
 
+#include "Client.h"
 #include "EntityList.h"
 #include "EVE_Scanning.h"
 #include "EVEServerConfig.h"
@@ -36,7 +37,6 @@
 #include "system/SystemBubble.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
-#include "Client.h"
 
 
 BubbleManager::BubbleManager()
@@ -45,8 +45,9 @@ m_emptyTimer(0),
 m_bubbleID(0)
 {
     m_bubbles.clear();
-    m_bubbleMap.clear();
     m_wanderers.clear();
+    m_bubbleIDMap.clear();
+    m_sysBubbleMap.clear();
 }
 
 BubbleManager::~BubbleManager() {
@@ -207,10 +208,6 @@ void BubbleManager::Remove(SystemEntity *ent) {
  * and allowing a much larger amount of bubbles per system without
  * introducing lag from bubble processing.
  *
- * to further reduce bubble-finding process times, testing an unordered multimap
- * of bubbles by [systemID, SystemBubble*] to search only bubbles in desired system,
- * greatly reducing the search time for many loaded systems.
- *
  * NOTE:  these are only used here...
  */
 SystemBubble* BubbleManager::FindBubble(SystemEntity *ent) const {
@@ -223,7 +220,7 @@ SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &pos) cons
     _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::FindBubble() - Searching point %.1f, %.1f, %.1f in system %u.", \
                 pos.x, pos.y, pos.z, systemID);
 
-    auto range = m_bubbleMap.equal_range(systemID);
+    auto range = m_sysBubbleMap.equal_range(systemID);
     for ( auto itr = range.first; itr != range.second; ++itr )
         if (itr->second->InBubble(pos))
             return itr->second;
@@ -241,16 +238,9 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
     return pBubble;
 }
 
-SystemBubble* BubbleManager::GetBubbleByID(uint16 bubbleID) {
-    for (auto cur : m_bubbles)
-        if (cur->GetID() == bubbleID)
-            return cur;
-    return nullptr;
-}
-
 SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
     // determine if new center (pos) is within 2x radius of another bubble center. (overlap)
-    auto range = m_bubbleMap.equal_range(sysMgr->GetID());
+    auto range = m_sysBubbleMap.equal_range(sysMgr->GetID());
     for ( auto itr = range.first; itr != range.second; ++itr )
         if (itr->second->IsOverlap(pos)) {
             GVector dir(itr->second->GetCenter(), pos);
@@ -264,39 +254,44 @@ SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
     SystemBubble* pBubble = new SystemBubble(sysMgr, pos, BUBBLE_RADIUS_METERS);
     if (pBubble != nullptr) {
         m_bubbles.push_back(pBubble);
-        m_bubbleMap.emplace(sysMgr->GetID(), pBubble);
+        m_bubbleIDMap.emplace(pBubble->GetID(), pBubble);
+        m_sysBubbleMap.emplace(sysMgr->GetID(), pBubble);
         if (sConfig.debug.BubbleTrack)
             pBubble->MarkCenter();
     }
     return pBubble;
 }
 
-SystemBubble* BubbleManager::FindBubbleByID(uint32 systemID, uint16 bubbleID)
+SystemBubble* BubbleManager::FindBubbleByID(uint16 bubbleID)
 {
-    auto range = m_bubbleMap.equal_range(systemID);
-    for (auto itr = range.first; itr != range.second; ++itr)
-        if (itr->second->GetID() == bubbleID)
-            return itr->second;
+    std::map<uint32, SystemBubble*>::iterator itr = m_bubbleIDMap.find(bubbleID);
+    if (itr != m_bubbleIDMap.end())
+        return itr->second;
     return nullptr;
 }
 
 void BubbleManager::ClearSystemBubbles(uint32 systemID)
 {
-    auto range = m_bubbleMap.equal_range(systemID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    auto range = m_sysBubbleMap.equal_range(systemID);
+    for (auto itr = range.first; itr != range.second; ++itr){
         m_bubbles.remove(itr->second);
+        m_bubbleIDMap.erase(itr->second->GetID());
+    }
 
-    m_bubbleMap.erase(systemID);
+    m_sysBubbleMap.erase(systemID);
 }
 
 void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB)
 {
-    auto range = m_bubbleMap.equal_range(systemID);
+    auto range = m_sysBubbleMap.equal_range(systemID);
     for (auto itr = range.first; itr != range.second; ++itr)
         if (itr->second == pSB) {
-            m_bubbleMap.erase(itr);
+            m_sysBubbleMap.erase(itr);
             return;
         }
+    std::map<uint32, SystemBubble*>::iterator itr = m_bubbleIDMap.find(pSB->GetID());
+    if (itr != m_bubbleIDMap.end())
+        m_bubbleIDMap.erase(itr);
 }
 
 /* for beltmgr */
@@ -326,7 +321,7 @@ uint32 BubbleManager::GetBeltID(uint16 bubbleID)
 
 uint32 BubbleManager::GetBubbleCount(uint32 systemID) {
     uint32 count = 0;
-    auto range = m_bubbleMap.equal_range(systemID);
+    auto range = m_sysBubbleMap.equal_range(systemID);
     for (auto itr = range.first; itr != range.second; ++itr)
         ++count;
     return count;
@@ -334,7 +329,7 @@ uint32 BubbleManager::GetBubbleCount(uint32 systemID) {
 
 void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
     ContainerSE* cSE(nullptr);
-    for (auto cur : m_bubbleMap) {
+    for (auto cur : m_sysBubbleMap) {
         cSE = cur.second->GetCenterMarker();
         if (cSE == nullptr)
             continue;
@@ -357,7 +352,7 @@ void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
 
 void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSignature>& anom) {
     ContainerSE* cSE(nullptr);
-    auto range = m_bubbleMap.equal_range(systemID);
+    auto range = m_sysBubbleMap.equal_range(systemID);
     for (auto itr = range.first; itr != range.second; ++itr) {
         cSE = itr->second->GetCenterMarker();
         if (cSE == nullptr)
@@ -381,23 +376,23 @@ void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSi
 
 
 void BubbleManager::MarkCenters() {
-    for (auto cur : m_bubbleMap)
+    for (auto cur : m_sysBubbleMap)
         cur.second->MarkCenter();
 }
 
 void BubbleManager::RemoveMarkers() {
-    for (auto cur : m_bubbleMap)
+    for (auto cur : m_sysBubbleMap)
         cur.second->RemoveMarkers();
 }
 
 void BubbleManager::MarkCenters(uint32 systemID) {
-    auto range = m_bubbleMap.equal_range(systemID);
+    auto range = m_sysBubbleMap.equal_range(systemID);
     for (auto itr = range.first; itr != range.second; ++itr)
         itr->second->MarkCenter();
 }
 
 void BubbleManager::RemoveMarkers(uint32 systemID) {
-    auto range = m_bubbleMap.equal_range(systemID);
+    auto range = m_sysBubbleMap.equal_range(systemID);
     for (auto itr = range.first; itr != range.second; ++itr)
         itr->second->RemoveMarkers();
 }

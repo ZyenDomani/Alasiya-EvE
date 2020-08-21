@@ -59,12 +59,11 @@ public:
     void CheckBubble(SystemEntity* ent);
     //call when an entity is added to the system.
     void Add(SystemEntity* pSE, bool isPostWarp = false);
-    SystemBubble* GetBubbleByID(uint16 bubbleID);
     //call to find the bubble containing the SystemEntity specified, if no bubble does, return NULL
     SystemBubble* FindBubble(SystemEntity *ent) const;
     //call to find the bubble containing the GPoint specified, if no bubble does, return NULL
     SystemBubble* FindBubble(uint32 systemID, const GPoint &pos) const;
-    SystemBubble* FindBubbleByID(uint32 systemID, uint16 bubbleID);
+    SystemBubble* FindBubbleByID(uint16 bubbleID);
     //find the bubble containing the GPoint specified.  will call create to make new bubble if none found.
     //  this is preferred method to create new bubble.
     SystemBubble* GetBubble(SystemManager* sysMgr, const GPoint &pos);
@@ -112,7 +111,9 @@ private:
     std::list<SystemBubble*> m_bubbles;                 //for proc only.
     std::vector<SystemEntity*> m_wanderers;             //entities that are no longer in their bubble, but not removed
 
-    std::unordered_multimap<uint32, SystemBubble*> m_bubbleMap;  // systemID/bubble*
+    std::map<uint32, SystemBubble*> m_bubbleIDMap;     // bubbleID/bubble*
+
+    std::unordered_multimap<uint32, SystemBubble*> m_sysBubbleMap;  // systemID/bubble*
 };
 
 //Singleton
