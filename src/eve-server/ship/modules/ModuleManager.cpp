@@ -37,7 +37,7 @@
 ModuleManager::ModuleManager(ShipItem *const pShip)
 : pShipItem(pShip),
 m_initalized(false),
-m_rigScanBonus(1.0f),
+m_rigScanBonus(0),
 m_LowSlots(0),
 m_MidSlots(0),
 m_HighSlots(0),
@@ -97,7 +97,28 @@ bool ModuleManager::Initialize() {
         }
         if (IsModuleSlot(cur->flag())) {
             switch (cur->categoryID()) {
-                case EVEDB::invCategories::Module:
+                case EVEDB::invCategories::Module: {
+                    _log(MODULE__TRACE, "MM::Initialize() - loading %s(%u) to %s.",\
+                            cur->name(), cur->itemID(), sDataMgr.GetFlagName(cur->flag()));
+                    ModuleItemRef mRef = ModuleItemRef::StaticCast(cur);
+                    // hack to get total scan bonus from rigs, if applicable
+                    // do we need to check for and set anything else here?
+                    if (mRef->groupID() == EVEDB::invGroups::Rig_Electronics) {
+                        switch (mRef->typeID()) {
+                            case 25936:   // Large Gravity Capacitor Upgrade I
+                            case 31213:   // Small Gravity Capacitor Upgrade I
+                            case 31215:   // Medium Gravity Capacitor Upgrade I
+                            case 31217:   // Capital Gravity Capacitor Upgrade I
+                            case 26350:   // Large Gravity Capacitor Upgrade II
+                            case 31220:   // Small Gravity Capacitor Upgrade II
+                            case 31222:   // Medium Gravity Capacitor Upgrade II
+                            case 31224: { // Capital Gravity Capacitor Upgrade II
+                                m_rigScanBonus += (0.01 * mRef->GetAttribute(AttrScanStrengthBonus).get_float());
+                            } break;
+                        }
+                    }
+                    AddModule(mRef, cur->flag());
+                } break;
                 case EVEDB::invCategories::Subsystem: {
                     _log(MODULE__TRACE, "MM::Initialize() - loading %s(%u) to %s.",\
                             cur->name(), cur->itemID(), sDataMgr.GetFlagName(cur->flag()));
@@ -309,15 +330,15 @@ bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
         // do we need to check for and set anything else here?
         if (mRef->groupID() == EVEDB::invGroups::Rig_Electronics) {
             switch (mRef->typeID()) {
-                case 25936:   //  Large Gravity Capacitor Upgrade I
-                case 31213:   //  Small Gravity Capacitor Upgrade I
-                case 31215:   //  Medium Gravity Capacitor Upgrade I
-                case 31217:   //  Capital Gravity Capacitor Upgrade I
-                case 26350:   //  Large Gravity Capacitor Upgrade II
-                case 31220:   //  Small Gravity Capacitor Upgrade II
-                case 31222:   //  Medium Gravity Capacitor Upgrade II
-                case 31224: { //  Capital Gravity Capacitor Upgrade II
-                    m_rigScanBonus += mRef->GetAttribute(AttrScanStrengthBonus).get_float();
+                case 25936:   // Large Gravity Capacitor Upgrade I
+                case 31213:   // Small Gravity Capacitor Upgrade I
+                case 31215:   // Medium Gravity Capacitor Upgrade I
+                case 31217:   // Capital Gravity Capacitor Upgrade I
+                case 26350:   // Large Gravity Capacitor Upgrade II
+                case 31220:   // Small Gravity Capacitor Upgrade II
+                case 31222:   // Medium Gravity Capacitor Upgrade II
+                case 31224: { // Capital Gravity Capacitor Upgrade II
+                    m_rigScanBonus += (0.01 * mRef->GetAttribute(AttrScanStrengthBonus).get_float());
                 } break;
             }
         }
@@ -355,7 +376,7 @@ void ModuleManager::UninstallRig(uint32 itemID)
             case 31220:   //  Small Gravity Capacitor Upgrade II
             case 31222:   //  Medium Gravity Capacitor Upgrade II
             case 31224: { //  Capital Gravity Capacitor Upgrade II
-                m_rigScanBonus -= pMod->GetAttribute(AttrScanStrengthBonus).get_float();
+                m_rigScanBonus -= (0.01 * pMod->GetAttribute(AttrScanStrengthBonus).get_float());
             } break;
         }
     }
@@ -900,7 +921,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 
     if (loadQty < chargeRef->quantity()) {
         InventoryItemRef cRef(chargeRef);
-        chargeRef = chargeRef->Split(loadQty, true, true);
+        chargeRef = chargeRef->Split(loadQty, false, true);
         if (chargeRef.get() == nullptr) {
             _log(MODULE__ERROR, "");
             if (pShipItem->HasPilot())
@@ -927,13 +948,56 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         pMod->GetLoadedChargeRef()->Merge(chargeRef, loadQty);
     } else {
         // if module wasnt previously loaded, add to ship's inventory and charge map
-        chargeRef->Move(pShipItem->itemID(), flag, pShipItem->HasPilot());
-        //chargeRef->SetQuantity(loadQty, pShipItem->HasPilot() == nullptr?false:pShipItem->GetPilot()->IsInSpace());
+        chargeRef->SetAttribute(AttrQuantity, EvilZero, false);    // OMAC
+        chargeRef->Move(pShipItem->itemID(), flag, pShipItem->HasPilot()?pShipItem->GetPilot()->IsDocked():false);
+        //chargeRef->Move(pShipItem->itemID(), flag, false);
         m_charges.emplace(flag, chargeRef);
     }
 
     // this will enable module loading blink if ship in space, even on reload/fillup
     pMod->LoadCharge(chargeRef);
+
+    //  just found a call i was missing.... 19Aug20
+    /*
+     *                  [PyTuple 3 items]
+     *                    [PyString "OnGodmaPrimeItem"]
+     *                    [PyIntegerVar 1002332228246]  <<-- item locationID
+     *                    [PyObjectData Name: util.KeyVal]
+     *                      [PyDict 5 kvp]
+     *                        [PyString "itemID"]
+     *                        [PyTuple 3 items]
+     *                          [PyIntegerVar 1002332228246]
+     *                          [PyInt 27]
+     *                          [PyInt 30028]
+     *                        [PyString "attributes"]
+     *                        [PyDict 23 kvp]
+     *                        [PyString "invItem"]
+     *                        [PyNone]
+     *                        [PyString "time"]
+     *                        [PyIntegerVar 129527520208602524]
+     *                        [PyString "activeEffects"]
+     *                        [PyDict 0 kvp]
+     *    [PyDict 1 kvp]
+     *      [PyString "sn"]
+     *      [PyIntegerVar 131]
+     */
+    // send update to client for processing new subLocation   -found/added 19Aug20
+    if (pShipItem->HasPilot() and pShipItem->GetPilot()->IsInSpace()) {
+        Rsp_CommonGetInfo_Entry entry2;
+        if (chargeRef->Populate(entry2)) {
+            PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0, new PyInt(chargeRef->locationID()));
+                tuple->SetItem(1, new PyInt(chargeRef->flag()));
+                tuple->SetItem(2, new PyInt(chargeRef->typeID()));
+            PyTuple* result = new PyTuple(2);
+                result->SetItem(0, new PyInt(chargeRef->locationID()));
+                result->SetItem(1, new PyObject("util.KeyVal", entry2.Encode()));
+            pShipItem->GetPilot()->SendNotification("OnGodmaPrimeItem", "clientID", result);     // this is sequenced
+        } else
+            sLog.Error("MM::LoadCharge","cannot Populate() %s", chargeRef->name());
+    }
+    //chargeRef->SetQuantity(loadQty, true);                  // OIC
+    chargeRef->SetAttribute(AttrQuantity, loadQty, true);   // OMAC
 }
 
 void ModuleManager::UnloadCharge(GenericModule* pMod)
@@ -972,6 +1036,8 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
      *  OnModuleAttributeChange thru Godma when in space or OnItemChange thru InventoryItem when docked
      */
 
+    chargeRef->SetAttribute(AttrQuantity, EvilZero);    // OMAC
+
     if (IsStation(pShipItem->locationID())) {
         StationItemRef sRef = sEntityList.GetStationByID(pShipItem->locationID());
         if (sRef.get() != nullptr) {
@@ -991,7 +1057,6 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
             chargeRef->Move(pShipItem->locationID(), flagHangar, true);
         }
     } else {
-        chargeRef->SetAttribute(AttrQuantity, EvilZero);    // OMAC
         /*
         EVEItemFlags flag = flagCargoHold;
         // check for existence of ammohold...not yet.  only one ship has it (cockroach)

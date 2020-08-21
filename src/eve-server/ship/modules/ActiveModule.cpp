@@ -274,9 +274,6 @@ void ActiveModule::Process()
             if (!m_chargeLoaded)
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 
-            //m_chargeRef->SetQuantity(m_loadQty, true);                // OIC
-            m_chargeRef->SetAttribute(AttrQuantity, m_loadQty, true);   // OMAC
-            m_loadQty = 0;
             m_ChargeState = Module::State::Loaded;
             m_chargeLoaded = true;
         }
@@ -816,12 +813,12 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         return;
     }
 
-    m_loadQty = chargeRef->quantity();
+    uint8 loadQty = chargeRef->quantity();
 
     if (m_ChargeState == Module::State::Loaded) {
         m_ChargeState == Module::State::Reloading;
         if (m_chargeRef.get() != nullptr)
-            m_loadQty += m_chargeRef->quantity();
+            loadQty += m_chargeRef->quantity();
         // dont change chargeRef if we're just reloading. new chargeRef is deleted on merge
     } else {
         m_ChargeState = Module::State::Loading;
@@ -866,9 +863,6 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         // set immediately on login or when docked
         m_chargeLoaded = true;
         m_ChargeState = Module::State::Loaded;
-        // this will only hit for login and docked ships.  dont send OMAC to client
-        chargeRef->SetAttribute(AttrQuantity, m_loadQty, false);
-        m_loadQty = 0;
     }
 }
 
@@ -1333,7 +1327,7 @@ void ActiveModule::LaunchProbe()
         pClient->SetScan(new Scan(pClient));
 
     uint8 pcount = pClient->scan()->GetProbeCount();
-    if (pcount == (pClient->GetChar()->GetSkillLevel(EvESkill::Astrometrics) +1)) {
+    if (pcount > (pClient->GetChar()->GetSkillLevel(EvESkill::Astrometrics) +3)) {
         pClient->SendErrorMsg("You can only control %u probes based on your current skills.", pcount);
         return;
     }

@@ -111,8 +111,6 @@ private:
 
     bool                m_Stop :1;
 
-    uint8               m_loadQty;
-
 };
 
 
