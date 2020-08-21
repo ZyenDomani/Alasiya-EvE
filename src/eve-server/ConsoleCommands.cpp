@@ -36,6 +36,7 @@
 #include "market/MarketDB.h"
 #include "missions/MissionDataMgr.h"
 #include "threading/Threading.h"
+#include "testing/test.h"
 
 
 ConsoleCommand::ConsoleCommand()
@@ -331,8 +332,8 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
 
 void ConsoleCommand::Test()
 {
-    sLog.Green("  Alasiya's EvEMu", "Server Test:");
-    sLog.Error("     Allan\'s Test", "Nothing Available at this time.");
+    sLog.Green("  Alasiya's EvEMu", "Running Server Test Code:");
+    //testing::posTest();
 
     // execute code to begin filling missing data in mission db.
     //  first step:  get courier missionIDs

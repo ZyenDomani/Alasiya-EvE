@@ -565,7 +565,7 @@ public:
     }
 
     /**
-     * @brief Overload of assigment operator to handle object ownership.
+     * @brief Overload of assignment operator to handle object ownership.
      *
      * @param[in] oth Tuple the content of which is to be copied.
      * @return Itself.
@@ -647,7 +647,7 @@ public:
     void AddItemString( const char* str ) { AddItem( new PyString( str ) ); }
 
     /**
-     * @brief Overload of assigment operator to handle object ownership.
+     * @brief Overload of assignment operator to handle object ownership.
      *
      * @param[in] oth List the content of which is to be copied.
      * @return Itself.
@@ -757,7 +757,7 @@ public:
     void SetItemString( const char* key, PyRep* value ) { SetItem( new PyString( key ), value ); }
 
     /**
-     * @brief Overload of assigment operator to handle object ownership.
+     * @brief Overload of assignment operator to handle object ownership.
      *
      * @param[in] oth PyDict the content of which is to be copied.
      * @return Itself.

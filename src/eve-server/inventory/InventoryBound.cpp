@@ -660,19 +660,20 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
         return items;
     }
 
-    uint16 count = 0;
-    double start = 0.0;
-    if (sConfig.debug.IsTestServer)
-        if (sConfig.debug.UseProfiling)
-            start = GetTimeUSeconds();
+    uint16 count(0);
+    double start(0.0);
+    if (sConfig.debug.IsTestServer and sConfig.debug.UseProfiling)
+        start = GetTimeUSeconds();
 
     //begin basic sort
-    bool done = false;
+    bool done(false);
     InventoryItemRef tmp(nullptr);
     while (!done) {
         done = true;  //assume sorted
-        for (int i = 0, i2 = 1; (i < itemVec.size()) and (i2 < itemVec.size()); ++i, ++i2) { //iterate though list
-            if (itemVec[i]->categoryID() < itemVec[i2]->categoryID()) {  //check if each pair is sorted by category.   modules -> charges -> subsystems
+        //iterate though list
+        for (int i = 0, i2 = 1; (i < itemVec.size()) and (i2 < itemVec.size()); ++i, ++i2) {
+            //check if each pair is sorted by category.   modules -> charges -> subsystems
+            if (itemVec[i]->categoryID() < itemVec[i2]->categoryID()) {
                 //it's not, so flip the values
                 tmp = itemVec[i];
                 itemVec[i] = itemVec[i2];
@@ -686,9 +687,8 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
     for (auto cur : itemVec)
         items.push_back(cur->itemID());
 
-    if (sConfig.debug.IsTestServer)
-        if (sConfig.debug.UseProfiling)
-            sLog.Warning("IB::CatSortItems", "%u items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
+    if (sConfig.debug.IsTestServer and sConfig.debug.UseProfiling)
+        sLog.Warning("IB::CatSortItems", "%u items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
 
     return items;  //returns sorted list
 }

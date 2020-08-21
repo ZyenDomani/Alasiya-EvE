@@ -128,7 +128,7 @@ bool SolarSystem::_Load()
 
 void SolarSystem::AddItemToInventory(InventoryItemRef iRef)
 {
-    _log(ITEM__TRACE, "SS::AddItemToInventory() - removing item %s(%u) from inventory of %s(%u)",\
+    _log(ITEM__TRACE, "SS::AddItemToInventory() - adding %s(%u) to inventory of %s(%u)",\
             iRef->itemName().c_str(), iRef->itemID(), m_itemName.c_str(), m_itemID);
     AddItem( iRef );
 }

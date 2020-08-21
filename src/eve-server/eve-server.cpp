@@ -219,6 +219,7 @@ int main( int argc, char* argv[] )
     sLog.Log("   Config Version", " %.1f", Config_Version );
     sLog.Log("      Log Version", " %.1f", Log_Version );
     sLog.Log("   NPC AI Version", " %.2f", NPC_AI_Version );
+    sLog.Log(" Scanning Version", " %.2f", Scan_Version );
     sLog.Log(" Drone AI Version", " %.2f", Drone_AI_Version );
     sLog.Log("    NC AI Version", " %.2f", Civilian_AI_Version );
     sLog.Log("Sentry AI Version", " %.2f", Sentry_AI_Version );
