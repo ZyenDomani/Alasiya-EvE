@@ -428,12 +428,9 @@ bool SystemManager::LoadSystemStatics() {
         AddItemToInventory(pSE->GetSelf());
     }
 
-    if (m_entities.size())
-        m_entityChanged = true;
-
     _log(SERVER__INIT, "SystemManager::LoadSystemStatics() - %u Static System entities loaded for %s (%u)", entities.size(), m_data.name.c_str(), m_data.systemID);
     entities.clear();
-    return m_entityChanged;
+    return true;
 }
 
 bool SystemManager::LoadSystemDynamics() {
@@ -1015,6 +1012,7 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
 }
 
 void SystemManager::RemoveEntity(SystemEntity* pSE) {
+    /** @note  this does not remove static balls (bubble center markers) and no clue why */
     if (pSE == nullptr)
         return;
     sBubbleMgr.Remove(pSE);
@@ -1023,6 +1021,7 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
 
     // remove entity from our maps
     uint32 itemID = pSE->GetID();
+    m_entityChanged = true;
     m_ticEntities.erase(itemID);
     m_staticEntities.erase(itemID);
 
@@ -1343,13 +1342,13 @@ void SystemManager::SendStaticBall(SystemEntity* pSE)
         balls->SetItem(1, pSE->MakeDamageState());
         addballs2.extraBallData->AddItem(balls);
     }
-    pSE->EncodeDestiny(*destinyBuffer);
 
     if (addballs2.extraBallData->size() < 1) {
         SafeDelete( destinyBuffer );
         return;
     }
 
+    pSE->EncodeDestiny(*destinyBuffer);
     addballs2.state = new PyBuffer(&destinyBuffer); //consumed
     SafeDelete( destinyBuffer );
 
@@ -1373,7 +1372,6 @@ void SystemManager::RemoveItemFromInventory(InventoryItemRef iRef)
     if (itr != m_entities.end()) {
         _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", iRef->name(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
         m_entities.erase(itr);
-        m_entityChanged = true;
     } else
         _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", \
                 iRef->name(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
