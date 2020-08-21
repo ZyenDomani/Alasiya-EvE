@@ -121,7 +121,7 @@ void SpawnMgr::Process() {
                     _log(SPAWN__TRACE, "Process() calling Respawn for SpawnEntryID %u (0x%X)", \
                             itr->second.spawnID, &itr->second);
                     // this means check SpawnEntry for 'missing' SpawnGroup members and respawn as needed.
-                    ReSpawn(sBubbleMgr.FindBubbleByID(m_system->GetID(), itr->first), itr->second);
+                    ReSpawn(sBubbleMgr.FindBubbleByID(itr->first), itr->second);
                     itr->second.enabled = false;
                 }
                 ++itr;
@@ -758,14 +758,13 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
     if (spawnEntry.spawnClass > Spawn::Class::Insane)
         return;
     GPoint startPos(pBubble->GetCenter());
-    const GPoint warpToPoint(startPos);
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
+    GPoint warpToPoint(startPos);
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from bubble center
     _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
             spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
             spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
-    /*
-     *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
-     *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
+    /* ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
+     *           const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
      */
     ItemData idata(spawnEntry.typeID, spawnEntry.corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);      // will have to work on this to NOT save npc to db.
@@ -794,7 +793,6 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
     }
 
     m_system->AddNPC(pNPC);
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 10) *1000);
     pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
 
     spawnEntry.stamp = 0;
