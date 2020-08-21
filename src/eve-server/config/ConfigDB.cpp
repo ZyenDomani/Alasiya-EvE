@@ -37,10 +37,6 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     owner.clear();
 
     for (auto cur : entityIDs) {
-        if (cur == 0) {
-            sLog.Error("GetMultiOwnersEx", "Sent 0.");
-            continue;
-        }
         if (IsCorp(cur))
             corp.push_back(cur);
         else if (IsAlliance(cur))
@@ -62,7 +58,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  corporationName as ownerName,"
             "  2 AS typeID,"                    // corp typeID
             "  false AS gender,"
-            "  NULL AS ownerNameID"
+            "  NULL AS ownerNameID"             // return localization.GetByMessageID(self.ownerNameID, languageID)
             " FROM crpCorporation"
             " WHERE corporationID IN (%s)", ids.c_str()))
         {
@@ -143,11 +139,6 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     asteroidItems.clear();
 
     for (auto cur : entityIDs) {
-        if (cur == 0 or IsTempItem(cur)) {
-            //sLog.Error("GetMultiLocationsEx", "Sent 0.");
-            continue;
-        }
-        //sLog.Warning("GetMultiLocationsEx", "Sent %u.", cur);
         if (IsStaticItem(cur))
             staticItems.push_back(cur);
         else if (IsAsteroid(cur))
@@ -166,7 +157,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
             " itemID AS locationID,"
             " itemName AS locationName,"
             " x, y, z,"
-            " NULL AS locationNameID"
+            " NULL AS locationNameID"   //locationName = localization.GetByMessageID(self.locationNameID)
             " FROM mapDenormalize"
             " WHERE itemID in (%s)", ids.c_str()))
         {
