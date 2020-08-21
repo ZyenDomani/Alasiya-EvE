@@ -53,7 +53,7 @@ public:
 
     bool GetProbeDataForSig(SignalData& data);
     // this will determine signal strength, deviation, and other aspects based on signal type and probe data
-    void GetSignalData(SignalData& data, std::vector< ProbeSE* >& probeVec, GPoint& point);
+    void GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec);
 
 protected:
     void ScanStart();
@@ -64,9 +64,12 @@ private:
     Client* m_client;
     SystemManager* m_system;
 
+    void CalcProbeAngles(GPoint& sigPos, std::vector<ProbeSE*>& probeVec, std::map<float, std::pair<ProbeSE*, ProbeSE*>>& angleMap);
+
     bool m_probeScan;
 
-    std::map<uint32, ProbeSE*> m_probeMap;
+    std::map<uint32, ProbeSE*> m_probeMap;        // probeID/ProbeSE*
+    std::map<uint32, ProbeSE*> m_activeProbeMap;  // probeID/ProbeSE*
 };
 
 #endif // EVEMU_SCANING_SCAN_H_

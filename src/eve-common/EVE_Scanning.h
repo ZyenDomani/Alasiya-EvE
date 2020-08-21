@@ -35,7 +35,8 @@ namespace Probe {
             Moving       = 2,
             Warping      = 3,
             Scanning     = 4,
-            Returning    = 5
+            Returning    = 5,
+            Waiting      = 6    // internal only
         };
     }
 }

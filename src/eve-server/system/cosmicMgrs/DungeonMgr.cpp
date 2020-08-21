@@ -295,7 +295,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - %s using templateID %u and roomID %i", sig.sigName.c_str(), templateID, dTemplate.dunRoomID);
 
-    /* do we need this?  persistant dungeons?
+    /* do we need this?  persistent dungeons?
     if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
         // setup data to save active dungeon
         ActiveDungeon dungeon = ActiveDungeon();
@@ -443,10 +443,10 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             } else {
                 level = 1;
             }
-
             // sigStrength depends on roid types as well as trueSec
             if (sec == 1) {             // hi sec
                 sig.sigStrength = 0.2 /level;  // 1/5 base
+                //sig.sigStrength = 0.0125;        // testing 1/80
                 type = MakeRandomInt(0,5);
             } else if (sec == 2) {      // lo sec
                 sig.sigStrength = 0.1 /level; // 1/10 base

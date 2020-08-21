@@ -29,27 +29,29 @@ class SystemManager;
 class AnomalyMgr
 {
   public:
-      AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
-      ~AnomalyMgr();
+    AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
+    ~AnomalyMgr();
 
-      bool Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
-      void Close();
-      void Process();
+    bool Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
+    void Close();
+    void Process();
 
-      void SaveAnomaly();
-      void CreateAnomaly(int8 typeID=0);
-      void LoadAnomalies();
+    void SaveAnomaly();
+    void CreateAnomaly(int8 typeID=0);
+    void LoadAnomalies();
 
-      //  assign sigID and add to anom list to allow showing on scanner
-      void AddSignal(SystemEntity* pSE, uint32 id = 0);
-      void RemoveSignal(uint32 itemID);
-      // list for ship scanner
-      void GetAnomalyList(std::vector< CosmicSignature >& sig);
-      // list for probe
-      void GetSignatureList(std::vector< CosmicSignature >& sig);
+    //  assign sigID and add to anom list to allow showing on scanner
+    void AddSignal(SystemEntity* pSE, uint32 id = 0);
+    void RemoveSignal(uint32 itemID);
+    // list for ship scanner
+    void GetAnomalyList(std::vector< CosmicSignature >& sig);
+    // list for probe
+    void GetSignatureList(std::vector< CosmicSignature >& sig);
 
-      uint32 GetAnomalyID(std::string& sigID);
-      GPoint GetAnomalyPos(std::string& sigID);
+    uint32 GetAnomalyID(std::string& sigID);
+    GPoint GetAnomalyPos(std::string& sigID);
+
+    const char* GetScanGroupName(uint8 groupID=0);
 
 protected:
     ManagerDB m_mdb;
@@ -57,7 +59,6 @@ protected:
     SystemGPoint m_gp;
 
     uint8 GetDungeonType();
-    const char* GetScanGroupName(uint8 groupID=0);
 
 private:
     /* we do not own any of these (our sysmgr does) */
@@ -68,13 +69,12 @@ private:
     PyServiceMgr& m_services;
 
     Timer m_spawnTimer;
-    Timer m_anomTimer;
+    Timer m_procTimer;
 
     bool m_initalized;
 
     // internal data counters   hard-capped at 256/128
     uint8 m_maxSigs;    // max total for this system
-    uint16 m_Anoms; // system total, including pos, wrecks, ships.  65535 *should* be large enough
     uint8 m_Sigs; // total probe-needed items, hard-capped at 256
     // these should be fine soft-capped at 128
     int8 m_WH;    // < 0 means "not allowed"
@@ -86,6 +86,8 @@ private:
     int8 m_Unrated;  // < 0 means "not allowed"
     // DED sites
     int8 m_Complex;  // < 0 means "not allowed"
+    // system total, including pos, wrecks, ships.  65535 *should* be large enough
+    uint16 m_Anoms; // this counts signals added thru sysmgr also
 
 
     std::map<uint32, CosmicSignature> m_sigByItemID;            // signatures in system - need probes to scan down

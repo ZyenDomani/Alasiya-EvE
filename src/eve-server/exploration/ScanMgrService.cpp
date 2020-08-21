@@ -237,5 +237,8 @@ PyResult ScanBound::Handle_ReconnectToLostProbes( PyCallArgs& call ) {
     //  will have to test against client launcher vs probe m_moduleID
     // will have to write *something* to loop thru active probes in system for this....
 
+    //  search inactive probes in system for ownerID, reset variables as per launch, add to all maps, then send client update
+    // will need separate map for probes to use this?  or just loop thru EVERYTHING in system in the off chance we'll find a lost probe?
+    //    i dunno...both kinda suck at this point
     return nullptr;
 }

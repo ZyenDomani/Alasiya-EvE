@@ -91,7 +91,8 @@ public:
     /* specific functions handled in this class. */
     void RecoverProbe(PyList* list);
     void UpdateProbe(ProbeData& data);
-    // removes probe from system, scan map, and sends RemoveProbe call to client
+    // removes probe from system and scan map, and sends RemoveProbe call to client
+    // does not remove probe from entity list
     void RemoveProbe();
     void SendNewProbe();
     void SendSlimChange();
@@ -104,6 +105,8 @@ public:
     void StartStateTimer(uint16 time)                   { m_stateTimer.Start(time); }
 
     bool IsMoving();
+
+    void SetState(uint8 state=Probe::State::Idle)       { m_state = state; }
     uint8 GetState()                                    { return m_state; }
     uint8 GetRangeStep()                                { return m_rangeStep; }
 
@@ -111,17 +114,29 @@ public:
     uint16 GetMoveTime()                                { return m_stateTimer.GetRemainingTime(); }
     int64 GetExpiryTime()                               { return m_expiry; }
 
+    // return deviation in meters based on current probe settings
     float GetDeviation();
+    // return probe scan range setting in km
     float GetScanRange()                                { return m_scanRange; }
     float GetRangeModifier(float dist);
 
-    // total, modified probe scan strength, based on data modified by char skills, ship, launcher, distance and range
+    // total probe scan strength, based on data modified by char skills, ship, launcher, and range
     float GetScanStrength();
 
     GPoint GetDestination()                             { return m_destination; }
     const char* GetStateName(uint8 state);
 
     bool CanScanShips()                                 { return m_scanShips; }
+
+    bool IsRing()                                       { return m_ring; }
+    bool IsSphere()                                     { return m_sphere; }
+    void SetRing(bool set=false)                        { m_ring = set; }
+    void SetSphere(bool set=false)                      { m_sphere = set; }
+
+
+    // Alasiya-specific.  this will allow players with Sensor Linking L5 and Signal Acquisition L5
+    //  to add another set of probe results to the signal being scanned (max of 4)
+    bool HasMaxSkill();
 
 private:
     Timer m_lifeTimer;
@@ -137,16 +152,21 @@ private:
     InventoryItemRef m_moduleRef;
 
     bool m_scanShips;
+    bool m_ring;                // used to send additional data to client for partial hit
+    bool m_sphere;              // used to send additional data to client for partial hit
 
     uint8 m_state;
-    uint8 m_rangeStep;
+    uint8 m_rangeStep;          // range 'click'.  values are 1 to 8.  sent from client
+    uint8 m_rangeFactor;        // exponent for range checks
 
-    int64 m_expiry;
+    uint32 m_baseScanRange;     // lowest scan radius, in km
+
+    int64 m_expiry;             // probe lifetime as filetime
 
     float m_secStatus;
-    float m_scanRange;
-    float m_scanStrength;
-    float m_scanDeviation;
+    float m_scanRange;          // in km.  sent from client
+    float m_scanStrength;       // scan str in decimal.  unsure of uom
+    float m_scanDeviation;      // max scan deviation for this probe, in % where 1.0 = 100
 
 };
 

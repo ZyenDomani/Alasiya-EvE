@@ -85,7 +85,7 @@ public:
 
     /* Process Calls - Overridden as needed in derived classes */
     virtual void                Process();
-    virtual bool                ProcessTic()            { /* do nothing here */ }   // not used yet
+    virtual bool                ProcessTic()            { return true; }   // not used yet
 
     /* (Allan) the next two sections eliminate the overhead of RTTI static casting.  */
     /* class type pointer querys, grouped by base class.  public for anyone to access. */

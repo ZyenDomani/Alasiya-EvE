@@ -74,13 +74,55 @@ void ProbeItem::Delete() {
 }
 
 
+// abandoned probe c'tor
+ProbeSE::ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system)
+: DynamicSystemEntity(self, services, system),
+m_scan(nullptr),
+m_client(nullptr),
+m_shipRef(nullptr),
+m_moduleRef(nullptr),
+m_secStatus(0),
+m_lifeTimer(0),
+m_rangeStep(0),
+m_scanRange(0),
+m_stateTimer(0),
+m_returnTimer(0),
+m_scanStrength(0),
+m_scanDeviation(0),
+m_ring(false),
+m_sphere(false),
+m_scanShips(false)
+{
+    m_state = Probe::State::Inactive;
+
+    if (self->HasAttribute(AttrProbeCanScanShips))
+        m_scanShips = self->GetAttribute(AttrProbeCanScanShips).get_bool();
+
+    // set probe lifetime of 5h
+    m_expiry = GetFileTimeNow() + (EvE::Time::Hour *5);  // 5h abandoned lifespan
+    m_lifeTimer.Start(5*60*60*1000);        // 5h to ms
+
+    _log(SCAN__INFO, "Created Abandoned ProbeSE for %u. expiry: %lli", m_self->itemID(), m_expiry);
+}
+
 ProbeSE::ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system, InventoryItemRef moduleRef, ShipItemRef shipRef)
 : DynamicSystemEntity(self, services, system),
 m_scan(nullptr),
+m_state(Probe::State::Idle),
 m_client(shipRef->GetPilot()),
+m_shipRef(shipRef),
+m_moduleRef(moduleRef),
 m_lifeTimer(0),
+m_rangeStep(0),
+m_scanRange(0),
 m_stateTimer(0),
 m_returnTimer(0),
+m_rangeFactor(0),
+m_scanStrength(0),
+m_scanDeviation(0),
+m_baseScanRange(0),
+m_ring(false),
+m_sphere(false),
 m_scanShips(false)
 {
     m_warID = m_client->GetWarFactionID();
@@ -88,9 +130,6 @@ m_scanShips(false)
     m_corpID = m_client->GetCorporationID();
     m_ownerID = m_client->GetCharacterID();
 
-    m_state = Probe::State::Idle;
-    m_shipRef = shipRef;
-    m_moduleRef = moduleRef;
     m_secStatus = m_client->GetSecurityRating();
 
     if (self->HasAttribute(AttrProbeCanScanShips))
@@ -104,86 +143,74 @@ m_scanShips(false)
     } else
         m_lifeTimer.Start(self->GetAttribute(AttrExplosionDelay).get_uint32());
 
-    // set str and deviation
-    m_scanStrength = self->GetAttribute(AttrBaseSensorStrength).get_int();
+    // set base str, deviation and range
+    m_rangeFactor = self->GetAttribute(AttrRangeFactor).get_uint32();
+    m_scanStrength = self->GetAttribute(AttrBaseSensorStrength).get_float();
     m_scanDeviation = self->GetAttribute(AttrBaseMaxScanDeviation).get_float();
-
-    // this isnt used like this, just placeholders to init variables
-    m_rangeStep = self->GetAttribute(AttrRangeFactor).get_int();
-    m_scanRange = self->GetAttribute(AttrBaseScanRange).get_float();
-
-    // i think we may have to do probe modifiers here....they are not being done thru fx system
-    Character* pChar = m_client->GetChar().get();
+    m_baseScanRange = self->GetAttribute(AttrBaseScanRange).get_float() * (ONE_AU_IN_METERS /100);
 
     // not sure about this one yet....moon survey.  will need special initializers here
     if (self->groupID() == EVEDB::invGroups::Survey_Probe) {
         // 5% reduction to flight time?  10% for t2 ship
     }
 
+    // i think we may have to do probe modifiers here....they are not being done thru fx system
+    Character* pChar = m_client->GetChar().get();
     // skills
-    m_scanStrength *= (1 + (0.05 * pChar->GetSkillLevel(EvESkill::Astrometrics)));             // +5% scan probe strength per level
-    m_scanStrength *= (1 + (0.05 * pChar->GetSkillLevel(EvESkill::SignatureAnalysis)));        // +5% scan probe strength per level
-    m_scanStrength *= (1 + (0.1 * pChar->GetSkillLevel(EvESkill::AstrometricRangefinding)));   // +10% scan probe strength per level
-    m_scanDeviation *= (1 - (0.05 * pChar->GetSkillLevel(EvESkill::Astrometrics)));            // -5% scan probe deviation per level
-    m_scanDeviation *= (1 - (0.1 * pChar->GetSkillLevel(EvESkill::AstrometricPinpointing)));   // -10% scan probe deviation per level
-    m_scanDeviation *= (1 - (0.05 * pChar->GetSkillLevel(EvESkill::SensorLinking)));           // -5% scan probe deviation per level
+    m_scanStrength *= (1 + (0.1 * pChar->GetSkillLevel(EvESkill::AstrometricRangefinding)));   // +10% strength per level
+    // skill bonuses unique to Alasiya
+    //m_scanStrength *= (1 + (0.01 * pChar->GetSkillLevel(EvESkill::Astrometrics)));             // +1% strength per level
+    //m_scanStrength *= (1 + (0.01 * pChar->GetSkillLevel(EvESkill::SignatureAnalysis)));        // +1% strength per level
+    //m_scanDeviation *= (1 - (0.01 * pChar->GetSkillLevel(EvESkill::Astrometrics)));            // -1% deviation per level
+    //m_scanDeviation *= (1 - (0.01 * pChar->GetSkillLevel(EvESkill::SensorLinking)));           // -1% deviation per level
 
     // ship
     switch (shipRef->typeID()) {
         //t1
         case 29248: { /* Magnate */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::AmarrFrigate, true)))); // +5% scan probe strength per level
+            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::AmarrFrigate)))); // +5% strength per level
         } break;
         case 605: { /* Heron */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::CaldariFrigate, true)))); // +5% scan probe strength per level
+            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::CaldariFrigate)))); // +5% strength per level
         } break;
         case 607: { /* Imicus */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::GallenteFrigate, true)))); // +5% scan probe strength per level
+            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::GallenteFrigate)))); // +5% strength per level
         } break;
         case 586: { /* Probe */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::MinmatarFrigate, true)))); // +5% scan probe strength per level
+            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::MinmatarFrigate)))); // +5% strength per level
         } break;
         //t2 - Anathema, Buzzard, Cheetah, Helios
         case 11188:  /* Anathema */
         case 11192:  /* Buzzard */
         case 11172:  /* Helios */
         case 11182: { /* Cheetah */
-            m_scanStrength *= (1 + (0.1 * (pChar->GetSkillLevel(EvESkill::CovertOps, true)))); // +10% scan probe strength per level
+            m_scanStrength *= (1 + (0.1 * (pChar->GetSkillLevel(EvESkill::CovertOps)))); // +10% strength per level
         } break;
         //t3
         // just test for subsystem here... typeIDs 30042, 30052, 30062, 30072
         // use same general code as GetRigScanBonus() in MM below...
     }
 
-    // modules (launchers)
+    // modules (launchers - 5 or 10)
     if (moduleRef->HasAttribute(AttrScanStrengthBonus))
-        m_scanStrength *= (1 + moduleRef->GetAttribute(AttrScanStrengthBonus).get_float());
+        m_scanStrength *= (1 + (0.01 * moduleRef->GetAttribute(AttrScanStrengthBonus).get_float()));
 
-    // rigs
-    m_scanStrength *= shipRef->GetModuleManager()->GetRigScanBonus();
+    // rigs (10 or 15)
+    m_scanStrength *= (1 + shipRef->GetModuleManager()->GetRigScanBonus());
 
-    // implants
+    // implants (virtue - 1-5, hardwire 2,6,10)
+    // skill (AstrometricRangefinding @ 10%/lvl)  <-- this doesnt get set on character object - checked above...
     // this is just a placeholder.  not sure if this will be how it works yet
     //  also, the bonus will be determined by the implant fx, which would be set in attrib.
     if (pChar->HasAttribute(AttrScanStrengthBonus))
-        m_scanStrength *= (1 + pChar->GetAttribute(AttrScanStrengthBonus).get_float());
+        m_scanStrength *= (1 + (0.01 * pChar->GetAttribute(AttrScanStrengthBonus).get_float()));
 
-    // fudge scan strength to make my formulas work right...wip
-    m_scanStrength /= 10;
-
-    _log(SCAN__DEBUG, "Created ProbeSE for %u. timeNow: %.0f, expiry: %lli, scan Str: %.4f, deviation: %.5f, range: %.2f, ship: %s", \
-    m_self->itemID(), GetFileTimeNow(), m_expiry, m_scanStrength, m_scanDeviation, m_scanRange, m_scanShips?"true":"false");
+    _log(SCAN__INFO, "Created ProbeSE for %u. timeNow: %.0f, expiry: %lli, scan Str: %.4f, deviation: %.5f, ship: %s", \
+            m_self->itemID(), GetFileTimeNow(), m_expiry, m_scanStrength, m_scanDeviation, m_scanShips?"true":"false");
 }
 
     /*
-    AttrScanRange = 765,
-    AttrMinScanDeviation = 787,
-    AttrMaxScanDeviation = 788,
-    AttrScanAnalyzeCount = 791,
-    AttrScanGravimetricStrengthPercent = 1027,
-    AttrScanLadarStrengthPercent = 1028,
-    AttrScanMagnetometricStrengthPercent = 1029,
-    AttrScanRadarStrengthPercent = 1030,
+    AttrScanAnalyzeCount = 791,     (no db data)
     AttrScanProbeStrength = 1116,         (no db data)
     AttrScanStrengthSignatures = 1117,         (no db data)
     AttrScanStrengthDronesProbes = 1118,         (no db data)
@@ -192,68 +219,21 @@ m_scanShips(false)
     AttrScanStrengthStructures = 1121,         (no db data)
     AttrMaxScanGroups = 1122,         (no db data)
     AttrScanDuration = 1123,     How long this probe has to scan until it can obtain results. (no db data)
-    AttrScanResolutionMultiplierSet = 1135,
-    AttrScanAllStrength = 1136,
     AttrScanFrequencyResult = 1161,             (no db data)
-    AttrScanGenericStrength = 1169,
-    AttrProbeCanScanShips = 1413,
-    AttrScanGravimetricStrengthMultiplier = 1473,
-    AttrScanLadarStrengthMultiplier = 1474,
-    AttrScanMagnetometricStrengthMultiplier = 1475,
-    AttrScanRadarStrengthMultiplier = 1476,
-    AttrSignatureRadiusBonusMultiplier = 1477,
-    AttrMaxTargetRangeBonusMultiplier = 1478,
-    AttrScanResolutionBonusMultiplier = 1479,
-    AttrScanStrengthBonusModule
+    AttrProbeCanScanShips = 1413,       boolean
 
     // these are char attribs
-    AttrScanStrengthBonus = 846,
+    AttrScanStrengthBonus = 846,        in %
     AttrMaxScanDeviationModifier = 1156,
 
-    // these 4 are implants
-    AttrScanRadarStrengthModifier = 1565,
-    AttrScanLadarStrengthModifier = 1566,
-    AttrScanGravimetricStrengthModifier = 1567,
-    AttrScanMagnetometricStrengthModifier = 1568,
+    // for moon goo
+    AttrScanRange = 765,
+    AttrMinScanDeviation = 787,
+    AttrMaxScanDeviation = 788,
 
     // new shit from rhea
     AttrScanStrengthBonusModule = 1907,
     */
-
-// abandoned probe c'tor
-ProbeSE::ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system)
-: DynamicSystemEntity(self, services, system),
-m_scan(nullptr),
-m_client(nullptr),
-m_shipRef(nullptr),
-m_moduleRef(nullptr),
-m_secStatus(0),
-m_lifeTimer(0),
-m_stateTimer(0),
-m_returnTimer(0),
-m_scanShips(false)
-{
-    m_state = Probe::State::Inactive;
-
-    if (self->HasAttribute(AttrProbeCanScanShips))
-        m_scanShips = self->GetAttribute(AttrProbeCanScanShips).get_bool();
-
-    // set probe lifetime of 5h
-    m_expiry = GetFileTimeNow() + (EvE::Time::Hour *5);  // 5h abandoned lifespan
-    m_lifeTimer.Start(5*60*60*1000);        // 5h to ms
-
-    // set str and deviation
-    m_scanStrength = self->GetAttribute(AttrBaseSensorStrength).get_int();
-    m_scanDeviation = self->GetAttribute(AttrBaseMaxScanDeviation).get_float();
-
-    // this isnt used like this, just placeholders to init variables
-    m_rangeStep = self->GetAttribute(AttrRangeFactor).get_int();
-    m_scanRange = self->GetAttribute(AttrBaseScanRange).get_float();
-
-    _log(SCAN__DEBUG, "Created Abandoned ProbeSE for %u. timeNow: %.0f, expiry: %lli, scan Str: %.4f, deviation: %.5f, range: %.2f, ship: %s", \
-            m_self->itemID(), GetFileTimeNow(), m_expiry, m_scanStrength, \
-            m_scanDeviation, m_scanRange, m_scanShips?"true":"false");
-}
 
 bool ProbeSE::ProcessTic()
 {
@@ -267,7 +247,7 @@ bool ProbeSE::ProcessTic()
     if (m_returnTimer.Enabled())
         if (m_returnTimer.Check()) {
             m_returnTimer.Disable();
-            _log(SCAN__DEBUG, "ProbeSE::Process() return timer hit for probeID %u", m_self->itemID());
+            _log(SCAN__INFO, "ProbeSE::Process() return timer hit for probeID %u", m_self->itemID());
             if (m_state == Probe::State::Warping)
                 SendWarpEnd();
             RemoveProbe();
@@ -279,7 +259,7 @@ bool ProbeSE::ProcessTic()
     if (m_stateTimer.Enabled())
         if (m_stateTimer.Check()) {
             m_stateTimer.Disable();
-            _log(SCAN__DEBUG, "ProbeSE::Process() state timer hit for probeID %u  state: %s", \
+            _log(SCAN__INFO, "ProbeSE::Process() state timer hit for probeID %u  state: %s", \
                     m_self->itemID(), GetStateName(m_state));
             if (IsMoving())
                 m_self->SetPosition(m_destination);
@@ -296,6 +276,7 @@ bool ProbeSE::IsMoving()
         case Probe::State::Idle:
         case Probe::State::Inactive:
         case Probe::State::Scanning:
+        case Probe::State::Waiting:
             return false;
         case Probe::State::Moving:
         case Probe::State::Warping:
@@ -312,7 +293,9 @@ void ProbeSE::UpdateProbe(ProbeData& data)
     m_destination = data.dest;
 
     float time(1), dist = GetPosition().distance(m_destination);
-    if (dist > BUBBLE_RADIUS_METERS){
+    if (dist < 100) {
+        time = 0.5;
+    } else if (dist > BUBBLE_RADIUS_METERS){
         float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS /4);
         time = EvE::max(dist / wsm, 1);
         SendStateChange(Probe::State::Warping);
@@ -324,8 +307,7 @@ void ProbeSE::UpdateProbe(ProbeData& data)
     }
 
     m_stateTimer.Start(time *1000);
-
-    _log(SCAN__DEBUG, "ProbeSE::UpdateProbe()  id:%u, state: %s, scanRange: %.2f, step: %u, dist:%.2f, time: %.2f", \
+    _log(SCAN__TRACE, "ProbeSE::UpdateProbe()  id:%u, state: %s, scanRange: %.2f, step: %u, dist:%.2f, time: %.2f", \
                 GetID(), GetStateName(m_state), m_scanRange, m_rangeStep, dist, time );
 }
 
@@ -349,7 +331,7 @@ void ProbeSE::RecoverProbe(PyList* list)
     list->AddItem(new PyInt(m_self->itemID()));
     m_returnTimer.Start(time *1000);
     SendStateChange(Probe::State::Returning);
-    _log(SCAN__DEBUG, "ProbeSE::RecoverProbe()  Probe %u returning.  Return time is %.2fs", \
+    _log(SCAN__TRACE, "ProbeSE::RecoverProbe()  Probe %u returning.  Return time is %.2fs", \
                 GetID(), time);
 }
 
@@ -379,7 +361,7 @@ void ProbeSE::SendStateChange(uint8 state)
     if (m_state == state)
         return;
 
-    _log(SCAN__DEBUG, "ProbeSE::SendStateChange()  Probe %u changing state to %s.", GetID(), GetStateName(state));
+    _log(SCAN__TRACE, "ProbeSE::SendStateChange()  Probe %u changing state to %s.", GetID(), GetStateName(state));
     m_state = state;
     if (m_client == nullptr)
         return;
@@ -391,10 +373,11 @@ void ProbeSE::SendStateChange(uint8 state)
 
 void ProbeSE::RemoveProbe()
 {
+    // remove from scan map, but check for abandoned probes (no scan)
+    if (m_scan != nullptr)
+        m_scan->RemoveProbe(this);
     // remove from system
     m_system->RemoveEntity(this);
-    // remove from scan map
-    m_scan->RemoveProbe(this);
     // set item loc to null
     m_self->SetPosition(NULL_ORIGIN);
 
@@ -407,8 +390,6 @@ void ProbeSE::RemoveProbe()
 
 void ProbeSE::SendWarpStart(float travelTime/*0*/)
 {
-    // OnProbeWarpStart(self, probeID, fromPos, toPos, startTime, duration)
-
     // remove from bubble
     m_bubble->Remove(this);
 
@@ -427,6 +408,7 @@ void ProbeSE::SendWarpStart(float travelTime/*0*/)
     PyTuple* to = new PyTuple(2);
         to->SetItem(0, token);
         to->SetItem(1, posTo.Encode());
+    // OnProbeWarpStart(self, probeID, fromPos, toPos, startTime, duration)
     PyTuple* tuple = new PyTuple(5);
         tuple->SetItem(0, new PyLong(m_self->itemID()));    //probeID
         tuple->SetItem(1, new PyObjectEx(false, from));     //from
@@ -466,64 +448,28 @@ const char* ProbeSE::GetStateName(uint8 state)
 
 float ProbeSE::GetDeviation()
 {
-    float maxDeviation = m_scanRange /m_self->GetAttribute(AttrBaseScanRange).get_float();
-    maxDeviation *= m_scanDeviation;
-    // fudge this to allow skill to perform better (the purpose of skill)
-    if (m_client != nullptr)
-        maxDeviation *= (1 - (0.15 * m_client->GetChar()->GetSkillLevel(EvESkill::AstrometricPinpointing))); //15%/lvl
-    return maxDeviation;
-}
-
-/*
- *  to calculate the maximum possible deviation you use the constants provided for the type of probe,
- * the scan size your probes are set to, and your skill level of Astrometric Pinpointing.
- * Here is the formula:
- * Max Deviation = (Scan Range/Base Scan Range) × Base Maximum Deviation × (1 - Pinpointing Skill/10)
- *
- * Maximum deviation in AU at different ranges and levels
- * Scan            Astrometric Pinpointing Skill Level
- * Range         0        1      2       3       4       5
- * 0.25 AU     0.125   0.1125  0.100   0.0875  0.075   0.0625
- * 0.5 AU      0.25    0.225   0.2     0.175   0.15    0.125      --Combat Scanner Probes have a minimum scan range of 0.5 AU.
- * 1 AU        0.5     0.45    0.4     0.35    0.3     0.25
- * 2 AU        1       0.9     0.8     0.7     0.6     0.5
- * 4 AU        2       1.8     1.6     1.4     1.2     1
- * 8 AU        4       3.6     3.2     2.8     2.4     2
- * 16 AU       8       7.2     6.4     5.6     4.8     4
- * 32 AU      16      14.4    12.8    11.2     9.6     8          --Core Scanner Probes haves a maximum scan range of 32 AU.
- * 64 AU      32      28.8    25.6    22.4    19.2    16
- *
- */
-
-float ProbeSE::GetRangeModifier(float dist)
-{
-    dist /= m_scanRange;
-
-    switch(m_rangeStep) {
-        case 8:  return dist * 0.125;
-        case 7:  return dist * 0.25;
-        case 6:  return dist * 0.375;
-        case 5:  return dist * 0.50;
-        case 4:  return dist * 0.625;
-        case 3:  return dist * 0.75;
-        case 2:  return dist * 0.875;
-    }
-    return dist;
+    // % of current range based on bonuses
+    return m_scanRange *m_scanDeviation;
 }
 
 float ProbeSE::GetScanStrength()
 {
-    switch(m_rangeStep) {
-        case 8:  return m_scanStrength * 0.125;
-        case 7:  return m_scanStrength * 0.25;
-        case 6:  return m_scanStrength * 0.375;
-        case 5:  return m_scanStrength * 0.50;
-        case 4:  return m_scanStrength * 0.625;
-        case 3:  return m_scanStrength * 0.75;
-        case 2:  return m_scanStrength * 0.875;
-        case 1:  return m_scanStrength * 1.125;
-    }
-    return m_scanStrength;
+    // factor of range
+    return m_scanStrength /pow(2, (m_rangeStep -1));
+}
+
+float ProbeSE::GetRangeModifier(float dist) {
+    // e^-((targ rang / max range)^2)
+    float tmp = pow(dist/(m_baseScanRange *m_rangeStep), m_rangeFactor);
+    return log(tmp);
+}
+
+//SignatureFocusing?
+bool ProbeSE::HasMaxSkill() {
+    if (m_client->GetChar()->HasSkillTrainedToLevel(EvESkill::SensorLinking, 5))
+        if (m_client->GetChar()->HasSkillTrainedToLevel(EvESkill::AstrometricAcquisition, 5))
+            return true;
+        return false;
 }
 
 PyDict* ProbeSE::MakeSlimItem()

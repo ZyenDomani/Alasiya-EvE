@@ -771,7 +771,7 @@ enum EveAttrEnum {
     AttrReactionGroup2 = 843,
     AttrAgentAutoPopupRange = 844,
     AttrHiddenLauncherDamageBonus = 845,
-    AttrScanStrengthBonus = 846,
+    AttrScanStrengthBonus = 846,                        // skill, implant, launcher, rig.  in %
     AttrAoeVelocityBonus = 847,
     AttrAoeCloudSizeBonus = 848,
     AttrCanUseCargoInSpace = 849,
@@ -1265,10 +1265,10 @@ enum EveAttrEnum {
     AttrMaxSubSystems = 1367,
     AttrTurretHardPointModifier = 1368,
     AttrLauncherHardPointModifier = 1369,
-    AttrBaseScanRange = 1370,
-    AttrBaseSensorStrength = 1371,
-    AttrBaseMaxScanDeviation = 1372,
-    AttrRangeFactor = 1373,
+    AttrBaseScanRange = 1370,                           //probe attrib.   in AU
+    AttrBaseSensorStrength = 1371,                      //probe attrib.   unknown uom
+    AttrBaseMaxScanDeviation = 1372,                    //probe attrib.   in % of current scan range
+    AttrRangeFactor = 1373,                             //probe attrib.   integer.  multiplication factor for getting sensor str at range
     AttrHiSlotModifier = 1374,
     AttrMedSlotModifier = 1375,
     AttrLowSlotModifier = 1376,
