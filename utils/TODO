@@ -34,10 +34,8 @@ check/fix loading linked weapons
     - look over and correct loading with partial stacks (see UserError at MM::LoadCharge)
     - reloading grouped weapons should divide evenly between modules.
         it currently fills modules in slot order.
-charge loading using OIC for probe qty change to show in cargo.
-    this sets charge as item in slot, not subloc, which fucks up counts (consume charge doesnt hit for item)
+OnGodmaPrimeItem recieved item for unknown location: (0,
 
-    
 all MM and ship calls need to verify throw status
     - test with Client->CanThrow() to verify throwable status
 
@@ -58,9 +56,6 @@ check trade - ships retain insurance
 
 dungeon deco items need better placement
 
-
-00:13:48 [CMgr Debug] AnomalyMgr::AddSignal() - adding Probe to anomaly list as Invalid(8) with 4.100% sigStrength.
-    - "Probe" here is a ship (minmatar frigate)
 
 check for item ownership before rename
     send error if failed
@@ -130,6 +125,13 @@ currently, all bookmarks are donated to calling player when moved into cargo/han
 
 finish DestinyManager::SendCloakFx()
 
+bounties have a bonus...
+skillDEDConnections = 3362, // Social Skill at dealing with Concord Department and negotiating bounties
+Bonus fee of 1,500 isk per pirate head per level of the skill
+*** actually, ALL of the social skills have bonuses.
+    - these need to be looked over and implemented.
+skillGeneralFreight = 12834, // Trade Skill at the stowage and transportation of bulk goods
+5% Bonus per level to Ship Cargo Capacity
 
 change AddBalance (et al) to TransferFunds()
     - only used by market service.  will need more code to implement.
@@ -253,6 +255,7 @@ anomaly system - working. may need revisit after other systems mature.   -priori
     - verify AddSignal() calls for all items (needs work)
     - add map for .showall function on scanner
     - ships have shipScanResistance (511) but they are all zero.  also look into using sig radius as sigStrength
+    - there is no "remove anomaly" or "cleanup anomaly" methods.....how we remove gutted sites?
 
 added notes on scanner groupNames in anomalyMgr.cpp and more data in EVE_Scanner.h
     - field descriptions found in packets/Scan.xmlp
@@ -267,7 +270,7 @@ scan proc calls done on client timer.  this needs change/rewrite/something else
 probe proc done on 250ms tics.  scan proc needs to do this also.  not sure how yet.
 set probe life timer is now correct, and using db data for lifetime.
 probes in space are showing in scan window...can get to 100% with 5 probes, but position still wrong
-figure out how to remove YOUR active probes from scan
+reconnect to lost probes not implemented yet.
 
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
     moved to signature from anomaly.
@@ -346,6 +349,10 @@ market system....this needs a lot of attention
 21:29:11 [InvTrace] Inventory::LoadContents() - Loading inventory of Ragnarok(140023615) with owner 1   <<< owner 1 here??  any why we loading?
 21:29:11 [InvTrace] II::Donate() - Updated flag on Ragnarok(140023615) from AutoFit to Hangar.
 
+locationName = localization.GetByMessageID(self.locationNameID)
+    - locationNameID is a messageID!!!
+return localization.GetByMessageID(self.ownerNameID, languageID)
+    - ownerNameID is a messageID!!!
 
 InvBrokerService needs love
 mapservice  needs love
@@ -411,6 +418,26 @@ look into OnSessionMutated to see if we can implement it properly
 look into adding cargo mass to ship mass for maneuvering adjustments (fully loaded should be heavy)
 
 F11 map - universe not showing region connecting (jump) lines (should be green for region jumps)
+
+command .attrlist needs names as well as attrID
+
+
+low on the list.....
+contraband.
+however, there are skills related to it, once implemented
+skillSmuggling = 3448, // Trade Proficiency at laying low and avoiding unwanted attention. From a base of 90%, each level of skill reduces by 10% the likelihood of being scanned while transporting contraband.
+skillStarshipFreight = 13069, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
+skillMineralFreight = 13070, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
+skillMunitionsFreight = 13071, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
+skillDroneFreight = 13072, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
+skillRawMaterialFreight = 13073, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
+skillConsumableFreight = 13074, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
+skillHazardousMaterialFreight = 13075, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
+
+
+skillTaxEvasion = 28261, // Trade Knowledge of the SCC tax regime and the ability to utilize that to one's own advantage.
+2% reduction in SCC tax per level.
+
 
 *******************************************************
 *****************  Fx shit
@@ -504,12 +531,70 @@ update ValidateAddItem() to return >0 on error and use enums to determine/displa
 
 make log/config option for (en/dis)able client massive check.
 
-comment unused attrib defs
+comment unused attrib defs?
+
+these are charges...
+497     8   Fuel
+498     8   Modifications
+SQL result
+
+typeID  groupID     typeName    description     graphicID   radius  mass    volume  capacity    portionSize     raceID  basePrice   published   marketGroupID   chanceOfDuplicating     copyTypeID  soundID     iconID  dataID  typeNameID  descriptionID
+19543   497     Cap Saving Fuel     Provides a quick injection of power into your capacitor. Good for tight situations!     0   0   10  10  100     10  0   100     0   0   0.07    0   0   1033    16685114    98837   89631
+19545   497     Power Boosting Fuel     Provides a quick injection of power into your capacitor. Good for tight situations!     0   0   10  10  100     10  0   100     0   0   0.07    0   0   1033    16685116    98839   89632
+22065   497     Power Boosting Fuel 2   Provides a quick injection of power into your capacitor. Good for tight situations!     0   0   10  10  100     10  0   100     0   0   0.07    0   0   1033    16685544    99267   89973
+19459   498     'Phase' Servitor    Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685100    98823   89617
+19466   498     Regular Mercenary Navigator     Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685104    98827   89621
+19468   498     'Longbow' Servitor  Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685105    98828   89622
+19583   498     Regular Mercenary Scout     Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685119    98842   89634
+19594   498     'Dart' Servitor     Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685123    98846   89638
+22797   498     Independent Shielding   Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685678    99696   90097
+// obsolete probes....
+9994    972     Snoop Scanner Probe I   The Snoop is the most accurate scanner probe available.  Possessing little to no scan deviation, it effectively enables its user to warp in on top of their intended target.  Its extremely limited range, however, means it must be used in conjunction with other, longer-range scanner probes.   1723    1   1   0.025   0   1   0   100     0   0   0.07    0   0   1723    16677047    72256   83232
+10006   972     Fathom Scanner Probe I  The Fathom is a very accurate scanner probe, able to pinpoint targets with very little deviation.  Its maximum effective scanning range, however, is limited.   1722    1   1   0.05    0   1   0   100     0   0   0.07    0   0   1722    16677022    72231   83207
+10008   972     Spook Scanner Probe I   The Spook represents the upper mid-range of scanner probes.     1720    1   1   0.075   0   1   0   100     0   0   0.07    0   0   1720    16677048    72257   83233
+10010   972     Ferret Scanner Probe I  The Ferret is the longest-range scanner probe currently available, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.   1721    1   1   0.1     0   1   0   100     0   0   0.07    0   0   1721    16677023    72232   83208
+17980   972     Ferret Class Scanner Probe 1AU  High-yield bomb with plasma payload     1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676886    72095   83122
+18588   972     Observator Deep Space Probe I   The deep-space probe uses directional measurements of the red shifting of scan signatures due to space-time expansion to give very coarse scanning of objects up to interstellar ranges. You only need one such probe for analysis, and it scans everything within 1000AU.  2704    1   1   0.125   0   1   0   100     0   0   0.07    0   0   2222    16677037    72246   83222
+19735   972     GM Class Scanner Probe 1AU  High-yield bomb with plasma payload     1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676887    72096   83123
+25207   972     Scan Probe Test 1   The Spook represents the upper mid-range of scanner probes, able to scan distances up to 48 AU and possessing moderate scan accuracy.   1720    1   1   0.125   0   1   0   100     0   0   0.07    0   0   1720    16676894    72103   83130
+25755   972     New Scan Probe Test 1   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676888    72097   83124
+25757   972     New Scan Probe Test 2   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676890    72099   83126
+25759   972     New Scan Probe Test 3   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676891    72100   83127
+25761   972     New Scan Probe Test 4   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676892    72101   83128
+25763   972     New Scan Probe Test 5   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676893    72102   83129
+25767   972     New Scan Probe Test 100000  The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676889    72098   83125
+25773   972     Radar Sift Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. Sift probes are designed for pinpoint scanning at the very shortest distances.  2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677041    72250   83226
+25775   972     Gravimetric Sift Probe  Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. Sift probes are designed for pinpoint scanning at the very shortest distances.  2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677027    72236   83212
+25777   972     Magnetometric Sift Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. Sift probes are designed for pinpoint scanning at the very shortest distances.  2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677035    72244   83220
+25779   972     Ladar Sift Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. Sift probes are designed for pinpoint scanning at the very shortest distances.  2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677031    72240   83216
+25781   972     Radar Comb Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Comb probe is designed for scanning at shorter-range distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677038    72247   83223
+25783   972     Gravimetric Comb Probe  Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Comb probe is designed for scanning at shorter-range distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677024    72233   83209
+25785   972     Magnetometric Comb Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Comb probe is designed for scanning at shorter-range distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677032    72241   83217
+25787   972     Ladar Comb Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Comb probe is designed for scanning at shorter-range distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677028    72237   83213
+25789   972     Radar Pursuit Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Pursuit probe is designed for scanning at medium distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677039    72248   83224
+25791   972     Gravimetric Pursuit Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Pursuit probe is designed for scanning at medium distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677025    72234   83210
+25793   972     Magnetometric Pursuit Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Pursuit probe is designed for scanning at medium distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677033    72242   83218
+25795   972     Ladar Pursuit Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Pursuit probe is designed for scanning at medium distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677029    72238   83214
+25797   972     Radar Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677040    72249   83225
+25799   972     Gravimetric Quest Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677026    72235   83211
+25801   972     Magnetometric Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677034    72243   83219
+25803   972     Ladar Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677030    72239   83215
+26171   972     Demo Probe  The deep-space probe uses directional measurements of the red shifting of scan signatures due to space-time expansion to give very coarse scanning of objects up to interstellar ranges. You only need one such probe for analysis, and it scans everything outside its scan range.     2704    1   1   0.15    0   1   0   100     0   0   0.07    0   0   2222    16676885    72094   83121
+26909   972     Multispectral Frequency Probe   The Multispectral Frequency Probe scans the entire solar system for multispectral frequencies, and gives a readout on which types of frequencies exist.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677036    72245   83221
+28154   972     Built-in Scanner Test Probe     The deep-space probe uses directional measurements of the red shifting of scan signatures due to space-time expansion to give very coarse scanning of objects up to interstellar ranges. You only need one such probe for analysis, and it scans everything outside its scan range.     2704    1   1   0.15    0   1   0   100     0   0   0.07    0   0   2222    16676884    72093   83120
+28760   972     Sisters Gravimetric Quest Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677042    72251   83227
+28762   972     Sisters Ladar Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677043    72252   83228
+28764   972     Sisters Magnetometric Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677044    72253   83229
+28766   972     Sisters Observator Deep Space Probe     The deep-space probe uses directional measurements of the red shifting of scan signatures due to space-time expansion to give very coarse scanning of objects up to interstellar ranges. You only need one such probe for analysis, and it scans everything within 1000AU.  2704    1   1   0.125   0   1   0   100     0   0   0.07    0   0   2222    16677045    72254   83230
+28768   972     Sisters Radar Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677046    72255   83231
+
 
 *******************************************************
 *****************   errata and miscellaneous bullshit
 
-17908 - nerf bat???
+17908 - nerf bat    <<-- this is `QA Cruise Missile`  100km/s, 1k multi-spectral damage
+
+GM/WM slash commands arent parsed in server (rclick '/create this type'....etc)
 
 i have a sneaky suspicion 'throw' isnt used properly throughout the entire codebase
 
