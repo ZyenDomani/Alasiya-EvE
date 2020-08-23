@@ -304,15 +304,16 @@ void SystemManager::UnloadSystem() {
         }
         if (pSE->TargetMgr() != nullptr)
             pSE->TargetMgr()->Unload();
-        if (pSE->IsShipSE())
+        if (pSE->IsShipSE()) {
             pSE->GetShipSE()->GetShipItemRef()->LogOut();
-        if (pSE->IsNPCSE()) {
+        } else if (pSE->IsNPCSE()) {
             sEntityList.RemoveNPC();    // this is for loaded npc count.
             pSE->GetSelf()->Delete();
-        }
-        if (pSE->IsStationSE()) {
+        } else if (pSE->IsStationSE()) {
             pSE->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
+        } else if (pSE->IsProbeSE()) {
+            sEntityList.RemoveProbe(itr->first);
         }
 
         sItemFactory.RemoveItem(itr->first);
@@ -1018,6 +1019,9 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     sBubbleMgr.Remove(pSE);
     // Remove Entity's Item Ref from Solar System Dynamic Inventory:
     RemoveItemFromInventory(pSE->GetSelf());
+    // remove probes from entity list
+    if (pSE->IsProbeSE())
+        sEntityList.RemoveProbe(pSE->GetID());
 
     // remove entity from our maps
     uint32 itemID = pSE->GetID();

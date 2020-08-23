@@ -235,6 +235,11 @@ m_scanShips(false)
     AttrScanStrengthBonusModule = 1907,
     */
 
+ProbeSE::~ProbeSE() {
+    if (m_scan != nullptr)
+        m_scan->RemoveProbe(this);
+}
+
 bool ProbeSE::ProcessTic()
 {
     if (m_lifeTimer.Check()) {

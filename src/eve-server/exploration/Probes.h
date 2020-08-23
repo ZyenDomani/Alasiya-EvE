@@ -73,7 +73,7 @@ public:
     ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system);
     // launched probe c'tor
     ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system, InventoryItemRef moduleRef, ShipItemRef shipRef);
-    virtual ~ProbeSE()                                  { /* Do nothing here */ }
+    virtual ~ProbeSE();
 
     /* Process Calls - Overridden as needed in derived classes */
     virtual bool ProcessTic();
