@@ -36,7 +36,7 @@
 #include "market/MarketDB.h"
 #include "missions/MissionDataMgr.h"
 #include "threading/Threading.h"
-#include "testing/test.h"
+// #include "testing/test.h"
 
 
 ConsoleCommand::ConsoleCommand()
