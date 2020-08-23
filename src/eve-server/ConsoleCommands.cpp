@@ -333,6 +333,7 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Running Server Test Code:");
+    sLog.Warning(" Server Test Code", "No Test Code at this time.");
     //testing::posTest();
 
     // execute code to begin filling missing data in mission db.

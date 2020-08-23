@@ -607,6 +607,11 @@ SET( system_managers_SOURCE
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/SpawnMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/WormholeMgr.cpp")
 
+SET( test_INCLUDE
+    "${TARGET_INCLUDE_DIR}/testing/test.h")
+SET( test_SOURCE
+    "${TARGET_SOURCE_DIR}/testing/test.cpp")
+
 ########################
 # Setup the executable #
 ########################
@@ -645,6 +650,7 @@ SOURCE_GROUP( "src\\standing"      FILES ${standing_INCLUDE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_INCLUDE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_INCLUDE} )
 SOURCE_GROUP( "src\\system\\cosmicMgrs"  FILES ${system_managers_INCLUDE} )
+SOURCE_GROUP( "src\\system\\test"  FILES ${test_INCLUDE} )
 
 SOURCE_GROUP( "src"                FILES ${SOURCE} )
 SOURCE_GROUP( "src\\account"       FILES ${account_SOURCE} )
@@ -681,6 +687,7 @@ SOURCE_GROUP( "src\\standing"      FILES ${standing_SOURCE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_SOURCE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_SOURCE} )
 SOURCE_GROUP( "src\\system\\cosmicMgrs"  FILES ${system_managers_SOURCE} )
+SOURCE_GROUP( "src\\system\\test"  FILES ${test_SOURCE} )
 
 ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${INCLUDE}                ${SOURCE}
@@ -717,7 +724,9 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${standing_INCLUDE}       ${standing_SOURCE}
                 ${station_INCLUDE}        ${station_SOURCE}
                 ${system_INCLUDE}         ${system_SOURCE}
-                ${system_managers_INCLUDE} ${system_managers_SOURCE} )
+                ${system_managers_INCLUDE} ${system_managers_SOURCE}
+                ${test_INCLUDE}           ${test_SOURCE}
+                )
 
 TARGET_BUILD_PCH( "${TARGET_NAME}"
                   "${TARGET_INCLUDE_DIR}/eve-server.h"
