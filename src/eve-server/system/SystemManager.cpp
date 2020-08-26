@@ -1019,10 +1019,6 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     sBubbleMgr.Remove(pSE);
     // Remove Entity's Item Ref from Solar System Dynamic Inventory:
     RemoveItemFromInventory(pSE->GetSelf());
-    // remove probes from entity list
-    if (pSE->IsProbeSE())
-        sEntityList.RemoveProbe(pSE->GetID());
-
     // remove entity from our maps
     uint32 itemID = pSE->GetID();
     m_entityChanged = true;

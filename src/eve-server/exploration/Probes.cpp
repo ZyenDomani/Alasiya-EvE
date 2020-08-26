@@ -67,10 +67,13 @@ void ProbeItem::Delete() {
             iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
         else
             _log(ITEM__ERROR, "ProbeItem::Delete() - Cant find location %u containing %s.", m_locationID, m_itemName.c_str());
-    }
+    } else
+        _log(ITEM__ERROR, "ProbeItem::Delete() - Location %u containing %s is invalid.", m_locationID, m_itemName.c_str());
 
     // remove from DB
     ItemDB::DeleteItem(m_itemID);
+    // remove from factory cache
+    sItemFactory.RemoveItem(m_itemID);
 }
 
 
@@ -243,7 +246,6 @@ ProbeSE::~ProbeSE() {
 bool ProbeSE::ProcessTic()
 {
     if (m_lifeTimer.Check()) {
-        RemoveProbe();
         Delete();
         delete(this);
         // delete from entity map
@@ -379,12 +381,16 @@ void ProbeSE::SendStateChange(uint8 state)
 void ProbeSE::RemoveProbe()
 {
     // remove from scan map, but check for abandoned probes (no scan)
-    if (m_scan != nullptr)
+    if (m_scan != nullptr) {
         m_scan->RemoveProbe(this);
+        m_scan = nullptr;
+    }
     // remove from system
     m_system->RemoveEntity(this);
     // set item loc to null
     m_self->SetPosition(NULL_ORIGIN);
+    // remove from entity list
+    sEntityList.RemoveProbe(m_self->itemID());
 
     if (m_client == nullptr)
         return;
