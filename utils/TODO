@@ -83,7 +83,7 @@ when t3 ship killed, pilot will lose sp in a required skill for each of the 5 su
 
 JumpCloneService needs work to allow capital ships `show info` tab to work in space.
     - this class is barely above skeleton code, and hardly researched.
-    - jump clones arent even close to implementation, so its be nbd so far.
+    - jump clones arent even close to implementation, so its nbd at this point
 
 
 *******************************************************
@@ -191,8 +191,6 @@ InventoryBound  incomplete
   RunRefiningProcess()
   TakeOutTrash()
 
-...speaking of t3 ships....
-ShipBound::Handle_AssembleShip is partially coded.  needs work for t3
 
 DogmaIMBound::Handle_Activate
     - need to complete POS/Container cases and verify we're not missing anything
@@ -260,7 +258,6 @@ added notes on scanner groupNames in anomalyMgr.cpp and more data in EVE_Scanner
     - field descriptions found in packets/Scan.xmlp
 when using .showall or .bubbletrack, the items need to be put into anomalymgr map for objects
     - need to get items from anomalyMgr instead of sysmgr and bubblemgr (currently using both)
-anomalies need a groupID that's NOT "unknown"
 check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
 
 set probe life timer is now correct, and using db data for lifetime.
@@ -366,7 +363,7 @@ store/board ship in cap ship hangar not coded
 
 ship selfdestruct not coded
 
-0 AS landmarkNameID
+0 AS landmarkNameID  -- this is probably a messageID also (all *NameIDs are)
 
 authentication and session still need work, but i dont fully understand them
 
@@ -444,6 +441,7 @@ skillTaxEvasion = 28261, // Trade Knowledge of the SCC tax regime and the abilit
 
 update all specialFX to use common call in DestinyManager code.
 this includes fx13 and fx10 calls
+    - see notes above for specialFX code improvements
 
 
 *******************************************************
@@ -464,7 +462,7 @@ look into using "CALL_", "RSP_" and "encode=true/false"/"decode=true/false" for 
 *****************  db shit
 
 all PackedRows are marshalled into a buffer, where None is inserted as zero.
-    - this negates client conditional checks like using "if x is None:" because x=0 returns false in that check
+    - this negates client conditional checks like using "if x is None:" because x=0 will return false in that check, which makes shit weird
 
 *******************************************************
 *****************  ideas for later
@@ -482,8 +480,7 @@ mailDB needs much love.
 drone chat window for drone specific msgs (using individual drone as sender)
 player command to show drones targeted by
 
-change warpstate variable in destiny from class (and using naked 'new') to struct?
-    - probably not.  current system works very well, and no mem leaks
+warpstate class works very well, and no mem leaks (as opposed to changing to struct)
 
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
     - npc will attack drones based on class (find this info again)
@@ -595,6 +592,8 @@ error with char location on login......
 22:09:28 [InvTrace] Inventory::RemoveItem() - Ibaria(30000053) does not contain Allan(90000000) in AutoFit.
 22:09:28 [InvTrace] Inventory::AddItem() - Updated Ibaria III - Thukker Mix Warehouse(60014137) to contain (1) Allan(90000000) in AutoFit.
 
+update console commands to use complete words instead of first letter
+    - this will enable greater command control and passing of arguments
 
 add rule of 5 for Py* code (or =delete defaults)
 
@@ -664,7 +663,6 @@ move *data calls from inventoryDB into static data mgr  -priority level: low
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
-dynamic system items not inserted into itemfactory map
 static items not being removed from itemfactory map upon system unload
 
 began putting specific throw msgs in appropriate common/EVE_*.h files if available,
