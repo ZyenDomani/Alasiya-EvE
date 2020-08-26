@@ -60,9 +60,9 @@ PyCallArgs::PyCallArgs(Client *c, PyTuple* tup, PyDict* dict)
 : client(c),
   tuple(tup)
 {
-    PyIncRef( tup );
+   // PyIncRef( tup );
     for (PyDict::const_iterator cur = dict->begin(); cur != dict->end(); cur++) {
-        if(!cur->first->IsString()) {
+        if (!cur->first->IsString()) {
             _log(SERVICE__ERROR, "Non-string key in call named arguments. Skipping.");
             cur->first->Dump(SERVICE__ERROR, "    ");
             continue;
