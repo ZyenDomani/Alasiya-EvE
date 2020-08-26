@@ -92,13 +92,14 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("           (n)ote", " Broadcasts a message to all clients thru a notification window.");
                 sLog.Warning("        (m)essage", " Broadcasts a message to all clients thru a message window.");
                 sLog.Warning("        (p)rofile", " Prints a profile of current server runtimes.  *Incomplete*");
-                sLog.Warning("          (r)oles", " Prints a list of common roles and their values.");
+                sLog.Warning("          r(o)les", " Prints a list of common roles and their values.");
                 sLog.Warning("       c(o)mmands", " Prints a list of currently loaded Commands and their required role. (long list)");
                 sLog.Warning("           (t)est", " Prints the current test object *varies*");
                 sLog.Warning("        e(f)fects", " Compiles and prints all item effects.");
                 sLog.Warning("        threa(d)s", " Prints a list of current threads.");
                 sLog.Warning("    reload (l)ogs", " Reloads log.ini to change values without restarting server.");
                 sLog.Warning("(q)uery stat data", " Prints current statistic data.");
+                sLog.Warning("       hea(r) all", " Echo all chat msgs to console. *Not Implemented*");
             } else if (strncmp(buf, "e", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Hello:");
                 sLog.Magenta("      Server Says", " Hello World!" );
@@ -230,6 +231,8 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
                 sProfile.PrintProfile();
             } else if (strncmp(buf, "r", 1) == 0) {
+                // enable console chat echo
+            } else if (strncmp(buf, "o", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Common Account Roles:");
                 sLog.Warning("     Acct::Role::DEV", " %lli(%p)", Acct::Role::DEV, Acct::Role::DEV);
                 sLog.Warning("     Acct::Role::STD", " %lli(%p)", Acct::Role::STD, Acct::Role::STD);

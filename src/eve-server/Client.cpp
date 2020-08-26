@@ -273,9 +273,10 @@ Client::~Client() {
     // remove char from entitylist
     sEntityList.RemovePlayer(this);
     //sEntityList.RemoveSID(GetSessionID());
+    // bound objects are stored by bindID.  should we keep a map of bindIDs for specific client here to ease release?
     m_services.ClearBoundObjects(this);
 
-    m_system = nullptr; // DO NOT delete m_system
+    m_system = nullptr; // DO NOT delete m_system here
 
     SafeDelete(m_TS);
     SafeDelete(m_scan);

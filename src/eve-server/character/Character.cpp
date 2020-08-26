@@ -707,7 +707,7 @@ void Character::ClearSkillQueue() {
         uint32 CurrentSP = skill->GetCurrentSP(this);
         SaveSkillHistory(EvESkill::Event::TrainingCancelled, GetFileTimeNow(), m_itemID, skill->typeID(), level, CurrentSP);
 
-        _log(SKILL__MESSAGE, "%s:%s(%u) SkillTraining to level %u cancelled by Clearing Queue. CurrentSP: %u", \
+        _log(SKILL__MESSAGE, "%s:%s(%u) SkillTraining to level %u canceled by Clearing Queue. CurrentSP: %u", \
                 itemName().c_str(), skill->itemName().c_str(), skill->itemID(), level, CurrentSP);
 
         skill->SetAttribute(AttrSkillPoints, CurrentSP);
@@ -731,7 +731,7 @@ void Character::ClearSkillQueue() {
 void Character::UpdateSkillQueue() {
     /* cleaned up code and reworked logic  -allan 28Apr16   -- revisited 23Mar17  --updated code, logic and timers 16Nov17  -again 9jan18*/
     // finally fixed.  22Jan18  --it wasnt 24Jan18     still not right 3Dec18    -again 4jan19      -another 6Aug19
-    // rewrote and FINALLY fixed.  10Aug19
+    // rewrote and FINALLY fixed.  10Aug19   --still wrong 23Aug20
     if (m_pClient == nullptr)
         return;
 
@@ -748,7 +748,7 @@ void Character::UpdateSkillQueue() {
             SaveSkillHistory(EvESkill::Event::TrainingCancelled, currTime, m_itemID, skill->typeID(), level, currentSP);
 
             if (is_log_enabled(SKILL__INFO))
-                _log(SKILL__INFO, "%s:%s(%u) Training to level %u cancelled by switching skills.  CurrentSP: %u, nextLevelSP: %u", \
+                _log(SKILL__INFO, "%s:%s(%u) Training to level %u canceled by switching skills.  CurrentSP: %u, nextLevelSP: %u", \
                         itemName().c_str(), skill->itemName().c_str(), skill->typeID(), level,\
                         currentSP, skill->GetSPForLevel(level));
 

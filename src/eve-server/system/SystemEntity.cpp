@@ -79,13 +79,6 @@ void SystemEntity::Process() {
         return;
     }
 
-    /*  Enable base call to Process Targeting and Movement
-     * this order WILL affect Point/Tackle  (kinda like on live)
-     * processing target first will benefit point/tackle
-     * processing destiny first will benefit escaping
-     */
-    //if (m_targMgr != nullptr)
-    //    m_targMgr->Process();
     if (m_destiny != nullptr)
         m_destiny->Process();
 }

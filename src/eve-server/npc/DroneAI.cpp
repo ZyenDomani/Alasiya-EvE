@@ -1,28 +1,10 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
-
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:     Allan
-    Version:    0.15
-    Date:       27Nov19
+/**
+ * DroneAI.cpp
+ *      this class is for drone AI
+ *
+ * @Author:     Allan
+ * @Version:    0.15
+ * @Date:       27Nov19
 */
 
 #include "eve-server.h"
@@ -247,62 +229,36 @@ void DroneAIMgr::Target(SystemEntity* pTarget) {
 }
 
 void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
+    _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while %s.",
+                m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID(), GetStateName(m_state).c_str());
     switch(m_state) {
         case DroneAI::State::Idle: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Idle.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Operating: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Operating.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Unknown: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Unknown.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Engaged: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while engaged.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Fleeing: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while fleeing.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Incapacitated: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Incapacitated.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Guarding: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Guarding.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Assisting: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Assisting.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Combat: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while engaged Combat.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Mining: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Mining.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Approaching: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Approaching.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Departing: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while engaged Departing.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Departing2: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Departing2.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Pursuit: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Pursuit.",
-                 m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
     }
 }

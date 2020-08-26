@@ -72,11 +72,6 @@ m_customInfo(_data.customInfo)
     _log(ITEM__TRACE, "II::C'tor - Created Generic Item %p for item %s (%u).", this, m_itemName.c_str(), m_itemID);
 }
 
-InventoryItem::~InventoryItem() noexcept
-{
-    SafeDelete(pAttributeMap);
-}
-
 InventoryItem::InventoryItem(const InventoryItem& oth)
 : RefObject(0),
 m_itemID(oth.m_itemID),
@@ -116,6 +111,11 @@ InventoryItem& InventoryItem::operator=(InventoryItem&& oth) noexcept
     assert(0);
 }
 */
+
+InventoryItem::~InventoryItem() noexcept
+{
+    SafeDelete(pAttributeMap);
+}
 
 InventoryItemRef InventoryItem::Load(uint32 itemID)
 {
@@ -223,7 +223,8 @@ RefPtr<_Ty> InventoryItem::_LoadItem(uint32 itemID, const ItemType &type, const 
             // create Generic item for now
             return InventoryItemRef(new InventoryItem(itemID, type, data ));
         } break;
-        case EVEDB::invCategories::Module: {
+        case EVEDB::invCategories::Module:
+        case EVEDB::invCategories::Subsystem: {
             return ModuleItem::_LoadItem<ModuleItem>(itemID, type, data);
         } break;
         case EVEDB::invCategories::Owner: {
@@ -389,7 +390,6 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
         case EVEDB::invCategories::Accessories:         // this is for bookmark vouchers
         case EVEDB::invCategories::AncientRelics:       // t3 bpc from sleepers
         // these *may* need their own class
-        case EVEDB::invCategories::Subsystem:
         case EVEDB::invCategories::Decryptors:
         case EVEDB::invCategories::StructureUpgrade:
         case EVEDB::invCategories::PlanetaryInteraction:
@@ -436,12 +436,15 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
                 } break;
             }
         } break;
+        case EVEDB::invCategories::Module:
+        case EVEDB::invCategories::Subsystem: {
+            return ModuleItem::Spawn(data);
+        } break;
         case EVEDB::invCategories::Drone: {
             if (!sConfig.testing.EnableDrones)
                 return InventoryItemRef(nullptr);
             //return DroneItem::Spawn(data);
         } // allow fallthru until DroneItem is written
-        case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Deployable: {
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID(data);

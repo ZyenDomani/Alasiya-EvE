@@ -253,6 +253,7 @@ void EntityList::Process() {
 
             if (m_minutes % 5 == 0) { // ~5m
                 sWHMgr.Process();
+                // write something to tic corps vote cases.
                 for (auto cur : m_systems)
                     cur.second->UpdateData();   // update active system timers and dynamic data every 5m
             }
@@ -264,8 +265,6 @@ void EntityList::Process() {
                 MapDB::ManipulateTimeData();
                 sMktMgr.Process();  // not used - does nothing at this time
             }
-
-            // write something to tic corps vote cases.
         }
 
         if (sConfig.debug.UseProfiling)
@@ -430,7 +429,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
         case CorpNewCEO: {
             // all members?
             while (itr != end) {
-                cMap.insert(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
         } break;
@@ -443,7 +442,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
                 //if ((itr->second &Corp::Role::Director) == Corp::Role::Director)
                 //    cMap.insert(std::make_pair(std::make_pair(itr->first->GetCharacterID(), itr->first)));
                 if ((itr->second &Corp::Role::PersonnelManager) == Corp::Role::PersonnelManager)
-                    cMap.insert(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
         } break;
@@ -455,7 +454,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
             while (itr != end) {
                 // if (itr->first->GetChar()->HasShares())  // not written, no underlying code yet
                 if (mdb.HasShares(itr->first->GetCharacterID(), corpID))
-                    cMap.insert(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
         } break;

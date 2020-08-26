@@ -219,7 +219,7 @@ PyResult TradeBound::Handle_Abort(PyCallArgs &call) {
 
 void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSes)
 {
-    // trade cancelled.  send items back to owner. (monies not taken at this point)
+    // trade canceled.  send items back to owner. (monies not taken at this point)
     PyDict* dict = new PyDict();
     dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(pTSes->m_tradeSession.containerID));
 

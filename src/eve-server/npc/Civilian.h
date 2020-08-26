@@ -8,7 +8,7 @@
 
 /*
 10043   Peddler     297     Convoy
-10044   Column  297     Convoy
+10044   Column      297     Convoy
 10045   Vanguard    297     Convoy
 10114   Tradesman   297     Convoy
 10115   Merchant    297     Convoy

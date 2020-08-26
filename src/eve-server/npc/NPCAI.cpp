@@ -608,9 +608,12 @@ void NPCAIMgr::Targeted(SystemEntity* pSE) {
         return;
     double targetTime = GetTargetTime();
 
+    _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while %s.", \
+            m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), GetStateName(m_state).c_str());
+
     switch(m_state) {
         case NPCAI::State::Idle: {
-            _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) in Idle. Begin Approaching and start Targeting sequence.", \
+            _log(NPC__AI_TRACE, "%s(%u): Begin Approaching and start Targeting sequence.", \
                     m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
             SetChasing(pSE);
 
@@ -632,24 +635,14 @@ void NPCAIMgr::Targeted(SystemEntity* pSE) {
 
         /** @todo  determine if new targetedby entity is weaker than current target. use optimalSigRadius to test for 'optimal' target */
         case NPCAI::State::Chasing: {
-            _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while chasing.", \
-                    m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
         } break;
         case NPCAI::State::Following: {
-            _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while following.", \
-                    m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
         } break;
         case NPCAI::State::Engaged: {
-            _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while engaged.", \
-                    m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
         } break;
         case NPCAI::State::Fleeing: {
-            _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while fleeing.", \
-                    m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
         } break;
         case NPCAI::State::Signaling: {
-            _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while signaling.", \
-                    m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
         } break;
     }
     if (!m_shieldBoosterTimer.Enabled())
