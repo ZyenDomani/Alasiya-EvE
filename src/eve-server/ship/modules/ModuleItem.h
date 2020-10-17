@@ -43,15 +43,14 @@ protected:
     // Template loader:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 modID, const ItemType &type, const ItemData &data) {
-        if ((type.categoryID() != EVEDB::invCategories::Module)
-        and (type.categoryID() != EVEDB::invCategories::Subsystem)) {
-            sLog.Error("ModuleItem", "Trying to load %s(%u) as Module.", type.category().name().c_str(), modID);
-            if (sConfig.server.StackTrace)
-                EvE::traceStack();
-            return RefPtr<_Ty>();
-        }
+        if ((type.categoryID() == EVEDB::invCategories::Module)
+        or (type.categoryID() == EVEDB::invCategories::Subsystem))
+            return ModuleItemRef( new ModuleItem(modID, type, data ) );
 
-        return ModuleItemRef( new ModuleItem(modID, type, data ) );
+        sLog.Error("ModuleItem", "Trying to load %s(%u) as Module.", type.category().name().c_str(), modID);
+        if (sConfig.server.StackTrace)
+            EvE::traceStack();
+        return RefPtr<_Ty>();
     }
 
 };
