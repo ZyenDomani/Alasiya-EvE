@@ -45,6 +45,7 @@ struct SaveData {
 
 /* POD structure for saving attribute data */
 struct AttrData {
+    bool type;          // 0=int, 1=float
     uint16 attrID;
     uint32 itemID;
     int64 valueInt;

@@ -327,10 +327,10 @@ void ItemDB::SaveAttributes(bool isChar, std::vector<AttrData>& data)
         } else
             Inserts << ", ";
         Inserts << "(" << cur.itemID << ", " << cur.attrID << ", ";
-        if (cur.valueInt)
-            Inserts << cur.valueInt << ", NULL)";
-        else
+        if (cur.type)
             Inserts << "NULL, " << cur.valueFloat << ")";
+        else
+            Inserts << cur.valueInt << ", NULL)";
     }
 
     if (!first) {
