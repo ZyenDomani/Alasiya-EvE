@@ -95,6 +95,7 @@ public:
     EVERace             GetFactionRace(uint32 factionID);
     std::string         GetCorpName(uint32 corpID);
     std::string         GetFactionName(uint32 factionID);
+    const char*         GetRaceName(EVERace raceID);
 
     void                GetSalvage(uint32 factionID, std::vector<uint32> &itemList);
 

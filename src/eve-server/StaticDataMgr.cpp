@@ -1272,6 +1272,23 @@ std::string StaticDataMgr::GetFactionName(uint32 factionID)
     return "Undefined";
 }
 
+const char* StaticDataMgr::GetRaceName(EVERace raceID)
+{
+    switch (raceID) {
+        case raceCaldari:       return "Caldari";
+        case raceMinmatar:      return "Minmatar";
+        case raceAmarr:         return "Amarr";
+        case raceGallente:      return "Gallente";
+        case raceJove:          return "Jove";
+        case racePirate:        return "Pirate";
+        case raceSleepers:      return "Sleeper";
+        case raceORE:           return "ORE";
+    }
+    // default to none
+    return "Race Not Defined";
+
+}
+
 uint32 StaticDataMgr::GetRaceFaction(EVERace raceID)
 {
     switch (raceID) {
