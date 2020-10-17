@@ -327,7 +327,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();
         cdata.skillPoints += skillPoints;
-        charRef->SaveSkillHistory(EvESkill::Event::SkillPointsApplied/*EvESkill::Event::CharCreation*/, // #33 shows as "Unknown" in PD>Skill>History
+        charRef->SaveSkillHistory(EvESkill::Event::SkillPointsApplied/*EvESkill::Event::CharCreation*/, // 'CharCreation' shows as "Unknown" in PD>Skill>History
                                   GetFileTimeNow(),
                                     charRef->itemID(),
                                     cur.first,

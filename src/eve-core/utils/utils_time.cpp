@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan
 */
 
 #include "eve-core.h"
@@ -67,7 +68,7 @@ int64 Win32TimeNow() {
     return UnixTimeToWin32Time(std::time(NULL), 0);
 }
 
-int32 GetElapsedHours(int64 time)
+int32 GetElapsedHours(int64 time)  // -allan
 {
     double hours = time - GetFileTimeNow();
     hours /= 10000000;
@@ -76,7 +77,7 @@ int32 GetElapsedHours(int64 time)
     return (int32)hours;
 }
 
-double GetFileTimeNow()
+double GetFileTimeNow()  // -allan
 {
     // convert system time to filetime.
     double time = GetTimeMSeconds();
@@ -87,7 +88,7 @@ double GetFileTimeNow()
 }
 
 //  NOTE  auto and std::chrono require C++11
-int64 GetSteadyTime() {
+int64 GetSteadyTime() {  // -allan
     // simulation of Windows GetTickCount()
     //  this returns milliseconds
     using namespace std::chrono;

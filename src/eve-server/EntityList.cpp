@@ -364,7 +364,7 @@ std::string EntityList::GetAnomalyID()
     std::string str1 = "", str2 = "";
     for (uint8 i = 0; i < 3; ++i) {
         str1 += alphaList[MakeRandomInt(0,25)];    //rand() % sizeof(alphaList) - 1
-        str2 += itoa(MakeRandomInt(0,9));
+        str2 += std::to_string(MakeRandomInt(0,9));
     }
 
     std::string res = str1;
@@ -375,32 +375,35 @@ std::string EntityList::GetAnomalyID()
     return res;
 }
 
-const char* EntityList::GetUpTime() {
-
-    uint8 w = 0, d = 0, h = 0, m = 0, s = 0;
+const char* EntityList::GetUpTime()
+{
     uint32 seconds = m_stamp - 1000;
-    float minutes = seconds/60;
-    float hours = minutes/60;
-    float days = hours/24;
-    float weeks = days/7;
+    uint32 minutes = seconds/60;
+    uint32 hours = minutes/60;
+    uint32 days = hours/24;
+    uint32 weeks = days/7;
+    uint32 months = days/30;
 
-    s = fmod(seconds,60);
-    m = fmod(minutes,60);
-    h = fmod(hours,24);
-    d = fmod(days,7);
-    w = fmod(weeks,4);
+    int s(seconds %60);
+    int m(minutes %60);
+    int h(hours %24);
+    int d(days %7);
+    int w(weeks %4);
+    int M(months %12);
 
     std::ostringstream uptime;
-    if (w)
-        uptime << itoa(w) << "w" << itoa(d) << "d" << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+    if (M)
+        uptime << M << "M" << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
+    else if (w)
+        uptime << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
     else if (d)
-        uptime << itoa(d) << "d" << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+        uptime << d << "d" << h << "h" << m << "m" << s << "s";
     else if (h)
-        uptime << itoa(h) << "h" << itoa(m) << "m" << itoa(s) << "s";
+        uptime << h << "h" << m << "m" << s << "s";
     else if (m)
-        uptime << itoa(m) << "m" << itoa(s) << "s";
+        uptime << m << "m" << s << "s";
     else
-        uptime << itoa(s) << "s";
+        uptime << s << "s";
 
     return uptime.str().c_str();
 }

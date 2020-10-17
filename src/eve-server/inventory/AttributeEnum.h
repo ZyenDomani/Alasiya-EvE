@@ -32,7 +32,7 @@ enum EveAttrEnum {
     AttrOnline = 2,
     AttrDamage = 3,
     AttrMass = 4,
-    AttrSkillStartTime = 5,                             // filetime of when skill started (or will start) - specific to Alasiya
+    AttrStartTime = 5,                                  // filetime of when event started (or will start) - specific to Alasiya
     AttrCapacitorNeed = 6,                              //dischargeAttributeID in dgmEffects
     AttrMinRange = 8,                                   // only used by 22476 which is non-published
     AttrHP = 9,

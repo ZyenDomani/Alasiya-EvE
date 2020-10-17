@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan
 */
 
 #ifndef __UTILS_TIME_H__INCL__
@@ -37,14 +38,14 @@ YEAR = (12 * MONTH)
 namespace EvE {
     namespace Time {
         enum:int64_t {
-            mSecond = 1000L,    //1000
-            Second = 10000000L, //10000000
-            Minute = (Second * 60L),
-            Hour = (Minute * 60L),
-            Day = (Hour * 24L),
-            Week = (Day * 7L),
-            Month = (Day * 30L),
-            Year = (Day * 365L)
+            mSecond     = 1000L,        //1000
+            Second      = 10000000L,    //10000000
+            Minute      = (Second * 60L),
+            Hour        = (Minute * 60L),
+            Day         = (Hour * 24L),
+            Week        = (Day * 7L),
+            Month       = (Day * 30L),
+            Year        = (Day * 365L)
         };
     }
 }

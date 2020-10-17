@@ -109,8 +109,9 @@ namespace EvE {
     void traceStack(void);
     // Find Case Insensitive Sub String in a given substring
     bool icontains(std::string data, std::string toSearch, size_t pos = 0);
-    // format given time (in seconds) to week/day/hour/seconds
-    const char* FormatTime(uint32 time=0);
+    // format given time (in seconds) to month/week/day/hour/minute/second
+    // <0 will return "Invalid Time".  0 will return "None"
+    const char* FormatTime(int64 time=-1);
 }
 
 #endif /* !__MISC_H__INCL__ */

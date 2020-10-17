@@ -26,6 +26,7 @@
 #include "eve-core.h"
 
 #include "utils/misc.h"
+#include "utils/utils_string.h"
 
 static uint16 crc16_table[ 256 ] =
 {
@@ -167,13 +168,13 @@ double EvE::max(double x, double y, double z)
 
 void EvE::traceStack(void)
 {
-    int j, nptrs;
+    uint8 j(0), nptrs(0);
     #define SIZE 100
     void *buffer[100];
     char **strings;
 
     nptrs = backtrace(buffer, SIZE);
-    printf("backtrace() returned %d addresses\n", nptrs);
+    printf("backtrace() returned %i addresses\n", nptrs);
 
     /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
      *       would produce similar output to the following: */
@@ -184,7 +185,7 @@ void EvE::traceStack(void)
         return;
     }
 
-    for (j = 0; j < nptrs; j++)
+    for (j = 0; j < nptrs; ++j)
         printf("%s\n", strings[j]);
 
     free(strings);
@@ -200,22 +201,29 @@ bool EvE::icontains(std::string data, std::string toSearch, size_t pos/*0*/)
     return (data.find(toSearch, pos) != std::string::npos);
 }
 
-const char* EvE::FormatTime(uint32 time) {
-    uint8 w = 0, d = 0, h = 0, m = 0, s = 0;
-    uint32 seconds = time;
-    float minutes = seconds/60;
-    float hours = minutes/60;
-    float days = hours/24;
-    float weeks = days/7;
+const char* EvE::FormatTime(int64 time/*-1*/) {
+    if (time < 0)
+        return "Invalid Time";
+    if (time < 1)
+        return "None";
+    int64 seconds = time;
+    int64 minutes = seconds/60;
+    int64 hours = minutes/60;
+    uint32 days = hours/24;
+    uint32 weeks = days/7;
+    uint32 months = days/30;
 
-    s = fmod(seconds,60);
-    m = fmod(minutes,60);
-    h = fmod(hours,24);
-    d = fmod(days,7);
-    w = fmod(weeks,4);
+    int s(seconds %60);
+    int m(minutes %60);
+    int h(hours %24);
+    int d(days %7);
+    int w(weeks %4);
+    int M(months %12);
 
     std::ostringstream uptime;
-    if (w)
+    if (M)
+        uptime << M << "M" << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
+    else if (w)
         uptime << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
     else if (d)
         uptime << d << "d" << h << "h" << m << "m" << s << "s";

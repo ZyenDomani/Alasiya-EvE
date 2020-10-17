@@ -47,7 +47,7 @@ namespace Standings {
         CombatAggressionOwnFaction      = 225,
         CombatAssistanceOwnFaction      = 226,
         CombatOtherOwnFaction           = 228
-        //anything up until 500 is 'Standing Change'
+        //anything up to 500 is 'Standing Change'
     };
 
     /*Standing Events
