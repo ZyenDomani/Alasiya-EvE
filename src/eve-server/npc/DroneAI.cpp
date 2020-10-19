@@ -17,7 +17,7 @@
 #include "system/Damage.h"
 #include "system/SystemBubble.h"
 
-DroneAIMgr::DroneAIMgr(Drone* who)
+DroneAIMgr::DroneAIMgr(DroneSE* who)
 : m_state(DroneAI::State::Idle),
   m_pDrone(who),
   m_assignedShip(nullptr),

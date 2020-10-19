@@ -37,14 +37,14 @@ namespace DroneAI {
     }
 }
 
-class Drone;
+class DroneSE;
 class SystemEntity;
 class Timer;
 class EvilNumber;
 
 class DroneAIMgr {
 public:
-    DroneAIMgr(Drone *who);
+    DroneAIMgr(DroneSE *who);
 
     void Process();
 
@@ -86,7 +86,7 @@ private:
     uint32 m_armorRepairDuration;
     uint32 m_shieldBoosterDuration;
 
-    Drone* m_pDrone;
+    DroneSE* m_pDrone;
     ShipSE* m_assignedShip;
 
     TurretFormulas m_formula;

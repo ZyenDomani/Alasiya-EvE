@@ -133,7 +133,7 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     return 0;
 }
 
-float TurretFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
+float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget)
 {
     if (pTarget == nullptr)
         return 0;

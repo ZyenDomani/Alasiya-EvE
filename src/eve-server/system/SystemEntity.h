@@ -39,7 +39,7 @@ class Client;
 class Concord;
 class ContainerSE;
 class Damage;
-class Drone;
+class DroneSE;
 class NPC;
 class Sentry;
 class SystemBubble;
@@ -127,7 +127,7 @@ public:
     /* Dynamic */
     virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
     virtual NPC*                GetNPCSE()              { return nullptr; }
-    virtual Drone*              GetDroneSE()            { return nullptr; }
+    virtual DroneSE*            GetDroneSE()            { return nullptr; }
     virtual Missile*            GetMissileSE()          { return nullptr; }
     virtual ShipSE*             GetShipSE()             { return nullptr; }
     virtual Concord*            GetConcordSE()          { return nullptr; }

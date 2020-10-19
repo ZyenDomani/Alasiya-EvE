@@ -43,15 +43,15 @@ class ServiceDB;
 class NPCAIMgr;
 class Damage;
 
-class Drone
+class DroneSE
 : public DynamicSystemEntity
 {
 public:
-    Drone(InventoryItemRef drone, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
-    virtual ~Drone();
+    DroneSE(InventoryItemRef drone, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
+    virtual ~DroneSE();
 
     /* class type pointer querys. */
-    virtual Drone* GetDroneSE()                         { return this; }
+    virtual DroneSE* GetDroneSE()                         { return this; }
     /* class type tests. */
     virtual bool IsDroneSE()                            { return true; }
 

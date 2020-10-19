@@ -824,7 +824,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             if (drone.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
-            Drone* dSE = new Drone(drone, *(sysMgr.GetServiceMgr()), &sysMgr, data);
+            DroneSE* dSE = new DroneSE(drone, *(sysMgr.GetServiceMgr()), &sysMgr, data);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DroneSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
         } break;
