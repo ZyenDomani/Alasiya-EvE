@@ -29,7 +29,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="NotifyOnCharNowInStation">
+  <elementDef name="OnCharNowInStation">
     <tupleInline>
         <tupleInline>
             <int name="charID" />
@@ -40,7 +40,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="NotifyOnCharNoLongerInStation">
+  <elementDef name="OnCharNoLongerInStation">
     <tupleInline>
       <tupleInline>
         <int name="charID" />

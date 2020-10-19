@@ -27,8 +27,8 @@
 #define __EVE_VERSION_H
 
 // Client version info
-// (supported client is Crucible v1.6.5 build 360229)
-// (this is ALL CPP information needed by the client)
+// supported client is Crucible v1.6.5 build 360229
+// this is ALL CPP information needed by the client
 static const double EVEVersionNumber = 7.31;
 static const uint16 MachoNetVersion = 320;
 static const int32 EVEBuildVersion = 360229;
@@ -39,11 +39,11 @@ static const char* const EVEProjectCodename = "EVE-EVE-TRANQUILITY";
 static const int32 EVEBirthday = 170472;
 
 /*  Allan's Static Definitions */
-static const char* const EVEMU_REVISION = "0.67.05";
-static const char* const EVEMU_BUILD_DATE = "21 August 2020";
+static const char* const EVEMU_REVISION = "0.70.05";
+static const char* const EVEMU_BUILD_DATE = "19 October 2020";
 /* match versions here with stated files for full support */
-static const float Config_Version = 9.8; /* eve-server.xml and EveServerConfig.cpp */
-static const float Log_Version = 9.9;    /* logtypes.h and log.ini */
+static const float Config_Version = 9.9; /* eve-server.xml and EveServerConfig.cpp */
+static const float Log_Version = 10.0;    /* logtypes.h and log.ini */
 /* AI versions for shitz-n-giggles */
 static const float Bot_Version = 0.10;   /* MarketBot.xml and MarketBotConf.cpp */
 /* these  dont have separate config files ...yet */
@@ -54,6 +54,6 @@ static const float Mission_Version = 0.31;
 static const float Civilian_AI_Version = 0.10;
 static const float Sentry_AI_Version = 0.10;
 static const float POS_AI_Version = 0.01;
-static const float Scan_Version = 0.42;
+static const float Scan_Version = 0.43;
 
 #endif

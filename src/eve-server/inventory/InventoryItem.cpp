@@ -1043,6 +1043,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
             pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this is for single items
     } else if (IsPlayerCorp(toID)) {
         // there is more to this.  not sure what else or how yet.
+        /** @todo update this to use CorpNotify() */
         MulticastTarget mct;
         mct.corporations.insert(toID);
         if (IsStation(m_locationID)) {
@@ -1120,7 +1121,6 @@ void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
     into->SetField("instanceID",     new PyLong(shipID));  // locationID
     into->SetField("flagID",         new PyInt(m_flag));
     into->SetField("typeID",         new PyInt(m_type.id()));
-    //into->SetField("quantity",       pAttributeMap->GetAttribute(AttrQuantity).GetPyObject());
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const
@@ -1128,7 +1128,6 @@ PyPackedRow* InventoryItem::GetItemRow() const
     DBRowDescriptor* header = sDataMgr.CreateHeader();
     PyPackedRow* row = new PyPackedRow(header);
     GetItemRow(row);
-
     return row;
 }
 
@@ -1171,7 +1170,6 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
         result.invItem = PyStatic.NewNone();
-        //result.invItem = GetItemRow();
         for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; ++itr)
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         return true;
@@ -1200,7 +1198,10 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             es.env_effectID = 16;
             /** @todo fix this once we start tracking effects */
             // on login, this is current time
-            es.startTime = GetFileTimeNow() - EvE::Time::Minute; // m_timestamp
+            if (IsCharacter(m_itemID))
+                es.startTime = GetFileTimeNow() - EvE::Time::Minute; // m_timestamp
+            else
+                es.startTime = GetFileTimeNow() - EvE::Time::Minute; // GetAttribute(AttrStartTime).get_int();
             es.duration = -1;
             es.repeat = 0;
             es.randomSeed = PyStatic.NewNone();

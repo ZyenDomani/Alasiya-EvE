@@ -209,7 +209,6 @@ public:
     void SetBallParkTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetStateTimer(int8 state, uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetDestiny(const GPoint& pt, bool update=false);
-    void UpdateSkillTraining();
     ShipItemRef SpawnNewRookieShip(uint32 stationID);
     void LoadStationHangar(uint32 stationID);
     void AddStationHangar(uint32 stationID);
@@ -306,8 +305,8 @@ public:
     TradeSession* GetTradeSession()                     { return m_TS; }
 
     // character notification messages
-    void OnCharNowInStation();
-    void OnCharNoLongerInStation();
+    void CharNowInStation();
+    void CharNoLongerInStation();
 
     // portrait stuff....
     bool RecPic()                                       { return m_portrait; }
@@ -321,6 +320,9 @@ public:
 
     // this will add clone alpha if no clone is found
     void InitSession( int32 characterID  );
+
+    // skill training timer shit
+    void SetTrainingEndTime(int64 endTime)              { m_skillTimer = endTime; }
 
 protected:
     Scan* m_scan;
@@ -387,7 +389,7 @@ protected:
     std::set<LSCChannel*>   m_channels;    //we do not own these.
     std::map<uint32, bool>  m_hangarLoaded;
 
-    int64                   m_timeEndTrain;
+    int64                   m_skillTimer;
 
     int8                    m_clientState;
 

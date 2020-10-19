@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 9.9
+ Log Version: 10.0
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -86,6 +86,15 @@ LOG_TYPE( ALLY, RSP_DUMP, DISABLED, "AllyRspDump" )
 LOG_TYPE( ALLY, PKT_TRACE, DISABLED, "AllyPktTrace" )
 LOG_TYPE( ALLY, DB_ERROR,   ENABLED, "AllyDBError" )
 LOG_TYPE( ALLY, DB_WARNING, DISABLED, "AllyDBWarning" )
+
+LOG_CATEGORY( ATTRIBUTE )
+LOG_TYPE( ATTRIBUTE, ERROR,   ENABLED, "Attr Error" )
+LOG_TYPE( ATTRIBUTE, WARNING, DISABLED, "Attr Warning" )
+LOG_TYPE( ATTRIBUTE, INFO, DISABLED, "Attr Info" )
+LOG_TYPE( ATTRIBUTE, ADD, DISABLED, "Attr Add" )
+LOG_TYPE( ATTRIBUTE, DELETE, DISABLED, "Attr Delete" )
+LOG_TYPE( ATTRIBUTE, CHANGE, DISABLED, "Attr Change" )
+LOG_TYPE( ATTRIBUTE, MISSING, DISABLED, "Attr Missing" )
 
 LOG_CATEGORY( AUTOPILOT )
 LOG_TYPE( AUTOPILOT, ERROR,   ENABLED, "AP Error" )

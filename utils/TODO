@@ -1,17 +1,17 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    12 August 2020
+****    18 October 2020
 
     note:  this whole file needs to be reorganized
 
 *******************************************************
 **********  errors and other found shit...high priority
 
-skill training is still fucked up.  needs a good walkthru with a shitton of molesting to verify operation
-
+verify skill attr 'in training' is being properly removed
 
 noob ships do not Init() correctly....  most attrs are 0
+    -- check this.  may be fixed already
 
 npcs not getting destiny warpstate set (sometimes - this is cause of rats not warping into belts)
 
@@ -20,8 +20,6 @@ after unloading module using ungroup, tried loading charge to newly-ungrouped mo
 
 prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
-
-ShipItem::AddItemByFlag --  this needs a walkthru to verify usage and proper operation
 
 module add/remove isnt fully thought out at this point.
     - will need complete walk thru to verify proper operation
@@ -46,21 +44,19 @@ also check containers for contents and remove/deny before repack
 
 check insurance payouts.   rounds full ship value up
 check trade - ships retain insurance
-20:41:06 [Bound] InsuranceBound::InsureShip()
-20:41:06 [AcctTrace] TranserFunds() - from: 90000000, to: 1000132, entry: 19, refID: 0, amount: 0.33, fKey: 1000, tKey: 1000
-20:41:06 [AcctTrace] TranserFunds() - toID: 1000132 is neither player nor player corp.
-20:41:06 [SvcMsg] New messageID: 1
-20:41:06 [SvcMsg] Delivered message from 1000132 to recipient 90000000
-
 
 dungeon deco items need better placement
 
-
 check for item ownership before rename
-    send error if failed
-    multiple checks still need to be written
-    verify OnCfgDataChanged vs OnItemNameChange
+    verify OnCfgDataChanged
     Structure items have throw.  not sure if this is valid
+
+error:
+"turret not fitted on shipID (npc)"
+
+
+*******************************************************
+********  improvements
 
 go thru all updated effect data and look for 'improved' ship data to update ours
     - specialized holds from rhea (not available in cruc)
@@ -74,26 +70,9 @@ turn fx sending on and follow calls to verify proper OnSpecialFX data
     - remove xmlp data for specialFX and build packet in code?
     - remove specialFX10.  easier if specialFX is built in code, else send None...still not sure on what we can NOT send
 
-error:
-"turret not fitted on shipID (npc)"
-
-can you repack t3 ships??
-when t3 ship killed, pilot will lose sp in a required skill for each of the 5 subsystems.
-    not sure how this is determined, or how many sp lost.
-
-JumpCloneService needs work to allow capital ships `show info` tab to work in space.
-    - this class is barely above skeleton code, and hardly researched.
-    - jump clones arent even close to implementation, so its nbd at this point
-
-
-*******************************************************
-********  improvements
-
 check data sent for bound objects to see what we can use.
     verify members for bound objects.  we may need to add few more to avoid redirects (cant find data on effectiveness of static member vs multi-redirect call)
     client sends some data we dont necessarily need, due to server differences between us and live
-
-go thru and verify all uses of itemDescriptor header/packet follow the outline in GetItemDescriptor
 
 pypacket building isnt completely right....some things dont need to be that deep.
 some returns are put instead of substruct, and others dont have the 2 tuples that follow substruct.
@@ -102,8 +81,20 @@ no clue on criteria or exactly what goes where yet.
 go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
 
 jettison now checks for can capy.
-    - will need to code new can when current can is full.
-    - currently throws error to client and msg in console.
+    - once full, loop stops and warning issued
+    - updated loops for deployable items
+    - need code for corp usage
+
+AttributeMap::Change() has data for updated cap charge sending....not sure how/when to implement it
+
+
+20:41:06 [Bound] InsuranceBound::InsureShip()
+20:41:06 [AcctTrace] TranserFunds() - from: 90000000, to: 1000132, entry: 19, refID: 0, amount: 0.33, fKey: 1000, tKey: 1000
+20:41:06 [AcctTrace] TranserFunds() - toID: 1000132 is neither player nor player corp.
+20:41:06 [SvcMsg] New messageID: 1
+20:41:06 [SvcMsg] Delivered message from 1000132 to recipient 90000000
+    - ins mail working.  need contractID, expiry date, and few other things...
+
 
 closely examine target mgr and see what we can improve.
     - test changing TargetEntry class (and enums) to struct
@@ -143,7 +134,7 @@ check client's locationID vs stationID.
 
 replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
     - this is applicable for corporation notifications only, as CorpNotify() checks corp settings to determine recipients
-    - MultiCast() updated to remove the dumb shit.  safe to use for typical shit as intended now.  should be good to ~5k+ clients w/o noticeable lag
+    - MultiCast() updated to remove the dumb shit.  safe to use for typical shit as intended now.  should be good to ~k+ clients w/o noticeable lag
 
 systemmgr - use kills object instead of db hit
     - hit this object to avoid db hits for every kill
@@ -158,15 +149,11 @@ dbcore - query retry enables runaway server when query causes server disconnecti
     - should this be limited?
     - note: it only happens for malformed queries (while testing) from what i've seen.
 
-DBResultToIntIntDict uses isNull test to set var to 0
-    - this should be PyNone as appropriate
-
 char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.
     - they should at least have a starter profession cert
 
 RefObjects - MEMORY MANAGEMENT!!
-    - *** make RefPtr and Py* destructor virtual
     - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
     - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr
     -  this may be more work than it's worth, but current Ref* objects arent being tracked properly
@@ -250,24 +237,18 @@ next up is security missions.  will need dungeon work for these.   -priority lev
 anomaly system - working. may need revisit after other systems mature.   -priority level: med
     - sig data needs work and common add/create method for scanning
     - verify AddSignal() calls for all items (needs work)
-    - add map for .showall function on scanner
     - ships have shipScanResistance (511) but they are all zero.  also look into using sig radius as sigStrength
     - there is no "remove anomaly" or "cleanup anomaly" methods.....how we remove gutted sites?
 
 added notes on scanner groupNames in anomalyMgr.cpp and more data in EVE_Scanner.h
     - field descriptions found in packets/Scan.xmlp
-when using .showall or .bubbletrack, the items need to be put into anomalymgr map for objects
-    - need to get items from anomalyMgr instead of sysmgr and bubblemgr (currently using both)
 check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
 
-set probe life timer is now correct, and using db data for lifetime.
-probes in space are showing in scan window...can get to 100% with 5 probes, but position still wrong
 reconnect to lost probes not implemented yet.
 
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 
 player drones - skeleton started. needs functionality    -priority level: med-hi
-rename Drone to DroneSE to follow updated core naming convention
 drones mass and maxspeed need attention
 does controller and controllerownerid change when assigning drone to other pilots?
 ShipSE::LaunchDrone() needs bit of work.  drones are online and set to orbit after launch, before BW test
@@ -279,6 +260,8 @@ mining methods will need updates to test for drones vs pilots
 move mining item depleted call to targmgr
 
 RAM code - implement invention, copy, re, tech    -priority level: low
+    - check/update eveMath code for use with RAM/Invention
+    - EvilNumber shit isnt needed or wanted with these
 
 contact list - no notification when contacts login.  no initial contact status when logging in.  -priority level: lo
 
@@ -296,6 +279,14 @@ lsc system better, but incomplete and needs revisiting    -priority level: med-h
     - whole system needs update or possible rewrite
 
 link/unlink need a bit more logic work (as per notes in code)
+
+can you repack t3 ships??
+when t3 ship killed, pilot will lose sp in a required skill for each of the 5 subsystems.
+    not sure how this is determined, or how many sp lost.
+
+JumpCloneService needs work to allow capital ships `show info` tab to work in space.
+    - this class is barely above skeleton code, and hardly researched.
+    - jump clones arent even close to implementation, so its nbd at this point
 
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
@@ -339,10 +330,12 @@ market system....this needs a lot of attention
 21:29:11 [InvTrace] Inventory::LoadContents() - Loading inventory of Ragnarok(140023615) with owner 1   <<< owner 1 here??  any why we loading?
 21:29:11 [InvTrace] II::Donate() - Updated flag on Ragnarok(140023615) from AutoFit to Hangar.
 
+these can be found in 'db_shit/output.txt'
 locationName = localization.GetByMessageID(self.locationNameID)
     - locationNameID is a messageID!!!
 return localization.GetByMessageID(self.ownerNameID, languageID)
     - ownerNameID is a messageID!!!
+0 AS landmarkNameID
 
 InvBrokerService needs love
 mapservice  needs love
@@ -363,8 +356,6 @@ store/board ship in cap ship hangar not coded
 
 ship selfdestruct not coded
 
-0 AS landmarkNameID  -- this is probably a messageID also (all *NameIDs are)
-
 authentication and session still need work, but i dont fully understand them
 
 incursions.  this hasnt even been looked at yet.
@@ -378,11 +369,6 @@ journal - killing rats descriptions are a bit off...gives itemID (no name)
 many unimplemented salvage error msgs noted in prospector.h
 
 OSE::Killed() unfinished.
-
-skillbar error only happens when training skill to L5 complete
-check sending 275 (attrTimeConst) as float
-
-pause skill queue should clear training queue window
 
 set station GoTo target to be dock elevation, NOT centerPoint
 
@@ -405,12 +391,11 @@ implement remaining UIDs as noted in EVE_Defines.h
 
 look into OnSessionMutated to see if we can implement it properly
 
-look into adding cargo mass to ship mass for maneuvering adjustments (fully loaded should be heavy)
-
 F11 map - universe not showing region connecting (jump) lines (should be green for region jumps)
 
 command .attrlist needs names as well as attrID
 
+owner notes and owner labels incomplete
 
 low on the list.....
 contraband.
@@ -457,6 +442,8 @@ look into using "CALL_", "RSP_" and "encode=true/false"/"decode=true/false" for 
   - this will be involved and rather time-consuming
 
   <elementDef name="GodmaError"><!-- more to this than template has here.  fix later  -->
+
+remove "Notify*" from notify names....implement better naming convention (see above)
 
 *******************************************************
 *****************  db shit
@@ -514,7 +501,6 @@ inventory item - populate - effect timestamp
     - this needs to be tracked/updated for proper effects handing and tracking.
     - could be a problem with movement being funky
 
-rework/refactor SE objects definitions for updated items (FieldSE is not OSE, Containers are not ISEs)
 rename AttributeManager to Godma to follow client naming convention?
 
 update ValidateAddItem() to return >0 on error and use enums to determine/display error
@@ -525,7 +511,7 @@ comment unused attrib defs?
 
 these are charges...
 497     8   Fuel
-498     8   Modifications
+498     8   Modifications (most need 'Omnipotent')
 SQL result
 
 typeID  groupID     typeName    description     graphicID   radius  mass    volume  capacity    portionSize     raceID  basePrice   published   marketGroupID   chanceOfDuplicating     copyTypeID  soundID     iconID  dataID  typeNameID  descriptionID
@@ -621,8 +607,6 @@ ideas for holoscreen in CQ:
     - others?
     - more?
 
-review eve marshal 'visit' code.  use PyRep.type to determine opcode, instead of if/else loops
-
 OnItemsChanged is for multiple changes in a single return.  -priority level: low
     - look into how we can implement this return, if needed, instead of using multiple returns (consolidate packet sending)
 
@@ -640,22 +624,7 @@ destiny shit - misc things found in destiny.dll
     - id of bubble ball belongs to, current and former (uk)
     - dunRotation is used for accel gates, customs offices, moon miners, and possibly others i havent found yet
 
-update station data's 'serviceID' to the more accurate (and client named) 'serviceMask'
-
 need timer/var for after cloak for targeting (cannot target x sec after uncloak - currently no delay)
-
-client calculates next level points as "skillPointsToNextLevel=int(skill.spHi + 0.5)" where
-            if attrKey == 'spHi':
-                return self.GetHi(itemKey)
-
-    def GetHi(self, skillID):
-        item = self.GetItem(skillID)
-        if item.skillLevel >= skillUtil.MAXSKILLLEVEL:
-            return None
-        else:
-            return skillUtil.GetSPForLevelRaw(item.skillTimeConstant, item.skillLevel + 1)
-
-    - thing to note here is the "points to next level = spHi + 0.5"
 
 jump clones - when i start this, need to check into diff between active clone and jumpclone.  may have to rearrange things to properly implement jump clones.
 
@@ -696,18 +665,6 @@ turns use quanternion lerp curve (and mass/agility somehow)
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend
 
-15:32:10 [ItemMsg] type 2525 (group: 1027, cat: 41) called _LoadType, but is not handled.
-15:32:10 [ItemMsg] type 2549 (group: 1027, cat: 41) called _LoadType, but is not handled.
-15:32:10 [ItemMsg] type 2400 (group: 1042, cat: 43) called _LoadType, but is not handled.
-15:32:10 [ItemMsg] type 2390 (group: 1042, cat: 43) called _LoadType, but is not handled.
-15:32:10 [ItemMsg] type 2270 (group: 1032, cat: 42) called _LoadType, but is not handled.
-15:32:10 [ItemMsg] type 3697 (group: 1034, cat: 43) called _LoadType, but is not handled.
-15:32:10 [ItemMsg] type 2867 (group: 1041, cat: 43) called _LoadType, but is not handled.
-15:32:10 [ItemMsg] type 3779 (group: 1042, cat: 43) called _LoadType, but is not handled.
-15:32:10 [ItemMsg] type 2329 (group: 1034, cat: 43) called _LoadType, but is not handled.
-
-fix all call.decode errors to common msg...
-codelog(SERVICE__ERROR, "**call name**: Failed to decode arguments.");
 
 *******************************************************
 ********************************

@@ -377,19 +377,19 @@ std::string EntityList::GetAnomalyID()
 
 const char* EntityList::GetUpTime()
 {
-    uint32 seconds = m_stamp - 1000;
-    uint32 minutes = seconds/60;
-    uint32 hours = minutes/60;
-    uint32 days = hours/24;
-    uint32 weeks = days/7;
-    uint32 months = days/30;
+    float seconds = m_stamp - 1000;
+    float minutes = seconds/60;
+    float hours = minutes/60;
+    float days = hours/24;
+    float weeks = days/7;
+    float months = days/30;
 
-    int s(seconds %60);
-    int m(minutes %60);
-    int h(hours %24);
-    int d(days %7);
-    int w(weeks %4);
-    int M(months %12);
+    int s(fmod(seconds, 60));
+    int m(fmod(minutes, 60));
+    int h(fmod(hours, 24));
+    int d(fmod(days, 7));
+    int w(fmod(weeks, 4));
+    int M(fmod(months, 12));
 
     std::ostringstream uptime;
     if (M)

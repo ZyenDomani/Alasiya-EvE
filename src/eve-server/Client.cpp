@@ -113,7 +113,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     //m_toGate = 0;
     m_locationID = 0;
     m_moveSystemID = 0;
-    m_timeEndTrain = 0;
+    m_skillTimer = 0;
     m_dockStationID = 0;
 
     m_lpMap.clear();
@@ -175,7 +175,7 @@ m_nextNotifySequence(0)
     //m_toGate = 0;
     m_locationID = 0;
     m_moveSystemID = 0;
-    m_timeEndTrain = 0;
+    m_skillTimer = 0;
     m_dockStationID = 0;
 
     m_lpMap.clear();
@@ -258,11 +258,11 @@ Client::~Client() {
                     TradeService* mts = (TradeService*)(m_services.LookupService("trademgr"));
                     mts->CancelTrade(this);
                 }
-                OnCharNoLongerInStation();
+                CharNoLongerInStation();
             }
 
         }
-        // remove fleet data and set logout time
+        // remove fleet data, save SP and set logout time
         m_char->LogOut();
     }
 
@@ -408,15 +408,14 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     ServiceDB::SetCharacterOnlineStatus(charID, true);
     sItemFactory.UnsetUsingClient();
 
-    m_char->VerifySP();
-    m_char->SetLoginTime();
-    m_char->UpdateSkillQueue();
-
-    UpdateSkillTraining();
 
     SetStateTimer(Player::State::Login, Player::Timer::Login);
     SetInvulTimer(Player::Timer::WarpInInvul);
     //SetCloakTimer(Player::Timer::LoginCloak);
+
+    m_char->VerifySP();
+    m_char->SkillQueueLoop(false);
+    m_char->SetLoginTime();
 
     // set ship cap and shields to full
     m_ship->SetShipShield(1.0);
@@ -437,9 +436,9 @@ void Client::ProcessClient() {
         m_char->SetLogonMinutes();
     }
 
-    if (m_timeEndTrain > 0)
-        if (m_timeEndTrain < Win32TimeNow())
-            m_char->UpdateSkillQueue();
+    if (m_skillTimer > 0)
+        if (m_skillTimer < GetFileTimeNow())
+            m_char->SkillQueueLoop();
 
     if (m_sessionTimer.Check(false)) {
         _log(CLIENT__TIMER, "Client::ProcessClient():  SetSessionChange to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
@@ -528,7 +527,7 @@ void Client::ProcessClient() {
 
     if (m_stateTimer.Enabled())
         if (m_stateTimer.Check(false)) {
-            _log(CLIENT__TIMER, "ProcessClient(): state timer hit: timenow %u", m_stateTimer.GetCurrentTime());
+            _log(CLIENT__TIMER, "ProcessClient(): state timer hit.  current state time is%u", m_stateTimer.GetCurrentTime());
             m_stateTimer.Disable();
             switch (m_clientState) {
                 case Player::State::Idle: {
@@ -708,7 +707,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
                     m_system->GetName(), m_SystemData.name.c_str(), m_system->GetID(), m_locationID);
         // if docked, update guestlist
         if (wasDocked) {
-            OnCharNoLongerInStation();
+            CharNoLongerInStation();
             wasDocked = false;  // dont update station again on this call (redundant check later in this method)
         }
         if (pShipSE != nullptr) {
@@ -767,7 +766,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
         if (!IsHangarLoaded(m_locationID))
             LoadStationHangar(m_locationID);
-        OnCharNowInStation();
+        CharNowInStation();
         DestroyShipSE();
         StationItemRef sRef = sEntityList.GetStationByID(m_locationID);
         if (sRef.get() != nullptr) {
@@ -782,7 +781,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
         // if docked, update guestlist
         if (wasDocked and m_undock)
-            OnCharNoLongerInStation();
+            CharNoLongerInStation();
 
         if (IsFleet(m_fleet)) {
             m_fleetTimer.Start(Player::Timer::Fleet);
@@ -1290,21 +1289,35 @@ void Client::CreateNewPod() {
 ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
     /** @todo  create/send mail from scc about lost ship as needed....create char uses this method also */
     //create rookie ship of appropriate type
-    uint16 shipID = amarrRookie, gunID = amarrWeapon;
-    EVERace race = m_char->race();
-    if (race == raceCaldari) {
-        gunID = caldariWeapon;
-        shipID = caldariRookie;
-    } else if (race == raceGallente) {
-        gunID = gallenteWeapon;
-        shipID = gallenteRookie;
-    } else if (race == raceMinmatar) {
-        gunID = minmatarWeapon;
-        shipID = minmatarRookie;
+    uint16 shipID(0), gunID(0);
+    switch (m_char->race()) {
+        case raceCaldari: {
+            gunID = caldariWeapon;
+            shipID = caldariRookie;
+        } break;
+        case raceGallente: {
+            gunID = gallenteWeapon;
+            shipID = gallenteRookie;
+        } break;
+        case raceMinmatar: {
+            gunID = minmatarWeapon;
+            shipID = minmatarRookie;
+        } break;
+        case raceAmarr: {
+            gunID = amarrWeapon;
+            shipID = amarrRookie;
+        } break;
+        default: {
+            // invalid race
+            _log(CLIENT__ERROR, "SpawnNewRookieShip() - Invalid Race of %s(%u) for %s(%u)",
+                 sDataMgr.GetRaceName(m_char->race()), m_char->race(), m_char->itemName().c_str(),
+                 m_char->itemID());
+            return ShipItemRef(nullptr);
+        }
     }
 
-    std::string name =  m_char->itemName() + "'s Noob Ship";
     //create data for new rookie ship
+    std::string name =  m_char->itemName() + "'s Noob Ship";
     ItemData sData(shipID, m_char->itemID(), 0, flagAutoFit, name.c_str());
     //spawn rookie ship
     ShipItemRef sRef = sItemFactory.SpawnShip(sData);
@@ -1442,7 +1455,7 @@ void Client::SetBallParkTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Ballpark Timer set at %ums.  timenow %u", m_char->name(), time, m_ballparkTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Ballpark Timer set at %ums.  current state time is %u", m_char->name(), time, m_ballparkTimer.GetCurrentTime());
     m_ballparkTimer.Start(time);
 }
 
@@ -1463,7 +1476,7 @@ void Client::SetCloakTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Cloak Timer set at %ums.  timenow %u", m_char->name(), time, m_cloakTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Cloak Timer set at %ums.   current state time is %u", m_char->name(), time, m_cloakTimer.GetCurrentTime());
     m_cloakTimer.Start(time);
     if (m_login)
         return;
@@ -1487,7 +1500,7 @@ void Client::SetUncloakTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Uncloak Timer set at %ums.  timenow %u", m_char->name(), time, m_uncloakTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Uncloak Timer set at %ums.   current state time is %u", m_char->name(), time, m_uncloakTimer.GetCurrentTime());
     m_uncloakTimer.Start(time);
     SetUncloak(true);
 }
@@ -1507,7 +1520,7 @@ void Client::SetInvulTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Invul Timer set at %ums.  timenow %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Invul Timer set at %ums.   current state time is %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
     m_invulTimer.Start(time);
     SetInvul(true);
 }
@@ -1526,7 +1539,7 @@ void Client::SetStateTimer( int8 state, uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: State Timer set from %s to %s at %ums.  current time: %u", m_char->itemName().c_str(), \
+    _log(CLIENT__TIMER, "%s: Client Timer set from %s to %s at %ums.  current state time: %u", m_char->itemName().c_str(), \
             GetStateName(m_clientState).c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
     m_clientState = state;
     m_stateTimer.Start(time);
@@ -1562,13 +1575,6 @@ std::string Client::GetStateName(int8 state)
         case Player::State::Login:   return "Login";
     }
     return "Undefined";
-}
-
-void Client::UpdateSkillTraining() {
-    if (m_char.get() != nullptr)
-        m_timeEndTrain = m_char->GetEndOfTraining();
-    else
-        m_timeEndTrain = 0;
 }
 
 void Client::AddStationHangar(uint32 stationID) {
@@ -1730,18 +1736,18 @@ void Client::ChannelLeft(LSCChannel *chan) {
 /************************************************************************/
 /* character notification messages wrapper                              */
 /************************************************************************/
-void Client::OnCharNoLongerInStation() {
+void Client::CharNoLongerInStation() {
     // remove client from station guest list
     sEntityList.GetStationByID(m_StationData.stationID)->RemoveGuest(this);
     // clear station data
     m_StationData = StationData();
     m_system->SetDockCount(this, false);
-    NotifyOnCharNoLongerInStation n;
-        n.charID = m_char->itemID();
-        n.corpID = GetCorporationID();
-        n.allianceID = GetAllianceID();
-        n.factionID = GetWarFactionID();
-    PyTuple* tmp = n.Encode();
+    OnCharNoLongerInStation ocnis;
+        ocnis.charID = m_char->itemID();
+        ocnis.corpID = GetCorporationID();
+        ocnis.allianceID = GetAllianceID();
+        ocnis.factionID = GetWarFactionID();
+    PyTuple* tmp = ocnis.Encode();
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.GetStationGuestList(m_locationID, clients);
@@ -1752,14 +1758,14 @@ void Client::OnCharNoLongerInStation() {
     PySafeDecRef(tmp);
 }
 
-void Client::OnCharNowInStation() {
+void Client::CharNowInStation() {
     m_system->SetDockCount(this, true);
-    NotifyOnCharNowInStation n;
-        n.charID = m_char->itemID();
-        n.corpID = GetCorporationID();
-        n.allianceID = GetAllianceID();
-        n.warFactionID = GetWarFactionID();
-    PyTuple* tmp = n.Encode();
+    OnCharNowInStation ocnis;
+        ocnis.charID = m_char->itemID();
+        ocnis.corpID = GetCorporationID();
+        ocnis.allianceID = GetAllianceID();
+        ocnis.warFactionID = GetWarFactionID();
+    PyTuple* tmp = ocnis.Encode();
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.GetStationGuestList(m_locationID, clients);
