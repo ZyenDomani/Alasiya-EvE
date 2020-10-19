@@ -51,11 +51,11 @@ SkillRef Skill::Load( uint32 skillID)
 
 SkillRef Skill::Spawn( ItemData &data)
 {
-    uint32 skillID = InventoryItem::CreateItemID(data );
+    uint32 skillID(InventoryItem::CreateItemID(data));
     if ( skillID == 0 )
         return SkillRef(nullptr);
 
-    SkillRef skillRef = Skill::Load(skillID );
+    SkillRef skillRef(Skill::Load(skillID));
     if (skillRef.get() == nullptr) {
         // make error msg here for failure to load skill?
         return SkillRef(nullptr);
@@ -65,93 +65,146 @@ SkillRef Skill::Spawn( ItemData &data)
     return skillRef;
 }
 
+bool Skill::IsTraining() {
+    return (m_flag == flagSkillInTraining);
+}
+
+uint8 Skill::GetLevelForSP(uint32 currentSP) {
+    return EvEMath::Skill::LevelForPoints(currentSP, GetAttribute(AttrSkillTimeConstant).get_uint32());
+}
+
 uint32 Skill::GetSPForLevel(uint8 level) {
     return EvEMath::Skill::PointsAtLevel(level, GetAttribute(AttrSkillTimeConstant).get_uint32());
 }
 
-uint32 Skill::GetCurrentSP(Character* ch)
+uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
 {
-    int64 expiryTime = GetAttribute(AttrExpiryTime).get_int();
-    if (expiryTime == 0)
-        return GetAttribute(AttrSkillPoints).get_uint32();
+    uint32 currentSP(GetAttribute(AttrSkillPoints).get_uint32());
+    if (m_flag == flagSkill)
+        return currentSP;
+
+    if (startTime == 0)
+        return currentSP;
+
+    if (startTime > GetFileTimeNow())
+        return currentSP;
 
     uint8 level = GetAttribute(AttrSkillLevel).get_uint32() +1;
-    uint32 spNextLevel = GetSPForLevel(level);
-    uint32 currentSP = 0;
-    float timeLeft = (GetAttribute(AttrExpiryTime).get_int() - GetFileTimeNow()) / EvE::Time::Second;
-    if (timeLeft > 0) {
-        timeLeft /= 60;     // more accurate to get minutes here...get fraction of minutes also, where x/minute (above) didnt
-        currentSP = spNextLevel - (timeLeft * ch->GetSPPerMin(this));
-    } else {
-        // training is complete, so set points for next level
-        currentSP = spNextLevel;
+    if (level > EvESkill::MAXSKILLLEVEL)
+        level = EvESkill::MAXSKILLLEVEL;
+
+    // at this point, the skill is in training.  calculate accumulated sp and return
+    uint32 delta(0);
+    uint32 timeElapsed((GetFileTimeNow() - startTime) / EvE::Time::Second);
+    if (timeElapsed > 60) {
+        // skill in training - return updated SP based on elapsed training
+        delta = (timeElapsed /60) * ch->GetSPPerMin(this);
+        currentSP += delta;
     }
-    _log(SKILL__TRACE, "Skill::GetCurrentSP() for %s is %u - remaining time for level %u: %0.2fm", itemName().c_str(), currentSP, level, timeLeft);
+
+    _log(SKILL__TRACE, "Skill::GetCurrentSP() for %s is %u - delta: %u, elapsed time: %us", \
+            m_itemName.c_str(), currentSP, delta, timeElapsed);
 
     return currentSP;
 }
 
-
-void Skill::VerifySP()
+uint32 Skill::GetRemainingSP(Character* ch, int64 curTime/*0*/)
 {
-    if (is_log_enabled(SKILL__INFO))
-        _log(SKILL__INFO, "Begin SP check for %s. level %u: CurrentSP: %u", \
-                itemName().c_str(), GetAttribute(AttrSkillLevel).get_uint32(), GetAttribute(AttrSkillPoints).get_uint32());
-
-    if (GetAttribute(AttrSkillPoints) == EvilZero)
-        return;
     uint8 level = GetAttribute(AttrSkillLevel).get_uint32() +1;
-    if (level > 5)
-        return;
+    if (level > EvESkill::MAXSKILLLEVEL)
+        return 0;
 
-    uint32 spThisLevel = GetSPForLevel(level -1);
-    uint32 spNextLevel = GetSPForLevel(level);
-    uint32 spCurrent = GetAttribute(AttrSkillPoints).get_uint32();
-    if (spCurrent < spThisLevel) {
-        _log(SKILL__WARNING, "Skill %s points low.  Updating from %u to %u (next: %u)", itemName().c_str(), spCurrent, spThisLevel, spNextLevel);
-        SetAttribute(AttrSkillPoints, spThisLevel);
-        SetAttribute(AttrExpiryTime, EvilZero);
-        SetAttribute(AttrSkillStartTime, EvilZero);
-    }
-    if (spCurrent > spNextLevel) {
-        SetAttribute(AttrSkillLevel, level);
-        if (level > 4) {
-            _log(SKILL__WARNING, " %s - Skillpoints high for L5. Updating SP from %u to %u.", \
-                itemName().c_str(), spCurrent, spNextLevel);
-            SetAttribute(AttrSkillPoints, spNextLevel);
-            DeleteAttribute(AttrExpiryTime);
-            DeleteAttribute(AttrSkillStartTime);
-            return;
-        } else
-            _log(SKILL__WARNING, " %s - Skillpoints high. Updating level from %u to %u.", \
-                itemName().c_str(), level -1, level);
-        //SetAttribute(AttrSkillPoints, spThisLevel, false);
-        SetAttribute(AttrExpiryTime, EvilZero);
-        SetAttribute(AttrSkillStartTime, EvilZero);
-        VerifySP();
-    }
+    if (curTime == 0)
+        curTime = GetFileTimeNow();
+
+    // get full sp needed for next level
+    uint32 remainingSP(GetSPForLevel(level) - GetAttribute(AttrSkillPoints).get_uint32());
+
+    float timeLeft((ch->GetEndOfTraining() - curTime) / EvE::Time::Second);
+    // if remaining time > 1m, subtract spm from total to get remaining
+    if (timeLeft > 60)
+        remainingSP -= ((timeLeft /60) * ch->GetSPPerMin(this));
+
+    return remainingSP;
+}
+
+uint32 Skill::GetTrainingTime(Character* ch, int64 startTime/*0*/)
+{
+    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() +1;
+    if (level > EvESkill::MAXSKILLLEVEL)
+        return 0;
+
+    // get full sp needed for next level
+    uint32 remainingSP(GetSPForLevel(level) - GetAttribute(AttrSkillPoints).get_uint32());
+    // divide by spm to get time and convert to seconds
+    uint32 timeLeft((remainingSP /ch->GetSPPerMin(this)) *60);
+
+    if (startTime == 0)
+        return timeLeft;
+
+    uint32 delta = (uint32)ceil((GetFileTimeNow() -  startTime) / EvE::Time::Second);
+    if (delta < 1)
+        return timeLeft;
+
+    // this skill is currently training.  subtract accumulated time from total and return
+    return timeLeft - delta;
 }
 
 void Skill::VerifyAttribs()
 {
     if (!m_singleton)
-        ChangeSingleton(true, true);
+        ChangeSingleton(true);
     if (GetAttribute(AttrSkillLevel).get_type() != evil_number_int) {
         _log(SKILL__INFO, "Skill %s level type != int.  Fixing...", itemName().c_str());
         SetAttribute(AttrSkillLevel, GetAttribute(AttrSkillLevel).get_uint32(), false);
     }
     if (GetAttribute(AttrSkillPoints).get_type() != evil_number_int) {
         _log(SKILL__INFO, "Skill %s sp type != int.  Fixing...", itemName().c_str());
-        SetAttribute(AttrSkillPoints, GetAttribute(AttrSkillPoints).get_uint32());
+        SetAttribute(AttrSkillPoints, GetAttribute(AttrSkillPoints).get_uint32(), false);
     }
-    // is this needed?
-    //if (m_flag != flagSkillInTraining)
-    //    SetAttribute(AttrExpiryTime, EvilZerof);
+}
+
+void Skill::VerifySP()
+{
+    if (is_log_enabled(SKILL__MESSAGE))
+        _log(SKILL__MESSAGE, "Begin SP check for %s. level %u: CurrentSP: %u", \
+                itemName().c_str(), GetAttribute(AttrSkillLevel).get_uint32(), GetAttribute(AttrSkillPoints).get_uint32());
+
+    if (GetAttribute(AttrSkillPoints) == EvilZero)
+        return;
+
+    uint8 level(GetAttribute(AttrSkillLevel).get_uint32() +1);
+    if (level > EvESkill::MAXSKILLLEVEL) {
+        level = EvESkill::MAXSKILLLEVEL;
+        SetAttribute(AttrSkillLevel, level, false);
+    }
+    uint32 spThisLevel(GetSPForLevel(level -1));
+    uint32 spCurrent(GetAttribute(AttrSkillPoints).get_uint32());
+    if (spCurrent < spThisLevel) {
+        _log(SKILL__WARNING, "Skill %s points low.  Updating from %u to %u", itemName().c_str(), spCurrent, spThisLevel);
+        SetAttribute(AttrSkillPoints, spThisLevel, false);
+        // hit it again to be sure it's fixed
+        VerifySP();
+        return;
+    }
+    uint32 spNextLevel(GetSPForLevel(level));
+    if (spCurrent > spNextLevel) {
+        SetAttribute(AttrSkillLevel, level);
+        if (level > 4) {
+            _log(SKILL__WARNING, " %s - Skillpoints high for L5. Updating SP from %u to %u.", \
+                itemName().c_str(), spCurrent, spNextLevel);
+        } else
+            _log(SKILL__WARNING, " %s - Skillpoints high. Updating level from %u to %u and SP from %u to %u.", \
+                itemName().c_str(), level -1, level, spCurrent, spNextLevel);
+        SetAttribute(AttrSkillPoints, spNextLevel, false);
+        // hit it again to be sure it's fixed
+        VerifySP();
+    }
 }
 
 bool Skill::SkillPrereqsComplete(Character &ch) {
-    bool test = true;
-    EvilNumber skillID = 0;
+    bool test(true);
+    EvilNumber skillID(0);
     if (HasAttribute(AttrRequiredSkill1, skillID)) {
         if (GetAttribute(AttrRequiredSkill1Level) > ch.GetSkillLevel(skillID.get_uint32()))
             test = false;
@@ -173,8 +226,8 @@ bool Skill::SkillPrereqsComplete(Character &ch) {
 }
 
 bool Skill::FitModuleSkillCheck(InventoryItemRef iRef, CharacterRef cRef) {
-    bool test = true;
-    EvilNumber skillID = 0;
+    bool test(true);
+    EvilNumber skillID(0);
     if (iRef->HasAttribute(AttrRequiredSkill1, skillID)) {//Primary Skill
         if ( iRef->GetAttribute(AttrRequiredSkill1Level) > cRef->GetSkillLevel(skillID.get_uint32()))
             test = false;

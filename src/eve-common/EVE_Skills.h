@@ -23,10 +23,10 @@ namespace EvESkill {
             Gift                          = 24,   //Unknown
             CharCreation                  = 33,   //Unknown
             ClonePenalty                  = 34,   //Skill Clone Penalty
-            TaskMaster                    = 35,   //Unknown
+            TaskMaster                    = 35,   //Unknown (used to denote training correction)
             TrainingStarted               = 36,   //Skill Training Started
             TrainingComplete              = 37,   //Skill Training Complete
-            TrainingCancelled             = 38,   //Skill Training Cancelled
+            TrainingCanceled              = 38,   //Skill Training Canceled
             GMGift                        = 39,   //GM Skill Gift
             QueueTrainingCompleted        = 53,   //Skill Training Complete
             SkillInjected                 = 56,   //Unknown
@@ -36,6 +36,18 @@ namespace EvESkill {
             GMReverseFreeSkillPointsUsed  = 309   //Unknown
         };
     }
+
+    /*
+     'OnSkillStartTraining',
+     'OnSkillTrainingStopped',
+     'OnSkillTrained',  reloads skill window, if open, and reloads char info
+     //  if 'old notifications' is set in client, this will show a list of skills trained, else neocom blink
+     'OnMultipleSkillsTrained',
+     'OnSkillTrainingSaved',    reloads skill window, if open
+     'OnSkillInjected',    reloads skill window, if open
+     // this one is used to switch training from completed skill to next in queue
+     'OnSkillSwitched',  def OnSkillSwitched(self, oldSkillID, newSkillID, ETA):   client scatters skillTrained and training started when this event is received
+     */
 
  /** Created with MYSQL query:
   * SELECT concat("\tskill", Replace(t.typeName, ' ', ''), "\t\t= ", t.typeID, ',\t\t// group = ', g.groupName)

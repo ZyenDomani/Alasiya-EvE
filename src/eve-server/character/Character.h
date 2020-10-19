@@ -46,7 +46,6 @@ public:
         const char* _desc = "",
         const char* _maleDesc = "",
         const char* _femaleDesc = "",
-        uint32 _shipTypeID = 0,
         uint32 _corporationID = 0,
         uint8 _perception = 0,
         uint8 _willpower = 0,
@@ -64,7 +63,6 @@ public:
     std::string description;
     std::string maleDescription;
     std::string femaleDescription;
-    uint32 shipTypeID;
     uint32 corporationID;
 
     uint8 perception;
@@ -86,13 +84,6 @@ class CharacterType
 {
     friend class ItemType; // to let it construct us
 public:
-    /**
-     * Loads and returns new CharacterType.
-     *
-     * @param[in] factory
-     * @param[in] characterTypeID ID of character type to load.
-     * @return Pointer to new object, NULL if failed.
-     */
     static CharacterType* Load( uint32 characterTypeID);
 
     /*
@@ -104,8 +95,6 @@ public:
     const std::string& description() const { return m_description; }
     const std::string& maleDescription() const { return m_maleDescription; }
     const std::string& femaleDescription() const { return m_femaleDescription; }
-    const ItemType& shipType() const { return m_shipType; }
-    uint32 shipTypeID() const { return shipType().id(); }
     uint32 corporationID() const { return m_corporationID; }
 
     uint8 perception() const { return m_perception; }
@@ -126,7 +115,6 @@ protected:
         const ItemGroup& _group,
         const TypeData& _data,
         // CharacterType stuff:
-        const ItemType& _shipType,
         const CharacterTypeData& _charData
     );
 
@@ -151,12 +139,7 @@ protected:
         if( !sItemFactory.db()->GetCharacterType(typeID, bloodlineID, charData) )
             return nullptr;
 
-        // load ship type
-        const ItemType* type = sItemFactory.GetType( charData.shipTypeID );
-        if( type == nullptr )
-            return nullptr;
-
-        return new CharacterType( typeID, bloodlineID, group, data, *type, charData );
+        return new CharacterType( typeID, bloodlineID, group, data, charData );
     }
 
     /*
@@ -168,7 +151,6 @@ protected:
     std::string m_description;
     std::string m_maleDescription;
     std::string m_femaleDescription;
-    const ItemType& m_shipType;
     uint32 m_corporationID;
 
     uint8 m_perception;
@@ -232,152 +214,65 @@ class Character
     friend class InventoryItem;    // to let it construct us
 public:
 
+    virtual void Delete();
+
     /**
      * Primary public interface:
      */
     bool AlterBalance(double amount, uint8 type);
     void SetLocation(uint32 stationID, SystemData& data);
-	void JoinCorporation(const CorpData& data);
+    void JoinCorporation(const CorpData& data);
     void SetDescription(const char *newDescription);
     void SetAccountKey(int32 accountKey);
     void SetBaseID(uint32 baseID);
     void SetFleetData(CharFleetData& fleet);
     uint32 PickAlternateShip(uint32 locationID);
 
-    virtual void Delete();
     void SetClient(Client* pClient)                     { m_pClient = pClient; }
     Client* GetClient()                                 { return m_pClient; }
 
     void AddItem(InventoryItemRef item);
 
-    /**
-     * Checks whether character has the skill.
-     *
-     * @param[in] skillTypeID ID of skill type to be checked.
-     * @return True if character has the skill, false if doesn't.
-     */
+    // skills
     bool            HasSkill(uint16 skillTypeID) const;
-    /**
-     * Checks whether the character has the skill, and if so, if it has been trained to the level specified.
-     *
-     * @param[in] skillTypeID ID of skill type to be checked
-     * @param[in] skillLevel Level of the skill to be checked to see if it is trained already to at least this level
-     * @return True if character has the skill AND that skill has been trained to at least the level specified, False otherwise
-     */
     bool            HasSkillTrainedToLevel(uint16 skillTypeID, uint8 skillLevel) const;
-    /**
-     * Returns skill.
-     *
-     * @param[in] skillTypeID ID of skill type to be returned.
-     * @return Pointer to Skill object; NULL if skill was not found.
-     */
     SkillRef        GetSkill(uint16 skillTypeID) const;
-    /**
-     * Gets level of skill that is trained.
-     *
-     * @param[in] skillTypeID ID of skill type to be checked
-     * @param[in] zeroForNotInjected true if method should return 0 for un injected skills,
-     *  false if it should return -1
-     * @return value 0..5 - the level of skill trained, or, if it was not injected,
-     *  0 if zeroForNotInjected.is true, -1 otherwise
-     */
     int8            GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected = true) const;
-    /**
-     * Get char's Research and Manufacturing skills
-     *
-     * @param[in] none
-     * @return Python wire object
-     */
     PyRep*          GetRAMSkills();
-
-    SkillRef        GetSkillInTraining() const;
-    /**
-     * Returns entire list of skills learned by this character
-     *
-     * @param[in] empty std::vector<InventoryItemRef> which is populated with list of skills
-     */
+    Skill*          GetSkillInTraining() const          { return m_inTraining; }
     void            GetSkillsList(std::vector<InventoryItemRef>& skills) const;
     void            VerifySP();
     uint32          GetTotalSPTrained()                 { return m_charData.skillPoints; };
-    /**
-     * Calculates Skillpoints per minute rate.
-     *
-     * @param[in] skill Skill for which the rate is calculated.
-     * @return Skillpoints per minute rate.
-     */
     uint8           GetSPPerMin(Skill* skill);
-    /**
-     * @return Timestamp at which current skill training finishes.
-     */
-    int64           GetEndOfTraining() const;
-
-    /* InjectSkillIntoBrain(InventoryItem* skill)
-     *
-     * Perform injection of passed skill into the character.
-     * @author xanarox
-     * @param InventoryItem
-     */
-    bool            InjectSkillIntoBrain(SkillRef skill);
-
-    /* AddSkillToSkillQueue()
-     *
-     * This will add a skill into the skill queue.
-     * @author xanarox
-     */
-    void            AddToSkillQueue(uint32 typeID, uint8 level);
-    void            ClearSkillQueue();
+    int64           GetEndOfTraining();
+    uint8           InjectSkillIntoBrain(SkillRef skill);
+    void            AddToSkillQueue(uint16 typeID, uint8 level);
+    void            ClearSkillQueue(bool update=false);
     void            PauseSkillQueue();
-    void            LoadPausedSkillQueue();
+    // if there is currently a skill in training, this will check completion, set and save attribs, and remove from queue
+    void            CancelSkillInTraining(bool update=false);
+    void            LoadPausedSkillQueue(uint16 typeID);
+    void            SkillQueueLoop(bool update=true);
     void            UpdateSkillQueue();
-    /**
-     * Update skill training end time on char select screen.
-     * @author allan
-     */
-    void            UpdateSkillQueueEndTime( );
+    void            UpdateSkillQueueEndTime();
+    void            RemoveFromQueue(SkillRef sRef);
+    void            ClearSkillFlags();
 
     PyRep*          GetSkillHistory();
-	uint32          GetTotalSP();
+    uint32          GetTotalSP();
 
-    /* GrantCertificate( uint32 certificateID )
-     *
-     * This will add a certificate into the character
-     * @author almamu
-     */
+    /* Certificates */
     void GrantCertificate( uint32 certificateID );
-    /* UpdateCertificate( uint32 certificateID, bool pub )
-     *
-     * This will change the public status of the certificate
-     * @author almamu
-     */
     void UpdateCertificate( uint32 certificateID, bool pub );
-    /* HasCertificate( uint32 certificateID )
-     *
-     * This will check if the player has a certificate
-     * @author almamu
-     */
     bool HasCertificate( uint32 certificateID ) const;
-    /* GetCertificates( )
-     *
-     * This will get the char's certificates
-     * @author almamu
-     */
     void GetCertificates( CertMap& crt );
 
-    /*
-     * Primary public packet builders:
-     */
+    /* Primary public packet builders */
     PyDict* GetCharInfo();
     PyObject* GetDescription() const;
-    /* GetSkillQueue()
-     *
-     * This will get the skills from the skill queue for a character.
-     * @author xanarox
-    */
-    PyTuple* GetSkillQueue();
+    PyTuple* SendSkillQueue();
 
-    /*
-     * Public fields:
-     */
+    /* Public fields */
     const CharacterType&    type() const                        { return static_cast<const CharacterType& >(InventoryItem::type()); }
     uint32                  bloodlineID() const                 { return type().bloodlineID(); }
     EVERace                 race() const                        { return type().race(); }
@@ -459,25 +354,25 @@ public:
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
     void                    SaveCertificates();
-    void                    SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, uint32 absolutePoints);
+    void                    SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint16 skillTypeID, uint8 skillLevel, uint32 absolutePoints);
 
     void                    SetLoaded(bool set=false)   { m_loaded = set; }
 
     void                    SetLoginTime();
     void                    SetLogonMinutes();
 
-	//  Standings functions
+    //  Standings functions
     //     toID = me|myCorp|myAlliance.  fromID = char|agent|corp|faction|alliance
     double                  GetStanding(uint32 fromID, uint32 toID);            // this is NOT adjusted for skills
     double                  GetStandingModified(uint32 fromID, uint32 toID);    // this IS adjusted for skills
     double                  GetNPCCorpStanding(uint32 fromID, uint32 toID);
-	double 					GetStandingChanges();
-    void 					SetStanding(uint32 fromID, uint32 toID, double standing);
+    double 		    GetStandingChanges();
+    void                    SetStanding(uint32 fromID, uint32 toID, double standing);
     void                    FleetShareMissionRewards();
     void                    FleetShareMissionStandings(float newStanding);
 
     //  Dynamic Data
-	void                    VisitSystem(uint32 solarSystemID);
+    void                    VisitSystem(uint32 solarSystemID);
 
     // character skill, implant and booster effects.  parsed and applied on undock and ship init in space (with all other ship-related effects)
     // NOTE:  implants and boosters not implemented yet
@@ -546,10 +441,11 @@ private:
     CharFleetData m_fleetData;
 
     // Skill queue:
-    SkillQueue m_skillQueue;
+    Skill* m_inTraining;      // holder for training skill, as inventory maps wont work right.
+    SkillQueue m_skillQueue;    //std::vector<QueuedSkill>
     uint32 m_freePoints;
 
-    CertMap m_certificates;
+    CertMap m_certificates;     // std::map<uint16, CharCerts>
 
     bool m_loaded :1;      /* to avoid multiple load calls (_Load is called ~4x) */
 

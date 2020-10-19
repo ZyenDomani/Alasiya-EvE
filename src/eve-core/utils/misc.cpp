@@ -206,19 +206,55 @@ const char* EvE::FormatTime(int64 time/*-1*/) {
         return "Invalid Time";
     if (time < 1)
         return "None";
-    int64 seconds = time;
-    int64 minutes = seconds/60;
-    int64 hours = minutes/60;
-    uint32 days = hours/24;
-    uint32 weeks = days/7;
-    uint32 months = days/30;
+    double seconds = time;
+    float minutes = seconds/60;
+    float hours = minutes/60;
+    float days = hours/24;
+    float weeks = days/7;
+    float months = days/30;
 
-    int s(seconds %60);
-    int m(minutes %60);
-    int h(hours %24);
-    int d(days %7);
-    int w(weeks %4);
-    int M(months %12);
+    int s(fmod(seconds, 60));
+    int m(fmod(minutes, 60));
+    int h(fmod(hours, 24));
+    int d(fmod(days, 7));
+    int w(fmod(weeks, 4));
+    int M(fmod(months, 12));
+
+    std::ostringstream uptime;
+    if (M)
+        uptime << M << "M" << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
+    else if (w)
+        uptime << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
+    else if (d)
+        uptime << d << "d" << h << "h" << m << "m" << s << "s";
+    else if (h)
+        uptime << h << "h" << m << "m" << s << "s";
+    else if (m)
+        uptime << m << "m" << s << "s";
+    else
+        uptime << s << "s";
+
+    return uptime.str().c_str();
+}
+
+const char* EvE::FormatTime(float time/*-1*/) {
+    if (time < 0)
+        return "Invalid Time";
+    if (time < 1)
+        return "None";
+    float seconds = time;
+    float minutes = seconds/60;
+    float hours = minutes/60;
+    float days = hours/24;
+    float weeks = days/7;
+    float months = days/30;
+
+    int s(fmod(seconds, 60));
+    int m(fmod(minutes, 60));
+    int h(fmod(hours, 24));
+    int d(fmod(days, 7));
+    int w(fmod(weeks, 4));
+    int M(fmod(months, 12));
 
     std::ostringstream uptime;
     if (M)

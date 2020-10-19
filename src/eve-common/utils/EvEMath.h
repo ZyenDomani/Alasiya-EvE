@@ -7,16 +7,27 @@
  //
  //////////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef EVE_COMMON_UTILS_MATH_H
+#define EVE_COMMON_UTILS_MATH_H
+
 #include "../../eve-core/eve-core.h"
 
 class EvilNumber;
 
+namespace EvESkill {
+    // skill constants
+    const uint8 MAXSKILLLEVEL = 5;
+    const uint8 skillPointMultiplier = 250;
+    const float DIVCONSTANT = std::log(2) * 2.5;
+}
+
 namespace EvEMath {
     namespace Skill {
-        int64 EndTime( uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow );
-        int64 StartTime( uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow );
         uint32 PointsAtLevel(uint8 level, uint8 rank);
         uint8 PointsPerMinute(uint8 pAttr, uint8 sAttr);
+        uint8 LevelForPoints(uint32 currentSP, uint8 rank);
+        int64 EndTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow);
+        int64 StartTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow);
     }
 
     namespace RAM {
@@ -48,6 +59,36 @@ namespace EvEMath {
         float GetStandingBonus(float fromStanding, uint32 fromFactionID, uint8 ConnectionsSkillLevel, uint8 DiplomacySkillLevel, uint8 CriminalConnectionsSkillLevel);
     }
 
+    namespace PI {
+        void Dijkstra(uint32 sourcePin, uint32 destinationPin);
+
+        /**  @note client code for shortest path algorithm (PI shit)
+         *
+         *    def Dijkstra(self, sourcePin, destinationPin):
+         *        D = {}
+         *        P = {}
+         *        Q = planetCommon.priority_dict()
+         *        Q[sourcePin] = 0.0
+         *        while len(Q) > 0:
+         *            vPin = Q.smallest()
+         *            D[vPin] = Q[vPin]
+         *            if vPin == destinationPin:
+         *                break
+         *            Q.pop_smallest()
+         *            for wDestinationID in self.colonyData.GetLinksForPin(vPin.id):
+         *                wLink = self.GetLink(vPin.id, wDestinationID)
+         *                wPin = self.GetPin(wDestinationID)
+         *                vwLength = D[vPin] + self._GetLinkWeight(wLink, wPin, vPin)
+         *                if wPin in D:
+         *                    if vwLength < D[wPin]:
+         *                        raise ValueError, 'Dijkstra: found better path to already-final vertex'
+         *                elif wPin not in Q or vwLength < Q[wPin]:
+         *                    Q[wPin] = vwLength
+         *                    P[wPin] = vPin
+         *
+         *        return (D, P)
+         */
+    }
 
     EvilNumber EffectiveAttribute( EvilNumber BaseAttribute, EvilNumber ImplantAttributeBonus );
     EvilNumber TargetingLockTime( EvilNumber YourEffectiveScanResolution, EvilNumber TargetEffectiveSignatureRadius );
@@ -56,29 +97,5 @@ namespace EvEMath {
 
 }
 
+#endif  // EVE_COMMON_UTILS_MATH_H
 
-/*
- *    def Dijkstra(self, sourcePin, destinationPin):
- *        D = {}
- *        P = {}
- *        Q = planetCommon.priority_dict()
- *        Q[sourcePin] = 0.0
- *        while len(Q) > 0:
- *            vPin = Q.smallest()
- *            D[vPin] = Q[vPin]
- *            if vPin == destinationPin:
- *                break
- *            Q.pop_smallest()
- *            for wDestinationID in self.colonyData.GetLinksForPin(vPin.id):
- *                wLink = self.GetLink(vPin.id, wDestinationID)
- *                wPin = self.GetPin(wDestinationID)
- *                vwLength = D[vPin] + self._GetLinkWeight(wLink, wPin, vPin)
- *                if wPin in D:
- *                    if vwLength < D[wPin]:
- *                        raise ValueError, 'Dijkstra: found better path to already-final vertex'
- *                elif wPin not in Q or vwLength < Q[wPin]:
- *                    Q[wPin] = vwLength
- *                    P[wPin] = vPin
- *
- *        return (D, P)
- * */

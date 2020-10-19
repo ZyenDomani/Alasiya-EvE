@@ -34,6 +34,17 @@
 #include "inventory/InventoryItem.h"
 
 
+/*
+ * ATTRIBUTE__ADD
+ * ATTRIBUTE__CHANGE
+ * ATTRIBUTE__DELETE
+ * ATTRIBUTE__MISSING
+ * ATTRIBUTE__ERROR
+ * ATTRIBUTE__WARNING
+ * ATTRIBUTE__INFO
+ */
+
+
 AttributeMap::AttributeMap( InventoryItem& item)
 : mItem(item)
 {
@@ -67,8 +78,8 @@ bool AttributeMap::Load(bool reset/*false*/) {
         }
 
         DBResultRow row;
-        EvilNumber value = EvilNumber();
         while (res.GetRow(row)) {
+            EvilNumber value = EvilNumber();
             if (row.IsNull(1)) {
                 if (row.IsNull(2))
                     value = EvilZero;
@@ -80,8 +91,8 @@ bool AttributeMap::Load(bool reset/*false*/) {
         }
     }
     /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
-    if (is_log_enabled(ITEM__DEBUG))
-        _log(ITEM__DEBUG, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.itemName().c_str());
+    if (is_log_enabled(ATTRIBUTE__INFO))
+        _log(ATTRIBUTE__INFO, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.itemName().c_str());
     return true;
 }
 
@@ -112,7 +123,7 @@ bool AttributeMap::Save() {
         case EVEDB::invCategories::Ship: {      // ship attribs saved in shipItem, not here.
             return true;
         } break;
-        case EVEDB::invCategories::Skill: {     // save SP and Level for skills
+        case EVEDB::invCategories::Skill: {     // save SP, Level and times for skills
             skill = true;
         } break;
         case EVEDB::invCategories::Owner:       // save all attribs for these
@@ -140,7 +151,8 @@ bool AttributeMap::Save() {
     for (; itr != end; ++itr) {
         save = false;
         if (skill)
-            if ((itr->first == AttrSkillPoints) or (itr->first == AttrSkillLevel) or (itr->first == AttrExpiryTime) or (itr->first == AttrSkillStartTime))
+            if ((itr->first == AttrSkillPoints)
+            or  (itr->first == AttrSkillLevel))
                 save = true;
         if (damage)
             if (itr->first == AttrDamage)
@@ -152,10 +164,13 @@ bool AttributeMap::Save() {
             AttrData data = AttrData();
             data.itemID = mItem.itemID();
             data.attrID = itr->first;
-            if (itr->second.isInt())
+            if (itr->second.isInt()) {
+                data.type = false;
                 data.valueInt = itr->second.get_int();
-            else
+            } else {
+                data.type = true;
                 data.valueFloat = itr->second.get_double();
+            }
             items.push_back(data);
         }
     }
@@ -169,7 +184,7 @@ bool AttributeMap::Save() {
 void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*true*/)
 {
     if (num.isNaN() or num.isInf()) {
-        _log(ITEM__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr %u on %s(%u). Returning without modifying.",\
+        _log(ATTRIBUTE__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr %u on %s(%u). Returning without modifying.",\
                 attrID, mItem.itemName().c_str(), mItem.itemID());
         EvE::traceStack();
         //ResetAttribute(attrID, notify);
@@ -180,13 +195,21 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
         mAttributes.emplace(attrID, num);
         if (notify) {
             Add(attrID, num);
-        } else if ((attrID == AttrQuantity) and is_log_enabled(ITEM__CHANGE)) {
+        } else if (is_log_enabled(ATTRIBUTE__MISSING)) {
             if (num.isFloat()) {
-                _log(ITEM__CHANGE, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
+                _log(ATTRIBUTE__MISSING, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
                         attrID, num.get_float(), mItem.itemName().c_str(), mItem.itemID());
             } else {
-                _log(ITEM__CHANGE, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
+                _log(ATTRIBUTE__MISSING, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
                     attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
+            }
+        } else if (is_log_enabled(ATTRIBUTE__ADD)) {
+            if (num.isFloat()) {
+                _log(ATTRIBUTE__ADD, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
+                attrID, num.get_float(), mItem.itemName().c_str(), mItem.itemID());
+            } else {
+                _log(ATTRIBUTE__ADD, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
+                attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
             }
         }
 
@@ -196,23 +219,23 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
     if (itr->second == num)
         return;
 
-    if (notify)
+    if (notify) {
         Change(attrID, itr->second, num);
-    else if ((attrID == AttrQuantity) and is_log_enabled(ITEM__CHANGE)) {
+    } else if (is_log_enabled(ATTRIBUTE__CHANGE)) {
         if (itr->second.isFloat()) {
             if (num.isFloat()) {
-                _log(ITEM__CHANGE, "Changing Attribute %u from %.2f to %.2f for %s(%u)", \
+                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %.2f to %.2f for %s(%u)", \
                         attrID, itr->second.get_float(), num.get_float(), mItem.itemName().c_str(), mItem.itemID());
             } else {
-                _log(ITEM__CHANGE, "Changing Attribute %u from %.2f to %lli for %s(%u)", \
+                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %.2f to %lli for %s(%u)", \
                         attrID, itr->second.get_float(), num.get_int(), mItem.itemName().c_str(), mItem.itemID());
             }
         } else {
             if (num.isFloat()) {
-                _log(ITEM__CHANGE, "Changing Attribute %u from %lli to %.2f for %s(%u)", \
+                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %lli to %.2f for %s(%u)", \
                         attrID, itr->second.get_int(), num.get_float(), mItem.itemName().c_str(), mItem.itemID());
             } else {
-                _log(ITEM__CHANGE, "Changing Attribute %u from %lli to %lli for %s(%u)", \
+                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %lli to %lli for %s(%u)", \
                         attrID, itr->second.get_int(), num.get_int(), mItem.itemName().c_str(), mItem.itemID());
             }
         }
@@ -224,7 +247,7 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
 void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify/*false*/)
 {
     if (num.isNaN() or num.isInf()) {
-        _log(ITEM__ERROR, "AttributeMap::MultiplyAttribute() - Something sent NaN or Inf for %u on %s(%u). Returning without modifying.", \
+        _log(ATTRIBUTE__ERROR, "AttributeMap::MultiplyAttribute() - Something sent NaN or Inf for %u on %s(%u). Returning without modifying.", \
                 attrID, mItem.itemName().c_str(), mItem.itemID());
         EvE::traceStack();
         //ResetAttribute(attrID, notify);
@@ -233,7 +256,7 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify
     if (num == EvilZero) {
         // could this be on purpose?
         //ResetAttribute(attrID, notify);
-        _log(ITEM__WARNING, "AttributeMap::MultiplyAttribute() - Something sent 0 for %u on %s(%u). Returning without modifying.", \
+        _log(ATTRIBUTE__WARNING, "AttributeMap::MultiplyAttribute() - Something sent 0 for %u on %s(%u). Returning without modifying.", \
                 attrID, mItem.itemName().c_str(), mItem.itemID());
         EvE::traceStack();
         return;
@@ -280,40 +303,23 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
 // [eventName,] ownerID, itemID, attributeID, time, newValue, oldValue = change (unless attrib = quantity)
 bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_val) {
     // check for internal skill time data
-    if (attrID == AttrSkillStartTime)
+    if (attrID == AttrStartTime)
         return true;
+    // check for changes
     if (old_val == new_val)
         return true;
-
+    // check owner
     if ((mItem.ownerID() == 1)
     and (!IsCharacter(mItem.itemID())))
         return true;
 
-    if (is_log_enabled(ITEM__CHANGE)) {
-        if (old_val.isFloat()) {
-            if (new_val.isFloat()) {
-                _log(ITEM__CHANGE, "Changing Attribute %u from %.2f to %.2f for %s(%u)", \
-                        attrID, old_val.get_float(), new_val.get_float(), mItem.itemName().c_str(), mItem.itemID());
-            } else {
-                _log(ITEM__CHANGE, "Changing Attribute %u from %.2f to %lli for %s(%u)", \
-                        attrID, old_val.get_float(), new_val.get_int(), mItem.itemName().c_str(), mItem.itemID());
-            }
-        } else {
-            if (new_val.isFloat()) {
-                _log(ITEM__CHANGE, "Changing Attribute %u from %lli to %.2f for %s(%u)", \
-                        attrID, old_val.get_int(), new_val.get_float(), mItem.itemName().c_str(), mItem.itemID());
-            } else {
-                _log(ITEM__CHANGE, "Changing Attribute %u from %lli to %lli for %s(%u)", \
-                        attrID, old_val.get_int(), new_val.get_int(), mItem.itemName().c_str(), mItem.itemID());
-            }
-        }
-    }
-
+    // i dunno wtf i put this here....modules maybe?
+    /*
     if (IsCharacter(mItem.ownerID())) {
         Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
         if (pClient->IsDocked())
             return true;
-    }
+    }  */
 
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
@@ -351,28 +357,19 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
 }
 
 bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
-    if (attrID == AttrSkillStartTime)
+    if (attrID == AttrStartTime)
         return true;
 
     if ((mItem.ownerID() == 1)
     and (!IsCharacter(mItem.itemID())))
         return true;
-
-    if (is_log_enabled(ITEM__CHANGE)) {
-        if (num.isFloat()) {
-            _log(ITEM__CHANGE, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
-                    attrID, num.get_float(), mItem.itemName().c_str(), mItem.itemID());
-        } else {
-            _log(ITEM__CHANGE, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
-                    attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
-        }
-    }
-
+/*
     if (IsCharacter(mItem.ownerID())) {
         Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
         if (pClient->IsDocked())
             return true;
     }
+    */
 
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
@@ -397,7 +394,7 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
     if (attrChange == nullptr)
         return true;
 
-    /** @todo update this to notify appropriate corp ppl of change */
+    /** @todo update this to use CorpNotify() */
     if (IsCorp(mItem.ownerID()))
         return true;
     /*
@@ -429,9 +426,9 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
     if (pClient->IsLogin())
         return true;
 
-    if (is_log_enabled(ITEM__CHANGE)) {
-        _log(ITEM__CHANGE, "Sending Attribute changes for %s(%u)", mItem.itemName().c_str(), mItem.itemID());
-        attrChange->Dump(ITEM__CHANGE, "");
+    if (is_log_enabled(ATTRIBUTE__CHANGE)) {
+        _log(ATTRIBUTE__CHANGE, "Sending Attribute changes for %s(%u)", mItem.itemName().c_str(), mItem.itemID());
+        attrChange->Dump(ATTRIBUTE__CHANGE, "");
     }
 
     pClient->QueueDestinyEvent(&attrChange);
@@ -458,10 +455,10 @@ void AttributeMap::SaveShipState()
     // start the insert into command.
     Inserts << "REPLACE INTO entity_attributes ";
     Inserts << " (itemID, attributeID, valueInt, valueFloat) VALUES";
-    bool shield = false, armor = false, hull = false, hi = false, mid = false, lo = false;
+    bool save(false);
     AttrMap::iterator cur = mAttributes.find(AttrShieldCharge);
     if (cur != mAttributes.end()) {
-        shield = true;
+        save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
@@ -471,9 +468,9 @@ void AttributeMap::SaveShipState()
     }
     cur = mAttributes.find(AttrArmorDamage);
     if (cur != mAttributes.end()) {
-        armor = true;
-        if (shield)
+        if (save)
             Inserts << ",";
+        save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
@@ -483,9 +480,9 @@ void AttributeMap::SaveShipState()
     }
     cur = mAttributes.find(AttrDamage);
     if (cur != mAttributes.end()) {
-        hull = true;
-        if (shield or armor)
+        if (save)
             Inserts << ",";
+        save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
@@ -495,9 +492,9 @@ void AttributeMap::SaveShipState()
     }
     cur = mAttributes.find(AttrHeatHi);
     if (cur != mAttributes.end()) {
-        hi = true;
-        if (shield or armor)
+        if (save)
             Inserts << ",";
+        save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
@@ -507,9 +504,9 @@ void AttributeMap::SaveShipState()
     }
     cur = mAttributes.find(AttrHeatMed);
     if (cur != mAttributes.end()) {
-        mid = true;
-        if (shield or armor)
+        if (save)
             Inserts << ",";
+        save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
@@ -519,9 +516,9 @@ void AttributeMap::SaveShipState()
     }
     cur = mAttributes.find(AttrHeatLow);
     if (cur != mAttributes.end()) {
-        lo = true;
-        if (shield or armor)
+        if (save)
             Inserts << ",";
+        save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
@@ -530,7 +527,7 @@ void AttributeMap::SaveShipState()
         }
     }
 
-    if (shield or armor or hull or hi or mid or lo) {
+    if (save) {
         DBerror err;
         if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
             _log(DATABASE__ERROR, "SaveShipState - unable to save attributes for %u - %s", mItem.itemID(), err.c_str());
@@ -544,6 +541,7 @@ void AttributeMap::Delete() {
 }
 
 void AttributeMap::DeleteAttribute(uint16 attrID) {
+    _log(ATTRIBUTE__DELETE, "Delete Attribute %u for %s(%u)", attrID, mItem.itemName().c_str(), mItem.itemID());
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end()) {
         mAttributes.erase(itr);
@@ -558,7 +556,8 @@ void AttributeMap::DeleteAttribute(uint16 attrID) {
                 _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
             }
         }
-    }
+    } else
+        _log(ATTRIBUTE__WARNING, "Attribute %u not found in %s(%u) when calling delete ", attrID, mItem.itemName().c_str(), mItem.itemID());
 }
 
 AttrMapItr AttributeMap::begin() {

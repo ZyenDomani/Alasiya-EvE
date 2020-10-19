@@ -24,8 +24,8 @@
     Updates:    Allan
 */
 
-#ifndef __SKILL__H__INCL__
-#define __SKILL__H__INCL__
+#ifndef EVE_SERVER_SKILLS_SKILL_H
+#define EVE_SERVER_SKILLS_SKILL_H
 
 
 #include "EVEServerConfig.h"
@@ -68,10 +68,16 @@ public:
      */
     static SkillRef Spawn( ItemData &data);
 
-    uint32 GetSPForLevel(uint8 level);
-    uint32 GetCurrentSP(Character* ch);
-    bool SkillPrereqsComplete(Character &ch);
+    bool IsTraining();
 
+    uint8 GetLevelForSP(uint32 currentSP);
+    uint32 GetSPForLevel(uint8 level);
+    uint32 GetCurrentSP(Character* ch, int64 startTime=0);      // requires startTime for skill in training
+    // returns remaining sp to next level of this skill
+    uint32 GetRemainingSP(Character* ch, int64 curTime=0);      // requires Skill* = m_skillQueue.front()
+    // returns remaining time in seconds to train this skill to next level
+    uint32 GetTrainingTime(Character* ch, int64 startTime=0);
+    bool SkillPrereqsComplete(Character &ch);
     static bool FitModuleSkillCheck(InventoryItemRef item, CharacterRef ch);
 
     void VerifySP();
@@ -100,5 +106,4 @@ protected:
     }
 };
 
-#endif /* !__SKILL__H__INCL__ */
-
+#endif  // EVE_SERVER_SKILLS_SKILL_H

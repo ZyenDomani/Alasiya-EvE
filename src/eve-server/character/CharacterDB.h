@@ -72,6 +72,8 @@ struct PortraitInfo {
 struct QueuedSkill {
     uint8 level;
     uint16 typeID;
+    int64 endTime;
+    int64 startTime;
 };
 typedef std::vector<QueuedSkill> SkillQueue;
 

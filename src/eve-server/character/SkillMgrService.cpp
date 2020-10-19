@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -59,15 +60,16 @@ SkillMgrBound::SkillMgrBound(PyServiceMgr *mgr, CharacterDB &db)
     m_strBoundObjectName = "SkillMgrBound";
 
     PyCallable_REG_CALL(SkillMgrBound, InjectSkillIntoBrain);
+    PyCallable_REG_CALL(SkillMgrBound, GetSkillQueueAndFreePoints);
+    PyCallable_REG_CALL(SkillMgrBound, SaveSkillQueue);
+    PyCallable_REG_CALL(SkillMgrBound, AddToEndOfSkillQueue);
+    PyCallable_REG_CALL(SkillMgrBound, CharStartTrainingSkill);
     PyCallable_REG_CALL(SkillMgrBound, CharStartTrainingSkillByTypeID);
     PyCallable_REG_CALL(SkillMgrBound, CharStopTrainingSkill);
     PyCallable_REG_CALL(SkillMgrBound, GetEndOfTraining);
     PyCallable_REG_CALL(SkillMgrBound, GetSkillHistory);
     PyCallable_REG_CALL(SkillMgrBound, CharAddImplant);
     PyCallable_REG_CALL(SkillMgrBound, RemoveImplantFromCharacter);
-    PyCallable_REG_CALL(SkillMgrBound, GetSkillQueueAndFreePoints);
-    PyCallable_REG_CALL(SkillMgrBound, SaveSkillQueue);
-    PyCallable_REG_CALL(SkillMgrBound, AddToEndOfSkillQueue);
     PyCallable_REG_CALL(SkillMgrBound, GetRespecInfo);
     PyCallable_REG_CALL(SkillMgrBound, RespecCharacter);
     PyCallable_REG_CALL(SkillMgrBound, GetCharacterAttributeModifiers);
@@ -89,8 +91,7 @@ PyResult SkillMgrBound::Handle_GetRespecInfo( PyCallArgs& call ) {
 }
 
 PyResult SkillMgrBound::Handle_GetSkillQueueAndFreePoints(PyCallArgs &call) {
-    // returns list of skills currently in the skill queue.
-    return call.client->GetChar()->GetSkillQueue();
+    return call.client->GetChar()->SendSkillQueue();
 }
 
 PyResult SkillMgrBound::Handle_GetEndOfTraining(PyCallArgs &call) {
@@ -102,90 +103,36 @@ PyResult SkillMgrBound::Handle_GetSkillHistory( PyCallArgs& call ) {
 }
 
 PyResult SkillMgrBound::Handle_CharStopTrainingSkill(PyCallArgs &call) {
-//  look into this again, redesign so these calls arent needed.....
-    CharacterRef ch = call.client->GetChar();
-
-    // clear & update
-    ch->PauseSkillQueue();  // this saves current queue to chrPausedSkillQueue as the next line deletes it.
-    ch->ClearSkillQueue();
-    ch->UpdateSkillQueue();
-
-    return ch->GetSkillQueue();
+    // called when pausing skill queue
+    call.client->GetChar()->PauseSkillQueue();
+    // returns nothing
+    return nullptr;
 }
 
-PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
-    Call_SaveSkillQueue args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+PyResult SkillMgrBound::Handle_CharStartTrainingSkill( PyCallArgs& call ) {
+    // sm.GetService('godma').GetSkillHandler().CharStartTrainingSkill(skillX.itemID, skillX.locationID)
+    Call_TwoIntegerArgs args;
+    if( !args.Decode( call.tuple ) )
+    {
+        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
         return nullptr;
     }
 
-    // xml decode will now check for and fix level being a float instead of int and leading to client freakout
-    CharacterRef ch = call.client->GetChar();
-    ch->ClearSkillQueue();
-    SkillQueue_Element el;
-    std::vector<PyRep*>::const_iterator cur = args.queue->begin();
-    for (; cur != args.queue->end(); cur++) {
-        if (!el.Decode(*cur))         {
-            _log(SERVICE__ERROR, "%s: Failed to decode element of SkillQueue (%u). Skipping.", call.client->GetName(), *cur);
-            continue;
-        }
-        ch->AddToSkillQueue( el.typeID, el.level );
-    }
-    ch->UpdateSkillQueue();
+    _log(SKILL__WARNING, "Called CharStartTrainingSkill for itemID %i in location %i", args.arg1, args.arg2);
     return nullptr;
 }
 
 PyResult SkillMgrBound::Handle_AddToEndOfSkillQueue(PyCallArgs &call) {
+    //  sm.StartService('godma').GetSkillHandler().AddToEndOfSkillQueue(skillID, nextLevel)
     Call_TwoIntegerArgs args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
-    CharacterRef ch = call.client->GetChar();
-    ch->AddToSkillQueue(args.arg1, args.arg2);
-    ch->UpdateSkillQueue();
-
-    return nullptr;
-}
-
-PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
-{
-    Call_RespecCharacter args;
-    if (!args.Decode(call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return nullptr;
-    }
-
-	CharacterRef cref = call.client->GetChar();
-    if (cref->GetSkillInTraining())
-		throw(PyException(MakeUserError("RespecSkillInTraining")));
-
-    // return early if this is an illegal call
-    if (!m_db.ReportRespec(call.client->GetCharacterID()))
-        return nullptr;
-    uint8 multiplier = sConfig.character.statMultiplier;
-    cref->SetAttribute(AttrCharisma, args.charisma * multiplier);
-    cref->SetAttribute(AttrIntelligence, args.intelligence * multiplier);
-    cref->SetAttribute(AttrMemory, args.memory * multiplier);
-    cref->SetAttribute(AttrPerception, args.perception * multiplier);
-    cref->SetAttribute(AttrWillpower, args.willpower * multiplier);
-    cref->SaveAttributes();
-
-    // no return value
-    return nullptr;
-}
-
-//13:43:18 L SkillMgrBound::Handle_CharStartTrainingSkillByTypeID(): size= 1, 0 = Integer(3308) <- this is skill#
-PyResult SkillMgrBound::Handle_CharStartTrainingSkillByTypeID( PyCallArgs& call )
-{
-    CharacterRef ch = call.client->GetChar();
-
-    ch->LoadPausedSkillQueue();
-    ch->UpdateSkillQueue();
-    //ch->GetSkillQueue();
-
+    CharacterRef cRef(call.client->GetChar());
+    cRef->AddToSkillQueue(args.arg1, args.arg2);
+    cRef->UpdateSkillQueueEndTime();
     return nullptr;
 }
 
@@ -197,27 +144,148 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
         return nullptr;
     }
 
-    CharacterRef ch = call.client->GetChar();
-
+    // make a list of skills successfully injected to display after injection
+    // name, ret value  where 1=success, 2=prereqs, 3=already known, 4=split fail, 5=load fail
+    std::map<std::string, uint8> skills;
+    SkillRef skill(nullptr);
+    CharacterRef cRef(call.client->GetChar());
     for (auto cur : args.skills)  {
-        SkillRef skill = sItemFactory.GetSkill(cur);
+        skill = sItemFactory.GetSkill(cur);
         if (skill.get() == nullptr) {
-            codelog( ITEM__ERROR, "%s: failed to load skill item %u for injection.", call.client->GetName(), cur );
+            _log( ITEM__ERROR, "%s: failed to load skill %u for injection.", call.client->GetName(), cur);
+            std::string str = "Invalid Name #";
+            str += itoa(cur);
+            skills.emplace(str, 5);
             continue;
         }
 
-        if (!ch->InjectSkillIntoBrain(skill)) {
-            /** @todo build and send UserError about injection failure. */
-            _log(ITEM__WARNING, "%s: Injection of skill %u failed", call.client->GetName(), skill->itemID() );
-        }
+        skills.emplace(skill->itemName(), cRef->InjectSkillIntoBrain(skill));
     }
 
+    // build and populate status reply
+    if (skills.empty())
+        return nullptr;
+
+    if (skills.size() == 1) {
+        std::string status;
+        switch (skills.begin()->second) {
+            //1=success, 2=prereqs, 3=already known, 4=split fail, 5=load fail
+            case 1: status = "Success."; break;
+            case 2: status = "Failed: Prerequisites incomplete."; break;
+            case 3: status = "Failed: Skill already known."; break;
+            case 4: status = "Failed: Stack split failure."; break;
+            case 5: status = "Failed: Skill loading failure."; break;
+            default: status = "Failed: Unknown Error."; break;
+        }
+        call.client->SendInfoModalMsg("Injection of %s:  %s", skills.begin()->first.c_str(), status.c_str());
+    } else {
+        std::string status;
+        std::ostringstream str;
+        str.clear();
+        str << "The Injection of %u skills for %s has resulted in the following outcome.<br><br>"; //40
+
+        for (auto cur : skills) {
+            switch (cur.second) {
+                //1=success, 2=prereqs, 3=already known, 4=split fail, 5=load fail
+                case 1: status = "Success."; break;
+                case 2: status = "Failed: Prerequisites incomplete."; break; //35
+                case 3: status = "Failed: Skill already known."; break;
+                case 4: status = "Failed: Stack split failure."; break;
+                case 5: status = "Failed: Skill loading failure."; break;
+                default: status = "Failed: Unknown Error."; break;
+            }
+            str << cur.first << " - " << status << "<br>"; //40 for name, 35 for status (75)
+        }
+
+        int count = skills.size();
+        int size = count * 75;
+        size += 100;    // for header, including char name
+        char reply[size];
+        snprintf(reply, size, str.str().c_str(), count, call.client->GetName());
+
+        call.client->SendInfoModalMsg(reply);
+    }
+
+    PyTuple* tmp = new PyTuple(1);
+    tmp->SetItem(0, new PyString("OnSkillInjected"));
+    call.client->QueueDestinyEvent(&tmp);
+    return nullptr;
+}
+
+PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
+    // called when previously-set skill queue changed
+    Call_SaveSkillQueue args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
+    }
+
+    // xml decode will now check for and fix level being a float instead of int and leading to client freakout
+    CharacterRef cRef(call.client->GetChar());
+    _log(SKILL__QUEUE, "%s(%u) calling SaveSkillQueue()", cRef->name(), cRef->itemID());
+    cRef->ClearSkillQueue(true);
+    SkillQueue_Element el;
+    std::vector<PyRep*>::const_iterator cur = args.queue->begin(), end = args.queue->end();
+    for (; cur != end; ++cur) {
+        if (!el.Decode(*cur))         {
+            _log(SERVICE__ERROR, "%s: Failed to decode element of SkillQueue (%u). Skipping.", call.client->GetName(), *cur);
+            continue;
+        }
+        cRef->AddToSkillQueue( el.typeID, el.level );
+    }
+
+    cRef->UpdateSkillQueueEndTime();
+    PyTuple* tmp = new PyTuple(1);
+        tmp->SetItem(0, new PyString("OnSkillTrainingSaved"));
+    call.client->QueueDestinyEvent(&tmp);
+    return nullptr;
+}
+
+PyResult SkillMgrBound::Handle_CharStartTrainingSkillByTypeID( PyCallArgs& call )
+{
+    // called when skill queue empty or paused
+    // sends skill typeID to start training
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
+        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
+        return nullptr;
+    }
+
+    call.client->GetChar()->LoadPausedSkillQueue(args.arg);
+    return nullptr;
+}
+
+PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
+{
+    Call_RespecCharacter args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
+    }
+
+    CharacterRef cRef(call.client->GetChar());
+    if (cRef->GetSkillInTraining() != nullptr)
+        throw(PyException(MakeUserError("RespecSkillInTraining")));
+
+    // return early if this is an illegal call
+    if (!m_db.ReportRespec(call.client->GetCharacterID()))
+        return nullptr;
+    uint8 multiplier = sConfig.character.statMultiplier;
+    cRef->SetAttribute(AttrCharisma, args.charisma * multiplier);
+    cRef->SetAttribute(AttrIntelligence, args.intelligence * multiplier);
+    cRef->SetAttribute(AttrMemory, args.memory * multiplier);
+    cRef->SetAttribute(AttrPerception, args.perception * multiplier);
+    cRef->SetAttribute(AttrWillpower, args.willpower * multiplier);
+    cRef->SaveAttributes();
+
+    // no return value
     return nullptr;
 }
 
 PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
 {
-    // expected data: for (itemID, typeID, operation, value,) in modifiers:
+    //  for (itemID, typeID, operation, value,) in modifiers:
+
     /*
      * client sends attrib# of stat in question...
      *            [PyString "GetCharacterAttributeModifiers"]
@@ -232,18 +300,21 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
      *            [PyFloat 3]                 << value
      */
     Call_SingleIntegerArg args;
-    if( !args.Decode( &call.tuple ) )
-    {
-        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
-    PyTuple* tuple = new PyTuple(4);
-        tuple->SetItem(0, new PyInt(0));   //implantID
-        tuple->SetItem(1, new PyInt(0));   //implantTypeID
-        tuple->SetItem(2, new PyInt(0));   //operation
-        tuple->SetItem(3, new PyInt(0));   //value
+
+    CharacterRef cRef(call.client->GetChar());
     PyList* list = new PyList();
+    // for each implant, make tuple and put into list
+    PyTuple* tuple = new PyTuple(4);
+        tuple->SetItem(0, PyStatic.NewZero());   //implantID
+        tuple->SetItem(1, PyStatic.NewZero());   //implantTypeID
+        tuple->SetItem(2, PyStatic.NewZero());   //operation
+        tuple->SetItem(3, PyStatic.NewZero());   //value
         list->AddItem(tuple);
+
     return list;
 }
 
@@ -251,11 +322,11 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 {
     //sends itemid
     Call_SingleIntegerArg args;
-    if( !args.Decode( &call.tuple ) )
-    {
-        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
+
     //{'FullPath': u'UI/Messages', 'messageID': 259242, 'label': u'OnlyOneBoosterActiveBody'}(u'You cannot consume the {typeName} as you are already using another similar booster {typeName2}.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}, u'{typeName2}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName2'}})
     //{'FullPath': u'UI/Messages', 'messageID': 259243, 'label': u'OnlyOneImplantActiveBody'}(u'You cannot install the {typeName} as there is already an implant installed in the slot it needs to occupy.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
 
@@ -266,9 +337,8 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
 {
     //sends itemid
     Call_SingleIntegerArg args;
-    if( !args.Decode( &call.tuple ) )
-    {
-        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

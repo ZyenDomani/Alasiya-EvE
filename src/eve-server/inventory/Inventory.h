@@ -75,9 +75,11 @@ public:
     bool IsEmptyByFlag(EVEItemFlags flag) const;
     bool GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef &iRef) const;
     bool GetTypesByFlag(EVEItemFlags flag, std::map<uint16, InventoryItemRef> &items);
+    // for characters, ALL skills are flagSkill. we are not keeping flagSkillInTraining separate here
     uint32 GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
     uint32 GetItemsByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const;
     uint32 GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const;
+    // for characters, ALL skills are flagSkill. we are not keeping flagSkillInTraining separate here
     InventoryItemRef FindFirstByFlag(EVEItemFlags flag) const;
     InventoryItemRef GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit);
 

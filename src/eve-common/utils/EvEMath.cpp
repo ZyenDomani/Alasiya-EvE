@@ -1,18 +1,33 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 // EVE Math Equations for in-game features
-// (pulled directly from http://wiki.eve-id.net/Equations)
+// (pulled directly from client code and http://wiki.eve-id.net/Equations)
+//
+// Latest Update:       Allan  18Oct20
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../eve-common.h"
-#include "utils/EvEMath.h"
+//#include "utils/EvEMath.h"
 
 // skill Equations
 uint32 EvEMath::Skill::PointsAtLevel(uint8 level, uint8 rank)
 {
-    //math.ceil(250 * skillTimeConstant * 2 ** (2.5 * (level - 1)))
-    return pow(sqrt(32), (level -1)) * 250 * rank;
+    if (level > EvESkill::MAXSKILLLEVEL)
+        level = EvESkill::MAXSKILLLEVEL;
+    float ret = pow(sqrt(32), (level -1)) * EvESkill::skillPointMultiplier * rank;
+    return (uint32)ceil(ret);
+}
+
+uint8 EvEMath::Skill::LevelForPoints(uint32 currentSP, uint8 rank)
+{
+    uint16 baseSLC = rank * EvESkill::skillPointMultiplier;
+    if (baseSLC == 0)
+        return 0;
+    if (baseSLC > currentSP)
+        return 0;
+    int8 ret = log(currentSP / baseSLC) / EvESkill::DIVCONSTANT + 1;
+    return (uint8)EvE::min(ret, EvESkill::MAXSKILLLEVEL);
 }
 
 uint8 EvEMath::Skill::PointsPerMinute(uint8 pAttr, uint8 sAttr)
@@ -127,7 +142,7 @@ EvilNumber EvEMath::Refine::EffectiveRefiningYield( EvilNumber StationEquipmentY
 }
 
 
-
+// Agent Equations
 float EvEMath::Agent::EffectiveQuality(int8 AgentQuality, uint8 NegotiationSkillLevel, float AgentPersonalStanding)
 {
     return (AgentQuality + (5.0 * NegotiationSkillLevel) + AgentPersonalStanding);
@@ -160,7 +175,7 @@ float EvEMath::Agent::AgentStandingIncrease(float CurrentStanding, float Percent
 
 float EvEMath::Agent::GetStandingBonus(float fromStanding, uint32 fromFactionID, uint8 ConnectionsSkillLevel, uint8 DiplomacySkillLevel, uint8 CriminalConnectionsSkillLevel)
 {
-    float bonus = 0.0f;
+    float bonus(0.0f);
     if (fromStanding < 0.0f) {
         bonus = DiplomacySkillLevel * 0.4f;
     } else if (fromStanding > 0.0f) {
@@ -178,6 +193,11 @@ float EvEMath::Agent::GetStandingBonus(float fromStanding, uint32 fromFactionID,
         }
     }
     return bonus;
+}
+
+void EvEMath::PI::Dijkstra(uint32 sourcePin, uint32 destinationPin)
+{
+    // not used yet...
 }
 
 

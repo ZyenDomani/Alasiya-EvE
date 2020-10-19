@@ -31,8 +31,6 @@
 
 #include "Client.h"
 #include "ConsoleCommands.h"
-#include "npc/NPC.h"
-#include "npc/NPCAI.h"
 #include "admin/AllCommands.h"
 #include "admin/CommandDB.h"
 #include "inventory/AttributeEnum.h"
@@ -41,6 +39,8 @@
 #include "manufacturing/Blueprint.h"
 #include "map/MapConnections.h"
 #include "npc/Drone.h"
+#include "npc/NPC.h"
+#include "npc/NPCAI.h"
 #include "system/Damage.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
@@ -612,7 +612,6 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
                 if (skill->flag() == flagSkillInTraining) {
                     skill->SetFlag(flagSkill, false);
-                    skill->SetAttribute(AttrExpiryTime, EvilZero, false);
                 }
             } else {    // Character DOES NOT have this skill
                 ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
@@ -650,12 +649,13 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
     uint32 ownerID = 0, skillID = 0, level = 0;
     uint32 newPoints = 0;
     CharacterRef character;
-    Client *pTarget = nullptr;
+    Client *pTarget(nullptr);
 
     if (args.argCount() == 4) {
         if (args.isNumber(1)) {
             ownerID = atoi(args.arg(1).c_str());
             character = sEntityList.FindClientByCharID(ownerID)->GetChar();
+            pTarget = character->GetClient();
         } else if (args.arg(1) == "me") {
             ownerID = who->GetCharacterID();
             character = who->GetChar();
@@ -681,58 +681,60 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             throw PyException(MakeCustomError("Argument 3 must be level"));
         level = atoi(args.arg(3).c_str());
 
-        if (level > 5) level = 5;    //levels don't go higher than 5
-
+        if (level > EvESkill::MAXSKILLLEVEL)
+            level = EvESkill::MAXSKILLLEVEL;
     } else
-        throw PyException(MakeCustomError("Correct Usage: /giveskill [CharacterID] [skillID] [desired level]"));
+        throw PyException(MakeCustomError("Correct Usage: .giveskill [me/CharacterID] [skillID] [level]"));
 
-    // this needs to tell client they have a new skill.  dont know how yet.
-    if ((pTarget != nullptr) and (character.get() != nullptr)) {       // Make sure references are not NULL before trying to use them:
-        SkillRef skill;
-        if (character->HasSkillTrainedToLevel(skillID, level))
-            return PyStatic.NewNone();
-        else if (character->HasSkill(skillID)) {
-            /** @todo  check if this skill is being trained and update as necessary */
-            skill = character->GetSkill(skillID);
-            if (skill.get() == nullptr){
-                throw PyException(MakeCustomError("Unable to get item for skillID %u.", skillID));
-                return new PyString ("Skill Gifting Failure - Unable to get item for skillID %u.", skillID);
-            }
-            newPoints = skill->GetSPForLevel(level);
-            skill->SetAttribute(AttrSkillLevel, level);
-            skill->SetAttribute(AttrSkillPoints, newPoints);
-            if (skill->flag() == flagSkillInTraining) {
-                skill->SetFlag(flagSkill, true);
-                skill->SetAttribute(AttrExpiryTime, EvilZero);
-            }
-        } else {    // Character DOES NOT have this skill
-            ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
-            skill = sItemFactory.SpawnSkill(idata);
-            if (skill.get() == nullptr) {
-                throw PyException(MakeCustomError("Unable to create item for skillID %u.", skillID));
-                return new PyString ("Skill Gifting Failure - Unable to create item for skillID %u.", skillID);
-            } else {
-                character->AddItem(skill);
-                newPoints = skill->GetSPForLevel(level);
-                skill->SetAttribute(AttrSkillLevel, level);
-                skill->SetAttribute(AttrSkillPoints, newPoints);
-            }
-        }
-        skill->SaveItem();
-        //  save gm skill gift in history  -allan
-        character->SaveSkillHistory(EvESkill::Event::GMGift, GetFileTimeNow(), ownerID, skillID, level, newPoints);
-
-        OnSkillTrained ost;
-        ost.itemID = skill->itemID();
-        PyTuple* tmp = ost.Encode();
-        pTarget->QueueDestinyEvent(&tmp);
-
-        _log(SKILL__MESSAGE, "GiveSkill - skill %u set to level %u with %u SP.", skillID, level, newPoints);
-
-        return new PyString ("Skill Gifting Complete");
-    } else
+    // Make sure references are not NULL before trying to use them
+    if ((pTarget == nullptr) or (character.get() == nullptr))
         throw PyException(MakeCustomError("ERROR: Unable to validate character object."));
 
+    SkillRef skill;
+    if (character->HasSkillTrainedToLevel(skillID, level)) {
+        // already trained to requested level
+        return PyStatic.NewNone();
+    } else if (character->HasSkill(skillID)) {
+        // has skill injected, so update level
+        skill = character->GetSkill(skillID);
+        if (skill.get() == nullptr){
+            throw PyException(MakeCustomError("Unable to get item for skillID %u.", skillID));
+            return new PyString ("Skill Gifting Failure - Unable to get item for skillID %u.", skillID);
+        }
+        newPoints = skill->GetSPForLevel(level);
+        skill->SetAttribute(AttrSkillLevel, level);
+        skill->SetAttribute(AttrSkillPoints, newPoints);
+        //check for and remove this skill from training queue
+        character->RemoveFromQueue(skill);
+    } else {
+        // Character does not have this skill
+        std::ostringstream str;
+        str << "Skill Gift by ";
+        str << who->GetCharName();
+        ItemData idata(skillID, ownerID, pTarget->GetLocationID(), flagSkill, 1, str.str().c_str());
+        skill = sItemFactory.SpawnSkill(idata);
+        if (skill.get() == nullptr)
+            throw PyException(MakeCustomError("Unable to create item for skillID %u.", skillID));
+
+        newPoints = skill->GetSPForLevel(level);
+        skill->SetAttribute(AttrSkillLevel, level);
+        skill->SetAttribute(AttrSkillPoints, newPoints);
+        skill->ChangeSingleton(true);
+        skill->Move(pTarget->GetCharacterID(), flagSkill, true);
+    }
+
+    skill->SaveItem();
+    //  save gm skill gift in history  -allan
+    character->SaveSkillHistory(EvESkill::Event::GMGift, GetFileTimeNow(), ownerID, skillID, level, newPoints);
+
+    OnAdminSkillChange oasc;
+        oasc.skillItemID = skill->itemID();
+        oasc.skillTypeID = skillID;
+        oasc.newSP = newPoints;
+    PyTuple* tmp = oasc.Encode();
+    pTarget->QueueDestinyEvent(&tmp);
+
+    _log(SKILL__MESSAGE, "GiveSkill - skill %u set to level %u with %u SP.", skillID, level, newPoints);
     return PyStatic.NewNone();
 }
 

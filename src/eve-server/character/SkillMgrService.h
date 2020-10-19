@@ -54,18 +54,9 @@ public:
 
     virtual void Release();
 
-    /**
-     * InjectSkillIntoBrain
-     *
-     * Injects a list of skills into a characters brain.
-     */
     PyCallable_DECL_CALL(InjectSkillIntoBrain);
 
-    /**
-     * CharStartTrainingSkillByTypeID
-     *
-     * Starts training a characters skill based on typeID
-     */
+    PyCallable_DECL_CALL(CharStartTrainingSkill);
     PyCallable_DECL_CALL(CharStartTrainingSkillByTypeID);
     PyCallable_DECL_CALL(CharStopTrainingSkill);
     PyCallable_DECL_CALL(GetEndOfTraining);
@@ -73,28 +64,10 @@ public:
     PyCallable_DECL_CALL(CharAddImplant);
     PyCallable_DECL_CALL(RemoveImplantFromCharacter);
 
-    /**
-     * GetSkillQueueAndFreePoints
-     *
-     * Gets the list of skill currently in
-     * the skill queue for a character and the free points.
-     */
     PyCallable_DECL_CALL(GetSkillQueueAndFreePoints);
 
-    /**
-     * SaveSkillQueue
-     *
-     * Saves a list of character skills received
-     * from the client.
-     */
     PyCallable_DECL_CALL(SaveSkillQueue);
 
-    /**
-     * AddToEndOfSkillQueue
-     *
-     * Adds a skill to end of a characters skill
-     * queue.
-     */
     PyCallable_DECL_CALL(AddToEndOfSkillQueue);
 
     PyCallable_DECL_CALL(RespecCharacter);

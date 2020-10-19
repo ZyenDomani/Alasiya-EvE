@@ -1304,13 +1304,13 @@ void CharacterDB::SetLabel(uint32 charID, uint32 color, std::string name)
 
 void CharacterDB::DeleteLabel(uint32 charID, uint32 labelID)
 {
-
+    DBerror err;
+    sDatabase.RunQuery(err,"DELETE FROM chrLabels WHERE ownerID = %u AND labelID = %u", charID, labelID);
 }
-
 
 bool CharacterDB::LoadSkillQueue(uint32 characterID, SkillQueue &into) {
     DBQueryResult res;
-    if (!sDatabase.RunQuery( res, "SELECT typeID, level FROM chrSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
+    if (!sDatabase.RunQuery( res, "SELECT typeID, level, startTime, endTime FROM chrSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
         _log(DATABASE__ERROR, "Failed to query skill queue of character %u: %s.", characterID, res.error.c_str());
         return false;
     }
@@ -1318,8 +1318,10 @@ bool CharacterDB::LoadSkillQueue(uint32 characterID, SkillQueue &into) {
     DBResultRow row;
     while (res.GetRow(row)) {
         QueuedSkill qs = QueuedSkill();
-            qs.typeID = row.GetUInt( 0 );
-            qs.level = row.GetUInt( 1 );
+            qs.typeID = row.GetUInt(0);
+            qs.level = row.GetUInt(1);
+            qs.startTime = row.GetInt64(2);
+            qs.endTime = row.GetInt64(3);
         into.push_back( qs );
     }
 
@@ -1341,7 +1343,7 @@ bool CharacterDB::LoadPausedSkillQueue(uint32 characterID, SkillQueue &into) {
         into.push_back( qs );
     }
 
-    // now, delete paused queue because subsquent pressess of 'apply' button will add paused queue again, and again, etc...
+    // delete paused queue, as subsequent presses of 'apply' button will add paused queue again, and again, etc...
     DBerror err;
     if (!sDatabase.RunQuery(err,"DELETE FROM chrPausedSkillQueue WHERE characterID = %u", characterID)) {
         _log(DATABASE__ERROR, "Failed to delete skill queue of character %u: %s.", characterID, err.c_str());
@@ -1365,8 +1367,8 @@ bool CharacterDB::SaveSkillQueue(uint32 characterID, SkillQueue &data) {
 
     for (uint8 i = 0; i < data.size(); i++) {
         const QueuedSkill &qs = data[ i ];
-        char buf[ 64 ];
-        snprintf( buf, 64, "(%u, %u, %u, %u)", characterID, i, qs.typeID, qs.level );
+        char buf[ 80 ];
+        snprintf( buf, sizeof(buf), "(%u, %u, %u, %u, %lli, %lli)", characterID, i, qs.typeID, qs.level, qs.startTime, qs.endTime );
 
         if (i > 0)
             query += ',';
@@ -1374,10 +1376,11 @@ bool CharacterDB::SaveSkillQueue(uint32 characterID, SkillQueue &data) {
     }
 
     if ( !sDatabase.RunQuery( err,
-        "INSERT INTO chrSkillQueue (characterID, orderIndex, typeID, level)"
+        "INSERT INTO chrSkillQueue (characterID, orderIndex, typeID, level, startTime, endTime)"
         " VALUES %s",query.c_str()))
     {
         _log(DATABASE__ERROR, "SaveSkillQueue - unable to save data - %s", err.c_str());
+        return false;
     }
     return true;
 }
@@ -1396,8 +1399,8 @@ bool CharacterDB::SavePausedSkillQueue(uint32 characterID, SkillQueue &data) {
 
     for (uint8 i = 0; i < data.size(); i++) {
         const QueuedSkill &qs = data[ i ];
-        char buf[ 64 ];
-        snprintf( buf, 64, "(%u, %u, %u, %u)", characterID, i, qs.typeID, qs.level );
+        char buf[ 30 ];
+        snprintf( buf, sizeof(buf), "(%u, %u, %u, %u)", characterID, i, qs.typeID, qs.level );
 
         if (i > 0)
             query += ',';
@@ -1409,6 +1412,7 @@ bool CharacterDB::SavePausedSkillQueue(uint32 characterID, SkillQueue &data) {
         " VALUES %s",query.c_str()))
     {
         _log(DATABASE__ERROR, "SavePausedSkillQueue - unable to save data - %s", err.c_str());
+        return false;
     }
 
     return true;
