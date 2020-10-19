@@ -302,5 +302,5 @@ const char* MarshalStringTable::LookupString( uint8 index )
     if( --index < s_mStringTableSize )
         return s_mStringTable[ index ];
     else
-        return NULL;
+        return nullptr;
 }

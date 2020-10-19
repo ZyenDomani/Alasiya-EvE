@@ -158,9 +158,10 @@ PyResult DogmaIMService::Handle_GetAttributeTypes(PyCallArgs& call) {
 }
 
 PyBoundObject* DogmaIMService::CreateBoundObject(Client *pClient, const PyRep* bind_args) {
-    PyRep *t = bind_args->Clone();
     DogmaLM_BindArgs args;
-    if(!args.Decode(&t)) {
+    //crap
+    PyRep* tmp(bind_args->Clone());
+    if (!args.Decode(&tmp)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode bind args.", GetName());
         return nullptr;
     }

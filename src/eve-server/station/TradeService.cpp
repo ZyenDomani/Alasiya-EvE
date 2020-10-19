@@ -114,11 +114,13 @@ PyBoundObject* TradeService::CreateBoundObject(Client* pClient, const PyRep *bin
     // each client's trade session has it's own bound object.
     //   create code for multiple sessions per client, using TradeBound and TradeSession.
     Trade_BindArgs args;
-    PyRep *t = bind_args->Clone();
-    if (!args.Decode(&t)) {
-        codelog(PLAYER__ERROR, "Failed to decode bind args from '%s'", pClient->GetName());
+    //crap
+    PyRep* tmp(bind_args->Clone());
+    if (!args.Decode(&tmp)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode bind args.", GetName());
         return nullptr;
     }
+
     _log(COLLECT__OTHER_DUMP, "Trade bind request for:");
     args.Dump(COLLECT__OTHER_DUMP, "    ");
 
@@ -312,9 +314,10 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
      *  call.byname "qty"
      */
     if (!args.Decode(&call.tuple)) {
-        codelog(PLAYER__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return Handle_Abort(call);
     }
+
     InventoryItemRef itemRef = sItemFactory.GetItem(args.arg1);
     if (itemRef.get() == nullptr)  {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_Add() - Failed to get ItemRef.");
@@ -364,7 +367,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
     PyDict* dict = new PyDict();
         dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(args.arg2));
 
-    DBRowDescriptor* header = m_TSvc->CreateHeader();
+    DBRowDescriptor* header = sDataMgr.CreateHeader();
     PyPackedRow* row = new PyPackedRow( header );
         row->SetField( "itemID",        new PyLong(mTI.itemID));
         row->SetField( "typeID",        new PyInt(mTI.typeID));
@@ -399,9 +402,10 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
      *  call.byname "flag"
      */
     if (!args.Decode(&call.tuple)) {
-        codelog(PLAYER__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return Handle_Abort(call);
     }
+
     uint32 flag(0);
     if (call.byname.find("flag") != call.byname.cend())
         flag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
@@ -426,7 +430,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     uint32 charID = call.client->GetCharacterID();
     uint32 tradeContID = pTSes->m_tradeSession.containerID;
 
-    DBRowDescriptor* header = m_TSvc->CreateHeader();
+    DBRowDescriptor* header = sDataMgr.CreateHeader();
     std::vector<int32> list = args.ints;
     for (auto cur : list) {
         InventoryItemRef itemRef = sItemFactory.GetItem(cur);
@@ -505,7 +509,7 @@ PyResult TradeBound::Handle_List(PyCallArgs &call) {
     TradeSession* pTSes = call.client->GetTradeSession();
     PyList* list = new PyList();
 
-    DBRowDescriptor* header = m_TSvc->CreateHeader();
+    DBRowDescriptor* header = sDataMgr.CreateHeader();
     for (auto itr : pTSes->m_tradelist) {
         PyPackedRow* row = new PyPackedRow( header );
             row->SetField( "itemID",        new PyLong(itr.itemID));
@@ -631,10 +635,11 @@ PyResult TradeService::Handle_InitiateTrade(PyCallArgs &call) {
 
     Call_SingleIntegerArg args;
     //    .arg is char to trade with
-    if(!args.Decode(&call.tuple)) {
-        codelog(PLAYER__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
+
     target = sEntityList.FindClientByCharID( args.arg );
     if (target->GetTradeSession()) {
         Client* otarget = sEntityList.FindClientByCharID( call.client->GetTradeSession()->m_tradeSession.herID );
@@ -695,21 +700,6 @@ void TradeService::CancelTrade(Client* pClient) {
     pClient->ClearTradeSession();
     pOther->ClearTradeSession();
     // returns none
-}
-
-DBRowDescriptor* TradeService::CreateHeader() {
-    DBRowDescriptor* header = new DBRowDescriptor;
-        header->AddColumn( "itemID",     DBTYPE_I8 );
-        header->AddColumn( "typeID",     DBTYPE_I4 );
-        header->AddColumn( "ownerID",    DBTYPE_I4 );
-        header->AddColumn( "locationID", DBTYPE_I8 );
-        header->AddColumn( "flagID",     DBTYPE_I2 );
-        header->AddColumn( "stacksize",  DBTYPE_I4 );
-        header->AddColumn( "groupID",    DBTYPE_I2 );
-        header->AddColumn( "singleton",  DBTYPE_BOOL );
-        header->AddColumn( "categoryID", DBTYPE_I4 );
-        header->AddColumn( "customInfo", DBTYPE_STR );
-    return header;
 }
 
 uint32 TradeService::GetTradeSessionID()

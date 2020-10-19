@@ -70,9 +70,9 @@ PyResult SovereigntyMgrService::Handle_GetSystemSovereigntyInfo(PyCallArgs &call
             [PyInt 30000302]
               */
     Call_SingleIntegerArg args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetSystemSovInfo(args.arg);

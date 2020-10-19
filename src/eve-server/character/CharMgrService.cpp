@@ -185,13 +185,13 @@ PyBoundObject *CharMgrService::CreateBoundObject(Client *pClient, const PyRep *b
     bind_args->Dump(CHARACTER__BIND, "    ");
     Call_TwoIntegerArgs args;
     //crap
-    PyRep *t = bind_args->Clone();
-    if(!args.Decode(&t)) {
-        _log(SERVICE__ERROR, "%s: Failed to decode bind object params.", GetName());
+    PyRep* tmp(bind_args->Clone());
+    if (!args.Decode(&tmp)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
-	return(new CharMgrBound(m_manager, args.arg1, args.arg2));
+    return new CharMgrBound(m_manager, args.arg1, args.arg2);
 }
 
 PyResult CharMgrService::Handle_GetImageServerLink( PyCallArgs& call )
@@ -285,7 +285,7 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
 {
     Call_TwoIntegerArgs args;
-    if (!args.Decode( &call.tuple ) )  {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }

@@ -132,7 +132,7 @@ PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityID
 }
 
 PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
-    // this is locations only....region, const, system, station
+    // this is locations only....region, const, system, station, ship
     std::vector<int32> staticItems, dynamicItems, asteroidItems;
     staticItems.clear();
     dynamicItems.clear();
@@ -157,7 +157,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
             " itemID AS locationID,"
             " itemName AS locationName,"
             " x, y, z,"
-            " NULL AS locationNameID"   //locationName = localization.GetByMessageID(self.locationNameID)
+            " itemNameID AS locationNameID"   //locationName = localization.GetByMessageID(self.locationNameID)
             " FROM mapDenormalize"
             " WHERE itemID in (%s)", ids.c_str()))
         {
@@ -184,6 +184,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
 
     if (asteroidItems.size()) {
         ListToINString(asteroidItems, ids);
+        sLog.Warning("GetMultiLocationsEx", "Asteroid Item requested.");
         if (!sDatabase.RunQuery(res,
             "SELECT "
             " itemID AS locationID,"

@@ -1256,7 +1256,7 @@ std::string StaticDataMgr::GetCorpName(uint32 corpID)
         case corpRogueDrones:       return "Rogue Drones";
     }
 
-    return "Undefined";
+    return "Undefined - WIP";
 }
 
 std::string StaticDataMgr::GetFactionName(uint32 factionID)

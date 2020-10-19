@@ -117,7 +117,7 @@ void MarketProxyService::InvalidateOrdersCache(uint32 typeID)
 PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -127,7 +127,7 @@ PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
 PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -138,7 +138,7 @@ PyResult MarketProxyService::Handle_CharGetNewTransactions(PyCallArgs &call)
 {
     Call_GetNewCharTransactions args;
     if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -151,7 +151,7 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
 {
     Call_GetNewCorpTransactions args;
     if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -164,7 +164,7 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
 PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
     Call_SingleIntegerArg args; //itemID
     if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -214,10 +214,10 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 17:15:42 [SvcCall]         [10] (None)
 */
   Call_PlaceCharOrder args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
-        return nullptr;
-    }
+  if (!args.Decode(&call.tuple)) {
+      codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+      return nullptr;
+  }
 
     _log(MARKET__DUMP, "Mkt::PlaceCharOrder()");
     args.Dump(MARKET__DUMP, "    ");
@@ -385,9 +385,10 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
     Call_ModifyCharOrder args;
     if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
+
     // client coded to throw error if price > 9223372036854.0
     uint16 typeID = 0;
     uint32 quantity = 0;
@@ -422,7 +423,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
 PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     Call_CancelCharOrder args;
     if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

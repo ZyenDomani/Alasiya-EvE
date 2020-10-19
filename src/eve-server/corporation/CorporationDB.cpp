@@ -2136,6 +2136,7 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     DBResultRow row;
     if (res.GetRow(row)) {
         // add to notification
+        /** @todo update this to use CorpNotify() */
         OnCorpShareChange corpUpdate;
             corpUpdate.corpID = corpID;
             corpUpdate.ownerID = ownerID;

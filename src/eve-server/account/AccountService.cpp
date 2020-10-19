@@ -315,7 +315,8 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         HandleCorpTransaction(toID, entryTypeID, fromID, toID, toCurrency, toKey, amount, reason, referenceID);
         return;
     } else {
-        _log(ACCOUNT__TRACE, "TranserFunds() - toID: %u is neither player nor player corp.", toID);
+        _log(ACCOUNT__TRACE, "TranserFunds() - toID: %s(%u) is neither player nor player corp.  Not sending update.", \
+                sDataMgr.GetCorpName(toID).c_str(), toID);
         return;
     }
 

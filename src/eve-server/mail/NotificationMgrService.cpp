@@ -100,11 +100,11 @@ PyResult NotificationMgrService::Handle_GetByGroupID(PyCallArgs &call)
               */
               // yes, i have the packet, but wtf is this?
     Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple))
-    {
-        _log(SERVICE__ERROR, "Failed to decode args for GetByGroupID call");
-        return NULL;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
     }
+
     int groupID = args.arg;
     return new PyTuple(0);
 }
@@ -120,11 +120,11 @@ PyResult NotificationMgrService::Handle_GetUnprocessed(PyCallArgs &call)
 PyResult NotificationMgrService::Handle_MarkGroupAsProcessed(PyCallArgs &call)
 {
     Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple))
-    {
-        _log(SERVICE__ERROR, "Failed to decode args for MarkGroupAsProcessed call");
-        return NULL;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
     }
+
     int groupID = args.arg;
     return NULL;
 }
@@ -137,11 +137,11 @@ PyResult NotificationMgrService::Handle_MarkAllAsProcessed(PyCallArgs &call)
 PyResult NotificationMgrService::Handle_MarkAsProcessed(PyCallArgs &call)
 {
     Call_SingleArg args;
-    if (!args.Decode(&call.tuple))
-    {
-        _log(SERVICE__ERROR, "Failed to decode args for MarkAsProcessed call");
-        return NULL;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
     }
+
     PyRep* notificationsList = args.arg;
     return NULL;
 }
@@ -149,11 +149,11 @@ PyResult NotificationMgrService::Handle_MarkAsProcessed(PyCallArgs &call)
 PyResult NotificationMgrService::Handle_DeleteGroupNotifications(PyCallArgs &call)
 {
     Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple))
-    {
-        _log(SERVICE__ERROR, "Failed to decode args for DeleteGroupNotifications call");
-        return NULL;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
     }
+
     int groupID = args.arg;
     return NULL;
 }
@@ -166,11 +166,11 @@ PyResult NotificationMgrService::Handle_DeleteAllNotifications(PyCallArgs &call)
 PyResult NotificationMgrService::Handle_DeleteNotifications(PyCallArgs &call)
 {
     Call_SingleArg args;
-    if (!args.Decode(&call.tuple))
-    {
-        _log(SERVICE__ERROR, "Failed to decode args for DeleteNotifications call");
-        return NULL;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
     }
+    
     PyRep* notificationsIDs = args.arg;
     return NULL;
 }

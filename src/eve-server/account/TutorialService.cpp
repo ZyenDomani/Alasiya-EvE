@@ -52,16 +52,16 @@ TutorialService::~TutorialService() {
 }
 
 PyResult TutorialService::Handle_GetTutorials(PyCallArgs &call) {
-  sLog.White( "TutorialService::Handle_GetTutorials()", "size= %u", call.tuple->size() );
+  sLog.Warning( "TutorialService::Handle_GetTutorials()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
     return(m_db.GetAllTutorials());
 }
 
 PyResult TutorialService::Handle_GetTutorialInfo(PyCallArgs &call) {
-  sLog.White( "TutorialService::Handle_GetTutorialInfo()", "size= %u", call.tuple->size() );
+  sLog.Warning( "TutorialService::Handle_GetTutorialInfo()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
     Call_GetTutorialInfo args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return NULL;
     }

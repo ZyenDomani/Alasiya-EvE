@@ -217,8 +217,10 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
             body += shipRef->itemName();
             body += ", at level of ";
             body += itoa(fraction *100);
-            body += "%.<br>This contract will expire after 12 weeks.<br><br>";   //*insert endDate Here*,
-            body += "Best,<br>";
+            body += "%.<br>This contract will expire after 12 weeks, on xxxxx";
+            // body += GetExpireDate();   //*insert endDate Here*,
+            body += "<br><br>";
+            body += "Best Wishes,<br>";
             body += "The Secure Commerce Commission,<br><br>";
             body += "Reference ID: xxxxx <br>"; // put contractID here
             body += "jav";

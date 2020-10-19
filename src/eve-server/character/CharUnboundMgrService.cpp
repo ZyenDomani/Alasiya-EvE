@@ -153,7 +153,7 @@ PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call)
 PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call) {
     // charID = sm.RemoteSvc('charUnboundMgr').CreateCharacterWithDoll(charactername, bloodlineID, genderID, ancestryID, charInfo, portraitInfo, schoolID)
     CallCreateCharacterWithDoll arg;
-    if (!arg.Decode(call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewZero();
     }

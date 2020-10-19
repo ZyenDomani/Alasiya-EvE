@@ -135,7 +135,7 @@ PyResult FleetManager::Handle_BroadcastToBubble(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     SendBroadCastCall args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return nullptr;
     }
@@ -151,7 +151,7 @@ PyResult FleetManager::Handle_BroadcastToSystem(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     SendBroadCastCall args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return nullptr;
     }

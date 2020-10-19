@@ -31,7 +31,7 @@
 
 Mutex mLogSys;
 
-FILE *logsys_log_file = nullptr;
+FILE *logsys_log_file(nullptr);
 
 #define LOG_CATEGORY(category) #category ,
 const char *log_category_names[NUMBER_OF_LOG_CATEGORIES] = {

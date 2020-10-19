@@ -81,7 +81,7 @@ PyResult ConfigService::Handle_GetMultiOwnersEx(PyCallArgs &call) {
     call.Dump(CACHE__DUMP);
 
     Call_SingleIntList arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -91,7 +91,7 @@ PyResult ConfigService::Handle_GetMultiOwnersEx(PyCallArgs &call) {
 
 PyResult ConfigService::Handle_GetMultiAllianceShortNamesEx(PyCallArgs &call) {
     Call_SingleIntList arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -104,7 +104,7 @@ PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // n
     _log(CACHE__DUMP,  "ConfigService::Handle_GetMultiLocationsEx" );
     call.Dump(CACHE__DUMP);
     Call_SingleIntList arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -116,7 +116,7 @@ PyResult ConfigService::Handle_GetMultiStationEx(PyCallArgs &call) {
     _log(CACHE__DUMP,  "ConfigService::Handle_GetMultiStationEx" );
     call.Dump(CACHE__DUMP);
     Call_SingleIntList arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -126,7 +126,7 @@ PyResult ConfigService::Handle_GetMultiStationEx(PyCallArgs &call) {
 
 PyResult ConfigService::Handle_GetMultiCorpTickerNamesEx(PyCallArgs &call) {
     Call_SingleIntList arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -136,7 +136,7 @@ PyResult ConfigService::Handle_GetMultiCorpTickerNamesEx(PyCallArgs &call) {
 
 PyResult ConfigService::Handle_GetMultiGraphicsEx(PyCallArgs &call) {
     Call_SingleIntList arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -146,8 +146,8 @@ PyResult ConfigService::Handle_GetMultiGraphicsEx(PyCallArgs &call) {
 
 PyResult ConfigService::Handle_GetMap(PyCallArgs &call) {
     Call_SingleIntegerArg args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -164,19 +164,19 @@ PyResult ConfigService::Handle_GetMapOffices(PyCallArgs &call) {
 22:38:58 [SvcCall]     Argument 'machoVersion':
 22:38:58 [SvcCall]         Integer field: 1
   */
-    Call_SingleIntegerArg args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
-        return nullptr;
-    }
+  Call_SingleIntegerArg args;
+  if (!args.Decode(&call.tuple)) {
+      codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+      return nullptr;
+  }
 
     return m_db.GetMapOffices(args.arg);
 }
 
 PyResult ConfigService::Handle_GetMapObjects(PyCallArgs &call) {
-  Call_GetMapObjects args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+    Call_GetMapObjects args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -189,7 +189,7 @@ PyResult ConfigService::Handle_GetMultiInvTypesEx(PyCallArgs &call) {
 
     //parse the PyRep to get the list of IDs to query.
     Call_SingleIntList arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -199,15 +199,15 @@ PyResult ConfigService::Handle_GetMultiInvTypesEx(PyCallArgs &call) {
 
 
 //02:10:35 L ConfigService::Handle_GetMapConnections(): size= 6
-//15:12:56[33;01m W [37;01mConfigDB::GetMapConnections: [33;01mDB query - System:20000307, B1:0, B2:0, B3:1, Cel:0, _c:1  <-- this means cached
+//15:12:56 W ConfigDB::GetMapConnections: DB query - System:20000307, B1:0, B2:0, B3:1, Cel:0, _c:1  <-- this means cached
 PyResult ConfigService::Handle_GetMapConnections(PyCallArgs &call) {
 /**
         this is cached on clientside.  only called if not in client cache
 */
     Call_GetMapConnections args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return new PyInt(0);
+        return nullptr;
     }
 
     /** @todo check into id sending.... 9 is EvE Universe and 9000001 is EvE WormHole Universe */

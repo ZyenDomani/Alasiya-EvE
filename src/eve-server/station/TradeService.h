@@ -40,7 +40,6 @@ public:
     virtual ~TradeService();
 
     uint32 GetTradeSessionID();
-    DBRowDescriptor* CreateHeader();
 
     void InitiateTrade(Client* pClient, PyRep* resp);
     void RemoveActiveSession(uint32 myID);

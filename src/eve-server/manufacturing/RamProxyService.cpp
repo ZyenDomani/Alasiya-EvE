@@ -109,7 +109,7 @@ PyResult RamProxyService::Handle_AssemblyLinesGet(PyCallArgs &call) {
 PyResult RamProxyService::Handle_AssemblyLinesSelect(PyCallArgs &call) {
     Call_AssemblyLinesSelect args;
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Unable to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -129,7 +129,7 @@ PyResult RamProxyService::Handle_AssemblyLinesSelect(PyCallArgs &call) {
 PyResult RamProxyService::Handle_GetJobs2(PyCallArgs &call) {
     Call_GetJobs2 args;
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode call args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -151,7 +151,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
     Call_InstallJob args;
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -464,7 +464,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
 
     Call_CompleteJob args;
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

@@ -217,7 +217,7 @@ PyRep* UnmarshalStream::LoadIntegerVar()
      * length integer field (somewhat of a 'bigint' style data type), but it gets
      * used at times for integers which would fit into the other primitive data
      * types.... I would really like to see the criteria they use to determine
-     * what gets marshales as what...
+     * what gets marshaled as what...
      */
 
     const uint32 len = ReadSizeEx();
@@ -338,11 +338,9 @@ PyRep* UnmarshalStream::LoadTuple()
     const uint32 count = ReadSizeEx();
     PyTuple* tuple = new PyTuple( count );
 
-    for( uint32 i(0); i < count; i++ )
-    {
+    for ( uint32 i(0); i < count; ++i ) {
         PyRep* rep = LoadRep();
-        if( NULL == rep )
-        {
+        if (rep == nullptr) {
             PyDecRef( tuple );
             return nullptr;
         }
@@ -390,10 +388,10 @@ PyRep* UnmarshalStream::LoadList()
     const uint32 count = ReadSizeEx();
     PyList* list = new PyList( count );
 
-    for( uint32 i(0); i < count; i++ )
+    for ( uint32 i(0); i < count; i++ )
     {
         PyRep* rep = LoadRep();
-        if( NULL == rep )
+        if (rep == nullptr)
         {
             PyDecRef( list );
             return nullptr;
@@ -422,7 +420,7 @@ PyRep* UnmarshalStream::LoadDict()
     const uint32 count = ReadSizeEx();
     PyDict* dict = new PyDict;
 
-    for( uint32 i(0); i < count; i++ )
+    for ( uint32 i(0); i < count; i++ )
     {
         PyRep* value = LoadRep();
         if( NULL == value )
@@ -533,7 +531,7 @@ PyRep* UnmarshalStream::LoadPackedRow()
     uint32 cc = row->header()->ColumnCount();
     size_t sum(0);
 
-    for( uint32 i(0); i < cc; i++ )
+    for ( uint32 i(0); i < cc; i++ )
     {
         uint8 size = DBTYPE_GetSizeBits( row->header()->GetColumnType( i ) );
 
@@ -551,7 +549,7 @@ PyRep* UnmarshalStream::LoadPackedRow()
     std::multimap< uint8, uint32, std::greater< uint8 > >::iterator cur, end;
     cur = sizeMap.begin();
     end = sizeMap.end();
-    for(; cur != end; ++cur)
+    for (; cur != end; ++cur)
     {
         const uint32 index = cur->second;
 

@@ -247,7 +247,7 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     FleetInviteCall args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return PyStatic.NewNone();
     }
@@ -397,7 +397,7 @@ PyResult FleetBound::Handle_ChangeWingName(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     RenameCall args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return PyStatic.NewNone();
     }
@@ -419,7 +419,7 @@ PyResult FleetBound::Handle_ChangeSquadName(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     RenameCall args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return PyStatic.NewNone();
     }
@@ -481,7 +481,7 @@ PyResult FleetBound::Handle_RejectJoinRequest(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
-    if (!arg.Decode(call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return PyStatic.NewNone();
     }
@@ -547,7 +547,7 @@ PyResult FleetBound::Handle_SendBroadcast(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     SendBroadCastCall args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return nullptr;
     }
@@ -609,7 +609,7 @@ PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
-    if (!arg.Decode(call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arg.", call.client->GetChar()->itemName().c_str());
         return PyStatic.NewNone();
     }
@@ -643,7 +643,7 @@ PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     SetBoosterCall args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return PyStatic.NewFalse();
     }
@@ -694,7 +694,7 @@ PyResult FleetBound::Handle_MoveMember(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     MoveMemberCall args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return PyStatic.NewFalse();
     }
@@ -723,7 +723,7 @@ PyResult FleetBound::Handle_KickMember(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
-    if (!arg.Decode(call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return PyStatic.NewFalse();
     }
@@ -748,7 +748,7 @@ PyResult FleetBound::Handle_CreateSquad(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
-    if (!arg.Decode(call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return nullptr;
     }
@@ -765,7 +765,7 @@ PyResult FleetBound::Handle_DeleteWing(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
-    if (!arg.Decode(call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return nullptr;
     }
@@ -782,7 +782,7 @@ PyResult FleetBound::Handle_DeleteSquad(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
-    if (!arg.Decode(call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return nullptr;
     }

@@ -84,7 +84,7 @@ PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call)
 PyResult Standing::Handle_GetSecurityRating(PyCallArgs &call) {
     //takes an integer: characterID
     Call_SingleIntegerArg arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }

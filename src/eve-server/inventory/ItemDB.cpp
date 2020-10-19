@@ -362,7 +362,7 @@ bool ItemDB::DeleteItem(uint32 itemID) {
     return true;
 }
 
-void ItemDB::GetItems ( uint16 catID, std::map< uint16, std::string >& typeIDs ) {
+void ItemDB::GetItems(uint16 catID, std::map< uint16, std::string >& typeIDs) {
 
     DBQueryResult res;
 

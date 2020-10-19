@@ -107,7 +107,7 @@ PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
     // NOTE:  "return PyNone()" = access denied to customs office.
 
     Call_SingleIntegerArg args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -128,7 +128,7 @@ PyResult PlanetORBBound::Handle_GetSettingsInfo( PyCallArgs& call )
      *   self.selectedHour, self.taxRateValues, self.standingLevel, self.allowAlliance, self.allowStandings = self.orbitalData
      */
     Call_SingleIntegerArg args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -144,7 +144,7 @@ PyResult PlanetORBBound::Handle_UpdateSettings( PyCallArgs& call )
     call.Dump(PLANET__DUMP);
 
     Call_UpdateSettings args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }

@@ -70,7 +70,7 @@ PyResult PyService::Handle_MachoResolveObject(PyCallArgs &call) {
 PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
 {
     CallMachoBindObject args;
-    if ( !args.Decode( &call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog( SERVICE__ERROR, "%s Service: Failed to decode arguments", GetName() );
         return nullptr;
     }
@@ -80,7 +80,7 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
     //first we need to get our implementation to actually create the object they are trying to bind to.
     PyBoundObject* obj = CreateBoundObject(call.client, args.bindParams);
     if (obj == nullptr) {
-        _log( SERVICE__ERROR, "%s Service: Unable to create bound object for:", GetName());
+        _log( SERVICE__ERROR, "%s Service: Unable to create bound object:", GetName());
         args.bindParams->Dump(SERVICE__ERROR, "    ");
 
         return nullptr;
@@ -96,7 +96,7 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
     } else {
         CallMachoBindObject_call boundcall;
         if (!boundcall.Decode(&args.call)) {
-            codelog(SERVICE__ERROR, "%s Service: %s: Failed to decode boundcall arguments", GetName(), call.client->GetName());
+            codelog(SERVICE__ERROR, "%s Service: Failed to decode boundcall arguments", GetName());
             return nullptr;
         }
 

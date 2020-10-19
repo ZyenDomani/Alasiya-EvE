@@ -140,7 +140,7 @@ bool MarshalStream::VisitLong( const PyLong* rep )
 
 bool MarshalStream::VisitBoolean( const PyBool* rep )
 {
-    if ( rep->value() == true )
+    if (rep->value())
         Put<uint8>( Op_PyTrue );
     else
         Put<uint8>( Op_PyFalse );
@@ -190,7 +190,7 @@ bool MarshalStream::VisitString( const PyString* rep )
     } else {
         //string is long enough for a string table entry, check it.
         const uint8 index = sMarshalStringTable.LookupIndex( rep->content() );
-        if ( STRING_TABLE_ERROR != index ) {
+        if ( index > STRING_TABLE_ERROR ) {
             Put<uint8>( Op_PyStringTableItem );
             Put<uint8>( index );
         } else {
@@ -293,7 +293,7 @@ bool MarshalStream::VisitObject( const PyObject* rep )
 
 bool MarshalStream::VisitObjectEx( const PyObjectEx* rep )
 {
-    if ( rep->isType2() == true )
+    if (rep->isType2())
         Put<uint8>( Op_PyObjectEx2 );
     else
         Put<uint8>( Op_PyObjectEx1 );

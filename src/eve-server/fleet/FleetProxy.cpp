@@ -57,7 +57,7 @@ PyResult FleetProxy::Handle_ApplyToJoinFleet(PyCallArgs &call) {
    // call.Dump(FLEET__DUMP);
 
     Call_SingleIntegerArg arg;
-    if (!arg.Decode(call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return new PyBool(false);
     }
@@ -75,7 +75,7 @@ PyResult FleetProxy::Handle_AddFleetFinderAdvert(PyCallArgs &call) {
     /** @todo  this needs to be updated....check standings and verifly scope */
 
     FleetAdvertCall args;
-    if (!args.Decode(call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return nullptr;
     }

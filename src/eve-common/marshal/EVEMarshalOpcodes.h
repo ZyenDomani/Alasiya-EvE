@@ -23,6 +23,9 @@
     Author:        Zhur
 */
 
+// no clue where these come from, how they were found, or how i can implement the unfinished ones....
+
+
 #ifndef EVE_MARSHAL_OPCODES_H
 #define EVE_MARSHAL_OPCODES_H
 

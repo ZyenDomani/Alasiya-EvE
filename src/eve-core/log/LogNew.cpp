@@ -51,7 +51,7 @@ NewLog::NewLog()
   m_initialized(false)
 {
     // open default logfile
-    std::string logPath = EVEMU_ROOT "/log/";
+    std::string logPath = EVEMU_ROOT "/logs/";
     SetLogfileDefault(logPath);
 
     m_initialized = true;
@@ -63,7 +63,7 @@ mTime( 0 )
 {
     // open default logfile
     if( logPath.empty() )
-        logPath = EVEMU_ROOT "/log/";
+        logPath = EVEMU_ROOT "/logs/";
 
     SetLogfileDefault(logPath);
 
@@ -89,7 +89,7 @@ void NewLog::InitializeLogging( std::string logPath )
 {
     // open default logfile
     if( logPath.empty() )
-        logPath = EVEMU_ROOT "/log/";
+        logPath = EVEMU_ROOT "/logs/";
 
     m_initialized = true;
 
@@ -324,10 +324,10 @@ void NewLog::SetLogfileDefault(std::string logPath)
 
     // open default logfile
     char filename[ FILENAME_MAX + 1 ];
-    std::string logFile = logPath + "log_%02u-%02u-%04u-%02u-%02u.log";
+    std::string logFile = logPath + "%02u-%02u-%04u-%02u-%02u.log";
     snprintf( filename, FILENAME_MAX + 1, logFile.c_str(),
               t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min );
-    //snprintf( filename, FILENAME_MAX + 1, EVEMU_ROOT "/log/log_%02u-%02u-%04u-%02u-%02u.log",
+    //snprintf( filename, FILENAME_MAX + 1, EVEMU_ROOT "/logs/%02u-%02u-%04u-%02u-%02u.log",
     //          t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min );
 
     // this isnt accurate as log system is not initalized yet.  all Print calls will fail

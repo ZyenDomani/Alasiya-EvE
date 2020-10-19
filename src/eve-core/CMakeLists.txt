@@ -33,14 +33,10 @@ SET( error_SOURCE
      "${TARGET_SOURCE_DIR}/error/ErrorHandler.cpp" )
 
 SET( log_INCLUDE
-     #"${TARGET_INCLUDE_DIR}/log/Basic_Log.h"
-     #"${TARGET_INCLUDE_DIR}/log/HTML_Log.h"
      "${TARGET_INCLUDE_DIR}/log/LogNew.h"
      "${TARGET_INCLUDE_DIR}/log/logsys.h"
      "${TARGET_INCLUDE_DIR}/log/logtypes.h" )
 SET( log_SOURCE
-     #"${TARGET_SOURCE_DIR}/log/Basic_Log.cpp"
-     #"${TARGET_SOURCE_DIR}/log/HTML_Log.cpp"
      "${TARGET_SOURCE_DIR}/log/LogNew.cpp"
      "${TARGET_SOURCE_DIR}/log/logsys.cpp" )
 
@@ -114,7 +110,7 @@ SET( utils_SOURCE
 #####################
 SOURCE_GROUP( "src"            FILES ${INCLUDE} )
 SOURCE_GROUP( "src\\database"  FILES ${database_INCLUDE} )
-SOURCE_GROUP( "src\\error"     FILES ${error_INCLUDE} )
+#SOURCE_GROUP( "src\\error"     FILES ${error_INCLUDE} )
 SOURCE_GROUP( "src\\log"       FILES ${log_INCLUDE} )
 SOURCE_GROUP( "src\\math"      FILES ${math_INCLUDE} )
 SOURCE_GROUP( "src\\memory"    FILES ${memory_INCLUDE} )
@@ -124,7 +120,7 @@ SOURCE_GROUP( "src\\utils"     FILES ${utils_INCLUDE} )
 
 SOURCE_GROUP( "src"            FILES ${SOURCE} )
 SOURCE_GROUP( "src\\database"  FILES ${database_SOURCE} )
-SOURCE_GROUP( "src\\error"     FILES ${error_SOURCE} )
+#SOURCE_GROUP( "src\\error"     FILES ${error_SOURCE} )
 SOURCE_GROUP( "src\\log"       FILES ${log_SOURCE} )
 SOURCE_GROUP( "src\\math"      FILES ${math_SOURCE} )
 #SOURCE_GROUP( "src\\memory"    FILES ${memory_SOURCE} )
@@ -135,7 +131,7 @@ SOURCE_GROUP( "src\\utils"     FILES ${utils_SOURCE} )
 ADD_LIBRARY( "${TARGET_NAME}"
              ${INCLUDE}           ${SOURCE}
              ${database_INCLUDE}  ${database_SOURCE}
-             ${error_INCLUDE}     ${error_SOURCE}
+             #${error_INCLUDE}     ${error_SOURCE}
              ${log_INCLUDE}       ${log_SOURCE}
              ${math_INCLUDE}      ${math_SOURCE}
              ${memory_INCLUDE}    #${memory_SOURCE}

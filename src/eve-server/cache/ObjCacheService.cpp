@@ -270,12 +270,11 @@ PyResult ObjCacheService::Handle_GetCachableObject(PyCallArgs &call) {
 20:27:48 [SvcCall]         [ 2]   [ 1] Integer field: 933884788
 20:27:48 [SvcCall]         [ 3] Integer field: 333444
   */
-  //sLog.White( "ObjCacheService", "Handle_GetCachableObject" );
-  //call.Dump(SERVICE__CALL_DUMP);
+    //sLog.White( "ObjCacheService", "Handle_GetCachableObject" );
+    //call.Dump(SERVICE__CALL_DUMP);
     CallGetCachableObject args;
-    if(!args.Decode(&call.tuple))
-    {
-        sLog.Error("Obj Cache Srv", "%s: Unable to decode arguments", call.client->GetName());
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

@@ -585,6 +585,7 @@ PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call)
 
     // Only send notification if it is needed...
     if (notif.data->items.size()) {
+        /** @todo update this to use CorpNotify() */
         MulticastTarget mct;
             mct.corporations.insert(notif.key);
         PyTuple * answer = notif.Encode();
@@ -791,6 +792,7 @@ PyResult CorpRegistryBound::Handle_UpdateTitle(PyCallArgs &call) {
 
     PyDict* updates = new PyDict();
     if (m_db.UpdateTitle(m_corpID, args, updates)) {
+        /** @todo update this to use CorpNotify() */
         OnTitleChanged change;
             change.corpID = m_corpID;
             change.titleID = args.titleID;
@@ -852,6 +854,7 @@ PyResult CorpRegistryBound::Handle_UpdateTitles(PyCallArgs &call) {
         args.rolesAtOther = PyRep::IntegerValue(list2->GetItem(8));
         args.grantableRolesAtOther = PyRep::IntegerValue(list2->GetItem(9));
         if (m_db.UpdateTitle(m_corpID, args, updates)) {
+            /** @todo update this to use CorpNotify() */
             OnTitleChanged change;
                 change.corpID = m_corpID;
                 change.titleID = args.titleID;
@@ -888,6 +891,7 @@ PyResult CorpRegistryBound::Handle_UpdateCorporation(PyCallArgs &call) {
 
     // Only send notification if it is needed...
     if (notif.data->items.size()) {
+        /** @todo update this to use CorpNotify() */
         MulticastTarget mct;
         mct.corporations.insert(notif.key);
         PyTuple * answer = notif.Encode();
@@ -935,6 +939,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call)
                                  Account::KeyType::Cash);   // main wallet
 
     // Send notification to those in the station
+    /** @todo update this to use CorpNotify() */
     MulticastTarget mct;
     mct.locations.insert(call.client->GetLocationID());
     PyTuple *answer = notif.Encode();

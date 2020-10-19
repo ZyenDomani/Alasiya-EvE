@@ -729,7 +729,7 @@ enum EveAttrEnum {
     AttrShipBonusPirateFaction = 793,
     AttrProbesInGroup = 794,
     AttrShipBonus1ABC = 795,
-    AttrMassAddition = 796,
+    AttrMassAddition = 796,     // this is solely for mwd/ab mass addition. (checked in client)
     AttrMaximumRangeCap = 797,
     AttrEntityBracketColour = 798,
     AttrImplantSetBloodraider = 799,

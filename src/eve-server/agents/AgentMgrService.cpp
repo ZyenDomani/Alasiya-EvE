@@ -82,14 +82,14 @@ AgentMgrService::~AgentMgrService() {
 //  also need a way to check/delete released objects/agents
 PyBoundObject *AgentMgrService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     if (!bind_args->IsInt()) {
-        _log(SERVICE__ERROR, "%s: Non-integer bind argument '%s'", pClient->GetName(), bind_args->TypeString());
+        _log(SERVICE__ERROR, "%s: Non-integer argument '%s'", pClient->GetName(), bind_args->TypeString());
         return nullptr;
     }
 
-    uint32 agentID = bind_args->AsInt()->value();
-    Agent* pAgent = sEntityList.GetAgent(agentID);
+    uint32 agentID(bind_args->AsInt()->value());
+    Agent* pAgent(sEntityList.GetAgent(agentID));
     if (pAgent == nullptr) {
-        _log(SERVICE__ERROR, "%s: Unable to obtain agent %u", pClient->GetName(), agentID);
+        _log(AGENT__ERROR, "%s: Unable to obtain agent %u", pClient->GetName(), agentID);
         return nullptr;
     }
 

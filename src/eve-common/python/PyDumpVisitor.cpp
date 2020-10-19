@@ -79,7 +79,7 @@ bool PyDumpVisitor::VisitBuffer( const PyBuffer* rep )
 
 bool PyDumpVisitor::VisitString( const PyString *rep )
 {
-    if( IsPrintable( rep ) )
+    if (IsPrintable( rep ) )
         _print( "%s    String: '%s'", _pfx(), rep->content().c_str() );
     else
         _print( "%sBinary String: (len=%lu)", _pfx(), rep->content().length() );
@@ -90,7 +90,7 @@ bool PyDumpVisitor::VisitString( const PyString *rep )
 bool PyDumpVisitor::VisitWString( const PyWString* rep )
 {
     // how to do it correctly?
-    if( IsPrintable( rep ) )
+    if (IsPrintable( rep ) )
         _print( "%s   WString: '%s'", _pfx(), rep->content().c_str() );
     else
         _print( "%ssBinary WString: (len=%lu)'", _pfx(), rep->content().length() );
@@ -107,8 +107,8 @@ bool PyDumpVisitor::VisitToken( const PyToken* rep )
 
 bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
 {
-    bool res = true;
-    if( rep->empty() )
+    bool res(true);
+    if (rep->empty())
         _print( "%s Tuple: Empty", _pfx() );
     else  {
         _print( "%s Tuple: %lu elements", _pfx(), rep->size() );
@@ -132,8 +132,8 @@ bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
 
 bool PyDumpVisitor::VisitList( const PyList* rep )
 {
-    bool res = true;
-    if( rep->empty() )
+    bool res(true);
+    if (rep->empty())
         _print( "%s  List: Empty", _pfx() );
     else {
         _print( "%s  List: %lu elements", _pfx(), rep->size() );
@@ -157,14 +157,14 @@ bool PyDumpVisitor::VisitList( const PyList* rep )
 
 bool PyDumpVisitor::VisitDict( const PyDict* rep )
 {
-    if( rep->empty() )
+    if (rep->empty())
         _print( "%s Dictionary: Empty", _pfx() );
     else {
         _print( "%s Dictionary: %lu entries", _pfx(), rep->size() );
 
         PyDict::const_iterator cur = rep->begin();
         for( uint32 i = 0; cur != rep->end(); cur++, i++ ) {
-            if( i > 100 && !fullNested() ) {
+            if (i > 100 && !fullNested() ) {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;
             }
@@ -173,14 +173,14 @@ bool PyDumpVisitor::VisitDict( const PyDict* rep )
             bool res = cur->first->visit( *this );
             _pfxWithdraw();
 
-            if( !res )
+            if (!res )
                 return false;
 
             _pfxExtend( "  [%2u] Value: ", i );
             res = cur->second->visit( *this );
             _pfxWithdraw();
 
-            if( !res )
+            if (!res )
                 return false;
         }
     }
@@ -195,14 +195,14 @@ bool PyDumpVisitor::VisitObject( const PyObject* rep )
     bool res = rep->type()->visit( *this );
     _pfxWithdraw();
 
-    if( !res )
+    if (!res )
         return false;
 
     _pfxExtend( "  Args: " );
     res = rep->arguments()->visit( *this );
     _pfxWithdraw();
 
-    if( !res )
+    if (!res )
         return false;
 
     return true;
@@ -213,26 +213,26 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
     _print( "%s ObjectEx%s:", _pfx(), rep->isType2() ? "2" : "1" );
 
     _print( "%s    Header:", _pfx() );
-    if( rep->header() == NULL )
+    if (rep->header() == NULL )
         _print( "%s (None)", _pfx() );
     else {
         _pfxExtend( "  " );
         bool res = rep->header()->visit( *this );
         _pfxWithdraw();
 
-        if( !res )
+        if (!res )
             return false;
     }
 
     _print( "%s  List:", _pfx() );
-    if( rep->list().empty() )
+    if (rep->list().empty() )
         _print( "%s  Empty", _pfx() );
     else  {
         PyObjectEx::const_list_iterator cur = rep->list().begin();
         for( uint32 i = 0; cur != rep->list().end(); cur++, i++ ) {
             if (*cur == nullptr)
                 continue;
-            if( i > 100 && !fullNested() ) {
+            if (i > 100 && !fullNested() ) {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;
             }
@@ -241,18 +241,18 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
             bool res = (*cur)->visit( *this );
             _pfxWithdraw();
 
-            if( !res )
+            if (!res )
                 return false;
         }
     }
 
     _print( "%s    Dict:", _pfx() );
-    if( rep->dict().empty() )
+    if (rep->dict().empty() )
         _print( "%s   Empty", _pfx() );
     else {
         PyObjectEx::const_dict_iterator cur = rep->dict().begin();
         for( uint32 i = 0; cur != rep->dict().end(); cur++, i++ ) {
-            if( i > 100 && !fullNested() ) {
+            if (i > 100 && !fullNested() ) {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;
             }
@@ -261,14 +261,14 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
             bool res = cur->first->visit( *this );
             _pfxWithdraw();
 
-            if( !res )
+            if (!res )
                 return false;
 
             _pfxExtend( "  [%2u] Value: ", i );
             res = cur->second->visit( *this );
             _pfxWithdraw();
 
-            if( !res )
+            if (!res )
                 return false;
         }
     }
@@ -285,15 +285,15 @@ bool PyDumpVisitor::VisitPackedRow( const PyPackedRow* rep )
     for( uint32 i = 0; cur != rep->end(); cur++, i++ ) {
         _pfxExtend( "    [%2u] %s: ", i, rep->header()->GetColumnName( i )->content().c_str() );
 
-        bool res = true;
-        if( (*cur) == NULL )
+        bool res(true);
+        if ((*cur) == NULL )
             _print( "%s  (None)", _pfx() );
         else
             res = (*cur)->visit( *this );
 
         _pfxWithdraw();
 
-        if( !res )
+        if (!res )
             return false;
     }
 
@@ -343,7 +343,7 @@ PyLogDumpVisitor::PyLogDumpVisitor( LogType log_type, LogType log_hex_type, cons
 
 void PyLogDumpVisitor::_print( const char* fmt, ... )
 {
-    if( !is_log_enabled( logType() ) )
+    if (!is_log_enabled( logType() ) )
         return;
 
     va_list ap;
@@ -356,10 +356,10 @@ void PyLogDumpVisitor::_print( const char* fmt, ... )
 
 void PyLogDumpVisitor::_dump( const char* pfx, const uint8* data, size_t len )
 {
-    if( !is_log_enabled( logHexType() ) )
+    if (!is_log_enabled( logHexType() ) )
         return;
 
-    if( fullHex() )
+    if (fullHex() )
         pfxHexDump( pfx, logHexType(), data, len );
     else
         pfxHexDumpPreview( pfx, logHexType(), data, len );
@@ -385,7 +385,7 @@ void PyFileDumpVisitor::_print( const char* fmt, ... )
 
 void PyFileDumpVisitor::_dump( const char* pfx, const uint8* data, size_t len )
 {
-    if( fullHex() )
+    if (fullHex() )
         pfxHexDump( pfx, file(), data, len );
     else
         pfxHexDumpPreview( pfx, file(), data, len );

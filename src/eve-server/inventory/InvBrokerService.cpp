@@ -119,11 +119,13 @@ InvBrokerService::~InvBrokerService() {
 
 PyBoundObject* InvBrokerService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     InvBroker_BindArgs args;
-    PyRep *t = bind_args->Clone();
-    if(!args.Decode(&t)) {
-        codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", pClient->GetName());
-        return NULL;
+    //crap
+    PyRep* tmp(bind_args->Clone());
+    if (!args.Decode(&tmp)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode bind args.", GetName());
+        return nullptr;
     }
+
     _log(INV__BIND, "InvBrokerService bind request:");
     args.Dump(INV__BIND, "    ");
 
@@ -288,7 +290,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
     _log(INV__DUMP, "InvBrokerBound::Handle_GetInventory() size=%u", call.tuple->size());
     call.Dump(INV__DUMP);
     Inventory_GetInventory args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -393,6 +395,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     InventoryItemRef iRef = sItemFactory.GetItem( args.itemID );
     if (iRef.get() == nullptr) {
         codelog(INV__ERROR, "%s: Unable to load item %u", call.client->GetName(), args.itemID);
+        sItemFactory.UnsetUsingClient();
         return nullptr;
     }
 
@@ -401,30 +404,31 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
      * {'FullPath': u'UI/Messages', 'messageID': 258479, 'label': u'SetNameShipMustBePilotBody'}(u'You can only rename ships that you are currently piloting.', None, None)
      */
 
+    bool error(false);
     /** @todo if owner is corp, make sure char has permissions to rename corp items  */
     if (IsPlayerCorp(iRef->ownerID())) {
         if (iRef->ownerID() != call.client->GetCorporationID()) {
             _log(INV__ERROR, "%u(%u) tried to rename CorpItem %s(%u) owned by %u.", \
                     call.client->GetName(), call.client->GetCharacterID(), iRef->name(), \
                     iRef->itemID(), iRef->ownerID());
-            call.client->SendErrorMsg("You are not allowed to rename that.");
-            return nullptr;
+            error = true;
         }
     } else if (IsCharacter(iRef->ownerID())) {
         if (iRef->ownerID() != call.client->GetCharacterID()) {
             _log(INV__ERROR, "%u(%u) tried to rename PlayerItem %s(%u) owned by %u.", \
                     call.client->GetName(), call.client->GetCharacterID(), iRef->name(), \
                     iRef->itemID(), iRef->ownerID());
-            call.client->SendErrorMsg("You are not allowed to rename that.");
-            return nullptr;
+            error = true;
         }
     } else {
         // error here....
-        call.client->SendErrorMsg("You are not allowed to rename that.");
-        return nullptr;
+        error = true;
     }
 
-    iRef->Rename(PyRep::StringContent(args.itemName));
+    if (error)
+        call.client->SendErrorMsg("You are not allowed to rename that.");
+    else
+        iRef->Rename(PyRep::StringContent(args.itemName));
 
     // Release the ItemFactory
     sItemFactory.UnsetUsingClient();
@@ -432,13 +436,14 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     //OnItemNameChange
     // need to also check pos rename code.
     //  this needs investigating to verify
+    //  -- not sure this is sent from server
 
     return nullptr;
 }
 
 PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
     Call_TrashItems args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }

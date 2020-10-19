@@ -258,7 +258,7 @@ PyDict *DBResultToIntRowDict(DBQueryResult &result, uint32 key_index, const char
     PyDict *res = new PyDict();
     //add a line entry for each result row:
     DBResultRow row;
-    while(result.GetRow(row)) {
+    while (result.GetRow(row)) {
         //this could be more efficient by not building the column list each time, but cloning it instead.
         PyObject *r = DBRowToRow(row, type);
         int32 k = row.GetInt(key_index);
@@ -275,82 +275,18 @@ PyDict *DBResultToIntIntDict(DBQueryResult &result) {
     //add a line entry for each result row:
     DBResultRow row;
     while(result.GetRow(row)) {
-        if(row.IsNull(0))
+        if (row.IsNull(0))
             continue;   //no working with NULL keys...
         int32 k = row.GetInt(0);
-        if(k == 0)
+        if (k == 0)
             continue;   //likely a non-integer key
-        if(row.IsNull(1))
+        if (row.IsNull(1))
             res->SetItem( new PyInt(k), PyStatic.NewNone() );
         else
             res->SetItem( new PyInt(k), new PyInt(row.GetInt(1)) );
     }
 
     return res;
-}
-
-void DBResultToIntIntDict(DBQueryResult &result, std::map<int32, int32> &into) {
-    //add a line entry for each result row:
-    DBResultRow row;
-    while(result.GetRow(row)) {
-        if(row.IsNull(0))
-            continue;   //no working with NULL keys...
-        int32 k = row.GetInt(0);
-        int32 v(0);
-        if(row.IsNull(1))
-            v = 0;      //we can deal with assuming NULL == 0
-        else
-            v = row.GetInt(1);
-        into[k] = v;
-    }
-}
-
-void DBResultToUIntUIntDict(DBQueryResult &result, std::map<uint32, uint32> &into) {
-    //add a line entry for each result row:
-    DBResultRow row;
-    while(result.GetRow(row)) {
-        if(row.IsNull(0))
-            continue;   //no working with NULL keys...
-        uint32 k = row.GetUInt(0);
-        uint32 v(0);
-        if(row.IsNull(1))
-            v = 0;      //we can deal with assuming NULL == 0
-        else
-            v = row.GetUInt(1);
-        into[k] = v;
-    }
-}
-
-/**
- * this function isn't used.
- */
-void DBResultToIntIntlistDict( DBQueryResult &result, std::map<int32, PyRep *> &into ) {
-    /* this builds a map from the int in result[0], to a list of each result[1]
-     * which is has the same result[0]. This function assumes the result is
-     * ORDER BY result[0]
-     */
-    uint32 last_key = 0xFFFFFFFF;
-
-    PyList *l = NULL;
-
-    DBResultRow row;
-    while( result.GetRow( row ) )
-    {
-        uint32 k = row.GetUInt(0);
-        if (k != last_key )
-        {
-            //watch for overwrite, no guarantee we are dealing with a key.
-            std::map<int32, PyRep *>::iterator res = into.find(k);
-            if (res != into.end() )
-                //log an error or warning?
-                PyDecRef( res->second );
-
-            into[k] = l = new PyList();
-            last_key = k;
-        }
-
-        l->AddItemInt( row.GetInt( 1 ) );
-    }
 }
 
 void FillPackedRow( const DBResultRow& row, PyPackedRow* into )
@@ -519,4 +455,68 @@ PyPackedRow *DBRowToPackedRow( DBResultRow &row )
     DBRowDescriptor *header = new DBRowDescriptor( row );
 
     return CreatePackedRow( row, header );
+}
+
+/**
+ * these functions aren't used.
+ */
+void DBResultToIntIntDict(DBQueryResult &result, std::map<int32, int32> &into) {
+    //add a line entry for each result row:
+    DBResultRow row;
+    while(result.GetRow(row)) {
+        if (row.IsNull(0))
+            continue;   //no working with NULL keys...
+            int32 k = row.GetInt(0);
+        int32 v(0);
+        if (row.IsNull(1))
+            v = 0;      //we can deal with assuming NULL == 0
+            else
+                v = row.GetInt(1);
+            into[k] = v;
+    }
+}
+
+void DBResultToUIntUIntDict(DBQueryResult &result, std::map<uint32, uint32> &into) {
+    //add a line entry for each result row:
+    DBResultRow row;
+    while(result.GetRow(row)) {
+        if(row.IsNull(0))
+            continue;   //no working with NULL keys...
+            uint32 k = row.GetUInt(0);
+        uint32 v(0);
+        if(row.IsNull(1))
+            v = 0;      //we can deal with assuming NULL == 0
+            else
+                v = row.GetUInt(1);
+            into[k] = v;
+    }
+}
+
+void DBResultToIntIntlistDict( DBQueryResult &result, std::map<int32, PyRep *> &into ) {
+    /* this builds a map from the int in result[0], to a list of each result[1]
+     * which is has the same result[0]. This function assumes the result is
+     * ORDER BY result[0]
+     */
+    uint32 last_key = 0xFFFFFFFF;
+
+    PyList *l = NULL;
+
+    DBResultRow row;
+    while( result.GetRow( row ) )
+    {
+        uint32 k = row.GetUInt(0);
+        if (k != last_key )
+        {
+            //watch for overwrite, no guarantee we are dealing with a key.
+            std::map<int32, PyRep *>::iterator res = into.find(k);
+            if (res != into.end() )
+                //log an error or warning?
+                PyDecRef( res->second );
+
+            into[k] = l = new PyList();
+            last_key = k;
+        }
+
+        l->AddItemInt( row.GetInt( 1 ) );
+    }
 }

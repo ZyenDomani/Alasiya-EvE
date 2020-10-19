@@ -254,6 +254,11 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Asteroid: {
             // these are called but not sure if they need to be coded specifically
         } break;
+        case EVEDB::invCategories::PlanetaryResources:
+        case EVEDB::invCategories::PlanetaryCommodities:
+        case EVEDB::invCategories::PlanetaryInteraction:  {
+            // these probably dont need to be coded specifically
+        } break;
         default:
             _log(ITEM__MESSAGE, "type %u (group: %u, cat: %u) called _LoadType, but is not handled.", typeID, group.id(), group.categoryID());
              break;

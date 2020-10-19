@@ -54,8 +54,7 @@ CertificateMgrService::~CertificateMgrService()
 }
 
 PyResult CertificateMgrService::Handle_GetMyCertificates(PyCallArgs &call) {
-    CertMap crt;
-    crt.clear();
+    CertMap crt = CertMap();
     call.client->GetChar()->GetCertificates( crt );
 
     util_Rowset rs;
