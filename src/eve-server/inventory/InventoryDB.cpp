@@ -169,7 +169,6 @@ bool InventoryDB::GetCharacterType(uint32 bloodlineID, CharacterTypeData &into) 
         "  description,"
         "  maleDescription,"
         "  femaleDescription,"
-        "  shipTypeID,"
         "  corporationID,"
         "  perception,"
         "  willpower,"
@@ -198,17 +197,15 @@ bool InventoryDB::GetCharacterType(uint32 bloodlineID, CharacterTypeData &into) 
     into.description = row.GetText(2);
     into.maleDescription = row.GetText(3);
     into.femaleDescription = row.GetText(4);
-    into.shipTypeID = row.GetUInt(5);
-    into.corporationID = row.GetUInt(6);
-    into.perception = row.GetUInt(7);
-    into.willpower = row.GetUInt(8);
-    into.charisma = row.GetUInt(9);
-    into.memory = row.GetUInt(10);
-    into.intelligence = row.GetUInt(11);
-    into.shortDescription = row.GetText(12);
-    into.shortMaleDescription = row.GetText(13);
-    into.shortFemaleDescription = row.GetText(14);
-
+    into.corporationID = row.GetUInt(5);
+    into.perception = row.GetUInt(6);
+    into.willpower = row.GetUInt(7);
+    into.charisma = row.GetUInt(8);
+    into.memory = row.GetUInt(9);
+    into.intelligence = row.GetUInt(10);
+    into.shortDescription = row.GetText(11);
+    into.shortMaleDescription = row.GetText(12);
+    into.shortFemaleDescription = row.GetText(13);
     return true;
 }
 
