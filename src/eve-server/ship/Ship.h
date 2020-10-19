@@ -61,6 +61,8 @@ public:
     void InitPod();
     void InitAttribs();
     void LogOut();
+    // adds cargo mass to ship's mass
+    void UpdateMass();  // will reset ship mass to default, then loop thru cargo
     static ShipItemRef Load( uint32 shipID);
     static ShipItemRef Spawn( ItemData &data);
 
@@ -320,9 +322,9 @@ public:
 
     /* virtual functions to be overridden in derived classes */
     virtual void MissileLaunched(Missile* pMissile)     { /* Do nothing here */ }
-    virtual bool IsInvul()                              { return false; }      /** @todo finish this. client IsInvul coded. */
+    virtual bool IsInvul();
     virtual bool IsFrozen()                             { return false; }
-    virtual bool IsLogin()                              { return false; }      /** @todo finish this. client IsLogin coded. */
+    virtual bool IsLogin();
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void SetPilot(Client* pClient);
@@ -364,7 +366,7 @@ public:
 
     void AbandonDrones();
     bool LaunchDrone(InventoryItemRef dRef);
-    void ScoopDrone(SystemEntity* pDroneSE);
+    void ScoopDrone(SystemEntity* pSE);
     // returns current count of drones in space for this ship
     uint8 DroneCount()                                  { return m_drones.size(); }
 

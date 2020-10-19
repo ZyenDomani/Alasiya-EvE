@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.8
+    Version:    9.9
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -60,6 +60,7 @@ public:
         bool BountyPayoutDelayed;
         bool LoadOldMissions;
         bool AsteroidsOnDScan;
+        bool CargoMassAdditive;
         uint8 ServerSleepTime;
         uint8 MaxThreadReport;
         uint8 BountyPayoutTimer;

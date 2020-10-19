@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.8
+    Version:    9.9
 */
 
 
@@ -65,6 +65,7 @@ EVEServerConfig::EVEServerConfig()
     server.BountyPayoutTimer = 20/*m*/;
     server.LoadOldMissions = false;
     server.AsteroidsOnDScan = false;
+    server.CargoMassAdditive = false;
 
     // world
     world.chatLogs = false;//N
@@ -334,6 +335,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "BountyPayoutTimer",    server.BountyPayoutTimer );
     AddValueParser( "LoadOldMissions",      server.LoadOldMissions );
     AddValueParser( "AsteroidsOnDScan",     server.AsteroidsOnDScan );
+    AddValueParser( "CargoMassAdditive",    server.CargoMassAdditive );
 
     const bool result = ParseElementChildren( ele );
 
@@ -356,6 +358,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "BountyPayoutTimer" );
     RemoveParser( "LoadOldMissions" );
     RemoveParser( "AsteroidsOnDScan" );
+    RemoveParser( "CargoMassAdditive" );
 
     return result;
 }

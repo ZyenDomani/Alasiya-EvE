@@ -66,7 +66,7 @@ bool ShipItem::_Load()
         return true;
 
     Client* pClient = sItemFactory.GetUsingClient();
-    // test for character creation (which throws errors here and isnt really needed)
+    // test for character creation (which throws errors on following *load() calls and not really needed)
     if ((pClient != nullptr) and pClient->IsCharCreation())
         return true;
     // load attributes
@@ -160,6 +160,9 @@ void ShipItem::Init()
 
     // load linked weapons (if available)
     LoadWeaponGroups();
+
+    if (sConfig.server.CargoMassAdditive)
+        UpdateMass();
 }
 
 void ShipItem::InitPod() {
@@ -187,6 +190,7 @@ void ShipItem::InitAttribs()
     // Create default dynamic attributes in the AttributeMap
     SetAttribute(AttrOnline,                            EvilOne, false);
     SetAttribute(AttrVolume,                            GetPackagedVolume(), false);
+    SetAttribute(AttrMass,                              type().mass());
     SetAttribute(AttrCpuLoad,                           EvilZero, false);
     SetAttribute(AttrPowerLoad,                         EvilZero, false);
     // rig shit
@@ -379,6 +383,18 @@ void ShipItem::Undock() {
     }
 }
 
+void ShipItem::UpdateMass()
+{
+    std::map< uint32, InventoryItemRef > invMap;
+    pInventory->GetInventoryList(invMap);
+    uint32 mass(GetAttribute(AttrMass).get_uint32());
+    for (auto cur : invMap)
+        mass += cur.second->type().mass() * cur.second->quantity();
+
+    // may have to adjust this for player login
+    SetAttribute(AttrMass, mass, HasPilot());
+}
+
 void ShipItem::Warp() {
     m_ModuleManager->ShipWarping();
 }
@@ -453,8 +469,12 @@ void ShipItem::AddItem(InventoryItemRef iRef)
 
     InventoryItem::AddItem(iRef);
 
-    if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge))
-        iRef->ChangeSingleton(true); // make singleton
+    // add item mass to ship's mass if set in options (additive...loaded ship should be heavy)
+    if (sConfig.server.CargoMassAdditive) {
+        uint32 mass = GetAttribute(AttrMass).get_uint32();
+        uint32 addition = iRef->type().mass() * iRef->quantity();
+        SetAttribute(AttrMass, mass + addition, HasPilot());
+    }
 }
 
 uint32 ShipItem::AddItemByFlag(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)
@@ -525,6 +545,13 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
         else
             m_ModuleManager->UnfitModule(iRef->itemID());
         //m_ModuleManager->UpdateModules(iRef->flag());
+    }
+
+    // remove item mass to ship's mass if set in options (additive...loaded ship should be heavy)
+    if (sConfig.server.CargoMassAdditive) {
+        uint32 mass = GetAttribute(AttrMass).get_uint32();
+        uint32 addition = iRef->type().mass() * iRef->quantity();
+        SetAttribute(AttrMass, mass - addition, HasPilot());
     }
 }
 
@@ -2502,6 +2529,20 @@ void ShipSE::SetPilot(Client* pClient) {
     m_corpID = pClient->GetCorporationID();
 }
 
+bool ShipSE::IsInvul()
+{
+    if (m_shipRef->HasPilot())
+        return m_shipRef->GetPilot()->IsInvul();
+    return false;
+}
+
+bool ShipSE::IsLogin()
+{
+    if (m_shipRef->HasPilot())
+        return m_shipRef->GetPilot()->IsLogin();
+    return false;
+}
+
 void ShipSE::Dock() {
     if (m_targMgr != nullptr) {
         m_targMgr->ClearModules();
@@ -2767,7 +2808,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
         data.corporationID = pChar->corporationID();
         data.factionID = pChar->warFactionID();
         data.ownerID = pChar->itemID();
-    Drone* pDrone = new Drone(dRef, m_services, m_system, data);
+    DroneSE* pDrone = new DroneSE(dRef, m_services, m_system, data);
 
     // tell new drone it's being launched.
     pDrone->Launch(this);
@@ -2793,11 +2834,11 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     return false;
 }
 
-void ShipSE::ScoopDrone(SystemEntity* pDroneSE) {
-    m_drones.erase(pDroneSE->GetID());
-    pDroneSE->GetDroneSE()->Offline();
+void ShipSE::ScoopDrone(SystemEntity* pSE) {
+    m_drones.erase(pSE->GetID());
+    pSE->GetDroneSE()->Offline();
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
-    load -= pDroneSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
+    load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
     m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
 }
 

@@ -368,6 +368,10 @@ int main( int argc, char* argv[] )
         sLog.Green("  DScan Asteroids","Enabled.");
     else
         sLog.Warning("  DScan Asteroids","Disabled.");
+    if (sConfig.server.CargoMassAdditive)
+        sLog.Green("       Cargo Mass","Enabled.");
+    else
+        sLog.Warning("       Cargo Mass","Disabled.");
     if (sConfig.cosmic.BumpEnabled)
         sLog.Green("Bumping Mechanics","Enabled.");
     else
