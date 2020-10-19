@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-Version: 9.7 -->
+Version: 9.9 -->
 
 <!--
 unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -27,9 +27,9 @@ boolean can use either 0/1 OR true/false.
                     &lt;b&gt;Alasiya EvE Development Server&lt;/b&gt;&lt;br&gt;
                 &lt;/head&gt;
                 &lt;body&gt;
-                    Revision 0.57.91&lt;br&gt;
-                    SHA 16545cbd529ccfa90cb610bd10f39e2758d6b198&lt;br&gt;
-                    30 March 2020&lt;br&gt;
+                    Revision 0.70.05&lt;br&gt;
+                    SHA 0b229d215c879fa3e3d898eda84e10c992063aa4&lt;br&gt;
+                    19 October 2020&lt;br&gt;
                 &lt;/body&gt;
             &lt;/html&gt;
         </loginMessage>
@@ -54,11 +54,13 @@ boolean can use either 0/1 OR true/false.
         <ModuleDamageChance>0.1</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
         <UnloadOnLinkAll>true</UnloadOnLinkAll>  <!-- bool - unload weapons and link when LinkAll button pressed -->
         <AllowNonPublished>true</AllowNonPublished>
-        <BountyPayoutDelayed>false</BountyPayoutDelayed><!-- (en/dis)able system bounty payouts on timer (vs immediate) -->
-        <FleetShareDelayed>true</FleetShareDelayed><!-- switch to put fleet bounty shares in system bounty timer (vs immediate), if enabled -->
+        <BountyPayoutDelayed>false</BountyPayoutDelayed><!-- bool - (en/dis)able system bounty payouts on timer (vs immediate) -->
+        <FleetShareDelayed>true</FleetShareDelayed><!-- bool - switch to put fleet bounty shares in system bounty timer (vs immediate), if enabled -->
         <BountyPayoutTimer>5</BountyPayoutTimer><!-- time for system bounty timer to run (in minutes - 20m default - 256 max) -->
         <!-- LoadOldMissions not completely working yet.....AgentMgrService::Handle_GetMyJournalDetails() will need work to implement this. -->
-        <LoadOldMissions>false</LoadOldMissions><!-- allow display of expired/completed missions in journal -->
+        <LoadOldMissions>false</LoadOldMissions><!-- bool - allow display of expired/completed missions in journal -->
+        <AsteroidsOnDScan>true</AsteroidsOnDScan><!-- bool - show asteroids on directional scanner -->
+        <CargoMassAdditive>true</CargoMassAdditive><!-- bool - add mass of cargo to ship's mass (will effect mobility) -->
     </server>
 
     <world>
@@ -164,7 +166,7 @@ boolean can use either 0/1 OR true/false.
         <StaticTimer>600</StaticTimer><!-- max time between spawn checks, in seconds  10m default -->
         <RespawnTimer>300</RespawnTimer><!-- static time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
-        <LootDropChance>0.75</LootDropChance><!-- % in whole #  chance for NPC to drop loot.  75% default -->
+        <LootDropChance>0.85</LootDropChance><!-- % chance for NPC to drop loot.  75% default -->
         <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
     </npc>
 
@@ -217,7 +219,7 @@ boolean can use either 0/1 OR true/false.
         <Unrated>8</Unrated><!-- integer  -1 to disable.  max 128.  default 8 -->
         <Complex>4</Complex><!-- integer  -1 to disable.  max 128.  default 4 -->
     </exploring>
-    
+
     <testing><!-- switches for various incomplete/testing code sections -->
         <ShipHeat>true</ShipHeat><!-- bool -->
         <EnableDrones>true</EnableDrones><!-- bool -->
@@ -231,7 +233,7 @@ boolean can use either 0/1 OR true/false.
         <ProfileTraceTime>5000</ProfileTraceTime><!-- msec  profile time above this will print StackTrace  default: 500 -->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
         <PositionHack>false</PositionHack><!-- bool -->
-        <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown.  this is for ship and bubble tracking -->
+        <DeleteTrackingCans>false</DeleteTrackingCans><!-- bool - no longer used -->
         <AnomalyFaction>0</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
     </debug>
 
@@ -253,9 +255,9 @@ boolean can use either 0/1 OR true/false.
 
     <database>
         <host>localhost</host><!--  must be 'localhost' for socket connection -->
-        <username>name</username>
-        <password>pass</password>
-        <db>evemu</db>
+        <username>allan</username>
+        <password>none</password>
+        <db>EvE_AlasiyaDev</db>
         <port>3306</port><!-- 3306 default -->
         <ssl>false</ssl><!-- bool   enable ssl for db connection (NOTE: NOT coded. DO NOT USE) -not needed when using socket under linux-->
         <compress>false</compress><!-- bool   compressed protocol for client server communication - not sure if needed. -->
@@ -273,9 +275,15 @@ boolean can use either 0/1 OR true/false.
     </files>
 
     <net>
+        <!--  for internal network only-->
         <port>26000</port>
-        <imageServer>localhost</imageServer>
-        <imageServerPort>26001</imageServerPort><!-- must be base port +1 -->
+        <imageServer>192.168.1.14</imageServer>
+        <imageServerPort>26001</imageServerPort>
+
+        <!-- to allow external access to internal dev server (network server config'd to port-forward this one)
+        <port>26000</port>
+        <imageServer>eve.alasiya.net</imageServer>
+        <imageServerPort>26001</imageServerPort>-->
     </net>
 
 </eve-server>
