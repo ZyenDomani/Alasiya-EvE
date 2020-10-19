@@ -689,7 +689,6 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     InventoryItemRef cRef, iRef;
     CargoContainerRef jcRef, ccRef;
     StructureItemRef sRef;
-    uint32 groupID = 0, categoryID = 0;
 
     /** @todo  deal with launching items for corp... they will use flagProperty */
 
@@ -706,35 +705,103 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         tuple->SetItem(1, new PyLong(GetFileTimeNow()));
 
     //args contains id's of items to jettison
-    std::vector<int32>::iterator cur = args.ints.begin();
+    std::vector<int32>::iterator itr = args.ints.begin();
     // loop thru items to see if there is a container in this list.
-    for (; cur != args.ints.end(); ++cur) {
+    for (; itr != args.ints.end(); ++itr) {
         // running this list twice is fuckedup, but not sure of another way to determine if container is in jettison list.
-        iRef = sItemFactory.GetItem(*cur);
+        iRef = sItemFactory.GetItem(*itr);
         if (iRef.get() == nullptr)
             continue;
-        groupID = iRef->groupID();
+        switch (iRef->categoryID()) {
+            case EVEDB::invCategories::Structure:
+            case EVEDB::invCategories::SovereigntyStructure:
+            case EVEDB::invCategories::StructureUpgrade: {
+                sRef = sItemFactory.GetStructure(*itr);
+                if (sRef.get() == nullptr)
+                    throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", sRef->typeID()));
 
-        if ((groupID == EVEDB::invGroups::Audit_Log_Secure_Container)
-        or  (groupID == EVEDB::invGroups::Secure_Cargo_Container)
-        or  (groupID == EVEDB::invGroups::Freight_Container)) {
-            /** @todo (allan)  check these for accuracy  */
-            /** @todo (allan)  *****  there are stipulations on placement of these items.  *****  */
-            ccRef = sItemFactory.GetCargoContainer(*cur);
-            if (ccRef.get() == nullptr)
-                throw PyException(MakeCustomError("Unable to spawn item of type %u.", ccRef->typeID()));
+                sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                StructureSE* sSE = new StructureSE(sRef, *m_manager, pSysMgr, data);
+                location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
+                sSE->SetPosition(location);
+                sRef->SaveItem();
+                pSysMgr->AddEntity(sSE);
+                pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                itr = args.ints.erase(itr);
+            } break;
+            case EVEDB::invCategories::Orbitals: {
+                sRef = sItemFactory.GetStructure(*itr);
+                if (sRef.get() == nullptr)
+                    throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", sRef->typeID()));
 
-            ccRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            ContainerSE* cSE = new ContainerSE(ccRef, *m_manager, pSysMgr, data);
-            location.MakeRandomPointOnSphere(500.0);
-            cSE->SetPosition(location);
-            ccRef->SaveItem();
-            pSysMgr->AddEntity(cSE);
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                CustomsSE* sSE = new CustomsSE(sRef, *m_manager, pSysMgr, data);
+                location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
+                sSE->SetPosition(location);
+                sRef->SaveItem();
+                pSysMgr->AddEntity(sSE);
+                pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                itr = args.ints.erase(itr);
+            } break;
+            case EVEDB::invCategories::Deployable: {
+                cRef = sItemFactory.GetItem(*itr);
+                if (cRef.get() == nullptr)
+                    throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cRef->typeID()));
 
-            // container found.  remove this item from list, then break out of here and use to contain all other non-pos items
-            args.ints.erase(cur);
-            cur = args.ints.end();
+                cRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
+                // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
+                DeployableSE* dSE = new DeployableSE(cRef, *m_manager, pSysMgr, data);
+                location.MakeRandomPointOnSphere(1500.0 + cRef->type().radius());
+                dSE->SetPosition(location);
+                cRef->SaveItem();
+                pSysMgr->AddEntity(dSE);
+                pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                itr = args.ints.erase(itr);
+            } break;
+            /** @todo  Handle other cargo */
+
+            // test for cargo container being launched
+            case EVEDB::invCategories::Celestial: {
+                switch (iRef->groupID()) {
+                    case EVEDB::invGroups::Cargo_Container:
+                    case EVEDB::invGroups::Audit_Log_Secure_Container:
+                    case EVEDB::invGroups::Secure_Cargo_Container:
+                    case EVEDB::invGroups::Freight_Container: {
+                        /** @todo (allan)  check these for accuracy  */
+                        /** @todo (allan)  *****  there are stipulations on placement of these items.  *****  */
+                        ccRef = sItemFactory.GetCargoContainer(*itr);
+                        if (ccRef.get() == nullptr)
+                            throw PyException(MakeCustomError("Unable to spawn item of type %u.", ccRef->typeID()));
+
+                        ccRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                        ContainerSE* cSE = new ContainerSE(ccRef, *m_manager, pSysMgr, data);
+                        location.MakeRandomPointOnSphere(500.0);
+                        cSE->SetPosition(location);
+                        ccRef->SaveItem();
+                        pSysMgr->AddEntity(cSE);
+                        pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+
+                        // container found.  remove this item from list, then break out of here and use to contain all other non-pos items
+                        args.ints.erase(itr);
+                        itr = args.ints.end();
+                    } break;
+                    case EVEDB::invGroups::Construction_Platform:
+                    case EVEDB::invGroups::Mobile_Sentry_Gun:
+                    case EVEDB::invGroups::Global_Warp_Disruptor:
+                    case EVEDB::invGroups::Station_Upgrade_Platform:
+                    case EVEDB::invGroups::Station_Improvement_Platform:
+                    case EVEDB::invGroups::Covert_Beacon:
+                    case EVEDB::invGroups::Covert_Cynosural_Field_Generator: {
+                        //these should need corp shit for use, i think.
+                        sLog.Warning("Ship::Jettison", "%s: %s called to jettison.",pClient->GetName(), iRef->name());
+                    } break;
+                    case EVEDB::invGroups::Shipping_Crates: {
+                        // not sure what this is, can it be jettisoned?
+                        sLog.Error("Ship::Jettison", "%s: %s called to jettison.",pClient->GetName(), iRef->name());
+                    } break;
+                }
+            }
         }
     }
 
@@ -743,55 +810,8 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         iRef = sItemFactory.GetItem(cur);
         if (iRef.get() == nullptr)
             continue;
-        categoryID = iRef->categoryID();
 
-        if ((categoryID == EVEDB::invCategories::Structure)
-        or  (categoryID == EVEDB::invCategories::SovereigntyStructure)
-        or  (categoryID == EVEDB::invCategories::StructureUpgrade)) {
-            sRef = sItemFactory.GetStructure(cur);
-            if (sRef.get() == nullptr)
-                throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", sRef->typeID()));
-
-            sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            StructureSE* sSE = new StructureSE(sRef, *m_manager, pSysMgr, data);
-            location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
-            sSE->SetPosition(location);
-            sRef->SaveItem();
-            pSysMgr->AddEntity(sSE);
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
-            continue;
-        } else if (categoryID == EVEDB::invCategories::Orbitals) {
-            sRef = sItemFactory.GetStructure(cur);
-            if (sRef.get() == nullptr)
-                throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", sRef->typeID()));
-
-            sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            CustomsSE* sSE = new CustomsSE(sRef, *m_manager, pSysMgr, data);
-            location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
-            sSE->SetPosition(location);
-            sRef->SaveItem();
-            pSysMgr->AddEntity(sSE);
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
-            continue;
-        } else if (categoryID == EVEDB::invCategories::Deployable) {
-            cRef = sItemFactory.GetItem(cur);
-            if (cRef.get() == nullptr)
-                throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cRef->typeID()));
-
-            cRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
-            // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
-            DeployableSE* dSE = new DeployableSE(cRef, *m_manager, pSysMgr, data);
-            location.MakeRandomPointOnSphere(1500.0 + cRef->type().radius());
-            dSE->SetPosition(location);
-            cRef->SaveItem();
-            pSysMgr->AddEntity(dSE);
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
-            continue;
-        } //else if ()
-        /** @todo  Handle other cargo */
-
-        // item isnt structure or deployable and can be jettisoned.  check if container was already created
+        // item can be jettisoned.  check if container was already created
         if ((ccRef.get() == nullptr) or (jcRef.get() == nullptr)) {
             if (!pClient->IsJetcanAvalible()) {
                 std::string msg = "A Jettison Container is currently being prepped in your cargo hold. \n";
