@@ -624,8 +624,8 @@ PyDict *DynamicSystemEntity::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",          new PyInt(m_ownerID));
-        slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
-        slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
+        //slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
+        //slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
         slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
         slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());

@@ -2908,13 +2908,13 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
     OnSpecialFX13 effect;
         effect.entityID = entityID;
         effect.moduleID = moduleID;
-        effect.moduleTypeID = moduleTypeID;
+        effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's/drones
         effect.targetID = targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID);
         effect.chargeTypeID = chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID);
         effect.guid = guid;
-        effect.isOffensive = isOffensive;
-        effect.start = start;
-        effect.active = isActive;
+        effect.isOffensive = isOffensive;                  // bool
+        effect.start = start;                   // bool
+        effect.active = isActive;                  // bool
         effect.duration = duration;
         effect.repeat = repeat;
         effect.startTime = GetFileTimeNow();

@@ -475,6 +475,8 @@ void ShipItem::AddItem(InventoryItemRef iRef)
         uint32 addition = iRef->type().mass() * iRef->quantity();
         SetAttribute(AttrMass, mass + addition, HasPilot());
     }
+
+    /** @todo update destiny mass after adding item */
 }
 
 uint32 ShipItem::AddItemByFlag(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)

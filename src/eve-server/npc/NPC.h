@@ -71,7 +71,7 @@ public:
     void UseArmorRepairer();
     void UseShieldRecharge();
     void Orbit(SystemEntity* who);
-    void ForcedSetSpawner(SpawnMgr* spawnMgr)           { m_spawnMgr = spawnMgr; }
+    void ForceSetSpawner(SpawnMgr* spawnMgr)            { m_spawnMgr = spawnMgr; }
 
     float GetThermal()                                  { return m_therDamage; }
     float GetEM()                                       { return m_emDamage; }

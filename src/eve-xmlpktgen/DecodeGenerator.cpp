@@ -207,11 +207,9 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
     /** @note:  commented code is depreciated in favor of PyRep::IntegerValue(), which tests and decodes as integers */
 
     //const char* safe = field->Attribute("safe");
-    //const char* none_marker = field->Attribute("none_marker");
+    const char* none_marker = field->Attribute("none_marker");
 
     const char* v = top();
-    fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
-    /*
     if (none_marker != nullptr)
         fprintf(mOutputFile,
                 "    if (%s->IsNone())\n"
@@ -221,6 +219,9 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
                 name, none_marker
         );
 
+    fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
+    
+    /*
     fprintf(mOutputFile,
             "    if (%s->IsInt())\n"
             "        %s = PyRep::IntegerValue(%s);\n"

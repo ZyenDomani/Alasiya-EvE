@@ -519,6 +519,35 @@ PyDict* TowerSE::MakeSlimItem()
     }
     return slim;
 }
+/*
+                      [PyString "OnSlimItemChange"]
+                      [PyTuple 2 items]
+                        [PyIntegerVar 1006120578679]
+                        [PyObjectData Name: foo.SlimItem]
+                          [PyDict 11 kvp]
+                            [PyString "itemID"]
+                            [PyIntegerVar 1006120578679]
+                            [PyString "typeID"]
+                            [PyInt 20060]               <<--  Amarr Control Tower Small
+                            [PyString "name"]
+                            [PyString "Pix0r monto la torre de al lado"]
+                            [PyString "incapacitated"]
+                            [PyFloat 0]
+                            [PyString "posTimestamp"]
+                            [PyIntegerVar 129773067243437304]
+                            [PyString "posState"]
+                            [PyInt 4]
+                            [PyString "warFactionID"]
+                            [PyNone]
+                            [PyString "allianceID"]
+                            [PyInt 99001691]
+                            [PyString "corpID"]
+                            [PyInt 717154310]
+                            [PyString "ownerID"]
+                            [PyInt 717154310]
+                            [PyString "nameID"]
+                            [PyNone]
+                    */
 
 /*
  *    def IsShipInRangeOfStructureControlTower(self, shipID, structureID):
