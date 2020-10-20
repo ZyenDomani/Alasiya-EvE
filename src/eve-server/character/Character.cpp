@@ -1140,17 +1140,20 @@ void Character::SkillQueueLoop(bool update/*true*/)
     UpdateSkillQueueEndTime();
     SaveCharacter();
 
-    if (m_pClient->IsLogin() and !list->empty()) {
+    if (m_pClient->IsLogin()) {
         PyTuple* tmp(nullptr);
-        if (list->size() > 1) {
-            OnMultipleSkillsTrained omst;
-                omst.skillList = list;
-            tmp = omst.Encode();
-        } else {
+        if (!list->empty()) {
+            if (list->size() > 1) {
+                OnMultipleSkillsTrained omst;
+                    omst.skillList = list;
+                tmp = omst.Encode();
+            }
+        } else if (skill != nullptr) {
             OnSkillTrained ost;
                 ost.itemID = skill->itemID();
             tmp = ost.Encode();
         }
+
         m_pClient->QueueDestinyEvent(&tmp);
     }
 
