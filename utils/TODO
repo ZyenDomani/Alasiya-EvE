@@ -10,6 +10,8 @@
 
 verify skill attr 'in training' is being properly removed
 
+RAM doing funny shit...check it out
+
 noob ships do not Init() correctly....  most attrs are 0
     -- check this.  may be fixed already
 
@@ -58,6 +60,18 @@ error:
 *******************************************************
 ********  improvements
 
+journal msgs need to be implemented (wip)
+
+standings
+    - char standings are in char code and hit db on every call.
+    - reproc/ram to remove individual standing code in favor of common code (evemath::standing?)
+    - faction/corp standings should be static for npc groups
+    - need to write standings code for corps
+
+TransportClosed error msgs located in common/python/pypacket.h
+
+change itoa() to new standard c++/11 std::to_string()
+
 go thru all updated effect data and look for 'improved' ship data to update ours
     - specialized holds from rhea (not available in cruc)
     - updated barges from current live patch (hot tanks)
@@ -94,6 +108,7 @@ AttributeMap::Change() has data for updated cap charge sending....not sure how/w
 20:41:06 [SvcMsg] New messageID: 1
 20:41:06 [SvcMsg] Delivered message from 1000132 to recipient 90000000
     - ins mail working.  need contractID, expiry date, and few other things...
+    -- this does NOT work....mailDB table is mailMessage.  this was saved in eveMail
 
 
 closely examine target mgr and see what we can improve.
@@ -123,18 +138,10 @@ Bonus fee of 1,500 isk per pirate head per level of the skill
 skillGeneralFreight = 12834, // Trade Skill at the stowage and transportation of bulk goods
 5% Bonus per level to Ship Cargo Capacity
 
-change AddBalance (et al) to TransferFunds()
-    - only used by market service.  will need more code to implement.
-    ** market service needs rewrite anyway.  will fix at that time.
-
 check client's locationID vs stationID.
     - multiple calls in client will test for these as separate values (tested separately)
     - verify our use of these is correct....
     - most tests use locationID first, then stationID2
-
-replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
-    - this is applicable for corporation notifications only, as CorpNotify() checks corp settings to determine recipients
-    - MultiCast() updated to remove the dumb shit.  safe to use for typical shit as intended now.  should be good to ~k+ clients w/o noticeable lag
 
 systemmgr - use kills object instead of db hit
     - hit this object to avoid db hits for every kill
@@ -288,14 +295,38 @@ JumpCloneService needs work to allow capital ships `show info` tab to work in sp
     - this class is barely above skeleton code, and hardly researched.
     - jump clones arent even close to implementation, so its nbd at this point
 
+item contraband.....this needs implementing
+    - will be used in system security
+    - could this be a dataset in static data mgr for market items to avoid loading?
+
+market code
+    - determine and code methods for using arum as credit type
+
+market for corp use
+    - add checks for hangar location when placing buy orders
+    - find corp hangar/deny use for corp buy order at requested station
+    - will need more data and checks for using corp account key (wallet division) properly.  currently cash (div 1)
+    - escrow and broker fee have "authorized by" msgs to implement....see common/eve-wallet.h
+
+market system....this needs a lot of attention (rewrite/update in progress - 24/oct/20)
+    - abundance of checks (probably overkill)
+    - db hits abound
+    - EVEYTHING is uint32 but we really dont need that
+    - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client
+    ** error...
+21:29:11 [Service] marketProxy::PlaceCharOrder()
+21:29:11 [AcctTrace] TranserFunds() - from: 90000000, to: 1000160, entry: 2, refID: 125, amount: 500.00, fKey: 1000, tKey: 1000
+21:29:11 [AcctTrace] TranserFunds() - toID: 1000160 is neither player nor player corp.
+21:29:11 [InvTrace] Inventory::LoadContents() - Loading inventory of Ragnarok(140023615) with owner 1   <<< owner 1 here??  any why we loading?
+21:29:11 [InvTrace] II::Donate() - Updated flag on Ragnarok(140023615) from AutoFit to Hangar.
+
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
 raceMask isnt implemented yet...will need more thought/coding
 still some corp shit not started/completed yet...need to finish it. may need to split file again.  -priority level: med-hi
 partial code for corpStations, member roles,
 no code for labels
-HandleCorpTransaction() when giving isk to corp, journal window not updating.
-set initial standings when corp is created.  need to write standings code for corps
+set initial standings when corp is created.
 when renting office, station offices dont refresh
 GetMemberTrackingInfo() incomplete
 CorpStationMgrIMBound incomplete
@@ -316,20 +347,6 @@ all alliance calls are skeleton code, except GetEmploymentRecord
 
 m_self is NOT being populated for non-piloted ships.   -priority level: low
 
-market system....this needs a lot of attention
-    - unneeded bcasts
-    - vague error msgs
-    - abundance of checks (probably overkill)
-    - db hits abound
-    - EVEYTHING is uint32 but we really dont need that
-    - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client
-    ** error...
-21:29:11 [Service] marketProxy::PlaceCharOrder()
-21:29:11 [AcctTrace] TranserFunds() - from: 90000000, to: 1000160, entry: 2, refID: 125, amount: 500.00, fKey: 1000, tKey: 1000
-21:29:11 [AcctTrace] TranserFunds() - toID: 1000160 is neither player nor player corp.
-21:29:11 [InvTrace] Inventory::LoadContents() - Loading inventory of Ragnarok(140023615) with owner 1   <<< owner 1 here??  any why we loading?
-21:29:11 [InvTrace] II::Donate() - Updated flag on Ragnarok(140023615) from AutoFit to Hangar.
-
 these can be found in 'db_shit/output.txt'
 locationName = localization.GetByMessageID(self.locationNameID)
     - locationNameID is a messageID!!!
@@ -346,6 +363,9 @@ certificateMgr needs looking at
 paperDollServer incomplete
 factionWarMgr incomplete
 ShipService incomplete
+LookupService needs update
+serviceDB needs update
+    - maybe remove "Lookup*" shit to its own db file
 
 lots of Corp* shit still incomplete
 
@@ -360,11 +380,38 @@ authentication and session still need work, but i dont fully understand them
 
 incursions.  this hasnt even been looked at yet.
 map::GetIncursionGlobalReport()
+journal data....
+class ReportSortBy():
+    Constellation, LP, Jumps, Influence, StagingSolarSystem, Security = range(6)
+
+
+REPORT_SORT_PARAMETERS = (('constellationName', False),
+ ('loyaltyPoints', True),
+ ('jumps', False),
+ ('influence', True),
+ ('stagingSolarSystemName', False),
+ ('security', True))
+REWARD_SCOUT = 8
+REWARD_VANGUARD = 1
+REWARD_ASSAULT = 2
+REWARD_HQ = 3
+REWARD_BOSS = 10
+ENCOUNTERS = {'scout': (util.KeyVal(severity='scout', index=1, rewardID=REWARD_SCOUT, name='UI/Incursion/Encounters/Scout/One', text='UI/Incursion/Encounters/Scout/OneText'),
+           util.KeyVal(severity='scout', index=2, rewardID=REWARD_SCOUT, name='UI/Incursion/Encounters/Scout/Two', text='UI/Incursion/Encounters/Scout/TwoText'),
+           util.KeyVal(severity='scout', index=3, rewardID=REWARD_SCOUT, name='UI/Incursion/Encounters/Scout/Three', text='UI/Incursion/Encounters/Scout/ThreeText'),
+           util.KeyVal(severity='scout', index=4, rewardID=REWARD_SCOUT, name='UI/Incursion/Encounters/Scout/Four', text='UI/Incursion/Encounters/Scout/FourText')),
+ 'vanguard': (util.KeyVal(severity='vanguard', index=1, rewardID=REWARD_VANGUARD, name='UI/Incursion/Encounters/Vanguard/One', text='UI/Incursion/Encounters/Vanguard/OneText'), util.KeyVal(severity='vanguard', index=2, rewardID=REWARD_VANGUARD, name='UI/Incursion/Encounters/Vanguard/Two', text='UI/Incursion/Encounters/Vanguard/TwoText'), util.KeyVal(severity='vanguard', index=3, rewardID=REWARD_VANGUARD, name='UI/Incursion/Encounters/Vanguard/Three', text='UI/Incursion/Encounters/Vanguard/ThreeText')),
+ 'assault': (util.KeyVal(severity='assault', index=1, rewardID=REWARD_ASSAULT, name='UI/Incursion/Encounters/Assault/One', text='UI/Incursion/Encounters/Assault/OneText'), util.KeyVal(severity='assault', index=2, rewardID=REWARD_ASSAULT, name='UI/Incursion/Encounters/Assault/Two', text='UI/Incursion/Encounters/Assault/TwoText'), util.KeyVal(severity='assault', index=3, rewardID=REWARD_ASSAULT, name='UI/Incursion/Encounters/Assault/Three', text='UI/Incursion/Encounters/Assault/ThreeText')),
+ 'hq': (util.KeyVal(severity='hq', index=1, rewardID=REWARD_HQ, name='UI/Incursion/Encounters/HQ/One', text='UI/Incursion/Encounters/HQ/OneText'),
+        util.KeyVal(severity='hq', index=2, rewardID=REWARD_HQ, name='UI/Incursion/Encounters/HQ/Two', text='UI/Incursion/Encounters/HQ/TwoText'),
+        util.KeyVal(severity='hq', index=3, rewardID=REWARD_HQ, name='UI/Incursion/Encounters/HQ/Three', text='UI/Incursion/Encounters/HQ/ThreeText'),
+        util.KeyVal(severity='hq', index=4, rewardID=REWARD_BOSS, name='UI/Incursion/Encounters/HQ/Four', text='UI/Incursion/Encounters/HQ/FourText'),
+        util.KeyVal(severity='hq', index=5, rewardID=REWARD_BOSS, name='UI/Incursion/Encounters/HQ/Five', text='UI/Incursion/Encounters/HQ/FiveText'))}
+ENGLISH_MISSIONS_SETTING = 'AgentMissionsInEnglish'
+
 
 expeditions.  not sure how to do this one.
 dungeonExplorationMgr::GetMyEscalatingPathDetails()
-
-journal - killing rats descriptions are a bit off...gives itemID (no name)
 
 many unimplemented salvage error msgs noted in prospector.h
 
@@ -397,6 +444,15 @@ command .attrlist needs names as well as attrID
 
 owner notes and owner labels incomplete
 
+trader joe (market bot)
+    - use civilian code to move around
+    - fleet of ships (haulers, escorts) moving thru systems (universe wide?  multiple traders?)
+    - market updates only at station fleet docked in
+    - accurate travel times
+    - can be attacked, but VERY tough.  will call reinforcements (arrival time tbd)
+    - items in haulers for sale at docked station (random)  remove item from hauler when order placed.
+    - add data/info to getmultiownersex call
+
 low on the list.....
 contraband.
 however, there are skills related to it, once implemented
@@ -412,6 +468,11 @@ skillHazardousMaterialFreight = 13075, // Trade The skill at transporting contra
 
 skillTaxEvasion = 28261, // Trade Knowledge of the SCC tax regime and the ability to utilize that to one's own advantage.
 2% reduction in SCC tax per level.
+
+
+client session makes sessionID.  still dont know how to get it.
+see if we can send first, so client wont make one.
+look for GetNewSid() in client code
 
 
 *******************************************************
@@ -508,61 +569,6 @@ update ValidateAddItem() to return >0 on error and use enums to determine/displa
 make log/config option for (en/dis)able client massive check.
 
 comment unused attrib defs?
-
-these are charges...
-497     8   Fuel
-498     8   Modifications (most need 'Omnipotent')
-SQL result
-
-typeID  groupID     typeName    description     graphicID   radius  mass    volume  capacity    portionSize     raceID  basePrice   published   marketGroupID   chanceOfDuplicating     copyTypeID  soundID     iconID  dataID  typeNameID  descriptionID
-19543   497     Cap Saving Fuel     Provides a quick injection of power into your capacitor. Good for tight situations!     0   0   10  10  100     10  0   100     0   0   0.07    0   0   1033    16685114    98837   89631
-19545   497     Power Boosting Fuel     Provides a quick injection of power into your capacitor. Good for tight situations!     0   0   10  10  100     10  0   100     0   0   0.07    0   0   1033    16685116    98839   89632
-22065   497     Power Boosting Fuel 2   Provides a quick injection of power into your capacitor. Good for tight situations!     0   0   10  10  100     10  0   100     0   0   0.07    0   0   1033    16685544    99267   89973
-19459   498     'Phase' Servitor    Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685100    98823   89617
-19466   498     Regular Mercenary Navigator     Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685104    98827   89621
-19468   498     'Longbow' Servitor  Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685105    98828   89622
-19583   498     Regular Mercenary Scout     Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685119    98842   89634
-19594   498     'Dart' Servitor     Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685123    98846   89638
-22797   498     Independent Shielding   Servitor are Self contained Expert Systems used to radicaly alter the functionlity of a specific core system. These Systems are quite large but being self contained they connect to the ship though a Dedicated interface node without any disruption to the ships power and computer systems.     0   1   1   5   0   1   0   100     0   0   0.07    0   0   2188    16685678    99696   90097
-// obsolete probes....
-9994    972     Snoop Scanner Probe I   The Snoop is the most accurate scanner probe available.  Possessing little to no scan deviation, it effectively enables its user to warp in on top of their intended target.  Its extremely limited range, however, means it must be used in conjunction with other, longer-range scanner probes.   1723    1   1   0.025   0   1   0   100     0   0   0.07    0   0   1723    16677047    72256   83232
-10006   972     Fathom Scanner Probe I  The Fathom is a very accurate scanner probe, able to pinpoint targets with very little deviation.  Its maximum effective scanning range, however, is limited.   1722    1   1   0.05    0   1   0   100     0   0   0.07    0   0   1722    16677022    72231   83207
-10008   972     Spook Scanner Probe I   The Spook represents the upper mid-range of scanner probes.     1720    1   1   0.075   0   1   0   100     0   0   0.07    0   0   1720    16677048    72257   83233
-10010   972     Ferret Scanner Probe I  The Ferret is the longest-range scanner probe currently available, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.   1721    1   1   0.1     0   1   0   100     0   0   0.07    0   0   1721    16677023    72232   83208
-17980   972     Ferret Class Scanner Probe 1AU  High-yield bomb with plasma payload     1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676886    72095   83122
-18588   972     Observator Deep Space Probe I   The deep-space probe uses directional measurements of the red shifting of scan signatures due to space-time expansion to give very coarse scanning of objects up to interstellar ranges. You only need one such probe for analysis, and it scans everything within 1000AU.  2704    1   1   0.125   0   1   0   100     0   0   0.07    0   0   2222    16677037    72246   83222
-19735   972     GM Class Scanner Probe 1AU  High-yield bomb with plasma payload     1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676887    72096   83123
-25207   972     Scan Probe Test 1   The Spook represents the upper mid-range of scanner probes, able to scan distances up to 48 AU and possessing moderate scan accuracy.   1720    1   1   0.125   0   1   0   100     0   0   0.07    0   0   1720    16676894    72103   83130
-25755   972     New Scan Probe Test 1   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676888    72097   83124
-25757   972     New Scan Probe Test 2   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676890    72099   83126
-25759   972     New Scan Probe Test 3   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676891    72100   83127
-25761   972     New Scan Probe Test 4   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676892    72101   83128
-25763   972     New Scan Probe Test 5   The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676893    72102   83129
-25767   972     New Scan Probe Test 100000  The Ferret is the longest-range scanner probe currently available.  Its sensors can sweep to a range of 192 AU, though its ability to cover a greater amount of territory means it sacrifices quite a bit of accuracy.  1721    1   1   0.15    0   1   0   100     0   0   0.07    0   0   1721    16676889    72098   83125
-25773   972     Radar Sift Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. Sift probes are designed for pinpoint scanning at the very shortest distances.  2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677041    72250   83226
-25775   972     Gravimetric Sift Probe  Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. Sift probes are designed for pinpoint scanning at the very shortest distances.  2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677027    72236   83212
-25777   972     Magnetometric Sift Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. Sift probes are designed for pinpoint scanning at the very shortest distances.  2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677035    72244   83220
-25779   972     Ladar Sift Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. Sift probes are designed for pinpoint scanning at the very shortest distances.  2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677031    72240   83216
-25781   972     Radar Comb Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Comb probe is designed for scanning at shorter-range distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677038    72247   83223
-25783   972     Gravimetric Comb Probe  Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Comb probe is designed for scanning at shorter-range distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677024    72233   83209
-25785   972     Magnetometric Comb Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Comb probe is designed for scanning at shorter-range distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677032    72241   83217
-25787   972     Ladar Comb Probe    Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Comb probe is designed for scanning at shorter-range distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677028    72237   83213
-25789   972     Radar Pursuit Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Pursuit probe is designed for scanning at medium distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677039    72248   83224
-25791   972     Gravimetric Pursuit Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Pursuit probe is designed for scanning at medium distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677025    72234   83210
-25793   972     Magnetometric Pursuit Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Pursuit probe is designed for scanning at medium distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677033    72242   83218
-25795   972     Ladar Pursuit Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Pursuit probe is designed for scanning at medium distances.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677029    72238   83214
-25797   972     Radar Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677040    72249   83225
-25799   972     Gravimetric Quest Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677026    72235   83211
-25801   972     Magnetometric Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677034    72243   83219
-25803   972     Ladar Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677030    72239   83215
-26171   972     Demo Probe  The deep-space probe uses directional measurements of the red shifting of scan signatures due to space-time expansion to give very coarse scanning of objects up to interstellar ranges. You only need one such probe for analysis, and it scans everything outside its scan range.     2704    1   1   0.15    0   1   0   100     0   0   0.07    0   0   2222    16676885    72094   83121
-26909   972     Multispectral Frequency Probe   The Multispectral Frequency Probe scans the entire solar system for multispectral frequencies, and gives a readout on which types of frequencies exist.     2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677036    72245   83221
-28154   972     Built-in Scanner Test Probe     The deep-space probe uses directional measurements of the red shifting of scan signatures due to space-time expansion to give very coarse scanning of objects up to interstellar ranges. You only need one such probe for analysis, and it scans everything outside its scan range.     2704    1   1   0.15    0   1   0   100     0   0   0.07    0   0   2222    16676884    72093   83120
-28760   972     Sisters Gravimetric Quest Probe     Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677042    72251   83227
-28762   972     Sisters Ladar Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677043    72252   83228
-28764   972     Sisters Magnetometric Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677044    72253   83229
-28766   972     Sisters Observator Deep Space Probe     The deep-space probe uses directional measurements of the red shifting of scan signatures due to space-time expansion to give very coarse scanning of objects up to interstellar ranges. You only need one such probe for analysis, and it scans everything within 1000AU.  2704    1   1   0.125   0   1   0   100     0   0   0.07    0   0   2222    16677045    72254   83230
-28768   972     Sisters Radar Quest Probe   Lith probes pick up the diffraction of quasar emissions around large stationary objects in space, and utilize the resultant interference to estimate the distance at which the objects lie. The Quest probe is the longest-distance lith probe available.   2704    1   1   1.25    0   1   0   100     0   0   0.07    0   0   2222    16677046    72255   83231
 
 
 *******************************************************
@@ -665,6 +671,10 @@ turns use quanternion lerp curve (and mass/agility somehow)
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend
 
+
+add colors to skill list (and other commands)
+    - currently, skill in training is aqua, others are white.
+    - fleet bonuses is only other command that is colored (offhand)
 
 *******************************************************
 ********************************
