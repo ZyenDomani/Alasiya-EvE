@@ -711,11 +711,20 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     PySafeDecRef( cache_name );
 
     // Register new corp
-    uint32 corpID = 0;
+    uint32 corpID(0);
     if (!m_db.AddCorporation(args, pClient, corpID)) {
         codelog(SERVICE__ERROR, "New corporation creation failed.");
         return nullptr;
     }
+
+    // make sure AI is set correctly in db.  sometimes it's not (cause i forget)
+    if (!IsPlayerCorp(corpID)) {
+        // not sure what to do here yet....delete everything, make sure db autoincrement is set right then reapply
+        _log(CORP__ERROR, "Auto Increment improperly set in DB.");
+        pClient->SendErrorMsg("Server Error when creating corp.  CorpID invalid.");
+        return nullptr;
+    }
+
     // create default role title data
     m_db.CreateTitleData(corpID);
 

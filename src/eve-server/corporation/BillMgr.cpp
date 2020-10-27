@@ -53,18 +53,15 @@ BillMgr::~BillMgr() {
     delete m_dispatch;
 }
 
-PyResult BillMgr::Handle_GetBillTypes( PyCallArgs& call )
-{
+PyResult BillMgr::Handle_GetBillTypes(PyCallArgs& call) {
     return sDataMgr.GetBillTypes();
 }
 
-PyResult BillMgr::Handle_GetCorporationBills(PyCallArgs &call)
-{
+PyResult BillMgr::Handle_GetCorporationBills(PyCallArgs &call) {
     return m_db.GetCorporationBills(call.client->GetCorporationID(), true);
 }
 
-PyResult BillMgr::Handle_GetCorporationBillsReceivable(PyCallArgs &call)
-{
+PyResult BillMgr::Handle_GetCorporationBillsReceivable(PyCallArgs &call) {
     return m_db.GetCorporationBills(call.client->GetCorporationID(), false);
 }
 
@@ -72,6 +69,8 @@ PyResult BillMgr::Handle_GetCorporationBillsReceivable(PyCallArgs &call)
 PyResult BillMgr::Handle_CharPayBill(PyCallArgs &call) {
     //   sm.RemoteSvc('billMgr').CharPayBill(bill.billID)
     sLog.Warning("BillMgr", "Handle_CharPayBill() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     // returns nothing
     return nullptr;
 }
@@ -79,6 +78,8 @@ PyResult BillMgr::Handle_CharPayBill(PyCallArgs &call) {
 PyResult BillMgr::Handle_CharGetBills(PyCallArgs &call) {
     //   return sm.RemoteSvc('billMgr').CharGetBills()
     sLog.Warning("BillMgr", "Handle_CharGetBills() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     // returns nothing
     return nullptr;
 }
@@ -86,6 +87,8 @@ PyResult BillMgr::Handle_CharGetBills(PyCallArgs &call) {
 PyResult BillMgr::Handle_CharGetBillsReceivable(PyCallArgs &call) {
     //   bills = sm.RemoteSvc('billMgr').CharGetBillsReceivable()
     sLog.Warning("BillMgr", "Handle_CharGetBillsReceivable() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     // returns nothing
     return nullptr;
 }
@@ -93,6 +96,8 @@ PyResult BillMgr::Handle_CharGetBillsReceivable(PyCallArgs &call) {
 PyResult BillMgr::Handle_PayCorporationBill(PyCallArgs &call) {
     //  sm.RemoteSvc('billMgr').PayCorporationBill(bill.billID, fromAccountKey=eve.session.corpAccountKey)
     sLog.Warning("BillMgr", "Handle_PayCorporationBill() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     // returns nothing
     return nullptr;
 }
@@ -100,36 +105,58 @@ PyResult BillMgr::Handle_PayCorporationBill(PyCallArgs &call) {
 
 PyResult BillMgr::Handle_SendAutomaticPaySettings(PyCallArgs &call) {
     //    sm.RemoteSvc('billMgr').SendAutomaticPaySettings(self.automaticPaymentSettings)
-    sLog.Warning("BillMgr", "Handle_SendAutomaticPaySettings() size=%u", call.tuple->size() );
+
+    // if corp in alliance, get settings for all 6, else ignore AllianceMaintainanceBill (5)
+    
+    /*
+     * 19:07:55 [CorpCallDump]   Call Arguments:
+     * 19:07:55 [CorpCallDump]      Tuple: 1 elements
+     * 19:07:55 [CorpCallDump]       [ 0]  Dictionary: 1 entries
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0]   Key:    Integer: 98000001
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:  Dictionary: 6 entries
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 0]   Key:    Integer: 6
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 0] Value:    Boolean: false
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 1]   Key:    Integer: 4
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 1] Value:    Boolean: true
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 2]   Key:     String: 'divisionID'
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 2] Value:    Integer: 1003
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 3]   Key:    Integer: 3
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 3] Value:    Boolean: true
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 4]   Key:    Integer: 2
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 4] Value:    Boolean: true
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 5]   Key:    Integer: 1
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 5] Value:    Boolean: false
+     */
+
     // returns nothing
     return nullptr;
 }
 
-//00:29:03 L BillMgr::Handle_GetAutomaticPaySettings(): size= 0
 PyResult BillMgr::Handle_GetAutomaticPaySettings(PyCallArgs &call) {
     //    ambSettings = sm.RemoteSvc('billMgr').GetAutomaticPaySettings()
-    /*
-            if bill.debtorID not in ambSettings:
-                continue
-            if ambSettings[bill.debtorID].get(bill.billTypeID, False) == False:
-                continue
-                */
-    /*
-        [PyDict 1 kvp]
-          [PyInt 98038978]
-          [PyDict 5 kvp]
-            [PyInt 1]
-            [PyBool False]
-            [PyInt 2]
-            [PyBool False]
-            [PyInt 3]
-            [PyBool False]
-            [PyInt 4]
-            [PyBool False]
-            [PyInt 6]
-            [PyBool False]
-            */
-    return nullptr;
+    // returns t/f for bill types
+    DBQueryResult res;
+    m_db.GetAutoPay(call.client->GetCorporationID(), res);
+
+    DBResultRow row;
+    PyDict* sets = new PyDict();
+    if (res.GetRow(row)) {
+        sets->SetItem(new PyInt(Corp::BillType::MarketFine), new PyBool(row.GetBool(0)));
+        sets->SetItem(new PyInt(Corp::BillType::RentalBill), new PyBool(row.GetBool(1)));
+        sets->SetItem(new PyInt(Corp::BillType::BrokerBill), new PyBool(row.GetBool(2)));
+        sets->SetItem(new PyInt(Corp::BillType::WarBill), new PyBool(row.GetBool(3)));
+        if (call.client->GetAllianceID())
+            sets->SetItem(new PyInt(Corp::BillType::AllianceMaintainanceBill), new PyBool(row.GetBool(4)));
+        sets->SetItem(new PyInt(Corp::BillType::SovereigntyMarker), new PyBool(row.GetBool(5)));
+    }
+
+    PyDict* dict = new PyDict();
+        dict->SetItem(new PyInt(call.client->GetCorporationID()), sets);
+
+    if (is_log_enabled(CORP__RSP_DUMP))
+        dict->Dump(CORP__RSP_DUMP, "");
+
+    return dict;
 }
 
 

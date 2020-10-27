@@ -225,7 +225,7 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
         } else {
             msg += " pirates in ";
             msg += m_system->GetNameStr();
-            sStandingMgr.UpdateStandings(ownerCONCORD, pChar->itemID(), Standings::LawEnforcement, secAward, msg);
+            sStandingMgr.UpdateStandings(corpCONCORD, pChar->itemID(), Standings::LawEnforcement, secAward, msg);
             // decrease standings with faction of this npc kill
             sStandingMgr.UpdateStandings(iRef->ownerID(), pChar->itemID(), Standings::CombatShipKill, -secAward, msg);
         }
@@ -731,13 +731,14 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
             reason += pClient->GetName();
             data.reason = reason;
             for (auto cur :members)
-                AccountService::TranserFunds(ownerCONCORD, cur, bounty, reason.c_str(), Journal::EntryType::BountyPrize, GetID());
+                AccountService::TranserFunds(corpCONCORD, cur, bounty, reason.c_str(), Journal::EntryType::BountyPrize, -GetTypeID());
         }
+    } else {
+        data.amount = bounty;
+        if (sConfig.server.BountyPayoutDelayed)
+            m_system->AddBounty(pClient->GetCharacterID(), data);
+        else
+            AccountService::TranserFunds(corpCONCORD, pClient->GetCharacterID(), bounty, reason.c_str(), Journal::EntryType::BountyPrize, -GetTypeID());
     }
-    data.amount = bounty;
-    if (sConfig.server.BountyPayoutDelayed)
-        m_system->AddBounty(pClient->GetCharacterID(), data);
-    else
-        AccountService::TranserFunds(ownerCONCORD, pClient->GetCharacterID(), bounty, reason.c_str(), Journal::EntryType::BountyPrize, GetID());
 }
 

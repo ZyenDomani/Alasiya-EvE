@@ -220,7 +220,7 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
         );
 
     fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
-    
+
     /*
     fprintf(mOutputFile,
             "    if (%s->IsInt())\n"
@@ -259,6 +259,7 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
             mName, name, v
     );
 */
+    
     pop();
     return true;
 }

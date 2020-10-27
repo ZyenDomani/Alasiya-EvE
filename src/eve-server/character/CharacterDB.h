@@ -113,12 +113,14 @@ public:
     PyRep *GetCharacterList(uint32 accountID);
     PyRep *GetCharSelectInfo(uint32 charID);
     void SetAvatar(uint32 charID, PyRep* hairDarkness);
-	void SetAvatarColors(uint32 charID, uint32 colorID, uint32 colorNameA, uint32 colorNameBC, double weight, double gloss);
-	void SetAvatarModifiers(uint32 charID, PyRep* modifierLocationID,  PyRep* paperdollResourceID, PyRep* paperdollResourceVariation);
-	void SetAvatarSculpts(uint32 charID, PyRep* sculptLocationID, PyRep* weightUpDown, PyRep* weightLeftRight, PyRep* weightForwardBack);
+    void SetAvatarColors(uint32 charID, uint32 colorID, uint32 colorNameA, uint32 colorNameBC, double weight, double gloss);
+    void SetAvatarModifiers(uint32 charID, PyRep* modifierLocationID,  PyRep* paperdollResourceID, PyRep* paperdollResourceVariation);
+    void SetAvatarSculpts(uint32 charID, PyRep* sculptLocationID, PyRep* weightUpDown, PyRep* weightLeftRight, PyRep* weightForwardBack);
     void SetPortraitInfo(uint32 charID, PortraitInfo &data);
     PyRep *GetCharPublicInfo(uint32 charID);
     PyRep *GetCharPublicInfo3(uint32 charID);
+    PyRep *GetCharPrivateInfo(uint32 charID);
+    
     //PyObject *GetAgentPublicInfo(uint32 agentID);
     PyRep *GetOwnerNoteLabels(uint32 charID);
     PyRep *GetOwnerNote(uint32 charID, uint32 noteID);
@@ -128,7 +130,7 @@ public:
 
     bool ChangeCloneType(uint32 charID, uint32 typeID);
     static bool ChangeCloneLocation(uint32 charID, uint32 locationID);
-	bool GetCharClones(uint32 charID, std::vector<uint32> &into);
+    bool GetCharClones(uint32 charID, std::vector<uint32> &into);
     bool GetActiveCloneType(uint32 charID, uint32 &typeID);
     std::string GetCharName(uint32 charID);
 
@@ -180,7 +182,7 @@ public:
     uint32      AddOwnerNote(uint32 charID, const std::string &label, const std::string &content);
     bool        EditOwnerNote(uint32 charID, uint32 noteID, const std::string &label, const std::string &content);
 
-    int64      PrepareCharacterForDelete(uint32 accountID, uint32 charID);
+    int64       PrepareCharacterForDelete(uint32 accountID, uint32 charID);
     void        CancelCharacterDeletePrepare(uint32 accountID, uint32 charID);
 
     bool        ReportRespec(uint32 characterId);
@@ -211,9 +213,9 @@ public:
     void        SetLogInTime(uint32 charID);
     void        SetLogOffTime(uint32 charID);
 
-	void 		addOwnerCache(uint32 ownerID, std::string ownerName, uint32 typeID);
+    void        addOwnerCache(uint32 ownerID, std::string ownerName, uint32 typeID);
 
-	PyRep*      GetBounty(uint32 charID, uint32 ownerID);
+    PyRep*      GetBounty(uint32 charID, uint32 ownerID);
     PyRep*      GetTopBounties();
     void        AddBounty(uint32 charID, uint32 ownerID, uint32 amount);
 
@@ -225,12 +227,15 @@ public:
     static float GetCorpTaxRate(uint32 charID);
     static PyRep* GetMyCorpMates(uint32 corpID);
 
+    // get skill level for given skill for offline character (used by market tax)
+    static uint8 GetSkillLevel(uint32 charID, uint16 skillTypeID);
+
     PyRep*      GetLabels(uint32 charID);
     void        SetLabel(uint32 charID, uint32 color, std::string name);
     void        EditLabel(uint32 charID, uint32 labelID, uint32 color, std::string name);
     void        DeleteLabel(uint32 charID, uint32 labelID);
 
-	void        VisitSystem(uint32 solarSystemID, uint32 charID);
+    void        VisitSystem(uint32 solarSystemID, uint32 charID);
 
     //  name validation shit
     void        ValidateCharName(std::string name);     // called on CreateCharacterWithDoll() and will throw on error

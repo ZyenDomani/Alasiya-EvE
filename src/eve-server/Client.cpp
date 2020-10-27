@@ -1398,7 +1398,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     //m_toGate = toGate;
     StaticData toData = StaticData();
     if (!sDataMgr.GetStaticInfo(toGate, toData)) {
-        sLog.Error("Client","%s: Failed to query data for stargate %u", m_char->itemName().c_str(), toGate);
+        _log(DATA__ERROR, "Failed to retrieve data for stargate %u", toGate);
         // send client msg about new system info failure
         return;
     }

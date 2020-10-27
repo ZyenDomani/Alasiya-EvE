@@ -65,7 +65,7 @@ void Inventory::Unload()
 
     //  save contents on the off-chance they have changed, but not on shutdown. (saved in ItemFactory::Close())
     if (!sConsole.IsShutdown()) {
-        std::vector<SaveData> items;
+        std::vector<Inv::SaveData> items;
         items.clear();
         std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
         while (itr != mContents.end()) {
@@ -76,7 +76,7 @@ void Inventory::Unload()
                     continue;
                 }
 
-                SaveData data = SaveData();
+                Inv::SaveData data = Inv::SaveData();
                     data.itemID = itr->first;
                     data.contraband = itr->second->contraband();
                     data.flag = itr->second->flag();

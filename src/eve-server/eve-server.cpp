@@ -224,7 +224,7 @@ int main( int argc, char* argv[] )
     sLog.Log("    NC AI Version", " %.2f", Civilian_AI_Version );
     sLog.Log("Sentry AI Version", " %.2f", Sentry_AI_Version );
     sLog.Log("   POS AI Version", " %.2f", POS_AI_Version );
-    sLog.Log("MarketBot Version", " %.2f", Bot_Version );
+    sLog.Log("TraderJoe Version", " %.2f", Joe_Version );
     sLog.Log(" Missions Version", " %.2f", Mission_Version );
     std::printf("\n");     // spacer
 
@@ -442,13 +442,13 @@ int main( int argc, char* argv[] )
         sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
     else
         sLog.Warning("      Decay Timer","Disabled.");
-    if (sConfig.server.UseMarketBot) {
-        sLog.Green("   Market Bot Mgr", "Market Bot Enabled.");
+    if (sConfig.server.TraderJoe) {
+        sLog.Green("   Market Bot Mgr", "TraderJoe is Enabled.");
         /* create the MarketBot singleton */
         sLog.Green("       ServerInit", "Starting Market Bot Manager");
-        //sMktBotMgr.Initialize();
+        sMktBotMgr.Initialize();
     } else
-        sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
+        sLog.Warning("   Market Bot Mgr", "TraderJoe is Disabled.");
     std::printf("\n");     // spacer
 
     sLog.Blue("     ServerConfig", "Debug Switches");
@@ -554,7 +554,7 @@ int main( int argc, char* argv[] )
     sFltSvc.Initialize(&pyServMgr);
     /* create the MarketMgr singleton */
     sLog.Green("       ServerInit", "Starting Market Manager");
-    sMktMgr.Initialize();
+    sMktMgr.Initialize(&pyServMgr);
     sLog.Green("       ServerInit", "Starting Statistics Manager");
     sStatMgr.Initialize();
     /* create console command interperter singleton */

@@ -203,7 +203,8 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
         std::string reason = "Insurance Premium on ";
         reason += call.client->GetShip()->itemName();
         reason += ".  Reference ID : xxxxx";     // put contractID here
-        AccountService::TranserFunds(call.client->GetCharacterID(), ownerSCC, args.amount, reason, Journal::EntryType::Insurance);
+        AccountService::TranserFunds(call.client->GetCharacterID(), corpSCC, args.amount, reason, \
+                Journal::EntryType::Insurance, -shipRef->itemID());     // for paying ins, shipID should be negative
     } else {
         throw PyException(MakeUserError("InsureShipFailed"));
     }
@@ -225,7 +226,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
             body += "Reference ID: xxxxx <br>"; // put contractID here
             body += "jav";
 
-    m_manager->lsc_service->SendMail(ownerSCC, call.client->GetCharacterID(), subject, body);
+    m_manager->lsc_service->SendMail(corpSCC, call.client->GetCharacterID(), subject, body);
 
     return m_db->GetInsuranceByShipID(args.shipID);
 }

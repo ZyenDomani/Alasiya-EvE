@@ -171,7 +171,9 @@ bool load_log_settings(const char *filename) {
     if (!f)
         return false;
     char linebuf[512], type_name[256], value[256];
+    uint16 i(0);
     while(!feof(f)) {
+        ++i;
         if (fgets(linebuf, 512, f) == nullptr)
             continue;
         if (sscanf(linebuf, "%[^=]=%[^\r\n]\n", type_name, value) != 2)
@@ -187,7 +189,7 @@ bool load_log_settings(const char *filename) {
         else if (!strcasecmp(value, "off") || !strcasecmp(value, "no") || !strcasecmp(value, "disabled") || !strcmp(value, "0"))
             enabled = false;
         else {
-            printf("Unable to parse value '%s' from %s. Skipping line.", value, filename);
+            printf("Unable to parse value '%s' from %s around line %u. Skipping.\n", value, filename, i);
             continue;
         }
 
@@ -216,7 +218,7 @@ bool load_log_settings(const char *filename) {
                 break;
         }
         if (r == NUMBER_OF_LOG_TYPES) {
-            printf("Unable to locate log type %s from file %s. Skipping line.", type_name, filename);
+            printf("Unable to locate log type %s from file %s around line %u. Skipping.\n", type_name, filename, i);
             continue;
         }
 

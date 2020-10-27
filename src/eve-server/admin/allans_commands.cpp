@@ -533,13 +533,18 @@ PyResult Command_skilllist(Client* pClient, CommandDB* db, PyServiceMgr* service
     str << "InventoryID %u(%p) of %s has %u skills.<br><br>"; //80
 
     for (auto cur : invMap) {
+        if (cur.second->flag() == flagSkillInTraining)
+            str << "<color=aqua>";
         str << cur.first << " - " << cur.second->itemName();    //45
         str  << " (" << cur.second->GetAttribute(AttrSkillLevel).get_uint32() << ") "; //3
         if (cur.second->GetAttribute(AttrSkillPoints).get_type() == evil_number_int)    //15
             str << "[i-" << cur.second->GetAttribute(AttrSkillPoints).get_int();
         else
             str << "[f-" << cur.second->GetAttribute(AttrSkillPoints).get_float();
-        str << "]<br>"; // 45 + 3 + 15 + 5 (70)
+        if (cur.second->flag() == flagSkillInTraining)
+            str << "]</color><br>";
+        else
+            str << "]<br>"; // 45 + 3 + 15 + 5 (70)
     }
 
     int count = invMap.size();

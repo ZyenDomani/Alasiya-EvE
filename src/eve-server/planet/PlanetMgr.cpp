@@ -96,7 +96,7 @@ bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
     //take the money, send wallet blink event record the transaction in their journal.
     std::string reason = "DESC:  Command Center upgrade on ";
     reason += m_planet->GetName();
-    uint32 ownerID = ownerCONCORD;
+    uint32 ownerID = corpCONCORD;
     if (m_planet->SystemMgr()->GetSystemSecurityRating() < 0.5)
         ownerID = corpInterbus;
     AccountService::TranserFunds(
@@ -123,7 +123,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
             //take the money, send wallet blink event record the transaction in their journal.
             std::string reason = "DESC:  Command Center construction on ";
             reason += m_planet->GetName();
-            uint32 ownerID = ownerCONCORD;
+            uint32 ownerID = corpCONCORD;
             if (m_planet->SystemMgr()->GetSystemSecurityRating() < 0.5)
                 ownerID = corpInterbus;
             AccountService::TranserFunds(
@@ -232,7 +232,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     reason += pinString.c_str();
     reason += " Construction on ";
     reason += m_planet->GetName();
-    uint32 ownerID = ownerCONCORD;
+    uint32 ownerID = corpCONCORD;
     if (m_planet->SystemMgr()->GetSystemSecurityRating() < 0.5)
         ownerID = corpInterbus;
     AccountService::TranserFunds(

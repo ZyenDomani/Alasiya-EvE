@@ -89,7 +89,7 @@ PyResult LPService::Handle_GetLPExchangeRates( PyCallArgs& call )
 PyResult LPService::Handle_GetLPForCharacterCorp( PyCallArgs& call )
 {/**
                 self.cache.lps = sm.RemoteSvc('LPSvc').GetLPForCharacterCorp(corpID)
-         self.cache.concordLps = sm.RemoteSvc('LPSvc').GetLPForCharacterCorp(const.ownerCONCORD)
+         self.cache.concordLps = sm.RemoteSvc('LPSvc').GetLPForCharacterCorp(const.corpCONCORD)
 
 04:39:44 [SvcCall] Service LPSvc: calling GetLPForCharacterCorp
 04:39:44 L CharMgrService::Handle_GetLPForCharacterCorp(): size= 1, 0=Integer(1000049)

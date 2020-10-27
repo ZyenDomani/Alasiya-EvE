@@ -22,22 +22,23 @@ namespace Account {
 
     namespace KeyType {
         enum {
-            Cash           = 1000,
-            Cash2          = 1001,     //walletDivision2...
+            Cash           = 1000,      // default player wallet, corp walletDivision1
+            Cash2          = 1001,      //walletDivision2...
             Cash3          = 1002,
             Cash4          = 1003,
             Cash5          = 1004,
             Cash6          = 1005,
             Cash7          = 1006,
-            Property       = 1100,
-            AUR            = 1200,
-            AUR2           = 1201,     //walletDivision2...
+            Property       = 1100,      // not sure
+            AUR            = 1200,      // default player wallet, corp walletDivision1
+            AUR2           = 1201,      //walletDivision2...
             AUR3           = 1202,
             AUR4           = 1203,
             AUR5           = 1204,
             AUR6           = 1205,
             AUR7           = 1206,
-            Escrow         = 1500,
+            Escrow         = 1500,      // for MarketEscrow only
+            // not sure what these are used for yet.
             Receivables    = 1800,
             Payables       = 2000,
             Gold           = 2010,
@@ -70,11 +71,12 @@ namespace Account {
  *   NOTE:  npc bounties using BountyPrize MUST have npc typeID as refereceID.
  *          those using BountyPrizes MUST have dict of [typeID/qty] in description
  * recDescription = 'DESC'                     <-- defines a custom description
- * recDescNpcBountyList = 'NBL'                <-- descrives a full list
- * recDescNpcBountyListTruncated = 'NBLT'      <-- describes a trunicated list
+ * recDescNpcBountyList = 'NBL'                <-- describes a full list
+ * recDescNpcBountyListTruncated = 'NBLT'      <-- describes a truncated list
  * recStoreItems = 'STOREITEMS'                <-- specific itemTypes purchased  --for typeID, qty in description.get(const.recStoreItems, []):
  */
 
+// max journal entries in client (hardcoded)  214748364
 namespace Journal {
     namespace EntryType {
         enum {
@@ -91,13 +93,28 @@ namespace Journal {
             Inheritance = 9,
             PlayerDonation = 10,
             CorporationPayment = 11,
+            /*
+            if entryTypeID == const.refCorporationPayment:
+                if arg1 != -1:
+                    return localization.GetByLabel('UI/Generic/FormatReference/corpPayment1', arg=GetName(arg1), name1=GetName(o1), name2=GetName(o2))
+                return localization.GetByLabel('UI/Generic/FormatReference/corpPayment2', name1=GetName(o1), name2=GetName(o2))
+                */
             DockingFee = 12,
             OfficeRentalFee = 13,     // * EVE System    1
             FactorySlotRentalFee = 14,
             RepairBill = 15,
             Bounty = 16,     // * characterID with bounty
-            BountyPrize = 17,     // * NPC ID
+            BountyPrize = 17,     // * NPC typeID
             Insurance = 19,     // * Destroyed Ship Type ID
+            /*  arg1 is refereceID
+            if entryTypeID == const.refInsurance:
+                if arg1 > 0:
+                    return localization.GetByLabel('UI/Generic/FormatReference/insurancePaidByCoveringLoss', itemname=cfg.invtypes.Get(arg1).name, name1=GetName(o1), name2=GetName(o2))
+                elif arg1 and arg1 < 0:
+                    return localization.GetByLabel('UI/Generic/FormatReference/insurancePaidForShip', locaton=GetLocation(-arg1), name1=GetName(o1), name2=GetName(o2), refID=-arg1)
+                else:
+                    return localization.GetByLabel('UI/Generic/FormatReference/insurancePaidTo', name1=GetName(o1), name2=GetName(o2))
+                    */
             MissionExpiration = 20,
             MissionCompletion = 21,
             Shares = 22,
@@ -112,16 +129,46 @@ namespace Journal {
             AgentMissionCollateralRefunded = 31,
             AgentMissionReward = 33,     // * agent ID
             AgentMissionTimeBonusReward = 34,     // * agent ID
-            CSPA = 35,     // * character ID  you're trying to contact.
+            CSPA = 35,     // * character ID you're trying to contact.
             CSPAOfflineRefund = 36,
-            CorporationAccountWithdrawal = 37,     // *Player character ID that performed withdrawal
+            /*
+        if entryTypeID == const.refCSPA:
+            if arg1:
+                return localization.GetByLabel('UI/Generic/FormatReference/cspaServiceChargePaidBy', name1=GetName(o1), name2=GetName(arg1))
+            else:
+                return localization.GetByLabel('UI/Generic/FormatReference/cspaServiceCharge', name=GetName(o1))
+        elif entryTypeID == const.refCSPAOfflineRefund:
+            if arg1:
+                return localization.GetByLabel('UI/Generic/FormatReference/cspaServiceChargeRefundBy', name1=GetName(o2), name2=GetName(arg1))
+            else:
+                return localization.GetByLabel('UI/Generic/FormatReference/cspaServiceChargeRefundByConcord', name1=GetName(o2))
+            */
+            CorporationAccountWithdrawal = 37,     // * character ID that performed withdrawal
             CorporationDividendPayment = 38,
             CorporationRegistrationFee = 39,    // * Corporation ID
             CorporationLogoChangeCost = 40,     // * Corporation ID
             ReleaseOfImpoundedProperty = 41,
             MarketEscrow = 42,
-            MarketFinePaid = 44,
-            Brokerfee = 46,     // * EVE System    1
+            /*
+                    if entryTypeID == const.refMarketEscrow:
+                        owner = cfg.eveowners.GetIfExists(o1 if arg1 == -1 else o2)
+                        if owner is not None:
+                            if amount < 0.0:
+                                return localization.GetByLabel('UI/Generic/FormatReference/marketEscrowAuthorizedBy', name=owner.ownerName)
+                        if amount < 0.0:
+                            return localization.GetByLabel('UI/Generic/FormatReference/marketEscrow')
+                        else:
+                            return localization.GetByLabel('UI/Generic/FormatReference/marketEscrowRelease')
+                */
+            MarketFinePaid = 44,        // not sure what a 'market fine' is...
+            Brokerfee = 46,     // * station ownerID
+            /*
+                    if entryTypeID == const.refBrokerfee:
+                        owner = cfg.eveowners.GetIfExists(o1)
+                        if owner is not None:
+                            return localization.GetByLabel('UI/Generic/FormatReference/marketBrokersFeeBy', name1=owner.ownerName)
+                        return localization.GetByLabel('UI/Generic/FormatReference/marketBrokersFee')
+                */
             AllianceRegistrationFee = 48,
             WarFee = 49,
             AllianceMaintainanceFee = 50,     // * Alliance ID (to concord)
@@ -129,7 +176,7 @@ namespace Journal {
             CloneTransfer = 52,
             AccelerationGateFee = 53,
             TransactionTax = 54,     // *
-            JumpCloneInstallationFee = 55,     // * EVE System    1
+            JumpCloneInstallationFee = 55,     // * station ownerID
             Manufacturing = 56,     // *
             ResearchingTechnology = 57,
             ResearchingTimeProductivity = 58,
@@ -172,6 +219,26 @@ namespace Journal {
             PlanetaryImportTax = 96,     // * Planet ID
             PlanetaryExportTax = 97,     // * Planet ID
             PlanetaryConstruction = 98,
+            /*
+                        if entryTypeID == const.refPlanetaryImportTax:
+                            if arg1 is not None:
+                                planetName = cfg.evelocations.Get(arg1).name
+                            else:
+                                planetName = localization.GetByLabel('UI/Generic/Unknown')
+                            return localization.GetByLabel('UI/Generic/FormatReference/planetImportTax', name=GetName(o1), planet=planetName)
+                        if entryTypeID == const.refPlanetaryExportTax:
+                            if arg1 is not None:
+                                planetName = cfg.evelocations.Get(arg1).name
+                            else:
+                                planetName = localization.GetByLabel('UI/Generic/Unknown')
+                            return localization.GetByLabel('UI/Generic/FormatReference/planetExportTax', name=GetName(o1), planet=planetName)
+                        if entryTypeID == const.refPlanetaryConstruction:
+                            if arg1 is not None:
+                                planetName = cfg.evelocations.Get(arg1).name
+                            else:
+                                planetName = localization.GetByLabel('UI/Generic/Unknown')
+                            return localization.GetByLabel('UI/Generic/FormatReference/planetConstruction', name=GetName(o1), planet=planetName)
+                    */
             RewardManager = 99,
             BountySurcharge = 101,
             ContractReversal = 102,

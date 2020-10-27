@@ -238,27 +238,34 @@ PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call)
 PyResult CharMgrService::Handle_GetContactList(PyCallArgs &call)
 {
     PyDict* dict = new PyDict();
-    dict->SetItemString("addresses", m_db.GetContacts(call.client->GetCharacterID(), false));
-    dict->SetItemString("blocked", m_db.GetContacts(call.client->GetCharacterID(), true));
+        dict->SetItemString("addresses", m_db.GetContacts(call.client->GetCharacterID(), false));
+        dict->SetItemString("blocked", m_db.GetContacts(call.client->GetCharacterID(), true));
     PyObject* args = new PyObject("util.KeyVal", dict);
     if (is_log_enabled(CLIENT__RSP_DUMP))
         args->Dump(CLIENT__RSP_DUMP, "");
     return args;
 }
 
-PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
-  /*
-17:01:37 [SvcCall] Service charMgr: calling GetPublicInfo
-17:01:37 [SvcCall]   Call Arguments:
-17:01:37 [SvcCall]       Tuple: 1 elements
-17:01:37 [SvcCall]         [ 0] Integer field: 140000000
-17:01:37 [SvcCall]   Call Named Arguments:
-17:01:37 [SvcCall]     Argument 'machoVersion':
-17:01:37 [SvcCall]         Integer field: 1
+PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
+{
+    // self.memberinfo = self.charMgr.GetPrivateInfo(self.charID)
+    // this is called by corp/editMember
 
-    call.Dump(CHARACTER__TRACE);
-*/
-    //takes a single int arg: char id or corp id
+    // single int arg: charid
+    Call_SingleIntegerArg arg;
+    if(!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
+    }
+
+    PyRep* args(m_db.GetCharPrivateInfo(arg.arg));
+    if (is_log_enabled(CLIENT__RSP_DUMP))
+        args->Dump(CLIENT__RSP_DUMP, "");
+    return args;
+}
+
+PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
+    //single int arg: char id or corp id
     Call_SingleIntegerArg arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -268,7 +275,7 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
     /*if(IsAgent(args.arg)) {
         //handle agents special right now...
         PyRep *result = m_db.GetAgentPublicInfo(args.arg);
-        if(result == NULL) {
+        if(result == nullptr) {
             codelog(CLIENT__ERROR, "%s: Failed to find agent %u", call.client->GetName(), args.arg);
             return nullptr;
         }
@@ -276,7 +283,7 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
     }*/
 
     PyRep *result = m_db.GetCharPublicInfo(arg.arg);
-    if (result == NULL)
+    if (result == nullptr)
         codelog(CHARACTER__ERROR, "%s: Failed to find char %u", call.client->GetName(), arg.arg);
 
     return result;
@@ -298,7 +305,7 @@ PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
     if (args.arg2 < call.client->GetBalance()) {
         std::string reason = "Placing Bounty on ";
         reason += m_db.GetCharName(args.arg1);
-        AccountService::TranserFunds(call.client->GetCharacterID(), ownerCONCORD, args.arg2, reason, Journal::EntryType::Bounty, args.arg1);
+        AccountService::TranserFunds(call.client->GetCharacterID(), corpCONCORD, args.arg2, reason, Journal::EntryType::Bounty, args.arg1);
         m_db.AddBounty(args.arg1, call.client->GetCharacterID(), args.arg2);
         // new system gives target a mail from concord about placement of bounty and char name placing it.
     } else {
@@ -809,9 +816,8 @@ PyResult CharMgrService::Handle_CreateLabel( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_DeleteContacts( PyCallArgs& call )
 {
-  /*
- sm.RemoteSvc('charMgr').DeleteContacts([contactIDs])
- */
+  // sm.RemoteSvc('charMgr').DeleteContacts([contactIDs])
+
   sLog.Warning( "CharMgrService::Handle_DeleteContacts()", "size=%u ", call.tuple->size());
   call.Dump(CHARACTER__DEBUG);
 
@@ -850,13 +856,6 @@ PyResult CharMgrService::Handle_EditContactsRelationshipID( PyCallArgs& call )
 PyResult CharMgrService::Handle_GetFactions( PyCallArgs& call )
 {
     sLog.Warning( "CharMgrService::Handle_GetFactions()", "size= %u", call.tuple->size() );
-    call.Dump(CHARACTER__TRACE);
-    return nullptr;
-}
-
-PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
-{
-    sLog.Warning( "CharMgrService::Handle_GetPrivateInfo()", "size= %u", call.tuple->size() );
     call.Dump(CHARACTER__TRACE);
     return nullptr;
 }

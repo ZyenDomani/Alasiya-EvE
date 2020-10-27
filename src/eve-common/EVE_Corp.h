@@ -14,7 +14,7 @@
 
 namespace Corp {
 
-    namespace CorpBillType {
+    namespace BillType {
         enum {
             MarketFine = 1,
             RentalBill = 2,
@@ -25,7 +25,7 @@ namespace Corp {
         };
     }
 
-    namespace CorpBillStatus {
+    namespace BillStatus {
         enum {
             Unpaid = 0,
             Paid = 1,
@@ -313,4 +313,10 @@ namespace EveFacWar {
  * {'FullPath': u'UI/Messages', 'messageID': 259838, 'label': u'CrpJunkContainsLockedItemBody'}(u'The impounded items contain at least one locked item. You can not retrieve the impounded items until the locks(s) have been removed. If you have a locked item here, you need to propose a vote to unlock the item before getting the impounded items back.', None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 259839, 'label': u'CrpJunkOnlyAvailableToDirectorTitle'}(u'No Hangar?', None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 259840, 'label': u'CrpJunkOnlyAvailableToDirectorBody'}(u'The lease on your corporate hangar has expired. Its contents has been impounded. In order to have the contents released either rent another hangar or have a director or your CEO attempt to open the hangar.', None, None)
+ *
+ * {'FullPath': u'UI/Corporations/AccessRestrictions', 'messageID': 251326, 'label': u'NotAccountantOrBetter'}(u'You need to have the role accountant or better to perform this operation.', None, None)
+ * {'FullPath': u'UI/Corporations/AccessRestrictions', 'messageID': 251327, 'label': u'NotJuniorAccountantOrBetter'}(u'You need to have the role accountant or junior accountant or better to perform this operation.', None, None)
+ * {'FullPath': u'UI/Corporations/AccessRestrictions', 'messageID': 251337, 'label': u'NotFullAccountant'}(u'You are not an accountant of the corporation.', None, None)
+ * {'FullPath': u'UI/Corporations/AccessRestrictions', 'messageID': 251346, 'label': u'NoAccountantOrTrader'}(u'You are not an accountant, a junior accountant or a trader of the corporation,', None, None)
+ *
  */

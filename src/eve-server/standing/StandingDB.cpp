@@ -106,7 +106,7 @@ PyRep* StandingDB::PrimeCharStandings(uint32 charID) {
 }
 
 PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint16 eventID, uint16 eventType, int64 eventDateTime) {
-    if (fromID == ownerCONCORD)
+    if (fromID == corpCONCORD)
         ;
 
     DBQueryResult res;

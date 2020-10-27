@@ -122,15 +122,17 @@ public:
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
     // remove item from old location, add to new location and (optionally) notify client of changes
+    // will bcast to corp for item update (incomplete)
     void                    Move(uint32 new_location=0, EVEItemFlags flag=flagAutoFit, bool notify=false);
     // same as Move() but xfer ownership also
+    // will bcast to corp for item update (incomplete)
     void                    Donate(uint32 new_owner=1, uint32 new_location=0, EVEItemFlags new_flag=flagAutoFit, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map< int32, PyRep* >& changes);
     // this is for stacking recovered probes, mined ore, and salvage in ship's cargo
     void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);  // will test for existing types
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     // this also updates volume of item
-    bool                    AlterQuantity(int32 qty, bool notify=false);
+    bool                    AlterQuantity(int32 qty, bool notify=false);  // make sure to use proper sign
     bool                    SetQuantity(int32 qty, bool notify=false, bool deleteOnZero=true);
     // sets new flag, if different, saves update to db, and (optionally) notifies client of change
     bool                    SetFlag(EVEItemFlags flag, bool notify=false);

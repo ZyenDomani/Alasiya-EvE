@@ -79,7 +79,7 @@ PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call)
     return sStandingMgr.GetFactionStandings();
 }
 
-/** @todo  need to add a standing from ownerCONCORD to any/all charID, corpID, allyID  for security rating (as seen in client code) */
+/** @todo  need to add a standing from corpCONCORD to any/all charID, corpID, allyID  for security rating (as seen in client code) */
 
 PyResult Standing::Handle_GetSecurityRating(PyCallArgs &call) {
     //takes an integer: characterID

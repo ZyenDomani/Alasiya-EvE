@@ -441,7 +441,7 @@ static std::string _IoN( PyRep* r )
 {
     if ( !r->IsInt() )
         return "NULL";
-    return itoa( r->AsInt()->value() );
+    return std::to_string(PyRep::IntegerValueU32(r));
 }
 
 bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, Client* pClient, uint32 & corpID) {
@@ -493,6 +493,9 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, Client* pClie
     // dont care if these fail....
     // create default wallet info
     sDatabase.RunQuery(err, "INSERT INTO crpWalletDivisons (corporationID) VALUES (%u)", corpID);
+
+    // create default bill auto-pay
+    sDatabase.RunQuery(err, "INSERT INTO crpAutoPay (corporationID) VALUES (%u)", corpID);
 
     // create corp-owned shares
     sDatabase.RunQuery(err, "INSERT INTO crpShares (corporationID, shareholderID, shares, shareholderCorporationID)"
@@ -1833,7 +1836,7 @@ bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDic
 
 PyRep* CorporationDB::GetMemberTrackingInfo(uint32 corpID)
 {
-    //  lastOnline needs update based on char logoffDateTime using GetElapsedHours();
+    //  lastOnline(hours) needs update based on char logoffDateTime using GetElapsedHours();
     // no idea how to do that short of pulling/updating column every (x time) interval....and uh, no.
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -1863,6 +1866,16 @@ PyRep* CorporationDB::GetMemberTrackingInfoSimple(uint32 corpID)
         return nullptr;
     }
     return DBResultToCRowset(res);
+}
+
+void CorporationDB::GetAutoPay(uint32 corpID, DBQueryResult& res)
+{
+    sDatabase.RunQuery(res, "SELECT market, rental, broker, war, alliance, sov FROM crpAutoPay WHERE corporationID = %u", corpID);
+}
+
+void CorporationDB::SetAutoPay()
+{
+    //UPDATE crpAutoPay SET corporationID=[value-1],market=[value-2],rental=[value-3],broker=[value-4],war=[value-5],alliance=[value-6],sov=[value-7] WHERE 1
 }
 
 void CorporationDB::AddItemEvent(uint32 corpID, uint32 charID, uint16 eTypeID)

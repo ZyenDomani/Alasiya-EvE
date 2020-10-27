@@ -195,7 +195,8 @@ PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
     std::string reason = "DESC: Updating Clone in ";
     // make config option for station name or system name here?
     reason += call.client->GetSystemName();
-    //reason += stDataMgr.GetStationName(call.client->GetStationID());
+    reason += " at ";
+    reason += stDataMgr.GetStationName(call.client->GetStationID());
     AccountService::TranserFunds(
                     call.client->GetCharacterID(),
                     call.client->GetStationID(),

@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 10.0
+ Log Version: 10.1
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -250,6 +250,12 @@ LOG_TYPE( DAMAGE, INFO, DISABLED, "DmgInfo" )
 LOG_TYPE( DAMAGE, DEBUG, DISABLED, "DmgDebug" )
 LOG_TYPE( DAMAGE, TRACE, DISABLED, "DmgTrace" )
 LOG_TYPE( DAMAGE, TRACE_NPC, DISABLED, "DmgTraceNPC" )
+
+LOG_CATEGORY( DATA )
+LOG_TYPE( DATA, ERROR, ENABLED, "Data Error" )
+LOG_TYPE( DATA, WARNING, ENABLED, "Data Warn" )
+LOG_TYPE( DATA, MESSAGE, DISABLED, "Data Msg" )
+LOG_TYPE( DATA, INFO, DISABLED, "Data Info" )
 
 LOG_CATEGORY( DATABASE )
 LOG_TYPE( DATABASE, ERROR, ENABLED, "DB Error" )

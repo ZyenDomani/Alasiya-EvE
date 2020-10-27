@@ -116,7 +116,7 @@ void ItemFactory::SaveItems() {
         m_db->DeleteTrackingCans();
     uint32 count = 0;
     double startTime = GetTimeMSeconds();
-    std::vector<SaveData> items;
+    std::vector<Inv::SaveData> items;
     items.clear();
     for (auto cur : m_items) {
         if (cur.second->quantity() < 1) // should we delete this?
@@ -126,7 +126,7 @@ void ItemFactory::SaveItems() {
         if (IsCharacter(cur.first))
             continue;
         if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
-            SaveData data = SaveData();
+            Inv::SaveData data = Inv::SaveData();
                 data.itemID = cur.first;
                 data.contraband = cur.second->contraband();
                 data.flag = cur.second->flag();

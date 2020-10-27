@@ -51,7 +51,7 @@ public:
     //overload Callable for binding:
     virtual PyResult Call(const std::string &method, PyCallArgs &args);
 
-    const char* GetName() const                         { return m_name.c_str(); }
+    const char* GetName() const                         { return m_name; }
 
 protected:
     typedef enum {    //enum to make sure the caller uses legit values.
@@ -91,7 +91,7 @@ protected:
     PyServiceMgr *const m_manager;
 
 private:
-    std::string m_name;
+    const char* m_name;
 };
 
 #endif

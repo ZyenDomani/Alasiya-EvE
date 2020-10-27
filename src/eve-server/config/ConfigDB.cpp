@@ -30,11 +30,13 @@
 
 PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     // separate list of ids into respective groups
-    std::vector<int32> player, corp, ally, owner;
+    std::vector<int32> player, corp, ally, owner, npc, station;
     player.clear();
     corp.clear();
     ally.clear();
     owner.clear();
+    npc.clear();
+    station.clear();
 
     for (auto cur : entityIDs) {
         if (IsCorp(cur))
@@ -43,8 +45,15 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             ally.push_back(cur);
         else if (IsCharacter(cur))
             player.push_back(cur);
+        else if (cur < 33000)
+            npc.push_back(cur);
+        else if (IsStation(cur))
+            station.push_back(cur);
         else
             owner.push_back(cur);
+
+        // add check here for trader joe.
+        //  will have to hardcode data, then run thru db query cause i dont know how to build packet for this return
     }
 
     DBQueryResult res;
@@ -54,11 +63,11 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         ListToINString(corp, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
-            "  corporationID as ownerID,"
-            "  corporationName as ownerName,"
+            "  corporationID AS ownerID,"
+            "  corporationName AS ownerName,"
             "  2 AS typeID,"                    // corp typeID
             "  false AS gender,"
-            "  NULL AS ownerNameID"             // return localization.GetByMessageID(self.ownerNameID, languageID)
+            "  NULL AS ownerNameID"             // this is a messageID - have not taken time to find and insert
             " FROM crpCorporation"
             " WHERE corporationID IN (%s)", ids.c_str()))
         {
@@ -71,8 +80,8 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         ListToINString(ally, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
-            "  allianceID as ownerID,"
-            "  allianceShortName as ownerName,"
+            "  allianceID AS ownerID,"
+            "  allianceShortName AS ownerName,"
             "  16159 AS typeID,"                 // alliance typeID.
             "  false AS gender,"
             "  NULL AS ownerNameID"
@@ -88,8 +97,8 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         ListToINString(player, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
-            "  characterID as ownerID,"
-            "  characterName as ownerName,"
+            "  characterID AS ownerID,"
+            "  characterName AS ownerName,"
             "  typeID,"
             "  gender,"
             "  NULL AS ownerNameID"
@@ -98,6 +107,39 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         }
+        ids = "";
+    }
+
+    if (npc.size()) {
+        ListToINString(npc, ids);
+        if (!sDatabase.RunQuery(res,
+            "SELECT "
+            "  typeID AS ownerID,"
+            "  typeName AS ownerName,"
+            "  typeID,"
+            "  1 AS gender,"
+            "  typeNameID AS ownerNameID"
+            " FROM invTypes"
+            " WHERE typeID IN (%s)", ids.c_str()))
+        {
+            codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        }
+        ids = "";
+    }
+
+    if (station.size()) {
+        ListToINString(station, ids);
+        if (!sDatabase.RunQuery(res,
+            "SELECT "
+            "  corporationID AS ownerID,"
+            "  corporationName AS name,"
+            "  2 AS typeID"                    // corp typeID
+            " FROM crpCorporation"
+            " WHERE corporationID IN (SELECT corporationID FROM staStations WHERE stationID IN (%s))", ids.c_str()))
+        {
+            codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        }
+        ids = "";
     }
 
     if (owner.size()) {
@@ -474,7 +516,7 @@ PyObject *ConfigDB::GetMapOffices(uint32 solarSystemID) {
 
 /** @todo more map data in /eve/client/script/ui/shared/maps/mapcommon.py */
 PyObject *ConfigDB::GetMapConnections(uint32 id, bool sol, bool reg, bool con, uint16 cel, uint16 _c) {
-  sLog.Warning ("ConfigDB::GetMapConnections", "DB query - System:%u, Sol:%u, Reg:%u, Con:%u, Cel:%u, _c:%u", id, sol, reg, con, cel, _c);
+  sLog.Warning ("ConfigDB::GetMapConnections", "DB query - System:%u, Sol:%u, Reg:%u, Con:%u, Cel:%u, cached:%u", id, sol, reg, con, cel, _c);
     const char *key = "fromsol";
     if (sol)
         key = "fromsol";

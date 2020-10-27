@@ -145,8 +145,8 @@ bool AttributeMap::Save() {
     }
 
     bool save = false;
-    std::vector<AttrData> items;
-    items.clear();
+    std::vector<Inv::AttrData> attribs;
+    attribs.clear();
     AttrMapItr itr = mAttributes.begin(), end = mAttributes.end();
     for (; itr != end; ++itr) {
         save = false;
@@ -161,7 +161,7 @@ bool AttributeMap::Save() {
             if (itr->first == AttrOnline)
                 save = true;
         if (save or owner) {
-            AttrData data = AttrData();
+            Inv::AttrData data = Inv::AttrData();
             data.itemID = mItem.itemID();
             data.attrID = itr->first;
             if (itr->second.isInt()) {
@@ -171,12 +171,12 @@ bool AttributeMap::Save() {
                 data.type = true;
                 data.valueFloat = itr->second.get_double();
             }
-            items.push_back(data);
+            attribs.push_back(data);
         }
     }
 
-    if (!items.empty())
-        ItemDB::SaveAttributes(IsCharacter(mItem.itemID()), items);
+    if (!attribs.empty())
+        ItemDB::SaveAttributes(IsCharacter(mItem.itemID()), attribs);
     return true;
 }
 
@@ -394,22 +394,20 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
     if (attrChange == nullptr)
         return true;
 
-    /** @todo update this to use CorpNotify() */
-    if (IsCorp(mItem.ownerID()))
-        return true;
-    /*
-    if (IsPlayerCorp(toID)) {
-        // there is more to this.  not sure what else or how yet.
+    if (IsPlayerCorp(mItem.ownerID())) {
+        // there is no code to get corp AND loc in multicast.  it sends to both
         MulticastTarget mct;
-        mct.corporations.insert(toID);
-        if (IsStation(m_locationID)) {
-            mct.locations.insert(m_locationID);
-            sEntityList.Multicast("OnItemChange", "*stationid&corpid", &tmp, mct);
+        mct.corporations.insert(mItem.ownerID());
+        if (IsStation(mItem.locationID())) {
+            mct.locations.insert(mItem.locationID());
+            sEntityList.Multicast("OnItemChange", "*stationid&corpid", &attrChange, mct);
         } else {
-            sEntityList.Multicast("OnItemChange", "corpid", &tmp, mct);
+            sEntityList.Multicast("OnItemChange", "corpid", &attrChange, mct);
         }
     }
-    */
+
+    if (IsCorp(mItem.ownerID()))
+        return true;
 
     Client* pClient(nullptr);
     if (IsCharacter(mItem.itemID()))

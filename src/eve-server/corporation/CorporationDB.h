@@ -90,6 +90,9 @@ public:
     PyRep* GetVoteOptions(uint32 voteCaseID);
     PyRep* GetSanctionedItems(uint32 corpID, uint8 status=0);
 
+    void GetAutoPay(uint32 corpID, DBQueryResult& res);
+    void SetAutoPay();
+
     //PyObject *ListStationOffices(uint32 station_id);
     PyObject *ListStationCorps(uint32 station_id);
     PyObject *ListStationOwners(uint32 station_id);

@@ -29,30 +29,6 @@
 #include "ServiceDB.h"
 #include "inventory/ItemType.h"
 
-/* POD structure for saving items */
-struct SaveData {
-    bool            contraband :1;
-    bool            singleton :1;
-    EVEItemFlags    flag;
-    uint16          typeID;
-    uint32          itemID;
-    uint32          ownerID;
-    uint32          locationID;
-    uint32          quantity;
-    GPoint          position;
-    std::string     customInfo;
-};
-
-/* POD structure for saving attribute data */
-struct AttrData {
-    bool type;          // 0=int, 1=float
-    uint16 attrID;
-    uint32 itemID;
-    int64 valueInt;
-    double valueFloat;
-};
-
-
 class ItemDB
 {
 public:
@@ -65,8 +41,8 @@ public:
     static uint32 NewItem(const ItemData &data);
 
     static bool SaveItem(uint32 itemID, const ItemData &data);
-    static void SaveItems(std::vector< SaveData > &data);
-    static void SaveAttributes(bool isChar, std::vector< AttrData > &data);
+    static void SaveItems(std::vector< Inv::SaveData > &data);
+    static void SaveAttributes(bool isChar, std::vector< Inv::AttrData > &data);
 
     // only used in ConsoleCommands to test/process fx data
     static void GetItems(uint16 catID, std::map<uint16, std::string> &typeIDs);

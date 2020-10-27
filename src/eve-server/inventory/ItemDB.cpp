@@ -212,9 +212,8 @@ uint32 ItemDB::NewItem(const ItemData &data) {
 void ItemDB::UpdateLocation(uint32 itemID, uint32 locationID, EVEItemFlags flag)
 {
     DBerror err;
-    sDatabase.RunQuery(err,
-                       "UPDATE entity SET locationID = %u, flag = %u WHERE itemID = %u",
-                       locationID, (uint16)flag, itemID);
+    sDatabase.RunQuery(err, "UPDATE entity SET locationID = %u, flag = %u WHERE itemID = %u", \
+    locationID, (uint16)flag, itemID);
 }
 
 bool ItemDB::SaveItem(uint32 itemID, const ItemData &data) {
@@ -262,7 +261,7 @@ bool ItemDB::SaveItem(uint32 itemID, const ItemData &data) {
     return true;
 }
 
-void ItemDB::SaveItems(std::vector<SaveData>& data)
+void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
 {
     std::ostringstream Inserts;
     // start the insert into command.
@@ -306,7 +305,7 @@ void ItemDB::SaveItems(std::vector<SaveData>& data)
     }
 }
 
-void ItemDB::SaveAttributes(bool isChar, std::vector<AttrData>& data)
+void ItemDB::SaveAttributes(bool isChar, std::vector<Inv::AttrData>& data)
 {
     std::ostringstream Inserts;
     // start the insert into command.

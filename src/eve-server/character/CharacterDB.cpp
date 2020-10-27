@@ -500,11 +500,11 @@ PyRep *CharacterDB::GetCharPublicInfo(uint32 characterID) {
         codelog(DATABASE__ERROR, "Error in GetCharPublicInfo query: no data for char %d", characterID);
         return nullptr;
     }
-    return(DBRowToKeyVal(row));
 
+    return(DBRowToKeyVal(row));
 }
 
-void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int64> &characterDataMap) {
+void CharacterDB::GetCharacterData(uint32 charID, std::map<std::string, int64> &characterDataMap) {
 
     DBQueryResult res;
     DBResultRow row;
@@ -534,9 +534,9 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
         "  ch.characterName"         //20
         " FROM chrCharacters AS ch"
         "    LEFT JOIN crpCorporation AS co USING (corporationID) "
-        " WHERE characterID = %u", characterID))
+        " WHERE characterID = %u", charID))
     {
-        sLog.Error("CharacterDB::GetCharacterData()", "Failed to query HQ of character's %u corporation: %s.", characterID, res.error.c_str());
+        sLog.Error("CharacterDB::GetCharacterData()", "Failed to query HQ of character's %u corporation: %s.", charID, res.error.c_str());
     }
 
     if (!res.GetRow(row))
@@ -567,19 +567,19 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
     characterDataMap["warFactionID"] = row.GetInt(19);
 
     uint32 stationID = row.GetInt(17);
-    if (!CharacterDB::GetCharHomeStation(characterID, stationID)) {
-        ItemData iData( itemCloneAlpha, characterID, stationID, flagClone, 1 );
+    if (!CharacterDB::GetCharHomeStation(charID, stationID)) {
+        ItemData iData( itemCloneAlpha, charID, stationID, flagClone, 1 );
         iData.customInfo="Active: ";
         iData.customInfo += row.GetText(20);
         iData.customInfo += "(";
-        iData.customInfo += itoa(characterID);
+        iData.customInfo += std::to_string(charID);
         iData.customInfo += ") {ud}";
         sItemFactory.SpawnItem( iData )->SaveItem();
     }
     characterDataMap["cloneStationID"] = stationID;
 }
 
-PyRep* CharacterDB::GetCharPublicInfo3(uint32 characterID) {
+PyRep* CharacterDB::GetCharPublicInfo3(uint32 charID) {
     // bounty, title, startDateTime, description, corporationID
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -590,13 +590,35 @@ PyRep* CharacterDB::GetCharPublicInfo3(uint32 characterID) {
         "  description,"
         "  corporationID"
         " FROM chrCharacters "
-        " WHERE characterID=%u", characterID))
+        " WHERE characterID=%u", charID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
 
     return DBResultToCRowset(res);
+}
+
+PyRep* CharacterDB::GetCharPrivateInfo(uint32 charID) {
+    // characterID, gender, raceID, bloodlineID, createDateTime
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "  gender,"
+        "  createDateTime,"
+        "  raceID,"
+        "  bloodlineID"
+        " FROM chrCharacters "
+        " WHERE characterID=%u", charID))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row))
+        return nullptr;
+    return DBRowToPackedRow(row);
 }
 
 PyRep *CharacterDB::GetInfoWindowDataForChar(uint32 characterID) {
@@ -1818,4 +1840,22 @@ PyRep* CharacterDB::ListStationBlueprintItems(uint32 ownerID, uint32 stationID, 
         rsp->Dump(CLIENT__RSP_DUMP, "    ");
     return rsp;
 
+}
+
+uint8 CharacterDB::GetSkillLevel(uint32 charID, uint16 skillTypeID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT valueInt FROM entity_attributes WHERE attributeID= %u AND itemID= "
+        "SELECT itemID FROM entity WHERE locationID = %u AND typeID = %u",
+        AttrSkillLevel, charID, skillTypeID))
+    {
+        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        return 0;
+    }
+
+    DBResultRow row;
+    if (res.GetRow(row))
+        return row.GetUInt(0);
+    return 0;
 }

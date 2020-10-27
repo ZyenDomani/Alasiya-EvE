@@ -1022,7 +1022,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
         reason += m_pSE->GetName();
         AccountService::TranserFunds(
                     m_client->GetCharacterID(),
-                    ownerCONCORD,  // pSysMgr->GetSovHolder(),
+                    corpCONCORD,  // pSysMgr->GetSovHolder(),
                     cost,
                     reason.c_str(),
                     Journal::EntryType::PlanetaryExportTax,
