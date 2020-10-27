@@ -18,13 +18,6 @@
 #include "EntityList.h"
 #include "market/MarketDB.h"
 
-/* market range
-rangeStation = -1
-rangeSolarSystem = 0
-rangeConstellation = 4
-rangeRegion = 32767
-*/
-
 class Client;
 
 class MarketMgr
@@ -34,26 +27,32 @@ public:
     MarketMgr();
     ~MarketMgr();
 
-    int Initialize();
+    int Initialize(PyServiceMgr* pManager);
 
     void Close();
     void GetInfo();
     void Process();
 
-    bool NeedsUpdate();
+    void SystemStartup(SystemData &data);
+    void SystemShutdown(SystemData &data);
 
     void UpdatePriceHistory();
 
-    void ExecuteBuyOrder(uint32 buy_order_id, uint32 stationID, uint32 quantity, Client *seller, InventoryItemRef item, bool isCorp=false);
-    void ExecuteSellOrder(uint32 sell_order_id, uint32 stationID, uint32 quantity, Client *buyer, bool isCorp=false);
-    void SendOnOwnOrderChanged(Client *who, uint32 orderID, const char *action, bool isCorp=false, PyRep* order = nullptr);
-    void BroadcastOnOwnOrderChanged(uint32 regionID, uint32 orderID, const char *action, bool isCorp=false, PyRep* order = nullptr);
-    void SendOnMarketRefresh(Client *who);
-    
-    //void InvalidateOrdersCache(uint32 regionID);
+    // fulfill market order placed by buyer to buy items (usually at reduced prices).
+    // updates qty in args based on order request.  returns false if/when entire quantity is filled.
+    bool ExecuteBuyOrder(Client *seller, uint32 orderID, InventoryItemRef iRef, Call_PlaceCharOrder &args, uint16 accountKey = Account::KeyType::Cash);
+    // market order placed by seller to sell items (usually at higher prices)
+    void ExecuteSellOrder(Client *buyer, uint32 orderID, Call_PlaceCharOrder &args);
+    void SendOnOwnOrderChanged(Client* pClient, uint32 orderID, uint8 action, bool isCorp = false, PyRep* order = nullptr);
 
-    PyRep* GetMarketGroups()               { PyIncRef(m_marketGroups); return m_marketGroups; }
+    void InvalidateOrdersCache(uint32 regionID, uint32 typeID);
+
+    bool NeedsUpdate()                                  { return m_timeStamp > GetFileTimeNow()?false:true; }
+
+    PyRep* GetMarketGroups()                            { PyIncRef(m_marketGroups); return m_marketGroups; }
+    // cached
     PyRep* GetNewPriceHistory(uint32 regionID, uint32 typeID);
+    // cached
     PyRep* GetOldPriceHistory(uint32 regionID, uint32 typeID);
 
 protected:
@@ -61,6 +60,7 @@ protected:
 
 private:
     MarketDB m_db;
+    PyServiceMgr* m_manager;
 
     PyRep* m_marketGroups;  // static market group data
 
@@ -71,6 +71,7 @@ private:
     //  load market data by region, sorted by system/station.
     //  station data will also store StationRef to owning/containing station for easier access later
     //  will be able to implement 'jumps' and other market conditionals
+    //  ** this could take ~16m for average market data per region
 };
 
 //Singleton
@@ -79,3 +80,21 @@ private:
 
 
 #endif  // _EVE_SERVER_MARKET_MANAGER_H__
+
+/*
+ *    def GetStationDistance(self, stationID, getFastestRoute = True):
+ *        if session.stationid == stationID:
+ *            return -1
+ *        station = sm.GetService('ui').GetStation(stationID)
+ *        solarSystemID = station.solarSystemID
+ *        regionID = sm.GetService('map').GetRegionForSolarSystem(solarSystemID)
+ *        if regionID != session.regionid:
+ *            return const.rangeRegion
+ *        if getFastestRoute:
+ *            jumps = sm.StartService('pathfinder').GetShortestJumpCountFromCurrent(solarSystemID)
+ *        else:
+ *            jumps = sm.StartService('pathfinder').GetJumpCountFromCurrent(solarSystemID)
+ *        if jumps >= 1:
+ *            return jumps
+ *        return 0
+ */

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.9
+    Version:    10.0
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -47,7 +47,7 @@ public:
     // From <server>
     struct {
         bool UseBeanCount;
-        bool UseMarketBot;
+        bool TraderJoe;
         bool UseStackTrace;
         bool DisableIGB;
         bool BulkDataOD;
@@ -135,6 +135,9 @@ public:
     struct {
         bool UseOrderRange;
         bool DeleteOldTransactions;
+        uint8 StationOrderLimit;
+        uint8 SystemOrderLimit;
+        uint8 RegionOrderLimit;
         uint8 FindBuyOrder;
         uint8 FindSellOrder;
         uint8 OldPriceLimit;

@@ -1,7 +1,7 @@
 
  /**
   * @name StaticDataMgr.h
-  *   memory object caching system for managing and saving ingame data
+  *   memory object caching system for retrieving, managing and saving ingame data
   *
   * @Author:         Allan
   * @date:   1Jul15 / 1Aug16
@@ -67,11 +67,16 @@ public:
     uint16              GetStaticType(uint32 itemID);
 
     // this specific cache method is designed to use EITHER a stationID OR a systemID to determine system data wanted.
-    bool                GetSystemInfo(uint32 locationID, SystemData& data);
+    const char*         GetSystemName(uint32 locationID);       //  allan 3Aug16
+    // this specific cache method is designed to use EITHER a stationID OR a systemID to determine system data wanted.
+    bool                GetSystemInfo(uint32 locationID, SystemData& data);      //  allan 3Aug16
 
     PyRep*              GetStationCount();
+    // return regionID for given stationID
     uint32              GetStationRegion(uint32 stationID);
+    // return constellationID for given stationID
     uint32              GetStationConstellation(uint32 stationID);
+    // return systemID for given stationID
     uint32              GetStationSystem(uint32 stationID);
 
     uint8               GetStationCount(uint32 systemID);
@@ -115,12 +120,12 @@ public:
 
     // common place for *FULL* DBRowDescriptor Header creation.
     //  this way all users are using the exact same data
-    DBRowDescriptor* CreateHeader();
+    DBRowDescriptor*    CreateHeader();
 
 protected:
     void                Populate();
 
-    std::vector<uint16> m_items;
+    std::vector<uint16>                                 m_items;
 
 private:
     PyTuple*                                            m_factionInfo;

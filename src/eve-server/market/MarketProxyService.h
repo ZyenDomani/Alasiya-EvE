@@ -57,10 +57,6 @@ protected:
     PyCallable_DECL_CALL(CorpGetNewTransactions);
     PyCallable_DECL_CALL(StartupCheck);
     PyCallable_DECL_CALL(GetCorporationOrders);
-
-
-    void InvalidateOrdersCache(uint32 regionID);
-
 };
 
 #endif

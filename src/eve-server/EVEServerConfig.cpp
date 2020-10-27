@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.9
+    Version:    10.0
 */
 
 
@@ -45,7 +45,7 @@ EVEServerConfig::EVEServerConfig()
 
     // server
     server.UseBeanCount = false;
-    server.UseMarketBot = false;
+    server.TraderJoe = false;//N
     server.maxPlayers = 500;//N
     server.UseStackTrace = false;
     server.BulkDataOD = false;
@@ -101,8 +101,8 @@ EVEServerConfig::EVEServerConfig()
     rates.ShipRepairModifier = 0.0000075;
     rates.ModuleRepairModifier = 0.00125;
     rates.WebUpdate = 15 /*m*/;
-    rates.TaxAmount = 10000;
-    rates.TaxedAmount = 175000;
+    rates.TaxAmount = 5000;
+    rates.TaxedAmount = 75000;
     rates.PlayerCritChance = 0.02;
     rates.NpcCritChance = 0.15;
     rates.SentryCritChance = 0.02;
@@ -112,6 +112,9 @@ EVEServerConfig::EVEServerConfig()
     //market
     market.FindBuyOrder = 10;
     market.FindSellOrder = 10;
+    market.StationOrderLimit = 10;
+    market.SystemOrderLimit = 10;
+    market.RegionOrderLimit = 10;
     market.OldPriceLimit = 10;
     market.NewPriceLimit = 10;
     market.HistoryUpdateTime = 6/*h*/;
@@ -316,7 +319,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 {
     AddValueParser( "DisableIGB",           server.DisableIGB );
     AddValueParser( "UseBeanCount",         server.UseBeanCount );
-    AddValueParser( "UseMarketBot",         server.UseMarketBot );
+    AddValueParser( "TraderJoe",            server.TraderJoe );
     AddValueParser( "maxPlayers",           server.maxPlayers );
     AddValueParser( "NoobShipCheck",        server.NoobShipCheck );
     AddValueParser( "StackTrace",           server.StackTrace );
@@ -341,6 +344,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 
     RemoveParser( "DisableIGB" );
     RemoveParser( "UseBeanCount" );
+    RemoveParser( "TraderJoe" );
     RemoveParser( "maxPlayers" );
     RemoveParser( "NoobShipCheck" );
     RemoveParser( "StackTrace" );
@@ -461,6 +465,9 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele)
 {
+    AddValueParser( "StationOrderLimit",            market.StationOrderLimit );
+    AddValueParser( "SystemOrderLimit",             market.SystemOrderLimit);
+    AddValueParser( "RegionOrderLimit",             market.RegionOrderLimit );
     AddValueParser( "FindBuyOrder",                 market.FindBuyOrder );
     AddValueParser( "FindSellOrder",                market.FindSellOrder);
     AddValueParser( "OldPriceLimit",                market.OldPriceLimit );
@@ -471,6 +478,9 @@ bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele)
 
     const bool result = ParseElementChildren( ele );
 
+    RemoveParser( "StationOrderLimit" );
+    RemoveParser( "SystemOrderLimit" );
+    RemoveParser( "RegionOrderLimit" );
     RemoveParser( "FindBuyOrder" );
     RemoveParser( "FindSellOrder" );
     RemoveParser( "OldPriceLimit" );

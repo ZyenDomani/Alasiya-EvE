@@ -91,7 +91,9 @@ public:
 
     Agent* GetAgent(uint32 agentID);
 
+    // will return nullptr if character not online
     Client* FindClientByName(const char* name) const;
+    // will return nullptr if character not online
     Client* FindClientByCharID(uint32 charID) const;
 
     // this will return nullptr and throw console msg on failure.

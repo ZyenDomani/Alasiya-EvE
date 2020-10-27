@@ -195,6 +195,23 @@ float EvEMath::Agent::GetStandingBonus(float fromStanding, uint32 fromFactionID,
     return bonus;
 }
 
+float EvEMath::Market::BrokerFee(uint8 brSkillLvl, float fStanding, float cStanding)
+{
+    return 0.05 - (0.003 * brSkillLvl) - (0.0003 * fStanding) - (0.0002 * cStanding);
+}
+
+float EvEMath::Market::RelistFee(float oldPrice, float newPrice, float brokerPercent/*0.05*/, float discount/*0*/)
+{
+    // this needs a 'Relist Discount' but no clue where to find data for it yet
+    return EvE::max(brokerPercent * (newPrice -oldPrice)) + (1 -discount) *brokerPercent *newPrice;
+}
+
+float EvEMath::Market::SalesTax(uint8 accountingSkillLvl/*0*/, uint8 taxEvasionSkillLvl/*0*/)
+{
+    /** @todo  add skillTaxEvasion to this formula.... */
+    return 0.05 * (1 - 0.11 * accountingSkillLvl);
+}
+
 void EvEMath::PI::Dijkstra(uint32 sourcePin, uint32 destinationPin)
 {
     // not used yet...
@@ -214,12 +231,6 @@ EvilNumber EvEMath::TargetingLockTime( EvilNumber YourEffectiveScanResolution, E
 EvilNumber EvEMath::AlignTimeInSeconds( EvilNumber inertia, EvilNumber Mass )
 {
     return ((log(2.0) * inertia * Mass) / 500000);
-}
-
-EvilNumber EvEMath::TradeBrokerFee( EvilNumber BrokerRelationsSkillLevel, EvilNumber FactionStanding, EvilNumber CorporationStanding )
-{
-    return (100.0 * ((0.01 - 0.0005 * BrokerRelationsSkillLevel.get_double())
-    / (pow( 2, (0.14 * FactionStanding.get_double() + 0.06 * CorporationStanding.get_double()) ))));
 }
 
 /*

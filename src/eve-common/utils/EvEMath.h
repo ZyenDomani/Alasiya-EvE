@@ -59,6 +59,12 @@ namespace EvEMath {
         float GetStandingBonus(float fromStanding, uint32 fromFactionID, uint8 ConnectionsSkillLevel, uint8 DiplomacySkillLevel, uint8 CriminalConnectionsSkillLevel);
     }
 
+    namespace Market {
+        float BrokerFee( uint8 brSkillLvl, float fStanding, float cStanding );
+        float RelistFee(float oldPrice, float newPrice, float brokerPercent=0.05, float discount=0);
+        float SalesTax(uint8 accountingSkillLvl=0, uint8 taxEvasionSkillLvl=0);
+    }
+
     namespace PI {
         void Dijkstra(uint32 sourcePin, uint32 destinationPin);
 
@@ -93,7 +99,6 @@ namespace EvEMath {
     EvilNumber EffectiveAttribute( EvilNumber BaseAttribute, EvilNumber ImplantAttributeBonus );
     EvilNumber TargetingLockTime( EvilNumber YourEffectiveScanResolution, EvilNumber TargetEffectiveSignatureRadius );
     EvilNumber AlignTimeInSeconds( EvilNumber inertia, EvilNumber Mass );
-    EvilNumber TradeBrokerFee( EvilNumber BrokerRelationsSkillLevel, EvilNumber FactionStanding, EvilNumber CorporationStanding );
 
 }
 

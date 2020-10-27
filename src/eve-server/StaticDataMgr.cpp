@@ -1,7 +1,7 @@
 
  /**
   * @name StaticDataMgr.cpp
-  *   memory object caching system for managing and saving ingame data
+  *   memory object caching system for retrieving, managing and saving ingame data
   *
   * @Author:         Allan
   * @date:   1Jul15 / 1Aug16
@@ -17,6 +17,12 @@
 #include "station/StationDataMgr.h"
 #include "system/SystemManager.h"
 
+/*
+ * DATA__ERROR          # specific "*data not found but should be there" msgs
+ * DATA__WARNING        # misc "data not found but nbd" msgs
+ * DATA__MESSAGE        # misc data msgs (mt)
+ * DATA__INFO           # data loading msgs (container and amount) (mt)
+ */
 
 StaticDataMgr::StaticDataMgr()
 : m_keyMap(nullptr),
@@ -825,6 +831,23 @@ bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
 
     _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
     return false;
+}
+
+const char* StaticDataMgr::GetSystemName(uint32 locationID)
+{
+    if (IsStation(locationID)) {
+        locationID = GetStationSystem(locationID);
+    } else if (!IsSolarSystem(locationID)) {
+        _log(SERVICE__WARNING, "Failed to query info:  locationID %u is neither station nor system.", locationID);
+        return false;
+    }
+
+    std::map<uint32, SystemData>::iterator itr = m_systemData.find(locationID);
+    if (itr != m_systemData.end())
+        return itr->second.name.c_str();
+
+    _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
+    return "";
 }
 
 bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)

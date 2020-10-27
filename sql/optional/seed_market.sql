@@ -15,9 +15,9 @@ insert into tStations
   select stationID,solarSystemID,regionID, corporationID, security from staStations where (@i:=@i+1)<=@lim AND regionID=@regionid  order by rand();
 
 -- actual seeding
-INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, volRemaining, issued, orderState,
+INSERT INTO mktOrders (typeID, charID, regionID, stationID, price, volEntered, volRemaining, issued,
 minVolume, duration, solarSystemID, jumps)
-  SELECT typeID, corporationID, regionID, stationID, basePrice / security,550, 550, 132094760660000000 ,1, 1, 250, solarSystemID, 5
+  SELECT typeID, corporationID, regionID, stationID, basePrice / security, 550, 550, 132478179209572976, 1, 250, solarSystemID, 1
   FROM tStations, invTypes inner join invGroups USING (groupID)
   WHERE invTypes.published = 1
   AND invGroups.categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
@@ -65,14 +65,14 @@ truncate table tStations;
 insert into tStations values (60014137, 30000053, 10000001);
 
 -- actual seeding
-INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, volRemaining, issued, orderState,
+INSERT INTO mktOrders (typeID, charID, regionID, stationID, price, volEntered, volRemaining, issued,
 minVolume, duration, solarSystemID, jumps)
-  SELECT typeID,1, regionID, stationID, basePrice, 550, 550, 131989844991575488,1, 1, 250, solarSystemID, 25
+  SELECT typeID, stationID, regionID, stationID, basePrice, 550, 550, 132478179209572976, 1, 250, solarSystemID, 1
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
   WHERE invTypes.published = 1
   AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 20, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
 UPDATE mktOrders SET price = 100 WHERE price = 0;
--- 1922 rows affected. (Query took 0.1082 seconds.)
+-- 11004 orders per station
 
 -- categoryID  categoryName
 -- 	4   Material

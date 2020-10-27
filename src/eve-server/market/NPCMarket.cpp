@@ -85,8 +85,8 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
     // get the solar system and region IDs.
     StationData data = StationData();
     if (!stDataMgr.GetStationData(StationID, data)) {
+        _log(DATA__ERROR, "Failed to retrieve data for station %u", StationID);
         newOrders.clear();
-        codelog(MARKET__ERROR, "NPCMarket: Failed to find parents for station %u", StationID);
         // adding these market orders failed but that does not mean the xml is at fault.
         // return a successful processing of the xml.
         return true;
@@ -114,7 +114,6 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
         values << ", " << (*itr).Qty;
         values << ", " << (*itr).Qty;
         values << ", " << trnTime;
-        values << ", 1"; // orderState
         values << ", 1"; // minVolume
         values << ", 0"; // contraband
         values << ", 0"; // accountID
@@ -131,7 +130,7 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
                                "INSERT INTO market_orders ("
                                "    typeID, charID, regionID, stationID,"
                                "    `range`, bid, price, volEntered, volRemaining, issued,"
-                               "    orderState, minVolume, contraband, accountID, duration,"
+                               "    minVolume, contraband, accountID, duration,"
                                "    isCorp, solarSystemID, escrow, jumps "
                                " ) VALUES %s",
                                values.str().c_str()

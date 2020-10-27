@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:        Allan
+    Rewrite:    Allan
 */
 
 #include <boost/algorithm/string.hpp>
@@ -174,6 +174,7 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
     return res;
 }
 
+/** @todo this isnt right.... */
 PyResult AccountService::Handle_GetJournalForAccounts(PyCallArgs &call) {
     // this asks for data for multiple acctKeys
     // self.journalData[key] = self.GetAccountSvc().GetJournalForAccounts(accountKeys, fromDate, entryTypeID, corpAccount, transactionID, rev)
@@ -192,9 +193,6 @@ PyResult AccountService::Handle_GetJournalForAccounts(PyCallArgs &call) {
         ownerID = call.client->GetCorporationID();
 
     uint16 acctKey = Account::KeyType::Cash;
-    if (call.byname.find("accountKey") != call.byname.end())
-        if (call.byname.find("accountKey")->second->IsInt())
-            acctKey = call.byname.find("accountKey")->second->AsInt()->value();
 
     PyRep* res = m_db.GetJournal(ownerID, args.entryTypeID, acctKey, args.fromDate, args.rev);
     if (is_log_enabled(ACCOUNT__RSP_DUMP))
@@ -243,27 +241,29 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
 
     uint16 toAcctKey = Account::KeyType::Cash;
     if (call.byname.find("toAccountKey") != call.byname.end())
-        if (call.byname.find("toAccountKey")->second->IsInt())
-            toAcctKey = call.byname.find("toAccountKey")->second->AsInt()->value();
+        toAcctKey = PyRep::IntegerValue(call.byname.find("toAccountKey")->second);
 
-    std::string reason= "DESC: No Reason Given";
+    std::string reason= "DESC: ";
     if (call.byname.find("reason") != call.byname.end()) {
         // this hits db directly, so test for possible sql injection code
         for (const auto cur : badChars)
             if (EvE::icontains(PyRep::StringContent(call.byname.find("reason")->second), cur))
-                throw PyException( MakeCustomError("Search String contains invalid characters"));
+                throw PyException( MakeCustomError("Reason contains invalid characters"));
 
-        reason = "DESC: ";
         reason += PyRep::StringContent(call.byname.find("reason")->second);
+    } else {
+        reason += "No Reason Given by ";
+        reason += call.client->GetCharName();
     }
 
     TranserFunds(call.client->GetCorporationID(), args.toID, args.amount, reason.c_str(), Journal::EntryType::CorporationAccountWithdrawal, \
-                call.client->GetCharacterID(), args.fromAcctKey, toAcctKey);
+                call.client->GetCharacterID(), args.fromAcctKey, toAcctKey, call.client);
     return nullptr;
 }
 
 void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason /*""*/, uint8 entryTypeID /*Journal::EntryType::Undefined*/, \
-                                  uint32 referenceID/*0*/, uint16 fromKey/*Account::KeyType::Cash*/, uint16 toKey/*Account::KeyType::Cash*/)
+                                  uint32 referenceID/*0*/, uint16 fromKey/*Account::KeyType::Cash*/, uint16 toKey/*Account::KeyType::Cash*/,
+                                  Client* pClient/*nullptr*/)
 {
     if (is_log_enabled(ACCOUNT__TRACE))
         _log(ACCOUNT__TRACE, "TranserFunds() - from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, fKey: %u, tKey: %u", \
@@ -279,7 +279,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     if (IsCharacter(fromID)) {
         pClientFrom = sEntityList.FindClientByCharID(fromID);
         if (pClientFrom == nullptr) {
-            // sender is offline. xfer funds thru db....is this possible?  sending funds while offline??
+            // sender is offline. xfer funds thru db.
             newBalanceFrom = AccountDB::OfflineFundXfer(fromID, -amount, fromCurrency);
         } else {
             // this will throw if it fails
@@ -288,7 +288,10 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         }
         AccountDB::AddJournalEntry(fromID, entryTypeID, fromID, toID, fromCurrency, fromKey, -amount, newBalanceFrom, reason, referenceID);
     } else if (IsPlayerCorp(fromID)) {
-        HandleCorpTransaction(fromID, entryTypeID, fromID, toID, fromCurrency, fromKey, -amount, reason, referenceID);
+        uint32 userID(0);
+        if (pClient != nullptr)
+            userID = pClient->GetCharacterID();
+        HandleCorpTransaction(fromID, entryTypeID, userID?userID:fromID, toID, fromCurrency, fromKey, -amount, reason, referenceID);
     } // fromID could be npc or _System.  nothing to do on this side.
 
     uint8 toCurrency = Account::CreditType::ISK;
@@ -307,12 +310,15 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
             // this will throw if it fails
             pClientTo->AddBalance(amount, toCurrency);
             /** @todo if this DOES fail, return funds to origin.  this needs a try/catch block */
-            //TranserFunds(ownerSCC, fromID, amount, reason, Journal::EntryType::Undefined, referenceID, fromKey, fromKey);
+            //TranserFunds(corpSCC, fromID, amount, reason, Journal::EntryType::Undefined, referenceID, fromKey, fromKey);
             newBalanceTo = pClientTo->GetBalance(toCurrency);
         }
         AccountDB::AddJournalEntry(toID, entryTypeID, fromID, toID, toCurrency, toKey, amount, newBalanceTo, reason, referenceID);
     } else if (IsPlayerCorp(toID)) {
-        HandleCorpTransaction(toID, entryTypeID, fromID, toID, toCurrency, toKey, amount, reason, referenceID);
+        uint32 userID(0);
+        if (pClient != nullptr)
+            userID = pClient->GetCharacterID();
+        HandleCorpTransaction(toID, entryTypeID, fromID, userID?userID:toID, toCurrency, toKey, amount, reason, referenceID);
         return;
     } else {
         _log(ACCOUNT__TRACE, "TranserFunds() - toID: %s(%u) is neither player nor player corp.  Not sending update.", \
@@ -326,13 +332,14 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     /* corp taxes...
      *   bounty prizes and mission rewards are taxed by the players corp based on corp tax rate.
      *   there is a possibility the char receiving these payments could be offline (for whatever reason)
-     *   these payments are only taxed if they are above amount set in config, or the default 250000 isk.
+     *   these payments are only taxed if they are above amount set in server config.
      */
 
     // are bounty payments grouped on timer?
-    if ((entryTypeID == Journal::EntryType::BountyPrize) or (entryTypeID == Journal::EntryType::BountyPrizes))
+    if ((entryTypeID == Journal::EntryType::BountyPrize)
+    or  (entryTypeID == Journal::EntryType::BountyPrizes))
         if (sConfig.server.BountyPayoutDelayed)
-            if (amount < sConfig.rates.TaxedAmount)  // is amount worth taxing?  default is 175k
+            if (amount < sConfig.rates.TaxedAmount)  // is amount worth taxing?  default is 75k
                 return;
     float tax = 0;
     uint32 corpID = 0;
@@ -340,7 +347,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         tax = pClientTo->GetCorpTaxRate() * amount;
         corpID = pClientTo->GetCorporationID();
     } else {
-        //  receipient is offline...try to get needed data from db
+        //  recipient is offline...try to get needed data from db
         tax = CharacterDB::GetCorpTaxRate(toID) * amount;
         corpID = CharacterDB::GetCorpID(toID);
     }
@@ -348,10 +355,11 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     // just in case something went wrong.....
     if (!IsCorp(corpID))
         return;
-    // is tax worth the accounting hassle? (from corp pov)  default is 10k
+    // is tax worth the accounting hassle? (from corp pov)  default is 5k
     if (tax < sConfig.rates.TaxAmount)
         return;
 
+    reason = "DESC: Corporation Tax on pirate bounty";
     switch (entryTypeID) {
         // Corp Taxed payment types
         case Journal::EntryType::BountyPrize:
@@ -367,29 +375,29 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     }
 }
 
-void AccountService::HandleCorpTransaction(uint32 ownerID, int8 entryTypeID, uint32 fromID, uint32 toID, int8 currency, \
-                                           uint16 accountKey, double amount, std::string description, uint32 referenceID)
+void AccountService::HandleCorpTransaction(uint32 corpID, int8 entryTypeID, uint32 fromID, uint32 toID, int8 currency, \
+                                            uint16 accountKey, double amount, std::string description, \
+                                            uint32 referenceID/*0*/)
 {
     if (is_log_enabled(ACCOUNT__TRACE))
-        _log(ACCOUNT__TRACE, "HandleCorpTransaction() - owner: %u, from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, key: %u, currency: %u", \
-                        ownerID, fromID, toID, entryTypeID, referenceID, amount,accountKey, currency);
-    double balance = AccountDB::GetCorpBalance(ownerID, accountKey);
+        _log(ACCOUNT__TRACE, "HandleCorpTransaction() - corp: %u, from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, key: %u, currency: %u", \
+                        corpID, fromID, toID, entryTypeID, referenceID, amount, accountKey, currency);
+    double balance = AccountDB::GetCorpBalance(corpID, accountKey);
     // verify funds available for withdraw first
     if (amount < 0) {
         if (-amount > balance) {
-            /** @todo  update this... however, current implementation will allow for corp transactions w/o loaded corp  */
             std::map<std::string, PyRep *> args;
-            args["owner"] = new PyString(CorporationDB::GetCorpName(ownerID));
+            args["owner"] = new PyString(CorporationDB::GetCorpName(corpID));
             args["amount"] = new PyFloat(-amount);
             args["balance"] = new PyFloat(balance);
-            args["division"] = new PyString(CorporationDB::GetDivisionName(ownerID, accountKey));
+            args["division"] = new PyString(CorporationDB::GetDivisionName(corpID, accountKey));
             throw PyException(MakeUserError("NotEnoughMoneyCorp", args));
         }
     }
     // get new corp balance
     balance += amount;
     // update corp balance
-    AccountDB::UpdateCorpBalance(ownerID, accountKey, balance);
+    AccountDB::UpdateCorpBalance(corpID, accountKey, balance);
 
     OnAccountChange oac;
     switch (accountKey) {
@@ -403,10 +411,7 @@ void AccountService::HandleCorpTransaction(uint32 ownerID, int8 entryTypeID, uin
         default:                      oac.accountKey = "cash";  break;
     }
     oac.balance = balance;
-    oac.ownerid = fromID;
-    PyTuple* answer = oac.Encode();
-    MulticastTarget mct;
-    mct.corporations.insert(fromID);
-    sEntityList.Multicast("OnAccountChange", "*corpid&corpAccountKey", &answer, mct);
-    AccountDB::AddJournalEntry(ownerID, entryTypeID, fromID, toID, currency, accountKey, amount, balance, description, referenceID);
+    oac.ownerid = corpID;
+    sEntityList.CorpNotify(corpID, 126 /*WalletChange*/, "OnAccountChange", "*corpid&corpAccountKey", oac.Encode());
+    AccountDB::AddJournalEntry(corpID, entryTypeID, fromID, toID, currency, accountKey, amount, balance, description, referenceID);
 }

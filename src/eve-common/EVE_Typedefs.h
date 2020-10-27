@@ -70,6 +70,7 @@ enum EVERace {
     racePirate      = 32,
     raceSleepers    = 64,
     raceORE         = 128
+    // max is uint8 (255)
 };
 
 typedef enum {
@@ -243,10 +244,7 @@ typedef enum {
     ownerBank               = 2,
     ownerStation            = 4,
     ownerCombatSimulator    = 5,
-    ownerUnknown            = 3006,
-    ownerCONCORD            = 1000125,
-    ownerSCC                = 1000132,
-    ownerDED                = 1000137   //division of concord
+    ownerUnknown            = 3006
 } ownerDefs;
 
 typedef enum {
@@ -460,7 +458,7 @@ typedef enum {
      corpBloodRaider         = 1000134,
      corpSerpentis           = 1000135,
      corpGuardianAngels     = 1000136,
-     corpDED                 = 1000137,
+     corpDED                 = 1000137,   //division of concord
      corpDominations     = 1000138,
      corpFoodRelief     = 1000139,
      corpGenolution  = 1000140,

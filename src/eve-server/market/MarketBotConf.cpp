@@ -6,7 +6,7 @@
   * idea and some code taken from AuctionHouseBot - Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
   * @Author:         Allan
   * @date:   10 August 2016
-  * @version:  0.3
+  * @version:  0.15
   */
 
 

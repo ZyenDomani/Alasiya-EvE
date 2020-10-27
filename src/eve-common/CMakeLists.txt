@@ -26,6 +26,7 @@ SET( INCLUDE
      "${TARGET_INCLUDE_DIR}/EVE_Inventory.h"
      "${TARGET_INCLUDE_DIR}/EVE_LSC.h"
      "${TARGET_INCLUDE_DIR}/EVE_Mail.h"
+     "${TARGET_INCLUDE_DIR}/EVE_Market.h"
      "${TARGET_INCLUDE_DIR}/EVE_Planet.h"
      "${TARGET_INCLUDE_DIR}/EVE_POS.h"
      "${TARGET_INCLUDE_DIR}/EVE_Roles.h"

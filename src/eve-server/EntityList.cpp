@@ -429,7 +429,8 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
     corpRole::const_iterator itr = cItr->second.begin(), end = cItr->second.end();
     switch (type) {
         case CorpNews:
-        case CorpNewCEO: {
+        case CorpNewCEO:
+        case CharLeftCorp: {
             // all members?
             while (itr != end) {
                 cMap.emplace(itr->first->GetCharacterID(), itr->first);
@@ -475,7 +476,6 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
         case BillPaidChar:
         case BillPaidCorpAll:
         case CorpTaxChange:
-        case CharLeftCorp:
         case CorpDividend:
         case CorpVoteCEORevoked:
         case CorpWarDeclared:
@@ -531,6 +531,43 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
         case OrbitalReinforced:
         case OwnershipTransferred:
             break;
+
+        // internal Alasiya corp notifications
+        case MarketOrder: {
+            // who else wants/needs this?
+            //  lets start with traders, and may have to add later
+            while (itr != end) {
+                if ((itr->second &Corp::Role::Trader) == Corp::Role::Trader)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
+        case WalletChange: {
+            while (itr != end) {
+                if ((itr->second &Corp::Role::Accountant) == Corp::Role::Accountant)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                if ((itr->second &Corp::Role::Auditor) == Corp::Role::Auditor)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                // this may need to check if player has access to division changed - will require a LOT more code
+                if ((itr->second &Corp::Role::JuniorAccountant) == Corp::Role::JuniorAccountant)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
+        case ItemUpdateStation: {
+            // all members?
+            while (itr != end) {
+                cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
+        case ItemUpdateSystem: {
+            // all members?
+            while (itr != end) {
+                cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
     }
 
     for (auto cur : cMap) {

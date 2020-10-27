@@ -88,6 +88,7 @@ namespace Notify {
     }
 
     namespace Types {
+        // these are types for mail msgs.
         enum {
             OldLscMessages = 1,
             CharTermination = 2,
@@ -184,7 +185,13 @@ namespace Notify {
             OrbitalReinforced = 94,
             OwnershipTransferred = 95,
             FWAllianceWarning = 96,
-            FWAllianceKick = 97
+            FWAllianceKick = 97,
+
+            // these are internal alasiya corp Notifications to allow switching for various events
+            MarketOrder = 125,    // since this updates same corp group, is used for all market order updates
+            WalletChange = 126,
+            ItemUpdateStation = 127,
+            ItemUpdateSystem = 128
         };
     }
 }

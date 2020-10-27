@@ -30,19 +30,23 @@
 #include "PyService.h"
 #include "account/AccountDB.h"
 
+class Client;
+
 class AccountService
 : public PyService {
 public:
     AccountService(PyServiceMgr *mgr);
     ~AccountService();
 
-    // this moves currency and adds journal entries. will also handle corp taxes internally.
+    // this moves currency, adds journal entries, and sends blink event. handles applicable corp taxes internally.
     //  will throw if fails
-    static void TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason = "", uint8 entryTypeID = Journal::EntryType::Undefined,\
-                             uint32 referenceID = 0, uint16 fromKey = Account::KeyType::Cash, uint16 toKey = Account::KeyType::Cash);
+    static void TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason = "", \
+                            uint8 entryTypeID = Journal::EntryType::Undefined, uint32 referenceID = 0, \
+                            uint16 fromKey = Account::KeyType::Cash, uint16 toKey = Account::KeyType::Cash, \
+                            Client* pClient=nullptr);
 
     // this should be the ONLY method to alter corp balances, and ONLY called from TransferFunds()
-    static void HandleCorpTransaction(uint32 ownerID, int8 entryTypeID, uint32 fromID, uint32 toID, int8 currency, uint16 accountKey, \
+    static void HandleCorpTransaction(uint32 corpID, int8 entryTypeID, uint32 fromID, uint32 toID, int8 currency, uint16 accountKey, \
                                       double amount, std::string description, uint32 referenceID = 0);
 
 protected:
