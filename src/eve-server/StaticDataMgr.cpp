@@ -839,7 +839,7 @@ const char* StaticDataMgr::GetSystemName(uint32 locationID)
         locationID = GetStationSystem(locationID);
     } else if (!IsSolarSystem(locationID)) {
         _log(SERVICE__WARNING, "Failed to query info:  locationID %u is neither station nor system.", locationID);
-        return false;
+        return "Error";
     }
 
     std::map<uint32, SystemData>::iterator itr = m_systemData.find(locationID);
@@ -847,7 +847,7 @@ const char* StaticDataMgr::GetSystemName(uint32 locationID)
         return itr->second.name.c_str();
 
     _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
-    return "";
+    return "Invalid";
 }
 
 bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
