@@ -107,14 +107,15 @@ bool Inventory::GetItems(OwnerData od, std::vector< uint32 >& into ) {
 bool Inventory::LoadContents() {
     if (IsAgent(m_myID))
         return true;
-    double profileStartTime = GetTimeUSeconds();
+    double profileStartTime(GetTimeUSeconds());
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
-    Client* pClient = sItemFactory.GetUsingClient();
-    // test for character creation (which throws errors here and isnt really needed)
-    if ((pClient != nullptr) and pClient->IsCharCreation())
-        return true;
-    if (IsStation(m_myID)) {
-        if (pClient != nullptr) {
+    Client* pClient(sItemFactory.GetUsingClient());
+
+    // test for character creation (which throws errors) and station loading
+    if (pClient != nullptr) {
+        if (pClient->IsCharCreation())
+            return true;
+        if (IsStation(m_myID)) {
             if (pClient->IsHangarLoaded(m_myID))
                 return true;
             pClient->AddStationHangar(m_myID);
@@ -311,12 +312,12 @@ void Inventory::GetCargoList(std::multimap< uint8, InventoryItemRef >& cargoMap)
         cargoMap.emplace(cur.second->flag(), cur.second);
 }
 
-double Inventory::GetCorpHangerCapyUsed() const {
-    double totalVolume(0.0);
+float Inventory::GetCorpHangerCapyUsed() const {
+    float totalVolume(0.0f);
     for (auto cur : mContents)
         if (IsHangarFlag(cur.second->flag()))
             totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
-        return totalVolume;
+    return totalVolume;
 }
 
 void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
@@ -552,9 +553,9 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
     }
 }
 
-double Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
+float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
 {
-    double totalVolume(0.0);
+    float totalVolume(0.0f);
     if (IsHangarFlag(flag) and combined) {
         for (auto cur : mContents)
             if (IsHangarFlag(cur.second->flag()))
@@ -570,7 +571,7 @@ double Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) cons
 
 bool Inventory::HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) const {
 
-    double capacity = GetRemainingCapacity(flag);
+    float capacity = GetRemainingCapacity(flag);
     float volume = iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float();
 
     _log(INV__CAPY, "Inventory::HasAvailableSpace() - Testing %s's %s available capy of %f to add %u %s at %f (%f each)",
@@ -584,7 +585,7 @@ bool Inventory::HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) cons
 }
 
 
-double Inventory::GetCapacity(EVEItemFlags flag) const {
+float Inventory::GetCapacity(EVEItemFlags flag) const {
     // added hangar capy for all hangar types
     // are we missing any hangar types here?  POS types?
     switch( flag ) {
@@ -641,7 +642,7 @@ double Inventory::GetCapacity(EVEItemFlags flag) const {
 
     _log(INV__WARNING, "Inventory::GetCapacity() - Unsupported flag %s(%u) called for %s(%u)", \
                 sDataMgr.GetFlagName(flag), flag, m_self->name(), m_myID);
-    return 0.0;
+    return 0.0f;
 }
 
 
@@ -653,7 +654,7 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
 
     // can this be coded to check weapon capy?
 
-    double capacity = GetRemainingCapacity(flag);
+    float capacity = GetRemainingCapacity(flag);
     float volume = iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float();
 
     _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %.2f to add %u %s at %.2f (%.3f each)",

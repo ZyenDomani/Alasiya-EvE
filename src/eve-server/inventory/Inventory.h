@@ -62,10 +62,10 @@ public:
     bool ContainsTypeQty(uint16 typeID, uint32 qty=0) const;
     bool ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit) const;
 
-    double GetCapacity(EVEItemFlags flag) const;
-    double GetStoredVolume(EVEItemFlags flag, bool combined=true) const;
-    double GetCorpHangerCapyUsed() const;
-    double GetRemainingCapacity(EVEItemFlags flag) const { return GetCapacity( flag ) - GetStoredVolume( flag ); }
+    float GetCapacity(EVEItemFlags flag) const;
+    float GetStoredVolume(EVEItemFlags flag, bool combined=true) const;
+    float GetCorpHangerCapyUsed() const;
+    float GetRemainingCapacity(EVEItemFlags flag) const { return GetCapacity( flag ) - GetStoredVolume( flag ); }
 
     InventoryItemRef GetByID(uint32 id) const;
     InventoryItemRef GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const;
