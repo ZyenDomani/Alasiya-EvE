@@ -175,6 +175,7 @@ PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityID
 
 PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     // this is locations only....region, const, system, station, ship
+    // wtf are asteroids seen in this call???
     std::vector<int32> staticItems, dynamicItems, asteroidItems;
     staticItems.clear();
     dynamicItems.clear();
@@ -226,7 +227,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
 
     if (asteroidItems.size()) {
         ListToINString(asteroidItems, ids);
-        sLog.Warning("GetMultiLocationsEx", "Asteroid Item requested.");
+        sLog.Warning("GetMultiLocationsEx", "Asteroid Items (%s) requested.", ids.c_str());
         if (!sDatabase.RunQuery(res,
             "SELECT "
             " itemID AS locationID,"

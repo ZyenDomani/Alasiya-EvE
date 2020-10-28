@@ -546,7 +546,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (sConfig.debug.IsTestServer)
         if (is_log_enabled(TARGET__MESSAGE)) {
             GVector vectorToTarget( mySE->GetPosition(), tSE->GetPosition());
-            _log(TARGET__MESSAGE, "DogmaIM::AddTarget() - %s(%u) targeting %s(%u) at range of %.2f meters.", \
+            _log(TARGET__MESSAGE, "DogmaIM::AddTarget() - %s(%u) targeting %s(%u) at distance of %.2f meters.", \
                     mySE->GetName(), mySE->GetID(), tSE->GetName(), args.arg, vectorToTarget.length() );
         }
 

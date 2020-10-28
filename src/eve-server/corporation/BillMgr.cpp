@@ -107,7 +107,7 @@ PyResult BillMgr::Handle_SendAutomaticPaySettings(PyCallArgs &call) {
     //    sm.RemoteSvc('billMgr').SendAutomaticPaySettings(self.automaticPaymentSettings)
 
     // if corp in alliance, get settings for all 6, else ignore AllianceMaintainanceBill (5)
-    
+
     /*
      * 19:07:55 [CorpCallDump]   Call Arguments:
      * 19:07:55 [CorpCallDump]      Tuple: 1 elements
@@ -118,7 +118,7 @@ PyResult BillMgr::Handle_SendAutomaticPaySettings(PyCallArgs &call) {
      * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 0] Value:    Boolean: false
      * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 1]   Key:    Integer: 4
      * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 1] Value:    Boolean: true
-     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 2]   Key:     String: 'divisionID'
+     * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 2]   Key:     String: 'divisionID'  << wallet to use
      * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 2] Value:    Integer: 1003
      * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 3]   Key:    Integer: 3
      * 19:07:55 [CorpCallDump]       [ 0]   [ 0] Value:   [ 3] Value:    Boolean: true

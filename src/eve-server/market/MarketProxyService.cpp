@@ -283,7 +283,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             uint32 orderID = m_db.FindSellOrder(args);
             if (orderID) {
                 // found one.
-                _log(MARKET__TRACE, "PlaceCharOrder - Found sell order %u in %s for %s. (type %i, price %.2f, qty %i, range %i)", \
+                _log(MARKET__TRACE, "PlaceCharOrder - Found sell order #%u in %s for %s. (type %i, price %.2f, qty %i, range %i)", \
                         orderID, stDataMgr.GetStationName(args.stationID).c_str(), call.client->GetName(), args.typeID, args.price, args.quantity, args.orderRange);
 
                 sMktMgr.ExecuteSellOrder(call.client, orderID, args);
@@ -442,7 +442,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             while (args.quantity and search) {
                 orderID = m_db.FindBuyOrder(args);
                 if (orderID) {
-                    _log(MARKET__TRACE, "PlaceCharOrder - Found buy order %u in %s for %s.", \
+                    _log(MARKET__TRACE, "PlaceCharOrder - Found buy order #%u in %s for %s.", \
                             orderID, stDataMgr.GetStationName(args.stationID).c_str(), call.client->GetName());
                     search = sMktMgr.ExecuteBuyOrder(call.client, orderID, iRef, args);
                 }
@@ -540,7 +540,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
     // we need to pull data from db for typeID and isCorp...
     Market::OrderInfo oInfo = Market::OrderInfo();
     if (!m_db.GetOrderInfo(args.orderID, oInfo)) {
-        _log(MARKET__ERROR, "ModifyCharOrder - Failed to get info about order %u.", args.orderID);
+        _log(MARKET__ERROR, "ModifyCharOrder - Failed to get info about order #%u.", args.orderID);
         return nullptr;
     }
 
@@ -555,7 +555,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
                         Account::KeyType::Cash, Account::KeyType::Escrow);
 
     if (!m_db.AlterOrderPrice(args.orderID, args.newPrice)) {
-        _log(MARKET__ERROR, "ModifyCharOrder - Failed to modify price for order %u.", call.client->GetName(), args.orderID);
+        _log(MARKET__ERROR, "ModifyCharOrder - Failed to modify price for order #%u.", call.client->GetName(), args.orderID);
         return nullptr;
     }
 
@@ -574,7 +574,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
 
     Market::OrderInfo oInfo = Market::OrderInfo();
     if (!m_db.GetOrderInfo(args.orderID, oInfo)) {
-        _log(MARKET__ERROR, "CancelCharOrder - Failed to get info about order %u.", call.client->GetName(), args.orderID);
+        _log(MARKET__ERROR, "CancelCharOrder - Failed to get info about order #%u.", call.client->GetName(), args.orderID);
         return nullptr;
     }
 
@@ -596,7 +596,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
 
     PyRep* order(m_db.GetOrderRow(args.orderID));
     if (!m_db.DeleteOrder(args.orderID)) {
-        _log(MARKET__ERROR, "CancelCharOrder - Failed to delete order %u.", args.orderID);
+        _log(MARKET__ERROR, "CancelCharOrder - Failed to delete order #%u.", args.orderID);
         return nullptr;
     }
 

@@ -115,8 +115,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     //first make sure they are not already in the list
-    std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(tSE);
-    if (res != m_targets.end()) {
+    if (m_targets.find(tSE) != m_targets.end()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
         mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return false;
@@ -329,7 +328,8 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
 void TargetManager::TargetedByLocked(SystemEntity* pSE) {
     _log(TARGET__TRACE, "%s(%u) has been locked by %s(%u)", \
             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
-    mySE->TargetMgr()->TargetedAdd(pSE);
+    // i think this is redundant....check
+    //mySE->TargetMgr()->TargetedAdd(pSE);
 }
 
 void TargetManager::TargetedByLost(SystemEntity* pSE) {
@@ -340,11 +340,12 @@ void TargetManager::TargetedByLost(SystemEntity* pSE) {
         return;
     }
 
+    _log(TARGET__TRACE, "%s(%u) is no longer locked by %s(%u)", \
+            mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
+
     SafeDelete(itr->second);
     m_targetedBy.erase(itr);
     TargetedLost(pSE);
-    _log(TARGET__TRACE, "%s(%u) is no longer locked by %s(%u)", \
-            mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
 }
 
 /*
@@ -379,16 +380,15 @@ void TargetManager::TargetAdded(SystemEntity* tSE) {
 }
 
 void TargetManager::TargetedAdd(SystemEntity *tSE) {
-    _log(TARGET__TRACE, "%s(%u) - %s(%u) has started target lock on me.", \
-            mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
     //first make sure they are not already in the list
-    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(tSE);
-    if (itr != m_targetedBy.end()) {
-        _log(TARGET__INFO, "Adding %s(%u) to %s(%u)'s locked list, but they're already in there.", \
+    if (m_targetedBy.find(tSE) != m_targetedBy.end()) {
+        _log(TARGET__INFO, "Cannot add %s(%u) to %s(%u)'s locked list: they're already in there.", \
                 tSE->GetName(), tSE->GetID(), mySE->GetName(), mySE->GetID());
         return;
     } else {
         //new entry.
+        _log(TARGET__TRACE, "%s(%u) - %s(%u) has started target lock on me.", \
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         TargetedByEntry *te = new TargetedByEntry();
         te->state = TargMgr::State::Locking;
         m_targetedBy[tSE] = te;

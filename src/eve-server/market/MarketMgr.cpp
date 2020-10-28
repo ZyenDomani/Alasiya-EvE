@@ -294,7 +294,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
 
     Market::OrderInfo oInfo = Market::OrderInfo();
     if (!m_db.GetOrderInfo(orderID, oInfo)) {
-        _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to get order info for %u.", orderID);
+        _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to get order info for #%u.", orderID);
         return true;
     }
 
@@ -446,9 +446,9 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
 
     if (qtyStatus == Market::QtyStatus::Under) {
         uint32 newQty(oInfo.quantity - args.quantity);
-        _log(MARKET__TRACE, "ExecuteBuyOrder - Partially satisfied order %u, altering quantity to %u.", orderID, newQty);
+        _log(MARKET__TRACE, "ExecuteBuyOrder - Partially satisfied order #%u, altering quantity to %u.", orderID, newQty);
         if (!m_db.AlterOrderQuantity(orderID, newQty)) {
-            _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to alter quantity of order %u.", orderID);
+            _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to alter quantity of order #%u.", orderID);
             return true;
         }
         InvalidateOrdersCache(oInfo.regionID, args.typeID);
@@ -458,10 +458,10 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         return false;
     }
 
-    _log(MARKET__TRACE, "ExecuteBuyOrder - Satisfied order %u, deleting.", orderID);
+    _log(MARKET__TRACE, "ExecuteBuyOrder - Satisfied order #%u, deleting.", orderID);
     PyRep* order = m_db.GetOrderRow(orderID);
     if (!m_db.DeleteOrder(orderID)) {
-        _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to delete order %u.", orderID);
+        _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to delete order #%u.", orderID);
         return true;
     }
     InvalidateOrdersCache(oInfo.regionID, args.typeID);
@@ -520,19 +520,19 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
         seller = sEntityList.FindClientByCharID(oInfo.ownerID);
 
     if (orderConsumed) {
-        _log(MARKET__TRACE, "ExecuteSellOrder - satisfied order %u, deleting.", orderID);
+        _log(MARKET__TRACE, "ExecuteSellOrder - satisfied order #%u, deleting.", orderID);
         PyRep* order = m_db.GetOrderRow(orderID);
         if (!m_db.DeleteOrder(orderID)) {
-            _log(MARKET__ERROR, "ExecuteSellOrder - Failed to delete order %u.", orderID);
+            _log(MARKET__ERROR, "ExecuteSellOrder - Failed to delete order #%u.", orderID);
             return;
         }
         InvalidateOrdersCache(oInfo.regionID, args.typeID);
         SendOnOwnOrderChanged(seller, orderID, Market::Action::Expiry, args.useCorp, order);
     } else {
         uint32 newQty(oInfo.quantity - args.quantity);
-        _log(MARKET__TRACE, "ExecuteSellOrder - Partially satisfied order %u, altering quantity to %u.", orderID, newQty);
+        _log(MARKET__TRACE, "ExecuteSellOrder - Partially satisfied order #%u, altering quantity to %u.", orderID, newQty);
         if (!m_db.AlterOrderQuantity(orderID, newQty)) {
-            _log(MARKET__ERROR, "ExecuteSellOrder - Failed to alter quantity of order %u.", orderID);
+            _log(MARKET__ERROR, "ExecuteSellOrder - Failed to alter quantity of order #%u.", orderID);
             return;
         }
         InvalidateOrdersCache(oInfo.regionID, args.typeID);
