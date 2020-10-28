@@ -1430,7 +1430,7 @@ void Client::ExecuteJump() {
     }
 
     //OnScannerInfoRemoved  - no args.  flushes scan data in client
-    SendNotification("OnScannerInfoRemoved", "charid", new_tuple(PyStatic.NewZero()), true);  // this is sequenced
+    SendNotification("OnScannerInfoRemoved", "charid", new PyTuple(0), true);  // this is sequenced
     pShipSE->Jump();
 
     MoveToLocation(m_moveSystemID, m_movePoint);
@@ -2079,6 +2079,7 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
     notify.args = payload;
 
     PyAddress dest;
+    // are all of these 'Broadcast'?
     dest.type = PyAddress::Broadcast;
     dest.service = notifyType;
     dest.bcast_idtype = idType;
@@ -2088,7 +2089,6 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
 
     //now send it to the client
     SendNotification(dest, notify, seq);
-    //PyDecRef(*payload);
 }
 
 void Client::SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq /*true*/) {
@@ -2101,6 +2101,7 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
         notify.args = (*payload);
 
     PyAddress dest;
+    // are all of these 'Broadcast'?
         dest.type = PyAddress::Broadcast;
         dest.service = notifyType;
         dest.bcast_idtype = idType;
@@ -2108,7 +2109,6 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
 
     //now send it to the client
     SendNotification(dest, notify, seq);
-    //PyDecRef(*payload);
 }
 
 void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq/*true*/) {
@@ -2117,6 +2117,7 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
     packet->type_string = "macho.Notification";
     packet->type = NOTIFICATION;
 
+    // is source type right here?
     packet->source.type = PyAddress::Node;
     packet->source.objectID = m_services.GetNodeID();
 
