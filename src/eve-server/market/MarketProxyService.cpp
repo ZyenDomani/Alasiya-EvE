@@ -340,6 +340,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         /** @todo standings incomplete.  need to finish */
         float fee = EvEMath::Market::BrokerFee(lvl, 1, 1);
         fee *= money;
+        _log(MARKET__DEBUG, "PlaceCharOrder(buy) - %s: Escrow: %.2f, Fee: %.2f", args.useCorp?"Corp":"Player", money, fee);
         // take monies and record actions
         if (args.useCorp) {
             AccountService::TranserFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), fee, \
@@ -471,10 +472,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             return nullptr;
         }
 
-
         // they will be placing a sell order.
-        /** @todo figure broker fees */
-        Journal::EntryType::Brokerfee;
 
         // set save data
         Market::SaveData data = Market::SaveData();
@@ -523,6 +521,26 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         //notify client about new order.
         sMktMgr.InvalidateOrdersCache(call.client->GetRegionID(), args.typeID);
         sMktMgr.SendOnOwnOrderChanged(call.client, orderID, Market::Action::Add, args.useCorp);
+
+        // calculate total for broker fees
+        float total = args.price * args.quantity;
+        std::string reason = "DESC:  Setting up sell order in ";
+        reason += stDataMgr.GetStationName(args.stationID).c_str();
+        // get data for computing broker fees
+        uint8 lvl = call.client->GetChar()->GetSkillLevel(EvESkill::BrokerRelations);
+        //call.client->GetChar()->GetStandingModified();
+        /** @todo standings incomplete.  need to finish */
+        float fee = EvEMath::Market::BrokerFee(lvl, 1, 1);
+        fee *= total;
+        _log(MARKET__DEBUG, "PlaceCharOrder(sell) - %s: Total: %.2f, Fee: %.2f", args.useCorp?"Corp":"Player", total, fee);
+        
+        // take monies and record actions (taxes are paid when item sells)
+        if (args.useCorp)
+            AccountService::TranserFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), fee, \
+                    reason.c_str(), Journal::EntryType::Brokerfee, orderID, accountKey, Account::KeyType::Cash, call.client);
+        else
+            AccountService::TranserFunds(call.client->GetCharacterID(), stDataMgr.GetOwnerID(args.stationID), fee, \
+                    reason.c_str(), Journal::EntryType::Brokerfee, orderID, accountKey);
     }
 
     //returns nothing.

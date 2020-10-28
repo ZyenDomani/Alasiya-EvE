@@ -409,7 +409,7 @@ PyRep *MarketDB::GetMarketGroups() {
 
     DBRowDescriptor *header = new DBRowDescriptor(res);
 
-    _log(MARKET__DEBUG, "GetMarketGroups header has %u columns.", header->ColumnCount());
+    _log(MARKET__DB_TRACE, "GetMarketGroups header has %u columns.", header->ColumnCount());
 
     CFilterRowSet *filterRowset = new CFilterRowSet(&header);
     PyDict *keywords = filterRowset->GetKeywords();
@@ -445,7 +445,7 @@ PyRep *MarketDB::GetMarketGroups() {
         pyrow->SetField(9, new PyInt( row.GetUInt(9) )  ); //descriptionID
     }
 
-    _log(MARKET__DEBUG, "GetMarketGroups returned %u keys.", filterRowset->GetKeyCount());
+    _log(MARKET__DB_TRACE, "GetMarketGroups returned %u keys.", filterRowset->GetKeyCount());
     if (is_log_enabled(MARKET__DB_TRACE))
         filterRowset->Dump(MARKET__DB_TRACE, "    ");
 
