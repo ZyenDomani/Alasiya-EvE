@@ -1899,7 +1899,7 @@ std::string ShipItem::GetShipDNA()
      *
      * the format is as follows:
      * <shipTypeID>:
-     *      <subsystemID>:
+     *    <subsystemID>:
      *      <moduleType-Highslot>;<quantity>:
      *      <moduleType-Midslot>;<quantity>:
      *      <moduleType-Lowslot>;<quantity>:
@@ -1958,7 +1958,7 @@ std::string ShipItem::GetShipDNA()
     dna << type().id() << ":";
     dna << subSys.str() << modHi.str() << modMid.str() << modLow.str() << modRig.str() << charges.str() << drones.str();
 
-    _log(SHIP__MESSAGE, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
+    _log(SHIP__MESSAGE, "ShipDNA has compiled \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
     return dna.str();
 }
 
@@ -1983,7 +1983,8 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             }
             if (m_type.groupID() == EVEDB::invGroups::Supercarrier) {
                 // these can only carry fighters and fighter/bombers in drone bay.  enforce that here.
-                if ((iRef->groupID() != EVEDB::invGroups::Fighter_Bomber) and (iRef->groupID() != EVEDB::invGroups::Fighter_Drone)) {
+                if ((iRef->groupID() != EVEDB::invGroups::Fighter_Bomber)
+                and (iRef->groupID() != EVEDB::invGroups::Fighter_Drone)) {
                     pClient->SendErrorMsg("The %s can only carry fighter drones in it's Drone Bay.  The %s is not allowed.", name(), iRef->name());
                     return false;
                 }
@@ -1996,42 +1997,39 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             }
             if (typeID() == EVEDB::invTypes::Rorqual)
                 if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
-                    and (iRef->groupID() != EVEDB::invGroups::Exhumer)
-                    and (iRef->groupID() != EVEDB::invGroups::Industrial)
-                    and (iRef->groupID() != EVEDB::invGroups::TransportShip)
-                    and (iRef->groupID() != EVEDB::invGroups::Freighter)
-                    and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
-                    and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
-                    pClient->SendErrorMsg("Only indy ships may be placed into this ship's maintenance ship hold.");
+                and (iRef->groupID() != EVEDB::invGroups::Exhumer)
+                and (iRef->groupID() != EVEDB::invGroups::Industrial)
+                and (iRef->groupID() != EVEDB::invGroups::TransportShip)
+                and (iRef->groupID() != EVEDB::invGroups::Freighter)
+                and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
+                and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
+                    pClient->SendErrorMsg("Only indy ships may be placed into the Rorqual's ship hold.");
+                    return false;
+                }
+            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
+                pClient->SendErrorMsg("Only ships may be placed into the maintenance bay.");
                 return false;
-                    }
-                    if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                        pClient->SendErrorMsg("Only ships may be placed into the maintenance bay.");
-                        return false;
-                    }
+            }
         } break;
-
-        // not sure if all of these flag* are used.  if not, *may* update dgmData to add them....later.
         case flagFuelBay: {    //  AttrFuelBayCapacity
-            if (iRef->groupID() != EVEDB::invGroups::FuelBlock) {
-                pClient->SendErrorMsg("Only fuel blocks may be placed into the fuel bay.");
+            if ((iRef->groupID() != EVEDB::invGroups::FuelBlock)
+            and (iRef->groupID() != EVEDB::invGroups::Ice_Product)) {
+                pClient->SendErrorMsg("Only fuel types may be stored in the fuel bay.");
                 return false;
             }
         } break;
         case flagOreHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Asteroid) {
-                pClient->SendErrorMsg("Only mined ore may be placed into the ore hold.");
+                pClient->SendErrorMsg("Only mined ore may be stored in the ore hold.");
                 return false;
             }
         } break;
-        /*
-         *        case flagGasHold: {
-         *            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-         *                pClient->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
-         *                return false;
-    }
-    } break;
-    */
+        case flagGasHold: {
+            if (iRef->groupID() != EVEDB::invGroups::Gas_Isotopes) {
+                pClient->SendErrorMsg("Only gas products may be stored in the gas hold.");
+                return false;
+            }
+        } break;
         case flagMineralHold: {
             if (iRef->groupID() != EVEDB::invGroups::Mineral) {
                 pClient->SendErrorMsg("Only refined minerals may be placed into the mineral hold.");
@@ -2044,6 +2042,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                 return false;
             }
         } break;
+        // not sure if all of these flag* are used.  if not, *may* update dgmData to add them....later.
         case flagShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
                 pClient->SendErrorMsg("Only ships may be placed into the ship hold.");
@@ -2072,28 +2071,28 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
         } break;
         case flagIndustrialShipHold: {
             if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
-                and (iRef->groupID() != EVEDB::invGroups::Exhumer)
-                and (iRef->groupID() != EVEDB::invGroups::Industrial)
-                and (iRef->groupID() != EVEDB::invGroups::TransportShip)
-                and (iRef->groupID() != EVEDB::invGroups::Freighter)
-                and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
-                and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
+            and (iRef->groupID() != EVEDB::invGroups::Exhumer)
+            and (iRef->groupID() != EVEDB::invGroups::Industrial)
+            and (iRef->groupID() != EVEDB::invGroups::TransportShip)
+            and (iRef->groupID() != EVEDB::invGroups::Freighter)
+            and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
+            and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
                 pClient->SendErrorMsg("Only indy ships may be placed into the ship's industrial ship hold.");
-            return false;
-                }
+                return false;
+            }
         } break;
         case flagAmmoHold: {
             if ((iRef->groupID() != EVEDB::invGroups::Ammo)
-                and (iRef->groupID() != EVEDB::invGroups::Frequency_Crystal)
-                and (iRef->groupID() != EVEDB::invGroups::Mining_Crystal)
-                and (iRef->groupID() != EVEDB::invGroups::Mercoxit_Mining_Crystal)
-                and (iRef->groupID() != EVEDB::invGroups::Advanced_Beam_Laser_Crystal)
-                and (iRef->groupID() != EVEDB::invGroups::Advanced_Pulse_Laser_Crystal)
-                and (iRef->groupID() != EVEDB::invGroups::Advanced_Artillery_Ammo)
-                and (iRef->groupID() != EVEDB::invGroups::Advanced_Autocannon_Ammo)
-                and (iRef->groupID() != EVEDB::invGroups::Advanced_Blaster_Ammo)
-                and (iRef->groupID() != EVEDB::invGroups::Advanced_Railgun_Ammo)
-                and (iRef->groupID() != EVEDB::invGroups::Hybrid_Ammo)) {
+            and (iRef->groupID() != EVEDB::invGroups::Frequency_Crystal)
+            and (iRef->groupID() != EVEDB::invGroups::Mining_Crystal)
+            and (iRef->groupID() != EVEDB::invGroups::Mercoxit_Mining_Crystal)
+            and (iRef->groupID() != EVEDB::invGroups::Advanced_Beam_Laser_Crystal)
+            and (iRef->groupID() != EVEDB::invGroups::Advanced_Pulse_Laser_Crystal)
+            and (iRef->groupID() != EVEDB::invGroups::Advanced_Artillery_Ammo)
+            and (iRef->groupID() != EVEDB::invGroups::Advanced_Autocannon_Ammo)
+            and (iRef->groupID() != EVEDB::invGroups::Advanced_Blaster_Ammo)
+            and (iRef->groupID() != EVEDB::invGroups::Advanced_Railgun_Ammo)
+            and (iRef->groupID() != EVEDB::invGroups::Hybrid_Ammo)) {
                 pClient->SendErrorMsg("Only ammunition and crystals may be placed into the ammo bay.");
                 return false;
                 }
@@ -2114,52 +2113,51 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             // {'FullPath': u'UI/Messages', 'messageID': 259450, 'label': u'ItemNotHardwareBody'}(u'{[item]itemname.name} cannot be fitted onto a ship. Only hardware modules can be fitted.', None, {u'{[item]itemname.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'itemname'}})
 
             if ((iRef->categoryID() != EVEDB::invCategories::Module)
-                and (iRef->categoryID() != EVEDB::invCategories::Charge)
-                and (iRef->categoryID() != EVEDB::invCategories::Subsystem)) {
+            and (iRef->categoryID() != EVEDB::invCategories::Charge)
+            and (iRef->categoryID() != EVEDB::invCategories::Subsystem)) {
                 pClient->SendErrorMsg("%s cannot be fitted onto a ship. Only hardware modules may be fitted.", iRef->name());
-            return false;
-                }
+                return false;
+            }
 
-                if (IsModuleSlot(flag)) {
-                    if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
-                        pClient->SendErrorMsg("You do not have the required skills to fit this %s.  Ref: ServerError 25163.", iRef->name());
-                        return false;
-                    }
-                    if (!ValidateItemSpecifics(iRef)) {
-                        pClient->SendErrorMsg("Your ship cannot equip the %s.<br>The %s group is not allowed on your %s.", \
-                        iRef->name(), iRef->group().name().c_str(), m_type.name().c_str());
-                        return false;
-                    }
-                    if (iRef->categoryID() == EVEDB::invCategories::Charge) {
-                        GenericModule* pMod = m_ModuleManager->GetModule(flag);
-                        if (pMod != nullptr) {
-                            // note:  this is also checked in client before calling Load()
-                            if (iRef->HasAttribute(AttrChargeSize))
-                                if (pMod->GetAttribute(AttrChargeSize) != iRef->GetAttribute(AttrChargeSize)) {
-                                    sLog.Error("ShipItem::ValidateAddItem", "Charge size %u for %s does not match Module size %u for %s.",\
-                                    iRef->GetAttribute(AttrChargeSize).get_uint32(), iRef->name(),\
-                                    pMod->GetAttribute(AttrChargeSize).get_uint32(), pMod->GetSelf()->name());
-                                    pClient->SendErrorMsg("Incorrect charge size for this module.");
-                                    return false;
-                                }
-                                if ((pMod->GetAttribute(AttrChargeGroup1) != iRef->groupID())
-                                    and (pMod->GetAttribute(AttrChargeGroup2) != iRef->groupID())
-                                    and (pMod->GetAttribute(AttrChargeGroup3) != iRef->groupID())
-                                    and (pMod->GetAttribute(AttrChargeGroup4) != iRef->groupID())
-                                    and (pMod->GetAttribute(AttrChargeGroup5) != iRef->groupID())) {
-                                    pClient->SendErrorMsg("Incorrect charge type for this module.");
-                                return false;
-                                    }
-                                    // NOTE: Module Manager will check for actual room to load charges and make stack splits, or reject loading altogether
-                        } else {
-                            pClient->SendErrorMsg("There is no module in %s.  Ref: ServerError 25162.", sDataMgr.GetFlagName(flag));
-                            return false;
-                        }
-                    }
-                } else {
-                    sLog.Error("ShipItem::ValidateAddItem", "testing of %s to add %u %s of cat %s has reached the end.",
-                               sDataMgr.GetFlagName(flag),iRef->quantity(), iRef->name(), iRef->category().name().c_str());
+            if (IsModuleSlot(flag)) {
+                if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
+                    pClient->SendErrorMsg("You do not have the required skills to fit this %s.  Ref: ServerError 25163.", iRef->name());
+                    return false;
                 }
+                if (!ValidateItemSpecifics(iRef)) {
+                    pClient->SendErrorMsg("Your ship cannot equip the %s.<br>The %s group is not allowed on your %s.", \
+                    iRef->name(), iRef->group().name().c_str(), m_type.name().c_str());
+                    return false;
+                }
+                if (iRef->categoryID() == EVEDB::invCategories::Charge) {
+                    GenericModule* pMod = m_ModuleManager->GetModule(flag);
+                    if (pMod != nullptr) {
+                        // note:  this is also checked in client before calling Load()
+                        if (iRef->HasAttribute(AttrChargeSize))
+                            if (pMod->GetAttribute(AttrChargeSize) != iRef->GetAttribute(AttrChargeSize)) {
+                                sLog.Error("ShipItem::ValidateAddItem", "Charge size %u for %s does not match Module size %u for %s.",\
+                                        iRef->GetAttribute(AttrChargeSize).get_uint32(), iRef->name(),\
+                                        pMod->GetAttribute(AttrChargeSize).get_uint32(), pMod->GetSelf()->name());
+                                pClient->SendErrorMsg("Incorrect charge size for this module.");
+                                return false;
+                            }
+                            if ((pMod->GetAttribute(AttrChargeGroup1) != iRef->groupID())
+                            and (pMod->GetAttribute(AttrChargeGroup2) != iRef->groupID())
+                            and (pMod->GetAttribute(AttrChargeGroup3) != iRef->groupID())
+                            and (pMod->GetAttribute(AttrChargeGroup4) != iRef->groupID())
+                            and (pMod->GetAttribute(AttrChargeGroup5) != iRef->groupID())) {
+                                pClient->SendErrorMsg("Incorrect charge type for this module.");
+                                return false;
+                            }
+                        // NOTE: Module Manager will check for actual room to load charges and make stack splits, or reject loading altogether
+                    } else {
+                        pClient->SendErrorMsg("There is no module in %s.  Ref: ServerError 25162.", sDataMgr.GetFlagName(flag));
+                        return false;
+                    }
+                }
+            } else
+                sLog.Error("ShipItem::ValidateAddItem", "testing of %s to add %u %s of cat %s has reached the end.",
+                        sDataMgr.GetFlagName(flag),iRef->quantity(), iRef->name(), iRef->category().name().c_str());
         }
     }
     return true;
