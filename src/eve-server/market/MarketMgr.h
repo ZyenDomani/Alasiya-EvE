@@ -98,3 +98,35 @@ private:
  *            return jumps
  *        return 0
  */
+
+/*
+ *    def GetSkillLimits(self):
+ *        limits = {}
+ *        currentOpen = 0
+ *        myskills = sm.GetService('skills').MySkillLevelsByID()
+ *        retailLevel = myskills.get(const.typeRetail, 0)
+ *        tradeLevel = myskills.get(const.typeTrade, 0)
+ *        wholeSaleLevel = myskills.get(const.typeWholesale, 0)
+ *        accountingLevel = myskills.get(const.typeAccounting, 0)
+ *        brokerLevel = myskills.get(const.typeBrokerRelations, 0)
+ *        tycoonLevel = myskills.get(const.typeTycoon, 0)
+ *        marginTradingLevel = myskills.get(const.typeMarginTrading, 0)
+ *        marketingLevel = myskills.get(const.typeMarketing, 0)
+ *        procurementLevel = myskills.get(const.typeProcurement, 0)
+ *        visibilityLevel = myskills.get(const.typeVisibility, 0)
+ *        daytradingLevel = myskills.get(const.typeDaytrading, 0)
+ *        maxOrderCount = 5 + tradeLevel * 4 + retailLevel * 8 + wholeSaleLevel * 16 + tycoonLevel * 32
+ *        limits['cnt'] = maxOrderCount
+ *        commissionPercentage = const.marketCommissionPercentage / 100.0
+ *        commissionPercentage *= 1 - brokerLevel * 0.05
+ *        transactionTax = const.mktTransactionTax / 100.0
+ *        transactionTax *= 1 - accountingLevel * 0.1
+ *        limits['fee'] = commissionPercentage
+ *        limits['acc'] = transactionTax
+ *        limits['ask'] = jumpsPerSkillLevel[marketingLevel]
+ *        limits['bid'] = jumpsPerSkillLevel[procurementLevel]
+ *        limits['vis'] = jumpsPerSkillLevel[visibilityLevel]
+ *        limits['mod'] = jumpsPerSkillLevel[daytradingLevel]
+ *        limits['esc'] = 0.75 ** marginTradingLevel
+ *        return limits
+ */

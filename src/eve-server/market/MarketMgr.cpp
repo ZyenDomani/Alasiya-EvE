@@ -381,7 +381,6 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
             lvl = pBuyer->GetChar()->GetSkillLevel(EvESkill::Accounting);
         float tax = EvEMath::Market::SalesTax(lvl);
         tax *= money;
-        tax = EvE::max(tax, 100.0f);
         _log(MARKET__DEBUG, "ExecuteBuyOrder - Buyer is Player: Price: %.2f, Tax: %.2f", money, tax);
         AccountService::TranserFunds(oInfo.ownerID, corpSCC, tax, reason.c_str(), \
                         Journal::EntryType::TransactionTax, orderID);
@@ -396,7 +395,6 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
             lvl = pBuyer->GetChar()->GetSkillLevel(EvESkill::Accounting);
         float tax = EvEMath::Market::SalesTax(lvl);
         tax *= money;
-        tax = EvE::max(tax, 100.0f);
         _log(MARKET__DEBUG, "ExecuteBuyOrder - Buyer is Corp: Price: %.2f, Tax: %.2f", money, tax);
         AccountService::TranserFunds(oInfo.ownerID, corpSCC, tax, reason.c_str(), \
                         Journal::EntryType::TransactionTax, orderID, oInfo.accountKey);
@@ -501,9 +499,8 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
 
     // get data needed and compute tax
     /** @todo standings incomplete.  need to finish */
-    float tax = EvEMath::Market::SalesTax(buyer->GetChar()->GetSkillLevel(EvESkill::Accounting));
+    float tax = EvEMath::Market::SalesTax(buyer->GetChar()->GetSkillLevel(EvESkill::Accounting), buyer->GetChar()->GetSkillLevel(EvESkill::TaxEvasion));
     tax *= money;
-    tax = EvE::max(tax, 100.0f);
     _log(MARKET__DEBUG, "ExecuteSellOrder - Buyer is Player: Price: %.2f, Tax: %.2f", money, tax);
     AccountService::TranserFunds(buyer->GetCharacterID(), corpSCC, money, reason.c_str(), \
             Journal::EntryType::TransactionTax, orderID, Account::KeyType::Cash);

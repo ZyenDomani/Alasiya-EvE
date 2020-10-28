@@ -197,19 +197,22 @@ float EvEMath::Agent::GetStandingBonus(float fromStanding, uint32 fromFactionID,
 
 float EvEMath::Market::BrokerFee(uint8 brSkillLvl, float fStanding, float cStanding)
 {
-    return 0.05 - (0.003 * brSkillLvl) - (0.0003 * fStanding) - (0.0002 * cStanding);
+    float wStanding = (0.7 * fStanding + 0.3 * cStanding) / 10.0;
+    float fee = 0.01 * (1 - (0.05 * brSkillLvl)) * pow(2, -2 * wStanding);
+    return EvE::max(fee, 100.0f);
 }
 
-float EvEMath::Market::RelistFee(float oldPrice, float newPrice, float brokerPercent/*0.05*/, float discount/*0*/)
+float EvEMath::Market::RelistFee(float oldPrice, float newPrice, float brokerPercent/*0.01*/, float discount/*0*/)
 {
     // this needs a 'Relist Discount' but no clue where to find data for it yet
     return EvE::max(brokerPercent * (newPrice -oldPrice)) + (1 -discount) *brokerPercent *newPrice;
 }
 
-float EvEMath::Market::SalesTax(uint8 accountingSkillLvl/*0*/, uint8 taxEvasionSkillLvl/*0*/)
+float EvEMath::Market::SalesTax(uint8 accountingLvl/*0*/, uint8 taxEvasionLvl/*0*/)
 {
-    /** @todo  add skillTaxEvasion to this formula.... */
-    return 0.05 * (1 - 0.11 * accountingSkillLvl);
+    /** @todo  add skillTaxEvasion to this formula; its not calculated in client... */
+    float tax = 0.01 * (1 - 0.1 * accountingLvl);
+    return EvE::max(tax, 100.0f);
 }
 
 void EvEMath::PI::Dijkstra(uint32 sourcePin, uint32 destinationPin)
