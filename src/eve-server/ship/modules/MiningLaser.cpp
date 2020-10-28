@@ -84,13 +84,6 @@ bool MiningLaser::CanActivate()
         return false;
     }
 
-    if (m_chargeLoaded and (m_chargeRef.get() != nullptr) and (m_crystalRoidGrp == 0)) {
-        m_crystalDmg = m_chargeRef->GetAttribute(AttrDamage).get_float();
-        m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
-        m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
-        m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
-    }
-
     bool canActivate = false;
     // verify module vs target for activation.  disallow if not compatible.  set special ore hold if applicable
     if (m_rMiner) {
@@ -121,8 +114,31 @@ bool MiningLaser::CanActivate()
     }
 
     if (canActivate) {
+        // so far, checks have passed and proper hold is set.
+        // check for capacity as final test before allowing mining (ship would know)
+
+        // should we also test for target volume here? ...it's done on every ProcessCycle() call...
+        if (m_shipRef->GetRemainingVolumeByFlag(m_holdFlag) < GetMiningVolume()) {
+            _log(MINING__WARNING, "Activate() - Cargo full.  Denying Activate() on %s", m_targetSE->GetName());
+            if (m_shipRef->HasPilot())
+                m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: Your Cargo is full. - Ref: ServerError 65125");
+
+            return false;
+        }
+    }
+
+    if (canActivate) {
         m_IsInitialCycle = true;
         m_targetSE->SystemMgr()->GetBeltMgr()->SetActive(m_targetSE->SysBubble()->GetID());
+
+        // mining on current target approved. check for and set crystal variables here
+        if (m_chargeLoaded and (m_chargeRef.get() != nullptr) and (m_crystalRoidGrp == 0)) {
+            m_crystalDmg = m_chargeRef->GetAttribute(AttrDamage).get_float();
+            m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
+            m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
+            m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
+        }
+
         return ActiveModule::CanActivate();
     } else {
         _log(MINING__WARNING, "Activate() - Invalid target: %s", m_targetSE->GetName());
@@ -379,7 +395,7 @@ float MiningLaser::GetMiningVolume()
 
     // fleet involvement enhances mining amount using MiningForeman of highest member (3%/lvl)
     // this should apply to modules/ship when boost activated, but this is easier at this time.
-    //  downside is client will have the original, lower cycle amount as this isnt set in module
+    //  downside is client will have the original, lower cycle amount as this isnt set in module (but should be)
     ShipSE* pShip = m_shipRef->GetPilot()->GetShipSE();
     if (pShip != nullptr)
         if (pShip->IsBoosted())
