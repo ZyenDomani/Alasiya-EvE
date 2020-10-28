@@ -527,7 +527,7 @@ void Client::ProcessClient() {
 
     if (m_stateTimer.Enabled())
         if (m_stateTimer.Check(false)) {
-            _log(CLIENT__TIMER, "ProcessClient(): state timer hit.  current state time is%u", m_stateTimer.GetCurrentTime());
+            _log(CLIENT__TIMER, "ProcessClient(): state timer hit.  current state time is %ums", m_stateTimer.GetCurrentTime());
             m_stateTimer.Disable();
             switch (m_clientState) {
                 case Player::State::Idle: {
@@ -664,11 +664,11 @@ void Client::WarpOut() {
 void Client::SetAutoPilot(bool set/*false*/)
 {
     // itemID=10644  flag=*module*  not published - not in client data
+    if (m_autoPilot == set)
+        return;
+
     m_autoPilot = set;
     _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
-
-    //OnAutoPilotOn
-    //OnAutoPilotOff
 }
 
 void Client::EnterSystem(uint32 systemID)
@@ -1455,7 +1455,7 @@ void Client::SetBallParkTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Ballpark Timer set at %ums.  current state time is %u", m_char->name(), time, m_ballparkTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Ballpark Timer set at %ums.  current state time is %ums", m_char->name(), time, m_ballparkTimer.GetCurrentTime());
     m_ballparkTimer.Start(time);
 }
 
@@ -1476,7 +1476,7 @@ void Client::SetCloakTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Cloak Timer set at %ums.   current state time is %u", m_char->name(), time, m_cloakTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Cloak Timer set at %ums.   current state time is %ums", m_char->name(), time, m_cloakTimer.GetCurrentTime());
     m_cloakTimer.Start(time);
     if (m_login)
         return;
@@ -1500,7 +1500,7 @@ void Client::SetUncloakTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Uncloak Timer set at %ums.   current state time is %u", m_char->name(), time, m_uncloakTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Uncloak Timer set at %ums.   current state time is %ums", m_char->name(), time, m_uncloakTimer.GetCurrentTime());
     m_uncloakTimer.Start(time);
     SetUncloak(true);
 }
@@ -1520,7 +1520,7 @@ void Client::SetInvulTimer(uint32 time/*Player::Timer::Default*/)
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Invul Timer set at %ums.   current state time is %u", m_char->name(), time, m_invulTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: Invul Timer set at %ums.   current state time is %ums", m_char->name(), time, m_invulTimer.GetCurrentTime());
     m_invulTimer.Start(time);
     SetInvul(true);
 }

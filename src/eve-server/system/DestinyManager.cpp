@@ -537,9 +537,10 @@ void DestinyManager::Stop() {
 
 void DestinyManager::Halt() {
     // AP not implemented yet in this version  -allan 4Mar15
-    //Clear autopilot
+    //Clear autopilot if not jumping
     if (mySE->HasPilot())
-        mySE->GetPilot()->SetAutoPilot(false);
+        if (!mySE->GetPilot()->IsJump())
+            mySE->GetPilot()->SetAutoPilot(false);
 
     SafeDelete(m_warpState);
 
