@@ -193,7 +193,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     if (oreAmount > roidQuantity)
         oreAmount = roidQuantity;
 
-    double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(m_holdFlag);
+    float remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(m_holdFlag);
     if (remainingCargoVolume < cycleVol) {
         // cargohold is full.  this module will fill to available volume and trash the rest
         if (remainingCargoVolume > oreVolume)
@@ -226,6 +226,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         if (!m_iMiner) {
             /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
             double radius = exp((roidQuantity +112404.8) /25000);
+            // need to update players in bubble of this change.  not sure how yet
             roidRef->SetAttribute(AttrRadius, radius);
         }
     } else {
@@ -248,8 +249,8 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         return;
     }
 
-    bool oreError = true;
-    // verify item to hold, and available space
+    bool oreError(true);
+    // verify proper hold for item, and available space
     if (m_shipRef->ValidateAddItem(m_holdFlag, oRef)) {
         if (m_shipRef->GetMyInventory()->HasAvailableSpace(m_holdFlag, oRef)) {
             oreError = false;
@@ -258,9 +259,9 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     }
 
     // add data to StatisticMgr
-    sStatMgr.Add(Stat::oreMined, oreAmount);
+    sStatMgr.Add(Stat::oreMined, cycleVol);
 
-    if (oreError) {
+    if (oreError and !abort) {
         m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as it couldn't add the %s to your %s.", \
                 m_modRef->name(), oRef->name(), sDataMgr.GetFlagName(m_holdFlag));
         _log(MINING__ERROR, "Could not add ore to hold for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );

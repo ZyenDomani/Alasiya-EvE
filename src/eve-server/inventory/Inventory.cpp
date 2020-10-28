@@ -207,14 +207,15 @@ void Inventory::AddItem(InventoryItemRef iRef) {
         _log(INV__TRACE, "Inventory::AddItem() - %s(%u) already contains %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 
-    // need to find and remove skill in training here....
+    // need to find and remove skill in training flag here for proper skill search
     if (IsCharacter(m_myID)) {
         if (iRef->categoryID() == EVEDB::invCategories::Skill) {
             m_contentsByFlag.emplace(flagSkill, iRef);
         } else {
             m_contentsByFlag.emplace(iRef->flag(), iRef);
         }
-    }
+    } else
+        m_contentsByFlag.emplace(iRef->flag(), iRef);
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
