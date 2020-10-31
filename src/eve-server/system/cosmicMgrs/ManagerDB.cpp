@@ -284,7 +284,7 @@ void ManagerDB::GetSystemData(DBQueryResult& res)
 void ManagerDB::GetStaticData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT itemID, regionID, constellationID, solarSystemID, typeID, x, y, z FROM mapDenormalize WHERE solarSystemID IS NOT NULL"))
+        "SELECT itemID, regionID, constellationID, solarSystemID, typeID, radius, x, y, z FROM mapDenormalize WHERE solarSystemID IS NOT NULL"))
         codelog(DATABASE__ERROR, "Error in GetStaticInfo query: %s", res.error.c_str());
 }
 

@@ -58,9 +58,9 @@ public:
         m_strBoundObjectName = "BeyonceBound";
 
         PyCallable_REG_CALL(BeyonceBound, CmdFollowBall);   //*
-        PyCallable_REG_CALL(BeyonceBound, CmdOrbit);
+        PyCallable_REG_CALL(BeyonceBound, CmdOrbit);   //*
         PyCallable_REG_CALL(BeyonceBound, CmdAlignTo);
-        PyCallable_REG_CALL(BeyonceBound, CmdGotoDirection);
+        PyCallable_REG_CALL(BeyonceBound, CmdGotoDirection);   //*
         PyCallable_REG_CALL(BeyonceBound, CmdGotoBookmark);
         PyCallable_REG_CALL(BeyonceBound, CmdSetSpeedFraction);
         PyCallable_REG_CALL(BeyonceBound, CmdStop);
@@ -147,7 +147,7 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
     // this is only called when player enters new system and calls to bind new beyonce
     if (!call.client->IsSetStateSent())
         call.client->CheckBallparkTimer();
-    
+
     //vicious crap.
     PyTuple* res = new PyTuple( 2 );
         Beyonce_Formation f;
@@ -205,10 +205,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    //if (call.client->IsAutoPilot())
-    //    pDestiny->GotoPoint(pSE->GetPosition());
-    //else
-        pDestiny->Follow(pSE, distance);
+    pDestiny->Follow(pSE, distance);
 
     return PyStatic.NewNone();
 }
@@ -282,7 +279,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called GotoDirection. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    call.client->SetAutoPilot(false);
+    //call.client->SetAutoPilot(false);
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
@@ -310,7 +307,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called GotoBookmark. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    call.client->SetAutoPilot(false);
+    //call.client->SetAutoPilot(false);
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
@@ -364,6 +361,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 }
 
 PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
+    _log(AUTOPILOT__MESSAGE, "%s called Orbit. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
     call.client->SetAutoPilot(false);
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
@@ -409,7 +407,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuff. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    call.client->SetAutoPilot(false);
+    //call.client->SetAutoPilot(false);
 
   _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %u", call.tuple->size() );
    call.Dump(SERVICE__CALL_DUMP);
@@ -423,7 +421,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
-    } else if (pDestiny->IsWarping()){
+    }
+    if (pDestiny->IsWarping()){
         call.client->SendNotifyMsg( "You are already warping");
         return PyStatic.NewNone();
     }
@@ -434,13 +433,13 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    bool fleet = false;
+    bool fleet(false);
     if (call.byname.find("fleet") != call.byname.end())
         if (!(call.byname.find("fleet")->second->IsNone()))
             fleet = call.byname.find("fleet")->second->AsBool()->value();
 
     // get the warp-to distance specified by the client
-    int32 distance = 0;
+    int32 distance(0);
     if (call.byname.find("minRange") == call.byname.end()) {
         codelog(DESTINY__TRACE, "WarpTo Range not sent.  Using 500m default.");
         distance = 500;
@@ -670,22 +669,26 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 
     call.client->SetInvul(false);
     call.client->SetUndock(false);
+    // AP shit here.....
     call.client->SetAutoPilot(true);
+    call.client->UpdateSessionInt("solarsystemid", pSystem->GetID());
+    //call.client->UpdateSession();
+    //call.client->SendSessionChange();
 
-    int32 distance = sConfig.world.apWarptoDistance;    //8km default
-	//Adding in ship and target object radius'
-    distance += call.client->GetShipSE()->GetRadius() + pSE->GetRadius();
+    uint16 distance = sConfig.world.apWarptoDistance;    //10km default
+    //Adding in ship and target object radius'
+    //distance += call.client->GetShipSE()->GetRadius() + pSE->GetRadius();
     pDestiny->WarpTo(pSE->GetPosition(), distance, true, pSE);
 
     return PyStatic.NewNone();
 }
 
 PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
-    _log(AUTOPILOT__MESSAGE, "%s called Stop. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    if (call.client->IsJump())
-        if (call.client->IsAutoPilot())
-            return PyStatic.NewNone();
-
+    _log(AUTOPILOT__MESSAGE, "%s called Stop. AP: %s, Invul: %s", call.client->GetName(), \
+            (call.client->IsAutoPilot() ? "true" : "false"), call.client->IsInvul()?"true":"false");
+    //if (call.client->IsInvul())
+    //    if (call.client->IsAutoPilot())
+    //        return PyStatic.NewNone();
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
