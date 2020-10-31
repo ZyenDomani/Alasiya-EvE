@@ -26,6 +26,8 @@
 
 #include "eve-server.h"
 
+#include "../../eve-common/EVE_Character.h"
+
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "EntityList.h"
@@ -221,7 +223,7 @@ PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call )
 {
-    return new PyInt(paperdollStateNoRecustomization);
+    return new PyInt(Char::PDState::NoRecustomization);
 }
 
 PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call)

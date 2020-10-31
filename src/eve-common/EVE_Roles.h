@@ -1,5 +1,7 @@
+
 /*
- *
+ *  EVE_Roles.h
+ *      namespace data for Account and Corporation
  *
  *
  */
@@ -9,6 +11,25 @@
 #define EVE_ROLES_H
 
 namespace Acct {
+
+    namespace Type {
+        enum {
+            CCP                 = 13,
+            UK                  = 17,
+            PBC                 = 20,
+            ETC                 = 21,
+            Trial               = 23,   // most client tests are >22
+            Mammon              = 30,   // this is default player account type
+            Media               = 31,
+            CDKey               = 33,
+            IA                  = 34,
+            // not used here
+            DustPlayer          = 101,
+            DustCCP             = 102,
+            DustBattleServer    = 103
+        };
+    }
+
     namespace Role {
         enum:int64_t {
             DUST               = 1L,                      // 0x01                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001

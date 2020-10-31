@@ -23,10 +23,11 @@ typedef std::map<uint16, CharCerts> CertMap;
 struct AccountData {
     bool online:1;
     bool banned:1;
+    uint8 type;
     int32 id;
     int32 visits;
+    uint32 clientID;
     int64 role;
-    int64 clientID;
     std::string name;
     std::string hash;
     std::string password;
@@ -180,7 +181,7 @@ struct OreTypeChance {
 /* POD structure for cosmic signatures/anomalies */
 struct CosmicSignature {
     uint8 dungeonType;          // internal for creation checks
-    uint16 bubbleID;            // internal for .siglist command 
+    uint16 bubbleID;            // internal for .siglist command
     // typeID of signal
     uint16 sigTypeID;           // type name if scanGroupID is not sig or anom and certainty > 0.75
     // groupID of signal
@@ -329,6 +330,7 @@ struct StaticData {
     uint32 systemID;
     uint32 constellationID;
     uint32 regionID;
+    float radius;
     GPoint position;
 };
 

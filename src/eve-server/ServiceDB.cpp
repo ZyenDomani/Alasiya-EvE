@@ -75,14 +75,14 @@ bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& 
 
     DBQueryResult res;
     if ( !sDatabase.RunQuery( res,
-        "SELECT accountID, clientID, password, hash, role, online, banned, logonCount, lastLogin"
+        "SELECT accountID, clientID, password, hash, role, type, online, banned, logonCount, lastLogin"
         " FROM account WHERE accountName = '%s'", eLogin.c_str() ) )
     {
         sLog.Error( "ServiceDB", "Error in query: %s.", res.error.c_str() );
         failMsg = "Error in DB Query";
         failMsg += ": Account not found for ";
         failMsg += eLogin;
-        //failMsg += res.error.c_str();     // do we wanna sent the error msg to client?
+        //failMsg += res.error.c_str();     // do we wanna sent the db error msg to client?
         return false;
     }
 
@@ -113,10 +113,11 @@ bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& 
     aData.password   = (row.IsNull(2) ? "" : row.GetText(2));
     aData.hash       = (row.IsNull(3) ? "" : row.GetText(3));
     aData.role       = row.GetInt64(4);
-    aData.online     = row.GetInt(5) ? true : false;
-    aData.banned     = row.GetInt(6) ? true : false;
-    aData.visits     = row.GetInt(7);
-    aData.last_login = (row.IsNull(8) ? "" : row.GetText(8));
+    aData.type       = row.GetUInt(5);
+    aData.online     = row.GetInt(6) ? true : false;
+    aData.banned     = row.GetInt(7) ? true : false;
+    aData.visits     = row.GetInt(8);
+    aData.last_login = (row.IsNull(9) ? "" : row.GetText(9));
 
     return true;
 }

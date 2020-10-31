@@ -150,8 +150,8 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
     into.volume = row.GetDouble(5);
     into.capacity = row.GetDouble(6);
     into.portionSize = row.GetUInt(7);
-    into.race = EVERace(row.IsNull(8) ? 0 : row.GetUInt(8));
-	into.basePrice = row.GetDouble(9);
+    into.race = (row.IsNull(8) ? 0 : row.GetUInt(8));
+    into.basePrice = row.GetDouble(9);
     into.published = (sConfig.server.AllowNonPublished ? true : row.GetBool(10));
     into.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(11));
     into.chanceOfDuplicating = row.GetDouble(12);
@@ -193,7 +193,7 @@ bool InventoryDB::GetCharacterType(uint32 bloodlineID, CharacterTypeData &into) 
     }
 
     into.bloodlineName = row.GetText(0);
-    into.race = (EVERace)row.GetUInt(1);
+    into.race = row.GetUInt(1);
     into.description = row.GetText(2);
     into.maleDescription = row.GetText(3);
     into.femaleDescription = row.GetText(4);

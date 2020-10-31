@@ -104,10 +104,10 @@ public:
     // these dont always work...still dont know why.  fixed.  was bad _comp method in PyDict
     std::string GetAddress() const                      { return pSession->GetCurrentString( "address" ); }
     std::string GetLanguageID() const                   { return pSession->GetCurrentString( "languageID" ); }
-    //std::string GetCharacterName() const                { return pSession->GetCurrentString( "charname" ); }
 
     int32 GetUserID() const                             { return pSession->GetCurrentInt( "userid" ); }
     int32 GetAccountType() const                        { return pSession->GetCurrentInt( "userType" ); }
+
     // these below need Session initialized before use (which we dont do for char creation due to errors)
     int32 GetCharacterID() const                        { return pSession->GetCurrentInt( "charid" ); }
     int32 GetStationID() const                          { return pSession->GetCurrentInt( "stationid" ); }
@@ -116,7 +116,7 @@ public:
 
     int64 GetAccountRole() const                        { return pSession->GetCurrentLong( "role" ); }
     int64 GetClientID() const                           { return pSession->GetCurrentLong( "clientID" ); }
-    int64 GetSessionID()                                { return pSession->GetCurrentLong( "sessionID" ); }
+    int64 GetSessionID() const                          { return pSession->GetCurrentLong( "sessionID" ); }
 
     double GetCorpTaxRate()                             { return (m_char.get() != nullptr ? m_char->corpTaxRate() : 0.0); }
     int32 GetCorporationID() const                      { return pSession->GetCurrentInt( "corpid" ); }
@@ -157,7 +157,7 @@ public:
     void UpdateCorpSession(CorpData& data);
     void UpdateFleetSession(CharFleetData& fleet);
 
-    // character data used before session data is initalized
+    // character data used before session data is initialized
     uint32 GetLoyaltyPoints(uint32 corpID);
     void SetChar(CharacterRef charRef)                  { m_char = charRef; }   // only used during char creation
     CharacterRef GetChar() const                        { return m_char; }
@@ -169,9 +169,11 @@ public:
     uint32 GetPodID() const                             { return m_pod->itemID(); }
     double GetBounty() const                            { return m_char->bounty(); }
     double GetSecurityRating() const                    { return m_char->GetSecurityRating(); }
-    //check all these and update to AccountService::TransferFunds() where applicable
-    bool AddBalance(double amount, uint8 type=Account::CreditType::ISK) { return m_char->AlterBalance(amount, type); }
-    double GetBalance(uint8 type=Account::CreditType::ISK) { return m_char->balance(type); }
+
+    bool AddBalance(double amount, uint8 type=Account::CreditType::ISK)
+                                                        { return m_char->AlterBalance(amount, type); }
+    double GetBalance(uint8 type=Account::CreditType::ISK)
+                                                        { return m_char->balance(type); }
 
     // ship functions
     void SetPodItem();
@@ -186,8 +188,9 @@ public:
     void Eject();       // only called in space
     void Board(ShipSE* newShipSE); // only called when in space
     void BoardShip(ShipItemRef newShipRef); // only called when docked
+
 private:
-    // ship MUST be added to system BEFORE update (need sysMgr, sysBubble, DestinyMgr)
+    // ship MUST be added to system before update (need sysMgr, sysBubble, DestinyMgr)
     void UpdateNewShip();    //  calls destiny update methods
     void CheckShipRef(ShipItemRef newShipRef);  // called by Board methods
 
@@ -339,9 +342,10 @@ protected:
     ClientSession* pSession;
     SystemManager* m_system;    //we do not own this
 
-    //void _AwardBounty(SystemEntity *who);
     void ExecuteJump();
     void DestroyShipSE();
+
+    //void _AwardBounty(SystemEntity *who);
 
     bool m_afk;             // for map info (pilots docked and active)
     bool m_invul;

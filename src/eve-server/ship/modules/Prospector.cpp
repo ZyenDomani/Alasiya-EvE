@@ -129,7 +129,7 @@ void Prospector::SendFailure()
 {
     if (m_salvager) {
         PyTuple* type = new PyTuple(2);
-            type->SetItem(0, new PyInt(cacheSolarSystemObjects));
+            type->SetItem(0, new PyInt(4));
             type->SetItem(1, new PyInt(m_targetSE->GetTypeID()));
         PyDict* dict = new PyDict;
             dict->SetItemString("type", type);
@@ -137,12 +137,6 @@ void Prospector::SendFailure()
             tup->SetItem(0, new PyString("OnRemoteMessage"));
             tup->SetItem(1, new PyString("SalvagingFailure"));
             tup->SetItem(2, dict);
-        /*
-        std::vector<PyTuple*> events;
-            events.push_back(tup);
-        std::vector<PyTuple*> updates;
-        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, true);
-        */
         m_shipRef->GetPilot()->QueueDestinyEvent(&tup);
     }
     if (m_dataMiner) {

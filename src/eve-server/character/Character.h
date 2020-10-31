@@ -42,7 +42,7 @@ class CharacterTypeData {
 public:
     CharacterTypeData(
         const char* _bloodlineName = "",
-        EVERace _race = (EVERace)0,
+        uint8 _race = 0,
         const char* _desc = "",
         const char* _maleDesc = "",
         const char* _femaleDesc = "",
@@ -59,7 +59,7 @@ public:
 
     // Content:
     std::string bloodlineName;
-    EVERace race;
+    uint8 race;
     std::string description;
     std::string maleDescription;
     std::string femaleDescription;
@@ -275,7 +275,7 @@ public:
     /* Public fields */
     const CharacterType&    type() const                        { return static_cast<const CharacterType& >(InventoryItem::type()); }
     uint32                  bloodlineID() const                 { return type().bloodlineID(); }
-    EVERace                 race() const                        { return type().race(); }
+    uint8                   race() const                        { return type().race(); }
 
     // Account:
     uint32                  accountID() const                   { return m_charData.accountID; }

@@ -161,7 +161,9 @@ ItemGroup* ItemGroup::_Load( uint16 groupID, const ItemCategory &category, const
 /*
  * TypeData
  */
-TypeData::TypeData(uint16 _groupID, const char* _name, const char* _desc, double _radius, double _mass, double _volume, double _capacity, uint32 _portionSize, EVERace _race, double _basePrice, bool _published, uint32 _marketGroupID, double _chanceOfDuplicating)
+TypeData::TypeData(uint16 _groupID, const char* _name, const char* _desc, double _radius, double _mass,
+                double _volume, double _capacity, uint32 _portionSize, uint8 _race, double _basePrice,
+                bool _published, uint32 _marketGroupID, double _chanceOfDuplicating)
 : groupID(_groupID),
   name(_name),
   description(_desc),

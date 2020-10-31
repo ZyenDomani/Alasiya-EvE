@@ -42,7 +42,7 @@
  * CharacterTypeData
  */
 CharacterTypeData::CharacterTypeData(
-    const char* _bloodlineName, EVERace _race, const char* _desc, const char* _maleDesc, const char* _femaleDesc, uint32 _corporationID, uint8 _perception, uint8 _willpower, uint8 _charisma, uint8 _memory, uint8 _intelligence, const char* _shortDesc, const char* _shortMaleDesc, const char* _shortFemaleDesc)
+    const char* _bloodlineName, uint8 _race, const char* _desc, const char* _maleDesc, const char* _femaleDesc, uint32 _corporationID, uint8 _perception, uint8 _willpower, uint8 _charisma, uint8 _memory, uint8 _intelligence, const char* _shortDesc, const char* _shortMaleDesc, const char* _shortFemaleDesc)
 : bloodlineName(_bloodlineName),
   race(_race),
   description(_desc),

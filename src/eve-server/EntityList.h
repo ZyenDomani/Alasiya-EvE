@@ -106,7 +106,7 @@ public:
     uint32 GetClientCount() const                       { return m_clients.size(); }
     uint32 GetSystemCount() const                       { return m_systems.size(); }
     uint32 GetStationCount() const                      { return m_stations.size(); }
-    uint32 GetClientSeed()                              { return ++m_clientSeedID; }
+    uint16 GetClientSeed()                              { return ++m_clientSeedID; }
 
     /* stamp shit here */
     uint32 GetStamp()                                   { return m_stamp; }
@@ -197,7 +197,7 @@ private:
     uint32 m_stamp;
     uint32 m_minutes;
     uint32 m_connections;
-    uint32 m_clientSeedID;
+    uint16 m_clientSeedID;
 
     int64 m_startTime;
 };

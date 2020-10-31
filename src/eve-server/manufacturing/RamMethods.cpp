@@ -9,6 +9,7 @@
 
 #include "PyCallable.h"
 
+#include "../eve-common/EVE_Character.h"
 #include "Client.h"
 #include "manufacturing/Blueprint.h"
 #include "manufacturing/RamMethods.h"
@@ -369,24 +370,24 @@ bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef install
             into.charTimeMultiplier = pChar->GetAttribute(AttrManufactureTimeMultiplier).get_double();
 
             switch(pType->race()) {
-                case raceCaldari: {
+                case Char::Race::Caldari: {
                     if (pChar->HasAttribute(AttrCaldariTechTimePercent))
                         into.charTimeMultiplier *= (pChar->GetAttribute(AttrCaldariTechTimePercent).get_float() /100);
                 } break;
-                case raceMinmatar:{
+                case Char::Race::Minmatar:{
                     if (pChar->HasAttribute(AttrMinmatarTechTimePercent))
                         into.charTimeMultiplier *= (pChar->GetAttribute(AttrMinmatarTechTimePercent).get_float() / 100);
                 } break;
-                case raceAmarr: {
+                case Char::Race::Amarr: {
                     if (pChar->HasAttribute(AttrAmarrTechTimePercent))
                         into.charTimeMultiplier *= (pChar->GetAttribute(AttrAmarrTechTimePercent).get_float() / 100);
                 } break;
-                case raceGallente: {
+                case Char::Race::Gallente: {
                     if (pChar->HasAttribute(AttrGallenteTechTimePercent))
                         into.charTimeMultiplier *= (pChar->GetAttribute(AttrGallenteTechTimePercent).get_float() / 100);
                 } break;
-                case raceJove:
-                case racePirate:
+                case Char::Race::Jove:
+                case Char::Race::Pirate:
                 default: {
                     // unknown
                 } break;

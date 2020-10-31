@@ -192,7 +192,7 @@ public:
         double _volume = 0.0,
         double _capacity = 0.0,
         uint32 _portionSize = 0,
-        EVERace _race = (EVERace)0,
+        uint8 _race = 0,
         double _basePrice = 0.0,
         bool _published = false,
         uint32 _marketGroupID = 0,
@@ -208,7 +208,7 @@ public:
     double volume;
     double capacity;
     uint32 portionSize;
-    EVERace race;
+    uint8 race;
     double basePrice;
     bool published;
     uint32 marketGroupID;
@@ -249,7 +249,7 @@ public:
     double mass() const                                 { return m_mass; }
     double volume() const                               { return m_volume; }
     double capacity() const                             { return m_capacity; }
-    EVERace race() const                                { return m_raceID; }
+    uint8 race() const                                  { return m_raceID; }
 
     /* new effects processing system */
     void GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const;
@@ -327,6 +327,7 @@ public:
 private:
     const ItemGroup *m_group;
     bool m_published;
+    uint8 m_raceID;
     const uint16 m_id;
     uint16 m_defaultID;
     uint32 m_portionSize;
@@ -337,7 +338,6 @@ private:
     double m_mass;
     double m_volume;
     double m_capacity;
-    EVERace m_raceID;
     std::string m_name;
     std::string m_description;
 

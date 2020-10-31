@@ -96,11 +96,11 @@ public:
     void                GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData);
 
     uint32              GetCorpID(uint32 factionID);
-    uint32              GetRaceFaction(EVERace raceID);
-    EVERace             GetFactionRace(uint32 factionID);
+    uint32              GetRaceFaction(uint8 raceID);
+    uint8               GetFactionRace(uint32 factionID);
     std::string         GetCorpName(uint32 corpID);
     std::string         GetFactionName(uint32 factionID);
-    const char*         GetRaceName(EVERace raceID);
+    const char*         GetRaceName(uint8 raceID);
 
     void                GetSalvage(uint32 factionID, std::vector<uint32> &itemList);
 
@@ -167,6 +167,7 @@ private:
     std::multimap<uint8, RatSpawnClass>                 m_npcClasses;       // spawnType/data
     std::multimap<uint32, RatFactionGroups>             m_npcGroups;        // factionID/data
     // deadspace
+    
     // incursion
 
     /* salvage data */

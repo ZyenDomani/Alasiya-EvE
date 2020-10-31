@@ -12,6 +12,7 @@
   */
 
 
+#include "../eve-common/EVE_Character.h"
 #include "StaticDataMgr.h"
 #include "database/EVEDBUtils.h"
 #include "station/StationDataMgr.h"
@@ -194,15 +195,16 @@ void StaticDataMgr::Populate()
     startTime = GetTimeMSeconds();
     ManagerDB::GetStaticData(*res);
     while (res->GetRow(row)) {
-        //SELECT itemID, regionID, constellationID, solarSystemID, typeID, x, y, z FROM mapDenormalize
-        StaticData staticData = StaticData();
-        staticData.itemID          = row.GetInt(0);
-        staticData.regionID        = row.GetInt(1);
-        staticData.constellationID = row.GetInt(2);
-        staticData.systemID        = row.GetInt(3);
-        staticData.typeID          = row.GetInt(4);
-        staticData.position        = GPoint(row.GetDouble(5),row.GetDouble(6),row.GetDouble(7));
-        m_staticData.emplace(row.GetInt(0), staticData);
+        //SELECT itemID, regionID, constellationID, solarSystemID, typeID, radius, x, y, z FROM mapDenormalize
+        StaticData data = StaticData();
+        data.itemID          = row.GetInt(0);
+        data.regionID        = row.GetInt(1);
+        data.constellationID = row.GetInt(2);
+        data.systemID        = row.GetInt(3);
+        data.typeID          = row.GetInt(4);
+        data.radius          = row.GetFloat(5);
+        data.position        = GPoint(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
+        m_staticData.emplace(row.GetInt(0), data);
     }
     sLog.Cyan("    StaticDataMgr", "%u Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
 
@@ -1295,54 +1297,54 @@ std::string StaticDataMgr::GetFactionName(uint32 factionID)
     return "Undefined";
 }
 
-const char* StaticDataMgr::GetRaceName(EVERace raceID)
+const char* StaticDataMgr::GetRaceName(uint8 raceID)
 {
     switch (raceID) {
-        case raceCaldari:       return "Caldari";
-        case raceMinmatar:      return "Minmatar";
-        case raceAmarr:         return "Amarr";
-        case raceGallente:      return "Gallente";
-        case raceJove:          return "Jove";
-        case racePirate:        return "Pirate";
-        case raceSleepers:      return "Sleeper";
-        case raceORE:           return "ORE";
+        case Char::Race::Caldari:       return "Caldari";
+        case Char::Race::Minmatar:      return "Minmatar";
+        case Char::Race::Amarr:         return "Amarr";
+        case Char::Race::Gallente:      return "Gallente";
+        case Char::Race::Jove:          return "Jove";
+        case Char::Race::Pirate:        return "Pirate";
+        case Char::Race::Sleepers:      return "Sleeper";
+        case Char::Race::ORE:           return "ORE";
     }
     // default to none
     return "Race Not Defined";
 
 }
 
-uint32 StaticDataMgr::GetRaceFaction(EVERace raceID)
+uint32 StaticDataMgr::GetRaceFaction(uint8 raceID)
 {
     switch (raceID) {
-        case raceCaldari:       return factionCaldari;
-        case raceMinmatar:      return factionMinmatar;
-        case raceAmarr:         return factionAmarr;
-        case raceGallente:      return factionGallente;
-        case raceJove:          return factionJove;
-        case racePirate:        return factionNoFaction;
-        case raceSleepers:      return factionSleepers;
-        case raceORE:           return factionORE;
+        case Char::Race::Caldari:       return factionCaldari;
+        case Char::Race::Minmatar:      return factionMinmatar;
+        case Char::Race::Amarr:         return factionAmarr;
+        case Char::Race::Gallente:      return factionGallente;
+        case Char::Race::Jove:          return factionJove;
+        case Char::Race::Pirate:        return factionNoFaction;
+        case Char::Race::Sleepers:      return factionSleepers;
+        case Char::Race::ORE:           return factionORE;
     }
     // default to none
     return factionNoFaction;
 }
 
-EVERace StaticDataMgr::GetFactionRace(uint32 factionID)
+uint8 StaticDataMgr::GetFactionRace(uint32 factionID)
 {
     switch (factionID) {
-        case factionCaldari:        return raceCaldari;
-        case factionMinmatar:       return raceMinmatar;
-        case factionAmarr:          return raceAmarr;
-        case factionGallente:       return raceGallente;
-        case factionJove:           return raceJove;
-        case factionNoFaction:      return racePirate;
-        case factionSleepers:       return raceSleepers;
-        case factionORE:            return raceORE;
-        case factionAmmatar:        return raceAmmatar;
+        case factionCaldari:        return Char::Race::Caldari;
+        case factionMinmatar:       return Char::Race::Minmatar;
+        case factionAmarr:          return Char::Race::Amarr;
+        case factionGallente:       return Char::Race::Gallente;
+        case factionJove:           return Char::Race::Jove;
+        case factionNoFaction:      return Char::Race::Pirate;
+        case factionSleepers:       return Char::Race::Sleepers;
+        case factionORE:            return Char::Race::ORE;
+        case factionAmmatar:        return Char::Race::Ammatar;
     }
     // default to Gallente
-    return raceGallente;
+    return Char::Race::Gallente;
 }
 
 const char* StaticDataMgr::GetRigSizeName(uint8 size)

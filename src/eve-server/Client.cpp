@@ -26,6 +26,7 @@
 
 #include "eve-server.h"
 #include "../eve-common/EVEVersion.h"
+#include "../eve-common/EVE_Character.h"
 
 #include "Client.h"
 #include "ConsoleCommands.h"
@@ -487,7 +488,7 @@ void Client::ProcessClient() {
         return;
     }
 
-    if (m_invul)
+    if (m_invulTimer.Enabled()/*m_invul*/)
         if (m_invulTimer.Check(false)) {
             _log(CLIENT__TIMER, "ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
             m_invulTimer.Disable();
@@ -569,7 +570,6 @@ void Client::ProcessClient() {
                 case Player::State::Jump: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Jump");
                     ExecuteJump();
-                    m_clientState = Player::State::Idle;
                 } break;
                 case Player::State::Logout: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Logout");
@@ -885,8 +885,9 @@ void Client::SetBallPark() {
         m_ballparkTimer.Disable();
         if (IsJump()) {
             SetInvulTimer(Player::Timer::JumpInvul);
-            // dont use timer method here...
+            // dont use timer method here...(jumping ship will flash at destination)
             m_cloakTimer.Start(Player::Timer::JumpCloak);
+            m_clientState = Player::State::Idle;
         }
     }
     if (m_undock)
@@ -1289,23 +1290,24 @@ void Client::CreateNewPod() {
 ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
     /** @todo  create/send mail from scc about lost ship as needed....create char uses this method also */
     //create rookie ship of appropriate type
+    using namespace Char;
     uint16 shipID(0), gunID(0);
     switch (m_char->race()) {
-        case raceCaldari: {
-            gunID = caldariWeapon;
-            shipID = caldariRookie;
+        case Race::Caldari: {
+            gunID = Rookie::Weapon::Caldari;
+            shipID = Rookie::Ship::Caldari;
         } break;
-        case raceGallente: {
-            gunID = gallenteWeapon;
-            shipID = gallenteRookie;
+        case Race::Gallente: {
+            gunID = Rookie::Weapon::Gallente;
+            shipID = Rookie::Ship::Gallente;
         } break;
-        case raceMinmatar: {
-            gunID = minmatarWeapon;
-            shipID = minmatarRookie;
+        case Race::Minmatar: {
+            gunID = Rookie::Weapon::Minmatar;
+            shipID = Rookie::Ship::Minmatar;
         } break;
-        case raceAmarr: {
-            gunID = amarrWeapon;
-            shipID = amarrRookie;
+        case Race::Amarr: {
+            gunID = Rookie::Weapon::Amarr;
+            shipID = Rookie::Ship::Amarr;
         } break;
         default: {
             // invalid race
@@ -1347,6 +1349,7 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
         cRef->Move(sRef->itemID(), flagCargoHold);
     // save new ship and items
     sRef->SaveShip();
+
     // in case caller needs ref to new ship
     return sRef;
 }
@@ -1411,7 +1414,8 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     m_char->VisitSystem(toData.systemID);
 
     m_movePoint = toData.position;
-    m_movePoint.MakeRandomPointOnSphereLayer(6500, 9500);   // Make Jump-In point a random spot on ~10km radius sphere about the stargate
+    // Make Jump-In point a random spot on ~10km radius sphere about the stargate radius
+    m_movePoint.MakeRandomPointOnSphereLayer(toData.radius +6500, toData.radius +9500);
     m_moveSystemID = toData.systemID;
 /*
     char ci[25];
@@ -1846,7 +1850,9 @@ void Client::InitSession(int32 characterID)
     if ((IsSolarSystem(m_SystemData.systemID))
     and (IsConstellation(m_SystemData.constellationID))
     and (IsRegion(m_SystemData.regionID)))
+    {
         m_validSession = true;
+    }
 }
 
 void Client::UpdateSession()
@@ -2270,9 +2276,6 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 
     /** @todo  check this character/account for newbie status and revoke as needed before account update.  */
 
-    /* marshaled Python string "None" */
-    //static const uint8 handshakeFunc[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };
-
     /* send our handshake */
     CryptoServerHandshake server_shake;
     //server_shake.context = ??
@@ -2280,7 +2283,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     server_shake.func_marshaled_code = new PyBuffer(marshaledNone, marshaledNone + sizeof(marshaledNone));
     server_shake.verification = new PyBool(false);
     server_shake.cluster_usercount = sEntityList.GetClientCount(); //GetUserCount();
-    server_shake.proxy_nodeid = 0xFFAA;
+    server_shake.proxy_nodeid = 0xFFAA; //888444
     server_shake.user_logonqueueposition = _GetQueuePosition();
     // binascii.crc_hqx of marshaled single-element tuple containing 64 zero-bytes string
     server_shake.challenge_responsehash = "55087";
@@ -2300,12 +2303,11 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     pSession->SetString("address", EVEClientSession::GetAddress().c_str());
     pSession->SetString("languageID", ccp.user_languageid.c_str());
 
-    //user type 30 is normal user, type 23 is a trial account user.
-    pSession->SetInt("userType", userTypeMammon);
+    pSession->SetInt("userType", Acct::Type::Mammon);     //aData.type  - incomplete (db fields done)
     pSession->SetInt("userid", aData.id);
     pSession->SetLong("role", aData.role);
-    pSession->SetLong("clientID", 0/*10000000000L * account_info.clientID + 888444*/);   /* this should be sent in rsp packet for "clientid".  not sure how yet.   */
-    pSession->SetLong("sessionID", 0/*pSession->CreateSessionID()*/);
+    pSession->SetLong("clientID", 1000000L * aData.clientID + 888444);
+    pSession->SetLong("sessionID", pSession->CreateSessionID());
 
     sLog.Green("  Client::Login()","Account %u (%s) logging in from %s", aData.id, aData.name.c_str(), EVEClientSession::GetAddress().c_str());
 
@@ -2327,16 +2329,15 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     CryptoHandshakeAck ack;
         ack.jit = GetLanguageID();
         ack.userid = GetUserID();   //5654387 accountID?
-        ack.maxSessionTime = PyStatic.NewNone();
-        ack.userType = 1;
+        ack.maxSessionTime = PyStatic.NewNone();        // set this for an auto-logout time?
+        ack.userType = Acct::Type::Mammon;      //GetAccountType()  - not written yet
         ack.role = Acct::Role::PLAYER | Acct::Role::NEWBIE | Acct::Role::LOGIN; /*  live returns these */
         ack.address = GetAddress();
-        ack.inDetention = PyStatic.NewNone();
-    // no client update available
+        ack.inDetention = PyStatic.NewNone();   // dont know what this is or what it's for
         ack.client_hash = PyStatic.NewNone();
         ack.user_clientid = GetClientID();  //241241000001103
         ack.live_updates = sLiveUpdateDB.GetUpdates();
-        /* the client creates and sends sessionID in the initial packet.  unknown how to get it yet. */
+        /* the server creates and sends sessionID in the initial packet.  unknown how to get it yet. */
         //ack.sessionID = GetSessionID();   //398773966249980114
     PyRep* res(ack.Encode());
     if (is_log_enabled(CLIENT__CALL_DUMP))

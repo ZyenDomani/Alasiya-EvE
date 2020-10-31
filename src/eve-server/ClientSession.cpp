@@ -163,7 +163,8 @@ int64 ClientSession::CreateSessionID() {
     /*  session id is unique to each session.
      * is not saved, or shared between chars
      */
-    m_sessionID = GetTimeMSeconds() * 25;
+    //random.getrandbits(63)
+    m_sessionID = GetTimeUSeconds() *15;
     sEntityList.RegisterSID(m_sessionID);
 
     return m_sessionID;
