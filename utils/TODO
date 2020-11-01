@@ -123,6 +123,8 @@ create ".modify" command to allow ingame setting of attributes
     - this is done already, but incomplete.  search for ".dogma" command
 
 add cache calls/data for systems that use it after debugging and testing completed
+    - bookmarks
+    - agent data?
 
 bookmarks in cargo have name correctly (bm 'memo' is it's player-given name), but mouseover shows  ` - {memo}` ....  what is blank space before '-'??
 write new methods for List() and Move() for bookmarks where owner != player
@@ -133,7 +135,8 @@ finish DestinyManager::SendCloakFx()
 bounties have a bonus...
 skillDEDConnections = 3362, // Social Skill at dealing with Concord Department and negotiating bounties
 Bonus fee of 1,500 isk per pirate head per level of the skill
-*** actually, ALL of the social skills have bonuses.
+**********************************
+*** actually, ALL of the social and trade skills have bonuses.
     - these need to be looked over and implemented.
 skillGeneralFreight = 12834, // Trade Skill at the stowage and transportation of bulk goods
 5% Bonus per level to Ship Cargo Capacity
@@ -225,6 +228,8 @@ dungeons - complete current wip code   -priority level: med-hi
 
 belt spawns - rework for better ship group selection   -priority level: med
 
+belt manager 'active' status on timer?
+
 contracts - start this system. current status unknown. this system is barely skeleton code at this time.  -priority level: low-med
 contractProxy::GetMyExpiredContractList()
 /client/script/ui/shared/neocom/journal.py(1429) DoShowContracts
@@ -301,18 +306,17 @@ item contraband.....this needs implementing
 
 market code
     - determine and code methods for using arum as credit type
+    - fees/taxes wrong.  see notes/code in MarketMgr.h
 
 market for corp use
     - add checks for hangar location when placing buy orders
-    - find corp hangar/deny use for corp buy order at requested station
+    - find delivery hangar flag for corp buy order at requested station
     - will need more data and checks for using corp account key (wallet division) properly.  currently cash (div 1)
     - escrow and broker fee have "authorized by" msgs to implement....see common/eve-wallet.h
 
 market system....this needs a lot of attention (rewrite/update in progress - 24/oct/20)
     - abundance of checks (probably overkill)
-    - db hits abound
-    - EVEYTHING is uint32 but we really dont need that
-    - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client
+    - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client (very few msgs. noted)
     ** error...
 21:29:11 [Service] marketProxy::PlaceCharOrder()
 21:29:11 [AcctTrace] TranserFunds() - from: 90000000, to: 1000160, entry: 2, refID: 125, amount: 500.00, fKey: 1000, tKey: 1000
@@ -455,7 +459,7 @@ trader joe (market bot)
 
 low on the list.....
 contraband.
-however, there are skills related to it, once implemented
+however, there are skills related to it, once implemented  (not published)
 skillSmuggling = 3448, // Trade Proficiency at laying low and avoiding unwanted attention. From a base of 90%, each level of skill reduces by 10% the likelihood of being scanned while transporting contraband.
 skillStarshipFreight = 13069, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
 skillMineralFreight = 13070, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
@@ -468,11 +472,6 @@ skillHazardousMaterialFreight = 13075, // Trade The skill at transporting contra
 
 skillTaxEvasion = 28261, // Trade Knowledge of the SCC tax regime and the ability to utilize that to one's own advantage.
 2% reduction in SCC tax per level.
-
-
-client session makes sessionID.  still dont know how to get it.
-see if we can send first, so client wont make one.
-look for GetNewSid() in client code
 
 
 *******************************************************
@@ -574,6 +573,15 @@ comment unused attrib defs?
 *******************************************************
 *****************   errata and miscellaneous bullshit
 
+dont remember why i put this log in, but it got hit while testing earlier....
+19:54:01 [Service] config::GetMultiLocationsEx()
+19:54:01 W GetMultiLocationsEx: Asteroid Item requested.
+19:54:03 [Service] config::GetMultiLocationsEx()
+19:54:03 W GetMultiLocationsEx: Asteroid Item requested.
+19:54:05 [Service] config::GetMultiLocationsEx()
+19:54:05 W GetMultiLocationsEx: Asteroid Item requested.
+
+
 17908 - nerf bat    <<-- this is `QA Cruise Missile`  100km/s, 1k multi-spectral damage
 
 GM/WM slash commands arent parsed in server (rclick '/create this type'....etc)
@@ -671,10 +679,18 @@ turns use quanternion lerp curve (and mass/agility somehow)
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend
 
+broker agents to gain rep with to modify fees?
 
 add colors to skill list (and other commands)
     - currently, skill in training is aqua, others are white.
     - fleet bonuses is only other command that is colored (offhand)
+
+set up universe monitor for watching jumps
+when jumps > xx send "system closed" and "system congested" msgs to pilots trying to jump in.
+...other things?
+
+there is a lot more to machonet than we currently have coded/working....
+
 
 *******************************************************
 ********************************
