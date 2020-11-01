@@ -27,7 +27,6 @@
 #ifndef EVEMU_SYSTEM_CALENDARMGR_H__
 #define EVEMU_SYSTEM_CALENDARMGR_H__
 
-#include "system/Calendar.h"
 #include "PyService.h"
 
 class CalendarMgrService
@@ -42,6 +41,16 @@ class CalendarMgrService
     Dispatcher *const m_dispatch;
 
     PyCallable_DECL_CALL(GetResponsesForCharacter);
+    PyCallable_DECL_CALL(CreatePersonalEvent);
+    PyCallable_DECL_CALL(CreateCorporationEvent);
+    PyCallable_DECL_CALL(CreateAllianceEvent);
+    PyCallable_DECL_CALL(UpdateEventParticipants);
+    PyCallable_DECL_CALL(EditPersonalEvent);
+    PyCallable_DECL_CALL(EditCorporationEvent);
+    PyCallable_DECL_CALL(EditAllianceEvent);
+    PyCallable_DECL_CALL(SendEventResponse);
+    PyCallable_DECL_CALL(DeleteEvent);
+    PyCallable_DECL_CALL(GetResponsesToEvent);
 };
 
 #endif // EVEMU_SYSTEM_CALENDARMGR_H__

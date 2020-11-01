@@ -27,7 +27,6 @@
 #define EVEMU_SYSTEM_CALENDARPROXY_H__
 
 
-#include "system/Calendar.h"
 #include "PyService.h"
 
 class CalendarProxy
@@ -41,7 +40,8 @@ class CalendarProxy
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
-    //PyCallable_DECL_CALL(??);
+    PyCallable_DECL_CALL(GetEventList);
+    PyCallable_DECL_CALL(GetEventDetails);
 
 };
 

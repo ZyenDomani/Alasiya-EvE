@@ -26,6 +26,7 @@
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
+#include "system/CalendarDB.h"
 #include "system/CalendarProxy.h"
 
 PyCallable_Make_InnerDispatcher(CalendarProxy)
@@ -36,7 +37,8 @@ CalendarProxy::CalendarProxy(PyServiceMgr *mgr)
 {
     _SetCallDispatcher(m_dispatch);
 
-    //PyCallable_REG_CALL(CalendarProxy, ??);
+    PyCallable_REG_CALL(CalendarProxy, GetEventList);
+    PyCallable_REG_CALL(CalendarProxy, GetEventDetails);
 }
 
 CalendarProxy::~CalendarProxy()
@@ -44,8 +46,63 @@ CalendarProxy::~CalendarProxy()
     delete m_dispatch;
 }
 
-/*
-PyResult CalendarProxy::Handle_GetResponsesForCharacter( PyCallArgs& call )
+
+PyResult CalendarProxy::Handle_GetEventList( PyCallArgs& call )
 {
+    /*
+     *            dbRowList = self.GetCalendarProxy().GetEventList(month, year)
+     *            for dbRows in dbRowList:
+     *                if dbRows is not None:
+     *                    eventList.extend([ util.KeyVal(x) for x in dbRows ])
+     *
+     *            for x in eventList:
+     *                x.flag = self.GetEventFlag(x.ownerID, x.Get('autoEventType', None))
+     */
+
+    Call_TwoIntegerArgs args;   //(month, year)
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
+    }
+
+    PyList *list = new PyList();
+    PyRep* res(nullptr);
+
+    // get system events
+    res = CalendarDB::GetEventList(ownerSystem, args.arg1, args.arg2);
+    if (res != nullptr)
+        list->AddItem(res);
+
+    // get personal events
+    res = CalendarDB::GetEventList(call.client->GetCharacterID(), args.arg1, args.arg2);
+    if (res != nullptr)
+        list->AddItem(res);
+
+    // get corp events
+    res = CalendarDB::GetEventList(call.client->GetCorporationID(), args.arg1, args.arg2);
+    if (res != nullptr)
+        list->AddItem(res);
+
+    // get alliance events
+    res = CalendarDB::GetEventList(call.client->GetAllianceID(), args.arg1, args.arg2);
+    if (res != nullptr)
+        list->AddItem(res);
+
+    if (list->empty())
+        list->AddItem(PyStatic.NewNone());
+
+    return list;
 }
-*/
+
+PyResult CalendarProxy::Handle_GetEventDetails( PyCallArgs& call )
+{
+    // self.eventDetails[eventID] = self.GetCalendarProxy().GetEventDetails(eventID, ownerID)
+    Call_TwoIntegerArgs args;   //(eventID, ownerID)
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
+    }
+
+    return CalendarDB::GetEventDetails(args.arg1);
+}
+

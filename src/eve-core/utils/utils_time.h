@@ -48,6 +48,20 @@ namespace EvE {
             Year        = (Day * 365L)
         };
     }
+
+    struct TimeParts {
+        uint16 year;
+        uint8 month;
+        uint8 wd;       // day of week
+        uint8 wn;       // week of year
+        uint8 day;
+        uint8 hour;
+        uint8 min;
+        uint8 sec;
+        uint16 dy;      // day of year
+        uint16 ms;
+    };
+
 }
 
 extern const int64 Win32Time_Second;
@@ -79,6 +93,9 @@ std::string GetMTimeTillNow(double fromTime);
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
 const std::string currentDateTime();
+
+// break down given filetime into year, month, day, hour, min, sec, ms
+EvE::TimeParts GetTimeParts(int64 filetime=0);  // also gives day of week, day of year, and week of year
 
 // Get linux filetime from dataTime format YYYY-MM-DDTHH:mm:ssZ (where "T" is a separator and "Z" denotes 'zulo')
 //std::time_t getEpochTime(const std::wstring& dateTime);

@@ -1,0 +1,38 @@
+
+<elements>
+
+  <elementDef name="Call_CreateEvent">
+    <tupleInline>
+      <long name="startDateTime" />
+      <int name="duration" />
+      <wstring name="title" />
+      <wstring name="description" />
+      <!-- really a soft boolean -->
+      <int name="important" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_CreateEventWithInvites">
+    <tupleInline>
+      <long name="startDateTime" />
+      <int name="duration" />
+      <wstring name="title" />
+      <wstring name="description" />
+      <!-- really a soft boolean -->
+      <int name="important" />
+      <list name="invitees" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_SendEventResponse">
+    <tupleInline>
+      <int name="eventID" />
+      <int name="ownerID" />
+      <int name="response" />
+    </tupleInline>
+  </elementDef>
+
+
+</elements>
+
+

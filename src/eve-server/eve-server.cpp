@@ -58,7 +58,6 @@
 // alliance services
 #include "alliance/AllianceRegistry.h"
 // calendar services
-#include "system/Calendar.h"
 #include "system/CalendarMgrService.h"
 #include "system/CalendarProxy.h"
 // cache services

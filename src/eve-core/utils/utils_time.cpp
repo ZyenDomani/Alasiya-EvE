@@ -25,18 +25,19 @@
 */
 
 #include "eve-core.h"
+// #include "date.h"
 
 #include "utils/utils_time.h"
 
-const int64 Win32Time_Second = 10000000L;
+static const int64 SECS_BETWEEN_EPOCHS = 11644473600LL;
+static const int64 SECS_TO_100NS = 10000000L; // 10^7
+
+const int64 Win32Time_Second = SECS_TO_100NS;
 const int64 Win32Time_Minute = Win32Time_Second*60;
 const int64 Win32Time_Hour = Win32Time_Minute*60;
 const int64 Win32Time_Day = Win32Time_Hour*24;
 const int64 Win32Time_Month = Win32Time_Day*30;
 const int64 Win32Time_Year = Win32Time_Month*12;
-
-static const int64 SECS_BETWEEN_EPOCHS = 11644473600LL;
-static const int64 SECS_TO_100NS = 10000000L; // 10^7
 
 int64 UnixTimeToWin32Time( time_t sec, uint32 nsec ) {
     return(
@@ -70,9 +71,9 @@ int64 Win32TimeNow() {
 
 int32 GetElapsedHours(int64 time)  // -allan
 {
-    double hours = time - GetFileTimeNow();
-    hours /= 10000000;
-    hours -= 11644473600;
+    double hours = GetFileTimeNow() -time;
+    hours /= SECS_TO_100NS;
+    hours -= SECS_BETWEEN_EPOCHS;
     hours /= 3600;
     return (int32)hours;
 }
@@ -82,8 +83,8 @@ double GetFileTimeNow()  // -allan
     // convert system time to filetime.
     double time = GetTimeMSeconds();
     time /= 1000;   // to second
-    time += 11644473600;    // offset
-    time *= EvE::Time::Second; // to 10 uSeconds
+    time += SECS_BETWEEN_EPOCHS;    // offset
+    time *= EvE::Time::Second; // to 100 uSeconds
     return time;
 }
 
@@ -150,8 +151,96 @@ std::string GetMTimeTillNow(double fromTime)
         return sprintf("0.4fms",elapsed);
 }
 
+EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
+{
+    // time sent as (windows)FILETIME; convert to unix time
+    double time(filetime /EvE::Time::Second);// to Seconds
+    time -= SECS_BETWEEN_EPOCHS;    // epoc offset
 
-/*  this doesnt work....std::get_time() is unavalible
+    // Number of days in month in normal year
+    int daysOfMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    // Calculate total days
+    uint16 day = (time / 86400) +1;
+    uint16 seconds = fmod(time, 86400);
+
+    // year loop
+    uint16 year = 1970;
+    while (day >= 365) {
+        if ((year % 400 == 0)
+        or ((year % 4 == 0) and (year % 100 != 0))) {
+            day -= 366;
+        } else {
+            day -= 365;
+        }
+        ++year;
+    }
+
+    bool flag(false);
+    if ((year % 400 == 0)
+    or ((year % 4 == 0) and (year % 100 != 0)))
+        flag = true;
+
+    // Calculating MONTH and DATE
+    uint8 month(0), index(0);
+    if (flag) {
+        while (true) {
+            if (index == 1) {
+                if (day - 29 < 0)
+                    break;
+                ++month;
+                day -= 29;
+            } else {
+                if (day -daysOfMonth[index] < 0)
+                    break;
+                ++month;
+                day -= daysOfMonth[index];
+            }
+            ++index;
+        }
+    } else {
+        while (true) {
+            if (day -daysOfMonth[index] < 0)
+                break;
+            day -= daysOfMonth[index];
+            ++month;
+            ++index;
+        }
+    }
+
+    // Current Month
+    if (day > 0) {
+        ++month;
+    } else {
+        if (month == 2 && flag)
+            day = 29;
+        else {
+            day = daysOfMonth[month - 1];
+        }
+    }
+
+    // use boost to get day of week and week of year
+    boost::gregorian::date d(year, month, day);
+
+    EvE::TimeParts data = EvE::TimeParts();
+    data.year   = year;
+    data.month  = month;
+    data.day    = day;
+    data.wn     = d.week_number();
+    data.wd     = d.day_of_week();
+    data.dy     = d.day_of_year();
+    data.hour   = seconds / 3600;
+    data.min    = fmod(seconds, 3600) / 60;
+    data.sec    = fmod(fmod(seconds, 3600), 60);
+    data.ms     = fmod(time, 1000);
+
+    return data;
+}
+
+//FILETIME, a struct which stores the 64-bit number of 100-nanosecond intervals since midnight Jan 1, 1601.
+
+
+/*  this doesnt work....std::get_time() is unavailable
 // Converts UTC time string to a time_t value.
 std::time_t getEpochTime(const std::wstring& dateTime)
 {
