@@ -769,6 +769,10 @@ int main( int argc, char* argv[] )
     ServiceDB::SetServerOnlineStatus(true);
     sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.");
 
+    std::string str = "Started on ";
+    str += currentDateTime();
+    sLog.Cyan("           Server", "%s", str.c_str());
+
     /////////////////////////////////////////////////////////////////////////////////////
     //     !!!  DO NOT PUT ANY INITIALIZATION CODE OR CALLS BELOW THIS LINE   !!!
     /////////////////////////////////////////////////////////////////////////////////////
