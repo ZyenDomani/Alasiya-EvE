@@ -117,6 +117,8 @@ public:
     PyCallable_DECL_CALL(UpdateStationManagementSettings);
     PyCallable_DECL_CALL(GetNumberOfPotentialCEOs);
 
+    PyCallable_DECL_CALL(CanLeaveCurrentCorporation);
+    
 
 protected:
     static void FillOCApplicationChange(OnCorporationApplicationChanged& OCAC, const Corp::ApplicationInfo& Old, const Corp::ApplicationInfo& New);

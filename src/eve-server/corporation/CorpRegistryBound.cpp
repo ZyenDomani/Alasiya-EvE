@@ -284,6 +284,8 @@ CorpRegistryBound::CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint3
     PyCallable_REG_CALL(CorpRegistryBound, UpdateStationManagementSettings);
     PyCallable_REG_CALL(CorpRegistryBound, GetNumberOfPotentialCEOs);
 
+    PyCallable_REG_CALL(CorpRegistryBound, CanLeaveCurrentCorporation);
+
     m_corpID = corpID;
 }
 
@@ -2532,3 +2534,18 @@ PyResult CorpRegistryBound::Handle_GetNumberOfPotentialCEOs(PyCallArgs &call) {
 
     return nullptr;
 }
+
+PyResult CorpRegistryBound::Handle_CanLeaveCurrentCorporation(PyCallArgs &call) {
+    //  canLeave, error, errorDetails = corpSvc.CanLeaveCurrentCorporation()
+    // error:  CrpCantQuitNotInStasis  and canLeave=false for member that has roles
+
+    PyTuple* tuple = new PyTuple(3);
+        tuple->SetItem(0, PyStatic.NewTrue());  //canLeave - set this to timer or w/e to deter corp jumpers
+        tuple->SetItem(1, PyStatic.NewNone());
+        tuple->SetItem(2, PyStatic.NewNone());
+
+    return tuple;
+}
+
+
+
