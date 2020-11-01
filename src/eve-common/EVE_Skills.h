@@ -57,6 +57,9 @@ namespace EvESkill {
   */
  //  -allan 21Mar14
   enum {  //thanks positron96 for this query
+
+      //  ***** NOTE:  items marked with '//*' are not published  (incomplete)
+
 // Corporation Management
      CorporationManagement      = 3363,
      StationManagement      = 3364,
@@ -478,19 +481,19 @@ namespace EvESkill {
  // Trade
      Trade      = 3443,
      Retail     = 3444,
-     BlackMarketTrading     = 3445,
+     BlackMarketTrading     = 3445,//*
      BrokerRelations        = 3446,
      Visibility     = 3447,
-     Smuggling      = 3448,
-     Test       = 11015,
-     GeneralFreight     = 12834,
-     StarshipFreight        = 13069,
-     MineralFreight     = 13070,
-     MunitionsFreight       = 13071,
-     DroneFreight       = 13072,
-     RawMaterialFreight     = 13073,
-     ConsumableFreight      = 13074,
-     HazardousMaterialFreight       = 13075,
+     Smuggling      = 3448,     //*
+     Test       = 11015,//*
+     GeneralFreight     = 12834,//*
+     StarshipFreight        = 13069,//*
+     MineralFreight     = 13070,//*
+     MunitionsFreight       = 13071,//*
+     DroneFreight       = 13072,//*
+     RawMaterialFreight     = 13073,//*
+     ConsumableFreight      = 13074,//*
+     HazardousMaterialFreight       = 13075,//*
      Procurement        = 16594,
      Daytrading     = 16595,
      Wholesale      = 16596,
@@ -502,6 +505,53 @@ namespace EvESkill {
      Contracting        = 25235,
      TaxEvasion     = 28261
  };
+
+ /* skills not published...
+  skillStationManagement = 3364, // group = Corporation Management
+  skillStarbaseManagement = 3365, // group = Corporation Management
+  skillFactoryManagement = 3366, // group = Corporation Management
+  skillRefineryManagement = 3367, // group = Corporation Management
+  skillCFOTraining = 3369, // group = Corporation Management
+  skillChiefScienceOfficer = 3370, // group = Corporation Management
+  skillPublicRelations = 3371, // group = Corporation Management
+  skillIntelligenceAnalyst = 3372, // group = Corporation Management
+  skillSalvageDroneOperation = 3440, // group = Drones
+  skillTESTDroneSkill = 22172, // group = Drones
+  skillMiningDroneSpecialization = 22541, // group = Drones
+  skillPropulsionJammingDroneInterfacing = 23599, // group = Drones
+  skillAdvancedSensorUpgrades = 11208, // group = Electronics
+  skillHypereuclideanNavigation = 12368, // group = Electronics
+  skillTournamentObservation = 28604, // group = Electronics
+  skillImperialNavySecurityClearance = 28631, // group = Electronics
+  skillAdvancedEnergyGridUpgrades = 11204, // group = Engineering
+  skillAdvancedShieldUpgrades = 11206, // group = Engineering
+  skillStealthBombersFakeSkill = 20127, // group = Fake Skills
+  skillAmarrTech = 3381, // group = Industry
+  skillCaldariTech = 3382, // group = Industry
+  skillGallenteTech = 3383, // group = Industry
+  skillMinmatarTech = 3384, // group = Industry
+  skillMobileRefineryOperation = 3390, // group = Industry
+  skillMobileFactoryOperation = 3391, // group = Industry
+  skillOreCompression = 28373, // group = Industry
+  skillHypernetScience = 11858, // group = Science
+  skillJoveFrigate = 3755, // group = Spaceship Command
+  skillJoveCruiser = 3758, // group = Spaceship Command
+  skillPolaris = 9955, // group = Spaceship Command
+  skillConcord = 10264, // group = Spaceship Command
+  skillJoveIndustrial = 11075, // group = Spaceship Command
+  skillJoveBattleship = 11078, // group = Spaceship Command
+  skillOmnipotent = 19430, // group = Spaceship Command
+  skillBlackMarketTrading = 3445, // group = Trade
+  skillSmuggling = 3448, // group = Trade
+  skillTest = 11015, // group = Trade
+  skillStarshipFreight = 13069, // group = Trade
+  skillMineralFreight = 13070, // group = Trade
+  skillMunitionsFreight = 13071, // group = Trade
+  skillDroneFreight = 13072, // group = Trade
+  skillRawMaterialFreight = 13073, // group = Trade
+  skillConsumableFreight = 13074, // group = Trade
+  skillHazardousMaterialFreight = 13075, // group = Trade
+  */
 
 }
  #endif  //EVE_SKILLS_H

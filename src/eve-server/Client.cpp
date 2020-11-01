@@ -1892,7 +1892,7 @@ void Client::UpdateSessionInt(const char *id, int value)
 
 void Client::UpdateCorpSession(CorpData& data)
 {
-    // session.Set* methods only updates on change
+    // session.Set* methods only update on change
     pSession->SetInt("corpid", data.corporationID);
     pSession->SetInt("baseID", data.baseID);
     pSession->SetInt("hqID", data.corpHQ);

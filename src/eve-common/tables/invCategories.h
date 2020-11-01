@@ -37,7 +37,8 @@ namespace EVEDB {
             PlanetaryResources = 42,
             PlanetaryCommodities = 43,
             Orbitals = 46,
-            Placeables = 49,    // WIS items.  not sure if these are used.  they are listed as 'published'
+            // WIS items.  not sure if these are used.  they are listed as 'published'
+            Placeables = 49,    // furniture, etc
             Effects = 53,       // lighting-type effects.  non-creatable item type
             Lights = 54,        // light sources.  non-creatable item type
             Cells = 59          // not used

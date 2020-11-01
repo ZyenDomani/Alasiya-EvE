@@ -237,13 +237,13 @@ const char* EvE::FormatTime(int64 time/*-1*/) {
     return uptime.str().c_str();
 }
 
-const char* EvE::FormatTime(float time/*-1*/) {
+const char* EvE::FormatTime(double time/*-1*/) {
     if (time < 0)
         return "Invalid Time";
     if (time < 1)
         return "None";
-    float seconds = time;
-    float minutes = seconds/60;
+    double seconds = time;
+    double minutes = seconds/60;
     float hours = minutes/60;
     float days = hours/24;
     float weeks = days/7;
@@ -272,3 +272,4 @@ const char* EvE::FormatTime(float time/*-1*/) {
 
     return uptime.str().c_str();
 }
+

@@ -1464,7 +1464,7 @@ void DestinyManager::InitWarp() {
     float cruiseTime(0.0f);
     double accelDistance(0.0), decelDistance(0.0), cruiseDistance(0.0);
     // fudge this a bit for accel/decel distances
-    if (m_targetDistance < (warpSpeedInMeters *2)) {
+    if (m_targetDistance < warpSpeedInMeters) {
         //  short warp....no cruise
         // this isnt very accurate....times and distances are a bit off....
         cruise = false;

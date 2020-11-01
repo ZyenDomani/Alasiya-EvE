@@ -28,6 +28,18 @@
 #include "marshal/EVEMarshalStringTable.h"
 
 /* we made up this list so we have efficient string communication with the client */
+/**  @note
+ *      this list should only be updated by running the following script within client context
+ *      (thanks comet0)
+ * 
+ * --
+ * import blue
+ * values = sorted(blue.marshal.stringTable, key=blue.marshal.stringTable.get)
+ * for i in values:
+ *      print '    "%s", ' % (i)
+ * --
+ */
+
 const char* const MarshalStringTable::s_mStringTable[] =
 {
     "*corpid",

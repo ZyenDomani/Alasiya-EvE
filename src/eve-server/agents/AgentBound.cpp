@@ -19,7 +19,7 @@
  * AGENT__INFO
  * AGENT__TRACE
  * AGENT__DUMP
- * AGENT__RSPDUMP
+ * AGENT__RSP_DUMP
  */
 
 #include "eve-server.h"
@@ -383,9 +383,9 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         outer->SetItem(0, inner);
         outer->SetItem(1, xtraInfo);
 
-    if (is_log_enabled(AGENT__RSPDUMP)) {
-        _log(AGENT__RSPDUMP, "AgentBound::Handle_DoAction RSP:" );
-        outer->Dump(AGENT__RSPDUMP, "    ");
+    if (is_log_enabled(AGENT__RSP_DUMP)) {
+        _log(AGENT__RSP_DUMP, "AgentBound::Handle_DoAction RSP:" );
+        outer->Dump(AGENT__RSP_DUMP, "    ");
     }
 
     return outer;
@@ -448,9 +448,9 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
         briefingInfo->SetItemString("Decline Time", new PyNone());   // -1 is generic decline msg
         briefingInfo->SetItemString("Expiration Time", new PyLong(offer.expiryTime) );
 
-    if (is_log_enabled(AGENT__RSPDUMP)) {
-        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionBriefingInfo() RSP:" );
-        briefingInfo->Dump(AGENT__RSPDUMP, "    ");
+    if (is_log_enabled(AGENT__RSP_DUMP)) {
+        _log(AGENT__RSP_DUMP, "AgentBound::Handle_GetMissionBriefingInfo() RSP:" );
+        briefingInfo->Dump(AGENT__RSP_DUMP, "    ");
     }
 
     return briefingInfo;
@@ -495,9 +495,9 @@ PyResult AgentBound::Handle_GetMissionKeywords(PyCallArgs &call) {
     keywords->SetItemString("dungeonLocationID", new PyInt(offer.dungeonLocationID));
     keywords->SetItemString("dungeonSolarSystemID", new PyInt(offer.dungeonSolarSystemID));
 
-    if (is_log_enabled(AGENT__RSPDUMP)) {
-        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionKeywords() RSP:" );
-        keywords->Dump(AGENT__RSPDUMP, "    ");
+    if (is_log_enabled(AGENT__RSP_DUMP)) {
+        _log(AGENT__RSP_DUMP, "AgentBound::Handle_GetMissionKeywords() RSP:" );
+        keywords->Dump(AGENT__RSP_DUMP, "    ");
     }
 
     return keywords;
@@ -563,8 +563,8 @@ PyResult AgentBound::Handle_GetMyJournalDetails(PyCallArgs &call) {
     PyList* research = new PyList();
     tuple->SetItem(1, research);
 
-    if (is_log_enabled(AGENT__RSPDUMP))
-        tuple->Dump(AGENT__RSPDUMP, "   ");
+    if (is_log_enabled(AGENT__RSP_DUMP))
+        tuple->Dump(AGENT__RSP_DUMP, "   ");
     return tuple;
 }
 
@@ -594,9 +594,9 @@ PyResult AgentBound::Handle_GetMissionJournalInfo(PyCallArgs &call) {
             journalInfo->SetItemString("missionImage", sMissionDataMgr.GetKillRes()); break;
     }
 
-    if (is_log_enabled(AGENT__RSPDUMP)) {
-        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionJournalInfo() RSP:" );
-        journalInfo->Dump(AGENT__RSPDUMP, "    ");
+    if (is_log_enabled(AGENT__RSP_DUMP)) {
+        _log(AGENT__RSP_DUMP, "AgentBound::Handle_GetMissionJournalInfo() RSP:" );
+        journalInfo->Dump(AGENT__RSP_DUMP, "    ");
     }
 
     return journalInfo;
@@ -750,9 +750,9 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
      * shipRestrictions  0=normal 1=special with link to *something else*
      */
 
-    if (is_log_enabled(AGENT__RSPDUMP)) {
-        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionObjectiveInfo() RSP:" );
-        objectiveData->Dump(AGENT__RSPDUMP, "    ");
+    if (is_log_enabled(AGENT__RSP_DUMP)) {
+        _log(AGENT__RSP_DUMP, "AgentBound::Handle_GetMissionObjectiveInfo() RSP:" );
+        objectiveData->Dump(AGENT__RSP_DUMP, "    ");
     }
 
     return objectiveData;

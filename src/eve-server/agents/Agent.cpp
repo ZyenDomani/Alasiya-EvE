@@ -19,7 +19,7 @@
  * AGENT__INFO
  * AGENT__TRACE
  * AGENT__DUMP
- * AGENT__RSPDUMP
+ * AGENT__RSP_DUMP
  */
 
 #include "../eve-server.h"
@@ -430,9 +430,9 @@ PyObject* Agent::GetInfoServiceDetails()
     res->SetItemString("incompatible", tuple);
     */
 
-    if (is_log_enabled(AGENT__RSPDUMP)) {
-        _log(AGENT__RSPDUMP, "Agent::GetInfoServiceDetails() Dump:" );
-        res->Dump(AGENT__RSPDUMP, "    ");
+    if (is_log_enabled(AGENT__RSP_DUMP)) {
+        _log(AGENT__RSP_DUMP, "Agent::GetInfoServiceDetails() Dump:" );
+        res->Dump(AGENT__RSP_DUMP, "    ");
     }
 
     return new PyObject("util.KeyVal", res);

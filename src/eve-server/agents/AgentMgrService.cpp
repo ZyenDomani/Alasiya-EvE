@@ -44,7 +44,7 @@
  * AGENT__INFO
  * AGENT__TRACE
  * AGENT__DUMP
- * AGENT__RSPDUMP
+ * AGENT__RSP_DUMP
  */
 
 #include "eve-server.h"
@@ -158,8 +158,8 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
     PyList* research = new PyList();
     tuple->SetItem(1, research);
 
-    if (is_log_enabled(AGENT__RSPDUMP))
-        tuple->Dump(AGENT__RSPDUMP, "   ");
+    if (is_log_enabled(AGENT__RSP_DUMP))
+        tuple->Dump(AGENT__RSP_DUMP, "   ");
     return tuple;
   /*
       [PySubStream 59 bytes]

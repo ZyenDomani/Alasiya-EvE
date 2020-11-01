@@ -194,9 +194,6 @@ PyResult FactionWarMgrService::Handle_GetFactionMilitiaCorporation(PyCallArgs &c
      * 05:39:07 [SvcCall]   Call Arguments:
      * 05:39:07 [SvcCall]       Tuple: 1 elements
      * 05:39:07 [SvcCall]         [ 0] Integer field: 500002
-     * 05:39:07 [SvcCall]   Call Named Arguments:
-     * 05:39:07 [SvcCall]     Argument 'machoVersion':
-     * 05:39:07 [SvcCall]         Integer field: 1
      */
   _log(FACWAR__CALL, "FacWarMgr::Handle_GetFactionMilitiaCorporation()", "size= %u", call.tuple->size() );
   call.Dump(FACWAR__CALL_DUMP);
@@ -209,12 +206,6 @@ PyResult FactionWarMgrService::Handle_GetFactionMilitiaCorporation(PyCallArgs &c
 }
 
 PyResult FactionWarMgrService::Handle_GetSystemStatus(PyCallArgs &call) {
-    /*
-     * contestionStateNone = 0
-     * contestionStateContested = 1
-     * contestionStateVulnerable = 2
-     * contestionStateCaptured = 3
-     */
     /*
      * status = self.facWarMgr.GetSystemStatus(session.solarsystemid2, session.warfactionid)
      * systemStatus = sm.StartService('facwar').GetSystemStatus()
@@ -232,10 +223,10 @@ PyResult FactionWarMgrService::Handle_GetSystemStatus(PyCallArgs &call) {
 
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetSystemStatus()");
     call.Dump(FACWAR__CALL_DUMP);
-    return (new PyInt(0));
+    return new PyInt(FacWar::SysStatus::None);
 }
 
-//22:48:28 L FactionWarMgrService::Handle_IsEnemyFaction(): size= 2
+// these next two should use static data or cached data to avoid db hits
 PyResult FactionWarMgrService::Handle_IsEnemyFaction(PyCallArgs &call) {
     //  return self.facWarMgr.IsEnemyFaction(enemyID, factionID)
     /*
@@ -246,6 +237,15 @@ PyResult FactionWarMgrService::Handle_IsEnemyFaction(PyCallArgs &call) {
      * 05:39:09 [SvcCall]         [ 1] Integer field: 500001   <- this one changes
      */
     _log(FACWAR__CALL, "FacWarMgr::Handle_IsEnemyFaction()");
+    call.Dump(FACWAR__CALL_DUMP);
+
+    // return boolean
+    return PyStatic.NewFalse();
+}
+
+PyResult FactionWarMgrService::Handle_IsEnemyCorporation(PyCallArgs &call) {
+    //return self.facWarMgr.IsEnemyCorporation(enemyID, factionID)
+    _log(FACWAR__CALL, "FacWarMgr::Handle_IsEnemyCorporation()");
     call.Dump(FACWAR__CALL_DUMP);
 
     // return boolean
@@ -286,16 +286,12 @@ PyResult FactionWarMgrService::Handle_GetCorporationWarFactionID(PyCallArgs &cal
     return nullptr;
 }
 
-PyResult FactionWarMgrService::Handle_IsEnemyCorporation(PyCallArgs &call) {
-    //return self.facWarMgr.IsEnemyCorporation(enemyID, factionID)
-    _log(FACWAR__CALL, "FacWarMgr::Handle_IsEnemyCorporation()");
-    call.Dump(FACWAR__CALL_DUMP);
-
-    return nullptr;
-}
-
 PyResult FactionWarMgrService::Handle_GetSystemsConqueredThisRun(PyCallArgs &call) {
-    //return self.facWarMgr.GetSystemsConqueredThisRun()
+    /*
+        systemsThatWillSwitchNextDownTime = self.GetSystemsConqueredThisRun()
+        cfg.evelocations.Prime([ d['solarsystemID'] for d in systemsThatWillSwitchNextDownTime ])
+        cfg.eveowners.Prime([ d['occupierID'] for d in systemsThatWillSwitchNextDownTime ])
+        */
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetSystemsConqueredThisRun()");
     call.Dump(FACWAR__CALL_DUMP);
 
@@ -312,6 +308,9 @@ PyResult FactionWarMgrService::Handle_GetFactionCorporations(PyCallArgs &call) {
 
 PyResult FactionWarMgrService::Handle_JoinFactionAsCharacterRecommendationLetter(PyCallArgs &call) {
     //self.facWarMgr.JoinFactionAsCharacterRecommendationLetter, factionID, itemID)
+    // if char standing with faction is < 0.5,
+    // they can join provided they have a 'recommendation letter', typeID 30906
+    // dunno if the letter is removed after joining.
     _log(FACWAR__CALL, "FacWarMgr::Handle_JoinFactionAsCharacterRecommendationLetter()");
     call.Dump(FACWAR__CALL_DUMP);
 

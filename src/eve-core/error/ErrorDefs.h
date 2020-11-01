@@ -2,7 +2,7 @@
  /**
   * @name ErrorDefs.h
   *   system for managing error defs for server
-  * this header defines error codes for interperting errors within the running server
+  * this header defines error codes for interpreting errors within the running server
   * @Author:         Allan
   * @date:   ?? May 2015
   */
@@ -22,7 +22,7 @@
  *      B = system (0-character, 1-location, 2-system, 3-item, 4-planet, 5-ship, 6-module, 7-agent, 8-, 9-effects)
  *      C = subsystem (0-other, 1-self, 2-target, 3-charge, 4-calculate, 5-init, 6-pilot, 7-skill, 8-bind, 9-timer)
  *      D = type (0-create, 1-destroy, 2-check, 3-change, 4-move, 5-update, 6-save, 7-load, 8-decode, 9-encode)
- *      E = error (0-undef, 1-not init, 2-oob, 3-not found, 4-offline, 5-, 6-, 7-unknown, 8-invalid, 9-not implemented)
+ *      E = error (0-undef, 1-not init, 2-oob, 3-not found, 4-offline, 5-overflow/max, 6-, 7-unknown, 8-invalid, 9-not implemented)
  *
  *
  * Ref: ServerError 04421. << PlanetMgr::CreatePin - cost is 0
@@ -35,7 +35,7 @@
  * Ref: ServerError 15107. << Client::ResetAfterPopped() - error when creating pod SE
  * Ref: ServerError 15610. << ShipItem::GetEffectiveness() - effectiveness <= 0
  * Ref: ServerError 15611. << ShipItem::GetEffectiveness() - module has invalid state
- * Ref: ServerError 15623. << MSAC::ModifyTargetShipAttribute() - no target
+ * Ref: ServerError 15628. << MiningLaser::CanActivate() - Invalid Target
  * Ref: ServerError 15693. << EnergyTurret::Activate() - Cannot find loaded charge for this module
  * Ref: ServerError 16222. << ActiveModule::CanActivate() - target outside module range
  * Ref: ServerError 16228. << ActiveModule::CanActivate() - attempt to attack non-combatant (invalid target)
@@ -48,6 +48,7 @@
  * Ref: ServerError 31110. << commandDispatcher::Execute()
  * Ref: ServerError 35412. << DestinyManager::_Orbit() - distance checks oob
  * Ref: ServerError 35928. << DestinyManager::Process() - warpState checks invalid
+ * Ref: ServerError 65125. << MiningLaser::CanActivate() - cargo full
  * Ref: ServerError 65282. << ShipItem::ModifyHoldVolumeByFlag() - flag not in map
  * Ref: ServerError 75520. << Ship::InsureShip() - fraction is 0
  * Ref: ServerError 75521. << Ship::InsureShip() - fraction is < 0.05 -- ship is insured @ 30% (which gives error in client)
