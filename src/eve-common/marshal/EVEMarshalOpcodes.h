@@ -79,6 +79,12 @@ enum PyRepOpcode
     Op_PyWStringUTF8        = 0x2E,
     Op_PyVarInteger            = 0x2F, // variable length integer field??? // PyLong from Byte array
     PyRepOpcodeMask            = 0x3F
+
+    //  seen these on main server.
+    // E Unmarshal: Invalid stream received (header byte ...)
+    //                          = 0x5
+    //                          = 0xE
+    //                          = 0xCC
 };    //6 bits
 
 struct ZeroCompressOpcode
