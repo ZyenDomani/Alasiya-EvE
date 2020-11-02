@@ -124,12 +124,13 @@ EVEServerConfig::EVEServerConfig()
     // bpTimes
     bpTimes.ProdTime = 1.0;
     bpTimes.MatMod = 1.0;
-    bpTimes.ProdMod = 1.0;
+    bpTimes.CopyTime = 1.0;
     bpTimes.WasteMod = 1.0;
     bpTimes.ResCopy = 1.0;
     bpTimes.ResME = 1.0;
     bpTimes.ResPE = 1.0;
     bpTimes.ResRE = 1.0;
+    bpTimes.Invent = 1.0;
 
     // account
     account.autoAccountRole = Acct::Role::STD;
@@ -496,23 +497,25 @@ bool EVEServerConfig::ProcessBPTimes(const TiXmlElement* ele)
 {
     AddValueParser( "ProdTime",         bpTimes.ProdTime);
     AddValueParser( "ResCopy",          bpTimes.ResCopy);
-    AddValueParser( "ProdMod",          bpTimes.ProdMod);
+    AddValueParser( "CopyTime",         bpTimes.CopyTime);
     AddValueParser( "WasteMod",         bpTimes.WasteMod);
     AddValueParser( "MatMod",           bpTimes.MatMod);
     AddValueParser( "ResME",            bpTimes.ResME);
     AddValueParser( "ResPE",            bpTimes.ResPE);
     AddValueParser( "ResRE",            bpTimes.ResRE);
+    AddValueParser( "Invent",           bpTimes.Invent);
 
     const bool result = ParseElementChildren( ele );
 
     RemoveParser( "ProdTime" );
     RemoveParser( "ResCopy" );
-    RemoveParser( "ProdMod" );
+    RemoveParser( "CopyTime" );
     RemoveParser( "WasteMod" );
     RemoveParser( "MatMod" );
     RemoveParser( "ResME" );
     RemoveParser( "ResPE" );
     RemoveParser( "ResRE" );
+    RemoveParser( "Invent" );
 
     return result;
 }

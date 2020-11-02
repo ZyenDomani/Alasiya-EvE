@@ -61,7 +61,9 @@ public:
     float            chanceOfReverseEngineering() const { return m_data.chanceOfReverseEngineering; }
 
 protected:
-    BlueprintType(uint32 _id, const ItemGroup& _group, const TypeData& _data, const BlueprintType *_parentBlueprintType, const ItemType& _productType, const BlueprintTypeData& _bpData);
+    BlueprintType(uint32 _id, const ItemGroup& _group, const TypeData& _data,
+                  const BlueprintType *_parentBlueprintType, const ItemType& _productType,
+                  const EvERam::bpTypeData& _tData);
 
     /*
      * Member functions
@@ -78,23 +80,23 @@ protected:
         }
 
         // pull additional blueprint data
-        BlueprintTypeData bpData = BlueprintTypeData();
-        sDataMgr.GetBpTypeData(typeID, bpData);
+        EvERam::bpTypeData tData = EvERam::bpTypeData();
+        sDataMgr.GetBpTypeData(typeID, tData);
 
         // obtain parent blueprint type (might be NULL)
         const BlueprintType* parentBlueprintType(nullptr);
-        if (bpData.parentBlueprintTypeID) {
-            parentBlueprintType = sItemFactory.GetBlueprintType( bpData.parentBlueprintTypeID );
+        if (tData.parentBlueprintTypeID) {
+            parentBlueprintType = sItemFactory.GetBlueprintType( tData.parentBlueprintTypeID );
             if (parentBlueprintType == nullptr)
                 return nullptr;
         }
 
         // obtain product type
-        const ItemType* productType = sItemFactory.GetType( bpData.productTypeID );
+        const ItemType* productType = sItemFactory.GetType( tData.productTypeID );
         if (productType == nullptr)
             return nullptr;
 
-        return new BlueprintType(typeID, group, data, parentBlueprintType, *productType, bpData );
+        return new BlueprintType(typeID, group, data, parentBlueprintType, *productType, tData );
     }
 
     /*
@@ -103,7 +105,7 @@ protected:
     const BlueprintType *m_parentBlueprintType;
     const ItemType& m_productType;
 
-    BlueprintTypeData m_data;
+    EvERam::bpTypeData m_data;
 };
 
 
@@ -117,18 +119,20 @@ public:
     // overload to merge the blueprints properly
     virtual bool            Merge(InventoryItemRef to_merge, uint32 qty=0, bool notify=true);
     // overload to split the blueprints properly
-    virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true) { return SplitBlueprint( qty_to_take, notify ); }
+    virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true)
+                                                        { return SplitBlueprint( qty_to_take, notify ); }
+
     BlueprintRef            SplitBlueprint(int32 qty_to_take, bool notify=true);
 
     static BlueprintRef     Load( uint32 blueprintID);
-    static BlueprintRef     Spawn( ItemData& data, BlueprintData& bpData);
+    static BlueprintRef     Spawn( ItemData& data, EvERam::bpData& bdata);
 
     /*
      * Public fields:
      */
-    const BlueprintType&    type()                const { return static_cast<const BlueprintType& >(InventoryItem::type()); }
-    const ItemType&         productType()         const { return type().productType(); }
-    uint32                  productTypeID()       const { return type().productTypeID(); }
+    const BlueprintType&    type()                const { return m_bpType; }
+    const ItemType&         productType()         const { return m_bpType.productType(); }
+    uint32                  productTypeID()       const { return m_bpType.productTypeID(); }
     bool                    copy()                      { return m_data.copy; }
     int32                   materialLevel()             { return m_data.mLevel; }
     int32                   productivityLevel()         { return m_data.pLevel; }
@@ -144,22 +148,19 @@ public:
     void                    SetCopy(bool copy)          { m_data.copy = copy; }
     void                    SetRuns(int32 runs)         { m_data.runs = runs; }
 
-    bool                    infinite()                  { return ((m_data.runs < 0) ? true : false); }
-    float                   timeFactor() const;
-    float                   wasteFactor() const;
-    double                  materialMultiplier()  const { return (1.0 + wasteFactor()); }
-    double                  timeMultiplier()      const { return (1.0 - (timeFactor() / type().productionTime())); }
+    float                   GetPE()                     { return m_data.pLevel / (1 + m_data.pLevel); }
+    float                   GetME();
+
+    bool                    infinite()                  { return (m_data.runs < 0); }
 
     /*
      * Primary public packet builders:
      */
     PyDict*                 GetBlueprintAttributes();
 
-private:
-    FactoryDB m_db;
 
 protected:
-    Blueprint(  uint32 _blueprintID, const BlueprintType& _bpType, const ItemData& _data, BlueprintData& _bpData);
+    Blueprint(  uint32 _blueprintID, const BlueprintType& _bpType, const ItemData& _data, EvERam::bpData& _bpData);
 
     /*
      * Member functions
@@ -179,19 +180,19 @@ protected:
         }
         const BlueprintType& bpType = static_cast<const BlueprintType& >( type );
 
-        FactoryDB mdb;
-        BlueprintData bpData = BlueprintData();
-        if (!mdb.GetBlueprint( blueprintID, bpData ) )
+        EvERam::bpData bdata = EvERam::bpData();
+        if (!FactoryDB::GetBlueprint( blueprintID, bdata ) )
             return RefPtr<_Ty>();
 
-        return BlueprintRef( new Blueprint( blueprintID, bpType, data, bpData ) );
+        return BlueprintRef( new Blueprint( blueprintID, bpType, data, bdata ) );
     }
 
     void                    SaveBlueprint();
-    static uint32           CreateItemID( ItemData& data, BlueprintData& bpData);
+    static uint32           CreateItemID( ItemData& data, EvERam::bpData& bdata);
 
 private:
-    BlueprintData m_data;
+    const BlueprintType &m_bpType;
+    EvERam::bpData m_data;
 
 };
 

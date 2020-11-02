@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Bloody.Rabbit
+    Rewrite:    Allan
 */
 
 /** @todo  load the bp material list from invTypeMaterials */
@@ -39,16 +40,16 @@ BlueprintType::BlueprintType(
     const TypeData& _data,
     const BlueprintType *_parentBlueprintType,
     const ItemType& _productType,
-    const BlueprintTypeData& _bpData)
+    const EvERam::bpTypeData& _tData)
 : ItemType(_id, _group, _data),
   m_parentBlueprintType(_parentBlueprintType),
   m_productType(_productType)
 {   // asserts for data consistency
-    assert(_bpData.productTypeID == m_productType.id());
+    assert(_tData.productTypeID == m_productType.id());
     if (m_parentBlueprintType != nullptr)
-        assert(_bpData.parentBlueprintTypeID == m_parentBlueprintType->id());
+        assert(_tData.parentBlueprintTypeID == m_parentBlueprintType->id());
 
-    m_data = _bpData;
+    m_data = _tData;
 }
 
 BlueprintType *BlueprintType::Load( uint32 typeID)
@@ -60,15 +61,13 @@ BlueprintType *BlueprintType::Load( uint32 typeID)
  * Blueprint
  */
 Blueprint::Blueprint(
-    uint32 _blueprintID,
-    const BlueprintType& _bpType,
-    const ItemData& _data,
-    BlueprintData& _bpData)
-: InventoryItem(_blueprintID, _bpType, _data)
+    uint32 _blueprintID, const BlueprintType& _bpType, const ItemData& _data, EvERam::bpData& _bpData)
+: InventoryItem(_blueprintID, _bpType, _data),
+m_bpType(_bpType)
 {
     // data consistency asserts
     assert(_bpType.categoryID() == EVEDB::invCategories::Blueprint);
-    m_data   = _bpData;
+    m_data = _bpData;
 }
 
 BlueprintRef Blueprint::Load( uint32 blueprintID)
@@ -76,27 +75,28 @@ BlueprintRef Blueprint::Load( uint32 blueprintID)
     return InventoryItem::Load<Blueprint>(blueprintID );
 }
 
-BlueprintRef Blueprint::Spawn( ItemData& data, BlueprintData& bpData) {
-    uint32 blueprintID = Blueprint::CreateItemID(data, bpData);
+BlueprintRef Blueprint::Spawn( ItemData& data, EvERam::bpData& bdata) {
+    uint32 blueprintID(Blueprint::CreateItemID(data, bdata));
     if (blueprintID == 0)
         return BlueprintRef(nullptr);
-    return Blueprint::Load(blueprintID);
+    BlueprintRef bRef = Blueprint::Load(blueprintID);
+    sItemFactory.AddItem(bRef);
+    return bRef;
 }
 
-uint32 Blueprint::CreateItemID( ItemData& data, BlueprintData& bpData) {
+uint32 Blueprint::CreateItemID( ItemData& data, EvERam::bpData& bdata) {
     // make sure it's a blueprint type
     const BlueprintType* bpType = sItemFactory.GetBlueprintType(data.typeID);
     if (bpType == nullptr)
         return 0;
 
     // get the blueprintID
-    uint32 blueprintID = InventoryItem::CreateItemID(data);
+    uint32 blueprintID(InventoryItem::CreateItemID(data));
     if (blueprintID == 0)
         return 0;
 
-    FactoryDB mdb;
     // insert blueprint data into DB
-    if (!mdb.SaveBlueprintData(blueprintID, bpData)) {
+    if (!FactoryDB::SaveBlueprintData(blueprintID, bdata)) {
         ItemDB::DeleteItem(blueprintID);
         return 0;
     }
@@ -105,13 +105,13 @@ uint32 Blueprint::CreateItemID( ItemData& data, BlueprintData& bpData) {
 }
 
 void Blueprint::Delete() {
-    m_db.DeleteBlueprint(m_itemID);
+    FactoryDB::DeleteBlueprint(m_itemID);
     InventoryItem::Delete();
 }
 
 BlueprintRef Blueprint::SplitBlueprint(int32 qty_to_take, bool notify/*true*/) {
     // split item
-    BlueprintRef bRef = BlueprintRef::StaticCast( InventoryItem::Split( qty_to_take, notify ) );
+    BlueprintRef bRef = BlueprintRef::StaticCast(InventoryItem::Split(qty_to_take, notify));
     if (bRef.get() == nullptr)
         return BlueprintRef(nullptr);
 
@@ -125,11 +125,7 @@ BlueprintRef Blueprint::SplitBlueprint(int32 qty_to_take, bool notify/*true*/) {
 }
 
 bool Blueprint::Merge(InventoryItemRef itemRef, uint32 qty, bool notify) {
-    /** @todo  check for packaged, ME, PE, runs, etc before merge. */
-    /*  singleton is checked and error thrown in InventoryItem::Merge()
-    if (singleton() or itemRef->singleton())
-        return false;
-    */
+    //  singleton is checked and error thrown in InventoryItem::Merge()
     BlueprintRef bpRef = BlueprintRef::StaticCast(itemRef);
     if (m_data.mLevel != bpRef->materialLevel())
         return false;
@@ -137,18 +133,16 @@ bool Blueprint::Merge(InventoryItemRef itemRef, uint32 qty, bool notify) {
         return false;
     if (m_data.runs != bpRef->runsRemaining())
         return false;
-    if ( !InventoryItem::Merge( itemRef, qty, notify ) )
+    if (!InventoryItem::Merge(itemRef, qty, notify))
         return false;
     return true;
 }
 
 void Blueprint::SaveBlueprint() {
     _log( MANUF__TRACE, "Saving blueprint %u.", itemID() );
-
-    m_db.SaveBlueprintData(itemID(), m_data);
+    FactoryDB::SaveBlueprintData(itemID(), m_data);
 }
 
-/** @todo this should be cached ..maybe */
 PyDict* Blueprint::GetBlueprintAttributes() {
     Rsp_GetBlueprintAttributes rsp;
         rsp.blueprintID = itemID();
@@ -156,37 +150,28 @@ PyDict* Blueprint::GetBlueprintAttributes() {
         rsp.productivityLevel = m_data.pLevel;
         rsp.materialLevel = m_data.mLevel;
         rsp.licensedProductionRunsRemaining = m_data.runs;
-        rsp.wastageFactor = wasteFactor();
-        rsp.productTypeID = type().productTypeID();
-        rsp.manufacturingTime = type().productionTime();
-        rsp.maxProductionLimit = type().maxProductionLimit();
-        rsp.researchMaterialTime = type().researchMaterialTime();
-        rsp.researchTechTime = type().researchTechTime();
-        rsp.researchProductivityTime = type().researchProductivityTime();
-        rsp.researchCopyTime = type().researchCopyTime();
+        rsp.wastageFactor = GetME();
+        rsp.productTypeID = m_bpType.productTypeID();
+        rsp.manufacturingTime = m_bpType.productionTime();
+        rsp.maxProductionLimit = m_bpType.maxProductionLimit();
+        rsp.researchMaterialTime = m_bpType.researchMaterialTime();
+        rsp.researchTechTime = m_bpType.researchTechTime();
+        rsp.researchProductivityTime = m_bpType.researchProductivityTime();
+        rsp.researchCopyTime = m_bpType.researchCopyTime();
     return rsp.Encode();
 }
 
-float Blueprint::wasteFactor() const
+float Blueprint::GetME()
 {
-    float res = type().wasteFactor();
-    if ((m_data.mLevel < 0) and (res > 0))
-        res *= -(-1.0 + m_data.mLevel);
-    else if ((m_data.mLevel > 0) and (res > 0))
-        res *= 1.0 / (1.0 + m_data.mLevel);
-    res /= 100;
-    return res;
+    float bwf(m_bpType.wasteFactor() /100);
+    if (m_data.mLevel < 0)
+        bwf *= (1 - m_data.mLevel);
+    else if (m_data.mLevel > 0)
+        bwf *= 1 / (1 + m_data.mLevel);
+    return bwf;
 }
 
-float Blueprint::timeFactor() const
-{
-    float batchTime = type().productionTime();
-    if (m_data.pLevel > 0)
-        batchTime = batchTime - (1.0 - 1.0 / (1 + batchTime)) * type().productivityModifier();
-    else if (m_data.pLevel < 0)
-        batchTime = batchTime + (1.0 - batchTime) * type().productivityModifier();
-    return batchTime;
-}
+
 
 /*
                     if activity in (const.activityManufacturing, const.activityDuplicating):
@@ -203,7 +188,7 @@ float Blueprint::timeFactor() const
 /* invention
  *
  *
- *    The chance for a succesful invention is calculated by this formula:
+ *    The chance for a successful invention is calculated by this formula:
  * Invention_Chance = Base_Chance * (1 + (0.01 * Encryption_Skill_Level)) * (1 + ((Datacore_1_Skill_Level + Datacore_2_Skill_Level) * Decryptor_Modifier
  *      where:
  *        Base Chance

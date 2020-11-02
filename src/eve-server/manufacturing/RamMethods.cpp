@@ -26,7 +26,7 @@
  * MANUF__DUMP
  */
 
-static const uint32 ramProductionTimeLimit = 60*60*24*30;   //30 days
+static const uint32 RAM_PRODUCTION_TIME_LIMIT = 60*60*24*30;   //30 days
 
 /*
  *    UNKNOWN/NOT IMPLEMENTED EXCEPTIONS:
@@ -67,7 +67,7 @@ void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& arg
             if (!bRef->copy())
                 throw(PyException(MakeUserError("RamCannotInventABlueprintOriginal")));
 
-            uint32 pTypeID = RamProxyDB::GetTech2Blueprint(installedItem->typeID());
+            uint32 pTypeID = FactoryDB::GetTech2Blueprint(installedItem->typeID());
             if (pTypeID == 0)
                 throw(PyException(MakeUserError("RamInventionNoOutput")));
 
@@ -84,14 +84,14 @@ void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& arg
         }
     }
 
-    if (!RamProxyDB::IsProducableBy(args.installationAssemblyLineID, pType->groupID()))
+    if (!FactoryDB::IsProducableBy(args.installationAssemblyLineID, pType->groupID()))
         throw(PyException(MakeUserError("RamBadEndProductForActivity")));
 }
 
 void RamMethods::JobsCheck(Character* pChar, const Call_InstallJob& args)
 {
     if (args.activityID == EvERam::Activity::Manufacturing) {
-        uint32 jobCount = RamProxyDB::CountManufacturingJobs(pChar->itemID());
+        uint32 jobCount = FactoryDB::CountManufacturingJobs(pChar->itemID());
         uint charMaxJobs = pChar->GetAttribute(AttrManufactureSlotLimit).get_int()
                             + pChar->GetSkillLevel(EvESkill::MassProduction)
                             + pChar->GetSkillLevel(EvESkill::AdvancedMassProduction);
@@ -107,7 +107,7 @@ void RamMethods::JobsCheck(Character* pChar, const Call_InstallJob& args)
                             + pChar->GetSkillLevel(EvESkill::LaboratoryOperation)
                             + pChar->GetSkillLevel(EvESkill::AdvancedLaboratoryOperation);
 
-        uint32 jobCount = RamProxyDB::CountResearchJobs(pChar->itemID());
+        uint32 jobCount = FactoryDB::CountResearchJobs(pChar->itemID());
         if (charMaxJobs <= jobCount) {
             std::map<std::string, PyRep *> exceptArgs;
             exceptArgs["current"] = new PyInt(jobCount);
@@ -149,7 +149,7 @@ void RamMethods::AssemblyLineCheck(Client*const pClient, const Call_InstallJob& 
     int8 restrictionMask, activity;
 
     // get properties
-    if (!RamProxyDB::GetAssemblyLineVerifyProperties(args.installationAssemblyLineID, ownerID, minCharSec, maxCharSec, restrictionMask, activity))
+    if (!FactoryDB::GetAssemblyLineVerifyProperties(args.installationAssemblyLineID, ownerID, minCharSec, maxCharSec, restrictionMask, activity))
         throw(PyException(MakeUserError("RamInstallationHasNoDefaultContent")));
 
     // check validity of activity
@@ -290,9 +290,9 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
                 throw(PyException(MakeUserError("RamNeedSkillForJob", args)));
             }
         } else {
-            uint32 qtyNeeded = (uint32)ceil(cur.quantity * rsp.materialMultiplier * runs);
-            if (cur.damagePerJob == 1.0)
-                qtyNeeded = (uint32)ceil(qtyNeeded * rsp.charMaterialMultiplier);
+            uint32 qtyNeeded = ceil(cur.quantity * rsp.materialMultiplier * runs);
+            if (cur.damagePerJob == 1)
+                qtyNeeded = ceil(qtyNeeded * rsp.charMaterialMultiplier);
             std::map<uint16, InventoryItemRef>::iterator itr = items.find(cur.typeID);
             if (itr != items.end())
                 if (itr->second->typeID() == cur.typeID)
@@ -314,10 +314,10 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
 
 void RamMethods::ProductionTimeCheck(uint32 productionTime)
 {
-    if (productionTime > ramProductionTimeLimit) {
+    if (productionTime > RAM_PRODUCTION_TIME_LIMIT) {
         std::map<std::string, PyRep *> args;
         args["productionTime"] = new PyInt(productionTime);
-        args["limit"] = new PyInt(ramProductionTimeLimit);
+        args["limit"] = new PyInt(RAM_PRODUCTION_TIME_LIMIT);
         throw(PyException(MakeUserError("RamProductionTimeExceedsLimits", args)));
     }
 }
@@ -329,10 +329,10 @@ void RamMethods::CompleteJob(const Call_CompleteJob &args, Client* const pClient
         if (pClient->GetChar()->flag() != flagPilot)
             throw(PyException(MakeUserError("RamCompletionMustBeInShip")));
 
-    uint32 ownerID = 0;
-    int64 endProductionTime = 0;
-    int8 status = 0, restrictionMask = 0;
-    if (!RamProxyDB::GetJobVerifyProperties(args.jobID, ownerID, endProductionTime, restrictionMask, status))
+    uint32 ownerID(0);
+    int64 endProductionTime(0);
+    int8 status(0), restrictionMask(0);
+    if (!FactoryDB::GetJobVerifyProperties(args.jobID, ownerID, endProductionTime, restrictionMask, status))
         throw(PyException(MakeUserError("RamCompletionNoSuchJob")));
 
     if (ownerID != pClient->GetCharacterID()) {
@@ -343,19 +343,17 @@ void RamMethods::CompleteJob(const Call_CompleteJob &args, Client* const pClient
             throw(PyException(MakeUserError("RamCompletionAccessDenied")));
     }
 
-    if (status != EvERam::CompletedStatus::InProgress)
+    if (status != EvERam::Status::InProgress)
         throw(PyException(MakeUserError("RamCompletionJobCompleted")));
 
     if (!args.cancel and (endProductionTime > GetFileTimeNow()))
         throw(PyException(MakeUserError("RamCompletionInProduction")));
 }
 
-bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Client* const pClient, Rsp_InstallJob &into)
+bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Character* pChar, Rsp_InstallJob &into)
 {
-    if (!RamProxyDB::GetAssemblyLineProperties(args.installationAssemblyLineID, into))
+    if (!FactoryDB::GetAssemblyLineProperties(args.installationAssemblyLineID, into))
         return false;
-
-    Character* pChar = pClient->GetChar().get();
 
     const ItemType* pType(nullptr);
     switch(args.activityID) {
@@ -363,12 +361,17 @@ bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef install
             BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
             pType = &bp->productType();
 
-            // do these need the actual bp values?
-            into.productionTime = bp->type().productionTime();
-            into.materialMultiplier *= bp->materialMultiplier();
-            into.timeMultiplier *= bp->timeMultiplier();
-            into.charTimeMultiplier = pChar->GetAttribute(AttrManufactureTimeMultiplier).get_double();
+            into.materialMultiplier *= bp->GetME();
+            into.materialMultiplier *= sConfig.bpTimes.MatMod;
 
+            into.timeMultiplier *= (1.0f - (0.04f * pChar->GetSkillLevel(EvESkill::Industry)));
+            // into.timeMultiplier *= implant modifier here;
+
+            // these are all 1 in db (base)
+            into.charTimeMultiplier = pChar->GetAttribute(AttrManufactureTimeMultiplier).get_float();
+
+            // these arent in db...
+            /*
             switch(pType->race()) {
                 case Char::Race::Caldari: {
                     if (pChar->HasAttribute(AttrCaldariTechTimePercent))
@@ -388,59 +391,66 @@ bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef install
                 } break;
                 case Char::Race::Jove:
                 case Char::Race::Pirate:
-                default: {
                     // unknown
+                default: {
                 } break;
             }
-            break;
-        }
+            */
+
+            if (into.charTimeMultiplier == 0)
+                into.charTimeMultiplier = 1.0;
+            into.productionTime = EvEMath::RAM::ProductionTime(bp->type().productionTime(), bp->type().productivityModifier(),
+                                                               bp->productivityLevel(), into.timeMultiplier);
+            into.productionTime *= args.runs;
+            into.productionTime *= sConfig.bpTimes.ProdTime;
+        }  break;
         case EvERam::Activity::ResearchTime: {
             BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
             pType = &installedItem->type();
             //TODO  implement PE_ResearchTime here
             into.productionTime = bp->type().researchProductivityTime();
+            into.productionTime *= sConfig.bpTimes.ResPE;
             into.charTimeMultiplier = pChar->GetAttribute(AttrManufacturingTimeResearchSpeed).get_double();
-            break;
-        }
+        }  break;
         case EvERam::Activity::ResearchMaterial: {
             BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
             pType = &installedItem->type();
             //TODO  implement ME_ResearchTime here
             into.productionTime = bp->type().researchMaterialTime();
+            into.productionTime *= sConfig.bpTimes.ResME;
             into.charTimeMultiplier = pChar->GetAttribute(AttrMineralNeedResearchSpeed).get_double();
-            break;
-        }
+        }  break;
         case EvERam::Activity::Copying: {
             BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
             pType = &installedItem->type();
             // no ceil() here on purpose
-            into.productionTime = (bp->type().researchCopyTime() / bp->type().maxProductionLimit()) * args.licensedProductionRuns;
+            into.productionTime = EvEMath::RAM::BpCopyTime(bp->type().researchCopyTime(),
+                                                           pChar->GetSkillLevel(EvESkill::Science), into.timeMultiplier);
+            into.productionTime *= sConfig.bpTimes.CopyTime;
             into.charTimeMultiplier = pChar->GetAttribute(AttrCopySpeedPercent).get_double();
-            break;
-        }
-        case EvERam::Activity::Duplicating:
+        }  break;
         case EvERam::Activity::ReverseEngineering:
+            into.productionTime *= sConfig.bpTimes.ResRE;
         case EvERam::Activity::Invention:
+            into.productionTime *= sConfig.bpTimes.Invent;
+        case EvERam::Activity::Duplicating:
         default: {
             pType = &installedItem->type();
             into.charTimeMultiplier = 1.0;
-            break;
-        }
+        }  break;
     }
 
-    if (!GetMultipliers(args.installationAssemblyLineID, pType->groupID(), into.materialMultiplier, into.timeMultiplier))
-        return false;
+    FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType->groupID(), into.materialMultiplier, into.timeMultiplier);
 
     // calculate the remaining things
     into.charMaterialMultiplier = 1.0; //ch->GetAttribute(AttrResearchCostPercent).get_int();   << this is not used
-    into.productionTime *= (int32)(into.timeMultiplier * into.charTimeMultiplier * args.runs);
     into.usageCost *= ceil(into.productionTime / 3600.0);
     into.cost = into.installCost + into.usageCost;
 
-    // I "hope" this is right, simple tells client how soon will his job be started
+    // I "hope" this is right, simply tells client how soon the job will be started
     // Unfortunately, rounding done on client's side causes showing "Start time: 0 seconds" when he has to wait less than minute
     // I have no idea how to avoid this ...
-    into.maxJobStartTime = RamProxyDB::GetNextFreeTime(args.installationAssemblyLineID);
+    into.maxJobStartTime = FactoryDB::GetNextFreeTime(args.installationAssemblyLineID);
 
     return true;
 }
@@ -477,7 +487,7 @@ void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &
         } else {
             // if there are losses, make line for waste material list
             if (charMaterialMultiplier > 1.0) {
-                MaterialList_Line wastage( line );  // simply copy origial line ...
+                MaterialList_Line wastage( line );  // simply copy original line ...
                 wastage.quantity = (int32)ceil(wastage.quantity * (charMaterialMultiplier - 1.0)); // ... and calculate proper quantity
                 into.wasteMaterials.lines->AddItem( wastage.Encode() );
             }
@@ -487,7 +497,7 @@ void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &
 }
 
 void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> &reqItems, const PathElement &bomLocation, Client *const pClient, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map<int32, PyRep *> &into) {
-    //query out what we need
+    //
     std::vector<InventoryItemRef> skills, items;
 
     //get the skills
@@ -503,7 +513,7 @@ void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> 
         qtyReq = cur.quantity;
         if (!cur.isSkill) {
             qtyReq = (uint32)ceil(qtyReq * materialMultiplier * runs);
-            if (cur.damagePerJob == 1.0)
+            if (cur.damagePerJob == 1)
                 qtyReq = (uint32)ceil(qtyReq * charMaterialMultiplier);
         }
 
@@ -515,9 +525,11 @@ void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> 
             curi = items.begin();
             endi = items.end();
         }
-        /** @todo update this for corp usage */
+
         for (; curi != endi and qtyReq > 0; ++curi) {
-            if ((*curi)->typeID() == cur.typeID and (*curi)->ownerID() == pClient->GetCharacterID()) {
+            if (((*curi)->typeID() == cur.typeID)
+            and (((*curi)->ownerID() == pClient->GetCharacterID())
+              or ((*curi)->ownerID() == pClient->GetCorporationID()))) {
                 if (cur.isSkill)
                     qtyReq -= std::min(qtyReq, (*curi)->GetAttribute(AttrSkillLevel).get_uint32() );
                 else
@@ -545,16 +557,13 @@ void RamMethods::GetBOMItemsMap(const PathElement& bomLocation, std::map< uint16
 
 
 bool RamMethods::GetMultipliers(const uint32 assemblyLineID, const uint32 productGroupID, double &materialMultiplier, double &timeMultiplier) {
-    double tmpMat, tmpTime;
-    if (!RamProxyDB::GetMultipliers(assemblyLineID, productGroupID, tmpMat, tmpTime))
+    if (!FactoryDB::GetMultipliers(assemblyLineID, productGroupID, materialMultiplier, timeMultiplier))
         return false;
 
-    materialMultiplier *= tmpMat;
-    timeMultiplier *= tmpTime;
     return true;
 }
 
-/* each material required for a blueprint (from invTypeMaterials) the quantity is affected by ME research and skills.
+/* For each material required for a blueprint (from invTypeMaterials), the quantity is affected by ME research and skills.
  * Then there’s the extra materials, which come from the ramTypeRequirements table for that BP.
  * Next, any materials in ramTypeRequirements which are marked as recyclable, have their recycled materials (from invTypeMaterials) subtracted from the list of materials required for the produced item.
  * The remaining materials from invTypeMaterials are then modified by skills and ME research as follows;

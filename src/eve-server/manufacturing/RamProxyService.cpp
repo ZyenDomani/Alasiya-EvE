@@ -157,10 +157,10 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
     _log(MANUF__INFO, "RamProxyService::Handle_InstallJob() - %s", sRamMthd.GetActivityName(args.activityID));
 
-    // check character job count
+    // check character job count - will throw if fail
     sRamMthd.JobsCheck(call.client->GetChar().get(), args);
 
-	// load job Blueprint
+    // load job Blueprint
     InventoryItemRef installedItem = sItemFactory.GetItem( args.installedItemID );
     if (installedItem.get() == nullptr) {
         // this means item/location not loaded.
@@ -264,14 +264,14 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     InventoryItemRef lastContItem = sItemFactory.GetItem(pathBomLocation.locationID);
     uint32 solarSystemID = lastContItem->locationID();
 
-    // this calculates some useful multipliers ... Rsp_InstallJob is used as container and response to job quote.
+    // this calculates bp modifiers; Rsp_InstallJob is used as container to build response to job quote.
     Rsp_InstallJob rsp;
-    if (!sRamMthd.Calculate(args, installedItem, call.client, rsp)){
+    if (!sRamMthd.Calculate(args, installedItem, call.client->GetChar().get(), rsp)){
         _log(MANUF__ERROR, "Could not Calculate() on %s for %s(%u)", bpRef->itemName().c_str(), call.client->GetName(), call.client->GetCharacterID());
         return nullptr;
-	}
+    }
 
-	// sent as assy line.nextFreeTime + 1m  (a previous client call asks for assy line nextFreeTime, displayed in window)
+    // sent as assy line.nextFreeTime + 1m  (a previous client call asks for assy line nextFreeTime, displayed in window)
     if (call.byname.find("maxJobStartTime") != call.byname.end())
         if (rsp.maxJobStartTime > PyRep::IntegerValue(call.byname["maxJobStartTime"]))
             throw(PyException(MakeUserError("RamProductionTimeExceedsLimits")));
@@ -285,7 +285,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     // verify installer has skills and all needed materials are present in bp's location
     sRamMthd.MaterialSkillsCheck(call.client, args.runs, pathBomLocation, rsp, reqItems);
 
-	// quoteOnly is sent for all jobs before installation to approve price and timeframe
+    // quoteOnly is sent for all jobs before installation to approve price and timeframe
     if (PyRep::IntegerValueU32(call.byname["quoteOnly"])) {
         _log(MANUF__INFO, "quoteOnly = true");
         sRamMthd.EncodeBillOfMaterials(reqItems, rsp.materialMultiplier, rsp.charMaterialMultiplier, args.runs, rsp.bom);
@@ -356,10 +356,13 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
         // calculate needed quantity
         uint32 qtyNeeded = (uint32)ceil(itemItr->quantity * rsp.materialMultiplier * args.runs);
-        if (itemItr->damagePerJob == 1.0)
+        if (itemItr->damagePerJob == 1)
             qtyNeeded = (uint32)ceil(qtyNeeded * rsp.charMaterialMultiplier);   // skill multiplier is applied only on fully consumed materials
 
         // consume required materials
+        /** @todo update this for corp usage.
+         * need to verify char can access mat'l location
+         */
         std::vector<InventoryItemRef>::iterator refItr = items.begin();
         for (; refItr != items.end(); ++refItr)
             if (((*refItr)->typeID() == itemItr->typeID) and ((*refItr)->ownerID() == call.client->GetCharacterID()))
@@ -380,7 +383,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
         /** @todo do something constructive with this data... */
         // this is populated for t2 bpc
-        int16 outputType = 0, baseItemType = 0, decryptorType = 0;
+        uint16 outputType(0), baseItemType(0), decryptorType(0);
         if (call.byname.find("inventionItems") != call.byname.end()) {
             PyDict* dict = call.byname["inventionItems"]->AsDict();
             outputType = PyRep::IntegerValueU32(dict->GetItemString("outputType"));
@@ -485,14 +488,16 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
         return nullptr;
     installedItem->Move( installedItem->locationID(), outputFlag, true );
 
-    m_db.CompleteJob(args.jobID, (args.cancel ? EvERam::CompletedStatus::Abort : EvERam::CompletedStatus::Delivered));
+    // does an aborted job return the installed item?
+    //  is it immediate or after time expiry?
+    m_db.CompleteJob(args.jobID, (args.cancel ? EvERam::Status::Abort : EvERam::Status::Delivered));
 
-    // return materials which weren't  consumed
-    /** @todo make sure this is NOT returning more items than given...  */
+    // return materials which weren't consumed
+    /** @todo make sure this is NOT returning more items than given... it is!!! */
     std::vector<EvERam::RequiredItem> reqItems;
     sDataMgr.GetRamReturns(installedItem->typeID(), activity, reqItems);
     for (auto cur : reqItems) {
-        uint32 quantity = (uint32)(cur.quantity * runs * (1.0 - cur.damagePerJob));
+        uint32 quantity = (cur.quantity * runs * (1 - cur.damagePerJob));
         if (quantity == 0)
             quantity = 1;
 
@@ -527,7 +532,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                 BlueprintRef copy = BlueprintRef(nullptr);
                 while (runs) {
                     //wtf?  not sure if i like this but cant think of a better way right now...
-                    copy = sItemFactory.SpawnBlueprint(idata, data);
+                    copy = Blueprint::Spawn(idata, data);
                     if (copy.get() != nullptr)
                         copy->Move(args.containerID, outputFlag, true);
                     --runs;
@@ -564,7 +569,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                     dict->SetItemString("messageLabel", new PyString("UI/ScienceAndIndustry/ScienceAndIndustryWindow/RamInventionJobFailed"));
                     dict->SetItemString("jobCompletedSuccessfully", new PyBool(false));
                 }
-                // not sure the semantics on this...its' on both succede and fail
+                // not sure the semantics on this...its' on both succeed and fail
                 // this *could* be the part about your skills
                 /*
 (251331, `This job was so easy you feel you could do it again in your sleep.`)
@@ -630,7 +635,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
     // there is more to this.  also could be not needed, as it checks for 'none'
     // result.message.msg = "event";
     // result.message.args = ??
-    return nullptr;
+    return PyStatic.NewNone();
 }
 
 PyResult RamProxyService::Handle_UpdateAssemblyLineConfigurations(PyCallArgs &call) {

@@ -1,42 +1,65 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ /**
+  * @name FactoryDB.h
+  *   db query methods for R.A.M. activities
+  *
+  * @Author:         Allan
+  * @date:          9Jan18
+  */
 
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Zhur
-*/
 
-#ifndef __FACTORY_DB_H__
-#define __FACTORY_DB_H__
+#ifndef EVE_MANUF_FACTORYDB_H
+#define EVE_MANUF_FACTORYDB_H
 
 #include "ServiceDB.h"
+#include "../eve-common/EVE_RAM.h"
+#include "packets/Manufacturing.h"
+#include "inventory/InventoryItem.h"
 
-class FactoryDB : public ServiceDB
+
+class FactoryDB
+: public ServiceDB
 {
 public:
-    PyRep *GetMaterialCompositionOfItemType(const uint32 typeID) const;
+    // client calls
+    static PyRep* GetJobs2(const int32 ownerID, const bool completed);
+    static PyRep* AssemblyLinesSelectPublic(const uint32 regionID);
+    static PyRep* AssemblyLinesSelectPersonal(const uint32 charID);
+    static PyRep* AssemblyLinesSelectPrivate(const uint32 charID);
+    static PyRep* AssemblyLinesSelectCorporation(const uint32 corporationID);
+    static PyRep* AssemblyLinesSelectAlliance(const int32 allianceID);
+    static PyRep* AssemblyLinesGet(const uint32 containerID);
+    static PyRep* GetMaterialCompositionOfItemType(const uint32 typeID);
 
-    bool DeleteBlueprint(uint32 blueprintID);
-    bool GetBlueprint(uint32 blueprintID, BlueprintData& into);
-    bool SaveBlueprintData(uint32 blueprintID, BlueprintData& data);
+    // for static data mgr
+    static void GetRAMMaterials(DBQueryResult& res);
+    static void GetBlueprintType(DBQueryResult& res);
+    static void GetRAMRequirements(DBQueryResult& res);
+
+    // InstallJob stuff
+    static bool GetAssemblyLineProperties(const uint32 assemblyLineID, Rsp_InstallJob &into);
+    static bool GetAssemblyLineVerifyProperties(const uint32 assemblyLineID, uint32& ownerID, double& minCharSecurity, double& maxCharSecurity, int8& restrictionMask, int8& activity);
+    static bool InstallJob(const uint32 ownerID, const uint32 installerID, const uint32 assemblyLineID, const uint32 installedItemID, const int64 beginProductionTime, const int64 endProductionTime, const char* description, const int32 runs, const EVEItemFlags outputFlag, const uint32 installedInSolarSystem, const int32 licensedProductionRuns);
+
+    // CompleteJob stuff
+    static bool GetJobProperties(const uint32 jobID, uint32& installedItemID, uint32& ownerID, EVEItemFlags& outputFlag, int32& runs, int32& licensedProductionRuns, int8& activity);
+    static bool GetJobVerifyProperties(const uint32 jobID, uint32& ownerID, int64& endProductionTime, int8& restrictionMask, int8& status);
+    static bool CompleteJob(const uint32 jobID, const int8 completedStatus);
+
+    // misc queries
+    static bool DeleteBlueprint(uint32 blueprintID);
+    static bool GetBlueprint(uint32 blueprintID, EvERam::bpData& into);
+    static bool SaveBlueprintData(uint32 blueprintID, EvERam::bpData& data);
+    static bool IsProducableBy(const uint32 assemblyLineID, const uint32 groupID);
+    static bool GetMultipliers(const uint32 assemblyLineID, uint32 groupID, double &materialMultiplier, double &timeMultiplier);
+
+    static uint32 CountManufacturingJobs(const uint32 installerID);
+    static uint32 CountResearchJobs(const uint32 installerID);
+    static uint32 GetTech2Blueprint(const uint32 blueprintTypeID);
+
+    static int64 GetNextFreeTime(const uint32 assemblyLineID);
+
 };
 
-#endif
+#endif  // EVE_MANUF_FACTORYDB_H
 

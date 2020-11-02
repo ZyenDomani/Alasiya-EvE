@@ -31,7 +31,7 @@ namespace EvERam {
         };
     }
 
-    namespace CompletedStatus {
+    namespace Status {
         //from table 'ramCompletedStatuses'
         enum  {
             InProgress = 0,
@@ -71,14 +71,14 @@ namespace EvERam {
 
     /* POD structure for blueprint required materials  */
     struct RequiredItem {
-        RequiredItem(uint16 _typeID, uint32 _quantity, double _damagePerJob, bool _isSkill, bool _extra)
+        RequiredItem(uint16 _typeID, uint32 _quantity, float _damagePerJob, bool _isSkill, bool _extra)
         : typeID(_typeID), quantity(_quantity), damagePerJob(_damagePerJob), isSkill(_isSkill), extra(_extra) {}
 
-        bool extra;
-        bool isSkill;
+        bool extra :1;
+        bool isSkill :1;
         uint16 typeID;
         uint32 quantity;
-        double damagePerJob;
+        float damagePerJob;
     };
 
     /* POD structure for indy job data  */
@@ -89,6 +89,32 @@ namespace EvERam {
         uint32 bpID;
         uint32 ownerID;
         EVEItemFlags outputFlag;
+    };
+
+    /* POD structure for blueprint data */
+    struct bpData {
+        bool copy :1;
+        int32 mLevel;       // material level
+        int32 pLevel;       // productivity level
+        int32 runs;
+    };
+
+    /* POD structure for blueprint type data */
+    struct bpTypeData {
+        int8 catID;
+        int8 techLevel;
+        uint16 wasteFactor;
+        uint16 productTypeID;
+        uint16 parentBlueprintTypeID;
+        uint32 productionTime;
+        uint32 researchProductivityTime;
+        uint32 researchMaterialTime;
+        uint32 researchCopyTime;
+        uint32 researchTechTime;
+        uint32 productivityModifier;
+        uint32 materialModifier;
+        uint32 maxProductionLimit;
+        float chanceOfReverseEngineering;
     };
 
 }

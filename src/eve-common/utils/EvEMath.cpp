@@ -8,7 +8,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../eve-common.h"
-//#include "utils/EvEMath.h"
 
 // skill Equations
 uint32 EvEMath::Skill::PointsAtLevel(uint8 level, uint8 rank)
@@ -49,24 +48,61 @@ int64 EvEMath::Skill::EndTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int6
 
 
 //RAM Equations
+float EvEMath::RAM::ProductionTimeModifier(uint8 IndustrySkillLevel, float ProductionSlotModifier/*1*/, float ImplantModifier/*1*/ )
+{
+    if (ImplantModifier == 0)
+        ImplantModifier = 1;
+    if (ProductionSlotModifier == 0)
+        ProductionSlotModifier = 1;
+    return (1.0f - (0.04f * IndustrySkillLevel)) * ImplantModifier * ProductionSlotModifier;
+}
+
+uint32 EvEMath::RAM::ProductionTime(uint32 BaseProductionTime, float ProductivityModifier, float ProductionLevel, float ProductionTimeModifier )
+{
+    float PE_Factor(0.0f);
+    if (ProductionLevel >= 0)
+        PE_Factor = (ProductionLevel / (1.0 + ProductionLevel));
+    else
+        PE_Factor = (ProductionLevel - 1.0);
+
+    float effModifier(1.0 - (ProductivityModifier / BaseProductionTime) * PE_Factor);
+    return (BaseProductionTime * effModifier * ProductionTimeModifier);
+}
+
+float EvEMath::RAM::ME_EffectOnWaste( float MaterialAmount, float BaseWasteFactor, float MaterialEfficiency )
+{
+    float ME_Factor(0.0);
+    if (MaterialEfficiency >= 0)
+        ME_Factor = 1 / (1 + MaterialEfficiency);
+    else
+        ME_Factor = 1 - MaterialEfficiency;
+
+    return (floor(0.5 + (MaterialAmount * (BaseWasteFactor /100) * ME_Factor)));
+}
+
+uint32 EvEMath::RAM::PerfectME(uint32 MaterialAmount, uint8 BaseWasteFactor)
+{
+    return floor(0.02 * BaseWasteFactor * MaterialAmount);
+}
+
+float EvEMath::RAM::ResearchPointsPerDay( float Multiplier, float AgentEffectiveQuality, uint8 CharSkillLevel, uint8 AgentSkillLevel )
+{
+     return (Multiplier * (2 + (AgentEffectiveQuality / 100.0)) * pow(CharSkillLevel + AgentSkillLevel,2));
+}
+
+
+float EvEMath::Refine::StationTaxesForReprocessing( float CharacterStandingWithStationOwner )
+{
+    return 5 - (0.75 * CharacterStandingWithStationOwner);
+}
+
+float EvEMath::Refine::EffectiveRefiningYield( float StationEquipmentYield, uint8 RefiningSkillLevel, uint8 RefiningEfficiencySkillLevel, uint8 OreProcessingSkillLevel )
+{
+    return (StationEquipmentYield + 0.375 * (1 + (RefiningSkillLevel * 0.02))
+            * (1 + (RefiningEfficiencySkillLevel * 0.04)) * (1 + (OreProcessingSkillLevel * 0.05)));
+}
+
 /** @todo update and verify these before use...and remove the fucking EvilNumber bullshit...NOT needed here. */
-EvilNumber EvEMath::RAM::ME_EffectOnWaste( EvilNumber MaterialAmount, EvilNumber BaseWasteFactor, EvilNumber MaterialEfficiency )
-{
-	 EvilNumber ME_Factor(0.0);
-
-	 if( MaterialEfficiency >= 0 )
-		 ME_Factor = (1.0 / (MaterialEfficiency.get_double() + 1.0));
-	 else
-		 ME_Factor = (1.0 - MaterialEfficiency.get_double());
-
-	 return (floor(0.5 + (MaterialAmount.get_double() * (BaseWasteFactor.get_double() / 100.0) * ME_Factor.get_double())));
-}
-
-EvilNumber EvEMath::RAM::ME_LevelToEliminateWaste( EvilNumber MaterialAmount, EvilNumber BaseWasteFactor )
-{
-	 return (floor(0.02 * BaseWasteFactor.get_double() * MaterialAmount.get_double()));
-}
-
 EvilNumber EvEMath::RAM::WasteSkillBased( EvilNumber MaterialAmount, EvilNumber ProductionEfficiency )
 {
 	 return (floor(0.5 + (MaterialAmount.get_double() * ((25.0 - (5.0 * ProductionEfficiency.get_double())) / 100.0))));
@@ -84,30 +120,9 @@ EvilNumber EvEMath::RAM::PE_ResearchTime( EvilNumber BlueprintBaseResearchTime, 
 	 * ResearchSlotModifier.get_double() * ImplantModifier.get_double());
 }
 
-EvilNumber EvEMath::RAM::BluePrintCopyTime( EvilNumber BlueprintBaseCopyTime, EvilNumber ScienceSkillLevel, EvilNumber CopySlotModifier, EvilNumber ImplantModifier )
+float EvEMath::RAM::BpCopyTime( uint16 BaseCopyTime, uint8 ScienceLevel, float CopySlotModifier, float ImplantModifier/*1*/ )
 {
-	 return (BlueprintBaseCopyTime.get_double() * (1.0 - (0.05 * ScienceSkillLevel.get_double()))
-	 * CopySlotModifier.get_double() * ImplantModifier.get_double());
-}
-
-EvilNumber EvEMath::RAM::ProductionTimeModifier( EvilNumber IndustrySkillLevel, EvilNumber ImplantModifier, EvilNumber ProductionSlotModifier )
-{
-    return (8.0 - (0.04 * IndustrySkillLevel.get_double()) * ImplantModifier.get_double() * ProductionSlotModifier.get_double());
-}
-
-EvilNumber EvEMath::RAM::ProductionTime( EvilNumber BaseProductionTime, EvilNumber ProductivityModifier, EvilNumber ProductionEfficiency, EvilNumber ProductionTimeModifier )
-{
-	 EvilNumber PE_Factor(0.0);
-
-	 if( ProductionEfficiency >= 0.0 )
-		 PE_Factor = (ProductionEfficiency.get_double() / (1.0 + ProductionEfficiency.get_double()));
-	 else
-		 PE_Factor = (ProductionEfficiency.get_double() - 1.0);
-
-	 return (BaseProductionTime.get_double()
-	 * (1.0 - (ProductivityModifier.get_double() / BaseProductionTime.get_double())
-	 * (PE_Factor.get_double()))
-	 * ProductionTimeModifier.get_double());
+	 return (BaseCopyTime * (1.0 - (0.05 * ScienceLevel)) * CopySlotModifier * ImplantModifier);
 }
 
 EvilNumber EvEMath::RAM::BlueprintInventionTime( EvilNumber BlueprintBaseInventionTime, EvilNumber InventionSlotModifier, EvilNumber ImplantModifier )
@@ -120,25 +135,6 @@ EvilNumber EvEMath::RAM::BlueprintInventionChance( EvilNumber BaseChance, EvilNu
      return (BaseChance.get_double() * (1+0.11*EncryptionSkillLevel.get_double())
      * (1+(DataCore1SkillLevel.get_double()+DataCore2SkillLevel.get_double())
      * (0.8 / (5 - MetaLevel.get_double())) * DecryptorModifier.get_double()));
-}
-
-EvilNumber EvEMath::RAM::ResearchPointsPerDay( EvilNumber Multiplier, EvilNumber AgentEffectiveQuality, EvilNumber YourResearchSkillLevel, EvilNumber AgentResearchSkillLevel )
-{
-     return (Multiplier.get_double() * (2 + (AgentEffectiveQuality.get_double() / 100.0))
-     * pow(YourResearchSkillLevel.get_double() + AgentResearchSkillLevel.get_double(),2));
-}
-
-
-float EvEMath::Refine::StationTaxesForReprocessing( float CharacterStandingWithStationOwner )
-{
-    return (5.0 - 0.75 * CharacterStandingWithStationOwner);
-}
-
-EvilNumber EvEMath::Refine::EffectiveRefiningYield( EvilNumber StationEquipmentYield, EvilNumber RefiningSkillLevel, EvilNumber RefiningEfficiencySkillLevel, EvilNumber OreSpecificProcessingSkillLevel )
-{
-    return (StationEquipmentYield.get_double() + 0.375 * (1 + (RefiningSkillLevel.get_double() * 0.02))
-    * (1 + (RefiningEfficiencySkillLevel.get_double() * 0.04))
-    * (1 + (OreSpecificProcessingSkillLevel.get_double() * 0.05)));
 }
 
 

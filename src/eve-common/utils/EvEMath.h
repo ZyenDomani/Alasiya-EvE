@@ -31,22 +31,25 @@ namespace EvEMath {
     }
 
     namespace RAM {
-        EvilNumber ME_EffectOnWaste( EvilNumber MaterialAmount, EvilNumber BaseWasteFactor, EvilNumber MaterialEfficiency );
-        EvilNumber ME_LevelToEliminateWaste( EvilNumber MaterialAmount, EvilNumber BaseWasteFactor );
+        uint32 ProductionTime( uint32 BaseProductionTime, float ProductivityModifier, float ProductionLevel, float ProductionTimeModifier );
+
+        float ProductionTimeModifier( uint8 IndustrySkillLevel, float ProductionSlotModifier=1, float ImplantModifier=1);
+        float ME_EffectOnWaste( float MaterialAmount, float BaseWasteFactor, float MaterialEfficiency );
+        float ResearchPointsPerDay( float Multiplier, float AgentEffectiveQuality, uint8 CharSkillLevel, uint8 AgentSkillLevel );
+        float BpCopyTime( uint16 BaseCopyTime, uint8 ScienceLevel, float CopySlotModifier, float ImplantModifier=1 );
+
+        uint32 PerfectME( uint32 MaterialAmount, uint8 BaseWasteFactor );
+
         EvilNumber WasteSkillBased( EvilNumber MaterialAmount, EvilNumber ProductionEfficiency );
         EvilNumber ME_ResearchTime( EvilNumber BlueprintBaseResearchTime, EvilNumber MetallurgySkillLevel, EvilNumber ResearchSlotModifier, EvilNumber ImplantModifier );
         EvilNumber PE_ResearchTime( EvilNumber BlueprintBaseResearchTime, EvilNumber ResearchSkillLevel, EvilNumber ResearchSlotModifier, EvilNumber ImplantModifier );
-        EvilNumber BluePrintCopyTime( EvilNumber BlueprintBaseCopyTime, EvilNumber ScienceSkillLevel, EvilNumber CopySlotModifier, EvilNumber ImplantModifier );
-        EvilNumber ProductionTimeModifier( EvilNumber IndustrySkillLevel, EvilNumber ImplantModifier, EvilNumber ProductionSlotModifier );
-        EvilNumber ProductionTime( EvilNumber BaseProductionTime, EvilNumber ProductivityModifier, EvilNumber ProductionEfficiency, EvilNumber ProductionTimeModifier );
         EvilNumber BlueprintInventionTime( EvilNumber BlueprintBaseInventionTime, EvilNumber InventionSlotModifier, EvilNumber ImplantModifier );
         EvilNumber BlueprintInventionChance( EvilNumber BaseChance, EvilNumber EncryptionSkillLevel, EvilNumber DataCore1SkillLevel, EvilNumber DataCore2SkillLevel, EvilNumber MetaLevel, EvilNumber DecryptorModifier );
-        EvilNumber ResearchPointsPerDay( EvilNumber Multiplier, EvilNumber AgentEffectiveQuality, EvilNumber YourResearchSkillLevel, EvilNumber AgentResearchSkillLevel );
     }
 
     namespace Refine {
         float StationTaxesForReprocessing( float CharacterStandingWithStationOwner );
-        EvilNumber EffectiveRefiningYield( EvilNumber StationEquipmentYield, EvilNumber RefiningSkillLevel, EvilNumber RefiningEfficiencySkillLevel, EvilNumber OreSpecificProcessingSkillLevel );
+        float EffectiveRefiningYield( float StationEquipmentYield, uint8 RefiningSkillLevel, uint8 RefiningEfficiencySkillLevel, uint8 OreProcessingSkillLevel );
     }
 
     namespace Agent {

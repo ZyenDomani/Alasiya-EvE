@@ -12,7 +12,7 @@
 #define EVE_MANUF_RAM_METHODS_H
 
 
-#include "manufacturing/RamProxyDB.h"
+#include "manufacturing/FactoryDB.h"
 
 class Client;
 
@@ -34,7 +34,7 @@ public:
 
     static void CompleteJob(const Call_CompleteJob &args, Client *const c);
 
-    static bool Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Client *const c, Rsp_InstallJob &into);
+    static bool Calculate(const Call_InstallJob& args, InventoryItemRef installedItem, Character* pChar, Rsp_InstallJob& into);
     static void EncodeBillOfMaterials(const std::vector< EvERam::RequiredItem >& reqItems, double materialMultiplier, double charMaterialMultiplier, uint32 runs, BillOfMaterials& into);
     static void EncodeMissingMaterials(const std::vector< EvERam::RequiredItem >& reqItems, const PathElement& bomLocation, Client*const pClient, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map< int32, PyRep* >& into);
 

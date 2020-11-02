@@ -67,7 +67,7 @@ PyResult FactoryService::Handle_GetMaterialCompositionOfItemType(PyCallArgs &cal
         return nullptr;
     }
 
-    return m_db.GetMaterialCompositionOfItemType(arg.arg);
+    return FactoryDB::GetMaterialCompositionOfItemType(arg.arg);
 }
 
 PyResult FactoryService::Handle_GetBlueprintAttributes(PyCallArgs &call) {

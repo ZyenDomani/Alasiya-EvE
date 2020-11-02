@@ -28,7 +28,6 @@
 #define __RAM_PROXY_SERVICE__H__
 
 #include "PyService.h"
-#include "manufacturing/RamProxyDB.h"
 
 
 class RamProxyService : public PyService {
@@ -39,7 +38,6 @@ public:
 private:
     class Dispatcher;
     Dispatcher *const m_dispatch;
-    RamProxyDB m_db;
 
     PyCallable_DECL_CALL(GetJobs2);
     PyCallable_DECL_CALL(InstallJob);

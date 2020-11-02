@@ -148,13 +148,14 @@ public:
     // From <bpTimes>
     struct {
         float ProdTime;
-        float ProdMod;
+        float CopyTime;
         float MatMod;
         float WasteMod;
         float ResPE;
         float ResME;
         float ResCopy;
         float ResRE;
+        float Invent;
     } bpTimes;
 
     // From <account>

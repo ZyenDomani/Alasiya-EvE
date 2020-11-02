@@ -39,8 +39,6 @@ private:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
-    FactoryDB m_db;
-
     PyCallable_DECL_CALL(GetBlueprintAttributes);
     PyCallable_DECL_CALL(GetMaterialsForTypeWithActivity);
     PyCallable_DECL_CALL(GetMaterialCompositionOfItemType);
