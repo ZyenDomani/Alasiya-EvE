@@ -29,6 +29,7 @@
 
 
 #include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "../../eve-core/utils/misc.h"
 #include "inventory/InventoryItem.h"
 
@@ -96,7 +97,7 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 skillID, const ItemType &type, const ItemData &data) {
         if (type.categoryID() != EVEDB::invCategories::Skill) {
-            sLog.Error("Skill", "Trying to load %s(%u) as Skill.", type.category().name().c_str(), skillID);
+            _log(ITEM__ERROR, "Trying to load %s as Skill.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

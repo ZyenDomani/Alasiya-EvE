@@ -51,7 +51,7 @@ public:
      * @param[out] into Where loaded data should be stored.
      * @return True on success, false on failure.
      */
-    bool GetCharacterType(uint32 bloodlineID, CharacterTypeData &into);
+    bool GetCharacterType(uint8 bloodlineID, CharacterTypeData &into);
     /**
      * Obtains ID of character type based on bloodline.
      *
@@ -59,7 +59,7 @@ public:
      * @param[out] characterTypeID Resulting ID of character type.
      * @return True on success, false on failure.
      */
-    bool GetCharacterTypeByBloodline(uint32 bloodlineID, uint32 &characterTypeID);
+    bool GetCharacterTypeByBloodline(uint8 bloodlineID, uint16 &characterTypeID);
     /**
      * Obtains ID of bloodline based on character type.
      *
@@ -67,7 +67,7 @@ public:
      * @param[out] bloodlineID Resulting ID of bloodline.
      * @return True on success, false on failure.
      */
-    bool GetBloodlineByCharacterType(uint32 characterTypeID, uint32 &bloodlineID);
+    bool GetBloodlineByCharacterType(uint16 characterTypeID, uint8& bloodlineID);
 
     /**
      * Obtains bloodline and loads character type data.
@@ -77,7 +77,7 @@ public:
      * @param[out] into Where character type data should be stored.
      * @return True on success, false on failure.
      */
-    bool GetCharacterType(uint32 characterTypeID, uint32 &bloodlineID, CharacterTypeData &into);
+    bool GetCharacterType(uint16 characterTypeID, uint8 &bloodlineID, CharacterTypeData &into);
     /**
      * Obtains ID of character type and loads it.
      *
@@ -86,7 +86,7 @@ public:
      * @param[out] into Where loaded character type data should be stored.
      * @return True on success, false on failure.
      */
-    bool GetCharacterTypeByBloodline(uint32 bloodlineID, uint32 &characterTypeID, CharacterTypeData &into);
+    bool GetCharacterTypeByBloodline(uint8 bloodlineID, uint16 &characterTypeID, CharacterTypeData &into);
 
     /**
      * Loads ship type data into given container.
@@ -95,7 +95,7 @@ public:
      * @param[in] into Container to load data into.
      * @return True on success, false on failure.
      */
-    bool GetShipType(uint32 shipTypeID, ShipTypeData &into);
+    bool GetShipType(uint16 shipTypeID, ShipTypeData &into);
 
     bool GetItemContents(OwnerData &od, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<uint32> &into);
@@ -111,14 +111,12 @@ public:
 
     /** @todo update these below to use static data manager */
     // get this shit outta here.....
-    bool GetCategory(EVEItemCategories category, CategoryData &into);
-    bool GetGroup(uint32 groupID, GroupData &into);
-    bool GetType(uint32 typeID, TypeData &into);
+    bool GetType(uint16 typeID, TypeData &into);
     bool GetCelestialObject(uint32 celestialID, CelestialObjectData &into);
     bool GetSolarSystem(uint32 solarSystemID, SolarSystemData &into);
 
-    static bool GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into);
-    static bool GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &into);
+    static bool GetModulePowerSlotByTypeID(uint16 typeID, uint32 &into);
+    static bool GetOpenPowerSlots(uint16 slotType, ShipItemRef ship, uint32 &into);
 };
 
 #endif

@@ -1890,6 +1890,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
 
     // npcs have no warp restrictions (yet)
     if (mySE->IsNPCSE() or mySE->IsDroneSE()) {
+        // do drones warp??
         m_ballMode = Destiny::Ball::Mode::WARP;
 
         std::vector<PyTuple*> updates;
@@ -1931,6 +1932,9 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
         if (m_targetDistance < minWarpDistance) {
             mySE->GetPilot()->SendErrorMsg("That is too close for your Warp Drive.");
             // warp distance too close.  cancel warp and return
+            // we may need to send pos update
+            if (sConfig.debug.PositionHack)
+                SetPosition(mySE->GetPosition(), true);
             m_ballMode = Destiny::Ball::Mode::STOP;
             SafeDelete(m_warpState);
             return;
@@ -1938,41 +1942,41 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
 
         Client *pClient = mySE->GetPilot();
 
-        /*  capacitor for warp forumlas from https://oldforums.eveonline.com/?a=topic&threadID=332116
+        /*  capacitor for warp formulas from https://oldforums.eveonline.com/?a=topic&threadID=332116
          *  Energy to warp = warpCapacitorNeed * mass * au * (1 - warp_drive_operation_skill_level * 0.10)
          */
         float currentShipCap = pClient->GetShip()->GetAttribute(AttrCapacitorCharge).get_float();
-        float adjDistance = m_targetDistance / ONE_AU_IN_METERS; // change distance in meters to AU.
-        float capNeeded = m_mass * m_warpCapacitorNeed * adjDistance;
-        capNeeded *= (1 - (0.1 *(pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation, true))));
+        float capNeeded = m_mass * m_warpCapacitorNeed * (m_targetDistance / ONE_AU_IN_METERS);
+        capNeeded *= (1 - (0.1 *pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
 
-        if (capNeeded > 5)
-            _log(DESTINY__WARNING, "Warp Cap need for %s(%u) is %0.4f", mySE->GetName(), mySE->GetID(), capNeeded);
+        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) is %.4f", mySE->GetName(), mySE->GetID(), capNeeded);
 
         //  check if ship has enough capacitor to warp full distance
         if (capNeeded > currentShipCap) {
-            /** @todo (allan) this is wrong...
-             * //  nope...enough cap to min warp?
-             *        float cap_check = ((150000 /ONE_AU_IN_METERS) * m_mass * adjWarpCapNeed);
-             *        if (cap_check > 0) {
-             *          //reset distance based on available capacitor
-             *            // adjust warp distance based on cap left.
-             *              m_stopDistance = currentShipCap / (m_mass * adjWarpCapNeed);
-             *              m_targetPoint = NULL_ORIGIN;
-             *            capNeeded = currentShipCap;
-        } else {*/
-            pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
-            _log(DESTINY__WARNING, "Destiny::WarpTo() - %s(%u): Capacitor needed vs current  %.3f / %.3f",
-                 mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
+            // not enough cap.  reset everything based on available cap
+            capNeeded = (currentShipCap /m_warpCapacitorNeed) /m_mass;
+            if (capNeeded > 1) {
+                m_targetDistance = capNeeded * ONE_AU_IN_METERS;
+                GVector warp_direction(m_position, where);
+                GPoint newTarget(m_position +(warp_direction *m_targetDistance));
 
-            m_ballMode = Destiny::Ball::Mode::STOP;
-            m_targBubble = nullptr;
-            SafeDelete(m_warpState);
-            return;
-            //}
-        } else {
+                m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), newTarget);
+                if (is_log_enabled(DESTINY__WARP_TRACE))
+                    _log(DESTINY__TRACE, "Destiny::WarpTo():Update - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %.1f",
+                        mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), m_stopDistance, m_targetDistance);
+            } else {
+                // if not enough cap to do min warp, cancel and return
+                pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
+                _log(DESTINY__WARNING, "Destiny::WarpTo() - %s(%u): Capacitor needed vs current  %.3f / %.3f",
+                        mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
+
+                m_ballMode = Destiny::Ball::Mode::STOP;
+                m_targBubble = nullptr;
+                SafeDelete(m_warpState);
+                return;
+            }
+        } else
             capNeeded = currentShipCap - capNeeded;
-        }
 
         m_capNeeded = capNeeded;
     }

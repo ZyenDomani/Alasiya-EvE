@@ -28,6 +28,7 @@
 #define __ASTEROID_H_INCL__
 
 #include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "system/SystemEntity.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
@@ -55,7 +56,7 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 asteroidID, const ItemType &type, const ItemData &data) {
         if (type.categoryID() != EVEDB::invCategories::Asteroid) {
-            _log( ITEM__ERROR, "Trying to load %s(%u) as Asteroid.", type.category().name().c_str(), asteroidID);
+            _log(ITEM__ERROR, "Trying to load %s as Asteroid.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

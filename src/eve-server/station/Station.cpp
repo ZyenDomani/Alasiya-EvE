@@ -40,14 +40,14 @@
 /*
  * StationType
  */
-StationType::StationType(uint32 _id, const ItemGroup &_group, const TypeData &_data)
-: ItemType(_id, _group, _data)
+StationType::StationType(uint16 _id, const TypeData& _data)
+: ItemType(_id, _data)
 {
     // consistency check
     assert(_data.groupID == EVEDB::invGroups::Station);
 }
 
-StationType *StationType::Load( uint32 stationTypeID)
+StationType *StationType::Load(uint16 stationTypeID)
 {
     return ItemType::Load<StationType>(stationTypeID );
 }
@@ -59,11 +59,10 @@ StationItem::StationItem(uint32 stationID, const StationType& type, const ItemDa
 : CelestialObject(stationID, type, data, cData),
 m_officePyData(nullptr),
 m_stationType(type),
-m_stationID(stationID)
+m_stationID(stationID),
+m_loaded(false)
 {
     pInventory = new Inventory(InventoryItemRef(this));
-
-    m_loaded = false;
 
     _log(ITEM__TRACE, "Created Station for item %s (%u).", itemName().c_str(), itemID());
 }
@@ -81,7 +80,7 @@ StationItem::~StationItem()
 
 StationItemRef StationItem::Load( uint32 stationID)
 {
-    return InventoryItem::Load<StationItem>(stationID );
+    return InventoryItem::Load<StationItem>(stationID);
 }
 
 bool StationItem::_Load() {

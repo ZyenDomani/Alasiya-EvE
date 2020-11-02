@@ -45,6 +45,12 @@ public:
     PyTuple*            GetFactionInfo()                { PyIncRef(m_factionInfo); return m_factionInfo; }
     PyObject*           GetNPCDivisions()               { PyIncRef(m_npcDivisions); return m_npcDivisions; }
 
+
+    void                GetCategory(uint8 catID, Inv::CatData &into);
+    void                GetGroup(uint16 grpID, Inv::GrpData &into);
+    const char*         GetGroupName(uint16 grpID);
+    const char*         GetCategoryName(uint8 catID);
+
     void                GetMoonResouces(std::map<uint16, uint8>& data);
 
     bool                IsSkillTypeID(uint16 typeID);
@@ -93,7 +99,7 @@ public:
 
     PyDict*             SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID);
     PyDict*             GetBPMatlData(uint16 typeID);   //this is called on EVERY "show info" of a blueprint
-    void                GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData);
+    void                GetBpTypeData(uint32 typeID, EvERam::bpTypeData& tData);
 
     uint32              GetCorpID(uint32 factionID);
     uint32              GetRaceFaction(uint8 raceID);
@@ -125,8 +131,6 @@ public:
 protected:
     void                Populate();
 
-    std::vector<uint16>                                 m_items;
-
 private:
     PyTuple*                                            m_factionInfo;
     PyObject*                                           m_keyMap;
@@ -135,6 +139,10 @@ private:
     PyObject*                                           m_npcDivisions;
     PyObjectEx*                                         m_agents;
     PyObjectEx*                                         m_operands;
+
+    std::map<uint16, Inv::CatData>                      m_catData;
+    std::map<uint16, Inv::GrpData>                      m_grpData;
+    std::map<uint16, Inv::TypeData>                     m_typeData;
 
     std::map<uint16, PyDict*>                           m_bpMatlData;       // typeID/dict*
     std::map<uint32, uint8>                             m_whRegions;        // regionID/classID
@@ -148,7 +156,7 @@ private:
     std::map<uint32, uint32>                            m_stationConst;     // stationID/systemID
     std::map<uint32, uint32>                            m_stationSystem;    // stationID/systemID
     std::map<uint32, uint8>                             m_factionRaces;     // factionID/raceID
-    std::map<uint16, BlueprintTypeData>                 m_bpTypeData;       // typeID/data
+    std::map<uint16, EvERam::bpTypeData>                m_bpTypeData;       // typeID/data
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
     std::map<uint16, std::string>                       m_skills;           // typeID/name
     std::map<uint32, StaticData>                        m_staticData;       // itemID/data
@@ -167,7 +175,7 @@ private:
     std::multimap<uint8, RatSpawnClass>                 m_npcClasses;       // spawnType/data
     std::multimap<uint32, RatFactionGroups>             m_npcGroups;        // factionID/data
     // deadspace
-    
+
     // incursion
 
     /* salvage data */

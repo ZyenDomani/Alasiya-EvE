@@ -1978,7 +1978,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             return true;
         case flagDroneBay: {
             if (iRef->categoryID() != EVEDB::invCategories::Drone) {
-                pClient->SendErrorMsg("%s cannot be stowed in the Drone Bay", iRef->group().name().c_str());
+                pClient->SendErrorMsg("%s cannot be stowed in the Drone Bay", sDataMgr.GetGroupName(iRef->groupID()));
                 return false;
             }
             if (m_type.groupID() == EVEDB::invGroups::Supercarrier) {
@@ -2125,8 +2125,8 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                     return false;
                 }
                 if (!ValidateItemSpecifics(iRef)) {
-                    pClient->SendErrorMsg("Your ship cannot equip the %s.<br>The %s group is not allowed on your %s.", \
-                    iRef->name(), iRef->group().name().c_str(), m_type.name().c_str());
+                    pClient->SendErrorMsg("Your ship cannot equip the %s.<br>The group '%s' is not allowed on your %s.", \
+                            iRef->name(), sDataMgr.GetGroupName(iRef->groupID()), m_type.name().c_str());
                     return false;
                 }
                 if (iRef->categoryID() == EVEDB::invCategories::Charge) {
@@ -2156,8 +2156,8 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                     }
                 }
             } else
-                sLog.Error("ShipItem::ValidateAddItem", "testing of %s to add %u %s of cat %s has reached the end.",
-                        sDataMgr.GetFlagName(flag),iRef->quantity(), iRef->name(), iRef->category().name().c_str());
+                sLog.Error("ShipItem::ValidateAddItem", "testing %s to add %u %s of cat %s has reached the end.",
+                        sDataMgr.GetFlagName(flag), iRef->quantity(), iRef->name(), sDataMgr.GetCategoryName(iRef->categoryID()));
         }
     }
     return true;

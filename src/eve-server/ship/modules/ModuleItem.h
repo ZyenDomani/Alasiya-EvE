@@ -12,6 +12,7 @@
 
 
 #include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "inventory/InventoryItem.h"
 
 
@@ -47,7 +48,7 @@ protected:
         or (type.categoryID() == EVEDB::invCategories::Subsystem))
             return ModuleItemRef( new ModuleItem(modID, type, data ) );
 
-        sLog.Error("ModuleItem", "Trying to load %s(%u) as Module.", type.category().name().c_str(), modID);
+        _log(ITEM__ERROR, "Trying to load %s as Module.", sDataMgr.GetCategoryName(type.categoryID()));
         if (sConfig.server.StackTrace)
             EvE::traceStack();
         return RefPtr<_Ty>();

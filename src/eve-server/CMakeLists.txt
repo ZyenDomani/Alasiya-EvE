@@ -336,7 +336,6 @@ SET( manufacturing_INCLUDE
      "${TARGET_INCLUDE_DIR}/manufacturing/Blueprint.h"
      "${TARGET_INCLUDE_DIR}/manufacturing/FactoryDB.h"
      "${TARGET_INCLUDE_DIR}/manufacturing/FactoryService.h"
-     "${TARGET_INCLUDE_DIR}/manufacturing/RamProxyDB.h"
      "${TARGET_INCLUDE_DIR}/manufacturing/RamMethods.h"
      "${TARGET_INCLUDE_DIR}/manufacturing/RamProxyService.h" )
 SET( manufacturing_SOURCE
@@ -344,7 +343,6 @@ SET( manufacturing_SOURCE
      "${TARGET_SOURCE_DIR}/manufacturing/FactoryDB.cpp"
      "${TARGET_SOURCE_DIR}/manufacturing/FactoryService.cpp"
      "${TARGET_SOURCE_DIR}/manufacturing/RamMethods.cpp"
-     "${TARGET_SOURCE_DIR}/manufacturing/RamProxyDB.cpp"
      "${TARGET_SOURCE_DIR}/manufacturing/RamProxyService.cpp" )
 
 SET( map_INCLUDE

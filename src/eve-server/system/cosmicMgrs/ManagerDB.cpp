@@ -13,13 +13,63 @@
 #include "system/cosmicMgrs/ManagerDB.h"
 
 
+void ManagerDB::GetCategoryData(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT categoryID, categoryName, description, published FROM invCategories"))
+        codelog(DATABASE__ERROR, "Error in GetCategoryData query: %s.", res.error.c_str());
+
+    _log(DATABASE__RESULTS, "GetCategoryData returned %u items", res.GetRowCount());
+}
+
+void ManagerDB::GetGroupData(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "  groupID,"
+        "  categoryID,"
+        "  groupName,"
+        "  description,"
+        "  useBasePrice,"
+        "  allowManufacture,"
+        "  allowRecycler,"
+        "  anchored,"
+        "  anchorable,"
+        "  fittableNonSingleton,"
+        "  published "
+        " FROM invGroups "))
+        codelog(DATABASE__ERROR, "Error in GetGroupData query: %s.", res.error.c_str());
+
+    _log(DATABASE__RESULTS, "GetGroupData returned %u items", res.GetRowCount());
+}
+
+void ManagerDB::GetTypeData(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "  typeID,"
+        "  groupID,"
+        "  typeName,"
+        "  description,"
+        "  radius,"
+        "  mass,"
+        "  volume,"
+        "  capacity,"
+        "  portionSize,"
+        "  raceID,"
+        "  basePrice,"
+        "  published,"
+        "  marketGroupID,"
+        "  chanceOfDuplicating "
+        " FROM invTypes "))
+        codelog(DATABASE__ERROR, "Error in GetTypeData query: %s.", res.error.c_str());
+
+    _log(DATABASE__RESULTS, "GetTypeData returned %u items", res.GetRowCount());
+}
 void ManagerDB::GetSkillList(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (SELECT groupID FROM invGroups WHERE categoryID = 16)"))
         codelog(DATABASE__ERROR, "Error in GetSkillList query: %s", res.error.c_str());
 
     _log(DATABASE__RESULTS, "GetSkillList returned %u items", res.GetRowCount());
-
 }
 
 void ManagerDB::GetTypeAttributes(DBQueryResult& res)
@@ -224,45 +274,6 @@ void ManagerDB::GetSalvageGroups(DBQueryResult& res) {
         codelog(DATABASE__ERROR, "Error in GetSalvageGroups query: %s", res.error.c_str());
         return;
     }
-}
-
-void ManagerDB::GetBlueprintType(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "  blueprintTypeID,"
-        "  parentBlueprintTypeID,"
-        "  productTypeID,"
-        "  productionTime,"
-        "  techLevel,"
-        "  researchProductivityTime,"
-        "  researchMaterialTime,"
-        "  researchCopyTime,"
-        "  researchTechTime,"
-        "  productivityModifier,"
-        "  materialModifier,"
-        "  wasteFactor,"
-        "  maxProductionLimit, "
-        "  chanceOfRE,"
-        "  g.categoryID"
-        " FROM invBlueprintTypes AS bt"
-        "  LEFT JOIN invTypes AS t ON t.typeID = bt.blueprintTypeID"
-        "  LEFT JOIN invGroups AS g USING (groupID)"
-        " WHERE t.published = 1" ))
-    {
-        codelog(DATABASE__ERROR, "Error in GetBlueprintType query: %s.", res.error.c_str());
-    }
-}
-
-void ManagerDB::GetRAMMaterials(DBQueryResult& res)
-{
-    if (!sDatabase.RunQuery(res, "SELECT typeID, materialTypeID, quantity FROM invTypeMaterials"))
-        codelog(DATABASE__ERROR, "Error in GetRAMMaterials query: %s", res.error.c_str());
-}
-
-void ManagerDB::GetRAMRequirements(DBQueryResult& res)
-{
-    if (!sDatabase.RunQuery(res, "SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, extra FROM ramTypeRequirements"))
-        codelog(DATABASE__ERROR, "Error in GetRAMRequirements query: %s", res.error.c_str());
 }
 
 void ManagerDB::GetOreBySSC(DBQueryResult& res)

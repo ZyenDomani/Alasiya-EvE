@@ -27,6 +27,7 @@
 #ifndef __CHARACTER__H__INCL__
 #define __CHARACTER__H__INCL__
 
+#include "StaticDataMgr.h"
 #include "character/CertificateMgrService.h"
 #include "character/CharacterDB.h"
 #include "character/Skill.h"
@@ -84,35 +85,34 @@ class CharacterType
 {
     friend class ItemType; // to let it construct us
 public:
-    static CharacterType* Load( uint32 characterTypeID);
+    static CharacterType* Load(uint16 typeID);
 
     /*
      * Access functions:
      */
-    uint32 bloodlineID() const { return m_bloodlineID; }
+    uint8 bloodlineID() const                           { return m_bloodlineID; }
 
-    const std::string& bloodlineName() const { return m_bloodlineName; }
-    const std::string& description() const { return m_description; }
-    const std::string& maleDescription() const { return m_maleDescription; }
-    const std::string& femaleDescription() const { return m_femaleDescription; }
-    uint32 corporationID() const { return m_corporationID; }
+    const std::string& bloodlineName() const            { return m_bloodlineName; }
+    const std::string& description() const              { return m_description; }
+    const std::string& maleDescription() const          { return m_maleDescription; }
+    const std::string& femaleDescription() const        { return m_femaleDescription; }
+    uint32 corporationID() const                        { return m_corporationID; }
 
-    uint8 perception() const { return m_perception; }
-    uint8 willpower() const { return m_willpower; }
-    uint8 charisma() const { return m_charisma; }
-    uint8 memory() const { return m_memory; }
-    uint8 intelligence() const { return m_intelligence; }
+    uint8 perception() const                            { return m_perception; }
+    uint8 willpower() const                             { return m_willpower; }
+    uint8 charisma() const                              { return m_charisma; }
+    uint8 memory() const                                { return m_memory; }
+    uint8 intelligence() const                          { return m_intelligence; }
 
-    const std::string& shortDescription() const { return m_shortDescription; }
-    const std::string& shortMaleDescription() const { return m_shortMaleDescription; }
-    const std::string& shortFemaleDescription() const { return m_shortFemaleDescription; }
+    const std::string& shortDescription() const         { return m_shortDescription; }
+    const std::string& shortMaleDescription() const     { return m_shortMaleDescription; }
+    const std::string& shortFemaleDescription() const   { return m_shortFemaleDescription; }
 
 protected:
     CharacterType(
-        uint32 _id,
+        uint16 _id,
         uint8 _bloodlineID,
         // ItemType stuff:
-        const ItemGroup& _group,
         const TypeData& _data,
         // CharacterType stuff:
         const CharacterTypeData& _charData
@@ -125,21 +125,21 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty* _LoadType( uint32 typeID, const ItemGroup& group, const TypeData& data)
+    static _Ty* _LoadType(uint16 typeID, const TypeData& data)
     {
         // check we are really loading a character type
-        if( group.id() != EVEDB::invGroups::Character ) {
-            sLog.Error("Character", "Load of character type %u requested, but it's %s.", typeID, group.name().c_str() );
+        if (data.groupID != EVEDB::invGroups::Character) {
+            _log( ITEM__ERROR, "Trying to load %s as CharacterType.", sDataMgr.GetGroupName(data.groupID));
             return nullptr;
         }
 
         // query character type data
-        uint32 bloodlineID;
+        uint8 bloodlineID(0);
         CharacterTypeData charData;
-        if( !sItemFactory.db()->GetCharacterType(typeID, bloodlineID, charData) )
+        if (!sItemFactory.db()->GetCharacterType(typeID, bloodlineID, charData) )
             return nullptr;
 
-        return new CharacterType( typeID, bloodlineID, group, data, charData );
+        return new CharacterType( typeID, bloodlineID, data, charData );
     }
 
     /*
@@ -219,19 +219,19 @@ public:
     /**
      * Primary public interface:
      */
-    bool AlterBalance(double amount, uint8 type);
-    void SetLocation(uint32 stationID, SystemData& data);
-    void JoinCorporation(const CorpData& data);
-    void SetDescription(const char *newDescription);
-    void SetAccountKey(int32 accountKey);
-    void SetBaseID(uint32 baseID);
-    void SetFleetData(CharFleetData& fleet);
-    uint32 PickAlternateShip(uint32 locationID);
+    bool            AlterBalance(double amount, uint8 type);
+    void            SetLocation(uint32 stationID, SystemData& data);
+    void            JoinCorporation(const CorpData& data);
+    void            SetDescription(const char *newDescription);
+    void            SetAccountKey(int32 accountKey);
+    void            SetBaseID(uint32 baseID);
+    void            SetFleetData(CharFleetData& fleet);
+    uint32          PickAlternateShip(uint32 locationID);
 
-    void SetClient(Client* pClient)                     { m_pClient = pClient; }
-    Client* GetClient()                                 { return m_pClient; }
+    void            SetClient(Client* pClient)          { m_pClient = pClient; }
+    Client*         GetClient()                         { return m_pClient; }
 
-    void AddItem(InventoryItemRef item);
+    void            AddItem(InventoryItemRef item);
 
     // skills
     bool            HasSkill(uint16 skillTypeID) const;
@@ -262,15 +262,15 @@ public:
     uint32          GetTotalSP();
 
     /* Certificates */
-    void GrantCertificate( uint32 certificateID );
-    void UpdateCertificate( uint32 certificateID, bool pub );
-    bool HasCertificate( uint32 certificateID ) const;
-    void GetCertificates( CertMap& crt );
+    void            GrantCertificate( uint32 certificateID );
+    void            UpdateCertificate( uint32 certificateID, bool pub );
+    bool            HasCertificate( uint32 certificateID ) const;
+    void            GetCertificates( CertMap& crt );
 
     /* Primary public packet builders */
-    PyDict* GetCharInfo();
-    PyObject* GetDescription() const;
-    PyTuple* SendSkillQueue();
+    PyDict*         GetCharInfo();
+    PyObject*       GetDescription() const;
+    PyTuple*        SendSkillQueue();
 
     /* Public fields */
     const CharacterType&    type() const                        { return static_cast<const CharacterType& >(InventoryItem::type()); }
@@ -406,26 +406,26 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem( uint32 characterID, const ItemType& type, const ItemData& data) {
+    static RefPtr<_Ty> _LoadItem( uint32 charID, const ItemType& type, const ItemData& data) {
         if( type.groupID() != EVEDB::invGroups::Character ) {
-            sLog.Error("Character", "Trying to load %s(%u) as Character.", type.group().name().c_str(), characterID );
+            _log(ITEM__ERROR, "Trying to load %s as Character.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }
         CharacterData charData = CharacterData();
-        if( !sItemFactory.db()->GetCharacterData( characterID, charData ) )
+        if( !sItemFactory.db()->GetCharacterData( charID, charData ) )
             return RefPtr<_Ty>();
 
         CorpData corpData = CorpData();
-        if( !sItemFactory.db()->GetCorpData( characterID, corpData ) )
+        if( !sItemFactory.db()->GetCorpData( charID, corpData ) )
             return RefPtr<_Ty>();
 
         // cast the type
         const CharacterType& charType = static_cast<const CharacterType& >( type );
 
         // construct the character item
-        return CharacterRef( new Character( characterID, charType, data, charData, corpData ) );
+        return CharacterRef( new Character( charID, charType, data, charData, corpData ) );
     }
 
 

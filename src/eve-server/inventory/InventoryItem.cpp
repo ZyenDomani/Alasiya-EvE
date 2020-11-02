@@ -406,9 +406,9 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             return StructureItem::Spawn(data);
         } break;
         case EVEDB::invCategories::Blueprint: {
-            BlueprintData bpData = BlueprintData();
-                bpData.runs = -1;
-            return Blueprint::Spawn(data, bpData);
+            EvERam::bpData bdata = EvERam::bpData();
+                bdata.runs = -1;
+            return Blueprint::Spawn(data, bdata);
         } break;
         case EVEDB::invCategories::Skill: {
             return Skill::Spawn(data);

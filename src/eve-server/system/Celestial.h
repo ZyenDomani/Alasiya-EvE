@@ -27,6 +27,7 @@
 #define __CELESTIAL__H__INCL__
 
 #include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 
@@ -81,7 +82,7 @@ protected:
     static RefPtr<_Ty> _LoadItem( uint32 celestialID, const ItemType &type, const ItemData &data)
     {
         if (type.categoryID() != EVEDB::invCategories::Celestial)  {
-            _log( ITEM__ERROR, "Trying to load %s(%u) as Celestial.", type.category().name().c_str(), celestialID );
+            _log(ITEM__ERROR, "Trying to load %s as Celestial.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

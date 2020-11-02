@@ -429,7 +429,7 @@ void ModuleManager::CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRe
             args["noOfModules"]         = new PyInt(iRef->GetAttribute(AttrMaxGroupFitted).get_int());
             args["noOfModulesFitted"]   = new PyInt(GetFittedModuleCountByGroup(iRef->groupID()));
             args["ship"]                = new PyInt(pShipItem->itemID());
-            args["groupName"]           = new PyString(iRef->group().name());
+            args["groupName"]           = new PyString(sDataMgr.GetGroupName(iRef->groupID()));
             args["module"]              = new PyInt(iRef->itemID());
             throw PyException( MakeUserError("CantFitTooManyByGroup", args));   // bad msgID in client.
             */
@@ -997,7 +997,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
             } else
                 sLog.Error("MM::LoadCharge","cannot Populate() %s", chargeRef->name());
         }
-        
+
     //chargeRef->SetQuantity(loadQty, true);                  // OIC
     chargeRef->SetAttribute(AttrQuantity, loadQty, true);   // OMAC
 }

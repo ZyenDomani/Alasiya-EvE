@@ -35,7 +35,7 @@
 
 /*
  * LOADING INVOKATION EXPLANATION:
- * ItemCategory, ItemGroup, ItemType and InventoryItem classes and their children have special loading. Every such type has following methods:
+ * ItemType and InventoryItem classes and their children have special loading. Every such type has following methods:
  *
  *  static Load( <identifier>):
  *    Merges static and virtual loading trees.
@@ -49,134 +49,6 @@
  *  virtual _Load(ItemFactory &factory) (optional):
  *    Performs any post-construction loading.
  */
-
-/*
- * Simple container for raw category data.
- */
-class CategoryData {
-public:
-    CategoryData(
-        const char *_name = "",
-        const char *_desc = "",
-        bool _published = false
-    );
-
-    // Content:
-    std::string name;
-    std::string description;
-    bool published : 1;
-};
-
-/*
- * Class which maintains category data.
- */
-class ItemCategory {
-public:
-    static ItemCategory *Load( EVEItemCategories category);
-
-    EVEItemCategories id() const                        { return m_id; }
-
-    const std::string &name() const                     { return m_name; }
-    const std::string &description() const              { return m_description; }
-    bool published() const                              { return m_published; }
-
-protected:
-    ItemCategory(
-        EVEItemCategories _id,
-        // ItemCategory stuff:
-        const CategoryData &_data
-    );
-
-    static ItemCategory *_Load( EVEItemCategories category);
-    static ItemCategory *_Load( EVEItemCategories category, const CategoryData &data);
-
-    const EVEItemCategories m_id;
-
-    std::string m_name;
-    std::string m_description;
-    bool m_published : 1;
-};
-
-/*
- * Simple container for raw group data.
- */
-class GroupData {
-public:
-    GroupData(
-        EVEItemCategories _category = (EVEItemCategories)0,
-        const char *_name = "",
-        const char *_desc = "",
-        bool _useBasePrice = false,
-        bool _allowManufacture = false,
-        bool _allowRecycler = false,
-        bool _anchored = false,
-        bool _anchorable = false,
-        bool _fittableNonSingleton = false,
-        bool _published = false
-    );
-
-    // Content:
-    EVEItemCategories category;
-    std::string name;
-    std::string description;
-    // using a bitfield here saves
-    // considerable amount of memory ...
-    bool useBasePrice : 1;
-    bool allowManufacture : 1;
-    bool allowRecycler : 1;
-    bool anchored : 1;
-    bool anchorable : 1;
-    bool fittableNonSingleton : 1;
-    bool published : 1;
-};
-
-/*
- * Class which maintains group data.
- */
-/** @todo update this to use EVEItemGroups instead of uint16 for groupID */
-class ItemGroup {
-public:
-    static ItemGroup *Load( uint16 groupID);
-
-    uint16 id() const                                   { return m_id; }
-
-    const ItemCategory &category() const                { return (*m_category); }
-    EVEItemCategories categoryID() const                { return m_category->id(); }
-
-    const std::string &name() const                     { return m_name; }
-    const std::string &description() const              { return m_description; }
-    bool useBasePrice() const                           { return m_useBasePrice; }
-    bool allowManufacture() const                       { return m_allowManufacture; }
-    bool allowRecycler() const                          { return m_allowRecycler; }
-    bool anchored() const                               { return m_anchored; }
-    bool anchorable() const                             { return m_anchorable; }
-    bool fittableNonSingleton() const                   { return m_fittableNonSingleton; }
-    bool published() const                              { return m_published; }
-
-protected:
-    ItemGroup(
-        uint16 _id, const ItemCategory& _category, const GroupData& _data
-    );
-
-    static ItemGroup *_Load( uint16 groupID);
-    static ItemGroup *_Load( uint16 groupID, const ItemCategory &category, const GroupData &data);
-
-    // using a bitfield here saves
-    // considerable amount of memory ...
-    bool m_useBasePrice : 1;
-    bool m_allowManufacture : 1;
-    bool m_allowRecycler : 1;
-    bool m_anchored : 1;
-    bool m_anchorable : 1;
-    bool m_fittableNonSingleton : 1;
-    bool m_published : 1;
-
-    const uint16 m_id;
-    const ItemCategory *m_category;
-
-    std::string m_name;
-    std::string m_description;
-};
 
 /*
  * Simple container for raw type data.
@@ -220,22 +92,12 @@ public:
  */
 class ItemType {
 public:
-    /**
-     * Loads type from DB.
-     *
-     * @param[in] typeID ID of type to load.
-     * @return Pointer to new ItemType object; NULL if failed.
-     */
-    static ItemType* Load( uint32 typeID);
 
     /* Helper methods  */
     uint16 id() const                                   { return m_id; }
-
-    const ItemGroup &group() const                      { return (*m_group); }
-    uint16 groupID() const                              { return m_group->id(); }
-
-    const ItemCategory &category() const                { return m_group->category(); }
-    EVEItemCategories categoryID() const                { return m_group->categoryID(); }
+    uint16 groupID() const                              { return m_group.id; }
+    const std::string &groupName() const                { return m_group.name; }
+    uint8 categoryID() const                            { return m_group.catID; }
 
     const std::string &name() const                     { return m_name; }
     const std::string &description() const              { return m_description; }
@@ -251,6 +113,11 @@ public:
     double capacity() const                             { return m_capacity; }
     uint8 race() const                                  { return m_raceID; }
 
+    /* new attribute system */
+    const bool HasAttribute(const uint16 attributeID) const;
+    EvilNumber GetAttribute(const uint16 attributeID) const;
+    const void CopyAttributes(InventoryItem& itemRef) const;
+
     /* new effects processing system */
     void GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const;
     uint16 GetDefaultEffect() const                     { return m_defaultID; }
@@ -258,78 +125,68 @@ public:
     bool HasEffect(uint16 effectID) const;
     bool HasReqSkill(const uint16 skillID) const;
 
-    const bool HasAttribute(const uint16 attributeID) const;
-    EvilNumber GetAttribute(const uint16 attributeID) const;
-    const void CopyAttributes(InventoryItem& itemRef) const;
+    // load method
+    static ItemType* Load( uint16 typeID);
 
 protected:
-    ItemType(
-        uint32 _id,
-        const ItemGroup &_group,
-        const TypeData &_data
-    );
+    ItemType(uint16 _id, const TypeData &_data);
 
-	/*
+    /*
      * Member functions
      */
     // Template helper:
     template<class _Ty>
-    static _Ty *Load( uint32 typeID)
+    static _Ty *Load( uint16 typeID)
     {
         // static load
         _Ty *t = _Ty::template _Load<_Ty>(typeID );
-        if( t == nullptr )
+        if (t == nullptr)
             return nullptr;
 
         // dynamic load
-        if( !t->_Load() )
-        {
+        if (!t->_Load()) {
             delete t;
             return nullptr;
         }
 
-        // return
         return t;
     }
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_Load( uint32 typeID)
+    static _Ty *_Load( uint16 typeID)
     {
         // pull data
         TypeData data;
         if( !sItemFactory.db()->GetType( typeID, data ) )
             return nullptr;
-        /** @todo  this needs work.  static map items are "non-published" */
-        if (!data.published)
-            return nullptr;
+        /** @todo  this needs work.  other items we need are "non-published" */
+        if (data.groupID > 23)  // gID < 23 are map items.  will need to search for others
+            if (!data.published)
+                return nullptr;
 
-        // obtain group
-        const ItemGroup *g = sItemFactory.GetGroup( data.groupID );
-        if( g == nullptr )
-            return nullptr;
-
-        return _Ty::template _LoadType<_Ty>(typeID, *g, data );
+        return _Ty::template _LoadType<_Ty>(typeID, data );
     }
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty *_LoadType( uint32 typeID, const ItemGroup &group, const TypeData &data);
+    static _Ty *_LoadType( uint16 typeID, const TypeData &data);
 
     virtual bool _Load();
 
     void LoadEffects();
 
 public:
-    // i dont like this......MUST fix later
+    // i dont like this......MUST fix later....
+    // UD: ive no clue what i didnt like about it
     std::unordered_multimap<int8, Effect> m_stateFxMap; // k,v map of state, data   -to search by state
 
 private:
-    const ItemGroup *m_group;
+    Inv::GrpData m_group;
     bool m_published;
     uint8 m_raceID;
     const uint16 m_id;
-    uint16 m_defaultID;
+    uint16 m_defaultID;                 // default effectID
     uint32 m_portionSize;
     uint32 m_marketGroupID;
     double m_basePrice;
@@ -352,23 +209,23 @@ private:
 class ItemData {
 public:
     // Full + default constructor:
-    ItemData( const char *_name = "", uint32 _typeID = 0, uint32 _ownerID = 0, uint32 _locationID = 0,
+    ItemData( const char *_name = "", uint16 _typeID = 0, uint32 _ownerID = 0, uint32 _locationID = 0,
               EVEItemFlags _flag = flagAutoFit, bool _contraband = false, bool _singleton = false, uint32 _quantity = 0,
               const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "");
 
     // Item friendly constructor:
-    ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity,
+    ItemData( uint16 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity,
               const char *_customInfo = "", bool _contraband = false);
 
     // Singleton friendly constructor:
-    ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
+    ItemData( uint16 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
               const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
 
     // Content:
     bool            contraband :1;
     bool            singleton :1;
     EVEItemFlags    flag;
-    uint32          typeID;
+    uint16          typeID;
     uint32          ownerID;
     uint32          locationID;
     uint32          quantity;

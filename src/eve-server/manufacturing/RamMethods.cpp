@@ -48,7 +48,7 @@ void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& arg
 
     switch(args.activityID) {
         case EvERam::Activity::Manufacturing: {
-            if (!bRef->infinite() and (bRef->runsRemaining() - args.runs) < 0)
+            if (!bRef->infinite() and (bRef->runs() - args.runs) < 0)
                 throw(PyException(MakeUserError("RamTooManyProductionRuns")));
             pType = &bRef->productType();
         } break;
@@ -400,7 +400,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef install
             if (into.charTimeMultiplier == 0)
                 into.charTimeMultiplier = 1.0;
             into.productionTime = EvEMath::RAM::ProductionTime(bp->type().productionTime(), bp->type().productivityModifier(),
-                                                               bp->productivityLevel(), into.timeMultiplier);
+                                                               bp->pLevel(), into.timeMultiplier);
             into.productionTime *= args.runs;
             into.productionTime *= sConfig.bpTimes.ProdTime;
         }  break;

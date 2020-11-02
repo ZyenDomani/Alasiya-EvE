@@ -34,14 +34,9 @@
 /*
  * BlueprintType
  */
-BlueprintType::BlueprintType(
-    uint32 _id,
-    const ItemGroup& _group,
-    const TypeData& _data,
-    const BlueprintType *_parentBlueprintType,
-    const ItemType& _productType,
-    const EvERam::bpTypeData& _tData)
-: ItemType(_id, _group, _data),
+BlueprintType::BlueprintType(uint16 _id, const TypeData& _data, const BlueprintType* _parentBlueprintType,
+                             const ItemType& _productType, const EvERam::bpTypeData& _tData)
+: ItemType(_id, _data),
   m_parentBlueprintType(_parentBlueprintType),
   m_productType(_productType)
 {   // asserts for data consistency
@@ -52,9 +47,9 @@ BlueprintType::BlueprintType(
     m_data = _tData;
 }
 
-BlueprintType *BlueprintType::Load( uint32 typeID)
+BlueprintType *BlueprintType::Load(uint16 typeID)
 {
-    return ItemType::Load<BlueprintType>(typeID );
+    return ItemType::Load<BlueprintType>(typeID);
 }
 
 /*
@@ -70,7 +65,7 @@ m_bpType(_bpType)
     m_data = _bpData;
 }
 
-BlueprintRef Blueprint::Load( uint32 blueprintID)
+BlueprintRef Blueprint::Load(uint32 blueprintID)
 {
     return InventoryItem::Load<Blueprint>(blueprintID );
 }
@@ -84,7 +79,7 @@ BlueprintRef Blueprint::Spawn( ItemData& data, EvERam::bpData& bdata) {
     return bRef;
 }
 
-uint32 Blueprint::CreateItemID( ItemData& data, EvERam::bpData& bdata) {
+uint32 Blueprint::CreateItemID(ItemData& data, EvERam::bpData& bdata) {
     // make sure it's a blueprint type
     const BlueprintType* bpType = sItemFactory.GetBlueprintType(data.typeID);
     if (bpType == nullptr)
@@ -127,11 +122,11 @@ BlueprintRef Blueprint::SplitBlueprint(int32 qty_to_take, bool notify/*true*/) {
 bool Blueprint::Merge(InventoryItemRef itemRef, uint32 qty, bool notify) {
     //  singleton is checked and error thrown in InventoryItem::Merge()
     BlueprintRef bpRef = BlueprintRef::StaticCast(itemRef);
-    if (m_data.mLevel != bpRef->materialLevel())
+    if (m_data.mLevel != bpRef->mLevel())
         return false;
-    if (m_data.pLevel != bpRef->productivityLevel())
+    if (m_data.pLevel != bpRef->pLevel())
         return false;
-    if (m_data.runs != bpRef->runsRemaining())
+    if (m_data.runs != bpRef->runs())
         return false;
     if (!InventoryItem::Merge(itemRef, qty, notify))
         return false;
@@ -163,7 +158,8 @@ PyDict* Blueprint::GetBlueprintAttributes() {
 
 float Blueprint::GetME()
 {
-    float bwf(m_bpType.wasteFactor() /100);
+    float bwf(m_bpType.wasteFactor());
+    bwf /= 100;
     if (m_data.mLevel < 0)
         bwf *= (1 - m_data.mLevel);
     else if (m_data.mLevel > 0)

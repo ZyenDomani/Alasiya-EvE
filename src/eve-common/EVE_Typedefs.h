@@ -9,7 +9,7 @@
 #define EVE_TYPEDEFS_H
 
 #include "tables/invCategories.h"
-typedef EVEDB::invCategories::invCategories EVEItemCategories;
+//typedef EVEDB::invCategories::invCategories EVEItemCategories;
 #include "tables/invGroups.h"
 typedef EVEDB::invGroups::invGroups EVEItemGroups;
 #include "tables/invTypes.h"

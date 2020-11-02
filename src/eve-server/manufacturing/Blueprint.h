@@ -41,7 +41,7 @@ class BlueprintType
 {
     friend class ItemType;    // To let our parent redirect construction to our _Load().
 public:
-    static BlueprintType*   Load( uint32 typeID);
+    static BlueprintType*   Load(uint16 typeID);
 
     /* Access functions  */
     const BlueprintType*    parentBlueprintType() const { return m_parentBlueprintType; }
@@ -61,7 +61,7 @@ public:
     float            chanceOfReverseEngineering() const { return m_data.chanceOfReverseEngineering; }
 
 protected:
-    BlueprintType(uint32 _id, const ItemGroup& _group, const TypeData& _data,
+    BlueprintType(uint16 _id, const TypeData& _data,
                   const BlueprintType *_parentBlueprintType, const ItemType& _productType,
                   const EvERam::bpTypeData& _tData);
 
@@ -72,14 +72,16 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_LoadType( uint32 typeID, const ItemGroup& group, const TypeData& data)  {
+    static _Ty *_LoadType(uint16 typeID, const TypeData& data)  {
         // check if we are really loading a blueprint
-        if (group.categoryID() != EVEDB::invCategories::Blueprint ) {
-            sLog.Error("Blueprint", "Load of blueprint type %u requested, but it's %s.", typeID, group.category().name().c_str() );
+        Inv::GrpData gdata = Inv::GrpData();
+        sDataMgr.GetGroup(data.groupID, gdata);
+        if (gdata.catID != EVEDB::invCategories::Blueprint ) {
+            _log( ITEM__ERROR, "Trying to load %s as CharacterType.", sDataMgr.GetCategoryName(gdata.catID));
             return nullptr;
         }
 
-        // pull additional blueprint data
+        // get blueprint type data
         EvERam::bpTypeData tData = EvERam::bpTypeData();
         sDataMgr.GetBpTypeData(typeID, tData);
 
@@ -96,7 +98,7 @@ protected:
         if (productType == nullptr)
             return nullptr;
 
-        return new BlueprintType(typeID, group, data, parentBlueprintType, *productType, tData );
+        return new BlueprintType(typeID, data, parentBlueprintType, *productType, tData );
     }
 
     /*
@@ -134,9 +136,9 @@ public:
     const ItemType&         productType()         const { return m_bpType.productType(); }
     uint32                  productTypeID()       const { return m_bpType.productTypeID(); }
     bool                    copy()                      { return m_data.copy; }
-    int32                   materialLevel()             { return m_data.mLevel; }
-    int32                   productivityLevel()         { return m_data.pLevel; }
-    int32                   runsRemaining()             { return m_data.runs; }
+    int32                   mLevel()                    { return m_data.mLevel; }
+    int32                   pLevel()                    { return m_data.pLevel; }
+    int32                   runs()                      { return m_data.runs; }
 
     // some blueprint-related stuff
     void                    UpdateME(int32 change)      { m_data.mLevel += change;}
@@ -151,6 +153,7 @@ public:
     float                   GetPE()                     { return m_data.pLevel / (1 + m_data.pLevel); }
     float                   GetME();
 
+    // is this used?  should it be?
     bool                    infinite()                  { return (m_data.runs < 0); }
 
     /*
@@ -171,9 +174,8 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 blueprintID, const ItemType& type, const ItemData& data)
     {
-        if (type.categoryID() != EVEDB::invCategories::Blueprint )
-        {
-            sLog.Error("Blueprint", "Trying to load %s(%u) as Blueprint.", type.category().name().c_str(), blueprintID);
+        if (type.categoryID() != EVEDB::invCategories::Blueprint) {
+            _log(ITEM__ERROR, "Trying to load %s as Blueprint.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

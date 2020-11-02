@@ -3,7 +3,7 @@
 
 namespace EVEDB {
     namespace invCategories {
-        typedef enum {
+        enum {
             _System = 0,
             Owner = 1,          // char, corp, faction, alliance items.
             Celestial = 2,
@@ -42,7 +42,7 @@ namespace EVEDB {
             Effects = 53,       // lighting-type effects.  non-creatable item type
             Lights = 54,        // light sources.  non-creatable item type
             Cells = 59          // not used
-        } invCategories;
+        };
     }
 }
 

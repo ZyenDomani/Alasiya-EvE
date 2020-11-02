@@ -15,6 +15,7 @@
 
 #include "packets/POS.h"
 #include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "inventory/InventoryItem.h"
 #include "pos/PosMgrDB.h"
 #include "system/SystemBubble.h"
@@ -65,7 +66,7 @@ protected:
         and (type.categoryID() != EVEDB::invCategories::Orbitals)
         and (type.categoryID() != EVEDB::invCategories::SovereigntyStructure)
         and (type.categoryID() != EVEDB::invCategories::StructureUpgrade)) {
-            _log( ITEM__ERROR, "Trying to load %s(%u) as Structure.", type.category().name().c_str(), structureID);
+            _log(ITEM__ERROR, "Trying to load %s as Structure.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
@@ -181,7 +182,7 @@ public:
     bool                        IsReinforced()          { return false; }   /** @todo  finish this...not sure how yet. */
 
     void                        SendSlimUpdate();
-    
+
 protected:
     void                        SendEffectUpdate(int16 effectID, bool active);
 

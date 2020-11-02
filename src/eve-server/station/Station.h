@@ -26,6 +26,7 @@
 #ifndef __STATION__H__INCL__
 #define __STATION__H__INCL__
 
+#include "StaticDataMgr.h"
 #include "inventory/ItemType.h"
 #include "system/Celestial.h"
 
@@ -37,22 +38,11 @@ class StationType
 {
     friend class ItemType; // to let it construct us
 public:
-    /**
-     * Loads station type.
-     *
-     * @param[in] factory
-     * @param[in] stationTypeID ID of station type to load.
-     * @return Pointer to new StationType object; NULL if failed.
-     */
-    static StationType *Load( uint32 stationTypeID);
+
+    static StationType *Load(uint16 stationTypeID);
 
 protected:
-    StationType(
-        uint32 _id,
-        // ItemType stuff:
-        const ItemGroup &_group,
-        const TypeData &_data
-    );
+    StationType(uint16 _id, const TypeData &_data);
 
     /*
      * Member functions:
@@ -61,16 +51,16 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_LoadType( uint32 stationTypeID, const ItemGroup &group, const TypeData &data)
+    static _Ty *_LoadType(uint16 stationTypeID, const TypeData &data)
     {
-        if (group.id() != EVEDB::invGroups::Station) {
-            _log( ITEM__ERROR, "Trying to load %s(%u) as StationType.", group.name().c_str(), stationTypeID);
+        if (data.groupID != EVEDB::invGroups::Station) {
+            _log(ITEM__ERROR, "Trying to load %s as StationType.", sDataMgr.GetGroupName(data.groupID));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return nullptr;
         }
 
-        return new StationType( stationTypeID, group, data );
+        return new StationType(stationTypeID, data );
     }
 };
 
@@ -138,7 +128,7 @@ protected:
     static RefPtr<_Ty> _LoadItem( uint32 stationID, const ItemType &type, const ItemData &data)
     {
         if (type.groupID() != EVEDB::invGroups::Station) {
-            _log( ITEM__ERROR, "Trying to load %s(%u) as Station.", type.group().name().c_str(),  stationID);
+            _log(ITEM__ERROR, "Trying to load %s as Station.", sDataMgr.GetGroupName(type.groupID()));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

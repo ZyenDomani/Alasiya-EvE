@@ -12,6 +12,7 @@
 
 
 #include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "../../eve-common/EVE_Scanning.h"
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
@@ -47,7 +48,7 @@ protected:
         and (type.groupID() != EVEDB::invGroups::Survey_Probe)
         //and (type.groupID() != EVEDB::invGroups::Warp_Disruption_Probe)  this wont work here...
         and (type.groupID() != EVEDB::invGroups::Obsolete_Probes)) {
-            _log( ITEM__ERROR, "Trying to load %s(%u) as Probe.", type.group().name().c_str(), itemID);
+            _log(ITEM__ERROR, "Trying to load %s as Probe.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

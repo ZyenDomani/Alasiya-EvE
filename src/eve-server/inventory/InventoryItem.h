@@ -111,9 +111,7 @@ public:
     uint16                  typeID() const              { return m_type.id(); }
     uint16                  groupID() const             { return m_type.groupID(); }
     double                  radius() const              { return (HasAttribute(AttrRadius) ? GetAttribute(AttrRadius).get_double() : 1.0); }
-    const ItemGroup &       group() const               { return m_type.group(); }
-    const ItemCategory &    category() const            { return m_type.category(); }
-    EVEItemCategories       categoryID() const          { return m_type.categoryID(); }
+    uint8                   categoryID() const          { return m_type.categoryID(); }
     bool                    isGlobal() const            { return (HasAttribute(AttrIsGlobal) ? GetAttribute(AttrIsGlobal).get_bool() : false); }
     bool                    IsOnline()                  { return GetAttribute(AttrOnline).get_bool(); }
 
@@ -220,11 +218,11 @@ protected:
     {
         // static load
         RefPtr<_Ty> i = _Ty::template _Load<_Ty>( itemID );
-        if( !i )
+        if (!i)
             return RefPtr<_Ty>();
 
         // virtual load (load attributes)
-        if( !i->_Load() )
+        if (!i->_Load())
             return RefPtr<_Ty>();
 
         return i;
@@ -236,7 +234,7 @@ protected:
     {
         // pull the item info
         ItemData data;
-        if( !ItemDB::GetItem( itemID, data ) )
+        if (!ItemDB::GetItem(itemID, data))
             return RefPtr<_Ty>();
 
         // obtain type
@@ -285,6 +283,7 @@ protected:
     GPoint                  m_position;
 
 private:
+    /** @todo update this to static calls */
     InventoryDB m_db;
 
 /* new effects processing system */

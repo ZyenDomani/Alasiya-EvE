@@ -79,21 +79,21 @@ PyResult RamProxyService::Handle_GetRelevantCharSkills(PyCallArgs &call) {
 }
 
 PyResult RamProxyService::Handle_AssemblyLinesSelectPublic(PyCallArgs &call) {
-    return m_db.AssemblyLinesSelectPublic(call.client->GetRegionID());
+    return FactoryDB::AssemblyLinesSelectPublic(call.client->GetRegionID());
 }
 
 PyResult RamProxyService::Handle_AssemblyLinesSelectPrivate(PyCallArgs &call) {
-    return m_db.AssemblyLinesSelectPrivate(call.client->GetCharacterID());
+    return FactoryDB::AssemblyLinesSelectPrivate(call.client->GetCharacterID());
 }
 
 PyResult RamProxyService::Handle_AssemblyLinesSelectCorp(PyCallArgs &call) {
     /** @todo  this needs to search db for POS arrays based on corp */
-    return m_db.AssemblyLinesSelectCorporation(call.client->GetCorporationID());
+    return FactoryDB::AssemblyLinesSelectCorporation(call.client->GetCorporationID());
 }
 
 PyResult RamProxyService::Handle_AssemblyLinesSelectAlliance(PyCallArgs &call) {
     /** @todo  this needs to search db for POS arrays based on alliance */
-    return m_db.AssemblyLinesSelectAlliance(call.client->GetAllianceID());
+    return FactoryDB::AssemblyLinesSelectAlliance(call.client->GetAllianceID());
 }
 
 PyResult RamProxyService::Handle_AssemblyLinesGet(PyCallArgs &call) {
@@ -103,7 +103,7 @@ PyResult RamProxyService::Handle_AssemblyLinesGet(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.AssemblyLinesGet(arg.arg);
+    return FactoryDB::AssemblyLinesGet(arg.arg);
 }
 
 PyResult RamProxyService::Handle_AssemblyLinesSelect(PyCallArgs &call) {
@@ -114,13 +114,13 @@ PyResult RamProxyService::Handle_AssemblyLinesSelect(PyCallArgs &call) {
     }
 
     if (args.filter == "region")
-        return m_db.AssemblyLinesSelectPublic(call.client->GetRegionID());
+        return FactoryDB::AssemblyLinesSelectPublic(call.client->GetRegionID());
     else if (args.filter == "char")
-        return m_db.AssemblyLinesSelectPersonal(call.client->GetCharacterID());
+        return FactoryDB::AssemblyLinesSelectPersonal(call.client->GetCharacterID());
     else if (args.filter == "corp")
-        return m_db.AssemblyLinesSelectCorporation(call.client->GetCorporationID());
+        return FactoryDB::AssemblyLinesSelectCorporation(call.client->GetCorporationID());
     else if (args.filter == "alliance")
-        return m_db.AssemblyLinesSelectAlliance(call.client->GetAllianceID());
+        return FactoryDB::AssemblyLinesSelectAlliance(call.client->GetAllianceID());
 
     _log(SERVICE__ERROR, "Unknown filter '%s'.", args.filter.c_str());
     return nullptr;
@@ -140,7 +140,7 @@ PyResult RamProxyService::Handle_GetJobs2(PyCallArgs &call) {
             return nullptr;
         }
 
-    return m_db.GetJobs2(args.ownerID, args.completed);
+    return FactoryDB::GetJobs2(args.ownerID, args.completed);
 }
 
 /** @todo update this for corp usage */
@@ -376,11 +376,13 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     }
 
     if (args.activityID == EvERam::Activity::Invention) {
-        if (bpRef->infinite())
+        if (!bpRef->copy())
             throw(PyException(MakeUserError("RamCannotInventABlueprintOriginal")));
-        if (bpRef->runsRemaining() < 1)
+        if (bpRef->runs() < 1)
             throw(PyException(MakeUserError("RamCannotInventZeroRuns")));
 
+        // im sure there is more to do here......
+        
         /** @todo do something constructive with this data... */
         // this is populated for t2 bpc
         uint16 outputType(0), baseItemType(0), decryptorType(0);
@@ -398,7 +400,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     }
 
     // approved job cost from quote
-    float cost = PyRep::IntegerValue(call.byname["authorizedCost"]);
+    float cost(PyRep::IntegerValue(call.byname["authorizedCost"]));
 
     // pay for assembly lines...take the money, send wallet blink event record the transaction in journal.
     std::string reason = "DESC: Installing ";
@@ -422,7 +424,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                                  Account::KeyType::Cash);
 
     // register/save job to assy line.
-    if ( !m_db.InstallJob(
+    if ( !FactoryDB::InstallJob(
                           (args.isCorpJob ? call.client->GetCorporationID() : call.client->GetCharacterID()),
                           call.client->GetCharacterID(),
                           args.installationAssemblyLineID,
@@ -479,7 +481,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
     uint32 installedItemID, ownerID;
     EVEItemFlags outputFlag;
     int8 activity;
-    if (!m_db.GetJobProperties(args.jobID, installedItemID, ownerID, outputFlag, runs, licensedProductionRuns, activity))
+    if (!FactoryDB::GetJobProperties(args.jobID, installedItemID, ownerID, outputFlag, runs, licensedProductionRuns, activity))
         return nullptr;
 
     // return item
@@ -490,7 +492,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
 
     // does an aborted job return the installed item?
     //  is it immediate or after time expiry?
-    m_db.CompleteJob(args.jobID, (args.cancel ? EvERam::Status::Abort : EvERam::Status::Delivered));
+    FactoryDB::CompleteJob(args.jobID, (args.cancel ? EvERam::Status::Abort : EvERam::Status::Delivered));
 
     // return materials which weren't consumed
     /** @todo make sure this is NOT returning more items than given... it is!!! */
@@ -524,11 +526,11 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
             } break;
             case EvERam::Activity::Copying: {
                 ItemData idata(installedItem->typeID(), ownerID, 0, flagAutoFit);
-                BlueprintData data = BlueprintData();
+                EvERam::bpData data = EvERam::bpData();
                     data.copy   = true;
                     data.runs   = licensedProductionRuns;
-                    data.mLevel = bp->materialLevel();
-                    data.pLevel = bp->productivityLevel();
+                    data.mLevel = bp->mLevel();
+                    data.pLevel = bp->pLevel();
                 BlueprintRef copy = BlueprintRef(nullptr);
                 while (runs) {
                     //wtf?  not sure if i like this but cant think of a better way right now...

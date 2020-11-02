@@ -27,7 +27,8 @@
 #ifndef __SHIP__H__INCL__
 #define __SHIP__H__INCL__
 
-
+#include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "effects/EffectsData.h"
 #include "fleet/FleetData.h"
 #include "inventory/ItemType.h"
@@ -213,15 +214,13 @@ protected:
     // Template loader:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 shipID, const ItemType &type, const ItemData &data) {
-        if (type.categoryID() != EVEDB::invCategories::Ship) {
-            _log( ITEM__ERROR, "Trying to load %s(%u) as ShipItem.", type.category().name().c_str(), shipID);
-            if (sConfig.server.StackTrace)
-                EvE::traceStack();
-            return RefPtr<_Ty>();
-        }
+        if (type.categoryID() == EVEDB::invCategories::Ship)
+            return ShipItemRef( new ShipItem(shipID, type, data ));
 
-       // const ShipType &shipType = static_cast<const ShipType &>( type );
-        return ShipItemRef( new ShipItem(shipID, type, data ));
+        _log(ITEM__ERROR, "Trying to load %s as Ship.", sDataMgr.GetCategoryName(type.categoryID()));
+        if (sConfig.server.StackTrace)
+            EvE::traceStack();
+        return RefPtr<_Ty>();
     }
 
     //bool LoadAttributes();

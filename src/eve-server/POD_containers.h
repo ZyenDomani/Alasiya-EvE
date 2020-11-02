@@ -9,7 +9,9 @@
 
 #include "eve-server.h"
 
-/** @todo most of these need their own namespace */
+/** @todo most of these need their own namespace
+ *     currently moving to specific eve-common/EVE_xxxx.h files
+ */
 
 /* POD structure for certificate data */
 struct CharCerts {
@@ -109,32 +111,6 @@ struct BountyData {
     uint32 toID;
     double amount;
     std::string reason;
-};
-
-/* POD structure for blueprint data */
-struct BlueprintData {
-    bool copy:1;
-    int32 mLevel;
-    int32 pLevel;
-    int32 runs;
-};
-
-/* POD structure for blueprint type data */
-struct BlueprintTypeData {
-    int8 catID;
-    int8 techLevel;
-    uint16 wasteFactor;
-    uint16 productTypeID;
-    uint16 parentBlueprintTypeID;
-    uint32 productionTime;
-    uint32 researchProductivityTime;
-    uint32 researchMaterialTime;
-    uint32 researchCopyTime;
-    uint32 researchTechTime;
-    uint32 productivityModifier;
-    uint32 materialModifier;
-    uint32 maxProductionLimit;
-    double chanceOfReverseEngineering;
 };
 
 
@@ -411,7 +387,7 @@ struct DBSystemEntity {
 };
 
 struct DBSystemDynamicEntity {
-    EVEItemCategories categoryID;
+    uint8 categoryID;
     uint16 typeID;
     uint16 groupID;
     int32 allianceID;
@@ -442,5 +418,6 @@ struct ProbeData {
     float scanRange;
     GPoint dest;
 };
+
 
 #endif  // _EVEMU_POD_CONTAINERS_H_

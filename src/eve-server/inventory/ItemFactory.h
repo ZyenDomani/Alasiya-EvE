@@ -30,16 +30,14 @@
 
 #include "utils/Singleton.h"
 #include "inventory/ItemRef.h"
+//#include "../../eve-common/EVE_RAM.h"
 
 
-class ItemCategory;
-class ItemGroup;
 class ItemType;
 
 class ItemData;
 class CharacterData;
 class CorpData;
-class BlueprintData;
 class OfficeData;
 class AsteroidData;
 
@@ -78,28 +76,15 @@ public:
     // load=true will load the item and its container (recursively) into server, up to solarSystem
     Inventory* GetItemContainerInventory(uint32 itemID, bool load=true);
 
-    /**
-     * these load type, cache it and return it.
-     *
-     * @param[in] typeID  type to be returned.
-     * @return Pointer to type data container; NULL if fails.
-     */
-    const ItemCategory*     GetCategory(EVEItemCategories category);
-    const ItemGroup*        GetGroup(uint32 groupID);
-    const ItemType*         GetType(uint32 typeID);
-    //const ShipType*         GetShipType(uint32 shipTypeID);
-    const StationType*      GetStationType(uint32 stationTypeID);
-    const CharacterType*    GetCharacterType(uint32 characterTypeID);
-    const BlueprintType*    GetBlueprintType(uint32 blueprintTypeID);
-    const CharacterType*    GetCharacterTypeByBloodline(uint32 bloodlineID);
+    // these load, cache and return requested type.
+    const ItemType*         GetType(uint16 typeID);
+    const StationType*      GetStationType(uint16 stationTypeID);
+    const CharacterType*    GetCharacterType(uint16 characterTypeID);
+    const BlueprintType*    GetBlueprintType(uint16 blueprintTypeID);
+    const CharacterType*    GetCharacterTypeByBloodline(uint16 bloodlineID);
 
 
-    /**
-     * these load an InventoryItem of requested type and returns a RefPtr.
-     *
-     * @param[in]  ID of _item to load.
-     * @return RefPtr to _Ty; NULL if load failed.
-     */
+    // return a RefPtr of requested itemID, loading (and cache) as needed
     SkillRef                GetSkill(uint32 skillID);
     ShipItemRef             GetShip(uint32 shipID);
     StationItemRef          GetStation(uint32 stationID);
@@ -130,7 +115,6 @@ public:
     SkillRef                SpawnSkill(ItemData &data);
     ShipItemRef             SpawnShip(ItemData &data);
     CharacterRef            SpawnCharacter(CharacterData& charData, CorpData& corpData);
-    BlueprintRef            SpawnBlueprint(ItemData &data, BlueprintData &bpData);
     ModuleItemRef           SpawnModule(ItemData &data);
     InventoryItemRef        SpawnItem(ItemData &data);
     InventoryItemRef        SpawnTempItem(ItemData &data);
@@ -140,11 +124,12 @@ public:
     CargoContainerRef       SpawnCargoContainer(ItemData &data);
     WreckContainerRef       SpawnWreckContainer(ItemData &data);
     ProbeItemRef            SpawnProbe(ItemData &data);
+
     /** @todo  add PI item spawners here */
 
-    /*
-	 * ID Authority Functions:
-     */
+    /** @todo  add Sleeper item spawners here */
+
+    /* ID Authority Functions  */
     uint32                  GetNextNPCID();
     uint32                  GetNextTempID();
     uint32                  GetNextDroneID();
@@ -155,15 +140,13 @@ protected:
     InventoryDB* m_db;
     Client* m_pClient;     // client currently using the ItemFactory, we do not own this
 
-    std::map<uint32, ItemType*> m_types;
-    std::map<uint32, ItemGroup*> m_groups;
+    std::map<uint16, ItemType*> m_types;
     std::map<uint32, InventoryItemRef> m_items;
     std::map<uint32, InventoryItemRef> m_staticItems;
     std::map<uint32, InventoryItemRef> m_dynamicItems;
-    std::map<EVEItemCategories, ItemCategory*> m_categories;
 
     template<class _Ty>
-    const _Ty *_GetType(uint32 typeID);
+    const _Ty *_GetType(uint16 typeID);
 
     template<class _Ty>
     RefPtr<_Ty> _GetItem(uint32 itemID);

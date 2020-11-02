@@ -71,7 +71,7 @@ BookmarkService::~BookmarkService() {
     delete m_dispatch;
 }
 
-bool BookmarkService::LookupBookmark(uint32 bookmarkID, uint32& itemID, uint32& typeID, uint32& locationID, double& x, double& y, double& z) {
+bool BookmarkService::LookupBookmark(uint32 bookmarkID, uint32& itemID, uint16& typeID, uint32& locationID, double& x, double& y, double& z) {
     return m_db.GetBookmarkInformation(bookmarkID, itemID, typeID, locationID, x, y, z);
 }
 
@@ -118,7 +118,7 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
     // bookmarks = self.bookmarkMgr.DeleteFolder(folderID)
     call.Dump(BOOKMARK__CALL_DUMP);
 
-    uint32 folderID = PyRep::IntegerValueU32(call.tuple->GetItem( 0 ));
+    uint32 folderID(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
 
     // call db to get list of bmIDs in deleted folder.  return result with this data
     std::vector< int32 > bmIDs;

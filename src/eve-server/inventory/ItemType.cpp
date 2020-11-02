@@ -34,131 +34,6 @@
 #include "station/Station.h"
 
 /*
- * CategoryData
- */
-CategoryData::CategoryData(const char *_name, const char *_desc, bool _published)
-: name(_name),
-  description(_desc),
-  published(_published)
-{
-}
-
-/*
- * ItemCategory
- */
-ItemCategory::ItemCategory(EVEItemCategories _id, const CategoryData &_data)
-: m_id(_id),
-  m_name(_data.name),
-  m_description(_data.description),
-  m_published(_data.published)
-{
-    _log(ITEM__TRACE, "Created object %p for category %s (%u).", this, m_name.c_str(), (uint32)m_id);
-}
-
-ItemCategory* ItemCategory::Load( EVEItemCategories category)
-{
-    ItemCategory* c = ItemCategory::_Load(category);
-
-    // ItemCategory has no virtual _Load()
-    return c;
-}
-
-ItemCategory* ItemCategory::_Load( EVEItemCategories category)
-{
-    CategoryData data;
-    if(!sItemFactory.db()->GetCategory(category, data))
-        return nullptr;
-
-    return ItemCategory::_Load(category, data);
-}
-
-ItemCategory* ItemCategory::_Load( EVEItemCategories category, const CategoryData &data)
-{
-    return new ItemCategory(category, data);
-}
-
-/*
- * GroupData
- */
-GroupData::GroupData(
-    EVEItemCategories _category,
-    const char *_name,
-    const char *_desc,
-    bool _useBasePrice,
-    bool _allowManufacture,
-    bool _allowRecycler,
-    bool _anchored,
-    bool _anchorable,
-    bool _fittableNonSingleton,
-    bool _published)
-: category(_category),
-  name(_name),
-  description(_desc),
-  useBasePrice(_useBasePrice),
-  allowManufacture(_allowManufacture),
-  allowRecycler(_allowRecycler),
-  anchored(_anchored),
-  anchorable(_anchorable),
-  fittableNonSingleton(_fittableNonSingleton),
-  published(_published)
-{
-}
-
-/*
- * ItemGroup
- */
-ItemGroup::ItemGroup(
-    uint16 _id,
-    // ItemGroup stuff:
-    const ItemCategory &_category,
-    const GroupData &_data)
-: m_id(_id),
-  m_category(&_category),
-  m_name(_data.name),
-  m_description(_data.description),
-  m_useBasePrice(_data.useBasePrice),
-  m_allowManufacture(_data.allowManufacture),
-  m_allowRecycler(_data.allowRecycler),
-  m_anchored(_data.anchored),
-  m_anchorable(_data.anchorable),
-  m_fittableNonSingleton(_data.fittableNonSingleton),
-  m_published(_data.published)
-{
-    // assert for data consistency
-    assert(_data.category == _category.id());
-
-    _log(ITEM__TRACE, "Created object %p for group %s (%u).", this, name().c_str(), id());
-}
-
-ItemGroup* ItemGroup::Load( uint16 groupID)
-{
-    ItemGroup* g = ItemGroup::_Load(groupID);
-
-    // ItemGroup has no virtual _Load()
-    return g;
-}
-
-ItemGroup* ItemGroup::_Load( uint16 groupID)
-{
-    // pull data
-    GroupData data;
-    if(!sItemFactory.db()->GetGroup(groupID, data))
-        return nullptr;
-
-    // retrieve category
-    const ItemCategory *c = sItemFactory.GetCategory(data.category);
-    if(c == nullptr)
-        return nullptr;
-
-    return ItemGroup::_Load(groupID, *c, data);
-}
-
-ItemGroup* ItemGroup::_Load( uint16 groupID, const ItemCategory &category, const GroupData &data)
-{
-    return new ItemGroup(groupID, category, data);
-}
-
-/*
  * TypeData
  */
 TypeData::TypeData(uint16 _groupID, const char* _name, const char* _desc, double _radius, double _mass,
@@ -183,12 +58,8 @@ TypeData::TypeData(uint16 _groupID, const char* _name, const char* _desc, double
 /*
  * ItemType
  */
-ItemType::ItemType(
-    uint32 _id,
-    const ItemGroup &_group,
-    const TypeData &_data)
+ItemType::ItemType(uint16 _id, const TypeData &_data)
 : m_id(_id),
-  m_group(&_group),
   m_name(_data.name),
   m_description(_data.description),
   m_portionSize(_data.portionSize),
@@ -196,30 +67,33 @@ ItemType::ItemType(
   m_published(_data.published),
   m_marketGroupID(_data.marketGroupID),
   m_chanceOfDuplicating(_data.chanceOfDuplicating),
-  // set some attributes
+  // set common attributes
   m_radius(_data.radius),
   m_mass(_data.mass),
   m_volume(_data.volume),
   m_capacity(_data.capacity),
   m_raceID(_data.race),
-  m_defaultID(0)
+  m_defaultID(0),
+  m_group(Inv::GrpData())
 {
     // assert for data consistency
-    assert(_data.groupID == _group.id());
+    sDataMgr.GetGroup(_data.groupID, m_group);
+    assert(_data.groupID == m_group.id);
     m_AttributeMap.clear();
 
     _log(ITEM__TRACE, "Created ItemType object %p for type %s (%u).", this, name().c_str(), id());
 }
 
-ItemType* ItemType::Load( uint32 typeID)
-{
-    return ItemType::Load<ItemType>(typeID );
+ItemType* ItemType::Load(uint16 typeID) {
+    return ItemType::Load<ItemType>(typeID);
 }
 
 template<class _Ty>
-_Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData &data)
-{
-    switch( group.categoryID() ) { // not complete list
+_Ty* ItemType::_LoadType( uint16 typeID, const TypeData& data) {
+    Inv::GrpData gData = Inv::GrpData();
+    sDataMgr.GetGroup(data.groupID, gData);
+
+    switch (gData.catID) { // not complete list
         /*
          * not handled / not needed ?
         case EVEDB::invCategories::_System:
@@ -228,15 +102,16 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Reaction:
         */
         case EVEDB::invCategories::Owner: {
-            return CharacterType::_LoadType<CharacterType>(typeID, group, data );
+            return CharacterType::_LoadType<CharacterType>(typeID, data );
         }
         case EVEDB::invCategories::Station: {
-            if (group.id() == EVEDB::invGroups::Station)
-                return StationType::_LoadType<StationType>(typeID, group, data );
-                //case EVEDB::invGroups::Station_Services:  use generic type for this
+            if (gData.id == EVEDB::invGroups::Station)
+                return StationType::_LoadType<StationType>(typeID, data );
+            // i dont think we need anything specific for station services here...
+            //case EVEDB::invGroups::Station_Services:
         } break;
         case EVEDB::invCategories::Blueprint: {
-            return BlueprintType::_LoadType<BlueprintType>(typeID, group, data );
+            return BlueprintType::_LoadType<BlueprintType>(typeID, data );
         }
         case EVEDB::invCategories::Ship:
         case EVEDB::invCategories::Accessories:  // clone, voucher, outpost improvement/upgrade, plex
@@ -262,12 +137,12 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
             // these probably dont need to be coded specifically
         } break;
         default:
-            _log(ITEM__MESSAGE, "type %u (group: %u, cat: %u) called _LoadType, but is not handled.", typeID, group.id(), group.categoryID());
+            _log(ITEM__MESSAGE, "type %u (group: %u, cat: %u) called _LoadType, but is not handled.", typeID, gData.id, gData.catID);
              break;
     }
 
     // Generic one, create it:
-    return new ItemType( typeID, group, data );
+    return new ItemType( typeID, data );
 }
 
 bool ItemType::_Load()
@@ -381,7 +256,7 @@ void ItemType::GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMa
  */
 ItemData::ItemData(
     const char *_name,
-    uint32 _typeID,
+    uint16 _typeID,
     uint32 _ownerID,
     uint32 _locationID,
     EVEItemFlags _flag,
@@ -404,7 +279,7 @@ customInfo(_customInfo)
 }
 
 ItemData::ItemData(
-    uint32 _typeID,
+    uint16 _typeID,
     uint32 _ownerID,
     uint32 _locationID,
     EVEItemFlags _flag,
@@ -425,13 +300,13 @@ customInfo(_customInfo)
 }
 
 ItemData::ItemData(
-    uint32 _typeID,
+    uint16 _typeID,
     uint32 _ownerID,
     uint32 _locationID,
     EVEItemFlags _flag,
-    const char *_name,
-    const GPoint &_position,
-    const char *_customInfo,
+    const char* _name,
+    const GPoint& _position,
+    const char* _customInfo,
     bool _contraband)
 : name(_name),
 typeID(_typeID),

@@ -46,6 +46,50 @@ namespace Inv {
         };
     }
 
+    /* POD structure for Inventory categories */
+    struct CatData {
+        bool            published :1;
+        uint8           id;
+        std::string     name;
+        std::string     description;
+    };
+
+    /* POD structure for Inventory groups */
+    struct GrpData {
+
+        bool            useBasePrice :1;
+        bool            allowManufacture :1;
+        bool            allowRecycler :1;
+        bool            anchored :1;
+        bool            anchorable :1;
+        bool            fittableNonSingleton :1;
+        bool            published :1;
+        uint8           catID;
+        uint16          id;
+        std::string     name;
+        std::string     description;
+    };
+
+    /* POD structure for Inventory types */
+    struct TypeData {
+        bool            published :1;
+        bool            isRefinable :1;
+        bool            isRecyclable :1;
+        uint8           race;
+        uint16          id;
+        uint16          groupID;
+        uint32          portionSize;
+        uint32          marketGroupID;
+        float           chanceOfDuplicating;
+        double          radius;
+        double          mass;
+        double          volume;
+        double          capacity;
+        double          basePrice;
+        std::string     name;
+        std::string     description;
+    };
+
     /* POD structure for saving items */
     struct SaveData {
         bool            contraband :1;
@@ -62,11 +106,11 @@ namespace Inv {
 
     /* POD structure for saving attribute data */
     struct AttrData {
-        bool type;          // 0=int, 1=float
-        uint16 attrID;
-        uint32 itemID;
-        int64 valueInt;
-        double valueFloat;
+        bool            type;          // 0=int, 1=float
+        uint16          attrID;
+        uint32          itemID;
+        int64           valueInt;
+        double          valueFloat;
     };
 
 }

@@ -63,15 +63,8 @@ CharacterTypeData::CharacterTypeData(
 /*
  * CharacterType
  */
-CharacterType::CharacterType(
-    uint32 _id,
-    uint8 _bloodlineID,
-    // ItemType stuff:
-    const ItemGroup &_group,
-    const TypeData &_data,
-    // CharacterType stuff:
-    const CharacterTypeData &_charData)
-: ItemType(_id, _group, _data),
+CharacterType::CharacterType(uint16 _id, uint8 _bloodlineID, const TypeData& _data, const CharacterTypeData& _charData)
+: ItemType(_id, _data),
   m_bloodlineID(_bloodlineID),
   m_bloodlineName(_charData.bloodlineName),
   m_description(_charData.description),
@@ -91,15 +84,13 @@ CharacterType::CharacterType(
     assert(_data.race == _charData.race);
 }
 
-CharacterType *CharacterType::Load( uint32 characterTypeID)
-{
-    return ItemType::Load<CharacterType>(characterTypeID );
+CharacterType *CharacterType::Load(uint16 typeID) {
+    return ItemType::Load<CharacterType>(typeID );
 }
 
 /*
  * CharacterAppearance
  */
-
 void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 {
     PyList* colors = data->GetItemString("colors")->AsList();

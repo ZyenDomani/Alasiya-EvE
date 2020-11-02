@@ -38,79 +38,7 @@
 #include "system/Asteroid.h"
 #include "system/SolarSystem.h"
 
-bool InventoryDB::GetCategory(EVEItemCategories category, CategoryData &into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  categoryName,"
-        "  description,"
-        "  published "
-        " FROM invCategories "
-        " WHERE categoryID=%u",
-        (uint32)category))
-    {
-        codelog(DATABASE__ERROR, "Error in GetCategory query: %s.", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Category %u not found.", (uint32)category);
-        return false;
-    }
-
-    into.name = row.GetText(0);
-    into.description = row.GetText(1);
-    into.published = row.GetBool(2);
-
-    return true;
-}
-
-bool InventoryDB::GetGroup(uint32 groupID, GroupData &into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  categoryID,"
-        "  groupName,"
-        "  description,"
-        "  useBasePrice,"
-        "  allowManufacture,"
-        "  allowRecycler,"
-        "  anchored,"
-        "  anchorable,"
-        "  fittableNonSingleton,"
-        "  published "
-        " FROM invGroups "
-        " WHERE groupID=%u",
-        groupID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query group %u: %s.", groupID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Group %u not found.", groupID);
-        return false;
-    }
-
-    into.category = (EVEItemCategories)row.GetUInt(0);
-    into.name = row.GetText(1);
-    into.description = row.GetText(2);
-    into.useBasePrice = row.GetBool(3);
-    into.allowManufacture = row.GetBool(4);
-    into.allowRecycler = row.GetBool(5);
-    into.anchored = row.GetBool(6);
-    into.anchorable = row.GetBool(7);
-    into.fittableNonSingleton = row.GetBool(8);
-    into.published = row.GetBool(9);
-
-    return true;
-}
-
-bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
+bool InventoryDB::GetType(uint16 typeID, TypeData& into) {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -159,7 +87,7 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
     return true;
 }
 
-bool InventoryDB::GetCharacterType(uint32 bloodlineID, CharacterTypeData &into) {
+bool InventoryDB::GetCharacterType(uint8 bloodlineID, CharacterTypeData &into) {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -209,7 +137,7 @@ bool InventoryDB::GetCharacterType(uint32 bloodlineID, CharacterTypeData &into) 
     return true;
 }
 
-bool InventoryDB::GetCharacterTypeByBloodline(uint32 bloodlineID, uint32 &characterTypeID) {
+bool InventoryDB::GetCharacterTypeByBloodline(uint8 bloodlineID, uint16& characterTypeID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT typeID FROM bloodlineTypes WHERE bloodlineID = %u", bloodlineID)) {
         codelog(DATABASE__ERROR, "Failed to query bloodline %u: %s.", bloodlineID, res.error.c_str());
@@ -227,7 +155,7 @@ bool InventoryDB::GetCharacterTypeByBloodline(uint32 bloodlineID, uint32 &charac
     return true;
 }
 
-bool InventoryDB::GetBloodlineByCharacterType(uint32 characterTypeID, uint32 &bloodlineID) {
+bool InventoryDB::GetBloodlineByCharacterType(uint16 characterTypeID, uint8 &bloodlineID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT bloodlineID FROM bloodlineTypes WHERE typeID = %u", characterTypeID)) {
         codelog(DATABASE__ERROR, "Failed to query character type %u: %s.", characterTypeID, res.error.c_str());
@@ -245,13 +173,13 @@ bool InventoryDB::GetBloodlineByCharacterType(uint32 characterTypeID, uint32 &bl
     return true;
 }
 
-bool InventoryDB::GetCharacterType(uint32 characterTypeID, uint32 &bloodlineID, CharacterTypeData &into) {
+bool InventoryDB::GetCharacterType(uint16 characterTypeID, uint8 &bloodlineID, CharacterTypeData &into) {
     if(!GetBloodlineByCharacterType(characterTypeID, bloodlineID))
         return false;
     return GetCharacterType(bloodlineID, into);
 }
 
-bool InventoryDB::GetCharacterTypeByBloodline(uint32 bloodlineID, uint32 &characterTypeID, CharacterTypeData &into) {
+bool InventoryDB::GetCharacterTypeByBloodline(uint8 bloodlineID, uint16 &characterTypeID, CharacterTypeData &into) {
     if(!GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
         return false;
     return GetCharacterType(bloodlineID, into);
@@ -717,7 +645,7 @@ bool InventoryDB::GetSolarSystem(uint32 solarSystemID, SolarSystemData &into) {
     return true;
 }
 
-bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
+bool InventoryDB::GetModulePowerSlotByTypeID(uint16 typeID, uint32 &into)
 {
     /** @todo only used by gmcommands.  update and remove. */
     DBQueryResult res;
@@ -791,11 +719,11 @@ bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
         return false;
 }
 
-bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &into)
+bool InventoryDB::GetOpenPowerSlots(uint16 slotType, ShipItemRef ship, uint32 &into)
 {
     /** @todo only used by gmcommands.  update and remove. */
     DBQueryResult res;
-    uint32 attributeID = 0, firstFlag = 0, slotsOnShip = 0;
+    uint16 attributeID = 0, firstFlag = 0, slotsOnShip = 0;
     DBResultRow row;
 
     if( slotType == 0 )
@@ -823,7 +751,7 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
         slotsOnShip = ship->GetAttribute(AttrHiSlots).get_uint32();
     }
 
-    for( uint32 flag = firstFlag; flag < (firstFlag + slotsOnShip); flag++ ) {
+    for( uint16 flag = firstFlag; flag < (firstFlag + slotsOnShip); flag++ ) {
         // this is far from efficient as we are iterating through all of the ships item slots.... every iteration... so this will be slow when you got loads of players with a single free slot.
         if(ship->GetMyInventory()->IsEmptyByFlag((EVEItemFlags)flag)) {
             into = flag;

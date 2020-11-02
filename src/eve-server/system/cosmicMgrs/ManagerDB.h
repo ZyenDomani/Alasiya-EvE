@@ -11,6 +11,7 @@
 
 
 #include "EVE_Dungeon.h"
+#include "EVE_Inventory.h"
 #include "EVE_Scanning.h"
 #include "EntityList.h"
 #include "POD_containers.h"
@@ -28,17 +29,18 @@ public:
     static void UpdateStatisticHistory(StatisticData& data);
 
     /* data manager */
+    static void GetTypeData(DBQueryResult& res);
+    static void GetGroupData(DBQueryResult& res);
+    static void GetCategoryData(DBQueryResult& res);
+
     static void GetOreBySSC(DBQueryResult& res);
     static void GetSkillList(DBQueryResult& res);
     static void GetSystemData(DBQueryResult& res);
     static void GetStaticData(DBQueryResult& res); // static items in a solar system
     static void GetMoonResouces(DBQueryResult& res);
-    static void GetRAMMaterials(DBQueryResult& res);
     static void GetAgentLocation(DBQueryResult& res);
     static void GetSalvageGroups(DBQueryResult& res);
-    static void GetBlueprintType(DBQueryResult& res);
     static void GetTypeAttributes(DBQueryResult& res);
-    static void GetRAMRequirements(DBQueryResult& res);
 
     static void LoadCorpFactions(std::map<uint32, uint32> &into);
     static void LoadFactionStationCounts(std::map<uint32, uint32> &into);

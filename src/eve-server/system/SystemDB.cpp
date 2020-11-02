@@ -150,9 +150,9 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.itemID        = row.GetUInt(0);
         entry.itemName      = row.GetText(1);
         entry.ownerID       = row.GetInt(2);
-        entry.typeID        = row.GetInt(3);
-        entry.groupID       = row.GetInt(4);
-        entry.categoryID    = (EVEItemCategories)row.GetInt(5);
+        entry.typeID        = row.GetUInt(3);
+        entry.groupID       = row.GetUInt(4);
+        entry.categoryID    = row.GetUInt(5);
         GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
         entry.position      = pos;
         entry.planetID      = atoi(row.GetText(9));
@@ -219,10 +219,10 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         DBSystemDynamicEntity entry = DBSystemDynamicEntity();
         entry.itemID        = row.GetUInt(0);
         entry.itemName      = row.GetText(1);
-        entry.typeID        = row.GetInt(2);
+        entry.typeID        = row.GetUInt(2);
         entry.ownerID       = row.GetInt(3);
-        entry.groupID       = row.GetInt(4);
-        entry.categoryID    = (EVEItemCategories)row.GetInt(5);
+        entry.groupID       = row.GetUInt(4);
+        entry.categoryID    = row.GetUInt(5);
         GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
         entry.position      = pos;
 

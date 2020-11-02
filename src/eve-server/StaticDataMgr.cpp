@@ -15,6 +15,7 @@
 #include "../eve-common/EVE_Character.h"
 #include "StaticDataMgr.h"
 #include "database/EVEDBUtils.h"
+#include "manufacturing/FactoryDB.h"
 #include "station/StationDataMgr.h"
 #include "system/SystemManager.h"
 
@@ -168,10 +169,71 @@ void StaticDataMgr::Populate()
     DBResultRow row;
 
     startTime = GetTimeMSeconds();
+    ManagerDB::GetCategoryData(*res);
+    while (res->GetRow(row)) {
+        //SELECT categoryID, categoryName, description, published FROM invCategories
+        Inv::CatData data       = Inv::CatData();
+            data.id             = row.GetUInt(0);
+            data.name           = row.GetText(1);
+            data.description    = row.GetText(2);
+            data.published      = (sConfig.server.AllowNonPublished ? true : row.GetBool(3));
+        m_catData.emplace(row.GetUInt(0), data);
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Inventory Categories loaded in %.3fms.", m_catData.size(), (GetTimeMSeconds() - startTime));
+
+    startTime = GetTimeMSeconds();
+    ManagerDB::GetGroupData(*res);
+    while (res->GetRow(row)) {
+        //SELECT groupID, categoryID, groupName, description, useBasePrice, allowManufacture, allowRecycler,
+        //  anchored, anchorable, fittableNonSingleton, published FROM invGroups
+        Inv::GrpData data               = Inv::GrpData();
+            data.id                     = row.GetUInt(0);
+            data.catID                  = row.GetUInt(1);
+            data.name                   = row.GetText(2);
+            data.description            = row.GetText(3);
+            data.useBasePrice           = row.GetBool(4);
+            data.allowManufacture       = row.GetBool(5);
+            data.allowRecycler          = row.GetBool(6);
+            data.anchored               = row.GetBool(7);
+            data.anchorable             = row.GetBool(8);
+            data.fittableNonSingleton   = row.GetBool(9);
+            data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(10));
+        m_grpData.emplace(row.GetUInt(0), data);
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Inventory Groups loaded in %.3fms.", m_grpData.size(), (GetTimeMSeconds() - startTime));
+
+    startTime = GetTimeMSeconds();
+    ManagerDB::GetTypeData(*res);
+    while (res->GetRow(row)) {
+        Inv::TypeData data = Inv::TypeData();
+        data.id = row.GetUInt(0);
+        data.groupID = row.GetUInt(1);
+        data.name = row.GetText(2);
+        data.description = row.GetText(3);
+        data.radius = row.GetDouble(4);
+        data.mass = row.GetDouble(5);
+        data.volume = row.GetDouble(6);
+        data.capacity = row.GetDouble(7);
+        data.portionSize = row.GetUInt(8);
+        data.race = (row.IsNull(9) ? 0 : row.GetUInt(9));
+        data.basePrice = row.GetDouble(10);
+        data.published = (sConfig.server.AllowNonPublished ? true : row.GetBool(11));
+        data.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(12));
+        data.chanceOfDuplicating = row.GetDouble(13);
+
+        // these will take a bit of work, but will eliminate multiple db hits on inventory/menu loading ingame
+        data.isRecyclable = false;
+        data.isRefinable = false;
+
+        m_typeData.emplace(row.GetUInt(0), data);
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Inventory Types loaded in %.3fms.", m_typeData.size(), (GetTimeMSeconds() - startTime));
+
+    startTime = GetTimeMSeconds();
     ManagerDB::GetSystemData(*res);
     while (res->GetRow(row)) {
         //SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems
-        SystemData sysData = SystemData();
+        SystemData sysData        = SystemData();
         sysData.systemID          = row.GetInt(0);
         sysData.name              = row.GetText(1);
         sysData.constellationID   = row.GetInt(2);
@@ -182,7 +244,7 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
+    //res->Reset();  <<---  this is redundant.  object is reset in dbcore on each call
     startTime = GetTimeMSeconds();
     ManagerDB::GetWHSystemClass(*res);
     while (res->GetRow(row)) {
@@ -191,44 +253,38 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u WH System Classes loaded in %.3fms.", m_whRegions.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     ManagerDB::GetStaticData(*res);
     while (res->GetRow(row)) {
         //SELECT itemID, regionID, constellationID, solarSystemID, typeID, radius, x, y, z FROM mapDenormalize
-        StaticData data = StaticData();
-        data.itemID          = row.GetInt(0);
-        data.regionID        = row.GetInt(1);
-        data.constellationID = row.GetInt(2);
-        data.systemID        = row.GetInt(3);
-        data.typeID          = row.GetInt(4);
-        data.radius          = row.GetFloat(5);
-        data.position        = GPoint(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
+        StaticData data         = StaticData();
+        data.itemID             = row.GetInt(0);
+        data.regionID           = row.GetInt(1);
+        data.constellationID    = row.GetInt(2);
+        data.systemID           = row.GetInt(3);
+        data.typeID             = row.GetInt(4);
+        data.radius             = row.GetFloat(5);
+        data.position           = GPoint(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
         m_staticData.emplace(row.GetInt(0), data);
     }
     sLog.Cyan("    StaticDataMgr", "%u Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     MapDB::GetStationCount(*res);
     while (res->GetRow(row)) {
         //SELECT map.solarSystemID, count(sta.stationID) FROM staStations sta
         m_stationCount.emplace(row.GetInt(0), row.GetInt(1));
     }
-
-    //res->Reset();
     StationDB::GetStationRegion(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, regionID FROM staStations
         m_stationRegion.emplace(row.GetInt(0), row.GetInt(1));
     }
-    //res->Reset();
     StationDB::GetStationConstellation(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, constellationID FROM staStations
         m_stationConst.emplace(row.GetInt(0), row.GetInt(1));
     }
-    //res->Reset();
     StationDB::GetStationSystem(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, solarSystemID FROM staStations
@@ -248,7 +304,6 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u Static Station query sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     ManagerDB::GetTypeAttributes(*res);
     while (res->GetRow(row)) {
@@ -264,7 +319,6 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u Type Attribute Sets loaded in %.3fms", m_typeAttrMap.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     ManagerDB::GetSkillList(*res);
     while (res->GetRow(row)) {
@@ -273,21 +327,19 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
-    ManagerDB::GetRAMMaterials(*res);
-    EvERam::RamMaterials ramMatls = EvERam::RamMaterials();
+    FactoryDB::GetRAMMaterials(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
+        EvERam::RamMaterials ramMatls = EvERam::RamMaterials();
         ramMatls.quantity       = row.GetInt(2);
         ramMatls.materialTypeID = row.GetInt(1);
         m_ramMatl.emplace(row.GetInt(0), ramMatls);
     }
-    //res->Reset();
-    ManagerDB::GetRAMRequirements(*res);
-    EvERam::RamRequirements ramReq = EvERam::RamRequirements();
+    FactoryDB::GetRAMRequirements(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, extra FROM ramTypeRequirements
+        EvERam::RamRequirements ramReq = EvERam::RamRequirements();
         ramReq.activityID       = row.GetInt(1);
         ramReq.requiredTypeID   = row.GetInt(2);
         ramReq.quantity         = row.GetInt(3);
@@ -295,16 +347,14 @@ void StaticDataMgr::Populate()
         ramReq.extra            = row.GetBool(5);
         m_ramReq.emplace(row.GetInt(0), ramReq);
     }
-
     sLog.Cyan("    StaticDataMgr", "%u R.A.M. defs loaded in %.3fms.", (m_ramMatl.size() + m_ramReq.size()), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
-    ManagerDB::GetBlueprintType(*res);
+    FactoryDB::GetBlueprintType(*res);
     while (res->GetRow(row)) {
         //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
         //  researchTechTime, productivityModifier, materialModifier, wasteFactor, maxProductionLimit, chanceOfRE, catID FROM invBlueprintTypes
-        BlueprintTypeData bpTypeData = BlueprintTypeData();
+        EvERam::bpTypeData bpTypeData = EvERam::bpTypeData();
             bpTypeData.parentBlueprintTypeID    = row.GetInt(1);
             bpTypeData.productTypeID            = row.GetInt(2);
             bpTypeData.productionTime           = row.GetInt(3);
@@ -323,10 +373,8 @@ void StaticDataMgr::Populate()
     }
     for (auto cur : m_bpTypeData)
         m_bpMatlData[cur.first] = SetBPMatlType(cur.second.catID, cur.first, cur.second.productTypeID);
-
     sLog.Cyan("    StaticDataMgr", "%u BP Type defs loaded in %.3fms.", (m_bpTypeData.size() + m_bpMatlData.size()), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     ManagerDB::GetMoonResouces(*res);
     while (res->GetRow(row)) {
@@ -335,7 +383,6 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u Moon Resources loaded in %.3fms.", m_moonGoo.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     ManagerDB::GetOreBySSC(*res);
     while (res->GetRow(row)) {
@@ -347,15 +394,13 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u Ore defs loaded in %.3fms.", m_oreBySecClass.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     //SELECT factionID, itemID FROM facSalvage
     ManagerDB::GetSalvageGroups(*res);
-    while( res->GetRow(row) )
+    while (res->GetRow(row))
         m_salvageMap.emplace(row.GetInt(0), row.GetInt(1));
     sLog.Cyan("    StaticDataMgr", "%u salvage definitions loaded in %.3fms.", m_salvageMap.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     ManagerDB::GetRegionFaction(*res);
     while (res->GetRow(row)) {
@@ -363,7 +408,6 @@ void StaticDataMgr::Populate()
         m_regions.emplace(row.GetInt(0), row.GetInt(1));
     }
 
-    //res->Reset();
     ManagerDB::GetRegionRatFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
@@ -371,7 +415,6 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u Region Faction Data Sets loaded in %.3fms.", (m_regions.size() + m_ratRegions.size()), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     ManagerDB::GetFactionGroups(*res);
     DBQueryResult* res2 = new DBQueryResult();
@@ -394,10 +437,8 @@ void StaticDataMgr::Populate()
         rt_groups rtg;
         rtg.emplace((uint16)row.GetInt(1), rtt);
         m_npcTypes.emplace((uint8)row.GetInt(0), rtg);
-        //res2->Reset();
     }
 
-    //res->Reset();
     ManagerDB::GetSpawnClasses(*res);
     while (res->GetRow(row)) {
         //SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM npcSpawnClass
@@ -423,7 +464,6 @@ void StaticDataMgr::Populate()
     sLog.Cyan("    StaticDataMgr", "%u Rat Groups, %u Rat Classes, and %u Rat Types for %u regions loaded in %.3fms.",\
               m_npcGroups.size(), m_npcClasses.size(), typeCount, m_ratRegions.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     SystemDB::GetWrecksToTypes(*res);
     while (res->GetRow(row)) {
@@ -432,7 +472,6 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     SystemDB::GetLootGroups(*res);
     while (res->GetRow(row)) {
@@ -443,7 +482,6 @@ void StaticDataMgr::Populate()
         m_LootGroupMap.emplace(row.GetInt(0), lootGroup);
     }
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     SystemDB::GetLootGroupTypes(*res);
     while (res->GetRow(row)) {
@@ -459,7 +497,6 @@ void StaticDataMgr::Populate()
     sLog.Cyan("    StaticDataMgr", "%u loot groups and %u loot group types loaded in %.3fms.",
               m_LootGroupMap.size(), m_LootGroupTypeMap.size(), (GetTimeMSeconds() - startTime));
 
-    //res->Reset();
     startTime = GetTimeMSeconds();
     uint32 locationID = 0;
     ManagerDB::GetAgentLocation(*res);
@@ -494,13 +531,48 @@ void StaticDataMgr::GetInfo()
      */
 }
 
+void StaticDataMgr::GetCategory(uint8 catID, Inv::CatData& into)
+{
+    std::map<uint16, Inv::CatData>::const_iterator itr = m_catData.find(catID);
+    if (itr != m_catData.end())
+        into = itr->second;
+}
+
+const char* StaticDataMgr::GetCategoryName(uint8 catID)
+{
+    std::map<uint16, Inv::CatData>::const_iterator itr = m_catData.find(catID);
+    if (itr != m_catData.end())
+        return itr->second.name.c_str();
+
+    _log(DATA__ERROR, "GetCategoryName() - Category %u not found in map", catID);
+    return "None";
+}
+
+void StaticDataMgr::GetGroup(uint16 grpID, Inv::GrpData& into)
+{
+    std::map<uint16, Inv::GrpData>::const_iterator itr = m_grpData.find(grpID);
+    if (itr != m_grpData.end())
+        into = itr->second;
+}
+
+const char* StaticDataMgr::GetGroupName(uint16 grpID)
+{
+    std::map<uint16, Inv::GrpData>::const_iterator itr = m_grpData.find(grpID);
+    if (itr != m_grpData.end())
+        return itr->second.name.c_str();
+
+    _log(DATA__ERROR, "GetGroupName() - Group %u not found in map", grpID);
+    return "None";
+}
+
+
 PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID)
 {
     std::map<uint32, uint32>::iterator itr = m_agentSystem.find(agentID);
     if (itr != m_agentSystem.end())
         return new PyInt(itr->second);
 
-    _log(DATABASE__MESSAGE, "Failed to query system info for agent %u: Agent not found.", agentID);
+    _log(DATA__WARNING, "Failed to query system info for agent %u: Agent not found.", agentID);
     return new PyInt(0);
 }
 
@@ -540,7 +612,7 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
         return true;
     }
 
-    _log(DATABASE__MESSAGE, "Failed to query name for skill %u: Skill not found.", skillID);
+    _log(DATA__MESSAGE, "Failed to query name for skill %u: Skill not found.", skillID);
     return false;
 }
 
@@ -565,9 +637,11 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID)
                 break;
             }
     }
-    if (typeVec.size() < 1)
-        return 0;
-    return typeVec.at(MakeRandomInt(0, typeVec.size()));
+    if (typeVec.size())
+        return typeVec.at(MakeRandomInt(0, typeVec.size()));
+
+    _log(DATA__WARNING, "Failed to get random rat for sClass %u and groupID %u", sClass, groupID);
+    return 0;
 }
 
 bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec)
@@ -680,13 +754,13 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
         sProfile.AddTime(lootProfile, GetTimeUSeconds() - profileStartTime);
 }
 
-void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)
+void StaticDataMgr::GetBpTypeData(uint32 typeID, EvERam::bpTypeData& tData)
 {
-    std::map<uint16, BlueprintTypeData>::iterator itr = m_bpTypeData.find(typeID);
+    std::map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
     if (itr != m_bpTypeData.end())
-        bpData = itr->second;
+        tData = itr->second;
     else
-        _log(DATABASE__MESSAGE, "Failed to query info for bpType %u: Type not found.", typeID);
+        _log(DATA__MESSAGE, "Failed to query info for bpType %u: Type not found.", typeID);
 }
 
 void StaticDataMgr::GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs)
@@ -714,7 +788,7 @@ void StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< EvERam::RamRe
 void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity, std::vector< EvERam::RequiredItem >& into)
 {
     if (activity == EvERam::Activity::Manufacturing) {
-        std::map<uint16, BlueprintTypeData>::iterator itr = m_bpTypeData.find(typeID);
+        std::map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
         if (itr != m_bpTypeData.end()) {
             auto range = m_ramMatl.equal_range(itr->second.productTypeID);
             for (auto it = range.first; it != range.second; ++it)
@@ -724,7 +798,7 @@ void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity
 
     auto itr = m_ramReq.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; ++it)
-        if (activity == it->second.activityID)
+        if (it->second.activityID == activity)
             into.push_back(EvERam::RequiredItem(it->second.requiredTypeID, it->second.quantity, it->second.damagePerJob, IsSkillTypeID(it->second.requiredTypeID), it->second.extra));
 }
 
@@ -748,7 +822,7 @@ uint8 StaticDataMgr::GetStationCount(uint32 systemID)
     if (itr != m_stationCount.end())
         return itr->second;
 
-    _log(DATABASE__MESSAGE, "Failed to query station count for system %u: System not found.", systemID);
+    _log(DATA__MESSAGE, "Failed to query station count for system %u: System not found.", systemID);
     return 0;
 }
 
@@ -768,7 +842,7 @@ uint32 StaticDataMgr::GetStationRegion(uint32 stationID)
     if (itr != m_stationRegion.end())
         return itr->second;
 
-    _log(DATABASE__MESSAGE, "Failed to query region info for station %u: Station not found.", stationID);
+    _log(DATA__MESSAGE, "Failed to query region info for station %u: Station not found.", stationID);
     return 0;
 }
 
@@ -778,7 +852,7 @@ uint32 StaticDataMgr::GetStationConstellation(uint32 stationID)
     if (itr != m_stationConst.end())
         return itr->second;
 
-    _log(DATABASE__MESSAGE, "Failed to query constellation info for station %u: Station not found.", stationID);
+    _log(DATA__MESSAGE, "Failed to query constellation info for station %u: Station not found.", stationID);
     return 0;
 }
 
@@ -788,7 +862,7 @@ uint32 StaticDataMgr::GetStationSystem(uint32 stationID)
     if (itr != m_stationSystem.end())
         return itr->second;
 
-    _log(DATABASE__MESSAGE, "Failed to query system info for station %u: Station not found.", stationID);
+    _log(DATA__MESSAGE, "Failed to query system info for station %u: Station not found.", stationID);
     return 0;
 }
 
@@ -807,7 +881,7 @@ uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
         return itr->second;
 
     // dont have data for systemID nor regionID...throw error and ?something else?
-    _log(DATABASE__MESSAGE, "Failed to query WH Class for systemID %u: System not found.", systemID);
+    _log(DATA__MESSAGE, "Failed to query WH Class for systemID %u: System not found.", systemID);
     if (IsKSpace(systemID))
         return 0;
     if (IsWSpace(systemID))
@@ -831,7 +905,7 @@ bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
         return true;
     }
 
-    _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
+    _log(DATA__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
     return false;
 }
 
@@ -848,7 +922,7 @@ const char* StaticDataMgr::GetSystemName(uint32 locationID)
     if (itr != m_systemData.end())
         return itr->second.name.c_str();
 
-    _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
+    _log(DATA__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
     return "Invalid";
 }
 
@@ -860,7 +934,7 @@ bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
         return true;
     }
 
-    _log(DATABASE__MESSAGE, "Failed to query info for static item %u: Item not found.", itemID);
+    _log(DATA__MESSAGE, "Failed to query info for static item %u: Item not found.", itemID);
     return false;
 }
 
@@ -878,7 +952,7 @@ uint32 StaticDataMgr::GetRegionFaction(uint32 regionID)
     if (itr != m_regions.end())
         return itr->second;
 
-    _log(DATABASE__MESSAGE, "Failed to query faction for region %u: region not found.", regionID);
+    _log(DATA__MESSAGE, "Failed to query faction for region %u: region not found.", regionID);
     return 0;
 }
 
@@ -888,7 +962,7 @@ uint32 StaticDataMgr::GetRegionRatFaction(uint32 regionID)
     if (itr != m_ratRegions.end())
         return itr->second;
 
-    _log(DATABASE__MESSAGE, "Failed to query rat faction for region %u: region not found.", regionID);
+    _log(DATA__MESSAGE, "Failed to query rat faction for region %u: region not found.", regionID);
     return 0;
 
 /*

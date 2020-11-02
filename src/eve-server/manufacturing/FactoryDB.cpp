@@ -146,8 +146,8 @@ PyRep *FactoryDB::GetJobs2(const int32 ownerID, const bool completed)
         " job.installedItemID,"
         " installedItem.typeID AS installedItemTypeID,"
         " installedItem.ownerID AS installedItemOwnerID,"
-        " blueprint.productivityLevel AS installedItemProductivityLevel,"
-        " blueprint.materialLevel AS installedItemMaterialLevel,"
+        " blueprint.pLevel AS installedItemProductivityLevel,"
+        " blueprint.mLevel AS installedItemMaterialLevel,"
         // quite ugly, but lets us use DBResultToRowset
         " IF(assemblyLine.activityID = 1, blueprintType.productTypeID, installedItem.typeID) AS outputTypeID,"
         " job.outputFlag,"

@@ -32,6 +32,7 @@
 #include "cache/ObjCacheService.h"
 #include "planet/PlanetDB.h"
 #include "planet/Moon.h"
+#include "pos/Structure.h"
 #include "ship/BeyonceService.h"
 #include "station/StationDataMgr.h"
 #include "system/BookmarkService.h"
@@ -41,7 +42,6 @@
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/ManagerDB.h"
-#include <pos/Structure.h>
 
 class BeyonceBound
 : public PyBoundObject
@@ -130,7 +130,6 @@ BeyonceService::BeyonceService(PyServiceMgr *mgr)
 {
     _SetCallDispatcher(m_dispatch);
 
-    //PyCallable_REG_CALL(BeyonceService, )
     PyCallable_REG_CALL(BeyonceService, GetFormations)
 }
 
@@ -148,7 +147,6 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
     if (!call.client->IsSetStateSent())
         call.client->CheckBallparkTimer();
 
-    //vicious crap.
     PyTuple* res = new PyTuple( 2 );
         Beyonce_Formation f;
             //Diamond formation
@@ -200,12 +198,10 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    double distance = PyRep::IntegerValue(args.distance);
-
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    pDestiny->Follow(pSE, distance);
+    pDestiny->Follow(pSE, PyRep::IntegerValue(args.distance));
 
     return PyStatic.NewNone();
 }
@@ -324,8 +320,9 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    double x = 0.0, y = 0.0, z = 0.0;
-    uint32 itemID = 0, typeID = 0, locationID = 0;
+    double x(0.0), y(0.0), z(0.0);
+    uint16 typeID(0);
+    uint32 itemID(0), locationID(0);
 
     BookmarkService* pBMSvc = (BookmarkService*)(call.client->services().LookupService( "bookmark" ));
 
@@ -439,28 +436,23 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             fleet = call.byname.find("fleet")->second->AsBool()->value();
 
     // get the warp-to distance specified by the client
-    int32 distance(0);
-    if (call.byname.find("minRange") == call.byname.end()) {
-        codelog(DESTINY__TRACE, "WarpTo Range not sent.  Using 500m default.");
-        distance = 500;
-    } else {
-        distance = PyRep::IntegerValue(call.byname.find("minRange")->second);
-    }
+    int32 distance(5000);
+    if (call.byname.find("minRange") != call.byname.end())
+        distance = PyRep::IntegerValueU32(call.byname.find("minRange")->second);
 
     GPoint warpToPoint(NULL_ORIGIN);
     SystemEntity* pSE(nullptr);
-    double radius = 0;
-    uint32 toID = 0;
+    double radius(0);
+    uint32 toID(0);
     std::string stringArg = "";
 
-    if (call.tuple->GetItem(1)->IsString())
-        stringArg = call.tuple->GetItem(1)->AsString()->content();
-    else if (call.tuple->GetItem(1)->IsWString())
-        stringArg = call.tuple->GetItem(1)->AsWString()->content();
-    else if (call.tuple->GetItem(1)->IsInt())
-        toID = call.tuple->GetItem(1)->AsInt()->value();
+    if ((call.tuple->GetItem(1)->IsString())
+    or  (call.tuple->GetItem(1)->IsWString()))
+        stringArg = PyRep::StringContent(call.tuple->GetItem(1));
+    else
+        toID = PyRep::IntegerValueU32(call.tuple->GetItem(1));
 
-    std::string type = call.tuple->GetItem(0)->AsString()->content();
+    std::string type = PyRep::StringContent(call.tuple->GetItem(0));
     if (type == "item" ) {
         pSE = pSystem->GetSE(toID);
         if (pSE == nullptr) {
@@ -468,9 +460,10 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             return PyStatic.NewNone();
         }
     } else if (type == "bookmark" ) {
-        double x = 0.0, y = 0.0, z = 0.0;
-        uint32 typeID = 0, locationID = 0;
-        uint32 bookmarkID = call.tuple->GetItem(1)->AsInt()->value();
+        double x(0.0), y(0.0), z(0.0);
+        uint16 typeID(0);
+        uint32 locationID(0);
+        uint32 bookmarkID(PyRep::IntegerValueU32(call.tuple->GetItem(1)));
 
         BookmarkService* bkSrvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
         if (bkSrvc == nullptr) {
@@ -576,7 +569,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         warpToPoint = pSE->GetPosition();
         if (pSE->IsPlanetSE()) {
             srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
-            int64 rand = random();
+            int rand = random();
             double j = (((rand / RAND_MAX) -1.0) / 3.0);
             double s = 20 * std::pow(0.025 * (10 * std::log10(radius/1000000) -39), 20) +0.5;
             s = EvE::max(0.5, EvE::min(s, 10.5));
@@ -686,9 +679,6 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called Stop. AP: %s, Invul: %s", call.client->GetName(), \
             (call.client->IsAutoPilot() ? "true" : "false"), call.client->IsInvul()?"true":"false");
-    //if (call.client->IsInvul())
-    //    if (call.client->IsAutoPilot())
-    //        return PyStatic.NewNone();
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {

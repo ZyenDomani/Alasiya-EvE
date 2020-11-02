@@ -59,13 +59,13 @@ public:
     double luminosity;
 
     // use bitfield to save some memory...
-    bool border : 1;
-    bool fringe : 1;
-    bool corridor : 1;
-    bool hub : 1;
-    bool international : 1;
-    bool regional : 1;
-    bool constellation : 1;
+    bool border :1;
+    bool fringe :1;
+    bool corridor :1;
+    bool hub :1;
+    bool international :1;
+    bool regional :1;
+    bool constellation :1;
 
     double security;
     uint32 factionID;
@@ -139,7 +139,7 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 solarSystemID, const ItemType &type, const ItemData &data) {
         if (type.groupID() != EVEDB::invGroups::Solar_System) {
-            _log( ITEM__ERROR, "Trying to load %s(%u) as SolarSystem.", type.name().c_str(), solarSystemID );
+            _log(ITEM__ERROR, "Trying to load %s as SolarSystem.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
@@ -161,23 +161,23 @@ protected:
     /*
      * Data members:
      */
-    GPoint m_minPosition;
-    GPoint m_maxPosition;
+    bool m_border :1;
+    bool m_fringe :1;
+    bool m_corridor :1;
+    bool m_hub :1;
+    bool m_international :1;
+    bool m_regional :1;
+    bool m_constellation :1;
+
+    uint32 m_factionID;
+    
+    double m_security;
+    double m_radius;
     double m_luminosity;
 
-    // use bitfield to save some memory...
-    bool m_border : 1;
-    bool m_fringe : 1;
-    bool m_corridor : 1;
-    bool m_hub : 1;
-    bool m_international : 1;
-    bool m_regional : 1;
-    bool m_constellation : 1;
-
-    double m_security;
-    uint32 m_factionID;
-    double m_radius;
     std::string m_securityClass;
+    GPoint m_minPosition;
+    GPoint m_maxPosition;
 };
 
 #endif /* !__SOLAR_SYSTEM__H__INCL__ */

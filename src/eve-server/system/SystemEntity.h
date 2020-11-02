@@ -193,9 +193,9 @@ public:
     /* common functions for all entities handled here */
     /* public data queries  */
     InventoryItemRef            GetSelf()               { return m_self; }
-    uint32                      GetTypeID()             { return m_self->typeID(); }
+    uint16                      GetTypeID()             { return m_self->typeID(); }
     uint32                      GetGroupID()            { return m_self->groupID(); }
-    EVEItemCategories           GetCategoryID()         { return m_self->categoryID(); }
+    uint8                       GetCategoryID()         { return m_self->categoryID(); }
     EVEItemFlags                GetFlag()               { return m_self->flag(); }
     uint32                      GetID()                 { return m_self->itemID(); }
     double                      GetRadius()             { return m_radius; }

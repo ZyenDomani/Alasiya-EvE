@@ -89,20 +89,12 @@ int ItemFactory::Initialize()
 
 void ItemFactory::Close()
 {
-    sLog.Warning("      ItemFactory", "%u Items, %u Types, %u Groups, %u Cats still in list", \
-                m_items.size(), m_types.size(), m_groups.size(), m_categories.size());
+    sLog.Warning("      ItemFactory", "%u Items, %u Types still in list", \
+                m_items.size(), m_types.size());
     // types
     for (auto cur : m_types)
         SafeDelete(cur.second);
     m_types.clear();
-    // groups
-    for (auto cur : m_groups)
-        SafeDelete(cur.second);
-    m_groups.clear();
-    // categories
-    for (auto cur : m_categories)
-        SafeDelete(cur.second);
-    m_categories.clear();
     // items
     //for (auto cur : m_items)
     //    delete(cur.second.get());
@@ -271,72 +263,40 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true
     return iRef->GetMyInventory();
 }
 
-const ItemCategory* ItemFactory::GetCategory(EVEItemCategories category) {
-    std::map<EVEItemCategories, ItemCategory *>::iterator itr = m_categories.find(category);
-    if (itr == m_categories.end()) {
-        ItemCategory *cat = ItemCategory::Load(category);
-        if (cat == nullptr)
-            return nullptr;
-
-        // insert it into our cache
-        itr = m_categories.insert(
-            std::make_pair(category, cat)
-       ).first;
-    }
-    return itr->second;
-}
-
-const ItemGroup* ItemFactory::GetGroup(uint32 groupID) {
-    std::map<uint32, ItemGroup*>::iterator itr = m_groups.find(groupID);
-    if (itr == m_groups.end()) {
-        ItemGroup* group = ItemGroup::Load(groupID);
-        if (group == nullptr)
-            return nullptr;
-
-        // insert it into cache
-        itr = m_groups.insert(
-            std::make_pair(groupID, group)
-       ).first;
-    }
-    return itr->second;
-}
-
 template<class _Ty>
-const _Ty* ItemFactory::_GetType(uint32 typeID) {
-    std::map<uint32, ItemType*>::iterator itr = m_types.find(typeID);
+const _Ty* ItemFactory::_GetType(uint16 typeID) {
+    std::map<uint16, ItemType*>::iterator itr = m_types.find(typeID);
     if (itr == m_types.end()) {
         _Ty* type = _Ty::Load(typeID);
         if (type == nullptr)
             return nullptr;
 
         // insert into cache
-        itr = m_types.insert(
-            std::make_pair(typeID, type)
-       ).first;
+        itr = m_types.insert(std::make_pair(typeID, type)).first;
     }
     return static_cast<const _Ty *>(itr->second);
 }
 
-const ItemType* ItemFactory::GetType(uint32 typeID) {
+const ItemType* ItemFactory::GetType(uint16 typeID) {
     return _GetType<ItemType>(typeID);
 }
 
-const BlueprintType* ItemFactory::GetBlueprintType(uint32 blueprintTypeID) {
+const BlueprintType* ItemFactory::GetBlueprintType(uint16 blueprintTypeID) {
     return _GetType<BlueprintType>(blueprintTypeID);
 }
 
-const CharacterType* ItemFactory::GetCharacterType(uint32 characterTypeID) {
+const CharacterType* ItemFactory::GetCharacterType(uint16 characterTypeID) {
     return _GetType<CharacterType>(characterTypeID);
 }
 
-const CharacterType* ItemFactory::GetCharacterTypeByBloodline(uint32 bloodlineID) {
+const CharacterType* ItemFactory::GetCharacterTypeByBloodline(uint16 bloodlineID) {
     // Unfortunately, we have it indexed by typeID, so we must get it ...
-    uint32 characterTypeID;
+    uint16 characterTypeID;
     if (!m_db->GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
         return nullptr;
     return GetCharacterType(characterTypeID);
 }
-const StationType* ItemFactory::GetStationType(uint32 stationTypeID) {
+const StationType* ItemFactory::GetStationType(uint16 stationTypeID) {
     return _GetType<StationType>(stationTypeID);
 }
 
@@ -450,14 +410,6 @@ InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
 
 InventoryItemRef ItemFactory::SpawnTempItem(ItemData &data) {
     InventoryItemRef iRef = InventoryItem::SpawnTemp(data);
-    return iRef;
-}
-
-BlueprintRef ItemFactory::SpawnBlueprint(ItemData &data, BlueprintData &bpData) {
-    BlueprintRef iRef = Blueprint::Spawn(data, bpData);
-    if (iRef.get() != nullptr)
-        AddItem(iRef);
-
     return iRef;
 }
 

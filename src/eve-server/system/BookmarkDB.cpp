@@ -198,7 +198,7 @@ PyTuple* BookmarkDB::GetBookmarkDescription(uint32 bookmarkID)
     return tuple;
 }
 
-bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint32& typeID, uint32& locationID, double& x, double& y, double& z)
+bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint16& typeID, uint32& locationID, double& x, double& y, double& z)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -241,8 +241,8 @@ void BookmarkDB::SaveNewBookmark( BmData& data )
             "INSERT INTO bookmarks"
             " (ownerID, itemID, typeID, memo, created, x, y, z, locationID, note, creatorID, folderID)"
             " VALUES (%u, %u, %u, '%s', %f, %f, %f, %f, %u, '%s', %u, %u) ",
-                                   data.ownerID, data.itemID, data.typeID, eMemo.c_str(), GetFileTimeNow(), data.point.x, data.point.y,
-                                   data.point.z, data.locationID, eNote.c_str(), data.creatorID, data.folderID ))
+            data.ownerID, data.itemID, data.typeID, eMemo.c_str(), GetFileTimeNow(), data.point.x, data.point.y,
+            data.point.z, data.locationID, eNote.c_str(), data.creatorID, data.folderID ))
         {
             sLog.Error( "BookmarkDB::SaveNewBookmarkToDatabase(1)", "Error in query, Bookmark content couldn't be saved: %s", err.c_str() );
         }
@@ -251,8 +251,8 @@ void BookmarkDB::SaveNewBookmark( BmData& data )
             "INSERT INTO bookmarks"
             " (ownerID, itemID, typeID, memo, created, x, y, z, locationID, note, creatorID)"
             " VALUES (%u, %u, %u, '%s', %f, %f, %f, %f, %u, '%s', %u) ",
-                                   data.ownerID, data.itemID, data.typeID, eMemo.c_str(), GetFileTimeNow(), data.point.x, data.point.y,
-                                   data.point.z, data.locationID, eNote.c_str(), data.creatorID ))
+            data.ownerID, data.itemID, data.typeID, eMemo.c_str(), GetFileTimeNow(), data.point.x, data.point.y,
+            data.point.z, data.locationID, eNote.c_str(), data.creatorID ))
         {
             sLog.Error( "BookmarkDB::SaveNewBookmarkToDatabase(2)", "Error in query, Bookmark content couldn't be saved: %s", err.c_str() );
         }
