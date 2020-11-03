@@ -32,7 +32,7 @@
 #include "eve-compat.h"
 
 
-// this file should have all stuff regarding damage type attribute caching..
+// this file should have all stuff regarding attribute caching..
 enum EVIL_NUMBER_TYPE
 {
     evil_number_nan = 0,
@@ -377,9 +377,9 @@ public:
     EVIL_NUMBER_TYPE get_type()                         { return mType; }
 
     bool isInt()                                        { return ( mType == evil_number_int ); }
+    bool isFloat()                                      { return ( mType == evil_number_float ); }
     bool isNaN();
     bool isInf();
-    bool isFloat()                                      { return ( mType == evil_number_float ); }
 
     bool get_bool();
     int64 get_int();

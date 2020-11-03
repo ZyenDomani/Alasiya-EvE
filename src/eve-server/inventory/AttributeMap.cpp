@@ -103,7 +103,7 @@ bool AttributeMap::SaveAttributes() {
 bool AttributeMap::Save() {
     /** @note
      * we are saving:
-     *   all attribs for characters
+     *   ability attribs for characters
      *   level, sp and endtime attribs for skills
      *   all attribs for ISEs and CSEs, where applicable
      *   damage and online for modules
@@ -114,64 +114,99 @@ bool AttributeMap::Save() {
     if (IsStaticItem(mItem.itemID()))
         return true;
 
-    bool skill = false, damage = false, owner = false, module = false;
-    switch (mItem.categoryID()) {
-        case EVEDB::invCategories::Asteroid:    // asteroids and blueprints are NOT saved here
-        case EVEDB::invCategories::Blueprint: {
-            return false;
-        } break;
-        case EVEDB::invCategories::Ship: {      // ship attribs saved in shipItem, not here.
-            return true;
-        } break;
-        case EVEDB::invCategories::Skill: {     // save SP, Level and times for skills
-            skill = true;
-        } break;
-        case EVEDB::invCategories::Owner:       // save all attribs for these
-        case EVEDB::invCategories::Celestial:
-        case EVEDB::invCategories::Structure:
-        case EVEDB::invCategories::StructureUpgrade:
-        case EVEDB::invCategories::SovereigntyStructure:
-        case EVEDB::invCategories::Orbitals:
-        case EVEDB::invCategories::Deployable: {
-            owner = true;
-        } break;
-        case EVEDB::invCategories::Module:      // save online state for modules
-            module = true;            // we're falling thru on purpose here to save module damage
-        case EVEDB::invCategories::Charge:   // remember, crystals and lenses are charges, too.
-        case EVEDB::invCategories::Drone:     // this may need more.  check once system is working
-        case EVEDB::invCategories::Subsystem: {
-            damage = true;
-        } break;
-    }
-
-    bool save = false;
+    bool save(false);
     std::vector<Inv::AttrData> attribs;
     attribs.clear();
     AttrMapItr itr = mAttributes.begin(), end = mAttributes.end();
-    for (; itr != end; ++itr) {
-        save = false;
-        if (skill)
-            if ((itr->first == AttrSkillPoints)
-            or  (itr->first == AttrSkillLevel))
-                save = true;
-        if (damage)
-            if (itr->first == AttrDamage)
-                save = true;
-        if (module)
-            if (itr->first == AttrOnline)
-                save = true;
-        if (save or owner) {
-            Inv::AttrData data = Inv::AttrData();
-            data.itemID = mItem.itemID();
-            data.attrID = itr->first;
-            if (itr->second.isInt()) {
-                data.type = false;
-                data.valueInt = itr->second.get_int();
-            } else {
-                data.type = true;
-                data.valueFloat = itr->second.get_double();
+    if (IsCharacter(mItem.itemID())) {
+        for (; itr != end; ++itr) {
+            switch (itr->first) {
+                case AttrCharisma:
+                case AttrIntelligence:
+                case AttrMemory:
+                case AttrPerception:
+                case AttrWillpower:
+                case AttrCustomCharismaBonus:
+                case AttrCustomWillpowerBonus:
+                case AttrCustomPerceptionBonus:
+                case AttrCustomMemoryBonus:
+                case AttrCustomIntelligenceBonus:
+                case AttrCharismaBonus:
+                case AttrIntelligenceBonus:
+                case AttrMemoryBonus:
+                case AttrPerceptionBonus:
+                case AttrWillpowerBonus: {
+                    Inv::AttrData data = Inv::AttrData();
+                    data.itemID = mItem.itemID();
+                    data.attrID = itr->first;
+                    if (itr->second == EvilZero)
+                        continue;
+                    if (itr->second.isInt()) {
+                        data.type = false;
+                        data.valueInt = itr->second.get_int();
+                    } else {
+                        data.type = true;
+                        data.valueFloat = itr->second.get_double();
+                    }
+                    attribs.push_back(data);
+                }
             }
-            attribs.push_back(data);
+        }
+    } else {
+        bool skill(false), damage(false), owner(false), module(false);
+        switch (mItem.categoryID()) {
+            case EVEDB::invCategories::Asteroid:    // asteroids and blueprints are NOT saved here
+            case EVEDB::invCategories::Blueprint: {
+                return false;
+            } break;
+            case EVEDB::invCategories::Ship: {      // ship attribs saved in shipItem, not here.
+                return true;
+            } break;
+            case EVEDB::invCategories::Skill: {     // save SP, Level and times for skills
+                skill = true;
+            } break;
+            case EVEDB::invCategories::Celestial:       // save all attribs for these
+            case EVEDB::invCategories::Structure:
+            case EVEDB::invCategories::StructureUpgrade:
+            case EVEDB::invCategories::SovereigntyStructure:
+            case EVEDB::invCategories::Orbitals:
+            case EVEDB::invCategories::Deployable: {
+                owner = true;
+            } break;
+            case EVEDB::invCategories::Module:      // save online state for modules
+                module = true;            // we're falling thru on purpose here to save module damage
+            case EVEDB::invCategories::Charge:   // remember, crystals and lenses are charges, too.
+            case EVEDB::invCategories::Drone:     // this may need more.  check once system is working
+            case EVEDB::invCategories::Subsystem: {
+                damage = true;
+            } break;
+        }
+
+        for (; itr != end; ++itr) {
+            save = false;
+            if (skill)
+                if ((itr->first == AttrSkillPoints)
+                or  (itr->first == AttrSkillLevel))
+                    save = true;
+            if (damage)
+                if (itr->first == AttrDamage)
+                    save = true;
+            if (module)
+                if (itr->first == AttrOnline)
+                    save = true;
+            if (save or owner) {
+                Inv::AttrData data = Inv::AttrData();
+                data.itemID = mItem.itemID();
+                data.attrID = itr->first;
+                if (itr->second.isInt()) {
+                    data.type = false;
+                    data.valueInt = itr->second.get_int();
+                } else {
+                    data.type = true;
+                    data.valueFloat = itr->second.get_double();
+                }
+                attribs.push_back(data);
+            }
         }
     }
 
