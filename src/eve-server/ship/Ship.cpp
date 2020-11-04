@@ -1275,7 +1275,7 @@ void ShipItem::HeatDamageCheck(GenericModule* pMod)
 
     // check ship's current bank heat to determine chance for pMod to take heat damage.
     //  damage to other modules based on table above.
-    float curHeat = 0.0f, damChance = 0.0f;
+    float curHeat(0.0f), damChance(0.0f);
     if (pMod->isHighPower()) {
         curHeat = GetAttribute(AttrHeatHi).get_float();
         damChance = GetAttribute(AttrHeatAttenuationHi).get_float();
@@ -1297,7 +1297,7 @@ void ShipItem::HeatDamageCheck(GenericModule* pMod)
         uint8 flag = pMod->flag();
 
         // determine modules to damage and add to list
-        uint32 moduleID = 0;
+        uint32 moduleID(0);
 
 
         //modVec.push_back(moduleID);

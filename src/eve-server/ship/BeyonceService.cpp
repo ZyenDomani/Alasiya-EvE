@@ -338,7 +338,8 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
                 return PyStatic.NewNone();
             }
 
-            pDestiny->GotoPoint((GPoint)(x,y,z));
+            GPoint point(x, y, z);
+            pDestiny->GotoPoint(point);
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
             SystemEntity* pSE = call.client->SystemMgr()->GetSE(itemID);

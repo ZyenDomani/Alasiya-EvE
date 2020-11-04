@@ -142,7 +142,7 @@ public:
     bool IsFleetBoss()                                  { return (IsFleet(m_fleet) ? ((GetFleetRole() == Fleet::Role::FleetLeader) ? true : false) : false); }
     bool IsFleetBooster()                               { return (IsFleet(m_fleet) ? ((GetFleetRole() == Fleet::Booster::No) ? false : true) : false); }
 
-    int32 GetFleetID() const                            { return m_fleet; }
+    uint32 GetFleetID() const                           { return m_fleet; }
     int32 GetWingID() const                             { return m_wing; }
     int32 GetSquadID() const                            { return m_squad; }
 

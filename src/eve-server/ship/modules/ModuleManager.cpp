@@ -1055,7 +1055,7 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
         } else { // this will be an error.  cant find station ship is docked in
             _log(MODULE__ERROR, "MM::UnloadCharge() - Station %u not found for ship %u owned by %s",\
                     pShipItem->locationID(), pShipItem->itemID(), \
-                    pShipItem->HasPilot()? pShipItem->GetPilot()->GetName():itoa(pShipItem->ownerID()));
+                    pShipItem->HasPilot()? pShipItem->GetPilot()->GetName() : itoa(pShipItem->ownerID()));
             chargeRef->Move(pShipItem->locationID(), flagHangar, true);
         }
     } else {
@@ -1135,7 +1135,7 @@ void ModuleManager::UnloadModule(GenericModule* pMod) {
 void ModuleManager::UnloadWeapons()
 {
     std::map<uint8, GenericModule*>::iterator mItr;
-    for (EVEItemFlags i = flagHiSlot0; 1 < flagFixedSlot; i+1) {
+    for (uint8 i = flagHiSlot0; 1 < flagFixedSlot; ++i) {
         mItr = m_modules.find((uint8)i);
         if (mItr->second != nullptr)
             UnloadCharge(mItr->second);
@@ -1144,11 +1144,12 @@ void ModuleManager::UnloadWeapons()
 
 void ModuleManager::UnloadAllModules()
 {
+    /** @todo look into this....is this right?  */
     for (auto cur : m_modules)
         if (cur.second != nullptr)
             cur.second->UnloadCharge();
     // can this be called when docked?
-    bool docked = IsStation(pShipItem->locationID());
+    //bool docked = IsStation(pShipItem->locationID());
     for (auto cur : m_charges)
         UnloadModule(cur.second->flag());
 

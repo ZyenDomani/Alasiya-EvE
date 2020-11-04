@@ -224,7 +224,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
     data.creatorID = data.ownerID;
     data.created = GetFileTimeNow();
     data.locationID = args.locationID;
-    data.typeID == EVEDB::invTypes::SolarSystem;
+    data.typeID = EVEDB::invTypes::SolarSystem;
     data.point = ManagerDB::GetAnomalyPos(args.resultID);
 
     if (call.byname.find("folderID") != call.byname.end())

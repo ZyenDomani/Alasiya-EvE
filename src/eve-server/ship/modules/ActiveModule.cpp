@@ -27,17 +27,15 @@ m_bubble(nullptr),
 m_sysMgr(nullptr),
 m_targMgr(nullptr),
 m_targetSE(nullptr),
-m_destinyMgr(nullptr)
+m_destinyMgr(nullptr),
+m_usesCharge(false),
+m_needsCharge(false),
+m_needsTarget(false),
+m_targetID(0),
+m_effectID(0),
+m_Stop(true)
 {
-    m_Stop = true;
-    m_usesCharge = false;
-    m_needsCharge = false;
-    m_needsTarget = false;
-
-    m_repeat = 1000;    //arbitrary.
-
-    m_targetID = 0;
-    m_effectID = 0;
+    m_repeat = 1000;    //based on client data
 
     // civilian turrets dont use charges.  this is checked/hacked in TurretModule() to fix error when firing.
     m_needsCharge = mRef->HasAttribute(AttrChargeGroup1);
@@ -985,7 +983,7 @@ bool ActiveModule::CanActivate()
         switch (groupID()) {
             case Tractor_Beam: {
                 /** @todo  add checks for other items vs cap tractors and maybe some items for small tractors */
-                bool allowed = false;
+                bool allowed(false);
                 if ( m_targetSE->IsWreckSE())
                     allowed = true;
                 else if (m_targetSE->IsContainerSE()) {
@@ -1005,7 +1003,7 @@ bool ActiveModule::CanActivate()
 
                     // test for ownership here...wip
                     // once crim shit is implemented, allow for tractoring no matter owner.
-                    bool owner = false, fleet = false, corp = false, ally = false, war = false;
+                    bool owner(false), fleet(false), corp(false), ally(false), war(false);
                     if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
                         owner = true;
                     if (m_targetSE->GetCorporationID() == m_shipRef->GetPilot()->GetCorporationID())
