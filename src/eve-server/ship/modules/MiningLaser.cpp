@@ -258,7 +258,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     }
 
     // at this point, there is still plenty of ore in rock
-    ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), 0, flagAutoFit, oreAmount);
+    ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), locTemp, flagAutoFit, oreAmount);
     InventoryItemRef oRef = sItemFactory.SpawnItem( idata );
     if (oRef.get() == nullptr) {
         _log(MINING__ERROR, "Could not create mined ore for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );
@@ -366,7 +366,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
 
 void MiningLaser::AddOreAndDeactivate(uint16 typeID, float amt, bool slave/*true*/) {
 
-    ItemData idata(typeID, m_shipRef->ownerID(), 0, flagAutoFit, amt);
+    ItemData idata(typeID, m_shipRef->ownerID(), locTemp, flagAutoFit, amt);
     InventoryItemRef oRef = sItemFactory.SpawnItem( idata );
     if (oRef.get() == nullptr) {
         _log(MINING__ERROR, "AddOreAndDeactivate() - Could not create mined ore for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );

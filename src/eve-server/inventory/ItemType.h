@@ -168,7 +168,7 @@ private:
 class ItemData {
 public:
     // Full + default constructor:
-    ItemData( const char *_name = "", uint16 _typeID = 0, uint32 _ownerID = 0, uint32 _locationID = 0,
+    ItemData( const char *_name = "", uint16 _typeID = 0, uint32 _ownerID = ownerSystem, uint32 _locationID = locTemp,
               EVEItemFlags _flag = flagAutoFit, bool _contraband = false, bool _singleton = false, uint32 _quantity = 0,
               const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "");
 

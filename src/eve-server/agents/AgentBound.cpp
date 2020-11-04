@@ -244,7 +244,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 if (offer.courierTypeID) {
                     // add item to players hangar
                     sItemFactory.SetUsingClient(call.client);
-                    ItemData data(offer.courierTypeID, pchar->itemID(), 0, flagAutoFit, offer.courierAmount);
+                    ItemData data(offer.courierTypeID, pchar->itemID(), locTemp, flagAutoFit, offer.courierAmount);
                     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                     iRef->Move(offer.originID, flagHangar, true);
                     sItemFactory.UnsetUsingClient();
@@ -272,7 +272,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 if (offer.rewardItemID) {
                     // add reward item to players hangar
                     sItemFactory.SetUsingClient(call.client);
-                    ItemData data(offer.rewardItemID, pchar->itemID(), 0, flagAutoFit, offer.rewardItemQty);
+                    ItemData data(offer.rewardItemID, pchar->itemID(), locTemp, flagAutoFit, offer.rewardItemQty);
                     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                     iRef->Move(m_agent->GetStationID(), flagHangar, true);
                     sItemFactory.UnsetUsingClient();

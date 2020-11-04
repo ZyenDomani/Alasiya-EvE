@@ -877,7 +877,7 @@ void SystemBubble::MarkCenter()
 void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::string& desc, bool center/*false*/)
 {
     // create new container item
-    ItemData idata(23, 1, m_systemID, flagAutoFit, name.c_str(), position, desc.c_str());
+    ItemData idata(23, ownerSystem, m_systemID, flagAutoFit, name.c_str(), position, desc.c_str());
     CargoContainerRef cRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
     if ( cRef.get() == nullptr) {
         _log(DESTINY__WARNING, "MarkBubble() could not create Item for %s (%s)", name.c_str(), desc.c_str());

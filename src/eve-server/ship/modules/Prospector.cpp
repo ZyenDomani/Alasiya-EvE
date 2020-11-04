@@ -184,7 +184,7 @@ void Prospector::DropSalvage()
             if (IsEven(MakeRandomInt(0,10)))
                 continue;
             quantity = (MakeRandomInt(minDrop, maxDrop));
-            ItemData iLoot(cur, pChar->itemID(), 0, flagAutoFit, quantity);
+            ItemData iLoot(cur, pChar->itemID(), locTemp, flagAutoFit, quantity);
             iRef = sItemFactory.SpawnItem(iLoot);
             if (iRef.get() == nullptr) // we'll get over it...continue
                 continue;
@@ -214,7 +214,7 @@ void Prospector::DropSalvage()
         // create new container
         ItemData p_idata(23,   // 23 = cargo container
                         m_targetSE->GetSelf()->ownerID(),
-                        0,
+                        locTemp,
                         flagAutoFit,
                         "Jettisoned Loot Container",
                         m_targetSE->GetPosition());

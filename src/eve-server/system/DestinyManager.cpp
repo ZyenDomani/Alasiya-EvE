@@ -885,7 +885,7 @@ void DestinyManager::MoveObject() {
 
     if (sEntityList.GetTracking()) {
         // create jetcan to visualize object movement
-        ItemData idata(23, 1, mySE->GetLocationID(), flagAutoFit, itoa(timeStamp), m_position, "Position Test");
+        ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagAutoFit, itoa(timeStamp), m_position, "Position Test");
         CargoContainerRef iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
         if (iRef.get() != nullptr) {
             // create new container

@@ -533,7 +533,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         float fee = EvEMath::Market::BrokerFee(lvl, 1, 1);
         fee *= total;
         _log(MARKET__DEBUG, "PlaceCharOrder(sell) - %s: Total: %.2f, Fee: %.2f", args.useCorp?"Corp":"Player", total, fee);
-        
+
         // take monies and record actions (taxes are paid when item sells)
         if (args.useCorp)
             AccountService::TranserFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), fee, \
@@ -606,7 +606,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
                                      reason.c_str(), Journal::EntryType::MarketEscrow, args.orderID,
                                      Account::KeyType::Escrow, Account::KeyType::Cash);
     } else {
-        ItemData idata(oInfo.typeID, 1, 0, flagHangar, oInfo.quantity);
+        ItemData idata(oInfo.typeID, ownerStation, locTemp, flagHangar, oInfo.quantity);
         InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
         if (iRef.get() != nullptr)
             iRef->Donate(call.client->GetCharacterID(), oInfo.stationID, flagHangar, true);

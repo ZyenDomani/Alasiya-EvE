@@ -380,7 +380,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         iRef = sItemFactory.GetItem(m_colonyID);
         if (iRef->quantity() > 1) {
             // check for stack of CC items, and split as needed
-            ItemData data(typeID, m_client->GetCharacterID(), 0, flagAutoFit, iRef->quantity() -1);
+            ItemData data(typeID, m_client->GetCharacterID(), locTemp, flagAutoFit, iRef->quantity() -1);
             InventoryItemRef iRef2 = sItemFactory.SpawnItem(data);
             iRef2->Move(m_client->GetShipID(), flagCargoHold);
             iRef->SetQuantity(1);
@@ -485,7 +485,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
         if (itr != tempPinIDs.end())
             dest = itr->second;
     }
-    ItemData data(2280, m_client->GetCharacterID(), 0, flagAutoFit, 1);
+    ItemData data(2280, m_client->GetCharacterID(), locTemp, flagAutoFit, 1);
     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
     iRef->Move(m_pSE->GetID(), flagPlanetSurface, true);
     iRef->SaveItem();
@@ -981,7 +981,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
             case 3:     cost += (  900.00 * cur.second);    break;
             case 4:     cost += (75000.00 * cur.second);    break;
         }
-        ItemData iData(cur.first, m_client->GetCharacterID(), 0, flagAutoFit, cur.second);
+        ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagAutoFit, cur.second);
         InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
         if (iRef.get() == nullptr)
             continue;
@@ -1130,7 +1130,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
             case 4:     cost += (50000.00 * cur.second);    break;
         }
         // xfer virtual item to real
-        ItemData iData(cur.first, m_client->GetCharacterID(), 0, flagAutoFit, cur.second);
+        ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagAutoFit, cur.second);
         InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
         iRef->Move(m_pSE->GetCustomsOffice()->GetID(), flagHangar, true);
         ++fromColony;

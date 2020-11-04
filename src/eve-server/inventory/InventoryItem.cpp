@@ -764,7 +764,7 @@ InventoryItemRef InventoryItem::Split(int32 qty/*0*/, bool notify/*true*/, bool 
         return InventoryItemRef(nullptr);
     }
 
-    ItemData idata(m_type.id(), m_ownerID, 0, m_flag, qty);
+    ItemData idata(m_type.id(), m_ownerID, locTemp, m_flag, qty);
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
     if (iRef.get() == nullptr)
         return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
