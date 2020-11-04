@@ -102,7 +102,7 @@ void CommandDispatcher::ListCommands() {
     sLog.Green("  Alasiya's EvEMu", "Currently Loaded %u Commands:", m_commands.size());
     std::map<std::string, CommandDispatcher::CommandRecord*>::iterator itr = m_commands.begin();
     for (; itr != m_commands.end(); ++itr) {
-        sLog.Magenta("    Call and Role", "%s - %p (%lli)",
+        sLog.Magenta("    Call and Role", "%s - %p (%li)",
                      itr->first.c_str(), itr->second->required_role, itr->second->required_role);
     }
 }

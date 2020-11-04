@@ -117,9 +117,9 @@ PyResult CharMgrBound::Handle_ListStationBlueprintItems( PyCallArgs& call )
 
     /** @todo whats diff between stationID and locationID?
      *  none that i see so far...
-     * this could be diff between station and pos   will need to check later
+     * this could be diff between station and pos   will need to check later (locationID == stationID)
      */
-    uint32 locationID = PyRep::IntegerValueU32(call.tuple->GetItem(0));
+    //uint32 locationID = PyRep::IntegerValueU32(call.tuple->GetItem(0));
     uint32 stationID = PyRep::IntegerValueU32(call.tuple->GetItem(1));
 
     uint32 ownerID = m_ownerID;

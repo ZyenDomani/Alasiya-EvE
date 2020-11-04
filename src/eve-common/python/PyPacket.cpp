@@ -98,9 +98,9 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
     _log(ltype, "  User ID: %u", userid);
     _log(ltype, "  Payload:");
     payload->visit( dumper );
-    if (named_payload == nullptr)
+    if (named_payload == nullptr) {
         _log(ltype, "  Named Payload: None");
-    else {
+    } else {
         _log(ltype, "  Named Payload:");
         named_payload->visit( dumper );
     }
@@ -272,13 +272,13 @@ service("")
 void PyAddress::Dump(FILE *into, const char *pfx) const {
     switch(type) {
         case Any:
-            fprintf(into, "%sAny: service='%s' callID=%" PRIu64, pfx, service.c_str(), callID);
+            fprintf(into, "%sAny: service='%s' callID=%li", pfx, service.c_str(), callID);
         break;
         case Node:
-            fprintf(into, "%sNode: node=%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sNode: node=%p service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            fprintf(into, "%sClient: node=%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sClient: node=%p service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Broadcast:
             fprintf(into, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
@@ -292,13 +292,13 @@ void PyAddress::Dump(FILE *into, const char *pfx) const {
 void PyAddress::Dump(LogType ltype, const char *pfx) const {
     switch(type) {
         case Any:
-            _log(ltype, "%sAny: service='%s' callID=%" PRIu64, pfx, service.c_str(), callID);
+            _log(ltype, "%sAny: service='%s' callID=%li", pfx, service.c_str(), callID);
         break;
         case Node:
-            _log(ltype, "%sNode: node=%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+            _log(ltype, "%sNode: node=%p service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            _log(ltype, "%sClient: node=%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+            _log(ltype, "%sClient: node=%p service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Broadcast:
             _log(ltype, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());

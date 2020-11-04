@@ -202,7 +202,7 @@ void ShipItem::InitAttribs()
     // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
     if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrShieldCharge,  GetAttribute(AttrShieldCapacity), false);
     if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrCapacitorCharge,  GetAttribute(AttrCapacitorCapacity), false);
-    if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS), false);
+    if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((float)BUBBLE_RADIUS_METERS), false);
     // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some (t2 indy) already have it defined):
     if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, EvilZero, false);
     if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, EvilOne, false);
@@ -332,7 +332,7 @@ void ShipItem::Delete() {
 }
 
 /** @todo this will need more work to correctly check hold capacity for offline/unloaded ships */
-double ShipItem::GetRemainingVolumeByFlag(EVEItemFlags flag) const {
+float ShipItem::GetRemainingVolumeByFlag(EVEItemFlags flag) const {
     // updated to use inventory  -allan 26Jul16  -fixed 22Nov18  -updated to new call 08Aug20
     return pInventory->GetRemainingCapacity(flag);
 }
@@ -2404,22 +2404,28 @@ ShipSE::ShipSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSy
 : DynamicSystemEntity(self, services, pSystem),
 m_shipRef(ShipItemRef::StaticCast(self)),
 m_processTimerTick(SHIP_PROCESS_TICK_MS),   //5s
-m_processTimer(SHIP_PROCESS_TICK_MS)
+m_processTimer(SHIP_PROCESS_TICK_MS),
+m_oldArmor(0),
+m_oldShield(0),
+m_oldScanRes(0),
+m_oldInertia(0.0f),
+m_oldTargetRange(0),
+m_boosted(false),
+m_podShipID(0)
 {
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
 
-    ClearBoostData();
+    m_boost = BoostData();
 
     m_towerPass = "";
-    m_podShipID = 0;
     m_processTimer.Start(m_processTimerTick);
     _log(SHIP__TRACE, "Created ShipSE %p for item %u", this, self->itemID());
 }
 
-double ShipSE::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
+float ShipSE::CalculateRechargeRate(float Capacity, float Current, float RechargeTimeMS)
 {
     // C = Cmax * [ 1 + ( SQRT(C0/Cmax) - 1) * EXP((t0-t1)/tau) ] ^ 2
     // dC/dt = (SQRT(C/Cmax) - C/Cmax) * 2 * Cmax / tau
@@ -2428,17 +2434,17 @@ double ShipSE::CalculateRechargeRate(double Capacity, double Current, double Rec
     // prevent divide by zero.
     RechargeTimeMS = (RechargeTimeMS < 1 ? 1 : RechargeTimeMS);
     Current = (Current < 1 ? 1 : Current);
-    double Cmax = (Capacity < 1 ? 1 : Capacity);
+    float Cmax = (Capacity < 1 ? 1 : Capacity);
 
     // tau = "cap recharge time" / 5.0
-    double tau = (RechargeTimeMS / 5000.0);
+    float tau = (RechargeTimeMS / 5000.0);
     // (2*Cmax) / tau
-    double Cmax2_tau = ((Cmax * 2) / tau);
-    double C = Current;
+    float Cmax2_tau = ((Cmax * 2) / tau);
+    float C = Current;
     // C / Cmax
-    double C_Cmax = (C / Cmax);
+    float C_Cmax = (C / Cmax);
     // sqrt( C / Cmax)
-    double sC_Cmax = sqrt(C_Cmax);
+    float sC_Cmax = sqrt(C_Cmax);
     // charge rate in Gj / sec
     return (Cmax2_tau * (sC_Cmax - C_Cmax));
 }
@@ -2735,7 +2741,7 @@ void ShipSE::ClearBoostData()
     m_oldArmor       = 0;
     m_oldShield      = 0;
     m_oldScanRes     = 0;
-    m_oldInertia     = 0;
+    m_oldInertia     = 0.0f;
     m_oldTargetRange = 0;
 
     m_boost = BoostData();
@@ -2774,11 +2780,11 @@ void ShipSE::ApplyBoost(BoostData& bData)
     m_oldScanRes        = m_shipRef->GetAttribute(AttrScanResolution).get_uint32();
     m_oldTargetRange    = m_shipRef->GetAttribute(AttrMaxTargetRange).get_uint32();
 
-    uint16 armorHP      = m_oldArmor       * (1 + (0.02 * m_boost.armored)); // 2% increase/level
-    uint16 shieldHP     = m_oldShield      * (1 + (0.02 * m_boost.siege));// 2% increase/level
-    uint16 scanRes      = m_oldScanRes     * (1 + (0.02 * m_boost.leader));// 2% increase/level
-    uint32 targRange    = m_oldTargetRange * (1 + (0.02 * m_boost.info));// 2% increase/level
-    double inertia      = m_oldInertia     * (1 - (0.02 * m_boost.skirmish));// 2% decrease/level
+    uint16 armorHP      = m_oldArmor       * (1.0f + (0.02f * m_boost.armored)); // 2% increase/level
+    uint16 shieldHP     = m_oldShield      * (1.0f + (0.02f * m_boost.siege));// 2% increase/level
+    uint16 scanRes      = m_oldScanRes     * (1.0f + (0.02f * m_boost.leader));// 2% increase/level
+    uint32 targRange    = m_oldTargetRange * (1.0f + (0.02f * m_boost.info));// 2% increase/level
+    float inertia       = m_oldInertia     * (1.0f - (0.02f * m_boost.skirmish));// 2% decrease/level
 
     m_shipRef->SetAttribute(AttrInetia, inertia);   // lower inertia = lower agility = faster ship
     m_shipRef->SetAttribute(AttrArmorHP, armorHP);

@@ -160,14 +160,14 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         default: {
             float modifier = d.GetModifier();
             d *= modifier;
-                 if (modifier == 3.0)   damageID = 8;  //strikes perfectly, wrecking
-            else if (modifier > 1.2501) damageID = 7;  //places an excellent hit
-            else if (modifier > 0.9999) damageID = 6;  //aims well
-            else if (modifier > 0.7501) damageID = 5;  //hits
-            else if (modifier > 0.6251) damageID = 4;  //lightly hits
-            else if (modifier > 0.4121) damageID = 3;  //barely scratches
-            else if (modifier > 0.3751) damageID = 2;  //glances off
-            else if (modifier > 0.2501) damageID = 1;  //barely misses
+                 if (modifier == 3.0f)   damageID = 8;  //strikes perfectly, wrecking
+            else if (modifier > 1.2501f) damageID = 7;  //places an excellent hit
+            else if (modifier > 0.9999f) damageID = 6;  //aims well
+            else if (modifier > 0.7501f) damageID = 5;  //hits
+            else if (modifier > 0.6251f) damageID = 4;  //lightly hits
+            else if (modifier > 0.4121f) damageID = 3;  //barely scratches
+            else if (modifier > 0.3751f) damageID = 2;  //glances off
+            else if (modifier > 0.2501f) damageID = 1;  //barely misses
             else                        damageID = 0;  //misses completely
             _log(DAMAGE__TRACE, "%s(%u): Modifier: %.3f, damageID: %u.", GetName(), GetID(), modifier, damageID);
         } break;
@@ -184,9 +184,9 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         m_self->GetAttribute(AttrShieldExplosiveDamageResonance).get_float() );
 
     bool killed = false;
-    float total_damage = 0.0;
-    float shield_damage = DamageToShield.GetTotal();
-    float available_shield = m_self->GetAttribute(AttrShieldCharge).get_float();
+    float total_damage(0.0f);
+    float shield_damage(DamageToShield.GetTotal());
+    float available_shield(m_self->GetAttribute(AttrShieldCharge).get_float());
     if (shield_damage <= available_shield) {
         /** @todo  this works, but still needs work....
         if (HasPilot())
@@ -194,7 +194,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 float uniformity = m_self->GetAttribute(AttrShieldUniformity).get_float();
                 uniformity += (0.05 * GetPilot()->GetChar()->GetSkillLevel(EvESkill::TacticalShieldManipulation));
                 if ((available_shield /m_self->GetAttribute(AttrShieldCapacity).get_float()) < uniformity) {
-                    float bleedthru = (d.GetTotal() * 0.01);
+                    float bleedthru = (d.GetTotal() * 0.01f);
                     m_self->SetAttribute(AttrArmorDamage, (bleedthru + m_self->GetAttribute(AttrArmorDamage).get_float()));
                     shield_damage -= bleedthru;
                 }
@@ -211,7 +211,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         d *= (1 - (available_shield /shield_damage));
         total_damage += available_shield;
 
-        if (available_shield > 0) {
+        if (available_shield > 0.0f) {
             _log(DAMAGE__INFO, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
                  GetName(), GetID(), available_shield, d.GetTotal());
             m_self->SetAttribute(AttrShieldCharge, EvilZero);

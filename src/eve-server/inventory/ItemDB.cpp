@@ -318,7 +318,7 @@ void ItemDB::SaveAttributes(bool isChar, std::vector<Inv::AttrData>& data)
         Inserts << "INSERT INTO entity_attributes";
         Inserts << " (itemID, attributeID, valueInt, valueFloat)";
     }
-    bool first = true;
+    bool first(true);
     for (auto cur : data) {
         if (first) {
             Inserts << " VALUES ";

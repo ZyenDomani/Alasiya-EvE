@@ -112,8 +112,11 @@ PyBoundObject *ReprocessingService::CreateBoundObject(Client *pClient, const PyR
 
 ReprocessingServiceBound::ReprocessingServiceBound(PyServiceMgr *mgr, ReprocessingDB& db, uint32 stationID)
 : PyBoundObject(mgr),
-  m_dispatch(new Dispatcher(this)),
-  m_db(db)
+m_dispatch(new Dispatcher(this)),
+m_db(db),
+m_stationCorpID(0),
+m_staEfficiency(0.0f),
+m_tax(0.0f)
 {
     _SetCallDispatcher(m_dispatch);
 
@@ -124,10 +127,6 @@ ReprocessingServiceBound::ReprocessingServiceBound(PyServiceMgr *mgr, Reprocessi
     PyCallable_REG_CALL(ReprocessingServiceBound, GetQuote);
     PyCallable_REG_CALL(ReprocessingServiceBound, GetQuotes);
     PyCallable_REG_CALL(ReprocessingServiceBound, Reprocess);
-
-    m_stationCorpID = 0;
-    m_staEfficiency = 0.0f;
-    m_tax = 0.0f;
 
     m_station = sItemFactory.GetStation(stationID);
     if (m_station.get() != nullptr)
@@ -256,7 +255,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
         }
 
-        double efficiency = CalcReprocessingEfficiency( call.client, iRef );
+        float efficiency = CalcReprocessingEfficiency( call.client, iRef );
 
         // dont hit db for this shit...we kinda have to....dont have this data in static shit.
         std::vector<Recoverable> recoverables;
@@ -265,12 +264,12 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
 
         std::vector<Recoverable>::iterator itr = recoverables.begin();
         for (; itr != recoverables.end(); ++itr) {
-			uint32 full = itr->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
-            uint32 quantity = uint32(full * efficiency * (1.0 - tax) );
-			if (quantity == 0)
+            uint32 full = itr->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
+            uint32 quantity = uint32(full * efficiency * (1.0f - tax) );
+            if (quantity == 0)
                 continue;
 
-            ItemData idata(itr->typeID, args.ownerID, 0, flagAutoFit, quantity);
+            ItemData idata(itr->typeID, args.ownerID, locTemp, flagAutoFit, quantity);
             InventoryItemRef iRef2 = sItemFactory.SpawnItem( idata );
             if (iRef2.get() == nullptr)
                 continue;
@@ -301,22 +300,22 @@ float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient
     */
     /** @todo  check for implants here ... once they're working  */
     CharacterRef cRef = pClient->GetChar();
-    double efficiency =  (0.375
-                        * (1 + (0.02 * cRef->GetSkillLevel(EvESkill::Refining)))             // 2% lvl
-                        * (1 + (0.04 * cRef->GetSkillLevel(EvESkill::RefineryEfficiency)))); // 4% lvl
+    double efficiency =  (0.375f
+                        * (1 + (0.02f * cRef->GetSkillLevel(EvESkill::Refining)))             // 2% lvl
+                        * (1 + (0.04f * cRef->GetSkillLevel(EvESkill::RefineryEfficiency)))); // 4% lvl
 
     if (item.get() != nullptr) {
         uint32 specificSkill = item->GetAttribute(AttrReprocessingSkillType).get_int();
         if (specificSkill)
-            efficiency *= (1 + 0.05 * cRef->GetSkillLevel(specificSkill));
+            efficiency *= (1 + 0.05f * cRef->GetSkillLevel(specificSkill));
         else
-            efficiency *= (1 + 0.04 * cRef->GetSkillLevel(EvESkill::ScrapmetalProcessing));    // use Scrapmetal Processing as default
+            efficiency *= (1 + 0.04f * cRef->GetSkillLevel(EvESkill::ScrapmetalProcessing));    // use Scrapmetal Processing as default
     }
 
     efficiency += m_staEfficiency;
 
-    if (efficiency > 1)
-        efficiency = 1.05;  // should be 1.0 max
+    if (efficiency > 1.0f)
+        efficiency = 1.05f;  // should be 1.0 max
 
     return efficiency;
 }
@@ -372,7 +371,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
         uint32 ratio = cur.amountPerBatch * quote.quantityToProcess / iRef->type().portionSize();
         Rsp_GetQuote_Recoverables_Line line;
             line.typeID			= cur.typeID;
-            line.client			= uint32(efficiency * (1.0 - tax)   * ratio);
+            line.client			= uint32(efficiency * (1.0f - tax)   * ratio);
             line.station		= uint32(efficiency * tax           * ratio);
             line.unrecoverable	= ratio - line.client - line.station;
         quote.lines->AddItem( line.Encode() );
@@ -384,18 +383,18 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
 float ReprocessingServiceBound::GetStanding(const Client* pClient) const
 {
     float standing = pClient->GetChar()->GetStanding(m_stationCorpID, pClient->GetCharacterID());
-    if (standing < 0)
-        standing += ((10 +standing) * 0.04 * pClient->GetChar()->GetSkillLevel(EvESkill::Diplomacy));
+    if (standing < 0.0f)
+        standing += ((10.0f +standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Diplomacy));
     else
-        standing += ((10 -standing) * 0.04 * pClient->GetChar()->GetSkillLevel(EvESkill::Connections));
+        standing += ((10.0f -standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Connections));
 
     return EvE::max(standing, pClient->GetChar()->GetStanding(m_stationCorpID, pClient->GetCorporationID()));
 }
 
 float ReprocessingServiceBound::CalcTax(float standing) const {
     //EvEMath::Refine::StationTaxesForReprocessing(standing);
-    double tax = m_tax - 0.75/100 * standing;
-    if (tax < 0)
-        tax = 0;
+    float tax = m_tax - 0.75f / 100.0f * standing;
+    if (tax < 0.0f)
+        tax = 0.0f;
     return tax;
 }

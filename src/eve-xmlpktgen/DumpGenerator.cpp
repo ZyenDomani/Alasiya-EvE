@@ -509,7 +509,7 @@ bool ClassDumpGenerator::ProcessListLong( const TiXmlElement* field )
         "\n"
         "    std::vector<int64>::const_iterator cur = %s.begin();\n"
         "    for (int index = 0; cur != %s.end(); ++cur, ++index )\n"
-        "        _log( l_type, \"%%s   [%%02d] %%\" PRId64, pfx, index, (*cur) );\n"
+        "        _log( l_type, \"%%s   [%%02d] %%li\", pfx, index, (*cur) );\n"
         "\n",
         name, name, name, name
     );
@@ -526,13 +526,10 @@ bool ClassDumpGenerator::ProcessListStr( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    std::vector<std::string>::const_iterator %s_cur, %s_end;\n"
-        "    %s_cur = %s.begin();\n"
-        "    %s_end = %s.end();\n"
-        "    for( int index = 0; %s_cur != %s_end; ++%s_cur, ++index )\n"
+        "    std::vector<std::string>::const_iterator %s_cur = %s.begin(), %s_end = %s.end();\n"
+        "    for (int index = 0; %s_cur != %s_end; ++%s_cur, ++index )\n"
         "        _log( l_type, \"%%s   [%%02d] %%s\", pfx, index, ( *%s_cur ).c_str() );\n"
         "\n",
-        name, name, name, name,
         name, name, name, name,
         name, name, name, name
     );

@@ -105,7 +105,7 @@ m_scanShips(false)
     m_expiry = GetFileTimeNow() + (EvE::Time::Hour *5);  // 5h abandoned lifespan
     m_lifeTimer.Start(5*60*60*1000);        // 5h to ms
 
-    _log(SCAN__INFO, "Created Abandoned ProbeSE for %u. expiry: %lli", m_self->itemID(), m_expiry);
+    _log(SCAN__INFO, "Created Abandoned ProbeSE for %u. expiry: %li", m_self->itemID(), m_expiry);
 }
 
 ProbeSE::ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system, InventoryItemRef moduleRef, ShipItemRef shipRef)
@@ -160,7 +160,7 @@ m_scanShips(false)
     // i think we may have to do probe modifiers here....they are not being done thru fx system
     Character* pChar = m_client->GetChar().get();
     // skills
-    m_scanStrength *= (1 + (0.1 * pChar->GetSkillLevel(EvESkill::AstrometricRangefinding)));   // +10% strength per level
+    m_scanStrength *= (1 + (0.1f * pChar->GetSkillLevel(EvESkill::AstrometricRangefinding)));   // +10% strength per level
     // skill bonuses unique to Alasiya
     //m_scanStrength *= (1 + (0.01 * pChar->GetSkillLevel(EvESkill::Astrometrics)));             // +1% strength per level
     //m_scanStrength *= (1 + (0.01 * pChar->GetSkillLevel(EvESkill::SignatureAnalysis)));        // +1% strength per level
@@ -171,23 +171,23 @@ m_scanShips(false)
     switch (shipRef->typeID()) {
         //t1
         case 29248: { /* Magnate */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::AmarrFrigate)))); // +5% strength per level
+            m_scanStrength *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::AmarrFrigate)))); // +5% strength per level
         } break;
         case 605: { /* Heron */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::CaldariFrigate)))); // +5% strength per level
+            m_scanStrength *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::CaldariFrigate)))); // +5% strength per level
         } break;
         case 607: { /* Imicus */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::GallenteFrigate)))); // +5% strength per level
+            m_scanStrength *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::GallenteFrigate)))); // +5% strength per level
         } break;
         case 586: { /* Probe */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::MinmatarFrigate)))); // +5% strength per level
+            m_scanStrength *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::MinmatarFrigate)))); // +5% strength per level
         } break;
         //t2 - Anathema, Buzzard, Cheetah, Helios
         case 11188:  /* Anathema */
         case 11192:  /* Buzzard */
         case 11172:  /* Helios */
         case 11182: { /* Cheetah */
-            m_scanStrength *= (1 + (0.1 * (pChar->GetSkillLevel(EvESkill::CovertOps)))); // +10% strength per level
+            m_scanStrength *= (1 + (0.1f * (pChar->GetSkillLevel(EvESkill::CovertOps)))); // +10% strength per level
         } break;
         //t3
         // just test for subsystem here... typeIDs 30042, 30052, 30062, 30072
@@ -196,7 +196,7 @@ m_scanShips(false)
 
     // modules (launchers - 5 or 10)
     if (moduleRef->HasAttribute(AttrScanStrengthBonus))
-        m_scanStrength *= (1 + (0.01 * moduleRef->GetAttribute(AttrScanStrengthBonus).get_float()));
+        m_scanStrength *= (1 + (0.01f * moduleRef->GetAttribute(AttrScanStrengthBonus).get_float()));
 
     // rigs (10 or 15)
     m_scanStrength *= (1 + shipRef->GetModuleManager()->GetRigScanBonus());
@@ -206,9 +206,9 @@ m_scanShips(false)
     // this is just a placeholder.  not sure if this will be how it works yet
     //  also, the bonus will be determined by the implant fx, which would be set in attrib.
     if (pChar->HasAttribute(AttrScanStrengthBonus))
-        m_scanStrength *= (1 + (0.01 * pChar->GetAttribute(AttrScanStrengthBonus).get_float()));
+        m_scanStrength *= (1 + (0.01f * pChar->GetAttribute(AttrScanStrengthBonus).get_float()));
 
-    _log(SCAN__INFO, "Created ProbeSE for %u. timeNow: %.0f, expiry: %lli, scan Str: %.4f, deviation: %.5f, ship: %s", \
+    _log(SCAN__INFO, "Created ProbeSE for %u. timeNow: %.0f, expiry: %li, scan Str: %.4f, deviation: %.5f, ship: %s", \
             m_self->itemID(), GetFileTimeNow(), m_expiry, m_scanStrength, m_scanDeviation, m_scanShips?"true":"false");
 }
 
@@ -301,7 +301,7 @@ void ProbeSE::UpdateProbe(ProbeData& data)
 
     float time(1), dist = GetPosition().distance(m_destination);
     if (dist < 100) {
-        time = 0.5;
+        time = 0.5f;
     } else if (dist > BUBBLE_RADIUS_METERS){
         float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS /4);
         time = EvE::max(dist / wsm, 1);
@@ -322,7 +322,7 @@ void ProbeSE::RecoverProbe(PyList* list)
 {
     if (m_client == nullptr)
         return;
-    m_destination = m_shipRef->position() +250;
+    m_destination = m_shipRef->position() + 250;
     float time(1), dist = GetPosition().distance(m_destination);
     if (dist > BUBBLE_RADIUS_METERS){
         float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS /4);
@@ -336,7 +336,7 @@ void ProbeSE::RecoverProbe(PyList* list)
     /** @todo  verify probe status and controller before adding to "recover success list" */
     // add to list if still controlled by player
     list->AddItem(new PyInt(m_self->itemID()));
-    m_returnTimer.Start(time *1000);
+    m_returnTimer.Start(time * 1000);
     SendStateChange(Probe::State::Returning);
     _log(SCAN__TRACE, "ProbeSE::RecoverProbe()  Probe %u returning.  Return time is %.2fs", \
                 GetID(), time);

@@ -396,13 +396,13 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         m_cpu = iRef->GetAttribute(AttrCpuLoad).get_int();
         if (groupID != Planetary_Links) {
             // reset pg/cpu needs based on char skills for all modules (ex links)
-            m_pg *= (1 - ( 0.05 * (m_client->GetChar()->GetSkillLevel(EvESkill::Engineering, true))));               // 5% decrease in need
-            m_pg *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(EvESkill::EnergyManagement, true))));          // 1% decrease in need
-            m_pg *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(EvESkill::CommandCenterUpgrades, true))));     // 1% decrease in need
-            m_pg *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(EvESkill::EnergySystemsOperation, true))));    // 1% decrease in need
+            m_pg *= (1 - ( 0.05f * (m_client->GetChar()->GetSkillLevel(EvESkill::Engineering, true))));               // 5% decrease in need
+            m_pg *= (1 - ( 0.01f * (m_client->GetChar()->GetSkillLevel(EvESkill::EnergyManagement, true))));          // 1% decrease in need
+            m_pg *= (1 - ( 0.01f * (m_client->GetChar()->GetSkillLevel(EvESkill::CommandCenterUpgrades, true))));     // 1% decrease in need
+            m_pg *= (1 - ( 0.01f * (m_client->GetChar()->GetSkillLevel(EvESkill::EnergySystemsOperation, true))));    // 1% decrease in need
 
-            m_cpu *= (1 - ( 0.05 * (m_client->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));              // 5% decrease in need
-            m_cpu *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(EvESkill::CommandCenterUpgrades, true))));    // 1% decrease in need
+            m_cpu *= (1 - ( 0.05f * (m_client->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));              // 5% decrease in need
+            m_cpu *= (1 - ( 0.01f * (m_client->GetChar()->GetSkillLevel(EvESkill::CommandCenterUpgrades, true))));    // 1% decrease in need
         } */
     }
 
@@ -1379,7 +1379,7 @@ void Colony::ProcessECUs(bool& updateTimes)
 
         if ((ecu.second.expiryTime < EvE::Time::Second ) or (ecu.second.expiryTime > m_procTime)) {
             if (is_log_enabled(COLONY__DEBUG))
-                _log(COLONY__DEBUG, "Colony::ProcessECUs() - expiryTime (%lli) > m_procTime (%lli).", \
+                _log(COLONY__DEBUG, "Colony::ProcessECUs() - expiryTime (%li) > m_procTime (%li).", \
                         ecu.second.expiryTime, m_procTime);
             continue;
         }
@@ -1475,7 +1475,7 @@ void Colony::ProcessECUs(bool& updateTimes)
         updateTimes = true;
 
         if (is_log_enabled(COLONY__DEBUG))
-            _log(COLONY__DEBUG, "Colony::ProcessECUs() - Processing complete.  timeNow %lli, expiryTime %lli, lastRunTime %lli", \
+            _log(COLONY__DEBUG, "Colony::ProcessECUs() - Processing complete.  timeNow %li, expiryTime %li, lastRunTime %li", \
                     GetFileTimeNow(), ecu.second.expiryTime, ecu.second.lastRunTime);
     }
 }
@@ -1509,7 +1509,7 @@ void Colony::ProcessPlants(bool& updateTimes)
     std::map<uint32, PI_Pin>::iterator destPin;
     std::map<uint16, uint32>::iterator itemItr;
     std::map<uint32, PI_Plant>::iterator destPlant;
-    _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Plant Processing.  m_procTime: %lli", m_procTime);
+    _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Plant Processing.  m_procTime: %li", m_procTime);
     while (curCycle < 5) {
         if (is_log_enabled(COLONY__DEBUG))
             _log(COLONY__DEBUG, "Colony::ProcessPlants() - Begin Process loop for pLevel %u.", curCycle);
@@ -1556,13 +1556,13 @@ void Colony::ProcessPlants(bool& updateTimes)
 
             if (plant->second.lastRunTime >= m_procTime) {
                 if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - lastRunTime (%lli) >= m_procTime (%lli).", \
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - lastRunTime (%li) >= m_procTime (%li).", \
                                 plant->second.lastRunTime, m_procTime);
                 continue;
             }
 
             if (is_log_enabled(COLONY__DEBUG))
-                _log(COLONY__DEBUG, "Colony::ProcessPlants() - last run time %lli.", plant->second.lastRunTime);
+                _log(COLONY__DEBUG, "Colony::ProcessPlants() - last run time %li.", plant->second.lastRunTime);
 
             // second, check processing times for active plants
             delta = (m_procTime - plant->second.lastRunTime)  / EvE::Time::Second;
@@ -1775,7 +1775,7 @@ void Colony::ProcessPlants(bool& updateTimes)
                 updateTimes = true;
 
                 if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Received Inputs.  timeNow %lli, lastRunTime %lli", \
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Received Inputs.  timeNow %li, lastRunTime %li", \
                                 GetFileTimeNow(), plant->second.lastRunTime);
             } else
                 cycles = 0;

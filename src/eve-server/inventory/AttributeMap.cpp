@@ -63,6 +63,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
         mAttributes.clear();
     }
     /* First, we copy default attributes values from our itemType, loaded into memObj when type is loaded */
+    // (except char ability scores...dunno why yet)
     mItem.type().CopyAttributes(mItem);
 
     // check for temp items.  they arent saved to db
@@ -136,18 +137,13 @@ bool AttributeMap::Save() {
                 case AttrMemoryBonus:
                 case AttrPerceptionBonus:
                 case AttrWillpowerBonus: {
+                    if (itr->second == EvilZero)
+                        continue;
                     Inv::AttrData data = Inv::AttrData();
                     data.itemID = mItem.itemID();
                     data.attrID = itr->first;
-                    if (itr->second == EvilZero)
-                        continue;
-                    if (itr->second.isInt()) {
-                        data.type = false;
-                        data.valueInt = itr->second.get_int();
-                    } else {
-                        data.type = true;
-                        data.valueFloat = itr->second.get_double();
-                    }
+                    data.type = false;
+                    data.valueInt = itr->second.get_int();
                     attribs.push_back(data);
                 }
             }
@@ -235,7 +231,7 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
                 _log(ATTRIBUTE__MISSING, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
                         attrID, num.get_float(), mItem.itemName().c_str(), mItem.itemID());
             } else {
-                _log(ATTRIBUTE__MISSING, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
+                _log(ATTRIBUTE__MISSING, "Attribute %u not in map.  Adding as %li for %s(%u)", \
                     attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
             }
         } else if (is_log_enabled(ATTRIBUTE__ADD)) {
@@ -243,7 +239,7 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
                 _log(ATTRIBUTE__ADD, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
                 attrID, num.get_float(), mItem.itemName().c_str(), mItem.itemID());
             } else {
-                _log(ATTRIBUTE__ADD, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
+                _log(ATTRIBUTE__ADD, "Attribute %u not in map.  Adding as %li for %s(%u)", \
                 attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
             }
         }
@@ -262,15 +258,15 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
                 _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %.2f to %.2f for %s(%u)", \
                         attrID, itr->second.get_float(), num.get_float(), mItem.itemName().c_str(), mItem.itemID());
             } else {
-                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %.2f to %lli for %s(%u)", \
+                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %.2f to %li for %s(%u)", \
                         attrID, itr->second.get_float(), num.get_int(), mItem.itemName().c_str(), mItem.itemID());
             }
         } else {
             if (num.isFloat()) {
-                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %lli to %.2f for %s(%u)", \
+                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %li to %.2f for %s(%u)", \
                         attrID, itr->second.get_int(), num.get_float(), mItem.itemName().c_str(), mItem.itemID());
             } else {
-                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %lli to %lli for %s(%u)", \
+                _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %li to %li for %s(%u)", \
                         attrID, itr->second.get_int(), num.get_int(), mItem.itemName().c_str(), mItem.itemID());
             }
         }

@@ -107,7 +107,7 @@ double GetTimeMSeconds() {  // -allan
     */
     auto duration = system_clock::now().time_since_epoch();     // return in nanoseconds
     double time = duration_cast<microseconds>(duration).count();
-    return (time /1000);
+    return (time / 1000);
 }
 
 double GetTimeUSeconds() {  // -allan
@@ -115,7 +115,7 @@ double GetTimeUSeconds() {  // -allan
     using namespace std::chrono;
     auto duration = system_clock::now().time_since_epoch();     // return in nanoseconds
     double time = duration_cast<nanoseconds>(duration).count();
-    return (time /1000);
+    return (time / 1000);
 }
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
@@ -135,9 +135,9 @@ std::string GetUTimeTillNow(double fromTime)
 {
     double elapsed = GetTimeUSeconds() - fromTime;
     if (elapsed > 999999)
-        return sprintf("0.4fs",elapsed /1000000);
+        return sprintf("0.4fs",elapsed / 1000000);
     else if (elapsed > 999)
-        return sprintf("0.4fms",elapsed /1000);
+        return sprintf("0.4fms",elapsed / 1000);
     else
         return sprintf("0.4fus",elapsed);
 }
@@ -146,7 +146,7 @@ std::string GetMTimeTillNow(double fromTime)
 {
     double elapsed = GetTimeMSeconds() - fromTime;
     if (elapsed > 999)
-        return sprintf("0.4fs",elapsed /1000);
+        return sprintf("0.4fs",elapsed / 1000);
     else
         return sprintf("0.4fms",elapsed);
 }

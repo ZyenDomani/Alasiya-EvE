@@ -81,7 +81,7 @@ public:
 
     virtual void Delete();
 
-    double GetRemainingVolumeByFlag(EVEItemFlags flag) const;
+    float GetRemainingVolumeByFlag(EVEItemFlags flag) const;
     // this checks destination flag vs item type/group/category for proper placement
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);     // this cannot throw.  must return bool
     bool ValidateItemSpecifics(InventoryItemRef iRef);
@@ -361,7 +361,7 @@ public:
 
     ShipItemRef GetShipItemRef()                        { return m_shipRef; }
 
-    double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
+    float CalculateRechargeRate(float Capacity, float RechargeTimeMS, float Current);
 
     void AbandonDrones();
     bool LaunchDrone(InventoryItemRef dRef);
@@ -388,7 +388,7 @@ private:
     uint16 m_oldShield;
     uint16 m_oldScanRes;
     uint32 m_oldTargetRange;
-    double m_oldInertia;
+    float m_oldInertia;
 
     /*  for POS field */
     std::string m_towerPass;

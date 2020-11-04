@@ -763,7 +763,7 @@ int main( int argc, char* argv[] )
     sLog.Green(" Server Profiling","Profile Data Reset.");
     std::printf("\n");     // spacer
 
-    sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime) /1000);
+    sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime) / 1000);
     sLog.Error("       ServerInit", "Main Loop Starting.");
 
     ServiceDB::SetServerOnlineStatus(true);

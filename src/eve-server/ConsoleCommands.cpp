@@ -234,22 +234,22 @@ bool ConsoleCommand::Process() {
                 // enable console chat echo
             } else if (strncmp(buf, "o", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Common Account Roles:");
-                sLog.Warning("     Acct::Role::DEV", " %lli(%p)", Acct::Role::DEV, Acct::Role::DEV);
-                sLog.Warning("     Acct::Role::STD", " %lli(%p)", Acct::Role::STD, Acct::Role::STD);
-                sLog.Warning("     Acct::Role::VIP", " %lli(%p)", Acct::Role::VIP, Acct::Role::VIP);
-                sLog.Warning("    Acct::Role::VIP+", " %lli(%p)", Acct::Role::EPLAYER, Acct::Role::EPLAYER);
-                sLog.Warning("    Acct::Role::VIEW", " %lli(%p)", Acct::Role::VIEW, Acct::Role::VIEW);
-                sLog.Warning("    Acct::Role::BOSS", " %lli(%p)", Acct::Role::BOSS, Acct::Role::BOSS);
-                sLog.Warning("   Acct::Role::SLASH", " %lli(%p)", Acct::Role::SLASH, Acct::Role::SLASH);
-                sLog.Warning(" Acct::Role::CREATOR", " %lli(%p)", Acct::Role::CREATOR, Acct::Role::CREATOR);
+                sLog.Warning("     Acct::Role::DEV", " %li(%p)", Acct::Role::DEV, Acct::Role::DEV);
+                sLog.Warning("     Acct::Role::STD", " %li(%p)", Acct::Role::STD, Acct::Role::STD);
+                sLog.Warning("     Acct::Role::VIP", " %li(%p)", Acct::Role::VIP, Acct::Role::VIP);
+                sLog.Warning("    Acct::Role::VIP+", " %li(%p)", Acct::Role::EPLAYER, Acct::Role::EPLAYER);
+                sLog.Warning("    Acct::Role::VIEW", " %li(%p)", Acct::Role::VIEW, Acct::Role::VIEW);
+                sLog.Warning("    Acct::Role::BOSS", " %li(%p)", Acct::Role::BOSS, Acct::Role::BOSS);
+                sLog.Warning("   Acct::Role::SLASH", " %li(%p)", Acct::Role::SLASH, Acct::Role::SLASH);
+                sLog.Warning(" Acct::Role::CREATOR", " %li(%p)", Acct::Role::CREATOR, Acct::Role::CREATOR);
                 std::printf("\n");     // spacer
                 sLog.Green("  Alasiya's EvEMu", "Common Corp Roles:");
-                sLog.Warning("     Corp::Role::All", " %lli(%p)", Corp::Role::All, Corp::Role::All);
-                sLog.Warning("    Corp::Role::Cont", " %lli(%p)", Corp::Role::AllContainer, Corp::Role::AllContainer);
-                sLog.Warning("   Corp::Role::Admin", " %lli(%p)", Corp::Role::Admin, Corp::Role::Admin);
-                sLog.Warning("  Corp::Role::Hangar", " %lli(%p)", Corp::Role::AllHangar, Corp::Role::AllHangar);
-                sLog.Warning(" Corp::Role::Account", " %lli(%p)", Corp::Role::AllAccount, Corp::Role::AllAccount);
-                sLog.Warning("Corp::Role::Starbase", " %lli(%p)", Corp::Role::AllStarbase, Corp::Role::AllStarbase);
+                sLog.Warning("     Corp::Role::All", " %li(%p)", Corp::Role::All, Corp::Role::All);
+                sLog.Warning("    Corp::Role::Cont", " %li(%p)", Corp::Role::AllContainer, Corp::Role::AllContainer);
+                sLog.Warning("   Corp::Role::Admin", " %li(%p)", Corp::Role::Admin, Corp::Role::Admin);
+                sLog.Warning("  Corp::Role::Hangar", " %li(%p)", Corp::Role::AllHangar, Corp::Role::AllHangar);
+                sLog.Warning(" Corp::Role::Account", " %li(%p)", Corp::Role::AllAccount, Corp::Role::AllAccount);
+                sLog.Warning("Corp::Role::Starbase", " %li(%p)", Corp::Role::AllStarbase, Corp::Role::AllStarbase);
             } else if (strncmp(buf, "o", 1) == 0) {
                 pCommand->ListCommands();
             } else if (strncmp(buf, "t", 1) == 0) {

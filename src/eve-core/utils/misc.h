@@ -115,6 +115,8 @@ namespace EvE {
     // format given time (in seconds) to month/week/day/hour/minute/second
     // <0 will return "Invalid Time".  0 will return "None"
     const char* FormatTime(double time);
+
+    double trunicate2(double dig=0);
 }
 
 #endif /* !__MISC_H__INCL__ */

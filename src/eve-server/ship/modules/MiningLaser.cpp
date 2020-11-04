@@ -399,7 +399,7 @@ float MiningLaser::GetMiningVolume()
     ShipSE* pShip = m_shipRef->GetPilot()->GetShipSE();
     if (pShip != nullptr)
         if (pShip->IsBoosted())
-            cycleVol *= (1 + (0.03 * pShip->GetMiningBoostAmount())); // 3% increase/level
+            cycleVol *= (1 + (0.03f * pShip->GetMiningBoostAmount())); // 3% increase/level
 
     return cycleVol;
 }

@@ -31,7 +31,7 @@ uint8 EvEMath::Skill::LevelForPoints(uint32 currentSP, uint8 rank)
 
 uint8 EvEMath::Skill::PointsPerMinute(uint8 pAttr, uint8 sAttr)
 {
-    return (pAttr + (0.5 * sAttr));
+    return (pAttr + (0.5f * sAttr));
 }
 
 int64 EvEMath::Skill::StartTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow)
@@ -60,69 +60,69 @@ float EvEMath::RAM::ProductionTimeModifier(uint8 IndustrySkillLevel, float Produ
 uint32 EvEMath::RAM::ProductionTime(uint32 BaseProductionTime, float ProductivityModifier, float ProductionLevel, float ProductionTimeModifier )
 {
     float PE_Factor(0.0f);
-    if (ProductionLevel >= 0)
-        PE_Factor = (ProductionLevel / (1.0 + ProductionLevel));
+    if (ProductionLevel >= 0.0f)
+        PE_Factor = (ProductionLevel / (1.0f + ProductionLevel));
     else
-        PE_Factor = (ProductionLevel - 1.0);
+        PE_Factor = (ProductionLevel - 1.0f);
 
-    float effModifier(1.0 - (ProductivityModifier / BaseProductionTime) * PE_Factor);
+    float effModifier(1.0f - (ProductivityModifier / BaseProductionTime) * PE_Factor);
     return (BaseProductionTime * effModifier * ProductionTimeModifier);
 }
 
 float EvEMath::RAM::ME_EffectOnWaste( float MaterialAmount, float BaseWasteFactor, float MaterialEfficiency )
 {
-    float ME_Factor(0.0);
-    if (MaterialEfficiency >= 0)
-        ME_Factor = 1 / (1 + MaterialEfficiency);
+    float ME_Factor(0.0f);
+    if (MaterialEfficiency >= 0.0f)
+        ME_Factor = 1.0f / (1.0f + MaterialEfficiency);
     else
-        ME_Factor = 1 - MaterialEfficiency;
+        ME_Factor = 1.0f - MaterialEfficiency;
 
-    return (floor(0.5 + (MaterialAmount * (BaseWasteFactor /100) * ME_Factor)));
+    return (floor(0.5f + (MaterialAmount * (BaseWasteFactor / 100.0f) * ME_Factor)));
 }
 
 uint32 EvEMath::RAM::PerfectME(uint32 MaterialAmount, uint8 BaseWasteFactor)
 {
-    return floor(0.02 * BaseWasteFactor * MaterialAmount);
+    return floor(0.02f * BaseWasteFactor * MaterialAmount);
 }
 
 float EvEMath::RAM::ResearchPointsPerDay( float Multiplier, float AgentEffectiveQuality, uint8 CharSkillLevel, uint8 AgentSkillLevel )
 {
-     return (Multiplier * (2 + (AgentEffectiveQuality / 100.0)) * pow(CharSkillLevel + AgentSkillLevel,2));
+     return (Multiplier * (2.0f + (AgentEffectiveQuality / 100.0f)) * pow(CharSkillLevel + AgentSkillLevel,2));
 }
 
 
 float EvEMath::Refine::StationTaxesForReprocessing( float CharacterStandingWithStationOwner )
 {
-    return 5 - (0.75 * CharacterStandingWithStationOwner);
+    return 5.0f - (0.75f * CharacterStandingWithStationOwner);
 }
 
 float EvEMath::Refine::EffectiveRefiningYield( float StationEquipmentYield, uint8 RefiningSkillLevel, uint8 RefiningEfficiencySkillLevel, uint8 OreProcessingSkillLevel )
 {
-    return (StationEquipmentYield + 0.375 * (1 + (RefiningSkillLevel * 0.02))
-            * (1 + (RefiningEfficiencySkillLevel * 0.04)) * (1 + (OreProcessingSkillLevel * 0.05)));
+    return (StationEquipmentYield + 0.375f * (1.0f + (RefiningSkillLevel * 0.02f))
+            * (1.0f + (RefiningEfficiencySkillLevel * 0.04f)) * (1.0f + (OreProcessingSkillLevel * 0.05f)));
 }
 
 /** @todo update and verify these before use...and remove the fucking EvilNumber bullshit...NOT needed here. */
 EvilNumber EvEMath::RAM::WasteSkillBased( EvilNumber MaterialAmount, EvilNumber ProductionEfficiency )
 {
-	 return (floor(0.5 + (MaterialAmount.get_double() * ((25.0 - (5.0 * ProductionEfficiency.get_double())) / 100.0))));
+	 return (floor(0.5f + (MaterialAmount.get_double() * ((25.0f - (5.0f * ProductionEfficiency.get_double())) / 100.0f))));
 }
 
 EvilNumber EvEMath::RAM::ME_ResearchTime( EvilNumber BlueprintBaseResearchTime, EvilNumber MetallurgySkillLevel, EvilNumber ResearchSlotModifier, EvilNumber ImplantModifier )
 {
-	 return (BlueprintBaseResearchTime.get_double() * (13.0 - (0.05 * MetallurgySkillLevel.get_double()))
+	 return (BlueprintBaseResearchTime.get_double() * (13.0f - (0.05f * MetallurgySkillLevel.get_double()))
 	 * ResearchSlotModifier.get_double() * ImplantModifier.get_double());
 }
 
 EvilNumber EvEMath::RAM::PE_ResearchTime( EvilNumber BlueprintBaseResearchTime, EvilNumber ResearchSkillLevel, EvilNumber ResearchSlotModifier, EvilNumber ImplantModifier )
 {
-	 return (BlueprintBaseResearchTime.get_double() * (15.0 - (0.05 * ResearchSkillLevel.get_double()))
+	 return (BlueprintBaseResearchTime.get_double() * (15.0f - (0.05f * ResearchSkillLevel.get_double()))
 	 * ResearchSlotModifier.get_double() * ImplantModifier.get_double());
 }
 
 float EvEMath::RAM::BpCopyTime( uint16 BaseCopyTime, uint8 ScienceLevel, float CopySlotModifier, float ImplantModifier/*1*/ )
 {
-	 return (BaseCopyTime * (1.0 - (0.05 * ScienceLevel)) * CopySlotModifier * ImplantModifier);
+	 return (BaseCopyTime * (1.0f - (0.05f * ScienceLevel)) * CopySlotModifier * ImplantModifier);
 }
 
 EvilNumber EvEMath::RAM::BlueprintInventionTime( EvilNumber BlueprintBaseInventionTime, EvilNumber InventionSlotModifier, EvilNumber ImplantModifier )
@@ -132,41 +132,41 @@ EvilNumber EvEMath::RAM::BlueprintInventionTime( EvilNumber BlueprintBaseInventi
 
 EvilNumber EvEMath::RAM::BlueprintInventionChance( EvilNumber BaseChance, EvilNumber EncryptionSkillLevel, EvilNumber DataCore1SkillLevel, EvilNumber DataCore2SkillLevel, EvilNumber MetaLevel, EvilNumber DecryptorModifier )
 {
-     return (BaseChance.get_double() * (1+0.11*EncryptionSkillLevel.get_double())
-     * (1+(DataCore1SkillLevel.get_double()+DataCore2SkillLevel.get_double())
-     * (0.8 / (5 - MetaLevel.get_double())) * DecryptorModifier.get_double()));
+     return (BaseChance.get_double() * (1 + 0.11f * EncryptionSkillLevel.get_double())
+     * (1.0f + (DataCore1SkillLevel.get_double()+DataCore2SkillLevel.get_double())
+     * (0.8f / (5.0f - MetaLevel.get_double())) * DecryptorModifier.get_double()));
 }
 
 
 // Agent Equations
 float EvEMath::Agent::EffectiveQuality(int8 AgentQuality, uint8 NegotiationSkillLevel, float AgentPersonalStanding)
 {
-    return (AgentQuality + (5.0 * NegotiationSkillLevel) + AgentPersonalStanding);
+    return (AgentQuality + (5.0f * NegotiationSkillLevel) + AgentPersonalStanding);
 }
 
 float EvEMath::Agent::EffectiveStanding(float YourStanding, double standingBonus)
 {
-    return (1.0 - (1.0 - YourStanding / 10.0f) * (1.0 - standingBonus / 10.0f)) * 10.0f;
+    return (1.0f - (1.0f - YourStanding / 10.0f) * (1.0f - standingBonus / 10.0f)) * 10.0f;
 }
 
 float EvEMath::Agent::RequiredStanding( uint8 AgentLevel, int8 AgentQuality )
 {
-    return (((AgentLevel - 1) * 2) + (AgentQuality/20.0f));
+    return (((AgentLevel - 1.0f) * 2.0f) + (AgentQuality/20.0f));
 }
 
 float EvEMath::Agent::MissionStandingIncrease( float BaseMissionIncrease, uint8 YourSocialSkillLevel )
 {
-    return (BaseMissionIncrease * (1 + 0.05 * YourSocialSkillLevel));
+    return (BaseMissionIncrease * (1.0f + 0.05f * YourSocialSkillLevel));
 }
 
 float EvEMath::Agent::Efficiency( uint8 AgentLevel, int8 AgentQuality )
 {
-    return (0.01f * ((8 * AgentLevel) + (0.1f * AgentQuality) - 4));
+    return (0.01f * ((8.0f * AgentLevel) + (0.1f * AgentQuality) - 4.0f));
 }
 
 float EvEMath::Agent::AgentStandingIncrease(float CurrentStanding, float PercentIncrease)
 {
-    return (((10 - CurrentStanding) * PercentIncrease) + CurrentStanding);
+    return (((10.0f - CurrentStanding) * PercentIncrease) + CurrentStanding);
 }
 
 float EvEMath::Agent::GetStandingBonus(float fromStanding, uint32 fromFactionID, uint8 ConnectionsSkillLevel, uint8 DiplomacySkillLevel, uint8 CriminalConnectionsSkillLevel)
@@ -193,8 +193,8 @@ float EvEMath::Agent::GetStandingBonus(float fromStanding, uint32 fromFactionID,
 
 float EvEMath::Market::BrokerFee(uint8 brSkillLvl, float fStanding, float cStanding)
 {
-    float wStanding = (0.7 * fStanding + 0.3 * cStanding) / 10.0;
-    float fee = 0.01 * (1 - (0.05 * brSkillLvl)) * pow(2, -2 * wStanding);
+    float wStanding = (0.7f * fStanding + 0.3f * cStanding) / 10.0f;
+    float fee = 0.01f * (1.0f - (0.05f * brSkillLvl)) * pow(2, -2 * wStanding);
     return EvE::max(fee, 100.0f);
 }
 
@@ -207,7 +207,7 @@ float EvEMath::Market::RelistFee(float oldPrice, float newPrice, float brokerPer
 float EvEMath::Market::SalesTax(uint8 accountingLvl/*0*/, uint8 taxEvasionLvl/*0*/)
 {
     /** @todo  add skillTaxEvasion to this formula; its not calculated in client... */
-    float tax = 0.01 * (1 - 0.1 * accountingLvl);
+    float tax = 0.01f * (1 - 0.1f * accountingLvl);
     return EvE::max(tax, 100.0f);
 }
 
@@ -224,12 +224,12 @@ EvilNumber EvEMath::EffectiveAttribute( EvilNumber BaseAttribute, EvilNumber Imp
 
 EvilNumber EvEMath::TargetingLockTime( EvilNumber YourEffectiveScanResolution, EvilNumber TargetEffectiveSignatureRadius )
 {
-    return (40000.0 / (YourEffectiveScanResolution.get_double() * pow(asinh(TargetEffectiveSignatureRadius.get_double()),2)));
+    return (40000.0f / (YourEffectiveScanResolution.get_double() * pow(asinh(TargetEffectiveSignatureRadius.get_double()),2)));
 }
 
 EvilNumber EvEMath::AlignTimeInSeconds( EvilNumber inertia, EvilNumber Mass )
 {
-    return ((log(2.0) * inertia * Mass) / 500000);
+    return ((log(2.0f) * inertia * Mass) / 500000);
 }
 
 /*

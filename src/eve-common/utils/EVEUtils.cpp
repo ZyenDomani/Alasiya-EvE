@@ -144,6 +144,10 @@ bool DBTYPE_IsCompatible( DBTYPE type, const PyRep* rep )
 
         case DBTYPE_WSTR:
             return rep->IsWString();
+
+        case DBTYPE_EMPTY:
+        case DBTYPE_ERROR:
+            return false;
     }
 
     return false;

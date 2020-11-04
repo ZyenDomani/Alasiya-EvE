@@ -41,7 +41,7 @@ Prospector::Prospector(ModuleItemRef mRef, ShipItemRef sRef)
 
     // increase scan speed by level of survey skill
     float cycleTime = GetAttribute(AttrDuration).get_float();
-    cycleTime *= (1 + (0.03 * (pChar->GetSkillLevel(EvESkill::Survey, true))));
+    cycleTime *= (1 + (0.03f * (pChar->GetSkillLevel(EvESkill::Survey, true))));
     SetAttribute(AttrDuration, cycleTime);
 }
 
@@ -54,7 +54,7 @@ void Prospector::Update()
 
     // increase scan speed by level of survey skill
     float cycleTime = GetAttribute(AttrDuration).get_float();
-    cycleTime *= (1 + (0.03 * (pChar->GetSkillLevel(EvESkill::Survey, true))));
+    cycleTime *= (1 + (0.03f * (pChar->GetSkillLevel(EvESkill::Survey, true))));
     SetAttribute(AttrDuration, cycleTime);
 
     ActiveModule::Update();

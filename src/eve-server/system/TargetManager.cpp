@@ -624,8 +624,8 @@ float TargetManager::TimeToLock ( ShipItemRef sRef, SystemEntity* tSE ) const {
 
         float disMod = distance /10000;
         if (disMod < 1)
-            disMod = 0;
-        time += (disMod * 0.1);
+            disMod = 0.0f;
+        time += (disMod * 0.1f);
 
         return time;
 }

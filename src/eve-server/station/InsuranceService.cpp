@@ -100,7 +100,7 @@ PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called in space */
     const ItemType *type = sItemFactory.GetType(PyRep::IntegerValue(call.tuple->GetItem(0)));
     if (type != nullptr)
-        return new PyFloat(type->basePrice() /15);
+        return new PyFloat(type->basePrice() / 15);
 
     return PyStatic.NewZero();
 }
@@ -109,7 +109,7 @@ PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called when docked */
     const ItemType *type = sItemFactory.GetType(PyRep::IntegerValue(call.tuple->GetItem(0)));
     if (type != nullptr)
-        return new PyFloat(type->basePrice() /15);
+        return new PyFloat(type->basePrice() / 15);
 
     return PyStatic.NewZero();
 }
@@ -160,32 +160,32 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
      *   Basic      0.5       0.05
      */
     // calculate the fraction value
-    double paymentFraction = (args.amount / (shipRef->type().basePrice() /15));
-    if (paymentFraction < 0.05) {
+    double paymentFraction = (args.amount / (shipRef->type().basePrice() / 15));
+    if (paymentFraction < 0.05f) {
             // catchall for fuckedup prices.
         call.client->SendErrorMsg("Your payment of %.2f is below the minimum payment of %.2f required for coverage.", \
-                    args.amount, (shipRef->type().basePrice() /15) * 0.05);
+                    args.amount, (shipRef->type().basePrice() / 15) * 0.05f);
         return PyStatic.NewNone();
     }
 
     float fraction = 0.0f;  // with no insurance, SCC pays 40%
-    if (paymentFraction == 0.05)
+    if (paymentFraction == 0.05f)
         fraction = 0.5f;
-    else if (paymentFraction == 0.1)
+    else if (paymentFraction == 0.1f)
         fraction = 0.6f;
-    else if (paymentFraction == 0.15)
+    else if (paymentFraction == 0.15f)
         fraction = 0.7f;
-    else if (paymentFraction == 0.2)
+    else if (paymentFraction == 0.2f)
         fraction = 0.8f;
-    else if (paymentFraction == 0.25)
+    else if (paymentFraction == 0.25f)
         fraction = 0.9f;
-    else if (paymentFraction == 0.3)
+    else if (paymentFraction == 0.3f)
         fraction = 1.0f;
 
-    if (fraction < 0.05) {
+    if (fraction < 0.05f) {
         call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");
         throw PyException(MakeUserError("InsureShipFailed"));
-    } else if (fraction == 0.3)
+    } else if (fraction == 0.3f)
         call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 75521.");
 
     if (m_db->IsShipInsured(args.shipID)) {     //this hits db...can you insure unloaded ship? (if no, make this a ship memobj)
@@ -196,8 +196,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
             throw PyException(MakeUserError("InsureShipFailedSingleContract"));
     }
 
-    uint8 numWeeks = 12;
-
+    uint8 numWeeks(12);
     if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->itemName().c_str(), call.client->GetCharacterID(), fraction, shipRef->type().basePrice(), args.isCorp, numWeeks)) {
         //  it successfully added, now, have the player pay for the insurance
         std::string reason = "Insurance Premium on ";

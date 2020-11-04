@@ -130,7 +130,7 @@ GaVec3 GaVec3::angleRot(GaVec3 from, GaVec3 to, double angle)
     q_temp.v.y = axis.y * sin(angle);
     q_temp.v.z = axis.z * sin(angle);
     q_temp.w = cos(angle);
-
+*/
     /*
      *    q.v.x *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)
      *    q.v.y *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)

@@ -355,7 +355,7 @@ void Character::Delete() {
     InventoryItem::Delete();
 }
 
-double Character::balance(uint8 type)
+float Character::balance(uint8 type)
 {
     if (type == Account::CreditType::ISK)
         return m_charData.balance;
@@ -366,7 +366,7 @@ double Character::balance(uint8 type)
     return 0;
 }
 
-bool Character::AlterBalance(double amount, uint8 type) {
+bool Character::AlterBalance(float amount, uint8 type) {
     if (amount == 0)
         return true;
 
@@ -763,7 +763,7 @@ void Character::LoadPausedSkillQueue(uint16 typeID)
 
     // queue was paused.  all endTimes are off, so reset using now as start time for first skill.
     uint8 nextLvl(0);
-    uint32 skillID(0), currentSP(0), nextSP(0);
+    uint32 currentSP(0), nextSP(0);
     int64 startTime(GetFileTimeNow());
     for (SkillQueue::iterator itr = m_skillQueue.begin(); itr != m_skillQueue.end(); ++itr) {
         skill = GetSkill(itr->typeID).get();
@@ -1346,34 +1346,34 @@ void Character::SaveBookMarks()
 // functions and methods for standings system
 /** @todo  this needs to be moved to common standings code */
 /** @todo  these need to use common standings methods for formulas  */
-double Character::GetStanding(uint32 fromID, uint32 toID) {
+float Character::GetStanding(uint32 fromID, uint32 toID) {
     return StandingDB::GetStanding(fromID, toID);
 }
 
-double Character::GetStandingModified(uint32 fromID, uint32 toID)
+float Character::GetStandingModified(uint32 fromID, uint32 toID)
 {
-    double res = StandingDB::GetStanding(fromID, toID);
-    if (res < 0)
-        res += ((10+res) * 0.04 * GetSkillLevel(EvESkill::Diplomacy));
+    float res = StandingDB::GetStanding(fromID, toID);
+    if (res < 0.0f)
+        res += ((10 + res) * 0.04f * GetSkillLevel(EvESkill::Diplomacy));
     else
-        res += ((10-res) * 0.04 * GetSkillLevel(EvESkill::Connections));
+        res += ((10 - res) * 0.04f * GetSkillLevel(EvESkill::Connections));
     return res;
 }
 
-double Character::GetNPCCorpStanding(uint32 fromID, uint32 toID) {
-    double res = StandingDB::GetStanding(fromID, toID);
-    if (res < 0)
-        res += ((10+res) * 0.04 * GetSkillLevel(EvESkill::Diplomacy));
+float Character::GetNPCCorpStanding(uint32 fromID, uint32 toID) {
+    float res = StandingDB::GetStanding(fromID, toID);
+    if (res < 0.0f)
+        res += ((10 + res) * 0.04f * GetSkillLevel(EvESkill::Diplomacy));
     else
-        res += ((10-res) * 0.04 * GetSkillLevel(EvESkill::Connections));
+        res += ((10 - res) * 0.04f * GetSkillLevel(EvESkill::Connections));
     return res;
 }
 
-double Character::GetStandingChanges() {
+float Character::GetStandingChanges() {
 	return s_db.GetStandingChanges(m_itemID);
 }
 
-void Character::SetStanding(uint32 fromID, uint32 toID, double standing) {
+void Character::SetStanding(uint32 fromID, uint32 toID, float standing) {
     StandingDB::SetStanding(fromID, toID, standing);
     PyTuple* payload = new PyTuple(0);
     m_pClient->SendNotification("OnStandingSet", "charid", payload, false);

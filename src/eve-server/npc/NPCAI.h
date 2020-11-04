@@ -77,7 +77,7 @@ public:
 
     // npcAI methods
     void DisableWarpOutTimer()                          { m_warpOutTimer.Disable(); }
-    void WarpOutComplete()                              { m_warpOutTimer.Disable(); m_state == NPCAI::State::Idle; }
+    void WarpOutComplete()                              { m_warpOutTimer.Disable(); m_state = NPCAI::State::Idle; }
 
     void LaunchMissile(uint16 typeID, SystemEntity* pSE);   // us to them
     void MissileLaunched(Missile* pMissile); // them to us

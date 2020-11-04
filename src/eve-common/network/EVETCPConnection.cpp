@@ -88,7 +88,7 @@ PyRep* EVETCPConnection::PopRep()
     MutexLock lock( mMInQueue );
     Buffer* packet = mInQueue.PopPacket();
 
-    if (packet != nullptr)
+    if (packet != nullptr) {
         if ( PACKET_SIZE_LIMIT < packet->size() ) {
             sLog.Error( "Network", "Packet length %lu exceeds hardcoded packet length limit %u.", packet->size(), PACKET_SIZE_LIMIT );
         } else {
@@ -96,6 +96,7 @@ PyRep* EVETCPConnection::PopRep()
            //     DumpBuffer( packet, PACKET_INBOUND );
             res = InflateUnmarshal( *packet );
         }
+    }
 
     SafeDelete( packet );
     return res;

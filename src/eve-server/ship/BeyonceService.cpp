@@ -570,41 +570,41 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         if (pSE->IsPlanetSE()) {
             srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
             int rand = random();
-            double j = (((rand / RAND_MAX) -1.0) / 3.0);
-            double s = 20 * std::pow(0.025 * (10 * std::log10(radius/1000000) -39), 20) +0.5;
-            s = EvE::max(0.5, EvE::min(s, 10.5));
+            double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
+            double s = 20 * std::pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
+            s = EvE::max(0.5f, EvE::min(s, 10.5f));
             double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(std::pow(warpToPoint.x, 2) + std::pow(warpToPoint.z, 2)))) +j;
-            uint32 d = radius * (s +1) +1000000;
+            uint32 d = radius * (s + 1) + 1000000;
             warpToPoint.x += (d * std::sin(t));
-            warpToPoint.y += (0.5 * radius * std::sin(j));
+            warpToPoint.y += (0.5f * radius * std::sin(j));
             warpToPoint.z -= (d * std::cos(t));
         } else if (pSE->IsStationSE()){
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
         } else if (pSE->IsCOSE()) {
-            distance += (radius /2);
+            distance += (radius / 2);
         } else if (pSE->IsGateSE()) {
-            distance += (radius /3);  // fudge the distance a bit for gates... its' a lil close by default
+            distance += (radius / 3);  // fudge the distance a bit for gates... its' a lil close by default
         } else if (pSE->IsMoonSE()) {
             if (pSE->GetMoonSE()->HasTower()) {
                 // if moon has a tower, make warpin point 20km inside edge of tower's bubble.
                 warpToPoint = pSE->GetMoonSE()->GetMyTower()->GetPosition();
                 GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
                 vectorFromOrigin.normalize();   //we now have a direction
-                GPoint stopPoint = (vectorFromOrigin * (BUBBLE_RADIUS_METERS -20000));  // 20km inside bubble.
+                GPoint stopPoint = (vectorFromOrigin * (BUBBLE_RADIUS_METERS - 20000));  // 20km inside bubble.
                 warpToPoint -= stopPoint;
                 distance = 0;
             } else {
                 // hack for warping to moons
                 // this puts ship at Az: 0.785332, Ele: 0.615505, angle: 1.5708
-                warpToPoint -= (radius * 1.25);
+                warpToPoint -= (radius * 1.25f);
             }
         } else if (pSE->IsWormholeSE()) {
                 distance += 20000;  // add 20k for wh
         } else if (radius > 90000) {
             // this doesnt work for moons
             warpToPoint.x += ((radius + 500000) * std::cos(radius));
-            warpToPoint.y += ((radius * 1.3) - 7500);
+            warpToPoint.y += ((radius * 1.3f) - 7500);
             warpToPoint.z -= ((radius + 500000) * std::sin(radius));
         }
         if (radius < 90000) {

@@ -1947,7 +1947,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
          */
         float currentShipCap = pClient->GetShip()->GetAttribute(AttrCapacitorCharge).get_float();
         float capNeeded = m_mass * m_warpCapacitorNeed * (m_targetDistance / ONE_AU_IN_METERS);
-        capNeeded *= (1 - (0.1 *pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
+        capNeeded *= (1.0f - (0.1f *pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
 
         _log(DESTINY__WARNING, "Warp Cap need for %s(%u) is %.4f", mySE->GetName(), mySE->GetID(), capNeeded);
 
@@ -2404,10 +2404,10 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
 void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
 {
     if (apply)
-        m_maxShipSpeed *= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100));
+        m_maxShipSpeed *= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100.0f));
     else
-        m_maxShipSpeed /= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100));
-    m_activeSpeedFraction = m_activeSpeedFraction * 0.999;
+        m_maxShipSpeed /= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100.0f));
+    m_activeSpeedFraction = m_activeSpeedFraction * 0.999f;
     std::vector<PyTuple*> updates;
     SetBallSpeed sbms;
         sbms.entityID = mySE->GetID();

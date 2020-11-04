@@ -105,7 +105,8 @@ PyRep* StandingDB::PrimeCharStandings(uint32 charID) {
     return DBResultToRowset(res);
 }
 
-PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint16 eventID, uint16 eventType, int64 eventDateTime) {
+PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction,
+                                           uint16 eventID, uint16 eventType, int64 eventDateTime) {
     if (fromID == corpCONCORD)
         ;
 
@@ -133,22 +134,22 @@ PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 di
     return DBResultToRowset(res);
 }
 
-double StandingDB::GetStanding(uint32 fromID, uint32 toID) {
+float StandingDB::GetStanding(uint32 fromID, uint32 toID) {
     DBQueryResult res;
     DBResultRow row;
     sDatabase.RunQuery(res, "SELECT standing FROM repStandings WHERE fromID=%u AND toID=%u", fromID, toID);
     if (res.GetRow(row))
-        return row.GetDouble(0);
+        return row.GetFloat(0);
     else
         return 0.0f;
 }
 
-void StandingDB::SetStanding(uint32 fromID, uint32 toID, double standing) {
+void StandingDB::SetStanding(uint32 fromID, uint32 toID, float standing) {
     DBerror err;
     sDatabase.RunQuery(err, "INSERT INTO repStandings (fromID, toID, standing) VALUES (%u,%u,%f)", fromID, toID, standing );
 }
 
-void StandingDB::UpdateStanding(uint32 fromID, uint32 toID, double standing)
+void StandingDB::UpdateStanding(uint32 fromID, uint32 toID, float standing)
 {
     DBerror err;
     sDatabase.RunQuery(err,
@@ -157,12 +158,12 @@ void StandingDB::UpdateStanding(uint32 fromID, uint32 toID, double standing)
                        " ON DUPLICATE KEY UPDATE standing = standing + %f", fromID, toID, standing, standing);
 }
 
-double StandingDB::GetStandingChanges(uint32 charID) {
-    return 0.0;
+float StandingDB::GetStandingChanges(uint32 charID) {
+    return 0.0f;
 }
 
 //FIXME TODO  implement repStandingChanges after standing system is working....
-void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, double amount, std::string msg) {
+void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, float amount, std::string msg) {
     /* eventTypeID,eventDateTime,fromID,toID,modification,originalFromID,originalToID,int_1,int_2,int_3,msg */
     DBerror err;
     sDatabase.RunQuery(err,

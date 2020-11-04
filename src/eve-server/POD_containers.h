@@ -59,10 +59,10 @@ struct CharacterData {
     uint32 skillPoints;
     int64 loginTime;
     int64 createDateTime;
-    double bounty;
-    double balance;
-    double aurBalance;
-    double securityRating;
+    float bounty;
+    float balance;
+    float aurBalance;
+    float securityRating;
     std::string name;
     std::string title;
     std::string description;
@@ -86,7 +86,7 @@ struct CorpData {
     int64 grantableRolesAtBase;
     int64 grantableRolesAtHQ;
     int64 grantableRolesAtOther;
-    double taxRate;
+    float taxRate;
     std::string name;
     std::string ticker;
 };
@@ -109,7 +109,7 @@ struct BountyData {
     uint16 toKey;
     uint32 fromID;
     uint32 toID;
-    double amount;
+    float amount;
     std::string reason;
 };
 

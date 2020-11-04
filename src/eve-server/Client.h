@@ -167,12 +167,12 @@ public:
     ShipSE* GetShipSE()                                 { return pShipSE; }
     ShipItemRef GetPod() const                          { return m_pod; }
     uint32 GetPodID() const                             { return m_pod->itemID(); }
-    double GetBounty() const                            { return m_char->bounty(); }
-    double GetSecurityRating() const                    { return m_char->GetSecurityRating(); }
+    float GetBounty() const                             { return m_char->bounty(); }
+    float GetSecurityRating() const                     { return m_char->GetSecurityRating(); }
 
-    bool AddBalance(double amount, uint8 type=Account::CreditType::ISK)
+    bool AddBalance(float amount, uint8 type=Account::CreditType::ISK)
                                                         { return m_char->AlterBalance(amount, type); }
-    double GetBalance(uint8 type=Account::CreditType::ISK)
+    float GetBalance(uint8 type=Account::CreditType::ISK)
                                                         { return m_char->balance(type); }
 
     // ship functions
@@ -237,7 +237,7 @@ public:
     bool IsBubbleWait()                                 { return m_bubbleWait; }
     bool IsSetStateSent()                               { return m_setStateSent; }
     bool IsSessionChange()                              { return m_sessionChangeActive; }
-    uint32 GetSessionChangeTime()                       { return m_sessionTimer.GetRemainingTime() /1000; }
+    uint32 GetSessionChangeTime()                       { return m_sessionTimer.GetRemainingTime() / 1000; }
 
     void SetInvul(bool invul=false)                     { m_invul = invul; }
     void SetUndock(bool undock=false)                   { m_undock = undock; }
@@ -261,7 +261,7 @@ public:
     //jetcan timer
     bool IsJetcanAvalible();
     // return time remaining in seconds
-    uint32 JetcanTime()                                 { return (m_jetcanTimer.GetRemainingTime() /1000); }
+    uint32 JetcanTime()                                 { return (m_jetcanTimer.GetRemainingTime() / 1000); }
     void StartJetcanTimer()                             { m_jetcanTimer.Start(Player::Timer::Jetcan); }
 
     void SetShowAll(bool set=false)                     { m_showall = set; }

@@ -539,9 +539,9 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
         case FX::Math::ModSub:
             return val1 - val2;
         case FX::Math::PostPercent:
-            return val1 * (1 + (val2 / 100));
+            return val1 * (1.0f + (val2 / 100.0f));
         case FX::Math::RevPostPercent:
-            return val1 / (1 + (val2 / 100));
+            return val1 / (1.0f + (val2 / 100.0f));
         case FX::Math::Invalid:
             _log(EFFECTS__WARNING, "FxProc::CalculateNewAttributeValue() - Invalid Association used");
             return val1;
@@ -725,8 +725,8 @@ void FxProc::DecodeExpression(Expression expression, fxData& data)
                 data.typeID = expression.expressionTypeID;
         } break;
         case Operands::GETTYPE: { //36, %(arg1)s.GetTypeID()  --used by SRLG in AORSM
-            if (!data.typeID)
-                data.typeID = 0000; //data.srcRef->typeID();    // get items on ship that require SkillItem in srcRef
+            if (!data.typeID)   // verify this isnt set yet (dont overwrite)
+                data.typeID = 0; //data.srcRef->typeID();    // get items on ship that require SkillItem in srcRef
         } break;
         // do as stated
         case Operands::COMBINE: { //17, %(arg1)s); (%(arg2)s      --executes two statements

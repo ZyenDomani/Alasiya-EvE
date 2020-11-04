@@ -24,7 +24,7 @@ void AllianceDB::EditBulletin(uint32 bulletinID, uint32 eCharID, int64 eDataTime
 {
     DBerror err;
     sDatabase.RunQuery(err,
-            "UPDATE alnBulletins SET editCharacterID = %u, editDateTime = %lli, title = '%s', body = '%s'"
+            "UPDATE alnBulletins SET editCharacterID = %u, editDateTime = %li, title = '%s', body = '%s'"
             " WHERE bulletinID = %u",
             eCharID, eDataTime, title.c_str(), body.c_str(), bulletinID);
 }
@@ -131,7 +131,7 @@ bool AllianceDB::InsertApplication(Corp::ApplicationInfo& aInfo) {
     if (!sDatabase.RunQueryLID(err, aInfo.appID,
         " INSERT INTO alnApplications"
         " (corporationID, characterID, applicationText, applicationDateTime)"
-        " VALUES (%u, %u, '%s', %lli)",
+        " VALUES (%u, %u, '%s', %li)",
         aInfo.corpID, aInfo.charID, escaped.c_str(), aInfo.appTime))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", err.c_str());

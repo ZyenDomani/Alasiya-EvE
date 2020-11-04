@@ -290,6 +290,14 @@ PyRep *LSCChannel::EncodeID() {
                 desc.id = m_channelID;
             return desc.Encode();
         }
+        case LSC::Type::character:
+        case LSC::Type::alliance:
+        case LSC::Type::warfaction:
+        case LSC::Type::incursion: 
+        case LSC::Type::normal:
+        case LSC::Type::custom: {
+            return new PyInt(m_channelID);
+        }
     }
     return new PyInt(m_channelID);
 }

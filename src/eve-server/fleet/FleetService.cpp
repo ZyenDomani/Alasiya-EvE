@@ -32,9 +32,10 @@ FLEET__BIND_DUMP
 //  Manager class functions and methods...
 
 FleetService::FleetService()
-: m_services(nullptr)
+: m_services(nullptr),
+m_initalized(false)
 {
-    m_initalized = false;
+
 }
 
 void FleetService::Initialize(PyServiceMgr* svc)
@@ -126,7 +127,7 @@ uint32 FleetService::CreateFleet(Client *pClient)
     // update the fleet member map with new member for this fleet.
     m_fleetMembers.emplace(m_fleetID, pClient);
 
-    _log(FLEET__INFO, "FleetService::CreateFleet() - fleetID: %i, wingID: %i, squadID: %i, leaderID: %u", m_fleetID, m_wingID, m_squadID, pChar->itemID());
+    _log(FLEET__INFO, "FleetService::CreateFleet() - fleetID: %u, wingID: %u, squadID: %u, leaderID: %u", m_fleetID, m_wingID, m_squadID, pChar->itemID());
 
     sLog.Cyan("CreateFleet", "bData -- leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \
             sData.boost.leader, sData.boost.armored, sData.boost.info, sData.boost.siege, sData.boost.skirmish, sData.boost.mining);
@@ -138,6 +139,7 @@ uint32 FleetService::CreateFleet(Client *pClient)
     if (sConfig.chat.EnableSquadChat)
         m_services->lsc_service->CreateSystemChannel(m_squadID);
 
+    // increment counters after channels are created (to avoid wrong channel creation)
     ++m_fleetID;
     ++m_wingID;
     ++m_squadID;
@@ -160,7 +162,7 @@ PyRep* FleetService::CreateWing(uint32 fleetID)
     m_wingDataMap.emplace(m_wingID, wData);
     m_fleetWings.emplace(fleetID, m_wingID);
 
-    _log(FLEET__INFO, "FleetService::CreateWing() - fleetID: %i, wingID: %i", fleetID, m_wingID);
+    _log(FLEET__INFO, "FleetService::CreateWing() - fleetID: %u, wingID: %u", fleetID, m_wingID);
 
     PyTuple* tuple1 = new PyTuple(1);
         tuple1->SetItem(0, new PyInt(m_wingID));
@@ -189,16 +191,10 @@ void FleetService::CreateSquad(uint32 fleetID, uint32 wingID)
     FleetData data = FleetData();
     GetFleetData(fleetID, data);
     BoostData bData = BoostData();
-        bData.armored = 0;
-        bData.info = 0;
-        bData.leader = 0;
-        bData.mining = 0;
-        bData.siege = 0;
-        bData.skirmish = 0;
     SquadData sData = SquadData();
         sData.boost = bData;
         sData.name = "Squad ";
-        sData.name += itoa(data.squads);
+        sData.name += std::to_string(data.squads);
         sData.wingID = wingID;
         sData.fleetID = fleetID;
         sData.booster = nullptr;
@@ -207,7 +203,7 @@ void FleetService::CreateSquad(uint32 fleetID, uint32 wingID)
     m_squadDataMap.emplace(m_squadID, sData);
     m_wingSquads.emplace(wingID, m_squadID);
 
-    _log(FLEET__INFO, "FleetService::CreateSquad() - fleetID: %i, wingID: %i, squadID: %i", fleetID, wingID, m_squadID);
+    _log(FLEET__INFO, "FleetService::CreateSquad() - fleetID: %u, wingID: %u, squadID: %u", fleetID, wingID, m_squadID);
 
     PyTuple* tuple = new PyTuple(2);
         tuple->SetItem(0, new PyInt(wingID));
@@ -229,7 +225,7 @@ void FleetService::CreateSquad(uint32 fleetID, uint32 wingID)
 
 void FleetService::CreateFleetAdvert(uint32 fleetID, FleetAdvert data)
 {
-
+    /** @todo   update inviteScope to use names */
     std::map<uint32, FleetAdvert>::iterator itr = m_fleetAdvertMap.find(fleetID);
     if (itr != m_fleetAdvertMap.end()) {
         m_fleetAdvertMap.erase(fleetID);
@@ -252,7 +248,7 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
     if (pChar == nullptr)
         return false;
 
-    _log(FLEET__TRACE, "AddMember - CharID: %u, FleetID: %i, WingID: %i, Squad: %i, Job: %s, Role: %s, Booster: %s", \
+    _log(FLEET__TRACE, "AddMember - CharID: %u, FleetID: %u, WingID: %i, Squad: %i, Job: %s, Role: %s, Booster: %s", \
     pChar->itemID(), fleetID, wingID, squadID, GetJobName(job).c_str(), GetRoleName(role).c_str(), GetBoosterName(booster).c_str());
 
     // add new member to fleet data
@@ -263,7 +259,7 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
         fData.fleetID = fleetID;
         fData.wingID = wingID;
         fData.squadID = squadID;
-        fData.job = Fleet::Job::None;
+        fData.job = job; //Fleet::Job::None;
         fData.role = role;
         fData.booster = booster;
         fData.joinTime = GetFileTimeNow();
@@ -275,7 +271,7 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
         obj->SetItem(0, new PyObject("util.KeyVal", dict));
     pClient->SendNotification("OnFleetStateChange", "charid", obj, true);
 
-    bool fleet = false;
+    bool fleet(false);
     if (role == Fleet::Role::FleetLeader) {
         std::map<uint32, FleetData>::iterator fItr = m_fleetDataMap.find(fleetID);
         if (fItr == m_fleetDataMap.end()) {
@@ -382,12 +378,12 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
 
 bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, int32 newSquadID, int8 newJob, int8 newRole, int8 newBooster)
 {
-    bool fleet = false;
+    bool fleet(false);
     std::list<int32> wing, squad;
     wing.clear();
     squad.clear();
-    int8 oldRole = 0, oldJob = 0, oldBooster = 0;
-    int32 oldWingID = 0, oldSquadID = 0;
+    int8 oldRole(0), oldJob(0), oldBooster(0);
+    int32 oldWingID(0), oldSquadID(0);
     // verify member data
     Client* pClient = sEntityList.FindClientByCharID(charID);
     if (pClient == nullptr)
@@ -517,7 +513,7 @@ bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, 
         }
     }
 
-    _log(FLEET__TRACE, "UpdateMember - CharID: %u, FleetID: %i, oldWingID: %i, newWingID: %i, oldSquad: %i, newSquadID: %i, oldJob: %s, newJob: %s, oldRole: %s, newRole: %s, oldBooster: %s, newBooster: %s", \
+    _log(FLEET__TRACE, "UpdateMember - CharID: %u, FleetID: %u, oldWingID: %i, newWingID: %i, oldSquad: %i, newSquadID: %i, oldJob: %s, newJob: %s, oldRole: %s, newRole: %s, oldBooster: %s, newBooster: %s", \
             charID, fleetID, oldWingID, newWingID, oldSquadID, newSquadID, \
             GetJobName(oldJob).c_str(), GetJobName(newJob).c_str(), GetRoleName(oldRole).c_str(), GetRoleName(newRole).c_str(), \
             GetBoosterName(oldBooster).c_str(), GetBoosterName(newBooster).c_str());
@@ -566,8 +562,8 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
     std::vector< uint32 > wingIDs, squadIDs;
     std::map<ShipSE*, BoostData> memberUpdateMap;
 
-    bool fBoost = false;
-    int8 armored = 0, info = 0, leader = 0, mining = 0, siege = 0, skirmish = 0;
+    bool fBoost(false);
+    int8 armored(0), info(0), leader(0), mining(0), siege(0), skirmish(0);
 
     BoostData fData = BoostData();
     BoostData bData = BoostData();
@@ -611,7 +607,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
         wingIDs.clear();
         GetWingIDs(fleetID, wingIDs);
         for (auto wingID : wingIDs) {
-            if (!IsWing(wingID))
+            if (!IsWing(wingID))        // if WingID is invalid, remove it from map!!
                 continue;
             bData = BoostData();
             if (fBoost) {
@@ -628,7 +624,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
             for (auto squadID : squadIDs) {
                 if (!IsSquad(squadID))
                     continue;
-                bool sboost = false;
+                bool sboost(false);
                 SetSquadBoostData(squadID, bData, sboost);
                 SquadData sData = SquadData();
                 GetSquadData(squadID, sData);
@@ -658,7 +654,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
             for (auto squadID : squadIDs) {
                 if (!IsSquad(squadID))
                     continue;
-                bool sboost = false;
+                bool sboost(false);
                 SetSquadBoostData(squadID, bData, sboost);
                 SquadData sData = SquadData();
                 GetSquadData(squadID, sData);
@@ -671,7 +667,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
         squad.sort();
         squad.unique();
         for (auto squadID : squad) {
-            if (!IsSquad(squadID))
+            if (!IsSquad(squadID))       // if squadID is invalid, remove it from map!!
                 continue;
             bData = BoostData();
             if (fBoost) {
@@ -684,10 +680,10 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
             SquadData sData = SquadData();
             GetSquadData(squadID, sData);
             SetWingBoostData(sData.wingID, bData);
-            bool sboost = false;
+            bool sboost(false);
             SetSquadBoostData(squadID, bData, sboost);
             for (auto cur : sData.members)
-                if ((sboost) and (cur.second->GetSystemID() == sData.booster->GetSystemID()))
+                if (sboost and (cur.second->GetSystemID() == sData.booster->GetSystemID()))
                     memberUpdateMap.emplace(cur.second->GetShipSE(), sData.boost);
         }
     }
@@ -697,14 +693,14 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
     for (auto cur : memberUpdateMap)
         cur.first->ApplyBoost(cur.second);
 
-    _log( FLEET__TRACE, "FleetService::UpdateBoost() - Updated %i members of fleetID: %u in %.2fus.  fleet: %s, wing: %s, squad: %s", \
+    _log( FLEET__TRACE, "FleetService::UpdateBoost() - Updated %u members of fleetID: %u in %.2fus.  fleet: %s, wing: %s, squad: %s", \
             memberUpdateMap.size(), fleetID, GetTimeUSeconds() - start, (fleet ? "true" : "false"), (wing.empty() ? "false" : "true"), (squad.empty() ? "false" : "true"));
 }
 
 void FleetService::SetWingBoostData(uint32 wingID, BoostData& bData)
 {
-    bool boost = false;
-    int8 leader = 0, armored = 0, info = 0, mining = 0, siege = 0, skirmish = 0;
+    bool boost(false);
+    int8 leader(0), armored(0), info(0), mining(0), siege(0), skirmish(0);
     std::map<uint32, WingData>::iterator wItr = m_wingDataMap.find(wingID);
     if (wItr == m_wingDataMap.end())
         return;
@@ -733,25 +729,16 @@ void FleetService::SetWingBoostData(uint32 wingID, BoostData& bData)
                     wItr->second.boost.siege    = ((siege < bData.siege)       ? bData.siege     : siege);
                     wItr->second.boost.skirmish = ((skirmish < bData.skirmish) ? bData.skirmish  : skirmish);
                 } else {
-                    wItr->second.boost.armored  = 0;
-                    wItr->second.boost.info     = 0;
-                    wItr->second.boost.mining   = 0;
-                    wItr->second.boost.siege    = 0;
-                    wItr->second.boost.skirmish = 0;
+                    wItr->second.boost = BoostData();
                 }
             // this is for WC only.  will always get own skill, and here they get their wing boost, also
             wItr->second.boost.leader   = leader;
             wItr->second.leader->GetShipSE()->ApplyBoost(wItr->second.boost);
         }
 
-    if (!boost) {
-        wItr->second.boost.armored  = 0;
-        wItr->second.boost.info     = 0;
-        wItr->second.boost.leader   = 0;
-        wItr->second.boost.mining   = 0;
-        wItr->second.boost.siege    = 0;
-        wItr->second.boost.skirmish = 0;
-    }
+    if (!boost)
+        wItr->second.boost = BoostData();
+
     _log( FLEET__TRACE, "BoostData - WB: %s, wingID: %u - leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \
             (boost ? "true" : "false"), wingID, wItr->second.boost.leader, wItr->second.boost.armored, wItr->second.boost.info, \
             wItr->second.boost.siege, wItr->second.boost.skirmish, wItr->second.boost.mining);
@@ -759,7 +746,7 @@ void FleetService::SetWingBoostData(uint32 wingID, BoostData& bData)
 
 void FleetService::SetSquadBoostData(uint32 squadID, BoostData bData, bool& sboost)
 {
-    int8 leader = 0, armored = 0, info = 0, mining = 0, siege = 0, skirmish = 0;
+    int8 leader(0), armored(0), info(0), mining(0), siege(0), skirmish(0);
     std::map<uint32, SquadData>::iterator sItr = m_squadDataMap.find(squadID);
     if (sItr == m_squadDataMap.end())
         return;
@@ -787,25 +774,16 @@ void FleetService::SetSquadBoostData(uint32 squadID, BoostData bData, bool& sboo
                     sItr->second.boost.siege    = ((siege < bData.siege)       ? bData.siege     : siege);
                     sItr->second.boost.skirmish = ((skirmish < bData.skirmish) ? bData.skirmish  : skirmish);
                 } else {
-                    sItr->second.boost.armored  = 0;
-                    sItr->second.boost.info     = 0;
-                    sItr->second.boost.mining   = 0;
-                    sItr->second.boost.siege    = 0;
-                    sItr->second.boost.skirmish = 0;
+                    sItr->second.boost = BoostData();
                 }
             // squad will always get this if SC is skilled
             sboost = true;
             sItr->second.boost.leader = leader;
         }
 
-    if (!sboost) {
-        sItr->second.boost.armored  = 0;
-        sItr->second.boost.info     = 0;
-        sItr->second.boost.leader   = 0;
-        sItr->second.boost.mining   = 0;
-        sItr->second.boost.siege    = 0;
-        sItr->second.boost.skirmish = 0;
-    }
+    if (!sboost)
+        sItr->second.boost = BoostData();
+
     _log( FLEET__TRACE, "BoostData - SB: %s, squadID: %u - leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \
             (sboost ? "true" : "false"), squadID, sItr->second.boost.leader, sItr->second.boost.armored, sItr->second.boost.info, \
             sItr->second.boost.siege, sItr->second.boost.skirmish, sItr->second.boost.mining);
@@ -821,19 +799,19 @@ void FleetService::UpdateOptions(uint32 fleetID, bool isFreeMove, bool isRegiste
         return;
 
     PyDict* was = new PyDict();
-        was->SetItemString("isFreeMove", new PyBool(itr->second.isFreeMove));
-        was->SetItemString("isRegistered", new PyBool(itr->second.isRegistered));
-        was->SetItemString("isVoiceEnabled", new PyBool(itr->second.isVoiceEnabled));
+        was->SetItemString("isFreeMove",        new PyBool(itr->second.isFreeMove));
+        was->SetItemString("isRegistered",      new PyBool(itr->second.isRegistered));
+        was->SetItemString("isVoiceEnabled",    new PyBool(itr->second.isVoiceEnabled));
     PyDict* is = new PyDict();
-        is->SetItemString("isFreeMove", new PyBool(isFreeMove));
-        is->SetItemString("isRegistered", new PyBool(isRegistered));
-        is->SetItemString("isVoiceEnabled", new PyBool(isVoiceEnabled));
+        is->SetItemString("isFreeMove",         new PyBool(isFreeMove));
+        is->SetItemString("isRegistered",       new PyBool(isRegistered));
+        is->SetItemString("isVoiceEnabled",     new PyBool(isVoiceEnabled));
     PyTuple* tuple = new PyTuple(2);
         tuple->SetItem(0, new PyObject("util.KeyVal", was));
         tuple->SetItem(1, new PyObject("util.KeyVal", is));
     SendFleetUpdate(fleetID, "OnFleetOptionsChanged", tuple);
 
-    _log(FLEET__TRACE, "FleetService::UpdateOptions() - fleetID: %i FreeMove: %s, Registered: %s, Voice: %s", \
+    _log(FLEET__TRACE, "FleetService::UpdateOptions() - fleetID: %u FreeMove: %s, Registered: %s, Voice: %s", \
             fleetID, isFreeMove ? "true" : "false", isRegistered ? "true" : "false", isVoiceEnabled ? "true" : "false");
     itr->second.isFreeMove = isFreeMove;
     itr->second.isRegistered = isRegistered;
@@ -877,7 +855,7 @@ void FleetService::RenameWing(uint32 wingID, std::string name)
         tuple->SetItem(1, new PyString(name));
     SendFleetUpdate(itr->second.fleetID, "OnFleetWingNameChanged", tuple);
 
-    _log(FLEET__TRACE, "FleetService::RenameWing() %i to %s", wingID, name.c_str());
+    _log(FLEET__TRACE, "FleetService::RenameWing() %u to %s", wingID, name.c_str());
 }
 
 void FleetService::RenameSquad(uint32 squadID, std::string name)
@@ -893,7 +871,7 @@ void FleetService::RenameSquad(uint32 squadID, std::string name)
         tuple->SetItem(1, new PyString(name));
     SendFleetUpdate(itr->second.fleetID, "OnFleetSquadNameChanged", tuple);
 
-    _log(FLEET__TRACE, "FleetService::RenameSquad() %i to %s", squadID, name.c_str());
+    _log(FLEET__TRACE, "FleetService::RenameSquad() %u to %s", squadID, name.c_str());
 }
 
 bool FleetService::IsWingActive(int32 wingID)
@@ -1010,7 +988,7 @@ PyRep* FleetService::GetFleetAdvert(uint32 fleetID)
 
 void FleetService::RemoveFleetAdvert(uint32 fleetID)
 {
-    _log(FLEET__TRACE, "RemoveFleetAdvert for FleetID: %i", fleetID);
+    _log(FLEET__TRACE, "RemoveFleetAdvert for FleetID: %u", fleetID);
     m_fleetAdvertMap.erase(fleetID);
     // set options to remove registration
     std::map<uint32, FleetData>::iterator fItr = m_fleetDataMap.find(fleetID);
@@ -1354,13 +1332,13 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         return;
     }
 
-    int32 wingID = pFrom->GetChar()->wingID(), squadID = pFrom->GetChar()->squadID();
-    if (((wingID > 0) and !IsWing(wingID)) or ((squadID > 0) and !IsSquad(squadID))) {
+    int32 wingID(pFrom->GetChar()->wingID()), squadID(pFrom->GetChar()->squadID());
+    if (!IsWing(wingID) or !IsSquad(squadID)) {
         _log(FLEET__WARNING, "%s called FleetBroadcast with invalid wing %i or squad %i for fleet %u.", pFrom->GetName(), wingID, squadID, fleetID);
         return;
     }
 
-    uint16 scopeID = 0;
+    uint16 scopeID(0);
     std::vector<Client*> members;
     switch (scope) {
         case Fleet::BCast::Scope::System: {
@@ -1455,8 +1433,8 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         } break;
     }
 
-    // Broadcast(self, name, group, charID, solarSystemID = None, itemID = None, broadcastName(BroadcastEvent/label) = None):
-    //OnFleetBroadcast(self, name, group, charID, solarSystemID, itemID):
+    // Broadcast(name, group, charID, solarSystemID = None, itemID = None, broadcastName(BroadcastEvent/label) = None):
+    //OnFleetBroadcast(name, group, charID, solarSystemID, itemID):
     //   ('HealCapacitor', 3, 95895066, 30003500, 1019274373727L, None)))
 
     PyTuple* payload = new PyTuple(5);
@@ -1465,8 +1443,10 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         payload->SetItem(2, new PyInt(pFrom->GetCharacterID()));
         payload->SetItem(3, new PyInt(pFrom->GetSystemID()));
         payload->SetItem(4, new PyInt(itemID));
+        // if BCastName(label) then add next item properly
+        payload->SetItem(5, PyStatic.NewNone());
 
-    uint8 count = 0;
+    uint8 count(0);
     for (auto cur : members) {
         if (cur == nullptr)
             continue;
@@ -1581,7 +1561,7 @@ void FleetService::SendActiveStatus(uint32 fleetID, int32 wingID, int32 squadID)
         GetSquadData(squadID, sData);
         PyTuple* count = new PyTuple(2);
             count->SetItem(0, new PyInt(squadID));
-            count->SetItem(1, new PyInt(sData.members.size() > 0 ? 1 : 0));
+            count->SetItem(1, new PyInt(sData.members.size()? 1 : 0));
         SendFleetUpdate(fleetID, "OnSquadActive", count);
     }
 }
@@ -1704,7 +1684,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
     std::ostringstream str;
     str.clear();
 
-    bool fboost = false;
+    bool fboost(false);
     FleetData fData = FleetData();
     GetFleetData(fleetID, fData);
     str << "<color=teal>" << fData.name << "  Created By: " << fData.creator->GetChar()->itemName().c_str();
@@ -1775,7 +1755,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
     for (auto wingID : wingIDs) {
         if (!IsWing(wingID))
             continue;
-        bool wboost = false;
+        bool wboost(false);
         WingData wData = WingData();
         GetWingData(wingID, wData);
         if ((wData.leader != nullptr) and (wData.leader->IsInSpace()) and (pChar = wData.leader->GetChar().get()) != nullptr) {
@@ -1843,7 +1823,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
         for (auto squadID : squadIDs) {
             if (!IsSquad(squadID))
                 continue;
-            bool sboost = false;
+            bool sboost(false);
             SquadData sData = SquadData();
             GetSquadData(squadID, sData);
             if ((sData.leader != nullptr) and (sData.leader->IsInSpace()) and (pChar = sData.leader->GetChar().get()) != nullptr) {

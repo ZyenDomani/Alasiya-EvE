@@ -143,7 +143,7 @@ bool ClassDecodeGenerator::ProcessRaw(const TiXmlElement* field)
 
     const char* unusual = field->Attribute("unusual");
     const char* v = top();
-
+/*
     if (unusual != nullptr) {
         fprintf(mOutputFile,
                 "    if (%s->IsFloat()) {\n"
@@ -183,6 +183,7 @@ bool ClassDecodeGenerator::ProcessRaw(const TiXmlElement* field)
                 name
         );
     } else {
+        */
         fprintf(mOutputFile,
                 "    PySafeDecRef(%s);\n"
                 "    %s = %s;\n"
@@ -191,7 +192,7 @@ bool ClassDecodeGenerator::ProcessRaw(const TiXmlElement* field)
                 name, v,
                 name
         );
-    }
+    //}
 
     pop();
     return true;
@@ -259,7 +260,7 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
             mName, name, v
     );
 */
-    
+
     pop();
     return true;
 }

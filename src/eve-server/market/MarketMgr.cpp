@@ -121,13 +121,13 @@ void MarketMgr::UpdatePriceHistory()
             "    SUM(quantity),"
             "    COUNT(transactionID)"
             " FROM mktTransactions"
-            " WHERE transactionType=%u AND transactionDate < %lli",
+            " WHERE transactionType=%u AND transactionDate < %li",
             //" GROUP BY regionID, typeID, transactionDate",
             Market::Type::Sell, cutoff_time);
 
     // remove the transactions which have been aged out?
     if (sConfig.market.DeleteOldTransactions)
-        sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE transactionDate < %lli", (cutoff_time - EvE::Time::Year));
+        sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE transactionDate < %li", (cutoff_time - EvE::Time::Year));
 }
 
     /*DBColumnTypeMap colmap;
@@ -156,7 +156,7 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
             "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
             " FROM mktHistory "
             " WHERE regionID=%u AND typeID=%u"
-            " AND historyDate > %lli  LIMIT %u",
+            " AND historyDate > %li  LIMIT %u",
             regionID, typeID, (m_timeStamp - EvE::Time::Day), sConfig.market.NewPriceLimit))
         {
             _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -195,7 +195,7 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
         if(!sDatabase.RunQuery(res,
             "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
             " FROM mktHistory WHERE regionID=%u AND typeID=%u"
-            " AND historyDate > %lli AND historyDate < %lli LIMIT %u",
+            " AND historyDate > %li AND historyDate < %li LIMIT %u",
             regionID, typeID, (m_timeStamp - (EvE::Time::Day *3)), (m_timeStamp - EvE::Time::Day), sConfig.market.OldPriceLimit))
         {
             _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());

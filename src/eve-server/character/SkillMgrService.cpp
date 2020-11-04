@@ -270,7 +270,7 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
     // return early if this is an illegal call
     if (!m_db.ReportRespec(call.client->GetCharacterID()))
         return nullptr;
-    uint8 multiplier = sConfig.character.statMultiplier;
+    uint8 multiplier(sConfig.character.statMultiplier);
     cRef->SetAttribute(AttrCharisma, args.charisma * multiplier);
     cRef->SetAttribute(AttrIntelligence, args.intelligence * multiplier);
     cRef->SetAttribute(AttrMemory, args.memory * multiplier);

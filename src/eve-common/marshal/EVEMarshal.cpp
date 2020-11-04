@@ -336,7 +336,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     uint8 size(0);
 
     for ( uint32 i(0); i < cc; ++i ) {
-        uint8 size = DBTYPE_GetSizeBits( header->GetColumnType( i ) );
+        size = DBTYPE_GetSizeBits( header->GetColumnType( i ) );
 
         sizeMap.insert( std::make_pair( size, i ) );
         sum += size;

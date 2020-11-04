@@ -62,61 +62,61 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
     // missile skills do not apply correctly in fx processor.  not sure why yet.
     if (pSE->HasPilot()) {
         Character* pChar = pSE->GetPilot()->GetChar().get();
-        flightTime *= (1 + ( 0.1 * (pChar->GetSkillLevel(EvESkill::MissileBombardment, true)))); // 10% increase in flightTime
+        flightTime *= (1 + (0.1f * (pChar->GetSkillLevel(EvESkill::MissileBombardment, true)))); // 10% increase in flightTime
 
-        self->MultiplyAttribute(AttrMaxVelocity, (1 + ( 0.1 * (pChar->GetSkillLevel(EvESkill::MissileProjection, true))))); // 10% increase in velocity
-        self->MultiplyAttribute(AttrAoeCloudSize, (1 - ( 0.05 * (pChar->GetSkillLevel(EvESkill::GuidedMissilePrecision, true)))));  //  5% decrease in exp radius
-        self->MultiplyAttribute(AttrAoeVelocity, (1 + ( 0.1 * (pChar->GetSkillLevel(EvESkill::TargetNavigationPrediction, true)))));  // 10% increase in exp velocity
+        self->MultiplyAttribute(AttrMaxVelocity, (1 + (0.1f * (pChar->GetSkillLevel(EvESkill::MissileProjection, true))))); // 10% increase in velocity
+        self->MultiplyAttribute(AttrAoeCloudSize, (1 - (0.05f * (pChar->GetSkillLevel(EvESkill::GuidedMissilePrecision, true)))));  //  5% decrease in exp radius
+        self->MultiplyAttribute(AttrAoeVelocity, (1 + (0.1f * (pChar->GetSkillLevel(EvESkill::TargetNavigationPrediction, true)))));  // 10% increase in exp velocity
 
-        m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::WarheadUpgrades, true)))); // 5% increase in damage (upped from 2%)
+        m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::WarheadUpgrades, true)))); // 5% increase in damage (upped from 2%)
         switch (m_self->groupID()) {
             case EVEDB::invGroups::Light_Missile:
             case EVEDB::invGroups::FoF_Light_Missile:
             case EVEDB::invGroups::Advanced_Light_Missile: {
-                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::LightMissiles, true)))); // 5% increase in damage
+                m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::LightMissiles, true)))); // 5% increase in damage
                 if (m_self->groupID() == EVEDB::invGroups::Advanced_Light_Missile)
-                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(EvESkill::LightMissileSpecialization, true)))); // 3% increase in damage
+                    m_damageMod *= (1 + (0.03f * (pChar->GetSkillLevel(EvESkill::LightMissileSpecialization, true)))); // 3% increase in damage
             } break;
             case EVEDB::invGroups::Heavy_Missile:
             case EVEDB::invGroups::FoF_Heavy_Missile:
             case EVEDB::invGroups::Advanced_Heavy_Missile: {
-                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::HeavyMissiles, true)))); // 5% increase in damage
+                m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::HeavyMissiles, true)))); // 5% increase in damage
                 if (m_self->groupID() == EVEDB::invGroups::Advanced_Heavy_Missile)
-                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(EvESkill::HeavyMissileSpecialization, true)))); // 3% increase in damage
+                    m_damageMod *= (1 + (0.03f * (pChar->GetSkillLevel(EvESkill::HeavyMissileSpecialization, true)))); // 3% increase in damage
             } break;
             case EVEDB::invGroups::Cruise_Missile:
             case EVEDB::invGroups::FoF_Cruise_Missile:
             case EVEDB::invGroups::Advanced_Cruise_Missile: {
-                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::CruiseMissiles, true)))); // 5% increase in
+                m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::CruiseMissiles, true)))); // 5% increase in
                 if (m_self->groupID() == EVEDB::invGroups::Advanced_Cruise_Missile)
-                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(EvESkill::CruiseMissileSpecialization, true)))); // 3% increase in damage
+                    m_damageMod *= (1 + (0.03f * (pChar->GetSkillLevel(EvESkill::CruiseMissileSpecialization, true)))); // 3% increase in damage
             } break;
             case EVEDB::invGroups::Torpedo:
             case EVEDB::invGroups::Advanced_Torpedo: {
-                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::Torpedoes, true)))); // 5% increase in damage
+                m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::Torpedoes, true)))); // 5% increase in damage
                 if (m_self->groupID() == EVEDB::invGroups::Advanced_Torpedo)
-                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(EvESkill::TorpedoSpecialization, true)))); // 3% increase in damage
+                    m_damageMod *= (1 + (0.03f * (pChar->GetSkillLevel(EvESkill::TorpedoSpecialization, true)))); // 3% increase in damage
             } break;
             case EVEDB::invGroups::Rocket:
             case EVEDB::invGroups::Advanced_Rocket: {
-                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::Rockets, true)))); // 5% increase in damage
+                m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::Rockets, true)))); // 5% increase in damage
                 if (m_self->groupID() == EVEDB::invGroups::Advanced_Rocket)
-                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(EvESkill::RocketSpecialization, true)))); // 3% increase in damage
+                    m_damageMod *= (1 + (0.03f * (pChar->GetSkillLevel(EvESkill::RocketSpecialization, true)))); // 3% increase in damage
             } break;
             case EVEDB::invGroups::Defender_Missile: {
-                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::DefenderMissiles, true)))); // 5% increase in damage
+                m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::DefenderMissiles, true)))); // 5% increase in damage
             } break;
             case EVEDB::invGroups::Assault_Missile:
             case EVEDB::invGroups::Advanced_Assault_Missile: {
-                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::HeavyAssaultMissiles, true)))); // 5% increase in damage
+                m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::HeavyAssaultMissiles, true)))); // 5% increase in damage
                 if (m_self->groupID() == EVEDB::invGroups::Advanced_Assault_Missile)
-                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(EvESkill::HeavyAssaultMissileSpecialization, true)))); // 3% increase in damage
+                    m_damageMod *= (1 + (0.03f * (pChar->GetSkillLevel(EvESkill::HeavyAssaultMissileSpecialization, true)))); // 3% increase in damage
             } break;
             case EVEDB::invGroups::Citadel_Cruise: {
-                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::CitadelCruiseMissiles, true)))); // 5% increase in damage
+                m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::CitadelCruiseMissiles, true)))); // 5% increase in damage
             } break;
             case EVEDB::invGroups::Citadel_Torpedo: {
-                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::CitadelTorpedoes, true)))); // 5% increase in damage
+                m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::CitadelTorpedoes, true)))); // 5% increase in damage
             } break;
         }
     }
@@ -232,7 +232,7 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
     into.recharge = 10000;
     into.timestamp = GetFileTimeNow();
     into.armor = 1;
-    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
+    into.structure = 1.0f - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
 }
 
 void Missile::HitTarget() {

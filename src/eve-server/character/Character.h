@@ -219,7 +219,7 @@ public:
     /**
      * Primary public interface:
      */
-    bool            AlterBalance(double amount, uint8 type);
+    bool            AlterBalance(float amount, uint8 type);
     void            SetLocation(uint32 stationID, SystemData& data);
     void            JoinCorporation(const CorpData& data);
     void            SetDescription(const char *newDescription);
@@ -284,14 +284,14 @@ public:
     const std::string&      description() const                 { return m_charData.description; }
     bool                    gender() const                      { return m_charData.gender; }
 
-    double                  bounty() const                      { return m_charData.bounty; }
-    double                  balance(uint8 type);
-    double                  GetSecurityRating() const           { return m_charData.securityRating; }
+    float                   bounty() const                      { return m_charData.bounty; }
+    float                   balance(uint8 type);
+    float                   GetSecurityRating() const           { return m_charData.securityRating; }
     uint32					loginTime() const                   { return m_loginTime; }
     uint32                  logonMinutes() const                { return m_charData.logonMinutes; }
     uint16                  OnlineTime();
 
-    void                    secStatusChange( double amount )    { m_charData.securityRating += amount; }
+    void                    secStatusChange( float amount )    { m_charData.securityRating += amount; }
 
     // Corporation:
     void                    UpdateCorpData(CorpData& data);
@@ -302,7 +302,7 @@ public:
     int32                   allianceID() const                  { return m_corpData.allianceID; }
     int32                   warFactionID() const                { return m_corpData.warFactionID; }
     int32                   corpAccountKey() const              { return m_corpData.corpAccountKey; }
-    double                  corpTaxRate() const                 { return m_corpData.taxRate; }
+    float                   corpTaxRate() const                 { return m_corpData.taxRate; }
     void                    SetCorpHQ(uint32 stationID)         { m_corpData.corpHQ = stationID; UpdateCorpData(m_corpData);}
 
     // Corporation role:
@@ -363,11 +363,11 @@ public:
 
     //  Standings functions
     //     toID = me|myCorp|myAlliance.  fromID = char|agent|corp|faction|alliance
-    double                  GetStanding(uint32 fromID, uint32 toID);            // this is NOT adjusted for skills
-    double                  GetStandingModified(uint32 fromID, uint32 toID);    // this IS adjusted for skills
-    double                  GetNPCCorpStanding(uint32 fromID, uint32 toID);
-    double 		    GetStandingChanges();
-    void                    SetStanding(uint32 fromID, uint32 toID, double standing);
+    float                   GetStanding(uint32 fromID, uint32 toID);            // this is NOT adjusted for skills
+    float                   GetStandingModified(uint32 fromID, uint32 toID);    // this IS adjusted for skills
+    float                   GetNPCCorpStanding(uint32 fromID, uint32 toID);
+    float 		    GetStandingChanges();
+    void                    SetStanding(uint32 fromID, uint32 toID, float standing);
     void                    FleetShareMissionRewards();
     void                    FleetShareMissionStandings(float newStanding);
 

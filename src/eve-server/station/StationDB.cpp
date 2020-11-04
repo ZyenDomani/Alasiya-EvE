@@ -21,7 +21,7 @@ uint32 StationDB::CreateOffice(ItemData& idata, OfficeData& odata)
     if (!sDatabase.RunQueryLID(err, uid,
         "INSERT INTO staOffices (corporationID, stationID, officeFolderID, flag, solarSystemID, typeID, stationTypeID, lockDown, rentalFee, expiryDateTime)"
         " VALUES"
-        " (%u,%u,%u,%u,%u, 27, %u,%u,%u,%lli)",
+        " (%u,%u,%u,%u,%u, 27, %u,%u,%u,%li)",
         odata.corporationID, odata.stationID, odata.folderID, idata.flag, stDataMgr.GetStationSystemID(odata.stationID), odata.typeID, odata.lockDown, odata.rentalFee, odata.expiryTime)
     )
         codelog(DATABASE__ERROR, "Error in CreateOffice query: %s", err.c_str());
@@ -32,7 +32,7 @@ uint32 StationDB::CreateOffice(ItemData& idata, OfficeData& odata)
 void StationDB::UpdateOfficeData(OfficeData& data)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE staOffices SET lockDown = %u, rentalFee = %u, expiryDateTime = %lli)", data.lockDown, data.rentalFee, data.expiryTime);
+    sDatabase.RunQuery(err, "UPDATE staOffices SET lockDown = %u, rentalFee = %u, expiryDateTime = %li)", data.lockDown, data.rentalFee, data.expiryTime);
 }
 
 uint32 StationDB::GetOfficeCount(uint32 corpID)
