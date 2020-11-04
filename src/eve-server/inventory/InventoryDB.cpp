@@ -513,36 +513,6 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
 
     return true;
 }
-/*
- * This macro checks given CharacterAppearance object (app) if given value (v) is NULL:
- *  if yes, macro evaluates to string "NULL"
- *  if no, macro calls to function _ToStr, which turns given value to string.
- *
- * This macro is needed when saving CharacterAppearance values into DB (NewCharacter, SaveCharacterAppearance).
- * Resulting value must be const char *.
- */
-#define _VoN(app, v) \
-    ((const char *)(app.IsNull_##v() ? "NULL" : _ToStr(app.Get_##v()).c_str()))
-
-/* a 32 bits unsigned integer can be max 0xFFFFFFFF.
-   this results in a text string: '4294967295' which
-   is 10 long. Including the '\0' at the end of the
-   string it is max 11.
- */
-static std::string _ToStr(uint32 v) {
-    char buf[11];
-    snprintf(buf, 11, "%u", v);
-    return buf;
-}
-
-static std::string _ToStr(double v) {
-    char buf[32];
-    snprintf(buf, 32, "%.13f", v);
-    return buf;
-}
-
-// Undefine the macro used only in SaveCharacterAppearance.
-#undef _VoN
 
 bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &into) {
     DBQueryResult res;

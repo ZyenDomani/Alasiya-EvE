@@ -7,10 +7,12 @@
 #ifndef EVE_SCANNING_H
 #define EVE_SCANNING_H
 
+/*
 static float probeResultPerfect     = 1.0f;
 static float probeResultInformative = 0.75f;
 static float probeResultGood        = 0.25f;
 static float probeResultUnusable    = 0.001f;
+*/
 
 namespace Scanning {
 //  -allan 7Jul14
@@ -185,7 +187,7 @@ namespace Probe {
                                                  groupStargate,
                                                  groupSun,
                                                  groupStation])
-
+*/
 
 /* ship scanner result data from client...
  *
