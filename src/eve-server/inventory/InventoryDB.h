@@ -114,9 +114,6 @@ public:
     bool GetType(uint16 typeID, TypeData &into);
     bool GetCelestialObject(uint32 celestialID, CelestialObjectData &into);
     bool GetSolarSystem(uint32 solarSystemID, SolarSystemData &into);
-
-    static bool GetModulePowerSlotByTypeID(uint16 typeID, uint32 &into);
-    static bool GetOpenPowerSlots(uint16 slotType, ShipItemRef ship, uint32 &into);
 };
 
 #endif

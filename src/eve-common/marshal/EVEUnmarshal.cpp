@@ -643,6 +643,10 @@ PyRep* UnmarshalStream::LoadPackedRow()
 
                 row->SetField( index, el );
             } break;
+
+            case DBTYPE_EMPTY:
+            case DBTYPE_ERROR:
+                return nullptr;
         }
     }
 

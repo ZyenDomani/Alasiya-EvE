@@ -472,7 +472,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
 
     if (!args.isNumber(3))
         throw PyException(MakeCustomError("3rd argument must be value (got %s).", args.arg(3).c_str()));
-    const double value = atof(args.arg(3).c_str());
+    //const double value = atof(args.arg(3).c_str());
 
     if (itemID < minPlayerItem)
         throw PyException(MakeCustomError("1st argument must be a valid 'entity' table itemID that MUST be larger >= 140000000. (got %s)", args.arg(1).c_str()));
@@ -492,6 +492,8 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
 PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
 
+    throw PyException(MakeCustomError("This command is currently disabled."));
+/*
     uint32 typeID = 0;
     uint32 itemID = 0;
     EVEItemFlags flag = (EVEItemFlags)0;
@@ -522,16 +524,6 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
     if (typeID == 0) {
         throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
     } else {
-        if (flag == 0) {
-            //Get Range of slots for item
-            InventoryDB::GetModulePowerSlotByTypeID(typeID, powerSlot);
-
-            //Get open slots available on ship
-
-            InventoryDB::GetOpenPowerSlots(powerSlot, who->GetShip(), useableSlot);
-            flag = (EVEItemFlags)useableSlot;
-        }
-
         ItemData idata(
                        typeID,
                        who->GetCharacterID(),
@@ -554,7 +546,9 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
     }
     //return new PyBool(false);
     return PyStatic.NewOne();
+    */
 }
+
 PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     uint8 level = 5;            // Ensure that ALL skills are trained to level 5
     CharacterRef character;
@@ -595,9 +589,9 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
         db->FullSkillList(skillList);
 
         SkillRef skill;
-        uint8 oldLevel = 0;
+        //uint8 oldLevel = 0;
         uint16 skillID = 0;
-        uint32 oldPoints = 0, newPoints = 0;
+        //uint32 oldPoints = 0, newPoints = 0;
 
         std::vector<uint32>::const_iterator cur = skillList.begin();
         for (; cur != skillList.end(); ++cur) {
@@ -606,8 +600,8 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 return PyStatic.NewNone();
             else if (character->HasSkill(skillID)) {
                 skill = character->GetSkill(skillID);
-                oldLevel = skill->GetAttribute(AttrSkillLevel).get_uint32();
-                oldPoints = skill->GetAttribute(AttrSkillPoints).get_uint32();
+                //oldLevel = skill->GetAttribute(AttrSkillLevel).get_uint32();
+                //oldPoints = skill->GetAttribute(AttrSkillPoints).get_uint32();
                 skill->SetAttribute(AttrSkillLevel, level);
                 skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
                 if (skill->flag() == flagSkillInTraining) {

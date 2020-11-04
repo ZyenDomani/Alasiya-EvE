@@ -385,6 +385,8 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
             case DBTYPE_BOOL: {
                 unpacked.Append<bool>( r->IsNone() ? 0 : r->AsBool()->value() );
             } break;
+            case DBTYPE_EMPTY:
+            case DBTYPE_ERROR:
             case DBTYPE_BYTES:
             case DBTYPE_STR:
             case DBTYPE_WSTR: {

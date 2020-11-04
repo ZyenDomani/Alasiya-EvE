@@ -1334,12 +1334,12 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
 
     int32 wingID(pFrom->GetChar()->wingID());
     if ((wingID > 0) and !IsWing(wingID)) {
-        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid wing %i for fleet %u.", pFrom->GetName(), wingID, squadID, fleetID);
+        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid wing %i for fleet %u.", pFrom->GetName(), wingID, fleetID);
         return;
     }
     int32 squadID(pFrom->GetChar()->squadID());
     if ((squadID > 0) and !IsSquad(squadID)) {
-        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid squad %i for fleet %u.", pFrom->GetName(), wingID, squadID, fleetID);
+        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid squad %i for fleet %u.", pFrom->GetName(), squadID, fleetID);
         return;
     }
 
