@@ -107,11 +107,11 @@ bool PlanetSE::LoadExtras() {
     } */
 /*
     for (uint16 i=0; i<800; ++i) {
-        m_data.buffer_1 += itoa(0);
-        m_data.buffer_2 += itoa(0);
-        m_data.buffer_3 += itoa(0);
-        m_data.buffer_4 += itoa(0);
-        m_data.buffer_5 += itoa(0);
+        m_data.buffer_1 += std::to_string(0);
+        m_data.buffer_2 += std::to_string(0);
+        m_data.buffer_3 += std::to_string(0);
+        m_data.buffer_4 += std::to_string(0);
+        m_data.buffer_5 += std::to_string(0);
     }
 */
     m_typeBuffers[m_data.type_1] = m_data.buffer_1;

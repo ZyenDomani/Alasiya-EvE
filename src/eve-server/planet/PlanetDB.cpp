@@ -668,7 +668,7 @@ uint16 PlanetDB::SaveRoute(uint32 ccPinID, PI_Route& route)
     path.clear();
     std::list<uint32>::iterator itr = route.path.begin();
     while (itr != route.path.end()) {
-        path += itoa(*itr);
+        path += std::to_string(*itr);
         if (++itr != route.path.end())
             path += ":";
     }
@@ -702,7 +702,7 @@ void PlanetDB::SaveRoutes(PI_CCPin* ccPin)
             Inserts << ",";
         itr = cur.second.path.begin();
         while (itr != cur.second.path.end()) {
-            path += itoa(*itr);
+            path += std::to_string(*itr);
             if (++itr != cur.second.path.end())
                 path += ":";
         }

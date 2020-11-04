@@ -156,7 +156,7 @@ PyRep* FleetService::CreateWing(uint32 fleetID)
     WingData wData = WingData();
         wData.fleetID = fleetID;
         wData.name = "Wing ";
-        wData.name += itoa(count + 1);
+        wData.name += std::to_string(count + 1);
         wData.booster = nullptr;
         wData.leader = nullptr;
     m_wingDataMap.emplace(m_wingID, wData);
@@ -1464,11 +1464,11 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         std::ostringstream grp;
         switch (group) {
             case Fleet::BCast::Group::All: {
-                grp << "All " << itoa(count);
+                grp << "All " << std::to_string(count);
             } break;
             case Fleet::BCast::Group::Down:
             case Fleet::BCast::Group::Up: {
-                grp << itoa(count);
+                grp << std::to_string(count);
                 grp << " " << GetBCastGroupName(group).c_str();
             } break;
         }
@@ -1693,7 +1693,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
     FleetData fData = FleetData();
     GetFleetData(fleetID, fData);
     str << "<color=teal>" << fData.name << "  Created By: " << fData.creator->GetChar()->itemName().c_str();
-    str << "  Members: " << itoa(m_fleetMembers.count(fleetID)) << "</color><br>"; //54
+    str << "  Members: " << std::to_string(m_fleetMembers.count(fleetID)) << "</color><br>"; //54
     length += 54;
     length += fData.name.size();
     length += fData.creator->GetChar()->itemName().size();
@@ -1710,8 +1710,8 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
         str << "Fleet Cmdr: " << pChar->itemName().c_str(); //12
         length += pChar->itemName().size();
 
-        str << "    " << itoa(pChar->GetSkillLevel(EvESkill::FleetCommand)) << "/" << itoa(pChar->GetSkillLevel(EvESkill::WingCommand)) << "/";
-        str << itoa(pChar->GetSkillLevel(EvESkill::Leadership)) << "</color><br>";//15
+        str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::FleetCommand)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::WingCommand)) << "/";
+        str << std::to_string(pChar->GetSkillLevel(EvESkill::Leadership)) << "</color><br>";//15
         length += 30;
     } else {
         str << "<color=red>No Fleet Cmdr</color><br>";
@@ -1744,9 +1744,9 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
         }
         str << "Fleet Booster: " << pChar->itemName().c_str();//15
         length += pChar->itemName().size();
-        str << "    " << itoa(pChar->GetSkillLevel(EvESkill::ArmoredWarfare)) << "/" << itoa(pChar->GetSkillLevel(EvESkill::InformationWarfare)) << "/";
-        str << itoa(pChar->GetSkillLevel(EvESkill::SiegeWarfare)) << "/" << itoa(pChar->GetSkillLevel(EvESkill::SkirmishWarfare)) << "/";
-        str << itoa(pChar->GetSkillLevel(EvESkill::MiningForeman)) << "</color><br>";//30
+        str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::ArmoredWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::InformationWarfare)) << "/";
+        str << std::to_string(pChar->GetSkillLevel(EvESkill::SiegeWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SkirmishWarfare)) << "/";
+        str << std::to_string(pChar->GetSkillLevel(EvESkill::MiningForeman)) << "</color><br>";//30
         length += 50;
     } else {
         str << "<color=red>No Fleet Booster</color><br>";
@@ -1778,8 +1778,8 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
             str << "  " << wData.name.c_str() << " Cmdr: " << pChar->itemName().c_str(); //10
             length += wData.name.size();
             length += pChar->itemName().size();
-            str << "    " << itoa(pChar->GetSkillLevel(EvESkill::FleetCommand)) << "/" << itoa(pChar->GetSkillLevel(EvESkill::WingCommand)) << "/";
-            str << itoa(pChar->GetSkillLevel(EvESkill::Leadership)) << "</color><br>";//15
+            str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::FleetCommand)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::WingCommand)) << "/";
+            str << std::to_string(pChar->GetSkillLevel(EvESkill::Leadership)) << "</color><br>";//15
             length += 30;
         } else {
             str << "  <color=red>" << wData.name.c_str() << " No Cmdr</color><br>";//33
@@ -1812,9 +1812,9 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
             }
             str << "  " << "Booster: " << pChar->itemName().c_str();//11
             length += pChar->itemName().size();
-            str << "    " << itoa(pChar->GetSkillLevel(EvESkill::ArmoredWarfare)) << "/" << itoa(pChar->GetSkillLevel(EvESkill::InformationWarfare));
-            str << "/" << itoa(pChar->GetSkillLevel(EvESkill::SiegeWarfare)) << "/" << itoa(pChar->GetSkillLevel(EvESkill::SkirmishWarfare)) << "/";
-            str << itoa(pChar->GetSkillLevel(EvESkill::MiningForeman)) << "</color><br>";//32
+            str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::ArmoredWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::InformationWarfare));
+            str << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SiegeWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SkirmishWarfare)) << "/";
+            str << std::to_string(pChar->GetSkillLevel(EvESkill::MiningForeman)) << "</color><br>";//32
             length += 38;
         } else {
             str << "  <color=red>" << wData.name.c_str() << " No Booster</color><br>";//43
@@ -1846,8 +1846,8 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 str << "    " << sData.name.c_str() <<  " Cmdr: " << pChar->itemName().c_str(); //11
                 length += sData.name.size();
                 length += pChar->itemName().size();
-                str << "    " << itoa(pChar->GetSkillLevel(EvESkill::FleetCommand)) << "/" << itoa(pChar->GetSkillLevel(EvESkill::WingCommand)) << "/";
-                str << itoa(pChar->GetSkillLevel(EvESkill::Leadership)) << "</color><br>";//21
+                str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::FleetCommand)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::WingCommand)) << "/";
+                str << std::to_string(pChar->GetSkillLevel(EvESkill::Leadership)) << "</color><br>";//21
                 length += 22;
             } else {
                 str << "    <color=red>" << sData.name.c_str() << " No Cmdr</color><br>";
@@ -1880,9 +1880,9 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 }
                 str << "    Booster: " << pChar->itemName().c_str();//13
                 length += pChar->itemName().size();
-                str << "    " << itoa(pChar->GetSkillLevel(EvESkill::ArmoredWarfare)) << "/" << itoa(pChar->GetSkillLevel(EvESkill::InformationWarfare));
-                str << "/" << itoa(pChar->GetSkillLevel(EvESkill::SiegeWarfare)) << "/" << itoa(pChar->GetSkillLevel(EvESkill::SkirmishWarfare)) << "/";
-                str << itoa(pChar->GetSkillLevel(EvESkill::MiningForeman)) << "</color><br>";//25
+                str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::ArmoredWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::InformationWarfare));
+                str << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SiegeWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SkirmishWarfare)) << "/";
+                str << std::to_string(pChar->GetSkillLevel(EvESkill::MiningForeman)) << "</color><br>";//25
                 length += 40;
             } else {
                 str << "    <color=red>" << sData.name.c_str() << " No Booster</color><br>";//45
@@ -1894,35 +1894,35 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 str << "    <color=green>";
             else
                 str << "    <color=red>";
-            str << "Members: " << itoa(sData.members.size()) << "  Effective: ";
+            str << "Members: " << std::to_string(sData.members.size()) << "  Effective: ";
             length += 40;
             std::string bdata;
             if (sboost) {   // this is the only way i could get these working right...dunno why
-                bdata = itoa(sData.boost.leader);
+                bdata = std::to_string(sData.boost.leader);
                 bdata += "/";
-                bdata += itoa(sData.boost.armored);
+                bdata += std::to_string(sData.boost.armored);
                 bdata += "/";
-                bdata += itoa(sData.boost.info);
+                bdata += std::to_string(sData.boost.info);
                 bdata += "/";
-                bdata += itoa(sData.boost.siege);
+                bdata += std::to_string(sData.boost.siege);
                 bdata += "/";
-                bdata += itoa(sData.boost.skirmish);
+                bdata += std::to_string(sData.boost.skirmish);
                 bdata += "/";
-                bdata += itoa(sData.boost.mining);
+                bdata += std::to_string(sData.boost.mining);
                 length += 11;
             } else {
                 bdata = "0/0/0/0/0/0  (";
-                bdata += itoa(sData.boost.leader);
+                bdata += std::to_string(sData.boost.leader);
                 bdata += "/";
-                bdata += itoa(sData.boost.armored);
+                bdata += std::to_string(sData.boost.armored);
                 bdata += "/";
-                bdata += itoa(sData.boost.info);
+                bdata += std::to_string(sData.boost.info);
                 bdata += "/";
-                bdata += itoa(sData.boost.siege);
+                bdata += std::to_string(sData.boost.siege);
                 bdata += "/";
-                bdata += itoa(sData.boost.skirmish);
+                bdata += std::to_string(sData.boost.skirmish);
                 bdata += "/";
-                bdata += itoa(sData.boost.mining);
+                bdata += std::to_string(sData.boost.mining);
                 bdata += ")";
                 length += 26;
             }

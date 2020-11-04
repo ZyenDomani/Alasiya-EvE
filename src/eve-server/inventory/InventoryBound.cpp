@@ -813,13 +813,13 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
         PyList::const_iterator itr = args.bmIDs->begin();
         for (; itr != args.bmIDs->end(); ++itr) {
             //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
-            ItemData iData( 51, call.client->GetCharacterID(), 0, flagAutoFit, 1, itoa(PyRep::IntegerValueU32(*itr)));
+            ItemData iData( 51, call.client->GetCharacterID(), locTemp, flagAutoFit, 1, itoa(PyRep::IntegerValueU32(*itr)));
             InventoryItemRef iRef = sItemFactory.SpawnItem( iData );
             if (iRef.get() == nullptr) {
                 codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), PyRep::IntegerValueU32(*itr));
                 continue;
             }
-            //iRef->Rename(itoa(BookmarkDB::GetBookmarkName(PyRep::IntegerValueU32(*itr))));
+            //iRef->Rename(std::to_string(BookmarkDB::GetBookmarkName(PyRep::IntegerValueU32(*itr))));
             iRef->Move(locationID, (EVEItemFlags)args.flag, true);
             /*
             PyDict* dict = new PyDict();

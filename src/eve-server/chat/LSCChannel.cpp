@@ -222,7 +222,7 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     msg += "<br>Uptime: ";
     msg += sEntityList.GetUpTime();
     msg += "<br>Current Population: ";
-    msg += itoa(sEntityList.GetClientCount());
+    msg += std::to_string(sEntityList.GetClientCount());
     msg += "<br><br>Character Options:";
     msg += "<br>Module AutoStop: ";
     msg += (pClient->AutoStop() ? "On" : "Off");

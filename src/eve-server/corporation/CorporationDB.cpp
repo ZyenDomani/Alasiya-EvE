@@ -288,7 +288,7 @@ void CorporationDB::SaveMedalData(int64 medalID, std::vector< Corp::MedalData >&
             first = false;
         else
             query << ",";
-        query << "(" << itoa(medalID) << "," << itoa(cur.part) << ",'" << cur.graphic << "'," << itoa(cur.color) << ")";
+        query << "(" << std::to_string(medalID) << "," << std::to_string(cur.part) << ",'" << cur.graphic << "'," << std::to_string(cur.color) << ")";
     }
 
     if (!first ) {
@@ -413,8 +413,8 @@ void CorporationDB::GiveMedalToCharacters(uint32 issuerID, uint32 corpID, int32 
             first = false;
         else
             query << ",";
-        query << "(" << itoa(cur) << "," << itoa(medalID) << "," << itoa(corpID) << "," << itoa(issuerID) << ",";
-        query << itoa(GetFileTimeNow()) << ",'" << reason.c_str() << "')";
+        query << "(" << std::to_string(cur) << "," << std::to_string(medalID) << "," << std::to_string(corpID) << "," << std::to_string(issuerID) << ",";
+        query << std::to_string(GetFileTimeNow()) << ",'" << reason.c_str() << "')";
     }
 
     if (!first ) {
@@ -948,7 +948,7 @@ void CorporationDB::DeleteTitle(uint32 corpID, uint16 titleID)
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM crpRoleTitles WHERE corpID = %u AND titleID = %u", corpID, titleID);
     std::string title = "Untitled ";
-    title += itoa(log2(titleID)+1);
+    title += std::to_string(log2(titleID)+1);
     sDatabase.RunQuery(err, "INSERT INTO crpRoleTitles (corporationID, titleID, titleName) VALUES (%u,%u,'%s')", corpID, titleID, title.c_str());
 }
 
@@ -993,9 +993,9 @@ bool CorporationDB::UpdateTitle(uint32 corpID, Call_UpdateTitleData& args, PyDic
     }
 
     query += " WHERE corporationID = ";
-    query += itoa(corpID);
+    query += std::to_string(corpID);
     query += " AND titleID = ";
-    query += itoa(args.titleID);
+    query += std::to_string(args.titleID);
 
     _log(CORP__DB_MESSAGE, "DB Query: %s", query.c_str());
 
@@ -1684,7 +1684,7 @@ bool CorporationDB::UpdateDivisionNames(uint32 corpID, const Call_UpdateDivision
     }
 
     query += " WHERE corporationID = ";
-    query += itoa(corpID);
+    query += std::to_string(corpID);
 
     _log(CORP__DB_MESSAGE, "DB Query: %s", query.c_str());
 
@@ -2043,8 +2043,8 @@ void CorporationDB::AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCas
             set = true;
         else
             str << ",";
-        str << "(" << itoa((int64)voteCaseID) << "," << itoa(cur.optionID) << ",'" << cur.optionText << "'," << itoa(cur.parameter) << ",";
-        str << itoa(cur.parameter1) << "," << itoa(cur.parameter2) << ")";
+        str << "(" << std::to_string((int64)voteCaseID) << "," << std::to_string(cur.optionID) << ",'" << cur.optionText << "'," << std::to_string(cur.parameter) << ",";
+        str << std::to_string(cur.parameter1) << "," << std::to_string(cur.parameter2) << ")";
     }
 
     if (set)
@@ -2058,7 +2058,7 @@ PyRep* CorporationDB::GetVoteItems(uint32 corpID, uint8 status/*0*/, uint8 maxLe
     std::string statusTxt = "";
     if (status != 0) {
         statusTxt = "AND status = ";
-        statusTxt += itoa(status);
+        statusTxt += std::to_string(status);
     }
 
     DBQueryResult res;

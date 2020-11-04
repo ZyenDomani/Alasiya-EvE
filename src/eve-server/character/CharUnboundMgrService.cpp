@@ -350,7 +350,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         iData.customInfo="Active: ";
         iData.customInfo += charRef->itemName();
         iData.customInfo += "(";
-        iData.customInfo += itoa(charRef->itemID());
+        iData.customInfo += std::to_string(charRef->itemID());
         iData.customInfo += ")";
     sItemFactory.SpawnItem( iData )->SaveItem();
 

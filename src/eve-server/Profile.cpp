@@ -270,10 +270,10 @@ void Profile::GetRunTimes(std::vector< double >& container, double& h, double& l
     }
 
     uint32 size = container.size();
-    double total = 0.0, lo = 0.0, hi = 0.0;
+    float total(0.0f), lo(0.0f), hi(0.0f);
     for (uint32 i = 0; i < size; ++i) {
         total += container.at(i);
-        if ((lo > container.at(i)) or (lo < 0.000001))
+        if ((lo > container.at(i)) or (lo < 0.000001f))
             lo = container.at(i);
         if (hi < container.at(i))
             hi = container.at(i);
@@ -281,20 +281,20 @@ void Profile::GetRunTimes(std::vector< double >& container, double& h, double& l
 
     h = hi;
     l = lo;
-    a = total /size;
+    a = total / size;
 }
 
 std::string Profile::GetSize(size_t cSize)
 {
     std::string ret;
     if (cSize > 999999) {
-        ret = itoa(cSize /1000000);
+        ret = std::to_string(cSize / 1000000);
         ret += "m";
     } else if (cSize > 9999) {
-        ret = itoa(cSize /1000);
+        ret = std::to_string(cSize / 1000);
         ret += "k";
     } else
-        ret = itoa(cSize);
+        ret = std::to_string(cSize);
     return ret;
 }
 

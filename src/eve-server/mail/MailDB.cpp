@@ -62,7 +62,7 @@ int MailDB::SendMail(int sender, std::vector<int>& toCharacterIDs, int toListID,
     std::string toStr;
     for (size_t i = 0; i < toCharacterIDs.size(); i++)
     {
-        toStr += itoa(toCharacterIDs[i]);
+        toStr += std::to_string(toCharacterIDs[i]);
         // only add ',' when this isn't the last ID
         if (i != (toCharacterIDs.size() - 1))
             toStr += " ," ;

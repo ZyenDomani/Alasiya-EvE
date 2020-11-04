@@ -252,7 +252,7 @@ std::string GetFlagNames(uint8 flags)
         res += "HasMiniBalls";
 
     res += "(";
-    res += itoa(flags);
+    res += std::to_string(flags);
     res += ")";
     return res;
 }

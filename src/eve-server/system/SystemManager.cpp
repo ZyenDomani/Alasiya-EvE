@@ -1153,9 +1153,9 @@ recStoreItems = 'STOREITEMS'
         if (itr != m_ratMap.end()) {
             count = itr->second.size();
             for (auto cur : itr->second) {
-                reason += itoa(cur.first);
+                reason += std::to_string(cur.first);
                 reason += ":";
-                reason += itoa(cur.second);
+                reason += std::to_string(cur.second);
                 if (count > 1)
                     reason += ",";
                 --count;

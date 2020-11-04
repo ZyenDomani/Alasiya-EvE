@@ -62,11 +62,11 @@ std::string BaseRowsetReader::iterator::GetAsString( size_t index ) const
     case PyRep::PyTypeNone:
         return "None";
     case PyRep::PyTypeBool:
-        return itoa( GetBool( index ) ? 1 : 0 );
+        return std::to_string( GetBool( index ) ? 1 : 0 );
     case PyRep::PyTypeInt:
-        return itoa( GetInt( index ) );
+        return std::to_string( GetInt( index ) );
     case PyRep::PyTypeLong:
-        return itoa( GetLong( index ) );
+        return std::to_string( GetLong( index ) );
     case PyRep::PyTypeFloat:
         {
             char buf[64];

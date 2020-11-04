@@ -62,14 +62,14 @@ PyResult Command_search(Client* who, CommandDB* db, PyServiceMgr* services, cons
     if (!db->ItemSearch(query.c_str(), matches))
         throw PyException(MakeCustomError("Failed to query DB."));
 
-    std::string result(itoa(matches.size()));
+    std::string result(std::to_string(matches.size()));
     result += " matches found.<br>";
 
     std::map<uint32, std::string>::iterator cur, end;
     cur = matches.begin();
     end = matches.end();
     for(; cur != end; cur++) {
-        result += itoa(cur->first);
+        result += std::to_string(cur->first);
         result += ": ";
         result += cur->second;
         result += "<br>";

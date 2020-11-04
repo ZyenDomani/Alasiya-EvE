@@ -216,7 +216,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
             body += "This letter is to confirm that we have issued an insurance contract for your ship, ";
             body += shipRef->itemName();
             body += ", at level of ";
-            body += itoa(fraction *100);
+            body += std::to_string(fraction * 100);
             body += "%.<br>This contract will expire after 12 weeks, on xxxxx";
             // body += GetExpireDate();   //*insert endDate Here*,
             body += "<br><br>";

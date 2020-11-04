@@ -757,8 +757,7 @@ int main( int argc, char* argv[] )
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
 
-    // dont need to print access times for db access while loading server
-    //sProfile.PrintProfile();
+    // clear profile data from server startup
     sProfile.ClearAll();
     sLog.Green(" Server Profiling","Profile Data Reset.");
     std::printf("\n");     // spacer

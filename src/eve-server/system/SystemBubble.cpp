@@ -807,8 +807,8 @@ void SystemBubble::MarkCenter()
     if (m_hasMarkers)
         return;
     // create jetcan to mark bubble center
-    std::string str = "Center Marker for Bubble #", desc = "Bubble Center"; //itoa(m_bubbleID);
-    str += itoa(m_bubbleID);
+    std::string str = "Center Marker for Bubble #", desc = "Bubble Center"; //std::to_string(m_bubbleID);
+    str += std::to_string(m_bubbleID);
     MarkBubble(m_center, str, desc, true);
 
     // create jetcan to mark bubble x
@@ -816,7 +816,7 @@ void SystemBubble::MarkCenter()
     center.x += BUBBLE_RADIUS_METERS -5;
     str.clear();
     str = "Bubble #";
-    str += itoa(m_bubbleID);
+    str += std::to_string(m_bubbleID);
     str += " +X";
     desc = "Bubble x";
     MarkBubble(center, str, desc);
@@ -826,7 +826,7 @@ void SystemBubble::MarkCenter()
     center.x -= BUBBLE_RADIUS_METERS -5;
     str.clear();
     str = "Bubble #";
-    str += itoa(m_bubbleID);
+    str += std::to_string(m_bubbleID);
     str += " -X";
     desc = "Bubble -x";
     MarkBubble(center, str, desc);
@@ -836,7 +836,7 @@ void SystemBubble::MarkCenter()
     center.y += BUBBLE_RADIUS_METERS -5;
     str.clear();
     str = "Bubble #";
-    str += itoa(m_bubbleID);
+    str += std::to_string(m_bubbleID);
     str += " +Y";
     desc = "Bubble y";
     MarkBubble(center, str, desc);
@@ -846,7 +846,7 @@ void SystemBubble::MarkCenter()
     center.y -= BUBBLE_RADIUS_METERS -5;
     str.clear();
     str = "Bubble #";
-    str += itoa(m_bubbleID);
+    str += std::to_string(m_bubbleID);
     str +=  " -Y";
     desc = "Bubble -y";
     MarkBubble(center, str, desc);
@@ -856,7 +856,7 @@ void SystemBubble::MarkCenter()
     center.z += BUBBLE_RADIUS_METERS -5;
     str.clear();
     str = "Bubble #";
-    str += itoa(m_bubbleID);
+    str += std::to_string(m_bubbleID);
     str += " +Z";
     desc = "Bubble z";
     MarkBubble(center, str, desc);
@@ -866,7 +866,7 @@ void SystemBubble::MarkCenter()
     center.z -= BUBBLE_RADIUS_METERS -5;
     str.clear();
     str = "Bubble #";
-    str += itoa(m_bubbleID);
+    str += std::to_string(m_bubbleID);
     str +=  " -Z";
     desc = "Bubble -z";
     MarkBubble(center, str, desc);

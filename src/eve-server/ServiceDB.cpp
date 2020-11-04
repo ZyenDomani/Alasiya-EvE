@@ -312,7 +312,7 @@ void ServiceDB::ProcessIntChange(const char * key, uint32 oldValue, uint32 newVa
 
     std::string qValue(key);
     qValue += " = ";
-    qValue += itoa(newValue);
+    qValue += std::to_string(newValue);
     dbQ.push_back(qValue);
 }
 
@@ -328,7 +328,7 @@ void ServiceDB::ProcessLongChange(const char* key, int64 oldValue, int64 newValu
 
     std::string qValue(key);
     qValue += " = ";
-    qValue += itoa(newValue);
+    qValue += std::to_string(newValue);
     dbQ.push_back(qValue);
 }
 
