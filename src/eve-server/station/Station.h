@@ -42,7 +42,7 @@ public:
     static StationType *Load(uint16 stationTypeID);
 
 protected:
-    StationType(uint16 _id, const TypeData &_data);
+    StationType(uint16 _id, const Inv::TypeData &_data);
 
     /*
      * Member functions:
@@ -51,7 +51,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_LoadType(uint16 stationTypeID, const TypeData &data)
+    static _Ty *_LoadType(uint16 stationTypeID, const Inv::TypeData &data)
     {
         if (data.groupID != EVEDB::invGroups::Station) {
             _log(ITEM__ERROR, "Trying to load %s as StationType.", sDataMgr.GetGroupName(data.groupID));
@@ -60,7 +60,7 @@ protected:
             return nullptr;
         }
 
-        return new StationType(stationTypeID, data );
+        return new StationType(stationTypeID, data);
     }
 };
 

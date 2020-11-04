@@ -30,10 +30,6 @@
 #include "inventory/ItemRef.h"
 
 
-class CategoryData;
-class GroupData;
-class TypeData;
-
 class CharacterTypeData;
 class ShipTypeData;
 class CharacterAppearance;
@@ -111,7 +107,6 @@ public:
 
     /** @todo update these below to use static data manager */
     // get this shit outta here.....
-    bool GetType(uint16 typeID, TypeData &into);
     bool GetCelestialObject(uint32 celestialID, CelestialObjectData &into);
     bool GetSolarSystem(uint32 solarSystemID, SolarSystemData &into);
 };

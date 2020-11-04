@@ -154,7 +154,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
         if (skill.get() == nullptr) {
             _log( ITEM__ERROR, "%s: failed to load skill %u for injection.", call.client->GetName(), cur);
             std::string str = "Invalid Name #";
-            str += itoa(cur);
+            str += std::to_string(cur);
             skills.emplace(str, 5);
             continue;
         }
@@ -170,12 +170,12 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
         std::string status;
         switch (skills.begin()->second) {
             //1=success, 2=prereqs, 3=already known, 4=split fail, 5=load fail
-            case 1: status = "Success."; break;
-            case 2: status = "Failed: Prerequisites incomplete."; break;
-            case 3: status = "Failed: Skill already known."; break;
-            case 4: status = "Failed: Stack split failure."; break;
-            case 5: status = "Failed: Skill loading failure."; break;
-            default: status = "Failed: Unknown Error."; break;
+            case 1: status = "<color=green>Success.</color>"; break;
+            case 2: status = "<color=red>Failed:</color> <color=yellow>Prerequisites incomplete.</color>"; break;
+            case 3: status = "<color=red>Failed:</color> <color=cyan>Skill already known.</color>"; break;
+            case 4: status = "<color=red>Failed:</color> <color=red>Stack split failure.</color>"; break;
+            case 5: status = "<color=red>Failed:</color> <color=maroon>Skill loading failure.</color>"; break;
+            default: status = "<color=red>Failed:</color> <color=red>Unknown Error.</color>"; break;
         }
         call.client->SendInfoModalMsg("Injection of %s:  %s", skills.begin()->first.c_str(), status.c_str());
     } else {
@@ -187,21 +187,20 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
         for (auto cur : skills) {
             switch (cur.second) {
                 //1=success, 2=prereqs, 3=already known, 4=split fail, 5=load fail
-                case 1: status = "Success."; break;
-                case 2: status = "Failed: Prerequisites incomplete."; break; //35
-                case 3: status = "Failed: Skill already known."; break;
-                case 4: status = "Failed: Stack split failure."; break;
-                case 5: status = "Failed: Skill loading failure."; break;
-                default: status = "Failed: Unknown Error."; break;
+                case 1: status = "<color=green>Success.</color>"; break;
+                case 2: status = "<color=red>Failed:</color> <color=yellow>Prerequisites incomplete.</color>"; break;
+                case 3: status = "<color=red>Failed:</color> <color=cyan>Skill already known.</color>"; break;
+                case 4: status = "<color=red>Failed:</color> <color=red>Stack split failure.</color>"; break;
+                case 5: status = "<color=red>Failed:</color> <color=maroon>Skill loading failure.</color>"; break;
+                default: status = "<color=red>Failed:</color> <color=red>Unknown Error.</color>"; break;
             }
-            str << cur.first << " - " << status << "<br>"; //40 for name, 35 for status (75)
+            str << cur.first << " - " << status << "<br>"; //40 for name, 80 for status (120)
         }
 
-        int count = skills.size();
-        int size = count * 75;
+        int size = skills.size() * 120;
         size += 100;    // for header, including char name
         char reply[size];
-        snprintf(reply, size, str.str().c_str(), count, call.client->GetName());
+        snprintf(reply, size, str.str().c_str(), skills.size(), call.client->GetName());
 
         call.client->SendInfoModalMsg(reply);
     }

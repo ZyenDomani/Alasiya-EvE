@@ -21,11 +21,11 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Bloody.Rabbit
+    Rewrite:    Allan
 */
 
 #include "eve-server.h"
 
-#include "StaticDataMgr.h"
 #include "character/Character.h"
 #include "effects/EffectsDataMgr.h"
 #include "inventory/ItemType.h"
@@ -34,49 +34,15 @@
 #include "station/Station.h"
 
 /*
- * TypeData
- */
-TypeData::TypeData(uint16 _groupID, const char* _name, const char* _desc, double _radius, double _mass,
-                double _volume, double _capacity, uint32 _portionSize, uint8 _race, double _basePrice,
-                bool _published, uint32 _marketGroupID, double _chanceOfDuplicating)
-: groupID(_groupID),
-  name(_name),
-  description(_desc),
-  radius(_radius),
-  mass(_mass),
-  volume(_volume),
-  capacity(_capacity),
-  portionSize(_portionSize),
-  race(_race),
-  basePrice(_basePrice),
-  published(_published),
-  marketGroupID(_marketGroupID),
-  chanceOfDuplicating(_chanceOfDuplicating)
-{
-}
-
-/*
  * ItemType
  */
-ItemType::ItemType(uint16 _id, const TypeData &_data)
-: m_id(_id),
-  m_name(_data.name),
-  m_description(_data.description),
-  m_portionSize(_data.portionSize),
-  m_basePrice(_data.basePrice),
-  m_published(_data.published),
-  m_marketGroupID(_data.marketGroupID),
-  m_chanceOfDuplicating(_data.chanceOfDuplicating),
-  // set common attributes
-  m_radius(_data.radius),
-  m_mass(_data.mass),
-  m_volume(_data.volume),
-  m_capacity(_data.capacity),
-  m_raceID(_data.race),
+ItemType::ItemType(uint16 _id, const Inv::TypeData& _data)
+: m_type(_data),
   m_defaultID(0),
   m_group(Inv::GrpData())
 {
     // assert for data consistency
+    assert(m_type.id == _id);
     sDataMgr.GetGroup(_data.groupID, m_group);
     assert(_data.groupID == m_group.id);
     m_AttributeMap.clear();
@@ -89,7 +55,7 @@ ItemType* ItemType::Load(uint16 typeID) {
 }
 
 template<class _Ty>
-_Ty* ItemType::_LoadType( uint16 typeID, const TypeData& data) {
+_Ty* ItemType::_LoadType(uint16 typeID, const Inv::TypeData& data) {
     Inv::GrpData gData = Inv::GrpData();
     sDataMgr.GetGroup(data.groupID, gData);
 
@@ -141,29 +107,29 @@ _Ty* ItemType::_LoadType( uint16 typeID, const TypeData& data) {
              break;
     }
 
-    // Generic one, create it:
-    return new ItemType( typeID, data );
+    // nothing special, create generic object:
+    return new ItemType(typeID, data);
 }
 
 bool ItemType::_Load()
 {
     // load type attribs
     std::vector< DmgTypeAttribute > typeAttrVec;
-    sDataMgr.GetDgmTypeAttrVec(m_id, typeAttrVec);
+    sDataMgr.GetDgmTypeAttrVec(m_type.id, typeAttrVec);
     for (auto cur : typeAttrVec)
         m_AttributeMap.insert(std::pair<uint16, EvilNumber>(cur.attributeID, cur.value));
 
     // load attributes that are needed but NOT in default DgmTypeAttributes set (but found in invTypes)
-    if (m_mass)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrMass, m_mass));
-    if (m_radius)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRadius, m_radius));
-    if (m_volume)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrVolume, m_volume));
-    if (m_capacity)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrCapacity, m_capacity));
-    if (m_raceID)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRaceID, m_raceID));
+    if (m_type.mass)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrMass, m_type.mass));
+    if (m_type.radius)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRadius, m_type.radius));
+    if (m_type.volume)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrVolume, m_type.volume));
+    if (m_type.capacity)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrCapacity, m_type.capacity));
+    if (m_type.race)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRaceID, m_type.race));
 
     // load required skills and levels into their own map, for later checks
     if (HasAttribute(AttrRequiredSkill1))
@@ -224,13 +190,18 @@ bool ItemType::HasReqSkill(const uint16 skillID) const
 void ItemType::LoadEffects()
 {
     std::vector< TypeEffects > typeEffMap;
-    sFxDataMgr.GetTypeEffect(m_id, typeEffMap);
+    sFxDataMgr.GetTypeEffect(m_type.id, typeEffMap);
 
     for (auto cur : typeEffMap) {
         Effect mEffect(sFxDataMgr.GetEffect(cur.effectID));
         m_stateFxMap.emplace(mEffect.effectState, mEffect);
-        if (cur.isDefault)
+        if (cur.isDefault) {
+            if (m_defaultID) {
+                // error here to show multiple defaults set for this type
+                _log(ITEM__ERROR, "Type %u has multiple default fxID", m_type.id);
+            }
             m_defaultID = cur.effectID;
+        }
     }
 }
 

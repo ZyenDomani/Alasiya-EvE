@@ -40,16 +40,17 @@
 /*
  * StationType
  */
-StationType::StationType(uint16 _id, const TypeData& _data)
+StationType::StationType(uint16 _id, const Inv::TypeData& _data)
 : ItemType(_id, _data)
 {
     // consistency check
+    assert(_data.id == _id);
     assert(_data.groupID == EVEDB::invGroups::Station);
 }
 
 StationType *StationType::Load(uint16 stationTypeID)
 {
-    return ItemType::Load<StationType>(stationTypeID );
+    return ItemType::Load<StationType>(stationTypeID);
 }
 
 /*

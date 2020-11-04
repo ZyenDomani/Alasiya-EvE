@@ -177,25 +177,32 @@ public:
     /* specific function from real item to virtual item for PI commodity xfer */
     void                    ToVirtual(uint32 locationID);    // this deletes item without updating client with 'this is deleted' data
 
-    /**********************************************************************************************
+    /*********************************************************************************************
+     *
      * TEMPLATED LOADING INVOKATION EXPLANATION:        (written by allan)
-     * ItemCategory, ItemGroup, ItemType and Item classes and their children have special loading.
+     * Item types and classes (and their children) have special loading.
      *   Every such type has following methods: (with ShipItem being the exception)
      *
      *  static Load( <identifier>):
      *    Merges static and virtual loading trees.
-     *    First calls static _Load() to create desired object and
-     *    then calls its virtual _Load()
+     *    Call to static _Load()
+     *    Call object's virtual _Load()
      *
      *  static _Load( <identifier>[, <data-argument>, ...]):
-     *    creates item data and type info, then calls _Ty::LoadItem(), which then
-     *    creates any additional data needed, and calls the item constructor
+     *    retreives specific item data from db for created items, or creates default data for new items.
+     *    retrieves type info from static data
+     *    Call static _Ty::LoadItem()
+     *
+     *  static _Ty::LoadItem():
+     *    creates/retrieves additional item data as required
+     *    call the item constructor to create object
      *
      *  virtual _Load():
-     *    Performs post-construction loading (container contents) if needed,
-     *    then calls InventoryItem::_Load() to load the item's attributes
-     *    then add the created item to it's location's inventory.
-     */
+     *    Performs post-construction loading (container contents) as needed,
+     *    Call InventoryItem::_Load() to load the item's attributes
+     *    Add the created item to it's location's inventory.
+     *
+     *********************************************************************************************/
 
     /*  Item Creating and Loading methods */
     /* calls _Ty::Load<_Ty>.  */
@@ -232,7 +239,7 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _Load( uint32 itemID)
     {
-        // pull the item info
+        // pull the specific item info from db
         ItemData data;
         if (!ItemDB::GetItem(itemID, data))
             return RefPtr<_Ty>();

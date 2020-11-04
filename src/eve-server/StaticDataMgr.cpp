@@ -222,8 +222,8 @@ void StaticDataMgr::Populate()
         data.chanceOfDuplicating = row.GetDouble(13);
 
         // these will take a bit of work, but will eliminate multiple db hits on inventory/menu loading ingame
-        data.isRecyclable = false;
-        data.isRefinable = false;
+        data.isRecyclable = FactoryDB::IsRecyclable(data.id);
+        data.isRefinable = FactoryDB::IsRefinable(data.id);
 
         m_typeData.emplace(row.GetUInt(0), data);
     }
@@ -565,6 +565,23 @@ const char* StaticDataMgr::GetGroupName(uint16 grpID)
     return "None";
 }
 
+void StaticDataMgr::GetType(uint16 typeID, Inv::TypeData& into)
+{
+    std::map<uint16, Inv::TypeData>::const_iterator itr = m_typeData.find(typeID);
+    if (itr != m_typeData.end())
+        into = itr->second;
+}
+
+const char* StaticDataMgr::GetTypeName(uint16 typeID)
+{
+    std::map<uint16, Inv::TypeData>::const_iterator itr = m_typeData.find(typeID);
+    if (itr != m_typeData.end())
+        return itr->second.name.c_str();
+
+    _log(DATA__ERROR, "GetGroupName() - Group %u not found in map", typeID);
+    return "None";
+}
+
 
 PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID)
 {
@@ -592,7 +609,7 @@ bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<fl
     return !roids.empty();
 }
 
-void StaticDataMgr::GetDgmTypeAttrVec(uint32 typeID, std::vector< DmgTypeAttribute >& typeAttrVec)
+void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< DmgTypeAttribute >& typeAttrVec)
 {
     auto itr = m_typeAttrMap.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; ++it)
@@ -754,7 +771,7 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
         sProfile.AddTime(lootProfile, GetTimeUSeconds() - profileStartTime);
 }
 
-void StaticDataMgr::GetBpTypeData(uint32 typeID, EvERam::bpTypeData& tData)
+void StaticDataMgr::GetBpTypeData(uint16 typeID, EvERam::bpTypeData& tData)
 {
     std::map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
     if (itr != m_bpTypeData.end())
@@ -763,12 +780,35 @@ void StaticDataMgr::GetBpTypeData(uint32 typeID, EvERam::bpTypeData& tData)
         _log(DATA__MESSAGE, "Failed to query info for bpType %u: Type not found.", typeID);
 }
 
+bool StaticDataMgr::IsRecyclable(uint16 typeID)
+{
+    std::map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
+    if (itr != m_typeData.end())
+        return itr->second.isRecyclable;
+    return false;
+}
+
+bool StaticDataMgr::IsRefinable(uint16 typeID)
+{
+    std::map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
+    if (itr != m_typeData.end())
+        return itr->second.isRefinable;
+    return false;
+}
+
 void StaticDataMgr::GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs)
 {
     auto itr = m_ramReq.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; ++it)
-        if ((it->second.activityID = activityID) and (it->second.extra))
-            ramReqs.push_back(EvERam::RequiredItem(it->second.requiredTypeID, it->second.quantity, it->second.damagePerJob, IsSkillTypeID(it->second.requiredTypeID), it->second.extra));
+        if ((it->second.activityID = activityID) and (it->second.extra)) {
+            EvERam::RequiredItem data = EvERam::RequiredItem();
+            data.typeID = it->second.requiredTypeID;
+            data.quantity = it->second.quantity;
+            data.damagePerJob = it->second.damagePerJob;
+            data.isSkill = IsSkillTypeID(it->second.requiredTypeID);
+            data.extra = it->second.extra;
+            ramReqs.push_back(data);
+        }
 }
 
 void StaticDataMgr::GetRamMaterials(uint16 typeID, std::vector< EvERam::RamMaterials >& ramMatls)
@@ -791,15 +831,26 @@ void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity
         std::map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
         if (itr != m_bpTypeData.end()) {
             auto range = m_ramMatl.equal_range(itr->second.productTypeID);
-            for (auto it = range.first; it != range.second; ++it)
-                into.push_back(EvERam::RequiredItem(it->second.materialTypeID, it->second.quantity, 0, false, false));
+            for (auto it = range.first; it != range.second; ++it) {
+                EvERam::RequiredItem data = EvERam::RequiredItem();
+                data.typeID = it->second.materialTypeID;
+                data.quantity = it->second.quantity;
+                into.push_back(data);
+            }
         }
     }
 
     auto itr = m_ramReq.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; ++it)
-        if (it->second.activityID == activity)
-            into.push_back(EvERam::RequiredItem(it->second.requiredTypeID, it->second.quantity, it->second.damagePerJob, IsSkillTypeID(it->second.requiredTypeID), it->second.extra));
+        if (it->second.activityID == activity) {
+            EvERam::RequiredItem data = EvERam::RequiredItem();
+            data.typeID = it->second.requiredTypeID;
+            data.quantity = it->second.quantity;
+            data.damagePerJob = it->second.damagePerJob;
+            data.isSkill = IsSkillTypeID(it->second.requiredTypeID);
+            data.extra = it->second.extra;
+            into.push_back(data);
+        }
 }
 
 PyRep* StaticDataMgr::GetStationCount()

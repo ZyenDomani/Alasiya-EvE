@@ -63,7 +63,7 @@ CharacterTypeData::CharacterTypeData(
 /*
  * CharacterType
  */
-CharacterType::CharacterType(uint16 _id, uint8 _bloodlineID, const TypeData& _data, const CharacterTypeData& _charData)
+CharacterType::CharacterType(uint16 _id, uint8 _bloodlineID, const Inv::TypeData& _data, const CharacterTypeData& _charData)
 : ItemType(_id, _data),
   m_bloodlineID(_bloodlineID),
   m_bloodlineName(_charData.bloodlineName),

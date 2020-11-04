@@ -113,7 +113,7 @@ protected:
         uint16 _id,
         uint8 _bloodlineID,
         // ItemType stuff:
-        const TypeData& _data,
+        const Inv::TypeData& _data,
         // CharacterType stuff:
         const CharacterTypeData& _charData
     );
@@ -125,7 +125,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty* _LoadType(uint16 typeID, const TypeData& data)
+    static _Ty* _LoadType(uint16 typeID, const Inv::TypeData& data)
     {
         // check we are really loading a character type
         if (data.groupID != EVEDB::invGroups::Character) {

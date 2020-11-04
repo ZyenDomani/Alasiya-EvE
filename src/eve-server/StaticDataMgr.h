@@ -48,6 +48,8 @@ public:
 
     void                GetCategory(uint8 catID, Inv::CatData &into);
     void                GetGroup(uint16 grpID, Inv::GrpData &into);
+    void                GetType(uint16 typeID, Inv::TypeData &into);
+    const char*         GetTypeName(uint16 typeID);     // not sure if this will be needed
     const char*         GetGroupName(uint16 grpID);
     const char*         GetCategoryName(uint8 catID);
 
@@ -63,6 +65,8 @@ public:
     uint32              GetWreckID(uint32 typeID);  // returns wreck typeID based on given shipTypeID (incomplete, most ships done.)
     void                GetLoot(uint32 groupID, std::vector<LootList>& lootList);
 
+    bool                IsRefinable(uint16 typeID);
+    bool                IsRecyclable(uint16 typeID);
     void                GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs); // bp typeID/matls
     void                GetRamMaterials(uint16 typeID, std::vector<EvERam::RamMaterials>& ramMatls);    // bp productID/matls
     void                GetRamRequirements(uint16 typeID, std::vector< EvERam::RamRequirements >& ramReqs); // bp typeID/matls
@@ -95,11 +99,11 @@ public:
 
     uint8               GetWHSystemClass(uint32 systemID);
 
-    void                GetDgmTypeAttrVec(uint32 typeID, std::vector< DmgTypeAttribute >& typeAttrVec);
+    void                GetDgmTypeAttrVec(uint16 typeID, std::vector< DmgTypeAttribute >& typeAttrVec);
 
     PyDict*             SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID);
     PyDict*             GetBPMatlData(uint16 typeID);   //this is called on EVERY "show info" of a blueprint
-    void                GetBpTypeData(uint32 typeID, EvERam::bpTypeData& tData);
+    void                GetBpTypeData(uint16 typeID, EvERam::bpTypeData& tData);
 
     uint32              GetCorpID(uint32 factionID);
     uint32              GetRaceFaction(uint8 raceID);

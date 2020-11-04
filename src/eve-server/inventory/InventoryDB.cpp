@@ -38,55 +38,6 @@
 #include "system/Asteroid.h"
 #include "system/SolarSystem.h"
 
-bool InventoryDB::GetType(uint16 typeID, TypeData& into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  groupID,"
-        "  typeName,"
-        "  description,"
-        "  radius,"
-        "  mass,"
-        "  volume,"
-        "  capacity,"
-        "  portionSize,"
-        "  raceID,"
-        "  basePrice,"
-        "  published,"
-        "  marketGroupID,"
-        "  chanceOfDuplicating "
-        " FROM invTypes "
-        " WHERE typeID=%u",
-        typeID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query type %u: %s.", typeID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Type %u not found.", typeID);
-        return false;
-    }
-
-    into.groupID = row.GetUInt(0);
-    into.name = row.GetText(1);
-    into.description = row.GetText(2);
-    into.radius = row.GetDouble(3);
-    into.mass = row.GetDouble(4);
-    into.volume = row.GetDouble(5);
-    into.capacity = row.GetDouble(6);
-    into.portionSize = row.GetUInt(7);
-    into.race = (row.IsNull(8) ? 0 : row.GetUInt(8));
-    into.basePrice = row.GetDouble(9);
-    into.published = (sConfig.server.AllowNonPublished ? true : row.GetBool(10));
-    into.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(11));
-    into.chanceOfDuplicating = row.GetDouble(12);
-
-    return true;
-}
-
 bool InventoryDB::GetCharacterType(uint8 bloodlineID, CharacterTypeData &into) {
     DBQueryResult res;
 
