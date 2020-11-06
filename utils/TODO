@@ -1,16 +1,16 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    18 October 2020
+****    6 November 2020
 
-    note:  this whole file needs to be reorganized
+    note:  this whole file needs to be reorganized (wip)
 
 *******************************************************
 **********  errors and other found shit...high priority
 
 verify skill attr 'in training' is being properly removed
 
-RAM doing funny shit...check it out
+RAM doing funny shit...check it out (wip)
 
 noob ships do not Init() correctly....  most attrs are 0
     -- check this.  may be fixed already
@@ -60,22 +60,24 @@ error:
 *******************************************************
 ********  improvements
 
+look into changing (EvilNumber)DmgTypeAttribute to (struct)Inv::AttrData
+    - may be able to delete the EvilNumber class, as it was created only to deal with attribute data
+
 journal msgs need to be implemented (wip)
 
 standings
-    - char standings are in char code and hit db on every call.
+    - this is singleton (sStandingMgr)
+    - basic standings hit db on every call.  probably way too much for static data
     - reproc/ram to remove individual standing code in favor of common code (evemath::standing?)
     - faction/corp standings should be static for npc groups
-    - need to write standings code for corps
+    - need to write standings code for corps and finish for others (char, agents)
 
 TransportClosed error msgs located in common/python/pypacket.h
-
-change itoa() to new standard c++/11 std::to_string()
 
 go thru all updated effect data and look for 'improved' ship data to update ours
     - specialized holds from rhea (not available in cruc)
     - updated barges from current live patch (hot tanks)
-current fx data incomplete at best.  missing multiple items/defs
+current fx data in db incomplete at best.  missing multiple items/defs
 isDefault used to send to activate for effectID
 go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
 put EVEEffectID enum into namespace
@@ -212,7 +214,10 @@ activemodule c'tor - check/verify needsCharge code as some modules listed use sc
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)   -priority level: low-med
     - figure out how to determine LCO in dungeon and spawn rats/waves near objects instead of middle of bubble
 
+fleetData.h needs to be moved to common/EVE_Fleet.h and PODs put in fleet namespace
+
 fleet boosts - apply directly to ship/modules when calculated
+    - set leadership skill modifiers on char item, then have fleet boosts pull directly from char
     - apply either when undocking or as fleet is created and use OnModuleAttributeChange packet
     - this will give proper data to client when GetAllInfo() is sent
     - many fleet error msgs in client unused - noted in fleetdata.h
@@ -272,8 +277,10 @@ mining methods will need updates to test for drones vs pilots
 move mining item depleted call to targmgr
 
 RAM code - implement invention, copy, re, tech    -priority level: low
-    - check/update eveMath code for use with RAM/Invention
-    - EvilNumber shit isnt needed or wanted with these
+    - check/update eveMath code for use with RAM/Invention (wip)
+    - EvilNumber shit isnt needed or wanted with these (wip)
+    - (reproc) update GetRecoverables to use sDataMgr...currently hitting db on every call...
+    - add code/checks for char and corp standings in AssemblyLineCheck
 
 contact list - no notification when contacts login.  no initial contact status when logging in.  -priority level: lo
 
@@ -313,16 +320,6 @@ market for corp use
     - find delivery hangar flag for corp buy order at requested station
     - will need more data and checks for using corp account key (wallet division) properly.  currently cash (div 1)
     - escrow and broker fee have "authorized by" msgs to implement....see common/eve-wallet.h
-
-market system....this needs a lot of attention (rewrite/update in progress - 24/oct/20)
-    - abundance of checks (probably overkill)
-    - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client (very few msgs. noted)
-    ** error...
-21:29:11 [Service] marketProxy::PlaceCharOrder()
-21:29:11 [AcctTrace] TranserFunds() - from: 90000000, to: 1000160, entry: 2, refID: 125, amount: 500.00, fKey: 1000, tKey: 1000
-21:29:11 [AcctTrace] TranserFunds() - toID: 1000160 is neither player nor player corp.
-21:29:11 [InvTrace] Inventory::LoadContents() - Loading inventory of Ragnarok(140023615) with owner 1   <<< owner 1 here??  any why we loading?
-21:29:11 [InvTrace] II::Donate() - Updated flag on Ragnarok(140023615) from AutoFit to Hangar.
 
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
@@ -477,7 +474,8 @@ skillTaxEvasion = 28261, // Trade Knowledge of the SCC tax regime and the abilit
 *******************************************************
 *****************  Fx shit
 
-** idea  **  set leadership skill modifiers on char item, then have fleet boosts pull directly from char
+***  ideas
+
 
 ***  errors
 
@@ -514,7 +512,7 @@ all PackedRows are marshalled into a buffer, where None is inserted as zero.
 *******************************************************
 *****************  ideas for later
 
-***  look into using sql prepared statements for oft-used queries
+***  look into using sql prepared statements for oft-used queries  (undecided atm)
 
 ****  make safe save method to verify and save data on segfault
 
@@ -563,7 +561,7 @@ inventory item - populate - effect timestamp
 
 rename AttributeManager to Godma to follow client naming convention?
 
-update ValidateAddItem() to return >0 on error and use enums to determine/display error
+update ValidateAddItem() to return >0 on error and use enums to determine/display error (see char::injectskillintobrain)
 
 make log/config option for (en/dis)able client massive check.
 
@@ -641,8 +639,6 @@ destiny shit - misc things found in destiny.dll
 need timer/var for after cloak for targeting (cannot target x sec after uncloak - currently no delay)
 
 jump clones - when i start this, need to check into diff between active clone and jumpclone.  may have to rearrange things to properly implement jump clones.
-
-move *data calls from inventoryDB into static data mgr  -priority level: low
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
