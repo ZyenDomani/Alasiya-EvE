@@ -1,0 +1,7 @@
+package: maximumtwang.com/liveupdategen
+import:
+- package: github.com/fsnotify/fsnotify
+  version: ~1.4.2
+- package: github.com/go-sql-driver/mysql
+  version: ~1.3.0
+- package: github.com/sbinet/go-python
