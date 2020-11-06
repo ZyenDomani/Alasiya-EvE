@@ -153,12 +153,12 @@ PyRep* MarketDB::GetOrdersForOwner(uint32 ownerID)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
-        "   orderID, typeID, charID, regionID, stationID,"
+        "   orderID, typeID, ownerID AS charID, regionID, stationID,"
         "   orderRange AS `range`, bid, price, volEntered, volRemaining,"
         "   issued as issueDate, minVolume, contraband,"
         "   duration, isCorp, solarSystemID, escrow"
         " FROM mktOrders"
-        " WHERE charID=%u", ownerID))
+        " WHERE ownerID=%u", ownerID))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -173,7 +173,7 @@ PyRep *MarketDB::GetOrderRow(uint32 orderID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
-        "    price, volRemaining, typeID, orderRange AS `range`, orderID,"
+        "   price, volRemaining, typeID, orderRange AS `range`, orderID,"
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders"
@@ -199,14 +199,14 @@ uint32 MarketDB::FindBuyOrder(Call_PlaceCharOrder &call) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT orderID"
-        "    FROM mktOrders"
-        "    WHERE bid=1"
-        "        AND typeID=%u"
-        "        AND stationID=%u"
-        "        AND volRemaining >= %u"
-        "        AND price >= %.2f"
-        "    ORDER BY price DESC"
-        "    LIMIT 1;",
+        " FROM mktOrders"
+        " WHERE bid=1"
+        "  AND typeID=%u"
+        "  AND stationID=%u"
+        "  AND volRemaining >= %u"
+        "  AND price >= %.2f"
+        " ORDER BY price DESC"
+        " LIMIT 1;",
         call.typeID,
         call.stationID,
         call.quantity,
@@ -229,14 +229,14 @@ uint32 MarketDB::FindSellOrder(Call_PlaceCharOrder &call) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT orderID"
-        "    FROM mktOrders"
-        "    WHERE bid=0"
-        "        AND typeID=%u"
-        "        AND stationID=%u"
-        "        AND volRemaining >= %u"
-        "        AND price < %.2f"
-        "    ORDER BY price ASC"
-        "    LIMIT 1;",
+        " FROM mktOrders"
+        " WHERE bid=0"
+        "  AND typeID=%u"
+        "  AND stationID=%u"
+        "  AND volRemaining >= %u"
+        "  AND price < %.2f"
+        " ORDER BY price ASC"
+        " LIMIT 1;",
         call.typeID,
         call.stationID,
         call.quantity,
@@ -254,7 +254,7 @@ uint32 MarketDB::FindSellOrder(Call_PlaceCharOrder &call) {
 }
 
 bool MarketDB::GetOrderInfo(uint32 orderID, Market::OrderInfo &oInfo) {
-    //orderID, typeID, charID, regionID, stationID, orderRange, bid, price, escrow,
+    //orderID, typeID, ownerID, regionID, stationID, orderRange, bid, price, escrow,
     // minVolume, volEntered, volRemaining, issued, contraband, duration, jumps, isCorp, accountKey, memberID
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -264,7 +264,7 @@ bool MarketDB::GetOrderInfo(uint32 orderID, Market::OrderInfo &oInfo) {
         " typeID,"
         " stationID,"
         " regionID,"
-        " charID,"
+        " ownerID,"
         " bid,"
         " isCorp"
         " FROM mktOrders"
@@ -326,7 +326,7 @@ uint32 MarketDB::StoreOrder(Market::SaveData &data) {
     uint32 orderID(0);
     if (!sDatabase.RunQueryLID(err, orderID,
         "INSERT INTO mktOrders ("
-        " typeID, charID, regionID, stationID, solarSystemID, orderRange,"
+        " typeID, ownerID, regionID, stationID, solarSystemID, orderRange,"
         " bid, price, escrow, minVolume, volEntered, volRemaining,"
         " issued, contraband, duration, jumps, isCorp, accountKey, memberID"
         " ) VALUES ("

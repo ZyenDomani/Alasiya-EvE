@@ -88,9 +88,9 @@ bool ModuleManager::Initialize() {
     pShipItem->GetMyInventory()->GetInventoryVec(itemVec);
     GenericModule* pMod(nullptr);
     for (auto cur : itemVec) {
-        // this is a hack.  dont know why any ship item would have flagAutoFit set, but have seen random errors where charges are set to flagAutoFit
-        if (cur->flag() == flagAutoFit) {
-            _log(MODULE__ERROR, "MM::Initialize() - %s(%u) has flagAutoFit set in ship %s",\
+        // this is a hack.  dont know why any ship item would have flagNone set, but have seen random errors where charges are set to flagNone
+        if (cur->flag() == flagNone) {
+            _log(MODULE__ERROR, "MM::Initialize() - %s(%u) has flagNone set in ship %s",\
                     cur->name(), cur->itemID(), pShipItem->name() );
             // put that bitch back in cargo
             cur->SetFlag(flagCargoHold);

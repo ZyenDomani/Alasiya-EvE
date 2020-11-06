@@ -121,13 +121,13 @@ public:
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
     // remove item from old location, add to new location and (optionally) notify client of changes
     // will bcast to corp for item update (incomplete)
-    void                    Move(uint32 new_location=0, EVEItemFlags flag=flagAutoFit, bool notify=false);
+    void                    Move(uint32 new_location=0, EVEItemFlags flag=flagNone, bool notify=false);
     // same as Move() but xfer ownership also
     // will bcast to corp for item update (incomplete)
-    void                    Donate(uint32 new_owner=1, uint32 new_location=0, EVEItemFlags new_flag=flagAutoFit, bool notify=true);
+    void                    Donate(uint32 new_owner=1, uint32 new_location=0, EVEItemFlags new_flag=flagNone, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map< int32, PyRep* >& changes);
     // this is for stacking recovered probes, mined ore, and salvage in ship's cargo
-    void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);  // will test for existing types
+    void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagNone);  // will test for existing types
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     // this also updates volume of item
     bool                    AlterQuantity(int32 qty, bool notify=false);  // make sure to use proper sign
@@ -151,7 +151,7 @@ public:
     virtual bool            Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
     // same as Move() but doesnt remove item from previous location
     // used for moving charges to/from ship without calling Remove()
-    virtual void            Relocate(uint32 locID=0, EVEItemFlags flag=flagAutoFit);
+    virtual void            Relocate(uint32 locID=0, EVEItemFlags flag=flagNone);
 
     // add itemRef to our inventory.
     // does not move item

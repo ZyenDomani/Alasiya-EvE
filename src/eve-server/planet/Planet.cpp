@@ -327,7 +327,7 @@ void PlanetSE::CreateCustomsOffice()
     pos.z += radius + 700000 * std::cos(rad);
     pos.y += MakeRandomInt(-1000, 1000);
 
-    ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
+    ItemData idata(typeID, data.ownerID, m_system->GetID(), flagNone, 1, itoa(m_self->itemID()), false);
     StructureItemRef iRef = sItemFactory.SpawnStructure(idata);
     iRef->SetPosition(pos);
     iRef->ChangeSingleton(true, false);

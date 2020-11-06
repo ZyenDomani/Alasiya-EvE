@@ -11,7 +11,7 @@
 
 //from invFlags DB table
 enum EVEItemFlags {
-    flagAutoFit                     = 0,
+    flagNone                        = 0,
     flagWallet                      = 1,
     flagFactory                     = 2,  // dunno what this is for
     flagWardrobe                    = 3,  // dunno what this is for  clothes?
@@ -50,7 +50,7 @@ enum EVEItemFlags {
     flagHiSlot5                     = 32,
     flagHiSlot6                     = 33,
     flagHiSlot7                     = 34,    //High power slot 8
-    
+
     flagFixedSlot                   = 35,
 
     //factory stuff:
@@ -189,7 +189,7 @@ enum EVEItemFlags {
     flagIllegal                     = 999
 
     /*  actual flags defined in client.....
-     flagAutoFit = 0
+     flagNone = 0
      flagBonus = 86
      flagBooster = 88
      flagBriefcase = 6
@@ -295,9 +295,7 @@ typedef enum {
 //some alternative names for entries above.
 static const EVEItemFlags flagSlotFirst = flagLowSlot0;    //duplicate values
 static const EVEItemFlags flagSlotLast = flagFixedSlot;
-static const EVEItemFlags flagNone = flagAutoFit;
 
-static const EVEItemFlags flagAnywhere = flagAutoFit;
 static const uint8 MAX_MODULE_COUNT = flagSlotLast - flagSlotFirst + 1;
 static const uint8 MAX_HIGH_SLOT_COUNT = flagHiSlot7 - flagHiSlot0 + 1;
 static const uint8 MAX_MID_SLOT_COUNT = flagMidSlot7 - flagMidSlot0 + 1;

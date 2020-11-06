@@ -506,7 +506,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 entity.categoryID = iRef->categoryID();
 
                 // Move item from cargo bay to space: (and send OnItemChange packet)
-                iRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                iRef->Move(pClient->GetLocationID(), flagNone, true);
                 iRef->SetPosition(location + iRef->radius() + radius);
                 iRef->ChangeOwner(entity.ownerID);
 
@@ -720,7 +720,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 if (sRef.get() == nullptr)
                     throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", sRef->typeID()));
 
-                sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                sRef->Move(pClient->GetLocationID(), flagNone, true);
                 StructureSE* sSE = new StructureSE(sRef, *m_manager, pSysMgr, data);
                 location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
                 sSE->SetPosition(location);
@@ -734,7 +734,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 if (sRef.get() == nullptr)
                     throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", sRef->typeID()));
 
-                sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                sRef->Move(pClient->GetLocationID(), flagNone, true);
                 CustomsSE* sSE = new CustomsSE(sRef, *m_manager, pSysMgr, data);
                 location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
                 sSE->SetPosition(location);
@@ -748,7 +748,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 if (cRef.get() == nullptr)
                     throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cRef->typeID()));
 
-                cRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                cRef->Move(pClient->GetLocationID(), flagNone, true);
                 //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
                 // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
                 DeployableSE* dSE = new DeployableSE(cRef, *m_manager, pSysMgr, data);
@@ -774,7 +774,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                         if (ccRef.get() == nullptr)
                             throw PyException(MakeCustomError("Unable to spawn item of type %u.", ccRef->typeID()));
 
-                        ccRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                        ccRef->Move(pClient->GetLocationID(), flagNone, true);
                         ContainerSE* cSE = new ContainerSE(ccRef, *m_manager, pSysMgr, data);
                         location.MakeRandomPointOnSphere(500.0);
                         cSE->SetPosition(location);
@@ -827,7 +827,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                             23,                         // 23 = cargo container
                             pClient->GetCharacterID(),  //owner is Character?  figure out how to test for corp owner
                             pClient->GetLocationID(),
-                            flagAutoFit,
+                            flagNone,
                             "Jettisoned Cargo Container",
                             location);
 
@@ -847,15 +847,15 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         // check current can for capacity limits.
         //if over limit create new can?  reject remaining cargo?  delete?  crash?  run thru station naked?
         if (ccRef.get() != nullptr) {
-            if (ccRef->GetMyInventory()->HasAvailableSpace(flagAutoFit, iRef)) {
-                pClient->MoveItem(cur, ccRef->itemID(), flagAutoFit);
+            if (ccRef->GetMyInventory()->HasAvailableSpace(flagNone, iRef)) {
+                pClient->MoveItem(cur, ccRef->itemID(), flagNone);
             } else {
                 _log(ITEM__WARNING, "%s: CargoContainer %u is full.", pClient->GetName(), ccRef->itemID());
                 throw PyException(MakeCustomError("Your Cargo Container is full.  Some items were not transferred."));
             }
         } else if (jcRef.get() != nullptr) {
-            if (jcRef->GetMyInventory()->HasAvailableSpace(flagAutoFit, iRef)) {
-                pClient->MoveItem(cur, jcRef->itemID(), flagAutoFit);
+            if (jcRef->GetMyInventory()->HasAvailableSpace(flagNone, iRef)) {
+                pClient->MoveItem(cur, jcRef->itemID(), flagNone);
             } else {
                 _log(ITEM__WARNING, "%s: Jetcan %u is full.", pClient->GetName(), jcRef->itemID());
                 throw PyException(MakeCustomError("Your jetcan is full.  Some items were not transferred."));

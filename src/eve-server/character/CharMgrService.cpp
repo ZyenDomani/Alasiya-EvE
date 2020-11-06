@@ -94,9 +94,9 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
     flagIDs << flagHangar;
     /** @todo  test m_containerFlag to determine correct flag here and append to flagIDs string? */
 
-    uint32 ownerID = m_ownerID;
-    bool bpOnly = PyRep::IntegerValue(call.tuple->GetItem(0));
-    bool isCorp = PyRep::IntegerValue(call.tuple->GetItem(1));
+    uint32 ownerID(m_ownerID);
+    bool bpOnly(PyRep::IntegerValue(call.tuple->GetItem(0)));
+    bool isCorp(PyRep::IntegerValue(call.tuple->GetItem(1)));
 
     if (isCorp) {
         Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
@@ -104,7 +104,8 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
             return nullptr; // make error here
         ownerID = pClient->GetCorporationID();
         //  add corp hangar flags
-        flagIDs << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << "," << flagCorpHangar5 << "," << flagCorpHangar6 << "," << flagCorpHangar7;
+        flagIDs << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << ",";
+        flagIDs << flagCorpHangar5 << "," << flagCorpHangar6 << "," << flagCorpHangar7;
     }
 
     return CharacterDB::ListStations(ownerID, flagIDs, isCorp, bpOnly);
@@ -165,17 +166,13 @@ CharMgrService::CharMgrService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(CharMgrService, EditContact);
     PyCallable_REG_CALL(CharMgrService, DeleteContacts);
     PyCallable_REG_CALL(CharMgrService, GetRecentShipKillsAndLosses);
-
-    //these 2 are for labels in PnP window;
-    PyCallable_REG_CALL(CharMgrService, GetLabels);
-    PyCallable_REG_CALL(CharMgrService, CreateLabel);
-
-    PyCallable_REG_CALL(CharMgrService, DeleteContacts);
     PyCallable_REG_CALL(CharMgrService, BlockOwners);
     PyCallable_REG_CALL(CharMgrService, UnblockOwners);
     PyCallable_REG_CALL(CharMgrService, EditContactsRelationshipID);
     PyCallable_REG_CALL(CharMgrService, GetImageServerLink);
-
+    //these 2 are for labels in PnP window;
+    PyCallable_REG_CALL(CharMgrService, GetLabels);
+    PyCallable_REG_CALL(CharMgrService, CreateLabel);
 }
 
 CharMgrService::~CharMgrService() {

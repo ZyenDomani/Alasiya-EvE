@@ -404,7 +404,7 @@ void DroneSE::Killed(Damage &fatal_blow) {
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
-    ItemData wreckItemData(wreckTypeID, killerID, m_system->GetID(), flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
+    ItemData wreckItemData(wreckTypeID, killerID, m_system->GetID(), flagNone, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("DroneSE::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);

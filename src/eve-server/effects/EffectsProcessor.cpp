@@ -372,7 +372,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Charge: {
                         // ....charge on src item (from module)
-                        if (cur.second.srcRef->flag() == flagAutoFit) {
+                        if (cur.second.srcRef->flag() == flagNone) {
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is AutoFit but needed to aquire module.", cur.second.srcRef->itemName().c_str());
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
                             cur.second.srcRef->itemName().c_str(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
@@ -384,7 +384,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Other: {
                         // ....module containing the src item (from charge)
-                        if (cur.second.srcRef->flag() == flagAutoFit) {
+                        if (cur.second.srcRef->flag() == flagNone) {
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is AutoFit but needed to aquire module.", cur.second.srcRef->itemName().c_str());
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
                             cur.second.srcRef->itemName().c_str(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \

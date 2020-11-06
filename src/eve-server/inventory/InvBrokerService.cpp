@@ -163,7 +163,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
             throw PyException(MakeUserError("CantDoThatWithSomeoneElsesStuff"));
     }
 
-    return item->GetMyInventory()->List( flagAnywhere );
+    return item->GetMyInventory()->List( flagNone );
 }
 
 //this is a view into the entire inventory item.  this CAN throw.  find and implement client error msgs here for corp usage
@@ -212,25 +212,25 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
      *   ...
         inv = self.invCache.GetInventoryFromId(const.containerHangar)
      */
-    EVEItemFlags flag = flagAutoFit;
+    EVEItemFlags flag = flagNone;
     switch (iRef->categoryID()) {
         case EVEDB::invCategories::Owner: {
             switch (iRef->groupID()) {
                 case EVEDB::invGroups::Character: {
-                    flag = flagAutoFit;
+                    flag = flagNone;
                     ownerID = call.client->GetCharacterID();
                 } break;
                 case EVEDB::invGroups::Corporation: {
-                    flag = flagAutoFit;
+                    flag = flagNone;
                     ownerID = call.client->GetCorporationID();
                 } break;
                 case EVEDB::invGroups::Alliance: {
-                    flag = flagAutoFit;
+                    flag = flagNone;
                     ownerID = call.client->GetAllianceID();
                 } break;
                 case EVEDB::invGroups::Faction: {
                     // not sure if this is used...
-                    flag = flagAutoFit;
+                    flag = flagNone;
                     ownerID = call.client->GetWarFactionID();
                 } break;
             }
@@ -245,7 +245,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
         case EVEDB::invCategories::Structure: {
             switch(iRef->groupID()) {
                 case EVEDB::invGroups::Control_Tower: {
-                    flag = flagAutoFit;
+                    flag = flagNone;
                 } break;
                 default: {
                     flag = flagHangar;
@@ -256,7 +256,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
             switch(iRef->groupID()) {
                 case EVEDB::invGroups::Orbital_Construction_Platform: {
                     // not sure what to do in this case...
-                    flag = flagAutoFit;
+                    flag = flagNone;
                 } break;
                 case EVEDB::invGroups::Orbital_Infrastructure: {
                     // this includes orbital command centers, which this may not be right for.
@@ -274,7 +274,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
         } break;
         case EVEDB::invCategories::Trading: {
             _log(INV__WARNING, "GetInventoryFromID called for Trading locationID %u using itemID %u", m_locationID, args.arg1);
-            flag = flagAutoFit;
+            flag = flagNone;
         } break;
     }
 
@@ -316,7 +316,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
         return nullptr;
     }
 
-    EVEItemFlags flag = flagAutoFit;
+    EVEItemFlags flag = flagNone;
     switch(args.container) {
         case Inv::Container::Wallet: { /*10001*/
             if (ownerID == 0)
@@ -360,7 +360,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
             // not sure how to code it yet...
             if (ownerID == 0)
                 ownerID = call.client->GetCharacterID();
-            flag = flagAutoFit;
+            flag = flagNone;
         } break;
 
         //case Inv::Container::ScrapHeap:/*10005*/

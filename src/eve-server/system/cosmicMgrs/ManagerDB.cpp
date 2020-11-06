@@ -80,6 +80,14 @@ void ManagerDB::GetTypeAttributes(DBQueryResult& res)
     _log(DATABASE__RESULTS, "GetTypeAttributes returned %u items", res.GetRowCount());
 }
 
+void ManagerDB::LoadNPCCorpFactionData(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT corporationID, factionID FROM crpNPCCorporations" ))
+        codelog(DATABASE__ERROR, "Error in LoadCorpFactionData query: %s", res.error.c_str());
+
+    _log(DATABASE__RESULTS, "LoadCorpFactionData returned %u items", res.GetRowCount());
+}
+
 PyObject *ManagerDB::GetEntryTypes() {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT entryTypeID, entryTypeName, entryTypeNameID FROM jnlEntryTypeIDs"))    {
@@ -159,7 +167,7 @@ PyObjectEx *ManagerDB::GetOperands() {
 void ManagerDB::LoadCorpFactions(std::map<uint32, uint32> &into) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT corporationID,factionID FROM crpNPCCorporations" )) {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
     }
 
@@ -172,7 +180,7 @@ void ManagerDB::LoadFactionStationCounts(std::map<uint32, uint32> &into) {
         " LEFT JOIN staStations USING (corporationID)"
         " GROUP BY factionID"))
     {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
     }
 
@@ -184,7 +192,7 @@ void ManagerDB::LoadFactionSystemCounts(std::map<uint32, uint32> &into) {
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID, COUNT(solarSystemID) FROM mapSolarSystems GROUP BY factionID"))
     {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
     }
 
@@ -196,7 +204,7 @@ void ManagerDB::LoadFactionRegions(std::map<int32, PyRep *> &into) {
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID,regionID FROM mapRegions WHERE factionID IS NOT NULL"))
     {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
     }
     DBResultToIntIntlistDict(res, into);
@@ -207,7 +215,7 @@ void ManagerDB::LoadFactionConstellations(std::map<int32, PyRep *> &into) {
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID,constellationID FROM mapConstellations WHERE factionID IS NOT NULL" ))
     {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
     }
     DBResultToIntIntlistDict(res, into);
@@ -218,7 +226,7 @@ void ManagerDB::LoadFactionSolarSystems(std::map<int32, PyRep *> &into) {
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID,solarSystemID FROM mapSolarSystems WHERE factionID IS NOT NULL"))
     {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
     }
     DBResultToIntIntlistDict(res, into);
@@ -229,7 +237,7 @@ void ManagerDB::LoadFactionRaces(std::map<int32, PyRep *> &into) {
     //this is not quite right, but its good enough.
     if (!sDatabase.RunQuery(res, "SELECT factionID,raceID FROM facRaces WHERE factionID IS NOT NULL"))
     {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
     }
     DBResultToIntIntlistDict(res, into);
@@ -248,7 +256,7 @@ PyDict* ManagerDB::LoadNPCCorpInfo() {
         "  LEFT JOIN crpCorporation AS crp ON ncrp.corporationID = crp.corporationID"
         "  LEFT JOIN chrNPCCharacters AS chr ON ceoID=chr.characterID"))
     {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
 
@@ -261,7 +269,7 @@ PyObject* ManagerDB::GetNPCDivisions() {
         "SELECT "
         " divisionID, divisionName, description, leaderType, divisionNameID, leaderTypeID"
         " FROM crpNPCDivisions" )) {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
 

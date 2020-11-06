@@ -65,20 +65,21 @@ public:
     const std::string &groupName() const                { return m_group.name; }
     uint8 categoryID() const                            { return m_group.catID; }
 
-    const std::string &name() const                     { return m_type.name; }
-    const std::string &description() const              { return m_type.description; }
-    uint32 portionSize() const                          { return m_type.portionSize; }
-    double basePrice() const                            { return m_type.basePrice; }
-    bool published() const                              { return m_type.published; }
-    uint32 marketGroupID() const                        { return m_type.marketGroupID; }
-    double chanceOfDuplicating() const                  { return m_type.chanceOfDuplicating; }
-
-    double radius() const                               { return m_type.radius; }
-    double mass() const                                 { return m_type.mass; }
-    double volume() const                               { return m_type.volume; }
-    double capacity() const                             { return m_type.capacity; }
+    float radius() const                                { return m_type.radius; }
+    float mass() const                                  { return m_type.mass; }
+    float volume() const                                { return m_type.volume; }
+    float capacity() const                              { return m_type.capacity; }
     uint8 race() const                                  { return m_type.race; }
 
+    const std::string &name() const                     { return m_type.name; }
+    const std::string &description() const              { return m_type.description; }
+
+    uint16 portionSize() const                          { return m_type.portionSize; }
+    double basePrice() const                            { return m_type.basePrice; }
+    uint32 marketGroupID() const                        { return m_type.marketGroupID; }
+    float chanceOfDuplicating() const                   { return m_type.chanceOfDuplicating; }
+
+    bool published() const                              { return m_type.published; }
     bool refinable() const                              { return m_type.isRefinable; }
     bool recyclable() const                             { return m_type.isRecyclable; }
 
@@ -169,7 +170,7 @@ class ItemData {
 public:
     // Full + default constructor:
     ItemData( const char *_name = "", uint16 _typeID = 0, uint32 _ownerID = ownerSystem, uint32 _locationID = locTemp,
-              EVEItemFlags _flag = flagAutoFit, bool _contraband = false, bool _singleton = false, uint32 _quantity = 0,
+              EVEItemFlags _flag = flagNone, bool _contraband = false, bool _singleton = false, uint32 _quantity = 0,
               const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "");
 
     // Item friendly constructor:

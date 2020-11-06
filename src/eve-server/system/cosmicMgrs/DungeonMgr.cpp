@@ -281,7 +281,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     info += " in ";
     info += m_system->GetName();
     */
-    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), sig.position/*, info*/);
+    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagNone, sig.sigName.c_str(), sig.position/*, info*/);
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), iData);
     if (iRef.get() == nullptr) // make error and exit
         return false;
@@ -370,7 +370,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         pos2.y = sig.position.y + itr->y;
         pos2.z = sig.position.z + itr->z;
         // typeID, ownerID, locationID, flag, name, &_position
-        ItemData dData(itr->typeID, sig.ownerID, systemID, flagAutoFit, itr->typeName.c_str(), pos2);
+        ItemData dData(itr->typeID, sig.ownerID, systemID, flagNone, itr->typeName.c_str(), pos2);
         iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), dData);
         if (iRef.get() == nullptr) // we'll survive...
             continue;

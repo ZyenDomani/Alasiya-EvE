@@ -151,6 +151,7 @@ protected:
             return RefPtr<_Ty>();
 
         // load solar system data
+        /** @todo is this data in static data?  if not, do we continue db hit? */
         SolarSystemData ssData = SolarSystemData();
         if( !sItemFactory.db()->GetSolarSystem( solarSystemID, ssData ) )
             return RefPtr<_Ty>();
@@ -170,7 +171,7 @@ protected:
     bool m_constellation :1;
 
     uint32 m_factionID;
-    
+
     double m_security;
     double m_radius;
     double m_luminosity;

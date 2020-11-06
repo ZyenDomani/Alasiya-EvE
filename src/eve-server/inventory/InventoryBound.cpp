@@ -493,7 +493,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         } break;
     }
 
-    EVEItemFlags fromFlag(flagAutoFit);
+    EVEItemFlags fromFlag(flagNone);
     EVEItemFlags origFlag(toFlag);
     InventoryItemRef iRef(nullptr);
     sItemFactory.SetUsingClient(pClient);
@@ -593,7 +593,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         // move item to new location
         if (ship) {
             // are we adding module to ship using autoFit?
-            if (toFlag == flagAutoFit) {
+            if (toFlag == flagNone) {
                // assert(iRef->categoryID() != EVEDB::invCategories::Charge); // crash here...this should NOT happen.
                 if (iRef->categoryID() == EVEDB::invCategories::Module) {
                     toFlag = pShip->FindAvailableModuleSlot(iRef);
@@ -736,14 +736,14 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     } else if (IsPlayerItem(m_itemID)) {
         // this is probably a ship calling for all items
         //  is also used for t3 ships, POS, subLocations, and possibly others that are 'player items'
-        flag = flagAnywhere;
+        flag = flagNone;
         /*
     } else if (IsPlayerCorp(m_itemID)) {
         // this one probably will not be used.
         //  what items in a corp would be listed?  corpItem dont have inventory
     } else if (IsCharacter(m_itemID)) { // this is checked in Inventory::List()
         // this is asking for skill list...char is a container for skills
-        flag = flagAnywhere;
+        flag = flagNone;
     } else if (IsSolarSystem(m_itemID)) {
         //  not sure how to do this one...will have to check on WHEN system listing would be called
         */
@@ -761,7 +761,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
 } else if (IsHangarFlag(flag)) {
     // check for owner or corpID
 
-    flag = flagAnywhere;
+    flag = flagNone;
     if (call.client->GetCorporationID() != m_ownerID)
         ; // calling char is not member of corp.  send error?
 } else if (IsOfficeFlag(flag)) {
@@ -769,7 +769,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     //  this is market deliveries, impounded, etc.
     // check for corpID
 
-    flag = flagAnywhere;
+    flag = flagNone;
     if (call.client->GetCorporationID() != m_ownerID)
         ; // calling char is not member of corp.  send error?
 }
@@ -813,7 +813,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
         PyList::const_iterator itr = args.bmIDs->begin();
         for (; itr != args.bmIDs->end(); ++itr) {
             //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
-            ItemData iData( 51, call.client->GetCharacterID(), locTemp, flagAutoFit, 1, itoa(PyRep::IntegerValueU32(*itr)));
+            ItemData iData( 51, call.client->GetCharacterID(), locTemp, flagNone, 1, itoa(PyRep::IntegerValueU32(*itr)));
             InventoryItemRef iRef = sItemFactory.SpawnItem( iData );
             if (iRef.get() == nullptr) {
                 codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), PyRep::IntegerValueU32(*itr));

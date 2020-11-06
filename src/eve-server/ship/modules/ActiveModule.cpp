@@ -1335,7 +1335,7 @@ void ActiveModule::LaunchProbe()
 
     //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity);
     // we are not changing singleton status of probes
-    ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagAutoFit, 1);
+    ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagNone, 1);
     ProbeItemRef probeRef = sItemFactory.SpawnProbe(idata);
     if (probeRef.get() == nullptr)
         throw PyException(MakeCustomError("Unable to spawn item #%u:'%s' of type %u.", \

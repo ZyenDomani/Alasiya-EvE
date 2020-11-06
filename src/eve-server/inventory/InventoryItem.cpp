@@ -553,7 +553,7 @@ void InventoryItem::RemoveItem(InventoryItemRef iRef)
 void InventoryItem::Delete() {
     // get out of client's sight.
     if (!IsNPCCorp(m_ownerID) and m_ownerID > 1)
-        Move(0, flagAutoFit, true);
+        Move(0, flagNone, true);
     else {
         // remove from current container's inventory
         if (IsValidLocation(m_locationID)) {
@@ -626,7 +626,7 @@ void InventoryItem::Rename(std::string name)
 
 }
 
-void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEItemFlags new_flag/*flagAutoFit*/, bool notify/*true*/)
+void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*true*/)
 {
     if (!IsValidOwner(new_owner)) {
         _log(ITEM__ERROR, "II::Donate() - %u is invalid owner", new_owner);
@@ -699,7 +699,7 @@ void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEI
     }
 }
 
-void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagAutoFit*/, bool notify/*false*/) {
+void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*false*/) {
     if ((new_location == m_locationID) and (new_flag == m_flag) and !notify)
         return; //nothing to do...
 
@@ -855,7 +855,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
     return true;
 }
 
-void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAutoFit*/)
+void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagNone*/)
 {
     // get existing type in cargo
     InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flag);

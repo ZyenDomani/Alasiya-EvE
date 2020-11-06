@@ -78,13 +78,13 @@ namespace Inv {
         uint8           race;
         uint16          id;
         uint16          groupID;
-        uint32          portionSize;
+        uint16          portionSize;
         uint32          marketGroupID;
         float           chanceOfDuplicating;
-        double          radius;
-        double          mass;
-        double          volume;
-        double          capacity;
+        float           radius;
+        float           mass;
+        float           volume;
+        float           capacity;
         double          basePrice;
         std::string     name;
         std::string     description;

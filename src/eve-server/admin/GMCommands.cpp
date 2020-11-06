@@ -203,7 +203,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         actualTypeID,
         1, // owner is EVE System
         who->GetLocationID(),
-        flagAutoFit,
+        flagNone,
         actualTypeName.c_str(),
         loc
    );
@@ -334,7 +334,7 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
             actualTypeID,
             1, // owner is EVE System
             pClient->GetLocationID(),
-            flagAutoFit,
+            flagNone,
             actualTypeName.c_str(),
             loc
        );
@@ -356,7 +356,7 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
                 // owned by system rats
                 entity.factionID = sDataMgr.GetRegionRatFaction(pClient->GetRegionID());
                 entity.allianceID = entity.factionID;
-                entity.corporationID = sDataMgr.GetCorpID(entity.factionID);
+                entity.corporationID = sDataMgr.GetFactionCorp(entity.factionID);
                 entity.ownerID = entity.corporationID;
             } break;
             case EVEDB::invCategories::Ship: {
@@ -370,7 +370,7 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
                 //owned by system sov holder
                 entity.factionID = sDataMgr.GetRegionFaction(pClient->GetRegionID());
                 entity.allianceID = entity.factionID;
-                entity.corporationID = sDataMgr.GetCorpID(entity.factionID);
+                entity.corporationID = sDataMgr.GetFactionCorp(entity.factionID);
                 entity.ownerID = entity.corporationID;
             } break;
         }

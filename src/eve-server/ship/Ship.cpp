@@ -127,7 +127,7 @@ void ShipItem::SetPlayer(Client* pClient) {
 
     // this hits on login and when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
     if (IsSolarSystem(m_locationID)) {
-        SetFlag(flagAutoFit);
+        SetFlag(flagNone);
         /*  not sure if we're gonna keep this in here....
         if (pClient->IsLogin()) {
             if (sConfig.debug.IsTestServer) {
@@ -484,9 +484,9 @@ uint32 ShipItem::AddItemByFlag(EVEItemFlags flag, InventoryItemRef iRef, Client*
     if (iRef.get() == nullptr)
         return 0;
 
-    if (flag == flagAutoFit) {
+    if (flag == flagNone) {
         // make error.  nothing at this point should be "autoFit"
-        codelog(SHIP__ERROR, "ShipItem::AddItem() - flag = flagAutoFit.");
+        codelog(SHIP__ERROR, "ShipItem::AddItem() - flag = flagNone.");
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();
         flag = flagCargoHold;   //default to cargo (cause this is a ship)
@@ -2802,7 +2802,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     Character* pChar = GetPilot()->GetChar().get();
     sLog.Magenta("ShipSE::LaunchDrone()","%s: Launching drone %u",  pChar->name(), dRef->itemID());
 
-    dRef->Move(GetLocationID(), flagAutoFit, true);
+    dRef->Move(GetLocationID(), flagNone, true);
     dRef->ChangeSingleton(true);
 
     GPoint position(GetPosition());

@@ -24,7 +24,7 @@ void testing::posTest(Client* pClient) {
      *           const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
      */
     FactionData data = FactionData();
-    ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagAutoFit, "Found Position Test", NULL_ORIGIN, "Position Test");
+    ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, "Found Position Test", NULL_ORIGIN, "Position Test");
     CargoContainerRef iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
     if (iRef.get() != nullptr) {
         iRef->Rename("tuple 1");

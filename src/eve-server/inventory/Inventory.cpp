@@ -299,7 +299,7 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
     } else {
         for (auto cur : mContents) {
             if (((ownerID == 0)        or (cur.second->ownerID() == ownerID))
-            and ((flag == flagAnywhere) or (cur.second->flag() == flag))) {
+            and ((flag == flagNone) or (cur.second->flag() == flag))) {
                 row = into->NewRow();
                 cur.second->GetItemRow(row);
             }
@@ -594,7 +594,7 @@ float Inventory::GetCapacity(EVEItemFlags flag) const {
         case flagDelivery:
         case flagImpounded:
         case flagCorpMarket:                    return maxHangarCapy;
-        case flagAutoFit:
+        case flagNone:
         case flagCargoHold:                     return m_self->GetAttribute(AttrCapacity).get_float();
         case flagDroneBay:                      return m_self->GetAttribute(AttrDroneCapacity).get_float();
         case flagShipHangar:                    return m_self->GetAttribute(AttrShipMaintenanceBayCapacity).get_float();

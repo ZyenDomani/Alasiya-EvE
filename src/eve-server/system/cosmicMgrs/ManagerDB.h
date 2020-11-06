@@ -41,6 +41,7 @@ public:
     static void GetAgentLocation(DBQueryResult& res);
     static void GetSalvageGroups(DBQueryResult& res);
     static void GetTypeAttributes(DBQueryResult& res);
+    static void LoadNPCCorpFactionData(DBQueryResult& res);
 
     static void LoadCorpFactions(std::map<uint32, uint32> &into);
     static void LoadFactionStationCounts(std::map<uint32, uint32> &into);

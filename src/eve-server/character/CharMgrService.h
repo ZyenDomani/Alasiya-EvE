@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
+    Updates:    Allan
 */
 
 
@@ -66,7 +67,6 @@ protected:
     PyCallable_DECL_CALL(GetRecentShipKillsAndLosses);
     PyCallable_DECL_CALL(GetLabels);
     PyCallable_DECL_CALL(CreateLabel);
-
     PyCallable_DECL_CALL(DeleteContacts);
     PyCallable_DECL_CALL(BlockOwners);
     PyCallable_DECL_CALL(UnblockOwners);

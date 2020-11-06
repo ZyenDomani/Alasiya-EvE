@@ -69,7 +69,8 @@ bool ServiceDB::ValidateAccountName(CryptoChallengePacket& ccp, std::string& fai
 }
 
 bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& aData, std::string& failMsg )
-{       //added auto account    -allan 18Jan14      //UD 16Jan18  -again 15Dec18    -ud failMsgs 15Jun19
+{
+    //added auto account    -allan 18Jan14   -UD 16Jan18  -ud 15Dec18  -ud failMsgs 15Jun19  -ud type 4Nov20
     std::string eLogin;
     sDatabase.DoEscapeString(eLogin, ccp.user_name);
 

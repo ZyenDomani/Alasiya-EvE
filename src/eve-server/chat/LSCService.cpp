@@ -960,6 +960,7 @@ void LSCService::CreateSystemChannel(int32 channelID)
     int32 messageID = -1, grpMsgID = 0;
     uint32 ownerID = channelID;
 
+    /** @todo  i know this isnt used much, but wtf was i thinking hitting db for names, when they are in static data?? */
     if (IsRegion(channelID)) {
         type = LSC::Type::region;
         name = "Region";

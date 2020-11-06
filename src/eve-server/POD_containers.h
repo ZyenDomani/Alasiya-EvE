@@ -87,6 +87,7 @@ struct CorpData {
     int64 grantableRolesAtHQ;
     int64 grantableRolesAtOther;
     float taxRate;
+    float secRating;
     std::string name;
     std::string ticker;
 };

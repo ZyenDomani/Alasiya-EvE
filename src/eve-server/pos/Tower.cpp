@@ -476,7 +476,7 @@ void TowerSE::CreateForceField()
     if (m_hasShield)
         return;
     // create and add force field to tower
-    ItemData idata(EVEDB::invTypes::ForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
+    ItemData idata(EVEDB::invTypes::ForceField, m_corpID, m_system->GetID(), flagNone, m_ownerID);
     InventoryItemRef ifRef = sItemFactory.SpawnItem(idata);
     if (ifRef.get() == nullptr)
         return;  // we'll get over it
