@@ -16,6 +16,7 @@
 #include "packets/Manufacturing.h"
 #include "inventory/InventoryItem.h"
 
+class Character;
 
 class FactoryDB
 : public ServiceDB
@@ -32,26 +33,27 @@ public:
     static PyRep* GetMaterialCompositionOfItemType(const uint32 typeID);
 
     // for static data mgr
+    static bool IsRefinable(const uint16 typeID);
+    static bool IsRecyclable(const uint16 typeID);
     static void GetRAMMaterials(DBQueryResult& res);
     static void GetBlueprintType(DBQueryResult& res);
     static void GetRAMRequirements(DBQueryResult& res);
 
     // InstallJob stuff
-    static bool GetAssemblyLineProperties(const uint32 assemblyLineID, Rsp_InstallJob &into);
-    static bool GetAssemblyLineVerifyProperties(const uint32 assemblyLineID, uint32& ownerID, double& minCharSecurity, double& maxCharSecurity, int8& restrictionMask, int8& activity);
+    static bool GetAssemblyLineProperties(const uint32 assemblyLineID, Character *pChar, Rsp_InstallJob &into, bool isCorpJob=false);
+    static bool GetAssemblyLineRestrictions(const int32 assemblyLineID, EvERam::LineRestrictions& data);
     static bool InstallJob(const uint32 ownerID, const uint32 installerID, const uint32 assemblyLineID, const uint32 installedItemID, const int64 beginProductionTime, const int64 endProductionTime, const char* description, const int32 runs, const EVEItemFlags outputFlag, const uint32 installedInSolarSystem, const int32 licensedProductionRuns);
 
     // CompleteJob stuff
-    static bool GetJobProperties(const uint32 jobID, uint32& installedItemID, uint32& ownerID, EVEItemFlags& outputFlag, int32& runs, int32& licensedProductionRuns, int8& activity);
-    static bool GetJobVerifyProperties(const uint32 jobID, uint32& ownerID, int64& endProductionTime, int8& restrictionMask, int8& status);
+    static bool GetJobProperties(const uint32 jobID, EvERam::JobProperties& data);
     static bool CompleteJob(const uint32 jobID, const int8 completedStatus);
 
     // misc queries
     static bool DeleteBlueprint(uint32 blueprintID);
     static bool GetBlueprint(uint32 blueprintID, EvERam::bpData& into);
     static bool SaveBlueprintData(uint32 blueprintID, EvERam::bpData& data);
-    static bool IsProducableBy(const uint32 assemblyLineID, const uint32 groupID);
-    static bool GetMultipliers(const uint32 assemblyLineID, uint32 groupID, double &materialMultiplier, double &timeMultiplier);
+    static bool IsProducableBy(const uint32 assemblyLineID, const ItemType *pType);
+    static bool GetMultipliers(const uint32 assemblyLineID, const ItemType *pType, Rsp_InstallJob &into);
 
     static uint32 CountManufacturingJobs(const uint32 installerID);
     static uint32 CountResearchJobs(const uint32 installerID);

@@ -20,29 +20,28 @@ class RamMethods
 : public Singleton< RamMethods >
 {
 public:
-    static void ActivityCheck(Client* const pClient, const Call_InstallJob& args, InventoryItemRef installedItem);
-    static void JobsCheck(Character* pChar, const Call_InstallJob& args);
-    static void InstallationCheck(Client* const pClient, int32 installationContainerID);
-    static void AssemblyLineCheck(Client* const pClient, const Call_InstallJob& args);
-    static void ItemLocationCheck(Client* const pClient, const Call_InstallJob& args, InventoryItemRef installedItem);
-    static void ItemPermissionCheck(Client* const pClient, const Call_InstallJob& args, InventoryItemRef installedItem);
+    void ActivityCheck(Client* const pClient, const Call_InstallJob& args, BlueprintRef bpRef);
+    void JobsCheck(Character* pChar, const Call_InstallJob& args);
+    void InstallationCheck(Client* const pClient, int32 lineLocationID);
+    void LinePermissionCheck(Client* const pClient, const Call_InstallJob& args);
+    void ItemLocationCheck(Client* const pClient, const Call_InstallJob& args, InventoryItemRef installedItem);
+    void ItemPermissionCheck(Client*const pClient, const Call_InstallJob& args, BlueprintRef bpRef);
 
-    static void LocationRolesCheck(Client* const pClient, int16 flagID);
+    void LocationRolesCheck(Client* const pClient, int16 flagID);
 
-    static void ProductionTimeCheck(uint32 productionTime);
-    static void MaterialSkillsCheck(Client* const pClient, uint32 runs, const PathElement& bomLocation, const Rsp_InstallJob& rsp, const std::vector< EvERam::RequiredItem >& reqItems);
+    void ProductionTimeCheck(uint32 productionTime);
+    void MaterialSkillsCheck(Client* const pClient, uint32 runs, const PathElement& bomLocation, const Rsp_InstallJob& rsp, const std::vector< EvERam::RequiredItem >& reqItems);
 
-    static void CompleteJob(const Call_CompleteJob &args, Client *const c);
+    void VerifyCompleteJob(const Call_CompleteJob& args, EvERam::JobProperties& data, Client*const pClient);
 
-    static bool Calculate(const Call_InstallJob& args, InventoryItemRef installedItem, Character* pChar, Rsp_InstallJob& into);
-    static void EncodeBillOfMaterials(const std::vector< EvERam::RequiredItem >& reqItems, double materialMultiplier, double charMaterialMultiplier, uint32 runs, BillOfMaterials& into);
-    static void EncodeMissingMaterials(const std::vector< EvERam::RequiredItem >& reqItems, const PathElement& bomLocation, Client*const pClient, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map< int32, PyRep* >& into);
+    bool Calculate(const Call_InstallJob& args, BlueprintRef bpRef, Character* pChar, Rsp_InstallJob& into);
+    void EncodeBillOfMaterials(const std::vector< EvERam::RequiredItem >& reqItems, float materialMultiplier, float charMaterialMultiplier, uint32 runs, BillOfMaterials& into);
+    void EncodeMissingMaterials(const std::vector< EvERam::RequiredItem >& reqItems, const PathElement& bomLocation, Client*const pClient, float materialMultiplier, float charMaterialMultiplier, int32 runs, std::map< int32, PyRep* >& into);
 
-    static void GetBOMItems(const PathElement &bomLocation, std::vector<InventoryItemRef> &into);
-    static void GetBOMItemsMap(const PathElement &bomLocation, std::map<uint16, InventoryItemRef> &into);
-    static bool GetMultipliers(const uint32 assemblyLineID, const uint32 productGroupID, double &materialMultiplier, double &timeMultiplier);
+    void GetBOMItems(const PathElement &bomLocation, std::vector<InventoryItemRef> &into);
+    void GetBOMItemsMap(const PathElement &bomLocation, std::map<uint16, InventoryItemRef> &into);
 
-    static void GetAdjustedRamRequiredMaterials();
+    void GetAdjustedRamRequiredMaterials();
     const char* GetActivityName(int8 activityID);
 };
 
@@ -53,7 +52,7 @@ public:
 
 #endif  // EVE_MANUF_RAM_METHODS_H
 
-/*{'messageKey': 'RamAccessDeniedCorpSecStatusTooHigh', 'dataID': 17882212, 'suppressable': False, 'bodyID': 259049, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259048, 'messageID': 1444}
+/* {'messageKey': 'RamAccessDeniedCorpSecStatusTooHigh', 'dataID': 17882212, 'suppressable': False, 'bodyID': 259049, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259048, 'messageID': 1444}
  * {'messageKey': 'RamAccessDeniedCorpSecStatusTooLow', 'dataID': 17882217, 'suppressable': False, 'bodyID': 259051, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259050, 'messageID': 1445}
  * {'messageKey': 'RamAccessDeniedCorpStandingTooLow', 'dataID': 17882222, 'suppressable': False, 'bodyID': 259053, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259052, 'messageID': 1446}
  * {'messageKey': 'RamAccessDeniedNotPilot', 'dataID': 17882227, 'suppressable': False, 'bodyID': 259055, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259054, 'messageID': 1447}

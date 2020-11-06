@@ -201,7 +201,7 @@
           <!-- empty list.  always sends empty in client -->
         </listInline>
       </listInline>
-      <int name="flagOutput" /><!-- where to put finished job.  is this for returning bp also? -->
+      <int name="flagOutput" /><!-- where to deliver finished job and return bp -->
       <int name="runs" />
       <int name="activityID" />
       <int name="licensedProductionRuns" /><!-- only sent on copy jobs.  set copied bp to this # -->
@@ -326,7 +326,7 @@
           <int name="invLocationID" />
           <int name="invLocationGroupID" />
         </listInline>
-        <!-- path  - this is populated if jobContaier != station and  jobContaier = activeShipID -->
+        <!-- path  - this is populated if jobContaier == activeShipID -->
         <!--  path.append([eve.session.locationid, eve.session.charid, const.flagHangar]) -->
         <raw name="path" />
         <listInline>

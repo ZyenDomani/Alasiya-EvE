@@ -1346,31 +1346,28 @@ void Character::SaveBookMarks()
 // functions and methods for standings system
 /** @todo  this needs to be moved to common standings code */
 /** @todo  these need to use common standings methods for formulas  */
-float Character::GetStanding(uint32 fromID, uint32 toID) {
-    return StandingDB::GetStanding(fromID, toID);
-}
-
+/** @todo  these need secStatus tests and calcs for negative secStatus */
 float Character::GetStandingModified(uint32 fromID, uint32 toID)
 {
+    if (toID == 0)
+        toID = m_itemID;
     float res = StandingDB::GetStanding(fromID, toID);
     if (res < 0.0f)
-        res += ((10 + res) * 0.04f * GetSkillLevel(EvESkill::Diplomacy));
+        res += ((10.0f + res) * (0.04f * GetSkillLevel(EvESkill::Diplomacy)));
     else
-        res += ((10 - res) * 0.04f * GetSkillLevel(EvESkill::Connections));
+        res += ((10.0f - res) * (0.04f * GetSkillLevel(EvESkill::Connections)));
     return res;
 }
 
 float Character::GetNPCCorpStanding(uint32 fromID, uint32 toID) {
+    if (toID == 0)
+        toID = m_itemID;
     float res = StandingDB::GetStanding(fromID, toID);
     if (res < 0.0f)
-        res += ((10 + res) * 0.04f * GetSkillLevel(EvESkill::Diplomacy));
+        res += ((10.0f + res) * (0.04f * GetSkillLevel(EvESkill::Diplomacy)));
     else
-        res += ((10 - res) * 0.04f * GetSkillLevel(EvESkill::Connections));
+        res += ((10.0f - res) * (0.04f * GetSkillLevel(EvESkill::Connections)));
     return res;
-}
-
-float Character::GetStandingChanges() {
-	return s_db.GetStandingChanges(m_itemID);
 }
 
 void Character::SetStanding(uint32 fromID, uint32 toID, float standing) {

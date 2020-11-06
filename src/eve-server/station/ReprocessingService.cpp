@@ -156,10 +156,9 @@ PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &cal
     Rsp_GetOptionsForItemTypes      rsp;
     Rsp_GetOptionsForItemTypes_Arg  arg;
 
-    // this data may be in static...nope.  and not sure i can do this better....
     for (auto cur : args.typeIDs) {
-        arg.isRecyclable = m_db.IsRecyclable(cur.first);
-        arg.isRefinable = m_db.IsRefinable(cur.first);
+        arg.isRecyclable = sDataMgr.IsRecyclable(cur.first);
+        arg.isRefinable = sDataMgr.IsRefinable(cur.first);
         rsp.typeIDs[cur.first] = arg.Encode();
     }
 
@@ -225,7 +224,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
     if (args.ownerID == 0)  // should never hit.
         args.ownerID = call.client->GetCharacterID();
 
-    if (args.flag == flagAutoFit)  // should never hit.
+    if (args.flag == flagNone)  // should never hit.
         args.flag = flagHangar;
 
     if (args.ownerID == call.client->GetCorporationID()) {
@@ -269,7 +268,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             if (quantity == 0)
                 continue;
 
-            ItemData idata(itr->typeID, args.ownerID, locTemp, flagAutoFit, quantity);
+            ItemData idata(itr->typeID, args.ownerID, locTemp, flagNone, quantity);
             InventoryItemRef iRef2 = sItemFactory.SpawnItem( idata );
             if (iRef2.get() == nullptr)
                 continue;
@@ -340,6 +339,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
             return nullptr;
         }
 
+        // this throw "access denied to bom hangar" on error.  probably wrong for this application
         sRamMthd.LocationRolesCheck(pClient, iRef->flag());
     } else if (iRef->ownerID() != pClient->GetCharacterID()) {
         _log(SERVICE__ERROR, "Character %u tried to reprocess item %u of character %u.", pClient->GetCharacterID(), iRef->itemID(), iRef->ownerID());
@@ -380,15 +380,16 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     return quote.Encode();
 }
 
+/** @todo  should this be moved to standings code?  */
 float ReprocessingServiceBound::GetStanding(const Client* pClient) const
 {
-    float standing = pClient->GetChar()->GetStanding(m_stationCorpID, pClient->GetCharacterID());
+    float standing = StandingDB::GetStanding(m_stationCorpID, pClient->GetCharacterID());
     if (standing < 0.0f)
         standing += ((10.0f +standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Diplomacy));
     else
         standing += ((10.0f -standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Connections));
 
-    return EvE::max(standing, pClient->GetChar()->GetStanding(m_stationCorpID, pClient->GetCorporationID()));
+    return EvE::max(standing, StandingDB::GetStanding(m_stationCorpID, pClient->GetCorporationID()));
 }
 
 float ReprocessingServiceBound::CalcTax(float standing) const {
@@ -398,3 +399,4 @@ float ReprocessingServiceBound::CalcTax(float standing) const {
         tax = 0.0f;
     return tax;
 }
+

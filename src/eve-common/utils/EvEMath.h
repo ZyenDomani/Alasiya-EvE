@@ -31,39 +31,39 @@ namespace EvEMath {
     }
 
     namespace RAM {
-        uint32 ProductionTime( uint32 BaseProductionTime, float ProductivityModifier, float ProductionLevel, float ProductionTimeModifier );
+        int32 CopyTime(uint16 BaseTime, uint8 ScienceLevel, float SlotModifier=1, float ImplantModifier=1);
+        int32 InventionTime(uint32 BaseTime, uint8 AdvLabLevel, float SlotModifier = 1, float ImplantModifier = 1);
+        int32 ProductionTime(uint32 BaseTime, float bpProductivityModifier, float ProductionLevel, float TimeModifier=1);
+        int32 ME_ResearchTime(uint32 BaseTime, uint8 MetallurgyLevel, float SlotModifier=1, float ImplantModifier=1);
+        int32 PE_ResearchTime(uint32 BaseTime, uint8 ResearchLevel, float SlotModifier=1, float ImplantModifier=1);
+        int32 RE_ResearchTime(uint32 BaseTime, uint8 ResearchLevel, float SlotModifier=1, float ImplantModifier=1);
 
-        float ProductionTimeModifier( uint8 IndustrySkillLevel, float ProductionSlotModifier=1, float ImplantModifier=1);
-        float ME_EffectOnWaste( float MaterialAmount, float BaseWasteFactor, float MaterialEfficiency );
-        float ResearchPointsPerDay( float Multiplier, float AgentEffectiveQuality, uint8 CharSkillLevel, uint8 AgentSkillLevel );
-        float BpCopyTime( uint16 BaseCopyTime, uint8 ScienceLevel, float CopySlotModifier, float ImplantModifier=1 );
+        float ME_EffectOnWaste(float MaterialAmount, float BaseWasteFactor, float MaterialEfficiency);
+        float ResearchPointsPerDay(float Multiplier, float AgentEffectiveQuality, uint8 CharSkillLevel, uint8 AgentSkillLevel );
 
-        uint32 PerfectME( uint32 MaterialAmount, uint8 BaseWasteFactor );
+        uint32 PerfectME(uint32 MaterialAmount, uint8 BaseWasteFactor);
 
-        EvilNumber WasteSkillBased( EvilNumber MaterialAmount, EvilNumber ProductionEfficiency );
-        EvilNumber ME_ResearchTime( EvilNumber BlueprintBaseResearchTime, EvilNumber MetallurgySkillLevel, EvilNumber ResearchSlotModifier, EvilNumber ImplantModifier );
-        EvilNumber PE_ResearchTime( EvilNumber BlueprintBaseResearchTime, EvilNumber ResearchSkillLevel, EvilNumber ResearchSlotModifier, EvilNumber ImplantModifier );
-        EvilNumber BlueprintInventionTime( EvilNumber BlueprintBaseInventionTime, EvilNumber InventionSlotModifier, EvilNumber ImplantModifier );
-        EvilNumber BlueprintInventionChance( EvilNumber BaseChance, EvilNumber EncryptionSkillLevel, EvilNumber DataCore1SkillLevel, EvilNumber DataCore2SkillLevel, EvilNumber MetaLevel, EvilNumber DecryptorModifier );
+        float WasteSkillBased(uint32 MaterialAmount, float ProductionEfficiency);
+        float InventionChance(float BaseChance, uint8 EncryptionLevel, uint8 DataCore1SkillLevel, uint8 DataCore2SkillLevel, uint8 MetaLevel, float DecryptorModifier );
     }
 
     namespace Refine {
-        float StationTaxesForReprocessing( float CharacterStandingWithStationOwner );
-        float EffectiveRefiningYield( float StationEquipmentYield, uint8 RefiningSkillLevel, uint8 RefiningEfficiencySkillLevel, uint8 OreProcessingSkillLevel );
+        float StationTaxesForReprocessing(float CharacterStandingWithStationOwner);
+        float EffectiveRefiningYield(float EquipmentYield, uint8 RefiningLevel, uint8 RefiningEfficiencyLevel=9, uint8 OreProcessingLevel=0);
     }
 
     namespace Agent {
-        float EffectiveQuality( int8 AgentQuality, uint8 NegotiationSkillLevel, float AgentPersonalStanding );
-        float EffectiveStanding( float YourStanding, double standingBonus );
-        float RequiredStanding( uint8 AgentLevel, int8 AgentQuality );
-        float MissionStandingIncrease( float BaseMissionIncrease, uint8 YourSocialSkillLevel );
-        float Efficiency( uint8 AgentLevel, int8 AgentQuality );
+        float EffectiveQuality(int8 AgentQuality, uint8 NegotiationSkillLevel, float AgentPersonalStanding);
+        float EffectiveStanding(float YourStanding, double standingBonus);
+        float RequiredStanding(uint8 AgentLevel, int8 AgentQuality);
+        float MissionStandingIncrease( float BaseMissionIncrease, uint8 YourSocialSkillLevel);
+        float Efficiency(uint8 AgentLevel, int8 AgentQuality);
         float AgentStandingIncrease(float CurrentStanding, float PercentIncrease);
         float GetStandingBonus(float fromStanding, uint32 fromFactionID, uint8 ConnectionsSkillLevel, uint8 DiplomacySkillLevel, uint8 CriminalConnectionsSkillLevel);
     }
 
     namespace Market {
-        float BrokerFee( uint8 brSkillLvl, float fStanding, float cStanding );
+        float BrokerFee(uint8 brSkillLvl, float fStanding, float cStanding);
         float RelistFee(float oldPrice, float newPrice, float brokerPercent=0.01, float discount=0);
         float SalesTax(uint8 accountingLvl=0, uint8 taxEvasionLvl=0);
     }
@@ -98,10 +98,6 @@ namespace EvEMath {
          *        return (D, P)
          */
     }
-
-    EvilNumber EffectiveAttribute( EvilNumber BaseAttribute, EvilNumber ImplantAttributeBonus );
-    EvilNumber TargetingLockTime( EvilNumber YourEffectiveScanResolution, EvilNumber TargetEffectiveSignatureRadius );
-    EvilNumber AlignTimeInSeconds( EvilNumber inertia, EvilNumber Mass );
 
 }
 

@@ -43,7 +43,7 @@ protected:
     void                Populate();
 
 private:
-    PyObjectEx*                      m_factionStandings;
+    PyObjectEx*         m_factionStandings;
 
 };
 

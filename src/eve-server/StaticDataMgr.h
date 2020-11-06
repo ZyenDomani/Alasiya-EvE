@@ -105,7 +105,8 @@ public:
     PyDict*             GetBPMatlData(uint16 typeID);   //this is called on EVERY "show info" of a blueprint
     void                GetBpTypeData(uint16 typeID, EvERam::bpTypeData& tData);
 
-    uint32              GetCorpID(uint32 factionID);
+    uint32              GetFactionCorp(uint32 factionID);
+    uint32              GetCorpFaction(uint32 corpID);
     uint32              GetRaceFaction(uint8 raceID);
     uint8               GetFactionRace(uint32 factionID);
     std::string         GetCorpName(uint32 corpID);
@@ -154,6 +155,7 @@ private:
     std::map<uint32, uint32>                            m_ratRegions;       // regionID/ratFactionID
     std::map<uint32, SystemData>                        m_systemData;       // systemID/data
     std::map<uint32, uint32>                            m_agentSystem;      // agentID/systemID
+    std::map<uint32, uint32>                            m_corpFaction;      // corpID/factionID
     std::map<uint32, uint8>                             m_stationCount;     // systemID/count
     std::map<uint32, std::vector<uint32>>               m_stationList;      // systemID/data<stationID>
     std::map<uint32, uint32>                            m_stationRegion;    // stationID/regionID

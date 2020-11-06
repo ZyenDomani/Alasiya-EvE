@@ -38,8 +38,6 @@ class ReprocessingDB
 : public ServiceDB
 {
 public:
-    bool IsRefinable(const uint32 typeID);
-    bool IsRecyclable(const uint32 typeID);
     bool GetRecoverables(const uint32 typeID, std::vector<Recoverable> &into);
 };
 

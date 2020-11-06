@@ -47,7 +47,6 @@ protected:
 
     PyCallable_DECL_CALL(GetSecurityRating);
     PyCallable_DECL_CALL(GetMyKillRights);
-    PyCallable_DECL_CALL(GetMyStandings);
     PyCallable_DECL_CALL(GetCharStandings);
     PyCallable_DECL_CALL(GetCorpStandings);
     PyCallable_DECL_CALL(GetNPCNPCStandings);
@@ -60,9 +59,7 @@ protected:
 /*
 (235078, `Standing Decay`)
 (235079, `All standings decay by a certain amount on a regular basis.
-
-An exception to this rule is made for players that haven't logged in
-recently.`)
+An exception to this rule is made for players that haven't logged in recently.`)
 (235080, `Derived Modification`)
 (235081, `{name} was pleased by actions on you performed for {name}'s friends, or against {name}'s enemies`)
 (235082, `Derived Modification`)

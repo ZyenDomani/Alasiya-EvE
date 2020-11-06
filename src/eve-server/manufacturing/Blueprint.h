@@ -58,10 +58,10 @@ public:
     uint32                 productivityModifier() const { return m_data.productivityModifier; }
     uint32             researchProductivityTime() const { return m_data.researchProductivityTime; }
     uint16                parentBlueprintTypeID() const { return (m_parentBlueprintType == nullptr ? 0 : parentBlueprintType()->id()); }
-    float            chanceOfReverseEngineering() const { return m_data.chanceOfReverseEngineering; }
+    float            chanceOfRE() const { return m_data.chanceOfRE; }
 
 protected:
-    BlueprintType(uint16 _id, const TypeData& _data,
+    BlueprintType(uint16 _id, const Inv::TypeData& _data,
                   const BlueprintType *_parentBlueprintType, const ItemType& _productType,
                   const EvERam::bpTypeData& _tData);
 
@@ -72,12 +72,12 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_LoadType(uint16 typeID, const TypeData& data)  {
+    static _Ty *_LoadType(uint16 typeID, const Inv::TypeData& data)  {
         // check if we are really loading a blueprint
         Inv::GrpData gdata = Inv::GrpData();
         sDataMgr.GetGroup(data.groupID, gdata);
         if (gdata.catID != EVEDB::invCategories::Blueprint ) {
-            _log( ITEM__ERROR, "Trying to load %s as CharacterType.", sDataMgr.GetCategoryName(gdata.catID));
+            _log( ITEM__ERROR, "Trying to load %s as BlueprintType.", sDataMgr.GetCategoryName(gdata.catID));
             return nullptr;
         }
 
@@ -98,7 +98,7 @@ protected:
         if (productType == nullptr)
             return nullptr;
 
-        return new BlueprintType(typeID, data, parentBlueprintType, *productType, tData );
+        return new BlueprintType(typeID, data, parentBlueprintType, *productType, tData);
     }
 
     /*
@@ -129,9 +129,7 @@ public:
     static BlueprintRef     Load( uint32 blueprintID);
     static BlueprintRef     Spawn( ItemData& data, EvERam::bpData& bdata);
 
-    /*
-     * Public fields:
-     */
+    // query methods
     const BlueprintType&    type()                const { return m_bpType; }
     const ItemType&         productType()         const { return m_bpType.productType(); }
     uint32                  productTypeID()       const { return m_bpType.productTypeID(); }
@@ -139,19 +137,20 @@ public:
     int32                   mLevel()                    { return m_data.mLevel; }
     int32                   pLevel()                    { return m_data.pLevel; }
     int32                   runs()                      { return m_data.runs; }
+    float                   GetPE()                     { return m_data.pLevel / (1 + m_data.pLevel); }
+    float                   GetME();
 
-    // some blueprint-related stuff
-    void                    UpdateME(int32 change)      { m_data.mLevel += change;}
-    void                    UpdatePE(int32 change)      { m_data.pLevel += change;}
-    void                    UpdateRuns(int32 change)    { m_data.runs += change;}
 
+    // setting methods
     void                    SetME(int32 me)             { m_data.mLevel = me; }
     void                    SetPE(int32 pe)             { m_data.pLevel = pe; }
     void                    SetCopy(bool copy)          { m_data.copy = copy; }
     void                    SetRuns(int32 runs)         { m_data.runs = runs; }
 
-    float                   GetPE()                     { return m_data.pLevel / (1 + m_data.pLevel); }
-    float                   GetME();
+    // update methods
+    void                    UpdateME(int32 change)      { m_data.mLevel += change;}
+    void                    UpdatePE(int32 change)      { m_data.pLevel += change;}
+    void                    UpdateRuns(int32 change)    { m_data.runs += change;}
 
     // is this used?  should it be?
     bool                    infinite()                  { return (m_data.runs < 0); }

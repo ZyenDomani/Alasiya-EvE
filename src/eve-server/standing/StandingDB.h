@@ -41,13 +41,13 @@ public:
     static PyObjectEx* GetFactionStandings();
     PyRep* GetCorpStandings(Client* pClient);
     PyRep* GetCharStandings(Client* pClient);
-    PyRep* GetSystemSovInfo(uint32 systemID);
+    static PyRep* GetSystemSovInfo(uint32 systemID);
     PyRep* PrimeCharStandings(uint32 charID);
     PyRep* GetCharNPCStandings(uint32 charID);
-    PyRep* GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint16 eventID=0, uint16 eventType=0, int64 eventDateTime=0);
+    PyRep* GetStandingTransactions(Call_GetStandingTransactions &args);
     PyRep* GetStandingCompositions(uint32 fromID, uint32 toID);
 
-    float GetStandingChanges(uint32 charID);
+
     /*  all standings are in same table now, but follow identical rules
      * from agents to characters and player corps. changed by missions status'
      * corporation<-->alliance, alliance<-->alliance - changed thru Corp window

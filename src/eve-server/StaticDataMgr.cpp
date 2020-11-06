@@ -20,7 +20,7 @@
 #include "system/SystemManager.h"
 
 /*
- * DATA__ERROR          # specific "*data not found but should be there" msgs
+ * DATA__ERROR          # specific "data not found but should be there" msgs
  * DATA__WARNING        # misc "data not found but nbd" msgs
  * DATA__MESSAGE        # misc data msgs (mt)
  * DATA__INFO           # data loading msgs (container and amount) (mt)
@@ -44,6 +44,7 @@ m_npcDivisions(nullptr)
     m_staticData.clear();
     m_salvageMap.clear();
     m_agentSystem.clear();
+    m_corpFaction.clear();
     m_typeAttrMap.clear();
     m_LootGroupMap.clear();
     m_stationCount.clear();
@@ -95,6 +96,7 @@ void StaticDataMgr::Clear()
     m_staticData.clear();
     m_salvageMap.clear();
     m_agentSystem.clear();
+    m_corpFaction.clear();
     m_typeAttrMap.clear();
     m_stationCount.clear();
     m_stationConst.clear();
@@ -169,6 +171,14 @@ void StaticDataMgr::Populate()
     DBResultRow row;
 
     startTime = GetTimeMSeconds();
+    ManagerDB::LoadNPCCorpFactionData(*res);
+    while (res->GetRow(row)) {
+        //SELECT corporationID, factionID FROM crpNPCCorporations
+        m_corpFaction.emplace(row.GetUInt(0), row.GetUInt(1));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u NPC Corp Faction map loaded in %.3fms.", m_corpFaction.size(), (GetTimeMSeconds() - startTime));
+
+    startTime = GetTimeMSeconds();
     ManagerDB::GetCategoryData(*res);
     while (res->GetRow(row)) {
         //SELECT categoryID, categoryName, description, published FROM invCategories
@@ -210,20 +220,20 @@ void StaticDataMgr::Populate()
         data.groupID = row.GetUInt(1);
         data.name = row.GetText(2);
         data.description = row.GetText(3);
-        data.radius = row.GetDouble(4);
-        data.mass = row.GetDouble(5);
-        data.volume = row.GetDouble(6);
-        data.capacity = row.GetDouble(7);
+        data.radius = row.GetFloat(4);
+        data.mass = row.GetFloat(5);
+        data.volume = row.GetFloat(6);
+        data.capacity = row.GetFloat(7);
         data.portionSize = row.GetUInt(8);
-        data.race = (row.IsNull(9) ? 0 : row.GetUInt(9));
+        data.race = row.GetUInt(9);
         data.basePrice = row.GetDouble(10);
         data.published = (sConfig.server.AllowNonPublished ? true : row.GetBool(11));
         data.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(12));
-        data.chanceOfDuplicating = row.GetDouble(13);
+        data.chanceOfDuplicating = row.GetFloat(13);
 
         // these will take a bit of work, but will eliminate multiple db hits on inventory/menu loading ingame
-        data.isRecyclable = FactoryDB::IsRecyclable(data.id);
-        data.isRefinable = FactoryDB::IsRefinable(data.id);
+        data.isRecyclable = FactoryDB::IsRecyclable(data.id);   // +30s to startup
+        data.isRefinable = FactoryDB::IsRefinable(data.id);     // +8s to startup
 
         m_typeData.emplace(row.GetUInt(0), data);
     }
@@ -367,7 +377,7 @@ void StaticDataMgr::Populate()
             bpTypeData.materialModifier         = row.GetInt(10);
             bpTypeData.wasteFactor              = row.GetInt(11);
             bpTypeData.maxProductionLimit       = row.GetInt(12);
-            bpTypeData.chanceOfReverseEngineering = row.GetFloat(13);
+            bpTypeData.chanceOfRE = row.GetFloat(13);
             bpTypeData.catID                    = row.GetInt(14);
         m_bpTypeData.emplace(row.GetInt(0), bpTypeData);
     }
@@ -1356,7 +1366,7 @@ uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
     return 5;
 }
 
-uint32 StaticDataMgr::GetCorpID(uint32 factionID)
+uint32 StaticDataMgr::GetFactionCorp(uint32 factionID)
 {
     switch (factionID) {
         case factionAngel:          return corpArchangels;
@@ -1406,7 +1416,20 @@ std::string StaticDataMgr::GetCorpName(uint32 corpID)
         case corpRogueDrones:       return "Rogue Drones";
     }
 
+    _log(DATA__ERROR, "Name not found for corp %u", corpID);
     return "Undefined - WIP";
+}
+
+uint32 StaticDataMgr::GetCorpFaction(uint32 corpID)
+{
+    std::map<uint32, uint32>::iterator itr = m_corpFaction.find(corpID);
+    if (itr != m_corpFaction.end())
+        return itr->second;
+
+    if (IsNPCCorp(corpID))
+        _log(DATA__ERROR, "Faction not found for NPC corp %s", GetCorpName(corpID).c_str());
+
+    return 0;
 }
 
 std::string StaticDataMgr::GetFactionName(uint32 factionID)
@@ -1511,121 +1534,121 @@ const char* StaticDataMgr::GetFlagName(uint16 flag)
 const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
 {
     switch (flag) {
-        case flagAutoFit:                               return "AutoFit";
-        case flagWallet:                                return "Wallet";
-        case flagFactory:                               return "Factory";
-        case flagWardrobe:                              return "Wardrobe";
-        case flagHangar:                                return "Hangar";
-        case flagCargoHold:                             return "Cargo Hold";
-        case flagBriefcase:                             return "Briefcase";
-        case flagSkill:                                 return "Skill";
-        case flagReward:                                return "Reward";
-        case flagConnected:                             return "Connected";
-        case flagDisconnected:                          return "Disconnected";
-        case flagLowSlot0:                              return "First Low Slot";
-        case flagLowSlot1:                              return "Second Low Slot";
-        case flagLowSlot2:                              return "Third Low Slot";
-        case flagLowSlot3:                              return "Fourth Low Slot";
-        case flagLowSlot4:                              return "Fifth Low Slot";
-        case flagLowSlot5:                              return "Sixth Low Slot";
-        case flagLowSlot6:                              return "Seventh Low Slot";
-        case flagLowSlot7:                              return "Eighth Low Slot";
-        case flagMidSlot0:                              return "First Mid Slot";
-        case flagMidSlot1:                              return "Second Mid Slot";
-        case flagMidSlot2:                              return "Third Mid Slot";
-        case flagMidSlot3:                              return "Fourth Mid Slot";
-        case flagMidSlot4:                              return "Fifth Mid Slot";
-        case flagMidSlot5:                              return "Sixth Mid Slot";
-        case flagMidSlot6:                              return "Seventh Mid Slot";
-        case flagMidSlot7:                              return "Eighth Mid Slot";
-        case flagHiSlot0:                               return "First Hi Slot";
-        case flagHiSlot1:                               return "Second Hi Slot";
-        case flagHiSlot2:                               return "Third Hi Slot";
-        case flagHiSlot3:                               return "Fourth Hi Slot";
-        case flagHiSlot4:                               return "Fifth Hi Slot";
-        case flagHiSlot5:                               return "Sixth Hi Slot";
-        case flagHiSlot6:                               return "Seventh Hi Slot";
-        case flagHiSlot7:                               return "Eighth Hi Slot";
-        case flagFixedSlot:                             return "Fixed Slot";
-        case flagFactoryBlueprint:                      return "Factory Blueprint";
-        case flagFactoryMinerals:                       return "Factory Minerals";
-        case flagFactoryOutput:                         return "Factory Output";
-        case flagFactoryActive:                         return "Factory Active";
-        //case flagPromenadeSlot1:                        return "PromenadeSlot1";
-        case flagCapsule:                               return "Capsule";
-        case flagPilot:                                 return "Pilot";
-        case flagPassenger:                             return "Passenger";
-        case flagBoardingGate:                          return "Boarding Gate";
-        case flagCrew:                                  return "Crew";
-        case flagSkillInTraining:                       return "Skill In Training";
-        case flagCorpMarket:                            return "Corp Market";
-        case flagLocked:                                return "Locked";
-        case flagUnlocked:                              return "Unlocked";
-        case flagOffice:                                return "Office";
-        case flagImpounded:                             return "Impounded";
-        case flagProperty:                              return "Property";
-        case flagDelivery:                              return "Delivery";
-        case flagBonus:                                 return "Bonus";
-        case flagDroneBay:                              return "Drone Bay";
-        case flagBooster:                               return "Booster";
-        case flagImplant:                               return "Implant";
-        case flagShipHangar:                            return "Ship Hangar";
-        case flagShipOffline:                           return "Ship Offline";
-        case flagRigSlot0:                              return "First Rig Slot";
-        case flagRigSlot1:                              return "Second Rig Slot";
-        case flagRigSlot2:                              return "Third Rig Slot";
-        case flagRigSlot3:                              return "Fourth Rig Slot";
-        case flagRigSlot4:                              return "Fifth Rig Slot";
-        case flagRigSlot5:                              return "Sixth Rig Slot";
-        case flagRigSlot6:                              return "Seventh Rig Slot";
-        case flagRigSlot7:                              return "Eighth Rig Slot";
-        case flagFactoryOperation:                      return "FactoryOperation";
-        case flagCorpHangar2:                           return "CorpHangar2";
-        case flagCorpHangar3:                           return "CorpHangar3";
-        case flagCorpHangar4:                           return "CorpHangar4";
-        case flagCorpHangar5:                           return "CorpHangar5";
-        case flagCorpHangar6:                           return "CorpHangar6";
-        case flagCorpHangar7:                           return "CorpHangar7";
-        case flagSecondaryStorage:                      return "Secondary Storage";
-        case flagCaptainsQuarters:                      return "Captains Quarters";
-        case flagWisPromenade:                          return "Promenade";
-        //case flagWorldSpace:                          return "WorldSpace";
-        case flagSubSystem0:                            return "First SubSystem";
-        case flagSubSystem1:                            return "Second SubSystem";
-        case flagSubSystem2:                            return "Third SubSystem";
-        case flagSubSystem3:                            return "Fourth SubSystem";
-        case flagSubSystem4:                            return "Fifth SubSystem";
-        case flagSubSystem5:                            return "Sixth SubSystem";
-        case flagSubSystem6:                            return "Seventh SubSystem";
-        case flagSubSystem7:                            return "Eighth SubSystem";
-        case flagFuelBay:                               return "Fuel Bay";
-        case flagOreHold:                               return "Ore Hold";
-        case flagGasHold:                               return "Gas Hold";
-        case flagMineralHold:                           return "Mineral Hold";
-        case flagSalvageHold:                           return "Salvage Hold";
-        case flagShipHold:                              return "Ship Hold";
-        case flagSmallShipHold:                         return "Small Ship Hold";
-        case flagMediumShipHold:                        return "Medium Ship Hold";
-        case flagLargeShipHold:                         return "Large Ship Hold";
-        case flagIndustrialShipHold:                    return "Industrial Ship Hold";
-        case flagAmmoHold:                              return "Ammunition Hold";
-        case flagStructureActive:                       return "Structure Active";
-        case flagStructureInactive:                     return "Structure Inactive";
-        case flagJunkyardReprocessed:                   return "Junkyard Reprocessed";
-        case flagJunkyardTrashed:                       return "Junkyard Trashed";
-        case flagCommandCenterHold:                     return "Command Center Hold";
-        case flagPlanetaryCommoditiesHold:              return "Planetary Commodities Hold";
-        case flagPlanetSurface:                         return "Planet Surface";
-        case flagMaterialBay:                           return "Material Bay";
-        case flagDustCharacterBackpack:                 return "DustCharacterBackpack";
-        case flagDustCharacterBattle:                   return "DustCharacterBattle";
-        case flagQuafeBay:                              return "Quafe Bay";
-        case flagFleetHangar:                           return "Fleet Hangar";
-        case flagResearchFacilitySlotFirst:             return "ResearchFacilitySlotFirst";
-        case flagResearchFacilitySlotLast:              return "ResearchFacilitySlotLast";
-        case flagMissile:                               return "Missile";
-        case flagClone:                                 return "Clone";
-        case flagIllegal:                               return "Illegal";
+        case flagNone:                       return "AutoFit";
+        case flagWallet:                        return "Wallet";
+        case flagFactory:                       return "Factory";
+        case flagWardrobe:                      return "Wardrobe";
+        case flagHangar:                        return "Hangar";
+        case flagCargoHold:                     return "Cargo Hold";
+        case flagBriefcase:                     return "Briefcase";
+        case flagSkill:                         return "Skill";
+        case flagReward:                        return "Reward";
+        case flagConnected:                     return "Connected";
+        case flagDisconnected:                  return "Disconnected";
+        case flagLowSlot0:                      return "First Low Slot";
+        case flagLowSlot1:                      return "Second Low Slot";
+        case flagLowSlot2:                      return "Third Low Slot";
+        case flagLowSlot3:                      return "Fourth Low Slot";
+        case flagLowSlot4:                      return "Fifth Low Slot";
+        case flagLowSlot5:                      return "Sixth Low Slot";
+        case flagLowSlot6:                      return "Seventh Low Slot";
+        case flagLowSlot7:                      return "Eighth Low Slot";
+        case flagMidSlot0:                      return "First Mid Slot";
+        case flagMidSlot1:                      return "Second Mid Slot";
+        case flagMidSlot2:                      return "Third Mid Slot";
+        case flagMidSlot3:                      return "Fourth Mid Slot";
+        case flagMidSlot4:                      return "Fifth Mid Slot";
+        case flagMidSlot5:                      return "Sixth Mid Slot";
+        case flagMidSlot6:                      return "Seventh Mid Slot";
+        case flagMidSlot7:                      return "Eighth Mid Slot";
+        case flagHiSlot0:                       return "First Hi Slot";
+        case flagHiSlot1:                       return "Second Hi Slot";
+        case flagHiSlot2:                       return "Third Hi Slot";
+        case flagHiSlot3:                       return "Fourth Hi Slot";
+        case flagHiSlot4:                       return "Fifth Hi Slot";
+        case flagHiSlot5:                       return "Sixth Hi Slot";
+        case flagHiSlot6:                       return "Seventh Hi Slot";
+        case flagHiSlot7:                       return "Eighth Hi Slot";
+        case flagFixedSlot:                     return "Fixed Slot";
+        case flagFactoryBlueprint:              return "Factory Blueprint";
+        case flagFactoryMinerals:               return "Factory Minerals";
+        case flagFactoryOutput:                 return "Factory Output";
+        case flagFactoryActive:                 return "Factory Active";
+        //case flagPromenadeSlot1:                return "PromenadeSlot1";
+        case flagCapsule:                       return "Capsule";
+        case flagPilot:                         return "Pilot";
+        case flagPassenger:                     return "Passenger";
+        case flagBoardingGate:                  return "Boarding Gate";
+        case flagCrew:                          return "Crew";
+        case flagSkillInTraining:               return "Skill In Training";
+        case flagCorpMarket:                    return "Corp Market";
+        case flagLocked:                        return "Locked";
+        case flagUnlocked:                      return "Unlocked";
+        case flagOffice:                        return "Office";
+        case flagImpounded:                     return "Impounded";
+        case flagProperty:                      return "Property";
+        case flagDelivery:                      return "Delivery";
+        case flagBonus:                         return "Bonus";
+        case flagDroneBay:                      return "Drone Bay";
+        case flagBooster:                       return "Booster";
+        case flagImplant:                       return "Implant";
+        case flagShipHangar:                    return "Ship Hangar";
+        case flagShipOffline:                   return "Ship Offline";
+        case flagRigSlot0:                      return "First Rig Slot";
+        case flagRigSlot1:                      return "Second Rig Slot";
+        case flagRigSlot2:                      return "Third Rig Slot";
+        case flagRigSlot3:                      return "Fourth Rig Slot";
+        case flagRigSlot4:                      return "Fifth Rig Slot";
+        case flagRigSlot5:                      return "Sixth Rig Slot";
+        case flagRigSlot6:                      return "Seventh Rig Slot";
+        case flagRigSlot7:                      return "Eighth Rig Slot";
+        case flagFactoryOperation:              return "FactoryOperation";
+        case flagCorpHangar2:                   return "CorpHangar2";
+        case flagCorpHangar3:                   return "CorpHangar3";
+        case flagCorpHangar4:                   return "CorpHangar4";
+        case flagCorpHangar5:                   return "CorpHangar5";
+        case flagCorpHangar6:                   return "CorpHangar6";
+        case flagCorpHangar7:                   return "CorpHangar7";
+        case flagSecondaryStorage:              return "Secondary Storage";
+        case flagCaptainsQuarters:              return "Captains Quarters";
+        case flagWisPromenade:                  return "Promenade";
+        //case flagWorldSpace:                  return "WorldSpace";
+        case flagSubSystem0:                    return "First SubSystem";
+        case flagSubSystem1:                    return "Second SubSystem";
+        case flagSubSystem2:                    return "Third SubSystem";
+        case flagSubSystem3:                    return "Fourth SubSystem";
+        case flagSubSystem4:                    return "Fifth SubSystem";
+        case flagSubSystem5:                    return "Sixth SubSystem";
+        case flagSubSystem6:                    return "Seventh SubSystem";
+        case flagSubSystem7:                    return "Eighth SubSystem";
+        case flagFuelBay:                       return "Fuel Bay";
+        case flagOreHold:                       return "Ore Hold";
+        case flagGasHold:                       return "Gas Hold";
+        case flagMineralHold:                   return "Mineral Hold";
+        case flagSalvageHold:                   return "Salvage Hold";
+        case flagShipHold:                      return "Ship Hold";
+        case flagSmallShipHold:                 return "Small Ship Hold";
+        case flagMediumShipHold:                return "Medium Ship Hold";
+        case flagLargeShipHold:                 return "Large Ship Hold";
+        case flagIndustrialShipHold:            return "Industrial Ship Hold";
+        case flagAmmoHold:                      return "Ammunition Hold";
+        case flagStructureActive:               return "Structure Active";
+        case flagStructureInactive:             return "Structure Inactive";
+        case flagJunkyardReprocessed:           return "Junkyard Reprocessed";
+        case flagJunkyardTrashed:               return "Junkyard Trashed";
+        case flagCommandCenterHold:             return "Command Center Hold";
+        case flagPlanetaryCommoditiesHold:      return "Planetary Commodities Hold";
+        case flagPlanetSurface:                 return "Planet Surface";
+        case flagMaterialBay:                   return "Material Bay";
+        case flagDustCharacterBackpack:         return "DustCharacterBackpack";
+        case flagDustCharacterBattle:           return "DustCharacterBattle";
+        case flagQuafeBay:                      return "Quafe Bay";
+        case flagFleetHangar:                   return "Fleet Hangar";
+        case flagResearchFacilitySlotFirst:     return "ResearchFacilitySlotFirst";
+        case flagResearchFacilitySlotLast:      return "ResearchFacilitySlotLast";
+        case flagMissile:                       return "Missile";
+        case flagClone:                         return "Clone";
+        case flagIllegal:                       return "Illegal";
     }
     return "Undefined";
 }

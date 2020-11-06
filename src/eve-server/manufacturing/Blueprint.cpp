@@ -34,7 +34,7 @@
 /*
  * BlueprintType
  */
-BlueprintType::BlueprintType(uint16 _id, const TypeData& _data, const BlueprintType* _parentBlueprintType,
+BlueprintType::BlueprintType(uint16 _id, const Inv::TypeData& _data, const BlueprintType* _parentBlueprintType,
                              const ItemType& _productType, const EvERam::bpTypeData& _tData)
 : ItemType(_id, _data),
   m_parentBlueprintType(_parentBlueprintType),
@@ -134,13 +134,13 @@ bool Blueprint::Merge(InventoryItemRef itemRef, uint32 qty, bool notify) {
 }
 
 void Blueprint::SaveBlueprint() {
-    _log( MANUF__TRACE, "Saving blueprint %u.", itemID() );
-    FactoryDB::SaveBlueprintData(itemID(), m_data);
+    _log( MANUF__TRACE, "Saving blueprint %u.", m_itemID );
+    FactoryDB::SaveBlueprintData(m_itemID, m_data);
 }
 
 PyDict* Blueprint::GetBlueprintAttributes() {
     Rsp_GetBlueprintAttributes rsp;
-        rsp.blueprintID = itemID();
+        rsp.blueprintID = m_itemID;
         rsp.copy = m_data.copy;
         rsp.productivityLevel = m_data.pLevel;
         rsp.materialLevel = m_data.mLevel;
@@ -159,15 +159,13 @@ PyDict* Blueprint::GetBlueprintAttributes() {
 float Blueprint::GetME()
 {
     float bwf(m_bpType.wasteFactor());
-    bwf /= 100;
     if (m_data.mLevel < 0)
-        bwf *= (1 - m_data.mLevel);
+        bwf /= (-m_data.mLevel);
     else if (m_data.mLevel > 0)
-        bwf *= 1 / (1 + m_data.mLevel);
+        bwf /= (1 + m_data.mLevel);
+    bwf /= 100.0f;
     return bwf;
 }
-
-
 
 /*
                     if activity in (const.activityManufacturing, const.activityDuplicating):

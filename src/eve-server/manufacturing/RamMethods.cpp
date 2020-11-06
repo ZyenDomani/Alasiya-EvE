@@ -29,62 +29,60 @@
 static const uint32 RAM_PRODUCTION_TIME_LIMIT = 60*60*24*30;   //30 days
 
 /*
- *    UNKNOWN/NOT IMPLEMENTED EXCEPTIONS:
+ *    NOT IMPLEMENTED EXCEPTIONS:
  ************************************
  *    RamRemoteInstalledItemImpounded             - impound of installedItem
  *    RamInstallJob_InstalledItemChanged          - some cache expiration??
- *    RamInstalledItemMustBeInInstallation        - where to use?
- *    RamStationIsNotConstructed                  - station building not implemented
- *    RamAccessDeniedWrongAlliance                - alliances not implemented
  */
 
 
-void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& args, InventoryItemRef installedItem)
+void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& args, BlueprintRef bpRef)
 {
     const ItemType* pType(nullptr);
-    BlueprintRef bRef = BlueprintRef::StaticCast( installedItem );
-    if (bRef.get() == nullptr)
-        return;     // make error here
+    if (bpRef.get() == nullptr)
+        throw(PyException(MakeUserError("RamInventionNoOutput")));
 
     switch(args.activityID) {
         case EvERam::Activity::Manufacturing: {
-            if (!bRef->infinite() and (bRef->runs() - args.runs) < 0)
+            if (!bpRef->infinite() and (bpRef->runs() - args.runs) < 0)
                 throw(PyException(MakeUserError("RamTooManyProductionRuns")));
-            pType = &bRef->productType();
+            pType = &bpRef->productType();
         } break;
         case EvERam::Activity::ResearchMaterial:
         case EvERam::Activity::ResearchTime: {
-            if (bRef->copy())
+            if (bpRef->copy())
                 throw(PyException(MakeUserError("RamCannotResearchABlueprintCopy")));
-            pType = &bRef->type();
+            pType = &bpRef->type();
         } break;
         case EvERam::Activity::Copying: {
-            if (bRef->copy())
+            if (bpRef->copy())
                 throw(PyException(MakeUserError("RamCannotCopyABlueprintCopy")));
-            pType = &bRef->type();
+            pType = &bpRef->type();
         } break;
         case EvERam::Activity::Invention: {
-            if (!bRef->copy())
+            if (!bpRef->copy())
                 throw(PyException(MakeUserError("RamCannotInventABlueprintOriginal")));
 
-            uint32 pTypeID = FactoryDB::GetTech2Blueprint(installedItem->typeID());
+            uint32 pTypeID = FactoryDB::GetTech2Blueprint(bpRef->typeID());
             if (pTypeID == 0)
                 throw(PyException(MakeUserError("RamInventionNoOutput")));
 
-            pType = &bRef->productType();
+            pType = &bpRef->productType();
         }  break;
-        case EvERam::Activity::ReverseEngineering:  // RE is ONLY at expermential POS module...cannot do RE in stations.  right now, this will never hit.
+        case EvERam::Activity::ReverseEngineering:  // RE is ONLY at experimental POS module...cannot do RE in stations.  right now, this will never hit.
         case EvERam::Activity::ResearchTech:    // cannot find any reference to this.  not used?
         case EvERam::Activity::Duplicating:     // ancient pre-apoc 'copy' activity.  no longer used.
         default: {
             // not supported
             sLog.Error("RAM::InstallJob()", "Unsupported Activity %u sent by %s(%u).", args.activityID, pClient->GetName(), pClient->GetCharacterID());
             throw(PyException(MakeUserError("RamActivityInvalid")));
-            //throw(PyException(MakeUserError("RamNoKnownOutputType")));
         }
     }
 
-    if (!FactoryDB::IsProducableBy(args.installationAssemblyLineID, pType->groupID()))
+    if (pType == nullptr)
+        throw(PyException(MakeUserError("RamNoKnownOutputType")));
+
+    if (!FactoryDB::IsProducableBy(args.installationAssemblyLineID, pType))
         throw(PyException(MakeUserError("RamBadEndProductForActivity")));
 }
 
@@ -117,24 +115,29 @@ void RamMethods::JobsCheck(Character* pChar, const Call_InstallJob& args)
     }
 }
 
-void RamMethods::InstallationCheck(Client*const pClient, int32 installationContainerID)
+void RamMethods::InstallationCheck(Client*const pClient, int32 lineLocationID)
 {
-    uint32 regionID = sDataMgr.GetStationRegion(installationContainerID);
-    if (!IsRegion(regionID))
-        throw(PyException(MakeUserError("RamIsNotAnInstallation")));
+    if (IsStation(lineLocationID)) {
+        uint32 regionID = sDataMgr.GetStationRegion(lineLocationID);
+        if (!IsRegion(regionID))
+            throw(PyException(MakeUserError("RamIsNotAnInstallation")));
+        if (pClient->GetRegionID() != regionID)
+            throw(PyException(MakeUserError("RamRangeLimitationRegion")));
+    } else {
+        // get structure data and run tests
+        // RamStructureNotInSpace
+        // RamStructureNotIsSolarsystem
+    }
 
-    if (pClient->GetRegionID() != regionID)
-        throw(PyException(MakeUserError("RamRangeLimitationRegion")));
-
-    // RamStructureNotInSpace
-    // RamStructureNotIsSolarsystem
+    // check player skill for limits
     // RamRangeLimitation
     // RamRangeLimitationJumps
     // RamRangeLimitationJumpsNoSkill
 
     /*
-     *        jumpsPerSkillLevel = {0: -1,
-     *         1: 0,
+     *        jumpsPerSkillLevel =
+     *        {0: -1,   // station/structure
+     *         1: 0,    // system
      *         2: 5,
      *         3: 10,
      *         4: 20,
@@ -142,72 +145,83 @@ void RamMethods::InstallationCheck(Client*const pClient, int32 installationConta
      */
 }
 
-void RamMethods::AssemblyLineCheck(Client*const pClient, const Call_InstallJob& args)
+void RamMethods::LinePermissionCheck(Client*const pClient, const Call_InstallJob& args)
 {
-    uint32 ownerID = 0;
-    double minCharSec = 0, maxCharSec = 0;
-    int8 restrictionMask, activity;
-
     // get properties
-    if (!FactoryDB::GetAssemblyLineVerifyProperties(args.installationAssemblyLineID, ownerID, minCharSec, maxCharSec, restrictionMask, activity))
+    EvERam::LineRestrictions data = EvERam::LineRestrictions();
+    if (!FactoryDB::GetAssemblyLineRestrictions(args.installationAssemblyLineID, data))
         throw(PyException(MakeUserError("RamInstallationHasNoDefaultContent")));
 
     // check validity of activity
-    if (activity < EvERam::Activity::Manufacturing or activity > EvERam::Activity::Invention)
+    if (data.activityID < EvERam::Activity::Manufacturing or data.activityID > EvERam::Activity::Invention)
         throw(PyException(MakeUserError("RamAssemblyLineHasNoActivity")));
 
-    // check security rating if required
-    if ((restrictionMask & EvERam::RestrictionMask::BySecurity) == EvERam::RestrictionMask::BySecurity) {
-        if (minCharSec > pClient->GetSecurityRating())
-            throw(PyException(MakeUserError("RamAccessDeniedSecStatusTooLow")));
-
-        if (maxCharSec < pClient->GetSecurityRating())
-            throw(PyException(MakeUserError("RamAccessDeniedSecStatusTooHigh")));
-
-        // RamAccessDeniedCorpSecStatusTooHigh
-        // RamAccessDeniedCorpSecStatusTooLow
+    // verify corp roles
+    if (args.isCorpJob) {
+        int64 roles(pClient->GetCorpRole());
+        // check slot rental permissions first
+        if (args.activityID == EvERam::Activity::Manufacturing) {
+            if (roles & Corp::Role::CanRentFactorySlot != Corp::Role::CanRentFactorySlot)
+                throw(PyException(MakeUserError("RamCannotInstallWithoutRentFactorySlot")));
+        } else {
+            if (roles & Corp::Role::CanRentResearchSlot != Corp::Role::CanRentResearchSlot)
+                throw(PyException(MakeUserError("RamCannotInstallWithoutRentResearchSlot")));
+        }
+        if (roles & Corp::Role::FactoryManager != Corp::Role::FactoryManager)
+            throw(PyException(MakeUserError("RamCannotInstallForCorpByRoleFactoryManager")));
+        if (roles & Corp::Role::Director != Corp::Role::Director)
+            throw(PyException(MakeUserError("RamCannotInstallForCorpByRole")));
     }
 
-    // check standing if required
-    if ((restrictionMask & EvERam::RestrictionMask::ByStanding) == EvERam::RestrictionMask::ByStanding) {
-        // RamAccessDeniedCorpStandingTooLow
-        // RamAccessDeniedStandingTooLow
-    }
-    if ((restrictionMask & EvERam::RestrictionMask::ByAlliance) == EvERam::RestrictionMask::ByAlliance) {
-        if (ownerID != pClient->GetAllianceID())
+    // check usage restriction
+    if (data.rMask & EvERam::RestrictionMask::ByAlliance == EvERam::RestrictionMask::ByAlliance) {
+        if (data.ownerID != pClient->GetAllianceID())
             throw(PyException(MakeUserError("RamAccessDeniedWrongAlliance")));
     }
-    if ((restrictionMask & EvERam::RestrictionMask::ByCorp) == EvERam::RestrictionMask::ByCorp) {
-        if (ownerID != pClient->GetCorporationID())
+    if (data.rMask & EvERam::RestrictionMask::ByCorp == EvERam::RestrictionMask::ByCorp) {
+        if (data.ownerID != pClient->GetCorporationID())
             throw(PyException(MakeUserError("RamAccessDeniedWrongCorp")));
     }
 
-    //RamCannotInstallForCorpByRole     -- You cannot install this job for your corporation as you do not have the correct role to do so
-
-    if (args.isCorpJob) {
-        int64 roles = pClient->GetCorpRole();
-        if ((roles & Corp::Role::FactoryManager) != Corp::Role::FactoryManager)
-            throw(PyException(MakeUserError("RamCannotInstallForCorpByRoleFactoryManager")));
-        if (args.activityID == EvERam::Activity::Manufacturing) {
-            if ((roles & Corp::Role::CanRentFactorySlot) != Corp::Role::CanRentFactorySlot)
-                throw(PyException(MakeUserError("RamCannotInstallWithoutRentFactorySlot")));
+    // check standing
+    if (data.rMask & EvERam::RestrictionMask::ByStanding == EvERam::RestrictionMask::ByStanding) {
+        // get standings
+        if (args.isCorpJob) {
+            if (data.minStanding < StandingDB::GetStanding(data.ownerID, pClient->GetCorporationID()))
+                throw(PyException(MakeUserError("RamAccessDeniedCorpStandingTooLow")));
         } else {
-            if ((roles & Corp::Role::CanRentResearchSlot) != Corp::Role::CanRentResearchSlot)
-                throw(PyException(MakeUserError("RamCannotInstallWithoutRentResearchSlot")));
+            if (data.minStanding > pClient->GetChar()->GetStandingModified(data.ownerID))
+                throw(PyException(MakeUserError("RamAccessDeniedStandingTooLow")));
+        }
+    }
+
+    // check security rating
+    if (data.rMask & EvERam::RestrictionMask::BySecurity == EvERam::RestrictionMask::BySecurity) {
+        if (args.isCorpJob) {
+            /** @todo  corp secStatus????  didnt know that was a thing.  */
+            if (data.minCorpSec > pClient->GetChar()->corpSecRating())
+                throw(PyException(MakeUserError("RamAccessDeniedCorpSecStatusTooLow")));
+            if (data.maxCorpSec < pClient->GetChar()->corpSecRating())
+                throw(PyException(MakeUserError("RamAccessDeniedCorpSecStatusTooHigh")));
+        } else {
+            if (data.minCharSec > pClient->GetSecurityRating())
+                throw(PyException(MakeUserError("RamAccessDeniedSecStatusTooLow")));
+            if (data.maxCharSec < pClient->GetSecurityRating())
+                throw(PyException(MakeUserError("RamAccessDeniedSecStatusTooHigh")));
         }
     }
 }
 
-void RamMethods::ItemPermissionCheck(Client*const pClient, const Call_InstallJob& args, InventoryItemRef installedItem)
+void RamMethods::ItemPermissionCheck(Client*const pClient, const Call_InstallJob& args, BlueprintRef bpRef)
 {
-        // ownership
-        if (args.isCorpJob) {
-            if (installedItem->ownerID() != pClient->GetCorporationID())
-                throw(PyException(MakeUserError("RamCannotInstallItemForAnotherCorp")));
-        } else {
-            if (installedItem->ownerID() != pClient->GetCharacterID())
-                throw(PyException(MakeUserError("RamCannotInstallItemForAnother")));
-        }
+    // ownership
+    if (args.isCorpJob) {
+        if (bpRef->ownerID() != pClient->GetCorporationID())
+            throw(PyException(MakeUserError("RamCannotInstallItemForAnotherCorp")));
+    } else {
+        if (bpRef->ownerID() != pClient->GetCharacterID())
+            throw(PyException(MakeUserError("RamCannotInstallItemForAnother")));
+    }
 }
 
 void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& args, InventoryItemRef installedItem)
@@ -255,17 +269,20 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
         if (installedItem->locationID() != args.installationContainerID)
             throw(PyException(MakeUserError("RamInstalledItemMustBeInShip")));
     } else {
-        // this will be POS assembly modules and Outpost checks
-        // RamInstalledItemBadLocationStructure
-        // RamInstalledItemInStructureNotInContainer
-        // RamInstalledItemInStructureUnknownLocation
+        /* this will be POS assembly modules and Outpost checks
+        *  RamStationIsNotConstructed
+        *  RamInstalledItemMustBeInInstallation
+        *  RamInstalledItemBadLocationStructure
+        *  RamInstalledItemInStructureNotInContainer
+        *  RamInstalledItemInStructureUnknownLocation
+        */
         throw(PyException(MakeCustomError("R.A.M. at POS/Outpost not supported yet")));
     }
 }
 
 void RamMethods::LocationRolesCheck(Client* const pClient, int16 flagID)
 {
-    int64 roles = pClient->GetCorpRole();
+    int64 roles(pClient->GetCorpRole());
     if ((flagID == flagHangar and ((roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1))
     or  (flagID == flagCorpHangar2 and ((roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2))
     or  (flagID == flagCorpHangar3 and ((roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3))
@@ -295,15 +312,15 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
                 qtyNeeded = ceil(qtyNeeded * rsp.charMaterialMultiplier);
             std::map<uint16, InventoryItemRef>::iterator itr = items.find(cur.typeID);
             if (itr != items.end())
-                if (itr->second->typeID() == cur.typeID)
-                    if (itr->second->ownerID() == pClient->GetCharacterID()) {
-                        if (itr->second->quantity() < qtyNeeded)
-                            qtyNeeded -= itr->second->quantity();
-                        else
-                            qtyNeeded = 0;
-                    }
+                if (itr->second->typeID() == cur.typeID) {
+                    if (itr->second->quantity() < qtyNeeded)
+                        qtyNeeded -= itr->second->quantity();
+                    else
+                        qtyNeeded = 0;
+                }
 
             if (qtyNeeded) {
+                // should we test all items, or (as currently) throw on first error?
                 std::map<std::string, PyRep *> args;
                 args["item"] = new PyInt( cur.typeID );
                 throw(PyException(MakeUserError("RamNeedMoreForJob", args)));
@@ -322,140 +339,114 @@ void RamMethods::ProductionTimeCheck(uint32 productionTime)
     }
 }
 
-void RamMethods::CompleteJob(const Call_CompleteJob &args, Client* const pClient)
+void RamMethods::VerifyCompleteJob(const Call_CompleteJob &args, EvERam::JobProperties &data, Client* const pClient)
 {
     // this isnt entirely right....if job is installed in ship, receiver must be pilot in active ship to complete job.
     if (args.containerID == pClient->GetShipID())
         if (pClient->GetChar()->flag() != flagPilot)
             throw(PyException(MakeUserError("RamCompletionMustBeInShip")));
 
-    uint32 ownerID(0);
-    int64 endProductionTime(0);
-    int8 status(0), restrictionMask(0);
-    if (!FactoryDB::GetJobVerifyProperties(args.jobID, ownerID, endProductionTime, restrictionMask, status))
-        throw(PyException(MakeUserError("RamCompletionNoSuchJob")));
-
-    if (ownerID != pClient->GetCharacterID()) {
-        if (ownerID == pClient->GetCorporationID()) {
+    if (IsCorp(data.ownerID)) {
+        if (data.ownerID == pClient->GetCorporationID()) {
             if ((pClient->GetCorpRole() & Corp::Role::FactoryManager) != Corp::Role::FactoryManager)
                 throw(PyException(MakeUserError("RamCompletionAccessDeniedByCorpRole")));
         } else  // alliances not implemented
             throw(PyException(MakeUserError("RamCompletionAccessDenied")));
     }
 
-    if (status != EvERam::Status::InProgress)
+    if (data.status != EvERam::Status::InProgress)
         throw(PyException(MakeUserError("RamCompletionJobCompleted")));
 
-    if (!args.cancel and (endProductionTime > GetFileTimeNow()))
+    if (!args.cancel and (data.endTime > GetFileTimeNow()))
         throw(PyException(MakeUserError("RamCompletionInProduction")));
 }
 
-bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Character* pChar, Rsp_InstallJob &into)
+bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Character* pChar, Rsp_InstallJob &into)
 {
-    if (!FactoryDB::GetAssemblyLineProperties(args.installationAssemblyLineID, into))
+    // get line data
+    if (!FactoryDB::GetAssemblyLineProperties(args.installationAssemblyLineID, pChar, into, args.isCorpJob))
         return false;
+
+    // set char defaults
+    into.charTimeMultiplier = 1.0;
+    into.charMaterialMultiplier = 1.0;
 
     const ItemType* pType(nullptr);
     switch(args.activityID) {
         case EvERam::Activity::Manufacturing: {
-            BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
-            pType = &bp->productType();
-
-            into.materialMultiplier *= bp->GetME();
+            pType = &bpRef->productType();
+            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            into.materialMultiplier += bpRef->GetME();
             into.materialMultiplier *= sConfig.bpTimes.MatMod;
-
-            into.timeMultiplier *= (1.0f - (0.04f * pChar->GetSkillLevel(EvESkill::Industry)));
-            // into.timeMultiplier *= implant modifier here;
-
-            // these are all 1 in db (base)
-            into.charTimeMultiplier = pChar->GetAttribute(AttrManufactureTimeMultiplier).get_float();
-
-            // these arent in db...
-            /*
-            switch(pType->race()) {
-                case Char::Race::Caldari: {
-                    if (pChar->HasAttribute(AttrCaldariTechTimePercent))
-                        into.charTimeMultiplier *= (pChar->GetAttribute(AttrCaldariTechTimePercent).get_float() /100);
-                } break;
-                case Char::Race::Minmatar:{
-                    if (pChar->HasAttribute(AttrMinmatarTechTimePercent))
-                        into.charTimeMultiplier *= (pChar->GetAttribute(AttrMinmatarTechTimePercent).get_float() / 100);
-                } break;
-                case Char::Race::Amarr: {
-                    if (pChar->HasAttribute(AttrAmarrTechTimePercent))
-                        into.charTimeMultiplier *= (pChar->GetAttribute(AttrAmarrTechTimePercent).get_float() / 100);
-                } break;
-                case Char::Race::Gallente: {
-                    if (pChar->HasAttribute(AttrGallenteTechTimePercent))
-                        into.charTimeMultiplier *= (pChar->GetAttribute(AttrGallenteTechTimePercent).get_float() / 100);
-                } break;
-                case Char::Race::Jove:
-                case Char::Race::Pirate:
-                    // unknown
-                default: {
-                } break;
-            }
-            */
-
-            if (into.charTimeMultiplier == 0)
-                into.charTimeMultiplier = 1.0;
-            into.productionTime = EvEMath::RAM::ProductionTime(bp->type().productionTime(), bp->type().productivityModifier(),
-                                                               bp->pLevel(), into.timeMultiplier);
-            into.productionTime *= args.runs;
+            into.charTimeMultiplier *= (1.0f - (0.04f * pChar->GetSkillLevel(EvESkill::Industry)));
+            into.productionTime = EvEMath::RAM::ProductionTime(bpRef->type().productionTime(), bpRef->type().productivityModifier(),
+                                                               bpRef->pLevel(), into.timeMultiplier);
+            // modify base time by char multiplier
+            into.productionTime *= into.charTimeMultiplier;
+            // if time modifier is set in config, apply that now
             into.productionTime *= sConfig.bpTimes.ProdTime;
+        } break;
+        case EvERam::Activity::ResearchMaterial: {
+            pType = &bpRef->type();
+            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            into.productionTime = EvEMath::RAM::ME_ResearchTime(bpRef->type().researchMaterialTime(),
+                                                                pChar->GetSkillLevel(EvESkill::Metallurgy), into.timeMultiplier
+                                                                /*implant modifier here*/);
+            into.productionTime *= sConfig.bpTimes.ResME;
+            into.charTimeMultiplier *= pChar->GetAttribute(AttrMineralNeedResearchSpeed).get_float();
         }  break;
         case EvERam::Activity::ResearchTime: {
-            BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
-            pType = &installedItem->type();
-            //TODO  implement PE_ResearchTime here
-            into.productionTime = bp->type().researchProductivityTime();
+            pType = &bpRef->type();
+            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            //ch->GetAttribute(AttrResearchCostPercent).get_int();   << this is not used
+
+            into.productionTime = EvEMath::RAM::PE_ResearchTime(bpRef->type().researchProductivityTime(),
+                                                                pChar->GetSkillLevel(EvESkill::Research), into.timeMultiplier
+                                                                /*implant modifier here*/);
             into.productionTime *= sConfig.bpTimes.ResPE;
-            into.charTimeMultiplier = pChar->GetAttribute(AttrManufacturingTimeResearchSpeed).get_double();
-        }  break;
-        case EvERam::Activity::ResearchMaterial: {
-            BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
-            pType = &installedItem->type();
-            //TODO  implement ME_ResearchTime here
-            into.productionTime = bp->type().researchMaterialTime();
-            into.productionTime *= sConfig.bpTimes.ResME;
-            into.charTimeMultiplier = pChar->GetAttribute(AttrMineralNeedResearchSpeed).get_double();
+            into.charTimeMultiplier *= pChar->GetAttribute(AttrManufacturingTimeResearchSpeed).get_float();
         }  break;
         case EvERam::Activity::Copying: {
-            BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
-            pType = &installedItem->type();
-            // no ceil() here on purpose
-            into.productionTime = EvEMath::RAM::BpCopyTime(bp->type().researchCopyTime(),
-                                                           pChar->GetSkillLevel(EvESkill::Science), into.timeMultiplier);
+            pType = &bpRef->type();
+            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            into.productionTime = EvEMath::RAM::CopyTime(bpRef->type().researchCopyTime(),
+                                                         pChar->GetSkillLevel(EvESkill::Science), into.timeMultiplier
+                                                         /*implant modifier here*/);
             into.productionTime *= sConfig.bpTimes.CopyTime;
-            into.charTimeMultiplier = pChar->GetAttribute(AttrCopySpeedPercent).get_double();
+            into.charTimeMultiplier *= pChar->GetAttribute(AttrCopySpeedPercent).get_float();
+            //bpRef->type().chanceOfDuplicating();
         }  break;
-        case EvERam::Activity::ReverseEngineering:
-            into.productionTime *= sConfig.bpTimes.ResRE;
-        case EvERam::Activity::Invention:
+        case EvERam::Activity::Invention: {
+            pType = &bpRef->type();
+            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            into.productionTime = EvEMath::RAM::InventionTime(bpRef->type().researchTechTime(),
+                                                              pChar->GetSkillLevel(EvESkill::AdvancedLaboratoryOperation),
+                                                              into.timeMultiplier
+                                                              /*implant modifier here*/);
             into.productionTime *= sConfig.bpTimes.Invent;
-        case EvERam::Activity::Duplicating:
-        default: {
-            pType = &installedItem->type();
-            into.charTimeMultiplier = 1.0;
-        }  break;
+        } break;
+        case EvERam::Activity::ReverseEngineering: {
+            pType = &bpRef->type();
+            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            // base research time for RE is one hour
+            into.productionTime = 3600; // in seconds
+            into.productionTime *= sConfig.bpTimes.ResRE;
+            //bpRef->type().chanceOfRE();
+        } break;
     }
 
-    FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType->groupID(), into.materialMultiplier, into.timeMultiplier);
-
-    // calculate the remaining things
-    into.charMaterialMultiplier = 1.0; //ch->GetAttribute(AttrResearchCostPercent).get_int();   << this is not used
-    into.usageCost *= ceil(into.productionTime / 3600.0);
+    // calculate cost
+    into.usageCost *= ceil(into.productionTime / 3600.0f);
     into.cost = into.installCost + into.usageCost;
+    // multiply single run time by run count for total time
+    into.productionTime *= args.runs;
 
-    // I "hope" this is right, simply tells client how soon the job will be started
-    // Unfortunately, rounding done on client's side causes showing "Start time: 0 seconds" when he has to wait less than minute
-    // I have no idea how to avoid this ...
     into.maxJobStartTime = FactoryDB::GetNextFreeTime(args.installationAssemblyLineID);
 
     return true;
 }
 
-void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &reqItems, double materialMultiplier, double charMaterialMultiplier, uint32 runs, BillOfMaterials &into)
+void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &reqItems, float materialMultiplier, float charMaterialMultiplier, uint32 runs, BillOfMaterials &into)
 {
     PySafeDecRef( into.extras.lines );
     into.extras.lines = new PyList();
@@ -496,19 +487,18 @@ void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &
     }
 }
 
-void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> &reqItems, const PathElement &bomLocation, Client *const pClient, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map<int32, PyRep *> &into) {
+void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> &reqItems, const PathElement &bomLocation, Client *const pClient, float materialMultiplier, float charMaterialMultiplier, int32 runs, std::map<int32, PyRep *> &into) {
     //
     std::vector<InventoryItemRef> skills, items;
 
     //get the skills
     pClient->GetChar()->GetMyInventory()->GetItemsByFlag(flagSkill, skills);
-    pClient->GetChar()->GetMyInventory()->GetItemsByFlag(flagSkillInTraining, skills);
 
     //get the items
     GetBOMItems( bomLocation, items );
 
     //now do the check
-    uint32 qtyReq = 0;
+    uint32 qtyReq(0);
     for (auto cur : reqItems) {
         qtyReq = cur.quantity;
         if (!cur.isSkill) {
@@ -555,25 +545,17 @@ void RamMethods::GetBOMItemsMap(const PathElement& bomLocation, std::map< uint16
         inventory->GetTypesByFlag( (EVEItemFlags)bomLocation.flag, into );
 }
 
-
-bool RamMethods::GetMultipliers(const uint32 assemblyLineID, const uint32 productGroupID, double &materialMultiplier, double &timeMultiplier) {
-    if (!FactoryDB::GetMultipliers(assemblyLineID, productGroupID, materialMultiplier, timeMultiplier))
-        return false;
-
-    return true;
-}
-
 /* For each material required for a blueprint (from invTypeMaterials), the quantity is affected by ME research and skills.
  * Then there’s the extra materials, which come from the ramTypeRequirements table for that BP.
  * Next, any materials in ramTypeRequirements which are marked as recyclable, have their recycled materials (from invTypeMaterials) subtracted from the list of materials required for the produced item.
- * The remaining materials from invTypeMaterials are then modified by skills and ME research as follows;
+ * The remaining materials from invTypeMaterials are then modified by skills and ME research as follows:
+ *      xmatls = ramTypeRequirements.extra
+ *      reqMatls = (invTypeMaterials.reqMatls - xmatls)
+ *      waste = reqMatls * charSkills (which is wastage multiplier based on skills)
+ *      totalReqMatls = (reqMatls * skill mods) + xmatls + waste
  */
 void RamMethods::GetAdjustedRamRequiredMaterials()
 {
-    // xmatls = ramTypeRequirements.extra
-    // reqMatls = (invTypeMaterials.reqMatls - xmatls)
-    // waste = reqMatls * charSkills (which is wastage multiplier based on skills)
-    // totalReqMatls = (reqMatls * skill mods) + xmatls + waste
     // will need to update this using above formula for correct material list
 
 }

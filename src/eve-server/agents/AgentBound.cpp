@@ -98,7 +98,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
      */
 
     Character* pchar = call.client->GetChar().get();
-    float charStanding = pchar->GetStanding(m_agent->GetID(), pchar->itemID());
+    float charStanding = StandingDB::GetStanding(m_agent->GetID(), pchar->itemID());
     float quality = EvEMath::Agent::EffectiveQuality(m_agent->GetQuality(), pchar->GetSkillLevel(EvESkill::Connections), charStanding);
     float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agent->GetFactionID(), pchar->GetSkillLevel(EvESkill::Connections), pchar->GetSkillLevel(EvESkill::Diplomacy), pchar->GetSkillLevel(EvESkill::CriminalConnections));
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
@@ -244,7 +244,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 if (offer.courierTypeID) {
                     // add item to players hangar
                     sItemFactory.SetUsingClient(call.client);
-                    ItemData data(offer.courierTypeID, pchar->itemID(), locTemp, flagAutoFit, offer.courierAmount);
+                    ItemData data(offer.courierTypeID, pchar->itemID(), locTemp, flagNone, offer.courierAmount);
                     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                     iRef->Move(offer.originID, flagHangar, true);
                     sItemFactory.UnsetUsingClient();
@@ -272,7 +272,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 if (offer.rewardItemID) {
                     // add reward item to players hangar
                     sItemFactory.SetUsingClient(call.client);
-                    ItemData data(offer.rewardItemID, pchar->itemID(), locTemp, flagAutoFit, offer.rewardItemQty);
+                    ItemData data(offer.rewardItemID, pchar->itemID(), locTemp, flagNone, offer.rewardItemQty);
                     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                     iRef->Move(m_agent->GetStationID(), flagHangar, true);
                     sItemFactory.UnsetUsingClient();

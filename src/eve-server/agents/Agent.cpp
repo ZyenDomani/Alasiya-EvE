@@ -571,7 +571,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
     Character* pChar = pClient->GetChar().get();
     uint32 charID = pChar->itemID();
 
-    float charStanding = pChar->GetStanding(m_agentID, charID);
+    float charStanding = StandingDB::GetStanding(m_agentID, charID);
     float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agentData.factionID, pChar->GetSkillLevel(EvESkill::Connections), pChar->GetSkillLevel(EvESkill::Diplomacy), pChar->GetSkillLevel(EvESkill::CriminalConnections));
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
     float quality = EvEMath::Agent::EffectiveQuality(m_agentData.quality, pChar->GetSkillLevel(EvESkill::Negotiation), standing);
@@ -747,13 +747,13 @@ bool Agent::CanUseAgent(Client* pClient)
     uint8 sConn = pChar->GetSkillLevel(EvESkill::Connections);
     uint8 sDiplo = pChar->GetSkillLevel(EvESkill::Diplomacy);
     uint8 sCrim = pChar->GetSkillLevel(EvESkill::CriminalConnections);
-    float charStanding = pChar->GetStanding(m_agentID, charID);
+    float charStanding = StandingDB::GetStanding(m_agentID, charID);
     float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agentData.factionID, sConn, sDiplo, sCrim);
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
 
-    float facChr = pChar->GetStanding(m_agentData.factionID, charID);
-    float corpChr = pChar->GetStanding(m_agentData.corporationID, charID);
-    float charChr = pChar->GetStanding(m_agentID, charID);
+    float facChr = StandingDB::GetStanding(m_agentData.factionID, charID);
+    float corpChr = StandingDB::GetStanding(m_agentData.corporationID, charID);
+    float charChr = StandingDB::GetStanding(m_agentID, charID);
     float facBonus = EvEMath::Agent::GetStandingBonus(facChr, m_agentData.factionID, sConn, sDiplo, sCrim);
     float corpBonus = EvEMath::Agent::GetStandingBonus(corpChr, m_agentData.factionID, sConn, sDiplo, sCrim);
     float charBonus = EvEMath::Agent::GetStandingBonus(charChr, m_agentData.factionID, sConn, sDiplo, sCrim);

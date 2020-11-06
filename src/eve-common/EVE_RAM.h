@@ -54,6 +54,17 @@ namespace EvERam {
         };
     }
 
+    struct LineRestrictions {
+        uint8 activityID;
+        uint8 rMask;
+        uint32 ownerID;
+        float minCharSec;
+        float maxCharSec;
+        float minCorpSec;
+        float maxCorpSec;
+        float minStanding;
+    };
+
     /* POD structure for blueprint ram requirements */
     struct RamRequirements {
         bool extra;
@@ -71,9 +82,6 @@ namespace EvERam {
 
     /* POD structure for blueprint required materials  */
     struct RequiredItem {
-        RequiredItem(uint16 _typeID, uint32 _quantity, float _damagePerJob, bool _isSkill, bool _extra)
-        : typeID(_typeID), quantity(_quantity), damagePerJob(_damagePerJob), isSkill(_isSkill), extra(_extra) {}
-
         bool extra :1;
         bool isSkill :1;
         uint16 typeID;
@@ -84,10 +92,12 @@ namespace EvERam {
     /* POD structure for indy job data  */
     struct JobProperties {
         int8 activity;
+        int8 status;
         int16 jobRuns;
         int16 licensedRuns;
-        uint32 bpID;
+        uint32 itemID;
         uint32 ownerID;
+        int64 endTime;
         EVEItemFlags outputFlag;
     };
 
@@ -114,7 +124,7 @@ namespace EvERam {
         uint32 productivityModifier;
         uint32 materialModifier;
         uint32 maxProductionLimit;
-        float chanceOfReverseEngineering;
+        float chanceOfRE;
     };
 
 }

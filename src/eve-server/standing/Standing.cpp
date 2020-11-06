@@ -51,7 +51,6 @@ Standing::Standing(PyServiceMgr *mgr)
 
     PyCallable_REG_CALL(Standing, GetSecurityRating);
     PyCallable_REG_CALL(Standing, GetMyKillRights);
-    PyCallable_REG_CALL(Standing, GetMyStandings);
     PyCallable_REG_CALL(Standing, GetCharStandings);
     PyCallable_REG_CALL(Standing, GetCorpStandings);
     PyCallable_REG_CALL(Standing, GetNPCNPCStandings);
@@ -64,25 +63,21 @@ Standing::~Standing() {
     delete m_dispatch;
 }
 
-PyResult Standing::Handle_GetCharStandings(PyCallArgs &call)
-{
+PyResult Standing::Handle_GetCharStandings(PyCallArgs &call) {
     return m_db.GetCharStandings(call.client);
 }
 
-PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call)
-{
+PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call) {
     return m_db.GetCorpStandings(call.client);
 }
 
-PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call)
-{
+PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call) {
     return sStandingMgr.GetFactionStandings();
 }
 
 /** @todo  need to add a standing from corpCONCORD to any/all charID, corpID, allyID  for security rating (as seen in client code) */
 
 PyResult Standing::Handle_GetSecurityRating(PyCallArgs &call) {
-    //takes an integer: characterID
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -116,35 +111,8 @@ PyResult Standing::Handle_GetMyKillRights(PyCallArgs &call) {
     return KillRights;
 }
 
-// cannot find a call to this one
-PyResult Standing::Handle_GetMyStandings(PyCallArgs &call) {
-    /* still working on this one (cause i dont completely understand it yet) */
-    _log(STANDING__MESSAGE,  "Standing::Handle_GetMyStandings()");
-  call.Dump(STANDING__DUMP);
-
-    PyRep *charstandings = m_db.GetCharStandings(call.client);
-    PyRep *charprime = m_db.PrimeCharStandings(call.client->GetCharacterID());   //prime, as in to set initial values (initialize)
-    PyRep *npccharstandings = m_db.GetCharNPCStandings(call.client->GetCharacterID());
-
-    PyDict *corpstandings = new PyDict();
-    PyDict *corpprime = new PyDict();
-    PyDict *npccorpstandings = new PyDict();
-
-    PyTuple *tu = new PyTuple(6);
-        tu->items[0] = charstandings;
-        tu->items[1] = charprime;
-        tu->items[2] = npccharstandings;
-        tu->items[3] = corpstandings;
-        tu->items[4] = corpprime;
-        tu->items[5] = npccorpstandings;
-    PyRep *result = tu;
-    return result;
-}
-
 PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
-    /**
-     * data = sm.RemoteSvc('standing2').GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
-     */
+    // data = sm.RemoteSvc('standing2').GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
     _log(STANDING__MESSAGE,  "Standing::Handle_GetStandingTransactions()");
     call.Dump(STANDING__DUMP);
 
@@ -153,39 +121,8 @@ PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
-    /*
-     * 22:45:01 [SvcCall] Service standing2::GetStandingTransactions()
-     * ****  didnt have dump activated here....
-     *
-     * EXCEPTION #19 logged at  11/18/2018 22:45:01
-     * Caught at:
-     * /common/lib/bluepy.py(86) CallWrapper
-     * /client/script/ui/control/entries.py(2279) OnClick
-     * /../carbon/client/script/ui/control/scroll.py(518) SelectNode
-     * /../carbon/client/script/ui/control/scroll.py(522) ReportSelectionChange
-     * /client/script/ui/shared/neocom/charactersheet.py(448) OnSelectEntry
-     * /client/script/ui/shared/neocom/charactersheet.py(726) Load
-     * /client/script/ui/shared/neocom/charactersheet.py(995) ShowSecurityStatus
-     * /common/script/util/eveformat.py(590) FmtStandingTransaction
-     * Thrown at:
-     * /common/script/util/eveformat.py(481) FmtStandingTransaction
-     * /../carbon/common/script/sys/cfg.py(1220) Get
-     * /../carbon/common/script/sys/cfg.py(1090) Prime
-     * /../carbon/common/script/sys/cfg.py(1158) _Prime
-     *        localKeysToGet = set()
-     *        conf = <RemoteService: config>
-     *        self = <Instance of Recordset.EveOwners>
-     *                       Key column: ownerID, Cache entries: 11413
-     *                       Field names: ownerID, ownerName, typeID, gender, ownerNameID
-     *        keysIAlreadyHave = set()
-     *        key = 0
-     *        fk = ()
-     *        keysToGet = set([0])
-     *        fetch = <function callable at 0x52711570>
-     * ValueError: need more than 0 values to unpack
-     */
 
-    return m_db.GetStandingTransactions(args.fromID, args.toID, args.direction, args.eventID, args.eventType, args.eventDateTime);
+    return m_db.GetStandingTransactions(args);
 }
 
 PyResult Standing::Handle_GetStandingCompositions(PyCallArgs &call) {
@@ -197,7 +134,7 @@ PyResult Standing::Handle_GetStandingCompositions(PyCallArgs &call) {
                     if each.ownerID == fromID:
                         prior = each.standing
                         */
-_log(STANDING__MESSAGE,  "Standing::Handle_GetStandingCompositions()");
+    _log(STANDING__MESSAGE,  "Standing::Handle_GetStandingCompositions()");
     call.Dump(STANDING__DUMP);
 
     Call_GetStandingComposition args;

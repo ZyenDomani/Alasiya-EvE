@@ -20,14 +20,14 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Reve, Allan
+    Author:        Reve,
+    Rewrite:    Allan
 */
-
-//work in progress
 
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
+#include "standing/StandingDB.h"
 #include "system/SovereigntyMgrService.h"
 
 PyCallable_Make_InnerDispatcher(SovereigntyMgrService)
@@ -45,38 +45,13 @@ SovereigntyMgrService::~SovereigntyMgrService() {
     delete m_dispatch;
 }
 
+// this is only call to this service
 PyResult SovereigntyMgrService::Handle_GetSystemSovereigntyInfo(PyCallArgs &call) {
-    /*
-            [PyString "GetSystemSovereigntyInfo"]
-            [PyTuple 1 items]
-              [PyInt 30000302]      << systemID
-    {returns}
-      [PySubStream 116 bytes]
-        [PyObjectData Name: util.KeyVal]
-          [PyDict 7 kvp]
-            [PyString "contested"]
-            [PyInt 0]
-            [PyString "corporationID"]
-            [PyInt 98049918]
-            [PyString "claimTime"]
-            [PyIntegerVar 129743663400000000]
-            [PyString "claimStructureID"]
-            [PyIntegerVar 1005712174146]
-            [PyString "hubID"]
-            [PyIntegerVar 1005900797500]
-            [PyString "allianceID"]
-            [PyInt 99000289]
-            [PyString "solarSystemID"]
-            [PyInt 30000302]
-              */
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
-    return m_db.GetSystemSovInfo(args.arg);
+    return StandingDB::GetSystemSovInfo(args.arg);
 }
-
-/*sovSvc.CanInstallUpgrade(t.typeID, self.hubID, devIndices=self.devIndices)
-*/

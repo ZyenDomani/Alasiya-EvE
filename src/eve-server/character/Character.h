@@ -303,6 +303,7 @@ public:
     int32                   warFactionID() const                { return m_corpData.warFactionID; }
     int32                   corpAccountKey() const              { return m_corpData.corpAccountKey; }
     float                   corpTaxRate() const                 { return m_corpData.taxRate; }
+    float                   corpSecRating() const               { return m_corpData.secRating; }
     void                    SetCorpHQ(uint32 stationID)         { m_corpData.corpHQ = stationID; UpdateCorpData(m_corpData);}
 
     // Corporation role:
@@ -362,11 +363,10 @@ public:
     void                    SetLogonMinutes();
 
     //  Standings functions
-    //     toID = me|myCorp|myAlliance.  fromID = char|agent|corp|faction|alliance
-    float                   GetStanding(uint32 fromID, uint32 toID);            // this is NOT adjusted for skills
-    float                   GetStandingModified(uint32 fromID, uint32 toID);    // this IS adjusted for skills
-    float                   GetNPCCorpStanding(uint32 fromID, uint32 toID);
-    float 		    GetStandingChanges();
+    //  fromID = char|agent|corp|faction|alliance   toID = me|myCorp|myAlliance.
+    float                   GetStandingModified(uint32 fromID, uint32 toID=0);    // this IS adjusted for skills
+    //  fromID = char|agent|corp|faction|alliance   toID = me|myCorp|myAlliance.
+    float                   GetNPCCorpStanding(uint32 fromID, uint32 toID=0);
     void                    SetStanding(uint32 fromID, uint32 toID, float standing);
     void                    FleetShareMissionRewards();
     void                    FleetShareMissionStandings(float newStanding);

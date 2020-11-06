@@ -146,8 +146,8 @@ PyResult RamProxyService::Handle_GetJobs2(PyCallArgs &call) {
 /** @todo update this for corp usage */
 /** @todo  add missing/unhandled indy types (RE, invention, ??)  */
 PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
-    _log(MANUF__DUMP, "RamProxyService::Handle_InstallJob() - size %u", call.tuple->size() );
-    call.Dump(MANUF__DUMP);
+    //_log(MANUF__DUMP, "RamProxyService::Handle_InstallJob() - size %u", call.tuple->size() );
+    //call.Dump(MANUF__DUMP);
 
     Call_InstallJob args;
     if (!args.Decode(&call.tuple)) {
@@ -171,7 +171,13 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         // this is InventoryItem details of the bp being installed.
         if (call.byname.find("installedItem") != call.byname.end()) {
             // use this for stations that are NOT loaded.
-            //  on remote jobs, may have to use this data to split stacks and send to proper places, verify containers, verify access, etc.
+            /*  on remote jobs, may have to use this data to:
+             * split stacks
+             * send to proper places
+             * verify containers
+             * verify access
+             * etc.
+             */
             /*
              23:29:22 [ManufDump]       Args:  Dictionary: 11 entries
              23:29:22 [ManufDump]       Args:   [ 0]   Key:     String: 'categoryID'
@@ -205,26 +211,26 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                 throw(PyException(MakeUserError("RamActivityRequiresABlueprint")));
             }
         }
-        _log(MANUF__ERROR, "Could not get installedItem");
+        _log(MANUF__ERROR, "installedItem dict incomplete");
         throw(PyException(MakeUserError("Remote Job Installation Not Functional at this time.")));
         return nullptr;
     }
     if (installedItem->categoryID() != EVEDB::invCategories::Blueprint)
         throw(PyException(MakeUserError("RamActivityRequiresABlueprint")));
 
+    // installedItem is bp.  change ref to bpRef
+    BlueprintRef bpRef = BlueprintRef::StaticCast(installedItem);
+
     // check assy line activity
-    sRamMthd.ActivityCheck(call.client, args, installedItem);
+    sRamMthd.ActivityCheck(call.client, args, bpRef);
 
     // if output flag not set, put it where it was
-    if (args.flagOutput == flagAutoFit)
-        args.flagOutput = installedItem->flag();
+    if (args.flagOutput == flagNone)
+        args.flagOutput = bpRef->flag();
 
     // check permissions and corp roles, if applicable
-    sRamMthd.AssemblyLineCheck(call.client, args);
-    sRamMthd.ItemPermissionCheck(call.client, args, installedItem);
-
-    // change itemref to bpref
-    BlueprintRef bpRef = BlueprintRef::StaticCast( installedItem );
+    sRamMthd.LinePermissionCheck(call.client, args);
+    sRamMthd.ItemPermissionCheck(call.client, args, bpRef);
 
     // if corp item, check location access
     if (args.isCorpJob)
@@ -261,12 +267,22 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         _log(SERVICE__ERROR, "Failed to decode last element of BOM location.");
         return nullptr;
     }*/
+    // verify this....
     InventoryItemRef lastContItem = sItemFactory.GetItem(pathBomLocation.locationID);
+    if (lastContItem.get() == nullptr)  {
+        _log(MANUF__WARNING, "lastContItem null at bomLocationData.locationID %i", pathBomLocation.locationID);
+        //throw(PyException(MakeUserError("RamInstalledItemWrongLocation")));
+    }
     uint32 solarSystemID = lastContItem->locationID();
+    if (!IsSolarSystem(solarSystemID)) {
+        _log(MANUF__WARNING, "solarSystemID %u invalid for lastContItem %u at bomLocationData.locationID %i",
+                solarSystemID, lastContItem->itemID(), pathBomLocation.locationID);
+        //throw(PyException(MakeUserError("RamInstalledItemBadLocation")));
+    }
 
-    // this calculates bp modifiers; Rsp_InstallJob is used as container to build response to job quote.
+    // calculates bp modifiers; Rsp_InstallJob is used as container while building response to job quote.
     Rsp_InstallJob rsp;
-    if (!sRamMthd.Calculate(args, installedItem, call.client->GetChar().get(), rsp)){
+    if (!sRamMthd.Calculate(args, bpRef, call.client->GetChar().get(), rsp)){
         _log(MANUF__ERROR, "Could not Calculate() on %s for %s(%u)", bpRef->itemName().c_str(), call.client->GetName(), call.client->GetCharacterID());
         return nullptr;
     }
@@ -291,16 +307,12 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         sRamMthd.EncodeBillOfMaterials(reqItems, rsp.materialMultiplier, rsp.charMaterialMultiplier, args.runs, rsp.bom);
         sRamMthd.EncodeMissingMaterials(reqItems, pathBomLocation, call.client, rsp.materialMultiplier, rsp.charMaterialMultiplier, args.runs, rsp.missingMaterials);
 
-        // this value is halved in client code.
-        rsp.charTimeMultiplier *= 2;
+        // this value is halved in client code. (removed in client update patch 5Nov20)
+        //rsp.charTimeMultiplier *= 2;
         return rsp.Encode();
     }
 
     // at this point, it is a real job installation.  check everything else
-
-    // verify client has funds to install job?  is this done during quote?
-
-
     sRamMthd.ProductionTimeCheck(rsp.productionTime);
 
     int64 beginProductionTime = GetFileTimeNow();
@@ -314,28 +326,14 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             if (!bpRef->infinite())
                 bpRef->UpdateRuns(-1);
         } break;
-        case EvERam::Activity::Copying: {
-        } break;
-        case EvERam::Activity::Invention: {
-        } break;
-        case EvERam::Activity::ResearchMaterial: {
-        } break;
-        case EvERam::Activity::ResearchTime: {
-        } break;
-        case EvERam::Activity::ReverseEngineering:
-        /* unsupported */
-        case EvERam::Activity::ResearchTech:
-        case EvERam::Activity::Duplicating:
-        default: {
-            _log(MANUF__WARNING, "%s is currently unsupported.", sRamMthd.GetActivityName(args.activityID));
-            throw(PyException(MakeUserError("RamActivityInvalid")));
-        } break;
+        // others are verified in ActivityCheck() above.
     }
 
     if (bpRef->quantity() > 1) {
         BlueprintRef iRef = bpRef->SplitBlueprint(1);
         if (iRef.get() == nullptr) {
-            // split error.  make note
+            _log(MANUF__WARNING, "Failed to split %s for %s.", bpRef->name(), sRamMthd.GetActivityName(args.activityID));
+            throw(PyException(MakeUserError("RamActivityRequiresABlueprint")));
         }
         bpRef = iRef;
     }
@@ -343,7 +341,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     uint32 locationID = bpRef->locationID();
     // change to singleton now that bp has been used (this 'unpackages' it)
     bpRef->ChangeSingleton(true, true);
-    bpRef->Move( locationID, flagFactoryBlueprint, true );
+    bpRef->Move(locationID, flagFactoryBlueprint, true);
 
     // query all items contained in "Bill of Materials" location
     std::vector<InventoryItemRef> items;
@@ -365,7 +363,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
          */
         std::vector<InventoryItemRef>::iterator refItr = items.begin();
         for (; refItr != items.end(); ++refItr)
-            if (((*refItr)->typeID() == itemItr->typeID) and ((*refItr)->ownerID() == call.client->GetCharacterID()))
+            if (((*refItr)->typeID() == itemItr->typeID) and ((*refItr)->ownerID() == call.client->GetCharacterID())) {
                 if (qtyNeeded >= (*refItr)->quantity()) {
                     qtyNeeded -= (*refItr)->quantity();
                     (*refItr)->Delete();
@@ -373,17 +371,13 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                     (*refItr)->AlterQuantity(-qtyNeeded);
                     break;  // we are done, stop searching
                 }
+            }
     }
 
     if (args.activityID == EvERam::Activity::Invention) {
-        if (!bpRef->copy())
-            throw(PyException(MakeUserError("RamCannotInventABlueprintOriginal")));
-        if (bpRef->runs() < 1)
-            throw(PyException(MakeUserError("RamCannotInventZeroRuns")));
-
         // im sure there is more to do here......
-        
-        /** @todo do something constructive with this data... */
+
+        /** @todo do something constructive with this data...
         // this is populated for t2 bpc
         uint16 outputType(0), baseItemType(0), decryptorType(0);
         if (call.byname.find("inventionItems") != call.byname.end()) {
@@ -397,6 +391,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             // this is the bp typeID to create....should we test to see if they're the same?
             outputType = PyRep::IntegerValueU32(call.byname["inventionOutputItemID"]);
         }
+        */
     }
 
     // approved job cost from quote
@@ -473,75 +468,94 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
         return nullptr;
     }
 
-    // check this call and following db call as they are very close to identical....combine?
-    sRamMthd.CompleteJob(args, call.client);
+    EvERam::JobProperties data = EvERam::JobProperties();
+    if (!FactoryDB::GetJobProperties(args.jobID, data))
+        throw(PyException(MakeUserError("RamCompletionNoSuchJob")));
 
-    // many variables to allocate ... maybe we can make struct for GetJobProperties and InstallJob?
-    int32 runs, licensedProductionRuns;
-    uint32 installedItemID, ownerID;
-    EVEItemFlags outputFlag;
-    int8 activity;
-    if (!FactoryDB::GetJobProperties(args.jobID, installedItemID, ownerID, outputFlag, runs, licensedProductionRuns, activity))
-        return nullptr;
+    sRamMthd.VerifyCompleteJob(args, data, call.client);
 
     // return item
-    InventoryItemRef installedItem = sItemFactory.GetItem( installedItemID );
+    InventoryItemRef installedItem = sItemFactory.GetItem(data.itemID);
     if (installedItem.get() == nullptr)
         return nullptr;
-    installedItem->Move( installedItem->locationID(), outputFlag, true );
+    installedItem->Move(installedItem->locationID(), data.outputFlag, true);
 
     // does an aborted job return the installed item?
     //  is it immediate or after time expiry?
     FactoryDB::CompleteJob(args.jobID, (args.cancel ? EvERam::Status::Abort : EvERam::Status::Delivered));
 
     // return materials which weren't consumed
-    /** @todo make sure this is NOT returning more items than given... it is!!! */
     std::vector<EvERam::RequiredItem> reqItems;
-    sDataMgr.GetRamReturns(installedItem->typeID(), activity, reqItems);
+    sDataMgr.GetRamReturns(installedItem->typeID(), data.activity, reqItems);
     for (auto cur : reqItems) {
-        uint32 quantity = (cur.quantity * runs * (1 - cur.damagePerJob));
+        // what about items where damage < 1.0?  (there are some...)
+        uint32 quantity = (cur.quantity * data.jobRuns * (1 - cur.damagePerJob));
         if (quantity == 0)
             quantity = 1;
 
-        ItemData idata(cur.typeID, ownerID, 0, outputFlag, quantity);
+        ItemData idata(cur.typeID, data.ownerID, locTemp, flagNone, quantity);
         InventoryItemRef iRef = sItemFactory.SpawnItem( idata );
         if (iRef.get() != nullptr)
-            iRef->Move(args.containerID, outputFlag, true);
+            iRef->Move(args.containerID, data.outputFlag, true);
     }
 
     if (!args.cancel) {
         BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
-        switch(activity) {
+        switch(data.activity) {
             case EvERam::Activity::Manufacturing: {
-                ItemData idata(bp->productTypeID(), ownerID, 0, flagAutoFit, (bp->productType().portionSize() * runs));
+                ItemData idata(bp->productTypeID(), data.ownerID, locTemp, flagNone, (bp->productType().portionSize() * data.jobRuns));
                 InventoryItemRef iRef = sItemFactory.SpawnItem( idata );
                 if (iRef.get() != nullptr)
-                    iRef->Move(args.containerID, outputFlag, true);
+                    iRef->Move(args.containerID, data.outputFlag, true);
             } break;
             case EvERam::Activity::ResearchTime: {
-                bp->UpdatePE( runs );
+                bp->UpdatePE( data.jobRuns );
             } break;
             case EvERam::Activity::ResearchMaterial: {
-                bp->UpdateME( runs );
+                bp->UpdateME( data.jobRuns );
             } break;
             case EvERam::Activity::Copying: {
-                ItemData idata(installedItem->typeID(), ownerID, 0, flagAutoFit);
-                EvERam::bpData data = EvERam::bpData();
-                    data.copy   = true;
-                    data.runs   = licensedProductionRuns;
-                    data.mLevel = bp->mLevel();
-                    data.pLevel = bp->pLevel();
-                BlueprintRef copy = BlueprintRef(nullptr);
-                while (runs) {
+                /** @todo calculate and apply copy chance here */
+                ItemData idata(installedItem->typeID(), data.ownerID, locTemp, flagNone);
+                EvERam::bpData bpdata = EvERam::bpData();
+                    bpdata.copy   = true;
+                    bpdata.runs   = data.licensedRuns;
+                    bpdata.mLevel = bp->mLevel();
+                    bpdata.pLevel = bp->pLevel();
+                BlueprintRef copy = Blueprint::Spawn(idata, bpdata); //BlueprintRef(nullptr);
+                copy->SetQuantity(data.jobRuns);
+                copy->Move(args.containerID, data.outputFlag, true);
+                /*
+                while (data.jobRuns) {
                     //wtf?  not sure if i like this but cant think of a better way right now...
-                    copy = Blueprint::Spawn(idata, data);
+                    // stack bpc??
+                    copy = Blueprint::Spawn(idata, bpdata);
                     if (copy.get() != nullptr)
-                        copy->Move(args.containerID, outputFlag, true);
-                    --runs;
+                        copy->Move(args.containerID, data.outputFlag, true);
+                    --data.jobRuns;
                 }
+                */
             } break;
             /* todo */
             case EvERam::Activity::Invention: {
+                /*  base invention data...
+                 *
+                 * required items:
+                 * bpc of t1 item (will consume 1 run)
+                 * 2 types of datacores (all consumed)
+                 * T3 only: ancient relic (wrecked, malfunction, intact)
+                 *
+                 * optional items:
+                 * decryptor  (consumed)
+                 *   these modify chance, me, pe, runs on output bpc
+                 *
+                 * on success:  (see modifiers below)
+                 * T2: ship and rig bpc have 1 run, others are 10
+                 * T3: runs depend on relic (wrecked - 3, malfunction - 10, intact - 20)
+                 * me -2, pe -4
+                 *
+                 */
+
     /** @todo  this needs a return for invention
      *
             result = sm.ProxySvc('ramProxy').CompleteJob(installationLocationData, jobdata.jobID, cancel)
@@ -571,6 +585,32 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                     dict->SetItemString("messageLabel", new PyString("UI/ScienceAndIndustry/ScienceAndIndustryWindow/RamInventionJobFailed"));
                     dict->SetItemString("jobCompletedSuccessfully", new PyBool(false));
                 }
+
+                /*  invention base chances
+                 *  0.18  freighter
+                 *  0.22  bs, wrecked relic
+                 *  0.26  cru, bc, barge, indy
+                 *  0.30  frig, dessy, malfunction relic
+                 *  0.34  module, rig, ammo, intact relic
+                 *   100  perpetual motion unit?
+                 */
+
+                /* invention result outcomes:  (proposed in phoebe)
+                 *
+                 * success:
+                 *      execeptional    - ME +2, PE +3
+                 *      great           - ME +1, PE +2
+                 *      good            - PE +1
+                 *      standard        - no modifier
+                 *
+                 * failure:
+                 *      standard        - return 50% datacores
+                 *      poor            - return 25% datacores
+                 *      terrible        - return 10% datacores
+                 *      critical        - return no datacores
+                 *
+                 */
+
                 // not sure the semantics on this...its' on both succeed and fail
                 // this *could* be the part about your skills
                 /*
@@ -601,8 +641,8 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
 {'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251343, 'label': u'InventionResultFailedImpossible'}(u'You never saw the light, this job is almost impossible for you to complete.', None, None)
 {
 */
-                /*{'messageKey': 'ProductionDuplicationFailure', 'dataID': 17875202, 'suppressable': False, 'bodyID': 256422, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 256421, 'messageID': 3739}
-                 * {'messageKey': 'ProductionFailure', 'dataID': 17875197, 'suppressable': False, 'bodyID': 256420, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': 256419, 'messageID': 3741}
+                /* {'messageKey': 'ProductionFailure', 'dataID': 17875197, 'suppressable': False, 'bodyID': 256420, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': 256419, 'messageID': 3741}
+                 * {'messageKey': 'ProductionDuplicationFailure', 'dataID': 17875202, 'suppressable': False, 'bodyID': 256422, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 256421, 'messageID': 3739}
                  * {'messageKey': 'ProductionInventionFailure', 'dataID': 17875207, 'suppressable': False, 'bodyID': 256424, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 256423, 'messageID': 3740}
                  *
                  * {'FullPath': u'UI/Messages', 'messageID': 256419, 'label': u'ProductionFailureTitle'}(u'Production Job Will Fail', None, None)
@@ -628,7 +668,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
             case EvERam::Activity::ResearchTech:
             case EvERam::Activity::Duplicating:
             default: {
-                _log(MANUF__WARNING, "Activity %u is currently unsupported.", activity);
+                _log(MANUF__WARNING, "Activity %u is currently unsupported.", data.activity);
                 throw(PyException(MakeUserError("RamActivityInvalid")));
             } break;
         }
@@ -643,6 +683,9 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
 PyResult RamProxyService::Handle_UpdateAssemblyLineConfigurations(PyCallArgs &call) {
     _log(MANUF__DUMP, "RamProxyService::Handle_UpdateAssemblyLineConfigurations() - size %u", call.tuple->size() );
     call.Dump(MANUF__DUMP);
+
+    //RamConfigAssemblyLinesAccessDenied
+    //RamConfigAssemblyLinesInsuficientAccess
 
     return nullptr;
 }

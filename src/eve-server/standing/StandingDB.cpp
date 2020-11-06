@@ -21,11 +21,12 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:        Allan (rewrite)
+    Rewrite:        Allan
 */
 
 
 #include "Client.h"
+#include "packets/Sovereignty.h"
 #include "StaticDataMgr.h"
 #include "standing/StandingDB.h"
 
@@ -44,9 +45,9 @@
  repFactions    [fromID, toID, standing] (NPC Faction<-->NPC Faction) {populated, hard-coded  -- cant change}
  repStandings   [fromID, toID, standing] (agent-->char, agent-->PC corp  -- changed by missions status')
  repStandings   [fromID, toID, standing] (corporation<-->alliance, alliance<-->alliance  -- changed thru Corp window)
- repStandings   [fromID, toID, standing] (character<-->character, character<-->corporation  -- changed thru PnP window)
- repStandings   [fromID, toID, standing] (corporation<-->character, corporation<-->corporation  -- changed thru Corp window)
- repStandings   [fromID, toID, standing] (NPC corp-->char, NPC corp -->PC corp  -- changed by missions and faction kills)
+ repStandings   [fromID, toID, standing] (corporation-->character, corporation<-->corporation  -- changed thru Corp window)
+ repStandings   [fromID, toID, standing] (character<-->character, character-->corporation  -- changed thru PnP window)
+ repStandings   [fromID, toID, standing] (NPC corp-->char, NPC corp-->PC corp  -- changed by missions and faction kills)
 
  all change logs will go here.  not sure of all fields yet
  repStandingChanges [fromID, toID, eventID, eventTypeID, eventDateTime, modification, originalFromID, originalToID, int_1, int_2, int_3, msg] ()
@@ -61,8 +62,7 @@ PyObjectEx* StandingDB::GetFactionStandings() {
     return DBResultToCRowset(res);
 }
 
-PyRep* StandingDB::GetMyStandings(uint32 charID)
-{
+PyRep* StandingDB::GetMyStandings(uint32 charID) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID, standing AS rank FROM repStandings WHERE toID = %u", charID);
     return DBResultToCRowset(res);
@@ -87,16 +87,16 @@ PyRep* StandingDB::GetCharNPCStandings(uint32 charID) {
     return DBResultToCRowset(res);
 }
 
+/** @todo not sure about this yet.... wip */
 PyRep* StandingDB::PrimeCharStandings(uint32 charID) {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         " itemID AS ownerID,"
         " itemName AS ownerName,"
         " typeID"
         " FROM entity"
-        " WHERE itemID < 0"
-    ))
+        " WHERE itemID < 0"))
     {
         _log(DATABASE__ERROR, "Error in PrimeCharStandings query: %s", res.error.c_str());
         return NULL;
@@ -105,14 +105,16 @@ PyRep* StandingDB::PrimeCharStandings(uint32 charID) {
     return DBResultToRowset(res);
 }
 
-PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction,
-                                           uint16 eventID, uint16 eventType, int64 eventDateTime) {
-    if (fromID == corpCONCORD)
+PyRep* StandingDB::GetStandingTransactions(Call_GetStandingTransactions& args) {
+    //GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
+    /** @todo update this for direction */
+
+    if (args.fromID == corpCONCORD)
         ;
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT "
+        "SELECT"
         "  eventID,"
         "  eventTypeID,"
         "  eventDateTime,"
@@ -126,8 +128,7 @@ PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 di
         "  int_3,"
         "  msg"
         " FROM repStandingChanges"
-        " WHERE toID = %u"
-        "  AND fromID = %u", toID, fromID )) {
+        " WHERE toID = %u AND fromID = %u", args.toID, args.fromID )) {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
@@ -136,8 +137,8 @@ PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 di
 
 float StandingDB::GetStanding(uint32 fromID, uint32 toID) {
     DBQueryResult res;
-    DBResultRow row;
     sDatabase.RunQuery(res, "SELECT standing FROM repStandings WHERE fromID=%u AND toID=%u", fromID, toID);
+    DBResultRow row;
     if (res.GetRow(row))
         return row.GetFloat(0);
     else
@@ -149,32 +150,28 @@ void StandingDB::SetStanding(uint32 fromID, uint32 toID, float standing) {
     sDatabase.RunQuery(err, "INSERT INTO repStandings (fromID, toID, standing) VALUES (%u,%u,%f)", fromID, toID, standing );
 }
 
-void StandingDB::UpdateStanding(uint32 fromID, uint32 toID, float standing)
-{
+void StandingDB::UpdateStanding(uint32 fromID, uint32 toID, float standing) {
     DBerror err;
     sDatabase.RunQuery(err,
-                       "INSERT INTO repStandings (fromID, toID, standing)"
-                       " VALUES (%u,%u,%f)"
-                       " ON DUPLICATE KEY UPDATE standing = standing + %f", fromID, toID, standing, standing);
+        "INSERT INTO repStandings (fromID, toID, standing)"
+        " VALUES (%u,%u,%f)"
+        " ON DUPLICATE KEY UPDATE standing = standing + %f", fromID, toID, standing, standing);
 }
 
-float StandingDB::GetStandingChanges(uint32 charID) {
-    return 0.0f;
-}
-
-//FIXME TODO  implement repStandingChanges after standing system is working....
+/** @todo  implement repStandingChanges after standing system is working  */
 void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, float amount, std::string msg) {
     /* eventTypeID,eventDateTime,fromID,toID,modification,originalFromID,originalToID,int_1,int_2,int_3,msg */
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO repStandingChanges (eventTypeID, eventDateTime, fromID, toID, modification, msg)"
-        " VALUES (%u, %f, %u, %u, %f, '%s' )", eventType, GetFileTimeNow(), fromID, toID, amount, msg.c_str() );
+        " VALUES (%u, %f, %u, %u, %f, '%s' )",
+        eventType, GetFileTimeNow(), fromID, toID, amount, msg.c_str() );
 }
 
 PyRep* StandingDB::GetStandingCompositions(uint32 fromID, uint32 toID) {
     // ownerID, standing ...
 
-    return NULL;
+    return PyStatic.NewNone();
 }
 
 PyRep* StandingDB::GetSystemSovInfo(uint32 systemID) {
@@ -222,6 +219,8 @@ PyRep* StandingDB::GetSystemSovInfo(uint32 systemID) {
      *        return NULL;
 }
 
+    Rsp_GetSystemSovereigntyInfo rsp;
+
 if (!res.GetRow(row)) {
     sLog.Error("StandingDB::GetSystemSovInfo()", "No Data for systemID %u.  Hacking PyDict.", systemID);
     res.Reset();
@@ -248,5 +247,5 @@ if (!res.GetRow(row)) {
 
 return new PyObject("util.KeyVal", args);
 */
-    return new PyNone();
+    return PyStatic.NewNone();
 }

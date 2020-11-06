@@ -28,8 +28,6 @@
 #define __SOVEREIGNTYMGR_SERVICE_H_INCL__
 
 #include "PyService.h"
-#include "packets/Sovereignty.h"
-#include "standing/StandingDB.h"
 
 class SovereigntyMgrService: public PyService
 {
@@ -41,7 +39,6 @@ protected:
     class Dispatcher;
 
     Dispatcher *const m_dispatch;
-    StandingDB m_db;
 
     PyCallable_DECL_CALL(GetSystemSovereigntyInfo);
 

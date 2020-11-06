@@ -4,18 +4,31 @@
   *   db query methods for R.A.M. activities
   *
   * @Author:         Allan
-  * @date:          9Jan18
+  * @date:          9Jan18   UD 5Nov20
   */
+
+/*
+ * # Manufacturing Logging:
+ * MANUF__ERROR
+ * MANUF__WARNING
+ * MANUF__MESSAGE
+ * MANUF__INFO
+ * MANUF__DEBUG
+ * MANUF__TRACE
+ * MANUF__DUMP
+ */
 
 
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
+#include "character/Character.h"
 #include "manufacturing/FactoryDB.h"
 
-bool FactoryDB::IsProducableBy(const uint32 assemblyLineID, const uint32 groupID) {
-    double tmp;
-    return FactoryDB::GetMultipliers(assemblyLineID, groupID, tmp, tmp);
+/** @todo  is there is a better way to do this??  */
+bool FactoryDB::IsProducableBy(const uint32 assemblyLineID, const ItemType *pType) {
+    Rsp_InstallJob into;
+    return FactoryDB::GetMultipliers(assemblyLineID, pType, into);
 }
 
 void FactoryDB::GetRAMMaterials(DBQueryResult& res)
@@ -337,14 +350,18 @@ PyRep *FactoryDB::AssemblyLinesGet(const uint32 containerID) {
 }
 
 /** @todo  need to add check/query for POS assembly modules here */
-bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Rsp_InstallJob& into) {
+bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character* pChar, Rsp_InstallJob& into, bool isCorpJob/*false*/) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
         " alt.baseMaterialMultiplier,"
         " alt.baseTimeMultiplier,"
         " al.costInstall,"
-        " al.costPerHour"
+        " alt.minCostPerHour,"
+        " al.costPerHour,"
+        " al.ownerID,"
+        " al.discountPerGoodStandingPoint,"
+        " al.surchargePerBadStandingPoint"
         " FROM ramAssemblyLines AS al"
         " LEFT JOIN ramAssemblyLineTypes AS alt USING (assemblyLineTypeID)"
         " WHERE al.assemblyLineID = %u",
@@ -360,28 +377,81 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Rsp_Insta
         return false;
     }
 
-    into.materialMultiplier = row.GetFloat(0);
-    into.timeMultiplier     = row.GetFloat(1);
-    into.installCost        = row.GetFloat(2);
-    into.usageCost          = row.GetFloat(3);
+    into.materialMultiplier     = row.GetFloat(0);
+    into.timeMultiplier         = row.GetFloat(1);
+    into.installCost            = row.GetFloat(2);
+    if (row.GetFloat(3) > row.GetFloat(4))
+        into.usageCost          = row.GetFloat(3);
+    else
+        into.usageCost          = row.GetFloat(4);
+
+    // verify line standings modifiers (some have no modifiers)
+    if ((row.GetFloat(6) == 0) and (row.GetFloat(7) == 0))
+        return true;
+
+    /** @todo complete this for standings */
+    /* calculate standing modifier for npc station install cost
+     *  take char to npc corp standings for char in npc corp
+     *  take greater of npc faction/2 or corp standings to char if char is pc corp
+     * ownerID(idx 5) is station corp for npc stations
+     */
+
+    float standing(1), costModifier(1);
+    uint32 factionID = sDataMgr.GetCorpFaction(row.GetInt(5));
+    if (isCorpJob) {
+        // this is only for PC corps.  take higher of (npc faction to pc corp)/2 or npc corp to pc corp
+        float cStanding(StandingDB::GetStanding(row.GetInt(5), pChar->corporationID()));
+        float fStanding(StandingDB::GetStanding(factionID, pChar->corporationID()));
+        fStanding /= 2;
+        // this works for negative standings also
+        if (cStanding > fStanding)
+            standing = cStanding;
+        else
+            standing = fStanding;
+
+        /** @todo  this shit will have to be verified for negative standings */
+        // modify end result by 25% for char standings with station owner
+        standing *= (1 - (0.025f * StandingDB::GetStanding(row.GetInt(5), pChar->itemID())));
+
+    } else {
+        // else take personal standings with station corp only
+        standing = StandingDB::GetStanding(row.GetInt(5), pChar->itemID());
+
+    }
+
+    if (standing < 0)
+        costModifier += row.GetFloat(7) * -standing;
+    else
+        costModifier -= row.GetFloat(6) * standing;
+
+    // make sure costModifier isnt 0 (some lines have 0 as modifier)
+    if (costModifier == 0)
+        costModifier = 1;
+
+    _log(MANUF__MESSAGE, "Calculate()::GetProps() - Cost Modifier %u, standing %.2f", costModifier, standing);
+
+    // modify setup cost based on standings
+    into.installCost *= costModifier;
 
     return true;
 }
 
 /** @todo  need to add check/query for POS assembly modules here */
-bool FactoryDB::GetAssemblyLineVerifyProperties(const uint32 assemblyLineID, uint32 &ownerID, double &minCharSecurity, double &maxCharSecurity,
-                                                 int8 &restrictionMask, int8 &activity) {
+bool FactoryDB::GetAssemblyLineRestrictions(const int32 assemblyLineID, EvERam::LineRestrictions &data) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
         "SELECT"
         " ownerID,"
+        " minimumStanding,"
         " minimumCharSecurity,"
         " maximumCharSecurity,"
+        " minimumCorpSecurity,"
+        " maximumCorpSecurity,"
         " restrictionMask,"
         " activityID"
         " FROM ramAssemblyLines"
-        " WHERE assemblyLineID = %u",
+        " WHERE assemblyLineID = %i",
         assemblyLineID))
     {
         _log(DATABASE__ERROR, "Failed to query verify properties for assembly line %u: %s.", assemblyLineID, res.error.c_str());
@@ -394,11 +464,14 @@ bool FactoryDB::GetAssemblyLineVerifyProperties(const uint32 assemblyLineID, uin
         return false;
     }
 
-    ownerID = row.GetUInt(0);
-    minCharSecurity = row.GetFloat(1);
-    maxCharSecurity = row.GetFloat(2);
-    restrictionMask = row.GetInt(3);
-    activity        = row.GetInt(4);
+    data.ownerID        = row.GetUInt(0);
+    data.minStanding    = row.GetFloat(1);
+    data.minCharSec     = row.GetFloat(2);
+    data.maxCharSec     = row.GetFloat(3);
+    data.minCorpSec     = row.GetFloat(4);
+    data.maxCorpSec     = row.GetFloat(5);
+    data.rMask          = row.GetUInt(6);
+    data.activityID     = row.GetUInt(7);
 
     return true;
 }
@@ -416,7 +489,7 @@ bool FactoryDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
         " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime, description, runs, outputFlag,"
         " completedStatusID, installedInSolarSystemID, licensedProductionRuns)"
         " VALUES"
-        " (%u, %u, %u, %u, %f, %lli, %lli, '%s', %i, %i, 0, %u, %i)",
+        " (%u, %u, %u, %u, %f, %li, %li, '%s', %i, %i, 0, %u, %i)",
         ownerID, installerID, assemblyLineID, installedItemID, GetFileTimeNow(), beginProductionTime, endProductionTime, description,
         runs, (int)outputFlag, installedInSolarSystem, licensedProductionRuns))
     {
@@ -427,7 +500,7 @@ bool FactoryDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
     // update nextFreeTime
     if (!sDatabase.RunQuery(err,
         "UPDATE ramAssemblyLines"
-        " SET nextFreeTime = %lli"
+        " SET nextFreeTime = %li"
         " WHERE assemblyLineID = %u",
         endProductionTime, assemblyLineID))
     {
@@ -487,12 +560,13 @@ uint32 FactoryDB::CountResearchJobs(const uint32 installerID) {
     return row.GetUInt(0);
 }
 
-bool FactoryDB::GetJobProperties(const uint32 jobID, uint32& installedItemID, uint32& ownerID, EVEItemFlags& outputFlag, int32& runs, int32& licensedProductionRuns, int8& activity) {
+bool FactoryDB::GetJobProperties(const uint32 jobID, EvERam::JobProperties &data) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT job.installedItemID, job.ownerID, job.outputFlag, job.runs, job.licensedProductionRuns, assemblyLine.activityID"
+        "SELECT job.installedItemID, job.ownerID, job.outputFlag, job.runs, job.licensedProductionRuns,"
+        " job.endProductionTime, job.completedStatusID, line.activityID"
         " FROM ramJobs AS job"
-        " LEFT JOIN ramAssemblyLines AS assemblyLine USING (assemblyLineID)"
+        " LEFT JOIN ramAssemblyLines AS line USING (assemblyLineID)"
         " WHERE job.jobID = %u",
         jobID))
     {
@@ -506,39 +580,14 @@ bool FactoryDB::GetJobProperties(const uint32 jobID, uint32& installedItemID, ui
         return false;
     }
 
-    installedItemID         = row.GetUInt(0);
-    ownerID                 = row.GetUInt(1);
-    outputFlag              = (EVEItemFlags)row.GetUInt(2);
-    runs                    = row.GetInt(3);
-    licensedProductionRuns  = row.GetInt(4);
-    activity                = row.GetUInt(5);
-
-    return true;
-}
-
-bool FactoryDB::GetJobVerifyProperties(const uint32 jobID, uint32 &ownerID, int64 &endProductionTime, int8 &restrictionMask, int8 &status) {
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-                "SELECT job.ownerID, job.endProductionTime, job.completedStatusID, line.restrictionMask"
-                " FROM ramJobs AS job"
-                " LEFT JOIN ramAssemblyLines AS line USING (assemblyLineID)"
-                " WHERE job.jobID = %u",
-                jobID))
-    {
-        _log(DATABASE__ERROR, "Unable to query completion properties for job %u: %s", jobID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(MANUF__WARNING, "No completion properties found for job %u.", jobID);
-        return false;
-    }
-
-    ownerID = row.GetUInt(0);
-    endProductionTime = row.GetInt64(1);
-    status = row.GetInt(2);
-    restrictionMask = row.GetInt(3);
+    data.itemID         = row.GetUInt(0);
+    data.ownerID        = row.GetUInt(1);
+    data.outputFlag     = (EVEItemFlags)row.GetUInt(2);
+    data.jobRuns        = row.GetInt(3);
+    data.licensedRuns   = row.GetInt(4);
+    data.endTime        = row.GetInt64(5);
+    data.status         = row.GetInt(6);
+    data.activity       = row.GetUInt(7);
 
     return true;
 }
@@ -547,7 +596,7 @@ bool FactoryDB::CompleteJob(const uint32 jobID, const int8 completedStatus) {
     DBerror err;
 
     if (!sDatabase.RunQuery(err, "UPDATE ramJobs SET completedStatusID = %i WHERE jobID = %u", completedStatus, jobID)) {
-        _log(DATABASE__ERROR, "Failed to complete job %u (completed status = %i): %s.", jobID, completedStatus, err.c_str());
+        _log(DATABASE__ERROR, "Failed to complete job %u (status = %i): %s.", jobID, completedStatus, err.c_str());
         return false;
     }
 
@@ -585,49 +634,94 @@ int64 FactoryDB::GetNextFreeTime(const uint32 assemblyLineID) {
     return (row.IsNull(0) ? 0 : row.GetInt64(0));
 }
 
-bool FactoryDB::GetMultipliers(const uint32 assemblyLineID, uint32 groupID, double &materialMultiplier, double &timeMultiplier) {
+bool FactoryDB::GetMultipliers(const uint32 assemblyLineID, const ItemType* pType, Rsp_InstallJob& into) {
     DBQueryResult res;
-
-    // check table ramAssemblyLineTypeDetailPerGroup first  (all materialMultiplier = 1)
+    // check Category first
     if (!sDatabase.RunQuery(res,
-        "SELECT materialMultiplier, timeMultiplier"
-        " FROM ramAssemblyLineTypeDetailPerGroup"
-        " LEFT JOIN ramAssemblyLines USING (assemblyLineTypeID)"
-        " WHERE assemblyLineID = %u"
-        " AND groupID = %u",
-        assemblyLineID, groupID))
+        "SELECT alc.materialMultiplier, alc.timeMultiplier"
+        " FROM ramAssemblyLineTypeDetailPerCategory AS alc"
+        " LEFT JOIN ramAssemblyLines AS al USING (assemblyLineTypeID)"
+        " WHERE al.assemblyLineID = %u AND alc.categoryID = %u",
+        assemblyLineID, pType->categoryID()))
     {
-        _log(DATABASE__ERROR, "Failed to check producability of group %u by line %u: %s", groupID, assemblyLineID, res.error.c_str());
+        _log(DATABASE__ERROR, "Failed to check producability of cat %u by line %u: %s", pType->categoryID(), assemblyLineID, res.error.c_str());
         return false;
     }
 
     DBResultRow row;
     if (res.GetRow(row)) {
-        materialMultiplier *= row.GetDouble(0);
-        timeMultiplier *= row.GetDouble(1);
-        return true;
+        into.materialMultiplier *= row.GetDouble(0);
+        into.timeMultiplier *= row.GetDouble(1);
     }
 
-    // then ramAssemblyLineTypeDetailPerCategory
+    // then Group  (all materialMultiplier = 1)
     if (!sDatabase.RunQuery(res,
-        "SELECT materialMultiplier, timeMultiplier"
-        " FROM ramAssemblyLineTypeDetailPerCategory"
-        " LEFT JOIN ramAssemblyLines USING (assemblyLineTypeID)"
-        " LEFT JOIN invGroups USING (categoryID)"
-        " WHERE assemblyLineID = %u"
-        " AND groupID = %u",
-        assemblyLineID, groupID))
+        "SELECT alg.materialMultiplier, alg.timeMultiplier"
+        " FROM ramAssemblyLineTypeDetailPerGroup AS alg"
+        " LEFT JOIN ramAssemblyLines AS al USING (assemblyLineTypeID)"
+        " WHERE al.assemblyLineID = %u"
+        " AND alg.groupID = %u",
+        assemblyLineID, pType->groupID()))
     {
-        _log(DATABASE__ERROR, "Failed to check producability of group %u by line %u: %s", groupID, assemblyLineID, res.error.c_str());
+        _log(DATABASE__ERROR, "Failed to check producability of group %u by line %u: %s", pType->groupID(), assemblyLineID, res.error.c_str());
         return false;
     }
 
     if (res.GetRow(row)) {
-        materialMultiplier *= row.GetDouble(0);
-        timeMultiplier *= row.GetDouble(1);
-        return true;
+        into.materialMultiplier *= row.GetDouble(0);
+        into.timeMultiplier *= row.GetDouble(1);
     }
 
-    return false;
+    return true;
 }
 
+bool FactoryDB::IsRefinable(const uint16 typeID) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT NULL"
+        " FROM ramTypeRequirements"
+        " WHERE typeID=%u"
+        " AND extra = 0"
+        " LIMIT 1",
+        typeID))
+    {
+        _log(DATABASE__ERROR, "Failed to check ore type ID: %s.", res.error.c_str());
+        return false;
+    }
+
+    DBResultRow row;
+    return (res.GetRow(row));
+}
+
+bool FactoryDB::IsRecyclable(const uint16 typeID) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT NULL FROM ramTypeRequirements"
+        " LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID"
+        " WHERE damagePerJob = 1 AND activityID = 6 AND typeID = %u"
+        " AND extra = 1"
+        " LIMIT 1",
+        typeID))
+    {
+        _log(DATABASE__ERROR, "Failed to check item type ID: %s.", res.error.c_str());
+        return false;
+    }
+
+    DBResultRow row;
+    if (res.GetRow(row))
+        return true;
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT NULL FROM ramTypeRequirements"
+        " LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID"
+        " WHERE damagePerJob = 1 AND activityID = 1 AND productTypeID = %u"
+        " AND extra = 1"
+        " LIMIT 1",
+        typeID))
+    {
+        _log(DATABASE__ERROR, "Failed to check item type ID: %s.", res.error.c_str());
+        return false;
+    }
+
+    return (res.GetRow(row));
+}
