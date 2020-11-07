@@ -469,7 +469,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
     uint32 eventID = CalendarDB::SaveSystemEvent(args.isCorpJob?call.client->GetCorporationID() : call.client->GetCharacterID(),
                                 stDataMgr.GetOwnerID(locationID), beginProductionTime + rsp.productionTime * EvE::Time::Second,
-                                Calendar::AutoEvent::RAMJob, title, description);
+                                Calendar::AutoEvent::RAMJob, title, description); // should this be important?
 
     //force calendar reload (if corp job, update all online members, also)
     call.client->SendNotification("OnReloadCalendar", "charid", new PyTuple(0), true);  // this is sequenced

@@ -138,7 +138,8 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, uint32 creatorID, Call_CreateEve
 }
 
 // for system/auto events
-uint32 CalendarDB::SaveSystemEvent(uint32 ownerID, uint32 creatorID, uint8 type, int64 startDateTime, std::string title, std::string description)
+uint32 CalendarDB::SaveSystemEvent(uint32 ownerID, uint32 creatorID, uint8 type, int64 startDateTime,
+                                   std::string title, std::string description, bool important/*false*/)
 {
     EvE::TimeParts data = EvE::TimeParts();
     data = GetTimeParts(startDateTime);
@@ -147,11 +148,11 @@ uint32 CalendarDB::SaveSystemEvent(uint32 ownerID, uint32 creatorID, uint8 type,
     DBerror err;
     sDatabase.RunQueryLID(err, eventID,
         "INSERT INTO sysCalendarEvents(ownerID, creatorID, eventDateTime, autoEventType,"
-        " eventTitle, eventText, flag, month, year)"
-        " VALUES (%u, %u, %li, %u, '%s', '%s', %u, %u, %u)",
+        " eventTitle, eventText, flag, month, year, importance)"
+        " VALUES (%u, %u, %li, %u, '%s', '%s', %u, %u, %u, %u)",
         ownerID, creatorID, startDateTime, type, title.c_str(), description.c_str(),
-        Calendar::Flag::Automated, data.month, data.year);
-    
+        Calendar::Flag::Automated, data.month, data.year, important?1:0);
+
     return eventID;
 }
 

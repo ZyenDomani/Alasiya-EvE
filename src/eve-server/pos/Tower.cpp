@@ -239,7 +239,7 @@ void TowerSE::SetOnline()
     description += ** get tower location name here **;
     description += " will exhaust it's current fuel supply at this time.";      // change this to eve datetime?
     CalendarDB::SaveSystemEvent(call.client->GetCorporationID(), [towerID here?], expiryTime,
-                                Calendar::AutoEvent::PosFuel, title, description);
+                                Calendar::AutoEvent::PosFuel, title, description, true);
      */
 }
 
