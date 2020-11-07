@@ -60,6 +60,8 @@ error:
 *******************************************************
 ********  improvements
 
+skill error on queue update   - see cruc/skills/skill_error_new
+
 look into changing (EvilNumber)DmgTypeAttribute to (struct)Inv::AttrData
     - may be able to delete the EvilNumber class, as it was created only to deal with attribute data
 
