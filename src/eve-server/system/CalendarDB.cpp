@@ -26,7 +26,7 @@
 
 #include "eve-server.h"
 
-#include "EVE_Calendar.h"
+#include "../../eve-common/EVE_Calendar.h"
 #include "system/CalendarDB.h"
 
 
@@ -90,7 +90,7 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
     return new PyInt(eventID);
 }
 
-// for system/corp/alliance/auto events
+// for corp/alliance events
 PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, uint32 creatorID, Call_CreateEvent &args)
 {
     uint8 flag(Calendar::Flag::Invalid);
@@ -137,6 +137,25 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, uint32 creatorID, Call_CreateEve
     return new PyInt(eventID);
 }
 
+// for system/auto events
+uint32 CalendarDB::SaveSystemEvent(uint32 ownerID, uint32 creatorID, uint8 type, int64 startDateTime, std::string title, std::string description)
+{
+    EvE::TimeParts data = EvE::TimeParts();
+    data = GetTimeParts(startDateTime);
+
+    uint32 eventID(0);
+    DBerror err;
+    sDatabase.RunQueryLID(err, eventID,
+        "INSERT INTO sysCalendarEvents(ownerID, creatorID, eventDateTime, autoEventType,"
+        " eventTitle, eventText, flag, month, year)"
+        " VALUES (%u, %u, %li, %u, '%s', '%s', %u, %u, %u)",
+        ownerID, creatorID, startDateTime, type, title.c_str(), description.c_str(),
+        Calendar::Flag::Automated, data.month, data.year);
+    
+    return eventID;
+}
+
+
 PyRep* CalendarDB::GetEventList(uint32 ownerID, uint32 month, uint32 year)
 {
     if (ownerID == 0)
@@ -144,7 +163,7 @@ PyRep* CalendarDB::GetEventList(uint32 ownerID, uint32 month, uint32 year)
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT eventID, ownerID, eventDateTime, dateModified, eventDuration, importance, eventTitle, flag, isDeleted"
+        "SELECT eventID, ownerID, eventDateTime, dateModified, eventDuration, importance, eventTitle, flag, autoEventType, isDeleted"
         " FROM sysCalendarEvents WHERE ownerID = %u AND month = %u AND year = %u", ownerID, month, year))
     {
         codelog(DATABASE__ERROR, "Error in GetEventList query: %s", res.error.c_str());
@@ -165,8 +184,11 @@ PyRep* CalendarDB::GetEventList(uint32 ownerID, uint32 month, uint32 year)
             dict->SetItemString("eventDuration",        row.IsNull(4) ? PyStatic.NewNone() : new PyInt(row.GetInt(4)));
             dict->SetItemString("importance",           new PyBool(row.GetBool(5)));
             dict->SetItemString("eventTitle",           new PyString(row.GetText(6)));
-            dict->SetItemString("flag",                 row.IsNull(7) ? PyStatic.NewNone() : new PyInt(row.GetInt(7)));
-            dict->SetItemString("isDeleted",            new PyBool(row.GetBool(8)));
+            // this is somewhat overridden in client....see notes in EVE_Calendar.h
+            dict->SetItemString("flag",                 new PyInt(row.GetInt(7)));
+            if (row.GetInt(7) == Calendar::Flag::Automated)
+                dict->SetItemString("autoEventType",    new PyInt(row.GetInt(8)));
+            dict->SetItemString("isDeleted",            new PyBool(row.GetBool(9)));
         list->AddItem(new PyObject("util.KeyVal",       dict));
     }
 

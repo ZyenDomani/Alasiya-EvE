@@ -43,6 +43,12 @@ void FactoryDB::GetRAMRequirements(DBQueryResult& res)
         codelog(DATABASE__ERROR, "Error in GetRAMRequirements query: %s", res.error.c_str());
 }
 
+void FactoryDB::SetJobEventID(const uint32 jobID, const uint32 eventID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE ramJobs SET eventID=%u WHERE jobID=%u", eventID, jobID);
+}
+
 bool FactoryDB::DeleteBlueprint(uint32 blueprintID) {
     DBerror err;
     if(!sDatabase.RunQuery(err, "DELETE FROM invBlueprints WHERE itemID=%u", blueprintID)) {
@@ -51,7 +57,6 @@ bool FactoryDB::DeleteBlueprint(uint32 blueprintID) {
     }
     return true;
 }
-
 
 PyRep* FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) {
     DBQueryResult res;
@@ -476,15 +481,15 @@ bool FactoryDB::GetAssemblyLineRestrictions(const int32 assemblyLineID, EvERam::
     return true;
 }
 
-bool FactoryDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
+uint32 FactoryDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
         const uint32 assemblyLineID, const uint32 installedItemID,
         const int64 beginProductionTime, const int64 endProductionTime,
         const char *description, const int32 runs, const EVEItemFlags outputFlag,
         const uint32 installedInSolarSystem, const int32 licensedProductionRuns) {
     DBerror err;
-
+    uint32 jobID(0);
     // insert job
-    if (!sDatabase.RunQuery(err,
+    if (!sDatabase.RunQueryLID(err, jobID,
         "INSERT INTO ramJobs"
         " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime, description, runs, outputFlag,"
         " completedStatusID, installedInSolarSystemID, licensedProductionRuns)"
@@ -494,7 +499,7 @@ bool FactoryDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
         runs, (int)outputFlag, installedInSolarSystem, licensedProductionRuns))
     {
         _log(DATABASE__ERROR, "Failed to insert new job to database: %s.", err.c_str());
-        return false;
+        return 0;
     }
 
     // update nextFreeTime
@@ -505,10 +510,10 @@ bool FactoryDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
         endProductionTime, assemblyLineID))
     {
         _log(DATABASE__ERROR, "Failed to update next free time for assembly line %u: %s.", assemblyLineID, err.c_str());
-        return false;
+        return 0;
     }
 
-    return true;
+    return jobID;
 }
 
 uint32 FactoryDB::CountManufacturingJobs(const uint32 installerID) {
@@ -564,7 +569,7 @@ bool FactoryDB::GetJobProperties(const uint32 jobID, EvERam::JobProperties &data
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT job.installedItemID, job.ownerID, job.outputFlag, job.runs, job.licensedProductionRuns,"
-        " job.endProductionTime, job.completedStatusID, line.activityID"
+        " job.endProductionTime, job.completedStatusID, line.activityID, job.eventID"
         " FROM ramJobs AS job"
         " LEFT JOIN ramAssemblyLines AS line USING (assemblyLineID)"
         " WHERE job.jobID = %u",
@@ -588,6 +593,7 @@ bool FactoryDB::GetJobProperties(const uint32 jobID, EvERam::JobProperties &data
     data.endTime        = row.GetInt64(5);
     data.status         = row.GetInt(6);
     data.activity       = row.GetUInt(7);
+    data.eventID        = row.GetUInt(8);
 
     return true;
 }

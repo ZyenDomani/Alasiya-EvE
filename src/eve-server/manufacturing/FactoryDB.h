@@ -42,7 +42,7 @@ public:
     // InstallJob stuff
     static bool GetAssemblyLineProperties(const uint32 assemblyLineID, Character *pChar, Rsp_InstallJob &into, bool isCorpJob=false);
     static bool GetAssemblyLineRestrictions(const int32 assemblyLineID, EvERam::LineRestrictions& data);
-    static bool InstallJob(const uint32 ownerID, const uint32 installerID, const uint32 assemblyLineID, const uint32 installedItemID, const int64 beginProductionTime, const int64 endProductionTime, const char* description, const int32 runs, const EVEItemFlags outputFlag, const uint32 installedInSolarSystem, const int32 licensedProductionRuns);
+    static uint32 InstallJob(const uint32 ownerID, const uint32 installerID, const uint32 assemblyLineID, const uint32 installedItemID, const int64 beginProductionTime, const int64 endProductionTime, const char* description, const int32 runs, const EVEItemFlags outputFlag, const uint32 installedInSolarSystem, const int32 licensedProductionRuns);
 
     // CompleteJob stuff
     static bool GetJobProperties(const uint32 jobID, EvERam::JobProperties& data);
@@ -60,6 +60,9 @@ public:
     static uint32 GetTech2Blueprint(const uint32 blueprintTypeID);
 
     static int64 GetNextFreeTime(const uint32 assemblyLineID);
+
+    // for calendar events
+    static void SetJobEventID(const uint32 jobID, const uint32 eventID);
 
 };
 

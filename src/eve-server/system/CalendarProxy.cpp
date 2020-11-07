@@ -49,16 +49,6 @@ CalendarProxy::~CalendarProxy()
 
 PyResult CalendarProxy::Handle_GetEventList( PyCallArgs& call )
 {
-    /*
-     *            dbRowList = self.GetCalendarProxy().GetEventList(month, year)
-     *            for dbRows in dbRowList:
-     *                if dbRows is not None:
-     *                    eventList.extend([ util.KeyVal(x) for x in dbRows ])
-     *
-     *            for x in eventList:
-     *                x.flag = self.GetEventFlag(x.ownerID, x.Get('autoEventType', None))
-     */
-
     Call_TwoIntegerArgs args;   //(month, year)
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -84,9 +74,11 @@ PyResult CalendarProxy::Handle_GetEventList( PyCallArgs& call )
         list->AddItem(res);
 
     // get alliance events
-    res = CalendarDB::GetEventList(call.client->GetAllianceID(), args.arg1, args.arg2);
-    if (res != nullptr)
-        list->AddItem(res);
+    if (IsAlliance(call.client->GetAllianceID())) {
+        res = CalendarDB::GetEventList(call.client->GetAllianceID(), args.arg1, args.arg2);
+        if (res != nullptr)
+            list->AddItem(res);
+    }
 
     if (list->empty())
         list->AddItem(PyStatic.NewNone());

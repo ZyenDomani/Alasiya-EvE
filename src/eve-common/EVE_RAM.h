@@ -97,6 +97,7 @@ namespace EvERam {
         int16 licensedRuns;
         uint32 itemID;
         uint32 ownerID;
+        uint32 eventID;
         int64 endTime;
         EVEItemFlags outputFlag;
     };

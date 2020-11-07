@@ -29,6 +29,8 @@
 
 #include "eve-server.h"
 
+#include "../../eve-common/EVE_Calendar.h"
+
 #include "PyServiceCD.h"
 #include "StatisticMgr.h"
 #include "StaticDataMgr.h"
@@ -37,6 +39,7 @@
 #include "manufacturing/RamMethods.h"
 #include "manufacturing/RamProxyService.h"
 #include "station/StationDataMgr.h"
+#include "system/CalendarDB.h"
 
 PyCallable_Make_InnerDispatcher(RamProxyService)
 
@@ -409,8 +412,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         reason += " by ";
         reason += call.client->GetName();
     }
-    AccountService::TranserFunds(
-                                 call.client->GetCharacterID(),
+    AccountService::TranserFunds(call.client->GetCharacterID(),
                                  stDataMgr.GetOwnerID(locationID),
                                  cost,
                                  reason.c_str(),
@@ -419,7 +421,8 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                                  Account::KeyType::Cash);
 
     // register/save job to assy line.
-    if ( !FactoryDB::InstallJob(
+    // is 'description' used ??  they are all 'blah' from client
+    uint32 jobID = FactoryDB::InstallJob(
                           (args.isCorpJob ? call.client->GetCorporationID() : call.client->GetCharacterID()),
                           call.client->GetCharacterID(),
                           args.installationAssemblyLineID,
@@ -430,12 +433,48 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                           args.runs,
                           (EVEItemFlags)args.flagOutput,
                           solarSystemID,
-                          args.licensedProductionRuns))
-    {
+                          args.licensedProductionRuns);
+
+    if (jobID < 1) {
         _log(MANUF__ERROR, "Could not InstallJob for %s", bpRef->itemName().c_str());
         // make client error here...
         return nullptr;
     }
+
+    // check client settings for adding job end to calendar
+    std::string title = sRamMthd.GetActivityName(args.activityID);
+    if (IsStation(locationID)) {
+        title += " in ";
+        title += stDataMgr.GetStationName(locationID);
+    }
+
+    std::string description = "Completion of ";
+    description += sRamMthd.GetActivityName(args.activityID);
+    description += " job in ";
+    if (IsStation(locationID))
+        description += stDataMgr.GetStationName(locationID);
+    else    // test for POS after that system is more complete...
+        description += "Unknown Location";
+    description += ".";
+
+    if (args.isCorpJob) {
+        description += "<BR>This ";
+        description += sRamMthd.GetActivityName(args.activityID);
+        description += " job was installed by ";
+        description += call.client->GetName();
+        description += " on ";
+        description += currentDateTime();
+        description += " server time.";
+    }
+
+    uint32 eventID = CalendarDB::SaveSystemEvent(args.isCorpJob?call.client->GetCorporationID() : call.client->GetCharacterID(),
+                                stDataMgr.GetOwnerID(locationID), beginProductionTime + rsp.productionTime * EvE::Time::Second,
+                                Calendar::AutoEvent::RAMJob, title, description);
+
+    //force calendar reload (if corp job, update all online members, also)
+    call.client->SendNotification("OnReloadCalendar", "charid", new PyTuple(0), true);  // this is sequenced
+
+    FactoryDB::SetJobEventID(jobID, eventID);
 
     // we may need a separate table for invention jobs to store it's specific data....
 
@@ -499,7 +538,12 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
             iRef->Move(args.containerID, data.outputFlag, true);
     }
 
-    if (!args.cancel) {
+    if (args.cancel) {
+        // what needs to be done to cancel a job?
+
+        // if job event in calendar, set to deleted for canceled job.
+        CalendarDB::DeleteEvent(data.eventID);
+    } else {
         BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
         switch(data.activity) {
             case EvERam::Activity::Manufacturing: {
@@ -516,14 +560,13 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
             } break;
             case EvERam::Activity::Copying: {
                 /** @todo calculate and apply copy chance here */
-                ItemData idata(installedItem->typeID(), data.ownerID, locTemp, flagNone);
+                ItemData idata(installedItem->typeID(), data.ownerID, locTemp, flagNone, data.jobRuns);
                 EvERam::bpData bpdata = EvERam::bpData();
                     bpdata.copy   = true;
                     bpdata.runs   = data.licensedRuns;
                     bpdata.mLevel = bp->mLevel();
                     bpdata.pLevel = bp->pLevel();
                 BlueprintRef copy = Blueprint::Spawn(idata, bpdata); //BlueprintRef(nullptr);
-                copy->SetQuantity(data.jobRuns);
                 copy->Move(args.containerID, data.outputFlag, true);
                 /*
                 while (data.jobRuns) {
