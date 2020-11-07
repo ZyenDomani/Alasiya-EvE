@@ -227,6 +227,7 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     msg += "<br>Module AutoStop: ";
     msg += (pClient->AutoStop() ? "On" : "Off");
     msg += "<br>ShowAll: Off";
+    msg += "<br>RAM Event: On";
 
     OnLSC_SendMessage sm;
     sm.sender = _FakeSenderInfo();
@@ -293,7 +294,7 @@ PyRep *LSCChannel::EncodeID() {
         case LSC::Type::character:
         case LSC::Type::alliance:
         case LSC::Type::warfaction:
-        case LSC::Type::incursion: 
+        case LSC::Type::incursion:
         case LSC::Type::normal:
         case LSC::Type::custom: {
             return new PyInt(m_channelID);

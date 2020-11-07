@@ -228,6 +228,19 @@ void TowerSE::SetOnline()
     m_destiny->SendSpecialEffect(m_self->itemID(),m_self->itemID(),m_self->typeID(),0,0,"effects.StructureOnline",0,1,1,-1,0);
 
     m_db.UpdateBaseData(m_data);
+
+    /** @todo determine fuel supply and make calendar event for expiration
+
+    std::string title = "Expiration of Tower fuel";
+
+    std::string description = "The Control Tower ";
+    description += ** get tower name here **;
+    description += " in ";
+    description += ** get tower location name here **;
+    description += " will exhaust it's current fuel supply at this time.";      // change this to eve datetime?
+    CalendarDB::SaveSystemEvent(call.client->GetCorporationID(), [towerID here?], expiryTime,
+                                Calendar::AutoEvent::PosFuel, title, description);
+     */
 }
 
 void TowerSE::SetOffline()

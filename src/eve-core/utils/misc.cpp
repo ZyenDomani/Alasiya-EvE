@@ -207,18 +207,18 @@ const char* EvE::FormatTime(int64 time/*-1*/) {
     if (time < 1)
         return "None";
     double seconds = time;
-    float minutes = seconds/60;
-    float hours = minutes/60;
-    float days = hours/24;
-    float weeks = days/7;
-    float months = days/30;
+    double minutes = seconds / 60.0;
+    float hours = minutes / 60.0;
+    float days = hours / 24.0;
+    float weeks = days / 7.0;
+    float months = days / 30.0;
 
-    int s(fmod(seconds, 60));
-    int m(fmod(minutes, 60));
-    int h(fmod(hours, 24));
-    int d(fmod(days, 7));
-    int w(fmod(weeks, 4));
-    int M(fmod(months, 12));
+    int s(fmod(seconds, 60.0));
+    int m(fmod(minutes, 60.0));
+    int h(fmod(hours, 24.0));
+    int d(fmod(days, 7.0));
+    int w(fmod(weeks, 4.0));
+    int M(fmod(months, 12.0));
 
     std::ostringstream uptime;
     if (M)
@@ -243,18 +243,18 @@ const char* EvE::FormatTime(double time/*-1*/) {
     if (time < 1)
         return "None";
     double seconds = time;
-    double minutes = seconds/60;
-    float hours = minutes/60;
-    float days = hours/24;
-    float weeks = days/7;
-    float months = days/30;
+    double minutes = seconds / 60.0;
+    float hours = minutes / 60.0;
+    float days = hours / 24.0;
+    float weeks = days / 7.0;
+    float months = days / 30.0;
 
-    int s(fmod(seconds, 60));
-    int m(fmod(minutes, 60));
-    int h(fmod(hours, 24));
-    int d(fmod(days, 7));
-    int w(fmod(weeks, 4));
-    int M(fmod(months, 12));
+    int s(fmod(seconds, 60.0));
+    int m(fmod(minutes, 60.0));
+    int h(fmod(hours, 24.0));
+    int d(fmod(days, 7.0));
+    int w(fmod(weeks, 4.0));
+    int M(fmod(months, 12.0));
 
     std::ostringstream uptime;
     if (M)

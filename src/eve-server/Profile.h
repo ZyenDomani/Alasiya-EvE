@@ -66,9 +66,9 @@ public:
     void PrintProfile();
     void ClearAll();
 
-    std::string GetSize(size_t cSize);
+    const char* GetSize(size_t cSize);
 
-    void GetRunTimes(std::vector< double >& container, double& h, double& l, double& a);
+    void GetRunTimes(std::vector< double >& container, float& h, float& l, float& a);
 
 protected:
     std::string GetKeyName(uint8 key);

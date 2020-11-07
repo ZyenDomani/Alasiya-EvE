@@ -65,9 +65,8 @@ m_bpType(_bpType)
     m_data = _bpData;
 }
 
-BlueprintRef Blueprint::Load(uint32 blueprintID)
-{
-    return InventoryItem::Load<Blueprint>(blueprintID );
+BlueprintRef Blueprint::Load(uint32 blueprintID) {
+    return InventoryItem::Load<Blueprint>(blueprintID);
 }
 
 BlueprintRef Blueprint::Spawn( ItemData& data, EvERam::bpData& bdata) {

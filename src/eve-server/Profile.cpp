@@ -180,9 +180,78 @@ void Profile::PrintProfile()
     /** @todo figure out how to color this based on times....R,Y,G,M,B,W  */
 
     double startTime = GetTimeUSeconds();
-    double h = 0, l = 0, a = 0;
+    float h(0.0f), l(0.0f), a(0.0f);
     sLog.Green("   Server Profile", " Current Process Profile times for this run:");
-    /* not used yet.
+    //std::printf("\n");     // spacer
+    std::printf("\t\tLoop Calls\n");
+    GetRunTimes(m_entityS, h, l, a);
+    std::printf("    EntityList   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_entityS.size()),  h, l, a );
+    GetRunTimes(m_client, h, l, a);
+    std::printf("        Client   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_client.size()),  h, l, a );
+    GetRunTimes(m_system, h, l, a);
+    std::printf("     SystemMgr   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_system.size()),  h, l, a );
+    GetRunTimes(m_bubbles, h, l, a);
+    std::printf("       Bubbles   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_bubbles.size()),  h, l, a );
+    GetRunTimes(m_destiny, h, l, a);
+    std::printf("       Destiny   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_destiny.size()),  h, l, a );
+    GetRunTimes(m_npc, h, l, a);
+    std::printf("           NPC   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_npc.size()),  h, l, a );
+    GetRunTimes(m_modules, h, l, a);
+    std::printf("       Modules   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_modules.size()),  h, l, a );
+    GetRunTimes(m_ship, h, l, a);
+    std::printf("          Ship   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_ship.size()),  h, l, a );
+    //GetRunTimes(m_ontarget, h, l, a);
+    //std::printf("      OnTarget   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_ontarget.size()),  h, l, a );
+    GetRunTimes(m_targets, h, l, a);
+    std::printf("    TargetProc   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_targets.size()),  h, l, a );
+    GetRunTimes(m_missile, h, l, a);
+    std::printf("       Missile   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_missile.size()), h, l, a );
+    GetRunTimes(m_damage, h, l, a);
+    std::printf("        Damage   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_damage.size()), h, l, a );
+    if (sConfig.npc.RoamingSpawns or sConfig.npc.StaticSpawns) {
+        GetRunTimes(m_spawn, h, l, a);
+        std::printf("        Spawns   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_spawn.size()), h, l, a );
+    } else
+        std::printf("        Spawns   Disabled.\n");
+    if (sConfig.cosmic.BumpEnabled) {
+        GetRunTimes(m_collision, h, l, a);
+        std::printf("    Collisions   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_collision.size()), h, l, a );
+    } else
+        std::printf("    Collisions   Disabled.\n");
+    if (sConfig.testing.EnableDrones) {
+        GetRunTimes(m_drone, h, l, a);
+        std::printf("        Drones   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_drone.size()), h, l, a );
+    } else
+        std::printf("        Drones   Disabled.\n");
+
+    //std::printf("\n");     // spacer
+    std::printf("\t\tPeriodic Calls\n");
+    GetRunTimes(m_db, h, l, a);
+    std::printf("            DB   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_db.size()),  h, l, a );
+    GetRunTimes(m_effects1, h, l, a);
+    std::printf(" Parse Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects1.size()),  h, l, a );
+    GetRunTimes(m_effects2, h, l, a);
+    std::printf(" Apply Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects2.size()),  h, l, a );
+    GetRunTimes(m_itemload, h, l, a);
+    std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_itemload.size()),  h, l, a );
+    GetRunTimes(m_loot, h, l, a);
+    std::printf("          Loot   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_loot.size()), h, l, a );
+    GetRunTimes(m_salvage, h, l, a);
+    std::printf("       Salvage   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_salvage.size()), h, l, a );
+    if (sConfig.cosmic.PIEnabled) {
+        GetRunTimes(m_colony, h, l, a);
+        std::printf("        Colony   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_colony.size()), h, l, a );
+    } else
+        std::printf("        Colony   Disabled.\n");
+    if (sConfig.crime.Enabled) {
+        GetRunTimes(m_concord, h, l, a);
+        std::printf("       Concord   %s times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_concord.size()), h, l, a );
+    } else
+        std::printf("       Concord   Disabled.\n");
+
+    //std::printf("\n");     // spacer
+    std::printf("\t\tUnimplemented Calls\n");
+    /* not used yet. */
     GetRunTimes(m_server, h, l, a);
     std::printf("        *Main()  %u times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_server.size(), h, l, a );
     GetRunTimes(m_map, h, l, a);
@@ -191,81 +260,16 @@ void Profile::PrintProfile()
     std::printf("        *Items   %u times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_items.size(),  h, l, a );
     GetRunTimes(m_functions, h, l, a);
     std::printf("    *Functions   %u times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_functions.size(), h, l, a );
-    GetRunTimes(m_concord, h, l, a);
-    std::printf("       Concord   %u times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_concord.size(), h, l, a );
-    */
-
-    //std::printf("\n");     // spacer
-    std::printf("\tLoop Calls\n");
-    GetRunTimes(m_entityS, h, l, a);
-    std::printf("    EntityList   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_entityS.size()).c_str(),  h, l, a );
-    GetRunTimes(m_client, h, l, a);
-    std::printf("        Client   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_client.size()).c_str(),  h, l, a );
-    GetRunTimes(m_system, h, l, a);
-    std::printf("     SystemMgr   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_system.size()).c_str(),  h, l, a );
-    GetRunTimes(m_bubbles, h, l, a);
-    std::printf("       Bubbles   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_bubbles.size()).c_str(),  h, l, a );
-    GetRunTimes(m_destiny, h, l, a);
-    std::printf("       Destiny   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_destiny.size()).c_str(),  h, l, a );
-    GetRunTimes(m_npc, h, l, a);
-    std::printf("           NPC   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_npc.size()).c_str(),  h, l, a );
-    GetRunTimes(m_modules, h, l, a);
-    std::printf("       Modules   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_modules.size()).c_str(),  h, l, a );
-    GetRunTimes(m_ship, h, l, a);
-    std::printf("          Ship   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_ship.size()).c_str(),  h, l, a );
-    //GetRunTimes(m_ontarget, h, l, a);
-    //std::printf("      OnTarget   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_ontarget.size()).c_str(),  h, l, a );
-    GetRunTimes(m_targets, h, l, a);
-    std::printf("    TargetProc   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_targets.size()).c_str(),  h, l, a );
-    GetRunTimes(m_missile, h, l, a);
-    std::printf("       Missile   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_missile.size()).c_str(), h, l, a );
-    GetRunTimes(m_damage, h, l, a);
-    std::printf("        Damage   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_damage.size()).c_str(), h, l, a );
-    if (sConfig.npc.RoamingSpawns or sConfig.npc.StaticSpawns) {
-        GetRunTimes(m_spawn, h, l, a);
-        std::printf("        Spawns   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_spawn.size()).c_str(), h, l, a );
-    } else
-        std::printf("        Spawns   Disabled.\n");
-    if (sConfig.cosmic.BumpEnabled) {
-        GetRunTimes(m_collision, h, l, a);
-        std::printf("    Collisions   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_collision.size()).c_str(), h, l, a );
-    } else
-        std::printf("    Collisions   Disabled.\n");
-    if (sConfig.testing.EnableDrones) {
-        GetRunTimes(m_drone, h, l, a);
-        std::printf("        Drones   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_drone.size()).c_str(), h, l, a );
-    } else
-        std::printf("        Drones   Disabled.\n");
-
-    //std::printf("\n");     // spacer
-    std::printf("\tPeriodic Calls\n");
-    GetRunTimes(m_db, h, l, a);
-    std::printf("            DB   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_db.size()).c_str(),  h, l, a );
-    GetRunTimes(m_effects1, h, l, a);
-    std::printf(" Parse Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects1.size()).c_str(),  h, l, a );
-    GetRunTimes(m_effects2, h, l, a);
-    std::printf(" Apply Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects2.size()).c_str(),  h, l, a );
-    GetRunTimes(m_itemload, h, l, a);
-    std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_itemload.size()).c_str(),  h, l, a );
-    GetRunTimes(m_loot, h, l, a);
-    std::printf("          Loot   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_loot.size()).c_str(), h, l, a );
-    GetRunTimes(m_salvage, h, l, a);
-    std::printf("       Salvage   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_salvage.size()).c_str(), h, l, a );
-    if (sConfig.cosmic.PIEnabled) {
-        GetRunTimes(m_colony, h, l, a);
-        std::printf("        Colony   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_colony.size()).c_str(), h, l, a );
-    } else
-        std::printf("        Colony   Disabled.\n");
 
     std::printf(" Profile Times Compiled in %.4fus\n", (GetTimeUSeconds() -startTime) );
 }
 
-void Profile::GetRunTimes(std::vector< double >& container, double& h, double& l, double& a)
+void Profile::GetRunTimes(std::vector< double >& container, float& h, float& l, float& a)
 {
     if (container.empty()) {
-        h = 0;
-        l = 0;
-        a = 0;
+        h = 0.0f;
+        l = 0.0f;
+        a = 0.0f;
         return;
     }
 
@@ -284,7 +288,7 @@ void Profile::GetRunTimes(std::vector< double >& container, double& h, double& l
     a = total / size;
 }
 
-std::string Profile::GetSize(size_t cSize)
+const char* Profile::GetSize(size_t cSize)
 {
     std::string ret;
     if (cSize > 999999) {
@@ -295,7 +299,7 @@ std::string Profile::GetSize(size_t cSize)
         ret += "k";
     } else
         ret = std::to_string(cSize);
-    return ret;
+    return ret.c_str();
 }
 
 std::string Profile::GetKeyName(uint8 key)

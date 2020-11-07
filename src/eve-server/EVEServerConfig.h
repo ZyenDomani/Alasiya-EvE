@@ -308,6 +308,7 @@ public:
 
     // From <crime>
     struct {
+        bool Enabled;
         uint8 CWSessionTime;
         uint8 WeaponFlagTime;
         uint16 KillRightTime;

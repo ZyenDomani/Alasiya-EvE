@@ -219,6 +219,7 @@ void RamMethods::ItemPermissionCheck(Client*const pClient, const Call_InstallJob
         if (bpRef->ownerID() != pClient->GetCorporationID())
             throw(PyException(MakeUserError("RamCannotInstallItemForAnotherCorp")));
     } else {
+        // this one is checked in client
         if (bpRef->ownerID() != pClient->GetCharacterID())
             throw(PyException(MakeUserError("RamCannotInstallItemForAnother")));
     }

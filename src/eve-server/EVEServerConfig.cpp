@@ -211,6 +211,7 @@ EVEServerConfig::EVEServerConfig()
     chat.EnforceRookieInHelp = false;
 
     // crime
+    crime.Enabled = false; //N
     crime.AggFlagTime = 900 /*s*/;//N
     crime.CrimFlagTime = 900 /*s*/;//N
     crime.CWSessionTime = 60 /*s*/;//N
@@ -788,6 +789,7 @@ bool EVEServerConfig::ProcessStandings(const TiXmlElement* ele)
 
 bool EVEServerConfig::ProcessCrime( const TiXmlElement* ele )
 {
+    AddValueParser( "Enabled",          crime.Enabled );
     AddValueParser( "AggFlagTime",      crime.AggFlagTime );
     AddValueParser( "CrimFlagTime",     crime.CrimFlagTime );
     AddValueParser( "CWSessionTime",    crime.CWSessionTime );
@@ -796,6 +798,7 @@ bool EVEServerConfig::ProcessCrime( const TiXmlElement* ele )
 
     const bool result = ParseElementChildren( ele );
 
+    RemoveParser( "Enabled" );
     RemoveParser( "AggFlagTime" );
     RemoveParser( "CrimFlagTime" );
     RemoveParser( "CWSessionTime" );

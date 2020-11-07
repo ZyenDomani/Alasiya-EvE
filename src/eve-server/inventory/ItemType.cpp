@@ -198,7 +198,7 @@ void ItemType::LoadEffects()
         if (cur.isDefault) {
             if (m_defaultID) {
                 // error here to show multiple defaults set for this type
-                _log(ITEM__ERROR, "Type %u has multiple default fxID", m_type.id);
+                _log(ITEM__ERROR, "Type %u has multiple default fxID (%u/%u)", m_type.id, m_defaultID, cur.effectID);
             }
             m_defaultID = cur.effectID;
         }

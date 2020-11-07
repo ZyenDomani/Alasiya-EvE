@@ -176,7 +176,7 @@ void StaticDataMgr::Populate()
         //SELECT corporationID, factionID FROM crpNPCCorporations
         m_corpFaction.emplace(row.GetUInt(0), row.GetUInt(1));
     }
-    sLog.Cyan("    StaticDataMgr", "%u NPC Corp Faction map loaded in %.3fms.", m_corpFaction.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%u Corps in NPC Corp Faction map loaded in %.3fms.", m_corpFaction.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetCategoryData(*res);

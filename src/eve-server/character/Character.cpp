@@ -709,7 +709,7 @@ uint8 Character::InjectSkillIntoBrain(SkillRef skill) {
 
     if ( !skill->SkillPrereqsComplete( *this ) ) {
         /** @todo need to send back a response to the client.  need packet specs. */
-        _log(SKILL__DEBUG, "%s(%u): Requested to train %s (%u/%u) but prereq not complete.", \
+        _log(SKILL__DEBUG, "%s(%u): Requested to inject %s (%u/%u) but prereq not complete.", \
                 name(), m_itemID, skill->name(), skill->typeID(), skill->itemID() );
         m_pClient->SendNotifyMsg( "Injection failed.  Skill prerequisites incomplete." );
         return 2;
@@ -974,8 +974,8 @@ void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
     skill->SaveItem();
 
     float timeLeft = (qs.endTime - qs.startTime) / EvE::Time::Second;
-    _log(SKILL__QUEUE, "Added Level %u to queue with %s(%.1f) to train %uSP.", \
-            level, EvE::FormatTime(timeLeft), timeLeft, nextSP - currentSP);
+    _log(SKILL__QUEUE, "Added %s Level %u to queue with %s(%.1f) to train %uSP.", \
+            skill->name(), level, EvE::FormatTime(timeLeft), timeLeft, nextSP - currentSP);
 }
 
 void Character::UpdateSkillQueue() {
