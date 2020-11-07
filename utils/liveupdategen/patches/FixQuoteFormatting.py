@@ -11,10 +11,10 @@ def LoadQuote(self, *args):
     scrolllist = []
     bom = []
     headers = [nameLabel,
-                   requiredLabel,
-                   missingLabel,
-                   dmgJobLabel,
-                   wasteLabel]
+                requiredLabel,
+                missingLabel,
+                dmgJobLabel,
+                wasteLabel]
     self.sr.quoteScroll.sr.fixedColumns = {nameLabel: 224,
                                            requiredLabel: 70,
                                            missingLabel: 70,
