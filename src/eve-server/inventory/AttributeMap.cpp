@@ -93,7 +93,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
     }
     /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
     if (is_log_enabled(ATTRIBUTE__INFO))
-        _log(ATTRIBUTE__INFO, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.itemName().c_str());
+        _log(ATTRIBUTE__INFO, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.name());
     return true;
 }
 
@@ -216,7 +216,7 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
 {
     if (num.isNaN() or num.isInf()) {
         _log(ATTRIBUTE__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr %u on %s(%u). Returning without modifying.",\
-                attrID, mItem.itemName().c_str(), mItem.itemID());
+                attrID, mItem.name(), mItem.itemID());
         EvE::traceStack();
         //ResetAttribute(attrID, notify);
         return;
@@ -229,18 +229,18 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
         } else if (is_log_enabled(ATTRIBUTE__MISSING)) {
             if (num.isFloat()) {
                 _log(ATTRIBUTE__MISSING, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
-                        attrID, num.get_float(), mItem.itemName().c_str(), mItem.itemID());
+                        attrID, num.get_float(), mItem.name(), mItem.itemID());
             } else {
                 _log(ATTRIBUTE__MISSING, "Attribute %u not in map.  Adding as %li for %s(%u)", \
-                    attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
+                    attrID, num.get_int(), mItem.name(), mItem.itemID());
             }
         } else if (is_log_enabled(ATTRIBUTE__ADD)) {
             if (num.isFloat()) {
                 _log(ATTRIBUTE__ADD, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
-                attrID, num.get_float(), mItem.itemName().c_str(), mItem.itemID());
+                attrID, num.get_float(), mItem.name(), mItem.itemID());
             } else {
                 _log(ATTRIBUTE__ADD, "Attribute %u not in map.  Adding as %li for %s(%u)", \
-                attrID, num.get_int(), mItem.itemName().c_str(), mItem.itemID());
+                attrID, num.get_int(), mItem.name(), mItem.itemID());
             }
         }
 
@@ -256,18 +256,18 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
         if (itr->second.isFloat()) {
             if (num.isFloat()) {
                 _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %.2f to %.2f for %s(%u)", \
-                        attrID, itr->second.get_float(), num.get_float(), mItem.itemName().c_str(), mItem.itemID());
+                        attrID, itr->second.get_float(), num.get_float(), mItem.name(), mItem.itemID());
             } else {
                 _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %.2f to %li for %s(%u)", \
-                        attrID, itr->second.get_float(), num.get_int(), mItem.itemName().c_str(), mItem.itemID());
+                        attrID, itr->second.get_float(), num.get_int(), mItem.name(), mItem.itemID());
             }
         } else {
             if (num.isFloat()) {
                 _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %li to %.2f for %s(%u)", \
-                        attrID, itr->second.get_int(), num.get_float(), mItem.itemName().c_str(), mItem.itemID());
+                        attrID, itr->second.get_int(), num.get_float(), mItem.name(), mItem.itemID());
             } else {
                 _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %li to %li for %s(%u)", \
-                        attrID, itr->second.get_int(), num.get_int(), mItem.itemName().c_str(), mItem.itemID());
+                        attrID, itr->second.get_int(), num.get_int(), mItem.name(), mItem.itemID());
             }
         }
     }
@@ -279,7 +279,7 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify
 {
     if (num.isNaN() or num.isInf()) {
         _log(ATTRIBUTE__ERROR, "AttributeMap::MultiplyAttribute() - Something sent NaN or Inf for %u on %s(%u). Returning without modifying.", \
-                attrID, mItem.itemName().c_str(), mItem.itemID());
+                attrID, mItem.name(), mItem.itemID());
         EvE::traceStack();
         //ResetAttribute(attrID, notify);
         return;
@@ -288,7 +288,7 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify
         // could this be on purpose?
         //ResetAttribute(attrID, notify);
         _log(ATTRIBUTE__WARNING, "AttributeMap::MultiplyAttribute() - Something sent 0 for %u on %s(%u). Returning without modifying.", \
-                attrID, mItem.itemName().c_str(), mItem.itemID());
+                attrID, mItem.name(), mItem.itemID());
         EvE::traceStack();
         return;
     }
@@ -456,7 +456,7 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
         return true;
 
     if (is_log_enabled(ATTRIBUTE__CHANGE)) {
-        _log(ATTRIBUTE__CHANGE, "Sending Attribute changes for %s(%u)", mItem.itemName().c_str(), mItem.itemID());
+        _log(ATTRIBUTE__CHANGE, "Sending Attribute changes for %s(%u)", mItem.name(), mItem.itemID());
         attrChange->Dump(ATTRIBUTE__CHANGE, "");
     }
 
@@ -570,7 +570,7 @@ void AttributeMap::Delete() {
 }
 
 void AttributeMap::DeleteAttribute(uint16 attrID) {
-    _log(ATTRIBUTE__DELETE, "Delete Attribute %u for %s(%u)", attrID, mItem.itemName().c_str(), mItem.itemID());
+    _log(ATTRIBUTE__DELETE, "Delete Attribute %u for %s(%u)", attrID, mItem.name(), mItem.itemID());
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end()) {
         mAttributes.erase(itr);
@@ -586,7 +586,7 @@ void AttributeMap::DeleteAttribute(uint16 attrID) {
             }
         }
     } else
-        _log(ATTRIBUTE__WARNING, "Attribute %u not found in %s(%u) when calling delete ", attrID, mItem.itemName().c_str(), mItem.itemID());
+        _log(ATTRIBUTE__WARNING, "Attribute %u not found in %s(%u) when calling delete ", attrID, mItem.name(), mItem.itemID());
 }
 
 AttrMapItr AttributeMap::begin() {

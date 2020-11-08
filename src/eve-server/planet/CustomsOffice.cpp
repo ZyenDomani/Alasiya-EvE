@@ -53,7 +53,7 @@ m_system(system)
 
     sRef->SetMySE(this);
 
-    _log(SE__DEBUG, "Created CustomsSE for item %s (%u).", sRef->itemName().c_str(), sRef->itemID());
+    _log(SE__DEBUG, "Created CustomsSE for item %s (%u).", sRef->name(), sRef->itemID());
 }
 
 void CustomsSE::Init()
@@ -63,7 +63,7 @@ void CustomsSE::Init()
 
     // pull saved data from db
     if (!m_db.GetCustomsData(m_cData, m_oData)) {
-        _log(POS__MESSAGE, "CustomsSE::Init() - %s(%u) has no saved data.  Initializing default set.", m_self->itemName().c_str(), m_cData.itemID);
+        _log(POS__MESSAGE, "CustomsSE::Init() - %s(%u) has no saved data.  Initializing default set.", m_self->name(), m_cData.itemID);
         InitData();
         m_db.SaveCustomsData(m_cData, m_oData);
     }
@@ -224,7 +224,7 @@ void CustomsSE::VerifyAddItem(InventoryItemRef iRef)
     // test for planetary resources here
     if ((iRef->categoryID() != EVEDB::invCategories::PlanetaryResources)
     and (iRef->categoryID() != EVEDB::invCategories::PlanetaryCommodities))
-        throw PyException( MakeCustomError("You cannot put %s in a %s", iRef->itemName().c_str(), m_self->itemName().c_str()));
+        throw PyException( MakeCustomError("You cannot put %s in a %s", iRef->name(), m_self->name()));
 }
 
 void CustomsSE::GetEffectState(PyList& into)
@@ -287,7 +287,7 @@ void CustomsSE::SendSlimUpdate()
 void CustomsSE::SetAnchor(Client* pClient, GPoint& pos)
 {
     if (m_cData.status > EVEPOS::StructureStatus::Unanchored) {
-        pClient->SendErrorMsg("The %s is already anchored", m_self->itemName().c_str());
+        pClient->SendErrorMsg("The %s is already anchored", m_self->name());
         return;  // make error here?
     }
 
@@ -528,7 +528,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
 
     if (is_log_enabled(PHYSICS__TRACE))
         _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
-        GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+        GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = killer->GetAllianceID();

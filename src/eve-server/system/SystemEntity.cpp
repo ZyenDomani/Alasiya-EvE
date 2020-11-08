@@ -70,12 +70,12 @@ m_killed(false)
 
     m_harmonic = EVEPOS::Harmonic::Inactive;
 
-    _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %.1f.", self->itemName().c_str(), self->itemID(), m_radius);
+    _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %.1f.", self->name(), self->itemID(), m_radius);
 }
 
 void SystemEntity::Process() {
     if (m_killed) {
-        _log(SE__DEBUG, "SE::Process() - %s(%u) is dead but still in system.", m_self->itemName().c_str(), m_self->itemID());
+        _log(SE__DEBUG, "SE::Process() - %s(%u) is dead but still in system.", m_self->name(), m_self->itemID());
         return;
     }
 
@@ -741,4 +741,3 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
             AccountService::TranserFunds(corpCONCORD, pClient->GetCharacterID(), bounty, reason.c_str(), Journal::EntryType::BountyPrize, -GetTypeID());
     }
 }
-

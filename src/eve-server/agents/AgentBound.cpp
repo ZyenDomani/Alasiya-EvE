@@ -622,7 +622,7 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
         if (offer.typeID == Mission::Type::Courier) {
             PyTuple* missionExtra = new PyTuple(2);  // this is tuple(2)  headerID, bodyID    -- std locale msgIDs
                 missionExtra->SetItem(0, new PyString("Reminder...."));   // this should be separate title from mission name
-                missionExtra->SetItem(1, new PyString("Remember to get the %s from your hangar before you leave.", call.client->GetCourierItemRef(m_agent->GetID())->itemName().c_str()));   // this is additional info about mission, etc.
+                missionExtra->SetItem(1, new PyString("Remember to get the %s from your hangar before you leave.", call.client->GetCourierItemRef(m_agent->GetID())->name()));   // this is additional info about mission, etc.
             objectiveData->SetItemString("missionExtra", missionExtra);
         } */
 

@@ -200,7 +200,7 @@ public:
     uint32                      GetID()                 { return m_self->itemID(); }
     double                      GetRadius()             { return m_radius; }
     uint32                      GetLocationID()         { return m_self->locationID(); }
-    const char*                 GetName() const         { return m_self->itemName().c_str(); }
+    const char*                 GetName() const         { return m_self->name(); }
     const GPoint&               GetPosition() const     { return m_self->position(); }
     void                  SetPosition(const GPoint &pos){ m_self->SetPosition(pos); }
     inline double               x()                     { return m_self->position().x; }

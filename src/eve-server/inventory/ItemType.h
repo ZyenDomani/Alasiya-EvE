@@ -92,7 +92,7 @@ public:
 
     /* new effects processing system */
     void GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const;
-    uint16 GetDefaultEffect() const                     { return m_defaultID; }
+    uint16 GetDefaultEffect() const                     { return m_defaultFxID; }
 
     bool HasEffect(uint16 effectID) const;
 
@@ -156,7 +156,7 @@ public:
 private:
     Inv::GrpData m_group;
     Inv::TypeData m_type;
-    uint16 m_defaultID;                 // default effectID
+    uint16 m_defaultFxID;                 // default effectID
 
     std::map<uint16, uint8> m_reqSkillMap;              // k,v map of required skill, level for this ItemType, if any.
     std::map<uint16, EvilNumber> m_AttributeMap;        // k,v map of attributeID, value

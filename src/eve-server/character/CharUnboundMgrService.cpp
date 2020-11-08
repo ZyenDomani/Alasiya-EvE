@@ -316,7 +316,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         SkillRef skill = sItemFactory.SpawnSkill( skillItem );
         if (skill.get() == nullptr) {
             _log(CLIENT__ERROR, "Failed to add skill %u to char %s(%u) during create.",
-                 cur.first, charRef->itemName().c_str(), charRef->itemID());
+                 cur.first, charRef->name(), charRef->itemID());
             // missed a skill...whatever.
             continue;
         }
@@ -373,7 +373,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     m_db.addOwnerCache(charRef->itemID(), charRef->itemName(), char_type->id());
 
     std::string reason = "DESC: Inheritance Payment to ";
-    reason += charRef->itemName().c_str();
+    reason += charRef->itemName();
     AccountService::TranserFunds(corpSCC, charRef->itemID(), sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
     AccountService::TranserFunds(corpSCC, charRef->itemID(), sConfig.character.startAurBalance, reason, \
                             Journal::EntryType::Inheritance, 0, Account::KeyType::AUR, Account::KeyType::AUR);

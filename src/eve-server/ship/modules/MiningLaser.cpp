@@ -324,7 +324,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
         // send error and deactivate all active modules here
         for (auto cur : mMap) {
             cur.second->GetShipRef()->GetPilot()->SendNotifyMsg("Your %s deactivates because there was a processing error.  Ref: ServerError 03123.", \
-                        cur.second->GetSelf()->itemName().c_str());
+                        cur.second->GetSelf()->name());
             cur.second->CancelOnError();
         }
         return;

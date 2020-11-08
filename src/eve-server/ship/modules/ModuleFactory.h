@@ -225,7 +225,7 @@ static GenericModule* ModuleFactory(ModuleItemRef mRef, ShipItemRef sRef)
         }
     }
 
-    _log(MODULE__ERROR, "ModuleFactory - Module Group not found for %s - groupID: %u, typeID: %u", mRef->itemName().c_str(), mRef->groupID(), mRef->typeID());
+    _log(MODULE__ERROR, "ModuleFactory - Module Group not found for %s - groupID: %u, typeID: %u", mRef->name(), mRef->groupID(), mRef->typeID());
     return nullptr;
 }
 

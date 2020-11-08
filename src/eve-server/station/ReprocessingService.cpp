@@ -249,7 +249,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         // this should never happen, but for sure ...
         if (iRef->type().portionSize() > iRef->quantity()) {
             std::map<std::string, PyRep *> args;
-            args["typename"] = new PyString(iRef->itemName().c_str());
+            args["typename"] = new PyString(iRef->itemName());
             args["portion"] = new PyInt(iRef->type().portionSize());
             throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
         }
@@ -349,7 +349,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
 
     if (iRef->quantity() < iRef->type().portionSize()) {
         std::map<std::string, PyRep *> args;
-        args["typename"] = new PyString(iRef->itemName().c_str());
+        args["typename"] = new PyString(iRef->itemName());
         args["portion"] = new PyInt(iRef->type().portionSize());
         throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
     }

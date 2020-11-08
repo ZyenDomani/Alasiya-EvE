@@ -773,7 +773,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
         return;
     }
 
-    _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %s(%u)", iRef->itemName().c_str(), iRef->itemID());
+    _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %s(%u)", iRef->name(), iRef->itemID());
 
     FactionData data = FactionData();
         data.allianceID = spawnEntry.factionID;   // this is to set wreck salvage correctly (tests for faction)

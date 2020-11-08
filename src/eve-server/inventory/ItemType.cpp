@@ -38,7 +38,7 @@
  */
 ItemType::ItemType(uint16 _id, const Inv::TypeData& _data)
 : m_type(_data),
-  m_defaultID(0),
+  m_defaultFxID(0),
   m_group(Inv::GrpData())
 {
     // assert for data consistency
@@ -196,11 +196,11 @@ void ItemType::LoadEffects()
         Effect mEffect(sFxDataMgr.GetEffect(cur.effectID));
         m_stateFxMap.emplace(mEffect.effectState, mEffect);
         if (cur.isDefault) {
-            if (m_defaultID) {
+            if (m_defaultFxID) {
                 // error here to show multiple defaults set for this type
-                _log(ITEM__ERROR, "Type %u has multiple default fxID (%u/%u)", m_type.id, m_defaultID, cur.effectID);
+                _log(ITEM__ERROR, "Type %u has multiple default fxID (%u/%u)", m_type.id, m_defaultFxID, cur.effectID);
             }
-            m_defaultID = cur.effectID;
+            m_defaultFxID = cur.effectID;
         }
     }
 }

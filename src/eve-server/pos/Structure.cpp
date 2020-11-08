@@ -39,8 +39,8 @@ StructureItem::StructureItem(uint32 _structureID, const ItemType &_itemType, con
 : InventoryItem(_structureID, _itemType, _data)
 {
     pInventory = new Inventory(InventoryItemRef(this));
-    _log(ITEM__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
-    _log(POS__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
+    _log(ITEM__TRACE, "Created StructureItem for %s (%u).", name(), itemID());
+    _log(POS__TRACE, "Created StructureItem for %s (%u).", name(), itemID());
 }
 
 StructureItem::~StructureItem()
@@ -117,7 +117,7 @@ PyObject *StructureItem::StructureGetInfo()
 {
     /** @todo  why calling itemID() here??  cant we just access member instead?  */
     if (!pInventory->LoadContents()) {
-        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for Structure", itemName().c_str(), itemID() );
+        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for Structure", name(), itemID() );
         return NULL;
     }
 
@@ -204,7 +204,7 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     // update StructureItem with SE;
     structure->SetMySE(this);
 
-    _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->itemName().c_str(), structure->itemID());
+    _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->name(), structure->itemID());
 }
 
 void StructureSE::InitData()
@@ -298,7 +298,7 @@ void StructureSE::Init()
     }
 
     if (!m_db.GetBaseData(m_data)) {
-        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no saved data.  Initializing default set.", m_self->itemName().c_str(), m_data.itemID);
+        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no saved data.  Initializing default set.", m_self->name(), m_data.itemID);
         InitData();
         m_db.SaveBaseData(m_data);
     }
@@ -310,7 +310,7 @@ void StructureSE::Init()
 
     if (m_data.moonID == 0) {
         // make error here.  this should never hit.
-        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no moonID.", m_self->itemName().c_str(), m_data.itemID);
+        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no moonID.", m_self->name(), m_data.itemID);
         //iRef->Delete(); // really delete this?
         m_loaded = false;
         return;
@@ -320,7 +320,7 @@ void StructureSE::Init()
         SystemEntity* pSE = m_system->GetSE(m_data.moonID);
         if (pSE == nullptr) {
             //iRef->Delete(); // really delete this?
-            _log(POS__WARNING, "StructureSE::Init %s(%u) has no moonID. again.", m_self->itemName().c_str(), m_data.itemID);
+            _log(POS__WARNING, "StructureSE::Init %s(%u) has no moonID. again.", m_self->name(), m_data.itemID);
             m_loaded = false;
             return;
         }
@@ -341,7 +341,7 @@ void StructureSE::Init()
         SystemEntity* pSE = m_system->GetSE(m_data.towerID);
         if (pSE == nullptr) {
             //iRef->Delete(); // really delete this?
-            _log(POS__ERROR, "StructureSE::Init %s(%u) is invalid.  why are we here?", m_self->itemName().c_str(), m_data.itemID);
+            _log(POS__ERROR, "StructureSE::Init %s(%u) is invalid.  why are we here?", m_self->name(), m_data.itemID);
             return;
         }
         m_towerSE = pSE->GetTowerSE();
@@ -488,7 +488,7 @@ void StructureSE::Drop(SystemBubble* pBubble) {
 void StructureSE::SetAnchor(Client* pClient, GPoint& pos)
 {
     if (m_data.state > EVEPOS::StructureStatus::Unanchored) {
-        pClient->SendErrorMsg("The %s is already anchored", m_self->itemName().c_str());
+        pClient->SendErrorMsg("The %s is already anchored", m_self->name());
         return;  // make error here?
     }
 
@@ -606,7 +606,7 @@ void StructureSE::Activate(int32 effectID)
 
     } else if (m_module) {
         if (m_towerSE == nullptr) {
-            _log(POS__ERROR, "POS Module %s(%u) has no TowerSE for tower %u", m_self->itemName().c_str(), m_data.itemID, m_data.towerID);
+            _log(POS__ERROR, "POS Module %s(%u) has no TowerSE for tower %u", m_self->name(), m_data.itemID, m_data.towerID);
             return;
         }
         if (!m_towerSE->HasCPU(m_self->GetAttribute(AttrCpu).get_float())) {
@@ -1047,7 +1047,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
     if (!IsWreckTypeID(wreckTypeID)) {
-        sLog.Error("StructureSE::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
+        sLog.Error("StructureSE::Killed()", "Could not get wreckType for %s of type %u", m_self->name(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
     }
@@ -1063,7 +1063,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
 
     if (is_log_enabled(PHYSICS__TRACE))
         _log(PHYSICS__TRACE, "StructureSE::Killed() - Structure %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
-        GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+        GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = killer->GetAllianceID();

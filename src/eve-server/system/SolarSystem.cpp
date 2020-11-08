@@ -107,7 +107,7 @@ SolarSystem::SolarSystem(
 {
     pInventory = new Inventory(InventoryItemRef(this));
 
-    _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, m_itemName.c_str(), m_itemID);
+    _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, name(), m_itemID);
 }
 
 SolarSystem::~SolarSystem() {
@@ -129,13 +129,13 @@ bool SolarSystem::_Load()
 void SolarSystem::AddItemToInventory(InventoryItemRef iRef)
 {
     _log(ITEM__TRACE, "SS::AddItemToInventory() - adding %s(%u) to inventory of %s(%u)",\
-            iRef->itemName().c_str(), iRef->itemID(), m_itemName.c_str(), m_itemID);
+            iRef->name(), iRef->itemID(), name(), m_itemID);
     AddItem( iRef );
 }
 
 void SolarSystem::RemoveItemFromInventory( InventoryItemRef iRef )
 {
     _log(ITEM__TRACE, "SS::RemoveItemFromInventory() - removing item %s(%u) from inventory of %s(%u)",\
-            iRef->itemName().c_str(), iRef->itemID(), m_itemName.c_str(), m_itemID);
+            iRef->name(), iRef->itemID(), name(), m_itemID);
     RemoveItem( iRef );
 }

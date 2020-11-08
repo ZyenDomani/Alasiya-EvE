@@ -296,7 +296,7 @@ bool Client::ProcessNet()
     while ((p = PopPacket())) {
         try {
             if (!DispatchPacket(p))
-                sLog.Error("Client", "%s: Failed to dispatch packet of type %s (%d).", m_char->itemName().c_str(), MACHONETMSG_TYPE_NAMES[ p->type ], (int)p->type);
+                sLog.Error("Client", "%s: Failed to dispatch packet of type %s (%d).", m_char->name(), MACHONETMSG_TYPE_NAMES[ p->type ], (int)p->type);
         }
         catch(PyException& e) {
             _SendException(p->dest, p->source.callID, p->type, WRAPPEDEXCEPTION, &e.ssException);
@@ -442,14 +442,14 @@ void Client::ProcessClient() {
             m_char->SkillQueueLoop();
 
     if (m_sessionTimer.Check(false)) {
-        _log(CLIENT__TIMER, "Client::ProcessClient():  SetSessionChange to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        _log(CLIENT__TIMER, "Client::ProcessClient():  SetSessionChange to false for %s(%u)", m_char->name(), m_char->itemID());
         m_sessionTimer.Disable();
         m_sessionChangeActive = false;
     }
 
     /* Check Character Save Timer Expiry:  (not currently used  -allan 17May16)
     if (m_char->CheckSaveTimer()) {
-        _log(CLIENT__TIMER, "Client::ProcessClient():  SaveTimer for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        _log(CLIENT__TIMER, "Client::ProcessClient():  SaveTimer for %s(%u)", m_char->name(), m_char->itemID());
         m_char->SaveCharacter();
         m_ship->SaveShip();
     }
@@ -484,13 +484,13 @@ void Client::ProcessClient() {
     }
 
     if (pShipSE == nullptr) {
-        sLog.Error("ProcessClient()","%s: InSpace with no shipSE.  LocationID %u", m_char->itemName().c_str(), m_locationID);
+        sLog.Error("ProcessClient()","%s: InSpace with no shipSE.  LocationID %u", m_char->name(), m_locationID);
         return;
     }
 
     if (m_invulTimer.Enabled()/*m_invul*/)
         if (m_invulTimer.Check(false)) {
-            _log(CLIENT__TIMER, "ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            _log(CLIENT__TIMER, "ProcessClient():  SetInvul to false for %s(%u)", m_char->name(), m_char->itemID());
             m_invulTimer.Disable();
             m_invul = false;
             m_undock = false;
@@ -498,21 +498,21 @@ void Client::ProcessClient() {
 
     if (m_scanTimer.Enabled())
         if (m_scanTimer.Check(false)) {
-            _log(CLIENT__TIMER, "ProcessClient():  Scan Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
+            _log(CLIENT__TIMER, "ProcessClient():  Scan Timer hit for %s(%u).", m_char->name(), m_char->itemID());
             m_scanTimer.Disable();
             m_scan->ProcessScan(m_scanProbe);
         }
 
     if (m_ballparkTimer.Enabled())
         if (m_ballparkTimer.Check(false)) {
-            _log(CLIENT__TIMER, "ProcessClient():  Ballpark Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
+            _log(CLIENT__TIMER, "ProcessClient():  Ballpark Timer hit for %s(%u).", m_char->name(), m_char->itemID());
             m_ballparkTimer.Disable();
             SetBallPark();
         }
 
     if (pShipSE->DestinyMgr()->IsCloaked())
         if (m_cloakTimer.Check(false)) {
-            _log(CLIENT__TIMER, "ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            _log(CLIENT__TIMER, "ProcessClient():  SetCloak to false for %s(%u)", m_char->name(), m_char->itemID());
             m_cloakTimer.Disable();
             pShipSE->DestinyMgr()->UnCloak();
             //m_clientState = Player::State::Idle;
@@ -521,7 +521,7 @@ void Client::ProcessClient() {
 
     if (m_uncloak)
         if (m_uncloakTimer.Check(false)) {
-            _log(CLIENT__TIMER, "ProcessClient():  SetUncloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            _log(CLIENT__TIMER, "ProcessClient():  SetUncloak to false for %s(%u)", m_char->name(), m_char->itemID());
             m_uncloakTimer.Disable();
             m_uncloak = false;
         }
@@ -576,7 +576,7 @@ void Client::ProcessClient() {
                     // can we use this to allow WarpOut?
                 } break;
                 default: {
-                    sLog.Error("ProcessClient()","%s: State timer expired with invalid state: %s.", m_char->itemName().c_str(), GetStateName(m_clientState).c_str());
+                    sLog.Error("ProcessClient()","%s: State timer expired with invalid state: %s.", m_char->name(), GetStateName(m_clientState).c_str());
                     //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
                 } break;
             }
@@ -727,7 +727,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
         sItemFactory.UnsetUsingClient();
         if (m_system == nullptr) {
-            sLog.Error("Client", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
+            sLog.Error("Client", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->name(), m_char->itemID());
             SendErrorMsg("Unable to boot system.  Relog and try again.");
             return;
         }
@@ -744,7 +744,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
     char ci[45];
     if (IsStation(m_locationID)) {
-        _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
+        _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->name(), m_char->itemID(), m_locationID);
         stDataMgr.GetStationData(m_locationID, m_StationData);
         snprintf(ci, sizeof(ci), "Docked: %s(%u)", GetName(), m_char->itemID());
         m_char->Move(m_locationID, flagNone, true);
@@ -776,7 +776,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
     } else {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u. (setState %s, beyonce %s)", \
-                m_char->itemName().c_str(), m_char->itemID(), m_locationID, m_setStateSent ? "true" : "false", m_beyonce ? "true" : "false");
+                m_char->name(), m_char->itemID(), m_locationID, m_setStateSent ? "true" : "false", m_beyonce ? "true" : "false");
         snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
 
         // if docked, update guestlist
@@ -991,16 +991,16 @@ void Client::CreateShipSE() {
         data.factionID = GetWarFactionID();
         data.ownerID = GetCharacterID();
     pShipSE = new ShipSE(m_ship, *(m_system->GetServiceMgr()), m_system, data);
-    _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), m_char->itemID());
+    _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->name(), m_char->itemID());
 }
 
 void Client::DestroyShipSE() {
     if (pShipSE != nullptr) {
-        _log(PLAYER__MESSAGE, "DestroyShipSE() - pShipSE %p (%s) destroyed for %s(%u)", pShipSE, m_ship->itemName().c_str(), m_char->itemName().c_str(), m_char->itemID());
+        _log(PLAYER__MESSAGE, "DestroyShipSE() - pShipSE %p (%s) destroyed for %s(%u)", pShipSE, m_ship->name(), m_char->name(), m_char->itemID());
         m_system->RemoveEntity(pShipSE);
         SafeDelete(pShipSE);
     } else
-        _log(PLAYER__WARNING, "DestroyShipSE() - pShipSE = null for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        _log(PLAYER__WARNING, "DestroyShipSE() - pShipSE = null for %s(%u)", m_char->name(), m_char->itemID());
     pShipSE = nullptr;
 }
 
@@ -1029,14 +1029,14 @@ void Client::SetPodItem() {
 void Client::CheckShipRef(ShipItemRef newShipRef)
 {
     if (newShipRef.get() == nullptr) {
-        _log(PLAYER__ERROR, "CheckShipRef() - %s: newShipRef == NULL.", m_char->itemName().c_str());
+        _log(PLAYER__ERROR, "CheckShipRef() - %s: newShipRef == NULL.", m_char->name());
         throw PyException(MakeCustomError("Could not find ship's ItemRef.  Cannot Board.   Ref: ServerError 12321."));
     } else if (!newShipRef->singleton()) {
-        _log(PLAYER__MESSAGE, "%s tried to board ship %u, which is not assembled.", m_char->itemName().c_str(), newShipRef->itemID());
+        _log(PLAYER__MESSAGE, "%s tried to board ship %u, which is not assembled.", m_char->name(), newShipRef->itemID());
         throw PyException(MakeCustomError("You cannot board a ship which is not assembled!"));
     } else if ((m_ship == newShipRef) and !m_login) {
         // if char is loging in, this will hit.  unknown about any other time.
-        _log(PLAYER__MESSAGE, "%s tried to board active ship %u.", m_char->itemName().c_str(), newShipRef->itemID());
+        _log(PLAYER__MESSAGE, "%s tried to board active ship %u.", m_char->name(), newShipRef->itemID());
         throw PyException(MakeCustomError("You are already aboard this ship."));
     }
 }
@@ -1046,7 +1046,7 @@ void Client::BoardShip(ShipItemRef newShipRef)
     CheckShipRef(newShipRef);
 
     if (m_login) {
-        _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->itemName().c_str(), newShipRef->itemID());
+        _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->name(), newShipRef->itemID());
     } else if (m_ship->typeID() == itemTypeCapsule) {
         m_ship->SetPosition(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
@@ -1166,7 +1166,7 @@ void Client::Eject()
         data.corporationID = GetCorporationID();
     ShipSE* newShipSE = new ShipSE(m_pod, *(m_system->GetServiceMgr()), m_system, data);
     if (newShipSE == nullptr) {
-        _log(PLAYER__ERROR, "%s Eject() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
+        _log(PLAYER__ERROR, "%s Eject() - pShipSE = NULL for shipID %u.", m_char->name(), m_pod->itemID());
         // we should probably send char to their clone station if this happens....
         MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
         throw PyException(MakeCustomError("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107."));
@@ -1200,7 +1200,7 @@ void Client::ResetAfterPopped(GPoint& position)
         data.ownerID = GetCharacterID();
     ShipSE* newShipSE = new ShipSE(m_pod, *(m_system->GetServiceMgr()), m_system, data);
     if (newShipSE == nullptr) {
-        _log(PLAYER__ERROR, "%s ResetAfterPopped() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
+        _log(PLAYER__ERROR, "%s ResetAfterPopped() - pShipSE = NULL for shipID %u.", m_char->name(), m_pod->itemID());
         // we should probably send char to their clone station if this happens....
         MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
         SpawnNewRookieShip(m_locationID);
@@ -1312,7 +1312,7 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
         default: {
             // invalid race
             _log(CLIENT__ERROR, "SpawnNewRookieShip() - Invalid Race of %s(%u) for %s(%u)",
-                 sDataMgr.GetRaceName(m_char->race()), m_char->race(), m_char->itemName().c_str(),
+                 sDataMgr.GetRaceName(m_char->race()), m_char->race(), m_char->name(),
                  m_char->itemID());
             return ShipItemRef(nullptr);
         }
@@ -1384,7 +1384,7 @@ PyRep *Client::GetAggressors() const {
 
 void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     if ((m_clientState != Player::State::Idle) or m_stateTimer.Enabled()) {
-        sLog.Error("Client","%s: StargateJump called when a move is already pending. Ignoring.", m_char->itemName().c_str());
+        sLog.Error("Client","%s: StargateJump called when a move is already pending. Ignoring.", m_char->name());
         // send client msg about state change in progress
         return;
     }
@@ -1454,7 +1454,7 @@ void Client::SetBallParkTimer(uint32 time/*Player::Timer::Default*/)
     }
 
     if (m_ballparkTimer.Enabled()) {
-        _log(CLIENT__ERROR, "%s: Ballpark Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_ballparkTimer.GetRemainingTime());
+        _log(CLIENT__ERROR, "%s: Ballpark Timer called but timer already enabled with %ums remaining.", m_char->name(), m_ballparkTimer.GetRemainingTime());
         EvE::traceStack();
         return;
     }
@@ -1475,7 +1475,7 @@ void Client::SetCloakTimer(uint32 time/*Player::Timer::Default*/)
     }
 
     if (m_cloakTimer.Enabled()) {
-        _log(CLIENT__ERROR, "%s: Cloak Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_cloakTimer.GetRemainingTime());
+        _log(CLIENT__ERROR, "%s: Cloak Timer called but timer already enabled with %ums remaining.", m_char->name(), m_cloakTimer.GetRemainingTime());
         EvE::traceStack();
         return;
     }
@@ -1499,7 +1499,7 @@ void Client::SetUncloakTimer(uint32 time/*Player::Timer::Default*/)
     }
 
     if (m_uncloakTimer.Enabled()) {
-        _log(CLIENT__ERROR, "%s: Uncloak Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_cloakTimer.GetRemainingTime());
+        _log(CLIENT__ERROR, "%s: Uncloak Timer called but timer already enabled with %ums remaining.", m_char->name(), m_cloakTimer.GetRemainingTime());
         EvE::traceStack();
         return;
     }
@@ -1519,7 +1519,7 @@ void Client::SetInvulTimer(uint32 time/*Player::Timer::Default*/)
     }
 
     if (m_invulTimer.Enabled()) {
-        _log(CLIENT__ERROR, "%s: Invul Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_invulTimer.GetRemainingTime());
+        _log(CLIENT__ERROR, "%s: Invul Timer called but timer already enabled with %ums remaining.", m_char->name(), m_invulTimer.GetRemainingTime());
         EvE::traceStack();
         return;
     }
@@ -1538,12 +1538,12 @@ void Client::SetStateTimer( int8 state, uint32 time/*Player::Timer::Default*/)
     }
 
     if (m_stateTimer.Enabled()) {
-        _log(CLIENT__ERROR, "%s: State Timer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_stateTimer.GetRemainingTime());
+        _log(CLIENT__ERROR, "%s: State Timer called but timer already enabled with %ums remaining.", m_char->name(), m_stateTimer.GetRemainingTime());
         EvE::traceStack();
         return;
     }
 
-    _log(CLIENT__TIMER, "%s: Client Timer set from %s to %s at %ums.  current state time: %u", m_char->itemName().c_str(), \
+    _log(CLIENT__TIMER, "%s: Client Timer set from %s to %s at %ums.  current state time: %u", m_char->name(), \
             GetStateName(m_clientState).c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
     m_clientState = state;
     m_stateTimer.Start(time);
@@ -1597,7 +1597,7 @@ bool Client::IsHangarLoaded(uint32 hangarID) {
 }
 
 void Client::LoadStationHangar(uint32 stationID) {
-    _log(PLAYER__INFO, "Client::LoadStationHangar() is loading personal hangar for %s(%u) in stationID %u",  m_char->itemName().c_str(), m_char->itemID(), stationID);
+    _log(PLAYER__INFO, "Client::LoadStationHangar() is loading personal hangar for %s(%u) in stationID %u",  m_char->name(), m_char->itemID(), stationID);
     sItemFactory.SetUsingClient(this);
     m_system->GetStationFromInventory(stationID)->GetMyInventory()->LoadContents();
     sItemFactory.UnsetUsingClient();
@@ -1608,7 +1608,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
     sItemFactory.SetUsingClient(this);
     InventoryItemRef iRef = sItemFactory.GetItem(itemID);
     if (iRef.get() == nullptr) {
-        _log(INV__ERROR, "Client::MoveItem() - %s Unable to load item %u", m_char->itemName().c_str(), itemID);
+        _log(INV__ERROR, "Client::MoveItem() - %s Unable to load item %u", m_char->name(), itemID);
         return;
     }
 
@@ -1624,11 +1624,11 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
             // do nothing here.  this is to avoid throwing error msg below
         } else {
             _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %s (%u) from flag %s to flag %s.", \
-                    m_char->itemName().c_str(), iRef->itemName().c_str(), itemID, sDataMgr.GetFlagName(oldflag), sDataMgr.GetFlagName(flag));
+                    m_char->name(), iRef->name(), itemID, sDataMgr.GetFlagName(oldflag), sDataMgr.GetFlagName(flag));
         }
     } else {
         _log(INV__WARNING, "Client::MoveItem() - %s Unhandled NonPlayerItem %s (%u) from flag %s to flag %s.", \
-        m_char->itemName().c_str(), iRef->itemName().c_str(), itemID, sDataMgr.GetFlagName(oldflag), sDataMgr.GetFlagName(flag));
+        m_char->name(), iRef->name(), itemID, sDataMgr.GetFlagName(oldflag), sDataMgr.GetFlagName(flag));
     }
     sItemFactory.UnsetUsingClient();
 }
@@ -1930,7 +1930,7 @@ void Client::SendSessionChange()
     // this should never happen now.  -allan 3Aug16
     if (m_locationID == 0) {
         if (m_char.get() != nullptr) {
-            codelog(CLIENT__ERROR, "Session::LocationID == 0 for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            codelog(CLIENT__ERROR, "Session::LocationID == 0 for %s(%u)", m_char->name(), m_char->itemID());
             EvE::traceStack();
             if (IsStation(m_char->stationID()))
                 m_locationID = m_char->stationID();
@@ -2558,27 +2558,27 @@ bool Client::Handle_Notify(PyPacket* packet)
         PyList::const_iterator cur = notify.elements->begin();
         for (; cur != notify.elements->end(); ++cur) {
             if (!element.Decode(*cur)) {
-                sLog.Error("Client::Notify","Notification '%s' from %s: Failed to decode element. Skipping.", notify.method.c_str(),  m_char->itemName().c_str());
+                sLog.Error("Client::Notify","Notification '%s' from %s: Failed to decode element. Skipping.", notify.method.c_str(),  m_char->name());
                 continue;
             }
 
             uint32 nodeID = 0, bindID = 0;
             if (sscanf(element.boundID.c_str(), "N=%u:%u", &nodeID, &bindID) != 2) {
                 sLog.Error("Client::Notify","Notification '%s' from %s: Failed to parse bind string '%s'. Skipping.", \
-                           notify.method.c_str(), m_char->itemName().c_str(), element.boundID.c_str());
+                           notify.method.c_str(), m_char->name(), element.boundID.c_str());
                 continue;
             }
 
             if (nodeID != m_services.GetNodeID()) {
                 sLog.Error("Client::Notify","Notification '%s' from %s: Unknown nodeID %u received (expected %u). Skipping.", \
-                           notify.method.c_str(), m_char->itemName().c_str(), nodeID, m_services.GetNodeID());
+                           notify.method.c_str(), m_char->name(), nodeID, m_services.GetNodeID());
                 continue;
             }
 
             m_services.ClearBoundObject(bindID);
         }
     } else {
-        sLog.Error("Client::Notify","Unhandled notification from %s: unknown method '%s'", m_char->itemName().c_str(), notify.method.c_str());
+        sLog.Error("Client::Notify","Unhandled notification from %s: unknown method '%s'", m_char->name(), notify.method.c_str());
         return false;
     }
 
@@ -2692,13 +2692,13 @@ void Client::SelfChatMessage(const char* fmt, ...)
 
     if (m_channels.empty()) {
         if (m_char.get() != nullptr)
-            sLog.Error("Client", "%s: Tried to send self chat, but we are not joined to any channels: %s", m_char->itemName().c_str(), str);
+            sLog.Error("Client", "%s: Tried to send self chat, but we are not joined to any channels: %s", m_char->name(), str);
         free(str);
         return;
     }
 
     if (m_char.get() != nullptr)
-        sLog.White("Client","%s: Self message on all channels: %s", m_char->itemName().c_str(), str);
+        sLog.White("Client","%s: Self message on all channels: %s", m_char->name(), str);
 
     //this is such a pile of crap, but im not sure whats better.
     //maybe a private message...

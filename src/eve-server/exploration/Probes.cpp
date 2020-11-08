@@ -61,14 +61,14 @@ ProbeItemRef ProbeItem::Spawn(ItemData& data)
 void ProbeItem::Delete() {
     // remove from current container's inventory.
     // this should be SolarSystem, but just in case, run tests anyway
-    if (IsValidLocation(m_locationID)) {
-        InventoryItemRef iRef = sItemFactory.GetItem(m_locationID);
+    if (IsValidLocation(locationID())) {
+        InventoryItemRef iRef = sItemFactory.GetItem(locationID());
         if (iRef.get() != nullptr)
             iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
         else
-            _log(ITEM__ERROR, "ProbeItem::Delete() - Cant find location %u containing %s.", m_locationID, m_itemName.c_str());
+            _log(ITEM__ERROR, "ProbeItem::Delete() - Cant find location %u containing %s.", locationID(), name());
     } else
-        _log(ITEM__ERROR, "ProbeItem::Delete() - Location %u containing %s is invalid.", m_locationID, m_itemName.c_str());
+        _log(ITEM__ERROR, "ProbeItem::Delete() - Location %u containing %s is invalid.", locationID(), name());
 
     // remove from DB
     ItemDB::DeleteItem(m_itemID);

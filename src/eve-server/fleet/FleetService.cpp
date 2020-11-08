@@ -1692,7 +1692,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
     bool fboost(false);
     FleetData fData = FleetData();
     GetFleetData(fleetID, fData);
-    str << "<color=teal>" << fData.name << "  Created By: " << fData.creator->GetChar()->itemName().c_str();
+    str << "<color=teal>" << fData.name << "  Created By: " << fData.creator->GetChar()->itemName();
     str << "  Members: " << std::to_string(m_fleetMembers.count(fleetID)) << "</color><br>"; //54
     length += 54;
     length += fData.name.size();
@@ -1707,7 +1707,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
             fboost = true;
         }
         length += 13;
-        str << "Fleet Cmdr: " << pChar->itemName().c_str(); //12
+        str << "Fleet Cmdr: " << pChar->itemName(); //12
         length += pChar->itemName().size();
 
         str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::FleetCommand)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::WingCommand)) << "/";
@@ -1742,7 +1742,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
             fboost = false;
             length += 30;
         }
-        str << "Fleet Booster: " << pChar->itemName().c_str();//15
+        str << "Fleet Booster: " << pChar->itemName();//15
         length += pChar->itemName().size();
         str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::ArmoredWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::InformationWarfare)) << "/";
         str << std::to_string(pChar->GetSkillLevel(EvESkill::SiegeWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SkirmishWarfare)) << "/";
@@ -1775,7 +1775,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 wboost = true;
             }
             length += 13;
-            str << "  " << wData.name.c_str() << " Cmdr: " << pChar->itemName().c_str(); //10
+            str << "  " << wData.name.c_str() << " Cmdr: " << pChar->itemName(); //10
             length += wData.name.size();
             length += pChar->itemName().size();
             str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::FleetCommand)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::WingCommand)) << "/";
@@ -1810,7 +1810,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 wboost = false;
                 length += 30;
             }
-            str << "  " << "Booster: " << pChar->itemName().c_str();//11
+            str << "  " << "Booster: " << pChar->itemName();//11
             length += pChar->itemName().size();
             str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::ArmoredWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::InformationWarfare));
             str << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SiegeWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SkirmishWarfare)) << "/";
@@ -1843,7 +1843,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                     sboost = true;
                 }
                 length += 13;
-                str << "    " << sData.name.c_str() <<  " Cmdr: " << pChar->itemName().c_str(); //11
+                str << "    " << sData.name.c_str() <<  " Cmdr: " << pChar->itemName(); //11
                 length += sData.name.size();
                 length += pChar->itemName().size();
                 str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::FleetCommand)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::WingCommand)) << "/";
@@ -1878,7 +1878,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                     sboost = false;
                     length += 30;
                 }
-                str << "    Booster: " << pChar->itemName().c_str();//13
+                str << "    Booster: " << pChar->itemName();//13
                 length += pChar->itemName().size();
                 str << "    " << std::to_string(pChar->GetSkillLevel(EvESkill::ArmoredWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::InformationWarfare));
                 str << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SiegeWarfare)) << "/" << std::to_string(pChar->GetSkillLevel(EvESkill::SkirmishWarfare)) << "/";

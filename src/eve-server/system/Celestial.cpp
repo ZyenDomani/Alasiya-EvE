@@ -51,7 +51,7 @@ CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, con
   m_celestialIndex( 0 ),
   m_orbitIndex( 0 )
   {
-      _log(ITEM__TRACE, "Created Default CelestialObject %p for item %s (%u).", this, itemName().c_str(), itemID());
+      _log(ITEM__TRACE, "Created Default CelestialObject %p for item %s (%u).", this, name(), itemID());
 }
 
 CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, const ItemData &_data, const CelestialObjectData &_cData)
@@ -61,7 +61,7 @@ CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, con
   m_celestialIndex(_cData.celestialIndex),
   m_orbitIndex(_cData.orbitIndex)
 {
-      _log(ITEM__TRACE, "Created CelestialObject %p for %s (%u) with radius of %.1f.", this, itemName().c_str(), itemID(), m_radius);
+      _log(ITEM__TRACE, "Created CelestialObject %p for %s (%u) with radius of %.1f.", this, name(), itemID(), m_radius);
 }
 
 CelestialObjectRef CelestialObject::Load( uint32 celestialID)
@@ -95,7 +95,7 @@ void CelestialObject::Delete() {
 CelestialSE::CelestialSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : ItemSystemEntity(self, services, system)
 {
-    _log(SE__DEBUG, "Created CSE for item %s (%u) with radius of %.1f.", self->itemName().c_str(), self->itemID(), m_radius);
+    _log(SE__DEBUG, "Created CSE for item %s (%u) with radius of %.1f.", self->name(), self->itemID(), m_radius);
 }
 
 void CelestialSE::MakeDamageState(DoDestinyDamageState &into)

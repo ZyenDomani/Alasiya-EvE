@@ -16,7 +16,7 @@
 ModuleItem::ModuleItem(uint32 _modID, const ItemType& _type, const ItemData& _data)
 : InventoryItem(_modID, _type, _data)
 {
-    _log(ITEM__TRACE, "Created ModuleItem for %s(%u).", itemName().c_str(), itemID());
+    _log(ITEM__TRACE, "Created ModuleItem for %s(%u).", name(), itemID());
 }
 
 ModuleItemRef ModuleItem::Load( uint32 modID)
@@ -56,15 +56,15 @@ bool ModuleItem::_Load()
 
 void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
     _log(MODULE__DEBUG, "ModuleItem::SetOnline() - set module %s(%u) to %s", \
-                    m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
+                    name(), m_itemID, (online ? "Online" : "Offline"));
 
     if (!isRig)   // rigs DO NOT get isOnline attrib set.
         SetAttribute(AttrOnline, (online?1:0));
 
-    Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+    Client* pClient = sEntityList.FindClientByCharID(ownerID());
     if (pClient == nullptr) {
         _log(MODULE__WARNING, "ModuleItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
-                            m_ownerID, m_itemName.c_str(), m_itemID);
+                    ownerID(), name(), m_itemID);
         return;
     }
 
@@ -73,7 +73,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
 
     GodmaEnvironment ge;
         ge.selfID = m_itemID;
-        ge.charID = m_ownerID;
+        ge.charID = ownerID();
         ge.shipID = pClient->GetShipID();
         ge.target = PyStatic.NewNone();
         ge.subLoc = PyStatic.NewNone();

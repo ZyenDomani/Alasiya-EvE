@@ -29,7 +29,7 @@ m_data(_odata)
 {
     m_loaded = false;
     pInventory = new Inventory(InventoryItemRef(this));
-    _log(ITEM__TRACE, "Created StationOffice object for item %s (%u).", itemName().c_str(), itemID());
+    _log(ITEM__TRACE, "Created StationOffice object for item %s (%u).", name(), itemID());
 }
 
 StationOffice::~StationOffice()
@@ -72,7 +72,7 @@ void StationOffice::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) co
 
 PyObject *StationOffice::StationOfficeGetInfo() {
     if (!pInventory->LoadContents( ) ) {
-        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for StationOfficeGetInfo", itemName().c_str(), m_itemID );
+        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for StationOfficeGetInfo", name(), m_itemID );
         return nullptr;
     }
 

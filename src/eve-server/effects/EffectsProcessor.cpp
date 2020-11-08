@@ -373,10 +373,10 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     case Target::Charge: {
                         // ....charge on src item (from module)
                         if (cur.second.srcRef->flag() == flagNone) {
-                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is AutoFit but needed to aquire module.", cur.second.srcRef->itemName().c_str());
+                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is flagNone but need actual flag to acquire module.");
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
-                            cur.second.srcRef->itemName().c_str(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
-                            GetTargLocName(cur.second.targLoc), cur.second.targAttr);
+                                    cur.second.srcRef->name(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
+                                    GetTargLocName(cur.second.targLoc), cur.second.targAttr);
                             EvE::traceStack();
                             continue;
                         }
@@ -385,10 +385,10 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     case Target::Other: {
                         // ....module containing the src item (from charge)
                         if (cur.second.srcRef->flag() == flagNone) {
-                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is AutoFit but needed to aquire module.", cur.second.srcRef->itemName().c_str());
+                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is flagNone but need actual flag to acquire module.");
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
-                            cur.second.srcRef->itemName().c_str(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
-                            GetTargLocName(cur.second.targLoc), cur.second.targAttr);
+                                    cur.second.srcRef->name(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
+                                    GetTargLocName(cur.second.targLoc), cur.second.targAttr);
                             EvE::traceStack();
                             continue;
                         }
@@ -433,7 +433,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             } break;
             case Source::Ship: {      // source is a subsystem
                 ;   // not sure how to do this on yet.  t3 ships arent implemented (actually blocked)
-                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): %s is ship source calling target %s.", cur.second.srcRef->itemName().c_str(), GetTargLocName(cur.second.targLoc));
+                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): %s is ship source calling target %s.", cur.second.srcRef->name(), GetTargLocName(cur.second.targLoc));
             } break;
             case Source::Invalid: {
                 _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location invalid.");
@@ -452,7 +452,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             and (cur.second.grpID == 0)) {
                 // only concerned when typeID/grpID is 0.  when either are populated, ship dont have that module.  nbd
                 _log(EFFECTS__WARNING, "FxProc::ApplyEffects(%i): %s(%u): target item vector empty.", \
-                        cur.first, cur.second.srcRef->itemName().c_str(), cur.second.srcRef->itemID());
+                        cur.first, cur.second.srcRef->name(), cur.second.srcRef->itemID());
                 _log(EFFECTS__WARNING, "Data:  src(%s:%u), targ(%s:%u), grpID:%u, typeID:%u, math:%s.", \
                         GetSourceName(cur.second.fxSrc), cur.second.srcAttr, \
                         GetTargLocName(cur.second.targLoc), cur.second.targAttr, \
@@ -467,7 +467,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         if (srcValue.isNaN() or srcValue.isInf()) {
             srcValue = cur.second.srcRef->GetDefaultAttribute(cur.second.srcAttr);
             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): srcValue isInf or isNaN.  Data: %s(%u) - src(%s:%u) set to %.3f.", \
-            cur.second.srcRef->itemName().c_str(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float());
+            cur.second.srcRef->name(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float());
         } */
 
         // set target attr to modified value
@@ -483,7 +483,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             if (targValue.isNaN() or targValue.isInf()) {
                 targValue = item->GetDefaultAttribute(cur.second.targAttr);
                 _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): targValue isInf or isNaN.  Data: %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ to %.3f.", \
-                cur.second.srcRef->itemName().c_str(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), \
+                cur.second.srcRef->name(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), \
                     GetMathMethodName(opID), GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float());
             } */
 
@@ -501,7 +501,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             EvilNumber newValue = CalculateAttributeValue(targValue, srcValue, opID);
             // set new calculated value for target attribute
             _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u)=%.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", \
-                    cur.first, cur.second.srcRef->itemName().c_str(), cur.second.srcRef->itemID(), \
+                    cur.first, cur.second.srcRef->name(), cur.second.srcRef->itemID(), \
                     GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID), \
                     GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float(), newValue.get_float());
 

@@ -124,7 +124,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
 
     CelestialSE* wSE = new CelestialSE(iRef, *(pSysMgr->GetServiceMgr()), pSysMgr);
     if (wSE == nullptr) {
-        _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - SE Create failure for %s(%u)", iRef->itemName().c_str(), iRef->itemID());
+        _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - SE Create failure for %s(%u)", iRef->name(), iRef->itemID());
         return;
     }
     // set itemID to return to anomaly mgr after creation succeeds
@@ -136,7 +136,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     m_wormholes.push_back(iRef->itemID());
 
     _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created %s in %s(%u) with %.3f%% sigStrength.", \
-            iRef->itemName().c_str(), pSysMgr->GetName(), sig.systemID, sig.sigStrength *100);
+            iRef->name(), pSysMgr->GetName(), sig.systemID, sig.sigStrength *100);
 }
 
 void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)

@@ -82,7 +82,7 @@ Concord::Concord(
      m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
      m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
 
-     //_log(CONCORD__TRACE, "Created Concord Police object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
+     //_log(CONCORD__TRACE, "Created Concord Police object for %s (%u)", self.get()->name(), self.get()->itemID());
 }
 
 Concord::~Concord() {

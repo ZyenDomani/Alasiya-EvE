@@ -511,7 +511,7 @@ PyResult Command_shipinventory(Client* pClient, CommandDB* db, PyServiceMgr* ser
     int size = count * 60;
     size += 90;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), ship->itemName().c_str(), inventoryID, inv, ship.get(), count);
+    snprintf(reply, size, str.str().c_str(), ship->name(), inventoryID, inv, ship.get(), count);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -551,7 +551,7 @@ PyResult Command_skilllist(Client* pClient, CommandDB* db, PyServiceMgr* service
     int size = count * 80;
     size += 80;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), inventoryID, inv, pClient->GetChar()->itemName().c_str(), count);
+    snprintf(reply, size, str.str().c_str(), inventoryID, inv, pClient->GetChar()->name(), count);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);

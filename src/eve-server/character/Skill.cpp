@@ -66,7 +66,7 @@ SkillRef Skill::Spawn( ItemData &data)
 }
 
 bool Skill::IsTraining() {
-    return (m_flag == flagSkillInTraining);
+    return (flag() == flagSkillInTraining);
 }
 
 uint8 Skill::GetLevelForSP(uint32 currentSP) {
@@ -80,7 +80,7 @@ uint32 Skill::GetSPForLevel(uint8 level) {
 uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
 {
     uint32 currentSP(GetAttribute(AttrSkillPoints).get_uint32());
-    if (m_flag == flagSkill)
+    if (flag() == flagSkill)
         return currentSP;
 
     if (startTime == 0)
@@ -93,6 +93,7 @@ uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
     if (level > EvESkill::MAXSKILLLEVEL)
         level = EvESkill::MAXSKILLLEVEL;
 
+    /** @todo this isnt completely right.... */
     // at this point, the skill is in training.  calculate accumulated sp and return
     uint32 delta(0);
     uint32 timeElapsed((GetFileTimeNow() - startTime) / EvE::Time::Second);
@@ -103,7 +104,7 @@ uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
     }
 
     _log(SKILL__TRACE, "Skill::GetCurrentSP() for %s is %u - delta: %u, elapsed time: %us", \
-            m_itemName.c_str(), currentSP, delta, timeElapsed);
+            name(), currentSP, delta, timeElapsed);
 
     return currentSP;
 }
@@ -152,14 +153,14 @@ uint32 Skill::GetTrainingTime(Character* ch, int64 startTime/*0*/)
 
 void Skill::VerifyAttribs()
 {
-    if (!m_singleton)
+    if (!singleton())
         ChangeSingleton(true);
     if (GetAttribute(AttrSkillLevel).get_type() != evil_number_int) {
-        _log(SKILL__INFO, "Skill %s level type != int.  Fixing...", itemName().c_str());
+        _log(SKILL__INFO, "Skill %s level type != int.  Fixing...", name());
         SetAttribute(AttrSkillLevel, GetAttribute(AttrSkillLevel).get_uint32(), false);
     }
     if (GetAttribute(AttrSkillPoints).get_type() != evil_number_int) {
-        _log(SKILL__INFO, "Skill %s sp type != int.  Fixing...", itemName().c_str());
+        _log(SKILL__INFO, "Skill %s sp type != int.  Fixing...", name());
         SetAttribute(AttrSkillPoints, GetAttribute(AttrSkillPoints).get_uint32(), false);
     }
 }
@@ -168,7 +169,7 @@ void Skill::VerifySP()
 {
     if (is_log_enabled(SKILL__MESSAGE))
         _log(SKILL__MESSAGE, "Begin SP check for %s. level %u: CurrentSP: %u", \
-                itemName().c_str(), GetAttribute(AttrSkillLevel).get_uint32(), GetAttribute(AttrSkillPoints).get_uint32());
+                name(), GetAttribute(AttrSkillLevel).get_uint32(), GetAttribute(AttrSkillPoints).get_uint32());
 
     if (GetAttribute(AttrSkillPoints) == EvilZero)
         return;
@@ -181,7 +182,7 @@ void Skill::VerifySP()
     uint32 spThisLevel(GetSPForLevel(level -1));
     uint32 spCurrent(GetAttribute(AttrSkillPoints).get_uint32());
     if (spCurrent < spThisLevel) {
-        _log(SKILL__WARNING, "Skill %s points low.  Updating from %u to %u", itemName().c_str(), spCurrent, spThisLevel);
+        _log(SKILL__WARNING, "Skill %s points low.  Updating from %u to %u", name(), spCurrent, spThisLevel);
         SetAttribute(AttrSkillPoints, spThisLevel, false);
         // hit it again to be sure it's fixed
         VerifySP();
@@ -192,10 +193,10 @@ void Skill::VerifySP()
         SetAttribute(AttrSkillLevel, level);
         if (level > 4) {
             _log(SKILL__WARNING, " %s - Skillpoints high for L5. Updating SP from %u to %u.", \
-                itemName().c_str(), spCurrent, spNextLevel);
+                name(), spCurrent, spNextLevel);
         } else
             _log(SKILL__WARNING, " %s - Skillpoints high. Updating level from %u to %u and SP from %u to %u.", \
-                itemName().c_str(), level -1, level, spCurrent, spNextLevel);
+                name(), level -1, level, spCurrent, spNextLevel);
         SetAttribute(AttrSkillPoints, spNextLevel, false);
         // hit it again to be sure it's fixed
         VerifySP();

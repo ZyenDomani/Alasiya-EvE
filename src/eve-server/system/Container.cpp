@@ -45,7 +45,7 @@ CargoContainer::CargoContainer(uint32 _containerID, const ItemType &_containerTy
 m_isAnchored(false)
 {
     pInventory = new Inventory(InventoryItemRef(this));
-    _log(ITEM__TRACE, "Created CargoContainer object for item %s (%u).", m_itemName.c_str(), m_itemID);
+    _log(ITEM__TRACE, "Created CargoContainer object for item %s (%u).", name(), m_itemID);
 }
 
 CargoContainer::~CargoContainer()
@@ -120,7 +120,7 @@ void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) c
 
 PyObject *CargoContainer::CargoContainerGetInfo() {
     if (!pInventory->LoadContents( ) ) {
-        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for CargoContainerGetInfo", m_itemName.c_str(), m_itemID );
+        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for CargoContainerGetInfo", name(), m_itemID );
         return nullptr;
     }
 
@@ -226,7 +226,7 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
-    m_ownerID = data.ownerID;
+    SetOwner(data.ownerID);
 
     if (!IsStation(m_self->locationID())) { // should NEVER be true (SE object in station???)
         if (m_self->typeID() == EVEDB::invTypes::PlanetaryLaunchContainer)
@@ -337,7 +337,7 @@ void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
 }
 
 PyDict *ContainerSE::MakeSlimItem() {
-    _log(SE__SLIMITEM, "MakeSlimItem for ContainerSE %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for ContainerSE %s(%u)", m_self->name(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
@@ -368,7 +368,7 @@ m_delete(false)
     pInventory = new Inventory(InventoryItemRef(this));
     m_salvaged = false;
 
-    _log(ITEM__TRACE, "Created WreckContainer object for item %s (%u).", itemName().c_str(), itemID());
+    _log(ITEM__TRACE, "Created WreckContainer object for item %s (%u).", name(), itemID());
 }
 
 WreckContainer::~WreckContainer()
@@ -428,7 +428,7 @@ double WreckContainer::GetCapacity(EVEItemFlags flag) const
 PyObject *WreckContainer::WreckContainerGetInfo()
 {
     if (!pInventory->LoadContents()) {
-        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for WreckContainerGetInfo", itemName().c_str(), itemID() );
+        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for WreckContainerGetInfo", name(), itemID() );
         return nullptr;
     }
 
@@ -465,7 +465,7 @@ void WreckContainer::RemoveItem(InventoryItemRef iRef)
 
     if (pInventory->IsEmpty()) {
         MakeSlimItemChange();
-        _log(INV__INFO, "WreckContainer::IsEmpty() for %s(%u)", itemName().c_str(), itemID());
+        _log(INV__INFO, "WreckContainer::IsEmpty() for %s(%u)", name(), itemID());
     }
 }
 
@@ -502,7 +502,7 @@ m_contRef(self)
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
-    m_ownerID = data.ownerID;
+    SetOwner(data.ownerID);
 
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity());
 }
@@ -567,7 +567,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
 }
 
 PyDict *WreckSE::MakeSlimItem() {
-    _log(SE__SLIMITEM, "MakeSlimItem for WreckSE %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for WreckSE %s(%u)", m_self->name(), m_self->itemID());
     PyTuple* nameID = new PyTuple(2);
         nameID->SetItem(0,  new PyString("UI/Inflight/WreckNameShipName"));
     PyDict* shipName = new PyDict;

@@ -138,7 +138,7 @@ void TowerSE::Init()
     StructureSE::Init();
 
     if (!m_db.GetTowerData(m_tdata, m_data)) {
-        _log(SE__TRACE, "TowerSE %s(%u) has no saved data.  Initializing default set.", m_self->itemName().c_str(), m_self->itemID());
+        _log(SE__TRACE, "TowerSE %s(%u) has no saved data.  Initializing default set.", m_self->name(), m_self->itemID());
         // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
         InitData();
     }
@@ -192,8 +192,11 @@ void TowerSE::Scoop() {
 void TowerSE::Process()
 {
     /* called by EntityList::Process on every loop */
-    // tower-specific tests here
 
+    // starbase charter checks for empire space
+
+    // tower-specific tests here
+    
     /*  Enable base call to Process Anchoring, Targeting and Movement  */
     StructureSE::Process();
 }

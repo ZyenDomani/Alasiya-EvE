@@ -242,7 +242,7 @@ Character::Character(
   m_inTraining(nullptr)
 {
     // enforce characters to be singletons
-    assert(m_singleton);
+    assert(singleton());
 
     m_loaded = false;
     m_fleetData = CharFleetData();
@@ -1172,7 +1172,7 @@ PyDict *Character::GetCharInfo() {
     // this is char, skills, implants, boosters.
     if (!pInventory->ContentsLoaded())
         if (!pInventory->LoadContents()) {
-            codelog(CHARACTER__ERROR, "%s (%u): Failed to load contents for GetCharInfo", m_itemName.c_str(), m_itemID);
+            codelog(CHARACTER__ERROR, "%s (%u): Failed to load contents for GetCharInfo", name(), m_itemID);
             return nullptr;
         }
 
@@ -1198,7 +1198,7 @@ PyDict *Character::GetCharInfo() {
         if (cur->Populate(entry))
             result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry.Encode()));
         else
-            codelog(CHARACTER__ERROR, "%s (%u): Failed to load character item %u for GetCharInfo", m_itemName.c_str(), m_itemID, cur->itemID());
+            codelog(CHARACTER__ERROR, "%s (%u): Failed to load character item %u for GetCharInfo", name(), m_itemID, cur->itemID());
     }
 
     /** @todo i dont know how boosters and implants work yet, so may have to set item different for them.  */

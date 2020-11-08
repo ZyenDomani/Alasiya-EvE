@@ -91,10 +91,10 @@ void ShipItem::LogOut()
 
     // remove ship item from its' container's inventory list also.
     Inventory* pInv(nullptr);
-    if (IsStation(m_locationID))
-        pInv = sItemFactory.GetStation(m_locationID)->GetMyInventory();
+    if (IsStation(locationID()))
+        pInv = sItemFactory.GetStation(locationID())->GetMyInventory();
     else
-        pInv = sItemFactory.GetSolarSystem(m_locationID)->GetMyInventory();
+        pInv = sItemFactory.GetSolarSystem(locationID())->GetMyInventory();
 
     if (pInv != nullptr)
         pInv->RemoveItem(ShipItemRef(this));
@@ -123,10 +123,10 @@ void ShipItem::SetPlayer(Client* pClient) {
     Init();
 
     // proc effects when changing ships, or on login.
-    ProcessEffects(true, IsSolarSystem(m_locationID));
+    ProcessEffects(true, IsSolarSystem(locationID()));
 
     // this hits on login and when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
-    if (IsSolarSystem(m_locationID)) {
+    if (IsSolarSystem(locationID())) {
         SetFlag(flagNone);
         /*  not sure if we're gonna keep this in here....
         if (pClient->IsLogin()) {
@@ -147,7 +147,7 @@ void ShipItem::SetPlayer(Client* pClient) {
 void ShipItem::Init()
 {
     // pods have 57 attribs and 0 effects
-    if (m_type.groupID() == EVEDB::invGroups::Capsule) {
+    if (groupID() == EVEDB::invGroups::Capsule) {
         InitPod();
         return;
     }
@@ -997,7 +997,7 @@ void ShipItem::RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fr
 
 void ShipItem::Online(uint32 modID)
 {
-    if (IsSolarSystem(m_locationID)) {
+    if (IsSolarSystem(locationID())) {
         ; // check for avalible cap, and drain accordingly (this can throw)
         /*
         float Charge = GetAttribute(AttrCapacitorCharge).get_float();
@@ -1312,14 +1312,14 @@ void ShipItem::StripFitting()
     UnlinkAllWeapons();
 
     EVEItemFlags flag = flagCargoHold;
-    if IsStation(m_locationID)
+    if IsStation(locationID())
         flag = flagHangar;
 
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
     for (auto cur : moduleList) {
         m_ModuleManager->UnfitModule(cur->itemID());
-        cur->Move(m_locationID, flag, true);
+        cur->Move(locationID(), flag, true);
     }
 }
 
@@ -1328,7 +1328,7 @@ void ShipItem::EmptyCargo()
     std::map<uint32, InventoryItemRef> invList;
     pInventory->GetInventoryList(invList);
     for (auto cur : invList)
-        cur.second->Move(m_locationID, flagHangar, true);
+        cur.second->Move(locationID(), flagHangar, true);
 }
 
 void ShipItem::CargoFull() {
@@ -1828,7 +1828,7 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
     _log(EFFECTS__TRACE, "ShipItem::ProcessShipEffects()");
-    for (auto it : m_type.m_stateFxMap) {
+    for (auto it : type().m_stateFxMap) {
         fxData data = fxData();
         data.action = FX::Action::Invalid;
         data.srcRef = static_cast<InventoryItemRef>(this);
@@ -1882,7 +1882,7 @@ void ShipItem::ResetEffects() {
     for (auto cur : charges)
         cur.second->ResetAttributes();
 
-    ProcessEffects(true, true/*IsSolarSystem(m_locationID)*/);
+    ProcessEffects(true, true/*IsSolarSystem(locationID())*/);
     _log(EFFECTS__DEBUG, "ShipItem::ResetEffects() - Effects reset in %.3fms", (GetTimeMSeconds() - start));
 }
 
@@ -1916,9 +1916,9 @@ std::string ShipItem::GetShipDNA()
      * "587:8863;1:8863;1:8863;1:499;1:578;1:1798;1:6485;1:2046;1:8325;1:31788;1:31800;1:31788;1::"
      *  need to figure out how to group modules for correct condensed counts
      */
-    if (type().id() == EVEDB::invTypes::Capsule) {
+    if (typeID() == EVEDB::invTypes::Capsule) {
         std::stringstream dna;
-        dna << type().id() << ":";
+        dna << typeID() << ":";
         _log(SHIP__MESSAGE, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
         return dna.str();
     }
@@ -1955,7 +1955,7 @@ std::string ShipItem::GetShipDNA()
 
     /* build the dna stream */
     std::stringstream dna;
-    dna << type().id() << ":";
+    dna << typeID() << ":";
     dna << subSys.str() << modHi.str() << modMid.str() << modLow.str() << modRig.str() << charges.str() << drones.str();
 
     _log(SHIP__MESSAGE, "ShipDNA has compiled \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
@@ -1981,7 +1981,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                 pClient->SendErrorMsg("%s cannot be stowed in the Drone Bay", sDataMgr.GetGroupName(iRef->groupID()));
                 return false;
             }
-            if (m_type.groupID() == EVEDB::invGroups::Supercarrier) {
+            if (groupID() == EVEDB::invGroups::Supercarrier) {
                 // these can only carry fighters and fighter/bombers in drone bay.  enforce that here.
                 if ((iRef->groupID() != EVEDB::invGroups::Fighter_Bomber)
                 and (iRef->groupID() != EVEDB::invGroups::Fighter_Drone)) {
@@ -2126,7 +2126,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                 }
                 if (!ValidateItemSpecifics(iRef)) {
                     pClient->SendErrorMsg("Your ship cannot equip the %s.<br>The group '%s' is not allowed on your %s.", \
-                            iRef->name(), sDataMgr.GetGroupName(iRef->groupID()), m_type.name().c_str());
+                            iRef->name(), sDataMgr.GetGroupName(iRef->groupID()), type().name().c_str());
                     return false;
                 }
                 if (iRef->categoryID() == EVEDB::invCategories::Charge) {
@@ -2328,9 +2328,9 @@ bool ShipItem::ValidateBoardShip(CharacterRef character) {
 
 bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
 {
-    bool result = false;
-    EvilNumber fitID = 0;
-    uint16 groupID = m_type.groupID();
+    bool result(false);
+    EvilNumber fitID(0);
+    uint16 groupID(type().groupID());
     // If a ship group restriction is specified, the item must be able to fit to at least one ship group.
     _log(SHIP__TRACE, "ShipItem::ValidateItemSpecifics - Beginning the group validation for %s(%u):", iRef->name(), iRef->itemID());
     if (iRef->HasAttribute(AttrCanFitShipGroup1, fitID)) {
@@ -2373,7 +2373,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
     if (result) {
         _log(SHIP__TRACE, "ShipItem::ValidateItemSpecifics - Beginning the type validation for %s(%u):", iRef->name(), iRef->itemID());
 
-        uint16 typeID = m_type.id();
+        uint16 typeID(type().id());
         if (iRef->HasAttribute(AttrCanFitShipType1, fitID)) {
             result = false;
             if (fitID == typeID)

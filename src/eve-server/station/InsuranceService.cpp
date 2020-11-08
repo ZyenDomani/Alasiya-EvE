@@ -197,7 +197,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     }
 
     uint8 numWeeks(12);
-    if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->itemName().c_str(), call.client->GetCharacterID(), fraction, shipRef->type().basePrice(), args.isCorp, numWeeks)) {
+    if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->name(), call.client->GetCharacterID(), fraction, shipRef->type().basePrice(), args.isCorp, numWeeks)) {
         //  it successfully added, now, have the player pay for the insurance
         std::string reason = "Insurance Premium on ";
         reason += call.client->GetShip()->itemName();

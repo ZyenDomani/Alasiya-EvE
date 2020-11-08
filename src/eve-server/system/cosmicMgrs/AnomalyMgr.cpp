@@ -501,7 +501,7 @@ void AnomalyMgr::AddSignal(SystemEntity* pSE, uint32 id/*0*/)
     }
 
     _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::AddSignal() - adding %s to anomaly list as %s(%u) with %.3f%% sigStrength.", \
-                iRef->itemName().c_str(), GetScanGroupName(sig.scanGroupID), sig.scanGroupID, sig.sigStrength *100);
+                iRef->name(), GetScanGroupName(sig.scanGroupID), sig.scanGroupID, sig.sigStrength *100);
 
     // add new sig to our maps, but these are not added to anom/sig counts
     m_sigBySigID.emplace(sig.sigID, sig);

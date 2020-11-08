@@ -226,12 +226,12 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     // this may not be needed, as rental fee is queried immediatly prior to this call
     if (arg.arg != pStationItem->GetOfficeRentalFee())
         _log(CORP__WARNING, "RentOffice() - Was quoted %i but station reports %i for station %s", \
-                arg.arg, pStationItem->GetOfficeRentalFee(), pStationItem->itemName().c_str());
+                arg.arg, pStationItem->GetOfficeRentalFee(), pStationItem->name());
 
     // check if the corp has enough money
     // remove the money and record the transaction
     std::string reason = "Office Rental at ";
-    reason += pStationItem->itemName().c_str();
+    reason += pStationItem->itemName();
     reason += " by ";
     reason += pClient->GetCharName();
     AccountService::TranserFunds(pClient->GetCorporationID(), pStationItem->GetOwnerID(), arg.arg, reason.c_str(), Journal::EntryType::OfficeRentalFee);

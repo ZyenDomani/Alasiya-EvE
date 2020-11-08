@@ -93,19 +93,19 @@ public:
 
     /* common functions for all entities handled here */
     /* public data queries  */
-    bool                    contraband() const          { return m_contraband; }
-    bool                    singleton() const           { return m_singleton; }
-    int32                   quantity() const            { return m_quantity; }
+    bool                    contraband() const          { return m_data.contraband; }
+    bool                    singleton() const           { return m_data.singleton; }
+    int32                   quantity() const            { return m_data.quantity; }
     uint32                  itemID() const              { return m_itemID; }
-    uint32                  ownerID() const             { return m_ownerID; }
-    uint32                  locationID() const          { return m_locationID; }
-    EVEItemFlags            flag() const                { return m_flag; }
-    const GPoint &          position() const            { return m_position; }
+    uint32                  ownerID() const             { return m_data.ownerID; }
+    uint32                  locationID() const          { return m_data.locationID; }
+    EVEItemFlags            flag() const                { return m_data.flag; }
+    const GPoint &          position() const            { return m_data.position; }
     const ItemType &        type() const                { return m_type; }
-    const std::string &     itemName() const            { return m_itemName; }
-    const std::string &     customInfo() const          { return m_customInfo; }
+    const std::string &     itemName() const            { return m_data.name; }
+    const std::string &     customInfo() const          { return m_data.customInfo; }
 
-    const char*             name()                      { return m_itemName.c_str(); }
+    const char*             name()                      { return m_data.name.c_str(); }
 
     /* public type queries  */
     uint16                  typeID() const              { return m_type.id(); }
@@ -134,11 +134,13 @@ public:
     bool                    SetQuantity(int32 qty, bool notify=false, bool deleteOnZero=true);
     // sets new flag, if different, saves update to db, and (optionally) notifies client of change
     bool                    SetFlag(EVEItemFlags flag, bool notify=false);
+    // sets owner for player-owned npc types (drone, missile, etc)
+    void                    SetOwner(uint32 ownerID)    { m_data.ownerID = ownerID; }
 
     /* public-access data functions handled in base class. */
     void                    SaveItem();  //save the item to the DB.
     void                    UpdateLocation();   // save item's location, owner, flag
-    void                   UpdateLocation(uint32 locID) { m_locationID = locID; }  // change item's locationID without saving
+    void                   UpdateLocation(uint32 locID) { m_data.locationID = locID; }  // change item's locationID without saving
 
     /* virtual functions default to base class and overridden as needed */
     virtual void            Delete();  //totally removes item from game and deletes from the DB.
@@ -275,23 +277,11 @@ public:
 
 protected:
     Inventory* pInventory;
-
-    // our item data:
-    const uint32            m_itemID;
-    std::string             m_itemName;
-    bool                    m_contraband;
-    bool                    m_singleton;
-    int32                   m_quantity;
-    uint32                  m_locationID;
-    uint32                  m_ownerID;
-    std::string             m_customInfo;
-    const ItemType &        m_type;
-    EVEItemFlags            m_flag;
-    GPoint                  m_position;
+    uint32 m_itemID;
 
 private:
-    /** @todo update this to static calls */
-    InventoryDB m_db;
+    ItemData m_data;
+    ItemType m_type;
 
 /* new effects processing system */
 public:
@@ -314,7 +304,8 @@ public:
 
 
 /*  new attribute system */
-    AttributeMap* GetAttributeMap()                     { return pAttributeMap; }
+    AttributeMap*           GetAttributeMap()           { return pAttributeMap; }
+    int64                   GetTimeStamp()              { return m_timestamp; }
 
     void SetAttribute(uint16 attrID, int num, bool notify=true);
     void SetAttribute(uint16 attrID, uint32 num, bool notify=true);
@@ -334,6 +325,8 @@ public:
 
 protected:
     AttributeMap* pAttributeMap;
+
+private:
     // fx timestamp
     int64   m_timestamp;        // not implemented yet
 

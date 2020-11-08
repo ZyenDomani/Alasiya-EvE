@@ -76,7 +76,7 @@ Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, float mod, uint16 eID)
     explosive   = wRef->GetAttribute(AttrExplosiveDamage).get_float();
 
     _log(DAMAGE__WARNING, "Damage:C'tor - Called by source %s(%u) with weapon %s(%u).",
-         srcSE->GetName(), srcSE->GetID(), wRef->itemName().c_str(), wRef->itemID() );
+         srcSE->GetName(), srcSE->GetID(), wRef->name(), wRef->itemID() );
 }
 
 // this is for missiles
@@ -91,7 +91,7 @@ Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef, 
     explosive   = cRef->GetAttribute(AttrExplosiveDamage).get_float();
 
     _log(DAMAGE__WARNING, "Damage:C'tor - Called by source %s(%u) with weapon %s(%u) using charge %s(%u).",
-         srcSE->GetName(), srcSE->GetID(), wRef->itemName().c_str(), wRef->itemID(), cRef->itemName().c_str(), cRef->itemID() );
+         srcSE->GetName(), srcSE->GetID(), wRef->name(), wRef->itemID(), cRef->name(), cRef->itemID() );
 }
 
 // No specific damage dealt here, just killed
@@ -120,7 +120,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         } else if (d.srcSE->HasPilot()) {
             _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from %s's %s(%u) using %s(%u) %s with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetPilot()->GetName(), d.srcSE->GetName(), d.srcSE->GetID(), \
-                    d.weaponRef->itemName().c_str(), d.weaponRef->itemID(), (d.chargeRef ? d.chargeRef->itemName().c_str() : ""), \
+                    d.weaponRef->name(), d.weaponRef->itemID(), (d.chargeRef ? d.chargeRef->name() : ""), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
         } else {
             _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
@@ -410,7 +410,7 @@ void ShipSE::Killed(Damage &fatal_blow) {
     }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
     if (!IsWreckTypeID(wreckTypeID)) {
-        sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
+        sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->name(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
     }
@@ -428,7 +428,7 @@ void ShipSE::Killed(Damage &fatal_blow) {
 
         if (is_log_enabled(PHYSICS__TRACE))
             _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
-                    GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+                    GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
         DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();
@@ -591,7 +591,7 @@ void ShipSE::Killed(Damage &fatal_blow) {
                 sLog.Error("Ship::Killed()", "Spawning Corpse Failed: typeID or typeName not supported: '%u'", corpseTypeID);
             } else if (is_log_enabled(PHYSICS__TRACE)) {
                 _log(PHYSICS__TRACE, "Ship::Killed() - Pod %s(%u) Position: %.2f,%.2f,%.2f.  Corpse %s(%u) Position: %.2f,%.2f,%.2f.", \
-                    GetName(), GetID(), x(), y(), z(), corpseItemRef->itemName().c_str(), corpseItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+                    GetName(), GetID(), x(), y(), z(), corpseItemRef->name(), corpseItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
             }
         }
 
@@ -617,7 +617,7 @@ void ShipSE::Killed(Damage &fatal_blow) {
 
         if (is_log_enabled(PHYSICS__TRACE))
             _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
-            GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+            GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
         DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();

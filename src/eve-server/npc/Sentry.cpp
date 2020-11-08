@@ -53,7 +53,7 @@ Sentry::Sentry(InventoryItemRef self, PyServiceMgr& services, SystemManager* sys
     m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
     m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
 
-    // _log(Sentry__TRACE, "Created Sentry object for %s (%u)", m_self.get()->itemName().c_str(), m_self.get()->itemID());
+    // _log(Sentry__TRACE, "Created Sentry object for %s (%u)", m_self.get()->name(), m_self.get()->itemID());
 }
 
 Sentry::~Sentry() {
@@ -174,7 +174,7 @@ void Sentry::Killed(Damage &fatal_blow) {
     }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
     if (!IsWreckTypeID(wreckTypeID)) {
-        sLog.Error("Sentry::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
+        sLog.Error("Sentry::Killed()", "Could not get wreckType for %s of type %u", m_self->name(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
     }
@@ -190,7 +190,7 @@ void Sentry::Killed(Damage &fatal_blow) {
 
     if (is_log_enabled(PHYSICS__TRACE))
         _log(PHYSICS__TRACE, "Sentry::Killed() - Sentry %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
-        GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+        GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = killer->GetAllianceID();

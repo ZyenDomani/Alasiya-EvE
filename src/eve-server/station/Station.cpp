@@ -65,7 +65,7 @@ m_loaded(false)
 {
     pInventory = new Inventory(InventoryItemRef(this));
 
-    _log(ITEM__TRACE, "Created Station for item %s (%u).", itemName().c_str(), itemID());
+    _log(ITEM__TRACE, "Created Station for item %s (%u).", name(), itemID());
 }
 
 StationItem::~StationItem()
@@ -314,7 +314,7 @@ void StationSE::EncodeDestiny( Buffer& into )
 }
 
 PyDict *StationSE::MakeSlimItem() {
-    _log(SE__SLIMITEM, "MakeSlimItem for StationSE %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for StationSE %s(%u)", m_self->name(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));

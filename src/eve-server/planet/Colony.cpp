@@ -471,7 +471,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     if (groupID != Command_Centers)
         tempPinIDs.insert(std::pair<uint8, uint32>(pinID, iRef->itemID()));     // save map of tempID to itemID - this handles the stacked-calls from client to use real itemIDs
 
-    _log(COLONY__INFO, "Colony::CreatePin() - Created pin for %s(%u)", iRef->itemName().c_str(), iRef->itemID());
+    _log(COLONY__INFO, "Colony::CreatePin() - Created pin for %s(%u)", iRef->name(), iRef->itemID());
 }
 
 void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
@@ -1000,7 +1000,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     if (count)
         if (is_log_enabled(COLONY__TRACE))
             _log(COLONY__TRACE, "Colony::LaunchCommodities() - Launched %u items from command center %u to %s (%u)", \
-                        count, m_colonyID, contRef->itemName().c_str(), contRef->itemID() );
+                        count, m_colonyID, contRef->name(), contRef->itemID() );
 
     contRef->SaveItem();
     pin->second.lastLaunchTime = GetFileTimeNow();

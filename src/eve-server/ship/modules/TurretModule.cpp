@@ -95,7 +95,7 @@ void TurretModule::ApplyDamage()
                 if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
                     m_crystalDmg += m_crystalDmgAmount;
                     if (m_crystalDmg > 1.0f) {
-                        m_shipRef->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str());
+                        m_shipRef->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->name(), m_modRef->name());
                         InventoryItemRef chargeRef = m_chargeRef;   // make a copy of item ref, as m_chargeRef = NULL after next call returns
                         m_shipRef->RemoveItem(m_chargeRef);
                         chargeRef->Delete();

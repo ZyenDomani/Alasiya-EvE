@@ -91,7 +91,7 @@ public:
     // this should never be null
     SystemManager*          SystemMgr() const           { return m_system; }
     // used in msgs and other places where a const char* is needed instead of me forgetting to use .c_str()
-    const char*             GetName() const             { return (m_char.get() != nullptr ? m_char->itemName().c_str() : "(null)"); }
+    const char*             GetName() const             { return (m_char.get() != nullptr ? m_char->name() : "(null)"); }
 
     bool                    IsAFK()                     { return m_afk; }
     void                    SetAFK(bool set=true)       { m_afk = set; }

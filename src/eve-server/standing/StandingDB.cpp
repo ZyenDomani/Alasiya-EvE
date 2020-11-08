@@ -109,9 +109,6 @@ PyRep* StandingDB::GetStandingTransactions(Call_GetStandingTransactions& args) {
     //GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
     /** @todo update this for direction */
 
-    if (args.fromID == corpCONCORD)
-        ;
-
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"

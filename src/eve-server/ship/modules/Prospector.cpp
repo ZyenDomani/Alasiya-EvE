@@ -191,7 +191,7 @@ void Prospector::DropSalvage()
             if (sInv->HasAvailableSpace(m_holdFlag, iRef)) {
                 //iRef->Move(m_shipRef->itemID(), m_holdFlag, true);
                 iRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
-                _log(MODULE__DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->itemName().c_str(), minDrop, maxDrop);
+                _log(MODULE__DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->name(), minDrop, maxDrop);
             } else {
                 _log(MODULE__DEBUG, "Prospector::DropSalvage - %s's %s is full.", m_shipRef->name(), sDataMgr.GetFlagName(m_holdFlag));
                 m_shipRef->GetPilot()->SendNotifyMsg("Your %s is full.  Remaining salvage is lost.", sDataMgr.GetFlagName(m_holdFlag));

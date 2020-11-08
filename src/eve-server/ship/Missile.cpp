@@ -138,7 +138,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
 
     m_lifeTimer.Start(flightTime);
 
-    //_log(DAMAGE__MESSAGE, "Created Missile object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
+    //_log(DAMAGE__MESSAGE, "Created Missile object for %s (%u)", self.get()->name(), self.get()->itemID());
 }
 
 Missile::~Missile()
