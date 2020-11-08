@@ -1,5 +1,7 @@
-#@liveupdate("globalClassMethod", "svc.eveCalendar::GetEventFlag", "GetEventFlag")
+#@liveupdate("globalClassMethod", "svc.eveCalendar::EveCalendarSvc", "GetEventFlag")
 def GetEventFlag(self, ownerID, autoEventType = None):
+    if autoEventType is not None:
+        return const.calendarTagAutomated
     if ownerID == session.corpid:
         if autoEventType is None:
             return const.calendarTagCorp
@@ -8,7 +10,5 @@ def GetEventFlag(self, ownerID, autoEventType = None):
         return const.calendarTagAlliance
     elif ownerID == const.ownerSystem:
         return const.calendarTagCCP
-    elif autoEventType is None:
-        return const.calendarTagPersonal
     else:
-        return const.calendarTagAutomated
+        return const.calendarTagPersonal

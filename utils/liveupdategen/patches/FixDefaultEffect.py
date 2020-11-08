@@ -1,4 +1,4 @@
-#@liveupdate("globalClassMethod", "dogmax.DogmaLocation::CapacitorSimulator", "CapacitorSimulator")
+#@liveupdate("globalClassMethod", "dogmax.DogmaLocation::DogmaLocation", "CapacitorSimulator")
 def CapacitorSimulator(self, shipID):
     dogmaItem = self.dogmaItems[shipID]
     capacitorCapacity = self.GetAttributeValue(shipID, const.attributeCapacitorCapacity)
