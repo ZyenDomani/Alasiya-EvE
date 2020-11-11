@@ -126,7 +126,7 @@ void ItemFactory::SaveItems() {
                 data.ownerID = cur.second->ownerID();
                 data.position = cur.second->position();
                 data.quantity = cur.second->quantity();
-                data.singleton = cur.second->singleton();
+                data.singleton = cur.second->isSingleton();
                 data.typeID = cur.second->typeID();
                 data.customInfo = cur.second->customInfo();
             items.push_back(data);

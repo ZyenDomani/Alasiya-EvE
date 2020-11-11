@@ -1031,7 +1031,7 @@ void Client::CheckShipRef(ShipItemRef newShipRef)
     if (newShipRef.get() == nullptr) {
         _log(PLAYER__ERROR, "CheckShipRef() - %s: newShipRef == NULL.", m_char->name());
         throw PyException(MakeCustomError("Could not find ship's ItemRef.  Cannot Board.   Ref: ServerError 12321."));
-    } else if (!newShipRef->singleton()) {
+    } else if (!newShipRef->isSingleton()) {
         _log(PLAYER__MESSAGE, "%s tried to board ship %u, which is not assembled.", m_char->name(), newShipRef->itemID());
         throw PyException(MakeCustomError("You cannot board a ship which is not assembled!"));
     } else if ((m_ship == newShipRef) and !m_login) {
@@ -2306,7 +2306,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     pSession->SetInt("userType", Acct::Type::Mammon);     //aData.type  - incomplete (db fields done)
     pSession->SetInt("userid", aData.id);
     pSession->SetLong("role", aData.role);
-    pSession->SetLong("clientID", 1000000L * aData.clientID + 888444);
+    pSession->SetLong("clientID", 1000000L * aData.clientID + 888444);  // kinda arbitrary
     pSession->SetLong("sessionID", pSession->CreateSessionID());
 
     sLog.Green("  Client::Login()","Account %u (%s) logging in from %s", aData.id, aData.name.c_str(), EVEClientSession::GetAddress().c_str());

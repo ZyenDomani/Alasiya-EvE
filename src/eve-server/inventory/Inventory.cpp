@@ -84,7 +84,7 @@ void Inventory::Unload()
                     data.ownerID = itr->second->ownerID();
                     data.position = itr->second->position();
                     data.quantity = itr->second->quantity();
-                    data.singleton = itr->second->singleton();
+                    data.singleton = itr->second->isSingleton();
                     data.typeID = itr->second->typeID();
                     data.customInfo = itr->second->customInfo();
                 items.push_back(data);
@@ -541,7 +541,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
         ++lItr;
         if (IsModuleSlot(iRef->flag()))    // check to avoid removing loaded modules from ship
             continue;
-        if (iRef->singleton())
+        if (iRef->isSingleton())
             continue;
         if ((ownerID == 0) or (ownerID == iRef->ownerID())) {
             tItr = types.find(iRef->typeID());
@@ -587,7 +587,10 @@ bool Inventory::HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) cons
 
 float Inventory::GetCapacity(EVEItemFlags flag) const {
     // added hangar capy for all hangar types
-    // are we missing any hangar types here?  POS types?
+    // are we missing any hangar types here?  POS types?  yes...see next line
+    /** @todo  finish these for POS */
+    //   IsFlagCapacityLocationWide   item.groupID in (const.groupCorporateHangarArray, const.groupAssemblyArray, const.groupMobileLaboratory):
+
     switch( flag ) {
         case flagOffice:
         case flagProperty:

@@ -357,7 +357,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
         mTI.flagID = itemRef->flag();
         mTI.quantity = qty;
         mTI.groupID = itemRef->groupID();
-        mTI.singleton = itemRef->singleton();
+        mTI.singleton = itemRef->isSingleton();
         mTI.categoryID = itemRef->categoryID();
         mTI.customInfo = "";
         pTSes->m_tradelist.insert(pTSes->m_tradelist.end(), mTI);
@@ -448,7 +448,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
             mTI.flagID = flag;
             mTI.quantity = itemRef->quantity();
             mTI.groupID = itemRef->groupID();
-            mTI.singleton = itemRef->singleton();
+            mTI.singleton = itemRef->isSingleton();
             mTI.categoryID = itemRef->categoryID();
             mTI.customInfo = "";
         pTSes->m_tradelist.insert(pTSes->m_tradelist.end(), mTI);

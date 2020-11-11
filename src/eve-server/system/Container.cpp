@@ -97,7 +97,7 @@ uint32 CargoContainer::CreateItemID( ItemData &data)
 
 void CargoContainer::Delete()
 {
-    if (m_type.id() == EVEDB::invTypes::PlanetaryLaunchContainer)
+    if (typeID() == EVEDB::invTypes::PlanetaryLaunchContainer)
         PlanetDB::DeleteLaunch(m_itemID);
 
     // if SE exists, remove from system before deleting item
@@ -226,7 +226,7 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
-    SetOwner(data.ownerID);
+    m_ownerID = data.ownerID;
 
     if (!IsStation(m_self->locationID())) { // should NEVER be true (SE object in station???)
         if (m_self->typeID() == EVEDB::invTypes::PlanetaryLaunchContainer)
@@ -502,7 +502,7 @@ m_contRef(self)
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
-    SetOwner(data.ownerID);
+    m_ownerID = data.ownerID;
 
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity());
 }

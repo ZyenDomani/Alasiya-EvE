@@ -97,7 +97,14 @@ void CustomsSE::InitData()
         taxRateValues[EVEPOS::TaxValues::StandingGood]      = 0.05f;
         taxRateValues[EVEPOS::TaxValues::StandingHigh]      = 0.02f;
     m_cData.taxRateValues = taxRateValues;
-
+/*positionRowHeader = blue.DBRowDescriptor((('itemID', const.DBTYPE_I8),
+         ('x', const.DBTYPE_R5),
+         ('y', const.DBTYPE_R5),
+         ('z', const.DBTYPE_R5),
+         ('yaw', const.DBTYPE_R4),
+         ('pitch', const.DBTYPE_R4),
+         ('roll', const.DBTYPE_R4)))
+         */
     // yaw, pitch, roll = dunRotation
     /*  yaw is rotation on y axis [-180/180]
      *   +yaw is counterclockwise (+x starting at z 0)
@@ -451,7 +458,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         for (auto cur : deadShipInventory) {
             d = 0;
             x = cur.second->quantity();
-            s = (cur.second->singleton() ? 1 : 0);
+            s = (cur.second->isSingleton() ? 1 : 0);
             if (cur.second->categoryID() == EVEDB::invCategories::Blueprint) {
                 // singleton for bpo = 1, bpc = 2.
                 BlueprintRef bpRef = BlueprintRef::StaticCast(cur.second);

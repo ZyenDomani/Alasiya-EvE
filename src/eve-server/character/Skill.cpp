@@ -153,7 +153,7 @@ uint32 Skill::GetTrainingTime(Character* ch, int64 startTime/*0*/)
 
 void Skill::VerifyAttribs()
 {
-    if (!singleton())
+    if (!isSingleton())
         ChangeSingleton(true);
     if (GetAttribute(AttrSkillLevel).get_type() != evil_number_int) {
         _log(SKILL__INFO, "Skill %s level type != int.  Fixing...", name());

@@ -94,7 +94,7 @@ public:
     /* common functions for all entities handled here */
     /* public data queries  */
     bool                    contraband() const          { return m_data.contraband; }
-    bool                    singleton() const           { return m_data.singleton; }
+    bool                    isSingleton() const         { return m_data.singleton != 0; }
     int32                   quantity() const            { return m_data.quantity; }
     uint32                  itemID() const              { return m_itemID; }
     uint32                  ownerID() const             { return m_data.ownerID; }

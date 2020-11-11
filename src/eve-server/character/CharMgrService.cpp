@@ -121,10 +121,10 @@ PyResult CharMgrBound::Handle_ListStationBlueprintItems( PyCallArgs& call )
      * this could be diff between station and pos   will need to check later (locationID == stationID)
      */
     //uint32 locationID = PyRep::IntegerValueU32(call.tuple->GetItem(0));
-    uint32 stationID = PyRep::IntegerValueU32(call.tuple->GetItem(1));
+    uint32 stationID(PyRep::IntegerValueU32(call.tuple->GetItem(1)));
 
-    uint32 ownerID = m_ownerID;
-    bool forCorp = PyRep::IntegerValue(call.tuple->GetItem(2));
+    uint32 ownerID(m_ownerID);
+    bool forCorp(PyRep::IntegerValue(call.tuple->GetItem(2)));
     if (forCorp) { //forCorp
         Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
         if (pClient == nullptr)

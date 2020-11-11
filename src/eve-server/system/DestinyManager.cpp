@@ -3077,13 +3077,13 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
         }
     } else if (mySE->SysBubble() != nullptr) {
         if (is_log_enabled(DESTINY__UPDATES))
-            _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update (u:%u, e:%u) for stamp %u to bubbleID %u from %s(%u)", \
+            _log(DESTINY__UPDATES, "[%u] BubbleCasting destiny update (u:%u, e:%u) for stamp %u to bubbleID %u from %s(%u)", \
                     sEntityList.GetStamp(), updates.size(), events.size(), sEntityList.GetStamp(), mySE->SysBubble()->GetID(),   \
                     (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
                     (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
         mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
     } else {
-        _log( DESTINY__ERROR, "[%u] Cannot BubbleCast destiny update (u:%u, e:%u); entity (%u) is not in any bubble.", \
+        _log(DESTINY__WARNING, "[%u] Cannot BubbleCast destiny update (u:%u, e:%u); entity (%u) is not in any bubble.", \
                 sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetID() );
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();

@@ -242,7 +242,7 @@ Character::Character(
   m_inTraining(nullptr)
 {
     // enforce characters to be singletons
-    assert(singleton());
+    assert(isSingleton());
 
     m_loaded = false;
     m_fleetData = CharFleetData();

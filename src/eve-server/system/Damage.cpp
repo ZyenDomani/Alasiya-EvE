@@ -528,7 +528,7 @@ void ShipSE::Killed(Damage &fatal_blow) {
             for (auto cur : deadShipInventory) {
                 d = 0;
                 x = cur.second->quantity();
-                s = (cur.second->singleton() ? 1 : 0);
+                s = (cur.second->isSingleton() ? 1 : 0);
                 if (cur.second->categoryID() == EVEDB::invCategories::Blueprint) {
                     // singleton for bpo = 1, bpc = 2.
                     BlueprintRef bpRef = BlueprintRef::StaticCast(cur.second);

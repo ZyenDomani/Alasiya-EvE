@@ -183,7 +183,7 @@ public:
 
     // Content:
     bool            contraband :1;
-    bool            singleton :1;
+    bool            singleton :1;            // singletonBlueprintCopy = 2
     EVEItemFlags    flag;
     uint16          typeID;
     uint32          ownerID;

@@ -1740,6 +1740,7 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
 PyRep* CharacterDB::ListStationItems(uint32 ownerID, uint32 stationID)
 {
     /** @todo check into this to see if we're querying POS modules also */
+    // some code shows 'copy' field here (for corp bp)
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT "
@@ -1784,10 +1785,10 @@ PyRep* CharacterDB::ListStationBlueprintItems(uint32 ownerID, uint32 stationID, 
             "  o.stationID AS locationID, "
             "  e.flag AS flagID, "
             "  e.quantity AS stacksize, "
-            "  e.customInfo, "
+            //"  e.customInfo, "
             "  e.singleton, "
-            "  g.groupID, "
-            "  g.categoryID, "
+            //"  g.groupID, "
+            //"  g.categoryID, "
             "  b.pLevel AS productivityLevel,"
             "  b.mLevel AS materialLevel,"
             "  b.copy,"

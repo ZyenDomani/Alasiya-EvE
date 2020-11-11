@@ -821,7 +821,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
     if (to_merge.get() == nullptr)
         return false;
 
-    if (m_data.singleton or to_merge->singleton())
+    if (m_data.singleton or to_merge->isSingleton())
         throw PyException(MakeCustomError("You cannot stack assembled items."));
 
     if (m_type.id() != to_merge->typeID()) {
@@ -871,7 +871,7 @@ void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagNo
     }
 
     // if either item is assembled, just move item (merge will throw on assembled items)
-    if (iRef->singleton() or m_data.singleton) {
+    if (iRef->isSingleton() or m_data.singleton) {
         Move(pShip->itemID(), flag, true);
         return;
     }
@@ -1136,19 +1136,32 @@ PyPackedRow* InventoryItem::GetItemRow() const
 
 void InventoryItem::GetItemRow(PyPackedRow* into ) const
 {
-    int32 qty = (m_data.singleton ? -1 : m_data.quantity);
-    if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
-        if (sItemFactory.GetBlueprint(m_itemID)->copy())
-            qty = -2;
-
     into->SetField("itemID",       new PyLong(m_itemID));
     into->SetField("typeID",       new PyInt(m_type.id()));
     into->SetField("ownerID",      new PyInt(m_data.ownerID));
     into->SetField("locationID",   new PyInt(m_data.locationID));
     into->SetField("flagID",       new PyInt(m_data.flag));
-    into->SetField("quantity",     new PyInt(qty));
+    if (m_type.categoryID() == EVEDB::invCategories::Blueprint) {
+        if (sItemFactory.GetBlueprint(m_itemID)->copy()) {
+            into->SetField("quantity",     new PyInt(m_data.singleton? -2 : m_data.quantity));
+            into->SetField("stacksize",    new PyInt(m_data.quantity));
+            into->SetField("singleton",    new PyInt(-2));
+        } else {
+            into->SetField("quantity",     new PyInt(1));
+            into->SetField("stacksize",    new PyInt(1));
+            into->SetField("singleton",    new PyInt(-1));
+        }
+    } else {
+        into->SetField("quantity",     new PyInt(m_data.singleton? -1 : m_data.quantity));
+        into->SetField("stacksize",    new PyInt(m_data.quantity));
+        into->SetField("singleton",    new PyInt(m_data.singleton));
+    }
+    into->SetField("stacksize",    new PyInt(m_data.quantity));
+    into->SetField("singleton",    new PyInt(m_data.singleton));
     into->SetField("groupID",      new PyInt(type().groupID()));
     into->SetField("categoryID",   new PyInt(type().categoryID()));
+    // customInfo is actually used in client
+    //if const.ixLocationID in change and item.customInfo == logConst.eventUndock:
     into->SetField("customInfo",   new PyString(m_data.customInfo));
 }
 
