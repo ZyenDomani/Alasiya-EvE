@@ -334,6 +334,40 @@ int main( int argc, char* argv[] )
     else
         sLog.Green("     Missile Time","Normal.");
     std::printf("\n");     // spacer
+    sLog.Blue("     ServerConfig", "R.A.M. Rate Modifiers");
+    if (sConfig.ram.ResPE != 1.0)
+        sLog.Yellow(" PE Research Time","Modified at %.0f%%.", (sConfig.ram.ResPE *100) );
+    else
+        sLog.Green(" PE Research Time","Normal.");
+    if (sConfig.ram.ResME != 1.0)
+        sLog.Yellow(" ME Research Time","Modified at %.0f%%.", (sConfig.ram.ResME *100) );
+    else
+        sLog.Green(" ME Research Time","Normal.");
+    if (sConfig.ram.MatMod != 1.0)
+        sLog.Yellow("Material Modifier","Modified at %.0f%%.", (sConfig.ram.MatMod *100) );
+    else
+        sLog.Green("Material Modifier","Normal.");
+    if (sConfig.ram.CopyTime != 1.0)
+        sLog.Yellow("        Copy Time","Modified at %.0f%%.", (sConfig.ram.CopyTime *100) );
+    else
+        sLog.Green("        Copy Time","Normal.");
+    if (sConfig.ram.ProdTime != 1.0)
+        sLog.Yellow("  Production Time","Modified at %.0f%%.", (sConfig.ram.ProdTime *100) );
+    else
+        sLog.Green("  Production Time","Normal.");
+    if (sConfig.ram.InventTime != 1.0)
+        sLog.Yellow("   Invention Time","Modified at %.0f%%.", (sConfig.ram.InventTime *100) );
+    else
+        sLog.Green("   Invention Time","Normal.");
+    if (sConfig.ram.ReTime != 1.0)
+        sLog.Yellow("          RE Time","Modified at %.0f%%.", (sConfig.ram.ReTime *100) );
+    else
+        sLog.Green("          RE Time","Normal.");
+    if (sConfig.ram.WasteMod != 1.0)
+        sLog.Yellow("   Waste Modifier","Modified at %.0f%%.", (sConfig.ram.WasteMod *100) );
+    else
+        sLog.Green("   Waste Modifier","Normal.");
+    std::printf("\n");     // spacer
 
     sLog.Blue("     ServerConfig","Critical Hit Chances");
     if (sConfig.rates.PlayerCritChance != 0.02f)
@@ -359,6 +393,10 @@ int main( int argc, char* argv[] )
     std::printf("\n");     // spacer
 
     sLog.Blue("     ServerConfig", "Feature Switches");
+    if (sConfig.ram.AutoEvent)
+        sLog.Green("    RAM AutoEvent","Enabled.");
+    else
+        sLog.Warning("    RAM AutoEvent","Disabled.");
     if (sConfig.server.ModuleAutoOff)
         sLog.Green("  Module Auto-Off","Enabled.");
     else

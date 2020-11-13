@@ -1141,6 +1141,8 @@ void InventoryItem::GetItemRow(PyPackedRow* into ) const
     into->SetField("ownerID",      new PyInt(m_data.ownerID));
     into->SetField("locationID",   new PyInt(m_data.locationID));
     into->SetField("flagID",       new PyInt(m_data.flag));
+    into->SetField("groupID",      new PyInt(type().groupID()));
+    into->SetField("categoryID",   new PyInt(type().categoryID()));
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint) {
         if (sItemFactory.GetBlueprint(m_itemID)->copy()) {
             into->SetField("quantity",     new PyInt(m_data.singleton? -2 : m_data.quantity));
@@ -1156,10 +1158,6 @@ void InventoryItem::GetItemRow(PyPackedRow* into ) const
         into->SetField("stacksize",    new PyInt(m_data.quantity));
         into->SetField("singleton",    new PyInt(m_data.singleton));
     }
-    into->SetField("stacksize",    new PyInt(m_data.quantity));
-    into->SetField("singleton",    new PyInt(m_data.singleton));
-    into->SetField("groupID",      new PyInt(type().groupID()));
-    into->SetField("categoryID",   new PyInt(type().categoryID()));
     // customInfo is actually used in client
     //if const.ixLocationID in change and item.customInfo == logConst.eventUndock:
     into->SetField("customInfo",   new PyString(m_data.customInfo));

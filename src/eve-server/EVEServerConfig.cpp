@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    10.0
+    Version:    10.1
 */
 
 
@@ -121,16 +121,16 @@ EVEServerConfig::EVEServerConfig()
     market.UseOrderRange = true;//N
     market.DeleteOldTransactions = false;
 
-    // bpTimes
-    bpTimes.ProdTime = 1.0;
-    bpTimes.MatMod = 1.0;
-    bpTimes.CopyTime = 1.0;
-    bpTimes.WasteMod = 1.0;
-    bpTimes.ResCopy = 1.0;
-    bpTimes.ResME = 1.0;
-    bpTimes.ResPE = 1.0;
-    bpTimes.ResRE = 1.0;
-    bpTimes.Invent = 1.0;
+    // ram
+    ram.AutoEvent = false;
+    ram.ResME = 1.0;
+    ram.ResPE = 1.0;
+    ram.MatMod = 1.0;
+    ram.WasteMod = 1.0;
+    ram.ReTime = 1.0;
+    ram.ProdTime = 1.0;
+    ram.CopyTime = 1.0;
+    ram.InventTime = 1.0;
 
     // account
     account.autoAccountRole = Acct::Role::STD;
@@ -273,7 +273,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "world",       &EVEServerConfig::ProcessWorld );
     AddMemberParser( "rates",       &EVEServerConfig::ProcessRates );
     AddMemberParser( "market",      &EVEServerConfig::ProcessMarket );
-    AddMemberParser( "bpTimes",     &EVEServerConfig::ProcessBPTimes );
+    AddMemberParser( "ram",     &EVEServerConfig::ProcessBPTimes );
     AddMemberParser( "account",     &EVEServerConfig::ProcessAccount );
     AddMemberParser( "character",   &EVEServerConfig::ProcessCharacter );
     AddMemberParser( "npc",         &EVEServerConfig::ProcessNPC );
@@ -297,7 +297,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "world" );
     RemoveParser( "rates" );
     RemoveParser( "market" );
-    RemoveParser( "bpTimes" );
+    RemoveParser( "ram" );
     RemoveParser( "account" );
     RemoveParser( "character" );
     RemoveParser( "npc" );
@@ -496,27 +496,27 @@ bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele)
 
 bool EVEServerConfig::ProcessBPTimes(const TiXmlElement* ele)
 {
-    AddValueParser( "ProdTime",         bpTimes.ProdTime);
-    AddValueParser( "ResCopy",          bpTimes.ResCopy);
-    AddValueParser( "CopyTime",         bpTimes.CopyTime);
-    AddValueParser( "WasteMod",         bpTimes.WasteMod);
-    AddValueParser( "MatMod",           bpTimes.MatMod);
-    AddValueParser( "ResME",            bpTimes.ResME);
-    AddValueParser( "ResPE",            bpTimes.ResPE);
-    AddValueParser( "ResRE",            bpTimes.ResRE);
-    AddValueParser( "Invent",           bpTimes.Invent);
+    AddValueParser( "AutoEvent",        ram.AutoEvent);
+    AddValueParser( "ProdTime",         ram.ProdTime);
+    AddValueParser( "CopyTime",         ram.CopyTime);
+    AddValueParser( "WasteMod",         ram.WasteMod);
+    AddValueParser( "MatMod",           ram.MatMod);
+    AddValueParser( "ResME",            ram.ResME);
+    AddValueParser( "ResPE",            ram.ResPE);
+    AddValueParser( "ReTime",           ram.ReTime);
+    AddValueParser( "InventTime",       ram.InventTime);
 
     const bool result = ParseElementChildren( ele );
 
+    RemoveParser( "AutoEvent" );
     RemoveParser( "ProdTime" );
-    RemoveParser( "ResCopy" );
     RemoveParser( "CopyTime" );
     RemoveParser( "WasteMod" );
     RemoveParser( "MatMod" );
     RemoveParser( "ResME" );
     RemoveParser( "ResPE" );
-    RemoveParser( "ResRE" );
-    RemoveParser( "Invent" );
+    RemoveParser( "ReTime" );
+    RemoveParser( "InventTime" );
 
     return result;
 }

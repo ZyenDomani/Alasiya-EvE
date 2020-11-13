@@ -410,7 +410,7 @@ const char* EntityList::GetUpTime()
 
 
 // this is my answer to the crazy looping of Multicast shit...
-void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, const char* idType, PyTuple* payload) const
+void EntityList::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyType, const char* idType, PyTuple* payload) const
 {
     // make sure this is player corp (which it really should be, but just in case....)
     if (IsNPCCorp(corpID))
@@ -427,7 +427,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
     //using namespace Corp::Role;
     // auto doesnt work here...dunno why yet.
     corpRole::const_iterator itr = cItr->second.begin(), end = cItr->second.end();
-    switch (type) {
+    switch (bCastType) {
         case CorpNews:
         case CorpNewCEO:
         case CharLeftCorp: {
@@ -443,9 +443,9 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
             // who else wants/needs this?
             // PersonnelManager is only role that can view corp applications
             while (itr != end) {
-                //if ((itr->second &Corp::Role::Director) == Corp::Role::Director)
+                //if ((itr->second & Corp::Role::Director) == Corp::Role::Director)
                 //    cMap.insert(std::make_pair(std::make_pair(itr->first->GetCharacterID(), itr->first)));
-                if ((itr->second &Corp::Role::PersonnelManager) == Corp::Role::PersonnelManager)
+                if ((itr->second & Corp::Role::PersonnelManager) == Corp::Role::PersonnelManager)
                     cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
@@ -454,6 +454,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
             // any member that can vote (has shares)
             //  damn...dunno if i wanna do this one like this....hit db every loop here??  fukin nuts!
             // this is another vote for putting "corp shares" in character.corpData
+            //    well, then we'd have to hit db for offine chars.....omg
             CorporationDB mdb;
             while (itr != end) {
                 // if (itr->first->GetChar()->HasShares())  // not written, no underlying code yet
@@ -533,23 +534,32 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
             break;
 
         // internal Alasiya corp notifications
+        case FactoryJob: {      // factory job completion added to calendar
+            // who else wants/needs this?
+            //  lets start with factory manager, and may have to add later
+            while (itr != end) {
+                if ((itr->second & Corp::Role::FactoryManager) == Corp::Role::FactoryManager)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
         case MarketOrder: {
             // who else wants/needs this?
             //  lets start with traders, and may have to add later
             while (itr != end) {
-                if ((itr->second &Corp::Role::Trader) == Corp::Role::Trader)
+                if ((itr->second & Corp::Role::Trader) == Corp::Role::Trader)
                     cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
         } break;
         case WalletChange: {
             while (itr != end) {
-                if ((itr->second &Corp::Role::Accountant) == Corp::Role::Accountant)
+                if ((itr->second & Corp::Role::Accountant) == Corp::Role::Accountant)
                     cMap.emplace(itr->first->GetCharacterID(), itr->first);
-                if ((itr->second &Corp::Role::Auditor) == Corp::Role::Auditor)
+                if ((itr->second & Corp::Role::Auditor) == Corp::Role::Auditor)
                     cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 // this may need to check if player has access to division changed - will require a LOT more code
-                if ((itr->second &Corp::Role::JuniorAccountant) == Corp::Role::JuniorAccountant)
+                if ((itr->second & Corp::Role::JuniorAccountant) == Corp::Role::JuniorAccountant)
                     cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
@@ -744,7 +754,7 @@ Client* EntityList::FindClientByName(const char* name) const {
     for (auto cur : m_players) {
         CharacterRef cRef = cur.second->GetChar();
         if (cRef.get() != nullptr)
-            if (strcmp(cRef->itemName().c_str(), name) == 0)
+            if (strcmp(cRef->name(), name) == 0)
                 return cur.second;
     }
     return nullptr;

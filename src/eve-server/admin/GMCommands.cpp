@@ -411,8 +411,8 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     // these need to check current settings to see if anything changed
     bp->SetCopy((atoi(args.arg(2).c_str()) ? true : false));
-    bp->SetME(atoi(args.arg(3).c_str()));
-    bp->SetPE(atoi(args.arg(4).c_str()));
+    bp->SetMLevel(atoi(args.arg(3).c_str()));
+    bp->SetPLevel(atoi(args.arg(4).c_str()));
     bp->SetRuns(atoi(args.arg(5).c_str()));
 
     return new PyString("Properties modified.");

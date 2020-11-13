@@ -136,7 +136,7 @@ public:
     // new shit for replacing current crazy notification sending
     // this method will send notification to online members that have the role required for the notification sent.
     /** @todo this works very well, and will be used as template for other notification methods */
-    void CorpNotify(uint32 corpID, uint8 type, const char* notifyType, const char* idType, PyTuple* payload) const;
+    void CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyType, const char* idType, PyTuple* payload) const;
     // current crazy notification sending methods
     /** @todo this shit needs removal, after new notification methods are completed */
     void Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const;

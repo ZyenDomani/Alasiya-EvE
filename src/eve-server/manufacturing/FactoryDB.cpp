@@ -394,13 +394,6 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
     if ((row.GetFloat(6) == 0) and (row.GetFloat(7) == 0))
         return true;
 
-    /** @todo complete this for standings */
-    /* calculate standing modifier for npc station install cost
-     *  take char to npc corp standings for char in npc corp
-     *  take greater of npc faction/2 or corp standings to char if char is pc corp
-     * ownerID(idx 5) is station corp for npc stations
-     */
-
     float standing(1), costModifier(1);
     uint32 factionID = sDataMgr.GetCorpFaction(row.GetInt(5));
     if (isCorpJob) {
@@ -417,11 +410,9 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
         /** @todo  this shit will have to be verified for negative standings */
         // modify end result by 25% for char standings with station owner
         standing *= (1 - (0.025f * StandingDB::GetStanding(row.GetInt(5), pChar->itemID())));
-
     } else {
         // else take personal standings with station corp only
         standing = StandingDB::GetStanding(row.GetInt(5), pChar->itemID());
-
     }
 
     if (standing < 0)
@@ -433,7 +424,7 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
     if (costModifier == 0)
         costModifier = 1;
 
-    _log(MANUF__MESSAGE, "Calculate()::GetProps() - Cost Modifier %u, standing %.2f", costModifier, standing);
+    _log(MANUF__MESSAGE, "FactoryDB::GetALProps() - Cost Modifier %.2f, standing %.2f", costModifier, standing);
 
     // modify setup cost based on standings
     into.installCost *= costModifier;

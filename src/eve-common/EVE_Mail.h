@@ -191,7 +191,8 @@ namespace Notify {
             MarketOrder = 125,    // since this updates same corp group, is used for all market order updates
             WalletChange = 126,
             ItemUpdateStation = 127,
-            ItemUpdateSystem = 128
+            ItemUpdateSystem = 128,
+            FactoryJob = 129            // factory jobs now have config option to add event to calendar.  this updates corp members 
         };
     }
 }

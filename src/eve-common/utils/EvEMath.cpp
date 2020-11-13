@@ -108,17 +108,6 @@ float EvEMath::RAM::ResearchPointsPerDay( float Multiplier, float AgentEffective
 }
 
 
-float EvEMath::Refine::StationTaxesForReprocessing(float CharacterStandingWithStationOwner )
-{
-    return 5.0f - (0.75f * CharacterStandingWithStationOwner);
-}
-
-float EvEMath::Refine::EffectiveRefiningYield(float EquipmentYield, uint8 RefiningLevel, uint8 RefiningEfficiencyLevel/*0*/, uint8 OreProcessingLevel/*0*/)
-{
-    return (EquipmentYield + 0.375f * (1.0f + (RefiningLevel * 0.02f))
-            * (1.0f + (RefiningEfficiencyLevel * 0.04f)) * (1.0f + (OreProcessingLevel * 0.05f)));
-}
-
 float EvEMath::RAM::WasteSkillBased( uint32 MaterialAmount, float ProductionEfficiency )
 {
 	 return (floor(0.5f + (MaterialAmount * ((25.0f - (5.0f * ProductionEfficiency)) / 100.0f))));
@@ -128,9 +117,27 @@ float EvEMath::RAM::InventionChance( float BaseChance, uint8 EncryptionLevel, ui
 {
      return (BaseChance * (1 + 0.11f * EncryptionLevel) * (1.0f + (DataCore1SkillLevel + DataCore2SkillLevel)
      * (0.8f / (5.0f - MetaLevel)) * DecryptorModifier));
+     // fuzzysteve's formula (23may13)
+     // base * (1+0.01*EncryptionLevel) * (1+ (skill*(0.1/(5-metalevel)))) * max(decryptor,1)
+     // skill = sum of sciences skill lvls (as required by bpc)
+
+     // decryptor formula
+     //  min(max(rounddown((inputT1BPCruns/T1MaxPerBPC)*(T2MaxPerBPC/10)),1)+decryptorRunBonus, T2MaxPerBPC)
+
      //  new formula (pre phoebe)
      // base * skill * decryptor
      //  skill = 1 + EncryptionLevel/40 + (DataCore1SkillLevel + DataCore2SkillLevel)/30
+}
+
+float EvEMath::Refine::StationTaxesForReprocessing(float CharacterStandingWithStationOwner )
+{
+    return 5.0f - (0.75f * CharacterStandingWithStationOwner);
+}
+
+float EvEMath::Refine::EffectiveRefiningYield(float EquipmentYield, uint8 RefiningLevel, uint8 RefiningEfficiencyLevel/*0*/, uint8 OreProcessingLevel/*0*/)
+{
+    return (EquipmentYield + 0.375f * (1.0f + (RefiningLevel * 0.02f))
+            * (1.0f + (RefiningEfficiencyLevel * 0.04f)) * (1.0f + (OreProcessingLevel * 0.05f)));
 }
 
 

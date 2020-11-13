@@ -10,7 +10,7 @@
 
 namespace EvESkill {
     namespace Event {
-        /**  these are the only skill events that client will recognize....
+        /**  these are the only skill events that client will recognize....there are no messageIDs for others
                  34: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillClonePenalty')
                  36: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingStarted')
                  37: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingComplete')

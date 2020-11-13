@@ -105,9 +105,9 @@ namespace EvERam {
     /* POD structure for blueprint data */
     struct bpData {
         bool copy :1;
-        int32 mLevel;       // material level
-        int32 pLevel;       // productivity level
-        int32 runs;
+        int8 mLevel;       // material level
+        int8 pLevel;       // productivity level
+        int16 runs;
     };
 
     /* POD structure for blueprint type data */

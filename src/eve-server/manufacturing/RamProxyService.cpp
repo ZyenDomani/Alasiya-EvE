@@ -20,9 +20,9 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:     Zhur
-    Impelemtation: Positron96
-    Rewrite:    Allan
+    Author:             Zhur
+    Implementation:     Positron96
+    Rewrite:            Allan
 */
 
 /** @todo  go thru and update/optimize this class */
@@ -30,8 +30,10 @@
 #include "eve-server.h"
 
 #include "../../eve-common/EVE_Calendar.h"
+#include "../../eve-common/EVE_Mail.h"
 
 #include "PyServiceCD.h"
+#include "EntityList.h"
 #include "StatisticMgr.h"
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
@@ -164,6 +166,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     sRamMthd.JobsCheck(call.client->GetChar().get(), args);
 
     // load job Blueprint
+    // bp in pos can be in hangar or array.  need to check both
     InventoryItemRef installedItem = sItemFactory.GetItem( args.installedItemID );
     if (installedItem.get() == nullptr) {
         // this means item/location not loaded.
@@ -286,7 +289,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     // calculates bp modifiers; Rsp_InstallJob is used as container while building response to job quote.
     Rsp_InstallJob rsp;
     if (!sRamMthd.Calculate(args, bpRef, call.client->GetChar().get(), rsp)){
-        _log(MANUF__ERROR, "Could not Calculate() on %s for %s(%u)", bpRef->itemName().c_str(), call.client->GetName(), call.client->GetCharacterID());
+        _log(MANUF__ERROR, "Could not Calculate() on %s for %s(%u)", bpRef->name(), call.client->GetName(), call.client->GetCharacterID());
         return nullptr;
     }
 
@@ -322,16 +325,6 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     if (beginProductionTime < rsp.maxJobStartTime)
         beginProductionTime = rsp.maxJobStartTime;
 
-    // do some activity-specific actions
-    switch (args.activityID) {
-        case EvERam::Activity::Manufacturing: {
-            // decrease licensed production runs
-            if (!bpRef->infinite())
-                bpRef->UpdateRuns(-1);
-        } break;
-        // others are verified in ActivityCheck() above.
-    }
-
     if (bpRef->quantity() > 1) {
         BlueprintRef iRef = bpRef->SplitBlueprint(1);
         if (iRef.get() == nullptr) {
@@ -341,9 +334,11 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         bpRef = iRef;
     }
 
+    // verify this for POS and remote installations where bp can be in hangar or array.
+    //  for pos/starbase, bp must be moved to array.  not sure if client sends this data.
     uint32 locationID = bpRef->locationID();
     // change to singleton now that bp has been used (this 'unpackages' it)
-    bpRef->ChangeSingleton(true, true);
+    bpRef->ChangeSingleton(true);
     bpRef->Move(locationID, flagFactoryBlueprint, true);
 
     // query all items contained in "Bill of Materials" location
@@ -377,7 +372,18 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             }
     }
 
-    if (args.activityID == EvERam::Activity::Invention) {
+    // update runs and do other shit where applicable
+    switch (args.activityID) {
+        case EvERam::Activity::Manufacturing: {
+            // we just need to update runs here
+            bpRef->UpdateRuns(-args.runs);
+        } break;
+        case EvERam::Activity::ReverseEngineering: {
+            bpRef->UpdateRuns(-args.runs);
+            // there is more to this, but not implemented yet
+        } break;
+        case EvERam::Activity::Invention: {
+            bpRef->UpdateRuns(-args.runs);
         // im sure there is more to do here......
 
         /** @todo do something constructive with this data...
@@ -395,6 +401,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             outputType = PyRep::IntegerValueU32(call.byname["inventionOutputItemID"]);
         }
         */
+        } break;
     }
 
     // approved job cost from quote
@@ -420,7 +427,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                                  locationID,
                                  Account::KeyType::Cash);
 
-    // register/save job to assy line.
+    // register/save job to chosen assy line.
     // is 'description' used ??  they are all 'blah' from client
     uint32 jobID = FactoryDB::InstallJob(
                           (args.isCorpJob ? call.client->GetCorporationID() : call.client->GetCharacterID()),
@@ -436,45 +443,64 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                           args.licensedProductionRuns);
 
     if (jobID < 1) {
-        _log(MANUF__ERROR, "Could not InstallJob for %s", bpRef->itemName().c_str());
+        _log(MANUF__ERROR, "Could not InstallJob for %s", bpRef->name());
         // make client error here...
         return nullptr;
     }
 
-    // check client settings for adding job end to calendar
-    std::string title = sRamMthd.GetActivityName(args.activityID);
-    if (IsStation(locationID)) {
-        title += " in ";
-        title += stDataMgr.GetStationName(locationID);
-    }
+    if (sConfig.ram.AutoEvent) {
+        std::string title = sRamMthd.GetActivityName(args.activityID);
+        title += " Job";
+        if (0 and IsStation(locationID)) {
+            title += " in ";
+            title += stDataMgr.GetStationName(locationID);
+        }
 
-    std::string description = "Completion of ";
-    description += sRamMthd.GetActivityName(args.activityID);
-    description += " job in ";
-    if (IsStation(locationID))
-        description += stDataMgr.GetStationName(locationID);
-    else    // test for POS after that system is more complete...
-        description += "Unknown Location";
-    description += ".";
-
-    if (args.isCorpJob) {
-        description += "<BR>This ";
+        std::string description;
+        if (args.isCorpJob)
+            description += "The ";
+        else
+            description += "Your ";
         description += sRamMthd.GetActivityName(args.activityID);
-        description += " job was installed by ";
-        description += call.client->GetName();
-        description += " on ";
-        description += currentDateTime();
-        description += " server time.";
+        description += " job in ";
+        /** @todo update this for pos names when that system is working */
+        if (IsStation(locationID))
+            description += stDataMgr.GetStationName(locationID);
+        else  // POS installation
+            description += "Unknown Location";
+        description += " is scheduled to complete.<br>";
+        description += "This job is for ";
+        description += std::to_string(args.runs);
+        description += " runs of ";
+        description += bpRef->productType().name();
+
+        if (args.isCorpJob) {
+            description += "<br><br>This ";
+            description += sRamMthd.GetActivityName(args.activityID);
+            description += " job was installed by ";
+            description += call.client->GetName();
+            description += " on ";
+            description += currentDateTime();
+            description += " CST.";
+        }
+
+        if (IsEven(MakeRandomInt(0, 10)))
+            description += "<br><br><br>And a good time shall be had by all.";
+
+        // should this be important?
+        uint32 eventID = CalendarDB::SaveSystemEvent(args.isCorpJob?call.client->GetCorporationID():call.client->GetCharacterID(),
+                                                     stDataMgr.GetOwnerID(locationID),
+                                                     beginProductionTime + rsp.productionTime * EvE::Time::Second,
+                                                     Calendar::AutoEvent::RAMJob, title, description);
+
+        FactoryDB::SetJobEventID(jobID, eventID);
+
+        //force calendar reload (if corp job, update all online members, also)
+        if (args.isCorpJob)
+            sEntityList.CorpNotify(call.client->GetCorporationID(), Notify::Types::FactoryJob, "OnReloadCalendar", "charid", new PyTuple(0));
+        else
+            call.client->SendNotification("OnReloadCalendar", "charid", new PyTuple(0), false);  // this is not sequenced
     }
-
-    uint32 eventID = CalendarDB::SaveSystemEvent(args.isCorpJob?call.client->GetCorporationID() : call.client->GetCharacterID(),
-                                stDataMgr.GetOwnerID(locationID), beginProductionTime + rsp.productionTime * EvE::Time::Second,
-                                Calendar::AutoEvent::RAMJob, title, description); // should this be important?
-
-    //force calendar reload (if corp job, update all online members, also)
-    call.client->SendNotification("OnReloadCalendar", "charid", new PyTuple(0), true);  // this is sequenced
-
-    FactoryDB::SetJobEventID(jobID, eventID);
 
     // we may need a separate table for invention jobs to store it's specific data....
 
@@ -490,11 +516,11 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
      * 23:35:54 [ManufDump]      Tuple: 3 elements
      * 23:35:54 [ManufDump]       [ 0]   List: 3 elements
      * 23:35:54 [ManufDump]       [ 0]   [ 0]   List: 2 elements
-     * 23:35:54 [ManufDump]       [ 0]   [ 0]   [ 0]    Integer: 60014140   invLocation
+     * 23:35:54 [ManufDump]       [ 0]   [ 0]   [ 0]    Integer: 60014140   invLocation (station, ship, starbase)
      * 23:35:54 [ManufDump]       [ 0]   [ 0]   [ 1]    Integer: 15         invLocationGroup
      * 23:35:54 [ManufDump]       [ 0]   [ 1]   List: Empty                 path  [eve.session.locationid, eve.session.charid, const.flagHangar]
      * 23:35:54 [ManufDump]       [ 0]   [ 2]   List: 1 elements
-     * 23:35:54 [ManufDump]       [ 0]   [ 2]   [ 0]    Integer: 60014140   containerID
+     * 23:35:54 [ManufDump]       [ 0]   [ 2]   [ 0]    Integer: 60014140   containerID (actual itemID of location bp is in)
      * 23:35:54 [ManufDump]       [ 1]    Integer: 2                        jobID
      * 23:35:54 [ManufDump]       [ 2]    Boolean: false                    cancel
      */
@@ -513,15 +539,14 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
 
     sRamMthd.VerifyCompleteJob(args, data, call.client);
 
+    // does an aborted job return the installed item immediately or after time expiry?
+    FactoryDB::CompleteJob(args.jobID, (args.cancel ? EvERam::Status::Abort : EvERam::Status::Delivered));
+
     // return item
     InventoryItemRef installedItem = sItemFactory.GetItem(data.itemID);
     if (installedItem.get() == nullptr)
         return nullptr;
-    installedItem->Move(installedItem->locationID(), data.outputFlag, true);
-
-    // does an aborted job return the installed item?
-    //  is it immediate or after time expiry?
-    FactoryDB::CompleteJob(args.jobID, (args.cancel ? EvERam::Status::Abort : EvERam::Status::Delivered));
+    installedItem->Move(args.containerID, data.outputFlag, true);
 
     // return materials which weren't consumed
     std::vector<EvERam::RequiredItem> reqItems;
@@ -544,30 +569,31 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
         // if job event in calendar, set to deleted for canceled job.
         CalendarDB::DeleteEvent(data.eventID);
     } else {
-        BlueprintRef bp = BlueprintRef::StaticCast( installedItem );
+        BlueprintRef bpRef = BlueprintRef::StaticCast( installedItem );
         switch(data.activity) {
             case EvERam::Activity::Manufacturing: {
-                ItemData idata(bp->productTypeID(), data.ownerID, locTemp, flagNone, (bp->productType().portionSize() * data.jobRuns));
+                ItemData idata(bpRef->productTypeID(), data.ownerID, locTemp, flagNone, (bpRef->productType().portionSize() * data.jobRuns));
                 InventoryItemRef iRef = sItemFactory.SpawnItem( idata );
                 if (iRef.get() != nullptr)
                     iRef->Move(args.containerID, data.outputFlag, true);
             } break;
             case EvERam::Activity::ResearchTime: {
-                bp->UpdatePE( data.jobRuns );
+                bpRef->UpdatePLevel(data.jobRuns);
             } break;
             case EvERam::Activity::ResearchMaterial: {
-                bp->UpdateME( data.jobRuns );
+                bpRef->UpdateMLevel(data.jobRuns);
             } break;
             case EvERam::Activity::Copying: {
-                /** @todo calculate and apply copy chance here */
                 ItemData idata(installedItem->typeID(), data.ownerID, locTemp, flagNone, data.jobRuns);
                 EvERam::bpData bpdata = EvERam::bpData();
                     bpdata.copy   = true;
                     bpdata.runs   = data.licensedRuns;
-                    bpdata.mLevel = bp->mLevel();
-                    bpdata.pLevel = bp->pLevel();
+                    bpdata.mLevel = bpRef->mLevel();
+                    bpdata.pLevel = bpRef->pLevel();
                 BlueprintRef copy = Blueprint::Spawn(idata, bpdata); //BlueprintRef(nullptr);
                 copy->Move(args.containerID, data.outputFlag, true);
+                // is this redundant here?
+                copy->SetQuantity(data.jobRuns);
                 /*
                 while (data.jobRuns) {
                     //wtf?  not sure if i like this but cant think of a better way right now...
@@ -591,12 +617,28 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                  * optional items:
                  * decryptor  (consumed)
                  *   these modify chance, me, pe, runs on output bpc
+                 *   usually not worth it on modules, ammo
                  *
                  * on success:  (see modifiers below)
-                 * T2: ship and rig bpc have 1 run, others are 10
+                 * T2: ship and rig bpc have 1 run, others are up to 10 (based on copy runs)
                  * T3: runs depend on relic (wrecked - 3, malfunction - 10, intact - 20)
                  * me -2, pe -4
                  *
+                 */
+
+                /*  invention base chances (old)
+                 *  0.2 bc/bs/hulk
+                 *  0.25 cruiser/indy/mackinaw
+                 *  0.3 frig/desy/freighter/skiff
+                 *  0.4 modules/ammo
+                 */
+
+                /*  invention base chances  (new)
+                 *  0.18  freighter
+                 *  0.22  bs, {wrecked relic(RE)}
+                 *  0.26  cru, bc, barge, indy
+                 *  0.30  frig, dessy, {malfunction relic(RE)}
+                 *  0.34  module, rig, ammo, {intact relic(RE)}
                  */
 
     /** @todo  this needs a return for invention
@@ -628,15 +670,6 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                     dict->SetItemString("messageLabel", new PyString("UI/ScienceAndIndustry/ScienceAndIndustryWindow/RamInventionJobFailed"));
                     dict->SetItemString("jobCompletedSuccessfully", new PyBool(false));
                 }
-
-                /*  invention base chances
-                 *  0.18  freighter
-                 *  0.22  bs, wrecked relic
-                 *  0.26  cru, bc, barge, indy
-                 *  0.30  frig, dessy, malfunction relic
-                 *  0.34  module, rig, ammo, intact relic
-                 *   100  perpetual motion unit?
-                 */
 
                 /* invention result outcomes:  (proposed in phoebe)
                  *
@@ -706,8 +739,12 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                 dict->SetItemString("message", msg);
                 return dict;
             } break;
-            case EvERam::Activity::ReverseEngineering:
+
             /* unsupported */
+            case EvERam::Activity::ReverseEngineering:
+                //bpRef->type().chanceOfRE();
+
+            /* depreciated */
             case EvERam::Activity::ResearchTech:
             case EvERam::Activity::Duplicating:
             default: {
@@ -716,6 +753,9 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
             } break;
         }
     }
+
+    /** @todo on rand (or based on standings), send 'thank you' mail from factory to installer upon job delivery */
+
 
     // there is more to this.  also could be not needed, as it checks for 'none'
     // result.message.msg = "event";

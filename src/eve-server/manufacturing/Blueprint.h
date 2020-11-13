@@ -58,7 +58,7 @@ public:
     uint32                 productivityModifier() const { return m_data.productivityModifier; }
     uint32             researchProductivityTime() const { return m_data.researchProductivityTime; }
     uint16                parentBlueprintTypeID() const { return (m_parentBlueprintType == nullptr ? 0 : parentBlueprintType()->id()); }
-    float            chanceOfRE() const { return m_data.chanceOfRE; }
+    float                   chanceOfRE()          const { return m_data.chanceOfRE; }
 
 protected:
     BlueprintType(uint16 _id, const Inv::TypeData& _data,
@@ -134,23 +134,22 @@ public:
     const ItemType&         productType()         const { return m_bpType.productType(); }
     uint32                  productTypeID()       const { return m_bpType.productTypeID(); }
     bool                    copy()                      { return m_data.copy; }
-    int32                   mLevel()                    { return m_data.mLevel; }
-    int32                   pLevel()                    { return m_data.pLevel; }
-    int32                   runs()                      { return m_data.runs; }
+    int8                    mLevel()                    { return m_data.mLevel; }
+    int8                    pLevel()                    { return m_data.pLevel; }
+    int16                   runs()                      { return m_data.runs; }
     float                   GetPE()                     { return m_data.pLevel / (1 + m_data.pLevel); }
     float                   GetME();
 
-
-    // setting methods
-    void                    SetME(int32 me)             { m_data.mLevel = me; }
-    void                    SetPE(int32 pe)             { m_data.pLevel = pe; }
-    void                    SetCopy(bool copy)          { m_data.copy = copy; }
-    void                    SetRuns(int32 runs)         { m_data.runs = runs; }
+    // set methods
+    void                    SetMLevel(int8 me)          { m_data.mLevel = me; SaveBlueprint(); }
+    void                    SetPLevel(int8 pe)          { m_data.pLevel = pe; SaveBlueprint(); }
+    void                    SetCopy(bool copy)          { m_data.copy = copy; SaveBlueprint(); }
+    void                    SetRuns(int16 runs)         { m_data.runs = runs; SaveBlueprint(); }
 
     // update methods
-    void                    UpdateME(int32 change)      { m_data.mLevel += change;}
-    void                    UpdatePE(int32 change)      { m_data.pLevel += change;}
-    void                    UpdateRuns(int32 change)    { m_data.runs += change;}
+    void                    UpdateMLevel(int8 me)       { m_data.mLevel += me; SaveBlueprint(); }
+    void                    UpdatePLevel(int8 pe)       { m_data.pLevel += pe; SaveBlueprint(); }
+    void                    UpdateRuns(int16 runs)      { m_data.runs += runs; SaveBlueprint(); }
 
     // is this used?  should it be?
     bool                    infinite()                  { return (m_data.runs < 0); }
@@ -199,3 +198,32 @@ private:
 
 #endif /* !__BLUEPRINT_ITEM__H__INCL__ */
 
+/**  misc data
+ *
+ * only packaged BPO sold on market
+ * unpacked bpo or any bpc by contract or trade
+ *
+ * bpc "packs" are every bpc to make the item (usually large items)
+ *
+ *
+ * research bpo (~month of research for each ME/PE at base ccp times)
+ * modules/ammo - ME 50 PE 20
+ * ships/components - ME 10 PE 10
+ * carrier/big ship  ME 2 PE 1
+ *
+ * max run copies for type
+ * 300 modules, weapons
+ * 1500 drones, ammo
+ * 1 all others
+ *
+ * for invention, t1 bpc PE and ME are irrelevant
+ * if type is not ship or rig and runs < 10
+ * runs output = runs input
+ * else
+ * runs = max (10 on t2 bpc)
+ *
+ *
+ *
+ *
+ *
+ */

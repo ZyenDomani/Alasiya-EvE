@@ -60,7 +60,7 @@ namespace Calendar {
     namespace AutoEvent {
         enum {
             PosFuel = 1,
-            RAMJob = 2
+            RAMJob = 2          // Alasiya specific calendar event.  client patch to show 'automated' tag
         };
     }
 
@@ -75,30 +75,18 @@ namespace Calendar {
 }
 
 
-/*
+/* (client patch by allan)
  *    def GetEventFlag(self, ownerID, autoEventType = None):
- *        if autoEventType == 2:
+ *        if autoEventType is not None:
  *            return const.calendarTagAutomated
  *        if ownerID == session.corpid:
- *            if autoEventType is None:
- *                return const.calendarTagCorp
- *            return const.calendarTagAutomated
+ *            return const.calendarTagCorp
  *        elif ownerID == session.allianceid:
  *            return const.calendarTagAlliance
  *        elif ownerID == const.ownerSystem:
  *            return const.calendarTagCCP
  *        else:
  *            return const.calendarTagPersonal
- */
-
-/*
- *            dbRowList = self.GetCalendarProxy().GetEventList(month, year)
- *            for dbRows in dbRowList:
- *                if dbRows is not None:
- *                    eventList.extend([ util.KeyVal(x) for x in dbRows ])
- *
- *            for x in eventList:
- *                x.flag = self.GetEventFlag(x.ownerID, x.Get('autoEventType', None))
  */
 
 

@@ -69,7 +69,7 @@ BlueprintRef Blueprint::Load(uint32 blueprintID) {
     return InventoryItem::Load<Blueprint>(blueprintID);
 }
 
-BlueprintRef Blueprint::Spawn( ItemData& data, EvERam::bpData& bdata) {
+BlueprintRef Blueprint::Spawn(ItemData& data, EvERam::bpData& bdata) {
     uint32 blueprintID(Blueprint::CreateItemID(data, bdata));
     if (blueprintID == 0)
         return BlueprintRef(nullptr);
@@ -84,7 +84,7 @@ uint32 Blueprint::CreateItemID(ItemData& data, EvERam::bpData& bdata) {
     if (bpType == nullptr)
         return 0;
 
-    // get the blueprintID
+    // make the blueprintID
     uint32 blueprintID(InventoryItem::CreateItemID(data));
     if (blueprintID == 0)
         return 0;
@@ -111,8 +111,8 @@ BlueprintRef Blueprint::SplitBlueprint(int32 qty_to_take, bool notify/*true*/) {
 
     // copy our attributes
     bRef->SetCopy(m_data.copy);
-    bRef->SetME(m_data.mLevel);
-    bRef->SetPE(m_data.pLevel);
+    bRef->SetMLevel(m_data.mLevel);
+    bRef->SetPLevel(m_data.pLevel);
     bRef->SetRuns(m_data.runs);
     bRef->SaveBlueprint();
     return bRef;

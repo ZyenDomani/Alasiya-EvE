@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    10.0
+    Version:    10.1
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -145,18 +145,18 @@ public:
         uint8 HistoryUpdateTime;
     } market;
 
-    // From <bpTimes>
+    // From <ram>
     struct {
+        bool AutoEvent;
         float ProdTime;
         float CopyTime;
+        float ReTime;
         float MatMod;
         float WasteMod;
         float ResPE;
         float ResME;
-        float ResCopy;
-        float ResRE;
-        float Invent;
-    } bpTimes;
+        float InventTime;
+    } ram;
 
     // From <account>
     struct {
@@ -326,7 +326,7 @@ public:
     struct {
         bool BubbleTrack;
         bool SpawnTest;
-        bool IsTestServer;    // to distuinguish between live production server or experimental testing server
+        bool IsTestServer;    // to distinguish between live production server or experimental testing server
         bool UseProfiling;
         bool UseShipTracking;
         bool DeleteTrackingCans;

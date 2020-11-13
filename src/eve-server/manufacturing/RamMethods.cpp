@@ -38,14 +38,16 @@ static const uint32 RAM_PRODUCTION_TIME_LIMIT = 60*60*24*30;   //30 days
 
 void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& args, BlueprintRef bpRef)
 {
-    const ItemType* pType(nullptr);
     if (bpRef.get() == nullptr)
         throw(PyException(MakeUserError("RamInventionNoOutput")));
 
+    const ItemType* pType(nullptr);
     switch(args.activityID) {
         case EvERam::Activity::Manufacturing: {
-            if (!bpRef->infinite() and (bpRef->runs() - args.runs) < 0)
-                throw(PyException(MakeUserError("RamTooManyProductionRuns")));
+            if (!bpRef->infinite()
+            and ((bpRef->runs() - args.runs) < 0))
+                    throw(PyException(MakeUserError("RamTooManyProductionRuns")));
+
             pType = &bpRef->productType();
         } break;
         case EvERam::Activity::ResearchMaterial:
@@ -60,15 +62,18 @@ void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& arg
             pType = &bpRef->type();
         } break;
         case EvERam::Activity::Invention: {
-            if (!bpRef->copy())
+            if (!bpRef->copy() or bpRef->infinite())
                 throw(PyException(MakeUserError("RamCannotInventABlueprintOriginal")));
 
             uint32 pTypeID = FactoryDB::GetTech2Blueprint(bpRef->typeID());
             if (pTypeID == 0)
                 throw(PyException(MakeUserError("RamInventionNoOutput")));
 
+            if (bpRef->runs() < 1)
+                throw(PyException(MakeUserError("RamTooManyProductionRuns")));
+
             pType = &bpRef->productType();
-        }  break;
+        } break;
         case EvERam::Activity::ReverseEngineering:  // RE is ONLY at experimental POS module...cannot do RE in stations.  right now, this will never hit.
         case EvERam::Activity::ResearchTech:    // cannot find any reference to this.  not used?
         case EvERam::Activity::Duplicating:     // ancient pre-apoc 'copy' activity.  no longer used.
@@ -153,7 +158,8 @@ void RamMethods::LinePermissionCheck(Client*const pClient, const Call_InstallJob
         throw(PyException(MakeUserError("RamInstallationHasNoDefaultContent")));
 
     // check validity of activity
-    if (data.activityID < EvERam::Activity::Manufacturing or data.activityID > EvERam::Activity::Invention)
+    if ((data.activityID < EvERam::Activity::Manufacturing)
+    or  (data.activityID > EvERam::Activity::Invention))
         throw(PyException(MakeUserError("RamAssemblyLineHasNoActivity")));
 
     // verify corp roles
@@ -187,7 +193,7 @@ void RamMethods::LinePermissionCheck(Client*const pClient, const Call_InstallJob
     if (data.rMask & EvERam::RestrictionMask::ByStanding == EvERam::RestrictionMask::ByStanding) {
         // get standings
         if (args.isCorpJob) {
-            if (data.minStanding < StandingDB::GetStanding(data.ownerID, pClient->GetCorporationID()))
+            if (data.minStanding > StandingDB::GetStanding(data.ownerID, pClient->GetCorporationID()))
                 throw(PyException(MakeUserError("RamAccessDeniedCorpStandingTooLow")));
         } else {
             if (data.minStanding > pClient->GetChar()->GetStandingModified(data.ownerID))
@@ -378,14 +384,14 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
             pType = &bpRef->productType();
             FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
             into.materialMultiplier += bpRef->GetME();
-            into.materialMultiplier *= sConfig.bpTimes.MatMod;
+            into.materialMultiplier *= sConfig.ram.MatMod;
             into.charTimeMultiplier *= (1.0f - (0.04f * pChar->GetSkillLevel(EvESkill::Industry)));
             into.productionTime = EvEMath::RAM::ProductionTime(bpRef->type().productionTime(), bpRef->type().productivityModifier(),
                                                                bpRef->pLevel(), into.timeMultiplier);
             // modify base time by char multiplier
             into.productionTime *= into.charTimeMultiplier;
             // if time modifier is set in config, apply that now
-            into.productionTime *= sConfig.bpTimes.ProdTime;
+            into.productionTime *= sConfig.ram.ProdTime;
         } break;
         case EvERam::Activity::ResearchMaterial: {
             pType = &bpRef->type();
@@ -393,7 +399,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
             into.productionTime = EvEMath::RAM::ME_ResearchTime(bpRef->type().researchMaterialTime(),
                                                                 pChar->GetSkillLevel(EvESkill::Metallurgy), into.timeMultiplier
                                                                 /*implant modifier here*/);
-            into.productionTime *= sConfig.bpTimes.ResME;
+            into.productionTime *= sConfig.ram.ResME;
             into.charTimeMultiplier *= pChar->GetAttribute(AttrMineralNeedResearchSpeed).get_float();
         }  break;
         case EvERam::Activity::ResearchTime: {
@@ -404,7 +410,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
             into.productionTime = EvEMath::RAM::PE_ResearchTime(bpRef->type().researchProductivityTime(),
                                                                 pChar->GetSkillLevel(EvESkill::Research), into.timeMultiplier
                                                                 /*implant modifier here*/);
-            into.productionTime *= sConfig.bpTimes.ResPE;
+            into.productionTime *= sConfig.ram.ResPE;
             into.charTimeMultiplier *= pChar->GetAttribute(AttrManufacturingTimeResearchSpeed).get_float();
         }  break;
         case EvERam::Activity::Copying: {
@@ -413,7 +419,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
             into.productionTime = EvEMath::RAM::CopyTime(bpRef->type().researchCopyTime(),
                                                          pChar->GetSkillLevel(EvESkill::Science), into.timeMultiplier
                                                          /*implant modifier here*/);
-            into.productionTime *= sConfig.bpTimes.CopyTime;
+            into.productionTime *= sConfig.ram.CopyTime;
             into.charTimeMultiplier *= pChar->GetAttribute(AttrCopySpeedPercent).get_float();
             //bpRef->type().chanceOfDuplicating();
         }  break;
@@ -424,14 +430,14 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
                                                               pChar->GetSkillLevel(EvESkill::AdvancedLaboratoryOperation),
                                                               into.timeMultiplier
                                                               /*implant modifier here*/);
-            into.productionTime *= sConfig.bpTimes.Invent;
+            into.productionTime *= sConfig.ram.InventTime;
         } break;
         case EvERam::Activity::ReverseEngineering: {
             pType = &bpRef->type();
             FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
             // base research time for RE is one hour
             into.productionTime = 3600; // in seconds
-            into.productionTime *= sConfig.bpTimes.ResRE;
+            into.productionTime *= sConfig.ram.ReTime;
             //bpRef->type().chanceOfRE();
         } break;
     }
