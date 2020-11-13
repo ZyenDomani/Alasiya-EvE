@@ -55,8 +55,7 @@ BlueprintType *BlueprintType::Load(uint16 typeID)
 /*
  * Blueprint
  */
-Blueprint::Blueprint(
-    uint32 _blueprintID, const BlueprintType& _bpType, const ItemData& _data, EvERam::bpData& _bpData)
+Blueprint::Blueprint(uint32 _blueprintID, const BlueprintType& _bpType, const ItemData& _data, EvERam::bpData& _bpData)
 : InventoryItem(_blueprintID, _bpType, _data),
 m_bpType(_bpType)
 {

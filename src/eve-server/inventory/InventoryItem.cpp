@@ -1145,18 +1145,18 @@ void InventoryItem::GetItemRow(PyPackedRow* into ) const
     into->SetField("categoryID",   new PyInt(type().categoryID()));
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint) {
         if (sItemFactory.GetBlueprint(m_itemID)->copy()) {
-            into->SetField("quantity",     new PyInt(m_data.singleton? -2 : m_data.quantity));
-            into->SetField("stacksize",    new PyInt(m_data.quantity));
-            into->SetField("singleton",    new PyInt(-2));
-        } else {
-            into->SetField("quantity",     new PyInt(1));
+            //into->SetField("quantity",     new PyInt(m_data.singleton? -1 : m_data.quantity));
             into->SetField("stacksize",    new PyInt(1));
-            into->SetField("singleton",    new PyInt(-1));
+            into->SetField("singleton",    new PyInt(2));
+        } else {
+            //into->SetField("quantity",     new PyInt(m_data.singleton? -1 : m_data.quantity));
+            into->SetField("stacksize",    new PyInt(m_data.singleton? -1 : m_data.quantity));
+            into->SetField("singleton",    new PyInt(m_data.singleton?1:0));
         }
     } else {
-        into->SetField("quantity",     new PyInt(m_data.singleton? -1 : m_data.quantity));
-        into->SetField("stacksize",    new PyInt(m_data.quantity));
-        into->SetField("singleton",    new PyInt(m_data.singleton));
+        //into->SetField("quantity",     new PyInt(m_data.singleton? -1 : m_data.quantity));
+        into->SetField("stacksize",    new PyInt(m_data.singleton? -1 : m_data.quantity));
+        into->SetField("singleton",    new PyInt(m_data.singleton?1:0));
     }
     // customInfo is actually used in client
     //if const.ixLocationID in change and item.customInfo == logConst.eventUndock:

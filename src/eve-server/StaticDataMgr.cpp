@@ -1112,7 +1112,7 @@ DBRowDescriptor* StaticDataMgr::CreateHeader() {
         header->AddColumn("stacksize",  DBTYPE_I4);
         header->AddColumn("singleton",  DBTYPE_I2);
         header->AddColumn("flagID",     DBTYPE_I2);
-        header->AddColumn("quantity",   DBTYPE_I4);
+        //header->AddColumn("quantity",   DBTYPE_I4);
         header->AddColumn("groupID",    DBTYPE_I2);
         header->AddColumn("categoryID", DBTYPE_I4);
         header->AddColumn("customInfo", DBTYPE_STR);

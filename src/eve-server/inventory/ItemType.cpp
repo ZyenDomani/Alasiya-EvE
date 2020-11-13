@@ -226,16 +226,16 @@ void ItemType::GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMa
  * ItemData
  */
 ItemData::ItemData(
-    const char *_name,
-    uint16 _typeID,
-    uint32 _ownerID,
-    uint32 _locationID,
-    EVEItemFlags _flag,
-    bool _contraband,
-    bool _singleton,
-    uint32 _quantity,
-    const GPoint &_position,
-    const char *_customInfo)
+    const char *_name/*""*/,
+    uint16 _typeID/*0*/,
+    uint32 _ownerID/*ownerSystem*/,
+    uint32 _locationID/*locTemp*/,
+    EVEItemFlags _flag/*flagNone*/,
+    bool _contraband/*false*/,
+    bool _singleton/*false*/,
+    uint32 _quantity/*0*/,
+    const GPoint &_position/*NULL_ORIGIN*/,
+    const char *_customInfo/*""*/)
 : name(_name),
 typeID(_typeID),
 ownerID(_ownerID),
@@ -255,8 +255,8 @@ ItemData::ItemData(
     uint32 _locationID,
     EVEItemFlags _flag,
     uint32 _quantity,
-    const char *_customInfo,
-    bool _contraband)
+    const char *_customInfo/*""*/,
+    bool _contraband/*false*/)
 : name(""),
 typeID(_typeID),
 ownerID(_ownerID),
@@ -265,7 +265,7 @@ flag(_flag),
 contraband(_contraband),
 singleton(false),
 quantity(_quantity),
-position(0, 0, 0),
+position(NULL_ORIGIN),
 customInfo(_customInfo)
 {
 }
@@ -275,10 +275,10 @@ ItemData::ItemData(
     uint32 _ownerID,
     uint32 _locationID,
     EVEItemFlags _flag,
-    const char* _name,
-    const GPoint& _position,
-    const char* _customInfo,
-    bool _contraband)
+    const char* _name/*""*/,
+    const GPoint& _position/*NULL_ORIGIN*/,
+    const char* _customInfo/*""*/,
+    bool _contraband/*false*/)
 : name(_name),
 typeID(_typeID),
 ownerID(_ownerID),

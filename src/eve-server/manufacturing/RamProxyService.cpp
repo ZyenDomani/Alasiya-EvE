@@ -584,26 +584,21 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                 bpRef->UpdateMLevel(data.jobRuns);
             } break;
             case EvERam::Activity::Copying: {
-                ItemData idata(installedItem->typeID(), data.ownerID, locTemp, flagNone, data.jobRuns);
+                ItemData idata(installedItem->typeID(), data.ownerID, locTemp, flagNone);
                 EvERam::bpData bpdata = EvERam::bpData();
                     bpdata.copy   = true;
                     bpdata.runs   = data.licensedRuns;
                     bpdata.mLevel = bpRef->mLevel();
                     bpdata.pLevel = bpRef->pLevel();
-                BlueprintRef copy = Blueprint::Spawn(idata, bpdata); //BlueprintRef(nullptr);
-                copy->Move(args.containerID, data.outputFlag, true);
-                // is this redundant here?
-                copy->SetQuantity(data.jobRuns);
-                /*
+                BlueprintRef copy = BlueprintRef(nullptr);
                 while (data.jobRuns) {
                     //wtf?  not sure if i like this but cant think of a better way right now...
-                    // stack bpc??
+                    // stack bpc??   -- cant because of singleton code in client
                     copy = Blueprint::Spawn(idata, bpdata);
                     if (copy.get() != nullptr)
                         copy->Move(args.containerID, data.outputFlag, true);
                     --data.jobRuns;
                 }
-                */
             } break;
             /* todo */
             case EvERam::Activity::Invention: {

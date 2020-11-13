@@ -168,16 +168,16 @@ private:
  */
 class ItemData {
 public:
-    // Full + default constructor:
+    // default constructor:
     ItemData( const char *_name = "", uint16 _typeID = 0, uint32 _ownerID = ownerSystem, uint32 _locationID = locTemp,
               EVEItemFlags _flag = flagNone, bool _contraband = false, bool _singleton = false, uint32 _quantity = 0,
               const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "");
 
-    // Item friendly constructor:
+    // non-singleton constructor:
     ItemData( uint16 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity,
               const char *_customInfo = "", bool _contraband = false);
 
-    // Singleton friendly constructor:
+    // Singleton constructor:
     ItemData( uint16 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
               const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
 
