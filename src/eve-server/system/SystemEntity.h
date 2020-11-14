@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan (complete rewrite)
+    Rewrite:    Allan
 */
 
 #ifndef __SYSTEMENTITY_H_INCL__

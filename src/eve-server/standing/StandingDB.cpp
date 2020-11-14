@@ -87,7 +87,7 @@ PyRep* StandingDB::GetCharNPCStandings(uint32 charID) {
     return DBResultToCRowset(res);
 }
 
-/** @todo not sure about this yet.... wip */
+/** @todo not sure about this yet.... wip   ....not used? */
 PyRep* StandingDB::PrimeCharStandings(uint32 charID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,

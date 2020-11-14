@@ -123,9 +123,9 @@ bool ConsoleCommand::Process() {
                 }
             } else if (strncmp(buf, "s", 1) == 0) {
                 std::string state = "";
-                int64 threads = 0;
+                int64 threads(0);
                 uint8 aThreads = std::thread::hardware_concurrency();
-                float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
+                float vm(0.0f), rss(0.0f), user(0.0f), kernel(0.0f);
                 Status(state, threads, vm, rss, user, kernel);
                 sLog.Warning("    Server Status", "  S: %s | T: %d(%u) | RSS: %.3fMb | VM: %.3fMb | U: %.2f | K: %.2f", \
                         state.data(), threads, aThreads, rss, vm, user, kernel );
@@ -160,9 +160,9 @@ bool ConsoleCommand::Process() {
                 else
                     sLog.Warning("      Missile Dmg","Normal.");
                 if (sConfig.rates.turretRoF != 1.0)
-                    sLog.Green("      Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRoF *100) );
+                    sLog.Green("       Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRoF *100) );
                 else
-                    sLog.Warning("      Turret Dmg","Normal.");
+                    sLog.Warning("       Turret Dmg","Normal.");
             } else if (strncmp(buf, "v", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Version:");
                 sLog.Warning("  Server Revision", " %s", EVEMU_REVISION );
@@ -173,12 +173,12 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("       Build Date", " %s", EVEMU_BUILD_DATE );
                 //  memory
                 std::string state = "";
-                int64 threads = 0;
+                int64 threads(0);
                 uint8 aThreads = std::thread::hardware_concurrency();
-                float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
+                float vm(0.0f), rss(0.0f), user(0.0f), kernel(0.0f);
                 Status(state, threads, vm, rss, user, kernel);
                 sLog.Warning("     Memory Usage", " RSS: %.3fMb  VM: %.3fMb", rss, vm );
-                sLog.Warning("    Server Status", "  S: %s | T: %d(%u) | U: %.2f | K: %.2f", \
+                sLog.Warning("    Server Status", "  S: %s | T: %li(%u) | U: %.2f | K: %.2f", \
                 state.data(), threads, aThreads, user, kernel );
                 sLog.Warning("    Server UpTime", " %s", sEntityList.GetUpTime());
                 //  loaded items
@@ -196,11 +196,12 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
             } else if (strncmp(buf, "a", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server SaveAll:");
-                //sLog.Error("      Server Save", " Not Avalible Yet." );
+                //sLog.Error("      Server Save", " Not Available Yet." );
                 sItemFactory.SaveItems();
             } else if (strncmp(buf, "b", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Broadcast:");
-                sLog.Error(" Server Broadcast", " Not Avalible Yet." );
+                sLog.Error(" Server Broadcast", " Not Available Yet." );
+                /** @todo  make this show in general chat channel */
                 //const char* buff = buf +2;
                 //SendMessage(buff);
             } else if (strncmp(buf, "n", 1) == 0) {
@@ -209,7 +210,7 @@ bool ConsoleCommand::Process() {
                 std::vector<Client*> list;
                 sEntityList.GetClients(list);
                 for (auto cur : list)
-                cur->SendNotifyMsg( buff );
+                    cur->SendNotifyMsg( buff );
                 sLog.Warning("  Console Command", " Notification sent to all online clients." );
             } else if (strncmp(buf, "m", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Modal Message:");
@@ -221,15 +222,14 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("  Console Command", " Modal Message sent to all online clients." );
             } else if (strncmp(buf, "p", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Profile:");
-                if (!sConfig.debug.UseProfiling) {
+                if (sConfig.debug.UseProfiling) {
+                    sLog.Warning("    Current Stamp", " %u", sEntityList.GetStamp());
+                    sLog.Warning("    Server UpTime", " %s", sEntityList.GetUpTime());
+                    sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
+                    sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
+                    sProfile.PrintProfile();
+                } else
                     sLog.Error("   Server Profile", "Profiling is turned off.");
-                    return true;
-                }
-                sLog.Warning("    Current Stamp", " %u", sEntityList.GetStamp());
-                sLog.Warning("    Server UpTime", " %s", sEntityList.GetUpTime());
-                sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
-                sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
-                sProfile.PrintProfile();
             } else if (strncmp(buf, "r", 1) == 0) {
                 // enable console chat echo
             } else if (strncmp(buf, "o", 1) == 0) {
@@ -260,7 +260,7 @@ bool ConsoleCommand::Process() {
                 FxProc(atoi(&num));
             } else if (strncmp(buf, "d", 1) == 0) {
                 uint8 maxCount = sConfig.server.MaxThreadReport;
-                uint16 count = sThread.Count();
+                uint8 count = sThread.Count();
                 sLog.Blue("   Active Threads", "There are %u active threads running in the server.", count);
                 if (count > maxCount)
                     sLog.Warning("   Active Threads", "Individual thread IDs are not displayed for more than %u active threads.", maxCount);
@@ -300,10 +300,10 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
 {
     // the fields we want
     std::string ignore = "", run_state = "";
-    int64 num_threads = 0;  //this is saved from OS as long decimal....*sigh*  gotta allocate long int for it or weird shit happens.
-    int64 vsize = 0;      //in bytes
-    int64 rss = 0;			//in pages
-    float utime = 0.0f, stime = 0.0f;
+    int64 num_threads(0);  //this is saved from OS as long decimal....*sigh*  gotta allocate long int for it or weird shit happens.
+    int64 vsize(0);      //in bytes
+    int64 rss(0);			//in pages
+    float utime(0.0f), stime(0.0f);
 
     // stat seems to give the most reliable results
     std::ifstream ifs ("/proc/self/stat", std::ios_base::in);
@@ -313,7 +313,7 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
     ifs.close();
 
     if (sConfig.debug.IsTestServer)
-        _log(SERVER__INFO, "ConsoleCommand::Status() proc/self/stat returns RSS: %i, VM: %u", rss, vsize);
+        _log(SERVER__INFO, "ConsoleCommand::Status() proc/self/stat returns RSS: %li, VM: %li", rss, vsize);
 
     /*  state = One character from the string "RSDZTW" where
               R is running,
@@ -325,12 +325,11 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
     */
     state = run_state;
     threads = num_threads;
-    user = utime /sysconf(_SC_CLK_TCK)/100.0;
-    kernel = stime /sysconf(_SC_CLK_TCK)/100.0;
-    vm_usage     = ((vsize / sysconf(_SC_PAGE_SIZE)) /1024.0 /6);
+    user = utime / sysconf(_SC_CLK_TCK) / 100.0f;
+    kernel = stime / sysconf(_SC_CLK_TCK) / 100.0f;
+    vm_usage     = ((vsize / sysconf(_SC_PAGE_SIZE)) / 1024.0f / 6);
     //rss (in pages) * page_size(in bytes, converted to k), then convert to Mb.
-    resident_set = (rss * (sysconf(_SC_PAGE_SIZE) /1024.0) /1024.0);
-
+    resident_set = (rss * (sysconf(_SC_PAGE_SIZE) / 1024.0f) / 1024.0f);
 }
 
 void ConsoleCommand::Test()
@@ -347,8 +346,8 @@ void ConsoleCommand::Test()
 
 void ConsoleCommand::UpdateStatus() {
 	std::string state = "";
-	int64 threads = 0;
-	float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
+	int64 threads(0);
+	float vm(0.0f), rss(0.0f), user(0.0f), kernel(0.0f);
 	Status(state, threads, vm, rss, user, kernel);
     if (sConfig.debug.IsTestServer)
         _log(SERVER__INFO, "Current Mem usage - RSS: %f, VM: %f", rss, vm);

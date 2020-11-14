@@ -3,7 +3,7 @@
 // EVE Math Equations for in-game features
 // (pulled directly from client code and http://wiki.eve-id.net/Equations)
 //
-// Latest Update:       Allan  18Oct20
+// Latest Update:       Allan  13Nov20
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,7 +56,8 @@ int32 EvEMath::RAM::ProductionTime(uint32 BaseTime, float bpProductivityModifier
     else
         PE_Factor = (ProductionLevel - 1.0f);
 
-    float effModifier(1.0f - (bpProductivityModifier / BaseTime) * PE_Factor);
+    float effModifier(1.0f);
+    effModifier -= ((bpProductivityModifier / BaseTime) * PE_Factor);
     return (BaseTime * effModifier * TimeModifier);
 }
 
@@ -83,7 +84,7 @@ int32 EvEMath::RAM::CopyTime(uint16 BaseTime, uint8 ScienceLevel, float SlotModi
 
 int32 EvEMath::RAM::InventionTime(uint32 BaseTime, uint8 AdvLabLevel, float SlotModifier/*1*/, float ImplantModifier/*1*/ )
 {
-     return BaseTime * SlotModifier * ImplantModifier * (1.0f - 0.03f * AdvLabLevel);
+     return BaseTime * (1.0f - (0.03f * AdvLabLevel)) * SlotModifier * ImplantModifier;
 }
 
 float EvEMath::RAM::ME_EffectOnWaste( float MaterialAmount, float BaseWasteFactor, float MaterialEfficiency )

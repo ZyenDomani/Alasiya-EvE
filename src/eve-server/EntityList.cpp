@@ -53,7 +53,12 @@ EntityList::EntityList()
 m_targTimer(0, true),
 m_stampTimer(0, true),
 m_minuteTimer(0, true),
-m_startTime(0)
+m_startTime(0),
+m_npcs(0),
+m_stamp(1000),   /* arbitrary.  start at 1k.  in seconds.  used for destiny and client counters */
+m_minutes(0),
+m_connections(0),
+m_clientSeedID(0)
 {
     m_agents.clear();
     m_probes.clear();
@@ -64,11 +69,6 @@ m_startTime(0)
     m_targMgrs.clear();
     m_corpMembers.clear();
 
-    m_npcs = 0;
-    m_stamp = 1000;   /* arbitrary.  start at 1k.  in seconds.  used for destiny and client counters */
-    m_minutes = 0;
-    m_connections = 0;
-    m_clientSeedID = 0;
     m_shipTracking = sConfig.debug.UseShipTracking;
 }
 

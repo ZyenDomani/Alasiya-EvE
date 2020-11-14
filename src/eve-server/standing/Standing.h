@@ -118,3 +118,38 @@ An exception to this rule is made for players that haven't logged in recently.`)
 (235136, `Your standing was lowered with the {factionName} for transporting contraband in {systemName}.`)
 
 */
+
+/*
+ * def GetStandingEventTypes():
+ *    return [(localization.GetByLabel('UI/Generic/StandingNames/agentByoff'), logConst.eventAgentBuyOff),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/agentDonation'), logConst.eventAgentDonation),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/agentMissionBonus'), logConst.eventAgentMissionBonus),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/agentMissionComplete'), logConst.eventAgentMissionCompleted),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/agentMissionDeclined'), logConst.eventAgentMissionDeclined),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/agentMissionFailed'), logConst.eventAgentMissionFailed),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/agentMissionExpired'), logConst.eventAgentMissionOfferExpired),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/combatAgression'), logConst.eventCombatAggression),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/combatOther'), logConst.eventCombatOther),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/combatPodKill'), logConst.eventCombatPodKill),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/combatShipKill'), logConst.eventCombatShipKill),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/decay'), logConst.eventDecay),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/derivedNegitive'), logConst.eventDerivedModificationNegative),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/derivedPositive'), logConst.eventDerivedModificationPositive),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/agentInital'), logConst.eventInitialCorpAgent),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/factionInital'), logConst.eventInitialFactionAlly),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/factionInitalCorp'), logConst.eventInitialFactionCorp),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/factionInitalEnemy'), logConst.eventInitialFactionEnemy),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/lawEnforcement'), logConst.eventPirateKillSecurityStatus),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/playerCorpSetStandings'), logConst.eventPlayerCorpSetStanding),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/playerSetStandings'), logConst.eventPlayerSetStanding),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/entityRecacluate'), logConst.eventRecalcEntityKills),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/agentMissionRecaculateFailed'), logConst.eventRecalcMissionFailure),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/agentMissionRecaculateSucess'), logConst.eventRecalcMissionSuccess),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/entityRecaculatePirateKills'), logConst.eventRecalcPirateKills),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/playerRecaculateSetStandings'), logConst.eventRecalcPlayerSetStanding),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/GMSlashSet'), logConst.eventSlashSetStanding),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/standingReset'), logConst.eventStandingReset),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/tutorialInitial'), logConst.eventTutorialAgentInitial),
+ *     (localization.GetByLabel('UI/Generic/StandingNames/standingsUpdate'), logConst.eventUpdateStanding)]
+ *
+ */
