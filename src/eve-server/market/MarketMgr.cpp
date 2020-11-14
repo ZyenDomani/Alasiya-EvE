@@ -326,7 +326,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         if (isPlayer)
             iRef->Donate(oInfo.ownerID, args.stationID, flagHangar, true);
         else if (isCorp)
-            iRef->Donate(oInfo.ownerID, args.stationID, flagDelivery, true);
+            iRef->Donate(oInfo.ownerID, args.stationID, flagCorpMarket, true);
     } else if (iRef->quantity() > args.quantity) {
         // qty for sale > buy order amt
         qtyStatus = Market::QtyStatus::Over;
@@ -340,7 +340,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         if (isPlayer)
             siRef->Donate(oInfo.ownerID, args.stationID, flagHangar, true);
         else if (isCorp)
-            siRef->Donate(oInfo.ownerID, args.stationID, flagDelivery, true);
+            siRef->Donate(oInfo.ownerID, args.stationID, flagCorpMarket, true);
     } else {
         // qty for sale < buy order amt
         qtyStatus = Market::QtyStatus::Under;
@@ -348,7 +348,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         if (isPlayer)
             iRef->Donate(oInfo.ownerID, args.stationID, flagHangar, true);
         else if (isCorp)
-            iRef->Donate(oInfo.ownerID, args.stationID, flagDelivery, true);
+            iRef->Donate(oInfo.ownerID, args.stationID, flagCorpMarket, true);
     }
 
     uint32 qtySold(args.quantity);

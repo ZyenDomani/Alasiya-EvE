@@ -343,12 +343,6 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
                 ownerID = call.client->GetCorporationID();
             flag = flagOffice;
         } break;
-        case Inv::Container::Factory: { /*10006*/
-            // not sure on this one  (not coded in client)
-            if (ownerID == 0)
-                ownerID = call.client->GetCharacterID();
-            flag = flagFactory;
-        } break;
         case Inv::Container::SolarSystem: { /*10003*/ // is this for flagProperty items?  (corp items in space)
             // not sure on this one
             if (ownerID == 0)
@@ -363,6 +357,12 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
             flag = flagNone;
         } break;
 
+        case Inv::Container::Factory: { /*10006*/
+            // not sure on this one  (not coded in client)
+            if (ownerID == 0)
+                ownerID = call.client->GetCharacterID();
+            flag = flagFactoryOperation;
+        } break;
         //case Inv::Container::ScrapHeap:/*10005*/
         //case Inv::Container::Bank:/*10007*/
         //case Inv::Container::Recycler:/*10008*/

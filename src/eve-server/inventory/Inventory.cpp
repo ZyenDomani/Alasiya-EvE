@@ -594,7 +594,7 @@ float Inventory::GetCapacity(EVEItemFlags flag) const {
     switch( flag ) {
         case flagOffice:
         case flagProperty:
-        case flagDelivery:
+        //case flagDelivery:
         case flagImpounded:
         case flagCorpMarket:                    return maxHangarCapy;
         case flagNone:

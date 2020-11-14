@@ -1091,30 +1091,22 @@ return {10000001: (500019,),
          'ownerID',
          'groupID',
          'categoryID',
-         'quantity',
          'singleton',
          'stacksize',
          'locationID',
          'flagID']
          */
 DBRowDescriptor* StaticDataMgr::CreateHeader() {
-    /*
-    PyList *keywords = new PyList();
-        keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
-        keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
-    DBRowDescriptor* header = new DBRowDescriptor(keywords);
-    */
     DBRowDescriptor* header = new DBRowDescriptor();
         header->AddColumn("itemID",     DBTYPE_I8);
         header->AddColumn("typeID",     DBTYPE_I4);
         header->AddColumn("ownerID",    DBTYPE_I4);
-        header->AddColumn("locationID", DBTYPE_I4);
-        header->AddColumn("stacksize",  DBTYPE_I4);
-        header->AddColumn("singleton",  DBTYPE_I2);
-        header->AddColumn("flagID",     DBTYPE_I2);
-        //header->AddColumn("quantity",   DBTYPE_I4);
         header->AddColumn("groupID",    DBTYPE_I2);
         header->AddColumn("categoryID", DBTYPE_I4);
+        header->AddColumn("singleton",  DBTYPE_I2);
+        header->AddColumn("stacksize",  DBTYPE_I4);
+        header->AddColumn("locationID", DBTYPE_I4);
+        header->AddColumn("flagID",     DBTYPE_I2);
         header->AddColumn("customInfo", DBTYPE_STR);
     return header;
 }
@@ -1552,7 +1544,7 @@ const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
     switch (flag) {
         case flagNone:                       return "AutoFit";
         case flagWallet:                        return "Wallet";
-        case flagFactory:                       return "Factory";
+        //case flagFactory:                       return "Factory";
         case flagWardrobe:                      return "Wardrobe";
         case flagHangar:                        return "Hangar";
         case flagCargoHold:                     return "Cargo Hold";
@@ -1586,10 +1578,10 @@ const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
         case flagHiSlot6:                       return "Seventh Hi Slot";
         case flagHiSlot7:                       return "Eighth Hi Slot";
         case flagFixedSlot:                     return "Fixed Slot";
-        case flagFactoryBlueprint:              return "Factory Blueprint";
-        case flagFactoryMinerals:               return "Factory Minerals";
-        case flagFactoryOutput:                 return "Factory Output";
-        case flagFactoryActive:                 return "Factory Active";
+        //case flagFactoryBlueprint:              return "Factory Blueprint";
+        //case flagFactoryMinerals:               return "Factory Minerals";
+        //case flagFactoryOutput:                 return "Factory Output";
+        //case flagFactoryActive:                 return "Factory Active";
         //case flagPromenadeSlot1:                return "PromenadeSlot1";
         case flagCapsule:                       return "Capsule";
         case flagPilot:                         return "Pilot";
@@ -1603,7 +1595,7 @@ const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
         case flagOffice:                        return "Office";
         case flagImpounded:                     return "Impounded";
         case flagProperty:                      return "Property";
-        case flagDelivery:                      return "Delivery";
+        //case flagDelivery:                      return "Delivery";
         case flagBonus:                         return "Bonus";
         case flagDroneBay:                      return "Drone Bay";
         case flagBooster:                       return "Booster";
@@ -1618,7 +1610,7 @@ const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
         case flagRigSlot5:                      return "Sixth Rig Slot";
         case flagRigSlot6:                      return "Seventh Rig Slot";
         case flagRigSlot7:                      return "Eighth Rig Slot";
-        case flagFactoryOperation:              return "FactoryOperation";
+        case flagFactoryOperation:              return "Factory Operation";
         case flagCorpHangar2:                   return "CorpHangar2";
         case flagCorpHangar3:                   return "CorpHangar3";
         case flagCorpHangar4:                   return "CorpHangar4";

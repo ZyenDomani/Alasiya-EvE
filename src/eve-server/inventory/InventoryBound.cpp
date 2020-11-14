@@ -455,8 +455,8 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                         donating = true;
                     if (toFlag == flagImpounded)
                         donating = true;
-                    if (toFlag == flagDelivery)
-                        donating = true;
+                    //if (toFlag == flagDelivery)
+                    //    donating = true;
                     if (toFlag == flagLocked) {
                         ; // do tests here for moving locked items (corp role config and ??)
                     }
