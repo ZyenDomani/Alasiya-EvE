@@ -291,27 +291,21 @@ void SystemManager::UnloadSystem() {
             continue;
         }
         pSE = itr->second;
-        // these are also static (and some cases, global)
-        if (pSE->IsGateSE() or pSE->IsBeltSE() or pSE->IsStationSE())
-            sBubbleMgr.Remove(pSE);
 
-        if (pSE->IsStaticEntity() or pSE->isGlobal()) {
-            sItemFactory.RemoveItem(itr->first);
-            m_staticEntities.erase(m_staticEntities.find(itr->first));
-            itr = m_entities.erase(itr);
-            SafeDelete(pSE);
-            continue;
-        }
         if (pSE->TargetMgr() != nullptr)
             pSE->TargetMgr()->Unload();
-        if (pSE->IsShipSE()) {
+
+        if (pSE->IsStaticEntity() or pSE->isGlobal()) {
+            if (pSE->IsStationSE()) {
+                pSE->GetStationSE()->UnloadStation();
+                sEntityList.RemoveStation(itr->first);
+            }
+            m_staticEntities.erase(m_staticEntities.find(itr->first));
+        } else if (pSE->IsShipSE()) {
             pSE->GetShipSE()->GetShipItemRef()->LogOut();
         } else if (pSE->IsNPCSE()) {
             sEntityList.RemoveNPC();    // this is for loaded npc count.
             pSE->GetSelf()->Delete();
-        } else if (pSE->IsStationSE()) {
-            pSE->GetStationSE()->UnloadStation();
-            sEntityList.RemoveStation(itr->first);
         } else if (pSE->IsProbeSE()) {
             sEntityList.RemoveProbe(itr->first);
         }
@@ -400,7 +394,7 @@ bool SystemManager::LoadSystemStatics() {
                 m_moonMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pMSE));
                 pSE = pMSE;
             } break;
-            case EVEDB::invGroups::Sun: {    // suns dont have anything special, so they are generic StaticSystemEntitys
+            case EVEDB::invGroups::Sun: {    // suns dont have anything special, so they are generic SSEs
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 StaticSystemEntity *pSSE = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
@@ -744,7 +738,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
         case EVEDB::invCategories::Entity: {            // Entities
             if (entity.groupID == EVEDB::invGroups::Spawn_Container ) {     // these are destructible objects found in dungeons
                 // For category=Entity, group=Spawn Container, create a CargoContainer object:
-                /** @todo  this needs its own class....there are 477 types, spawing everything..rats, modules, items, etc. */
+                /** @todo  this needs its own class....there are 477 types, spawning everything..rats, modules, items, etc. */
                 CargoContainerRef contRef = sItemFactory.GetCargoContainer( entity.itemID );
                 if (contRef.get() == nullptr)
                     return nullptr;
@@ -1291,17 +1285,15 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         header->AddColumn( "ownerID",    DBTYPE_I4 );
         header->AddColumn( "locationID", DBTYPE_I8 );
         header->AddColumn( "flagID",     DBTYPE_I2 );
-        header->AddColumn( "quantity",   DBTYPE_I4 );
         header->AddColumn( "groupID",    DBTYPE_I2 );
         header->AddColumn( "categoryID", DBTYPE_I4 );
         header->AddColumn( "customInfo", DBTYPE_STR );
     PyPackedRow* row = new PyPackedRow( header );
         row->SetField( "itemID",        new PyLong(m_data.systemID));
         row->SetField( "typeID",        new PyInt(5));
-        row->SetField( "ownerID",       PyStatic.NewOne());  // should this be owning factionID?
+        row->SetField( "ownerID",       PyStatic.NewOne());  // should this be owning factionID?  yes
         row->SetField( "locationID",    new PyLong(m_data.constellationID));
         row->SetField( "flagID",        PyStatic.NewZero());
-        row->SetField( "quantity",      new PyInt(-1));
         row->SetField( "groupID",       new PyInt(5));
         row->SetField( "categoryID",    new PyInt(2));
         row->SetField( "customInfo",    new PyString(""));
