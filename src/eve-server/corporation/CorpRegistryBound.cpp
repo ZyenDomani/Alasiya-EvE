@@ -123,45 +123,24 @@ PyResult SparseCorpOfficeListBound::Handle_GetByKey(PyCallArgs &call) {
 //        2) owned by the viewer (whom shall also be hangar's owner)
 //  this poses a problem for corp staff when viewing member's hangars.  not sure how to 'fix' this yet.
 PyResult SparseCorpOfficeListBound::Handle_SelectByUniqueColumnValues(PyCallArgs &call) {
-    //offices = sm.GetService('corp').GetMyCorporationsOffices().SelectByUniqueColumnValues('stationID', [quoteData.containerID])
-    //   rows = sm.StartService('corp').GetMyCorporationsOffices().SelectByUniqueColumnValues('officeID', [invItem.locationID])
-
-    /*      the following code iterates thru the 'offices' return, but appears to send only one set of data (list of dict?)
-     *
-                        for office in offices:
-                            if quoteData.containerID == office.stationID:
-                                officeFolderID = office.officeFolderID
-                                officeID = office.officeID
-     */
-    /*
-     * 00:31:23 W SparseCorpOfficeListBound::Handle_SelectByUniqueColumnValues(): size= 2
-     * 00:31:23 [CorpCallDump]   Call Arguments:
-     * 00:31:23 [CorpCallDump]      Tuple: 2 elements
-     * 00:31:23 [CorpCallDump]       [ 0]     String: 'officeID'        << could also be 'stationID'
-     * 00:31:23 [CorpCallDump]       [ 1]   List: 1 elements
-     * 00:31:23 [CorpCallDump]       [ 1]   [ 0]    Integer: 100000003
-     */
-    _log(CORP__CALL, "SparseCorpOfficeListBound::Handle_SelectByUniqueColumnValues()");
-    call.Dump(CORP__WARNING);   //so this will dump on all calls
-
     std::string str = PyRep::StringContent(call.tuple->GetItem(0));
     uint32 locationID = PyRep::IntegerValueU32(call.tuple->GetItem(1)->AsList()->GetItem(0));
 
     std::vector<OfficeData> data;
-    if (str.compare("officeID") == 0)
-        stDataMgr.GetStationOfficeIDs(locationID, data);    // this method checks for the type of locationID sent.
-    else if (str.compare("stationID") == 0)
-        stDataMgr.GetStationOfficeIDs(locationID, data);
-    else
-        ;  // make error here?
+    stDataMgr.GetStationOfficeIDs(locationID, data);    // this method checks for the type of locationID sent.
+
+    DBRowDescriptor* header = new DBRowDescriptor();
+        header->AddColumn("officeID",     DBTYPE_I4);
+        header->AddColumn("officeFolderID",    DBTYPE_I4);
+        header->AddColumn("stationID", DBTYPE_I4);
 
     PyList* list = new PyList();
     for (auto cur : data) {
-        PyDict* dict = new PyDict();
-        dict->SetItemString("officeID", new PyInt(cur.officeID));
-        dict->SetItemString("officeFolderID", new PyInt(cur.folderID));
-        dict->SetItemString("stationID", new PyInt(cur.stationID));
-        list->AddItem(new PyObject("util.KeyVal", dict));
+        PyPackedRow* row = new PyPackedRow( header );
+            row->SetField("officeID",        new PyLong(cur.officeID));
+            row->SetField("officeFolderID",  new PyInt(cur.folderID));
+            row->SetField("stationID",       new PyInt(cur.stationID));
+        list->AddItem(row);
     }
 
     if (is_log_enabled(CORP__RSP_DUMP))

@@ -141,10 +141,10 @@ PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
         locFlag = flagOffice;
         flags << flagHangar << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << "," << flagCorpHangar5;
         flags  << "," << flagCorpHangar6 << "," << flagCorpHangar7;
-    } else if (args.flag.compare("junk") == 0) {
+    } else if (args.flag.compare("junk") == 0) {        // this is 'impounded' tab for all locations
         locFlag = flagImpounded;
         flags << flagImpounded;
-    } else if (args.flag.compare("property") == 0) {    // this is 'inSpace' tab...LSC, POS, etc
+    } else if (args.flag.compare("property") == 0) {    // this is 'inSpace' tab...LSC, ALSC, POS, etc
         locFlag = flagProperty;
         flags << flagHangar << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << "," << flagCorpHangar5;
         flags  << "," << flagCorpHangar6 << "," << flagCorpHangar7;
