@@ -60,11 +60,6 @@ ItemFactory::~ItemFactory()
     SafeDelete(m_db);
 }
 
-uint32 ItemFactory::Count()
-{
-    return m_items.size();
-}
-
 int ItemFactory::Initialize()
 {
     ManagerDB::DeleteSpawnedRats(); // takes ~31.2s to run on main, 0.005s on dev
@@ -79,7 +74,6 @@ int ItemFactory::Initialize()
     m_nextNPCID = NPC_ID;
     m_nextMissileID = MISSILE_ID;
     m_nextDroneID = DRONE_ID;
-    //m_nextAsteroidID = ASTEROID_ID;
 
     m_db = new InventoryDB();
 
@@ -105,19 +99,24 @@ void ItemFactory::Close()
 
 void ItemFactory::SaveItems() {
     if (sConfig.debug.DeleteTrackingCans)
-        m_db->DeleteTrackingCans();
+        InventoryDB::DeleteTrackingCans();
     uint32 count = 0;
     double startTime = GetTimeMSeconds();
     std::vector<Inv::SaveData> items;
     items.clear();
     for (auto cur : m_items) {
+        /*
+        if (IsStaticItem(cur.first))
+            continue;
         if (cur.second->quantity() < 1) // should we delete this?
             continue;
         if (IsAsteroid(cur.first))
             continue;
         if (IsCharacter(cur.first))
             continue;
+        */
         if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
+            cur.second->SaveAttributes();
             Inv::SaveData data = Inv::SaveData();
                 data.itemID = cur.first;
                 data.contraband = cur.second->contraband();
@@ -131,8 +130,6 @@ void ItemFactory::SaveItems() {
                 data.customInfo = cur.second->customInfo();
             items.push_back(data);
             ++count;
-            // attribMap has been updated to save relevant attributes.  this call is safe and desirable here
-            cur.second->SaveAttributes();
         }
     }
     ItemDB::SaveItems(items);
@@ -292,7 +289,7 @@ const CharacterType* ItemFactory::GetCharacterType(uint16 characterTypeID) {
 const CharacterType* ItemFactory::GetCharacterTypeByBloodline(uint16 bloodlineID) {
     // Unfortunately, we have it indexed by typeID, so we must get it ...
     uint16 characterTypeID;
-    if (!m_db->GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
+    if (!InventoryDB::GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
         return nullptr;
     return GetCharacterType(characterTypeID);
 }

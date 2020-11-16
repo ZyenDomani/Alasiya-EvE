@@ -1085,28 +1085,21 @@ return {10000001: (500019,),
     10000068: (500020,)}
     */
 }
-/*
-        header = ['itemID',
-         'typeID',
-         'ownerID',
-         'groupID',
-         'categoryID',
-         'singleton',
-         'stacksize',
-         'locationID',
-         'flagID']
-         */
+
 DBRowDescriptor* StaticDataMgr::CreateHeader() {
-    DBRowDescriptor* header = new DBRowDescriptor();
+    // this is correct data for crucible.  dont alter
+    PyList *keywords = new PyList();
+        keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
+        keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
+    DBRowDescriptor* header = new DBRowDescriptor(keywords);
         header->AddColumn("itemID",     DBTYPE_I8);
         header->AddColumn("typeID",     DBTYPE_I4);
         header->AddColumn("ownerID",    DBTYPE_I4);
-        header->AddColumn("groupID",    DBTYPE_I2);
-        header->AddColumn("categoryID", DBTYPE_I4);
-        header->AddColumn("singleton",  DBTYPE_I2);
-        header->AddColumn("stacksize",  DBTYPE_I4);
         header->AddColumn("locationID", DBTYPE_I4);
         header->AddColumn("flagID",     DBTYPE_I2);
+        header->AddColumn("quantity",   DBTYPE_I4);
+        header->AddColumn("groupID",    DBTYPE_I4);
+        header->AddColumn("categoryID", DBTYPE_I4);
         header->AddColumn("customInfo", DBTYPE_STR);
     return header;
 }
@@ -1542,7 +1535,7 @@ const char* StaticDataMgr::GetFlagName(uint16 flag)
 const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
 {
     switch (flag) {
-        case flagNone:                       return "AutoFit";
+        case flagNone:                          return "AutoFit";
         case flagWallet:                        return "Wallet";
         //case flagFactory:                       return "Factory";
         case flagWardrobe:                      return "Wardrobe";
@@ -1578,10 +1571,10 @@ const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
         case flagHiSlot6:                       return "Seventh Hi Slot";
         case flagHiSlot7:                       return "Eighth Hi Slot";
         case flagFixedSlot:                     return "Fixed Slot";
-        //case flagFactoryBlueprint:              return "Factory Blueprint";
-        //case flagFactoryMinerals:               return "Factory Minerals";
-        //case flagFactoryOutput:                 return "Factory Output";
-        //case flagFactoryActive:                 return "Factory Active";
+        case flagFactoryBlueprint:              return "Factory Blueprint";
+        case flagFactoryMinerals:               return "Factory Minerals";
+        case flagFactoryOutput:                 return "Factory Output";
+        case flagFactoryActive:                 return "Factory Active";
         //case flagPromenadeSlot1:                return "PromenadeSlot1";
         case flagCapsule:                       return "Capsule";
         case flagPilot:                         return "Pilot";

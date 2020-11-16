@@ -178,7 +178,7 @@ void StationItem::RecoverOffice(uint32 officeID)
 void StationItem::RentOffice(OfficeData& odata)
 {
     odata.typeID = typeID();    // change from officeTypeID to stationTypeID
-    odata.folderID = m_stationID + staOfficeOffset;
+    odata.folderID = m_stationID + STATION_OFFICE_OFFSET;
     odata.stationID = m_stationID;
 
     // create new office item

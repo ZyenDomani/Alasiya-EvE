@@ -60,7 +60,7 @@ public:
 
     void Close();
     int Initialize();
-    uint32 Count();
+    uint32 Count()                                      { return m_items.size(); }
 
     void SaveItems();
     void RemoveItem(uint32 itemID);

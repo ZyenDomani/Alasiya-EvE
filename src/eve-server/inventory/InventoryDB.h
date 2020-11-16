@@ -55,7 +55,7 @@ public:
      * @param[out] characterTypeID Resulting ID of character type.
      * @return True on success, false on failure.
      */
-    bool GetCharacterTypeByBloodline(uint8 bloodlineID, uint16 &characterTypeID);
+    static bool GetCharacterTypeByBloodline(uint8 bloodlineID, uint16 &characterTypeID);
     /**
      * Obtains ID of bloodline based on character type.
      *

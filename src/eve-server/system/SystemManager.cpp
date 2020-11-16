@@ -1279,24 +1279,15 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     into.droneState = pBubble->GetDroneState(); //SystemDB::GetSolDroneState( m_data.systemID );
 
     /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */
-    DBRowDescriptor* header = new DBRowDescriptor();
-        header->AddColumn( "itemID",     DBTYPE_I8 );
-        header->AddColumn( "typeID",     DBTYPE_I4 );
-        header->AddColumn( "ownerID",    DBTYPE_I4 );
-        header->AddColumn( "locationID", DBTYPE_I8 );
-        header->AddColumn( "flagID",     DBTYPE_I2 );
-        header->AddColumn( "groupID",    DBTYPE_I2 );
-        header->AddColumn( "categoryID", DBTYPE_I4 );
-        header->AddColumn( "customInfo", DBTYPE_STR );
-    PyPackedRow* row = new PyPackedRow( header );
-        row->SetField( "itemID",        new PyLong(m_data.systemID));
-        row->SetField( "typeID",        new PyInt(5));
-        row->SetField( "ownerID",       PyStatic.NewOne());  // should this be owning factionID?  yes
-        row->SetField( "locationID",    new PyLong(m_data.constellationID));
-        row->SetField( "flagID",        PyStatic.NewZero());
-        row->SetField( "groupID",       new PyInt(5));
-        row->SetField( "categoryID",    new PyInt(2));
-        row->SetField( "customInfo",    new PyString(""));
+    PyPackedRow* row = new PyPackedRow(sDataMgr.CreateHeader());
+        row->SetField("itemID",        new PyLong(m_data.systemID));
+        row->SetField("typeID",        new PyInt(5));
+        row->SetField("ownerID",       PyStatic.NewOne());  // should this be owning factionID?  yes
+        row->SetField("locationID",    new PyInt(m_data.constellationID));
+        row->SetField("flagID",        PyStatic.NewZero());
+        row->SetField("groupID",       new PyInt(5));
+        row->SetField("categoryID",    new PyInt(2));
+        row->SetField("customInfo",    new PyString(""));
     into.solItem = row;
 
     if (is_log_enabled(DESTINY__SETSTATE)) {

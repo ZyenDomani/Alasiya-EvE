@@ -258,7 +258,7 @@ void StationDataMgr::GetStationOfficeIDs(uint32 locationID, std::vector<OfficeDa
         for (auto itr = range.first; itr != range.second; ++itr)
                 data.push_back(itr->second);
     } else if (IsOfficeFolder(locationID)) {
-        auto range = m_stationOfficeData.equal_range((locationID -staOfficeOffset));
+        auto range = m_stationOfficeData.equal_range((locationID - STATION_OFFICE_OFFSET));
         for (auto itr = range.first; itr != range.second; ++itr)
             if (itr->second.folderID == locationID) {
                 data.push_back(itr->second);

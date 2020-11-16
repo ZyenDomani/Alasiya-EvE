@@ -1128,14 +1128,18 @@ void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
 
 PyPackedRow* InventoryItem::GetItemRow() const
 {
-    DBRowDescriptor* header = sDataMgr.CreateHeader();
-    PyPackedRow* row = new PyPackedRow(header);
+    PyPackedRow* row = new PyPackedRow( sDataMgr.CreateHeader() );
     GetItemRow(row);
     return row;
 }
 
-void InventoryItem::GetItemRow(PyPackedRow* into ) const
+void InventoryItem::GetItemRow(PyPackedRow* into) const
 {
+    int32 qty = (m_data.singleton ? -1 : m_data.quantity);
+    if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
+        if (sItemFactory.GetBlueprint(m_itemID)->copy())
+            qty = -2;
+
     into->SetField("itemID",       new PyLong(m_itemID));
     into->SetField("typeID",       new PyInt(m_type.id()));
     into->SetField("ownerID",      new PyInt(m_data.ownerID));
@@ -1143,6 +1147,8 @@ void InventoryItem::GetItemRow(PyPackedRow* into ) const
     into->SetField("flagID",       new PyInt(m_data.flag));
     into->SetField("groupID",      new PyInt(type().groupID()));
     into->SetField("categoryID",   new PyInt(type().categoryID()));
+    into->SetField("quantity",     new PyInt(qty));
+    /*
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint) {
         if (sItemFactory.GetBlueprint(m_itemID)->copy()) {
             into->SetField("stacksize",    new PyInt(1));
@@ -1155,6 +1161,7 @@ void InventoryItem::GetItemRow(PyPackedRow* into ) const
         into->SetField("stacksize",    new PyInt(m_data.singleton? -1 : m_data.quantity));
         into->SetField("singleton",    new PyInt(m_data.singleton?1:0));
     }
+    */
     // customInfo is actually used in client (but i dont think it's a string)
     //if const.ixLocationID in change and item.customInfo == logConst.eventUndock:
     into->SetField("customInfo",   new PyString(m_data.customInfo));
