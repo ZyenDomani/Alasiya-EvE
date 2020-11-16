@@ -128,7 +128,7 @@ public:
     int64 GetCorpRole() const                           { return pSession->GetCurrentLong( "corprole" ); }
     // access roles everywhere.  is joined with other access roles
     int64 GetRolesAtAll() const                         { return pSession->GetCurrentLong( "rolesAtAll" ); }
-    // access roles at base defined for this char. overrides hq if same location
+    // access roles at base. overrides hq if same location
     int64 GetRolesAtBase() const                        { return pSession->GetCurrentLong( "rolesAtBase" ); }
     // access roles at corp HQ.
     int64 GetRolesAtHQ() const                          { return pSession->GetCurrentLong( "rolesAtHQ" ); }

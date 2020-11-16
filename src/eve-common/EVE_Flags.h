@@ -13,7 +13,7 @@
 enum EVEItemFlags {
     flagNone                        = 0,
     flagWallet                      = 1,
-    flagFactory                     = 2,  // dunno what this is for
+    // flagFactory                     = 2,  // not in client
     flagWardrobe                    = 3,  // dunno what this is for  clothes?
     flagHangar                      = 4,  // station hangar and ship corp hangar 1
     flagCargoHold                   = 5,    //AttrCapacity
@@ -53,7 +53,7 @@ enum EVEItemFlags {
 
     flagFixedSlot                   = 35,
 
-    //factory stuff:
+    //factory stuff:   not in crucible client
     flagFactoryBlueprint            = 36,
     flagFactoryMinerals             = 37,
     flagFactoryOutput               = 38,
@@ -94,7 +94,8 @@ enum EVEItemFlags {
     flagOffice                      = 71,    // offices
     flagImpounded                   = 72,    // impounded or junk
     flagProperty                    = 74,    // property
-    flagDelivery                    = 75,    // deliveries   cannot find where this is used.  items set to this flag do not show when loaded
+    // not in client
+    // flagDelivery                    = 75,    // deliveries
 
     /*  they were OfficeSlot* in client const, but i cannot find any references to them in code
     flagUnknown1                    = 70,
@@ -126,7 +127,7 @@ enum EVEItemFlags {
     flagRigSlot6                    = 98,    //Rig power slot 7
     flagRigSlot7                    = 99,    //Rig power slot 8
 
-    flagFactoryOperation            = 100,   // dunno what this is for
+    flagFactoryOperation            = 100,
 
     //  these are flags for items in corp hangars (station, container, ship), by divisionID    all use AttrCorporateHangarCapacity
     flagCorpHangar2                 = 116,   // formerly corpSAG* or Security Access Group.

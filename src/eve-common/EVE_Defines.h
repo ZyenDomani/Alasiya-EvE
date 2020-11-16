@@ -174,7 +174,7 @@
 
 
 //  static defines to ease code checks
-#define staOfficeOffset           6000000
+#define STATION_OFFICE_OFFSET     6000000
 #define TEMP_ENTITY_ID          110000000
 #define PLANET_PIN_ID           130000000
 #define ASTEROID_ID             450000000
@@ -343,7 +343,7 @@
 ((flag == flagHangar) || ((flag >= flagCorpHangar2) && (flag <= flagCorpHangar7)))
 
 #define IsOfficeFlag(flag) \
-((flag >= flagCorpMarket) && (flag <= flagDelivery))
+((flag >= flagCorpMarket) && (flag <= flagProperty))
 
 #define IsModuleSlot(flag) \
 (((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) \

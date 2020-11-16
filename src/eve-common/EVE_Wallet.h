@@ -9,6 +9,8 @@
 #ifndef EVE_ACCOUNT_H
 #define EVE_ACCOUNT_H
 
+//Plex2AurExchangeRatio = 3500
+//AurumToken2AurExchangeRatio = 1000
 
 namespace Account {
 
@@ -250,8 +252,8 @@ namespace Journal {
             MiniGameHouseCut = 110,
             AurumTokenConversion = 111,
             Max = 120,
-            /* not sure on these
-refMaxEve = 10000
+        /* not sure on these
+            refMaxEve = 10000
             ModifyISK = 10001,
             PrimaryMarketplacePurchase = 10002,
             BattleReward = 10003,
@@ -264,7 +266,7 @@ refMaxEve = 10000
             BattleLossReward = 10010,
             ModifyAUR = 11001,
             RespecPayment = 11002
-            */
+        */
         };
     }
 }
