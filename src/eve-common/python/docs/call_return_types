@@ -6,13 +6,15 @@ var1 = {client call}
     however, if var1 is iterated, then set result to PyList() and load the list with dicts
             list->AddItem(new PyObject("util.KeyVal", dict));
 
-    if db call, use DBRowToKeyVal, DBResultToIndexRowset, or DBResultToCRowset for data accessed using dot, which
-    return a PyObject.  the diff returns are based on how the data is accessed
+    if db call, use DBRowToKeyVal, DBResultToIndexRowset, or DBResultToCRowset for data accessed using dot.
+    these return a PyObject
+    the diff returns are based on how the data is accessed
 
 
     PyObject using util.Rowset needs header/lines   <<<  notice the plural
     PyObject using util.Row needs header/line       <<<  notice the singular
 
+    if this doesnt work, use packedRow (see II::GetItemRow or SelectByUniqueColumnValues())
 
 
 var1, var2 (...) = {client call}
@@ -40,8 +42,8 @@ x**y in python is exponent (x^y)
 
 python slice notation
 a[start:stop:step]
-a[start:end] # items start through end-1
-a[start:]    # items start through the rest of the array
+a[start:end] # items from start through end-1
+a[start:]    # items from start through the rest of the array
 a[:end]      # items from the beginning through end-1
 a[:]         # a copy of the whole array
 

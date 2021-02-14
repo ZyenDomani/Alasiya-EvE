@@ -142,10 +142,6 @@ closely examine target mgr and see what we can improve.
     - update targ/npcai to inform npc of yellowbox instead of locked
 rewrite completed, but reverted due to multiple errors and inconsistencies (m_targMgr->OnTarget())
 
-create ".modify" command to allow ingame setting of attributes
-    - groove has this functionality in his launcher
-    - this is done already, but incomplete.  search for ".dogma" command
-
 add cache calls/data for systems that use it after debugging and testing completed
     - bookmarks
     - agent data?
@@ -159,6 +155,12 @@ finish DestinyManager::SendCloakFx()
 bounties have a bonus...
 skillDEDConnections = 3362, // Social Skill at dealing with Concord Department and negotiating bounties
 Bonus fee of 1,500 isk per pirate head per level of the skill
+
+PyRep --
+    do we need float and double to be separated?
+    currently both are sent as double, and some cases are using static_cast<float>
+    not sure if client expects a difference.  would be a bit less data on wire in some cases
+
 **********************************
 *** actually, ALL of the social and trade skills have bonuses.
     - these need to be looked over and implemented.
@@ -457,19 +459,11 @@ go thru classes and rename per class type...
     -  *Item  for items
     -  *SE  for system entities
 
-finish dot commands
-    - model commands on .tr where applicable/appropriate
-    - add options for commands
-    - .tr still needs lots of work.  basic code is done and working
-
-
 implement remaining UIDs as noted in EVE_Defines.h
 
 look into OnSessionMutated to see if we can implement it properly
 
 F11 map - universe not showing region connecting (jump) lines (should be green for region jumps)
-
-command .attrlist needs names as well as attrID
 
 owner notes and owner labels incomplete
 
@@ -500,6 +494,30 @@ skillTaxEvasion = 28261, // Trade Knowledge of the SCC tax regime and the abilit
 
 
 check into call returns.  they may be missing data (like callID)
+
+*******************************************************
+*****************  commands
+
+***  ideas
+and add colors where applicable/appropriate
+    - currently, skill in training is aqua, others are white.
+    - fleet bonuses is only other command that is colored (offhand)
+
+create ".modify" command to allow ingame setting of attributes
+    - groove has this functionality in his launcher
+    - this is done already, but incomplete.  search for ".dogma" command
+
+***  errors
+
+
+***  other
+finish dot commands
+    - model commands on .tr where applicable/appropriate
+    - add options for commands
+    - .tr still needs lots of work.  basic code is done and working
+
+command .attrlist needs names as well as attrID
+
 
 *******************************************************
 *****************  Fx shit
@@ -684,6 +702,7 @@ update sending Ref: ServerError xxxxx msgs on errors without existing msgs.
     - this includes all decode errors
 
 create data needed for killboard, and integrate killboard into site  -priority level: low
+    - page started.  data non-existent
 
 Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed  ....not working right.  later.
 
@@ -706,11 +725,7 @@ turns use quanternion lerp curve (and mass/agility somehow)
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend
 
-broker agents to gain rep with to modify fees?
-
-add colors to skill list (and other commands)
-    - currently, skill in training is aqua, others are white.
-    - fleet bonuses is only other command that is colored (offhand)
+gain rep with broker agents to modify fees?
 
 set up universe monitor for watching jumps
 when jumps > xx send "system closed" and "system congested" msgs to pilots trying to jump in.
@@ -726,3 +741,5 @@ website updates:
 
 add version #s to site
 
+integrate forums with server account data.
+use game login for forum, and create way to change relevant character (like wow page)

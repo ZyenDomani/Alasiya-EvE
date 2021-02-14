@@ -117,6 +117,7 @@ if "default" is not set, variable is initialized to "0".
 
 ***** UPDATE *****
 "none_marker" and "safe" for integer types has been depreciated.  "real" still uses these tags
+"none_marker" on int will force decoder to use given value if field is None  (useful for using -1 instead of 0 if field is None)
 code as been updated to use PyRep::IntegerValue(), which checks for PyRep type and decodes accordingly, with PyNone decoding as "0"
 
 

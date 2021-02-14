@@ -2,6 +2,22 @@
 
 *******  PYTHON ERROR TYPES  ********
 
+KeyError: 872
+	  marketGroupID = 872
+
+Exception:  'tuple' object is not callable  (missing comma?)
+
+
+IndexError: list assignment index out of range
+            no clue yet.
+
+ValueError: 'part' is not in list
+            no clue yet.
+
+ValueError: Unknown packet type
+            destiny structures incorrect (state or balls) - wrong variable type or wrong assembly or sectors incorrect for mode
+
+
         charID = ['charID']
 TypeError: unhashable type: 'list'
             must be tuple or dict.  cannot hash list
@@ -12,16 +28,9 @@ TypeError: unhashable instance
             loop thru items to return and insert into tuple.
             return tuple of items instead of list or dict
 
-        charID = 140000000
 TypeError: an integer is required
             unknown at this time
             *see above*
-
-Exception:  'tuple' object is not callable  (missing comma?)
-
-
-ValueError: Unknown packet type
-            destiny structures incorrect (state or balls) - wrong variable type or wrong assembly or sectors incorrect for mode
 
 TypeError: 'NoneType' object is not iterable
             object is None() but expected to iterate over the return.
@@ -41,7 +50,7 @@ TypeError: object of type 'int' has no len()
 
 TypeError: iteration over non-sequence
             you need to iterate over a list, not an object
-            return being sent as object, dict, or ??, but should be sent as tuple or list
+            return being sent as object, dict, or ??, but should be sent as tuple or list or packedRow
 
 TypeError: can't multiply sequence by non-int of type 'float'
             object assigned value by a server-return of *type*, but should be tuple (non-sequenced)
@@ -59,6 +68,7 @@ TypeError: list indices must be integers, not instancemethod
 
 TypeError: cannot convert dictionary update sequence element #0 to a sequence
             return sent as dict, but should be a list of (tuple[0]=key, tuple[1]=value)
+
 
 AttributeError: 'dict' object has no attribute 'Index'
             this should be sent as a DBResultToCRowset or DBResultToCIndexedRowset
@@ -98,6 +108,9 @@ AttributeError: 'tuple' object has no attribute 'index'
 AttributeError: 'tuple' object has no attribute 'keys'
             You can't find elements by k,v in a tuple. Tuples have no index method.
             Use Dict instead
+
+AttributeError: 'blue.DBRow' object has no attribute 'characterID'
+            unknown at this time
 
 AttributeError: Rowset instance has no attribute 'columns'
                 DBRowset class has no member 'columns'
@@ -147,16 +160,17 @@ AttributeError: KeyVal instance has no attribute 'GetDescription'
 AttributeError: KeyVal instance has no attribute 'Index'
                 change 'new PyObject("util.KeyVal", dict)' to DBResultToCRowset
 
-ValueError: 'part' is not in list
-            no clue yet.
+AttributeError: type object 'set' has no attribute 'itemID'
+                no clue yet.
 
 
 **********  PYTHON MISC  ************
 
-iteritems = iterator of dict (k,v) pairs
 iterkeys = iterator of dict keys
 itervalues = iterator of dict values
+iteritems = iterator of dict (k,v) pairs (both of the above)
 
+TypeError: unhashable type: 'list'
 
 TypeError: unhashable instance
 
