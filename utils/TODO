@@ -1,19 +1,23 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    6 November 2020
+****     13 November 2020
 
     note:  this whole file needs to be reorganized (wip)
 
 *******************************************************
 **********  errors and other found shit...high priority
 
-verify skill attr 'in training' is being properly removed
+can rent a second (or more) office in station!!!  wtf???
 
-RAM doing funny shit...check it out (wip)
+
+
+verify skill attr 'in training' is being properly removed
 
 noob ships do not Init() correctly....  most attrs are 0
     -- check this.  may be fixed already
+
+salvager success crashes other salvagers and tractor
 
 npcs not getting destiny warpstate set (sometimes - this is cause of rats not warping into belts)
 
@@ -60,6 +64,20 @@ error:
 *******************************************************
 ********  improvements
 
+entity list
+    - station map...change from stationItemRef to stationItem*  - this may improve a few other things
+    - can we make m_clients a map or list instead of vector? (to enable .find() method)
+
+EVEDB::invGroups::Spawn_Container needs it own class
+    - mostly for dungeons/deadspace
+    - 477 types
+
+remove InventoryDB (m_db) and associated code from itemfactory
+remove character queries from InventoryDB
+remove station/static queries from InventoryDB
+
+AuditLogSecureContainer types not coded (data coded in EvE_Inventory.h)
+
 skill error on queue update   - see cruc/skills/skill_error_new
 
 look into changing (EvilNumber)DmgTypeAttribute to (struct)Inv::AttrData
@@ -105,6 +123,8 @@ jettison now checks for can capy.
 
 AttributeMap::Change() has data for updated cap charge sending....not sure how/when to implement it
 
+customInfo is actually used in client
+    - there are many logConst and event** msgs not implemented/researched (LP, FacWar, StandingTransactions, more)
 
 20:41:06 [Bound] InsuranceBound::InsureShip()
 20:41:06 [AcctTrace] TranserFunds() - from: 90000000, to: 1000132, entry: 19, refID: 0, amount: 0.33, fKey: 1000, tKey: 1000
@@ -217,6 +237,7 @@ dungeon mgr - factionID of "region sov" needs to be written to determine region 
     - figure out how to determine LCO in dungeon and spawn rats/waves near objects instead of middle of bubble
 
 fleetData.h needs to be moved to common/EVE_Fleet.h and PODs put in fleet namespace
+FleetBound could use updates (client->getchar->name, etc)
 
 fleet boosts - apply directly to ship/modules when calculated
     - set leadership skill modifiers on char item, then have fleet boosts pull directly from char
@@ -263,6 +284,12 @@ added notes on scanner groupNames in anomalyMgr.cpp and more data in EVE_Scanner
     - field descriptions found in packets/Scan.xmlp
 check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
 
+ship/cargo scanning
+    - not sure about this system yet
+    - OnCargoScanComplete
+    - OnShipScanCompleted
+    - there are packets on both of these.  must make bpc updates play nice with scanner code.  may have to update client
+
 reconnect to lost probes not implemented yet.
 
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
@@ -278,11 +305,12 @@ drone ai needs:
 mining methods will need updates to test for drones vs pilots
 move mining item depleted call to targmgr
 
-RAM code - implement invention, copy, re, tech    -priority level: low
-    - check/update eveMath code for use with RAM/Invention (wip)
-    - EvilNumber shit isnt needed or wanted with these (wip)
+RAM code - implement invention, re    -priority level: low
     - (reproc) update GetRecoverables to use sDataMgr...currently hitting db on every call...
-    - add code/checks for char and corp standings in AssemblyLineCheck
+    - some bp dont have invention data
+    - invention and re will need lots of work
+    - data interface dont show on install job tab (dunno why)
+    - bpc may be a bit off (not sure why yet)
 
 contact list - no notification when contacts login.  no initial contact status when logging in.  -priority level: lo
 
@@ -315,14 +343,13 @@ item contraband.....this needs implementing
 
 market code
     - determine and code methods for using arum as credit type
-    - fees/taxes wrong.  see notes/code in MarketMgr.h
 
 market for corp use
-    - add checks for hangar location when placing buy orders
-    - find delivery hangar flag for corp buy order at requested station
+    - add checks for hangar location when placing sell orders
     - will need more data and checks for using corp account key (wallet division) properly.  currently cash (div 1)
     - escrow and broker fee have "authorized by" msgs to implement....see common/eve-wallet.h
 
+EVEItemFlags - update our code for the 89 flags defined in client
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
 raceMask isnt implemented yet...will need more thought/coding
@@ -340,8 +367,6 @@ corp items not updating in db when moved (could be all items as we're not saving
 dividends incomplete
 decorations list doesnt include recipients.  also time is shown as elapsed
 contacts incomplete
-StationOffice::ValidateAddItem incomplete (but unused)
-KeeperService will need work (accel gates)
 
 
 alliances?  not yet.  need other shit finished first.
@@ -356,6 +381,7 @@ locationName = localization.GetByMessageID(self.locationNameID)
 return localization.GetByMessageID(self.ownerNameID, languageID)
     - ownerNameID is a messageID!!!
 0 AS landmarkNameID
+    - landmarkNameID is a messageID!!!
 
 InvBrokerService needs love
 mapservice  needs love
@@ -369,8 +395,10 @@ ShipService incomplete
 LookupService needs update
 serviceDB needs update
     - maybe remove "Lookup*" shit to its own db file
+StationOffice::ValidateAddItem incomplete (but unused)
+    - need tic to determine rent time on office.  implement lockdown when rent unpaid (grace period?)
 
-lots of Corp* shit still incomplete
+KeeperService will need work (accel gates)
 
 PlanetORBBound needs work now that customs offices are working
 PI Launch status need *some way* to tick for launch reentry
@@ -420,8 +448,6 @@ many unimplemented salvage error msgs noted in prospector.h
 
 OSE::Killed() unfinished.
 
-set station GoTo target to be dock elevation, NOT centerPoint
-
 still many ClientErrorMgs not used/implemented
 
 noob mining ships to have ore hold?
@@ -458,7 +484,7 @@ trader joe (market bot)
 
 low on the list.....
 contraband.
-however, there are skills related to it, once implemented  (not published)
+however, there are skills related to it, once implemented  (but not published)
 skillSmuggling = 3448, // Trade Proficiency at laying low and avoiding unwanted attention. From a base of 90%, each level of skill reduces by 10% the likelihood of being scanned while transporting contraband.
 skillStarshipFreight = 13069, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
 skillMineralFreight = 13070, // Trade The skill at transporting contraband without getting caught. -10% chance of being caught transporting contraband. Base chance 60%.
@@ -472,6 +498,8 @@ skillHazardousMaterialFreight = 13075, // Trade The skill at transporting contra
 skillTaxEvasion = 28261, // Trade Knowledge of the SCC tax regime and the ability to utilize that to one's own advantage.
 2% reduction in SCC tax per level.
 
+
+check into call returns.  they may be missing data (like callID)
 
 *******************************************************
 *****************  Fx shit
@@ -510,6 +538,7 @@ remove "Notify*" from notify names....implement better naming convention (see ab
 
 all PackedRows are marshalled into a buffer, where None is inserted as zero.
     - this negates client conditional checks like using "if x is None:" because x=0 will return false in that check, which makes shit weird
+    - UPDATE  client patched to correct this, using "if x == 0:" after above "None" check
 
 *******************************************************
 *****************  ideas for later
@@ -644,7 +673,7 @@ jump clones - when i start this, need to check into diff between active clone an
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
-static items not being removed from itemfactory map upon system unload
+static items not being removed from itemfactory map upon system unload (station removal fixed)
 
 began putting specific throw msgs in appropriate common/EVE_*.h files if available,
 else src/*/*.h files
@@ -688,6 +717,7 @@ when jumps > xx send "system closed" and "system congested" msgs to pilots tryin
 ...other things?
 
 there is a lot more to machonet than we currently have coded/working....
+    - narrowcast is for notification types of "broadcast" using "bcast_idtype"
 
 
 *******************************************************
