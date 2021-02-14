@@ -54,7 +54,7 @@ void CorporationDB::GetCorpStations(uint32 corp_id, std::vector<uint32>& stVec) 
 PyObject *CorporationDB::ListStationOffices(uint32 station_id) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT officeID, officeFolderID, corporationID, stationID, typeID, lockDown, rentalFee, expiryDateTime"
+        "SELECT itemID, officeFolderID, corporationID, stationID, typeID, lockDown, rentalFee, expiryDateTime"
         " FROM staOffices"
         " WHERE stationID = %u", station_id ))
     {

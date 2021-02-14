@@ -251,21 +251,20 @@ PyRep* StationDataMgr::GetStationItemBits(uint32 stationID)
     return nullptr;
 }
 
-void StationDataMgr::GetStationOfficeIDs(uint32 locationID, std::vector<OfficeData>& data)
+void StationDataMgr::GetStationOfficeIDs(uint32 locationID, std::vector<OfficeData> &data)
 {
     if (IsStation(locationID)) {
         auto range = m_stationOfficeData.equal_range(locationID);
         for (auto itr = range.first; itr != range.second; ++itr)
-                data.push_back(itr->second);
+            data.push_back(itr->second);
     } else if (IsOfficeFolder(locationID)) {
         auto range = m_stationOfficeData.equal_range((locationID - STATION_OFFICE_OFFSET));
         for (auto itr = range.first; itr != range.second; ++itr)
-            if (itr->second.folderID == locationID) {
+            if (itr->second.folderID == locationID)
                 data.push_back(itr->second);
-                return;
-            }
     } else if (IsOffice(locationID)) {
-        // not sure how to do this one yet.....iterate thru the whole map?
+        // no better way to do this one yet.....iterate thru the whole map?
+        // this is full map of station data.  need to find station to cut down on loop time.
         for (auto cur : m_stationOfficeData)
             if (cur.second.officeID == locationID) {
                 data.push_back(cur.second);

@@ -33,7 +33,7 @@ public:
     void                AddOffice(uint32 stationID, OfficeData& data);
     void                LoadOffices(uint32 stationID, std::map<uint32, OfficeData>& data);
     // this will check for locationID type and retrieve appropriate data
-    void                GetStationOfficeIDs(uint32 locationID, std::vector<OfficeData>& data);
+    void                GetStationOfficeIDs(uint32 locationID, std::vector<OfficeData> &data);
 
     bool                GetStationData(uint32 stationID, StationData& data);
 

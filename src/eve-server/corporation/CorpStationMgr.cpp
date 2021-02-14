@@ -223,9 +223,11 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
 
     Client* pClient = call.client;
 
-    // this may not be needed, as rental fee is queried immediatly prior to this call
+    /** @todo see if corp has office in station already. */
+
+    // this may not be needed, as rental fee is queried immediately prior to this call
     if (arg.arg != pStationItem->GetOfficeRentalFee())
-        _log(CORP__WARNING, "RentOffice() - Was quoted %i but station reports %i for station %s", \
+        _log(CORP__WARNING, "RentOffice() - Was quoted %i but station reports %u for station %s", \
                 arg.arg, pStationItem->GetOfficeRentalFee(), pStationItem->name());
 
     // check if the corp has enough money
@@ -235,7 +237,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     reason += " by ";
     reason += pClient->GetCharName();
     AccountService::TranserFunds(pClient->GetCorporationID(), pStationItem->GetOwnerID(), arg.arg, reason.c_str(), Journal::EntryType::OfficeRentalFee);
-/*
+/** @note  why is this disabled? 
     int64 balance = AccountDB::GetCorpBalance(pClient->GetCorporationID(), Account::KeyType::Cash);
     if (balance < arg.arg) {
         std::map<std::string, PyRep *> args;
@@ -267,6 +269,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
      *        [PyString "clientID"]           << Notify::Types::
      */
 
+    /** @todo update this to use corpNotify */
     // This has to be sent to everyone in the station
     OfficeAttributeUpdate change;
         change.oldOfficeFolderID = PyStatic.NewNone();

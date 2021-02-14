@@ -24,10 +24,11 @@ public:
     // or CorpRegistryBound?
     PyCallable_Make_Dispatcher(SparseCorpOfficeListBound)
 
-    SparseCorpOfficeListBound(PyServiceMgr *mgr, CorporationDB& db)
+    SparseCorpOfficeListBound(PyServiceMgr *mgr, CorporationDB& db, uint32 corpID)
     : PyBoundObject(mgr),
     m_dispatch(new Dispatcher(this)),
-    m_db(db)
+    m_db(db),
+    m_corpID(corpID)
     {
         _SetCallDispatcher(m_dispatch);
 
@@ -52,6 +53,7 @@ protected:
     Dispatcher *const m_dispatch;
 
     CorporationDB& m_db;
+    uint32 m_corpID;
 };
 
 PyResult SparseCorpOfficeListBound::Handle_Fetch(PyCallArgs &call)
@@ -76,10 +78,20 @@ PyResult SparseCorpOfficeListBound::Handle_Fetch(PyCallArgs &call)
 }
 
 PyResult SparseCorpOfficeListBound::Handle_FetchByKey(PyCallArgs &call) {
+    // this is something about getting member data....
     _log(CORP__CALL, "SparseCorpOfficeListBound::Handle_FetchByKey()");
     call.Dump(CORP__WARNING);   //so this will dump on all calls
 
-    /*  no clue here....may not be used in this version
+    /*
+     * call
+          [PyTuple 4 items]
+            [PyString "N=699765:12950"]
+            [PyString "FetchByKey"]
+            [PyTuple 1 items]
+              [PyList 1 items]
+                [PyInt 649670823]       // charID ?
+     *
+     * return
       [PySubStream 71 bytes]
         [PyList 1 items]
           [PyTuple 3 items]
@@ -93,7 +105,7 @@ PyResult SparseCorpOfficeListBound::Handle_FetchByKey(PyCallArgs &call) {
               [PyString ""]
               [PyIntegerVar 0]
               [PyIntegerVar 0]
-              [PyIntegerVar 129492958800000000]
+              [PyIntegerVar 129492958800000000] // timestamp
               [PyNone]
               [PyIntegerVar 0]
               [PyIntegerVar 0]
@@ -103,7 +115,7 @@ PyResult SparseCorpOfficeListBound::Handle_FetchByKey(PyCallArgs &call) {
               [PyIntegerVar 0]
               [PyInt 0]
               [PyInt 1004]
-              [PyIntegerVar 129492958800000000]
+              [PyIntegerVar 129492958800000000] // timestamp
               [PyInt 0]
               */
     return nullptr;
@@ -117,36 +129,66 @@ PyResult SparseCorpOfficeListBound::Handle_GetByKey(PyCallArgs &call) {
 }
 
 // this is called in a few places, to get officeID, but
-//   uses a method chain from GetOffices() (from bound office object) and is only called when accessing containers and item(s) are owned by corp.
+//   uses a method chain from GetOffices() (from bound office object) and is only called when accessing containers and item(s) owned by corp.
 //  however, for these items to show in containers' inventory, current code requires they have to be:
 //        1) owned by the hangar's owner
 //        2) owned by the viewer (whom shall also be hangar's owner)
 //  this poses a problem for corp staff when viewing member's hangars.  not sure how to 'fix' this yet.
+//      and i still havent gotten this to work dependably
 PyResult SparseCorpOfficeListBound::Handle_SelectByUniqueColumnValues(PyCallArgs &call) {
+    _log(CORP__CALL, "SparseCorpOfficeListBound::Handle_SelectByUniqueColumnValues()");
+    call.Dump(CORP__WARNING);   //so this will dump on all calls
+
     std::string str = PyRep::StringContent(call.tuple->GetItem(0));
+    // could this be multiple locations?  doubt it.
     uint32 locationID = PyRep::IntegerValueU32(call.tuple->GetItem(1)->AsList()->GetItem(0));
+
+    /*
+    PyRep* res = StationDB::GetStationOfficeIDs(locationID, m_corpID, str.c_str());
+    if (is_log_enabled(CORP__RSP_DUMP) and (res != nullptr))
+        res->Dump(CORP__RSP_DUMP, "");
+    return res;
+    */
 
     std::vector<OfficeData> data;
     stDataMgr.GetStationOfficeIDs(locationID, data);    // this method checks for the type of locationID sent.
 
+    /*
     DBRowDescriptor* header = new DBRowDescriptor();
-        header->AddColumn("officeID",     DBTYPE_I4);
-        header->AddColumn("officeFolderID",    DBTYPE_I4);
-        header->AddColumn("stationID", DBTYPE_I4);
+        header->AddColumn("officeID",        DBTYPE_I4);
+        header->AddColumn("officeFolderID",  DBTYPE_I4);
+        header->AddColumn("stationID",       DBTYPE_I4);
 
     PyList* list = new PyList();
     for (auto cur : data) {
         PyPackedRow* row = new PyPackedRow( header );
-            row->SetField("officeID",        new PyLong(cur.officeID));
-            row->SetField("officeFolderID",  new PyInt(cur.folderID));
-            row->SetField("stationID",       new PyInt(cur.stationID));
+        row->SetField("officeID",        new PyInt(cur.officeID));
+        row->SetField("officeFolderID",  new PyInt(cur.folderID));
+        row->SetField("stationID",       new PyInt(cur.stationID));
         list->AddItem(row);
+    } */
+
+    PyList* rsp = new PyList();
+    for (auto cur : data) {
+        PyList* list = new PyList();
+        list->AddItem(new PyInt(cur.officeID));
+        list->AddItem(new PyInt(cur.folderID));
+        list->AddItem(new PyInt(cur.stationID));
+        rsp->AddItem(list);
     }
+    /*  original
+    for (auto cur : data) {
+        PyDict* dict = new PyDict();
+        dict->SetItemString("officeID",        new PyInt(cur.officeID));
+        dict->SetItemString("officeFolderID",  new PyInt(cur.folderID));
+        dict->SetItemString("stationID",       new PyInt(cur.stationID));
+        list->AddItem(new PyObject("util.KeyVal", dict));
+    } */
 
     if (is_log_enabled(CORP__RSP_DUMP))
-        list->Dump(CORP__RSP_DUMP, "");
+        rsp->Dump(CORP__RSP_DUMP, "");
 
-    return list;
+    return rsp;
 }
 
 /*
@@ -530,19 +572,54 @@ PyResult CorpRegistryBound::Handle_GetSuggestedAllianceShortNames(PyCallArgs &ca
 
 PyResult CorpRegistryBound::Handle_GetMembers(PyCallArgs &call)
 {   // working
-    // this just wants a member count and time
+    // this just wants a member count and time (and headers)
     uint16 rowCount = m_db.GetMemberCount(m_corpID);
 
-    GetMembersSparseRowset ret;
-    PyDict *dict = new PyDict();
-    dict->SetItemString("realRowCount", new PyInt(rowCount));   // this is current member count
-    PyTuple* tuple = new PyTuple(3);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, dict);
-    tuple->SetItem(2, new PyLong(Win32TimeNow()));
-    ret.tuple = tuple;
-    ret.realRowCount = rowCount;    // i dont think this is right here...
+    /*  update....do we need to send header also??
+     *
+        [PyObjectData Name: util.SparseRowset]
+          [PyTuple 3 items]
+            [PyList 19 items]
+              [PyString "characterID"]
+              [PyString "corporationID"]
+              [PyString "divisionID"]
+              [PyString "squadronID"]
+              [PyString "title"]
+              [PyString "roles"]
+              [PyString "grantableRoles"]
+              [PyString "startDateTime"]
+              [PyString "baseID"]
+              [PyString "rolesAtHQ"]
+              [PyString "grantableRolesAtHQ"]
+              [PyString "rolesAtBase"]
+              [PyString "grantableRolesAtBase"]
+              [PyString "rolesAtOther"]
+              [PyString "grantableRolesAtOther"]
+              [PyString "titleMask"]
+              [PyString "accountKey"]
+              [PyString "rowDate"]
+              [PyString "blockRoles"]
+            [PySubStruct]
+              [PySubStream 51 bytes]
+                [PyTuple 3 items]
+                  [PyString "N=700149:17018"]
+                  [PyDict 1 kvp]
+                    [PyString "realRowCount"]
+                    [PyInt 3]
+                  [PyIntegerVar 129515350203058462]
+            [PyInt 3]
+    */
 
+    PyDict *dict = new PyDict();
+        dict->SetItemString("realRowCount", new PyInt(rowCount));   // this is current member count
+    PyTuple* tuple = new PyTuple(3);
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, dict);
+        tuple->SetItem(2, new PyLong(Win32TimeNow()));
+
+    GetMembersSparseRowset ret;
+        ret.tuple = tuple;
+        ret.realRowCount = rowCount;
     return ret.Encode();
 }
 
@@ -1695,7 +1772,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
 
         // OnObjectPublicAttributesUpdated event        <<<---  needs to be updated. do search in packet logs
         OnObjectPublicAttributesUpdated opau;
-            opau.realRowCount = m_db.GetMemberCount(m_corpID);; // for this call, this is corp membership
+            opau.realRowCount = m_db.GetMemberCount(m_corpID); // for this call, this is corp membership
             opau.bindID = GetBindStr();
             opau.changePKIndexValue = args.charID;    // logs show this as charID, but cant find anything about it in code as to why.
             opau.changes = change.Encode();
@@ -1919,7 +1996,7 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
     _log(CORP__CALL, "CorpRegistryBound::Handle_GetOffices() size=%u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
-    PyBoundObject* bObj = new SparseCorpOfficeListBound(m_manager, m_db);
+    PyBoundObject* bObj = new SparseCorpOfficeListBound(m_manager, m_db, m_corpID);
     if (bObj == NULL) {
         _log(SERVICE__ERROR, "%s: Unable to create bound object for:", call.client->GetName()); //errors here
         return nullptr;
@@ -1928,7 +2005,7 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
     // this sends header info and # offices rented by corp
     // Data will be fetched from the subsequent call to SparseRowset (using self.sr.offices in client)
     CorpOfficeSparseRowset rsp;
-    rsp.officeCount = StationDB::GetOfficeCount(m_corpID);
+    rsp.officeCount = m_db.GetMemberCount(m_corpID); //StationDB::GetOfficeCount(m_corpID);
 
     PyDict* dict = new PyDict();
         dict->SetItemString("realRowCount", new PyInt(rsp.officeCount));

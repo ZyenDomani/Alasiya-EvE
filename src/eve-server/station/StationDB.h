@@ -22,6 +22,7 @@ public:
     void UpdateOfficeData(OfficeData& data);
 
     static PyRep* GetOffices(uint32 stationID);
+    static PyRep* GetStationOfficeIDs(uint32 locationID, uint32 corpID, const char* key);
 
     static uint32 CreateOffice(ItemData& idata, OfficeData& odata);
     static bool GetOfficeData(uint32 officeID, OfficeData& odata);
@@ -35,6 +36,7 @@ public:
     static uint32 GetOfficeCount(uint32 corpID);
 
     static void LoadOffices(OwnerData &od, std::vector<uint32> &into);
+
 
 };
 

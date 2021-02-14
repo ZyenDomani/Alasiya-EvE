@@ -104,6 +104,35 @@ void StationDB::GetStationOfficeData(DBQueryResult& res)
         codelog(DATABASE__ERROR, "Error in GetStationOfficeData query: %s", res.error.c_str());
 }
 
+PyRep* StationDB::GetStationOfficeIDs(uint32 locationID, uint32 corpID, const char* key)
+{
+    DBQueryResult res;
+    if (IsStation(locationID)) {
+        sDatabase.RunQuery(res, "SELECT itemID AS officeID, stationID, officeFolderID"
+        " FROM staOffices WHERE stationID = %u", locationID);
+    } else if (IsOfficeFolder(locationID)) {
+        sDatabase.RunQuery(res, "SELECT itemID AS officeID, stationID, officeFolderID"
+        " FROM staOffices WHERE officeFolderID = %u",
+            locationID - STATION_OFFICE_OFFSET);
+    } else if (IsOffice(locationID)) {
+        sDatabase.RunQuery(res, "SELECT itemID AS officeID, stationID, officeFolderID"
+        " FROM staOffices WHERE itemID = %u", locationID);
+    } else
+        _log(CORP__DB_ERROR, "StationDB::GetStationOfficeIDs got invalid locationID %u", locationID);
+
+    DBResultRow row;
+    if (res.GetRow(row))
+        return DBRowToRow(row);
+    else
+        return nullptr;
+    //return DBResultToCIndexedRowset(res, key);
+    //return DBResultToIndexRowset(res, key);
+    //return DBResultToCRowset(res);
+    //return DBResultToRowList(res);
+    //return DBResultToRowset(res);
+    //return DBResultToPackedRowDict(res, key);
+}
+
 void StationDB::GetStationData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
