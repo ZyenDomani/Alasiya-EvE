@@ -352,7 +352,8 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     for (; cur != end; ++cur) {
         const PyRep* r = rep->GetField( cur->second );
 
-        /* note the assert are disabled because of performance flows */
+        // packing a zero instead of None here is wrong.
+        //  have liveupdate patch to test for this discrepancy in client (FixDefaultEffect)
         switch( header->GetColumnType( cur->second ) ) {
             case DBTYPE_CY:
             case DBTYPE_I8:
@@ -360,9 +361,11 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
             case DBTYPE_FILETIME: {
                 unpacked.Append<int64>( r->IsNone() ? 0 : r->AsLong()->value() );
             } break;
-            case DBTYPE_I4:
-            case DBTYPE_UI4: {
+            case DBTYPE_I4: {
                 unpacked.Append<int32>( r->IsNone() ? 0 : r->AsInt()->value() );
+            } break;
+            case DBTYPE_UI4: {
+                unpacked.Append<uint32>( r->IsNone() ? 0 : r->AsInt()->value() );
             } break;
             case DBTYPE_I2: {
                 unpacked.Append<int16>( r->IsNone() ? 0 : r->AsInt()->value() );
@@ -380,7 +383,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
                 unpacked.Append<double>( r->IsNone() ? 0.0 : r->AsFloat()->value() );
             } break;
             case DBTYPE_R4: {
-                unpacked.Append<float>(static_cast<float>(r->IsNone() ? 0.0 : r->AsFloat()->value()));
+                unpacked.Append<float>(static_cast<float>(r->IsNone() ? 0.0f : r->AsFloat()->value()));
             } break;
             case DBTYPE_BOOL: {
                 unpacked.Append<bool>( r->IsNone() ? 0 : r->AsBool()->value() );
@@ -391,7 +394,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
             case DBTYPE_STR:
             case DBTYPE_WSTR: {
                 /* incorrect implemented so we make sure we crash here */
-                //FIXME  change to proper error-handling to avoid crash.
+                //FIXME  change to proper error-handling to avoid crash.  (currently nothing hits here)
                 assert( false );
                 EvE::traceStack();
             } break;

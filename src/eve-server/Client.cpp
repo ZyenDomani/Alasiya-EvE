@@ -2138,8 +2138,8 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
         packet->named_payload->SetItemString("sn", new PyInt(++m_nextNotifySequence));
     }
 
-    _log(CLIENT__NOTIFY_REP, "Sending notify of type %s with ID type %s to %s", dest.service.c_str(), dest.bcast_idtype.c_str(), GetName());
     if (is_log_enabled(CLIENT__NOTIFY_DUMP)) {
+        _log(CLIENT__NOTIFY_REP, "Sending notify of type %s with ID type %s to %s", dest.service.c_str(), dest.bcast_idtype.c_str(), GetName());
         PyLogDumpVisitor dumper(CLIENT__NOTIFY_DUMP, CLIENT__NOTIFY_REP, "", true, true);
         packet->Dump(CLIENT__NOTIFY_DUMP, dumper);
     }
@@ -2349,7 +2349,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     return true;
 }
 
-void Client::_SendCallReturn(const PyAddress& source, int64 callID, int64 clientID, PyRep** rsp, const char* channel)
+void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyRep** rsp, const char* channel)
 {
     //build the packet:
     PyPacket* packet = new PyPacket();
@@ -2359,7 +2359,7 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, int64 client
     packet->source = source;     /* address should be 'ship' for warpto response */
 
     packet->dest.type = PyAddress::Client;
-    packet->dest.objectID = clientID;
+    packet->dest.objectID = GetClientID();
     packet->dest.callID = callID;
 
     packet->userid = GetUserID();
@@ -2371,6 +2371,12 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, int64 client
     if (channel != nullptr) {
         packet->named_payload = new PyDict();
         packet->named_payload->SetItemString("channel", new PyString(channel));
+    }
+
+    if (is_log_enabled(COLLECT__PACKET_DUMP)) {
+        _log(COLLECT__PACKET_DUMP, "Call Rsp:");
+        PyLogDumpVisitor dumper(COLLECT__PACKET_DUMP, COLLECT__PACKET_DUMP, "", true, true);
+        packet->Dump(COLLECT__PACKET_DUMP, dumper);
     }
 
     QueuePacket(packet);
@@ -2537,7 +2543,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
         if (result.ssResult != nullptr)
             result.ssResult->Dump(CLIENT__OUT_ALL, "    ");
 
-    _SendCallReturn(packet->dest, packet->source.callID, GetClientID(), &result.ssResult);  //ssResult is consumed here
+    _SendCallReturn(packet->dest, packet->source.callID, &result.ssResult);  //ssResult is consumed here
 
     return true;
 }
