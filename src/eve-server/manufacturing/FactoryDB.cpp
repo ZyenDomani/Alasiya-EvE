@@ -178,7 +178,7 @@ PyRep *FactoryDB::GetJobs2(const int32 ownerID, const bool completed)
         " job.endProductionTime,"
         " job.completedStatusID != 0 AS completed,"
         " job.licensedProductionRuns,"
-        " job.installedInSolarSystemID,"
+        " station.solarSystemID AS installedInSolarSystemID,"
         " job.completedStatusID AS completedStatus,"
         " station.stationTypeID AS containerTypeID,"
         " station.solarSystemID AS containerLocationID"
@@ -211,10 +211,10 @@ PyRep *FactoryDB::AssemblyLinesSelectPublic(const uint32 regionID) {
         " station.assemblyLineTypeID,"
         " station.quantity,"
         " station.ownerID,"
-                " types.activityID"
+        " types.activityID"
         " FROM ramAssemblyLineStations AS station"
         " LEFT JOIN crpNPCCorporations AS corp ON station.ownerID = corp.corporationID"
-                " LEFT JOIN ramAssemblyLineTypes as types ON station.assemblyLineTypeID = types.assemblyLineTypeID"
+        " LEFT JOIN ramAssemblyLineTypes as types ON station.assemblyLineTypeID = types.assemblyLineTypeID"
         " WHERE station.ownerID = corp.corporationID"
         " AND station.regionID = %u",
         regionID))
@@ -472,22 +472,21 @@ bool FactoryDB::GetAssemblyLineRestrictions(const int32 assemblyLineID, EvERam::
     return true;
 }
 
-uint32 FactoryDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
-        const uint32 assemblyLineID, const uint32 installedItemID,
-        const int64 beginProductionTime, const int64 endProductionTime,
-        const char *description, const int32 runs, const EVEItemFlags outputFlag,
-        const uint32 installedInSolarSystem, const int32 licensedProductionRuns) {
+uint32 FactoryDB::InstallJob(const uint32 ownerID, const uint32 installerID, Call_InstallJob& args,
+                             const int64 beginTime, const int64 endTime)
+{
     DBerror err;
     uint32 jobID(0);
     // insert job
     if (!sDatabase.RunQueryLID(err, jobID,
         "INSERT INTO ramJobs"
-        " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime, description, runs, outputFlag,"
-        " completedStatusID, installedInSolarSystemID, licensedProductionRuns)"
+        " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime,"
+        " runs, outputFlag, licensedProductionRuns)"
         " VALUES"
-        " (%u, %u, %u, %u, %f, %li, %li, '%s', %i, %i, 0, %u, %i)",
-        ownerID, installerID, assemblyLineID, installedItemID, GetFileTimeNow(), beginProductionTime, endProductionTime, description,
-        runs, (int)outputFlag, installedInSolarSystem, licensedProductionRuns))
+        " (%u, %u, %i, %i, %.0f, %li, %li,"
+        " %i, %i, %i)",
+        ownerID, installerID, args.AssemblyLineID, args.bpItemID, GetFileTimeNow(), beginTime, endTime,
+        args.runs, args.outputFlag, args.copyRuns))
     {
         _log(DATABASE__ERROR, "Failed to insert new job to database: %s.", err.c_str());
         return 0;
@@ -497,10 +496,10 @@ uint32 FactoryDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
     if (!sDatabase.RunQuery(err,
         "UPDATE ramAssemblyLines"
         " SET nextFreeTime = %li"
-        " WHERE assemblyLineID = %u",
-        endProductionTime, assemblyLineID))
+        " WHERE assemblyLineID = %i",
+        endTime, args.AssemblyLineID))
     {
-        _log(DATABASE__ERROR, "Failed to update next free time for assembly line %u: %s.", assemblyLineID, err.c_str());
+        _log(DATABASE__ERROR, "Failed to update next free time for assembly line %u: %s.", args.AssemblyLineID, err.c_str());
         return 0;
     }
 

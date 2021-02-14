@@ -20,14 +20,20 @@ class RamMethods
 : public Singleton< RamMethods >
 {
 public:
+    // verify output, runs, and type data
     void ActivityCheck(Client* const pClient, const Call_InstallJob& args, BlueprintRef bpRef);
+    // verify job count for char
     void JobsCheck(Character* pChar, const Call_InstallJob& args);
+    // verify range for stations and structure data for POS
     void InstallationCheck(Client* const pClient, int32 lineLocationID);
+    // verify roles and restrictions
     void LinePermissionCheck(Client* const pClient, const Call_InstallJob& args);
+    void ItemOwnerCheck(Client*const pClient, const Call_InstallJob& args, BlueprintRef bpRef);
     void ItemLocationCheck(Client* const pClient, const Call_InstallJob& args, InventoryItemRef installedItem);
-    void ItemPermissionCheck(Client*const pClient, const Call_InstallJob& args, BlueprintRef bpRef);
 
-    void LocationRolesCheck(Client* const pClient, int16 flagID);
+    void HangarRolesCheck(Client* const pClient, int16 flagID);
+    // only used for station location role checks
+    void LocationRolesCheck(Client*const pClient, const CorpPathElement& data);
 
     void ProductionTimeCheck(uint32 productionTime);
     void MaterialSkillsCheck(Client* const pClient, uint32 runs, const PathElement& bomLocation, const Rsp_InstallJob& rsp, const std::vector< EvERam::RequiredItem >& reqItems);

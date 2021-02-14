@@ -15,6 +15,8 @@
 #include "manufacturing/RamMethods.h"
 #include "station/StationDataMgr.h"
 
+static const uint32 RAM_PRODUCTION_TIME_LIMIT = 60*60*24*30;   //30 days
+
 /*
  * # Manufacturing Logging:
  * MANUF__ERROR
@@ -25,8 +27,6 @@
  * MANUF__TRACE
  * MANUF__DUMP
  */
-
-static const uint32 RAM_PRODUCTION_TIME_LIMIT = 60*60*24*30;   //30 days
 
 /*
  *    NOT IMPLEMENTED EXCEPTIONS:
@@ -40,6 +40,11 @@ void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& arg
 {
     if (bpRef.get() == nullptr)
         throw(PyException(MakeUserError("RamInventionNoOutput")));
+
+    // check validity of activity
+    if ((args.activityID < EvERam::Activity::Manufacturing)
+    or  (args.activityID > EvERam::Activity::Invention))
+        throw(PyException(MakeUserError("RamAssemblyLineHasNoActivity")));
 
     const ItemType* pType(nullptr);
     switch(args.activityID) {
@@ -87,7 +92,7 @@ void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& arg
     if (pType == nullptr)
         throw(PyException(MakeUserError("RamNoKnownOutputType")));
 
-    if (!FactoryDB::IsProducableBy(args.installationAssemblyLineID, pType))
+    if (!FactoryDB::IsProducableBy(args.AssemblyLineID, pType))
         throw(PyException(MakeUserError("RamBadEndProductForActivity")));
 }
 
@@ -154,7 +159,7 @@ void RamMethods::LinePermissionCheck(Client*const pClient, const Call_InstallJob
 {
     // get properties
     EvERam::LineRestrictions data = EvERam::LineRestrictions();
-    if (!FactoryDB::GetAssemblyLineRestrictions(args.installationAssemblyLineID, data))
+    if (!FactoryDB::GetAssemblyLineRestrictions(args.AssemblyLineID, data))
         throw(PyException(MakeUserError("RamInstallationHasNoDefaultContent")));
 
     // check validity of activity
@@ -218,7 +223,7 @@ void RamMethods::LinePermissionCheck(Client*const pClient, const Call_InstallJob
     }
 }
 
-void RamMethods::ItemPermissionCheck(Client*const pClient, const Call_InstallJob& args, BlueprintRef bpRef)
+void RamMethods::ItemOwnerCheck(Client*const pClient, const Call_InstallJob& args, BlueprintRef bpRef)
 {
     // ownership
     if (args.isCorpJob) {
@@ -233,11 +238,12 @@ void RamMethods::ItemPermissionCheck(Client*const pClient, const Call_InstallJob
 
 void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& args, InventoryItemRef installedItem)
 {
-    if (IsStation(args.installationContainerID)) {
-        if (installedItem->locationID() != args.installationContainerID) {
-            if (args.installationContainerID == pClient->GetLocationID()) {
+    // a lot of this is checked in client.  need to verify
+    if (IsStation(args.lineContainerID)) {
+        if (installedItem->locationID() != args.lineContainerID) {
+            if (args.lineContainerID == pClient->GetLocationID()) {
                 std::map<std::string, PyRep *> exceptArgs;
-                exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.installationContainerID));
+                exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.lineContainerID));
                 if (args.isCorpJob)
                     throw(PyException(MakeUserError("RamCorpInstalledItemWrongLocation", exceptArgs)));
                 else
@@ -247,18 +253,18 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
         } else {
             if (args.isCorpJob) {
                 if (!IsHangarFlag(installedItem->flag())) {
-                    if (args.installationContainerID == pClient->GetLocationID()) {
+                    if (args.lineContainerID == pClient->GetLocationID()) {
                         std::map<std::string, PyRep *> exceptArgs;
-                        exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.installationContainerID));
+                        exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.lineContainerID));
                         throw(PyException(MakeUserError("RamCorpInstalledItemWrongLocation", exceptArgs)));
                     } else
                         throw(PyException(MakeUserError("RamRemoteInstalledItemNotInOffice")));
                 }
             } else {
                 if (installedItem->flag() != flagHangar) {
-                    if (args.installationInvLocationID == pClient->GetLocationID()) {
+                    if (args.lineLocationID == pClient->GetLocationID()) {
                         std::map<std::string, PyRep *> exceptArgs;
-                        exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.installationContainerID));
+                        exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.lineContainerID));
                         throw(PyException(MakeUserError("RamInstalledItemWrongLocation", exceptArgs)));
                     } else {
                         throw(PyException(MakeUserError("RamRemoteInstalledItemInStationNotHangar")));
@@ -266,14 +272,14 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
                 }
             }
         }
-    } else if (args.installationContainerID == pClient->GetShipID()) {
+    } else if (args.lineContainerID == pClient->GetShipID()) {
         if (pClient->GetChar()->flag() != flagPilot)
             throw(PyException(MakeUserError("RamAccessDeniedNotPilot")));
 
         if (args.isCorpJob and (installedItem->flag() == flagCargoHold))
             throw(PyException(MakeUserError("RamCorpInstalledItemNotInCargo")));
 
-        if (installedItem->locationID() != args.installationContainerID)
+        if (installedItem->locationID() != args.lineContainerID)
             throw(PyException(MakeUserError("RamInstalledItemMustBeInShip")));
     } else {
         /* this will be POS assembly modules and Outpost checks
@@ -287,17 +293,54 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
     }
 }
 
-void RamMethods::LocationRolesCheck(Client* const pClient, int16 flagID)
+void RamMethods::HangarRolesCheck(Client* const pClient, int16 flagID)
 {
     int64 roles(pClient->GetCorpRole());
-    if ((flagID == flagHangar and ((roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1))
-    or  (flagID == flagCorpHangar2 and ((roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2))
-    or  (flagID == flagCorpHangar3 and ((roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3))
-    or  (flagID == flagCorpHangar4 and ((roles & Corp::Role::HangarCanTake4) != Corp::Role::HangarCanTake4))
-    or  (flagID == flagCorpHangar5 and ((roles & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5))
-    or  (flagID == flagCorpHangar6 and ((roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6))
-    or  (flagID == flagCorpHangar7 and ((roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7)))
-        throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
+    switch (flagID) {
+        case flagHangar: {
+            if (roles & Corp::Role::HangarCanTake1 != Corp::Role::HangarCanTake1)
+                throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
+        } break;
+        case flagCorpHangar2: {
+            if (roles & Corp::Role::HangarCanTake2 != Corp::Role::HangarCanTake2)
+                throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
+        } break;
+        case flagCorpHangar3: {
+            if (roles & Corp::Role::HangarCanTake3 != Corp::Role::HangarCanTake3)
+                throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
+        } break;
+        case flagCorpHangar4: {
+            if (roles & Corp::Role::HangarCanTake4 != Corp::Role::HangarCanTake4)
+                throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
+        } break;
+        case flagCorpHangar5: {
+            if (roles & Corp::Role::HangarCanTake5 != Corp::Role::HangarCanTake5)
+                throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
+        } break;
+        case flagCorpHangar6: {
+            if (roles & Corp::Role::HangarCanTake6 != Corp::Role::HangarCanTake6)
+                throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
+        } break;
+        case flagCorpHangar7: {
+            if (roles & Corp::Role::HangarCanTake7 != Corp::Role::HangarCanTake7)
+                throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
+        } break;
+    }
+}
+
+void RamMethods::LocationRolesCheck(Client*const pClient, const CorpPathElement &data)
+{
+    int64 roles(0);
+    // this will verify corp roles at location
+    uint32 stationID(data.officeFolderID - STATION_OFFICE_OFFSET);
+    if (stationID == pClient->GetCorpHQ()) {
+        roles = pClient->GetRolesAtHQ();
+        /** @todo determine what roles are required here and test */
+    } else {
+        // not hq  is this a base?
+        /** @todo finish this.  */
+    }
+
 }
 
 void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const PathElement& bomLocation, const Rsp_InstallJob& rsp, const std::vector< EvERam::RequiredItem >& reqItems)
@@ -305,6 +348,7 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
     std::map<uint16, InventoryItemRef> items;   // typeID, itemRef
     GetBOMItemsMap( bomLocation, items );
 
+    std::map<std::string, PyRep *> args;
     for (auto cur : reqItems) {
         if (cur.isSkill) { // check skill (quantity is required level)
             if (pClient->GetChar()->GetSkillLevel(cur.typeID) < cur.quantity) {
@@ -327,13 +371,13 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
                 }
 
             if (qtyNeeded) {
-                // should we test all items, or (as currently) throw on first error?
-                std::map<std::string, PyRep *> args;
                 args["item"] = new PyInt( cur.typeID );
-                throw(PyException(MakeUserError("RamNeedMoreForJob", args)));
             }
         }
     }
+
+    if (!args.empty())
+        throw(PyException(MakeUserError("RamNeedMoreForJob", args)));
 }
 
 void RamMethods::ProductionTimeCheck(uint32 productionTime)
@@ -371,7 +415,7 @@ void RamMethods::VerifyCompleteJob(const Call_CompleteJob &args, EvERam::JobProp
 bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Character* pChar, Rsp_InstallJob &into)
 {
     // get line data
-    if (!FactoryDB::GetAssemblyLineProperties(args.installationAssemblyLineID, pChar, into, args.isCorpJob))
+    if (!FactoryDB::GetAssemblyLineProperties(args.AssemblyLineID, pChar, into, args.isCorpJob))
         return false;
 
     // set char defaults
@@ -382,7 +426,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
     switch(args.activityID) {
         case EvERam::Activity::Manufacturing: {
             pType = &bpRef->productType();
-            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            FactoryDB::GetMultipliers(args.AssemblyLineID, pType, into);
             into.materialMultiplier += bpRef->GetME();
             into.materialMultiplier *= sConfig.ram.MatMod;
             into.charTimeMultiplier *= (1.0f - (0.04f * pChar->GetSkillLevel(EvESkill::Industry)));
@@ -395,7 +439,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
         } break;
         case EvERam::Activity::ResearchMaterial: {
             pType = &bpRef->type();
-            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            FactoryDB::GetMultipliers(args.AssemblyLineID, pType, into);
             into.productionTime = EvEMath::RAM::ME_ResearchTime(bpRef->type().researchMaterialTime(),
                                                                 pChar->GetSkillLevel(EvESkill::Metallurgy), into.timeMultiplier
                                                                 /*implant modifier here*/);
@@ -404,7 +448,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
         }  break;
         case EvERam::Activity::ResearchTime: {
             pType = &bpRef->type();
-            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            FactoryDB::GetMultipliers(args.AssemblyLineID, pType, into);
             //ch->GetAttribute(AttrResearchCostPercent).get_int();   << this is not used
 
             into.productionTime = EvEMath::RAM::PE_ResearchTime(bpRef->type().researchProductivityTime(),
@@ -415,7 +459,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
         }  break;
         case EvERam::Activity::Copying: {
             pType = &bpRef->type();
-            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            FactoryDB::GetMultipliers(args.AssemblyLineID, pType, into);
             into.productionTime = EvEMath::RAM::CopyTime(bpRef->type().researchCopyTime(),
                                                          pChar->GetSkillLevel(EvESkill::Science), into.timeMultiplier
                                                          /*implant modifier here*/);
@@ -425,7 +469,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
         }  break;
         case EvERam::Activity::Invention: {
             pType = &bpRef->type();
-            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            FactoryDB::GetMultipliers(args.AssemblyLineID, pType, into);
             into.productionTime = EvEMath::RAM::InventionTime(bpRef->type().researchTechTime(),
                                                               pChar->GetSkillLevel(EvESkill::AdvancedLaboratoryOperation),
                                                               into.timeMultiplier
@@ -434,7 +478,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
         } break;
         case EvERam::Activity::ReverseEngineering: {
             pType = &bpRef->type();
-            FactoryDB::GetMultipliers(args.installationAssemblyLineID, pType, into);
+            FactoryDB::GetMultipliers(args.AssemblyLineID, pType, into);
             // base research time for RE is one hour
             into.productionTime = 3600; // in seconds
             into.productionTime *= sConfig.ram.ReTime;
@@ -448,7 +492,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
     // multiply single run time by run count for total time
     into.productionTime *= args.runs;
 
-    into.maxJobStartTime = FactoryDB::GetNextFreeTime(args.installationAssemblyLineID);
+    into.maxJobStartTime = FactoryDB::GetNextFreeTime(args.AssemblyLineID);
 
     return true;
 }
@@ -542,14 +586,14 @@ void RamMethods::GetBOMItems(const PathElement& bomLocation, std::vector< Invent
 {
     Inventory *inventory = sItemFactory.GetInventoryFromId( bomLocation.locationID );
     if (inventory != nullptr )
-        inventory->GetItemsByFlag((EVEItemFlags)bomLocation.flag, into );
+        inventory->GetItemsByFlag((EVEItemFlags)bomLocation.flagID, into );
 }
 
 void RamMethods::GetBOMItemsMap(const PathElement& bomLocation, std::map< uint16, InventoryItemRef >& into)
 {
     Inventory *inventory = sItemFactory.GetInventoryFromId( bomLocation.locationID );
     if (inventory != nullptr )
-        inventory->GetTypesByFlag( (EVEItemFlags)bomLocation.flag, into );
+        inventory->GetTypesByFlag( (EVEItemFlags)bomLocation.flagID, into );
 }
 
 /* For each material required for a blueprint (from invTypeMaterials), the quantity is affected by ME research and skills.

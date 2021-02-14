@@ -151,8 +151,10 @@ PyResult RamProxyService::Handle_GetJobs2(PyCallArgs &call) {
 /** @todo update this for corp usage */
 /** @todo  add missing/unhandled indy types (RE, invention, ??)  */
 PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
-    //_log(MANUF__DUMP, "RamProxyService::Handle_InstallJob() - size %u", call.tuple->size() );
-    //call.Dump(MANUF__DUMP);
+    //job = sm.ProxySvc('ramProxy').InstallJob(installationLocationData, installedItemLocationData, bomLocationData, flagOutput, quoteData.buildRuns, quoteData.activityID, quoteData.licensedProductionRuns, not quoteData.ownerFlag, 'blah', quoteOnly=1, installedItem=quoteData.blueprint, maxJobStartTime=quoteData.assemblyLine.nextFreeTime + 1 * MIN, inventionItems=quoteData.inventionItems, inventionOutputItemID=quoteData.inventionItems.outputType)
+
+    _log(MANUF__DUMP, "RamProxyService::Handle_InstallJob() - size %u", call.tuple->size() );
+    call.Dump(MANUF__DUMP);
 
     Call_InstallJob args;
     if (!args.Decode(&call.tuple)) {
@@ -167,7 +169,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
     // load job Blueprint
     // bp in pos can be in hangar or array.  need to check both
-    InventoryItemRef installedItem = sItemFactory.GetItem( args.installedItemID );
+    InventoryItemRef installedItem = sItemFactory.GetItem( args.bpItemID );
     if (installedItem.get() == nullptr) {
         // this means item/location not loaded.
         //  get data from installedItem named args and continue
@@ -185,29 +187,32 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
              * etc.
              */
             /*
-             23:29:22 [ManufDump]       Args:  Dictionary: 11 entries
-             23:29:22 [ManufDump]       Args:   [ 0]   Key:     String: 'categoryID'
-             23:29:22 [ManufDump]       Args:   [ 0] Value:    Integer: 9
-             23:29:22 [ManufDump]       Args:   [ 1]   Key:     String: 'itemID'
-             23:29:22 [ManufDump]       Args:   [ 1] Value:    Integer: 140000623
-             23:29:22 [ManufDump]       Args:   [ 2]   Key:     String: 'typeID'
-             23:29:22 [ManufDump]       Args:   [ 2] Value:    Integer: 785
-             23:29:22 [ManufDump]       Args:   [ 3]   Key:     String: 'singleton'
-             23:29:22 [ManufDump]       Args:   [ 3] Value:    Integer: 1
-             23:29:22 [ManufDump]       Args:   [ 4]   Key:     String: 'stacksize'
-             23:29:22 [ManufDump]       Args:   [ 4] Value:    Integer: 1
-             23:29:22 [ManufDump]       Args:   [ 5]   Key:     String: 'flagID'
-             23:29:22 [ManufDump]       Args:   [ 5] Value:    Integer: 4
-             23:29:22 [ManufDump]       Args:   [ 6]   Key:     String: 'customInfo'
-             23:29:22 [ManufDump]       Args:   [ 6] Value:    WString: ''
-             23:29:22 [ManufDump]       Args:   [ 7]   Key:     String: 'ownerID'
-             23:29:22 [ManufDump]       Args:   [ 7] Value:    Integer: 90000000
-             23:29:22 [ManufDump]       Args:   [ 8]   Key:     String: 'groupID'
-             23:29:22 [ManufDump]       Args:   [ 8] Value:    Integer: 134
-             23:29:22 [ManufDump]       Args:   [ 9]   Key:     String: 'locationID'
-             23:29:22 [ManufDump]       Args:   [ 9] Value:    Integer: 60014140
-             23:29:22 [ManufDump]       Args:   [10]   Key:     String: 'itemName'
-             23:29:22 [ManufDump]       Args:   [10] Value:    WString: 'Miner I Blueprint'
+             * 21:48:04 [ManufDump]   installedItem
+             * 21:48:04 [ManufDump]     Object:
+             * 21:48:04 [ManufDump]       Type:     String: 'util.KeyVal'
+             * 21:48:04 [ManufDump]       Args:  Dictionary: 11 entries
+             * 21:48:04 [ManufDump]       Args:   [ 0]   Key:     String: 'typeID'
+             * 21:48:04 [ManufDump]       Args:   [ 0] Value:    Integer: 880
+             * 21:48:04 [ManufDump]       Args:   [ 1]   Key:     String: 'singleton'
+             * 21:48:04 [ManufDump]       Args:   [ 1] Value:    Integer: 2
+             * 21:48:04 [ManufDump]       Args:   [ 2]   Key:     String: 'flagID'
+             * 21:48:04 [ManufDump]       Args:   [ 2] Value:    Integer: 4
+             * 21:48:04 [ManufDump]       Args:   [ 3]   Key:     String: 'quantity'
+             * 21:48:04 [ManufDump]       Args:   [ 3] Value:    Integer: -2
+             * 21:48:04 [ManufDump]       Args:   [ 4]   Key:     String: 'categoryID'
+             * 21:48:04 [ManufDump]       Args:   [ 4] Value:    Integer: 9
+             * 21:48:04 [ManufDump]       Args:   [ 5]   Key:     String: 'itemID'
+             * 21:48:04 [ManufDump]       Args:   [ 5] Value:    Integer: 140024212
+             * 21:48:04 [ManufDump]       Args:   [ 6]   Key:     String: 'locationID'
+             * 21:48:04 [ManufDump]       Args:   [ 6] Value:    Integer: 60014140
+             * 21:48:04 [ManufDump]       Args:   [ 7]   Key:     String: 'ownerID'
+             * 21:48:04 [ManufDump]       Args:   [ 7] Value:    Integer: 90000000
+             * 21:48:04 [ManufDump]       Args:   [ 8]   Key:     String: 'groupID'
+             * 21:48:04 [ManufDump]       Args:   [ 8] Value:    Integer: 165
+             * 21:48:04 [ManufDump]       Args:   [ 9]   Key:     String: 'stacksize'
+             * 21:48:04 [ManufDump]       Args:   [ 9] Value:    Integer: 1
+             * 21:48:04 [ManufDump]       Args:   [10]   Key:     String: 'customInfo'
+             * 21:48:04 [ManufDump]       Args:   [10] Value:     String: ''
              */
 
             PyDict* dict = call.byname["installedItem"]->AsDict();
@@ -230,100 +235,93 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     // check assy line activity
     sRamMthd.ActivityCheck(call.client, args, bpRef);
 
-    // if output flag not set, put it where it was
-    if (args.flagOutput == flagNone)
-        args.flagOutput = bpRef->flag();
+    // if output flag not set, put it where it came from
+    if (args.outputFlag == flagNone)
+        args.outputFlag = bpRef->flag();
 
-    // check permissions and corp roles, if applicable
+    // check permissions
     sRamMthd.LinePermissionCheck(call.client, args);
-    sRamMthd.ItemPermissionCheck(call.client, args, bpRef);
+    sRamMthd.ItemOwnerCheck(call.client, args, bpRef);
 
-    // if corp item, check location access
-    if (args.isCorpJob)
-        sRamMthd.LocationRolesCheck(call.client, bpRef->flag());
 
-    // decode path to BOM location
-    PathElement pathBomLocation;
-    if (!pathBomLocation.Decode( args.bomPath->GetItem(0))) {
-        _log(SERVICE__ERROR, "Failed to decode BOM location.");
-        return nullptr;
+    // this is a bit funky, but works quite well....
+    // decode path to BP and BOM location
+    // i am populating this for corp and personal to have common call to mat'l checks that follow
+    PathElement bomLocPath;
+    if (args.isCorpJob) {
+        // this will get messy...
+        /** @todo this is incomplete....
+         * get location (all, base, hq, other)
+         * get roles at location
+         * verify access at location
+         */
+        CorpPathElement bpPath;
+        if (!bpPath.Decode(args.bpLocPath)) {
+            _log(SERVICE__ERROR, "Failed to decode Corp BP path.");
+            return nullptr;
+        }
+        // check bp location access
+        sRamMthd.HangarRolesCheck(call.client, bpPath.pathFlagID);
+        sRamMthd.LocationRolesCheck(call.client, bpPath);
+
+
+        // bp passed..check bomData
+        CorpPathElement bomPath;
+        if (!bomPath.Decode(args.bomLocPath)) {
+            _log(SERVICE__ERROR, "Failed to decode Corp BOM path.");
+            return nullptr;
+        }
+        // check bp location access
+        sRamMthd.HangarRolesCheck(call.client, bomPath.officeFlagID);
+        sRamMthd.LocationRolesCheck(call.client, bomPath);
+
+        bomLocPath.locationID   = bomPath.officeID;
+        bomLocPath.ownerID      = bomPath.officeCorpID;
+        bomLocPath.flagID       = bomPath.pathFlagID;
+    } else {
+        // get path data for player
+        if (!bomLocPath.Decode(args.bpLocPath->GetItem(0))) {
+            _log(SERVICE__ERROR, "Failed to decode BOM path.");
+            return nullptr;
+        }
     }
 
-    // check bom location access
-    if (args.isCorpJob)
-        sRamMthd.LocationRolesCheck(call.client, pathBomLocation.flag);
-
-    /*  the first item in bomLocationData list is list of location data, which is same for both, although the data itself is different based on many other factors
-                    invLocation = [locationid, invLocationGroupID]
-     *  the next item in list is a "path" which can be a list of 1 or 3 items...this is a tricky one.
-     * on personal jobs, there is one arg here...a list of 2 items
-                    path = [invLocation, flagInput]]
-                bomLocationData = [[session.locationid, invLocationGroupID], path, []]
-
-     * on corp jobs, there is a list of 3 items here, which are lists of the following...
-                    path = []
-                    path.append([quoteData.containerID, const.ownerStation, 0])
-                    path.append([officeFolderID, session.corpid, const.flagHangar])
-                    path.append([officeID, session.corpid, flagInput])
-                    bomLocationData = [invLocation, path, []]
-     */
-    /*  not correct.  will need more work....
-    PathElement path;
-    if (!path.Decode(args.bomPath->GetItem(1))) {
-        _log(SERVICE__ERROR, "Failed to decode last element of BOM location.");
-        return nullptr;
-    }*/
-    // verify this....
-    InventoryItemRef lastContItem = sItemFactory.GetItem(pathBomLocation.locationID);
-    if (lastContItem.get() == nullptr)  {
-        _log(MANUF__WARNING, "lastContItem null at bomLocationData.locationID %i", pathBomLocation.locationID);
-        //throw(PyException(MakeUserError("RamInstalledItemWrongLocation")));
-    }
-    uint32 solarSystemID = lastContItem->locationID();
-    if (!IsSolarSystem(solarSystemID)) {
-        _log(MANUF__WARNING, "solarSystemID %u invalid for lastContItem %u at bomLocationData.locationID %i",
-                solarSystemID, lastContItem->itemID(), pathBomLocation.locationID);
-        //throw(PyException(MakeUserError("RamInstalledItemBadLocation")));
-    }
-
-    // calculates bp modifiers; Rsp_InstallJob is used as container while building response to job quote.
+    // calculate time and cost
+    //   Rsp_InstallJob is used as container while building response to job quote.
     Rsp_InstallJob rsp;
     if (!sRamMthd.Calculate(args, bpRef, call.client->GetChar().get(), rsp)){
         _log(MANUF__ERROR, "Could not Calculate() on %s for %s(%u)", bpRef->name(), call.client->GetName(), call.client->GetCharacterID());
         return nullptr;
     }
 
-    // sent as assy line.nextFreeTime + 1m  (a previous client call asks for assy line nextFreeTime, displayed in window)
+    // sent as assy line.nextFreeTime + 1m  (a previous call asks for assy line nextFreeTime, displayed in window)
     if (call.byname.find("maxJobStartTime") != call.byname.end())
         if (rsp.maxJobStartTime > PyRep::IntegerValue(call.byname["maxJobStartTime"]))
             throw(PyException(MakeUserError("RamProductionTimeExceedsLimits")));
 
     //RamCannotGuaranteeStartTime  // timeslot taken by another char while installing this one
 
-    // query required items for activity from static data (and not db hit)
+    // get required items for activity
     std::vector<EvERam::RequiredItem> reqItems;
     sDataMgr.GetRamRequiredItems(bpRef->typeID(), (int8)args.activityID, reqItems);
 
-    // verify installer has skills and all needed materials are present in bp's location
-    sRamMthd.MaterialSkillsCheck(call.client, args.runs, pathBomLocation, rsp, reqItems);
+    // verify installer has skills and all needed materials are present in proper location
+    sRamMthd.MaterialSkillsCheck(call.client, args.runs, bomLocPath, rsp, reqItems);
 
     // quoteOnly is sent for all jobs before installation to approve price and timeframe
     if (PyRep::IntegerValueU32(call.byname["quoteOnly"])) {
         _log(MANUF__INFO, "quoteOnly = true");
         sRamMthd.EncodeBillOfMaterials(reqItems, rsp.materialMultiplier, rsp.charMaterialMultiplier, args.runs, rsp.bom);
-        sRamMthd.EncodeMissingMaterials(reqItems, pathBomLocation, call.client, rsp.materialMultiplier, rsp.charMaterialMultiplier, args.runs, rsp.missingMaterials);
+        sRamMthd.EncodeMissingMaterials(reqItems, bomLocPath, call.client, rsp.materialMultiplier, rsp.charMaterialMultiplier, args.runs, rsp.missingMaterials);
 
         // this value is halved in client code. (removed in client update patch 5Nov20)
         //rsp.charTimeMultiplier *= 2;
         return rsp.Encode();
     }
 
+
     // at this point, it is a real job installation.  check everything else
     sRamMthd.ProductionTimeCheck(rsp.productionTime);
-
-    int64 beginProductionTime = GetFileTimeNow();
-    if (beginProductionTime < rsp.maxJobStartTime)
-        beginProductionTime = rsp.maxJobStartTime;
 
     if (bpRef->quantity() > 1) {
         BlueprintRef iRef = bpRef->SplitBlueprint(1);
@@ -334,16 +332,13 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         bpRef = iRef;
     }
 
-    // verify this for POS and remote installations where bp can be in hangar or array.
-    //  for pos/starbase, bp must be moved to array.  not sure if client sends this data.
-    uint32 locationID = bpRef->locationID();
-    // change to singleton now that bp has been used (this 'unpackages' it)
+    // unpackage bpo and move to factory
     bpRef->ChangeSingleton(true);
-    bpRef->Move(locationID, flagFactoryBlueprint, true);
+    bpRef->Move(locRAMItems, flagFactoryBlueprint, true);
 
-    // query all items contained in "Bill of Materials" location
+    // take required items
     std::vector<InventoryItemRef> items;
-    sRamMthd.GetBOMItems( pathBomLocation, items );
+    sRamMthd.GetBOMItems( bomLocPath, items );
 
     std::vector<EvERam::RequiredItem>::iterator itemItr = reqItems.begin();
     for (; itemItr != reqItems.end(); ++itemItr) {
@@ -356,17 +351,14 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             qtyNeeded = (uint32)ceil(qtyNeeded * rsp.charMaterialMultiplier);   // skill multiplier is applied only on fully consumed materials
 
         // consume required materials
-        /** @todo update this for corp usage.
-         * need to verify char can access mat'l location
-         */
         std::vector<InventoryItemRef>::iterator refItr = items.begin();
         for (; refItr != items.end(); ++refItr)
-            if (((*refItr)->typeID() == itemItr->typeID) and ((*refItr)->ownerID() == call.client->GetCharacterID())) {
+            if ((*refItr)->typeID() == itemItr->typeID) {
                 if (qtyNeeded >= (*refItr)->quantity()) {
                     qtyNeeded -= (*refItr)->quantity();
                     (*refItr)->Delete();
                 } else {
-                    (*refItr)->AlterQuantity(-qtyNeeded);
+                    (*refItr)->AlterQuantity(-qtyNeeded, true);
                     break;  // we are done, stop searching
                 }
             }
@@ -388,6 +380,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
         /** @todo do something constructive with this data...
         // this is populated for t2 bpc
+        //     inventionItems=quoteData.inventionItems
         uint16 outputType(0), baseItemType(0), decryptorType(0);
         if (call.byname.find("inventionItems") != call.byname.end()) {
             PyDict* dict = call.byname["inventionItems"]->AsDict();
@@ -396,11 +389,47 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             decryptorType = PyRep::IntegerValueU32(dict->GetItemString("decryptorType"));
         }
         // this is populated for t2 bpc
+        //    inventionOutputItemID=quoteData.inventionItems.outputType
         if (call.byname.find("inventionOutputItemID") != call.byname.end()) {
             // this is the bp typeID to create....should we test to see if they're the same?
             outputType = PyRep::IntegerValueU32(call.byname["inventionOutputItemID"]);
         }
         */
+        } break;
+    }
+
+    int64 beginTime = GetFileTimeNow();
+    if (beginTime < rsp.maxJobStartTime)
+        beginTime = rsp.maxJobStartTime;
+
+    // register/save job to chosen assy line.
+    uint32 jobID = FactoryDB::InstallJob((args.isCorpJob ? call.client->GetCorporationID() : call.client->GetCharacterID()),
+                                         call.client->GetCharacterID(), args, beginTime, beginTime + rsp.productionTime * EvE::Time::Second);
+
+    if (jobID < 1) {
+        _log(MANUF__ERROR, "Could not InstallJob for %s using %s", call.client->GetName(), bpRef->name());
+        // make client error here...
+        return nullptr;
+    }
+
+    // get proper location data
+    /** @todo  this will need work for pos */
+    uint32 locationID(0);
+    switch (args.lineLocationGroupID) {
+        case EVEDB::invGroups::Station:  {
+            // this should be same location as client....unless remote
+            locationID = args.lineLocationID;
+        } break;
+        case EVEDB::invGroups::Solar_System: {
+            // this will be pos or ship in space (not sure how ore compression works yet)
+            locationID = args.lineLocationID;
+        } break;
+        default: {
+            locationID = args.lineLocationID;
+            if (IsStation(args.lineContainerID))
+                locationID = args.lineContainerID;
+            else
+                sLog.Warning("InstallJob", "Location is not Station.  Needs work.");
         } break;
     }
 
@@ -424,37 +453,17 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                                  cost,
                                  reason.c_str(),
                                  Journal::EntryType::FactorySlotRentalFee,
-                                 locationID,
+                                 locationID,    // shows rental location (stationID)
                                  Account::KeyType::Cash);
 
-    // register/save job to chosen assy line.
-    // is 'description' used ??  they are all 'blah' from client
-    uint32 jobID = FactoryDB::InstallJob(
-                          (args.isCorpJob ? call.client->GetCorporationID() : call.client->GetCharacterID()),
-                          call.client->GetCharacterID(),
-                          args.installationAssemblyLineID,
-                          bpRef->itemID(),
-                          beginProductionTime,
-                          beginProductionTime + rsp.productionTime * EvE::Time::Second,
-                          args.description.c_str(),
-                          args.runs,
-                          (EVEItemFlags)args.flagOutput,
-                          solarSystemID,
-                          args.licensedProductionRuns);
-
-    if (jobID < 1) {
-        _log(MANUF__ERROR, "Could not InstallJob for %s", bpRef->name());
-        // make client error here...
-        return nullptr;
-    }
-
     if (sConfig.ram.AutoEvent) {
-        std::string title = sRamMthd.GetActivityName(args.activityID);
+        std::string title;
+        if (args.isCorpJob)
+            title += "Corporate ";
+        else
+            title += "Personal ";
+        title += sRamMthd.GetActivityName(args.activityID);
         title += " Job";
-        if (0 and IsStation(locationID)) {
-            title += " in ";
-            title += stDataMgr.GetStationName(locationID);
-        }
 
         std::string description;
         if (args.isCorpJob)
@@ -468,11 +477,57 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             description += stDataMgr.GetStationName(locationID);
         else  // POS installation
             description += "Unknown Location";
-        description += " is scheduled to complete.<br>";
-        description += "This job is for ";
-        description += std::to_string(args.runs);
-        description += " runs of ";
-        description += bpRef->productType().name();
+        description += " is scheduled to complete at the time noted.<br><br>";
+        switch (args.activityID) {
+            case EvERam::Activity::Manufacturing: {
+                description += "This job is for <color=red>";
+                description += std::to_string(args.runs);
+                description += "</color> runs of <color=yellow>";
+                description += bpRef->productType().groupName();
+                description += "</color>,<br>producing <color=green>";
+                description += std::to_string(args.runs * bpRef->productType().portionSize());
+                description += "</color> units of <color=green>";
+                description += bpRef->productType().name();
+                description += "</color>.";
+            } break;
+            case EvERam::Activity::ResearchMaterial: {
+                description += "Upon completion, this job will increase the Material Efficiency of the ";
+                description += "<color=yellow>";
+                description += bpRef->itemName();
+                description += "</color> from <color=red>";
+                description += std::to_string(bpRef->mLevel());
+                description += "</color> to <color=green>";
+                description += std::to_string(bpRef->mLevel() + args.runs);
+                description += "</color>.";
+            } break;
+            case EvERam::Activity::ResearchTime: {
+                description += "Upon completion, this job will increase the Production Efficiency of the ";
+                description += "<color=yellow>";
+                description += bpRef->itemName();
+                description += "</color> from <color=red>";
+                description += std::to_string(bpRef->pLevel());
+                description += "</color> to <color=green>";
+                description += std::to_string(bpRef->pLevel() + args.runs);
+                description += "</color>.";
+            } break;
+            case EvERam::Activity::Copying: {
+                description += "<color=green>";
+                description += std::to_string(args.runs);
+                description += "</color> Copies of the ";
+                description += "<color=yellow>";
+                description += bpRef->itemName();
+                description += "</color> will be made.";
+            } break;
+            case EvERam::Activity::Invention: {
+                // this isnt implemented yet, so not sure what to do here
+                description += "";
+            } break;
+            case EvERam::Activity::ReverseEngineering: {
+                // this isnt implemented yet, so not sure what to do here
+                description += "";
+            } break;
+                // others are not used (or shouldnt be)
+        }
 
         if (args.isCorpJob) {
             description += "<br><br>This ";
@@ -484,13 +539,17 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             description += " CST.";
         }
 
+        // random sayings/quotes here?  sure, why not?  lol
         if (IsEven(MakeRandomInt(0, 10)))
-            description += "<br><br><br>And a good time shall be had by all.";
+            description += "<br><br><br>And a good time shall be had by all!";
+        //description += "Don't wish it was easier; instead, wish you were better.";
+        //description += "Endure and survive.";
+        //description += "Fly safe.";
 
         // should this be important?
         uint32 eventID = CalendarDB::SaveSystemEvent(args.isCorpJob?call.client->GetCorporationID():call.client->GetCharacterID(),
                                                      stDataMgr.GetOwnerID(locationID),
-                                                     beginProductionTime + rsp.productionTime * EvE::Time::Second,
+                                                     beginTime + rsp.productionTime * EvE::Time::Second,
                                                      Calendar::AutoEvent::RAMJob, title, description);
 
         FactoryDB::SetJobEventID(jobID, eventID);
@@ -572,7 +631,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
         BlueprintRef bpRef = BlueprintRef::StaticCast( installedItem );
         switch(data.activity) {
             case EvERam::Activity::Manufacturing: {
-                ItemData idata(bpRef->productTypeID(), data.ownerID, locTemp, flagNone, (bpRef->productType().portionSize() * data.jobRuns));
+                ItemData idata(bpRef->productTypeID(), data.ownerID, locTemp, flagFactoryOutput, (bpRef->productType().portionSize() * data.jobRuns));
                 InventoryItemRef iRef = sItemFactory.SpawnItem( idata );
                 if (iRef.get() != nullptr)
                     iRef->Move(args.containerID, data.outputFlag, true);
@@ -584,23 +643,21 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                 bpRef->UpdateMLevel(data.jobRuns);
             } break;
             case EvERam::Activity::Copying: {
-                ItemData idata(installedItem->typeID(), data.ownerID, locTemp, flagNone);
+                ItemData idata(installedItem->typeID(), data.ownerID, locTemp, flagFactoryOutput);
                 EvERam::bpData bpdata = EvERam::bpData();
                     bpdata.copy   = true;
                     bpdata.runs   = data.licensedRuns;
                     bpdata.mLevel = bpRef->mLevel();
                     bpdata.pLevel = bpRef->pLevel();
-                BlueprintRef copy = BlueprintRef(nullptr);
                 while (data.jobRuns) {
-                    //wtf?  not sure if i like this but cant think of a better way right now...
-                    // stack bpc??   -- cant because of singleton code in client
-                    copy = Blueprint::Spawn(idata, bpdata);
+                    BlueprintRef copy = Blueprint::Spawn(idata, bpdata);
+                    //new bpc not showing in player hangar....
                     if (copy.get() != nullptr)
                         copy->Move(args.containerID, data.outputFlag, true);
                     --data.jobRuns;
                 }
             } break;
-            /* todo */
+            /** @todo  still need to finish these....eventually  */
             case EvERam::Activity::Invention: {
                 /*  base invention data...
                  *
@@ -749,7 +806,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
         }
     }
 
-    /** @todo on rand (or based on standings), send 'thank you' mail from factory to installer upon job delivery */
+    /** @todo  based on standings, send 'thank you' mail from factory to installer upon job delivery */
 
 
     // there is more to this.  also could be not needed, as it checks for 'none'

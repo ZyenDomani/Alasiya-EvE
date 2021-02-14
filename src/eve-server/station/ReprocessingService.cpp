@@ -236,7 +236,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             return nullptr;
         }
 
-        sRamMthd.LocationRolesCheck(call.client, args.flag);
+        sRamMthd.HangarRolesCheck(call.client, args.flag);
     }
 
     InventoryItemRef iRef(nullptr);
@@ -340,7 +340,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
         }
 
         // this throw "access denied to bom hangar" on error.  probably wrong for this application
-        sRamMthd.LocationRolesCheck(pClient, iRef->flag());
+        sRamMthd.HangarRolesCheck(pClient, iRef->flag());
     } else if (iRef->ownerID() != pClient->GetCharacterID()) {
         _log(SERVICE__ERROR, "Character %u tried to reprocess item %u of character %u.", pClient->GetCharacterID(), iRef->itemID(), iRef->ownerID());
         pClient->SendErrorMsg("The requested item is not yours.");

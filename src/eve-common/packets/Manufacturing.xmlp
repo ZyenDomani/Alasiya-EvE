@@ -150,66 +150,6 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="PathElement">
-    <listInline>
-      <int name="locationID" />
-      <int name="ownerID" />
-      <int name="flag" />
-    </listInline>
-  </elementDef>
-
-  <elementDef name="Call_InstallJob">
-    <tupleInline>
-      <listInline>
-        <!-- installationLocationData -->
-        <listInline>
-          <!-- invLocation -->
-          <int name="installationInvLocationID" />
-          <int name="installationInvLocationGroupID" />
-        </listInline>
-        <listInline>
-        </listInline>
-        <listInline>
-          <int name="installationContainerID" />
-          <int name="installationAssemblyLineID" />
-        </listInline>
-      </listInline>
-      <listInline>
-        <!-- installedItemLocationData -->
-        <listInline>
-          <!-- invLocation -->
-          <int name="installedItemInvLocationID" />
-          <int name="installedItemInvLocationGroup" />
-        </listInline>
-        <!-- List of PathElements, there is 1 on personal job, 3 on corp job -->
-        <list name="installedItemPath" />
-        <listInline>
-          <!-- itemSpecification -->
-          <int name="installedItemID" />
-        </listInline>
-      </listInline>
-      <listInline>
-        <!-- bomLocationData -->
-        <listInline>
-          <!-- invLocation -->
-          <int name="bomInvLocationID" />
-          <int name="bomInvLocationGroup" />
-        </listInline>
-          <!-- List of PathElements, there is 1 on personal job, 3 on corp job -->
-          <list name="bomPath" />
-        <listInline>
-          <!-- empty list.  always sends empty in client -->
-        </listInline>
-      </listInline>
-      <int name="flagOutput" /><!-- where to deliver finished job and return bp -->
-      <int name="runs" />
-      <int name="activityID" />
-      <int name="licensedProductionRuns" /><!-- only sent on copy jobs.  set copied bp to this # -->
-      <bool name="isCorpJob" />
-      <string name="description" />
-    </tupleInline>
-  </elementDef>
-
   <elementDef name="MaterialList">
     <objectInline>
       <stringInline value="util.Rowset" />
@@ -265,6 +205,94 @@
           </dictInlineEntry>
         </dictInline>
     </objectInline>
+  </elementDef>
+
+  <!-- PathElement -->
+  <elementDef name="PathElement">
+  <!-- pathLocationData -->
+    <listInline>
+      <int name="locationID" />
+      <int name="ownerID" />
+      <int name="flagID" />
+    </listInline>
+  </elementDef>
+
+  <!-- PathElement -->
+  <elementDef name="CorpPathElement">
+    <listInline>
+  <!-- pathLocationData -->
+    <listInline>
+      <int name="pathLocationID" />
+      <int name="pathFlagID" />
+      <int name="zero" />
+    </listInline>
+  <!-- officeLocationData -->
+    <listInline>
+      <int name="officeFolderID" />
+      <int name="officeLocCorpID" />
+      <int name="officeLocFlagID" />
+    </listInline>
+  <!-- officeData -->
+    <listInline>
+      <int name="officeID" />
+      <int name="officeCorpID" />
+      <int name="officeFlagID" />
+    </listInline>
+    </listInline>
+  </elementDef>
+
+  <elementDef name="Call_InstallJob">
+    <tupleInline>
+      <listInline>
+      <!-- AssemblyLineData -->
+        <listInline>
+        <!-- location -->
+          <int name="lineLocationID" />
+          <int name="lineLocationGroupID" />
+        </listInline>
+        <listInline>
+          <!-- empty list -->
+        </listInline>
+        <listInline>
+        <!-- container -->
+          <int name="lineContainerID" />
+          <int name="AssemblyLineID" />
+        </listInline>
+      </listInline>
+      <listInline>
+        <!-- bpData -->
+        <listInline>
+          <!-- bpLocationData -->
+          <int name="bpLocationID" />
+          <int name="bpLocationGroupID" />
+        </listInline>
+        <!-- List of PathElements, there is 1 on personal job, 3 on corp job -->
+        <list name="bpLocPath" />
+        <listInline>
+          <!-- bpItemData -->
+          <int name="bpItemID" />
+        </listInline>
+      </listInline>
+      <listInline>
+      <!-- bomData -->
+        <listInline>
+        <!-- bomLocation -->
+          <int name="bomLocationID" />
+          <int name="bomLocationGroupID" />
+        </listInline>
+        <!-- List of PathElements, there is 1 on personal job, 3 on corp job -->
+        <list name="bomLocPath" />
+        <listInline>
+          <!-- empty list -->
+        </listInline>
+      </listInline>
+      <int name="outputFlag" />
+      <int name="runs" />
+      <int name="activityID" />
+      <int name="copyRuns" /><!-- bp runs for copy job -->
+      <bool name="isCorpJob" />
+      <string name="description" />
+    </tupleInline>
   </elementDef>
 
   <elementDef name="Rsp_InstallJob">
@@ -326,7 +354,7 @@
           <int name="invLocationID" />
           <int name="invLocationGroupID" />
         </listInline>
-        <!-- path  - this is populated if jobContaier == activeShipID -->
+        <!-- path  - this is populated if jobContainer == activeShipID -->
         <!--  path.append([eve.session.locationid, eve.session.charid, const.flagHangar]) -->
         <raw name="path" />
         <listInline>

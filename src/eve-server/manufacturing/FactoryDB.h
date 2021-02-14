@@ -42,7 +42,7 @@ public:
     // InstallJob stuff
     static bool GetAssemblyLineProperties(const uint32 assemblyLineID, Character *pChar, Rsp_InstallJob &into, bool isCorpJob=false);
     static bool GetAssemblyLineRestrictions(const int32 assemblyLineID, EvERam::LineRestrictions& data);
-    static uint32 InstallJob(const uint32 ownerID, const uint32 installerID, const uint32 assemblyLineID, const uint32 installedItemID, const int64 beginProductionTime, const int64 endProductionTime, const char* description, const int32 runs, const EVEItemFlags outputFlag, const uint32 installedInSolarSystem, const int32 licensedProductionRuns);
+    static uint32 InstallJob(const uint32 ownerID, const uint32 installerID, Call_InstallJob &args, const int64 beginTime, const int64 endTime);
 
     // CompleteJob stuff
     static bool GetJobProperties(const uint32 jobID, EvERam::JobProperties& data);
