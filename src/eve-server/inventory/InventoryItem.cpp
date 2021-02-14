@@ -548,8 +548,8 @@ void InventoryItem::RemoveItem(InventoryItemRef iRef)
 
 void InventoryItem::Delete() {
     // get out of client's sight.
-    if (!IsNPCCorp(m_data.ownerID) and m_data.ownerID > 1)
-        Move(0, flagNone, true);
+    if (!IsNPCCorp(m_data.ownerID) and (m_data.ownerID > 1))
+        Move(locJunkyard, flagNone, true);
     else {
         // remove from current container's inventory
         if (IsValidLocation(m_data.locationID)) {
@@ -1045,16 +1045,10 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         //else
             pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this is for single items
     } else if (IsPlayerCorp(toID)) {
-        // there is more to this.  not sure what else or how yet.
-        /** @todo update this to use CorpNotify() */
-        MulticastTarget mct;
-        mct.corporations.insert(toID);
-        if (IsStation(m_data.locationID)) {
-            mct.locations.insert(m_data.locationID);
-            sEntityList.Multicast("OnItemChange", "*stationid&corpid", &tmp, mct);
-        } else {
-            sEntityList.Multicast("OnItemChange", "corpid", &tmp, mct);
-        }
+        if (IsStation(m_data.locationID))
+            sEntityList.CorpNotify(toID, Notify::Types::ItemUpdateStation, "OnItemChange","*stationid&corpid", tmp);
+        else
+            sEntityList.CorpNotify(toID, Notify::Types::ItemUpdateSystem, "OnItemChange","corpid", tmp);
     }
 }
 
