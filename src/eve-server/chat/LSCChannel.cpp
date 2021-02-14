@@ -226,8 +226,11 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     msg += "<br><br>Character Options:";
     msg += "<br>Module AutoStop: ";
     msg += (pClient->AutoStop() ? "On" : "Off");
-    msg += "<br>ShowAll: Off";
     msg += "<br>RAM Event: On";
+    //msg += (pClient->RAMEvent() ? "On" : "Off");
+    // check account roles for this one
+    msg += "<br>ShowAll: Off";
+    //msg += (pClient->ShowAll() ? "On" : "Off");
 
     OnLSC_SendMessage sm;
     sm.sender = _FakeSenderInfo();

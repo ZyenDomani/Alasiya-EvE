@@ -218,9 +218,9 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
             continue;
         // type:  1 = ribbon, 2 = medal
         Corp::MedalData data = Corp::MedalData();
-        data.part = PyRep::IntegerValue(list->GetItem(0));
-        data.graphic = PyRep::StringContent(list->GetItem(1));
-        data.color = PyRep::IntegerValue(list->GetItem(2));
+            data.part = PyRep::IntegerValue(list->GetItem(0));
+            data.graphic = PyRep::StringContent(list->GetItem(1));
+            data.color = PyRep::IntegerValue(list->GetItem(2));
         dataList.push_back( data );
     }
 

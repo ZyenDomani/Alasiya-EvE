@@ -51,6 +51,7 @@ PyObject *DBResultToIndexRowset(DBQueryResult &result, const char *key);
 PyObject *DBResultToIndexRowset(DBQueryResult &result, uint32 key_index);
 
 PyTuple *DBResultToTupleSet(DBQueryResult &result);
+// 2 lists, 1-colNames, 2-PyObject "util.Row" with data in 'lines'
 PyTuple *DBResultToRowList(DBQueryResult &result, const char *type = "util.Row");
 PyTuple *DBResultToPackedRowListTuple(DBQueryResult &result);
 

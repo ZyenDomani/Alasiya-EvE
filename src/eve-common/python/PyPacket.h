@@ -43,27 +43,42 @@ public:
     PyRep *Encode();
     void operator=(const PyAddress &right);
 
+    /*
+    def __setstate__(self, state):
+        if state[0] == const.ADDRESS_TYPE_CLIENT:
+            self.addressType, self.clientID, self.callID, self.service = state
+        elif state[0] == const.ADDRESS_TYPE_BROADCAST:
+            self.addressType, self.broadcastID, self.narrowcast, self.idtype = state
+        elif state[0] == const.ADDRESS_TYPE_ANY:
+            self.addressType, self.service, self.callID = state
+        else:
+            self.addressType, self.nodeID, self.service, self.callID = state
+    */
     typedef enum {
         Node    = 1,
             /*
+             * [0]   addressType
              * [1]   nodeID
              * [2]   service
              * [3]   callID
              */
         Client  = 2,
             /* "because it's ID doesn't match"
+             * [0]   addressType
              * [1]   clientID
              * [2]   callID
              * [3]   service
              */
         Broadcast = 4,
             /*
+             * [0]   addressType
              * [1]   broadcastID
-             * [2]   narrowcast
+             * [2]   narrowcast         // this part is not understood yet... something about specific nodes for bcast types
              * [3]   idtype
              */
         Any     = 8,
             /*
+             * [0]   addressType
              * [1]   service
              * [2]   callID
              */

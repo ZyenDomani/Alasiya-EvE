@@ -104,11 +104,6 @@ InvBrokerService::InvBrokerService(PyServiceMgr *mgr)
 }
 
 PyResult InvBrokerService::Handle_GetItemDescriptor(PyCallArgs &call) {
-    // not really clear on the use of this one? just a general header update?!
-    // from Inventory::List
-	/**
-            self.__itemhdr = sm.RemoteSvc('invbroker').GetItemDescriptor()
-            */
     return sDataMgr.CreateHeader();
 }
 

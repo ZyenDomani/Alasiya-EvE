@@ -275,13 +275,13 @@ void PyAddress::Dump(FILE *into, const char *pfx) const {
             fprintf(into, "%sAny: service='%s' callID=%li", pfx, service.c_str(), callID);
         break;
         case Node:
-            fprintf(into, "%sNode: node=%p service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sNode: nodeID=%li service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            fprintf(into, "%sClient: node=%p service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sClient: clientID=%li service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Broadcast:
-            fprintf(into, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
+            fprintf(into, "%sBroadcast: broadcastID='%s' narrowcast=(not implemented) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
         break;
         case Invalid:
         break;
@@ -295,13 +295,13 @@ void PyAddress::Dump(LogType ltype, const char *pfx) const {
             _log(ltype, "%sAny: service='%s' callID=%li", pfx, service.c_str(), callID);
         break;
         case Node:
-            _log(ltype, "%sNode: node=%p service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
+            _log(ltype, "%sNode: nodeID=%li service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            _log(ltype, "%sClient: node=%p service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
+            _log(ltype, "%sClient: clientID=%li callID=%li service='%s'", pfx, objectID, callID, service.c_str());
         break;
         case Broadcast:
-            _log(ltype, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
+            _log(ltype, "%sBroadcast: broadcastID='%s' narrowcast=(not implemented) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
         break;
         case Invalid:
         break;
@@ -327,7 +327,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
     }
 
     if (!base->IsObject()) {
-        codelog(NET__PACKET_ERROR, "Invalid element type, expected object");
+        codelog(NET__PACKET_ERROR, "Invalid element type, expected object but got %s", base->TypeString());
         PyDecRef(base);
         return false;
     }
@@ -339,7 +339,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
     }
 
     if (tuple->items.size() < 3) {
-        codelog(NET__PACKET_ERROR, "Not enough elements in address tuple: %lu", tuple->items.size());
+        codelog(NET__PACKET_ERROR, "Not enough elements in address tuple: %u", tuple->items.size());
         tuple->Dump(NET__PACKET_ERROR, "  ");
         PyDecRef(base);
         PyDecRef(tuple);
@@ -348,7 +348,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
 
     //decode the address type.
     if (!tuple->items[0]->IsInt()) {
-        codelog(NET__PACKET_ERROR, "Wrong type on address type element (0)");
+        codelog(NET__PACKET_ERROR, "Wrong type on address element (0)");
         tuple->items[0]->Dump(NET__PACKET_ERROR, "  ");
         PyDecRef(base);
         PySafeDecRef(tuple);
@@ -420,7 +420,8 @@ bool PyAddress::Decode(PyRep *&in_object) {
                 PyDecRef(base);
                 PySafeDecRef(tuple);
                 return false;
-            } else if (!tuple->items[3]->IsString()) {
+            }
+            if (!tuple->items[3]->IsString()) {
                 codelog(NET__PACKET_ERROR, "Invalid type %s for idtype", tuple->items[3]->TypeString());
                 PyDecRef(base);
                 PySafeDecRef(tuple);
@@ -439,7 +440,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
             }*/
         }   break;
         default: {
-            codelog(NET__PACKET_ERROR, "Unknown address type: %i", PyRep::IntegerValue(tuple->items[0]) );
+            codelog(NET__PACKET_ERROR, "Unknown address type: %i", PyRep::IntegerValue(tuple->items[0]));
             PyDecRef(base);
             PySafeDecRef(tuple);
             return false;
@@ -458,7 +459,7 @@ PyRep *PyAddress::Encode() {
             t = new PyTuple(3);
             t->items[0] = new PyInt((int)type);
 
-            if (service == "")
+            if (service.empty())
                 t->items[1] = PyStatic.NewNone();
             else
                 t->items[1] = new PyString(service.c_str());
@@ -473,7 +474,7 @@ PyRep *PyAddress::Encode() {
             t->items[0] = new PyInt((int)type);
             t->items[1] = new PyLong(objectID);
 
-            if (service == "")
+            if (service.empty())
                 t->items[2] = PyStatic.NewNone();
             else
                 t->items[2] = new PyString(service.c_str());
@@ -493,7 +494,7 @@ PyRep *PyAddress::Encode() {
             else
                 t->items[2] = new PyLong(callID);
 
-            if (service == "")
+            if (service.empty())
                 t->items[3] = PyStatic.NewNone();
             else
                 t->items[3] = new PyString(service.c_str());
@@ -502,12 +503,12 @@ PyRep *PyAddress::Encode() {
             t = new PyTuple(4);
             t->items[0] = new PyInt((int)type);
             //broadcastID
-            if (service == "")
+            if (service.empty())
                 t->items[1] = PyStatic.NewNone();
             else
                 t->items[1] = new PyString(service.c_str());
             //narrowcast
-            t->items[2] = new PyList(); // LSC uses tuple here, others usually None()
+            t->items[2] = new PyList(); // LSC uses tuple here, others None() or empty List()
             //typeID
             t->items[3] = new PyString(bcast_idtype.c_str());
         } break;
