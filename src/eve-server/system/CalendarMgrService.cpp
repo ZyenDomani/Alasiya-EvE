@@ -94,6 +94,8 @@ PyResult CalendarMgrService::Handle_SendEventResponse( PyCallArgs& call )
 
     CalendarDB::SaveEventResponse(call.client->GetCharacterID(), args);
 
+    // if this is an invitation, update calendar for non-denial responses
+
     return nullptr;
 }
 
@@ -145,6 +147,12 @@ PyResult CalendarMgrService::Handle_EditPersonalEvent( PyCallArgs& call )
     sLog.Cyan( "CalendarMgrService::Handle_EditPersonalEvent()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
+    Call_EditEvent args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
     return nullptr;
 }
 
@@ -154,6 +162,12 @@ PyResult CalendarMgrService::Handle_EditCorporationEvent( PyCallArgs& call )
 
     sLog.Cyan( "CalendarMgrService::Handle_EditCorporationEvent()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
+
+    Call_EditEvent args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
 
     return nullptr;
 }
@@ -165,6 +179,12 @@ PyResult CalendarMgrService::Handle_EditAllianceEvent( PyCallArgs& call )
     sLog.Cyan( "CalendarMgrService::Handle_EditAllianceEvent()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
+    Call_EditEvent args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
     return nullptr;
 }
 
@@ -174,6 +194,17 @@ PyResult CalendarMgrService::Handle_UpdateEventParticipants( PyCallArgs& call )
 
     sLog.Cyan( "CalendarMgrService::Handle_UpdateEventParticipants()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
+
+    Call_UpdateEventParticipants args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
+    CalendarDB::UpdateEventParticipants(args);
+    
+    //  this will need to update invitees and inform them of the invitation
+    // their calendar is updated based on their response (SendEventResponse)
 
     return nullptr;
 }
