@@ -116,7 +116,7 @@ namespace Corp {
     namespace Role {
         enum:int64_t {
             Member                          = 0,
-            Director                        = 1,
+            Director                        = 1,        // only role that can lock/unlock bp
             PersonnelManager                = 128,
             Accountant                      = 256,
             SecurityOfficer                 = 512,

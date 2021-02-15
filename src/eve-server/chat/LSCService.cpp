@@ -1035,6 +1035,10 @@ void LSCService::CreateStaticChannels() {
     // hardcode creating server static channels during server startup
     // these are all set to memberless to avoid constant updates
     std::ostringstream str;
+
+// basic template
+    //CreateChannel(channelID, ownerID, "name", "motd", "password" or nullptr, "*title*", LSC::Type::normal, cspa, 0, 0, true);
+
 //Help
 // Incursion Rookie Help MOTD
     str.str("");
@@ -1138,7 +1142,7 @@ void LSCService::CreateStaticChannels() {
     str << "<color=0xffffffff>, </color><url=showinfo:30836>Salvager II's</url><color=0xffffffff> &amp; </color><url=showinfo:4250>Tractor Beam II's</url><br>";
     */
     str << "<b><u><color=0xff00ffff>Mission Runners</color></b></u><br><color=0xffffffff>";
-    str << "Please state where your bookmark will be traded, contracted or if youre hoping to fleet with the salvager looking for work. <br>";
+    str << "Please state where your bookmark will be traded, contracted or if you're hoping to fleet with the salvager looking for work. <br>";
     str << "If you are contracting or trading bookmarks dont forget to</color> <color=0xff007fff>Abandon all wrecks and containers</color><color=0xffffffff>.</color><br><br>";
     str << "<b><u><color=0xff00ff00>Useful Links.</color></u><br>";
     str << "<loc><url=http://evemaps.dotlan.net/>DOTLAN</url></loc></b><color=0xffffffff> - A database of everything you need to know about New Eden; maps, corporations, navigations and much more.</color><color=0xff0000ff>NOTE:</color><color=0xffffffff> While this site is specific for Tranquility, the maps and navigation are the same here on Alasiya-EvE.</color><br>";

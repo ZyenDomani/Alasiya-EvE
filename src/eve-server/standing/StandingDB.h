@@ -49,12 +49,12 @@ public:
 
 
     /*  all standings are in same table now, but follow identical rules
-     * from agents to characters and player corps. changed by missions status'
-     * corporation<-->alliance, alliance<-->alliance - changed thru Corp window
-     * character<-->character, character<-->corporation - changed thru PnP window
-     * corporation<-->character, corporation<-->corporation - changed thru Corp window
-     * NPC Faction <--> NPC Faction - pre-set by game history
-     * NPC corps --> characters and player corps - changed by missions and faction kills
+     * NPC Faction<-->NPC Faction - populated, hard-coded  -- cant change
+     * agent-->char, agent-->PC corp  -- changed by missions status'
+     * corporation<-->alliance, alliance<-->alliance  -- changed thru Corp window
+     * corporation-->character, corporation<-->corporation  -- changed thru Corp window
+     * character<-->character, character-->corporation  -- changed thru PnP window
+     * NPC corp-->char, NPC corp-->PC corp  -- changed by missions and faction kills
      */
     static float GetStanding(uint32 fromID, uint32 toID);
 
