@@ -35,10 +35,10 @@ void StationDB::UpdateOfficeData(OfficeData& data)
     sDatabase.RunQuery(err, "UPDATE staOffices SET lockDown = %u, rentalFee = %u, expiryDateTime = %li)", data.lockDown, data.rentalFee, data.expiryTime);
 }
 
-uint32 StationDB::GetOfficeCount(uint32 corpID)
+int32 StationDB::GetOfficeCount(uint32 corpID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, " SELECT COUNT(itemID) FROM staOffices WHERE corporationID = %u ", corpID)) {
+    if (!sDatabase.RunQuery(res, "SELECT COUNT(itemID) FROM staOffices WHERE corporationID = %u ", corpID)) {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return 0;
     }
@@ -48,7 +48,7 @@ uint32 StationDB::GetOfficeCount(uint32 corpID)
         codelog(CORP__DB_WARNING, "Unable to find corporation's office data (%u)", corpID);
         return 0;
     }
-    return row.GetUInt(0);
+    return row.GetInt(0);
 }
 
 PyRep* StationDB::GetOffices(uint32 stationID)

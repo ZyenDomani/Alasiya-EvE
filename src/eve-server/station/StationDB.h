@@ -33,7 +33,7 @@ public:
     static void GetOperationServiceIDs(DBQueryResult& res);
     static void GetStationConstellation(DBQueryResult& res);
 
-    static uint32 GetOfficeCount(uint32 corpID);
+    static int32 GetOfficeCount(uint32 corpID);
 
     static void LoadOffices(OwnerData &od, std::vector<uint32> &into);
 
