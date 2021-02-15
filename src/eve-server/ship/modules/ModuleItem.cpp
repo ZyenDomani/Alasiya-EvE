@@ -82,7 +82,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
-        shipEff.timeNow = Win32TimeNow();
+        shipEff.timeNow = GetFileTimeNow();
         shipEff.start = online;
         shipEff.active = online;
         shipEff.environment = ge.Encode();

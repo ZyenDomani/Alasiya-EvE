@@ -29,6 +29,9 @@
 
 #include "utils/utils_time.h"
 
+// Number of days in month in normal year
+static const int daysOfMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
 static const int64 SECS_BETWEEN_EPOCHS = 11644473600LL;
 static const int64 SECS_TO_100NS = 10000000L; // 10^7
 
@@ -156,9 +159,6 @@ EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
     // time sent as (windows)FILETIME; convert to unix time
     double time(filetime /EvE::Time::Second);// to Seconds
     time -= SECS_BETWEEN_EPOCHS;    // epoc offset
-
-    // Number of days in month in normal year
-    int daysOfMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
     // Calculate total days
     uint16 day = (time / 86400) +1;

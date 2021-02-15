@@ -101,7 +101,7 @@ void SystemEntity::MakeDamageState(DoDestinyDamageState &into) {
     into.recharge = 110000;
     into.armor = 1;
     into.structure = 1;
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
 }
 
 PyDict* SystemEntity::MakeSlimItem() {
@@ -163,7 +163,7 @@ void SystemEntity::SendDamageStateChanged() {  //working 24Apr15
      DamageDetails dmgState;
         dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double();
         dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
-        dmgState.timestamp = Win32TimeNow();
+        dmgState.timestamp = GetFileTimeNow();
         dmgState.armor = (1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double()));
         dmgState.structure = (1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double()));
      OnDamageStateChange dmgChange;
@@ -433,7 +433,7 @@ void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
     } else {
         into.shield = (m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
         into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
-        into.timestamp = Win32TimeNow();
+        into.timestamp = GetFileTimeNow();
         into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
         into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
     }
@@ -544,7 +544,7 @@ PyDict* ObjectSystemEntity::MakeSlimItem() {
 void ObjectSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
     into.shield = (m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
     into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
     into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
 }
@@ -555,7 +555,7 @@ void ObjectSystemEntity::UpdateDamage()
      DamageDetails dmgState;
         dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double();
         dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
-        dmgState.timestamp = Win32TimeNow();
+        dmgState.timestamp = GetFileTimeNow();
         dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double();
         dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double();
      OnDamageStateChange dmgChange;
@@ -670,7 +670,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
 void DynamicSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
     into.shield = (m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
     into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
     into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
 }
@@ -682,7 +682,7 @@ void DynamicSystemEntity::UpdateDamage()
      DamageDetails dmgState;
         dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double();
         dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
-        dmgState.timestamp = Win32TimeNow();
+        dmgState.timestamp = GetFileTimeNow();
         dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double();
         dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double();
      OnDamageStateChange dmgChange;
