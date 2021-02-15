@@ -27,14 +27,14 @@ There will be some response, like opening windows, but will not generate an erro
 <font color="orange">Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=red>Outdated</font> - <font color="yellow">Being Updated</font><BR>
 <font color="orange">Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=pink>All data currently under review.  Found discrepancies in pre-rewrite tests (before mid-2016)</font><BR><BR></table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals </span></h2>
+<h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:86%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:63%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:86%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>86.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:66%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>62.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
