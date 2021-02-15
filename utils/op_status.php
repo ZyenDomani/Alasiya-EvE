@@ -41,76 +41,46 @@ There will be some response, like opening windows, but will not generate an erro
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;"><tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td><td style="width: 26%;">Comments</td></tr>
-<tr><td> - Stable, Efficient Server Code</td><td class="working">85%
+<tr><td> - Stable, Efficient Server Code</td><td class="working">65%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 65%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress - eliminating duplicated code and headers, tracking/fixing segfaults, updating code to C++/0x11<BR>27Feb16</td></tr>
+<td>In Progress - eliminating duplicated code and headers, tracking/fixing segfaults, updating code to C++/0x11<BR>14Feb21</td></tr>
 <tr><td> - Memory Management</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress<BR>While greatly improved over official branch, still <font color="red">horrible</font><BR>2Feb20</td></tr>
+<td>In Progress<BR>While greatly improved over official branch,<BR><font color="red">still horrible</font><BR>14Feb21</td></tr>
 <tr><td> - Efficient, Accurate Packet Deciphering</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>In Progress - Most packets understood and correctly processed<BR>27July15</td></tr>
-<tr><td> - Further Mutex-ing</td><td class="working">100%
+<tr><td> - Mutexes</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>All MT systems correctly lock/unlock data<BR>2Feb20</td></tr>
-<tr><td> - COMPLETE Destiny rewrite</td><td class="working">90%
+<td><font color="green">COMPLETE</font><BR>All MT systems correctly lock/unlock data - no data races<BR>14Feb21</td></tr>
+<tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Mostly Complete</font> - <font color=orange>Testing</font><BR>27Jun17</td></tr>
-<tr><td> - COMPLETE Module Class rewrite</td><td class="working">90%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Mostly Complete</font> - <font color=orange>Testing</font><BR>27Jun17</td></tr>
-<tr><td> - COMPLETE Item Class rewrite</td><td class="working">90%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Mostly Complete</font> - <font color=orange>Testing</font><BR>27Jun17</td></tr>
-<tr><td> - COMPLETE SystemEntity class rewrite</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - COMPLETE Object Attribute Management overhaul</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
-<td> - COMPLETE investigation of remaining database fields</td><td class="working">95%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Mostly Complete</font> - <font color=orange>Testing</font><BR>27Jun17</td></tr>
-<tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">70%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="pink">Not Complete</font><BR><font color=olive>Enabling all compiler warnings gives 10.8Mb log file of errors</font><BR>10Dec18</td></tr>
-<tr><td> - GM commands</td><td class="working">95%
+<tr><td> - GM commands<BR>Most commands need complete rewrite</td><td class="working">65%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 65%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Mostly Complete</font> - <font color=orange>Testing</font><BR>27Jun17</td></tr>
+<td><font color="lime">Working</font><BR><font color=magenta>Needs Work</font><BR>27Jun17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="General_Interface_Features"> General Interface Features </span></h2>
+<h2> <span class="mw-headline" id="Information"> Item Information Windows (<font color=yellow>needs review</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:96%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:96%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>96.4</b></font>&#160;&#160;&#160;&#160;
+<table style="background: transparent; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>90.0</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -122,32 +92,32 @@ There will be some response, like opening windows, but will not generate an erro
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=pink>Final Testing</font><BR>17Nov17</td></tr>
+<td><font color=pink>Final Testing</font><BR>22Aug18</td></tr>
 <tr><td> - Get Ship Info</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=pink>Final Testing</font><BR>17Nov17</td></tr>
-<tr><td> - Get Skill Info</td><td class="working">100%
+<td><font color=pink>Final Testing</font><BR>22Aug18</td></tr>
+<tr><td> - Get Skill Info</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>7Sep14</td></tr>
-<tr><td> - Get Certification Info</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td><font color=pink>Final Testing</font><BR>22Aug18</td></tr>
+<tr><td> - Get Certification Info</td><td class="working">90%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>27July15</td></tr>
+<td><font color=pink>Final Testing</font><BR>22Aug18</td></tr>
 <tr><td> - Get Character Info</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table>
-<td><font color=pink>Final Testing</font><BR>17Nov17</td></tr>
-<tr><td> - Get NPC Corporation Info</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td><font color=pink>Final Testing</font><BR>22Aug18</td></tr>
+<tr><td> - Get NPC Corporation Info</td><td class="working">90%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>22Aug18</td></tr>
+<td><font color=pink>Final Testing</font><BR>22Aug18</td></tr>
 <tr><td> - Get Player Corporation Info</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
@@ -155,7 +125,7 @@ There will be some response, like opening windows, but will not generate an erro
 <td><font color=pink>Final Testing</font><BR>22Aug18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Account_and_Character_Management"> Account and Character Management </span></h2>
+<h2> <span class="mw-headline" id="Account_and_Character_Management"> Account and Character Management (<font color=yellow>needs review</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:96%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table></td></tr></table></div></div>
@@ -249,7 +219,7 @@ There will be some response, like opening windows, but will not generate an erro
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>Standings paritially Implemented<BR>17Nov18</td></tr>
+<td><font color="green">COMPLETE</font><BR>Standings partially Implemented (see below)<BR>17Nov18</td></tr>
 <tr><td> - Open Security Status Window</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -333,16 +303,15 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27July15</td></tr>
 </table>
-
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Standings"> Standings </span></h2>
+<h2> <span class="mw-headline" id="Standings"> Standings (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:32%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:19%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:32%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>31.6</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:19%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>18.8</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td><font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -350,53 +319,72 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Faction</td><td class="working">100%
+<tr><td> - <font color=lime>Faction Standings (NPC Alliances)</font> &nbsp;&nbsp;--&nbsp;&nbsp; <font color=yellow>These standings cannot be modified.</font></td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>6Mar14</td></tr>
-<tr><td> - NPC Corp</td><td class="broken">15%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - Player Corp</td><td class="broken">10%
+<tr><td> - <font color=lime>CONCORD Standings (Security Rating)</font></td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td> - Player</td><td class="broken">15%
+<tr><td> - Agent to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions</font></td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - Set Player Standings</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>6Mar14</td></tr>
-<tr><td> - Set Corp Standings</td><td class="broken">10%
+<tr><td> - Agent to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions</font></td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td> - Agents respond to player standings</td><td class="broken">15%
+<tr><td> - Agents respond to Character standings (personal, corp, ally)</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - Agents respond to corp standings</td><td class="broken">10%
+<tr><td> - NPC Corp to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and faction kills</font></td><td class="working">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
+<tr><td> - NPC Corp to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and faction kills</font></td><td class="working">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
+<tr><td> - Character to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by PnP window</font></td><td class="working">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
+<tr><td> - Character to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by PnP window</font></td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td> - NPC Stations respond to player standings</td><td class="broken">10%
+<tr><td> - Player Corp to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
+<tr><td> - Player Corp to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
+<tr><td> - Alliance to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
+<tr><td> - Alliance to Alliance&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 </table>
-
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="NPC_Station_Services"> NPC Station Services (<font color=yellow>needs review</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
@@ -444,9 +432,9 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>30Nov15</td></tr>
-<tr><td> - Agent Services</td><td class="working">30%
+<tr><td> - Agent Services</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>13Nov18</td></tr>
 <tr><td> - Trade Services</td><td class="working">70%
@@ -532,14 +520,14 @@ There will be some response, like opening windows, but will not generate an erro
 <td><font color="green">COMPLETE</font><BR>1Feb14</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Agents"> Agents </span></h2>
+<h2> <span class="mw-headline" id="Agents"> Agents (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:63%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>79.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:63%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>63.1</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -547,39 +535,39 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Agents Tab</td><td class="working">100%
+<tr><td> - Agents Tab</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
-<tr><td> - Can initiate conversation with agent</td><td class="working">100%
+<td><font color=lime>Mostly Working</font><BR><font color=pink>Final Testing</font><BR>19Nov18</td></tr>
+<tr><td> - Can initiate conversation with agent</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
-<tr><td> - Agents offer Missions</td><td class="working">100%
+<td><font color=lime>Mostly Working</font><BR><font color=pink>Final Testing</font><BR>19Nov18</td></tr>
+<tr><td> - Agents offer Missions</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
-<tr><td> - Can View Mission Offer</td><td class="working">100%
+<td><font color=lime>Mostly Working</font><BR><font color=pink>Final Testing</font><BR>19Nov18</td></tr>
+<tr><td> - Can View Mission Offer</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
-<tr><td> - Can Accept Mission Offer</td><td class="working">100%
+<td><font color=lime>Mostly Working</font><BR><font color=pink>Final Testing</font><BR>19Nov18</td></tr>
+<tr><td> - Can Accept Mission Offer</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
-<tr><td> - Can Complete Mission Offer</td><td class="working">100%
+<td><font color=lime>Mostly Working</font><BR><font color=pink>Final Testing</font><BR>19Nov18</td></tr>
+<tr><td> - Can Complete Mission Offer</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
-<tr><td> - Can Search Agents</td><td class="working">25%
+<td><font color=lime>Mostly Working</font><BR><font color=pink>Final Testing</font><BR>19Nov18</td></tr>
+<tr><td> - Can Search Agents</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>19Nov18</td></tr>
 <tr><td> - Can Search for character by agent</td><td class="broken">10%
@@ -589,7 +577,7 @@ There will be some response, like opening windows, but will not generate an erro
 <td><font color=magenta>Skeleton Code Only</font><BR>19Nov18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Agents_Missions"> Missions (<font color=pink>Very Incomplete</font>)</span></h2>
+<h2> <span class="mw-headline" id="Missions"> Missions (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:15%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -604,11 +592,11 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Missions Give Rewards (isk/standings)</td><td class="working">100%
+<tr><td> - Missions Give Rewards (isk/standings)</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=pink>Final Testing</font><BR>19Nov18</td></tr>
 <tr><td> - Missions Give LP</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -620,22 +608,17 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Mining Missions</font><BR> 2 Types.  Mine specific ore at specific location, or supply agent with mined ore or reprocessed minerals.</td><td class="broken">20%
+<tr><td> - <font color=lime>Mining Missions</font><BR> 2 Types.  Mine specific ore at specific location, or supply agent with mined ore or reprocessed minerals.</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Security (Kill) Missions</font><BR> 2 Types.  Destroy ships at given location in space.  Destroy ships in deadspace pockets using acceleration gates.</td><td class="broken">0%
+<tr><td> - <font color=lime>Security Missions</font><BR> 2 Types.  Destroy ships at given location in space.  Destroy ships in deadspace pockets using acceleration gates.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Trade Missions</font><BR> Provide Agent with requested items at a specific station.  Can be either crafted or bought.  No standing loss from opposing faction.</td><td class="broken">0%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Storyline Missions</font><BR> Special Missions to gain faction standings with agent giving mission.  Given after 10-15 basic mission completions. Repeatable.</td><td class="broken">0%
+<tr><td> - <font color=lime>Trade Missions</font><BR> Provide Agent with requested items at a specific station.  Can be either crafted or bought. <BR> No standing loss from opposing faction.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -646,7 +629,12 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Research Missions</font><BR> Special Missions given from Research Agents when doing research with that agent.</td><td class="broken">0%
+<tr><td> - <font color=lime>Storyline Missions</font><BR> Special Missions to gain faction standings with agent giving mission.  Given after 10-15 basic mission completions. Repeatable.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Research Missions</font><BR> Special Missions given from Research Agents for characters doing research with that agent.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -656,12 +644,12 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Cosmos Missions</font><BR> Small Mission Chains, given from CONCORD agents.  Can only be completed once.  Expiration, Failure or Denial forever blocks giving agent.</td><td class="broken">0%
+<tr><td> - <font color=lime>Cosmos Missions</font><BR> Small Mission Chains, given from CONCORD agents.  Can only be completed once. <BR>Expiration, Failure or Denial forever blocks giving agent.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Anomic (Burner) Missions</font><BR> Given by L4 Security Agents - Can be declined without penalty.  Ship Restrictions.</td><td class="broken">0%
+<tr><td> - <font color=lime>Anomic Missions</font><BR> Given by L4 Security Agents.  Can be declined without penalty.  Ship Restrictions.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -677,7 +665,7 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>19Nov18</td></tr></table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Chats_-_Local_Corp_Custom_Private"> Large Scale Chat System (LSC) (<font color=pink>Rewrite on hold</font>) </span></h2>
+<h2> <span class="mw-headline" id="Chats_-_Local_Corp_Custom_Private"> LSC - Large Scale Chat System (<font color=pink>Rewrite on hold</font>) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -794,7 +782,7 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Players</h3></font></td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Characters</h3></font></td></tr>
 <tr><td> - Can Send Eve-mails</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
@@ -968,33 +956,6 @@ There will be some response, like opening windows, but will not generate an erro
 <td><font color="lime">Mostly Complete</font> - <font color=pink>Alliances not implemented</font><BR>31Oct20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Item_Properties_Window"> Item Properties Window </span></h2>
-<div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
-<table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
-</td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
-<table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>90.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
-</td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
-<table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
-<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Action</td>
-<td style="width: 4%;">Status</td>
-<td style="width: 26%;">Comments</td></tr>
-<tr><td> - View item properties</td><td class="working">90%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=pink>Final Testing</font><BR>17Nov17</td></tr>
-<tr><td> - View item picture (orange eye button)</td><td class="working">90%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=pink>Final Testing</font><BR>17Nov17</td></tr>
-</table>
-<p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Market_Details"> Market Details (<font color=pink>Rewrite on hold</font> - <font color=yellow>needs review</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
@@ -1015,7 +976,7 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Needs More Testing</font><BR>11Dec18</td></tr>
-<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Players</h3></font></td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Characters</h3></font></td></tr>
 <tr><td> - View Items on Market</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1124,7 +1085,7 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Players</h3></font></td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Characters</h3></font></td></tr>
 <tr><td> - All Assets View</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1150,9 +1111,9 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>30Dec14</td></tr>
-<tr><td> - Search Assets</td><td class="working">25%
+<tr><td> - Search Assets</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>6Mar14</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Corporations</h3></font></td></tr>
@@ -1181,9 +1142,9 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>26May19</td></tr>
-<tr><td> - Search Assets</td><td class="working">25%
+<tr><td> - Search Assets</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>26May19</td></tr>
 </table>
@@ -1203,7 +1164,7 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Players</h3></font></td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Characters</h3></font></td></tr>
 <tr><td> - View Journal Entries</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1262,7 +1223,7 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Players</h3></font></td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Characters</h3></font></td></tr>
 <tr><td> - Start Page</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
@@ -1449,7 +1410,7 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Player Bookmarks</h3></font></td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Character Bookmarks</h3></font></td></tr>
 <tr><td> - Bookmark system</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -1507,7 +1468,7 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=pink>Final Testing</font><BR>17Nov17</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Corporation Bookmarks</h3></font></td></tr>
-<tr><td> - Update a Player Bookmark</td><td class="working">100%
+<tr><td> - Update a Character Bookmark</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -1549,33 +1510,6 @@ There will be some response, like opening windows, but will not generate an erro
 <td><font color="green">COMPLETE</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Overview"> Overview </span></h2>
-<div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
-<table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
-</td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
-<table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>&nbsp;</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
-</td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
-<table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
-<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Action</td>
-<td style="width: 4%;">Status</td>
-<td style="width: 26%;">Comments</td></tr>
-<tr><td> - Selected Item Window</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>1Feb14</td></tr>
-<tr><td> - RClick on item in overview and interact</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>1Feb14</td></tr>
-</table>
-<p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="fxSystem"> Effects System (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
@@ -1597,7 +1531,7 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=pink>Final Testing</font><BR>17Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fx Source Processing - Item applying the effect</h3></font></td></tr>
-<tr><td> - <font color=lime>Process Self Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is Ship, Module or Charge</td><td class="working">95%
+<tr><td> - <font color=lime>Process Self Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is Ship (T1, T2), Module or Charge</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -1650,7 +1584,7 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=pink>Final Testing</font><BR>17Feb20</td></tr>
-<tr><td> - <font color=lime>Apply Processed Effects to Target</font><BR>&nbsp;&nbsp;&nbsp;Ship's current target</td><td class="working">85%
+<tr><td> - <font color=lime>Apply Processed Effects to Target</font><BR>&nbsp;&nbsp;&nbsp;Ship's current target, either ship or structure.</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -1709,31 +1643,31 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>9Dec15</td></tr>
-<tr><td> - Can Link Weapons</td><td class="working">100%
+<tr><td> - Can Link Weapons</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>1Dec18</td></tr>
-<tr><td> - Can AutoLink Weapons **Using GroupAllWeapons button**</td><td class="working">100%
+<td><font color=lime>Working</font> - <font color=olive>Needs More Testing</font><BR>1Dec18</td></tr>
+<tr><td> - Can AutoLink Weapons **Using GroupAllWeapons button**</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>1Dec18</td></tr>
-<tr><td> - Can Load Linked Weapons **Linked Weapons Load as a group**</td><td class="working">100%
+<td><font color=lime>Working</font> - <font color=olive>Needs More Testing</font><BR>1Dec18</td></tr>
+<tr><td> - Can Load Linked Weapons **Linked Weapons Load as a group**</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>1Dec18</td></tr>
-<tr><td> - Can UnLoad Linked Weapons **Linked Weapons UnLoad as a group**</td><td class="working">100%
+<td><font color=lime>Working</font> - <font color=olive>Needs More Testing</font><BR>1Dec18</td></tr>
+<tr><td> - Can Unload Linked Weapons **Linked Weapons UnLoad as a group**</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>1Dec18</td></tr>
-<tr><td> - Can Un-Link Weapons **Linked Weapons will NOT UnLoad Charges when UnLinked**</td><td class="working">100%
+<td><font color=lime>Working</font> - <font color=olive>Needs More Testing</font><BR>1Dec18</td></tr>
+<tr><td> - Can Un-Link Weapons **Linked Weapons will NOT UnLoad Charges when UnLinked**</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>1Dec18</td></tr>
+<td><font color=lime>Working</font> - <font color=olive>Needs More Testing</font><BR>1Dec18</td></tr>
 <!--
 <tr><td> - Charges Stack in cargo while in space</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
@@ -1792,11 +1726,11 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>15Aug18</td></tr>
-<tr><td> - Can store/retrieve items from Corporate Hangar</td><td class="working">95%
+<tr><td> - Can store/retrieve items from Corporate Hangar</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=pink>Final Testing</font><BR>20Dec17</td></tr>
+<td><font color=lime>Working</font> - <font color=olive>Needs More Testing</font><BR>1Dec18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Ship_Fittings"> Ship Fittings Manager (<font color=green>Current</font>)</span></h2>
@@ -1814,7 +1748,7 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Players</h3></font></td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Characters</h3></font></td></tr>
 <tr><td> - Save Fittings</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -1878,11 +1812,11 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27July15</td></tr>
-<tr><td> - Orbit Object</td><td class="working">95%
+<tr><td> - Orbit Object</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Hacked</font> - Working very well<BR>15Jul16</td></tr>
+<td><font color=orange>Hacked</font><BR>15Jul16</td></tr>
 <tr><td> - Follow Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1940,7 +1874,7 @@ There will be some response, like opening windows, but will not generate an erro
 <td><font color="lime">Complete</font> - <font color=red>NOT IMPLEMENTED</font><BR>10Aug16</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Ship_Combat"> Ship Combat </span></h2>
+<h2> <span class="mw-headline" id="Combat"> Combat (<font color=yellow>needs review</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:99%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1970,11 +1904,11 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - Can Orbit target</td><td class="working">95%
+<tr><td> - Can Orbit target</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Hacked</font> - Working very well<BR>15Jul16</td></tr>
+<td><font color=orange>Hacked</font><BR>15Jul16</td></tr>
 <tr><td> - Can Follow target</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1985,12 +1919,12 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - Killed ships put pilot in pod</td><td class="working">100%
+<tr><td> - Pilot moved to pod when ship destroyed</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>2Dec18</td></tr>
-<tr><td> - Killed pods put pilot in home station (in current clone)</td><td class="working">100%
+<tr><td> - Pilot moved to clone (at clone's location) when pod destroyed</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -2062,19 +1996,19 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=pink>Final Testing</font><BR>20Feb20</td></tr>
-<tr><td> - Can Overload modules (and they work)</td><td class="working">30%
+<tr><td> - Can Overload modules (and they work)</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>20Feb20</td></tr>
-<tr><td> - Can De-activate Overloaded modules</td><td class="working">30%
+<tr><td> - Can De-activate Overloaded modules</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>20Feb20</td></tr>
-<tr><td> - Overloaded modules damage bank from heat</td><td class="working">40%
+<tr><td> - Overloaded modules damage bank from heat</td><td class="working">20%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>20Feb20</td></tr>
 <tr><td> - Can repair damaged modules (using nanite paste)</td><td class="working">10%
@@ -2190,16 +2124,16 @@ There will be some response, like opening windows, but will not generate an erro
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>2Feb20</td></tr>
 <tr><td> - Scoop to Drone Bay</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drone AI </h3></font></td></tr>
-<tr><td><font color=lime>Passive/Aggressive</font><BR>(toggle - <font color=lime>passive</font>: attack only upon command.  <font color=lime>aggressive</font>: attack any valid target.)</td><td class="broken">30%
+<tr><td><font color=lime>Passive/Aggressive</font><BR>(toggle - <font color=lime>passive</font>: attack only upon command.  <font color=lime>aggressive</font>: attack any valid target.)</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font> - <font color=orange>Very Basic.</font><BR>2Feb20</td></tr>
 <tr><td><font color=lime>Attack and Follow</font> <font color=yellow>(fighters only)</font><BR>Will chase target in warp.</td><td class="broken">0%
@@ -2228,9 +2162,9 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drone Commands </h3></font></td></tr>
-<tr><td><font color=lime>Attack</font><BR>Engage target the assigned ship currently-attacking.<BR>If assigned ship has multiple targets, first locked target is chosen.</td><td class="broken">30%
+<tr><td><font color=lime>Attack</font><BR>Engage target the assigned ship currently-attacking.<BR>If assigned ship has multiple targets, first locked target is chosen.</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font> - <font color=orange>Very Basic.</font><BR>2Feb20</td></tr>
 <tr><td><font color=lime>Assist</font><BR>Engage anything assigned ship activates offensive module on. (passive/aggressive ignored)</td><td class="broken">10%
@@ -2258,14 +2192,14 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>2Feb20</td></tr>
-<tr><td><font color=lime>Return and orbit</font><BR>Should I explain this?</td><td class="working">30%
+<tr><td><font color=lime>Return and orbit</font><BR>Should I explain this?</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td><font color=lime>Return To Drone Bay</font><BR>To Be Determined.</td><td class="working">30%
+<tr><td><font color=lime>Return To Drone Bay</font><BR>To Be Determined.</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
 <tr><td><font color=lime>Reconnect to Lost Drones</font><BR>Try to reestablish communication with drones previously abandoned or went past ship's drone control range.</td><td class="broken">0%
@@ -2319,17 +2253,21 @@ There will be some response, like opening windows, but will not generate an erro
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font><BR>27July15</td></tr>
-<tr><td> - NPC Dynamic spawning</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<tr><td> - Rats find/harass Characters in space</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR>27July15</td></tr>
-<tr><td> - NPC Static spawning</td><td class="working">25%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
+<tr><td> - Rat Wreck Creation</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>27July15</td></tr>
+<td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
+<tr><td> - Rat Loot</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Science_and_Industry"> Science &amp; Industry (<font color=pink>Rewrite on hold</font>)</span></h2>
@@ -2436,9 +2374,9 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>21May16</td></tr>
-<tr><td> - Directional Scanning (using Ship Sensors)</td><td class="working">50%
+<tr><td> - Directional Scanning (using Ship Sensors)</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>20Feb20</td></tr>
 <tr><td> - Launch Probes from ship</td><td class="working">100%
@@ -2640,9 +2578,9 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Planet Search</td><td class="working">25%
+<tr><td> - Planet Search</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>27Dec16</td></tr>
 <tr><td> - Planet View</td><td class="working">95%
@@ -2685,19 +2623,19 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="lime">Complete</font> - <font color=olive>PlayTesting</font><BR>27Dec16</td></tr>
-<tr><td> - Install/Use Space Ports</td><td class="broken">25%
+<tr><td> - Install/Use Space Ports</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>27Dec16</td></tr>
-<tr><td> - Planetary Customs Office</td><td class="broken">25%
+<tr><td> - Planetary Customs Office</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>27Dec16</td></tr>
-<tr><td> - Launching Items to Customs Office</td><td class="broken">25%
+<tr><td> - Launching Items to Customs Office</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>27Dec16</td></tr>
 </table>
@@ -2906,7 +2844,7 @@ There will be some response, like opening windows, but will not generate an erro
 <td><font color=magenta>Skeleton Code Only</font><BR>25May19</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="POS_Operations"> Player Owned Structures (POS) (<font color=green>Current</font>)</span></h2>
+<h2> <span class="mw-headline" id="POS_Operations"> POS - Player Owned Structures (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:61%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -3006,28 +2944,6 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>28Dec17</td></tr>
-</table>
-<p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Outpost"> Outposts (<font color=green>Current</font>) </span></h2>
-<div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
-<table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:1%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
-</td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
-<table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:1%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
-</td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
-<table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
-<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Action</td>
-<td style="width: 4%;">Status</td>
-<td style="width: 26%;">Comments</td></tr>
-<tr><td> - Outposts</td><td class="broken">0%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>31Oct20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Cosmic_Management"> Cosmic Management System (Details in Specific System Listing)</span></h2>
@@ -3231,9 +3147,9 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>2Feb20</td></tr>
-<tr><td> - Asteroids Grow when idle</td><td class="broken">25%
+<tr><td> - Asteroids Grow when idle</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
 <tr><td> - Asteroids Disappear when mined out (individual roids)</td><td class="working">95%
@@ -3248,14 +3164,14 @@ There will be some response, like opening windows, but will not generate an erro
 <td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Spawn_Manager"> Spawn Manager (<font color=yellow>needs review</font>)</span></h2>
+<h2> <span class="mw-headline" id="Spawn_Manager"> Spawn Manager (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:86%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:65%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:86%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>86.4</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width: 65%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>65.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -3263,46 +3179,36 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Rat Creation</td><td class="working">95%
+<tr><td> - Dynamic spawning (Belt, Mission, Deadspace)</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
-<tr><td> - Rat Destruction</td><td class="working">95%
+<td><font color="lime">Mostly Complete</font><BR><font color=orange>Testing</font><BR>11Dec18</td></tr>
+<tr><td> - Static spawning (Gate)</td><td class="working">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
+<tr><td> - Spawn Destruction/Removal</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
-<tr><td> - Rats Warp into Belts</td><td class="working">95%
+<td><font color="lime">Mostly Complete</font><BR><font color=orange>Testing</font><BR>11Dec18</td></tr>
+<tr><td> - Spawns Warp into Belts</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
-<tr><td> - Rats Warp out of Belts</td><td class="working">95%
+<td><font color="lime">Mostly Complete</font><BR><font color=orange>Testing</font><BR>11Dec18</td></tr>
+<tr><td> - Spawns Warp out of Belts</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
-<tr><td> - Rats guard Gates</td><td class="working">95%
+<td><font color="lime">Mostly Complete</font><BR><font color=orange>Testing</font><BR>11Dec18</td></tr>
+<tr><td> - Spawns guard Gates</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
-<tr><td> - Rats find/harass players in space</td><td class="broken">0%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Rat Wreck Creation</td><td class="working">95%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
-<tr><td> - Rat Loot</td><td class="working">95%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
+<td><font color="lime">Mostly Complete</font><BR><font color=orange>Testing</font><BR>11Dec18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Scan_Manager"> Scan Manager (<font color=green>Current</font>)</span></h2>
@@ -3362,9 +3268,9 @@ There will be some response, like opening windows, but will not generate an erro
 <td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
-<tr><td> - WormHole Tracking</td><td class="broken">25%
+<tr><td> - WormHole Tracking</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
 <tr><td> - WormHole Destruction</td><td class="broken">10%
@@ -3399,9 +3305,9 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Civilian Ship Creation</td><td class="broken">25%
+<tr><td> - Civilian Ship Creation</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
 <tr><td> - Civilian Ships "Undock" from station</td><td class="broken">10%
