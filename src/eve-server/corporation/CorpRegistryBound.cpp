@@ -1,5 +1,5 @@
-/*
- *
+/*      CorpRegistryBound.cpp
+ *      bound object to access functions for specific corp
  *
  *
  */
@@ -14,182 +14,9 @@
 #include "cache/ObjCacheService.h"
 #include "chat/LSCService.h"
 #include "corporation/CorpRegistryBound.h"
+#include "corporation/SparseBound.h"
 #include "station/StationDB.h"
 #include "station/StationDataMgr.h"
-
-class SparseCorpOfficeListBound
-: public PyBoundObject
-{
-public:
-    // or CorpRegistryBound?
-    PyCallable_Make_Dispatcher(SparseCorpOfficeListBound)
-
-    SparseCorpOfficeListBound(PyServiceMgr *mgr, CorporationDB& db, uint32 corpID)
-    : PyBoundObject(mgr),
-    m_dispatch(new Dispatcher(this)),
-    m_db(db),
-    m_corpID(corpID)
-    {
-        _SetCallDispatcher(m_dispatch);
-
-        PyCallable_REG_CALL(SparseCorpOfficeListBound, Fetch);
-        PyCallable_REG_CALL(SparseCorpOfficeListBound, FetchByKey);
-        PyCallable_REG_CALL(SparseCorpOfficeListBound, GetByKey);
-        PyCallable_REG_CALL(SparseCorpOfficeListBound, SelectByUniqueColumnValues);
-    }
-    virtual ~SparseCorpOfficeListBound() {delete m_dispatch;}
-    virtual void Release() {
-        delete this;
-    }
-
-    PyCallable_DECL_CALL(Fetch);
-    PyCallable_DECL_CALL(SelectByUniqueColumnValues);
-    // these may not be used in this version...
-    PyCallable_DECL_CALL(FetchByKey); //([keys])
-    PyCallable_DECL_CALL(GetByKey); //(key)
-
-
-protected:
-    Dispatcher *const m_dispatch;
-
-    CorporationDB& m_db;
-    uint32 m_corpID;
-};
-
-PyResult SparseCorpOfficeListBound::Handle_Fetch(PyCallArgs &call)
-{
-    //(startPos, fetchSize)
-    /*
-     * 18:15:17 [CorpCall] SparseCorpOfficeListBound::Handle_Fetch()
-     * 18:15:17 [CorpWarning]   Call Arguments:
-     * 18:15:17 [CorpWarning]      Tuple: 2 elements
-     * 18:15:17 [CorpWarning]       [ 0]    Integer: 0
-     * 18:15:17 [CorpWarning]       [ 1]    Integer: 1
-     */
-    _log(CORP__CALL, "SparseCorpOfficeListBound::Handle_Fetch()");
-    call.Dump(CORP__WARNING);   //so this will dump on all calls
-    Call_TwoIntegerArgs args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return nullptr;
-    }
-
-    return m_db.Fetch(call.client->GetCorporationID(), args.arg1, args.arg2);
-}
-
-PyResult SparseCorpOfficeListBound::Handle_FetchByKey(PyCallArgs &call) {
-    // this is something about getting member data....
-    _log(CORP__CALL, "SparseCorpOfficeListBound::Handle_FetchByKey()");
-    call.Dump(CORP__WARNING);   //so this will dump on all calls
-
-    /*
-     * call
-          [PyTuple 4 items]
-            [PyString "N=699765:12950"]
-            [PyString "FetchByKey"]
-            [PyTuple 1 items]
-              [PyList 1 items]
-                [PyInt 649670823]       // charID ?
-     *
-     * return
-      [PySubStream 71 bytes]
-        [PyList 1 items]
-          [PyTuple 3 items]
-            [PyInt 1661059544]
-            [PyInt 0]
-            [PyList 19 items]
-              [PyInt 1661059544]
-              [PyInt 98038978]
-              [PyNone]
-              [PyNone]
-              [PyString ""]
-              [PyIntegerVar 0]
-              [PyIntegerVar 0]
-              [PyIntegerVar 129492958800000000] // timestamp
-              [PyNone]
-              [PyIntegerVar 0]
-              [PyIntegerVar 0]
-              [PyIntegerVar 0]
-              [PyIntegerVar 0]
-              [PyIntegerVar 0]
-              [PyIntegerVar 0]
-              [PyInt 0]
-              [PyInt 1004]
-              [PyIntegerVar 129492958800000000] // timestamp
-              [PyInt 0]
-              */
-    return nullptr;
-}
-
-PyResult SparseCorpOfficeListBound::Handle_GetByKey(PyCallArgs &call) {
-    _log(CORP__CALL, "SparseCorpOfficeListBound::Handle_GetByKey()");
-    call.Dump(CORP__WARNING);   //so this will dump on all calls
-
-    return nullptr;
-}
-
-// this is called in a few places, to get officeID, but
-//   uses a method chain from GetOffices() (from bound office object) and is only called when accessing containers and item(s) owned by corp.
-//  however, for these items to show in containers' inventory, current code requires they have to be:
-//        1) owned by the hangar's owner
-//        2) owned by the viewer (whom shall also be hangar's owner)
-//  this poses a problem for corp staff when viewing member's hangars.  not sure how to 'fix' this yet.
-//      and i still havent gotten this to work dependably
-PyResult SparseCorpOfficeListBound::Handle_SelectByUniqueColumnValues(PyCallArgs &call) {
-    _log(CORP__CALL, "SparseCorpOfficeListBound::Handle_SelectByUniqueColumnValues()");
-    call.Dump(CORP__WARNING);   //so this will dump on all calls
-
-    std::string str = PyRep::StringContent(call.tuple->GetItem(0));
-    // could this be multiple locations?  doubt it.
-    uint32 locationID = PyRep::IntegerValueU32(call.tuple->GetItem(1)->AsList()->GetItem(0));
-
-    /*
-    PyRep* res = StationDB::GetStationOfficeIDs(locationID, m_corpID, str.c_str());
-    if (is_log_enabled(CORP__RSP_DUMP) and (res != nullptr))
-        res->Dump(CORP__RSP_DUMP, "");
-    return res;
-    */
-
-    std::vector<OfficeData> data;
-    stDataMgr.GetStationOfficeIDs(locationID, data);    // this method checks for the type of locationID sent.
-
-    /*
-    DBRowDescriptor* header = new DBRowDescriptor();
-        header->AddColumn("officeID",        DBTYPE_I4);
-        header->AddColumn("officeFolderID",  DBTYPE_I4);
-        header->AddColumn("stationID",       DBTYPE_I4);
-
-    PyList* list = new PyList();
-    for (auto cur : data) {
-        PyPackedRow* row = new PyPackedRow( header );
-        row->SetField("officeID",        new PyInt(cur.officeID));
-        row->SetField("officeFolderID",  new PyInt(cur.folderID));
-        row->SetField("stationID",       new PyInt(cur.stationID));
-        list->AddItem(row);
-    } */
-
-    PyList* rsp = new PyList();
-    for (auto cur : data) {
-        PyList* list = new PyList();
-        list->AddItem(new PyInt(cur.officeID));
-        list->AddItem(new PyInt(cur.folderID));
-        list->AddItem(new PyInt(cur.stationID));
-        rsp->AddItem(list);
-    }
-    /*  original
-    for (auto cur : data) {
-        PyDict* dict = new PyDict();
-        dict->SetItemString("officeID",        new PyInt(cur.officeID));
-        dict->SetItemString("officeFolderID",  new PyInt(cur.folderID));
-        dict->SetItemString("stationID",       new PyInt(cur.stationID));
-        list->AddItem(new PyObject("util.KeyVal", dict));
-    } */
-
-    if (is_log_enabled(CORP__RSP_DUMP))
-        rsp->Dump(CORP__RSP_DUMP, "");
-
-    return rsp;
-}
 
 /*
  * CORP__ERROR
@@ -612,13 +439,13 @@ PyResult CorpRegistryBound::Handle_GetMembers(PyCallArgs &call)
 
     PyDict *dict = new PyDict();
         dict->SetItemString("realRowCount", new PyInt(rowCount));   // this is current member count
-    PyTuple* tuple = new PyTuple(3);
-        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-        tuple->SetItem(1, dict);
-        tuple->SetItem(2, new PyLong(Win32TimeNow()));
+    PyTuple* boundObject = new PyTuple(3);
+        boundObject->SetItem(0, new PyString(GetBindStr()));    // node info here
+        boundObject->SetItem(1, dict);
+        boundObject->SetItem(2, new PyLong(GetFileTimeNow()));
 
     GetMembersSparseRowset ret;
-        ret.tuple = tuple;
+        ret.boundObject = boundObject;
         ret.realRowCount = rowCount;
     return ret.Encode();
 }
@@ -1996,7 +1823,7 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
     _log(CORP__CALL, "CorpRegistryBound::Handle_GetOffices() size=%u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
-    PyBoundObject* bObj = new SparseCorpOfficeListBound(m_manager, m_db, m_corpID);
+    PyBoundObject* bObj = new SparseBound(m_manager, m_db, m_corpID);
     if (bObj == NULL) {
         _log(SERVICE__ERROR, "%s: Unable to create bound object for:", call.client->GetName()); //errors here
         return nullptr;
@@ -2078,7 +1905,7 @@ PyResult CorpRegistryBound::Handle_InsertVoteCase(PyCallArgs &call) {
     _log(CORP__CALL, "CorpRegistryBound::Handle_InsertVoteCase()");
     call.Dump(CORP__CALL_DUMP);
 
-    /*  OnCorporationVoteCaseChanged
+    /*
      * 10:10:55 W CorpRegistryBound::Handle_InsertVoteCase(): size= 7
      * 10:10:55 [CorpCallDump]   Call Arguments:
      * 10:10:55 [CorpCallDump]       Tuple: 7 elements
@@ -2116,6 +1943,20 @@ PyResult CorpRegistryBound::Handle_InsertVoteCase(PyCallArgs &call) {
      * 10:10:55 [CorpCallDump]            Integer: 1
      */
 
+    /*
+     * 13:54:27 [CorpCall] CorpRegistryBound::Handle_InsertVoteCase()
+     * 13:54:27 [DB Error] DoQuery_locked(/backups/local/src/eve/Alasiya-EvE/src/eve-core/database/dbcore.cpp:345):
+     * DBCore Query - #1064 in
+     * 'INSERT INTO crpVoteOptions (voteCaseID, optionID, optionText, parameter, parameter1, parameter2)
+     * VALUES
+     * (1,-104,'Lockdown the 125mm Gatling AutoCannon I Blueprint',140024216,819,60014140),
+     * (1,0,'Don't lockdown the 125mm Gatling AutoCannon I Blueprint',0,0,0)':
+     *
+     * You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version
+     * for the right syntax to use near 't lockdown the 125mm Gatling AutoCannon I Blueprint',0,0,0)' at line 1
+     */
+
+
     if (!call.tuple->GetItem(4)->IsObject()) {
         codelog(CORP__ERROR, "Tuple Item is wrong type: %s.  Expected PyObject.", call.tuple->GetItem(0)->TypeString());
         return nullptr;
@@ -2132,6 +1973,8 @@ PyResult CorpRegistryBound::Handle_InsertVoteCase(PyCallArgs &call) {
     }
 
     m_db.AddVoteCase(m_corpID, call.client->GetCharacterID(), args);
+
+    //  OnCorporationVoteCaseChanged
 
     // send notification to online corp memebers
     //def OnNotificationReceived(self, notificationID, typeID, senderID, created, data = {}):
@@ -2438,6 +2281,8 @@ PyResult CorpRegistryBound::Handle_GetLockedItemLocations( PyCallArgs& call )
     03:15:28 [CorpCallDump]   Call Arguments:
     03:15:28 [CorpCallDump]       Tuple: Empty
     */
+    //            locationIDs = self.GetCorpRegistry().GetLockedItemLocations()
+
     // called from corp.assets.lockdown
     _log(CORP__CALL, "CorpRegistryBound::Handle_GetLockedItemLocations()");
     call.Dump(CORP__CALL_DUMP);

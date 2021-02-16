@@ -1645,7 +1645,7 @@ void Client::RemoveMissionItem(uint16 typeID, uint32 qty)
     uint16 count = qty;
     InventoryItemRef iRef(nullptr);
     if (IsStation(m_locationID)) {
-        iRef = sItemFactory.GetStation(m_locationID)->GetMyInventory()->GetByTypeFlag(typeID, flagHangar);
+        iRef = sItemFactory.GetStationItem(m_locationID)->GetMyInventory()->GetByTypeFlag(typeID, flagHangar);
         if (iRef.get() != nullptr) {
             if (count < iRef->quantity()) {
                 iRef->AlterQuantity(count, true);
@@ -1679,7 +1679,7 @@ bool Client::ContainsTypeQty(uint16 typeID, uint32 qty) const
     InventoryItemRef iRef(nullptr);
     // this is for missions....we will have to determine if we have the TOTAL qty desired, in both cargo and hangar
     if (IsStation(m_locationID)) {
-        iRef = sItemFactory.GetStation(m_locationID)->GetMyInventory()->GetByTypeFlag(typeID, flagHangar);
+        iRef = sItemFactory.GetStationItem(m_locationID)->GetMyInventory()->GetByTypeFlag(typeID, flagHangar);
         if (iRef.get() != nullptr)
             count = iRef->quantity();
     }

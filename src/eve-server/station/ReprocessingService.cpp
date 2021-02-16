@@ -39,46 +39,12 @@
 
 #include "eve-server.h"
 
-#include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "packets/Manufacturing.h"
 #include "manufacturing/RamMethods.h"
 #include "station/ReprocessingService.h"
 #include "Station.h"
 #include "system/SystemManager.h"
-
-class ReprocessingServiceBound
-: public PyBoundObject
-{
-public:
-    ReprocessingServiceBound(PyServiceMgr *mgr, ReprocessingDB& db, uint32 stationID);
-    virtual ~ReprocessingServiceBound();
-
-    PyCallable_DECL_CALL(GetOptionsForItemTypes);
-    PyCallable_DECL_CALL(GetReprocessingInfo);
-    PyCallable_DECL_CALL(GetQuote);
-    PyCallable_DECL_CALL(GetQuotes);
-    PyCallable_DECL_CALL(Reprocess);
-
-    virtual void Release();
-
-protected:
-    class Dispatcher;
-    Dispatcher *const m_dispatch;
-
-    ReprocessingDB& m_db;
-
-    StationItemRef m_station;
-	uint32 m_stationCorpID; //corp that owns station. Used for standing
-    float m_staEfficiency;
-    float m_tax;
-
-    float CalcReprocessingEfficiency(const Client *pClient, InventoryItemRef item = InventoryItemRef(nullptr)) const;
-    float CalcTax(float standing) const;
-    PyRep* GetQuote(uint32 itemID, Client* pClient);
-
-    float GetStanding(const Client* pClient) const; // gets the higher of char/corp standings with station owner
-};
 
 PyCallable_Make_InnerDispatcher(ReprocessingService)
 PyCallable_Make_InnerDispatcher(ReprocessingServiceBound)
@@ -128,9 +94,9 @@ m_tax(0.0f)
     PyCallable_REG_CALL(ReprocessingServiceBound, GetQuotes);
     PyCallable_REG_CALL(ReprocessingServiceBound, Reprocess);
 
-    m_station = sItemFactory.GetStation(stationID);
-    if (m_station.get() != nullptr)
-        m_station->GetRefineData(m_stationCorpID, m_staEfficiency, m_tax);
+    m_stationRef = sItemFactory.GetStationItem(stationID);
+    if (m_stationRef.get() != nullptr)
+        m_stationRef->GetRefineData(m_stationCorpID, m_staEfficiency, m_tax);
 }
 
 ReprocessingServiceBound::~ReprocessingServiceBound() {
@@ -274,7 +240,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
                 continue;
 
             // update this for corp usage
-            iRef2->Move(m_station->GetID(), (EVEItemFlags)args.flag, true);
+            iRef2->Move(m_stationRef->GetID(), (EVEItemFlags)args.flag, true);
         }
 
         uint32 qtyLeft = iRef->quantity() % iRef->type().portionSize();
@@ -282,7 +248,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             iRef->SetQuantity(qtyLeft, true);
         else {
             iRef->Move(iRef->locationID(), flagJunkyardReprocessed, true);
-            m_station->RemoveItem(iRef);
+            m_stationRef->RemoveItem(iRef);
             iRef->Delete();
         }
     }
@@ -380,7 +346,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     return quote.Encode();
 }
 
-/** @todo  should this be moved to standings code?  */
+/** @todo  should this be moved to standings code?   yes!! */
 float ReprocessingServiceBound::GetStanding(const Client* pClient) const
 {
     float standing = StandingDB::GetStanding(m_stationCorpID, pClient->GetCharacterID());
@@ -392,6 +358,7 @@ float ReprocessingServiceBound::GetStanding(const Client* pClient) const
     return EvE::max(standing, StandingDB::GetStanding(m_stationCorpID, pClient->GetCorporationID()));
 }
 
+// this should be moved to eve math or eve calc's or w/e
 float ReprocessingServiceBound::CalcTax(float standing) const {
     //EvEMath::Refine::StationTaxesForReprocessing(standing);
     float tax = m_tax - 0.75f / 100.0f * standing;

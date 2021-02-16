@@ -47,6 +47,12 @@ class LSCService;
 class PyServiceMgr
 {
 public:
+    struct BoundObj
+    {
+        Client* client;         //we do not own this.
+        PyBoundObject* object;  //we own this. PyServiceMgr deletes it
+    };
+
     PyServiceMgr( uint32 nodeID, EntityList& elist);
     ~PyServiceMgr();
 
@@ -71,20 +77,17 @@ public:
     LSCService* lsc_service;
     ObjCacheService* cache_service;
 
+    // for shitz-n-giggles...command to list all bound objects in map
+    void BoundObjectVec(std::vector<BoundObj>& vec);
+
 protected:
-    std::map<std::string, PyService*> m_svcList;    //we own these pointers.
+    std::map<std::string, PyService*>   m_svcList;      //we own these pointers.
 
     uint32 m_nextBindID;
 
-    struct BoundObject
-    {
-        Client* client;    //we do not own this.
-        PyBoundObject* destination;    //we own this. PyServiceMgr deletes it
-    };
-
-    typedef std::map<uint32, BoundObject>   ObjectsBoundMap;
-    typedef ObjectsBoundMap::iterator       ObjectsBoundMapItr;
-    ObjectsBoundMap m_boundObjects;
+    typedef std::map<uint32, BoundObj>  ObjectsBoundMap;
+    typedef ObjectsBoundMap::iterator   ObjectsBoundMapItr;
+    ObjectsBoundMap                     m_boundObjects;         // bindID/BoundObject{client/object(PyBoundObject)}
 
     uint32 m_nodeID;
 };

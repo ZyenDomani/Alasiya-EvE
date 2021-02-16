@@ -27,6 +27,7 @@
 #define __REPROCESSING_SVC_H__
 
 #include "PyService.h"
+#include "PyBoundObject.h"
 #include "station/ReprocessingDB.h"
 
 class ReprocessingService
@@ -43,6 +44,39 @@ protected:
     ReprocessingDB m_db;
 
     virtual PyBoundObject* CreateBoundObject(Client *pClient, const PyRep *bind_args);
+};
+
+class ReprocessingServiceBound
+: public PyBoundObject
+{
+public:
+    ReprocessingServiceBound(PyServiceMgr *mgr, ReprocessingDB& db, uint32 stationID);
+    virtual ~ReprocessingServiceBound();
+
+    PyCallable_DECL_CALL(GetOptionsForItemTypes);
+    PyCallable_DECL_CALL(GetReprocessingInfo);
+    PyCallable_DECL_CALL(GetQuote);
+    PyCallable_DECL_CALL(GetQuotes);
+    PyCallable_DECL_CALL(Reprocess);
+
+    virtual void Release();
+
+protected:
+    class Dispatcher;
+    Dispatcher *const m_dispatch;
+
+    ReprocessingDB& m_db;
+
+    StationItemRef m_stationRef;
+    uint32 m_stationCorpID; //corp that owns station. Used for standing
+    float m_staEfficiency;
+    float m_tax;
+
+    float CalcReprocessingEfficiency(const Client *pClient, InventoryItemRef item = InventoryItemRef(nullptr)) const;
+    float CalcTax(float standing) const;
+    PyRep* GetQuote(uint32 itemID, Client* pClient);
+
+    float GetStanding(const Client* pClient) const; // gets the higher of char/corp standings with station owner
 };
 
 

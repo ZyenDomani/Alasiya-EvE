@@ -62,3 +62,5 @@
           " - begin warp to given bubbleID in current ship.")
  COMMAND( runtest, Acct::Role::PROGRAMMER,
           " - run testing::posTest()." )
+ COMMAND( bindList, Acct::Role::PROGRAMMER,
+          " - list of current bound objects (with clients)." )

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "eve-server.h"
 
+#include "PyBoundObject.h"
 #include "Client.h"
 #include "ConsoleCommands.h"
 #include "npc/NPC.h"
@@ -1137,6 +1138,30 @@ PyResult Command_runtest(Client* pClient, CommandDB* db, PyServiceMgr* services,
     snprintf(reply, size, "Running posTest()");
 
     testing::posTest(pClient);
+    return nullptr;
+}
+
+PyResult Command_bindList(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    std::ostringstream str;
+    str.clear();
+    str << "Current Bound Object Listing (%u)<br><br>"; //45
+
+    std::vector<PyServiceMgr::BoundObj> vec;
+    pClient->services().BoundObjectVec(vec);
+    for (auto cur : vec) {
+        str << cur.client->GetName() << ": " << cur.object->bindID() << " ";    //40
+        str << cur.object->GetName() << "<br>";         //60
+    }
+
+    int count = vec.size();
+    int size = count * 100;
+    size += 45;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), count);
+
+    pClient->SendInfoModalMsg(reply);
+
     return nullptr;
 }
 

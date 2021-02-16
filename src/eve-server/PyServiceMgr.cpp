@@ -57,7 +57,7 @@ void PyServiceMgr::Close() {
 
     PyBoundObject* bo(nullptr);
     for (auto cur : m_boundObjects) {
-        bo = cur.second.destination;
+        bo = cur.second.object;
         if (is_log_enabled(SERVICE__MESSAGE))
             _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
                     bo->GetName(), bo->m_nodeID, bo->m_bindID);
@@ -226,9 +226,9 @@ PySubStruct* PyServiceMgr::BindObject(Client* pClient, PyBoundObject* pObj, PyDi
     // save bindID in client for ease of release later
     pClient->AddBindID(m_nextBindID);
 
-    BoundObject obj = BoundObject();
+    BoundObj obj = BoundObj();
         obj.client = pClient;
-        obj.destination = pObj;
+        obj.object = pObj;
     m_boundObjects[pObj->bindID()] = obj;
 
     std::string bindStr = pObj->GetBindStr();
@@ -259,24 +259,31 @@ PySubStruct* PyServiceMgr::BindObject(Client* pClient, PyBoundObject* pObj, PyDi
 }
 
 PyBoundObject* PyServiceMgr::FindBoundObject(uint32 bindID) {
-    std::map<uint32, BoundObject>::iterator itr = m_boundObjects.find(bindID);
+    std::map<uint32, BoundObj>::iterator itr = m_boundObjects.find(bindID);
     if (itr != m_boundObjects.end())
-        return itr->second.destination;
+        return itr->second.object;
     return nullptr;
 }
 
 void PyServiceMgr::ClearBoundObject(uint32 bindID)
 {
-    std::map<uint32, BoundObject>::iterator itr = m_boundObjects.find(bindID);
+    std::map<uint32, BoundObj>::iterator itr = m_boundObjects.find(bindID);
     if (itr == m_boundObjects.end()) {
         _log(SERVICE__ERROR, "PyServiceMgr::ClearBoundObject() - Unable to find bound object %u to release.", bindID);
         return;
     }
 
-    PyBoundObject *bo(itr->second.destination);
+    PyBoundObject *bo(itr->second.object);
 
     _log(SERVICE__MESSAGE, "Service Mgr Clearing bound object %s at %s", bo->GetName(), bo->GetBindStr().c_str());
 
     m_boundObjects.erase(itr);
     bo->Release();
 }
+
+void PyServiceMgr::BoundObjectVec(std::vector< BoundObj >& vec)
+{
+    for (auto cur : m_boundObjects)
+        vec.push_back(cur.second);
+}
+
