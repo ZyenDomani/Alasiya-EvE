@@ -414,6 +414,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
     }
 
     /** @todo  not sure how to implement these yet... */
+    // these show on char portrait at top left on sel screen
     uint32 unreadMailCount = 0;
     uint32 upcomingEventCount = 0;
     uint32 unprocessedNotifications = 0;
@@ -1679,6 +1680,7 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
      *  when locationID is NOT station
      */
     DBQueryResult res;
+    /** @todo these queries are wrong....  (location and maybe owner)*/
     if (bpOnly) {
         if (forCorp) {
             // this is some funky shit to get correct stationID for corp bps in hangar, as their location is officeID, but we need stationID for this call
@@ -1687,9 +1689,9 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
                 " FROM entity AS e"
                 "  LEFT JOIN invTypes USING (typeID)"
                 "  LEFT JOIN invGroups AS g USING (groupID)"
-                "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
-                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND e.locationID < %u"
-                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint, maxStation))
+                "  LEFT JOIN staOffices as o ON o.itemID = e.locationID"
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND (e.locationID >= %u AND e.locationID <= %u)"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint, minOffice, maxOffice))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
                 return nullptr;
@@ -1700,7 +1702,7 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
                 " FROM entity AS e"
                 "  LEFT JOIN invTypes USING (typeID)"
                 "  LEFT JOIN invGroups AS g USING (groupID)"
-                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND e.locationID < %u"
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND e.locationID <= %u"
                 " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint, maxStation))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
@@ -1713,9 +1715,9 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
             if (!sDatabase.RunQuery(res,
                 "SELECT o.stationID, COUNT(e.itemID) as itemCount"
                 " FROM entity AS e"
-                "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
-                " WHERE e.ownerID=%u AND e.flag IN (%s) AND e.locationID < %u"
-                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), maxStation))
+                "  LEFT JOIN staOffices as o ON o.itemID = e.locationID"
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND (e.locationID >= %u AND e.locationID <= %u)"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), minOffice, maxOffice))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
                 return nullptr;
@@ -1723,7 +1725,7 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
         } else {
             if (!sDatabase.RunQuery(res,
                 "SELECT locationID AS stationID, COUNT(itemID) as itemCount"
-                " FROM entity WHERE ownerID=%u AND flag IN (%s) AND locationID < %u"
+                " FROM entity WHERE ownerID=%u AND flag IN (%s) AND locationID <= %u"
                 " GROUP BY locationID", ownerID, flagIDs.str().c_str(), maxStation))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());

@@ -164,7 +164,7 @@
 #include "station/ReprocessingService.h"
 #include "station/StationDataMgr.h"
 #include "station/StationService.h"
-#include "station/StationSvcService.h"
+#include "station/StationSvc.h"
 #include "station/TradeService.h"
 // system services
 #include "system/BookmarkService.h"
@@ -703,7 +703,7 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("sovMgr", new SovereigntyMgrService(&pyServMgr));
     pyServMgr.RegisterService("standing2", new Standing(&pyServMgr));
     pyServMgr.RegisterService("station", new StationService(&pyServMgr));
-    pyServMgr.RegisterService("stationSvc", new StationSvcService(&pyServMgr));
+    pyServMgr.RegisterService("stationSvc", new StationSvc(&pyServMgr));
     pyServMgr.RegisterService("trademgr", new TradeService(&pyServMgr));
     pyServMgr.RegisterService("tutorialSvc", new TutorialService(&pyServMgr));
     pyServMgr.RegisterService("userSvc", new UserService(&pyServMgr));

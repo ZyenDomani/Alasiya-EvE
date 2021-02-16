@@ -11,8 +11,8 @@ var1 = {client call}
     the diff returns are based on how the data is accessed
 
 
-    PyObject using util.Rowset needs header/lines   <<<  notice the plural
-    PyObject using util.Row needs header/line       <<<  notice the singular
+    PyObject using util.Rowset uses header/lines   <<<  notice the plural
+    PyObject using util.Row uses header/line       <<<  notice the singular
 
     if this doesnt work, use packedRow (see II::GetItemRow or SelectByUniqueColumnValues())
 

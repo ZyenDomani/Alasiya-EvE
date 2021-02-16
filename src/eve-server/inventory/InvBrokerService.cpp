@@ -63,6 +63,8 @@ public:
         PyCallable_REG_CALL(InvBrokerBound, AssembleCargoContainer);
         PyCallable_REG_CALL(InvBrokerBound, BreakPlasticWrap);
         PyCallable_REG_CALL(InvBrokerBound, TakeOutTrash);
+        PyCallable_REG_CALL(InvBrokerBound, SplitStack);
+        PyCallable_REG_CALL(InvBrokerBound, DeliverToCorpHangar);
 
     }
     virtual ~InvBrokerBound()
@@ -83,6 +85,8 @@ public:
     PyCallable_DECL_CALL(AssembleCargoContainer);
     PyCallable_DECL_CALL(BreakPlasticWrap);
     PyCallable_DECL_CALL(TakeOutTrash);
+    PyCallable_DECL_CALL(SplitStack);
+    PyCallable_DECL_CALL(DeliverToCorpHangar);
 
 
 protected:
@@ -506,3 +510,18 @@ PyResult InvBrokerBound::Handle_TakeOutTrash(PyCallArgs &call) {
     return nullptr;
 }
 
+PyResult InvBrokerBound::Handle_SplitStack(PyCallArgs &call) {
+    //
+    sLog.Warning( "InvBrokerBound::Handle_SplitStack()", "size= %u", call.tuple->size() );
+    call.Dump(INV__DUMP);
+
+    return nullptr;
+}
+
+PyResult InvBrokerBound::Handle_DeliverToCorpHangar(PyCallArgs &call) {
+    //
+    sLog.Warning( "InvBrokerBound::Handle_DeliverToCorpHangar()", "size= %u", call.tuple->size() );
+    call.Dump(INV__DUMP);
+
+    return nullptr;
+}

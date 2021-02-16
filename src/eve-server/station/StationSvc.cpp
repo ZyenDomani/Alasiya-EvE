@@ -29,32 +29,32 @@
 #include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
 #include "station/StationDataMgr.h"
-#include "station/StationSvcService.h"
+#include "station/StationSvc.h"
 
 
-PyCallable_Make_InnerDispatcher(StationSvcService)
+PyCallable_Make_InnerDispatcher(StationSvc)
 
-StationSvcService::StationSvcService(PyServiceMgr *mgr)
+StationSvc::StationSvc(PyServiceMgr *mgr)
 : PyService(mgr, "stationSvc"),
   m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
 
-    PyCallable_REG_CALL(StationSvcService, GetStationItemBits);
-    PyCallable_REG_CALL(StationSvcService, GetSolarSystem);
-    PyCallable_REG_CALL(StationSvcService, GetStation);
-    PyCallable_REG_CALL(StationSvcService, GetAllianceSystems);
+    PyCallable_REG_CALL(StationSvc, GetStationItemBits);
+    PyCallable_REG_CALL(StationSvc, GetSolarSystem);
+    PyCallable_REG_CALL(StationSvc, GetStation);
+    PyCallable_REG_CALL(StationSvc, GetAllianceSystems);
 }
 
-StationSvcService::~StationSvcService() {
+StationSvc::~StationSvc() {
     delete m_dispatch;
 }
 
-PyResult StationSvcService::Handle_GetStationItemBits(PyCallArgs &call) {
+PyResult StationSvc::Handle_GetStationItemBits(PyCallArgs &call) {
     return stDataMgr.GetStationItemBits(call.client->GetStationID());
 }
 
-PyResult StationSvcService::Handle_GetSolarSystem(PyCallArgs &call) {
+PyResult StationSvc::Handle_GetSolarSystem(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -72,7 +72,7 @@ PyResult StationSvcService::Handle_GetSolarSystem(PyCallArgs &call) {
     return(m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id));
 }
 
-PyResult StationSvcService::Handle_GetStation(PyCallArgs &call) {
+PyResult StationSvc::Handle_GetStation(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -82,8 +82,8 @@ PyResult StationSvcService::Handle_GetStation(PyCallArgs &call) {
     return stDataMgr.GetStationPyData(arg.arg);
 }
 
-PyResult StationSvcService::Handle_GetAllianceSystems(PyCallArgs &call) {
-  sLog.White( "StationSvcService::Handle_GetAllianceSystems()", "size= %u", call.tuple->size() );
+PyResult StationSvc::Handle_GetAllianceSystems(PyCallArgs &call) {
+  sLog.White( "StationSvc::Handle_GetAllianceSystems()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     return nullptr;
 }

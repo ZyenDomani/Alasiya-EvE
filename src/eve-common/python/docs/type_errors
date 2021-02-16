@@ -9,7 +9,8 @@ Exception:  'tuple' object is not callable  (missing comma?)
 
 
 IndexError: list assignment index out of range
-            no clue yet.
+            no clue yet...thrown by /common/script/sys/rowset.py(1119) SelectByUniqueColumnValues when rclick on item in corp hangar
+
 
 ValueError: 'part' is not in list
             no clue yet.
@@ -57,7 +58,7 @@ TypeError: can't multiply sequence by non-int of type 'float'
             this means you cant get 1.5 "objects" of python type 'float'
 
 TypeError: list indices must be integers, not str
-            not sure on this one...thrown by /common/script/sys/rowset.py(1119) SelectByUniqueColumnValues when rclick on item in corp hangar
+            not sure on this one...
 
 TypeError: list indices must be integers, not instancemethod
            thrown by '/client/script/ui/shared/manufacturing.py(1013) GetSubContent' by S&I blueprints tab using DBResultToCRowset
@@ -69,6 +70,8 @@ TypeError: list indices must be integers, not instancemethod
 TypeError: cannot convert dictionary update sequence element #0 to a sequence
             return sent as dict, but should be a list of (tuple[0]=key, tuple[1]=value)
 
+AttributeError: Rowset instance has no attribute 'header'
+            not sure yet
 
 AttributeError: 'dict' object has no attribute 'Index'
             this should be sent as a DBResultToCRowset or DBResultToCIndexedRowset
@@ -203,7 +206,7 @@ A tuple is defined in the same way as a list, but it's enclosed in parentheses i
 
 
 *************  PYTHON CLIENT ERRORS  ***************
-BallNotInPark:  Received SlimItem with no associated BallData for that itemID (or not correct BallData [from EncodeDestiny()])
+BallNotInPark:  Received SlimItem with no associated BallData for that itemID (or incorrect BallData [from EncodeDestiny()])
 NoBallparkForUpdate:  DoDestinyUpdate sent with no system ballpark (destiny bp)
 
 

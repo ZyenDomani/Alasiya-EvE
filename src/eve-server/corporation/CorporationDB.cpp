@@ -2043,7 +2043,7 @@ void CorporationDB::AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCas
             set = true;
         else
             str << ",";
-        str << "(" << std::to_string((int64)voteCaseID) << "," << std::to_string(cur.optionID) << ",'" << cur.optionText << "'," << std::to_string(cur.parameter) << ",";
+        str << "(" << std::to_string((int64)voteCaseID) << "," << std::to_string(cur.optionID) << ",\"" << cur.optionText << "\"," << std::to_string(cur.parameter) << ",";
         str << std::to_string(cur.parameter1) << "," << std::to_string(cur.parameter2) << ")";
     }
 
@@ -2311,7 +2311,6 @@ PyRep* CorporationDB::GetAssetInventory(uint32 corpID, EVEItemFlags locFlag, con
                 codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
                 return (PyRep*)PyStatic.NewNone();    // cannot return nullptr cause we may deref it on the return.
             }
-
         } break;
         case flagProperty: {  // in space...this will show items in containers, ships, POS, CO, etc.
             if (!sDatabase.RunQuery(res,

@@ -361,7 +361,7 @@ bool SystemManager::LoadSystemStatics() {
                 /** @todo (Allan) outposts are group::station - may need to hack this */
                 /*  types 12242 - 22298 in group 15 are outposts */
                 /*  types 29323 - 29390 in group 15 are wrecked stations */
-                StationItemRef itemRef = sItemFactory.GetStation(cur.itemID);
+                StationItemRef itemRef = sItemFactory.GetStationItem(cur.itemID);
                 StationSE *pSSE = new StationSE(itemRef, *(GetServiceMgr()), this);
                 sEntityList.AddStation(cur.itemID, itemRef);
                 pSE = pSSE;

@@ -1011,11 +1011,11 @@ PyTuple* PyObjectEx_Type2::_CreateHeader( PyToken* args, PyDict* keywords, bool 
     PyTuple* body = new PyTuple( 2 );
         body->SetItem( 0, args );
         body->SetItem( 1, keywords );
-        /*
+
     if (enclosed) {
         PyTuple* head = new PyTuple( 1 );
             head->SetItem( 0, body );
-    } */
+    }
 
     return body; // head;
 }
@@ -1027,7 +1027,6 @@ PyPackedRow::PyPackedRow( DBRowDescriptor* header ) : PyRep( PyRep::PyTypePacked
 PyPackedRow::PyPackedRow( const PyPackedRow& oth ) : PyRep( PyRep::PyTypePackedRow ),
   mHeader( oth.header() ), mFields( new PyList( oth.header()->ColumnCount() ) )
 {
-    //PyIncRef( mHeader );
     *this = oth;
 }
 

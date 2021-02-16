@@ -89,6 +89,8 @@ PyResult CharMgrBound::Handle_ListStationItems( PyCallArgs& call )
 
 PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
 {
+    //stations = sm.GetService('invCache').GetInventory(const.containerGlobal).ListStations(blueprintOnly, isCorp)
+
     call.Dump(CHARACTER__DEBUG);
     std::ostringstream flagIDs;
     flagIDs << flagHangar;
@@ -120,19 +122,21 @@ PyResult CharMgrBound::Handle_ListStationBlueprintItems( PyCallArgs& call )
      *  none that i see so far...
      * this could be diff between station and pos   will need to check later (locationID == stationID)
      */
-    //uint32 locationID = PyRep::IntegerValueU32(call.tuple->GetItem(0));
-    uint32 stationID(PyRep::IntegerValueU32(call.tuple->GetItem(1)));
-
     uint32 ownerID(m_ownerID);
-    bool forCorp(PyRep::IntegerValue(call.tuple->GetItem(2)));
+
+    uint32 locationID(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
+    uint32 stationID(PyRep::IntegerValueU32(call.tuple->GetItem(1)));
+    bool forCorp(PyRep::IntegerValueU32(call.tuple->GetItem(2)));
+
     if (forCorp) { //forCorp
         Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
         if (pClient == nullptr)
             return nullptr; // make error here
-            ownerID = pClient->GetCorporationID();
+        ownerID = pClient->GetCorporationID();
     }
     return CharacterDB::ListStationBlueprintItems(ownerID, stationID, forCorp);
 }
+
 
 PyCallable_Make_InnerDispatcher(CharMgrService)
 

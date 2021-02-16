@@ -351,7 +351,7 @@ SolarSystemRef ItemFactory::GetSolarSystem(uint32 solarSystemID)
     return _GetItem<SolarSystem>(solarSystemID);
 }
 
-StationItemRef ItemFactory::GetStation(uint32 stationID)
+StationItemRef ItemFactory::GetStationItem(uint32 stationID)
 {
     return _GetItem<StationItem>(stationID);
 }

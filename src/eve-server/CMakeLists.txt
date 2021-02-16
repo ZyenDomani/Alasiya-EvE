@@ -209,7 +209,8 @@ SET( corporation_INCLUDE
      "${TARGET_INCLUDE_DIR}/corporation/CorpRegistryService.h"
      "${TARGET_INCLUDE_DIR}/corporation/CorpStationMgr.h"
      "${TARGET_INCLUDE_DIR}/corporation/LPService.h"
-     "${TARGET_INCLUDE_DIR}/corporation/LPStore.h" )
+     "${TARGET_INCLUDE_DIR}/corporation/LPStore.h"
+     "${TARGET_INCLUDE_DIR}/corporation/SparseBound.h" )
 SET( corporation_SOURCE
      "${TARGET_SOURCE_DIR}/corporation/BillMgr.cpp"
      "${TARGET_SOURCE_DIR}/corporation/CorpBookmarkMgr.cpp"
@@ -221,7 +222,8 @@ SET( corporation_SOURCE
      "${TARGET_SOURCE_DIR}/corporation/CorpRegistryService.cpp"
      "${TARGET_SOURCE_DIR}/corporation/CorpStationMgr.cpp"
      "${TARGET_SOURCE_DIR}/corporation/LPService.cpp"
-     "${TARGET_SOURCE_DIR}/corporation/LPStore.cpp" )
+     "${TARGET_SOURCE_DIR}/corporation/LPStore.cpp"
+     "${TARGET_SOURCE_DIR}/corporation/SparseBound.cpp" )
 
 SET( dogmaim_INCLUDE
      "${TARGET_INCLUDE_DIR}/dogmaim/DogmaIMService.h"
@@ -518,7 +520,7 @@ SET( station_INCLUDE
      "${TARGET_INCLUDE_DIR}/station/StationDB.h"
      "${TARGET_INCLUDE_DIR}/station/StationOffice.h"
      "${TARGET_INCLUDE_DIR}/station/StationService.h"
-     "${TARGET_INCLUDE_DIR}/station/StationSvcService.h"
+     "${TARGET_INCLUDE_DIR}/station/StationSvc.h"
      "${TARGET_INCLUDE_DIR}/station/TradeService.h"  )
 SET( station_SOURCE
      "${TARGET_SOURCE_DIR}/station/HoloscreenMgrService.cpp"
@@ -532,7 +534,7 @@ SET( station_SOURCE
      "${TARGET_SOURCE_DIR}/station/StationDB.cpp"
      "${TARGET_SOURCE_DIR}/station/StationOffice.cpp"
      "${TARGET_SOURCE_DIR}/station/StationService.cpp"
-     "${TARGET_SOURCE_DIR}/station/StationSvcService.cpp"
+     "${TARGET_SOURCE_DIR}/station/StationSvc.cpp"
      "${TARGET_SOURCE_DIR}/station/TradeService.cpp" )
 
 SET( system_INCLUDE

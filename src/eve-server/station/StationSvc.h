@@ -31,11 +31,11 @@
 #include "PyService.h"
 
 
-class StationSvcService: public PyService
+class StationSvc: public PyService
 {
 public:
-    StationSvcService(PyServiceMgr *mgr);
-    virtual ~StationSvcService();
+    StationSvc(PyServiceMgr *mgr);
+    virtual ~StationSvc();
 
 protected:
     class Dispatcher;

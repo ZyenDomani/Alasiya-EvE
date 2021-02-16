@@ -608,6 +608,9 @@ public:
         PyIncRef( *rep );
     }
 
+    void SetItemInt( size_t index, int32 val ) { SetItem( index, new PyInt( val ) ); }
+    void SetItemString( size_t index, const char* str ) { SetItem( index, new PyString( str ) ); }
+
     // copy assignment
     PyTuple& operator= (const PyTuple& oth);
 

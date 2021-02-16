@@ -72,6 +72,7 @@ private:
 
 #endif  // EVEMU_INVENTORY_VOUCHER_H_
 
+//voucher types:  share, playerkill, bookmark
 
 /*typeID        typeName        description
 49      Player Kill     Kill confirmation

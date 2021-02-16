@@ -451,6 +451,8 @@ private:
 
     uint32 m_loginTime;
 
+    std::map<uint8, InventoryItemRef>  m_implantMap;    // slotID/itemRef 
+
 };
 
 #endif /* !__CHARACTER__H__INCL__ */

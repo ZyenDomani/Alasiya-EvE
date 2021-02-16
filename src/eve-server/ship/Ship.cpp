@@ -92,7 +92,7 @@ void ShipItem::LogOut()
     // remove ship item from its' container's inventory list also.
     Inventory* pInv(nullptr);
     if (IsStation(locationID()))
-        pInv = sItemFactory.GetStation(locationID())->GetMyInventory();
+        pInv = sItemFactory.GetStationItem(locationID())->GetMyInventory();
     else
         pInv = sItemFactory.GetSolarSystem(locationID())->GetMyInventory();
 

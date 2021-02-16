@@ -87,7 +87,7 @@ public:
     // return a RefPtr of requested itemID, loading (and cache) as needed
     SkillRef                GetSkill(uint32 skillID);
     ShipItemRef             GetShip(uint32 shipID);
-    StationItemRef          GetStation(uint32 stationID);
+    StationItemRef          GetStationItem(uint32 stationID);
     BlueprintRef            GetBlueprint(uint32 blueprintID);
     CharacterRef            GetCharacter(uint32 characterID);
     ModuleItemRef           GetModuleItem(uint32 moduleID);
