@@ -31,17 +31,26 @@
 
 ClientSession::ClientSession()
 : mSession(new PyDict()),
-mDirty(false)
+mDirty(false),
+m_sessionID(0)
 {
     /* default session values */
     mSession->SetItemString("role", new_tuple(PyStatic.NewNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE), PyStatic.NewFalse()));
     mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero(), PyStatic.NewFalse()));
     mSession->SetItemString("address", new_tuple(PyStatic.NewNone(), new PyString("0.0.0.0"), PyStatic.NewFalse()));
+
+    /*  session id is unique to each session.
+     * is not saved or shared between chars
+     */
+    //random.getrandbits(63)
+    m_sessionID = GetTimeUSeconds() *15;
+    sEntityList.RegisterSID(m_sessionID);
 }
 
 ClientSession::~ClientSession()
 {
     PyDecRef(mSession);
+    sEntityList.RemoveSID(m_sessionID);
 }
 
 // note:  cannot destroy these Py* objects here.
@@ -157,15 +166,4 @@ void ClientSession::_Set(const char* name, PyRep* value)
         mDirty = true;
     } else
         PyDecRef(value);
-}
-
-int64 ClientSession::CreateSessionID() {
-    /*  session id is unique to each session.
-     * is not saved, or shared between chars
-     */
-    //random.getrandbits(63)
-    m_sessionID = GetTimeUSeconds() *15;
-    sEntityList.RegisterSID(m_sessionID);
-
-    return m_sessionID;
 }

@@ -101,6 +101,7 @@ public:
     /* Session values                                                   */
     /********************************************************************/
     bool IsValidSession()                               { return m_validSession; }
+    ClientSession* GetSession()                         { return pSession; }
     // these dont always work...still dont know why.  fixed.  was bad _comp method in PyDict
     std::string GetAddress() const                      { return pSession->GetCurrentString( "address" ); }
     std::string GetLanguageID() const                   { return pSession->GetCurrentString( "languageID" ); }
@@ -116,7 +117,7 @@ public:
 
     int64 GetAccountRole() const                        { return pSession->GetCurrentLong( "role" ); }
     int64 GetClientID() const                           { return pSession->GetCurrentLong( "clientID" ); }
-    int64 GetSessionID() const                          { return pSession->GetCurrentLong( "sessionID" ); }
+    //int64 GetSessionID() const                          { return pSession->GetCurrentLong( "sessionID" ); }
 
     double GetCorpTaxRate()                             { return (m_char.get() != nullptr ? m_char->corpTaxRate() : 0.0); }
     int32 GetCorporationID() const                      { return pSession->GetCurrentInt( "corpid" ); }
@@ -423,22 +424,26 @@ public:
     void SendNotification(const char *notifyType, const char *idType, PyTuple *payload, bool seq=true);
     void SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
 
-    // this is to check Throw status, to avoid throws/segfault when not applicable
+    // this is to check Throw status, to avoid throws/segfault when not applicable  (should use try/catch block)
     bool CanThrow()                                     { return m_canThrow; }
 
     bool IsCharCreation()                               { return m_charCreation; }
     void CreateChar(bool set)                           { m_charCreation = set; }
+
+    void AddBindID(uint32 bindID)                       { m_bindSet.emplace(bindID); }
 
 private:
     bool m_canThrow;
     bool m_validSession;
     bool m_charCreation;
 
+    std::set<uint32> m_bindSet;
+
 protected:
     void UpdateSession();
     void _SendPingRequest();
     void _SendException( const PyAddress& source, int64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
-    void _SendCallReturn( const PyAddress& source, int64 callID, PyRep** rsp, const char* channel = 0 );
+    void _SendCallReturn( const PyAddress& source, int64 callID, PyResult& rsp);
     void _SendPingResponse( const PyAddress& source, int64 callID );
 
     bool Handle_CallReq( PyPacket* packet, PyCallStream& req );

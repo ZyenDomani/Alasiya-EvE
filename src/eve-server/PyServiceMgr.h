@@ -61,10 +61,9 @@ public:
     uint32 GetNodeID() const                            { return m_nodeID; }
 
     //object binding, not fully understood yet.
-    PySubStruct *BindObject(Client* pClient, PyBoundObject* pObj, PyDict* dict = nullptr);
+    PySubStruct *BindObject(Client* pClient, PyBoundObject* pObj, PyDict* dict=nullptr, PyDict *oid=nullptr);
     PyBoundObject *FindBoundObject(uint32 bindID);
     void ClearBoundObject(uint32 bindID);
-    void ClearBoundObjects(Client* pClient);
 
     //Area to access services by name. This isn't ideal, but it avoids casting.
     //these may be NULL during service init, but should never be after that.

@@ -88,7 +88,8 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
 
     //now we register
     PyTuple* rsp = new PyTuple(2);
-    rsp->SetItem(0, m_manager->BindObject(call.client, obj));
+    PyDict* oid = new PyDict();
+    rsp->SetItem(0, m_manager->BindObject(call.client, obj, nullptr, oid));
 
     if (args.call->IsNone()) {
         //no call was specified...
@@ -107,11 +108,10 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
         //do the call:
         PyResult result = obj->Call(boundcall.method_name, sub_args);
 
-        //PyIncRef( result.ssResult );
         rsp->SetItem(1, result.ssResult);
     }
 
-    return rsp;
+    return PyResult(rsp, oid);
 }
 
 const char *const PyService::s_checkTimeStrings[_checkCount] = {

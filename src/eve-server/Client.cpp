@@ -273,9 +273,9 @@ Client::~Client() {
     m_system->RemoveClient(this, true);
     // remove char from entitylist
     sEntityList.RemovePlayer(this);
-    //sEntityList.RemoveSID(GetSessionID());
-    // bound objects are stored by bindID.  should we keep a map of bindIDs for specific client here to ease release?
-    m_services.ClearBoundObjects(this);
+
+    for (auto cur : m_bindSet)
+        m_services.ClearBoundObject(cur);
 
     m_system = nullptr; // DO NOT delete m_system here
 
@@ -1752,14 +1752,16 @@ void Client::CharNoLongerInStation() {
         ocnis.allianceID = GetAllianceID();
         ocnis.factionID = GetWarFactionID();
     PyTuple* tmp = ocnis.Encode();
+    if (tmp == nullptr)
+        return;
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.GetStationGuestList(m_locationID, clients);
     for (auto cur : clients) {
-        PySafeIncRef(tmp);
+        PyIncRef(tmp);
         cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp); //consumed
     }
-    PySafeDecRef(tmp);
+    PyDecRef(tmp);
 }
 
 void Client::CharNowInStation() {
@@ -1953,11 +1955,12 @@ void Client::SendSessionChange()
         scn.changes->Dump(CLIENT__SESSION, "   Changes: ");
     }
 
-    //scn.sessionID = GetSessionID();       /* this isnt right....client creates sessionID.  i dont know how to retrieve it yet. */
+    scn.sessionID = pSession->GetSessionID();
     scn.clueless = 0;
     scn.nodesOfInterest.push_back(-1);  /* this means 'all nodes' */
     scn.nodesOfInterest.push_back(m_services.GetNodeID());  /* add current node to list */
     /* if other nodes are created, add those that are 'live' for this client here */
+    //   will need *some way* to track active nodes for each client
     //scn.nodesOfInterest.push_back(m_services.GetNodeID());
 
     //build the packet:
@@ -1976,18 +1979,18 @@ void Client::SendSessionChange()
     packet->userid = GetUserID();
 
     packet->payload = scn.Encode();
-
     packet->named_payload = nullptr;
-    //p->named_payload = new PyDict();
-    //p->named_payload->SetItemString("channel", new PyString("sessionchange"));
 
-    if (is_log_enabled(CLIENT__OUT_ALL)) {
-        _log(CLIENT__OUT_ALL, "Sending Session packet:");
-        PyLogDumpVisitor dumper(CLIENT__OUT_ALL, CLIENT__OUT_ALL);
-        packet->Dump(CLIENT__OUT_ALL, dumper);
+    if (is_log_enabled(CLIENT__SESSION_DUMP)) {
+        _log(CLIENT__SESSION_DUMP, "Sending Session packet:");
+        PyLogDumpVisitor dumper(CLIENT__SESSION_DUMP, CLIENT__SESSION_DUMP);
+        packet->Dump(CLIENT__SESSION_DUMP, dumper);
     }
 
     QueuePacket(packet);
+
+    // clean up packet after being created by 'new'
+    //SafeDelete(packet);
 }
 
 void Client::FlushQueue() {
@@ -2235,8 +2238,6 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     PyRep* res = new PyInt(2);
     mNet->QueueRep(res);
 
-    // somewhere in here, client sends it's sessionID.  i still dont know how to get it.
-
     std::string failMsg = "Login Authorization Invalid.";
 
     // test account name for invalid chars (which may allow sql injection)
@@ -2307,7 +2308,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     pSession->SetInt("userid", aData.id);
     pSession->SetLong("role", aData.role);
     pSession->SetLong("clientID", 1000000L * aData.clientID + 888444);  // kinda arbitrary
-    pSession->SetLong("sessionID", pSession->CreateSessionID());
+    pSession->SetLong("sessionID", pSession->GetSessionID());
 
     sLog.Green("  Client::Login()","Account %u (%s) logging in from %s", aData.id, aData.name.c_str(), EVEClientSession::GetAddress().c_str());
 
@@ -2337,7 +2338,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         ack.client_hash = PyStatic.NewNone();
         ack.user_clientid = GetClientID();  //241241000001103
         ack.live_updates = sLiveUpdateDB.GetUpdates();
-        ack.sessionID = GetSessionID();   //398773966249980114
+        ack.sessionID = pSession->GetSessionID();   //398773966249980114
     PyRep* res(ack.Encode());
     if (is_log_enabled(CLIENT__CALL_DUMP))
         res->Dump(CLIENT__CALL_DUMP, "    ");
@@ -2349,7 +2350,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     return true;
 }
 
-void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyRep** rsp, const char* channel)
+void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyResult &rsp)
 {
     //build the packet:
     PyPacket* packet = new PyPacket();
@@ -2365,16 +2366,11 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyRep** rsp,
     packet->userid = GetUserID();
 
     packet->payload = new PyTuple(1);
-    packet->payload->SetItem(0, new PySubStream(*rsp ));
-    rsp = nullptr;   //consumed...no, it's not.
-
-    if (channel != nullptr) {
-        packet->named_payload = new PyDict();
-        packet->named_payload->SetItemString("channel", new PyString(channel));
-    }
+    packet->payload->SetItem(0, new PySubStream(rsp.ssResult));
+    packet->named_payload = rsp.ssNamedResult;
 
     if (is_log_enabled(COLLECT__PACKET_DUMP)) {
-        _log(COLLECT__PACKET_DUMP, "Call Rsp:");
+        _log(COLLECT__PACKET_DUMP, "_SendCallReturn: Dump()");
         PyLogDumpVisitor dumper(COLLECT__PACKET_DUMP, COLLECT__PACKET_DUMP, "", true, true);
         packet->Dump(COLLECT__PACKET_DUMP, dumper);
     }
@@ -2398,9 +2394,9 @@ void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_T
     packet->userid = GetUserID();
 
     ErrorResponse e;
-    e.MsgType = msgType;
-    e.ErrorCode = errCode;
-    e.payload = *payload;
+        e.MsgType = msgType;
+        e.ErrorCode = errCode;
+        e.payload = *payload;
     payload = nullptr;
 
     packet->payload = e.Encode();
@@ -2534,16 +2530,19 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     PyCallArgs args(this, req.arg_tuple, req.arg_dict);
 
     //parts of call may be consumed here
-    m_canThrow = true;      // test for throwable.  -allan 29Jul16      should we use try/catch here?
-    PyResult result = dest->Call(req.method, args);
+    m_canThrow = true;      // test for throwable.  -allan 29Jul16      should we use try/catch here?   yes
+    PyResult result(dest->Call(req.method, args));
     m_canThrow = false;
 
     SendSessionChange();  //send out the session change before the return.
-    if (is_log_enabled(CLIENT__OUT_ALL))
+    if (is_log_enabled(CLIENT__OUT_ALL)) {
         if (result.ssResult != nullptr)
             result.ssResult->Dump(CLIENT__OUT_ALL, "    ");
+        if (result.ssNamedResult != nullptr)
+            result.ssNamedResult->Dump(CLIENT__OUT_ALL, "    ");
+    }
 
-    _SendCallReturn(packet->dest, packet->source.callID, &result.ssResult);  //ssResult is consumed here
+    _SendCallReturn(packet->dest, packet->source.callID, result);
 
     return true;
 }
@@ -2561,6 +2560,7 @@ bool Client::Handle_Notify(PyPacket* packet)
         _log(SERVICE__MESSAGE, "Client Has Released These Objects:");
         ServerNotification_ReleaseObj element;
 
+        uint32 nodeID(0), bindID(0);
         PyList::const_iterator cur = notify.elements->begin();
         for (; cur != notify.elements->end(); ++cur) {
             if (!element.Decode(*cur)) {
@@ -2568,7 +2568,6 @@ bool Client::Handle_Notify(PyPacket* packet)
                 continue;
             }
 
-            uint32 nodeID = 0, bindID = 0;
             if (sscanf(element.boundID.c_str(), "N=%u:%u", &nodeID, &bindID) != 2) {
                 sLog.Error("Client::Notify","Notification '%s' from %s: Failed to parse bind string '%s'. Skipping.", \
                            notify.method.c_str(), m_char->name(), element.boundID.c_str());
@@ -2581,6 +2580,8 @@ bool Client::Handle_Notify(PyPacket* packet)
                 continue;
             }
 
+            // clear bindID from internal map
+            m_bindSet.erase(bindID);
             m_services.ClearBoundObject(bindID);
         }
     } else {
@@ -2588,7 +2589,6 @@ bool Client::Handle_Notify(PyPacket* packet)
         return false;
     }
 
-    //SendSessionChange();  //just for good measure...
     return true;
 }
 

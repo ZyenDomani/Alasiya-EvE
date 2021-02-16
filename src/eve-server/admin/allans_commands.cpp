@@ -645,7 +645,7 @@ PyResult Command_showsession(Client* pClient, CommandDB* db, PyServiceMgr* servi
     char reply[size];
     snprintf(reply, size, str.str().c_str(),
              pClient->GetCharacterID(), pClient->GetName(), pClient->GetShipID(), pClient->GetCloneStationID(), pClient->GetClientID(), pClient->GetUserID(),
-             pClient->GetSessionID(), pClient->GetLocationID(), pClient->GetStationID(), pClient->GetStationID2(), pClient->GetSystemID(), pClient->GetConstellationID(),
+             pClient->GetSession()->GetSessionID(), pClient->GetLocationID(), pClient->GetStationID(), pClient->GetStationID2(), pClient->GetSystemID(), pClient->GetConstellationID(),
              pClient->GetRegionID(), pClient->GetCorporationID(), pClient->GetCorpHQ(), pClient->GetCorpAccountKey(), pClient->GetCorpRole(), pClient->GetRolesAtAll(),
              pClient->GetRolesAtBase(), pClient->GetRolesAtHQ(), pClient->GetRolesAtOther(), pClient->GetChar()->fleetID(), pClient->GetChar()->wingID(),
              pClient->GetChar()->squadID(), sFltSvc.GetJobName(pClient->GetChar()->fleetJob()).c_str(), sFltSvc.GetRoleName(pClient->GetChar()->fleetRole()).c_str(),

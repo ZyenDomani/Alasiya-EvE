@@ -182,7 +182,7 @@ PyPacket* EVEClientSession::_HandlePacket( PyRep* rep ) {
     if ( !p->Decode( &rep ) ) { //rep is consumed here
         sLog.Error("_HandlePacket", "%s: Failed to decode packet rep", GetAddress().c_str());
         SafeDelete( p );
-        PyDecRef(rep);
+        PySafeDecRef(rep);
         return PopPacket();
     }
 

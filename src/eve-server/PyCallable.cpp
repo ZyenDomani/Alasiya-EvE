@@ -39,7 +39,7 @@ PyCallable::~PyCallable()
 PyResult PyCallable::Call(const std::string &method, PyCallArgs &args) {
     //call the dispatcher, capturing the result.
     try {
-        PyResult res = m_serviceDispatch->Dispatch(method, args);
+        PyResult res(m_serviceDispatch->Dispatch(method, args));
 
         if (is_log_enabled(SERVICE__CALL_TRACE)) {
             _log(SERVICE__CALL_TRACE, "Call %s returned:", method.c_str());
@@ -94,10 +94,18 @@ void PyCallArgs::Dump(LogType type) const {
 }
 
 /* PyResult */
-PyResult::PyResult( ) : ssResult( nullptr ) { }
-PyResult::PyResult( PyRep* result ) : ssResult( result != nullptr ? result : PyStatic.NewNone() ) {}
-PyResult::PyResult( const PyResult& oth ) : ssResult( nullptr ) { *this = oth; }
-PyResult::~PyResult() { PySafeDecRef( ssResult ); }
+PyResult::PyResult() : ssResult( nullptr ), ssNamedResult( nullptr ) {}
+PyResult::PyResult(PyRep* result)
+: ssResult(result != nullptr ? result : PyStatic.NewNone()),
+ssNamedResult( nullptr )
+{}
+PyResult::PyResult(PyRep* result, PyDict* namedResult)
+: ssResult(result != nullptr ? result : PyStatic.NewNone()),
+ssNamedResult(namedResult)
+{}
+
+PyResult::PyResult( const PyResult& oth ) : ssResult( nullptr ), ssNamedResult( nullptr ) { *this = oth; }
+PyResult::~PyResult() { PySafeDecRef( ssResult ); PySafeDecRef( ssNamedResult ); }
 
 PyResult& PyResult::operator=( const PyResult& oth )
 {
@@ -107,6 +115,10 @@ PyResult& PyResult::operator=( const PyResult& oth )
     else
         ssResult = PyStatic.NewNone();
     PySafeIncRef( ssResult );
+
+    PySafeDecRef( ssNamedResult );
+    ssNamedResult = oth.ssNamedResult;
+    PySafeIncRef( ssNamedResult );
 
     return *this;
 }

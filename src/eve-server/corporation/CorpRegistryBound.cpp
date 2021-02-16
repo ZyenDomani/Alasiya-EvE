@@ -2005,18 +2005,70 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
     // this sends header info and # offices rented by corp
     // Data will be fetched from the subsequent call to SparseRowset (using self.sr.offices in client)
     CorpOfficeSparseRowset rsp;
-    rsp.officeCount = m_db.GetMemberCount(m_corpID); //StationDB::GetOfficeCount(m_corpID);
+    rsp.officeCount = StationDB::GetOfficeCount(m_corpID);
 
     PyDict* dict = new PyDict();
         dict->SetItemString("realRowCount", new PyInt(rsp.officeCount));
 
-    rsp.boundObject = m_manager->BindObject(call.client, bObj, dict);
+    PyDict* oid = new PyDict();
+    rsp.boundObject = m_manager->BindObject(call.client, bObj, dict, oid);
 
     PyObject* obj = rsp.Encode();
     if (is_log_enabled(CORP__RSP_DUMP))
         obj->Dump(CORP__RSP_DUMP, "");
 
-    return obj;
+    return PyResult(obj, oid);
+    /*
+    [PyTuple 1 items]
+      [PySubStream 114 bytes]
+        [PyObjectData Name: util.SparseRowset]
+          [PyTuple 3 items]
+            [PyList 4 items]
+              [PyString "stationID"]
+              [PyString "typeID"]
+              [PyString "officeID"]
+              [PyString "officeFolderID"]
+            [PySubStruct]
+              [PySubStream 50 bytes]
+                [PyTuple 3 items]
+                  [PyString "N=789442:2172"]
+                  [PyDict 1 kvp]
+                    [PyString "realRowCount"]
+                    [PyInt 8]
+                  [PyIntegerVar 129753802088805346]
+            [PyInt 8]
+    [PyDict 1 kvp]
+      [PyString "OID+"]
+      [PyDict 1 kvp]
+        [PyString "N=789442:2172"]
+        [PyIntegerVar 129753802088805346]
+    */
+    /*  newish  (dv packet)
+    [PyTuple 1 items]
+      [PySubStream 139 bytes]
+        [PyObjectData Name: eve.common.script.sys.rowset.SparseRowset]
+          [PyTuple 3 items]
+            [PyList 5 items]
+              [PyString "locationID"]
+              [PyString "solarSystemID"]
+              [PyString "typeID"]
+              [PyString "officeID"]
+              [PyString "officeFolderID"]
+            [PySubStruct]
+              [PySubStream 50 bytes]
+                [PyTuple 3 items]
+                  [PyString "N=1222739:1759"]
+                  [PyDict 1 kvp]
+                    [PyString "realRowCount"]
+                    [PyInt 0]
+                  [PyIntegerVar 131101118262531055]
+            [PyInt 0]
+    [PyDict 1 kvp]
+      [PyString "OID+"]
+      [PyDict 1 kvp]
+        [PyString "N=1222739:1759"]
+        [PyIntegerVar 131101118262531055]
+    */
 }
 
 PyResult CorpRegistryBound::Handle_InsertVoteCase(PyCallArgs &call) {
