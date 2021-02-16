@@ -546,7 +546,7 @@ bool PyToken::visit( PyVisitor& v ) const
 PyTuple::PyTuple( size_t item_count ) : PyRep( PyRep::PyTypeTuple ), items( item_count, nullptr ) {}
 PyTuple::PyTuple( const PyTuple& oth ) : PyRep( PyRep::PyTypeTuple ), items()
 {
-    // Use assigment operator
+    // Use assignment operator
     *this = oth;
 }
 
@@ -578,9 +578,9 @@ PyTuple& PyTuple::operator=( const PyTuple& oth )
 {
     clear();
     items.resize( oth.size() );
-    iterator cur = items.begin();
-    const_iterator cur_oth = oth.begin();
-    for (; cur != items.end() && cur_oth != oth.end(); ++cur, ++cur_oth)
+    iterator cur = items.begin(), end = items.end();
+    const_iterator cur_oth = oth.begin(), oth_end = oth.end();
+    for (; cur != end && cur_oth != oth_end; ++cur, ++cur_oth)
     {
         if (*cur_oth == nullptr )
             *cur = nullptr;
@@ -618,7 +618,7 @@ int32 PyTuple::hash() const
 PyList::PyList( size_t item_count ) : PyRep( PyRep::PyTypeList ), items( item_count, nullptr ) {}
 PyList::PyList( const PyList& oth ) : PyRep( PyRep::PyTypeList ), items()
 {
-    // Use assigment operator
+    // Use assignment operator
     *this = oth;
 }
 
@@ -650,9 +650,9 @@ PyList& PyList::operator=( const PyList& oth )
 {
     clear();
     items.resize( oth.size() );
-    iterator cur = items.begin();
-    const_iterator cur_oth = oth.begin();
-    for (; cur != items.end() && cur_oth != oth.end(); ++cur, ++cur_oth)
+    iterator cur = items.begin(), end = items.end();
+    const_iterator cur_oth = oth.begin(), oth_end = oth.end();
+    for (; cur != end && cur_oth != oth_end; ++cur, ++cur_oth)
     {
         if (*cur_oth == nullptr )
             *cur = nullptr;
@@ -669,7 +669,7 @@ PyList& PyList::operator=( const PyList& oth )
 PyDict::PyDict() : PyRep( PyRep::PyTypeDict ), items() {}
 PyDict::PyDict( const PyDict& oth ) : PyRep( PyRep::PyTypeDict ), items()
 {
-    // Use assigment operator
+    // Use assignment operator
     *this = oth;
 }
 
@@ -755,8 +755,8 @@ void PyDict::SetItem( PyRep* key, PyRep* value )
 PyDict& PyDict::operator=( const PyDict& oth )
 {
     clear();
-    const_iterator cur = oth.begin();
-    for (; cur != oth.end(); ++cur) {
+    const_iterator cur = oth.begin(), end = oth.end();
+    for (; cur != end; ++cur) {
         if (cur->second == nullptr )
             SetItem( cur->first->Clone(), nullptr );
         else
@@ -804,7 +804,7 @@ mHeader( header ), mIsType2( is_type_2 ), mList( new PyList() ), mDict( new PyDi
 PyObjectEx::PyObjectEx( const PyObjectEx& oth ) : PyRep( PyRep::PyTypeObjectEx ),
   mHeader( oth.header()->Clone() ), mIsType2( oth.isType2() ), mList( new PyList() ), mDict( new PyDict() )
 {
-    // Use assigment operator
+    // Use assignment operator
     *this = oth;
 }
 
@@ -1027,8 +1027,7 @@ PyPackedRow::PyPackedRow( DBRowDescriptor* header ) : PyRep( PyRep::PyTypePacked
 PyPackedRow::PyPackedRow( const PyPackedRow& oth ) : PyRep( PyRep::PyTypePackedRow ),
   mHeader( oth.header() ), mFields( new PyList( oth.header()->ColumnCount() ) )
 {
-    PyIncRef( mHeader );
-
+    //PyIncRef( mHeader );
     *this = oth;
 }
 
@@ -1126,10 +1125,9 @@ void PySubStream::EncodeData() const
     if ((mDecoded == nullptr) or (mData != nullptr))
         return;
 
-    Buffer* buf = new Buffer;
+    Buffer* buf = new Buffer();
     if (!Marshal( mDecoded, *buf ) ) {
         sLog.Error( "Marshal", "Failed to marshal rep %p.", mDecoded );
-
         SafeDelete( buf );
         return;
     }

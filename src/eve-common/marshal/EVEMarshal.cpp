@@ -36,7 +36,7 @@
 bool Marshal( const PyRep* rep, Buffer& into )
 {
     MarshalStream* pMS = new MarshalStream();
-    bool ret = pMS->Save( rep, into );
+    bool ret(pMS->Save(rep, into));
     SafeDelete(pMS);
     return ret;
 }
@@ -44,7 +44,7 @@ bool Marshal( const PyRep* rep, Buffer& into )
 bool MarshalDeflate( const PyRep* rep, Buffer& into, const uint32 deflationLimit )
 {
     Buffer* data = new Buffer();
-    bool ret = false;
+    bool ret(false);
     if (Marshal(rep, *data)) {
         if ( data->size() >= deflationLimit ) {
             ret = DeflateData( *data, into );
@@ -69,7 +69,7 @@ MarshalStream::MarshalStream()
 bool MarshalStream::Save( const PyRep* rep, Buffer& into )
 {
     mBuffer = &into;
-    bool res = SaveStream( rep );
+    bool res(SaveStream(rep));
     mBuffer = nullptr;
 
     return res;
@@ -82,6 +82,7 @@ bool MarshalStream::SaveStream( const PyRep* rep )
      * Mapcount
      * the amount of referenced objects within a marshal stream.
      * Note: Atm not supported.
+     * (allan)  have not found any information on this, so no idea how/when to implement it (or even if we need to)
      */
     Put<uint32>( 0 ); // Mapcount
 
@@ -236,7 +237,7 @@ bool MarshalStream::VisitToken( const PyToken* rep )
 
 bool MarshalStream::VisitTuple( const PyTuple* rep )
 {
-    uint32 size = (uint32)rep->size();
+    uint32 size(rep->size());
     if ( size == 0 ) {
         Put<uint8>( Op_PyEmptyTuple );
     } else if ( size == 1 ) {
@@ -253,7 +254,7 @@ bool MarshalStream::VisitTuple( const PyTuple* rep )
 
 bool MarshalStream::VisitList( const PyList* rep )
 {
-    uint32 size = (uint32)rep->size();
+    uint32 size(rep->size());
     if ( size == 0 ) {
         Put<uint8>( Op_PyEmptyList );
     } else if ( size == 1 ) {
@@ -268,8 +269,7 @@ bool MarshalStream::VisitList( const PyList* rep )
 
 bool MarshalStream::VisitDict( const PyDict* rep )
 {
-    uint32 size = (uint32)rep->size();
-
+    uint32 size(rep->size());
     Put<uint8>( Op_PyDict );
     PutSizeEx( size );
 
@@ -331,7 +331,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
 
     // Create size map, sorted from the greatest to the smallest value:
     std::multimap< uint8, uint32, std::greater< uint8 > > sizeMap;
-    uint32 cc = header->ColumnCount();
+    uint32 cc(header->ColumnCount());
     size_t sum(0);
     uint8 size(0);
 
@@ -343,7 +343,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     }
 
     Buffer unpacked;
-    sum = ( ( sum + 7 ) >> 3 );
+    sum = ((sum + 7) >> 3);
     unpacked.Reserve<uint8>( sum );
 
     std::multimap< uint8, uint32, std::greater< uint8 > >::iterator cur, end;
@@ -418,7 +418,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     }
 
     //pack the bytes with the zero compression algorithm.
-    if ( !SaveZeroCompressed( unpacked ) )
+    if (!SaveZeroCompressed(unpacked))
         return false;
 
     // Append fields that are not packed:
@@ -426,7 +426,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     end = sizeMap.end();
     for (; cur != end; ++cur) {
         const PyRep* r = rep->GetField( cur->second );
-        if ( !r->visit( *this ) )
+        if (!r->visit(*this))
             return false;
     }
 
@@ -451,7 +451,7 @@ bool MarshalStream::VisitSubStream( const PySubStream* rep )
         //unmarshaled stream
         //we have to marshal the substream.
         rep->EncodeData();
-        if ( rep->data() == nullptr ) {
+        if (rep->data() == nullptr) {
             Put<uint8>(0);
             return false;
         }

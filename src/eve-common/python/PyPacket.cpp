@@ -59,7 +59,12 @@ const char* MACHONETMSG_TYPE_NAMES[MACHONETMSG_TYPE_COUNT] =
     "PING_RSP"
 };
 
-PyPacket::PyPacket() : type_string("none"), type(__Fake_Invalid_Type), userid(0), payload(nullptr), named_payload(nullptr)
+PyPacket::PyPacket()
+: type_string("none"),
+type(__Fake_Invalid_Type),
+userid(0),
+payload(nullptr),
+named_payload(nullptr)
 {
 
 }
@@ -99,7 +104,7 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
     _log(ltype, "  Payload:");
     payload->visit( dumper );
     if (named_payload == nullptr) {
-        _log(ltype, "  Named Payload: None");
+        _log(ltype, "  Named Payload: None (null)");
     } else {
         _log(ltype, "  Named Payload:");
         named_payload->visit( dumper );
@@ -139,7 +144,7 @@ bool PyPacket::Decode(PyRep **in_packet)
     }
 
     if (!packet->IsObject()) {
-        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body is not an 'Object': %s", packet->TypeString());
+        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body is not PyObject: %s", packet->TypeString());
         PyDecRef(packet);
         return false;
     }
@@ -217,12 +222,12 @@ bool PyPacket::Decode(PyRep **in_packet)
     payload = tuple->items[4]->AsTuple();
 
     //options dict
-    if (tuple->items[5]->IsNone())
+    if (tuple->items[5]->IsNone()) {
         named_payload = nullptr;
-    else if (tuple->items[5]->IsDict()) {
+    } else if (tuple->items[5]->IsDict()) {
         named_payload = tuple->items[5]->AsDict();
     } else {
-        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Sixth main tuple element is not a dict");
+        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Sixth main tuple element is neither dict or none.");
         PyDecRef(packet);
         return false;
     }
@@ -246,13 +251,14 @@ PyRep *PyPacket::Encode() {
         arg_tuple->items[3] = new PyInt(userid);
 
     //payload
-    arg_tuple->items[4] = payload;     // no need to clone here.  set actual rep in item, and it will be cleaned up by d'tor later
+    arg_tuple->items[4] = payload;     // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
 
-    //named arguments
-    if (named_payload == nullptr)
+    //named arguments (OID+ or sn)
+    if (named_payload == nullptr) {
         arg_tuple->items[5] = PyStatic.NewNone();
-    else
-        arg_tuple->items[5] = named_payload;    // no need to clone here.  set actual rep in item, and it will be cleaned up by d'tor later
+    } else {
+        arg_tuple->items[5] = named_payload;    // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
+    }
 
     //TODO: Not sure what this is, On packets so far they always have as PyNone
     arg_tuple->items[6] = PyStatic.NewNone();
@@ -978,8 +984,6 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     }
 
     args = subt->items[1]->AsTuple();
-    //PyIncRef(args);
-
     notifyType = notify_type;
 
     PyDecRef(ss);
