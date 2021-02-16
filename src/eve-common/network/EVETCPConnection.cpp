@@ -33,7 +33,7 @@
 /* EVETCPConnection                                                      */
 /*************************************************************************/
 const uint32 EVETCPConnection::TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
-const uint32 EVETCPConnection::PACKET_SIZE_LIMIT = 10 * 1024 * 1024; // 10 megabytes
+const uint32 EVETCPConnection::PACKET_SIZE_LIMIT = 1024 * 1024; // 1 megabyte
 
 EVETCPConnection::EVETCPConnection()
 : TCPConnection(),
@@ -47,7 +47,7 @@ EVETCPConnection::EVETCPConnection( Socket* sock, uint32 rIP, uint16 rPort )
 {
 }
 
-void EVETCPConnection::QueueRep( const PyRep* rep, bool compress )
+void EVETCPConnection::QueueRep( const PyRep* rep, bool compress/*true*/ )
 {
     Buffer* pBuffer = new Buffer();
 
@@ -61,8 +61,7 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress )
         return;
     }
 
-    bool success = false;
-
+    bool success(false);
     if (compress)
         success = MarshalDeflate(rep, *pBuffer);
     else
@@ -74,8 +73,9 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress )
         // write length
         *bufLen = ( pBuffer->size() - sizeof( uint32 ) );
         Send( &pBuffer );
-    } else
+    } else {
         sLog.Error( "Network", "Failed to marshal new packet." );
+    }
 
     PySafeDecRef(rep);
     SafeDelete( pBuffer );

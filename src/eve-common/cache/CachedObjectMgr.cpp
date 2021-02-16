@@ -758,7 +758,6 @@ bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
     } else if (args->items[4]->IsBuffer()) {
         //this is a data buffer, likely compressed.
         PyBuffer* buf = args->items[4]->AsBuffer();
-        //PyIncRef( buf );
         cache = new PySubStream( buf );
     } else if (args->items[4]->IsString()) {
         //this is a data buffer, likely compressed, not sure why it comes through as a string...
@@ -814,14 +813,13 @@ PyObject *PyCachedObject::Encode()
 }
 
 PyObject *PyCachedObjectDecoder::EncodeHint() {
-    PyTuple *arg_tuple = new PyTuple(3);
-
     PyTuple *versiont = new PyTuple(2);
-    versiont->items[0] = new PyLong(timestamp);
-    versiont->items[1] = new PyInt(version);
-    arg_tuple->items[0] = objectID->Clone();
-    arg_tuple->items[1] = new PyInt(nodeID);
-    arg_tuple->items[2] = versiont;
+        versiont->items[0] = new PyLong(timestamp);
+        versiont->items[1] = new PyInt(version);
+    PyTuple *arg_tuple = new PyTuple(3);
+        arg_tuple->items[0] = objectID->Clone();
+        arg_tuple->items[1] = new PyInt(nodeID);
+        arg_tuple->items[2] = versiont;
 
     return new PyObject( "util.CachedObject", arg_tuple );
 }

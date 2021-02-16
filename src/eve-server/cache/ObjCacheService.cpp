@@ -361,16 +361,16 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
 }
 
 PyRep *ObjCacheService::GetCacheHint(const PyRep* objectID) {
-    if(!_LoadCachableObject(objectID))
+    if (!_LoadCachableObject(objectID))
         return nullptr;    //print done already
 
     PyObject *cache_hint = m_cache.MakeCacheHint(objectID);
-    if(cache_hint == nullptr) {
+    if (cache_hint == nullptr) {
         _log(CACHE__ERROR, "Unable to build cache hint for object ID '%s' (h), skipping.", CachedObjectMgr::OIDToString(objectID).c_str());
         return nullptr;
     }
 
-    return(cache_hint);
+    return cache_hint;
 }
 
 void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {

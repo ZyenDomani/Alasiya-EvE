@@ -159,8 +159,8 @@ public:
     PyObject *EncodeHint();
 
     //object version tuple:
-    /*0*/   int64 timestamp;
-    /*0*/   uint32 version;     //might be swapped with nodeID
+    /*0*/int64 timestamp;
+    /*0*/int32 version;     //might be swapped with nodeID
 
     /*1*/ //unknown None
     /*2*/uint32 nodeID;
