@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 10.1
+ Log Version: 10.2
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -155,6 +155,7 @@ LOG_TYPE( CLIENT, NOTIFY_REP, DISABLED, "ClientNotifyRep" )
 LOG_TYPE( CLIENT, NOTIFY_DUMP, DISABLED, "ClientNotifyDmp" )
 LOG_TYPE( CLIENT, QUEUE_DUMP, DISABLED, "ClientQueueDump" )
 LOG_TYPE( CLIENT, SESSION, DISABLED, "ClientSession" )
+LOG_TYPE( CLIENT, SESSION_DUMP, DISABLED, "ClientSessionDump" )
 LOG_TYPE( CLIENT, SESSION_NOTFOUND, DISABLED, "ClientSession" )
 LOG_TYPE( CLIENT, TIMER, DISABLED, "ClientTimer" )
 LOG_TYPE( CLIENT, TRACE, DISABLED, "ClientTrace" )
