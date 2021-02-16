@@ -255,7 +255,15 @@ class PyLong : public PyRep
 {
 public:
     PyLong( const int64 i );
+    // copy c'tor
     PyLong( const PyLong& oth );
+    // move c'tor
+    PyLong(PyLong&& oth) = delete;
+    // copy assignment
+    PyLong& operator= (const PyLong& oth) = delete;
+    // move assignment
+    PyLong& operator= (PyLong&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -278,7 +286,15 @@ class PyFloat : public PyRep
 {
 public:
     PyFloat( const double& i );
+    // copy c'tor
     PyFloat( const PyFloat& oth );
+    // move c'tor
+    PyFloat(PyFloat&& oth) = delete;
+    // copy assignment
+    PyFloat& operator= (const PyFloat& oth) = delete;
+    // move assignment
+    PyFloat& operator= (PyFloat&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -301,7 +317,15 @@ class PyBool : public PyRep
 {
 public:
     PyBool( bool i );
+    // copy c'tor
     PyBool( const PyBool& oth );
+    // move c'tor
+    PyBool(PyBool&& oth) = delete;
+    // copy assignment
+    PyBool& operator= (const PyBool& oth) = delete;
+    // move assignment
+    PyBool& operator= (PyBool&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -322,7 +346,15 @@ class PyNone : public PyRep
 {
 public:
     PyNone();
+    // copy c'tor
     PyNone( const PyNone& oth );
+    // move c'tor
+    PyNone(PyNone&& oth) = delete;
+    // copy assignment
+    PyNone& operator= (const PyNone& oth) = delete;
+    // move assignment
+    PyNone& operator= (PyNone&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -350,7 +382,6 @@ public:
     PyBuffer( Iter first, Iter last );
     /** Calls Buffer::Buffer( const Buffer& ). */
     PyBuffer( const Buffer& buffer );
-
     /** Takes ownership of a passed Buffer. */
     PyBuffer( Buffer** buffer );
     /** Copy constructor. */
@@ -496,6 +527,13 @@ public:
     PyToken( const PyString& token );
     /** Copy constructor. */
     PyToken( const PyToken& oth );
+    // move c'tor
+    PyToken(PyToken&& oth) = delete;
+    // copy assignment
+    PyToken& operator= (const PyToken& oth) = delete;
+    // move assignment
+    PyToken& operator= (PyToken&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -525,7 +563,13 @@ public:
     typedef storage_type::const_iterator    const_iterator;
 
     PyTuple( size_t item_count );
+    // copy c'tor
     PyTuple( const PyTuple& oth );
+    // move c'tor
+    PyTuple(PyTuple&& oth) = delete;
+    // move assignment
+    PyTuple& operator= (PyTuple&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -564,13 +608,8 @@ public:
         PyIncRef( *rep );
     }
 
-    /**
-     * @brief Overload of assignment operator to handle object ownership.
-     *
-     * @param[in] oth Tuple the content of which is to be copied.
-     * @return Itself.
-     */
-    PyTuple& operator=( const PyTuple& oth );
+    // copy assignment
+    PyTuple& operator= (const PyTuple& oth);
 
     int32 hash() const;
 
@@ -594,7 +633,15 @@ public:
     typedef storage_type::const_iterator    const_iterator;
 
     PyList( size_t item_count = 0 );
+    // copy c'tor
     PyList( const PyList& oth );
+    // move c'tor
+    PyList(PyList&& oth) = delete;
+    // copy assignment
+    PyList& operator= (const PyList& oth);
+    // move assignment
+    PyList& operator= (PyList&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -646,14 +693,6 @@ public:
     void AddItemReal( double realval ) { AddItem( new PyFloat( realval ) ); }
     void AddItemString( const char* str ) { AddItem( new PyString( str ) ); }
 
-    /**
-     * @brief Overload of assignment operator to handle object ownership.
-     *
-     * @param[in] oth List the content of which is to be copied.
-     * @return Itself.
-     */
-    PyList& operator=( const PyList& oth );
-
     // This needs to be public:
     storage_type items;
 
@@ -701,7 +740,15 @@ public:
     typedef storage_type::const_iterator                       const_iterator;
 
     PyDict();
+    // copy c'tor
     PyDict( const PyDict& oth );
+    // move c'tor
+    PyDict(PyDict&& oth) = delete;
+    // copy assignment
+    PyDict& operator= (const PyDict& oth);
+    // move assignment
+    PyDict& operator= (PyDict&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -740,10 +787,8 @@ public:
      * @param[in] value is the object that needs to be filed under key.
      */
     void SetItem( PyRep* key, PyRep* value );
-
-    void SetItem( const char* key, PyRep* value )    { SetItem(new PyString(key), value); }
-
-    void SetItem( const char* key, const char* value )     { SetItem(new PyString(key), new PyString(value)); }
+    void SetItem( const char* key, PyRep* value )       { SetItem(new PyString(key), value); }
+    void SetItem( const char* key, const char* value )  { SetItem(new PyString(key), new PyString(value)); }
 
     /**
      * @brief SetItemString adds or sets a database entry.
@@ -755,14 +800,6 @@ public:
      * @param[in] value is the object that needs to be filed under key.
      */
     void SetItemString( const char* key, PyRep* value ) { SetItem( new PyString( key ), value ); }
-
-    /**
-     * @brief Overload of assignment operator to handle object ownership.
-     *
-     * @param[in] oth PyDict the content of which is to be copied.
-     * @return Itself.
-     */
-    PyDict& operator=( const PyDict& oth );
 
     storage_type items;
 
@@ -781,7 +818,15 @@ class PyObject : public PyRep
 public:
     PyObject( const char* type, PyRep* args );
     PyObject( PyString* type, PyRep* args );
+    // copy c'tor
     PyObject( const PyObject& oth );
+    // move c'tor
+    PyObject(PyObject&& oth) = delete;
+    // copy assignment
+    PyObject& operator= (const PyObject& oth) = delete;
+    // move assignment
+    PyObject& operator= (PyObject&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -815,7 +860,15 @@ public:
     typedef dict_type::const_iterator       const_dict_iterator;
 
     PyObjectEx( bool is_type_2, PyRep* header );
+    // copy c'tor
     PyObjectEx( const PyObjectEx& oth );
+    // move c'tor
+    PyObjectEx(PyObjectEx&& oth) = delete;
+    // copy assignment
+    PyObjectEx& operator= (const PyObjectEx& oth);
+    // move assignment
+    PyObjectEx& operator= (PyObjectEx&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -829,13 +882,6 @@ public:
     dict_type& dict() { return *mDict; }
     const dict_type& dict() const { return *mDict; }
 
-    /**
-     * @brief Assigment operator to handle ownership things.
-     *
-     * @param[in] oth PyObjectEx the content of which should be copied.
-     * @return Itself.
-     */
-    PyObjectEx& operator=( const PyObjectEx& oth );
 
 protected:
     virtual ~PyObjectEx();
@@ -910,7 +956,15 @@ public:
     typedef storage_type::const_iterator    const_iterator;
 
     PyPackedRow( DBRowDescriptor* header );
+    // copy c'tor
     PyPackedRow( const PyPackedRow& oth );
+    // move c'tor
+    PyPackedRow(PyPackedRow&& oth) = delete;
+    // copy assignment
+    PyPackedRow& operator= (const PyPackedRow& oth);
+    // move assignment
+    PyPackedRow& operator= (PyPackedRow&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -928,14 +982,6 @@ public:
     bool SetField( uint32 index, PyRep* value );
     bool SetField( const char* colName, PyRep* value );
 
-    /**
-     * @brief Assigment operator to handle ownership things.
-     *
-     * @param[in] oth PyPackedRow the content of which should be copied.
-     * @return Itself.
-     */
-    PyPackedRow& operator=( const PyPackedRow& oth );
-
     int32 hash() const;
 
 protected:
@@ -949,7 +995,15 @@ class PySubStruct : public PyRep
 {
 public:
     PySubStruct( PyRep* t );
+    // copy c'tor
     PySubStruct( const PySubStruct& oth );
+    // move c'tor
+    PySubStruct(PySubStruct&& oth) = delete;
+    // copy assignment
+    PySubStruct& operator= (const PySubStruct& oth) = delete;
+    // move assignment
+    PySubStruct& operator= (PySubStruct&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -967,7 +1021,15 @@ class PySubStream : public PyRep
 public:
     PySubStream( PyRep* rep );
     PySubStream( PyBuffer* buffer );
+    // copy c'tor
     PySubStream( const PySubStream& oth );
+    // move c'tor
+    PySubStream(PySubStream&& oth) = delete;
+    // copy assignment
+    PySubStream& operator= (const PySubStream& oth) = delete;
+    // move assignment
+    PySubStream& operator= (PySubStream&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -993,7 +1055,15 @@ class PyChecksumedStream : public PyRep
 {
 public:
     PyChecksumedStream( PyRep* t, uint32 sum );
+    // copy c'tor
     PyChecksumedStream( const PyChecksumedStream& oth );
+    // move c'tor
+    PyChecksumedStream(PyChecksumedStream&& oth) = delete;
+    // copy assignment
+    PyChecksumedStream& operator= (const PyChecksumedStream& oth) = delete;
+    // move assignment
+    PyChecksumedStream& operator= (PyChecksumedStream&& oth) = delete;
+
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -1065,6 +1135,7 @@ protected:
  *
  * @Author:         Allan
  * @date:          13 December 17
+ * @update:     15 February 21 (added mt objects)
  *
  */
 
@@ -1074,8 +1145,29 @@ class pyStatic
 : public Singleton< pyStatic >
 {
 public:
-    pyStatic()                  { m_none = new PyNone(); m_zero = new PyInt(0); m_true = new PyBool(true); m_false = new PyBool(false); m_one = new PyInt(1); }
-    ~pyStatic()                 { PyDecRef(m_none); PyDecRef(m_zero); PyDecRef(m_true); PyDecRef(m_false); PyDecRef(m_one); }
+    pyStatic()
+    {
+        m_none = new PyNone();
+        m_zero = new PyInt(0);
+        m_one = new PyInt(1);
+        m_true = new PyBool(true);
+        m_false = new PyBool(false);
+        m_dict = new PyDict();
+        m_list = new PyList();
+        m_tuple = new PyTuple(0);
+    }
+
+   ~pyStatic()
+   {
+       PyDecRef(m_none);
+       PyDecRef(m_zero);
+       PyDecRef(m_one);
+       PyDecRef(m_true);
+       PyDecRef(m_false);
+       PyDecRef(m_dict);
+       PyDecRef(m_list);
+       PyDecRef(m_tuple);
+    }
 
     PyRep* NewNone()            { PyIncRef(m_none); return m_none; }
     PyRep* NewZero()            { PyIncRef(m_zero); return m_zero; }
@@ -1083,12 +1175,20 @@ public:
     PyRep* NewTrue()            { PyIncRef(m_true); return m_true; }
     PyRep* NewFalse()           { PyIncRef(m_false); return m_false; }
 
+    PyDict* mtDict()            { PyIncRef(m_dict); return m_dict; }
+    PyList* mtList()            { PyIncRef(m_list); return m_list; }
+    PyTuple* mtTuple()          { PyIncRef(m_tuple); return m_tuple; }
+
 private:
     PyRep* m_none;
     PyRep* m_zero;
     PyRep* m_one;
     PyRep* m_true;
     PyRep* m_false;
+
+    PyDict* m_dict;
+    PyList* m_list;
+    PyTuple* m_tuple;
 };
 
 //Singleton
