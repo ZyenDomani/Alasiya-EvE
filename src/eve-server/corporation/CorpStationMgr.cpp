@@ -223,11 +223,13 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
 
     Client* pClient = call.client;
 
-    /** @todo see if corp has office in station already. */
+    // see if corp has office in station already.
+    if (pStationItem->GetOfficeID(pClient->GetCorporationID()))
+        throw PyException(MakeUserError("RentingYouHaveAnOfficeHere"));
 
     // this may not be needed, as rental fee is queried immediately prior to this call
     if (arg.arg != pStationItem->GetOfficeRentalFee())
-        _log(CORP__WARNING, "RentOffice() - Was quoted %i but station reports %u for station %s", \
+        _log(CORP__WARNING, "RentOffice() - Was quoted %i but station reports %u for office rental at %s", \
                 arg.arg, pStationItem->GetOfficeRentalFee(), pStationItem->name());
 
     // check if the corp has enough money
@@ -237,7 +239,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     reason += " by ";
     reason += pClient->GetCharName();
     AccountService::TranserFunds(pClient->GetCorporationID(), pStationItem->GetOwnerID(), arg.arg, reason.c_str(), Journal::EntryType::OfficeRentalFee);
-/** @note  why is this disabled? 
+/** @note  why is this disabled?
     int64 balance = AccountDB::GetCorpBalance(pClient->GetCorporationID(), Account::KeyType::Cash);
     if (balance < arg.arg) {
         std::map<std::string, PyRep *> args;
@@ -263,7 +265,6 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     // send data to bill mgr for creating bill and notifications
 
     /*
-     *    Broadcast #2  bill
      *        [PyString "OnNotificationReceived"]
      *        [PyList 0 items]
      *        [PyString "clientID"]           << Notify::Types::
@@ -271,6 +272,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
 
     /** @todo update this to use corpNotify */
     // This has to be sent to everyone in the station
+    //  are corp members notified?
     OfficeAttributeUpdate change;
         change.oldOfficeFolderID = PyStatic.NewNone();
         change.oldOfficeID = PyStatic.NewNone();

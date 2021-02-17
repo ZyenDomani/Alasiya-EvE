@@ -322,10 +322,10 @@ struct StationData {
     uint16 hangarGraphicID;
     uint16 dockingBayGraphicID;
     uint16 reprocessingHangarFlag;
+    int32 officeRentalFee;
     uint32 stationID;
     uint32 corporationID;
     uint32 maxShipVolumeDockable;
-    uint32 officeRentalFee;
     uint32 systemID;
     uint32 constellationID;
     uint32 regionID;

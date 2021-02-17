@@ -90,11 +90,11 @@ public:
     // station methods here for offices, reprocessing, and docking.
     PyRep* GetOffices()                                 { PyIncRef(m_officePyData); return m_officePyData; }  // cached officeData for client call
     int8 GetAvalibleOfficeCount()                       { return maxRentableOffices - m_officeMap.size(); }
-    uint32 GetOfficeRentalFee()                         { return m_data.officeRentalFee; }
-    void RentOffice(OfficeData& odata);
-    uint32 GetOfficeID(uint32 corpID);
+    int32 GetOfficeRentalFee()                          { return m_data.officeRentalFee; }
     uint32 GetOwnerID()                                 { return m_data.corporationID; }
     uint32 GetID()                                      { return m_data.stationID; }
+    void RentOffice(OfficeData& odata);
+    uint32 GetOfficeID(uint32 corpID);
 
     void LoadStationOffice(uint32 corpID);
     void AddLoadedOffice(uint32 officeID);

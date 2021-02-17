@@ -94,7 +94,7 @@ void StationDataMgr::Populate()
         s.reprocessingHangarFlag, st.conquerable, st.hangarGraphicID, m.orbitID, m.radius, m.security, o.description, o.descriptionID,24\
         t.graphicID, s.solarSystemID, s.constellationID, s.regionID, st.dockEntryX, st.dockEntryY, st.dockEntryZ 31
         StationData sData = StationData();
-        sData.stationID                 = row.GetInt(0);
+        sData.stationID                 = row.GetUInt(0);
         if ((itr = m_serviceMask.find(sData.stationID)) != m_serviceMask.end())
             sData.serviceMask = itr->second;
         else
@@ -102,8 +102,8 @@ void StationDataMgr::Populate()
         sData.position                  = GPoint(row.GetDouble(1),row.GetDouble(2),row.GetDouble(3));
         sData.dockOrientation           = GVector(row.GetDouble(4),row.GetDouble(5),row.GetDouble(6));
         sData.dockingCostPerVolume      = row.GetFloat(7);
-        sData.maxShipVolumeDockable     = row.GetInt(8);
-        sData.officeSlots               = row.GetInt(9);
+        sData.maxShipVolumeDockable     = row.GetUInt(8);
+        sData.officeSlots               = row.GetUInt(9);
         sData.officeRentalFee           = row.GetInt(10);
         sData.operationID               = row.GetInt(11);
         sData.typeID                    = row.GetInt(12);
@@ -111,18 +111,18 @@ void StationDataMgr::Populate()
         sData.name                      = row.GetText(14);
         sData.reprocessingStationsTake  = row.GetFloat(15);
         sData.reprocessingEfficiency    = row.GetFloat(16);
-        sData.reprocessingHangarFlag    = row.GetInt(17);
+        sData.reprocessingHangarFlag    = row.GetUInt(17);
         sData.conquerable               = row.GetBool(18);
-        sData.hangarGraphicID           = row.GetInt(19);
-        sData.orbitID                   = row.GetInt(20);
+        sData.hangarGraphicID           = row.GetUInt(19);
+        sData.orbitID                   = row.GetUInt(20);
         sData.radius                    = row.GetFloat(21);
         sData.security                  = row.GetFloat(22);
         sData.description               = row.GetText(23);
         sData.descriptionID             = row.GetInt(24);
         sData.graphicID                 = row.GetInt(25);
-        sData.systemID                  = row.GetInt(26);
-        sData.constellationID           = row.GetInt(27);
-        sData.regionID                  = row.GetInt(28);
+        sData.systemID                  = row.GetUInt(26);
+        sData.constellationID           = row.GetUInt(27);
+        sData.regionID                  = row.GetUInt(28);
         sData.dockEntry                 = GPoint(row.GetDouble(29),row.GetDouble(30),row.GetDouble(31));
         sData.dockPosition              = GPoint(row.GetDouble(29) + row.GetDouble(1),
                                                  row.GetDouble(30) + row.GetDouble(2),
