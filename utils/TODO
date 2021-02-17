@@ -79,6 +79,8 @@ remove InventoryDB (m_db) and associated code from itemfactory
 remove character queries from InventoryDB
 remove station/static queries from InventoryDB
 remove *lsc_service and *cache_service from PyServiceMgr
+    - lsc_service may be singleton.  channels should remain dynamic...will have to look into this more
+    - cache_service....will have to look into this more before deciding.
 
 AuditLogSecureContainer types not coded (data coded in EvE_Inventory.h)
 
