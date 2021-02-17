@@ -25,6 +25,7 @@
 */
 
 #include "eve-server.h"
+#include "EVE_Consts.h"
 
 #include "PyServiceCD.h"
 #include "account/BrowserLockdownSvc.h"
@@ -53,19 +54,22 @@ PyResult BrowserLockdownService::Handle_GetFlaggedSitesHash(PyCallArgs &call)
     /* Future updates should be the md5 sum of the cache/browser/flaggedsites.dat file from user/appdata/Local/CCP/EVE
      *  as we dont have this list (which is sent from GetFlaggedSitesList), we send the md5 sum for an empty set.
      */
-    return new PyString("df98509e1e3f0dd839083e7be1d2b360");
+    return new PyString("df98509e1e3f0dd839083e7be1d2b360");    // mine
+    //return new PyString("d751713988987e9331980363e24189ce");    // avianrr
 }
 
 PyResult BrowserLockdownService::Handle_GetFlaggedSitesList(PyCallArgs &call)
 {
-    return new PyList();
+    // all packets show none here
+    return PyStatic.NewNone();
 }
 
-PyResult BrowserLockdownService::Handle_GetDefaultHomePage(PyCallArgs &call) {
-    const std::string url = "http:://eve.alasiya.net/";
-    return new PyWString(url);
+PyResult BrowserLockdownService::Handle_GetDefaultHomePage(PyCallArgs &call)
+{
+    return new PyWString(HomePageURL);
 }
 
-PyResult BrowserLockdownService::Handle_IsBrowserInLockdown(PyCallArgs &call) {
+PyResult BrowserLockdownService::Handle_IsBrowserInLockdown(PyCallArgs &call)
+{
     return new PyBool(sConfig.server.DisableIGB);
 }
