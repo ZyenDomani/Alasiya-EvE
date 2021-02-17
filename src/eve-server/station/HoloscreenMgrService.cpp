@@ -75,12 +75,12 @@ PyResult HoloscreenMgrService::Handle_GetTwoHourCache(PyCallArgs& call)
 PyResult HoloscreenMgrService::Handle_GetRuntimeCache(PyCallArgs& call)
 {
     PyDict* agents = new PyDict();
-    agents->SetItemString("Agent_DUMMY", new PyDict());
+        agents->SetItemString("Agent_DUMMY", new PyDict());
     PyDict* args = new PyDict();
-    args->SetItemString("careerAgents", agents);
-    args->SetItemString("incursionReport", new PyList());
-    args->SetItemString("epicArcAgents", new PyDict());
-    args->SetItemString("sovChangesReport", new PyList());
+        args->SetItemString("careerAgents", agents);
+        args->SetItemString("incursionReport", new PyList());
+        args->SetItemString("epicArcAgents", new PyDict());
+        args->SetItemString("sovChangesReport", new PyList());
     return new PyObject("util.KeyVal", args);
 }
 
@@ -94,3 +94,50 @@ PyResult HoloscreenMgrService::Handle_GetRuntimeCache(PyCallArgs& call)
       influence
       stagingSolarSystemID
     */
+
+/*
+ideas for holoscreen in CQ:
+    - corp recruit ads
+    - incursion data
+    - relevant system data for player's current system
+    - others?
+    - more?
+
+    */
+
+
+
+/*
+ *
+        [PySubStream 112 bytes]
+          [PyTuple 4 items]
+            [PyInt 1]
+            [PyString "GetCachableObject"]
+            [PyTuple 4 items]
+              [PyInt 1]
+              [PyTuple 3 items]
+                [PyString "Method Call"]
+                [PyString "server"]
+                [PyTuple 2 items]
+                  [PyString "holoscreenMgr"]
+                  [PyString "GetRuntimeCache"]
+              [PyTuple 2 items]
+                [PyIntegerVar 129519218650427395]
+                [PyInt 53737]
+              [PyInt 700318]
+              
+      [PySubStream 774 bytes]
+        [PyObjectData Name: objectCaching.CachedObject]
+          [PyTuple 7 items]
+            [PyTuple 2 items]
+              [PyIntegerVar 129519242704509384]
+              [PyInt 9603]
+            [PyNone]
+            [PyInt 700322]
+            [PyInt 1]
+            [PyString "xm?Kka??L????m?T
+ ? ??6TP.*?%?k?b??4??*?2I?n?????i??h????????C?? ?_?}G:?B????????i????f????D?5r8[??5-??1??-_?7^N,K?2???`9m?UF???x`??<pK?g???P}?6HE???2rI?_????9mJ?
+ ???? }N?A?9???   ?}??Nd^???? ?l???# ???0?Q?+ ?      ?`X@??UwA?UiD?????????&d??DJe?;Ad???
+ "u3?? 2V??"uS]/?T?U
+
+ */

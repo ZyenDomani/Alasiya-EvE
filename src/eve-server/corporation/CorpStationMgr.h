@@ -58,4 +58,11 @@ protected:
 
 #endif
 
-
+/*
+ * RentingOfficeRequestDenied
+ * RentingAnOfficeCostsMore
+ * NoOfficeAtStation
+ * NoOfficesAreAvailableForRenting
+ * OfficeEstablishmentItemNotAtStation
+ * OfficeRentalCostMustBePositive
+ */

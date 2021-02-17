@@ -143,7 +143,7 @@ void EntityList::Add( Client* pClient ) {
 }
 
 void EntityList::Remove(Client* pClient) {
-	/* note:  will get expensive for many clients  */
+    /* note:  will get expensive for many clients  */
     std::vector<Client*>::iterator itr = m_clients.begin();
     for (; itr != m_clients.end(); ++itr)
         if ((*itr) == pClient) {
@@ -743,14 +743,6 @@ void EntityList::Unicast(uint32 charID, const char* notifyType, const char* idTy
 }
 
 /** @todo @note NOTE: TODO: HACK: the Find* methods below can get very expensive for many players */
-
-// used in mkt shit....is there a better way for this one?
-//   this should NOT be used.  fix mkt and delete this
-void EntityList::FindByRegionID(uint32 regionID, std::vector<Client*> &result) const {
-    for (auto cur : m_clients)
-        if (cur->GetRegionID() == regionID)
-            result.push_back(cur);
-}
 
 //used by gmCommands....i dont like this one either....but at least it's use will be seldom
 Client* EntityList::FindClientByName(const char* name) const {

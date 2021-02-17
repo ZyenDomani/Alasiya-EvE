@@ -230,7 +230,7 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
         _log(INV__TRACE, "Inventory::RemoveItem(1) - Updated %s(%u) to no longer contain %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     } else
-        _log(INV__TRACE,"Inventory::RemoveItem(1) - %s(%u) does not contain %s(%u) in %s.", \
+        _log(INV__WARNING,"Inventory::RemoveItem(1) - %s(%u) contents does not contain %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 
     /** @todo @note  this isnt working right, and im not sure why yet...  */
@@ -244,7 +244,7 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
         }
     }
 
-    _log(INV__TRACE,"Inventory::RemoveItem(2) - %s(%u) flagMap does not contain %s(%u) in %s.", \
+    _log(INV__WARNING,"Inventory::RemoveItem(2) - %s(%u) flagMap does not contain %s(%u) in %s.", \
             m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
