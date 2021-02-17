@@ -36,9 +36,6 @@ check/fix loading linked weapons
     - reloading grouped weapons should divide evenly between modules.
         it currently fills modules in slot order.
 
-all MM and ship calls need to verify throw status
-    - test with Client->CanThrow() to verify throwable status
-
 check into making module tics faster (like targetMgr) for sub-tic timer calls/checks
 
 check repack/reproc ships for insurance and delete if applicable
@@ -46,9 +43,8 @@ check repack/reproc ships for insurance and delete if applicable
 also check containers for contents and remove/deny before repack
 
 check insurance payouts.   rounds full ship value up
-check trade - ships retain insurance
 
-dungeon deco items need better placement
+check trade - ships retain insurance
 
 check for item ownership before rename
     verify OnCfgDataChanged
@@ -57,6 +53,7 @@ check for item ownership before rename
 error:
 "turret not fitted on shipID (npc)"
 
+dungeon deco items need better placement
 
 *******************************************************
 ********  improvements

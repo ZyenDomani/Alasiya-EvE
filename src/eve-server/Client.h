@@ -193,7 +193,8 @@ public:
 private:
     // ship MUST be added to system before update (need sysMgr, sysBubble, DestinyMgr)
     void UpdateNewShip();    //  calls destiny update methods
-    void CheckShipRef(ShipItemRef newShipRef);  // called by Board methods
+    // called by Board methods
+    void CheckShipRef(ShipItemRef newShipRef);  // can throw
 
 public:
     // misc char functions

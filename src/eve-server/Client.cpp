@@ -1026,6 +1026,7 @@ void Client::SetPodItem() {
         CreateNewPod();
 }
 
+// can throw
 void Client::CheckShipRef(ShipItemRef newShipRef)
 {
     if (newShipRef.get() == nullptr) {

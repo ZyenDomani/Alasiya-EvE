@@ -398,6 +398,7 @@ bool ModuleManager::InstallSubSystem(ModuleItemRef mRef, EVEItemFlags flag)
     return true;
 }
 
+// not used
 void ModuleManager::CheckSlotFitLimited(EVEItemFlags flag)
 {
     if (IsRigSlot(flag))
@@ -419,6 +420,7 @@ void ModuleManager::CheckSlotFitLimited(EVEItemFlags flag)
     throw PyException(MakeUserError("NoFreeShipSlots"));
 }
 
+// not used
 void ModuleManager::CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (iRef->HasAttribute(AttrMaxGroupFitted)) {
@@ -494,6 +496,7 @@ void ModuleManager::UnfitModule(EVEItemFlags flag) {
     SafeDelete(pMod);
 }
 
+// cannot throw without test
 bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
@@ -501,14 +504,21 @@ bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
         return false;
     }
     if (IsSlotOccupied(flag)) {
-        //throw PyException( MakeUserError("SlotAlreadyOccupied"));
         GenericModule* pMod = GetModule(flag);
         if (pMod == nullptr)
             return false;
 
-        if (pShipItem->HasPilot() and !pShipItem->GetPilot()->IsLogin())
-            pShipItem->GetPilot()->SendErrorMsg("You cannot add %s to %s because %s is already there.", \
-                    mRef->name(), sDataMgr.GetFlagName(flag), pMod->GetSelf()->name());
+        if (pShipItem->HasPilot()) {
+            if (!pShipItem->GetPilot()->IsLogin()) {
+                if (pShipItem->GetPilot()->CanThrow()) {
+                    pShipItem->GetPilot()->SendErrorMsg("You cannot add %s to %s because %s is already there.", \
+                            mRef->name(), sDataMgr.GetFlagName(flag), pMod->GetSelf()->name());
+                } else {
+                    throw PyException( MakeUserError("SlotAlreadyOccupied"));
+                }
+            }
+        }
+        
         // change this to use movemodule?
         return false;
     }

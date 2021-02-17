@@ -479,6 +479,7 @@ void ShipItem::AddItem(InventoryItemRef iRef)
     /** @todo update destiny mass after adding item */
 }
 
+// cannot throw
 uint32 ShipItem::AddItemByFlag(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)
 {
     if (iRef.get() == nullptr)
@@ -595,6 +596,7 @@ InventoryItemRef ShipItem::GetModuleRef(uint32 modID)
     return InventoryItemRef(nullptr);
 }
 
+// only called from dogma call.  can throw
 void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
 {
     if (cRef.get() == nullptr)
@@ -658,6 +660,7 @@ NotEnoughChargeSpace  {'FullPath': u'UI/Messages', 'messageID': 259162, 'label':
 
  */
 
+// only called from dogma call.  can throw
 void ShipItem::LoadChargesToBank(EVEItemFlags flag, std::vector< int32 >& chargeIDs)
 {
     int8 pos = 0;
@@ -679,6 +682,7 @@ void ShipItem::LoadChargesToBank(EVEItemFlags flag, std::vector< int32 >& charge
     }
 }
 
+// only called from dogma call.  can throw
 void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs)
 {
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
@@ -730,6 +734,7 @@ void ShipItem::RemoveCharge(EVEItemFlags fromFlag)
     }
 }
 
+// only called from inv bound call.  can throw
 void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (m_ModuleManager->IsSlotOccupied(flag))
@@ -814,7 +819,8 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
     return (EVEItemFlags)slotFound;
 }
 
-// this can throw for now...
+
+// only called from inv bound call.  can throw
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     // this will never hit.  client checks before call.
     if (!m_ModuleManager->VerifySlotExchange(slot1, slot2))
@@ -1360,6 +1366,7 @@ void ShipItem::GetLinkedWeaponMods( EVEItemFlags flag, std::vector<GenericModule
     }
 }
 
+// only called from dogma call.  can throw
 void ShipItem::LinkWeapon(uint32 masterID, uint32 slaveID)
 {
     if (masterID == slaveID)
@@ -1559,6 +1566,7 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
     return slaveID;
 }
 
+// only called from dogma call.  can throw
 void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
 {
     if (masterID == slaveID)
@@ -1594,6 +1602,7 @@ void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
     }
 }
 
+// only called from dogma call.  can throw
 void ShipItem::UnlinkGroup(uint32 memberID, bool update/*false*/)
 {
     GenericModule* pMod1 = m_ModuleManager->GetModule(memberID);
@@ -1642,6 +1651,7 @@ void ShipItem::UnlinkGroup(uint32 memberID, bool update/*false*/)
     }
 }
 
+// called from here and dogma call.  can throw
 void ShipItem::UnlinkAllWeapons()
 {
     std::list< GenericModule* > weaponList;
