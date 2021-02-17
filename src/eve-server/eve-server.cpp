@@ -673,7 +673,6 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("lookupSvc", new LookupService(&pyServMgr));
     pyServMgr.RegisterService("LPSvc", new LPService(&pyServMgr));
     pyServMgr.RegisterService("storeServer", new LPStore(&pyServMgr));
-    pyServMgr.lsc_service = new LSCService(&pyServMgr, &command_dispatcher);
     pyServMgr.RegisterService("LSC", pyServMgr.lsc_service);
     pyServMgr.RegisterService("machoNet", new NetService(&pyServMgr));
     pyServMgr.RegisterService("mailMgr", new MailMgrService(&pyServMgr));
@@ -683,7 +682,6 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("missionMgr", new MissionMgrService(&pyServMgr));
     pyServMgr.RegisterService("movementServer", new MovementService(&pyServMgr));
     pyServMgr.RegisterService("notificationMgr", new NotificationMgrService(&pyServMgr));
-    pyServMgr.cache_service = new ObjCacheService(&pyServMgr, sConfig.files.cacheDir.c_str());
     pyServMgr.RegisterService("objectCaching", pyServMgr.cache_service);
     pyServMgr.RegisterService("onlineStatus", new OnlineStatusService(&pyServMgr));
     pyServMgr.RegisterService("paperDollServer", new PaperDollService(&pyServMgr));
@@ -714,6 +712,8 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("encounterSpawnServer", new encounterSpawnServer(&pyServMgr));
     pyServMgr.RegisterService("netStateServer", new netStateServer(&pyServMgr));
     pyServMgr.RegisterService("zActionServer", new zActionServer(&pyServMgr));
+    pyServMgr.lsc_service = new LSCService(&pyServMgr, &command_dispatcher);
+    pyServMgr.cache_service = new ObjCacheService(&pyServMgr, sConfig.files.cacheDir.c_str());
     pyServMgr.Initalize(startTime);
     std::printf("\n");     // spacer
 

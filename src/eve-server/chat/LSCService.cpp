@@ -106,6 +106,11 @@ LSCService::~LSCService() {
     SafeDelete(m_db);
 }
 
+void LSCService::Init(CommandDispatcher* cd )
+{
+
+}
+
 /*
 LSC__ERROR=1
 LSC__WARNING=0

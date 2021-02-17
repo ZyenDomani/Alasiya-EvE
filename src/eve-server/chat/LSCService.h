@@ -29,6 +29,8 @@
 
 #include <vector>
 
+//#include "utils/Singleton.h"
+
 #include "chat/LSCDB.h"
 #include "chat/LSCChannel.h"
 #include "PyService.h"
@@ -36,7 +38,9 @@
 
 class CommandDispatcher;
 
-class LSCService : public PyService
+class LSCService
+: //public Singleton<ItemFactory>,
+  public PyService
 {
 public:
     // All user-created chat channels are created with IDs that are in this set:
@@ -47,7 +51,10 @@ public:
     LSCService(PyServiceMgr *mgr, CommandDispatcher *cd);
     ~LSCService();
 
+    void Init(CommandDispatcher *cd);
+
     PyResult ExecuteCommand(Client *from, const char *msg);
+
     void CharacterLogin(Client *pClient);
     void SendServerMOTD(Client* pClient);
 
@@ -63,7 +70,6 @@ public:
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
-
     CommandDispatcher *const m_commandDispatch;
 
     LSCDB* m_db;
@@ -99,6 +105,12 @@ private:
                               bool memberless = false, bool maillist = false, bool temporary = false, bool languageRestriction = false);
 
 };
+
+/*  to finish later...
+//Singleton
+#define sLscSvc \
+( LSCService::get() )
+*/
 
 #endif
 

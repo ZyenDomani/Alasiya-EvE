@@ -83,13 +83,13 @@ public:
 protected:
     std::map<std::string, PyService*>   m_svcList;      //we own these pointers.
 
-    uint32 m_nextBindID;
 
     typedef std::map<uint32, BoundObj>  ObjectsBoundMap;
     typedef ObjectsBoundMap::iterator   ObjectsBoundMapItr;
     ObjectsBoundMap                     m_boundObjects;         // bindID/BoundObject{client/object(PyBoundObject)}
 
     uint32 m_nodeID;
+    uint32 m_nextBindID;
 };
 
 #endif
