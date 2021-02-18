@@ -60,8 +60,9 @@ PyResult BrowserLockdownService::Handle_GetFlaggedSitesHash(PyCallArgs &call)
 
 PyResult BrowserLockdownService::Handle_GetFlaggedSitesList(PyCallArgs &call)
 {
-    // all packets show none here
-    return PyStatic.NewNone();
+    // all packets show none here, however, this throws error for me in crucible.
+    //  needs to be empty list to play nice with above hash
+    return PyStatic.mtList();
 }
 
 PyResult BrowserLockdownService::Handle_GetDefaultHomePage(PyCallArgs &call)

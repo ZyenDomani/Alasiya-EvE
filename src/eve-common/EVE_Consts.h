@@ -8,7 +8,7 @@
 #include <array>
 
 // define default home page for IGB
-const std::string HomePageURL = "http:://eve.alasiya.net/";
+const std::string HomePageURL = "http://eve.alasiya.net/";
 
 /*
  *  misc static consts
