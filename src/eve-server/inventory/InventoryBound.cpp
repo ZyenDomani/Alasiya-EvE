@@ -228,11 +228,13 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     }
 
     sItemFactory.SetUsingClient(call.client);
-    Inventory* pInv = sItemFactory.GetInventoryFromId(args.locationID);
+    Inventory* pInv(nullptr); // = sItemFactory.GetInventoryFromId(args.locationID);
+    /* args.locationID is NOT the destination...it is the source, and NOT what we're looking for here.
     if (pInv == nullptr) {
         _log(INV__WARNING, "Failed to get container inventory for locationID %u.", args.locationID);
         return nullptr;
     }
+    */
 
     std::vector<PyRep *>::const_iterator itr = args.mergeData->begin(), end = args.mergeData->end();
     for (; itr != end; ++itr) {
@@ -252,6 +254,13 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
         InventoryItemRef destItem = sItemFactory.GetItem( data.destID );
         if (destItem.get() == nullptr) {
             _log(INV__WARNING, "Failed to load destination item %u. Skipping.", data.destID);
+            continue;
+        }
+
+        // get inventory of destination container for ValidateAddItem() check
+        pInv = sItemFactory.GetInventoryFromId(destItem->locationID());
+        if (pInv == nullptr) {
+            _log(INV__WARNING, "Failed to get inventory for locationID %u.", destItem->locationID());
             continue;
         }
 
