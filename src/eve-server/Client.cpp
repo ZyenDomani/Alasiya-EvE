@@ -2523,7 +2523,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
         if (dest == nullptr) {
             sLog.Error("Client::CallReq","Unable to find service to handle call to: %s", packet->dest.service.c_str());
             packet->dest.Dump(CLIENT__CALL_DUMP, "    ");
-            throw PyException(MakeUserError("ServiceNotFound"));
+            throw PyException(MakeUserError("ServiceNotFound"));  // this msg is invalid ("Message not found")
         }
     }
 
