@@ -65,6 +65,7 @@ public:
         PyCallable_REG_CALL(InvBrokerBound, TakeOutTrash);
         PyCallable_REG_CALL(InvBrokerBound, SplitStack);
         PyCallable_REG_CALL(InvBrokerBound, DeliverToCorpHangar);
+        PyCallable_REG_CALL(InvBrokerBound, DeliverToCorpMember);
 
     }
     virtual ~InvBrokerBound()
@@ -87,6 +88,7 @@ public:
     PyCallable_DECL_CALL(TakeOutTrash);
     PyCallable_DECL_CALL(SplitStack);
     PyCallable_DECL_CALL(DeliverToCorpHangar);
+    PyCallable_DECL_CALL(DeliverToCorpMember);
 
 
 protected:
@@ -512,6 +514,16 @@ PyResult InvBrokerBound::Handle_TakeOutTrash(PyCallArgs &call) {
 
 PyResult InvBrokerBound::Handle_SplitStack(PyCallArgs &call) {
     //
+    /*
+    18:22:26 W InvBrokerBound::Handle_SplitStack(): size= 4
+    18:22:26 [InvDump]   Call Arguments:
+    18:22:26 [InvDump]      Tuple: 4 elements
+    18:22:26 [InvDump]       [ 0]    Integer: 60014140          << locationID
+    18:22:26 [InvDump]       [ 1]    Integer: 140024213         << itemID to split
+    18:22:26 [InvDump]       [ 2]    Integer: 100               << qty to take
+    18:22:26 [InvDump]       [ 3]    Integer: 98000001          << ownerID (corpID)
+    */
+
     sLog.Warning( "InvBrokerBound::Handle_SplitStack()", "size= %u", call.tuple->size() );
     call.Dump(INV__DUMP);
 
@@ -520,7 +532,39 @@ PyResult InvBrokerBound::Handle_SplitStack(PyCallArgs &call) {
 
 PyResult InvBrokerBound::Handle_DeliverToCorpHangar(PyCallArgs &call) {
     //
+    /*
+    18:11:51 W InvBrokerBound::Handle_DeliverToCorpHangar(): size= 6
+    18:11:51 [InvDump]   Call Arguments:
+    18:11:51 [InvDump]      Tuple: 6 elements
+    18:11:51 [InvDump]       [ 0]    Integer: 100000000         << officeID
+    18:11:51 [InvDump]       [ 1]    Integer: 60014140          << locationID
+    18:11:51 [InvDump]       [ 2]   List: 1 elements            << items to deliver
+    18:11:51 [InvDump]       [ 2]   [ 0]    Integer: 140024211  << itemID
+    18:11:51 [InvDump]       [ 3]       None                    << u/k
+    18:11:51 [InvDump]       [ 4]    Integer: 98000001          << ownerID (corpID)
+    18:11:51 [InvDump]       [ 5]    Integer: 119               << destination flagID
+    */
+
     sLog.Warning( "InvBrokerBound::Handle_DeliverToCorpHangar()", "size= %u", call.tuple->size() );
+    call.Dump(INV__DUMP);
+
+    return nullptr;
+}
+
+PyResult InvBrokerBound::Handle_DeliverToCorpMember(PyCallArgs &call) {
+    //
+    /*
+    18:49:06 W InvBrokerBound::Handle_DeliverToCorpMember(): size= 5
+    18:49:06 [InvDump]   Call Arguments:
+    18:49:06 [InvDump]      Tuple: 5 elements
+    18:49:06 [InvDump]       [ 0]    Integer: 90000000          << member charID
+    18:49:06 [InvDump]       [ 1]    Integer: 60014140          << locationID
+    18:49:06 [InvDump]       [ 2]   List: 1 elements            << items to deliver
+    18:49:06 [InvDump]       [ 2]   [ 0]    Integer: 140024205  << itemID
+    18:49:06 [InvDump]       [ 3]       None                    << u/k
+    18:49:06 [InvDump]       [ 4]    Integer: 98000001          << ownerID (corpID)
+    */
+    sLog.Warning( "InvBrokerBound::Handle_DeliverToCorpMember()", "size= %u", call.tuple->size() );
     call.Dump(INV__DUMP);
 
     return nullptr;
