@@ -1221,7 +1221,7 @@ uint32 SystemManager::GetRandBeltID()
 
 void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) const {
     using namespace Destiny;
-    Buffer* stateBuffer = new Buffer();
+    Buffer* stateBuffer(new Buffer());
 
     AddBall_header head = AddBall_header();
         head.packet_type = 0;   // 0 = full state   1 = balls
@@ -1285,6 +1285,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         row->SetField("ownerID",       PyStatic.NewOne());  // should this be owning factionID?  yes
         row->SetField("locationID",    new PyInt(m_data.constellationID));
         row->SetField("flagID",        PyStatic.NewZero());
+        row->SetField("quantity",      PyStatic.NewNegOne());
         row->SetField("groupID",       new PyInt(5));
         row->SetField("categoryID",    new PyInt(2));
         row->SetField("customInfo",    new PyString(""));
