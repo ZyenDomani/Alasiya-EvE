@@ -428,7 +428,7 @@ InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) cons
     return InventoryItemRef(nullptr);
 }
 
-void Inventory::GetInventoryList( std::map< uint32, InventoryItemRef >& invMap ) {
+void Inventory::GetInventoryMap( std::map< uint32, InventoryItemRef >& invMap ) {
     for (auto cur : mContents)
         invMap.emplace(cur.first, cur.second);
 }
@@ -474,7 +474,7 @@ bool Inventory::GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef& iRef) c
 }
 
 bool Inventory::IsEmptyByFlag(EVEItemFlags flag) const {
-    return m_contentsByFlag.find(flag) == m_contentsByFlag.end();
+    return (m_contentsByFlag.find(flag) == m_contentsByFlag.end());
 }
 
 uint32 Inventory::GetItemsByFlagRange(EVEItemFlags lowflag, EVEItemFlags highflag, std::vector<InventoryItemRef> &items) const
@@ -532,6 +532,7 @@ bool Inventory::ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag) const
 
 void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
 {
+    /** @todo  fix this to work with m_contentsByFlag also!!  */
     InventoryItemRef iRef(nullptr);
     std::map<uint16, InventoryItemRef> types;
     std::map<uint16, InventoryItemRef>::iterator tItr = types.end();
@@ -571,11 +572,13 @@ float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
 
 bool Inventory::HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) const {
 
-    float capacity = GetRemainingCapacity(flag);
-    float volume = iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float();
+    float capacity(GetRemainingCapacity(flag));
+    float volume(iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float());
 
-    _log(INV__CAPY, "Inventory::HasAvailableSpace() - Testing %s's %s available capy of %f to add %u %s at %f (%f each)",
-         m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), volume, iRef->GetAttribute(AttrVolume).get_float());
+    if (is_log_enabled(INV__CAPY))
+        _log(INV__CAPY, "Inventory::HasAvailableSpace() - Testing %s's %s available capy of %f to add %u %s at %f (%f each)", \
+                m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), \
+                volume, iRef->GetAttribute(AttrVolume).get_float());
 
     // check capy for all units
     if (volume > capacity)
@@ -664,22 +667,22 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
     _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %.2f to add %i %s at %.2f (%.3f each)",
          m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), totalVolume, volume);
 
-    /** modify checks for splitting items in same container
-     * flag and iRef->flag() will be same, then add volume of qty to move to item available capy before other checks
-     *   this would (should) show item (and associated volume) being removed from container to allow subsequent additions
+    /** modify checks for splitting items in same container or moving items between a container's corp hangars
+     * flag and iRef->flag() will be same (or same type).
+     * add requested move volume to container's available capy before other checks
+     *   this will show item being removed from container to allow subsequent additions
      */
-    if (flag == iRef->flag()) {
-        // possible item split.  will have to molest the shit outta this one to verify nullablity of exploits
-        capacity += totalVolume;
-        _log(INV__CAPY, "Inventory::ValidateAddItem() - flag %s (%u) == iRef->flag() %s (%u) - test capacity changed to %.2f",
-             sDataMgr.GetFlagName(flag), flag, sDataMgr.GetFlagName(iRef->flag()), iRef->flag(), capacity);
+    if (m_self->itemID() == iRef->locationID())
+        if ((flag == iRef->flag())
+        or  (IsHangarFlag(flag) and IsHangarFlag(iRef->flag()))) {
+            // possible item split.  will have to molest the shit outta this one to verify nullablity of exploits
+            capacity += totalVolume;
+            _log(INV__CAPY, "Inventory::ValidateAddItem() - flag() %s (%u) == iRef->flag() %s (%u) - test capacity changed to %.2f",
+                    sDataMgr.GetFlagName(flag), flag, sDataMgr.GetFlagName(iRef->flag()), iRef->flag(), capacity);
     }
 
-    //  convert to integer for comparison tests to avoid float comparison
-    // currently, 0.01m3 free will not allow addition of 0.01m3 item cause they dont match (0.01 != 0.00999995)
-
-    // check capy for single unit, fudging a bit for inaccuracies of float comparison
-    if (capacity < (volume + 0.0001)) { // smallest volume is 0.0025
+    // check capy for single unit
+    if (capacity < volume) { // smallest volume is 0.0025
         Client* pClient = sItemFactory.GetUsingClient();
         if (pClient != nullptr) {
             std::map<std::string, PyRep *> args;
@@ -720,15 +723,12 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
         }
         return false;
     }
+
     // check capy for all units
-    if (totalVolume > (capacity + 0.0001)) {
+    if (totalVolume > capacity) {
         std::map<std::string, PyRep *> args;
         args["volume"] = new PyFloat(totalVolume);
-
-        if (IsCargoHoldFlag(flag)) {
-            args["available"] = new PyFloat(capacity);
-            throw PyException(MakeUserError("NotEnoughCargoSpace", args));
-        } else if (IsSpecialHoldFlag(flag)) {
+        if (IsSpecialHoldFlag(flag)) {
             args["available"] = new PyInt(capacity);
             throw PyException(MakeUserError("NotEnoughSpecialBaySpace", args));
         } else if (flag == flagDroneBay) {
@@ -739,6 +739,9 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
             args["maximum"] = new PyInt(GetCapacity(flag));
             args["used"] = new PyInt(GetStoredVolume(flag));
             throw PyException(MakeUserError("NotEnoughCargoSpaceOverload", args));
+        } else if (IsCargoHoldFlag(flag)) {
+            args["available"] = new PyFloat(capacity);
+            throw PyException(MakeUserError("NotEnoughCargoSpace", args));
         } else {
             args["itemTypeName"] = new PyInt(iRef->itemID());
             args["itemVolume"] = new PyFloat(totalVolume);

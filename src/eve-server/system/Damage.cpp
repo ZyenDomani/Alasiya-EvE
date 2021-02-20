@@ -520,7 +520,7 @@ void ShipSE::Killed(Damage &fatal_blow) {
         */
         std::map<uint32, InventoryItemRef> deadShipInventory;
         deadShipInventory.clear();
-        GetShipItemRef()->GetMyInventory()->GetInventoryList(deadShipInventory);
+        GetShipItemRef()->GetMyInventory()->GetInventoryMap(deadShipInventory);
         if (deadShipInventory.empty()) {
             blob << "<i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/>";
         } else {

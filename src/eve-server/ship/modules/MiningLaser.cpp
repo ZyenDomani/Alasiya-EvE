@@ -181,11 +181,11 @@ void MiningLaser::DeactivateCycle(bool abort/*false*/)
 /** @todo verify for ice and gas */
 void MiningLaser::ProcessCycle(bool abort/*false*/)
 {
-    float cycleVol = GetMiningVolume();
+    float cycleVol(GetMiningVolume());
 
-    InventoryItemRef roidRef = m_targetSE->GetSelf();
+    InventoryItemRef roidRef(m_targetSE->GetSelf());
     // verify gas clouds have volume attr.
-    float oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
+    float oreVolume(roidRef->GetAttribute(AttrVolume).get_float());
 
     if ((cycleVol < oreVolume) or (cycleVol <= 0) or (oreVolume <= 0)) {
         _log(MINING__ERROR, "%s(%u) - Mining Laser could not extract ore from %s(%u)", m_modRef->name(), m_modRef->itemID(), roidRef->name(), m_targetSE->GetID() );
@@ -194,7 +194,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         return;
     }
 
-    float oreAmount = (cycleVol /oreVolume);
+    float oreAmount((cycleVol /oreVolume));
     if (abort) {
         // adjust amount AND cycle for partial cycle
         float delta = 1 - (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_float());
@@ -205,11 +205,11 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         _log(MINING__DEBUG, "ProcessCycle(abort) -  cycleVol:%.2f, oreAmount:%.2f, delta:%.5f", cycleVol, oreAmount, delta);
     }
 
-    float roidQuantity = roidRef->GetAttribute(AttrQuantity).get_float();
+    float roidQuantity(roidRef->GetAttribute(AttrQuantity).get_float());
     if (oreAmount > roidQuantity)
         oreAmount = roidQuantity;
 
-    float remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(m_holdFlag);
+    float remainingCargoVolume(m_shipRef->GetRemainingVolumeByFlag(m_holdFlag));
     if (remainingCargoVolume < cycleVol) {
         // cargohold is full.  this module will fill to available volume and trash the rest
         if (remainingCargoVolume > oreVolume)
@@ -249,7 +249,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         //rock is depleted.
         // this will get all active miners on depleted rock and set mined amount accordingly for each.
         m_targetSE->TargetMgr()->Depleted(this);
-        SystemEntity* pSE = m_targetSE;
+        SystemEntity* pSE(m_targetSE);
         RemoveTarget(m_targetSE);
         // m_targetSE is null after above call returns
         pSE->Delete();
@@ -259,19 +259,16 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
 
     // at this point, there is still plenty of ore in rock
     ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), locTemp, flagNone, oreAmount);
-    InventoryItemRef oRef = sItemFactory.SpawnItem( idata );
+    InventoryItemRef oRef(sItemFactory.SpawnItem(idata));
     if (oRef.get() == nullptr) {
         _log(MINING__ERROR, "Could not create mined ore for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );
         return;
     }
 
     bool oreError(true);
-    // verify proper hold for item, and available space
-    if (m_shipRef->ValidateAddItem(m_holdFlag, oRef)) {
-        if (m_shipRef->GetMyInventory()->HasAvailableSpace(m_holdFlag, oRef)) {
-            oreError = false;
-            oRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
-        }
+    if (m_shipRef->GetMyInventory()->HasAvailableSpace(m_holdFlag, oRef)) {
+        oreError = false;
+        oRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
     }
 
     // add data to StatisticMgr
@@ -288,19 +285,18 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     if (!m_chargeLoaded or (m_chargeRef.get() == nullptr))
         return;
 
-    if (m_crystalDmgChance > 0.0f)
-        if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
-            m_crystalDmg += m_crystalDmgAmount;
-            if (m_crystalDmg > 0.99f) {
-                m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates due to the destruction of it's %s.", \
-                            m_modRef->name(), m_chargeRef->name());
-                InventoryItemRef chargeRef(m_chargeRef);   // make a copy of charge's item ref, as m_chargeRef = NULL after next call returns
-                m_shipRef->RemoveItem(m_chargeRef);
-                chargeRef->Delete();
-            } else {
-                m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
-            }
+    if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
+        m_crystalDmg += m_crystalDmgAmount;
+        if (m_crystalDmg > 0.99f) {
+            m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates due to the destruction of it's %s.", \
+                    m_modRef->name(), m_chargeRef->name());
+            InventoryItemRef chargeRef(m_chargeRef);   // make a copy of charge's item ref, as m_chargeRef = NULL after next call returns
+            m_shipRef->RemoveItem(m_chargeRef);
+            chargeRef->Delete();
+        } else {
+            m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
         }
+    }
 }
 
 void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {

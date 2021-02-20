@@ -68,6 +68,7 @@ public:
         PyCallable_REG_CALL(ShipBound, ScoopToSMA);
         PyCallable_REG_CALL(ShipBound, LaunchFromContainer);
         PyCallable_REG_CALL(ShipBound, Jettison);
+        PyCallable_REG_CALL(ShipBound, ConfigureShip);
         PyCallable_REG_CALL(ShipBound, GetShipConfiguration);
         PyCallable_REG_CALL(ShipBound, SelfDestruct);
 
@@ -93,6 +94,7 @@ public:
     PyCallable_DECL_CALL(ScoopToSMA);
     PyCallable_DECL_CALL(LaunchFromContainer);
     PyCallable_DECL_CALL(Jettison);
+    PyCallable_DECL_CALL(ConfigureShip);
     PyCallable_DECL_CALL(GetShipConfiguration);
     PyCallable_DECL_CALL(SelfDestruct);
 
@@ -627,16 +629,18 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     // per patch notes, if ship is too far to scoop, it will automagically travel closer till drone is within range, then scoop and stop
 
     Client* pClient(call.client);
+    SystemEntity* pDroneSE(nullptr);
+    InventoryItemRef iRef(nullptr);
     SystemManager* pSysMgr(pClient->SystemMgr());
     std::vector<int32>::const_iterator cur = args.ints.begin();
     for(; cur != args.ints.end(); ++cur) {
-        SystemEntity* pDroneSE = pSysMgr->GetSE(*cur);
+        pDroneSE = pSysMgr->GetSE(*cur);
         if (pDroneSE == nullptr) {
             _log(SERVICE__ERROR, "%s: Unable to find droneSE %u to scoop.", pClient->GetName(), *cur);
             continue;
         }
 
-        InventoryItemRef iRef(pDroneSE->GetSelf());
+        iRef = pDroneSE->GetSelf();
         if (iRef.get() == nullptr) {
             _log(SERVICE__ERROR, "%s: Unable to find droneItem %u to scoop.", pClient->GetName(), *cur);
             continue;
@@ -644,7 +648,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
 
         //AttrDroneBaySlotsLeft??
         // Check to see that this is really a drone:
-        pClient->GetShip()->ValidateAddItem(flagDroneBay, iRef);
+        pClient->GetShip()->VerifyHoldType(flagDroneBay, iRef, pClient);
 
         // check ownership/control
         if (pDroneSE->GetDroneSE()->IsEnabled())
@@ -995,6 +999,22 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     return nullptr;
 }
 
+PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call)
+{
+    PyDict* dict = new PyDict();
+    dict->SetItemString("allowFleetSMBUsage", new PyBool(call.client->GetShipSE()->GetFleetSMBUsage()));
+    return dict;
+}
+
+PyResult ShipBound::Handle_ConfigureShip(PyCallArgs &call)
+{
+    PyDict* dict = call.tuple->GetItem(0)->AsDict();
+    call.client->GetShipSE()->SetFleetSMBUsage(dict->GetItemString("allowFleetSMBUsage")->AsBool());
+
+    return nullptr;
+}
+
+
 /** ***********************************************************************
  * @note   these below are partially coded
  */
@@ -1003,7 +1023,6 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 /** ***********************************************************************
  * @note   these do absolutely nothing at this time....
  */
-
 
 
 PyResult ShipBound::Handle_LaunchFromContainer(PyCallArgs &call) {
@@ -1026,7 +1045,7 @@ PyResult ShipBound::Handle_LaunchFromContainer(PyCallArgs &call) {
 
 // ShipMaintenanceArray
 PyResult ShipBound::Handle_ScoopToSMA(PyCallArgs &call) {
-    /*      ******* no packet data ***********     */
+    // no packet data
 
     _log(SERVICE__CALL_DUMP, "ShipBound::Handle_ScoopToSMA()");
     call.Dump(SERVICE__CALL_DUMP);
@@ -1034,28 +1053,10 @@ PyResult ShipBound::Handle_ScoopToSMA(PyCallArgs &call) {
     return nullptr;
 }
 
-PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call) {
-    /*      ******* no packet data ***********
-     *
-     *     13:15:58 L ShipBound::Handle_GetShipConfiguration(): size=0
-     *     13:15:58 [SvcCall]   Call Arguments:
-     *     13:15:58 [SvcCall]       Tuple: Empty
-     *     _log(SERVICE__CALL_DUMP, "ShipBound::Handle_GetShipConfiguration()", "size=%u", call.tuple->size());
-     *     call.Dump(SERVICE__CALL_DUMP);
-     */
-
-    /*
-     *        self.conf = self.ship.GetShipConfiguration()
-     *        self.sr.smballowfleet.SetChecked(self.conf['allowFleetSMBUsage']) (SMB = ShipMaintenanceBay)
-     */
-
-    return nullptr;
-}
-
 
 PyResult ShipBound::Handle_BoardStoredShip(PyCallArgs &call) {
-    /*      ******* no packet data ***********
-     */
+    // no packet data
+
     //sm.StartService('sessionMgr').PerformSessionChange('board', ship.BoardStoredShip, structureID, shipID)
     _log(SERVICE__CALL_DUMP, "ShipBound::Handle_BoardStoredShip()");
     call.Dump(SERVICE__CALL_DUMP);
@@ -1064,8 +1065,8 @@ PyResult ShipBound::Handle_BoardStoredShip(PyCallArgs &call) {
 }
 
 PyResult ShipBound::Handle_StoreVessel(PyCallArgs &call) {
-    /*      ******* no packet data ***********
-     */
+    // no packet data
+
     //sm.StartService('sessionMgr').PerformSessionChange('storeVessel', ship.StoreVessel, destID)
     _log(SERVICE__CALL_DUMP, "ShipBound::Handle_StoreVessel()");
     call.Dump(SERVICE__CALL_DUMP);

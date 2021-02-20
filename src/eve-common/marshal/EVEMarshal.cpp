@@ -35,7 +35,7 @@
 
 bool Marshal( const PyRep* rep, Buffer& into )
 {
-    MarshalStream* pMS = new MarshalStream();
+    MarshalStream* pMS(new MarshalStream());
     bool ret(pMS->Save(rep, into));
     SafeDelete(pMS);
     return ret;
@@ -43,7 +43,7 @@ bool Marshal( const PyRep* rep, Buffer& into )
 
 bool MarshalDeflate( const PyRep* rep, Buffer& into, const uint32 deflationLimit )
 {
-    Buffer* data = new Buffer();
+    Buffer* data(new Buffer());
     bool ret(false);
     if (Marshal(rep, *data)) {
         if ( data->size() >= deflationLimit ) {
@@ -91,7 +91,7 @@ bool MarshalStream::SaveStream( const PyRep* rep )
 
 bool MarshalStream::VisitInteger( const PyInt* rep )
 {
-    const int32 val = rep->value();
+    const int32 val(rep->value());
 
     if ( val == -1 ) {
         Put<uint8>( Op_PyMinusOne );
@@ -115,7 +115,7 @@ bool MarshalStream::VisitInteger( const PyInt* rep )
 
 bool MarshalStream::VisitLong( const PyLong* rep )
 {
-    const int64 val = rep->value();
+    const int64 val(rep->value());
 
     if ( val == -1 ) {
         Put<uint8>( Op_PyMinusOne );
@@ -181,7 +181,7 @@ bool MarshalStream::VisitBuffer( const PyBuffer* rep )
 
 bool MarshalStream::VisitString( const PyString* rep )
 {
-    size_t len = rep->content().size();
+    size_t len(rep->content().size());
 
     if ( len == 0 ) {
         Put<uint8>( Op_PyEmptyString );
@@ -207,9 +207,9 @@ bool MarshalStream::VisitString( const PyString* rep )
 
 bool MarshalStream::VisitWString( const PyWString* rep )
 {
-    size_t len = rep->content().size();
+    size_t len(rep->content().size());
 
-    if ( 0 == len ) {
+    if ( len == 0 ) {
         Put<uint8>( Op_PyEmptyWString );
     } else {
         // We don't have to consider any conversions because
@@ -326,7 +326,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
 {
     Put<uint8>( Op_PyPackedRow );
 
-    DBRowDescriptor* header = rep->header();
+    DBRowDescriptor* header(rep->header());
     header->visit( *this );
 
     // Create size map, sorted from the greatest to the smallest value:
@@ -349,9 +349,9 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     std::multimap< uint8, uint32, std::greater< uint8 > >::iterator cur, end;
     cur = sizeMap.begin();
     end = sizeMap.lower_bound( 1 );
+    PyRep* r(nullptr);
     for (; cur != end; ++cur) {
-        const PyRep* r = rep->GetField( cur->second );
-
+        r = rep->GetField(cur->second);
         // packing a zero instead of None here is wrong.
         //  have liveupdate patch to test for this discrepancy in client (FixDefaultEffect)
         switch( header->GetColumnType( cur->second ) ) {
@@ -401,12 +401,13 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
         }
     }
 
-    uint8 bitOffset = 0;
+    uint8 bitOffset(0);
     Buffer::iterator<uint8> bitByte;
     cur = sizeMap.lower_bound( 1 );
     end = sizeMap.lower_bound( 0 );
+    PyBool* b(nullptr);
     for (; cur != end; ++cur) {
-        const PyBool* r = rep->GetField( cur->second )->AsBool();
+        b = rep->GetField( cur->second )->AsBool();
         if ( 7 < bitOffset )
             bitOffset = 0;
         if ( 0 == bitOffset ) {
@@ -414,7 +415,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
             unpacked.ResizeAt( bitByte, 1 );
         }
 
-        *bitByte |= ( r->value() << bitOffset++ );
+        *bitByte |= ( b->value() << bitOffset++ );
     }
 
     //pack the bytes with the zero compression algorithm.
@@ -425,7 +426,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     cur = sizeMap.lower_bound( 0 );
     end = sizeMap.end();
     for (; cur != end; ++cur) {
-        const PyRep* r = rep->GetField( cur->second );
+        r = rep->GetField( cur->second );
         if (!r->visit(*this))
             return false;
     }
@@ -480,8 +481,8 @@ bool MarshalStream::VisitChecksumedStream( const PyChecksumedStream* rep )
 
 void MarshalStream::SaveVarInteger( const PyLong* v )
 {
-    const int64 value = v->value();
-    uint8 integerSize = 0;
+    const int64 value(v->value());
+    uint8 integerSize(0);
 
 #define DoIntegerSizeCheck(x) if ( ( (uint8*)&value )[x] != 0 ) integerSize = x + 1;
     DoIntegerSizeCheck(4);

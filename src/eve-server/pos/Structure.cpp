@@ -969,7 +969,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     std::vector<InventoryItemRef> survivedItems;
     std::map<uint32, InventoryItemRef> deadShipInventory;
     deadShipInventory.clear();
-    m_self->GetMyInventory()->GetInventoryList(deadShipInventory);
+    m_self->GetMyInventory()->GetInventoryMap(deadShipInventory);
     if (!deadShipInventory.empty()) {
         uint32 s = 0, d = 0, x = 0;
         for (auto cur : deadShipInventory) {

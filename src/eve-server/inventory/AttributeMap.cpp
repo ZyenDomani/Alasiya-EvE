@@ -79,8 +79,8 @@ bool AttributeMap::Load(bool reset/*false*/) {
         }
 
         DBResultRow row;
+        EvilNumber value;
         while (res.GetRow(row)) {
-            EvilNumber value = EvilNumber();
             if (row.IsNull(1)) {
                 if (row.IsNull(2))
                     value = EvilZero;
@@ -468,7 +468,7 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
 }
 
 void AttributeMap::ResetAttribute(uint16 attrID, bool notify/*false*/) {
-    EvilNumber value = mItem.GetDefaultAttribute(attrID);
+    EvilNumber value(mItem.GetDefaultAttribute(attrID));
     SetAttribute(attrID, value, notify);
 }
 

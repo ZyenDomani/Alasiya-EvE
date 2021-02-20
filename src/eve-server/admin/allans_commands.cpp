@@ -404,7 +404,7 @@ PyResult Command_shutdown(Client* pClient, CommandDB* db, PyServiceMgr* services
     /* ingame command to immediatly save loaded items and halt server.
      */
     sConsole.HaltServer();
-    return new PyNone();
+    return nullptr;
 }
 
 PyResult Command_beltlist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
@@ -454,7 +454,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
         inv = station->GetMyInventory();
         if (inv == nullptr)
             throw PyException(MakeCustomError("Cannot find inventory for locationID %u", inventoryID));
-        inv->GetInventoryList(invMap);
+        inv->GetInventoryMap(invMap);
         item = station.get();
     } else {
         //Command_list(pClient,db,services,args);
@@ -465,7 +465,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
         inv = system->GetMyInventory();
         if (inv == nullptr)
             throw PyException(MakeCustomError("Cannot find inventory for locationID %u", inventoryID));
-        inv->GetInventoryList(invMap);
+        inv->GetInventoryMap(invMap);
         item = system.get();
     }
 
@@ -497,7 +497,7 @@ PyResult Command_shipinventory(Client* pClient, CommandDB* db, PyServiceMgr* ser
     uint32 inventoryID = pClient->GetShipID();
     ShipItemRef ship = sItemFactory.GetShip(inventoryID);
     Inventory* inv = ship->GetMyInventory();
-    inv->GetInventoryList(invMap);
+    inv->GetInventoryMap(invMap);
 
     std::ostringstream str;
     str.clear();
@@ -527,7 +527,7 @@ PyResult Command_skilllist(Client* pClient, CommandDB* db, PyServiceMgr* service
     invMap.clear();
     uint32 inventoryID = pClient->GetCharacterID();
     Inventory* inv = pClient->GetChar()->GetMyInventory();
-    inv->GetInventoryList(invMap);
+    inv->GetInventoryMap(invMap);
 
     std::ostringstream str;
     str.clear();
@@ -565,12 +565,12 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
 
     if (!args.isNumber(1))
         throw PyException(MakeCustomError("Argument 1 must be a valid itemID."));
-    uint32 itemID = atol(args.arg(1).c_str());
+    uint32 itemID(atol(args.arg(1).c_str()));
 
-    InventoryItemRef iRef = sItemFactory.GetItem(itemID);
+    InventoryItemRef iRef(sItemFactory.GetItem(itemID));
     if (iRef.get() == nullptr) {
         // make error msg here
-        return new PyNone();
+        return nullptr;
     }
 
     std::map<uint16, EvilNumber> attrMap;

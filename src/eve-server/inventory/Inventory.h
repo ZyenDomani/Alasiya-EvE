@@ -46,7 +46,8 @@ public:
     void AddItem(InventoryItemRef iRef);
     void RemoveItem(InventoryItemRef iRef);
     void DeleteContents();
-    void GetInventoryList(std::map<uint32, InventoryItemRef> &invMap);
+    // returns map of mContents
+    void GetInventoryMap(std::map<uint32, InventoryItemRef> &invMap);
     // this method also sorts in order - cargo, modules, charge, subsystems.
     void GetInventoryVec(std::vector<InventoryItemRef> &itemVec);
     void StackAll(EVEItemFlags flag, uint32 ownerID = 0);
@@ -90,7 +91,7 @@ public:
     void GetInvForOwner(uint32 ownerID, std::vector<InventoryItemRef> &items);
 
     /* for debug command */
-    void GetCargoList(std::multimap<uint8, InventoryItemRef> &cargoMap);     // returns map of cargoFlag:iRef
+    void GetCargoList(std::multimap<uint8, InventoryItemRef> &cargoMap);     // returns map of cargoFlag:iRef from mContents
 
 protected:
     bool GetItems(OwnerData od, std::vector< uint32 >& into);

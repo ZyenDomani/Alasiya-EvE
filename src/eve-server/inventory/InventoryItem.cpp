@@ -63,45 +63,64 @@ m_timestamp(0)  // placeholder for fx timestamp, once implemented
     _log(ITEM__TRACE, "II::C'tor - Created Generic Item %p for item %s (%u).", this, m_data.name.c_str(), m_itemID);
 }
 
+// copy c'tor
 InventoryItem::InventoryItem(const InventoryItem& oth)
 : RefObject(0),
+pAttributeMap(oth.pAttributeMap),
+pInventory(oth.pInventory),
 m_itemID(oth.m_itemID),
-m_type(oth.m_type)
+m_data(oth.m_data),
+m_type(oth.m_type),
+m_timestamp(oth.m_timestamp)
 {
     sLog.Error("InventoryItem()", "InventoryItem copy c'tor called.");
     EvE::traceStack();
     assert(0);
 }
 
-/* see notes about these in header
-InventoryItem::InventoryItem(const InventoryItemRef oth)
-: RefObject(0)
-{
-    std::map<uint16, EvilNumber> attrMap;
-    oth->GetAttributeMap()->CopyAttributes(attrMap);
-
-    m_itemID = oth->m_itemID;
-    m_type = oth->m_type;
-}
-*/
-
+// move c'tor
 InventoryItem::InventoryItem(InventoryItem&& oth) noexcept
 : RefObject(0),
+pAttributeMap(oth.pAttributeMap),
+pInventory(oth.pInventory),
 m_itemID(oth.m_itemID),
-m_type(oth.m_type)
+m_data(oth.m_data),
+m_type(oth.m_type),
+m_timestamp(oth.m_timestamp)
 {
     sLog.Error("InventoryItem()", "InventoryItem move c'tor called.");
     EvE::traceStack();
     assert(0);
 }
-/*
-InventoryItem& InventoryItem::operator=(InventoryItem&& oth) noexcept
+
+// copy assignment
+InventoryItem& InventoryItem::operator= ( const InventoryItem& oth )
 {
-    sLog.Error("InventoryItem()", "InventoryItem move op called.");
+    sLog.Error("InventoryItem()", "InventoryItem copy assign called.");
     EvE::traceStack();
     assert(0);
+    /*
+    oth.GetAttributeMap()->CopyAttributes(pAttributeMap->mAttributes);
+
+    m_itemID = oth.itemID();
+    m_type = oth.type();
+    */
 }
-*/
+
+// move assignment
+InventoryItem& InventoryItem::operator= ( InventoryItem&& oth ) noexcept
+{
+    sLog.Error("InventoryItem()", "InventoryItem move assign called.");
+    EvE::traceStack();
+    assert(0);
+    /*
+    oth.GetAttributeMap()->CopyAttributes(pAttributeMap->mAttributes);
+
+    m_itemID = oth.itemID();
+    m_type = oth.type();
+    */
+}
+
 
 InventoryItem::~InventoryItem() noexcept
 {
@@ -627,7 +646,7 @@ void InventoryItem::Rename(std::string name)
     /** @todo  if renaming a POS or other space object, we'll need to BubblecastSendNotification instead of CorpNotify  */
 }
 
-void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*true*/)
+void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*true*/)
 {
     if (!IsValidOwner(new_owner)) {
         _log(ITEM__ERROR, "II::Donate() - %u is invalid owner", new_owner);
@@ -646,7 +665,9 @@ void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEI
     uint32 old_location = m_data.locationID, old_owner = m_data.ownerID;
     EVEItemFlags old_flag = m_data.flag;
 
-    if (new_location != m_data.locationID) {
+    if ((new_location != m_data.locationID) // diff container
+    or ((new_location == m_data.locationID) // or same container
+        and (new_flag != m_data.flag))) {   //  but different flag
         // remove from current location
         if (IsValidLocation(m_data.locationID)) {
             iRef = sItemFactory.GetItem(m_data.locationID);
@@ -662,7 +683,9 @@ void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEI
     m_data.ownerID = new_owner;
     m_data.locationID = new_location;
 
-    if (old_location != m_data.locationID) {
+    if ((old_location != m_data.locationID) // diff container
+    or ((old_location == m_data.locationID) // or same container
+        and (old_flag != m_data.flag))) {   //  but different flag
         // add to new location
         iRef = sItemFactory.GetItem(m_data.locationID);
         if (iRef.get() != nullptr)
@@ -670,10 +693,6 @@ void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEI
         else
             _log(ITEM__ERROR, "II::Donate() - Cant find location %u containing %s.", m_data.locationID, m_data.name.c_str());
     }
-
-    if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
-        _log(INV__TRACE, "II::Donate() - Updated flag on %s(%u) from %s to %s.", \
-                m_data.name.c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
 
     SaveItem();
     //ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);
@@ -700,7 +719,7 @@ void InventoryItem::Donate(uint32 new_owner/*1*/, uint32 new_location/*0*/, EVEI
     }
 }
 
-void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*false*/) {
+void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*false*/) {
     if ((new_location == m_data.locationID) and (new_flag == m_data.flag) and !notify)
         return; //nothing to do...
 
@@ -708,7 +727,9 @@ void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagNo
     uint32 old_location = m_data.locationID;
     EVEItemFlags old_flag = m_data.flag;
 
-    if (new_location != m_data.locationID) {
+    if ((new_location != m_data.locationID) // diff container
+    or ((new_location == m_data.locationID) // or same container
+        and (new_flag != m_data.flag))) {   //  but different flag
         // remove from current location
         if (IsValidLocation(m_data.locationID)) {
             iRef = sItemFactory.GetItem(m_data.locationID);
@@ -723,7 +744,9 @@ void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagNo
     m_data.flag = new_flag;
     m_data.locationID = new_location;
 
-    if (old_location != m_data.locationID) {
+    if ((old_location != m_data.locationID) // diff container
+    or ((old_location == m_data.locationID) // or same container
+        and (old_flag != m_data.flag))) {   //  but different flag
         // add to new location
         if (IsValidLocation(m_data.locationID)) {
             iRef = sItemFactory.GetItem(m_data.locationID);
@@ -733,10 +756,6 @@ void InventoryItem::Move(uint32 new_location/*0*/, EVEItemFlags new_flag/*flagNo
                 _log(ITEM__ERROR, "II::Move() - Cant find location %u to add %s.", m_data.locationID, m_data.name.c_str());
         }
     }
-
-    if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
-        _log(INV__TRACE, "II::Move() - Updated flag on %s(%u) from %s to %s.", \
-                m_data.name.c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
 
     if (IsTempItem(m_itemID) or IsNPC(m_itemID))
         return;
@@ -789,7 +808,9 @@ void InventoryItem::Relocate(uint32 locID, EVEItemFlags flag) {
     m_data.flag = flag;
     m_data.locationID = locID;
 
-    if (old_location != m_data.locationID) {
+    if ((old_location != m_data.locationID) // diff container
+    or ((old_location == m_data.locationID) // or same container
+        and (old_flag != m_data.flag))) {   //  but different flag
         // add to new location
         if (IsValidLocation(m_data.locationID)) {
             iRef = sItemFactory.GetItem(m_data.locationID);
@@ -800,10 +821,6 @@ void InventoryItem::Relocate(uint32 locID, EVEItemFlags flag) {
                         m_data.locationID, m_data.name.c_str());
         }
     }
-
-    if ((old_flag != flag) and is_log_enabled(INV__TRACE))
-        _log(INV__TRACE, "II::Relocate()  Updated flag on %s(%u) from %s to %s.", \
-                m_data.name.c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(flag));
 
     if (IsValidLocation(m_data.locationID))
         ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);

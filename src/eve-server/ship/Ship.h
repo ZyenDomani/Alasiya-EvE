@@ -83,7 +83,7 @@ public:
 
     float GetRemainingVolumeByFlag(EVEItemFlags flag) const;
     // this checks destination flag vs item type/group/category for proper placement
-    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);     // this cannot throw.  must return bool
+    void VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);     // this will throw on error.
     bool ValidateItemSpecifics(InventoryItemRef iRef);
 
     bool IsPopped()                                     { return m_isPopped; }
@@ -369,6 +369,9 @@ public:
     // returns current count of drones in space for this ship
     uint8 DroneCount()                                  { return m_drones.size(); }
 
+    bool GetFleetSMBUsage()                             { return m_allowFleetSMBUsage; }
+    void SetFleetSMBUsage(bool set=false)               { m_allowFleetSMBUsage = set; }
+    
 protected:
     ShipItemRef m_shipRef;
 
@@ -381,8 +384,10 @@ private:
 
     uint32 m_podShipID;
 
+    bool m_allowFleetSMBUsage;
+
     /*  boost data */
-    BoostData m_boost;
+    BoostData m_boost = BoostData();
     bool m_boosted;
     uint16 m_oldArmor;
     uint16 m_oldShield;

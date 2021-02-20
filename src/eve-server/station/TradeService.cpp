@@ -607,13 +607,13 @@ void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryIt
         if (shipRef.get() == nullptr)
             shipRef = sItemFactory.GetShip(itemRef->itemID());
         if (!shipRef->GetMyInventory()->IsEmpty())
-            shipRef->GetMyInventory()->GetInventoryList(InventoryMap);
+            shipRef->GetMyInventory()->GetInventoryMap(InventoryMap);
     } else {
         CargoContainerRef contRef = pSysMgr->GetContainerFromInventory(itemRef->itemID());
         if (contRef.get() == nullptr)
             contRef = sItemFactory.GetCargoContainer(itemRef->itemID());
         if (!contRef->IsEmpty())
-            contRef->GetMyInventory()->GetInventoryList(InventoryMap);
+            contRef->GetMyInventory()->GetInventoryMap(InventoryMap);
     }
 
     for (auto cur : InventoryMap)

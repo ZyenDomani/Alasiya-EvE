@@ -209,7 +209,7 @@ void Prospector::DropSalvage()
 
         std::map<uint32, InventoryItemRef> shipLoot;
         shipLoot.clear();
-        m_targetSE->GetSelf()->GetMyInventory()->GetInventoryList(shipLoot);
+        m_targetSE->GetSelf()->GetMyInventory()->GetInventoryMap(shipLoot);
 
         // create new container
         ItemData p_idata(23,   // 23 = cargo container
