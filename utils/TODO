@@ -1,12 +1,28 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****     13 February 2021
+****     19 February 2021
 
     note:  this whole file needs to be reorganized (wip)
 
 *******************************************************
 **********  errors and other found shit...high priority
+
+work on buglist, integrate this list in there where i can
+    - modules/fitting
+    - destiny (all space movement)
+    - lsc
+    - drones
+    - standings
+    - corp
+    - mail/notifications
+    - missions
+    - ram
+    - calendar
+    - contracts
+    - lp
+    - cosmic systems
+    -
 
 
 verify skill attr 'in training' is being properly removed
@@ -43,6 +59,12 @@ check repack/reproc ships for insurance and delete if applicable
 also check containers for contents and remove/deny before repack
 
 check insurance payouts.   rounds full ship value up
+    - this will need base prices fixed
+
+base prices
+    - need mineral prices set first (from cruc-era)
+    - write code (in test.cpp) to determine item base price based on ME0 BPO BOM and save to db
+    - make file for items missing data to do above run
 
 check trade - ships retain insurance
 
@@ -54,6 +76,9 @@ error:
 "turret not fitted on shipID (npc)"
 
 dungeon deco items need better placement
+
+ship warp speed on attributes tab is wrong
+
 
 *******************************************************
 ********  improvements
@@ -103,6 +128,7 @@ go thru all updated effect data and look for 'improved' ship data to update ours
 current fx data in db incomplete at best.  missing multiple items/defs
 isDefault used to send to activate for effectID
 go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
+    - gfx display is wonky.  dunno why some show and some dont
 put EVEEffectID enum into namespace
 turn fx sending on and follow calls to verify proper OnSpecialFX data
     - found and added client fx classification data to destinyMgr.h
@@ -159,21 +185,10 @@ currently, all bookmarks are donated to calling player when moved into cargo/han
 
 finish DestinyManager::SendCloakFx()
 
-bounties have a bonus...
-skillDEDConnections = 3362, // Social Skill at dealing with Concord Department and negotiating bounties
-Bonus fee of 1,500 isk per pirate head per level of the skill
-
 PyRep --
     do we need float and double to be separated?
     currently both are sent as double, and some cases are using static_cast<float>
     not sure if client expects a difference.  would be a bit less data on wire in some cases
-
-
-**********************************
-*** actually, ALL of the social and trade skills have bonuses.
-    - these need to be looked over and implemented.
-skillGeneralFreight = 12834, // Trade Skill at the stowage and transportation of bulk goods
-5% Bonus per level to Ship Cargo Capacity
 
 check client's locationID vs stationID.
     - multiple calls in client will test for these as separate values (tested separately)
@@ -196,15 +211,6 @@ dbcore - query retry enables runaway server when query causes server disconnecti
 char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.
     - they should at least have a starter profession cert
-
-RefObjects - MEMORY MANAGEMENT!!
-    - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
-    - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr
-    -  this may be more work than it's worth, but current Ref* objects arent being tracked properly
-    -  the other option is to find/fix the current tracking for Ref* objects, which is only partly implemented (at best)
-
-Py* objects that have string as key need 'delete' called on string when destroyed per valgrind...cannot find ref to this error now
-Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
 
 
 InvBrokerBound::Handle_GetInventory
@@ -471,8 +477,13 @@ still many ClientErrorMgs not used/implemented
 
 look over CallDispatcher to see if we can improve/update anything
 
-noob mining ships to have ore hold?  yes, but small...  50m3 or so
-ibis, bantam, probe, ?
+noob mining ships to have ore hold?  yes, but small...  100m3 or so
+    - reduce cargo hold by 1/2 or better
+frigates
+ibis?, navitas, bantam, probe, tormentor
+cruisers
+arbitrator, osprey, scythe, vexor
+
 
 go thru classes and rename per class type...
     -  *Item  for items
@@ -510,6 +521,17 @@ skillTaxEvasion = 28261, // Trade Knowledge of the SCC tax regime and the abilit
 2% reduction in SCC tax per level.
 
 
+bounties have a bonus...
+skillDEDConnections = 3362, // Social Skill at dealing with Concord Department and negotiating bounties
+Bonus fee of 1,500 isk per pirate head per level of the skill
+
+**********************************
+*** actually, ALL of the social and trade skills have bonuses.
+    - these need to be looked over and implemented.
+skillGeneralFreight = 12834, // Trade Skill at the stowage and transportation of bulk goods
+5% Bonus per level to Ship Cargo Capacity
+
+
 check into call returns.  they may be missing data (like callID)
     - i think these are mostly complete.  may be too deep in packet.
 
@@ -536,6 +558,27 @@ finish dot commands
 
 command .attrlist needs names as well as attrID
 
+
+*******************************************************
+*****************  MEMORY MANAGEMENT and code compliance
+
+RefObjects -
+    - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
+    - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr
+    -  this may be more work than it's worth, but current Ref* objects arent being tracked properly
+    -  the other option is to find/fix the current tracking for Ref* objects, which is only partly implemented (at best)
+
+Py* objects that have string as key need 'delete' called on string when destroyed per valgrind...cannot find ref to this error now
+Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
+
+
+see what can be done about bind_args->Clone() as it may be leaking memory
+
+
+review all classes to add rule of 5 or =delete as required
+    - Py* objects done
+    - InventoryItem started (logging to see if other c'tors are used)
+    -
 
 *******************************************************
 *****************  Fx shit
@@ -630,6 +673,17 @@ update ValidateAddItem() to return >0 on error and use enums to determine/displa
 
 make log/config option for (en/dis)able client massive check.
 
+validate ship pilot skills to assemble/repack ship?
+    - is this a 'service' by station personnel?  yeah, probably so.
+    - charge for assemble/repack service?
+
+speaking of charges, how about a freight charge when moving large amounts of stuff?
+     would this be docking charge?  no, that's akin to a full service gas station.  fill 'er up, check oil, wash windows, etc.
+     based on standings with station owner?
+
+boosters damage/kill character (see description of 'Crash')
+others cause multiple other effects.  is this something we can implement/exploit?
+
 
 *******************************************************
 *****************   errata and miscellaneous bullshit
@@ -641,7 +695,6 @@ dont remember why i put this log in, but it got hit while testing earlier....
 19:54:03 W GetMultiLocationsEx: Asteroid Item requested.
 19:54:05 [Service] config::GetMultiLocationsEx()
 19:54:05 W GetMultiLocationsEx: Asteroid Item requested.
-
 
 17908 - nerf bat    <<-- this is `QA Cruise Missile`  100km/s, 1k multi-spectral damage
 
@@ -661,7 +714,6 @@ will need to look into this and determine how they use those files and the check
 as this is still beyond me, it may take a while.
 till then, we'll have to used the hacked system.
 after all, it works
-
 
 item flags are stored in db as 'entity.flag', but client wants 'flagID'.
 look into changing our code to conform.  most objects are built in-code and use flagID already, but some items need "flag AS flagID" in sql query.
