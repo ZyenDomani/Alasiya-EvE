@@ -129,6 +129,7 @@ current fx data in db incomplete at best.  missing multiple items/defs
 isDefault used to send to activate for effectID
 go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
     - gfx display is wonky.  dunno why some show and some dont
+    - stripminer on hulk working 20feb21
 put EVEEffectID enum into namespace
 turn fx sending on and follow calls to verify proper OnSpecialFX data
     - found and added client fx classification data to destinyMgr.h
@@ -799,6 +800,9 @@ when jumps > xx send "system closed" and "system congested" msgs to pilots tryin
 there is a lot more to machonet than we currently have coded/working....
     - narrowcast is for notification types of "broadcast" using "bcast_idtype"
 
+
+make EACS and E-UNI corps as tribute (static)?
+    - others?  goons?
 
 *******************************************************
 ********************************
