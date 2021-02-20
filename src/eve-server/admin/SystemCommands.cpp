@@ -481,7 +481,7 @@ static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr 
     ItemData idata(
         typeID,
         pClient->GetCharacterID(),
-                   0, //temp location
+                   locTemp, //temp location
                    flag,
                    qty
     );
