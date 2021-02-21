@@ -213,7 +213,7 @@ bool SystemManager::ProcessTic() {
      *  when iteration starts over, increment until cur > mLast and continue from there to end of list.
      */
     std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin();
-    uint32 mLast = 0;
+    uint32 mLast(0);
     while (itr != m_ticEntities.end()) {
         if (mLast >= itr->first) {
             ++itr;
@@ -221,10 +221,10 @@ bool SystemManager::ProcessTic() {
         }
 
          /* main process call. */
+        mLast = itr->first;     // not sure if this will slow this down or not.  check profile 
         itr->second->Process();
 
         if (m_entityChanged) {
-            mLast = itr->first;
             m_entityChanged = false;
             itr = m_ticEntities.begin();
             continue;
@@ -1014,7 +1014,7 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     // Remove Entity's Item Ref from Solar System Dynamic Inventory:
     RemoveItemFromInventory(pSE->GetSelf());
     // remove entity from our maps
-    uint32 itemID = pSE->GetID();
+    uint32 itemID(pSE->GetID());
     m_entityChanged = true;
     m_ticEntities.erase(itemID);
     m_staticEntities.erase(itemID);

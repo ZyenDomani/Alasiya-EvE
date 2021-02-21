@@ -1006,6 +1006,5 @@ PyTuple *EVENotificationStream::Encode() {
         t2->SetItem(1, new PySubStream(t3));
     PyTuple *t1 = new PyTuple(1);
         t1->SetItem(0, t2);
-        //t1->SetItem(1, PyStatic.NewNone());     // this may not be right.  most packets dont have it, but some do.  dunno what's the difference.
-    return(t1);
+    return t1;
 }

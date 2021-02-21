@@ -262,8 +262,8 @@ bool TCPConnection::SendData( char* errbuf )
         return false;
 
     mMSendQueue.Lock();
-    Buffer* buf = nullptr;
-    int status = 0;
+    Buffer* buf(nullptr);
+    int status(0);
     while (!mSendQueue.empty()) {
         buf = mSendQueue.front();
         mSendQueue.pop_front();

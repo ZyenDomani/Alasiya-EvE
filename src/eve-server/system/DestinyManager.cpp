@@ -885,7 +885,10 @@ void DestinyManager::MoveObject() {
 
     if (sEntityList.GetTracking()) {
         // create jetcan to visualize object movement
-        ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, itoa(timeStamp), m_position, "Position Test");
+        std::string str = mySE->GetName();
+        str += "  ";
+        str += itoa(timeStamp);
+        ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, str.c_str(), m_position, "Position Test");
         CargoContainerRef iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
         if (iRef.get() != nullptr) {
             // create new container
@@ -2884,8 +2887,8 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.entityID = entityID;
         effect.moduleID = moduleID;
         effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's/drones
-        effect.targetID = targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID);
-        effect.chargeTypeID = chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID);
+        effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
+        effect.chargeTypeID = (chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID));
         effect.guid = guid;
         effect.isOffensive = isOffensive;                  // bool
         effect.start = start;                   // bool
@@ -2893,7 +2896,7 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.duration = duration;
         effect.repeat = repeat;
         effect.startTime = GetFileTimeNow();
-        effect.graphicInfo = graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo);
+        effect.graphicInfo = (graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo));
     PyTuple *up = effect.Encode();
     SendSingleDestinyUpdate(&up);   // consumed
 }
