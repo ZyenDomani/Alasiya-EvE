@@ -213,7 +213,8 @@ void LSCChannel::SendMessage(Client * c, const char * message, bool self/*false*
 }
 
 void LSCChannel::SendServerMOTD(Client* pClient) {
-    const char* uptime(sEntityList.GetUpTime());
+    const char* uptime(nullptr);
+    sEntityList.GetUpTime(uptime);
     std::string msg = "<br>Welcome to Alasiya's EvEmu Server";
     //msg += pClient->GetCharName();
     msg += ".<br>Server Version: ";
