@@ -280,6 +280,7 @@ protected:
     uint32 m_itemID;
 
 private:
+    bool m_delete;
     ItemData m_data;
     ItemType m_type;
 

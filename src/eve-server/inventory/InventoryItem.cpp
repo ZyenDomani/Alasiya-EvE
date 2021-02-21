@@ -54,7 +54,8 @@ pInventory(nullptr),      // this is created/destroyed in derived classes as nee
 m_data(_data),
 m_type(_type),
 m_itemID(_itemID),
-m_timestamp(0)  // placeholder for fx timestamp, once implemented
+m_timestamp(0),  // placeholder for fx timestamp, once implemented
+m_delete(false)
 {
     // assert for data consistency
     assert(_data.typeID == _type.id());
@@ -71,7 +72,8 @@ pInventory(oth.pInventory),
 m_itemID(oth.m_itemID),
 m_data(oth.m_data),
 m_type(oth.m_type),
-m_timestamp(oth.m_timestamp)
+m_timestamp(oth.m_timestamp),
+m_delete(false)
 {
     sLog.Error("InventoryItem()", "InventoryItem copy c'tor called.");
     EvE::traceStack();
@@ -86,7 +88,8 @@ pInventory(oth.pInventory),
 m_itemID(oth.m_itemID),
 m_data(oth.m_data),
 m_type(oth.m_type),
-m_timestamp(oth.m_timestamp)
+m_timestamp(oth.m_timestamp),
+m_delete(false)
 {
     sLog.Error("InventoryItem()", "InventoryItem move c'tor called.");
     EvE::traceStack();
@@ -565,7 +568,10 @@ void InventoryItem::RemoveItem(InventoryItemRef iRef)
         pInventory->RemoveItem(iRef);
 }
 
-void InventoryItem::Delete() {
+void InventoryItem::Delete()
+{
+    m_delete = true;
+
     // get out of client's sight.
     if (!IsNPCCorp(m_data.ownerID) and (m_data.ownerID > 1))
         Move(locJunkyard, flagNone, true);
@@ -760,7 +766,7 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
     if (IsTempItem(m_itemID) or IsNPC(m_itemID))
         return;
 
-    if (IsValidLocation(m_data.locationID))
+    if (IsValidLocation(m_data.locationID) and (!m_delete))
         ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);
 
     //notify about the changes.

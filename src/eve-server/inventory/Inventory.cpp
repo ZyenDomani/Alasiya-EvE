@@ -532,26 +532,36 @@ bool Inventory::ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag) const
 
 void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
 {
-    /** @todo  fix this to work with m_contentsByFlag also!!  */
     InventoryItemRef iRef(nullptr);
+    std::vector<InventoryItemRef> delVec;
     std::map<uint16, InventoryItemRef> types;
     std::map<uint16, InventoryItemRef>::iterator tItr = types.end();
-    std::map<uint32, InventoryItemRef>::iterator lItr = mContents.begin();
-    while (lItr != mContents.end()) {
-        iRef = lItr->second;
-        ++lItr;
-        if (IsModuleSlot(iRef->flag()))    // check to avoid removing loaded modules from ship
+
+    auto range = m_contentsByFlag.equal_range(locFlag);
+    for (auto itr = range.first; itr != range.second; ++itr) {
+        iRef = itr->second;
+        // check to avoid removing modules (and their charges) from ship
+        if (IsModuleSlot(iRef->flag()))
             continue;
+        // singletons dont stack
         if (iRef->isSingleton())
             continue;
         if ((ownerID == 0) or (ownerID == iRef->ownerID())) {
             tItr = types.find(iRef->typeID());
-            if (tItr == types.end())
-                types.emplace(std::make_pair(iRef->typeID(), iRef));
-            else // found another stack of this type.  merge it.
-                tItr->second->Merge(iRef);  // this call will remove item from mContents.  does not invalidate the iterator.
+            if (tItr == types.end()) {
+                // insert type into map for later comparison (existing stack to merge into)
+                types.emplace(iRef->typeID(), iRef);
+            } else {
+                // found another stack of this type.
+                delVec.push_back(iRef);
+                // fake merge as calling II::Merge() will invalidate iterator
+                tItr->second->SetQuantity(tItr->second->quantity() + iRef->quantity(), true, false);
+            }
         }
     }
+    
+    for (auto cur : delVec)
+        cur->Delete();
 }
 
 float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
@@ -586,7 +596,6 @@ bool Inventory::HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) cons
 
     return true;
 }
-
 
 float Inventory::GetCapacity(EVEItemFlags flag) const {
     // added hangar capy for all hangar types
