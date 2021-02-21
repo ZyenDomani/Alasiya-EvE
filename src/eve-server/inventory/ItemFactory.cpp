@@ -105,16 +105,6 @@ void ItemFactory::SaveItems() {
     std::vector<Inv::SaveData> items;
     items.clear();
     for (auto cur : m_items) {
-        /*
-        if (IsStaticItem(cur.first))
-            continue;
-        if (cur.second->quantity() < 1) // should we delete this?
-            continue;
-        if (IsAsteroid(cur.first))
-            continue;
-        if (IsCharacter(cur.first))
-            continue;
-        */
         if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
             cur.second->SaveAttributes();
             Inv::SaveData data = Inv::SaveData();
@@ -148,23 +138,18 @@ void ItemFactory::AddItem(InventoryItemRef iRef)
     m_items.emplace(iRef->itemID(), iRef);
 }
 
-void ItemFactory::RemoveItem(uint32 itemID) {
-    if (IsTempItem(itemID) or (itemID < minAgent))
-        return;
-
-    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
-    if (itr == m_items.end())
-        _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found", itemID);
-    else
-        m_items.erase(itr);
+void ItemFactory::RemoveItem(uint32 itemID)
+{
+    m_items.erase(itemID);
 }
 
 uint32 ItemFactory::GetNextTempID()
 {
-    if (m_nextTempID < PLANET_PIN_ID)
+    if (m_nextTempID < PLANET_PIN_ID) {
         ++m_nextTempID;
-    else
+    } else {
         m_nextTempID = TEMP_ENTITY_ID;
+    }
 
     return m_nextTempID;
 }
@@ -190,10 +175,11 @@ Inventory* ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
 
     InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
-    if (itr != m_items.end())
+    if (itr != m_items.end()) {
         iRef = itr->second;
-    else if (load)
+    } else if (load) {
         iRef = GetItem(itemID);
+    }
 
     if (iRef.get() == nullptr)
         return nullptr;
@@ -204,10 +190,11 @@ Inventory* ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
 InventoryItemRef ItemFactory::GetInventoryItemFromID(uint32 itemID, bool load /*true*/) {
     InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
-    if (itr != m_items.end())
+    if (itr != m_items.end()) {
         iRef = itr->second;
-    else if (load)
+    } else if (load) {
         iRef = GetItem(itemID);
+    }
 
     return iRef;
 }
