@@ -573,12 +573,12 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     SystemManager* pSysMgr(pClient->SystemMgr());
     if (pSysMgr == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager.", pClient->GetName());
-        return PyStatic.NewNone();
+        return PyStatic.mtDict();
     }
     SystemEntity* pSE = pSysMgr->GetSE(arg.arg);
     if (pSE == nullptr) {
         _log(SERVICE__ERROR, "%s: Unable to find object %u to scoop.", pClient->GetName(), arg.arg);
-        return PyStatic.NewNone();
+        return PyStatic.mtDict();
         //{'FullPath': u'UI/Messages', 'messageID': 258825, 'label': u'ScoopObjectGoneBody'}(u'{target} is no longer there.', None, {u'{target}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
     }
 
@@ -596,7 +596,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     InventoryItemRef iRef = pSE->GetSelf();
     if (iRef.get() == nullptr) {
         codelog(CLIENT__ERROR, "ItemRef for %s not found.", arg.arg);
-        return PyStatic.NewNone();
+        return PyStatic.mtDict();
     }
 
     // Check cargo bay capacity:
@@ -617,14 +617,14 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         SafeDelete(pSE);
     }
 
-    return PyStatic.NewNone();
+    return PyStatic.mtDict();
 }
 
 PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return PyStatic.mtDict();
     }
     // per patch notes, if ship is too far to scoop, it will automagically travel closer till drone is within range, then scoop and stop
 
@@ -668,8 +668,8 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     }
 
     /** @todo complete error msgs here */
-    // returns error on error else none
-    return PyStatic.NewNone();
+    // returns error on error else mtDict
+    return PyStatic.mtDict();
 }
 
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
