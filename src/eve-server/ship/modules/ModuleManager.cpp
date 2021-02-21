@@ -301,14 +301,10 @@ GenericModule* ModuleManager::GetModule(EVEItemFlags flag)
 
 GenericModule* ModuleManager::GetModule(uint32 itemID)
 {
-    // change this to pull item from inventory and get flag?
-    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-    while (itr != m_modules.end()) {
-        if (itr->second != nullptr)
-            if (itr->second->itemID() == itemID)
-                return itr->second;
-        ++itr;
-    }
+    InventoryItemRef iRef = sItemFactory.GetItem(itemID);
+    if (iRef.get() != nullptr)
+        return GetModule(iRef->flag());
+
     return nullptr;
 }
 
@@ -319,7 +315,7 @@ GenericModule* ModuleManager::GetRandModule()
         if (m_modules[flag] != nullptr)
             modVec.push_back(m_modules[flag]);
 
-        return modVec[MakeRandomInt(0, modVec.size())];
+    return modVec[MakeRandomInt(0, modVec.size())];
 }
 
 bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
@@ -518,7 +514,7 @@ bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
                 }
             }
         }
-        
+
         // change this to use movemodule?
         return false;
     }
