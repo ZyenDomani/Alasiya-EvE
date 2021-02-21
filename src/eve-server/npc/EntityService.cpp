@@ -218,13 +218,18 @@ PyResult EntityBound::Handle_CmdGuard(PyCallArgs &call) {
 PyResult EntityBound::Handle_CmdMine(PyCallArgs &call) {
  // ret = entity.CmdMine(droneIDs, targetID)
     /*
-02:20:04 [DroneTrace] EntityBound::Handle_CmdMine()
-02:20:04 [DroneDump]   Call Arguments:
-02:20:04 [DroneDump]      Tuple: 2 elements
-02:20:04 [DroneDump]       [ 0]   List: 1 elements
-02:20:04 [DroneDump]       [ 0]   [ 0]    Integer: 140001526
-02:20:04 [DroneDump]       [ 1]    Integer: 140000029
-*/
+     * 16:19:14 [DroneTrace] EntityBound::Handle_CmdMine()
+     * 16:19:14 [DroneDump]   Call Arguments:
+     * 16:19:14 [DroneDump]      Tuple: 2 elements
+     * 16:19:14 [DroneDump]       [ 0]   List: 5 elements
+     * 16:19:14 [DroneDump]       [ 0]   [ 0]    Integer: 140024264
+     * 16:19:14 [DroneDump]       [ 0]   [ 1]    Integer: 140024265
+     * 16:19:14 [DroneDump]       [ 0]   [ 2]    Integer: 140024261
+     * 16:19:14 [DroneDump]       [ 0]   [ 3]    Integer: 140024262
+     * 16:19:14 [DroneDump]       [ 0]   [ 4]    Integer: 140024263
+     * 16:19:14 [DroneDump]       [ 1]    Integer: 450000587
+     */
+
     _log(DRONE__TRACE, "EntityBound::Handle_CmdMine()");
     call.Dump(DRONE__DUMP);
 
@@ -236,19 +241,23 @@ PyResult EntityBound::Handle_CmdMine(PyCallArgs &call) {
 
 PyResult EntityBound::Handle_CmdMineRepeatedly(PyCallArgs &call) {
  // ret = entity.CmdMineRepeatedly(droneIDs, targetID)
-    /*
-02:20:29 [DroneTrace] EntityBound::Handle_CmdMineRepeatedly()
-02:20:29 [DroneDump]   Call Arguments:
-02:20:29 [DroneDump]      Tuple: 2 elements
-02:20:29 [DroneDump]       [ 0]   List: 1 elements
-02:20:29 [DroneDump]       [ 0]   [ 0]    Integer: 140001526
-02:20:29 [DroneDump]       [ 1]    Integer: 140000029
-*/
+    /*)
+     * 16:20:28 [DroneTrace] EntityBound::Handle_CmdMineRepeatedly()
+     * 16:20:28 [DroneDump]   Call Arguments:
+     * 16:20:28 [DroneDump]      Tuple: 2 elements
+     * 16:20:28 [DroneDump]       [ 0]   List: 5 elements
+     * 16:20:28 [DroneDump]       [ 0]   [ 0]    Integer: 140024264
+     * 16:20:28 [DroneDump]       [ 0]   [ 1]    Integer: 140024265
+     * 16:20:28 [DroneDump]       [ 0]   [ 2]    Integer: 140024261
+     * 16:20:28 [DroneDump]       [ 0]   [ 3]    Integer: 140024262
+     * 16:20:28 [DroneDump]       [ 0]   [ 4]    Integer: 140024263
+     * 16:20:28 [DroneDump]       [ 1]    Integer: 450000587
+     */
     _log(DRONE__TRACE, "EntityBound::Handle_CmdMineRepeatedly()");
     call.Dump(DRONE__DUMP);
 
     /** @todo MAKE CHECKS IN MINING LASER FOR DRONES BEFORE COMPLETING THIS FUNCTION  **/
-    
+
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
     return new PyDict();
 }
@@ -334,6 +343,13 @@ PyResult EntityBound::Handle_CmdReturnBay(PyCallArgs &call) {
 
 PyResult EntityBound::Handle_CmdAbandonDrone(PyCallArgs &call) {
  // ret = entity.CmdAbandonDrone(droneIDs)
+    /*
+     * 16:23:23 [DroneTrace] EntityBound::Handle_CmdAbandonDrone()
+     * 16:23:23 [DroneDump]   Call Arguments:
+     * 16:23:23 [DroneDump]      Tuple: 1 elements
+     * 16:23:23 [DroneDump]       [ 0]   List: 1 elements
+     * 16:23:23 [DroneDump]       [ 0]   [ 0]    Integer: 140024263
+     */
     _log(DRONE__TRACE, "EntityBound::Handle_CmdAbandonDrone()");
     call.Dump(DRONE__DUMP);
 
