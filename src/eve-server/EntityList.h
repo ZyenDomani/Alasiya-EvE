@@ -82,7 +82,7 @@ public:
     void AddNPC()                                       { ++m_npcs; }
     void RemoveNPC()                                    { --m_npcs; }
     void SetService(PyServiceMgr* svc)                  { m_services = svc; }
-    
+
     // updated to use station guest list instead of full clientlist loop
     void GetStationGuestList(uint32 stationID, std::vector<Client* > &result) const;
 
@@ -129,7 +129,7 @@ public:
 
     void ResetStartTime()                               { m_startTime = GetFileTimeNow(); }
     int64 GetStartTime()                                { return m_startTime; }
-    const char* GetUpTime();
+    void GetUpTime(const char* time);
     uint32 GetConnections()                             { return m_connections; }
 
 

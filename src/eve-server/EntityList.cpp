@@ -376,7 +376,7 @@ std::string EntityList::GetAnomalyID()
     return res;
 }
 
-const char* EntityList::GetUpTime()
+void EntityList::GetUpTime(const char* time)
 {
     float seconds = m_stamp - 1000;
     float minutes = seconds/60;
@@ -406,7 +406,8 @@ const char* EntityList::GetUpTime()
     else
         uptime << s << "s";
 
-    return uptime.str().c_str();
+    //std::shared_ptr<const char*> ret = uptime.str().c_str();
+    time = uptime.str().c_str();
 }
 
 
