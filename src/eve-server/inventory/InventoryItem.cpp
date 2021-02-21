@@ -143,10 +143,9 @@ InventoryItemRef InventoryItem::SpawnItem(uint32 itemID, const ItemData &data)
     if (iType == nullptr)
         return InventoryItemRef(nullptr);
     InventoryItemRef iRef = InventoryItemRef(new InventoryItem(itemID, *iType, data));
-    if (iRef.get() == nullptr)
-        return iRef;
+    if (iRef.get() != nullptr)
+        iRef->_Load();
 
-    iRef->_Load();
     return iRef;
 }
 
@@ -375,6 +374,16 @@ InventoryItemRef InventoryItem::SpawnTemp(ItemData& data)
 {
     /** @todo will need to update this to get 'proper' item creation for temps... */
     //  for now, return generic item
+    // obtain type of new item
+    const ItemType *iType = sItemFactory.GetType(data.typeID);
+    if (iType == nullptr) {
+        codelog(ITEM__ERROR, "II::SpawnTemp() - Invalid type returned for typeID %u", data.typeID);
+        return InventoryItemRef(nullptr);
+    }
+
+    if (iType->groupID() == EVEDB::invGroups::Cargo_Container)
+        return CargoContainer::SpawnTemp(data);
+
     return InventoryItem::SpawnItem(InventoryItem::CreateTempItemID(data), data);
 }
 

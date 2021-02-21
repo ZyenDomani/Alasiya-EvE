@@ -81,13 +81,27 @@ CargoContainerRef CargoContainer::Spawn( ItemData &data) {
     containerRef->SetAttribute(AttrVolume,        containerRef->GetPackagedVolume(), false);        // Volume
     containerRef->SetAttribute(AttrCapacity,      containerRef->type().capacity(), false);      // Capacity
 
-	return containerRef;
+    return containerRef;
 }
 
 CargoContainerRef CargoContainer::SpawnTemp(ItemData& data)
 {
-    // not sure if this is used....
-    return Spawn(data);
+    uint32 containerID = CargoContainer::CreateTempItemID(data);
+    if (containerID == 0)
+        return CargoContainerRef(nullptr);
+    
+    if (data.quantity == 0)
+        return CargoContainerRef(nullptr);
+
+    const ItemType *iType = sItemFactory.GetType(data.typeID);
+    if (iType == nullptr)
+        return CargoContainerRef(nullptr);
+
+    CargoContainerRef cRef = CargoContainerRef(new CargoContainer(containerID, *iType, data));
+    if (cRef.get() != nullptr)
+        cRef->_Load();
+
+    return cRef;
 }
 
 uint32 CargoContainer::CreateItemID( ItemData &data)
