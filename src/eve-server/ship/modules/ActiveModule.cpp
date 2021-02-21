@@ -1115,9 +1115,9 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             abortTime += (3 * EvE::Time::Second);    // delay abort for 3s to simulate module "completing" its' cycle
     }
 
-    uint16 effectID = m_effectID;
+    uint16 effectID(m_effectID);
     // there may be others here like this...this is ONLY for OnSpecialFX data
-    if (m_effectID == EVEEffectID::useMissiles)   //operation defined by charge (use charge's default effectID)
+    if (m_chargeLoaded and (m_effectID == EVEEffectID::useMissiles))   //operation defined by charge (use charge's default effectID)
         effectID = m_chargeRef->type().GetDefaultEffect();
     std::string guidStr = sFxDataMgr.GetEffectGuid(effectID);
     if (guidStr.empty())
