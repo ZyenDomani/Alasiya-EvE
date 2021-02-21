@@ -680,19 +680,19 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient = call.client;
+    Client* pClient(call.client);
     if (!pClient->IsInSpace()) {
         _log(SERVICE__ERROR, "%s: Trying to jettison items when not in space!", pClient->GetName());
         return nullptr;
     }
 
-    SystemManager* pSysMgr = pClient->SystemMgr();
+    SystemManager* pSysMgr(pClient->SystemMgr());
     //Get location of our ship
     GPoint location(pClient->GetShipSE()->GetPosition());
 
-    InventoryItemRef cRef, iRef;
-    CargoContainerRef jcRef, ccRef;
-    StructureItemRef sRef;
+    InventoryItemRef cRef(nullptr), iRef(nullptr);
+    CargoContainerRef jcRef(nullptr), ccRef(nullptr);
+    StructureItemRef sRef(nullptr);
 
     /** @todo  deal with launching items for corp... they will use flagProperty */
 
@@ -816,7 +816,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             continue;
 
         // item can be jettisoned.  check if container was already created
-        if ((ccRef.get() == nullptr) or (jcRef.get() == nullptr)) {
+        if ((ccRef.get() == nullptr) and (jcRef.get() == nullptr)) {
             if (!pClient->IsJetcanAvalible()) {
                 std::string msg = "A Jettison Container is currently being prepped in your cargo hold. \n";
                 msg += "Your estimated wait time is ";
