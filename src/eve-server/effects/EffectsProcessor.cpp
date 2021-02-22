@@ -253,10 +253,11 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 std::ostringstream ret;
                 Operand operand = sFxDataMgr.GetOperand(expression.operandID);
                 ret << "Operand id:" << expression.operandID << " key:" << operand.operandKey;
-                if (operand.format.empty())
+                if (operand.format.empty()) {
                     ret << " - has not been defined.";
-                else                // % {'arg1': arg1, 'arg2': arg2, 'value': expression.expressionValue}
+                } else {                // % {'arg1': arg1, 'arg2': arg2, 'value': expression.expressionValue}
                     ret << " - should be added as " << operand.format.c_str();
+                }
                 _log(EFFECTS__UNDEFINED, "FxProc::ParseExpression() - %s", ret.str().c_str());
             }
         } break;
@@ -552,52 +553,54 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
 
 int8 FxProc::GetAssociationEnum(const std::string& association)
 {   // opID 21
-    if (association == "PreAssignment")
+    if (association == "PreAssignment") {
         return FX::Math::PreAssignment;
-    else if (association == "PreDiv")
+    } else if (association == "PreDiv") {
         return FX::Math::PreDiv;
-    else if (association == "PreMul")
+    } else if (association == "PreMul") {
         return FX::Math::PreMul;
-    else if (association == "ModAdd")
+    } else if (association == "ModAdd") {
         return FX::Math::ModAdd;
-    else if (association == "ModSub")
+    } else if (association == "ModSub") {
         return FX::Math::ModSub;
-    else if (association == "PostPercent")
+    } else if (association == "PostPercent") {
         return FX::Math::PostPercent;
-    else if (association == "PostMul")
+    } else if (association == "PostMul") {
         return FX::Math::PostMul;
-    else if (association == "PostDiv")
+    } else if (association == "PostDiv") {
         return FX::Math::PostDiv;
-    else if (association == "PostAssignment")
+    } else if (association == "PostAssignment") {
         return FX::Math::PostAssignment;
-    else if (association == "SkillCheck")
+    } else if (association == "SkillCheck") {
         return FX::Math::SkillCheck;
-    else if (association == "AddRate")
+    } else if (association == "AddRate") {
         return FX::Math::AddRate;
-    else if (association == "SubRate")
+    } else if (association == "SubRate") {
         return FX::Math::SubRate;
-    else
+    } else {
         return FX::Math::Invalid;  //throw std::bad_typeid();
+    }
 }
 
 int8 FxProc::GetEnvironmentEnum(const std::string& env)
 {   // opID 24
-    if (env == "Self")
+    if (env == "Self") {
         return FX::Target::Self;
-    else if (env == "Char")
+    } else if (env == "Char") {
         return FX::Target::Char;
-    else if (env == "Ship")
+    } else if (env == "Ship") {
         return FX::Target::Ship;
-    else if (env == "Target")
+    } else if (env == "Target") {
         return FX::Target::Target;
-    else if (env == "Area")
+    } else if (env == "Area") {
         return FX::Target::Area;
-    else if (env == "Other")
+    } else if (env == "Other") {
         return FX::Target::Other;
-    else if (env == "Charge")
+    } else if (env == "Charge") {
         return FX::Target::Charge;
-    else
+    } else {
         return FX::Target::Invalid;  //throw std::bad_typeid();
+    }
 }
 
 const char* FxProc::GetMathMethodName(int8 id)

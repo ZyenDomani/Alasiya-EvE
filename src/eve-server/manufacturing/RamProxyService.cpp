@@ -118,14 +118,15 @@ PyResult RamProxyService::Handle_AssemblyLinesSelect(PyCallArgs &call) {
         return nullptr;
     }
 
-    if (args.filter == "region")
+    if (args.filter == "region") {
         return FactoryDB::AssemblyLinesSelectPublic(call.client->GetRegionID());
-    else if (args.filter == "char")
+    } else if (args.filter == "char") {
         return FactoryDB::AssemblyLinesSelectPersonal(call.client->GetCharacterID());
-    else if (args.filter == "corp")
+    } else if (args.filter == "corp") {
         return FactoryDB::AssemblyLinesSelectCorporation(call.client->GetCorporationID());
-    else if (args.filter == "alliance")
+    } else if (args.filter == "alliance") {
         return FactoryDB::AssemblyLinesSelectAlliance(call.client->GetAllianceID());
+    }
 
     _log(SERVICE__ERROR, "Unknown filter '%s'.", args.filter.c_str());
     return nullptr;
@@ -440,10 +441,12 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     std::string reason = "DESC: Installing ";
     reason += sRamMthd.GetActivityName(args.activityID);
     reason += " job in ";
-    if (IsStation(locationID))
+    if (IsStation(locationID)) {
         reason += stDataMgr.GetStationName(locationID);
-    else    // test for POS after that system is more complete...
+    } else {    // test for POS after that system is more complete...
         reason += "Unknown Location";
+    }
+
     if (args.isCorpJob) {
         reason += " by ";
         reason += call.client->GetName();
@@ -473,10 +476,12 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         description += sRamMthd.GetActivityName(args.activityID);
         description += " job in ";
         /** @todo update this for pos names when that system is working */
-        if (IsStation(locationID))
+        if (IsStation(locationID)) {
             description += stDataMgr.GetStationName(locationID);
-        else  // POS installation
+        } else {  // POS installation
             description += "Unknown Location";
+        }
+
         description += " is scheduled to complete at the time noted.<br><br>";
         switch (args.activityID) {
             case EvERam::Activity::Manufacturing: {

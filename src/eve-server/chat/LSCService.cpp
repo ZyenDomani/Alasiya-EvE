@@ -295,9 +295,9 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
 
     PyList::const_iterator cur = args.channels->begin();
     for (; cur != args.channels->end(); cur++) {
-        if ((*cur)->IsInt())
+        if ((*cur)->IsInt()) {
             toJoin.insert((*cur)->AsInt()->value());
-        else if ((*cur)->IsTuple()) {
+        } else if ((*cur)->IsTuple()) {
             PyTuple* prt = (*cur)->AsTuple();
             if (prt->items.size() != 1 or !prt->items[0]->IsTuple()) {
                 _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -496,16 +496,16 @@ PyResult LSCService::Handle_Invite(PyCallArgs &call)
 
     // Decode the call:
     if (call.tuple->IsTuple()) {
-        if (call.tuple->GetItem(1)->IsInt())
+        if (call.tuple->GetItem(1)->IsInt()) {
             channel_ID = call.tuple->GetItem(1)->AsInt()->value();
-        else {
+        } else {
             _log(LSC__ERROR, "%s: call.tuple->GetItem(1) is of the wrong type: '%s'.  Expected PyInt type.", call.client->GetName(), call.tuple->TypeString());
             return nullptr;
         }
 
-        if (call.tuple->GetItem(0)->IsInt())
+        if (call.tuple->GetItem(0)->IsInt()) {
             invited_char_ID = call.tuple->GetItem(0)->AsInt()->value();
-        else {
+        } else {
             _log(LSC__ERROR, "%s: call.tuple->GetItem(0) is of the wrong type: '%s'.  Expected PyInt type.", call.client->GetName(), call.tuple->TypeString());
             return nullptr;
         }
@@ -609,9 +609,9 @@ PyResult LSCService::Handle_Configure(PyCallArgs& call)
     //}
 
     // Get Tuple which contains channel number to modify:
-    if (call.tuple->AsTuple()->GetItem(0)->IsInt())
+    if (call.tuple->AsTuple()->GetItem(0)->IsInt()) {
         channel_id = call.tuple->AsTuple()->GetItem(0)->AsInt()->value();
-    else {
+    } else {
         _log(LSC__ERROR, "%s: Tuple contained wrong type: '%s'", call.client->GetName(), call.tuple->TypeString());
         return nullptr;
     }
@@ -709,14 +709,14 @@ PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
 
     uint32 toLeave = 0;
 
-    if (arg.channel->IsInt())
+    if (arg.channel->IsInt()) {
         toLeave = arg.channel->AsInt()->value();
-    else if (arg.channel->IsTuple()) {
+    } else if (arg.channel->IsTuple()) {
         PyTuple* prt = arg.channel->AsTuple();
 
-        if (prt->GetItem(0)->IsInt())
+        if (prt->GetItem(0)->IsInt()) {
             toLeave = prt->GetItem(0)->AsInt()->value();
-        else if (prt->GetItem(0)->IsTuple()) {
+        } else if (prt->GetItem(0)->IsTuple()) {
             prt = prt->GetItem(0)->AsTuple();
 
             if (prt->items.size() != 2 or !prt->GetItem(1)->IsInt()) {
@@ -769,9 +769,9 @@ PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
 
     PyList::const_iterator cur = args.channels->begin();
     for (; cur != args.channels->end(); cur++) {
-        if ((*cur)->IsInt())
+        if ((*cur)->IsInt()) {
             toLeave.insert((*cur)->AsInt()->value());
-        else if ((*cur)->IsTuple()) {
+        } else if ((*cur)->IsTuple()) {
             PyTuple* prt = (*cur)->AsTuple();
 
             if (prt->GetItem(0)->IsInt()) {
@@ -865,16 +865,14 @@ PyResult LSCService::Handle_GetMembers(PyCallArgs &call) {
     }
 
     uint32 channelID;
-    if (arg.channel->IsInt())
+    if (arg.channel->IsInt()) {
         channelID = arg.channel->AsInt()->value();
-    else if (arg.channel->IsTuple())
-    {
+    } else if (arg.channel->IsTuple()) {
         PyTuple* prt = arg.channel->AsTuple();
 
-        if (prt->GetItem(0)->IsInt())
+        if (prt->GetItem(0)->IsInt()) {
             channelID = prt->GetItem(0)->AsInt()->value();
-        else if (prt->GetItem(0)->IsTuple())
-        {
+        } else if (prt->GetItem(0)->IsTuple()) {
             prt = prt->GetItem(0)->AsTuple();
 
             if (prt->items.size() != 2 or !prt->GetItem(1)->IsInt())
@@ -884,15 +882,11 @@ PyResult LSCService::Handle_GetMembers(PyCallArgs &call) {
             }
 
             channelID = prt->GetItem(1)->AsInt()->value();
-        }
-        else
-        {
+        } else {
             _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
         }
-    }
-    else
-    {
+    } else {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }

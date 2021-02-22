@@ -411,10 +411,11 @@ void ManagerDB::GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionI
             }
         } break;
         case factionBloodRaider: {
-            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19))
+            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19)) {
                 name = "AND typeName LIKE '%Elder%'";
-            else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18))
+            } else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18)) {
                 name = "AND typeName NOT LIKE '%Elder%'";
+            }
         } break;
         case factionGuristas: {   //Outlaw
             if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19)) {
@@ -426,10 +427,11 @@ void ManagerDB::GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionI
             }
         } break;
         case factionSanshas: {
-            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19))
+            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19)) {
                 name = "AND typeName LIKE '%Loyal%'";
-            else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18))
+            } else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18)) {
                 name = "AND typeName NOT LIKE '%Loyal%'";
+            }
         } break;
         case factionSerpentis: {   //Crook
             if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19)) {
@@ -441,10 +443,11 @@ void ManagerDB::GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionI
             }
         } break;
         case factionRogueDrones: {
-            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19))
+            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19)) {
                 name = "AND typeName LIKE '%Strain%'";
-            else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18))
+            } else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18)) {
                 name = "AND typeName NOT LIKE '%Strain%'";
+            }
         } break;
     }
 

@@ -186,13 +186,13 @@ void DestinyManager::ProcessState() {
                 //warp is in progress
                 uint16 sec_into_warp = (sEntityList.GetStamp() - m_stateStamp);
                 //  speed and distance formulas based on current warp distance
-                if (m_warpState->accel)
+                if (m_warpState->accel) {
                     WarpAccel(sec_into_warp);
-                else if (m_warpState->cruise)
+                } else if (m_warpState->cruise) {
                     WarpCruise(sec_into_warp);
-                else if (m_warpState->decel)
+                } else if (m_warpState->decel) {
                     WarpDecel(sec_into_warp);
-                else {// houston, we have a problem...
+                } else {// houston, we have a problem...
                     if (mySE->HasPilot()) {
                         _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) Has WarpState but checks are false.",  \
                                     mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
@@ -797,32 +797,34 @@ void DestinyManager::MoveObject() {
 
         m_currentSpeedFraction = (1 - exp(-timeStamp / m_shipAgility));
 
-        if (m_accel)
+        if (m_accel) {
             m_activeSpeedFraction = m_userSpeedFraction * m_currentSpeedFraction;
-        else if (m_decel)
+        } else if (m_decel) {
             m_activeSpeedFraction = m_prevSpeedFraction * m_currentSpeedFraction;
-        else if (m_userSpeedFraction != m_activeSpeedFraction)
+        } else if (m_userSpeedFraction != m_activeSpeedFraction) {
             m_activeSpeedFraction = m_currentSpeedFraction;
-        else if (m_tractored or m_tractorPause or (m_activeSpeedFraction == 1))
+        } else if (m_tractored or m_tractorPause or (m_activeSpeedFraction == 1)) {
             ;   // do nothing here.  this is to remove error reporting from next line.
-        else
+        } else {
             _log(DESTINY__ERROR, "Destiny::MoveObject() - %s(%u) - move checks are not set right. Acc:%s, Dec:%s, Turn:%s, Tic:%u, Tractored:%s, TractorPause:%s", \
                     mySE->GetName(), mySE->GetID(), (m_accel ? "True" : "False"), (m_decel ? "True" : "False"), (m_turning ? "True" : "False"), \
                     m_turnTic, (m_tractored ? "True" : "False"), (m_tractorPause ? "True" : "False"));
+        }
 
         if (m_prevSpeed) {
-            if (m_prevSpeedFraction and (m_prevSpeedFraction == m_userSpeedFraction))
+            if (m_prevSpeedFraction and (m_prevSpeedFraction == m_userSpeedFraction)) {
                 speed = m_prevSpeed * m_activeSpeedFraction;
             //else if (m_turning)
             //    speed = m_maxSpeed * m_activeSpeedFraction;
-            else if (m_prevSpeed > m_maxSpeed)
+            } else if (m_prevSpeed > m_maxSpeed) {
                 speed = m_prevSpeed - (m_prevSpeed - m_maxSpeed) * m_activeSpeedFraction;
             //else if (m_prevSpeed < m_maxSpeed)
             //    speed = (m_maxSpeed - m_prevSpeed) * m_activeSpeedFraction;
-            else
+            } else {
                 speed = m_maxSpeed * m_activeSpeedFraction;
-        } else
+        } else {
             speed = m_maxSpeed * m_activeSpeedFraction;
+        }
 
         if ((!m_userSpeedFraction) or m_decel) {
             if (m_turning) {
@@ -837,20 +839,24 @@ void DestinyManager::MoveObject() {
             //    //m_currentSpeedFraction -= m_activeSpeedFraction + m_prevSpeedFraction;
             //    speed = m_maxSpeed * m_currentSpeedFraction;
             //} else {
-                if (m_prevSpeed)
+                if (m_prevSpeed) {
                     speed = m_maxSpeed + speed;
-                else
+                } else {
                     speed = m_maxSpeed - speed;
+                }
                 m_currentSpeedFraction = 1 - m_activeSpeedFraction;
             //}
         }
     }
     // ships tend to "level out" when stopping.  try to mimic that here (wip)
-    if (m_stop) {// and (m_currentSpeedFraction < 0.4)) {
-        if (m_shipHeading.y < -0.45)
+    if (m_stop and (m_currentSpeedFraction < 0.5)) {
+        // rifter will stop level with can #3 (stop processed at #0)
+        // last can is #39 and 170m diff from client's view (below)
+        if (m_shipHeading.y < -0.45) {
             m_shipHeading.y += 0.07;
-        else if (m_shipHeading.y > 0.45)
+        } else if (m_shipHeading.y > 0.45) {
             m_shipHeading.y -= 0.07;
+        }
     }
 
     if (m_orbiting)
@@ -929,12 +935,12 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
         _log(DESTINY__ERROR, "Destiny::IsTurn() m_shipHeading: %.3f,%.3f,%.3f.  m_targetHeading: %.3f,%.3f,%.3f, toVec:%.3f,%.3f,%.3f", \
                 m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z, toVec.x, toVec.y, toVec.z);
         // try to correct for bad heading vector and retest...
-             if (m_shipHeading.x > 1.0f)  m_shipHeading.x -= 1;
-        else if (m_shipHeading.x < 1.0f)  m_shipHeading.x += 1;
-             if (m_shipHeading.y > 1.0f)  m_shipHeading.y -= 1;
-        else if (m_shipHeading.y < 1.0f)  m_shipHeading.y += 1;
-             if (m_shipHeading.z > 1.0f)  m_shipHeading.z -= 1;
-        else if (m_shipHeading.z < 1.0f)  m_shipHeading.z += 1;
+             if (m_shipHeading.x > 1.0f)  { m_shipHeading.x -= 1; }
+        else if (m_shipHeading.x < 1.0f)  { m_shipHeading.x += 1; }
+             if (m_shipHeading.y > 1.0f)  { m_shipHeading.y -= 1; }
+        else if (m_shipHeading.y < 1.0f)  { m_shipHeading.y += 1; }
+             if (m_shipHeading.z > 1.0f)  { m_shipHeading.z -= 1; }
+        else if (m_shipHeading.z < 1.0f)  { m_shipHeading.z += 1; }
         dot = toVec.dotProduct(m_shipHeading);
         if ((dot > 1.0f) or (dot < -1.0f)) {
             sLog.Error("Destiny::IsTurn()", "%s(%u) - shipHeading has screwed up AGAIN.  dot is %.5f", mySE->GetName(), mySE->GetID(), dot);
@@ -955,6 +961,33 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
     }
     return true;
 }
+
+/* Quaternion slerp(Quaternion const &v0, Quaternion const &v1, double t) {
+ *   // v0 and v1 should be unit length or else something broken will happen.
+ *
+ *   // Compute the cosine of the angle between the two vectors.
+ *   double dot = dot_product(v0, v1);
+ *
+ *   const double DOT_THRESHOLD = 0.9995;
+ *   if (dot > DOT_THRESHOLD) {
+ *       // If the inputs are too close for comfort, linearly interpolate
+ *       // and normalize the result.
+ *
+ *       Quaternion result = v0 + t*(v1 – v0);
+ *       result.normalize();
+ *       return result;
+ *   }
+ *
+ *   Clamp(dot, -1, 1);           // Robustness: Stay within domain of acos()
+ *   double theta_0 = acos(dot);  // theta_0 = angle between input vectors
+ *   double theta = theta_0*t;    // theta = angle between v0 and result
+ *
+ *   Quaternion v2 = v1 – v0*dot;
+ *   v2.normalize();              // { v0, v2 } is now an orthonormal basis
+ *
+ *   return v0*cos(theta) + v2*sin(theta);
+ }
+ */
 
 //from new source at eve/client/script/ui/services\flightControls.py
 //  self.curve = trinity.Tr2QuaternionLerpCurve()
@@ -1022,8 +1055,8 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
      */
     // set ship turn amount based on position in turn, current speed and ship agility
     GVector deltaHeading(m_shipHeading, m_targetHeading);
-    float turnPercent = 0.1f;
-    float degrees = EvE::Trig::Rad2Deg(m_radians);
+    float turnPercent(0.1f);
+    float degrees(EvE::Trig::Rad2Deg(m_radians));
     if (degrees > 100) {
         if (m_decel and (m_turnTic > turnTime)) {
             // turn half of remaining turn (simulate greatest turn angle when (turn > 90*) and (speed < time)
@@ -1187,7 +1220,7 @@ void DestinyManager::Orbit() {
     GPoint mPos(NULL_ORIGIN);
     float mPosAdj = 0.0f;
     // check distances for this tic
-    if (( edges /2) > m_followDistance) {
+    if ((edges /2) > m_followDistance) {
         if (m_orbiting == Destiny::Ball::Orbit::TooFar) {
             MoveObject();
             return;
@@ -1200,10 +1233,11 @@ void DestinyManager::Orbit() {
         radTarg += atan2(m_followDistance, edges);  // rad from 'distance line' to target 'offset'
         mPos.x = m_followDistance * cos(radTarg);
         mPos.z = m_followDistance * sin(radTarg);
-        if (Tp.y > m_position.y)  // target is above us.  set point below target using calculated distance
+        if (Tp.y > m_position.y) { // target is above us.  set point below target using calculated distance
             mPos.y = Tp.y - m_position.y;
-        else  // opposite of above
+        } else { // opposite of above
             mPos.y = m_position.y - Tp.y;
+        }
         m_targetPoint = Tp + mPos;
         GVector heading(m_position, m_targetPoint);
         heading.normalize();
@@ -1224,10 +1258,11 @@ void DestinyManager::Orbit() {
         //radTarg += atan2(m_followDistance, edges);  // rad from 'distance line' to target 'offset'
         mPos.x = m_followDistance * cos(radTarg);
         mPos.z = m_followDistance * sin(radTarg);
-        if (Tp.y > m_position.y)  // target is above us.  set point below target using calculated distance
+        if (Tp.y > m_position.y) {  // target is above us.  set point below target using calculated distance
             mPos.y = Tp.y - m_position.y;
-        else  // opposite of above
+        } else { // opposite of above
             mPos.y = m_position.y - Tp.y;
+        }
         m_targetPoint = Tp + mPos;
         GVector heading(m_position, m_targetPoint);
         heading.normalize();
@@ -1771,7 +1806,7 @@ void DestinyManager::BeginMovement() {
     // if ship is not moving, set initial movement variables
     if (m_userSpeedFraction < 0.05) {
         SetSpeedFraction(1.0f, true);
-        MoveObject();
+        //MoveObject();
     } else {
         // reset m_moveTime for current ship speed vs time to allow correct movement calculations after velocity change
         double newTime = (-log(1 - m_currentSpeedFraction) * m_shipAgility);
@@ -1782,6 +1817,7 @@ void DestinyManager::BeginMovement() {
     }
 
     SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
+    MoveObject();
 }
 
 void DestinyManager::Follow(SystemEntity* pSE, double distance) {

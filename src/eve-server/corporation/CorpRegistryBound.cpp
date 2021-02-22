@@ -1130,14 +1130,15 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
                 return nullptr;
             }
 
-            if (args3.queryType.compare("roles") == 0)
+            if (args3.queryType.compare("roles") == 0) {
                 query << "corpRole";
-            else
+            } else {
                 query << args3.queryType;
+            }
 
-            if (GetSearchValues(args3.searchOp, args3.valueRaw, query))
+            if (GetSearchValues(args3.searchOp, args3.valueRaw, query)) {
                 set = true;
-            else {
+            } else {
                 call.client->SendErrorMsg("Search data invalid. Ref: ServerError xxxxx");
                 return nullptr;
             }
@@ -1172,9 +1173,9 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
             else
                 query << args4.queryType;
 
-            if (GetSearchValues(args4.searchOp, args4.valueRaw, query))
+            if (GetSearchValues(args4.searchOp, args4.valueRaw, query)) {
                 set = true;
-            else {
+            } else {
                 call.client->SendErrorMsg("Search data invalid. Ref: ServerError xxxxx");
                 return nullptr;
             }
@@ -1281,30 +1282,31 @@ bool CorpRegistryBound::GetSearchValues(int8 op, PyRep* rep, std::ostringstream&
 // no longer used with new query decoding
 uint8 CorpRegistryBound::GetQueryType(std::string queryType)
 {
-    if (queryType.compare("roles") == 0)
+    if (queryType.compare("roles") == 0) {
         return Corp::QueryType::Roles;
-    else if (queryType.compare("rolesAtHQ") == 0)
+    } else if (queryType.compare("rolesAtHQ") == 0) {
         return Corp::QueryType::Roles;
-    else if (queryType.compare("rolesAtBase") == 0)
+    } else if (queryType.compare("rolesAtBase") == 0) {
         return Corp::QueryType::Roles;
-    else if (queryType.compare("rolesAtOther") == 0)
+    } else if (queryType.compare("rolesAtOther") == 0) {
         return Corp::QueryType::Roles;
-    else if (queryType.compare("grantableRoles") == 0)
+    } else if (queryType.compare("grantableRoles") == 0) {
         return Corp::QueryType::Roles;
-    else if (queryType.compare("grantableRolesAtHQ") == 0)
+    } else if (queryType.compare("grantableRolesAtHQ") == 0) {
         return Corp::QueryType::Roles;
-    else if (queryType.compare("grantableRolesAtBase") == 0)
+    } else if (queryType.compare("grantableRolesAtBase") == 0) {
         return Corp::QueryType::Roles;
-    else if (queryType.compare("grantableRolesAtOther") == 0)
+    } else if (queryType.compare("grantableRolesAtOther") == 0) {
         return Corp::QueryType::Roles;
-    else if (queryType.compare("baseID") == 0)
+    } else if (queryType.compare("baseID") == 0) {
         return Corp::QueryType::BaseID;
-    else if (queryType.compare("startDateTime") == 0)
+    } else if (queryType.compare("startDateTime") == 0) {
         return Corp::QueryType::StartDateTime;
-    else if (queryType.compare("characterID") == 0)     //this is actually string.  check searchOp for details
+    } else if (queryType.compare("characterID") == 0) {     //this is actually string.  check searchOp for details
         return Corp::QueryType::CharID;
-    else if (queryType.compare("titleMask") == 0)
+    } else if (queryType.compare("titleMask") == 0) {
         return Corp::QueryType::TitleMask;
+    }
 
     _log(CORP__ERROR, "CorpRegistryBound::GetQueryType() - Invalid QueryType: %s", queryType.c_str());
     return 0;
@@ -1647,7 +1649,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
     } else if (args.newStatus == Corp::AppStatus::RenegotiatedByCorporation) {
         // i dont see this option in client code...may not be able to reneg app.
         _log(CORP__MESSAGE, "CorpRegistryBound::Handle_UpdateApplicationOffer() hit AppStatus::RenegotiatedByCorporation by %s ", call.client->GetName() );
-    } else  {
+    } else {
         codelog(SERVICE__ERROR, "%s: Sent unhandled status %u ", call.client->GetName(), args.newStatus);
         // error...what to do here?
     }

@@ -45,10 +45,11 @@ m_launcher(false)
         m_medPower = true;
     } else if (mRef->type().HasEffect(EVEEffectID::hiPower)) {
         m_hiPower = true;
-        if (mRef->type().HasEffect(EVEEffectID::turretFitted))
+        if (mRef->type().HasEffect(EVEEffectID::turretFitted)) {
             m_turret = true;
-        else if (mRef->type().HasEffect(EVEEffectID::launcherFitted))
+        } else if (mRef->type().HasEffect(EVEEffectID::launcherFitted)) {
             m_launcher = true;
+        }
     } else if (mRef->type().HasEffect(EVEEffectID::rigSlot)) {
         m_rigSlot = true;
     } else if (mRef->type().HasEffect(EVEEffectID::subSystem)) {
@@ -289,17 +290,18 @@ const char* GenericModule::GetModuleStateName(int8 state)
 
 int8 GenericModule::GetModulePowerLevel() {
     {
-        if (m_hiPower)
+        if (m_hiPower) {
             return Module::Bank::High;
-        else if (m_medPower)
+        } else if (m_medPower) {
             return Module::Bank::Mid;
-        else if (m_loPower)
-            return Module::Bank::Low;
-        else if (m_rigSlot)
+        } else if (m_loPower) {
+            return Module::Bank::Low; {
+        } else if (m_rigSlot) {
             return Module::Bank::Rig;
-        else if (m_subSystem)
+        } else if (m_subSystem) {
             return Module::Bank::Subsystem;
-        else
+        } else {
             return Module::Bank::Undefined;
+        }
     }
 }

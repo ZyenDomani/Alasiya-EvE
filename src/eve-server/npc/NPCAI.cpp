@@ -120,18 +120,19 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 
     // 'sight' range (undefined in db)
     float radius = m_self->GetAttribute(AttrRadius).get_float();
-    if (radius < 30)
+    if (radius < 30) {
         m_sightRange = 2500;
-    else if (radius < 60)
+    } else if (radius < 60) {
         m_sightRange = 5000;
-    else if (radius < 150)
+    } else if (radius < 150) {
         m_sightRange = 8000;
-    else if (radius < 280)
+    } else if (radius < 280) {
         m_sightRange = 12000;
-    else if (radius < 550)
+    } else if (radius < 550) {
         m_sightRange = 15000;
-    else
+    } else {
         m_sightRange = 20000;
+    }
     if (m_maxAttackRange > m_sightRange)
         m_sightRange = m_maxAttackRange *2;
 
@@ -150,15 +151,15 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     /** @todo change these next 2 (rep and boost) to boolean to avoid timer creation/checks */
 
     // this is chance an npc has of delaying it's rep (if applicable)
-    if (m_self->HasAttribute(AttrEntityArmorRepairDelayChance))
+    if (m_self->HasAttribute(AttrEntityArmorRepairDelayChance)) {
         m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChance).get_float();
-    else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceSmall))
+    } else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceSmall)) {
         m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float();
-    else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceMedium))
+    } else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceMedium)) {
         m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_float();
-    else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceLarge))
+    } else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceLarge)) {
         m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float();
-    else {
+    } else {
         m_armorRepairDuration = 0;
         m_armorRepairDelayChance = 0;
     }
@@ -166,15 +167,15 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_armorRepairDuration = m_self->GetAttribute(AttrEntityArmorRepairDuration).get_uint32();
 
     // this is chance an npc has of delaying it's sebo (if applicable)
-    if (m_self->HasAttribute(AttrEntityShieldBoostDelayChance))
+    if (m_self->HasAttribute(AttrEntityShieldBoostDelayChance)) {
         m_shieldBoosterDelayChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChance).get_float();
-    else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceSmall))
+    } else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceSmall)) {
         m_shieldBoosterDelayChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
-    else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceMedium))
+    } else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceMedium)) {
         m_shieldBoosterDelayChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChanceMedium).get_float();
-    else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceLarge))
+    } else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceLarge)) {
         m_shieldBoosterDelayChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
-    else {
+    } else {
         m_shieldBoosterDuration = 0;
         m_shieldBoosterDelayChance = 0;
     }
@@ -562,12 +563,13 @@ void NPCAIMgr::CheckDistance(SystemEntity* pSE)
 
     m_isWandering = false;
 
-    if (dist < m_flyRange)
+    if (dist < m_flyRange) {
         SetEngaged(pSE);
-    else if (dist < m_boostRange)
+    } else if (dist < m_boostRange) {
         SetFollowing(pSE);
-    else
+    } else {
         SetChasing(pSE);
+    }
 
     _log(NPC__AI_TRACE, "%s(%u): CheckDistance:  target: %s(%u), state: %s, dist: %.0f, flyRange: %u, boostRange: %u.", \
             m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), GetStateName(m_state).c_str(), dist, m_flyRange, m_boostRange);
@@ -823,18 +825,19 @@ float NPCAIMgr::GetTargetTime()
     float targetTime = (m_self->GetAttribute(AttrScanSpeed).get_float());
     float radius = m_self->GetAttribute(AttrRadius).get_float();
     if (targetTime < 1) {
-        if (radius < 30)
+        if (radius < 30) {
             targetTime = 1500;
-        else if (radius < 60)
+        } else if (radius < 60) {
             targetTime = 2500;
-        else if (radius < 150)
+        } else if (radius < 150) {
             targetTime = 4000;
-        else if (radius < 280)
+        } else if (radius < 280) {
             targetTime = 6000;
-        else if (radius < 550)
+        } else if (radius < 550) {
             targetTime = 8000;
-        else
+        } else {
             targetTime = 13000;
+        }
     }
     return targetTime;
 }

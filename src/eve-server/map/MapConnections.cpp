@@ -38,12 +38,13 @@ void MapCon::PopulateConnections() {
         tocon = row.GetUInt(2);
         toreg = row.GetUInt(3);
 
-        if (fromreg != toreg)
+        if (fromreg != toreg) {
             ctype = Map::Jumptype::Region;
-        else if (fromcon != tocon)
+        } else if (fromcon != tocon) {
             ctype = Map::Jumptype::Constellation;
-        else
+        } else {
             ctype = Map::Jumptype::System;
+        }
 
         sDatabase.RunQuery(err, "UPDATE mapConnections SET ctype = %u WHERE AI = %u", ctype, count);
 

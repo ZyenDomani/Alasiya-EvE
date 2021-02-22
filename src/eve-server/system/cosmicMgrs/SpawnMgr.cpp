@@ -381,10 +381,11 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     bool anomaly = false;
     // get faction for this region
     uint32 factionID = factionRogueDrones;  // default to rogue drones.  this is my internal rogue drone factionID.
-    if (sConfig.npc.RatFaction)             // is RatFaction set in config?
+    if (sConfig.npc.RatFaction) {            // is RatFaction set in config?
         factionID = sConfig.npc.RatFaction;
-    else if (MakeRandomFloat() > 0.05)       // 5% chance for ANY spawn to be rogue drone.
+    } else if (MakeRandomFloat() > 0.05) {      // 5% chance for ANY spawn to be rogue drone.
         factionID = sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
+    }
 
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - faction: %s, region %u. (config set %s)", \
@@ -396,10 +397,11 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
             //NOTE  random checks here are for TESTING only....all rates are high.  make config option later?
             double rand = MakeRandomFloat();
             if (rand < 0.1) { // officer spawn
-                if (factionID != factionRogueDrones)   //but not for drones.  they dont have officers..make this the rare drone hauler spawn (which isnt written yet)
+                if (factionID != factionRogueDrones) {  //but not for drones.  they dont have officers..make this the rare drone hauler spawn (which isnt written yet)
                     sClass = Spawn::Class::Officer;
-                else
+                } else {
                     sClass = Spawn::Class::Hauler;
+                }
             } else if (rand < 0.15) { // commander spawn
                 sClass = Spawn::Class::Commander;
             } else if (rand < 0.25) { // hauler spawn
@@ -417,35 +419,37 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
             if ((factionID != factionRogueDrones) and (MakeRandomFloat() < 0.08)) { // second chance for hauler spawn, but include ALL secRating in this one
                 sClass = Spawn::Class::Hauler;
             } else { // gonna be a 'regular' trusec-based spawn in a belt.
-                if (secRating < -0.7)
+                if (secRating < -0.7) {
                     sClass = Spawn::Class::Insane;
-                else if (secRating < -0.4)
+                } else if (secRating < -0.4) {
                     sClass = Spawn::Class::Crazy;
-                else if (secRating < -0.1)
+                } else if (secRating < -0.1) {
                     sClass = Spawn::Class::Hard;
-                else if (secRating < 0.3)
+                } else if (secRating < 0.3) {
                     sClass = Spawn::Class::Medium;
-                else if (secRating < 0.6)
+                } else if (secRating < 0.6) {
                     sClass = Spawn::Class::Average;
-                else if (secRating < 0.85)
+                } else if (secRating < 0.85) {
                     sClass = Spawn::Class::Fair;
-                else
+                } else {
                     sClass = Spawn::Class::Easy;
+                }
             }
             if ((secRating < 0) and  (sClass < Spawn::Class::Hauler))
                 if (MakeRandomFloat() < 0.1)
                     sClass = Spawn::Class::Hell;
         } else if (pBubble->IsGate()) { // gate spawns are smaller/easier than roid spawns
-            if (secRating < -0.7)
+            if (secRating < -0.7) {
                 sClass = Spawn::Class::Hard;
-            else if (secRating < -0.4)
+            } else if (secRating < -0.4) {
                 sClass = Spawn::Class::Medium;
-            else if (secRating < -0.1)
+            } else if (secRating < -0.1) {
                 sClass = Spawn::Class::Average;
-            else if (secRating < 0.3)
+            } else if (secRating < 0.3) {
                 sClass = Spawn::Class::Fair;
-            else
+            } else {
                 sClass = Spawn::Class::Easy;
+            }
         } else {
             // make error here?
         }
@@ -481,13 +485,13 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         /** @todo  make templates/functions/whatever for sending msgs to players local for waves */
     } else if (sClass == Spawn::Class::Hauler) {
         // split hauler spawns based on trusec
-        if (secRating < -0.8)       level = MakeRandomInt(4, 7);
-        else if (secRating < -0.5)  level = MakeRandomInt(3, 6);
-        else if (secRating < -0.2)  level = MakeRandomInt(2, 5);
-        else if (secRating < 0.1)   level = MakeRandomInt(1, 4);
-        else if (secRating < 0.4)   level = MakeRandomInt(1, 3);
-        else if (secRating < 0.7)   level = 2;
-        else                        level = 1;
+             if (secRating < -0.8)  { level = MakeRandomInt(4, 7); }
+        else if (secRating < -0.5)  { level = MakeRandomInt(3, 6); }
+        else if (secRating < -0.2)  { level = MakeRandomInt(2, 5); }
+        else if (secRating < 0.1)   { level = MakeRandomInt(1, 4); }
+        else if (secRating < 0.4)   { level = MakeRandomInt(1, 3); }
+        else if (secRating < 0.7)   { level = 2; }
+        else                        { level = 1; }
     } else if (sClass <= Spawn::Class::Hell) {
         level = MakeRandomInt(0, spawnEntry.size());  // random belt/gate spawn type.
     } else {
@@ -595,19 +599,21 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
 
     if (factionID == factionRogueDrones) {
         if ((bc > 0) or (bs > 0)) {
-            if (sClass < Spawn::Class::BeltSpawn)
+            if (sClass < Spawn::Class::BeltSpawn) {
                 toSpawn.typeID = GetRandTypeID(9);
-            else if (sClass > Spawn::Class::BeltSpawn)
+            } else if (sClass > Spawn::Class::BeltSpawn) {
                 toSpawn.typeID = GetRandTypeID(22);
+            }
             // spawn 4 swarm ships for each bc/bs
             toSpawn.quantity = ((bs > 0 ? bs : bc) *4);
             m_toSpawn.push_back(toSpawn);
         } else if (o > 0) {
             // drones dont have officers.  spawn swarm x10
-            if (sClass < Spawn::Class::BeltSpawn)
+            if (sClass < Spawn::Class::BeltSpawn) {
                 toSpawn.typeID = GetRandTypeID(9);
-            else if (sClass > Spawn::Class::BeltSpawn)
+            } else if (sClass > Spawn::Class::BeltSpawn) {
                 toSpawn.typeID = GetRandTypeID(22);
+            }
             toSpawn.quantity = o *10;
             m_toSpawn.push_back(toSpawn);
         }
@@ -621,8 +627,9 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
             _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - toSpawn size is %u.", m_toSpawn.size());    //variable
         MakeSpawn(pBubble, factionID, sClass, level, anomaly);
         return true;
-    } else
+    } else {
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - Nothing to spawn.");
+    }
 
     return false;
 }

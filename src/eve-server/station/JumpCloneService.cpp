@@ -149,6 +149,7 @@ PyResult JumpCloneBound::Handle_GetShipCloneState(PyCallArgs &call) {
     dict->SetItemString( "implants", implants );
     dict->SetItemString( "timeLastJump", new PyLong(GetFileTimeNow() -(EvE::Time::Hour *MakeRandomFloat(1, 23))) );   /** @todo fix this to call.client->GetChar()->LastJumpTime()*/
 
+    // returns list
     return new PyObject( "util.KeyVal", dict );
 }
 

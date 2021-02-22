@@ -81,6 +81,9 @@ public:
     NPCAIMgr* GetAIMgr()                                { return m_AI; }
     SpawnMgr* GetSpawnMgr()                             { return m_spawnMgr; }
 
+    /* for command dropLoot - commands all npcs in bubble to jettison loot */
+    void CmdDropLoot();
+
 protected:
     NPCAIMgr* m_AI;
     SpawnMgr* m_spawnMgr;

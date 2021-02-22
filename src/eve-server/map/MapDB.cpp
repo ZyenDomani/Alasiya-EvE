@@ -169,10 +169,11 @@ PyRep *MapDB::GetDynamicData(uint8 type, uint8 time) {
             return dict;
         };
         case 3: {
-            if (time == 1)
+            if (time == 1) {
                 sDatabase.RunQuery(res, "SELECT solarSystemID, killsHour AS value1, factionKills AS value2, podKillsHour AS value3 FROM mapDynamicData" );
-            else if (time == 24)
+            } else if (time == 24) {
                 sDatabase.RunQuery(res, "SELECT solarSystemID, kills24Hour AS value1, factionKills24Hour AS value2, podKills24Hour AS value3 FROM mapDynamicData" );
+            }
         } break;
         case 4: {
             // not coded in client

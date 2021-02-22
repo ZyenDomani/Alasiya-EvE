@@ -288,16 +288,17 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     } else if (ice) {  //880 total systems with ice. 293 in hisec
         //  ice needs to be 30k to 75k, with radius of 40k to 100k
         radius *= 3; //24k base
-        if (secRating > 0.7)
+        if (secRating > 0.7) {
             pcs = 1;
-        else if (secRating > 0.4)
+        } else if (secRating > 0.4) {
             pcs = 2;
-        else if (secRating > 0.0)
+        } else if (secRating > 0.0) {
             pcs = 3;
-        else if (secRating > -0.4)
+        } else if (secRating > -0.4) {
             pcs = 4;
-        else
+        } else {
             pcs = 6;
+        } 
     } else {
         pcs += MakeRandomInt(5, 30);
         radius += (radius *secValue);

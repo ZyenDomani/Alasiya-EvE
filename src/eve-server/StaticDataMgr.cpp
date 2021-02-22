@@ -743,14 +743,15 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
         if (MakeRandomFloat(0, 1) < it->second.dropChance) {
             randChance = MakeRandomFloat(0, 1);
             metaLevel = 0;
-            if (randChance < 0.1)
+            if (randChance < 0.1) {
                 metaLevel = 4;
-            else if (randChance < 0.25)
+            } else if (randChance < 0.25) {
                 metaLevel = 3;
-            else if (randChance < 0.4)
+            } else if (randChance < 0.4) {
                 metaLevel = 2;
-            else if (randChance < 0.6)
+            } else if (randChance < 0.6) {
                 metaLevel = 1;
+            }
             /*need to figure out how to get faction loot for faction wrecks
              *    elif meta_level == 7:
              *        drop_chance = 0.15   # Faction stuff = 15%
@@ -1174,59 +1175,66 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             case Activity::Manufacturing: {         //1
                 /** @todo  this needs work.  dunno how to remove 'extra' materials from this list */
                 manuf = true;
-                if (IsSkillTypeID(cur.requiredTypeID))
+                if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListManuf->AddItem(row);
-                else if (cur.extra)
+                } else if (cur.extra) {
                     extraListManuf->AddItem(row);
-                else
+                } else {
                     matlListManuf->AddItem(row);
+                }
             } break;
             case Activity::ResearchTech: {          //2
                 // not used.  not defined in client.  no data for this activity
             } break;
             case Activity::ResearchTime: {          //3
                 te = true;
-                if (IsSkillTypeID(cur.requiredTypeID))
+                if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListTE->AddItem(row);
-                else
+                } else {
                     matlListTE->AddItem(row);
+                }
             } break;
             case Activity::ResearchMaterial: {      //4
                 me = true;
-                if (IsSkillTypeID(cur.requiredTypeID))
+                if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListME->AddItem(row);
-                else
+                } else {
                     matlListME->AddItem(row);
+                }
             } break;
             case Activity::Copying: {               //5
                 copy = true;
-                if (IsSkillTypeID(cur.requiredTypeID))
+                if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListCopy->AddItem(row);
-                else
+                } else {
                     matlListCopy->AddItem(row);
+                }
             } break;
             case Activity::Duplicating: {           //6
                 dup = true;
-                if (IsSkillTypeID(cur.requiredTypeID))
+                if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListDup->AddItem(row);
-                else if (cur.extra)
+                } else if (cur.extra) {
                     extraListDup->AddItem(row);
-                else
+                } else {
                     matlListDup->AddItem(row);
+                }
             } break;
             case Activity::ReverseEngineering: {    //7
                 re = true;
-                if (IsSkillTypeID(cur.requiredTypeID))
+                if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListRE->AddItem(row);
-                else
+                } else {
                     matlListRE->AddItem(row);
+                }
             } break;
             case Activity::Invention: {             //8
                 invent = true;
-                if (IsSkillTypeID(cur.requiredTypeID))
+                if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListInvent->AddItem(row);
-                else
+                } else {
                     matlListInvent->AddItem(row);
+                }
             } break;
         }
     }

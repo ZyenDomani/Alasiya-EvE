@@ -596,9 +596,9 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
         std::vector<uint32>::const_iterator cur = skillList.begin();
         for (; cur != skillList.end(); ++cur) {
             skillID = *cur;
-            if (character->HasSkillTrainedToLevel(skillID, level))
+            if (character->HasSkillTrainedToLevel(skillID, level)) {
                 return PyStatic.NewNone();
-            else if (character->HasSkill(skillID)) {
+            } else if (character->HasSkill(skillID)) {
                 skill = character->GetSkill(skillID);
                 //oldLevel = skill->GetAttribute(AttrSkillLevel).get_uint32();
                 //oldPoints = skill->GetAttribute(AttrSkillPoints).get_uint32();
@@ -611,9 +611,9 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
                 InventoryItemRef item = sItemFactory.SpawnItem(idata);
 
-                if (item.get() == nullptr)
+                if (item.get() == nullptr) {
                     throw PyException(MakeCustomError("Unable to create item of type %s.", item->typeID()));
-                else {
+                } else {
                     skill = SkillRef::StaticCast(item);
                     skill->SetAttribute(AttrSkillLevel, level);
                     skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
@@ -871,37 +871,31 @@ PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const
 PyResult Command_kick(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     Client *target;
-
-    if (args.argCount() == 2)
-    {
-
-        if (args.isNumber(1))
-        {
+    if (args.argCount() == 2) {
+        if (args.isNumber(1)) {
             int id = atoi(args.arg(1).c_str());
             target = sEntityList.FindClientByCharID(id);
-        }
-        else
-        {
+        } else {
             const char *name = args.arg(1).c_str();
             target = sEntityList.FindClientByName(name);
         }
     }
     //support for characters with first and last names
-    else if (args.argCount() == 3)
-    {
+    else if (args.argCount() == 3) {
         if (args.isHexNumber(1))
             throw PyException(MakeCustomError("Unknown arguments"));
 
         std::string name = args.arg(1) + " " + args.arg(2);
         target = sEntityList.FindClientByName(name.c_str()) ;
-    }
-    else
+    } else {
         throw PyException(MakeCustomError("Correct Usage: /kick [Character Name]"));
+    }
 
-   if (target == NULL)
+    if (target == NULL) {
         throw PyException(MakeCustomError("Cannot find Character"));
-    else
+    } else {
         target->DisconnectClient();
+    }
 
     return NULL;
 }

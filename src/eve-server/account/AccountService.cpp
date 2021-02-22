@@ -133,19 +133,20 @@ PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
     if (call.tuple->size() > 0)
         isCorp = PyRep::IntegerValue(call.tuple->GetItem(0));
 
-    double balance = 0;
-    int16 accountKey = call.client->GetCorpAccountKey();
+    double balance(0);
+    int16 accountKey(call.client->GetCorpAccountKey());
     if (call.byname.find("accountKey") != call.byname.end())
         accountKey = PyRep::IntegerValueU32(call.byname.find("accountKey")->second);
 
-    if (isCorp)
+    if (isCorp) {
         balance = AccountDB::GetCorpBalance( call.client->GetCorporationID(), accountKey);
-    else {
+    } else {
         int8 type = Account::CreditType::ISK;
-        if (accountKey == Account::KeyType::AUR)
+        if (accountKey == Account::KeyType::AUR) {
             type = Account::CreditType::AURUM;
-        else if (accountKey == Account::KeyType::DUST_ISK)
+        } else if (accountKey == Account::KeyType::DUST_ISK) {
             type = Account::CreditType::MPLEX;
+        }
         balance = call.client->GetBalance(type);
     }
 
@@ -164,7 +165,7 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
         return nullptr;
     }
 
-    uint32 ownerID = call.client->GetCharacterID();
+    uint32 ownerID(call.client->GetCharacterID());
     if (args.corpAccount)
         ownerID = call.client->GetCorporationID();
 
@@ -213,9 +214,9 @@ PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
     }
 
     std::string reason = "DESC: ";
-    if (args.reason.size() < 1)
+    if (args.reason.size() < 1) {
         reason += "No Reason Given";
-    else {
+    } else {
         // this hits db directly, so test for possible sql injection code
         for (const auto cur : badChars)
             if (EvE::icontains(args.reason, cur))
@@ -269,12 +270,13 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         _log(ACCOUNT__TRACE, "TranserFunds() - from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, fKey: %u, tKey: %u", \
                             fromID, toID, entryTypeID, referenceID, amount, fromKey, toKey);
     uint8 fromCurrency = Account::CreditType::ISK;
-    if (IsAUR(fromKey))
+    if (IsAUR(fromKey)) {
         fromCurrency = Account::CreditType::AURUM;
-    else if (IsDustKey(fromKey))
+    } else if (IsDustKey(fromKey)) {
         fromCurrency = Account::CreditType::MPLEX;
+    }
 
-    double newBalanceFrom = 0, newBalanceTo = 0;
+    double newBalanceFrom(0), newBalanceTo(0);
     Client* pClientFrom(nullptr);
     if (IsCharacter(fromID)) {
         pClientFrom = sEntityList.FindClientByCharID(fromID);
@@ -295,10 +297,11 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     } // fromID could be npc or _System.  nothing to do on this side.
 
     uint8 toCurrency = Account::CreditType::ISK;
-    if (IsAUR(toKey))
+    if (IsAUR(toKey)) {
         toCurrency = Account::CreditType::AURUM;
-    else if (IsDustKey(toKey))
+    } else if (IsDustKey(toKey)) {
         toCurrency = Account::CreditType::MPLEX;
+    }
 
     Client* pClientTo(nullptr);
     if (IsCharacter(toID)) {

@@ -244,9 +244,9 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         }
 
         uint32 qtyLeft = iRef->quantity() % iRef->type().portionSize();
-        if (qtyLeft)
+        if (qtyLeft) {
             iRef->SetQuantity(qtyLeft, true);
-        else {
+        } else {
             iRef->Move(iRef->locationID(), flagJunkyardReprocessed, true);
             m_stationRef->RemoveItem(iRef);
             iRef->Delete();

@@ -23,10 +23,11 @@ Prospector::Prospector(ModuleItemRef mRef, ShipItemRef sRef)
     m_salvager = false;
     m_dataMiner = false;
 
-    if (m_modRef->groupID() == EVEDB::invGroups::Salvager)
+    if (m_modRef->groupID() == EVEDB::invGroups::Salvager) {
         m_salvager = true;
-    else if (m_modRef->groupID() == EVEDB::invGroups::Data_Miner)
+    } else if (m_modRef->groupID() == EVEDB::invGroups::Data_Miner) {
         m_dataMiner = true;
+    }
 
     m_accessChance = 0;
 

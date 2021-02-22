@@ -451,9 +451,9 @@ bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, 
         }
     }
 
-    if (newWingID == 0)
+    if (newWingID == 0) {
         newWingID = oldWingID;
-    else if (IsWing(newWingID)) {
+    } else if (IsWing(newWingID)) {
         std::map<uint32, WingData>::iterator wItr = m_wingDataMap.find(newWingID);
         if (wItr == m_wingDataMap.end())
             return false;
@@ -489,9 +489,9 @@ bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, 
         }
     }
 
-    if (newSquadID == 0)
+    if (newSquadID == 0) {
         newSquadID = oldSquadID;
-    else if (IsSquad(newSquadID)) {
+    } else if (IsSquad(newSquadID)) {
         std::map<uint32, SquadData>::iterator sItr = m_squadDataMap.find(newSquadID);
         if (sItr == m_squadDataMap.end())
             return false;

@@ -418,17 +418,18 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 {
     float secRating = m_system->GetSystemSecurityRating();
     int8 sec = 1; // > 0.6
-    if (secRating < -0.2)
+    if (secRating < -0.2) {
         sec = 3;
-    else if (secRating < 0.2)
+    } else if (secRating < 0.2) {
         sec = 4;
-    else if (secRating < 0.6)
+    } else if (secRating < 0.6) {
         sec = 2;
+    }
 
-    float level = 1;
-    int8 type = 1;
+    float level(1.0f);
+    int8 type(1);
     // need to determine region sov, region rat or other here also
-    int8 faction = GetFaction(sig.ownerID);
+    int8 faction(GetFaction(sig.ownerID));
 
     using namespace Dungeon::Type;
     switch (sig.dungeonType) {
@@ -485,9 +486,9 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                     sig.sigStrength = 0.1; // 1/10
                 }
             }
-            if (level == 3)
+            if (level == 3) {
                 faction = 6;  // drone
-            else if (faction == 6) {
+            } else if (faction == 6) {
                 // lvls 1&2 cannot be drone.  set to region pirate
                 faction = GetFaction(sDataMgr.GetRegionRatFaction(m_system->GetRegionID()));
             }
@@ -523,12 +524,13 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         case Ladar: {             // 5
             faction = 0;
             type = MakeRandomInt(1,8);
-            if (sec == 1)
+            if (sec == 1) {
                 sig.sigStrength = 0.1; // 1/10
-            else if (sec == 2)
+            } else if (sec == 2) {
                 sig.sigStrength = 0.05; // 1/20
-            else if (sec == 3)
+            } else if (sec == 3) {
                 sig.sigStrength = 0.025; // 1/40
+            }
         } break;
         case Anomaly: {           // 7
             type = MakeRandomInt(1,5);
@@ -566,9 +568,9 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             sig.dungeonType = 8;
         };
         case Unrated: {           // 8
-            if (faction == 6)
+            if (faction == 6) {
                 type = MakeRandomInt(1,3);
-            else {
+            } else {
                 faction = 0;
                 type = MakeRandomInt(1,5);
             }
@@ -620,14 +622,15 @@ int8 DungeonMgr::GetRandLevel()
     double level = MakeRandomFloat();
     _log(COSMIC_MGR__TRACE, "DungeonMgr::GetRandLevel() - level = %.2f", level);
 
-    if (level < 0.15)
+    if (level < 0.15) {
         return 4;
-    else if (level < 0.25)
+    } else if (level < 0.25) {
         return 3;
-    else if (level < 0.50)
+    } else if (level < 0.50) {
         return 2;
-    else
+    } else {
         return 1;
+    }
 }
 
 /*

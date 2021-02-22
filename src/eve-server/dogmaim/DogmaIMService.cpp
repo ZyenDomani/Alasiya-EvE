@@ -935,18 +935,19 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         if (pSE->IsPOSSE()) {
             /*  these two may be called in posMgr...
             if ((args.arg2 == anchorDropForStructures)
-            or (args.arg2 == anchorDropOrbital))
+            or (args.arg2 == anchorDropOrbital)) {
                 pSE->GetPOSSE()->SetAnchor(args.arg2);
-            else */ if (args.arg2 == anchorLiftForStructures)
+            } else */ if (args.arg2 == anchorLiftForStructures) {
                 pSE->GetPOSSE()->PullAnchor();
-            else if (args.arg2 == onlineForStructures)
+            } else if (args.arg2 == onlineForStructures) {
                 pSE->GetPOSSE()->Activate(args.arg2);
+            }
         } else if (pSE->IsContainerSE()) {
             // not sure what calls are for containers yet
             pSE->GetContSE()->Activate(args.arg2);
-        } else
+        } else {
             ; // make error here
-
+        }
     } else if (call.tuple->size() == 4) {
         // activate ship module
         Call_Dogma_Activate args;
@@ -1000,13 +1001,13 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
          */
         // determine if this pSE is pos or cont.
         //call activate on pSE, pass effectID, send effect to clients (bubblecast) then set timers.
-        if (pSE->IsPOSSE())
+        if (pSE->IsPOSSE()) {
             pSE->GetPOSSE()->Deactivate(args.arg2);
-        else if (pSE->IsContainerSE())
+        } else if (pSE->IsContainerSE()) {
             pSE->GetContSE()->Deactivate(args.arg2);
-        else
+        } else {
             ; // make error here
-
+        }
     } else if (call.tuple->items.at(1)->IsWString()) {
         //if effect is wide string, then call is for module, including calls to online/offline (rclick module in HUD)
         Call_Dogma_Deactivate args;

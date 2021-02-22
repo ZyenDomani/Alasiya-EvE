@@ -542,13 +542,13 @@ PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
     DBResultRow row;
     PyDict* dict = new PyDict();
     for (auto cur : itemIDs) {
-        if (IsCharacter(cur))
+        if (IsCharacter(cur)) {
             sDatabase.RunQuery(res, "SELECT characterID, characterName, typeID FROM chrCharacters WHERE characterID = %u", cur);
-        else if (IsPlayerCorp(cur))
+        } else if (IsPlayerCorp(cur)) {
             sDatabase.RunQuery(res, "SELECT corporationID, corporationName, typeID FROM crpCorporation WHERE corporationID = %u", cur);
-        else if (IsAlliance(cur))
+        } else if (IsAlliance(cur)) {
             sDatabase.RunQuery(res, "SELECT allianceID, allianceName, typeID FROM alnAlliance WHERE allianceID = %u", cur);
-        else
+        } else {
             ; // make error
         if (res.GetRow(row)) {
             PyList* list = new PyList();

@@ -540,12 +540,13 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
 
     // check to see if item is currently in a module slot.
     if (IsModuleSlot(iRef->flag())) {
-        if (IsRigSlot(iRef->flag()))
+        if (IsRigSlot(iRef->flag())) {
             m_ModuleManager->UninstallRig(iRef->itemID());
-        else if (iRef->categoryID() == EVEDB::invCategories::Charge)
+        } else if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->UnloadModule(iRef->flag());
-        else
+        } else {
             m_ModuleManager->UnfitModule(iRef->itemID());
+        }
         //m_ModuleManager->UpdateModules(iRef->flag());
     }
 
@@ -799,18 +800,19 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
 
 EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
     uint16 slotFound(flagIllegal);
-    if (iRef->type().HasEffect(EVEEffectID::loPower))
+    if (iRef->type().HasEffect(EVEEffectID::loPower)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::loPower);
-    else if (iRef->type().HasEffect(EVEEffectID::medPower))
+    } else if (iRef->type().HasEffect(EVEEffectID::medPower)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::medPower);
-    else if (iRef->type().HasEffect(EVEEffectID::hiPower))
+    } else if (iRef->type().HasEffect(EVEEffectID::hiPower)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::hiPower);
-    else if (iRef->type().HasEffect(EVEEffectID::subSystem))
+    } else if (iRef->type().HasEffect(EVEEffectID::subSystem)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::subSystem);
-    else if (iRef->type().HasEffect(EVEEffectID::rigSlot))
+    } else if (iRef->type().HasEffect(EVEEffectID::rigSlot)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
-    else
+    } else {
         codelog(SHIP__ERROR, "ShipItem::FindAvailableModuleSlot() - iRef %s has no bank effect.", iRef->name());
+    }
 
     return (EVEItemFlags)slotFound;
 }
@@ -1937,18 +1939,19 @@ std::string ShipItem::GetShipDNA()
 
     /** @todo update this for multiples of modules */
     for (auto cur : moduleList) {
-        if (IsRigSlot(cur->flag()))
+        if (IsRigSlot(cur->flag())) {
             modRig << cur->typeID() << ";" << cur->quantity() << ":";
-        else if (IsHiSlot(cur->flag()))
+        } else if (IsHiSlot(cur->flag())) {
             modHi << cur->typeID() << ";" << cur->quantity() << ":";
-        else if (IsMidSlot(cur->flag()))
+        } else if (IsMidSlot(cur->flag())) {
             modMid << cur->typeID() << ";" << cur->quantity() << ":";
-        else if (IsLowSlot(cur->flag()))
+        } else if (IsLowSlot(cur->flag())) {
             modLow << cur->typeID() << ";" << cur->quantity() << ":";
-        else if (IsSubSystem(cur->flag()))
+        } else if (IsSubSystem(cur->flag())) {
             subSys << cur->typeID() << ":";
-        else
+        } else {
             ; // error?
+        }
     }
 
     std::map<EVEItemFlags, InventoryItemRef> chargeList;
@@ -2454,10 +2457,11 @@ void ShipSE::Process() {
         float Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
         if (Charge < Capacity) {
             float newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrShieldRechargeRate).get_float()));
-            if (newCharge > Capacity)
+            if (newCharge > Capacity) {
                 newCharge = Capacity;
-            else if ((Capacity - newCharge) < 0.3)
+            } else if ((Capacity - newCharge) < 0.3) {
                 newCharge = Capacity;
+            }
             m_self->SetAttribute(AttrShieldCharge, newCharge);
             SendDamageStateChanged();
             _log(SHIP__RECHARGE, "ShipSE::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
@@ -2468,10 +2472,11 @@ void ShipSE::Process() {
         Capacity = m_self->GetAttribute(AttrCapacitorCapacity).get_float();
         if (Charge < Capacity) {
             float newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrRechargeRate).get_float()));
-            if (newCharge > Capacity)
+            if (newCharge > Capacity) {
                 newCharge = Capacity;
-            else if ((Capacity - newCharge) < 0.3)
+            } else if ((Capacity - newCharge) < 0.3) {
                 newCharge = Capacity;
+            }
             m_self->SetAttribute(AttrCapacitorCharge, newCharge);
             _log(SHIP__RECHARGE, "ShipSE::Process(): %s(%u) - New Cap Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
         }

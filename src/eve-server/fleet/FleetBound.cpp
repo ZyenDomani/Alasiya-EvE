@@ -402,12 +402,13 @@ PyResult FleetBound::Handle_ChangeWingName(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    if (args.name->IsWString())
+    if (args.name->IsWString()) {
         sFltSvc.RenameWing(args.unitID, args.name->AsWString()->content());
-    else if (args.name->IsString())
+    } else if (args.name->IsString()) {
         sFltSvc.RenameWing(args.unitID, args.name->AsString()->content());
-    else
+    } else {
         _log(FLEET__ERROR, "ChangeWingName - args.name is of the wrong type: '%s'.  Expected PyString or PyWString.", args.name->TypeString());
+    }
 
     // returns nothing
     return nullptr;
@@ -424,12 +425,13 @@ PyResult FleetBound::Handle_ChangeSquadName(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    if (args.name->IsWString())
+    if (args.name->IsWString()) {
         sFltSvc.RenameSquad(args.unitID, args.name->AsWString()->content());
-    else if (args.name->IsString())
+    } else if (args.name->IsString()) {
         sFltSvc.RenameSquad(args.unitID, args.name->AsString()->content());
-    else
+    } else {
         _log(FLEET__ERROR, "ChangeSquadName - args.name is of the wrong type: '%s'.  Expected PyString or PyWString.", args.name->TypeString());
+    }
 
     // returns nothing
     return nullptr;

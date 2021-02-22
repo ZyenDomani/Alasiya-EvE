@@ -39,18 +39,19 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     station.clear();
 
     for (auto cur : entityIDs) {
-        if (IsCorp(cur))
+        if (IsCorp(cur)) {
             corp.push_back(cur);
-        else if (IsAlliance(cur))
+        } else if (IsAlliance(cur)) {
             ally.push_back(cur);
-        else if (IsCharacter(cur))
+        } else if (IsCharacter(cur)) {
             player.push_back(cur);
-        else if (cur < 33000)
+        } else if (cur < 33000) {
             npc.push_back(cur);
-        else if (IsStation(cur))
+        } else if (IsStation(cur)) {
             station.push_back(cur);
-        else
+        } else {
             owner.push_back(cur);
+        }
 
         // add check here for trader joe.
         //  will have to hardcode data, then run thru db query cause i dont know how to build packet for this return
@@ -182,12 +183,13 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     asteroidItems.clear();
 
     for (auto cur : entityIDs) {
-        if (IsStaticItem(cur))
+        if (IsStaticItem(cur)) {
             staticItems.push_back(cur);
-        else if (IsAsteroid(cur))
+        } else if (IsAsteroid(cur)) {
             asteroidItems.push_back(cur);
-        else
+        } else {
             dynamicItems.push_back(cur);
+        }
     }
 
     DBQueryResult res;
@@ -519,14 +521,15 @@ PyObject *ConfigDB::GetMapOffices(uint32 solarSystemID) {
 PyObject *ConfigDB::GetMapConnections(uint32 id, bool sol, bool reg, bool con, uint16 cel, uint16 _c) {
   sLog.Warning ("ConfigDB::GetMapConnections", "DB query - System:%u, Sol:%u, Reg:%u, Con:%u, Cel:%u, cached:%u", id, sol, reg, con, cel, _c);
     const char *key = "fromsol";
-    if (sol)
+    if (sol) {
         key = "fromsol";
-    else if (reg)
+    } else if (reg) {
         key = "fromreg";
-    else if (con)
+    } else if (con) {
         key = "fromcon";
-    else
+    } else {
         sLog.Error ("ConfigDB::GetMapConnections()", "Bad argument (id: %u, sol: %u, reg: %u, con: %u) passed to key.", id, sol, reg, con );
+    }
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,

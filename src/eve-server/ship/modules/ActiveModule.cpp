@@ -611,10 +611,11 @@ uint32 ActiveModule::DoCycle()
         m_shipRef->HeatDamageCheck(this);
 
     EvilNumber cycleTime = 10000;   // default to 10s
-    if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
+    if (m_modRef->HasAttribute(AttrSpeed, cycleTime)) {
         ; //return cycleTime.get_int();
-    else if (m_modRef->HasAttribute(AttrDuration, cycleTime))
+    } else if (m_modRef->HasAttribute(AttrDuration, cycleTime)) {
         ; //return cycleTime.get_int();
+    }
     return cycleTime.get_int();
 }
 
@@ -653,8 +654,9 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
         for (auto cur : modules)
             cur->GetActiveModule()->ShowEffect(false, abort);
-    } else
+    } else {
         ShowEffect(false, abort);
+    }
 
     ApplyEffect(FX::State::Active, false);
     if (IsValidTarget(m_targetID)
@@ -984,9 +986,9 @@ bool ActiveModule::CanActivate()
             case Tractor_Beam: {
                 /** @todo  add checks for other items vs cap tractors and maybe some items for small tractors */
                 bool allowed(false);
-                if ( m_targetSE->IsWreckSE())
+                if ( m_targetSE->IsWreckSE()) {
                     allowed = true;
-                else if (m_targetSE->IsContainerSE()) {
+                } else if (m_targetSE->IsContainerSE()) {
                     if (m_targetSE->GetContSE()->IsAnchored()) {
                         m_shipRef->GetPilot()->SendNotifyMsg("The %s is anchored.  It cannot be tractored.", m_targetSE->GetName());
                         return false;

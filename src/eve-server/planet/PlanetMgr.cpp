@@ -360,10 +360,11 @@ void PlanetMgr::SetLinkLevel(UUNCommand& nc)
 void PlanetMgr::SetSchematic(UUNCommand& nc)
 {
     uint32 pinID = 0;
-    if (nc.command_data->GetItem(0)->IsTuple())
+    if (nc.command_data->GetItem(0)->IsTuple()) {
         pinID = PyRep::IntegerValue(nc.command_data->GetItem(0)->AsTuple()->GetItem(1));
-    else if (nc.command_data->GetItem(0)->IsInt())
+    } else if (nc.command_data->GetItem(0)->IsInt()) {
         pinID = PyRep::IntegerValue(nc.command_data->GetItem(0));
+    }
     m_colony->SetSchematic(pinID, PyRep::IntegerValue(nc.command_data->GetItem(1))); // 65 - 137
 }
 

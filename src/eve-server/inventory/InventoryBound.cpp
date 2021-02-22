@@ -384,10 +384,11 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     if (call.byname.find("capacity") != call.byname.end())
         capacity = PyRep::IntegerValueU32(call.byname.find("capacity")->second);
 
-    if (capacity > 1)
+    if (capacity > 1) {
         moveStack = true;
-    else if (quantity < 1)
+    } else if (quantity < 1) {
         moveStack = true;
+    }
 
     // moving TO hangar...move all items in stack, if applicable...this includes ship corp hangars - is this what we want here?
     if (IsHangarFlag(toFlag))
@@ -620,19 +621,21 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             m_self->GetShipItem()->VerifyHoldType(toFlag, iRef, pClient); // this will throw if it fails
 
             // then check for module limits
-            if (IsModuleSlot(toFlag))
+            if (IsModuleSlot(toFlag)) {
                 m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef); // this will throw if it fails
-            else if (IsCargoHoldFlag(toFlag) or IsHangarFlag(toFlag) or (toFlag == flagDroneBay))
+            } else if (IsCargoHoldFlag(toFlag) or IsHangarFlag(toFlag) or (toFlag == flagDroneBay)) {
                 pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
+            }
 
             // check adding item to ship...if it fails, return to previous container
             if (m_self->GetShipItem()->AddItemByFlag(toFlag, iRef, pClient) < 1) {
                 //ALL items *should* have a loaded container item.
                 InventoryItemRef contRef = sItemFactory.GetItemContainer(*itr);
-                if (contRef.get() != nullptr)
+                if (contRef.get() != nullptr) {
                     contRef->AddItem(iRef);
-                else
+                } else {
                     _log(INV__ERROR, "IB::MoveItems() - previous container for item %i not found.  continuing.", (*itr));
+                }
                 continue;
             }
         } else if (customs) {

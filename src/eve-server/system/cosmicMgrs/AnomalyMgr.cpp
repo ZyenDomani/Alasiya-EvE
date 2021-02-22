@@ -122,13 +122,13 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
         m_maxSigs = 2;
         m_procTimer.Start(10000);  // 10s
     } else {
-             if (security == 2.0)  m_maxSigs = 25;
-        else if (security > 1.501) m_maxSigs = 20;
-        else if (security > 1.001) m_maxSigs = 15;
-        else if (security > 0.751) m_maxSigs = 12;
-        else if (security > 0.451) m_maxSigs = 8;
-        else if (security > 0.251) m_maxSigs = 5;
-        else                       m_maxSigs = 3;
+             if (security == 2.0)  { m_maxSigs = 25; }
+        else if (security > 1.501) { m_maxSigs = 20; }
+        else if (security > 1.001) { m_maxSigs = 15; }
+        else if (security > 0.751) { m_maxSigs = 12; }
+        else if (security > 0.451) { m_maxSigs = 8; }
+        else if (security > 0.251) { m_maxSigs = 5; }
+        else                       { m_maxSigs = 3; }
 
         m_procTimer.Start(120000);  // 2m
     }
@@ -217,19 +217,21 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         sig.sigStrength = 0.0125;
         // default to rogue drones
         sig.ownerID = factionRogueDrones;
-    if (sConfig.debug.AnomalyFaction)
+    if (sConfig.debug.AnomalyFaction) {
         sig.ownerID = sConfig.debug.AnomalyFaction;
-    else if (MakeRandomFloat() > 0.1) // 10% chance to be rogue drones
+    } else if (MakeRandomFloat() > 0.1) { // 10% chance to be rogue drones
         sig.ownerID = sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
+    }
 
     // there are some regions that dont have rat factions....what do we do in that case??
     //if (sig.ownerID == 0)
     //    return;     // make error here?
 
-    if (typeID == 0)
+    if (typeID == 0) {
         sig.dungeonType = GetDungeonType();
-    else  // proc calling anomaly or mission/escalation being setup.
+    } else {  // proc calling anomaly or mission/escalation being setup.
         sig.dungeonType = typeID;
+    }
 
     if (sig.dungeonType == 0) {
         _log(COSMIC_MGR__ERROR, "Dungeon Type returned 0 for %s in %s(%u)", \

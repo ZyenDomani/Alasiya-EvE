@@ -356,12 +356,13 @@ void MailDB::EditLabel(int characterID, Call_EditLabel& args) const
     int bit = BitFromLabelID(args.labelId);
 
     DBerror error;
-    if (args.name.length() == 0)
+    if (args.name.length() == 0) {
         sDatabase.RunQuery(error, " UPDATE mailLabel SET color = %u WHERE bit = %u AND ownerID = %u" , args.color, bit, characterID);
-    else if (args.color == -1)
+    } else if (args.color == -1) {
         sDatabase.RunQuery(error, " UPDATE mailLabel SET name = '%s' WHERE bit = %u AND ownerID = %u" , args.name.c_str(), bit, characterID);
-    else
+    } else {
         sDatabase.RunQuery(error, " UPDATE mailLabel SET name = '%s', color = %u WHERE bit = %u AND ownerID = %u" , args.name.c_str(), args.color, bit, characterID);
+    }
 }
 
 void MailDB::ApplyLabel(int32 messageID, int labelID)

@@ -497,9 +497,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         pSE = pSystem->GetSE(toID);
         // launchpickup - launch, launchid
     }
-	// the systems below are not implemented yet.  hold on coding till systems are working and we know what needs to be done here
-	// more info can be found in client::menuSvc.py
-	else if (type == "epinstance") {
+    // the systems below are not implemented yet.  hold on coding till systems are working and we know what needs to be done here
+    // more info can be found in client::menuSvc.py
+    else if (type == "epinstance") {
         // epinstance, instanceid
         //stringArg
         call.client->SendErrorMsg("WarpToInstance is not implemented at this time.");
@@ -579,7 +579,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.x += (d * std::sin(t));
             warpToPoint.y += (0.5f * radius * std::sin(j));
             warpToPoint.z -= (d * std::cos(t));
-        } else if (pSE->IsStationSE()){
+        } else if (pSE->IsStationSE()) {
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
         } else if (pSE->IsCOSE()) {

@@ -72,7 +72,7 @@ public:
 protected:
     void _AwardBounty(SystemEntity* who);
     /** @todo finish this... */
-    void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
+    void DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
     void _UpdateDamage();
     void SetResists();
 

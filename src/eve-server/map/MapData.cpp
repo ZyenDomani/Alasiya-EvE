@@ -74,12 +74,13 @@ void MapData::Populate()
     DBResultRow row;
     while (res->GetRow(row)) {
         //SELECT ctype, fromsol, tosol FROM mapConnections
-        if (row.GetInt(0) == Map::Jumptype::Region)
+        if (row.GetInt(0) == Map::Jumptype::Region) {
             m_regionJumps.emplace(row.GetInt(1), row.GetInt(2));
-        else if (row.GetInt(0) == Map::Jumptype::Constellation)
+        } else if (row.GetInt(0) == Map::Jumptype::Constellation) {
             m_constJumps.emplace(row.GetInt(1), row.GetInt(2));
-        else
+        } else {
             m_systemJumps.emplace(row.GetInt(1), row.GetInt(2));
+        }
     }
 
     sLog.Cyan("          MapData", "%u Region jumps, %u Constellation jumps and %u System jumps loaded in %.3fms.", //

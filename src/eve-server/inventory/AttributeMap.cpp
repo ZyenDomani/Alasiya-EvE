@@ -53,7 +53,7 @@ AttributeMap::AttributeMap( InventoryItem& item)
 
 AttributeMap::~AttributeMap()
 {
-    mAttributes.clear();
+    //mAttributes.clear();
 }
 
 

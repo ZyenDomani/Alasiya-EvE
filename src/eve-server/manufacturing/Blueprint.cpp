@@ -157,10 +157,11 @@ PyDict* Blueprint::GetBlueprintAttributes() {
 float Blueprint::GetME()
 {
     float bwf(m_bpType.wasteFactor());
-    if (m_data.mLevel < 0)
+    if (m_data.mLevel < 0) {
         bwf /= (-m_data.mLevel);
-    else if (m_data.mLevel > 0)
+    } else if (m_data.mLevel > 0) {
         bwf /= (1 + m_data.mLevel);
+    }
     bwf /= 100.0f;
     return bwf;
 }

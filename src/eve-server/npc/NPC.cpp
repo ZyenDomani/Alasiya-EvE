@@ -380,3 +380,11 @@ void NPC::Killed(Damage &fatal_blow) {
     if ((MakeRandomFloat() < sConfig.npc.LootDropChance) or (m_allyID == factionRogueDrones))
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 }
+
+
+void NPC::CmdDropLoot()
+{
+    m_destiny->SendJettisonPacket();
+    /** @todo finish this */
+    //DropLoot(wreckItemRef, m_self->groupID());
+}

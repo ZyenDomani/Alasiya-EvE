@@ -327,18 +327,19 @@ double SentryAI::GetTargetTime()
     double targetTime = (m_npc->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
     float radius = m_npc->GetSelf()->GetAttribute(AttrRadius).get_float();
     if (!targetTime) {
-        if (radius < 30)
+        if (radius < 30) {
             targetTime = 1500;
-        else if (radius < 60)
+        } else if (radius < 60) {
             targetTime = 2500;
-        else if (radius < 150)
+        } else if (radius < 150) {
             targetTime = 4000;
-        else if (radius < 280)
+        } else if (radius < 280) {
             targetTime = 6000;
-        else if (radius < 550)
+        } else if (radius < 550) {
             targetTime = 8000;
-        else
+        } else {
             targetTime = 13000;
+        }
     }
     return targetTime;
 }

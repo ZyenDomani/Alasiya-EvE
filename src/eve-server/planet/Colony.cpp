@@ -507,12 +507,13 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     std::list<uint32> list1;
     list1.clear();
     for (size_t i = 0; i < path->size(); ++i) {
-        if (path->GetItem(i)->IsTuple())
+        if (path->GetItem(i)->IsTuple()) {
             list1.push_back(PyRep::IntegerValue(path->GetItem(i)->AsTuple()->GetItem(1)));
-        else if (path->GetItem(i)->IsInt())
+        } else if (path->GetItem(i)->IsInt()) {
             list1.push_back(PyRep::IntegerValue(path->GetItem(i)));
-        else
+        } else {
             _log(COLONY__ERROR, "Colony::CreateRoute() - List item type unrecognized: %s", path->GetItem(1)->TypeString());
+        }
     }
 
     if (tempPinIDs.size() > 0) {
@@ -524,8 +525,9 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
                 itr = tempPinIDs.find(cur);
                 if (itr != tempPinIDs.end())
                     list2.push_back(itr->second);
-            } else
+            } else {
                 list2.push_back(cur);
+            }
         }
         list1.clear();
         list1 = list2;
@@ -561,9 +563,9 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
 
     uint32 amount = route.commodityQuantity;
     // remove contents from storage pin
-    if (itr->second > amount)
+    if (itr->second > amount) {
         itr->second -= amount;
-    else {
+    } else {
         amount = itr->second;
         srcPin->second.contents.erase(itr);
     }
@@ -571,10 +573,11 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
 
     // add contents to dest pin if we have any
     itr = destPin->second.contents.find(route.commodityTypeID);
-    if (itr != destPin->second.contents.end())
+    if (itr != destPin->second.contents.end()) {
         itr->second += amount;
-    else
+    } else {
         destPin->second.contents[route.commodityTypeID] = amount;
+    }
     destPin->second.update = true;
     // we have received a material from this route. enable check for all required materials for this Schematic
     if (destPin->second.isProcess) {
@@ -592,8 +595,9 @@ void Colony::UpgradeCommandCenter(uint32 pinID, int8 level) {
         itr->second.level = level;
         m_db.SaveCCLevel(pinID, level);
         _log(COLONY__INFO, "Colony::UpgradeCommandCenter() - Upgraded Command Center %u to level:%u", pinID, level);
-    } else
+    } else {
         _log(COLONY__ERROR, "Colony::UpgradeCommandCenter() - pinID %u not found in ccPin.pins map", pinID);
+    }
 }
 
 void Colony::UpgradeLink(uint32 src, uint32 dest, uint8 level)
@@ -1111,15 +1115,16 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
     for (auto cur : exportItems) {
         std::map<uint16, uint32>::iterator cont = pin->second.contents.find(cur.first);
         if (cont != pin->second.contents.end()) {
-            if (cont->second > cur.second)
+            if (cont->second > cur.second) {
                 cont->second -= cur.second;
-            else {
+            } else {
                 // set qty to amount contained in pin.
                 cur.second = cont->second;
                 pin->second.contents.erase(cont);   // remove item from pin.contents if exporting entire qty.
             }
-        } else
+        } else {
             _log(COLONY__WARNING, "Colony::PlanetXfer():export - item %u not found in spaceport", cur.first);
+        }
 
         //  if item not found in src contents, assume client is right and procede with xfer
         switch (sPIDataMgr.GetProductLevel(cur.first)) {
@@ -1639,9 +1644,9 @@ void Colony::ProcessPlants(bool& updateTimes)
 
                 // remove contents from storage pin
                 amount = it->second.commodityQuantity * cycles;
-                if (itemItr->second > amount)
+                if (itemItr->second > amount) {
                     itemItr->second -= amount;
-                else {
+                } else {
                     amount = itemItr->second;
                     srcPin->second.contents.erase(itemItr);
                 }

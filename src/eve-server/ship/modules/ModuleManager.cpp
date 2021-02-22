@@ -1497,13 +1497,13 @@ void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod)
     // add module to main map
     m_modules.at(flag) = pMod;
     // add module to proc maps
-    if (IsFittingSlot(flag))
+    if (IsFittingSlot(flag)) {
         m_fittings.at(flag) = pMod;
-    else if (IsRigSlot(flag))
+    } else if (IsRigSlot(flag)) {
         m_systems.at(flag) = pMod;
-    else if (IsSubSystem(flag))
+    } else if (IsSubSystem(flag)) {
         m_systems.at(flag) = pMod;
-    else {  // error here.
+    } else {  // error here.
         sLog.Error("MM::addModuleRef()", "%s(%u) sent flag '%s'", pMod->GetSelf()->name(), pMod->itemID(), sDataMgr.GetFlagName(flag));
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();
@@ -1513,10 +1513,11 @@ void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod)
     _log(MODULE__TRACE, "MM::addModuleRef() - adding %s in %s to map.", pMod->GetSelf()->name(), sDataMgr.GetFlagName(flag));
 
     // Maintain the Modules Fitted By Group counter for this module group:
-    if ( m_modByGroup.find(pMod->groupID()) != m_modByGroup.end() )
+    if (m_modByGroup.find(pMod->groupID()) != m_modByGroup.end()) {
         m_modByGroup.find(pMod->groupID())->second += 1;
-    else
+    } else {
         m_modByGroup.emplace(pMod->groupID(), 1);
+    }
 
     // update available slots
     if (pMod->isHighPower()) {
@@ -1552,13 +1553,13 @@ void ModuleManager::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
     // remove module from main map
     m_modules.at(flag) = nullptr;
     // remove module from proc maps
-    if (IsFittingSlot(flag))
+    if (IsFittingSlot(flag)) {
         m_fittings.at(flag) = nullptr;
-    else if (IsRigSlot(flag))
+    } else if (IsRigSlot(flag)) {
         m_systems.at(flag) = nullptr;
-    else if (IsSubSystem(flag))
+    } else if (IsSubSystem(flag)) {
         m_systems.at(flag) = nullptr;
-    else {  // error here.
+    } else {  // error here.
         sLog.Error("MM::deleteModuleRef()", "%s(%u) sent flag '%s'", pMod->GetSelf()->name(), pMod->itemID(), sDataMgr.GetFlagName(flag));
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();

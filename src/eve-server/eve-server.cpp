@@ -237,10 +237,11 @@ int main( int argc, char* argv[] )
     if (!sConfig.files.logDir.empty()) {
         //sLog.InitializeLogging(sConfig.files.logDir);
         std::string logFile = sConfig.files.logDir + "eve-server.log";
-        if( log_open_logfile( logFile.c_str() ) )
+        if( log_open_logfile( logFile.c_str() ) ) {
             sLog.Green( "       ServerInit", "Found log directory %s", sConfig.files.logDir.c_str() );
-        else
+        } else {
             sLog.Warning( "       ServerInit", "Unable to find log directory '%s', only logging to the screen now.", sConfig.files.logDir.c_str() );
+        }
     }
     std::printf("\n");     // spacer
 
@@ -249,9 +250,9 @@ int main( int argc, char* argv[] )
 
     sLog.Blue("     ServerConfig", "Main Loop Settings");
     uint8 m_sleepTime = sConfig.server.ServerSleepTime; // default 10ms.  max 256ms
-    if (m_sleepTime == 10)
+    if (m_sleepTime == 10) {
         sLog.Green("  Loop Sleep Time","Default at 10ms.");
-    else {
+    } else {
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
         sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", m_sleepTime);
     }

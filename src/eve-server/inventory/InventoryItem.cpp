@@ -582,16 +582,17 @@ void InventoryItem::Delete()
     m_delete = true;
 
     // get out of client's sight.
-    if (!IsNPCCorp(m_data.ownerID) and (m_data.ownerID > 1))
+    if (!IsNPCCorp(m_data.ownerID) and (m_data.ownerID > 1)) {
         Move(locJunkyard, flagNone, true);
-    else {
+    } else {
         // remove from current container's inventory
         if (IsValidLocation(m_data.locationID)) {
             InventoryItemRef iRef = sItemFactory.GetItem(m_data.locationID);
-            if (iRef.get() != nullptr)
+            if (iRef.get() != nullptr) {
                 iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
-            else
+            } else {
                 _log(ITEM__ERROR, "II::Delete() - Cant find location %u containing %s.", m_data.locationID, m_data.name.c_str());
+            }
         }
     }
 
@@ -646,16 +647,18 @@ void InventoryItem::Rename(std::string name)
         Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
         if (pClient == nullptr)
             return;  //  make error here?
-        if (pClient->IsDocked())
+        if (pClient->IsDocked()) {
             pClient->SendNotification("OnCfgDataChanged", "charid", &tuple, false); //unsequenced.
-        else // client in space.  sent update to all clients in bubble
+        } else { // client in space.  sent update to all clients in bubble
             pClient->GetShipSE()->SysBubble()->BubblecastSendNotification("OnCfgDataChanged", "solarsystemid", &tuple, false);
+        }
     } else if (IsPlayerCorp(m_data.ownerID)) {
         // bcast to all online corp members
-        if (IsStation(m_data.locationID))
+        if (IsStation(m_data.locationID)) {
             sEntityList.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateStation, "OnCfgDataChanged", "charid", tuple);
-        else
+        } else {
             sEntityList.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateSystem, "OnCfgDataChanged", "solarsystemid", tuple);
+        }
     }
 
     /** @todo  if renaming a POS or other space object, we'll need to BubblecastSendNotification instead of CorpNotify  */
@@ -1242,10 +1245,11 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             es.env_effectID = 16;
             /** @todo fix this once we start tracking effects */
             // on login, this is current time
-            if (IsCharacter(m_itemID))
+            if (IsCharacter(m_itemID)) {
                 es.startTime = GetFileTimeNow() - EvE::Time::Minute; // m_timestamp
-            else
+            } else {
                 es.startTime = GetFileTimeNow() - EvE::Time::Minute; // GetAttribute(AttrStartTime).get_int();
+            }
             es.duration = -1;
             es.repeat = 0;
             es.randomSeed = PyStatic.NewNone();
@@ -1254,10 +1258,11 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
 
     for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; ++itr) {
         //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
-        if ((*itr).first == AttrWarpSpeedMultiplier)
+        if ((*itr).first == AttrWarpSpeedMultiplier) {
             result.attributes[AttrWarpSpeedMultiplier] = new PyFloat((*itr).second.get_float() /3);
-        else
+        } else {
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
+        }
     }
 
     return true;

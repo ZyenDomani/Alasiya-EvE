@@ -160,15 +160,15 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         default: {
             float modifier = d.GetModifier();
             d *= modifier;
-                 if (modifier == 3.0f)   damageID = 8;  //strikes perfectly, wrecking
-            else if (modifier > 1.2501f) damageID = 7;  //places an excellent hit
-            else if (modifier > 0.9999f) damageID = 6;  //aims well
-            else if (modifier > 0.7501f) damageID = 5;  //hits
-            else if (modifier > 0.6251f) damageID = 4;  //lightly hits
-            else if (modifier > 0.4121f) damageID = 3;  //barely scratches
-            else if (modifier > 0.3751f) damageID = 2;  //glances off
-            else if (modifier > 0.2501f) damageID = 1;  //barely misses
-            else                        damageID = 0;  //misses completely
+                 if (modifier == 3.0f)   { damageID = 8; }  //strikes perfectly, wrecking
+            else if (modifier > 1.2501f) { damageID = 7; } //places an excellent hit
+            else if (modifier > 0.9999f) { damageID = 6; } //aims well
+            else if (modifier > 0.7501f) { damageID = 5; } //hits
+            else if (modifier > 0.6251f) { damageID = 4; } //lightly hits
+            else if (modifier > 0.4121f) { damageID = 3; } //barely scratches
+            else if (modifier > 0.3751f) { damageID = 2; } //glances off
+            else if (modifier > 0.2501f) { damageID = 1; } //barely misses
+            else                         { damageID = 0; } //misses completely
             _log(DAMAGE__TRACE, "%s(%u): Modifier: %.3f, damageID: %u.", GetName(), GetID(), modifier, damageID);
         } break;
     }
@@ -500,9 +500,9 @@ void ShipSE::Killed(Damage &fatal_blow) {
 
     std::stringstream blob;
     std::vector<InventoryItemRef> survivedItems;
-    if (pPilot->InPod())
+    if (pPilot->InPod()) {
         blob << "<items><i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/></items>";
-    else {
+    } else {
         AbortCycle();
         AbandonDrones();
 

@@ -173,12 +173,13 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         data.itemID =  args.itemID;  // this is stationID (for bm description)
         data.locationID = call.client->GetSystemID();       // get sol system of current station
     } else {      // char is passing systemID from map.  char is marking a solar systemID for bm
-        if (IsRegion(args.itemID))
+        if (IsRegion(args.itemID)) {
             data.typeID = EVEDB::invTypes::Region;
-        else if (IsConstellation(args.itemID))
+        } else if (IsConstellation(args.itemID)) {
             data.typeID = EVEDB::invTypes::Constellation;
-        else if (IsSolarSystem(args.itemID))
+        } else if (IsSolarSystem(args.itemID)) {
             data.typeID = EVEDB::invTypes::SolarSystem;
+        }
         data.locationID = args.itemID;  // this is systemID from map
         data.itemID = data.locationID;      //  itemID = locationID for coord bm.  shows jumps, s/c/r in bm window, green in system
     }

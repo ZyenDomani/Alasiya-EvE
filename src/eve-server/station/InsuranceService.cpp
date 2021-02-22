@@ -169,18 +169,19 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     }
 
     float fraction = 0.0f;  // with no insurance, SCC pays 40%
-    if (paymentFraction == 0.05f)
+    if (paymentFraction == 0.05f) {
         fraction = 0.5f;
-    else if (paymentFraction == 0.1f)
+    } else if (paymentFraction == 0.1f) {
         fraction = 0.6f;
-    else if (paymentFraction == 0.15f)
+    } else if (paymentFraction == 0.15f) {
         fraction = 0.7f;
-    else if (paymentFraction == 0.2f)
+    } else if (paymentFraction == 0.2f) {
         fraction = 0.8f;
-    else if (paymentFraction == 0.25f)
+    } else if (paymentFraction == 0.25f) {
         fraction = 0.9f;
-    else if (paymentFraction == 0.3f)
+    } else if (paymentFraction == 0.3f) {
         fraction = 1.0f;
+    } 
 
     if (fraction < 0.05f) {
         call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");

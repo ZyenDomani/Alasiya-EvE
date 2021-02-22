@@ -113,17 +113,17 @@ void PIDataMgr::_Populate()
         // SELECT `schematicID`, `typeID`, `quantity`, `isInput`
         itr = m_schematicData.find(row.GetInt(0));
         if (itr != m_schematicData.end()) {
-            if (row.GetBool(3))
+            if (row.GetBool(3)) {
                 itr->second.inputs[row.GetInt(1)] = row.GetInt(2);
-            else {
+            } else {
                 itr->second.outputType = row.GetInt(1);
                 itr->second.outputQty = row.GetInt(2);
             }
         } else {
             PI_Schematic data = PI_Schematic();
-            if (row.GetBool(3))
+            if (row.GetBool(3)) {
                 data.inputs[row.GetInt(1)] = row.GetInt(2);
-            else {
+            } else {
                 data.outputType = row.GetInt(1);
                 data.outputQty = row.GetInt(2);
             }
