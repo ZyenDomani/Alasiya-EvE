@@ -738,10 +738,11 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             se.spawnClass = sClass;
             se.spawnGroup = GetSpawnGroup(sClass);
             se.level = level;
-            if (sClass <= Spawn::Class::Officer)  // this spawn is for rat.
+            if (sClass <= Spawn::Class::Officer) {  // this spawn is for rat.
                 se.stamp = 0;   // this is for respawn time...do not set here.
-            else
+            } else {
                 se.stamp = sEntityList.GetStamp(); // set time of this spawn for ??
+            }
             m_spawns.emplace(pBubble->GetID(), se);
             _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry with ID %u to m_spawns. Class: %s, Group:%s, Level: %u.", \
                         se.spawnID, GetSpawnClassName(se.spawnClass).c_str(), GetSpawnGroupName(se.spawnGroup).c_str(), level);
@@ -856,7 +857,6 @@ void SpawnMgr::RemoveSpawn(uint16 bubbleID, uint32 itemID)
 
 uint8 SpawnMgr::GetSpawnGroup(uint8 sClass)
 {
-    // let the compiler optimize the nasty if/elseif shit for this one...
     switch (sClass) {
         case Spawn::Class::Extra:    // placeholder - not used yet
         case Spawn::Class::None:

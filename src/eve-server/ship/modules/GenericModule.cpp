@@ -296,7 +296,7 @@ int8 GenericModule::GetModulePowerLevel() {
         } else if (m_medPower) {
             return Module::Bank::Mid;
         } else if (m_loPower) {
-            return Module::Bank::Low; {
+            return Module::Bank::Low;
         } else if (m_rigSlot) {
             return Module::Bank::Rig;
         } else if (m_subSystem) {

@@ -131,38 +131,46 @@ bool ConsoleCommand::Process() {
                         state.data(), threads, aThreads, rss, vm, user, kernel );
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
-                if (sConfig.debug.UseProfiling)
+                if (sConfig.debug.UseProfiling) {
                     sLog.Green(" Server Profiling","Enabled.");
-                else
+                } else {
                     sLog.Warning(" Server Profiling","Disabled.");
-                if (sConfig.npc.StaticSpawns)
+                }
+                if (sConfig.npc.StaticSpawns) {
                     sLog.Green("    Static Spawns","Enabled.");
-                else
+                } else {
                     sLog.Warning("    Static Spawns","Disabled.");
-                if (sConfig.npc.RoamingSpawns)
+                }
+                if (sConfig.npc.RoamingSpawns) {
                     sLog.Green("   Roaming Spawns","Enabled.");
-                else
+                } else {
                     sLog.Warning("   Roaming Spawns","Disabled.");
-                if (sConfig.rates.secRate != 1.0)
+                }
+                if (sConfig.rates.secRate != 1.0) {
                     sLog.Green("        SecStatus","Enabled at %.0f%%.", (sConfig.rates.secRate *100) );
-                else
+                } else {
                     sLog.Warning("        SecStatus","Normal.");
-                if (sConfig.rates.npcBountyMultiply != 1.0)
+                }
+                if (sConfig.rates.npcBountyMultiply != 1.0) {
                     sLog.Green("          Bountys","Enabled at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
-                else
+                } else {
                     sLog.Warning("          Bountys","Normal.");
-                if (sConfig.rates.damageRate != 1.0)
+                }
+                if (sConfig.rates.damageRate != 1.0) {
                     sLog.Green("      All Damages","Enabled at %.0f%%.", (sConfig.rates.damageRate *100) );
-                else
+                } else {
                     sLog.Warning("      All Damages","Normal.");
-                if (sConfig.rates.missileRoF != 1.0)
+                }
+                if (sConfig.rates.missileRoF != 1.0) {
                     sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRoF *100) );
-                else
+                } else {
                     sLog.Warning("      Missile Dmg","Normal.");
-                if (sConfig.rates.turretRoF != 1.0)
+                } 
+                if (sConfig.rates.turretRoF != 1.0) {
                     sLog.Green("       Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRoF *100) );
-                else
+                } else {
                     sLog.Warning("       Turret Dmg","Normal.");
+                }
             } else if (strncmp(buf, "v", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Version:");
                 sLog.Warning("  Server Revision", " %s", EVEMU_REVISION );
@@ -180,9 +188,9 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("     Memory Usage", " RSS: %.3fMb  VM: %.3fMb", rss, vm );
                 sLog.Warning("    Server Status", "  S: %s | T: %li(%u) | U: %.2f | K: %.2f", \
                 state.data(), threads, aThreads, user, kernel );
-                const char* uptime(nullptr);
+                std::string uptime;
                 sEntityList.GetUpTime(uptime);
-                sLog.Warning("    Server UpTime", " %s", uptime );
+                sLog.Warning("    Server UpTime", " %s", uptime.c_str() );
                 //  loaded items
                 sLog.Warning("     Loaded Items", " %u", sItemFactory.Count());
                 //  loaded NPCs
@@ -226,14 +234,15 @@ bool ConsoleCommand::Process() {
                 sLog.Green("  Alasiya's EvEMu", "Server Profile:");
                 if (sConfig.debug.UseProfiling) {
                     sLog.Warning("    Current Stamp", " %u", sEntityList.GetStamp());
-                    const char* uptime(nullptr);
+                    std::string uptime;
                     sEntityList.GetUpTime(uptime);
-                    sLog.Warning("    Server UpTime", " %s", uptime );
+                    sLog.Warning("    Server UpTime", " %s", uptime.c_str() );
                     sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                     sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
                     sProfile.PrintProfile();
-                } else
+                } else {
                     sLog.Error("   Server Profile", "Profiling is turned off.");
+                }
             } else if (strncmp(buf, "r", 1) == 0) {
                 // enable console chat echo
             } else if (strncmp(buf, "o", 1) == 0) {
@@ -266,10 +275,11 @@ bool ConsoleCommand::Process() {
                 uint8 maxCount = sConfig.server.MaxThreadReport;
                 uint8 count = sThread.Count();
                 sLog.Blue("   Active Threads", "There are %u active threads running in the server.", count);
-                if (count > maxCount)
+                if (count > maxCount) {
                     sLog.Warning("   Active Threads", "Individual thread IDs are not displayed for more than %u active threads.", maxCount);
-                else
+                } else {
                     sThread.ListThreads();
+                }
             } else if (strncmp(buf, "l", 1) == 0) {
                 /*
                 sLog.~NewLog();
@@ -281,8 +291,9 @@ bool ConsoleCommand::Process() {
                     sConfig.server.StackTrace = is_log_enabled(SERVER__STACKTRACE);
                     sConfig.server.UseBeanCount = is_log_enabled(SERVER__BEANCOUNT);
                     sConfig.debug.IsTestServer = is_log_enabled(SERVER__TESTSERVER);
-                } else
+                } else {
                     sLog.Warning("  Alasiya's EvEMu", "Unable to reload settings from %s", sConfig.files.logSettings.c_str() );
+                }
             } else if (strncmp(buf, "q", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Statistic Data:");
                 sStatMgr.PrintInfo();
