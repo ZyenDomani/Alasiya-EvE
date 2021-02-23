@@ -107,12 +107,13 @@ void EntityList::Shutdown() {
 
 void EntityList::Close()
 {
-    if (m_clients.size() > 0)
+    if (m_clients.size() > 0) {
         sLog.Yellow("       EntityList", "Cleaning up %u clients, %u systems, %u agents, and %u stations", \
                     m_clients.size(), m_systems.size(), m_agents.size(), m_stations.size());
-    else
+    } else {
         sLog.Green("       EntityList", "Cleaning up %u clients, %u systems, %u agents, and %u stations", \
                     m_clients.size(), m_systems.size(), m_agents.size(), m_stations.size());
+    }
 
     for (auto cur : m_clients)
         SafeDelete(cur);
@@ -188,9 +189,9 @@ void EntityList::Process() {
     Client* pClient(nullptr);
     std::vector<Client*>::iterator citr = m_clients.begin();
     while (citr != m_clients.end()) {
-        if ((*citr)->ProcessNet())
+        if ((*citr)->ProcessNet()) {
             ++citr;
-        else {
+        } else {
             pClient = *citr;
             citr = m_clients.erase(citr);
             SafeDelete(pClient);
@@ -200,17 +201,19 @@ void EntityList::Process() {
     if (m_targTimer.Check()) {
         std::unordered_map<SystemEntity*, TargetManager*>::iterator titr = m_targMgrs.begin();
         while (titr != m_targMgrs.end()) {
-            if (titr->second->Process())
+            if (titr->second->Process()) {
                 ++titr;
-            else
+            } else {
                 titr = m_targMgrs.erase(titr);
+            }
         }
         std::map<uint32, ProbeSE*>::iterator pitr = m_probes.begin();
         while (pitr != m_probes.end()) {
-            if (pitr->second->ProcessTic())
+            if (pitr->second->ProcessTic()) {
                 ++pitr;
-            else
+            } else {
                 pitr = m_probes.erase(pitr);
+            }
         }
     }
 
@@ -376,7 +379,7 @@ std::string EntityList::GetAnomalyID()
     return res;
 }
 
-void EntityList::GetUpTime(const char* time)
+void EntityList::GetUpTime( std::string& time )
 {
     float seconds = m_stamp - 1000;
     float minutes = seconds/60;
@@ -393,21 +396,22 @@ void EntityList::GetUpTime(const char* time)
     int M(fmod(months, 12));
 
     std::ostringstream uptime;
-    if (M)
+    if (M) {
         uptime << M << "M" << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
-    else if (w)
+    } else if (w) {
         uptime << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
-    else if (d)
+    } else if (d) {
         uptime << d << "d" << h << "h" << m << "m" << s << "s";
-    else if (h)
+    } else if (h) {
         uptime << h << "h" << m << "m" << s << "s";
-    else if (m)
+    } else if (m) {
         uptime << m << "m" << s << "s";
-    else
+    } else {
         uptime << s << "s";
+    }
 
     //std::shared_ptr<const char*> ret = uptime.str().c_str();
-    time = uptime.str().c_str();
+    time = uptime.str();
 }
 
 
@@ -629,9 +633,9 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
     cVec.clear();
     switch( target ) {
         case NOTIF_DEST__LOCATION: {
-            if (IsStation(targID))
+            if (IsStation(targID)) {
                 GetStationGuestList(targID, cVec);
-            else if (IsSolarSystem(targID)) {
+            } else if (IsSolarSystem(targID)) {
                 SystemManager* pSysMgr = FindOrBootSystem(targID);
                 if (pSysMgr == nullptr)
                     break;
@@ -682,9 +686,9 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
         std::vector<Client*> cVec;
         cVec.clear();
         for (auto cur : mcset.locations) {
-            if (IsStation(cur))
+            if (IsStation(cur)) {
                 GetStationGuestList(cur, cVec);
-            else if (IsSolarSystem(cur)) {
+            } else if (IsSolarSystem(cur)) {
                 pSysMgr = FindOrBootSystem(cur);
                 if (pSysMgr == nullptr)
                     continue;

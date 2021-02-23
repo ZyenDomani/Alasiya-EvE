@@ -239,14 +239,13 @@ Character::Character(
   m_charData(_charData),
   m_corpData(_corpData),
   m_pClient(nullptr),
-  m_inTraining(nullptr)
+  m_inTraining(nullptr),
+  m_loaded(false),
+  m_fleetData(CharFleetData()),
+  m_freePoints(0)
 {
     // enforce characters to be singletons
     assert(isSingleton());
-
-    m_loaded = false;
-    m_fleetData = CharFleetData();
-    m_freePoints = 0;
 
     if (!IsAgent(m_itemID)) {
         m_loginTime = sEntityList.GetStamp();
@@ -273,11 +272,11 @@ bool Character::_Load() {
         return true;
 
     if (!pInventory->LoadContents()) {
-        sLog.Warning("Character::_Load","LoadContents returned false for char %u", m_itemID);
+        sLog.Error("Character::_Load","LoadContents returned false for char %u", m_itemID);
         return (m_loaded = false);
     }
     if (!m_db.LoadSkillQueue(m_itemID, m_skillQueue)) {
-        sLog.Warning("Character::_Load","LoadSkillQueue returned false for char %u", m_itemID);
+        sLog.Error("Character::_Load","LoadSkillQueue returned false for char %u", m_itemID);
         return (m_loaded = false);
     }
     if (!m_skillQueue.empty()) {
@@ -286,8 +285,9 @@ bool Character::_Load() {
             sRef->SetFlag(flagSkillInTraining, false);
             m_inTraining = sRef.get();
         }
-    } else
+    } else {
         ClearSkillFlags();
+    }
 
     m_loaded = InventoryItem::_Load();
 
@@ -357,12 +357,13 @@ void Character::Delete() {
 
 float Character::balance(uint8 type)
 {
-    if (type == Account::CreditType::ISK)
+    if (type == Account::CreditType::ISK) {
         return m_charData.balance;
-    else if (type == Account::CreditType::AURUM)
+    } else if (type == Account::CreditType::AURUM) {
         return m_charData.aurBalance;
-    else
+    } else {
         _log(ACCOUNT__ERROR, "Character::balance() - invalid type %u", type);
+    }
     return 0;
 }
 
@@ -376,7 +377,6 @@ bool Character::AlterBalance(float amount, uint8 type) {
         args["amount"] = new PyFloat(-amount);
         args["balance"] = new PyFloat(balance(type));
         throw(PyException(MakeUserError("NotEnoughMoney", args)));
-        return false;
     }
 
     //adjust balance and send notification of change
@@ -773,10 +773,11 @@ void Character::LoadPausedSkillQueue(uint16 typeID)
         if (nextLvl > EvESkill::MAXSKILLLEVEL)
             nextLvl = EvESkill::MAXSKILLLEVEL;
 
-        if (itr->level == nextLvl)
+        if (itr->level == nextLvl) {
             currentSP = skill->GetCurrentSP(this, startTime);
-        else
+        } else {
             currentSP = skill->GetSPForLevel(itr->level -1);
+        }
 
         nextSP = skill->GetSPForLevel(itr->level);
         itr->startTime = startTime;
@@ -974,8 +975,9 @@ void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
     skill->SaveItem();
 
     float timeLeft = (qs.endTime - qs.startTime) / EvE::Time::Second;
+    const char* formatedTime = EvE::FormatTime(timeLeft);
     _log(SKILL__QUEUE, "Added %s Level %u to queue with %s(%.1f) to train %uSP.", \
-            skill->name(), level, EvE::FormatTime(timeLeft), timeLeft, nextSP - currentSP);
+            skill->name(), level, formatedTime, timeLeft, nextSP - currentSP);
 }
 
 void Character::UpdateSkillQueue() {
@@ -1002,7 +1004,8 @@ void Character::SkillQueueLoop(bool update/*true*/)
     int64 curTime(GetFileTimeNow());
     if (m_skillQueue.front().endTime > curTime) {
         float timeLeft = (m_skillQueue.front().endTime - curTime) / EvE::Time::Second;
-        _log(SKILL__INFO, "%s still training.  %s remaining.", m_inTraining->name(), EvE::FormatTime(timeLeft));
+        const char* formatedTime = EvE::FormatTime(timeLeft);
+        _log(SKILL__INFO, "%s still training.  %s remaining.", m_inTraining->name(), formatedTime);
         UpdateSkillQueueEndTime();
         return;
     }
@@ -1113,8 +1116,9 @@ void Character::SkillQueueLoop(bool update/*true*/)
 
         if (is_log_enabled(SKILL__INFO)) {
             float timeLeft = (qs.endTime - curTime) / EvE::Time::Second;
+            const char* formatedTime = EvE::FormatTime(timeLeft);
             _log(SKILL__INFO, "Training started.  %s to train %u sp for level %u", \
-                    EvE::FormatTime(timeLeft), nextSP - skill->GetCurrentSP(this, qs.startTime), qs.level);
+                    formatedTime, nextSP - skill->GetCurrentSP(this, qs.startTime), qs.level);
         }
 
         if (!multiple) {
@@ -1195,10 +1199,11 @@ PyDict *Character::GetCharInfo() {
     //encode an entry for each one.
     for (auto cur : skills) {
         Rsp_CommonGetInfo_Entry entry;
-        if (cur->Populate(entry))
+        if (cur->Populate(entry)) {
             result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry.Encode()));
-        else
+        } else {
             codelog(CHARACTER__ERROR, "%s (%u): Failed to load character item %u for GetCharInfo", name(), m_itemID, cur->itemID());
+        }
     }
 
     /** @todo i dont know how boosters and implants work yet, so may have to set item different for them.  */
@@ -1352,10 +1357,11 @@ float Character::GetStandingModified(uint32 fromID, uint32 toID)
     if (toID == 0)
         toID = m_itemID;
     float res = StandingDB::GetStanding(fromID, toID);
-    if (res < 0.0f)
+    if (res < 0.0f) {
         res += ((10.0f + res) * (0.04f * GetSkillLevel(EvESkill::Diplomacy)));
-    else
+    } else {
         res += ((10.0f - res) * (0.04f * GetSkillLevel(EvESkill::Connections)));
+    }
     return res;
 }
 
@@ -1363,10 +1369,11 @@ float Character::GetNPCCorpStanding(uint32 fromID, uint32 toID) {
     if (toID == 0)
         toID = m_itemID;
     float res = StandingDB::GetStanding(fromID, toID);
-    if (res < 0.0f)
+    if (res < 0.0f) {
         res += ((10.0f + res) * (0.04f * GetSkillLevel(EvESkill::Diplomacy)));
-    else
+    } else {
         res += ((10.0f - res) * (0.04f * GetSkillLevel(EvESkill::Connections)));
+    }
     return res;
 }
 
