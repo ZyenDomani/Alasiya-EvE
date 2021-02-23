@@ -64,3 +64,5 @@
           " - run testing::posTest()." )
  COMMAND( bindList, Acct::Role::PROGRAMMER,
           " - list of current bound objects (with clients)." )
+ COMMAND( dropLoot, Acct::Role::PROGRAMMER,
+          " - commands all npcs in bubble to jettison loot." )

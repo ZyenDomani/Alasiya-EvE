@@ -32,6 +32,7 @@
 #include "Client.h"
 #include "EntityList.h"
 #include "npc/Drone.h"
+#include "npc/NPC.h"
 #include "system/BubbleManager.h"
 #include "system/Container.h"
 #include "system/DestinyManager.h"
@@ -310,10 +311,11 @@ void SystemBubble::SetSpawnTimer(bool isBelt/*false*/)
         m_spawnTimer.Start(5000); /* 5s for testing */
     } else {
         // these randoms should be changed to reflect this npc's faction presence in system
-        if (isBelt)
+        if (isBelt) {
             m_spawnTimer.Start(MakeRandomInt(30, sConfig.npc.RoamingTimer) *1000);
-        else
+        } else {
             m_spawnTimer.Start(MakeRandomInt(60, sConfig.npc.StaticTimer) *1000);
+        }
     }
 }
 
@@ -784,6 +786,15 @@ void SystemBubble::SyncPos() {
             player.second->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&up);
         }
 }
+
+void SystemBubble::CmdDropLoot()
+{
+    for (auto dse : m_dynamicEntities) {
+        if (dse.second->IsNPCSE())
+            dse.second->GetNPCSE()->CmdDropLoot();
+    }
+}
+
 
 void SystemBubble::RemoveMarkers()
 {

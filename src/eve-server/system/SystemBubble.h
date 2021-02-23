@@ -144,6 +144,8 @@ public:
 
     /* for command .syncloc - updates all players in bubble with positions of all dSE */
     void SyncPos();
+    /* for command dropLoot - commands all npcs in bubble to jettison loot */
+    void CmdDropLoot();
 
 protected:
     const GPoint m_center;
