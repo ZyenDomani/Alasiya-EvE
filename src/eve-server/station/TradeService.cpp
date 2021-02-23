@@ -701,6 +701,6 @@ uint32 TradeService::GetTradeSessionID()
 {
     if (m_SessionID < maxTradeCont)
         return ++m_SessionID;
-    else
-        return (m_SessionID = minTradeCont);
+
+    return (m_SessionID = minTradeCont);
 }

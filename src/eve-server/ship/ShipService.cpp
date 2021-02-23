@@ -950,8 +950,9 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
             //    return nullptr;
             //}
             itemIDList.push_back(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
-        } else
+        } else {
             sLog.Error("AssembleShip", "tuple size == 2 and ([0] != int and [1] != string) or some shit like that.");
+        }
     } else {
         sLog.Error( "Handle_AssembleShip", "end of conditional" );
         return nullptr;

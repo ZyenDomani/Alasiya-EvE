@@ -60,9 +60,9 @@ PyResult Command_siglist(Client* pClient, CommandDB* db, PyServiceMgr* services,
 
 PyResult Command_heal(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (args.argCount()== 1)
+    if (args.argCount()== 1) {
         pClient->GetShip()->Heal();
-    else if (args.argCount() == 2) {
+    } else if (args.argCount() == 2) {
         if (!args.isNumber(1))
             throw PyException(MakeCustomError("Argument 1 should be a character ID"));
 
@@ -80,9 +80,9 @@ PyResult Command_heal(Client* pClient, CommandDB* db, PyServiceMgr* services, co
 
 PyResult Command_healtarget(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (args.argCount()== 1)
+    if (args.argCount()== 1) {
         pClient->GetShip()->Heal();
-    else if (args.argCount() == 2) {
+    } else if (args.argCount() == 2) {
         if (!args.isNumber(1))
             throw PyException(MakeCustomError("Argument 1 should be a character ID"));
 
@@ -767,7 +767,7 @@ PyResult Command_bubbletrack(Client* pClient, CommandDB* db, PyServiceMgr* servi
             } else {
                 sBubbleMgr.RemoveMarkers();
             }
-        }else {
+        } else {
             throw PyException(MakeCustomError("BubbleTrack: Unrecognized Argument."));
         }
     } else {
@@ -1161,6 +1161,29 @@ PyResult Command_bindList(Client* pClient, CommandDB* db, PyServiceMgr* services
     snprintf(reply, size, str.str().c_str(), count);
 
     pClient->SendInfoModalMsg(reply);
+
+    return nullptr;
+}
+
+PyResult Command_dropLoot(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!pClient->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!pClient->GetShipSE()->SysBubble())
+        throw PyException(MakeCustomError("You're not in a bubble."));
+    if (!pClient->GetShipSE()->DestinyMgr())
+        throw PyException(MakeCustomError("You have no destiny manager."));
+
+    uint16 bubbleID = atoi(args.arg(1).c_str());
+    SystemBubble* pBubble = sBubbleMgr.FindBubbleByID(bubbleID);
+    if (pBubble == nullptr)
+        throw PyException(MakeCustomError("Bubble %u not found.", bubbleID));
+
+    if (pBubble->GetSystemID() != pClient->GetSystemID())
+        throw PyException(MakeCustomError("bubble %u is in %s and you are in %s", \
+                bubbleID, pBubble->GetSystem()->GetName(), pClient->GetSystemName().c_str()));
+
+    pBubble->CmdDropLoot();
 
     return nullptr;
 }

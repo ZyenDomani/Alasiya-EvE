@@ -58,10 +58,11 @@ DroneSE::DroneSE(InventoryItemRef drone, PyServiceMgr &services, SystemManager* 
 
     m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_float();
     if (m_orbitRange < 1) {
-        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
+        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff)) {
             m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
-        else
+        } else {
             m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
+        }
     }
 
     // Create default dynamic attributes in the AttributeMap:
@@ -382,10 +383,12 @@ void DroneSE::Killed(Damage &fatal_blow) {
         pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
         if (pClient == nullptr) {
             sLog.Error("DroneSE::Killed()", "killer == IsDrone and pPlayer == nullptr");
-        } else
+        } else {
             killerID = pClient->GetCharacterID();
-    } else
+        }
+    } else {
         killerID = killer->GetID();
+    }
 
     if (pClient != nullptr) {
         //award kill bounty.

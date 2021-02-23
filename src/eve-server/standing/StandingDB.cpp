@@ -136,10 +136,11 @@ float StandingDB::GetStanding(uint32 fromID, uint32 toID) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT standing FROM repStandings WHERE fromID=%u AND toID=%u", fromID, toID);
     DBResultRow row;
-    if (res.GetRow(row))
+    if (res.GetRow(row)) {
         return row.GetFloat(0);
-    else
+    } else {
         return 0.0f;
+    }
 }
 
 void StandingDB::SetStanding(uint32 fromID, uint32 toID, float standing) {

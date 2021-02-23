@@ -860,9 +860,10 @@ PyResult CorpRegistryBound::Handle_AddBulletin(PyCallArgs &call) {
         if (call.byname.find("editDateTime")->second->IsLong()) {
             edit = true;
             editDateTime = PyInt::IntegerValue(call.byname.find("editDateTime")->second);
-        } else
+        } else {
             _log(CORP__ERROR, "Handle_AddBulletin - editDateTime is of the wrong type: '%s'.  Expected PyString or PyWString.", \
                             call.byname.find("editDateTime")->second->TypeString());
+        }
     }
 
     int64 bulletinID = 0;
@@ -870,15 +871,17 @@ PyResult CorpRegistryBound::Handle_AddBulletin(PyCallArgs &call) {
         if (call.byname.find("bulletinID")->second->IsInt()) {
             edit = true;
             bulletinID = PyInt::IntegerValue(call.byname.find("bulletinID")->second);
-        } else
+        } else {
             _log(CORP__ERROR, "Handle_AddBulletin - bulletinID is of the wrong type: '%s'.  Expected PyInt.", \
                             call.byname.find("bulletinID")->second->TypeString());
+        }
     }
 
-    if (edit)
+    if (edit) {
         m_db.EditBulletin(bulletinID, call.client->GetCharacterID(), editDateTime, args.title, args.body);
-    else
+    } else {
         m_db.AddBulletin(m_corpID, m_corpID, call.client->GetCharacterID(), args.title, args.body);
+    }
 
     return nullptr;
 }
@@ -1026,10 +1029,11 @@ PyResult CorpRegistryBound::Handle_MoveCompanyShares(PyCallArgs &call) {
 
     uint32 corpID = 0;
     Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
-    if (pClient == nullptr)
+    if (pClient == nullptr) {
         corpID = CharacterDB::GetCorpID(args.toShareholderID);
-    else
+    } else {
         corpID = pClient->GetCorporationID();
+    }
 
     /** @todo  test for moving shares between players.  can we do that? */
     m_db.MoveShares(m_corpID, corpID, args);
@@ -1049,10 +1053,11 @@ PyResult CorpRegistryBound::Handle_MovePrivateShares(PyCallArgs &call) {
 
     uint32 corpID = 0;
     Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
-    if (pClient == nullptr)
+    if (pClient == nullptr) {
         corpID = CharacterDB::GetCorpID(args.toShareholderID);
-    else
+    } else {
         corpID = pClient->GetCorporationID();
+    }
 
     // gonna have to do this one different...
     //  will need shares OF WHAT corpID also.
@@ -1168,10 +1173,11 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
                 } break;
             }
 
-            if (args4.queryType.compare("roles") == 0)
+            if (args4.queryType.compare("roles") == 0) {
                 query << "corpRole";
-            else
+            } else {
                 query << args4.queryType;
+            }
 
             if (GetSearchValues(args4.searchOp, args4.valueRaw, query)) {
                 set = true;
@@ -1193,10 +1199,11 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
         m_db.GetMembersForQuery(query, result);
 
     // create/clear list as needed
-    if (list == nullptr)
+    if (list == nullptr) {
         list = new PyList();
-    else
+    } else {
         list->clear();
+    }
 
     // populate results
     for (auto cur : result)
@@ -1635,10 +1642,11 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             data.grantableRolesAtOther = Corp::Role::Member;
             data.corporationID = m_corpID;
         Client* recruit = sEntityList.FindClientByCharID(ocmc.charID);   // this returns nullptr for offline chars
-        if (recruit != nullptr)
+        if (recruit != nullptr) {
             recruit->GetChar()->JoinCorporation(data);
-        else
+        } else {
             CharacterDB::AddEmployment(args.charID, m_corpID, ocmc.oldCorpID);
+        }
 
         // add corp events for changing both corps
         m_db.AddItemEvent(m_corpID, args.charID, Corp::EventType::JoinedCorporation);
@@ -2094,8 +2102,9 @@ PyResult CorpRegistryBound::Handle_GetVoteCasesByCorporation(PyCallArgs &call)
         return m_db.GetVoteItems(args.corpid, args.status, args.maxLen);
     } else if (call.tuple->size() == 1) {
         return m_db.GetVoteItems(m_corpID);
-    } else
+    } else {
         ; // error?
+    }
 
     return nullptr;
 }

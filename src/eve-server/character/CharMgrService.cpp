@@ -354,10 +354,11 @@ PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
     sLog.Cyan("CharMgrService::SetActivityStatus()", "Player %s(%u) AFK:%s, time:%i.", \
             call.client->GetName(), call.client->GetCharacterID(), (args.arg1 ? "true" : "false"), args.arg2);
 
-    if (args.arg1)
+    if (args.arg1) {
         call.client->SetAFK(true);
-    else
+    } else {
         call.client->SetAFK(false);
+    }
 
     // call code here to set an AFK watchdog?  config option?
     // returns nothing

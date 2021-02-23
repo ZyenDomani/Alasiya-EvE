@@ -112,11 +112,12 @@ m_Stop(true)
     //Clear();
     //GM_Modules = 353,
 
-    if (m_reloadTime or m_usesCharge)
+    if (m_reloadTime or m_usesCharge) {
         _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums. (uses charge: %s", \
                 mRef->name(), mRef->itemID(), m_reloadTime, m_usesCharge?"true":"false");
-    else
+    } else {
         _log(MODULE__TRACE, "%s(%u) does not use reload time.", mRef->name(), mRef->itemID());
+    }
 
     if (!m_shipRef->HasPilot())
         return;
@@ -414,8 +415,9 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
             cur->GetActiveModule()->SetSlaveData(pShip);
             cur->GetActiveModule()->ShowEffect(true, false);
         }
-    } else
+    } else {
         ShowEffect(true, false);
+    }
 
     SetModuleState(Module::State::Activated);
 
@@ -776,8 +778,9 @@ void ActiveModule::ProcessActiveCycle() {
     if (newCap >= 0 ) {
         m_shipRef->SetAttribute(AttrCapacitorCharge, newCap);
         SetTimer(DoCycle());
-    } else
+    } else {
         AbortCycle();
+    }
 }
 
 void ActiveModule::SetTimer(uint32 time) {
@@ -911,8 +914,9 @@ void ActiveModule::ConsumeCharge() {
         for (auto cur : modules)
             if (cur->isOnline() and cur->IsLoaded())
                 cur->GetLoadedChargeRef()->AlterQuantity(-1, cur->IsLoaded());
-    } else
+    } else {
         m_chargeRef->AlterQuantity(-1, false);  // only used in space.  dont send ixStacksize update
+    }
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
@@ -1111,10 +1115,11 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     if (abort) {
         active = false;
         if ((m_effectID == EVEEffectID::miningLaser)
-            or (m_effectID == EVEEffectID::miningClouds))
+        or  (m_effectID == EVEEffectID::miningClouds)) {
             abortTime += (5 * EvE::Time::Second);    // delay abort for 5s to simulate module "completing" its' cycle and dumping ore to cargo
-        else
+        } else {
             abortTime += (3 * EvE::Time::Second);    // delay abort for 3s to simulate module "completing" its' cycle
+        }
     }
 
     uint16 effectID(m_effectID);
@@ -1223,16 +1228,20 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
          * u'TargetNoLongerPresentGenericBody'}(u'{[item]moduleID.name} deactivates as the item it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}})
          *
          */
-        } else
+        } else {
             shipEff.error = PyStatic.NewNone();
+        }
 
     PyTuple* tuple = shipEff.Encode();
     if (is_log_enabled(EFFECTS__DUMP))
         tuple->Dump(EFFECTS__DUMP, "");
-    if ((m_destinyMgr == nullptr) or (m_bubble == nullptr) or m_destinyMgr->IsWarping())
+    if ((m_destinyMgr == nullptr)
+    or  (m_bubble == nullptr)
+    or   m_destinyMgr->IsWarping()) {
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
-    else
+    } else {
         m_bubble->BubblecastDestinyEvent(&tuple, "destiny");
+    }
 }
 /*
                   [PyTuple 12 items]

@@ -362,10 +362,11 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 
     // figure out how to use args.qty for loading less-than-full charges
     //  LoadCharge() can be easily updated to do this.
-    if (pMod->IsLinked())
+    if (pMod->IsLinked()) {
         sRef->LoadLinkedWeapons(pMod, args.itemIDs);
-    else
+    } else {
         sRef->LoadCharge(sItemFactory.GetItem(args.itemIDs.at(0)), pMod->flag());
+    }
 
     // not sure why im not using this, as call is to load bank...
     //sRef->LoadChargesToBank(pMod->flag(), args.itemIDs);
@@ -618,10 +619,11 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         --still dont know what 'datas' are
         ** this has *something* to do with POS
         */
-    if (args.arg2)
+    if (args.arg2) {
         rsp->SetItemString("locationInfo", new PyDict());
-    else
+    } else {
         rsp->SetItemString("locationInfo", PyStatic.NewNone());
+    }
 
     // Set "shipModifiedCharAttribs" in the Dictionary
     /** @todo  havent found a populated item in packet logs */
@@ -637,8 +639,9 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
             return PyStatic.NewNone();
         }
         rsp->SetItemString("charInfo", charResult);
-    } else
+    } else {
         rsp->SetItemString("charInfo", new PyDict());
+    }
 
     // Set "shipInfo" in the Dictionary  -fixed 26Mar16
     if (args.arg2) {
@@ -649,8 +652,9 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
             return PyStatic.NewNone();
         }
         rsp->SetItemString("shipInfo", shipResult);
-    } else
+    } else {
         rsp->SetItemString("shipInfo", new PyDict());
+    }
 
     // Set "shipState" in the Dictionary  -fixed 26Mar16  -UD to add linked weapons 7Jan19
     if (pClient->GetShip().get() == nullptr) {
@@ -694,10 +698,11 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
 
     SystemManager* pSysMgr(call.client->SystemMgr());
     ShipItemRef sRef(nullptr);
-    if (call.client->IsDocked())
+    if (call.client->IsDocked()) {
         sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.shipID);
-    else
+    } else {
         sRef = pSysMgr->GetShipFromInventory(args.shipID);
+    }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
         call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
@@ -719,10 +724,11 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
 
     SystemManager* pSysMgr(call.client->SystemMgr());
     ShipItemRef sRef(nullptr);
-    if (call.client->IsDocked())
+    if (call.client->IsDocked()) {
         sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(arg.arg);
-    else
+    } else {
         sRef = pSysMgr->GetShipFromInventory(arg.arg);
+    }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
         call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
@@ -746,10 +752,11 @@ PyResult DogmaIMBound::Handle_DestroyWeaponBank(PyCallArgs& call) {
 
     SystemManager* pSysMgr(call.client->SystemMgr());
     ShipItemRef sRef(nullptr);
-    if (call.client->IsDocked())
+    if (call.client->IsDocked()) {
         sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.arg1);
-    else
+    } else {
         sRef = pSysMgr->GetShipFromInventory(args.arg1);
+    }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
         call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
@@ -772,10 +779,11 @@ PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
 
     SystemManager* pSysMgr(call.client->SystemMgr());
     ShipItemRef sRef(nullptr);
-    if (call.client->IsDocked())
+    if (call.client->IsDocked()) {
         sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(arg.arg);
-    else
+    } else {
         sRef = pSysMgr->GetShipFromInventory(arg.arg);
+    }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
         call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
@@ -801,10 +809,11 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
 
     SystemManager* pSysMgr(call.client->SystemMgr());
     ShipItemRef sRef(nullptr);
-    if (call.client->IsDocked())
+    if (call.client->IsDocked()) {
         sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.arg1);
-    else
+    } else {
         sRef = pSysMgr->GetShipFromInventory(args.arg1);
+    }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
         call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
@@ -832,10 +841,11 @@ PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
         return nullptr;
     SystemManager* pSysMgr(call.client->SystemMgr());
     ShipItemRef sRef(nullptr);
-    if (call.client->IsDocked())
+    if (call.client->IsDocked()) {
         sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.shipID);
-    else
+    } else {
         sRef = pSysMgr->GetShipFromInventory(args.shipID);
+    }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
         call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
@@ -866,10 +876,11 @@ PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
         return nullptr;
     SystemManager* pSysMgr(call.client->SystemMgr());
     ShipItemRef sRef(nullptr);
-    if (call.client->IsDocked())
+    if (call.client->IsDocked()) {
         sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.shipID);
-    else
+    } else {
         sRef = pSysMgr->GetShipFromInventory(args.shipID);
+    }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
         call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");

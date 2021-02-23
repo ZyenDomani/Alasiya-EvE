@@ -232,10 +232,11 @@ uint32 ServiceDB::GetStationOwner(uint32 stationID)
     }
 
     DBResultRow row;
-    if (res.GetRow(row))
+    if (res.GetRow(row)) {
         return row.GetInt(0);
-    else
+    } else {
         return 1;
+    }
 }
 
 bool ServiceDB::GetConstant(const char *name, uint32 &into)
@@ -550,6 +551,7 @@ PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
             sDatabase.RunQuery(res, "SELECT allianceID, allianceName, typeID FROM alnAlliance WHERE allianceID = %u", cur);
         } else {
             ; // make error
+        }
         if (res.GetRow(row)) {
             PyList* list = new PyList();
                 list->AddItem(new PyInt(row.GetInt(0)));

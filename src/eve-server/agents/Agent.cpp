@@ -167,10 +167,11 @@ bool Agent::HasMission(uint32 charID, MissionOffer& offer)
 void Agent::GetOffer(uint32 charID, MissionOffer& offer)
 {
     std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
-    if (itr != m_offers.end())
+    if (itr != m_offers.end()) {
         offer = itr->second;
-    else
+    } else {
         _log(AGENT__WARNING, "Agent::GetOffer() - offer not found for characterID %u", charID);
+    }
 }
 
 /*{'FullPath': u'UI/Messages', 'messageID': 259310, 'label': u'MisMissionExpiredBody'}(u'This mission has already expired.', None, None)
@@ -198,17 +199,19 @@ void Agent::UpdateOffer(uint32 charID, MissionOffer& offer)
         itr->second = offer;
         MissionDB::UpdateMissionOffer(itr->second);
         sMissionDataMgr.UpdateMissionData(charID, itr->second);
-    } else
+    } else {
         _log(AGENT__WARNING, "Agent::UpdateOffer() - offer not found for character %u", charID);
+    }
 }
 
 void Agent::RemoveOffer(uint32 charID)
 {
     std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
-    if (itr != m_offers.end())
+    if (itr != m_offers.end()) {
         m_offers.erase(itr);
-    else
+    } else {
         _log(AGENT__WARNING, "Agent::RemoveOffer() - offer not found for character %u", charID);
+    }
 }
 
 void Agent::DeleteOffer(uint32 charID)
@@ -219,8 +222,9 @@ void Agent::DeleteOffer(uint32 charID)
         MissionDB::UpdateMissionOffer(itr->second);
         sMissionDataMgr.RemoveMissionOffer(charID, itr->second);
         m_offers.erase(itr);
-    } else
+    } else {
         _log(AGENT__WARNING, "Agent::DeleteOffer() - offer not found for character %u", charID);
+    }
 }
 
 
@@ -337,8 +341,9 @@ PyObject* Agent::GetInfoServiceDetails()
         research->SetItemString("skills", skillList);
         research->SetItemString("researchSummary", patentList);
         research->SetItemString("researchData", researchData);
-    } else
+    } else {
         research->SetItemString("agentServiceType", new PyNone());
+    }
 
     /* for location agents....
      *
@@ -396,8 +401,9 @@ PyObject* Agent::GetInfoServiceDetails()
         locate->SetItemString("delays", delays);
         locate->SetItemString("callbackID", new PyInt(2));
         locate->SetItemString("lastUsed", new PyInt(0));
-    } else
+    } else {
         locate->SetItemString("agentServiceType", new PyNone());
+    }
 
     // for mission agents....
     PyDict* mission = new PyDict();

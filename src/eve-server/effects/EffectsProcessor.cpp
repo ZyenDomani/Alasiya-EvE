@@ -76,12 +76,14 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         // these provide the given expressionID (attrib/grp)
         case Operands::DEFATTRIBUTE: {  //22
             if (expression.expressionAttributeID) {
-                if (data.targAttr)  // always processed first
+                if (data.targAttr) {  // always processed first
                     data.srcAttr = expression.expressionAttributeID;
-                else
+                } else {
                     data.targAttr = expression.expressionAttributeID;
-            } else
+                }
+            } else {
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): opATTR called with no expressionAttributeID defined");
+            }
         } break;
         case Operands::DEFGROUP: {      //26
             data.fxSrc = Source::Group;
@@ -712,10 +714,11 @@ void FxProc::DecodeExpression(Expression expression, fxData& data)
         // these provide the given expressionID (attrib/grp)
         case Operands::DEFATTRIBUTE: {  //22
             if (expression.expressionAttributeID) {
-                if (data.targAttr)  // always processed first
+                if (data.targAttr) { // always processed first
                     data.srcAttr = expression.expressionAttributeID;
-                else
+                } else {
                     data.targAttr = expression.expressionAttributeID;
+                }
             }
         } break;
         case Operands::DEFGROUP: {      //26

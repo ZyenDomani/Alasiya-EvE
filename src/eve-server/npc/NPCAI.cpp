@@ -75,10 +75,11 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_attackSpeed = m_self->GetAttribute(AttrSpeed).get_uint32();
     m_sigRadius = m_self->GetAttribute(AttrSignatureRadius).get_uint32();
     m_launcherCycleTime = m_self->GetAttribute(AttrMissileLaunchDuration).get_uint32();
-    if (m_launcherCycleTime > 100)
+    if (m_launcherCycleTime > 100) {
         m_missileTypeID = m_self->GetAttribute(AttrEntityMissileTypeID).get_uint32();
-    else
+    } else {
         m_missileTypeID = 0;
+    }
 
     //  AttrEntityDefenderChance = 497,  <<< for defender missiles
 
@@ -144,8 +145,9 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     if (m_maxLockedTargets < 1) {
         if (m_maxAttackTargets > 1) {
             m_maxLockedTargets = m_maxAttackTargets;
-        } else
+        } else {
             m_maxLockedTargets = 1;
+        }
     }
 
     /** @todo change these next 2 (rep and boost) to boolean to avoid timer creation/checks */
@@ -183,14 +185,16 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_shieldBoosterDuration = m_self->GetAttribute(AttrEntityShieldBoostDuration).get_uint32();
 
     // advanced AI variables  only used by sleepers for now (and on live).  will update advanced npcs to use these also (unique to alasiya)
-    if (m_self->HasAttribute(AttrAI_ShouldUseTargetSwitching))
+    if (m_self->HasAttribute(AttrAI_ShouldUseTargetSwitching)) {
         m_useTargSwitching = true;
-    else
+    } else {
         m_useTargSwitching = false;
-    if (m_self->HasAttribute(AttrAI_ShouldUseSecondaryTarget))
+    }
+    if (m_self->HasAttribute(AttrAI_ShouldUseSecondaryTarget)) {
         m_useSecondTarget = true;
-    else
+    } else {
         m_useSecondTarget = false;
+    }
     if (m_self->HasAttribute(AttrAI_ShouldUseSignatureRadius)) {
         m_useSigRadius = true;
         m_preferedSigRadius = m_self->GetAttribute(AttrAI_PreferredSignatureRadius).get_uint32();
@@ -198,19 +202,22 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_useSigRadius = false;
         m_preferedSigRadius = 0;
     }
-    if (m_self->HasAttribute(AttrAI_ChanceToNotTargetSwitch))
+    if (m_self->HasAttribute(AttrAI_ChanceToNotTargetSwitch)) {
         m_switchTargChance = 1.0 - m_self->GetAttribute(AttrAI_ChanceToNotTargetSwitch).get_float();
-    else
+    } else {
         m_switchTargChance = 0;
+    }
 
-    if (m_self->HasAttribute(AttrWarpScrambleRange))
+    if (m_self->HasAttribute(AttrWarpScrambleRange)) {
         m_warpScramRange = m_self->GetAttribute(AttrWarpScrambleRange).get_float();
-    else
+    } else {
         m_warpScramRange = 0;
-    if (m_self->HasAttribute(AttrEntityWarpScrambleChance))
+    }
+    if (m_self->HasAttribute(AttrEntityWarpScrambleChance)) {
         m_warpScramChance = 1.0 - m_self->GetAttribute(AttrEntityWarpScrambleChance).get_float();
-    else
+    } else {
         m_warpScramChance = 0;
+    }
 
     /*
     AttrWarpScrambleRange = 103,

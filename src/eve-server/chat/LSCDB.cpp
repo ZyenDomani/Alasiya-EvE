@@ -77,10 +77,10 @@ int32 LSCDB::GetNextAvailableChannelID()
     }
 
         // Check to make sure that the next available channelID is not equal to the Maximum channel ID value
-    if( currentChannelID <= LSCService::MAX_CHANNEL_ID )
+    if( currentChannelID <= LSCService::MAX_CHANNEL_ID ) {
         return currentChannelID;
-    else
-        return 0;    // No free channel IDs found (this should never happen as there are way too many IDs to exhaust)
+
+    return 0;    // No free channel IDs found (this should never happen as there are way too many IDs to exhaust)
 }
 
 void LSCDB::UpdateChannelInfo(LSCChannel *channel) {
@@ -160,8 +160,8 @@ bool LSCDB::IsChannelNameAvailable(std::string name)
     // Return true (this 'displayName' not in use) if there are no rows returned by the query:
     if (!res.GetRow(row))
         return true;
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -186,8 +186,8 @@ bool LSCDB::IsChannelIDAvailable(int32 channelID)
     // Return true (this channelID not in use) if there are no rows returned by the query:
     if (!(res.GetRow(row)))
         return true;
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -213,8 +213,8 @@ bool LSCDB::IsChannelSubscribedByThisChar(uint32 charID, int32 channelID)
     // Return false (no subscription exists) if there are no rows returned by the query:
     if (!(res.GetRow(row)))
         return false;
-    else
-        return true;
+
+    return true;
 }
 
 int32 LSCDB::GetChannelID(std::string &name) {
@@ -226,8 +226,8 @@ int32 LSCDB::GetChannelID(std::string &name) {
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-            _log(SERVICE__ERROR, "Channel named '%s' isn't present in the database", name.c_str() );
-            return 0;
+        _log(SERVICE__ERROR, "Channel named '%s' isn't present in the database", name.c_str() );
+        return 0;
     }
 
     return row.GetInt(0);

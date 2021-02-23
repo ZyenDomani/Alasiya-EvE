@@ -221,7 +221,7 @@ bool SystemManager::ProcessTic() {
         }
 
          /* main process call. */
-        mLast = itr->first;     // not sure if this will slow this down or not.  check profile 
+        mLast = itr->first;     // not sure if this will slow this down or not.  check profile
         itr->second->Process();
 
         if (m_entityChanged) {
@@ -882,8 +882,9 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*f
         std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
         if (itr != m_jumpMap.end()) {
             ++(itr->second);
-        } else
+        } else {
             m_jumpMap.emplace(stamp, 1);
+        }
     }
 }
 
@@ -919,8 +920,9 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
         std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
         if (itr != m_jumpMap.end()) {
             ++(itr->second);
-        } else
+        } else {
             m_jumpMap.emplace(stamp, 1);
+        }
     }
 }
 
@@ -946,10 +948,11 @@ void SystemManager::AddNPC(NPC* pNPC) {
     if ( pNPC == nullptr)
         return;
     uint32 itemID = pNPC->GetID();
-    if (m_npcs.find(itemID) != m_npcs.end())
+    if (m_npcs.find(itemID) != m_npcs.end()) {
         _log(ITEM__WARNING, "%s(%u): Called AddNPC(), but they're already in %s(%u).  Check bubble.", pNPC->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-    else
+    } else {
         m_npcs[itemID] = pNPC;
+    }
 
     _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", pNPC->GetName(), pNPC->GetID(), m_data.name.c_str(), m_data.systemID);
     AddEntity(pNPC, false);
@@ -994,8 +997,9 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
             // *most* dynamic items need proc tics.  add to proc list
             m_entityChanged = true;
             m_ticEntities[itemID] = pSE;
-        } else
+        } else {
             addSignal = false;
+        }
 
         // Add Entity's Item Ref to Solar System Dynamic Inventory:
         m_solarSystemRef->AddItemToInventory( pSE->GetSelf() );
@@ -1356,9 +1360,10 @@ void SystemManager::RemoveItemFromInventory(InventoryItemRef iRef)
     if (itr != m_entities.end()) {
         _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", iRef->name(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
         m_entities.erase(itr);
-    } else
+    } else {
         _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", \
                 iRef->name(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
+    }
 
     m_solarSystemRef->RemoveItemFromInventory( iRef );
 }

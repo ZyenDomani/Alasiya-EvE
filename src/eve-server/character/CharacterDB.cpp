@@ -725,10 +725,11 @@ uint32 CharacterDB::PickAlternateShip(uint32 charID, uint32 locationID)
         "  LIMIT 1", charID, locationID, EVEDB::invCategories::Ship);
 
     DBResultRow row;
-    if (res.GetRow(row))
+    if (res.GetRow(row)) {
         return row.GetUInt(0);
-    else
+    } else {
         return 0;
+    }
 }
 
 void CharacterDB::SetCurrentShip(uint32 charID, uint32 shipID)
@@ -776,10 +777,11 @@ bool CharacterDB::GetActiveCloneID(uint32 characterID, uint32 &itemID) {
     }
 
     DBResultRow row;
-    if (res.GetRow(row))
+    if (res.GetRow(row)) {
         itemID=row.GetUInt(0);
-    else
+    } else {
         return false;
+    }
     return true;
 }
 
@@ -1126,10 +1128,11 @@ bool CharacterDB::GetSkillsByRace(uint32 raceID, std::map<uint32, uint8> &into) 
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        if (into.find(row.GetUInt(0)) == into.end())
+        if (into.find(row.GetUInt(0)) == into.end()) {
             into[row.GetUInt(0)] = row.GetUInt(1);
-        else
+        } else {
             into[row.GetUInt(0)] += row.GetUInt(1);
+        }
         //check to avoid more than 5 levels of a skill
         if (into[row.GetUInt(0)] > 5)
             into[row.GetUInt(0)] = 5;
@@ -1152,10 +1155,11 @@ bool CharacterDB::GetSkillsByCareer(uint32 careerID, std::map<uint32, uint8> &in
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        if (into.find(row.GetUInt(0)) == into.end())
+        if (into.find(row.GetUInt(0)) == into.end()) {
             into[row.GetUInt(0)] = row.GetUInt(1);
-        else
+        } else {
             into[row.GetUInt(0)] += row.GetUInt(1);
+        }
         //check to avoid more than 5 levels of a skill
         if (into[row.GetUInt(0)] > 5)
             into[row.GetUInt(0)] = 5;

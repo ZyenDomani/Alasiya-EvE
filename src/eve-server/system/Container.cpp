@@ -89,7 +89,7 @@ CargoContainerRef CargoContainer::SpawnTemp(ItemData& data)
     uint32 containerID = CargoContainer::CreateTempItemID(data);
     if (containerID == 0)
         return CargoContainerRef(nullptr);
-    
+
     if (data.quantity == 0)
         return CargoContainerRef(nullptr);
 
@@ -243,10 +243,11 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
     m_ownerID = data.ownerID;
 
     if (!IsStation(m_self->locationID())) { // should NEVER be true (SE object in station???)
-        if (m_self->typeID() == EVEDB::invTypes::PlanetaryLaunchContainer)
+        if (m_self->typeID() == EVEDB::invTypes::PlanetaryLaunchContainer) {
             m_deleteTimer.Start(5 *24 *60 *60 *1000);  //5d timer for PI launch.  should probably get this saved value from planet launches
-        else
+        } else {
             m_deleteTimer.Start(sConfig.rates.WorldDecay *60 *1000);
+        }
     }
 
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity(), false);

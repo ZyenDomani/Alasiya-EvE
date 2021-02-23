@@ -252,10 +252,11 @@ void GenericModule::ProcessEffects(int8 state, bool active/*false*/)
         /* module and charge effects will be added/removed from it's item
          * active/overload/gang/other effects will be applied and removed when called.
          */
-        if (active)
+        if (active) {
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
-        else
+        } else {
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+        }
     }
 }
 

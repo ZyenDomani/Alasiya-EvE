@@ -244,12 +244,14 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
             if (args.lineContainerID == pClient->GetLocationID()) {
                 std::map<std::string, PyRep *> exceptArgs;
                 exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.lineContainerID));
-                if (args.isCorpJob)
+                if (args.isCorpJob) {
                     throw(PyException(MakeUserError("RamCorpInstalledItemWrongLocation", exceptArgs)));
-                else
+                } else {
                     throw(PyException(MakeUserError("RamInstalledItemWrongLocation", exceptArgs)));
-            } else
+                }
+            } else {
                 throw(PyException(MakeUserError("RamRemoteInstalledItemNotInStation")));
+            }
         } else {
             if (args.isCorpJob) {
                 if (!IsHangarFlag(installedItem->flag())) {
@@ -257,8 +259,9 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
                         std::map<std::string, PyRep *> exceptArgs;
                         exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.lineContainerID));
                         throw(PyException(MakeUserError("RamCorpInstalledItemWrongLocation", exceptArgs)));
-                    } else
+                    } else {
                         throw(PyException(MakeUserError("RamRemoteInstalledItemNotInOffice")));
+                    }
                 }
             } else {
                 if (installedItem->flag() != flagHangar) {
@@ -370,9 +373,8 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
                         qtyNeeded = 0;
                 }
 
-            if (qtyNeeded) {
+            if (qtyNeeded)
                 args["item"] = new PyInt( cur.typeID );
-            }
         }
     }
 
@@ -571,10 +573,11 @@ void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> 
             if (((*curi)->typeID() == cur.typeID)
             and (((*curi)->ownerID() == pClient->GetCharacterID())
               or ((*curi)->ownerID() == pClient->GetCorporationID()))) {
-                if (cur.isSkill)
+                if (cur.isSkill) {
                     qtyReq -= std::min(qtyReq, (*curi)->GetAttribute(AttrSkillLevel).get_uint32() );
-                else
+                } else {
                     qtyReq -= std::min(qtyReq, (uint32)(*curi)->quantity() );
+                }
             }
         }
 

@@ -329,10 +329,11 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                     if (pMod->IsLinked())
                         banked = true;
             }
-            if (banked)
+            if (banked) {
                 tuple->SetItem(1, new PyString(Dmg::Msg::Banked[damageID]));
-            else
+            } else {
                 tuple->SetItem(1, new PyString(Dmg::Msg::Given[damageID]));
+            }
             tuple->SetItem(2, dict);
             d.srcSE->GetPilot()->QueueDestinyEvent(&tuple);
         } else if (d.srcSE->IsDroneSE()) {
@@ -391,10 +392,12 @@ void ShipSE::Killed(Damage &fatal_blow) {
             /** @todo  make error here */
             sLog.Error("Ship::Killed()", "killer == IsDrone and pPlayer == nullptr");
             EvE::traceStack();
-        } else
+        } else {
             killerID = pClient->GetCharacterID();
-    } else
+        }
+    } else {
         killerID = killer->GetID();
+    }
 
     // AttrFwLpKill
 

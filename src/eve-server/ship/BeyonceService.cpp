@@ -228,10 +228,11 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
 
     //sLog.Warning( "BeyonceBound", "Handle_CmdSetSpeedFraction %.2f", arg.arg );
     if (!call.client->IsUndock()){
-        if (pDestiny->IsMoving())
+        if (pDestiny->IsMoving()) {
             pDestiny->SetSpeedFraction(arg.arg);
-        else
+        } else {
             pDestiny->SetSpeedFraction(arg.arg, true);
+        }
     }
 
     return PyStatic.NewNone();
@@ -448,10 +449,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     std::string stringArg = "";
 
     if ((call.tuple->GetItem(1)->IsString())
-    or  (call.tuple->GetItem(1)->IsWString()))
+    or  (call.tuple->GetItem(1)->IsWString())) {
         stringArg = PyRep::StringContent(call.tuple->GetItem(1));
-    else
+    } else {
         toID = PyRep::IntegerValueU32(call.tuple->GetItem(1));
+    }
 
     std::string type = PyRep::StringContent(call.tuple->GetItem(0));
     if (type == "item" ) {

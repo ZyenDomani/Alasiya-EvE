@@ -309,10 +309,11 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
         }
 
     // this needs to distinguish between fraction change and speedboost change
-    if ((m_userSpeedFraction) and ((!fraction) or (m_prevSpeed) or (fraction != m_userSpeedFraction)))
+    if ((m_userSpeedFraction) and ((!fraction) or (m_prevSpeed) or (fraction != m_userSpeedFraction))) {
         m_prevSpeedFraction = m_userSpeedFraction;
-    else
+    } else {
         m_prevSpeedFraction = 0.0f;
+    }
 
     m_userSpeedFraction = fraction;
     bool isMoving = false;
@@ -452,10 +453,11 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
             m_shipMaxAccelTime *= m_activeSpeedFraction;
 
             // this is speed from prop mod, which is now deactivated
-            if (m_prevSpeed)
+            if (m_prevSpeed) {
                 m_maxSpeed = m_prevSpeed * m_activeSpeedFraction;
-            else
+            } else {
                 m_maxSpeed = m_maxShipSpeed * m_activeSpeedFraction;
+            }
             m_velocity = m_shipHeading * m_maxSpeed;
         } else {    //halt
             logType = 7;
@@ -610,8 +612,9 @@ void DestinyManager::CheckBump()
         if (distance < BUMP_DISTANCE) {
             Bump(cur->GetShipSE());
             m_bump = true;
-        } else
+        } else {
             m_bump = false;
+        }
     }
     /** @todo  add data and checks for each ship bumped
      * to give single bump msg for each ship combo
@@ -790,10 +793,11 @@ void DestinyManager::MoveObject() {
         }
     } else {
         //not full speed yet or has changed speed
-        if (m_turning)
+        if (m_turning) {
             move = "turning";
-        else
+        } else {
             move = "accelerating";
+        }
 
         m_currentSpeedFraction = (1 - exp(-timeStamp / m_shipAgility));
 
@@ -822,6 +826,7 @@ void DestinyManager::MoveObject() {
             //    speed = (m_maxSpeed - m_prevSpeed) * m_activeSpeedFraction;
             } else {
                 speed = m_maxSpeed * m_activeSpeedFraction;
+            }
         } else {
             speed = m_maxSpeed * m_activeSpeedFraction;
         }
@@ -1593,10 +1598,11 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
     if (currentDistance > m_warpState->accelDist) {
         currentDistance = m_warpState->accelDist;
         m_warpState->accel = false;
-        if (m_warpState->cruiseDist > 0)
+        if (m_warpState->cruiseDist > 0) {
             m_warpState->cruise = true;
-        else
+        } else {
             m_warpState->decel = true;
+        }
     }
 
     m_targetDistance -= currentDistance;
@@ -1902,10 +1908,11 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     SafeDelete(m_warpState);
 
     // check for autopilot.  it has 'special' checks in client for auto-disable by destiny update
-    if (autoPilot)
+    if (autoPilot) {
         Follow(pSE, distance);
-    else
+    } else {
         GotoPoint(where);
+    }
 
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -2014,8 +2021,9 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
                 SafeDelete(m_warpState);
                 return;
             }
-        } else
+        } else {
             capNeeded = currentShipCap - capNeeded;
+        }
 
         m_capNeeded = capNeeded;
     }
@@ -2342,10 +2350,11 @@ void DestinyManager::SetMaxVelocity(float maxVelocity)
                     mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID(), \
                     mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float());
 
-    if (maxVelocity > maxSpeed)
+    if (maxVelocity > maxSpeed) {
         m_maxShipSpeed = maxSpeed;
-    else
+    } else {
         m_maxShipSpeed = maxVelocity;
+    }
 }
 
 void DestinyManager::SpeedBoost(bool deactivate/*false*/)
@@ -2442,10 +2451,11 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
 
 void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
 {
-    if (apply)
+    if (apply) {
         m_maxShipSpeed *= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100.0f));
-    else
+    } else {
         m_maxShipSpeed /= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100.0f));
+    }
     m_activeSpeedFraction = m_activeSpeedFraction * 0.999f;
     std::vector<PyTuple*> updates;
     SetBallSpeed sbms;
@@ -2539,8 +2549,9 @@ Battleships 0.155
             sbspeed.speed = m_maxShipSpeed;
         updates.push_back(sbspeed.Encode());
         SendDestinyUpdate(updates); //consumed
-    } else
+    } else {
         m_hasSentShipUpdates = false;
+    }
 }
 
 void DestinyManager::MakeMissile(Missile* pMissile) {
@@ -2884,10 +2895,11 @@ void DestinyManager::SendCloakFx(bool apply/*false*/, bool module/*false*/) cons
         up = effect.Encode();
     } else {
         OnSpecialFX10 effect;
-        if (apply)
+        if (apply) {
             effect.guid = "effects.Cloak";
-        else
+        } else {
             effect.guid = "effects.Uncloak";
+        }
         effect.entityID = mySE->GetID();
         effect.isOffensive = 0;
         effect.start = 1;

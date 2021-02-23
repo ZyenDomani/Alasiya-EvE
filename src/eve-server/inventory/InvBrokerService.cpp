@@ -237,10 +237,11 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
         } break;
         case EVEDB::invCategories::Ship: {
             // should we test for ships and hangar types here?   yes.
-            if (iRef->HasAttribute(AttrHasCorporateHangars))
+            if (iRef->HasAttribute(AttrHasCorporateHangars)) {
                 flag = flagCargoHold;   // this is also corp hangar 1
-            else
+            } else {
                 flag = flagCargoHold;
+            }
         } break;
         case EVEDB::invCategories::Structure: {
             switch(iRef->groupID()) {
@@ -425,10 +426,11 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
         error = true;
     }
 
-    if (error)
+    if (error) {
         call.client->SendErrorMsg("You are not allowed to rename that.");
-    else
+    } else {
         iRef->Rename(PyRep::StringContent(args.itemName));
+    }
 
     // Release the ItemFactory
     sItemFactory.UnsetUsingClient();

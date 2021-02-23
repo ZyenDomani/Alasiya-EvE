@@ -154,10 +154,11 @@ uint32 MiningLaser::DoCycle() {
      * however, code processing runs at beginning of cycle, so this needs to 'fake' the ore acquisition to the end of cycle
      * we accomplish this by doing nothing on first cycle, and call the processing component at beginning of each cycle after that.
      */
-    if (m_IsInitialCycle)
+    if (m_IsInitialCycle) {
     	m_IsInitialCycle = false;
-    else
+    } else {
         ProcessCycle();
+    }
 
     return ActiveModule::DoCycle();
 }
@@ -212,10 +213,11 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     float remainingCargoVolume(m_shipRef->GetRemainingVolumeByFlag(m_holdFlag));
     if (remainingCargoVolume < cycleVol) {
         // cargohold is full.  this module will fill to available volume and trash the rest
-        if (remainingCargoVolume > oreVolume)
+        if (remainingCargoVolume > oreVolume) {
             oreAmount = remainingCargoVolume /oreVolume;
-        else
+        } else {
             oreAmount = 0;
+        }
         // check for other lasers running, and deactivate them also.
         // the ship will tell all miners the current hold is full, and they automagically deactivate.
         // this is a feature.

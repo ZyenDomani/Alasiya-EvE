@@ -181,18 +181,20 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
     /*   allan 27Nov14    */
     std::vector<LootList> lootList;
     sDataMgr.GetLoot(groupID, lootList);
-
     if (lootList.empty())
         return;
 
-    uint32 quantity = 0;
+    uint32 quantity(0);
     std::vector<LootList>::iterator cur = lootList.begin();
     while (cur != lootList.end()) {
-        if (cur->minDrop == cur->maxDrop)
+        if (cur->minDrop == cur->maxDrop) {
             quantity = cur->minDrop;
-        else
+        } else {
             quantity = (uint32)(MakeRandomInt(cur->minDrop, cur->maxDrop));
-        if (quantity < 1) quantity = 1;
+        }
+        if (quantity < 1)
+            quantity = 1;
+
         ItemData iLoot(cur->itemID, owner, wreckRef->itemID(), flagNone, quantity);
         wreckRef->AddItem(sItemFactory.SpawnItem(iLoot));
         ++cur;
@@ -735,9 +737,10 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
         }
     } else {
         data.amount = bounty;
-        if (sConfig.server.BountyPayoutDelayed)
+        if (sConfig.server.BountyPayoutDelayed) {
             m_system->AddBounty(pClient->GetCharacterID(), data);
-        else
+        } else {
             AccountService::TranserFunds(corpCONCORD, pClient->GetCharacterID(), bounty, reason.c_str(), Journal::EntryType::BountyPrize, -GetTypeID());
+        }
     }
 }

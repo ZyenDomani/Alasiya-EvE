@@ -120,8 +120,9 @@ bool CertificateMgrDB::SaveCertificates( uint32 characterID, const CertMap &data
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
+        } else {
             Inserts << ", ";
+        }
         Inserts << "(" << characterID << ", " << cur.first << ", " << cur.second.grantDate << ", " << cur.second.visibilityFlags << ")";
     }
 

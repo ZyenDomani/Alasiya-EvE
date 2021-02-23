@@ -66,11 +66,12 @@ PyResult AlertService::Handle_BeanCount(PyCallArgs &call) {
     PyTuple *result = new PyTuple(2);
 
     // what we are sending back is just a static mErrorID and the command not to do anything with it.
-    if (sConfig.server.UseBeanCount or sConfig.debug.IsTestServer)
+    if (sConfig.server.UseBeanCount or sConfig.debug.IsTestServer) {
         result->items[0] = new PyNone();
-    else
+    } else {
         result->items[0] = new PyInt(34135);    //ErrorID
-
+    }
+    
     result->items[1] = new PyInt(0);        //loggingMode, 0=local, 1=DB (Capt: This isn't correct at all as it seems..)
 
     return (PyRep*)result;

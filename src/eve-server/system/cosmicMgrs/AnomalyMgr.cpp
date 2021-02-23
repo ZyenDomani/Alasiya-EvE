@@ -439,10 +439,11 @@ void AnomalyMgr::AddSignal(SystemEntity* pSE, uint32 id/*0*/)
     CosmicSignature sig = CosmicSignature();
         sig.dungeonType = Dungeon::Type::Anomaly;
         sig.ownerID = iRef->ownerID();
-        if (id)
+        if (id) {
             sig.sigID = id;
-        else
+        } else {
             sig.sigID = sEntityList.GetAnomalyID();
+        }
         sig.sigItemID = iRef->itemID();
         sig.sigName = iRef->itemName();
         sig.systemID = m_system->GetID();
@@ -507,10 +508,11 @@ void AnomalyMgr::AddSignal(SystemEntity* pSE, uint32 id/*0*/)
 
     // add new sig to our maps, but these are not added to anom/sig counts
     m_sigBySigID.emplace(sig.sigID, sig);
-    if (sig.scanGroupID == Scanning::Group::Anomaly)
+    if (sig.scanGroupID == Scanning::Group::Anomaly) {
         m_anomByItemID.emplace(sig.sigItemID, sig);
-    else
+    } else {
         m_sigByItemID.emplace(sig.sigItemID, sig);
+    }
 }
 
 void AnomalyMgr::RemoveSignal(uint32 itemID)

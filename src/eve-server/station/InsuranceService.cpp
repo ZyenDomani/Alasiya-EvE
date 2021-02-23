@@ -181,20 +181,22 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
         fraction = 0.9f;
     } else if (paymentFraction == 0.3f) {
         fraction = 1.0f;
-    } 
+    }
 
     if (fraction < 0.05f) {
         call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");
         throw PyException(MakeUserError("InsureShipFailed"));
-    } else if (fraction == 0.3f)
+    } else if (fraction == 0.3f) {
         call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 75521.");
+    }
 
     if (m_db->IsShipInsured(args.shipID)) {     //this hits db...can you insure unloaded ship? (if no, make this a ship memobj)
         if (call.byname.find("voidOld") != call.byname.end()) {
             if (call.byname.find("voidOld")->second->AsBool()->value())
                 ShipDB::DeleteInsuranceByShipID(args.shipID);
-        } else  // this will send voidOld=true after asking player to cancel old insurance
+        } else {  // this will send voidOld=true after asking player to cancel old insurance
             throw PyException(MakeUserError("InsureShipFailedSingleContract"));
+        }
     }
 
     uint8 numWeeks(12);

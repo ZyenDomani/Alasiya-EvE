@@ -158,10 +158,11 @@ bool Inventory::LoadContents() {
                 _log(INV__WARNING, "Inventory::LoadContents() - inventory of officeID %u using corpID %u. Continuing...", m_myID, od.corpID);
             }
         }
-        if (pClient->IsValidSession())
+        if (pClient->IsValidSession()) {
             od.ownerID = pClient->GetCharacterID();
-        else
+        } else {
             od.ownerID = pClient->GetCharID();
+        }
     }
 
     _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory of %s(%u) with owner %u", m_self->name(), m_myID, od.ownerID);
@@ -179,8 +180,9 @@ bool Inventory::LoadContents() {
         if (iRef.get() == nullptr) {
             _log(INV__WARNING, "Inventory::LoadContents() - Failed to load item %u contained in %u. Skipping.", cur, m_myID);
             continue;
-        } else
+        } else {
             AddItem(iRef);
+        }
     }
 
     if (sConfig.debug.UseProfiling)
@@ -201,12 +203,13 @@ void Inventory::AddItem(InventoryItemRef iRef) {
     if (itr == mContents.end())
         test = mContents.emplace(iRef->itemID(), iRef);
 
-    if (test.second)
+    if (test.second) {
         _log(INV__TRACE, "Inventory::AddItem() - Updated %s(%u) to contain (%u) %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->quantity(), iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
-    else
+    } else {
         _log(INV__TRACE, "Inventory::AddItem() - %s(%u) already contains %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+    }
 
     // need to find and remove skill in training flag here for proper skill search
     if (IsCharacter(m_myID)) {
@@ -215,8 +218,9 @@ void Inventory::AddItem(InventoryItemRef iRef) {
         } else {
             m_contentsByFlag.emplace(iRef->flag(), iRef);
         }
-    } else
+    } else {
         m_contentsByFlag.emplace(iRef->flag(), iRef);
+    }
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
@@ -229,9 +233,10 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
         mContents.erase(itr);
         _log(INV__TRACE, "Inventory::RemoveItem(1) - Updated %s(%u) to no longer contain %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
-    } else
+    } else {
         _log(INV__WARNING,"Inventory::RemoveItem(1) - %s(%u) contents does not contain %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+    }
 
     /** @todo @note  this isnt working right, and im not sure why yet...  */
     auto range = m_contentsByFlag.equal_range(iRef->flag());
@@ -559,7 +564,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
             }
         }
     }
-    
+
     for (auto cur : delVec)
         cur->Delete();
 }

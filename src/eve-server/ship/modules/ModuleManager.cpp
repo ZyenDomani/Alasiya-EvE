@@ -339,8 +339,9 @@ bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
             }
         }
         return true;
-    } else
+    } else {
         codelog(MODULE__TRACE, "ModuleManager","%s tried to fit item %s(%u), which is not a rig", pShipItem->GetPilot()->GetName(), mRef->name(), mRef->itemID());
+    }
 
     return false;
 
@@ -912,8 +913,9 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
             modCapacity = pMod->GetAttribute(AttrCapacity).get_float();
             _log(MODULE__TRACE, "MM::LoadCharge() - %s reloading with different type. empty capy:%.2f", pMod->GetSelf()->name(), modCapacity);
         }
-    } else
+    } else {
         _log(MODULE__TRACE, "MM::LoadCharge() - %s not loaded. capy:%.2f", pMod->GetSelf()->name(), modCapacity);
+    }
 
     //{'FullPath': u'UI/Messages', 'messageID': 256676, 'label': u'CannotLoadNotEnoughChargesBody'}(u'There are not enough charges to fully load all of your modules. Some of your modules have been left partially loaded or empty.', None, None)
 
@@ -935,8 +937,9 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
                         cRef->name(), pMod->GetSelf()->name());
             return;
         }
-    } else
+    } else {
         loadQty = chargeRef->quantity();
+    }
 
     /* loaded charges are set in a "SubLocation" in client.
      * they then become a nullItem, with only type and qty references.
@@ -1000,8 +1003,9 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
                     result->SetItem(0, new PyInt(chargeRef->locationID()));
                     result->SetItem(1, new PyObject("util.KeyVal", entry2.Encode()));
                 pShipItem->GetPilot()->SendNotification("OnGodmaPrimeItem", "clientID", result);     // this is sequenced
-            } else
+            } else {
                 sLog.Error("MM::LoadCharge","cannot Populate() %s", chargeRef->name());
+            }
         }
 
     //chargeRef->SetQuantity(loadQty, true);                  // OIC
@@ -1056,8 +1060,9 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
                 //iRef->AlterQuantity(chargeRef->quantity() + iRef->quantity(), true);
                 //chargeRef->SetQuantity(0, true);         // OIC alternate
                 return;
-            } else
+            } else {
                 chargeRef->Move(pShipItem->locationID(), flagHangar, true);
+            }
         } else { // this will be an error.  cant find station ship is docked in
             _log(MODULE__ERROR, "MM::UnloadCharge() - Station %u not found for ship %u owned by %s",\
                     pShipItem->locationID(), pShipItem->itemID(), \

@@ -280,8 +280,9 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
+        } else {
             Inserts << ", ";
+        }
         Inserts << "(" << cur.itemID << ", " << cur.typeID << ", " << cur.ownerID << ", " << cur.locationID << ", ";
         Inserts << cur.flag << ", " << cur.contraband << ", " << (cur.singleton ? 1 : 0) << ", ";
         Inserts << cur.quantity << ", " << cur.position.x << ", " << cur.position.y << ", " << cur.position.z << ", '" << cur.customInfo << "')";
@@ -326,10 +327,11 @@ void ItemDB::SaveAttributes(bool isChar, std::vector<Inv::AttrData>& data)
         } else
             Inserts << ", ";
         Inserts << "(" << cur.itemID << ", " << cur.attrID << ", ";
-        if (cur.type)
+        if (cur.type) {
             Inserts << "NULL, " << cur.valueFloat << ")";
-        else
+        } else {
             Inserts << cur.valueInt << ", NULL)";
+        }
     }
 
     if (!first) {

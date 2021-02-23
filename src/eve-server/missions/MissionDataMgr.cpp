@@ -78,10 +78,11 @@ void MissionDataMgr::Process()
                     itr->second.stateID = Mission::State::Failed;
                     if (itr->second.courierTypeID) {
                         // remove item from player's possession
-                        if (pClient != nullptr)
+                        if (pClient != nullptr) {
                             pClient->RemoveMissionItem(itr->second.courierTypeID, itr->second.courierAmount);
-                        else
+                        } else {
                             MissionDB::RemoveMissionItem(itr->first, itr->second.courierTypeID, itr->second.courierAmount);
+                        }
                     }
                 } else if (itr->second.stateID == Mission::State::Offered) {
                     pAgent->SendMissionUpdate(pClient, "offer_expired");
@@ -96,8 +97,9 @@ void MissionDataMgr::Process()
                 itr = m_offers.erase(itr);
                 pAgent = nullptr;
                 pClient = nullptr;
-            } else
+            } else {
                 ++itr;
+            }
         }
     }
 }
@@ -148,10 +150,11 @@ void MissionDataMgr::Populate()
         data.bonusTime     = row.GetInt(14);
         data.range         = row.GetInt(15);
         data.raceID        = row.GetInt(16);
-        if (data.important)
+        if (data.important) {
             m_courierImp.emplace(row.GetInt(3), data);
-        else
+        } else {
             m_courier.emplace(row.GetInt(3), data);
+        }
     }
     sLog.Cyan("   MissionDataMgr", "%u(%u) Courier Mission Data Sets loaded in %.3fms.", m_courier.size(), m_courierImp.size(),(GetTimeMSeconds() - start));
 
@@ -178,10 +181,11 @@ void MissionDataMgr::Populate()
         data.bonusTime     = row.GetInt(14);
         data.range         = row.GetInt(15);
         data.raceID        = row.GetInt(16);
-        if (data.important)
+        if (data.important) {
             m_miningImp.emplace(row.GetInt(3), data);
-        else
+        } else {
             m_mining.emplace(row.GetInt(3), data);
+        }
     }
     sLog.Cyan("   MissionDataMgr", "%u(%u) Mining Mission Data Sets loaded in %.3fms.", m_mining.size(), m_miningImp.size(), (GetTimeMSeconds() - start));
 
@@ -231,10 +235,11 @@ void MissionDataMgr::Populate()
         data.constellationID = row.GetInt(8);
         data.corporationID = row.GetInt(9);
         data.dungeonID = row.GetInt(10);
-        if (data.important)
+        if (data.important) {
             m_missionsImp.emplace(row.GetInt(3), data);
-        else
+        } else {
             m_missions.emplace(row.GetInt(3), data);
+        }
     }
     sLog.Cyan("   MissionDataMgr", "%u(%u) Unsorted Mission Data Sets loaded in %.3fms.", m_missions.size(), m_missionsImp.size(), (GetTimeMSeconds() - start));
 

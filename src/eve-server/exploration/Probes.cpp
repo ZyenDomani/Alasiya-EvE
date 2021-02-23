@@ -63,12 +63,14 @@ void ProbeItem::Delete() {
     // this should be SolarSystem, but just in case, run tests anyway
     if (IsValidLocation(locationID())) {
         InventoryItemRef iRef = sItemFactory.GetItem(locationID());
-        if (iRef.get() != nullptr)
+        if (iRef.get() != nullptr) {
             iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
-        else
+        } else {
             _log(ITEM__ERROR, "ProbeItem::Delete() - Cant find location %u containing %s.", locationID(), name());
-    } else
+        }
+    } else {
         _log(ITEM__ERROR, "ProbeItem::Delete() - Location %u containing %s is invalid.", locationID(), name());
+    }
 
     // remove from DB
     ItemDB::DeleteItem(m_itemID);
@@ -143,8 +145,9 @@ m_scanShips(false)
     if (m_expiry < GetFileTimeNow()) {
         m_expiry = GetFileTimeNow() + (EvE::Time::Minute *30);  // 30m default lifespan
         m_lifeTimer.Start(30*60*1000);        // 30m to ms
-    } else
+    } else {
         m_lifeTimer.Start(self->GetAttribute(AttrExplosionDelay).get_uint32());
+    }
 
     // set base str, deviation and range
     m_rangeFactor = self->GetAttribute(AttrRangeFactor).get_uint32();

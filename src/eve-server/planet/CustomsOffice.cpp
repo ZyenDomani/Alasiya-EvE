@@ -442,10 +442,12 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
         if (pClient == nullptr) {
             sLog.Error("CustomsSE::Killed()", "killer == IsDrone and pPlayer == nullptr");
-        } else
+        } else {
             killerID = pClient->GetCharacterID();
-    } else
+        }
+    } else {
         killerID = killer->GetID();
+    }
 
     std::stringstream blob;
     blob << "<items>";

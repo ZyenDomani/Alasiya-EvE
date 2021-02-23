@@ -46,10 +46,11 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
   m_damageMod(1),
   m_alive(true)
 {
-    if (pSE->HasPilot())
+    if (pSE->HasPilot()) {
         m_ownerID = pSE->GetPilot()->GetChar()->itemID();
-    else
+    } else {
         m_ownerID = self->ownerID();
+    }
 
     m_warID = pSE->GetWarFactionID();
     m_allyID = pSE->GetAllianceID();

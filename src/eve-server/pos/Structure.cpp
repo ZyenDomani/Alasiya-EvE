@@ -158,8 +158,9 @@ void StructureItem::Rename( std::string name ) {
     if (mySE->GetPOSSE()->GetState() > EVEPOS::EntityState::Unanchored) {
         InventoryItem::Rename ( name );
         mySE->GetPOSSE()->SendSlimUpdate();
-    } else
+    } else {
         throw PyException(MakeUserError("SetNameObjectMustBeAnchoredInSpace"));
+    }
 // {'FullPath': u'UI/Messages', 'messageID': 258480, 'label': u'SetNameObjectMustBeAnchoredInSpaceBody'}(u'You can only rename this type of object if it is anchored in space (and you have a right to do so).', None, None)
 }
 
@@ -926,10 +927,11 @@ void StructureSE::GetEffectState(PyList& into) {
         return;
 
     OnSpecialFX13 effect;
-        if (m_module)
+        if (m_module) {
             effect.entityID = m_data.towerID;    /* control tower id */
-        else
+        } else {
             effect.entityID = m_data.itemID;     /* control tower id */
+        }
         effect.moduleID = m_data.itemID;         /* structure/module id as part of above tower system */
         effect.moduleTypeID = m_self->typeID();
         effect.duration = -1;
@@ -959,10 +961,12 @@ void StructureSE::Killed(Damage &fatal_blow) {
         pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
         if (pClient == nullptr) {
             sLog.Error("StructureSE::Killed()", "killer == IsDrone and pPlayer == nullptr");
-        } else
+        } else {
             killerID = pClient->GetCharacterID();
-    } else
+        }
+    } else {
         killerID = killer->GetID();
+    }
 
     std::stringstream blob;
     blob << "<items>";

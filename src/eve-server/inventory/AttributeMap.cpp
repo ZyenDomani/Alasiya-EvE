@@ -82,12 +82,14 @@ bool AttributeMap::Load(bool reset/*false*/) {
         EvilNumber value;
         while (res.GetRow(row)) {
             if (row.IsNull(1)) {
-                if (row.IsNull(2))
+                if (row.IsNull(2)) {
                     value = EvilZero;
-                else
+                } else {
                     value = row.GetDouble(2);
-            } else
+                }
+            } else {
                 value = row.GetInt64(1);
+            }
             SetAttribute(row.GetUInt(0), value, false);
         }
     }
@@ -362,8 +364,9 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
             itemKey->SetItem(1, new PyInt(mItem.flag()));
             itemKey->SetItem(2, new PyInt(mItem.typeID()));
         modChange.itemKey = itemKey;
-    } else
+    } else {
         modChange.itemKey = new PyInt(mItem.itemID());
+    }
 
         modChange.attributeID = attrID;
         modChange.time = GetFileTimeNow();
@@ -411,8 +414,9 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
             itemKey->SetItem(1, new PyInt(mItem.flag()));
             itemKey->SetItem(2, new PyInt(mItem.typeID()));
         modChange.itemKey = itemKey;
-    } else
+    } else {
         modChange.itemKey = new PyInt(mItem.itemID());
+    }
 
         modChange.attributeID = attrID;
         modChange.time = GetFileTimeNow();
@@ -441,10 +445,11 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
         return true;
 
     Client* pClient(nullptr);
-    if (IsCharacter(mItem.itemID()))
+    if (IsCharacter(mItem.itemID())) {
         pClient = sEntityList.FindClientByCharID(mItem.itemID());
-    else
+    } else {
         pClient = sEntityList.FindClientByCharID(mItem.ownerID());
+    }
 
     if (pClient == nullptr) {
         _log(PLAYER__WARNING, "AttributeMap::SendChanges() - ownerID for %u not found", mItem.itemID() );
@@ -585,8 +590,9 @@ void AttributeMap::DeleteAttribute(uint16 attrID) {
                 _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
             }
         }
-    } else
+    } else {
         _log(ATTRIBUTE__WARNING, "Attribute %u not found in %s(%u) when calling delete ", attrID, mItem.name(), mItem.itemID());
+    }
 }
 
 AttrMapItr AttributeMap::begin() {

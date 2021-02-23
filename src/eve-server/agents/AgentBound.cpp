@@ -609,10 +609,11 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
     objectiveData->SetItemString("contentID", new PyInt(offer.characterID));
     objectiveData->SetItemString("importantStandings", new PyInt(offer.important));     // boolean integer
     // will need to test for this to set correctly.....
-    if (pClient->IsMissionComplete(offer))      // Mission::Status:: data here 0=no, 1=yes, 2=cheat
+    if (pClient->IsMissionComplete(offer)) {     // Mission::Status:: data here 0=no, 1=yes, 2=cheat
         objectiveData->SetItemString("completionStatus", new PyInt(Mission::Status::Complete));
-    else
+    } else {
         objectiveData->SetItemString("completionStatus", new PyInt(Mission::Status::Incomplete));
+    }
     objectiveData->SetItemString("missionState", new PyInt(offer.stateID /*Mission::State::Offered*/));   // Mission::State:: data here for agentGift populating.  Accepted/failed to display gift items as accepted
     objectiveData->SetItemString("loyaltyPoints", new PyInt(0));
     objectiveData->SetItemString("researchPoints", new PyInt(0));
@@ -685,10 +686,11 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
             //extra->SetItemString("specificItemID", new PyNone());
             //extra->SetItemString("blueprintInfo", new PyNone());
         PyTuple* bonusRewards = new PyTuple(4);
-        if (offer.dateAccepted > 0)
+        if (offer.dateAccepted > 0) {
             bonusRewards->SetItem(0, new PyLong(offer.bonusTime - (offer.dateAccepted - offer.dateIssued) * EvE::Time::Minute));  // bonus time - elapsed time * minutes
-        else
+        } else {
             bonusRewards->SetItem(0, new PyLong(offer.bonusTime * EvE::Time::Minute));  // bonus time * minutes
+        }
             bonusRewards->SetItem(1, new PyInt(itemTypeCredits));   // bonus is *usually* isk.  for now, we'll keep it as isk (easier)
             bonusRewards->SetItem(2, new PyInt(offer.rewardISK *2));
             bonusRewards->SetItem(3, extra);

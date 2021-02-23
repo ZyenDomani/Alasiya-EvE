@@ -223,8 +223,9 @@ PyResult PosMgr::Handle_GetJumpArrays(PyCallArgs &call) {
                 tuple->SetItem(2, new PyInt(row.GetInt(3)));
             dict->SetItem(new PyInt(row.GetInt(0)), tuple);
             rsp->SetItem(1, dict);
-        } else
+        } else {
             rsp->SetItem(1, PyStatic.NewNone());
+        }
 
         list->AddItem(rsp);
     }

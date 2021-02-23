@@ -227,8 +227,8 @@ bool PlanetDB::LoadColony(uint32 charID, uint32 planetID, PI_CCPin* ccPin)
         ccPin->level = row.GetInt(1);
         ccPin->ccPinID = row.GetInt(0);
         return true;
-    } else
-        return false;
+    }
+    return false;
 }
 
 void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
@@ -455,8 +455,9 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
+        } else {
             Inserts << ", ";
+        }
         Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.typeID << ", " << cur.second.ownerID << ", " << cur.second.level << ", " << cur.second.latitude << ", " << cur.second.longitude << ", ";
         Inserts << cur.second.isCommandCenter << ", " << cur.second.isLaunchable << ", " << cur.second.isProcess << ", " << cur.second.isStorage <<", " << cur.second.isECU << ", ";
         Inserts << cur.second.schematicID << ", " << cur.second.programType << ", " << cur.second.headRadius << ", " << cur.second.lastLaunchTime;
@@ -505,8 +506,9 @@ void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin)
             if (first) {
                 Inserts << " VALUES ";
                 first = false;
-            } else
+            } else {
                 Inserts << ", ";
+            }
             Inserts << "(" << ccPin->ccPinID << ", " << cur.first << ", "<< cur.second.schematicID << ", " << cur.second.programType;
             Inserts << ", " << cur.second.lastLaunchTime << ", " << cur.second.cycleTime << ", " << cur.second.installTime;
             Inserts << ", " << cur.second.lastRunTime << ", " << cur.second.receivedInputsLastCycle << ", " << cur.second.hasReceivedInputs << ")";
@@ -570,8 +572,9 @@ void PlanetDB::UpdatePinTimes(PI_CCPin* ccPin)
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
+        } else {
             Inserts << ", ";
+        }
         Inserts << "(" << cur.first << ", " << cur.second.lastLaunchTime << ", ";
         Inserts << cur.second.installTime << ", " << cur.second.lastRunTime << ")";
     }
@@ -633,8 +636,9 @@ void PlanetDB::SaveLinks(PI_CCPin* ccPin)
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
-            Inserts << ",";
+        } else {
+            Inserts << ", ";
+        }
         Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.level << ", " << cur.second.endpoint1 << ", " << cur.second.endpoint2 << ")";
     }
 
@@ -698,8 +702,9 @@ void PlanetDB::SaveRoutes(PI_CCPin* ccPin)
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
-            Inserts << ",";
+        } else {
+            Inserts << ", ";
+        }
         itr = cur.second.path.begin();
         while (itr != cur.second.path.end()) {
             path += std::to_string(*itr);
@@ -741,8 +746,9 @@ void PlanetDB::SaveContents(PI_CCPin* ccPin)
                 if (first) {
                     Inserts << " VALUES ";
                     first = false;
-                } else
-                    Inserts << ",";
+                } else {
+                    Inserts << ", ";
+                }
                 Inserts << "(" << ccPinID << ", " << cur.first << ", " << itr->first << ", " << itr->second << ")";
             }
         }
@@ -771,8 +777,9 @@ void PlanetDB::SavePinContents(uint32 ccPinID, uint32 pinID, std::map< uint16, u
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
-            Inserts << ",";
+        } else {
+            Inserts << ", ";
+        }
         Inserts << "(" << ccPinID << ", " << pinID << ", " << itr->first << ", " << itr->second << ")";
     }
     if (!first) {

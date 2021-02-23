@@ -49,10 +49,11 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
         PyList* list(args.invitees->AsList());
         PyList::const_iterator itr = list->begin(), end = list->end();
         while (itr != end) {
-            if (comma)
+            if (comma) {
                 str << ",";
-            else
+            } else {
                 comma = true;
+            }
             str << *itr;
             ++itr;
         }

@@ -78,8 +78,9 @@ void Scan::ProcessScan(bool useProbe/*false*/)
             //  currrently, it will allow probes to hit 'idle' as scanning starts, or a few ms after.
             if (ntime > duration)       // flipped conditional
                 duration = ntime;
-        } else
+        } else {
             cur.second->SendStateChange(Probe::State::Idle);
+        }
     }
     if (idle) {
         m_probeScan = true;
@@ -250,8 +251,9 @@ void Scan::ShipScanResult() {
         m_system->GetAllEntities(anom);
         // bubble centers only populate when bubble markers are enabled.
         sBubbleMgr.GetBubbleCenterMarkers(m_system->GetID(), anom);
-    } else
+    } else {
         m_system->GetAnomMgr()->GetAnomalyList(anom);
+    }
 
     PyList* resultList = new PyList();
     // NOTE. cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther
@@ -462,8 +464,9 @@ struct CosmicSignature {
                     _log(SCAN__DEBUG, "Scan::GetProbeDataForSig()  scan range for probe %u: %.2fAU, distance to signal '%s' -> %.2fAU - %s",\
                             cur.first, cur.second->GetScanRange() /ONE_AU_IN_METERS, data.sig.sigName.c_str(), \
                             dist /ONE_AU_IN_METERS, hit?"hit":"miss");
-                } else
+                } else {
                     _log(SCAN__TRACE, "Scan::GetProbeDataForSig()  probe %u cannot scan signal %s", cur.first, data.sig.sigName.c_str());
+                }
             } break;
             case Scanning::Group::Signature: {
                 switch (data.sig.dungeonType) {
@@ -655,8 +658,9 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
         // set ring
         probeVec.at(0)->SetRing(true);
         probeVec.at(1)->SetRing(true);
-    } else if (data.certainty > 0.99)
+    } else if (data.certainty > 0.99) {
         sStatMgr.Increment(Stat::sitesScanned);
+    }
 
     // adjust deviation based on signal strength
     /*

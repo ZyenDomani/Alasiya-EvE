@@ -224,8 +224,9 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         if( m_db.DoesCorporationExist( sConfig.character.startCorporation ) ) {
             corpData.corporationID = sConfig.character.startCorporation;
             defCorp = false;
-        } else
+        } else {
             _log(CLIENT__MESSAGE, "Could not find default Corporation ID %u. Using Career Defaults instead.", sConfig.character.startCorporation);
+        }
     }
     if (defCorp) {
         if (!m_db.GetCorporationBySchool(cdata.schoolID, corpData.corporationID))

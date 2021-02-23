@@ -162,10 +162,11 @@ void StaticDataMgr::Populate()
     ManagerDB::LoadFactionRaces(rsp.factionRaces);
     rsp.npcCorpInfo = ManagerDB::LoadNPCCorpInfo();
     m_factionInfo = rsp.Encode();
-    if (m_factionInfo == nullptr)
+    if (m_factionInfo == nullptr) {
         sLog.Error("    StaticDataMgr", "m_factionInfo is null");
-    else
+    } else {
         sLog.Cyan("    StaticDataMgr", "Faction data sets loaded in %.3fms.", (GetTimeMSeconds() - startTime));
+    }
 
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
@@ -320,10 +321,11 @@ void StaticDataMgr::Populate()
         //SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes
         DmgTypeAttribute typeAttr = DmgTypeAttribute();
         typeAttr.attributeID = row.GetInt(1);
-        if (row.IsNull(2))
+        if (row.IsNull(2)) {
             typeAttr.value = row.GetDouble(3);
-        else
+        } else {
             typeAttr.value = row.GetInt(2); // highest value seen is 2,000,000,000 (struct HP)
+        }
 
         m_typeAttrMap.emplace(row.GetInt(0), typeAttr);
     }
@@ -785,10 +787,11 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
 void StaticDataMgr::GetBpTypeData(uint16 typeID, EvERam::bpTypeData& tData)
 {
     std::map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
-    if (itr != m_bpTypeData.end())
+    if (itr != m_bpTypeData.end()) {
         tData = itr->second;
-    else
+    } else {
         _log(DATA__MESSAGE, "Failed to query info for bpType %u: Type not found.", typeID);
+    }
 }
 
 bool StaticDataMgr::IsRecyclable(uint16 typeID)

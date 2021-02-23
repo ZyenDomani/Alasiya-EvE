@@ -52,10 +52,11 @@ PyRep* BookmarkDB::GetBookmarksInFolder(uint32 folderID)
     while (res.GetRow(row)) {
         PyDict* dict = new PyDict();
         dict->SetItemString("bookmarkID", new PyInt(row.GetInt(0)));
-        if (row.IsNull(1) or (row.GetInt(1) == 0))
+        if (row.IsNull(1) or (row.GetInt(1) == 0)) {
             dict->SetItemString("folderID", PyStatic.NewNone());
-        else
+        } else {
             dict->SetItemString("folderID", new PyInt(row.GetInt(1)));
+        }
         list->AddItem(new PyObject("util.KeyVal", dict));
     }
 
@@ -113,15 +114,17 @@ PyRep *BookmarkDB::GetBookmarks(uint32 ownerID) {
         dict->SetItemString("y", new PyFloat(row.GetFloat(7)));
         dict->SetItemString("z", new PyFloat(row.GetFloat(8)));
         dict->SetItemString("locationID", new PyInt(row.GetInt(9)));
-        if (row.IsNull(10))
+        if (row.IsNull(10)) {
             dict->SetItemString("note", PyStatic.NewNone());
-        else
+        } else {
             dict->SetItemString("note", new PyInt(row.GetInt(10)));
+        }
         dict->SetItemString("creatorID", new PyInt(row.GetInt(11)));
-        if (row.IsNull(12) or (row.GetInt(12) == 0))
+        if (row.IsNull(12) or (row.GetInt(12) == 0)) {
             dict->SetItemString("folderID", PyStatic.NewNone());
-        else
+        } else {
             dict->SetItemString("folderID", new PyInt(row.GetInt(12)));
+        }
         list->AddItem(new PyObject("util.KeyVal", dict));
     }
 
@@ -186,10 +189,11 @@ PyTuple* BookmarkDB::GetBookmarkDescription(uint32 bookmarkID)
     DBResultRow row;
     if (res.GetRow(row)) {
         tuple->SetItem(0, new PyString(row.GetText(0)));
-        if (row.IsNull(1))
+        if (row.IsNull(1)) {
             tuple->SetItem(1, PyStatic.NewNone());
-        else
+        } else {
             tuple->SetItem(1, new PyString(row.GetText(1)));
+        }
     } else {
         tuple->SetItem(0, PyStatic.NewNone());
         tuple->SetItem(1, PyStatic.NewNone());
@@ -400,14 +404,16 @@ void BookmarkDB::GetVoucherData( BmData& data ) {
         data.point.y = row.GetFloat(6);
         data.point.z = row.GetFloat(7);
         data.locationID = row.GetUInt(8);
-        if (row.IsNull(9))
+        if (row.IsNull(9)) {
             data.note = "";
-        else
+        } else {
             data.note = row.GetText(9);
+        }
         data.creatorID = row.GetUInt(10);
-        if (row.IsNull(11))
+        if (row.IsNull(11)){
             data.folderID = 0;
-        else
+        } else {
             data.folderID = row.GetUInt(11);
+        }
     }
 }

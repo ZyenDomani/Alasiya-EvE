@@ -495,8 +495,9 @@ bool ManagerDB::GetAsteroidData(uint32 asteroidID, AsteroidData& dbData)
         GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
         dbData.position = pos;
         return true;
-    } else
+    } else {
         dbData = AsteroidData();
+    }
 
     return false;
 }
@@ -570,8 +571,9 @@ void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& ro
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
+        } else {
             Inserts << ", ";
+        }
         // itemID and attributeID keys.
         Inserts << "(" << cur.itemID << ", '" << cur.itemName << "', " << cur.typeID << ", " << systemID << ", " << cur.beltID << ", ";
         Inserts << cur.quantity << ", " << cur.radius << ", " << cur.position.x << ", " << cur.position.y << ", " << cur.position.z << ")";

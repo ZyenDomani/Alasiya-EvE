@@ -140,8 +140,9 @@ void MapDB::LoadDynamicData(uint32 sysID, SystemKillData& data)
         data.faction24DateTime = row.GetInt64(9);
         data.podDateTime = row.GetInt64(10);
         data.pod24DateTime = row.GetInt64(11);
-    } else
+    } else {
         data = SystemKillData();
+    }
 }
 
 //  called from MapService by multiple functions based on passed values.

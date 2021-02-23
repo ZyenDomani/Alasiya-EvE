@@ -351,10 +351,11 @@ PyResult BookmarkService::Handle_AddBookmarkFromVoucher(PyCallArgs &call) {
     dict->SetItemString("locationID", new PyInt(data.locationID));
     dict->SetItemString("note", new PyString(data.note));
     dict->SetItemString("creatorID", new PyInt(data.creatorID));
-    if (data.folderID > 0)
+    if (data.folderID > 0) {
         dict->SetItemString("folderID", new PyInt(data.folderID));
-    else
+    } else {
         dict->SetItemString("folderID", PyStatic.NewNone());
+    }
 
     return new PyObject("util.KeyVal", dict);
 }
@@ -415,10 +416,11 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
         dict->SetItemString("locationID", new PyInt(data.locationID));
         dict->SetItemString("note", new PyString(data.note));
         dict->SetItemString("creatorID", new PyInt(data.creatorID));
-        if (data.folderID > 0)
+        if (data.folderID > 0) {
             dict->SetItemString("folderID", new PyInt(data.folderID));
-        else
+        } else {
             dict->SetItemString("folderID", PyStatic.NewNone());
+        }
 
         list->AddItem(new PyObject("util.KeyVal", dict));
     }

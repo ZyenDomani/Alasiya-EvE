@@ -284,10 +284,11 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
     response->SetItem(0, toBeChanged);
 
     //  if bulksEndingInChunk is empty, a PyNone is returned, stating this is only partial file data
-    if (bulksEndingInChunk->size() > 0)
+    if (bulksEndingInChunk->size() > 0) {
         response->SetItem(1, bulksEndingInChunk);
-    else
+    } else {
         response->SetItem(1, PyStatic.NewNone());
+    }
 
     response->SetItem(4, PyStatic.NewFalse());     //allowUnsubmitted isnt supported (yet)
 

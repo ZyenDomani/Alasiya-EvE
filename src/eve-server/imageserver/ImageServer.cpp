@@ -67,10 +67,11 @@ void ImageServer::ReportNewImage(uint32 accountID, std::shared_ptr<std::vector<c
     sLog.Warning("      ImageServer"," ReportNewImage() called.");
     Lock lock(_limboLock);
 
-    if (_limboImages.find(accountID) != _limboImages.end())
+    if (_limboImages.find(accountID) != _limboImages.end()) {
         _limboImages.insert(std::pair<uint32,std::shared_ptr<std::vector<char> > >(accountID, imageData));
-    else
+    } else {
         _limboImages[accountID] = imageData;
+    }
 }
 
 void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID)

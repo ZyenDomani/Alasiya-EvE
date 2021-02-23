@@ -56,14 +56,16 @@ m_webifierTimer(5000)         //arbitrary.
         m_sightRange = m_maxAttackRange *2;
 
     // advanced AI variables  only used by sleepers for now.  will update advanced npcs to use these also
-    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseTargetSwitching))
+    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseTargetSwitching)) {
         m_useTargSwitching = true;
-    else
+    } else {
         m_useTargSwitching = false;
-    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseSecondaryTarget))
+    }
+    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseSecondaryTarget)) {
         m_useSecondTarget = true;
-    else
-        m_useSecondTarget = false;
+    } else {
+            m_useSecondTarget = false;
+    }
     if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseSignatureRadius)) {
         m_useSigRadius = true;
         m_preferedSigRadius = who->GetSelf()->GetAttribute(AttrAI_PreferredSignatureRadius).get_int();
@@ -71,10 +73,11 @@ m_webifierTimer(5000)         //arbitrary.
         m_useSigRadius = false;
         m_preferedSigRadius = 0;
     }
-    if (who->GetSelf()->HasAttribute(AttrAI_ChanceToNotTargetSwitch))
+    if (who->GetSelf()->HasAttribute(AttrAI_ChanceToNotTargetSwitch)) {
         m_switchTargChance = 1.0 - who->GetSelf()->GetAttribute(AttrAI_ChanceToNotTargetSwitch).get_float();
-    else
+    } else {
         m_switchTargChance = 0.0f;
+    }
 }
 
 void SentryAI::Process() {

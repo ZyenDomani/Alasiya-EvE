@@ -689,10 +689,11 @@ void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/
         // remove from current location
         if (IsValidLocation(m_data.locationID)) {
             iRef = sItemFactory.GetItem(m_data.locationID);
-            if (iRef.get() != nullptr)
+            if (iRef.get() != nullptr) {
                 iRef->RemoveItem(InventoryItemRef(this));
-            else
+            } else {
                 _log(ITEM__ERROR, "II::Donate() - Cant find location %u containing %s.", m_data.locationID, m_data.name.c_str());
+            }
         }
     }
 
@@ -706,10 +707,11 @@ void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/
         and (old_flag != m_data.flag))) {   //  but different flag
         // add to new location
         iRef = sItemFactory.GetItem(m_data.locationID);
-        if (iRef.get() != nullptr)
+        if (iRef.get() != nullptr) {
             iRef->AddItem(InventoryItemRef(this));
-        else
+        } else {
             _log(ITEM__ERROR, "II::Donate() - Cant find location %u containing %s.", m_data.locationID, m_data.name.c_str());
+        }
     }
 
     SaveItem();
@@ -751,10 +753,11 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
         // remove from current location
         if (IsValidLocation(m_data.locationID)) {
             iRef = sItemFactory.GetItem(m_data.locationID);
-            if (iRef.get() != nullptr)
+            if (iRef.get() != nullptr) {
                 iRef->RemoveItem(InventoryItemRef(this));
-            else
+            } else {
                 _log(ITEM__ERROR, "II::Move() - Cant find location %u containing %s.", m_data.locationID, m_data.name.c_str());
+            }
         }
     }
 
@@ -768,10 +771,11 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
         // add to new location
         if (IsValidLocation(m_data.locationID)) {
             iRef = sItemFactory.GetItem(m_data.locationID);
-            if (iRef.get() != nullptr)
+            if (iRef.get() != nullptr) {
                 iRef->AddItem(InventoryItemRef(this));
-            else
+            } else {
                 _log(ITEM__ERROR, "II::Move() - Cant find location %u to add %s.", m_data.locationID, m_data.name.c_str());
+            }
         }
     }
 
@@ -832,11 +836,12 @@ void InventoryItem::Relocate(uint32 locID, EVEItemFlags flag) {
         // add to new location
         if (IsValidLocation(m_data.locationID)) {
             iRef = sItemFactory.GetItem(m_data.locationID);
-            if (iRef.get() != nullptr)
+            if (iRef.get() != nullptr) {
                 iRef->AddItem(InventoryItemRef(this));
-            else
+            } else {
                 _log(ITEM__ERROR, "II::Relocate(): new location %u not found for %s.",
                         m_data.locationID, m_data.name.c_str());
+            }
         }
     }
 
@@ -1080,10 +1085,11 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         //else
             pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this is for single items
     } else if (IsPlayerCorp(toID)) {
-        if (IsStation(m_data.locationID))
+        if (IsStation(m_data.locationID)) {
             sEntityList.CorpNotify(toID, Notify::Types::ItemUpdateStation, "OnItemChange","*stationid&corpid", tmp);
-        else
+        } else {
             sEntityList.CorpNotify(toID, Notify::Types::ItemUpdateSystem, "OnItemChange","corpid", tmp);
+        }
     }
 }
 
@@ -1284,10 +1290,11 @@ PyObject* InventoryItem::ItemGetInfo()
 }
 
 void InventoryItem::SetCustomInfo(const char *ci) {
-    if (ci != nullptr)
+    if (ci != nullptr) {
         m_data.customInfo = ci;
-    else
+    } else {
         m_data.customInfo = "";
+    }
 
     if (sConfig.world.saveOnUpdate)
         SaveItem();

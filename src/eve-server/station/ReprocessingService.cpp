@@ -271,10 +271,11 @@ float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient
 
     if (item.get() != nullptr) {
         uint32 specificSkill = item->GetAttribute(AttrReprocessingSkillType).get_int();
-        if (specificSkill)
+        if (specificSkill) {
             efficiency *= (1 + 0.05f * cRef->GetSkillLevel(specificSkill));
-        else
+        } else {
             efficiency *= (1 + 0.04f * cRef->GetSkillLevel(EvESkill::ScrapmetalProcessing));    // use Scrapmetal Processing as default
+        }
     }
 
     efficiency += m_staEfficiency;
@@ -350,10 +351,11 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
 float ReprocessingServiceBound::GetStanding(const Client* pClient) const
 {
     float standing = StandingDB::GetStanding(m_stationCorpID, pClient->GetCharacterID());
-    if (standing < 0.0f)
+    if (standing < 0.0f) {
         standing += ((10.0f +standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Diplomacy));
-    else
+    } else {
         standing += ((10.0f -standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Connections));
+    }
 
     return EvE::max(standing, StandingDB::GetStanding(m_stationCorpID, pClient->GetCorporationID()));
 }

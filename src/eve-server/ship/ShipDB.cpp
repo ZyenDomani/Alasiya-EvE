@@ -112,8 +112,9 @@ void ShipDB::SaveWeaponGroups(uint32 shipID, std::multimap< uint32, uint32 >& da
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
+        } else {
             Inserts << ", ";
+        }
         Inserts << "(" << shipID << ", " << cur.first << ", " << cur.second << ")";
     }
 

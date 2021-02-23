@@ -351,10 +351,11 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
     //if we have a cache dir, write out the cache entry:
     if(!m_cacheDir.empty())
     {
-        if(!m_cache.SaveCachedToFile(m_cacheDir, objectID))
+        if(!m_cache.SaveCachedToFile(m_cacheDir, objectID)) {
             sLog.Error( "ObjCacheService", "Failed to save cache file for '%s' in '%s'", objectID_string.c_str(), m_cacheDir.c_str() );
-        else
+        } else {
             sLog.White( "ObjCacheService", "Saved cached object '%s' to file in '%s'.", objectID_string.c_str(), m_cacheDir.c_str() );
+        }
     }
 
     return true;

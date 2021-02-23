@@ -117,14 +117,16 @@ PyRep* StationDB::GetStationOfficeIDs(uint32 locationID, uint32 corpID, const ch
     } else if (IsOffice(locationID)) {
         sDatabase.RunQuery(res, "SELECT itemID AS officeID, stationID, officeFolderID"
         " FROM staOffices WHERE itemID = %u", locationID);
-    } else
+    } else {
         _log(CORP__DB_ERROR, "StationDB::GetStationOfficeIDs got invalid locationID %u", locationID);
+    }
 
     DBResultRow row;
     if (res.GetRow(row))
         return DBRowToRow(row);
-    else
-        return nullptr;
+
+    return nullptr;
+
     //return DBResultToCIndexedRowset(res, key);
     //return DBResultToIndexRowset(res, key);
     //return DBResultToCRowset(res);

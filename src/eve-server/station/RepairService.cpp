@@ -203,17 +203,19 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
                     toRepair = cArmor - toRepair;
                     cur->SetAttribute(AttrArmorDamage, toRepair);
                 }
-            } else
+            } else {
                 cur->SetAttribute(AttrDamage, toRepair);
+            }
         } else {
             if (fraction == 1) {
                 cur->SetAttribute(AttrDamage, EvilZero);
                 continue;
             }
-            if ((cur->GetAttribute(AttrDamage).get_float() / cur->GetAttribute(AttrHP).get_float()) > fraction)
+            if ((cur->GetAttribute(AttrDamage).get_float() / cur->GetAttribute(AttrHP).get_float()) > fraction) {
                 toRepair = cur->GetAttribute(AttrHP) * fraction;
-            else
+            } else {
                 toRepair = EvilZero;
+            }
             if (toRepair < EvilZero)
                 toRepair = EvilZero;
             cur->SetAttribute(AttrDamage, toRepair);
@@ -243,10 +245,11 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
     Inventory* pInv = sRef->GetMyInventory();
     float standing = 0.0f;
     // standing system isnt complete, but this is the correct data methods for station standing checks
-    if (IsNPCCorp(sRef->ownerID()))
+    if (IsNPCCorp(sRef->ownerID())) {
         standing = pClient->GetChar()->GetNPCCorpStanding(sRef->ownerID(), pClient->GetCharacterID());
-    else
+    } else {
         standing = pClient->GetChar()->GetStandingModified(sRef->ownerID(), pClient->GetCharacterID());
+    }
 
     for (auto cur : args.ints) {
         RepairListRsp rlr;
@@ -271,10 +274,11 @@ void RepairService::GetDamageReports(uint32 itemID, Inventory* pInv, PyList* lis
     }
     itemRefVec.push_back(iRef);
     if (iRef->IsShipItem()) {
-        if (iRef->GetShipItem()->IsActive())
+        if (iRef->GetShipItem()->IsActive()) {
             iRef->GetShipItem()->GetModuleRefVec(itemRefVec);
-        else
+        } else {
             iRef->GetShipItem()->GetModuleItemVec(itemRefVec);
+        }
     }
 
     for (auto cur : itemRefVec) {

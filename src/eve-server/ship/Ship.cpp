@@ -93,10 +93,11 @@ void ShipItem::LogOut()
 
     // remove ship item from its' container's inventory list also.
     Inventory* pInv(nullptr);
-    if (IsStation(locationID()))
+    if (IsStation(locationID())) {
         pInv = sItemFactory.GetStationItem(locationID())->GetMyInventory();
-    else
+    } else {
         pInv = sItemFactory.GetSolarSystem(locationID())->GetMyInventory();
+    }
 
     if (pInv != nullptr)
         pInv->RemoveItem(ShipItemRef(this));
@@ -672,10 +673,11 @@ void ShipItem::LoadChargesToBank(EVEItemFlags flag, std::vector< int32 >& charge
             ++pos;
             continue;
         }
-        if (IsCargoHoldFlag(cRef->flag()) or IsHangarFlag(cRef->flag()))
+        if (IsCargoHoldFlag(cRef->flag()) or IsHangarFlag(cRef->flag())) {
             LoadCharge(cRef, cur->flag());
-        else
+        } else {
             ++pos;
+        }
     }
 }
 
@@ -976,9 +978,9 @@ void ShipItem::RepairShip(float fraction)
             amount = cArmor - amount;
              SetAttribute(AttrArmorDamage, amount);
         }
-    } else
+    } else {
          SetAttribute(AttrDamage, amount);
-
+    }
 }
 
 // not used
@@ -991,10 +993,11 @@ void ShipItem::RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fr
         if (damage < 0.01)
             continue;
         amount = cur->GetAttribute(AttrDamage);
-        if ((amount / cur->GetAttribute(AttrHP)) > fraction)
+        if ((amount / cur->GetAttribute(AttrHP)) > fraction) {
             amount = cur->GetAttribute(AttrHP) *  fraction;
-        else
+        } else {
             amount = 1;
+        }
         m_ModuleManager->RepairModule(cur->itemID(), amount);
     }
 }
@@ -1041,10 +1044,11 @@ void ShipItem::Offline(uint32 modID)
 
 void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat)
 {
-    if (IsValidTarget(targetID))
+    if (IsValidTarget(targetID)) {
         m_targetRef = sItemFactory.GetItem(targetID);
-    else
+    } else {
         m_targetRef = InventoryItemRef(nullptr);
+    }
 
     m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat);
 }
@@ -1440,8 +1444,9 @@ void ShipItem::LinkAllWeapons()
                 _log(MODULE__INFO, "ShipItem::LinkAllWeapons() - %s(%s) has empty link list.  Removing.", \
                     itr->first->GetSelf()->name(), sDataMgr.GetFlagName(itr->first->flag()));
             itr = m_linkedWeapons.erase(itr);
-        } else
+        } else {
             ++itr;
+        }
     }
 
     SaveWeaponGroups();
@@ -2182,11 +2187,13 @@ PyDict* ShipItem::GetShipInfo()
                     tuple->SetItem(1, new PyInt(cur->flag()));
                     tuple->SetItem(2, new PyInt(cur->typeID()));
                 result->SetItem(tuple, new PyObject("util.KeyVal", entry2.Encode()));
-        } else
-            result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry2.Encode()));
-        } else
+            } else {
+                result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry2.Encode()));
+            }
+        } else {
             _log( SHIP__ERROR, "%s(%u): Failed to Populate() %s(%u) for ShipGetInfo", \
                         name(), itemID(), cur->name(), cur->itemID());
+        }
     }
 
     if (is_log_enabled(SHIP__INFO)) {
@@ -2593,10 +2600,11 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         head.posX = x();
         head.posY = y();
         head.posZ = z();
-        if (m_self->HasPilot())
+        if (m_self->HasPilot()) {
             head.flags = Ball::Flag::IsInteractive | Ball::Flag::IsFree;
-        else
+        } else {
             head.flags = Ball::Flag::IsFree;
+        }
     into.Append( head);
     MassSector mass = MassSector();
         mass.mass = m_destiny->GetMass();

@@ -194,9 +194,10 @@ void Skill::VerifySP()
         if (level > 4) {
             _log(SKILL__WARNING, " %s - Skillpoints high for L5. Updating SP from %u to %u.", \
                 name(), spCurrent, spNextLevel);
-        } else
+        } else {
             _log(SKILL__WARNING, " %s - Skillpoints high. Updating level from %u to %u and SP from %u to %u.", \
                 name(), level -1, level, spCurrent, spNextLevel);
+        }
         SetAttribute(AttrSkillPoints, spNextLevel, false);
         // hit it again to be sure it's fixed
         VerifySP();

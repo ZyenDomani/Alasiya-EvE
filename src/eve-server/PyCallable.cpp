@@ -110,10 +110,11 @@ PyResult::~PyResult() { PySafeDecRef( ssResult ); PySafeDecRef( ssNamedResult );
 PyResult& PyResult::operator=( const PyResult& oth )
 {
     PySafeDecRef( ssResult );
-    if (oth.ssResult != nullptr )
+    if (oth.ssResult != nullptr ) {
         ssResult = oth.ssResult;
-    else
+    } else {
         ssResult = PyStatic.NewNone();
+    }
     PySafeIncRef( ssResult );
 
     PySafeDecRef( ssNamedResult );

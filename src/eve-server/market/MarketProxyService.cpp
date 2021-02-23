@@ -535,12 +535,13 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         _log(MARKET__DEBUG, "PlaceCharOrder(sell) - %s: Total: %.2f, Fee: %.2f", args.useCorp?"Corp":"Player", total, fee);
 
         // take monies and record actions (taxes are paid when item sells)
-        if (args.useCorp)
+        if (args.useCorp) {
             AccountService::TranserFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), fee, \
                     reason.c_str(), Journal::EntryType::Brokerfee, orderID, accountKey, Account::KeyType::Cash, call.client);
-        else
+        } else {
             AccountService::TranserFunds(call.client->GetCharacterID(), stDataMgr.GetOwnerID(args.stationID), fee, \
                     reason.c_str(), Journal::EntryType::Brokerfee, orderID, accountKey);
+        }
     }
 
     //returns nothing.

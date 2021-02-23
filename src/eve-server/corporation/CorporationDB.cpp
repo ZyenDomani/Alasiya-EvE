@@ -284,10 +284,11 @@ void CorporationDB::SaveMedalData(int64 medalID, std::vector< Corp::MedalData >&
 
     bool first = true;
     for (auto cur : dataList) {
-        if (first)
+        if (first) {
             first = false;
-        else
+        } else {
             query << ",";
+        }
         query << "(" << std::to_string(medalID) << "," << std::to_string(cur.part) << ",'" << cur.graphic << "'," << std::to_string(cur.color) << ")";
     }
 
@@ -409,10 +410,11 @@ void CorporationDB::GiveMedalToCharacters(uint32 issuerID, uint32 corpID, int32 
 
     bool first = true;
     for (auto cur : charVec) {
-        if (first)
+        if (first) {
             first = false;
-        else
+        } else {
             query << ",";
+        }
         query << "(" << std::to_string(cur) << "," << std::to_string(medalID) << "," << std::to_string(corpID) << "," << std::to_string(issuerID) << ",";
         query << std::to_string(GetFileTimeNow()) << ",'" << reason.c_str() << "')";
     }
@@ -1224,10 +1226,11 @@ void CorporationDB::AddRecruiters(uint16 adID, int32 corpID, std::vector< int32 
     for (auto cur : charVec) {
         if (!IsCharacter(cur))
             continue;
-        if (first)
+        if (first) {
             first = false;
-        else
+        } else {
             str << ",";
+        }
         str << "(" << adID << "," << corpID << "," << cur << ")";
     }
 
@@ -2039,10 +2042,11 @@ void CorporationDB::AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCas
 
     bool set = false;
     for (auto cur : data) {
-        if (!set)
+        if (!set) {
             set = true;
-        else
+        } else {
             str << ",";
+        }
         str << "(" << std::to_string((int64)voteCaseID) << "," << std::to_string(cur.optionID) << ",\"" << cur.optionText << "\"," << std::to_string(cur.parameter) << ",";
         str << std::to_string(cur.parameter1) << "," << std::to_string(cur.parameter2) << ")";
     }
@@ -2156,10 +2160,11 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
             corpUpdate.oldShares = row.GetInt(0);
             corpUpdate.newShares = row.GetInt(0) - args.numberOfShares;
         MulticastTarget mct;
-        if (isCorp)
+        if (isCorp) {
             mct.corporations.insert(corpID);
-        else
+        } else {
             mct.characters.insert(ownerID);
+        }
         PyTuple* tuple = corpUpdate.Encode();
         sEntityList.Multicast("OnShareChange", "*corpid&corprole", &tuple, mct);
     }
@@ -2176,10 +2181,11 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     Client* pClient(nullptr);
     if (IsCharacter(args.toShareholderID)) {
         pClient = sEntityList.FindClientByCharID(args.toShareholderID);
-        if (pClient == nullptr)
+        if (pClient == nullptr) {
             oldCorpID = CharacterDB::GetCorpID(args.toShareholderID);
-        else
+        } else {
             oldCorpID = pClient->GetCorporationID();
+        }
     }
     OnCharShareChange charUpdate;
     charUpdate.ownerID = args.toShareholderID;

@@ -427,10 +427,11 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         } break;
         default: {
             locationID = args.lineLocationID;
-            if (IsStation(args.lineContainerID))
+            if (IsStation(args.lineContainerID)) {
                 locationID = args.lineContainerID;
-            else
+            } else {
                 sLog.Warning("InstallJob", "Location is not Station.  Needs work.");
+            }
         } break;
     }
 
@@ -461,18 +462,20 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
     if (sConfig.ram.AutoEvent) {
         std::string title;
-        if (args.isCorpJob)
+        if (args.isCorpJob) {
             title += "Corporate ";
-        else
+        } else {
             title += "Personal ";
+        }
         title += sRamMthd.GetActivityName(args.activityID);
         title += " Job";
 
         std::string description;
-        if (args.isCorpJob)
+        if (args.isCorpJob) {
             description += "The ";
-        else
+        } else {
             description += "Your ";
+        }
         description += sRamMthd.GetActivityName(args.activityID);
         description += " job in ";
         /** @todo update this for pos names when that system is working */
@@ -560,10 +563,11 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         FactoryDB::SetJobEventID(jobID, eventID);
 
         //force calendar reload (if corp job, update all online members, also)
-        if (args.isCorpJob)
+        if (args.isCorpJob) {
             sEntityList.CorpNotify(call.client->GetCorporationID(), Notify::Types::FactoryJob, "OnReloadCalendar", "charid", new PyTuple(0));
-        else
+        } else {
             call.client->SendNotification("OnReloadCalendar", "charid", new PyTuple(0), false);  // this is not sequenced
+        }
     }
 
     // we may need a separate table for invention jobs to store it's specific data....

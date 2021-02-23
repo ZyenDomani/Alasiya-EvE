@@ -64,10 +64,11 @@ void StationDataMgr::Populate()
     StationDB::GetOperationServiceIDs(*res);
     while (res->GetRow(row)) {
         //SELECT operationID, serviceID FROM staOperationServices
-        if ((itr = m_serviceMask.find(row.GetInt(0))) != m_serviceMask.end())
+        if ((itr = m_serviceMask.find(row.GetInt(0))) != m_serviceMask.end()) {
             itr->second += row.GetInt(1);
-        else
+        } else {
             m_serviceMask.emplace(row.GetInt(0), row.GetInt(1));
+        }
     }
 
     //res->Reset();
@@ -95,10 +96,11 @@ void StationDataMgr::Populate()
         t.graphicID, s.solarSystemID, s.constellationID, s.regionID, st.dockEntryX, st.dockEntryY, st.dockEntryZ 31
         StationData sData = StationData();
         sData.stationID                 = row.GetUInt(0);
-        if ((itr = m_serviceMask.find(sData.stationID)) != m_serviceMask.end())
+        if ((itr = m_serviceMask.find(sData.stationID)) != m_serviceMask.end()) {
             sData.serviceMask = itr->second;
-        else
+        } else {
             sData.serviceMask = 0;
+        }
         sData.position                  = GPoint(row.GetDouble(1),row.GetDouble(2),row.GetDouble(3));
         sData.dockOrientation           = GVector(row.GetDouble(4),row.GetDouble(5),row.GetDouble(6));
         sData.dockingCostPerVolume      = row.GetFloat(7);
@@ -190,20 +192,22 @@ double StationDataMgr::GetDockPosY(uint32 stationID)
 std::string StationDataMgr::GetStationName(uint32 stationID)
 {
     std::map<uint32, StationData>::iterator itr = m_stationData.find(stationID);
-    if (itr != m_stationData.end())
+    if (itr != m_stationData.end()) {
         return itr->second.name;
-    else
+    } else {
         _log(DATABASE__MESSAGE, "Failed to query station name for station %u: Station not found.", stationID);
+    }
     return "";
 }
 
 uint32 StationDataMgr::GetStationSystemID(uint32 stationID)
 {
     std::map<uint32, StationData>::iterator itr = m_stationData.find(stationID);
-    if (itr != m_stationData.end())
+    if (itr != m_stationData.end()) {
         return itr->second.systemID;
-    else
+    } else {
         _log(DATABASE__MESSAGE, "Failed to query station systemID for station %u: Station not found.", stationID);
+    }
     return 0;
 }
 
@@ -226,8 +230,9 @@ PyObject* StationDataMgr::GetStationPyData(uint32 stationID)
     if (itr != m_stationPyData.end()) {
         PyIncRef(itr->second);
         return itr->second;
-    } else
+    } else {
         _log(DATABASE__MESSAGE, "Failed to query data for station %u: Station not found.", stationID);
+    }
     return nullptr;
 }
 
@@ -241,10 +246,11 @@ PyRep* StationDataMgr::GetStationItemBits(uint32 stationID)
             result->SetItem(0, new PyInt(itr->second.hangarGraphicID));
             result->SetItem(1, new PyInt(itr->second.corporationID));
             result->SetItem(2, new PyInt(stationID));
-            if ((itr2 = m_serviceMask.find(itr->second.operationID)) != m_serviceMask.end())
+            if ((itr2 = m_serviceMask.find(itr->second.operationID)) != m_serviceMask.end()) {
                 result->SetItem(3, new PyInt(itr2->second));
-            else
+            } else {
                 result->SetItem(3, new PyInt(0));
+            }
             result->SetItem(4, new PyInt(itr->second.typeID));
         return result;
     }

@@ -115,10 +115,11 @@ void BeltMgr::SetActive(uint16 bubbleID, bool active/*true*/)
 {
     uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     std::map<uint32, bool>::iterator itr = m_active.find(beltID);
-    if (itr != m_active.end())
+    if (itr != m_active.end()) {
         itr->second = active;
-    else
+    } else {
         m_active.insert(std::pair<uint32, bool>(beltID, active));
+    }
 }
 
 void BeltMgr::Process() {
@@ -167,16 +168,18 @@ bool BeltMgr::Load(uint16 bubbleID) {
         pASE->SetMgr(this, beltID);
     }
     std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
-    if (itr == m_spawned.end())
+    if (itr == m_spawned.end()) {
         m_spawned.insert(std::pair<uint32, bool>(beltID, true));
-    else
+    } else {
         itr->second = true;
+    }
 
     itr = m_active.find(beltID);
-    if (itr == m_active.end())
+    if (itr == m_active.end()) {
         m_active.insert(std::pair<uint32, bool>(beltID, true));
-    else
+    } else {
         itr->second = true;
+    }
 
     return true;
 }
@@ -298,7 +301,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
             pcs = 4;
         } else {
             pcs = 6;
-        } 
+        }
     } else {
         pcs += MakeRandomInt(5, 30);
         radius += (radius *secValue);
@@ -312,10 +315,11 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     GPoint mposition(NULL_ORIGIN);
     for (uint8 i = 1; i < pcs; ++i) {
         if (ice) {
-            if (secRating > -0.2)
+            if (secRating > -0.2) {
                 roidradius = MakeRandomInt(20, 40) *1000; // (40k,70k)  72-102k radius
-            else
+            } else {
                 roidradius = MakeRandomInt(40, 70) *1000; // (40k,80k)  82-112k radius
+            }
             radius += roidradius;
             elevation = (radius + (roidradius /2) /2);
         } else {
@@ -338,16 +342,18 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     }
 
     std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
-    if (itr == m_spawned.end())
+    if (itr == m_spawned.end()) {
         m_spawned.insert(std::pair<uint32, bool>(beltID, true));
-    else
+    } else {
         itr->second = true;
+    }
 
     itr = m_active.find(beltID);
-    if (itr == m_active.end())
+    if (itr == m_active.end()) {
         m_active.insert(std::pair<uint32, bool>(beltID, false));
-    else
+    } else {
         itr->second = false;
+    }
 
     _log(COSMIC_MGR__TRACE, "BeltMgr::SpawnBelt - Belt spawned with %u roids of %s in %s %u for %s(%u)", \
             pcs, (ice?"ice":"ore"), (anomaly?"anomalyID":"beltID"), beltID, m_system->GetName(), m_systemID );
@@ -398,10 +404,11 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         adata.position = position;
     ItemData idata(typeID, ownerSystem, m_systemID, flagNone, "", position);
     InventoryItemRef iRef(nullptr);
-    if (IsTempItem(beltID))
+    if (IsTempItem(beltID)) {
         iRef = AsteroidItem::SpawnTemp(idata, adata);   // create temp item for anomaly belt
-    else
+    } else {
         iRef = sItemFactory.SpawnAsteroid(idata, adata);
+    }
     if (iRef.get() == nullptr)
         return;
 

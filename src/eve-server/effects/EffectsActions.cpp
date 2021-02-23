@@ -64,10 +64,11 @@ void FxAction::DoAction(uint8 action, SystemEntity* pSE)
         } break;
         /* unique/special to Alasiya */
         case dgmSPEEDBOOST: { //  75    //effectID 14  - prop mod to call destiny speed updates
-            if ((pSE != nullptr) and (pSE->DestinyMgr()))
+            if ((pSE != nullptr) and (pSE->DestinyMgr())) {
                 pSE->DestinyMgr()->SpeedBoost();
-            else
+            } else {
                 _log(EFFECTS__ERROR, "FxAction::DoAction(): dgmSPEEDBOOST called with invalid pSE or DestinyMgr");
+            }
         } break;
         /* these below are special as they are called AFTER the module's cycle */
         case dgmCARGOSCAN: { //   14,

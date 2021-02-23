@@ -109,10 +109,11 @@ void NPC::Process() {
 }
 
 void NPC::Orbit(SystemEntity *who) {
-    if (who == nullptr)
+    if (who == nullptr) {
         m_orbitingID = 0;
-    else
+    } else {
         m_orbitingID = who->GetID();
+    }
 }
 
 void NPC::TargetLost(SystemEntity *who) {
@@ -226,8 +227,9 @@ void NPC::UseShieldRecharge()
         if (m_shieldCharge > m_self->GetAttribute(AttrShieldCapacity).get_float())
             m_shieldCharge = m_self->GetAttribute(AttrShieldCapacity).get_float();
         m_self->SetAttribute(AttrShieldCharge, m_shieldCharge);
-    } else
+    } else {
         m_AI->DisableRepTimers(true, false);
+    }
 
     // TODO: Need to send SpecialFX / amount update
     UpdateDamage();
@@ -240,8 +242,9 @@ void NPC::UseArmorRepairer()
         if (m_armorDamage < 0.0)
             m_armorDamage = 0.0;
         m_self->SetAttribute(AttrArmorDamage, m_armorDamage);
-    } else
+    } else {
         m_AI->DisableRepTimers(false, true);
+    }
 
     // TODO: Need to send SpecialFX / amount update
     UpdateDamage();
@@ -254,8 +257,9 @@ void NPC::UseHullRepairer()
         if (m_hullDamage < 0.0)
             m_hullDamage = 0.0;
         m_self->SetAttribute(AttrDamage, m_hullDamage);
-    } else
+    } else {
         m_AI->DisableRepTimers(false, false);
+    }
 
     // TODO: Need to send SpecialFX / amount update
     // gfxBoosterID
@@ -316,10 +320,12 @@ void NPC::Killed(Damage &fatal_blow) {
         pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
         if (pClient == nullptr) {
             sLog.Error("NPC::Killed()", "killer == IsDrone and pPlayer == nullptr");
-        } else
+        } else {
             killerID = pClient->GetCharacterID();
-    } else
+        }
+    } else {
         killerID = killer->GetID();
+    }
 
     uint32 locationID = GetLocationID();
     //  log faction kill in dynamic data   -allan

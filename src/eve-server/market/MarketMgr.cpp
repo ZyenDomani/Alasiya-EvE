@@ -224,10 +224,11 @@ void MarketMgr::SendOnOwnOrderChanged(Client* pClient, uint32 orderID, uint8 act
     if (pClient == nullptr)
         return;
     Notify_OnOwnOrderChanged ooc;
-    if (order != nullptr)
+    if (order != nullptr) {
         ooc.order = order;
-    else
+    } else {
         ooc.order = m_db.GetOrderRow(orderID);
+    }
 
     switch (action) {
         case Market::Action::Add:
@@ -244,10 +245,11 @@ void MarketMgr::SendOnOwnOrderChanged(Client* pClient, uint32 orderID, uint8 act
     ooc.isCorp = isCorp;
     PyTuple* tmp = ooc.Encode();
     // send journal blink and call 'self.RefreshOrders()' in client
-    if (isCorp)
+    if (isCorp) {
         sEntityList.CorpNotify(pClient->GetCorporationID(), 125 /*MarketOrder*/, "OnOwnOrderChanged", "*corpid&corprole", tmp);
-    else
+    } else {
         pClient->SendNotification("OnOwnOrderChanged", "clientID", &tmp);
+    }
 }
 
 
@@ -378,10 +380,11 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         // get data needed and compute tax
         uint8 lvl(0);
         Client* pBuyer = sEntityList.FindClientByCharID(oInfo.ownerID);
-        if (pBuyer == nullptr)
+        if (pBuyer == nullptr) {
             lvl = CharacterDB::GetSkillLevel(oInfo.ownerID, EvESkill::Accounting);
-        else
+        } else {
             lvl = pBuyer->GetChar()->GetSkillLevel(EvESkill::Accounting);
+        }
         float tax = EvEMath::Market::SalesTax(lvl);
         tax *= money;
         _log(MARKET__DEBUG, "ExecuteBuyOrder - Buyer is Player: Price: %.2f, Tax: %.2f", money, tax);
@@ -392,10 +395,11 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         // get data needed and compute tax
         uint8 lvl(0);
         Client* pBuyer = sEntityList.FindClientByCharID(oInfo.memberID);
-        if (pBuyer == nullptr)
+        if (pBuyer == nullptr) {
             lvl = CharacterDB::GetSkillLevel(oInfo.memberID, EvESkill::Accounting);
-        else
+        } else {
             lvl = pBuyer->GetChar()->GetSkillLevel(EvESkill::Accounting);
+        }
         float tax = EvEMath::Market::SalesTax(lvl);
         tax *= money;
         _log(MARKET__DEBUG, "ExecuteBuyOrder - Buyer is Corp: Price: %.2f, Tax: %.2f", money, tax);
@@ -409,15 +413,16 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     reason += "DESC:  Selling items in ";
     reason += stDataMgr.GetStationName(args.stationID).c_str();
     // this is fulfilling a buy order.  seller will receive isk from escrow if buyer is player or corp
-    if (isPlayer or isCorp)
+    if (isPlayer or isCorp) {
         //give the money to the seller from the escrow acct at station
         AccountService::TranserFunds(stDataMgr.GetOwnerID(args.stationID), seller->GetCharacterID(), \
                                 money, reason.c_str(), Journal::EntryType::MarketTransaction, orderID, \
                                 Account::KeyType::Escrow, accountKey);
-    else
+    } else {
         // npc buyer.  direct xfer to seller
         AccountService::TranserFunds(oInfo.ownerID, seller->GetCharacterID(), money, reason.c_str(), \
                                     Journal::EntryType::MarketTransaction, orderID, Account::KeyType::Cash, accountKey);
+    }
 
     // add data to StatisticMgr
     sStatMgr.Add(Stat::iskMarket, money);

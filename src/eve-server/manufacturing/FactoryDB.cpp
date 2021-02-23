@@ -385,10 +385,11 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
     into.materialMultiplier     = row.GetFloat(0);
     into.timeMultiplier         = row.GetFloat(1);
     into.installCost            = row.GetFloat(2);
-    if (row.GetFloat(3) > row.GetFloat(4))
+    if (row.GetFloat(3) > row.GetFloat(4)) {
         into.usageCost          = row.GetFloat(3);
-    else
+    } else {
         into.usageCost          = row.GetFloat(4);
+    }
 
     // verify line standings modifiers (some have no modifiers)
     if ((row.GetFloat(6) == 0) and (row.GetFloat(7) == 0))
@@ -402,10 +403,11 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
         float fStanding(StandingDB::GetStanding(factionID, pChar->corporationID()));
         fStanding /= 2;
         // this works for negative standings also
-        if (cStanding > fStanding)
+        if (cStanding > fStanding) {
             standing = cStanding;
-        else
+        } else {
             standing = fStanding;
+        }
 
         /** @todo  this shit will have to be verified for negative standings */
         // modify end result by 25% for char standings with station owner
@@ -415,10 +417,11 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
         standing = StandingDB::GetStanding(row.GetInt(5), pChar->itemID());
     }
 
-    if (standing < 0)
+    if (standing < 0) {
         costModifier += row.GetFloat(7) * -standing;
-    else
+    } else {
         costModifier -= row.GetFloat(6) * standing;
+    }
 
     // make sure costModifier isnt 0 (some lines have 0 as modifier)
     if (costModifier == 0)

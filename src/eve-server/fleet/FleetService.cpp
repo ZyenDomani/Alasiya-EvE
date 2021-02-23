@@ -822,10 +822,11 @@ PyRep* FleetService::GetMOTD(uint32 fleetID)
 {
     PyTuple* tuple = new PyTuple(1);
     std::map<uint32, FleetData>::iterator itr = m_fleetDataMap.find(fleetID);
-    if (itr != m_fleetDataMap.end())
+    if (itr != m_fleetDataMap.end()) {
         tuple->SetItem(0, new PyString(itr->second.motd));
-    else
-        tuple->SetItem(0, new PyNone());
+    } else {
+        tuple->SetItem(0, PyStatic.NewNone());
+    }
     return tuple;
 }
 
@@ -1890,10 +1891,11 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 length += 43;
                 sboost = false;
             }
-            if (sboost)
+            if (sboost) {
                 str << "    <color=green>";
-            else
+            } else {
                 str << "    <color=red>";
+            }
             str << "Members: " << std::to_string(sData.members.size()) << "  Effective: ";
             length += 40;
             std::string bdata;

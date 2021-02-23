@@ -377,10 +377,11 @@ PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
         return new PyLong(GetFileTimeNow());
     }
 
-    if (rejected)
+    if (rejected) {
         data.inviteBy->SendNotifyMsg("%s has rejected your fleet invite.", data.invited->GetChar()->name());
-    else
+    } else {
         data.inviteBy->SendNotifyMsg("%s has auto-rejected your fleet invite.", data.invited->GetChar()->name());
+    }
     sFltSvc.RemoveInviteData(pChar->itemID());
 
     // returns nodeID and timestamp

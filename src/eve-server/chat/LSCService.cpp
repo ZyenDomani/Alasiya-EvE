@@ -419,8 +419,9 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
         _log(LSC__INFO, "SlashService->SlashCmd() called via LSC Service");
         static_cast<SlashService *>(m_manager->LookupService("slash"))->SlashCommand(call.client, message);
         itr->second->SendMessage(call.client, message.c_str(), true);
-    } else
+    } else {
         itr->second->SendMessage(call.client, message.c_str());
+    }
 
     return PyStatic.NewNone();
 }

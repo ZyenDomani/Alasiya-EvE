@@ -151,10 +151,12 @@ void Sentry::Killed(Damage &fatal_blow) {
         pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
         if (pClient == nullptr) {
             sLog.Error("Sentry::Killed()", "killer == IsDrone and pPlayer == nullptr");
-        } else
+        } else {
             killerID = pClient->GetCharacterID();
-    } else
+        }
+    } else {
         killerID = killer->GetID();
+    }
 
     uint32 locationID = GetLocationID();
     //  log faction kill in dynamic data   -allan
