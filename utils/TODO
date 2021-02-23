@@ -24,6 +24,9 @@ work on buglist, integrate this list in there where i can
     - cosmic systems
     -
 
+request for smartbombs
+
+11:45:54 [DestinyWarning] Warp Cap need for Rifter(140007395) is 0.0007
 
 verify skill attr 'in training' is being properly removed
 
@@ -72,12 +75,17 @@ check for item ownership before rename
     verify OnCfgDataChanged
     Structure items have throw.  not sure if this is valid
 
-error:
-"turret not fitted on shipID (npc)"
-
 dungeon deco items need better placement
 
 ship warp speed on attributes tab is wrong
+
+
+error:
+"turret not fitted on shipID (npc)"
+...still not sure on this.  throws a shitton of errors in client error log
+"Cleaning session *clientID 2888444* because it's ID doesn't match  0"
+
+23:51:06 [FxError] guid empty for F85 Peripheral Damage System I using effectID 2302
 
 
 *******************************************************
@@ -130,6 +138,7 @@ isDefault used to send to activate for effectID
 go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
     - gfx display is wonky.  dunno why some show and some dont
     - stripminer on hulk working 20feb21
+    - salvager on trasher working 20feb21
 put EVEEffectID enum into namespace
 turn fx sending on and follow calls to verify proper OnSpecialFX data
     - found and added client fx classification data to destinyMgr.h
@@ -565,9 +574,9 @@ command .attrlist needs names as well as attrID
 
 RefObjects -
     - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
-    - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr
+    - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr  (see core/utils/singleton.h)
     -  this may be more work than it's worth, but current Ref* objects arent being tracked properly
-    -  the other option is to find/fix the current tracking for Ref* objects, which is only partly implemented (at best)
+    -  the other option is to find/fix the current tracking for Ref* objects, which is only partly implemented (at best) and only partially understood
 
 Py* objects that have string as key need 'delete' called on string when destroyed per valgrind...cannot find ref to this error now
 Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
@@ -575,10 +584,18 @@ Py* objects that have long int as key need 'delete' called on key when destroyed
 
 see what can be done about bind_args->Clone() as it may be leaking memory
 
+    - not sure yet
+==26326== Conditional jump or move depends on uninitialised value(s)
+==26326==    at 0xF23B52: MarshalStream::VisitLong(PyLong const*) (EVEMarshal.cpp:122)
+==26326==  Uninitialised value was created by a heap allocation
+==26326==    at 0x4C28487: operator new(unsigned long) (in /usr/lib64/valgrind/vgpreload_memcheck-amd64-linux.so)
+==26326==    by 0xEC324F: DynamicEntityFactory::BuildEntity(SystemManager&, DBSystemDynamicEntity const&) (SystemManager.cpp:654)
+==26326==    by 0xEC1E7B: SystemManager::LoadPlayerDynamics() (SystemManager.cpp:469)
+
 
 review all classes to add rule of 5 or =delete as required
     - Py* objects done
-    - InventoryItem started (logging to see if other c'tors are used)
+    - InventoryItem started (logging to see if other c'tors are used...so far not)
     -
 
 *******************************************************
@@ -642,6 +659,10 @@ npc ai - update for better ai. add advanced ai for advanced ship classes   -prio
     - npc lost target <- this method needs better thought to pick next target
     - should npc have 'pool' of available/preferred targets
 update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -priority level: low
+
+ADD THIS....
+get npc *something* to check damage done by npc.
+once damage starts dropping, check distance and move accordingly
 
 
 rats should test for faction signals in system and set origin along that direction (to appear they came from their 'base' in system)
@@ -750,7 +771,9 @@ destiny shit - misc things found in destiny.dll
 
 need timer/var for after cloak for targeting (cannot target x sec after uncloak - currently no delay)
 
-jump clones - when i start this, need to check into diff between active clone and jumpclone.  may have to rearrange things to properly implement jump clones.
+so, cannot get info on cap ships with clone service because of incomplete jumpCloneSvc.
+jump clones - when i start this, need to check into diff between active clone and jumpclone.
+may have to rearrange things to properly implement jump clones.
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
