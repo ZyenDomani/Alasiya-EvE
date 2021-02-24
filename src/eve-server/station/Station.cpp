@@ -98,9 +98,9 @@ bool StationItem::_Load() {
     if (m_data.officeRentalFee < 10000)
         m_data.officeRentalFee = 10000;
 
-    m_loaded = true;
+    m_loaded = CelestialObject::_Load();
 
-    return CelestialObject::_Load();
+    return m_loaded;
 }
 
 uint32 StationItem::CreateItemID( ItemData &data) {
