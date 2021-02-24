@@ -356,6 +356,7 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
         pClient->SetDestiny(NULL_ORIGIN);
 
     DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
+    GPoint heading(dm->GetHeading());
 
     char reply[300];
     snprintf(reply, 300,
@@ -371,9 +372,12 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              "Radius: %.2f<br>" //27
              "CapNeed: %.2f<br>" //27
              "Agility: %.3f<br>" //27
-             "Inertia: %.3f<br>", //27
-                pClient->GetShipSE()->GetName(), pClient->GetShipID(), dm->GetMass(), dm->GetAlignTime(), dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() /10),
-                dm->GetWarpTime(), dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(), dm->GetAgility(), dm->GetInertia()
+             "Inertia: %.3f<br>" //27
+             "Heading: %.3f,%.3f,%.3f<br>", //21
+                pClient->GetShipSE()->GetName(), pClient->GetShipID(), dm->GetMass(), dm->GetAlignTime(),
+             dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() /10), dm->GetWarpTime(),
+             dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(), dm->GetAgility(), dm->GetInertia(),
+             heading.x, heading.y, heading.z 
             );
 
     pClient->SendInfoModalMsg(reply);
