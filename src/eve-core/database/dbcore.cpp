@@ -31,15 +31,15 @@
 #include "log/logsys.h"
 #include "utils/misc.h"
 #include "utils/utils_time.h"
-//#include "../eve-server/Profile.h"
+//#include "../eve-server/Profiler.h"
 
 #define COLUMN_BOUNDS_CHECKING
 
 // this is to enable profile tracking for db
-#define sProfile ( Profile::get() )
+#define sProfiler ( Profiler::get() )
 
-class Profile
-: public Singleton<Profile>
+class Profiler
+: public Singleton<Profiler>
 {
 public:
     void AddTime(uint8 key, double value);
@@ -349,7 +349,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
     err.ClearError();
 
     if (pProfile)
-        sProfile.AddTime(9, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(9, GetTimeUSeconds() - profileStartTime);
 
     return true;
 }
