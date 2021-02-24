@@ -267,7 +267,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(parseFXProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::parseFX, GetTimeUSeconds() - profileStartTime);
 }
 
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
@@ -512,7 +512,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             item->SetAttribute(cur.second.targAttr, newValue, update);
         }
         if (sConfig.debug.UseProfiling)
-            sProfile.AddTime(applyFXProfile, GetTimeUSeconds() - profileStartTime);
+            sProfiler.AddTime(Profile::applyFX, GetTimeUSeconds() - profileStartTime);
     }
     /*  not used
     if (action)

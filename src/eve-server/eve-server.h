@@ -36,7 +36,7 @@
 /* eve-server includes                                                  */
 /************************************************************************/
 // profile
-#include "Profile.h"
+#include "Profiler.h"
 // auth
 #include "auth/PasswordModule.h"
 // cache

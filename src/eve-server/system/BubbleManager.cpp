@@ -115,7 +115,7 @@ void BubbleManager::Process() {
         RemoveEmpty();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(bubblesProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::bubbles, GetTimeUSeconds() - profileStartTime);
 }
 
 void BubbleManager::CheckBubble(SystemEntity *pSE) {

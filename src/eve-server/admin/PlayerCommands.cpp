@@ -187,7 +187,7 @@
         sLog.Error("     ServerConfig", "Live Server Enabled");
     if (sConfig.debug.UseProfiling) {
         sLog.Green(" Server Profiling","Enabled.");
-        sProfile.Initialize();
+        sProfiler.Initialize();
     } else
         sLog.Warning(" Server Profiling","Disabled.");
     if (sConfig.debug.SpawnTest)

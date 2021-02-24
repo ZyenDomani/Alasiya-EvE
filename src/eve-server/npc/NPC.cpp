@@ -105,7 +105,7 @@ void NPC::Process() {
     m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(npcProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::npc, GetTimeUSeconds() - profileStartTime);
 }
 
 void NPC::Orbit(SystemEntity *who) {

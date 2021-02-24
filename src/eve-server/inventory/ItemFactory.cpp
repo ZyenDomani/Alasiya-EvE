@@ -100,7 +100,7 @@ void ItemFactory::Close()
 void ItemFactory::SaveItems() {
     if (sConfig.debug.DeleteTrackingCans)
         InventoryDB::DeleteTrackingCans();
-    uint32 count = 0;
+    uint32 count(0);
     double startTime = GetTimeMSeconds();
     std::vector<Inv::SaveData> items;
     items.clear();

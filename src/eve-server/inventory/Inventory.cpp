@@ -64,11 +64,16 @@ void Inventory::Unload()
         return;
 
     //  save contents on the off-chance they have changed, but not on shutdown. (saved in ItemFactory::Close())
+    Inventory* inv(nullptr);
     if (!sConsole.IsShutdown()) {
         std::vector<Inv::SaveData> items;
         items.clear();
         std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
         while (itr != mContents.end()) {
+            // test for item contents and unload as required
+            inv = itr->second->GetMyInventory();
+            if (inv != nullptr)
+                inv->Unload();
             if (IsPlayerItem(itr->first)) {   // only save player items (except skills - saved in Character::SaveAll())
                 if (itr->second->flag() == flagSkill) {
                     sItemFactory.RemoveItem(itr->first);
@@ -186,7 +191,7 @@ bool Inventory::LoadContents() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(itemloadProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::itemload, GetTimeUSeconds() - profileStartTime);
 
     mContentsLoaded = true;
 

@@ -239,7 +239,7 @@ bool ConsoleCommand::Process() {
                     sLog.Warning("    Server UpTime", " %s", uptime.c_str() );
                     sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                     sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
-                    sProfile.PrintProfile();
+                    sProfiler.PrintProfile();
                 } else {
                     sLog.Error("   Server Profile", "Profiling is turned off.");
                 }

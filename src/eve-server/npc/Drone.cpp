@@ -126,7 +126,7 @@ void DroneSE::Process() {
         m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(droneProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
 }
 
 void DroneSE::SaveDrone() {

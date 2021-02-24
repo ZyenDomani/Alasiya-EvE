@@ -115,7 +115,7 @@ void DroneAIMgr::Process() {
     //no default on purpose
     }
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(droneProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
 }
 
 int8 DroneAIMgr::GetState() {

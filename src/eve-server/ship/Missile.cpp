@@ -27,7 +27,7 @@
 
 #include "Client.h"
 #include "EVEServerConfig.h"
-#include "Profile.h"
+#include "Profiler.h"
 #include "character/Character.h"
 #include "inventory/AttributeEnum.h"
 #include "system/DestinyManager.h"
@@ -165,7 +165,7 @@ void Missile::Process() {
         HitTarget();
     }
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(missileProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::missile, GetTimeUSeconds() - profileStartTime);
 }
 
 void Missile::EncodeDestiny( Buffer& into )

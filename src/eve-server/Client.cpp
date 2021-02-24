@@ -260,14 +260,16 @@ Client::~Client() {
                     mts->CancelTrade(this);
                 }
                 CharNoLongerInStation();
+                // remove char from station
+                sEntityList.GetStationByID(m_locationID)->RemoveItem(m_char);
             }
 
         }
-        // remove fleet data, save SP and set logout time
+        // remove fleet data, remove char from ItemFactory cache, save SP and set logout time
         m_char->LogOut();
     }
 
-    // save shipstate and remove from sItemFactory, as *something* in sItemFactory.save changes ship position
+    // save shipstate and remove from ItemFactory
     m_ship->LogOut();
 
     m_system->RemoveClient(this, true);
@@ -422,6 +424,9 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     m_ship->SetShipShield(1.0);
     m_ship->SetShipCapacitorLevel(1.0);
 
+    // send MOTD and server data to player's 'local' chat channel
+    m_services.lsc_service->SendServerMOTD(this);
+
     return (m_loaded = true);
 }
 
@@ -462,8 +467,6 @@ void Client::ProcessClient() {
                     case Player::State::Login: {
                         _log(CLIENT__TIMER, "ProcessClient()::IsDocked()::CheckState():  case: Login");
                         m_login = false;
-                        // send MOTD and server data to player's 'local' chat channel
-                        m_services.lsc_service->SendServerMOTD(this);
                     } break;
                     case Player::State::Idle: {
                         _log(CLIENT__TIMER, "ProcessClient()::IsDocked()::CheckState():  case: Idle");
@@ -479,7 +482,7 @@ void Client::ProcessClient() {
                 _log(AUTOPILOT__TRACE, "ProcessClient()::IsDocked() - m_clientState set to Idle");
             }
         if (sConfig.debug.UseProfiling)
-            sProfile.AddTime(clientProfile, GetTimeUSeconds() - profileStartTime);
+            sProfiler.AddTime(Profile::client, GetTimeUSeconds() - profileStartTime);
         return;
     }
 
@@ -563,8 +566,6 @@ void Client::ProcessClient() {
                     m_login = false;
                     SetBallPark();
                     m_clientState = Player::State::Idle;
-                    // send MOTD and server data to player's 'local' chat channel
-                    m_services.lsc_service->SendServerMOTD(this);
                     m_ship->GetModuleManager()->UpdateChargeQty();  //  <<<< huge hack here....cant find another way to do it yet.
                     } break;
                 case Player::State::Jump: {
@@ -617,7 +618,7 @@ void Client::ProcessClient() {
         }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(clientProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::client, GetTimeUSeconds() - profileStartTime);
 }
 
 void Client::WarpIn() {
@@ -756,10 +757,11 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
                 std::list<int32> wing, squad;
                 wing.clear();
                 squad.clear();
-                if (IsSquad(m_squad))
+                if (IsSquad(m_squad)) {
                     squad.emplace(squad.end(), m_squad);
-                else if (IsWing(m_wing))
+                } else if (IsWing(m_wing)) {
                     wing.emplace(wing.end(), m_wing);
+                }
                 sFltSvc.UpdateBoost(m_fleet, IsFleetBoss(), wing, squad);
             }
         }
@@ -789,10 +791,11 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
                 std::list<int32> wing, squad;
                 wing.clear();
                 squad.clear();
-                if (IsSquad(m_squad))
+                if (IsSquad(m_squad)) {
                     squad.emplace(squad.end(), m_squad);
-                else if (IsWing(m_wing))
+                } else if (IsWing(m_wing)) {
                     wing.emplace(wing.end(), m_wing);
+                }
                 sFltSvc.UpdateBoost(m_fleet, IsFleetBoss(), wing, squad);
             }
         }
@@ -852,12 +855,14 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
             updateShip?"true":"false", IsJump()?"true":"false", pShipSE->DestinyMgr()->IsCloaked()?"true":"false");
 
     if (pt.isZero()) {
-        if (pShipSE->GetPosition().isZero())
+        if (pShipSE->GetPosition().isZero()) {
             pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnPlanet(m_system->GetID()), update);
-        else
+        } else {
             pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), update);
-    } else
+        }
+    } else {
         pShipSE->DestinyMgr()->SetPosition(pt, update);
+    }
 
     //if (m_login)
     //    pShipSE->DestinyMgr()->SetCloak(true);
@@ -895,10 +900,11 @@ void Client::SetBallPark() {
 }
 
 void Client::CheckBallparkTimer() {
-    if (!m_ballparkTimer.Enabled())
+    if (!m_ballparkTimer.Enabled()) {
         sLog.Error("CheckBallparkTimer()", "BallPark Timer is disabled.");
-    else
+    } else {
         sLog.Warning("CheckBallparkTimer()", "BallPark Time remaining %ums", m_ballparkTimer.GetRemainingTime());
+    }
 
     _log(CLIENT__TIMER, "CheckBallparkTimer():  State: %s, SetState: %s, Beyonce: %s, Login: %s", \
             GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", \
@@ -999,8 +1005,9 @@ void Client::DestroyShipSE() {
         _log(PLAYER__MESSAGE, "DestroyShipSE() - pShipSE %p (%s) destroyed for %s(%u)", pShipSE, m_ship->name(), m_char->name(), m_char->itemID());
         m_system->RemoveEntity(pShipSE);
         SafeDelete(pShipSE);
-    } else
+    } else {
         _log(PLAYER__WARNING, "DestroyShipSE() - pShipSE = null for %s(%u)", m_char->name(), m_char->itemID());
+    }
     pShipSE = nullptr;
 }
 
@@ -1018,10 +1025,11 @@ void Client::UpdateNewShip()
 }
 
 void Client::SetPodItem() {
-    if (!IsPlayerItem(m_char->capsuleID()))
+    if (!IsPlayerItem(m_char->capsuleID())) {
         CreateNewPod();
-    else
+    } else {
         m_pod = sItemFactory.GetShip(m_char->capsuleID());
+    }
     if (m_pod.get() == nullptr)
         CreateNewPod();
 }
@@ -1118,18 +1126,20 @@ void Client::Eject()
 
     if (m_pod.get() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Failed to get podItem for %s.", GetName());
-        if (m_canThrow)
+        if (m_canThrow) {
             throw PyException(MakeCustomError("Something bad happened as you prepared to eject.  Ref: ServerError 25107."));
-        else
+        } else {
             return;
+        }
     }
     // this should NEVER happen...
     if (pShipSE->SysBubble() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Bubble is null for %s.", GetName());
-        if (m_canThrow)
+        if (m_canThrow) {
             throw PyException(MakeCustomError("Something bad happened as you prepared to eject.  Ref: ServerError 25107+1."));
-        else
+        } else {
             return;
+        }
     }
 
     //  check for POS/FF in bubble.  check for ship in FF.  if so, then not abandoned.
@@ -1145,8 +1155,9 @@ void Client::Eject()
     if (abandoned) {
         pShipSE->Abandon();
         snprintf(ci, sizeof(ci), "Abandoned: %s(%u)", GetName(), m_char->itemID());
-    } else
+    } else {
         snprintf(ci, sizeof(ci), "Ejected: %s(%u)", GetName(), m_char->itemID());
+    }
 
     m_ship->SetCustomInfo(ci);
     m_ship->SetPlayer(nullptr);
@@ -1356,10 +1367,11 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
 }
 
 bool Client::IsJetcanAvalible() {
-    if (m_jetcanTimer.Enabled())
+    if (m_jetcanTimer.Enabled()) {
         return (m_jetcanTimer.Check(false));
-    else
+    } else {
         return true;
+    }
 }
 
 PyRep *Client::GetAggressors() const {
@@ -1742,10 +1754,10 @@ void Client::ChannelLeft(LSCChannel *chan) {
 /* character notification messages wrapper                              */
 /************************************************************************/
 void Client::CharNoLongerInStation() {
-    // remove client from station guest list
-    sEntityList.GetStationByID(m_StationData.stationID)->RemoveGuest(this);
     // clear station data
     m_StationData = StationData();
+    // remove client from station guest list
+    sEntityList.GetStationByID(m_locationID)->RemoveGuest(this);
     m_system->SetDockCount(this, false);
     OnCharNoLongerInStation ocnis;
         ocnis.charID = m_char->itemID();
@@ -1763,6 +1775,7 @@ void Client::CharNoLongerInStation() {
         cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp); //consumed
     }
     PyDecRef(tmp);
+
 }
 
 void Client::CharNowInStation() {
@@ -1935,10 +1948,11 @@ void Client::SendSessionChange()
         if (m_char.get() != nullptr) {
             codelog(CLIENT__ERROR, "Session::LocationID == 0 for %s(%u)", m_char->name(), m_char->itemID());
             EvE::traceStack();
-            if (IsStation(m_char->stationID()))
+            if (IsStation(m_char->stationID())) {
                 m_locationID = m_char->stationID();
-            else
+            } else {
                 m_locationID = m_SystemData.systemID;
+            }
             /* a `session.locationid` change will trigger a ballpark update (add/delete bp) */
             pSession->SetInt("locationid", m_locationID);
         }
@@ -1974,7 +1988,7 @@ void Client::SendSessionChange()
     packet->source.callID = 0;
 
     packet->dest.type = PyAddress::Client;
-    packet->dest.objectID = GetClientID();
+    packet->dest.objectID = 0; //GetClientID();
     packet->dest.callID = 0;
 
     packet->userid = GetUserID();
@@ -2115,7 +2129,7 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
         dest.type = PyAddress::Broadcast;
         dest.service = notifyType;
         dest.bcast_idtype = idType;
-        dest.objectID = GetClientID();
+        dest.objectID = 0; //GetClientID();
 
     //now send it to the client
     SendNotification(dest, notify, seq);
@@ -2337,7 +2351,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         ack.address = GetAddress();
         ack.inDetention = PyStatic.NewNone();   // dont know what this is or what it's for
         ack.client_hash = PyStatic.NewNone();
-        ack.user_clientid = GetClientID();  //241241000001103
+        ack.user_clientid = 0; //GetClientID();  //241241000001103
         ack.live_updates = sLiveUpdateDB.GetUpdates();
         ack.sessionID = pSession->GetSessionID();   //398773966249980114
     PyRep* res(ack.Encode());
@@ -2361,7 +2375,7 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyResult &rs
     packet->source = source;     /* address should be 'ship' for warpto response */
 
     packet->dest.type = PyAddress::Client;
-    packet->dest.objectID = GetClientID();
+    packet->dest.objectID = 0; //GetClientID();
     packet->dest.callID = callID;
 
     packet->userid = GetUserID();
@@ -2389,7 +2403,7 @@ void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_T
     packet->source = source;
 
     packet->dest.type = PyAddress::Client;
-    packet->dest.objectID = GetClientID();
+    packet->dest.objectID = 0; //GetClientID();
     packet->dest.callID = callID;
 
     packet->userid = GetUserID();
@@ -2417,7 +2431,7 @@ void Client::_SendPingRequest()
     packet->source.callID = 0;
 
     packet->dest.type = PyAddress::Client;
-    packet->dest.objectID = GetClientID();
+    packet->dest.objectID = 0; //GetClientID();
     packet->dest.callID = 0;
 
     packet->userid = GetUserID();
@@ -2437,7 +2451,7 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
     packet->source = source;
 
     packet->dest.type = PyAddress::Client;
-    packet->dest.objectID = GetClientID();
+    packet->dest.objectID = 0; //GetClientID();
     packet->dest.callID = callID;
 
     packet->userid = GetUserID();

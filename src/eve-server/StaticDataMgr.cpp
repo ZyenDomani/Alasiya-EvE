@@ -781,7 +781,7 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(lootProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::loot, GetTimeUSeconds() - profileStartTime);
 }
 
 void StaticDataMgr::GetBpTypeData(uint16 typeID, EvERam::bpTypeData& tData)

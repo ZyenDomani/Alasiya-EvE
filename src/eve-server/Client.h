@@ -311,7 +311,7 @@ public:
 
     // character notification messages
     void CharNowInStation();
-    void CharNoLongerInStation();
+    void CharNoLongerInStation();       // clears m_StationData
 
     // portrait stuff....
     bool RecPic()                                       { return m_portrait; }

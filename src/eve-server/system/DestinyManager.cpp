@@ -53,8 +53,8 @@ m_shipMaxAccelTime(0.0f),
 m_ballMode(Destiny::Ball::Mode::STOP),
 m_warpTimer(0),
 m_moveTime(0.0),
-m_targetDistance(0.0),
-m_followDistance(0.0),
+m_targetDistance(0),
+m_followDistance(0),
 m_stopDistance(0),
 m_mass(1.0f),
 m_turnTic(1),
@@ -132,7 +132,7 @@ void DestinyManager::Process() {
     ProcessState();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(destinyProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::destiny, GetTimeUSeconds() - profileStartTime);
 }
 
 void DestinyManager::ProcessState() {
@@ -554,8 +554,8 @@ void DestinyManager::Halt() {
     m_stateStamp = 0;
     m_targetPoint = GPoint(NULL_ORIGIN);
     m_stopDistance = 0;
-    m_targetDistance = 0.0;
-    m_followDistance = 0.0;
+    m_targetDistance = 0;
+    m_followDistance = 0;
     m_prevSpeedFraction = 0.0f;
     m_userSpeedFraction = 0.0f;
     m_activeSpeedFraction = 0.0f;
@@ -622,7 +622,7 @@ void DestinyManager::CheckBump()
      */
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(collisionProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::collision, GetTimeUSeconds() - profileStartTime);
 }
 
 void DestinyManager::Bump(SystemEntity* pSE)
@@ -854,13 +854,11 @@ void DestinyManager::MoveObject() {
         }
     }
     // ships tend to "level out" when stopping.  try to mimic that here (wip)
-    if (m_stop and (m_currentSpeedFraction < 0.5)) {
-        // rifter will stop level with can #3 (stop processed at #0)
-        // last can is #39 and 170m diff from client's view (below)
-        if (m_shipHeading.y < -0.45) {
-            m_shipHeading.y += 0.07;
-        } else if (m_shipHeading.y > 0.45) {
-            m_shipHeading.y -= 0.07;
+    if (m_stop and (m_currentSpeedFraction < 0.85f) and (m_currentSpeedFraction > 0.09f)) {
+        if (m_shipHeading.y < -0.05) {
+            m_shipHeading.y += 0.05;
+        } else if (m_shipHeading.y > 0.05) {
+            m_shipHeading.y -= 0.05;
         }
     }
 
@@ -1101,7 +1099,7 @@ void DestinyManager::Follow() {
     //  Follow is also used by client as AlignTo.
     const GPoint& target_point = m_targetEntity.second->GetPosition();
     GVector heading(m_position, target_point);
-    m_targetDistance = (heading.length() - m_radius);
+    m_targetDistance = (uint32)(heading.length() - m_radius);
 
     if (m_targetDistance < m_followDistance) {
         if (mySE->HasPilot())
@@ -1215,15 +1213,15 @@ void DestinyManager::Orbit() {
     GPoint Tp(m_targetEntity.second->GetPosition());
 
     // current and edges are used to determine ship's orbit distance, and adjust position accordingly
-    double centers = m_position.distance(Tp);
-    double edges = ( centers - m_radius - Tr);
+    double centers(m_position.distance(Tp));
+    double edges(centers - m_radius - Tr);
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "1 - %s(%u): time:%u, centers:%.2f, edges:%.2f, target:%.2f, follow:%.2f", \
+        _log(DESTINY__ORBIT_TRACE, "1 - %s(%u): time:%u, centers:%.2f, edges:%.2f, target:%u, follow:%u", \
             mySE->GetName(), mySE->GetID(), timeStamp, centers, edges, m_targetDistance, m_followDistance);
 
     // distances checks for orbit calculations
     GPoint mPos(NULL_ORIGIN);
-    float mPosAdj = 0.0f;
+    float mPosAdj(0.0f);
     // check distances for this tic
     if ((edges /2) > m_followDistance) {
         if (m_orbiting == Destiny::Ball::Orbit::TooFar) {
@@ -1538,7 +1536,7 @@ void DestinyManager::InitWarp() {
             mySE->GetName(), mySE->GetID(), m_warpAccelTime, cruiseTime, m_warpDecelTime, warpTime, warpSpeedInMeters);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Accel distance is %.4f. Cruise distance is %.4f.  Decel distance is %.4f.  Direction is %.3f,%.3f,%.3f.", \
             mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, warp_vector.x, warp_vector.y, warp_vector.z);
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %.4f AU (%.4fm).", \
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %.4f AU (%um).", \
             mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance/ONE_AU_IN_METERS, m_targetDistance);
         GPoint destination = m_position + (warp_vector * m_targetDistance);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): calculated exit is %.2f,%.2f,%.2f and vector is %.4f,%.4f,%.4f.", \
@@ -1610,7 +1608,7 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
 
     if (m_warpState->accel)
         if (is_log_enabled(DESTINY__WARP_TRACE))
-            _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %.4f m/s with %.4f m left to go. Current distance %.4f from origin.", \
+            _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %.4f m/s with %u m left to go. Current distance %.4f from origin.", \
                     mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance);
 
     WarpUpdate(currentShipSpeed);
@@ -1626,7 +1624,7 @@ void DestinyManager::WarpCruise(uint16 sec_into_warp) {
     }
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpCruise(): %s(%u) - Warp Crusing(%us): velocity %.4f m/s. with %.4f m left to go.", \
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpCruise(): %s(%u) - Warp Crusing(%us): velocity %.4f m/s. with %u m left to go.", \
                 mySE->GetName(), mySE->GetID(), sec_into_warp, m_warpState->warpSpeed, m_targetDistance);
 
     WarpUpdate(m_warpState->warpSpeed);
@@ -1639,11 +1637,11 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
      */
     uint8 decelTime = (sec_into_warp - m_warpDecelTime);
     double currentDistance = (m_warpState->total_distance - (exp(-decelTime) * m_warpState->decelDist));
-    m_targetDistance = (m_warpState->total_distance - currentDistance);
+    m_targetDistance = (int32)(m_warpState->total_distance - currentDistance);
     double currentShipSpeed = (m_warpState->warpSpeed * exp(-decelTime));
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %.4f m/s with %.4f m left to go.", \
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %.4f m/s with %u m left to go.", \
                 mySE->GetName(), mySE->GetID(), decelTime, sec_into_warp, currentShipSpeed, m_targetDistance);
 
     WarpUpdate(currentShipSpeed);
@@ -1676,7 +1674,7 @@ void DestinyManager::WarpUpdate(double currentShipSpeed) {
 
 void DestinyManager::WarpStop(double currentShipSpeed) {
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpStop(): %s(%u) - Warp complete. Exit velocity %.4f m/s with %.4f m left to go.", \
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpStop(): %s(%u) - Warp complete. Exit velocity %.4f m/s with %u m left to go.", \
                 mySE->GetName(), mySE->GetID(), currentShipSpeed, m_targetDistance);
         _log(DESTINY__WARP_TRACE, "Destiny::WarpStop(): %s(%u): Ship currently at %.2f,%.2f,%.2f.", \
                 mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
@@ -1800,7 +1798,7 @@ void DestinyManager::BeginMovement() {
     if (m_orbiting == Destiny::Ball::Orbit::None) {
         // reset target distance just in case it changed.
         GVector shipVector(m_position, m_targetPoint);
-        m_targetDistance = shipVector.length();
+        m_targetDistance = (uint32)shipVector.length();
         m_orbitRadTic = 0.0f;
         m_maxOrbitSpeedFraction = 1;
     }
@@ -1826,7 +1824,7 @@ void DestinyManager::BeginMovement() {
     MoveObject();
 }
 
-void DestinyManager::Follow(SystemEntity* pSE, double distance) {
+void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
     //called from client as 'CmdFollowBall'
     //  also used by 'Approach'
     if ((m_ballMode == Destiny::Ball::Mode::FOLLOW)
@@ -1931,7 +1929,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
 
     m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), m_targetPoint);
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__TRACE, "Destiny::WarpTo() - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %.1f",
+        _log(DESTINY__TRACE, "Destiny::WarpTo() - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %u",
             mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), m_stopDistance, m_targetDistance);
 
     // npcs have no warp restrictions (yet)
@@ -1957,7 +1955,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
         updates.push_back(sfx.Encode());
         SendDestinyUpdate(updates);
         if (is_log_enabled(NPC__MESSAGE))
-            _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",\
+            _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %u",\
                     mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), mySE->SysBubble()->GetID(), \
                     m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
         return;
@@ -2002,13 +2000,13 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
             // not enough cap.  reset everything based on available cap
             capNeeded = (currentShipCap /m_warpCapacitorNeed) /m_mass;
             if (capNeeded > 1) {
-                m_targetDistance = capNeeded * ONE_AU_IN_METERS;
+                m_targetDistance = (uint32)capNeeded * ONE_AU_IN_METERS;
                 GVector warp_direction(m_position, where);
                 GPoint newTarget(m_position +(warp_direction *m_targetDistance));
 
                 m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), newTarget);
                 if (is_log_enabled(DESTINY__WARP_TRACE))
-                    _log(DESTINY__TRACE, "Destiny::WarpTo():Update - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %.1f",
+                    _log(DESTINY__TRACE, "Destiny::WarpTo():Update - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %u",
                         mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), m_stopDistance, m_targetDistance);
             } else {
                 // if not enough cap to do min warp, cancel and return
@@ -2071,11 +2069,11 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     SendSingleDestinyUpdate(&up, true);   // consumed
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %u",
              m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
 }
 
-void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
+void DestinyManager::Orbit(SystemEntity *pSE, uint32 distance/*0*/) {
     if ((m_ballMode == Destiny::Ball::Mode::ORBIT)
     and (m_targetEntity.second == pSE)
     and (m_targetDistance == distance))
@@ -2147,7 +2145,7 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     m_orbitRadTic = EvE::Trig::Pi2 / m_orbitTime;
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "%s(%u) - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
+        _log(DESTINY__ORBIT_TRACE, "%s(%u) - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%u, followDistance:%u, orbitTime:%.1f, radTic:%.5f", \
                 mySE->GetName(), mySE->GetID(), Rc, velocity, m_maxOrbitSpeedFraction, \
                 m_targetDistance, m_followDistance, m_orbitTime, m_orbitRadTic);
 /*  dont really need this here yet.....maybe not at all.
@@ -2178,7 +2176,7 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
 */
     if (m_followDistance == 0) {
         _log(DESTINY__ERROR, "%s(%u) - FollowDistance is 0.", mySE->GetName(), mySE->GetID());
-        m_followDistance = m_targetDistance + Tr + m_radius; // fudge something here.  will have to fix later, but this is close enough
+        m_followDistance = (uint32)(m_targetDistance + Tr + m_radius); // fudge something here.  will have to fix later, but this is close enough
     }
 
     CmdOrbit du;

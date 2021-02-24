@@ -213,7 +213,7 @@ void Colony::Process()
 
         // profile timer for the colony updates
         if (sConfig.debug.UseProfiling)
-            sProfile.AddTime(colonyProfile, GetTimeUSeconds() - profileStartTime);
+            sProfiler.AddTime(Profile::colony, GetTimeUSeconds() - profileStartTime);
     }
 
     if (m_toUpdate) {

@@ -1,5 +1,5 @@
 /**
- * @name Profile.h
+ * @name Profiler.h
  *   lightweight profiling code specifically for timing sections of running EvEmu application
  *   this code is very basic, and very specific.
  * @Author:         Allan
@@ -23,42 +23,44 @@
 
 #include "eve-common.h"
 
-typedef enum {          // implemented?  (* = yes)
-    destinyProfile     = 1,    //*
-    mapProfile         = 2,    //
-    clientProfile      = 3,    //*
-    npcProfile         = 4,    //*
-    bubblesProfile     = 5,    //*
-    itemsProfile       = 6,    //
-    modulesProfile     = 7,    //*
-    functionsProfile   = 8,    //
-    dbProfile          = 9,    //
-    shipProfile        = 10,   //*
-    targetsProfile     = 11,   //
-    serverProfile      = 12,   //
-    missileProfile     = 13,   //
-    systemProfile      = 14,   //*
-    entitySProfile     = 15,   //*
-    lootProfile        = 16,   //*
-    salvageProfile     = 17,   //
-    spawnProfile       = 18,   //*
-    collisionProfile   = 19,   //*
-    droneProfile       = 20,   //*
-    itemloadProfile    = 21,   //*
-    concordProfile     = 22,   //*
-    colonyProfile      = 23,   //*
-    damageProfile      = 24,
-    parseFXProfile     = 25,
-    applyFXProfile     = 26,
-    onTargProfile      = 27
-} profile;
+namespace Profile {
+    enum {          // implemented?  (* = yes)
+        destiny     = 1,    //*
+        map         = 2,    //
+        client      = 3,    //*
+        npc         = 4,    //*
+        bubbles     = 5,    //*
+        items       = 6,    //
+        modules     = 7,    //*
+        functions   = 8,    //
+        db          = 9,    //
+        ship        = 10,   //*
+        targets     = 11,   //
+        server      = 12,   //
+        missile     = 13,   //
+        system      = 14,   //*
+        entityS     = 15,   //*
+        loot        = 16,   //*
+        salvage     = 17,   //
+        spawn       = 18,   //*
+        collision   = 19,   //*
+        drone       = 20,   //*
+        itemload    = 21,   //*
+        concord     = 22,   //*
+        colony      = 23,   //*
+        damage      = 24,
+        parseFX     = 25,
+        applyFX     = 26,
+        onTarg      = 27
+    };
+}
 
-class Profile
-: public Singleton<Profile>
+class Profiler
+: public Singleton<Profiler>
 {
 public:
-    Profile();
-    ~Profile();
+    Profiler();
+    ~Profiler();
 
     int Initialize();
 
@@ -66,12 +68,12 @@ public:
     void PrintProfile();
     void ClearAll();
 
-    const char* GetSize(size_t cSize);
+    void GetSize(size_t cSize, std::string& ret);
 
     void GetRunTimes(std::vector< double >& container, float& h, float& l, float& a);
 
 protected:
-    std::string GetKeyName(uint8 key);
+    std::string GetKeyName(uint8& key);
 
 private:
     std::vector<double> m_server;
@@ -103,7 +105,7 @@ private:
     std::vector<double> m_effects2;
 };
 
-#define sProfile \
-    ( Profile::get() )
+#define sProfiler \
+    ( Profiler::get() )
 
 #endif  // EVEMU_EVESERVER_PROFILER_H_

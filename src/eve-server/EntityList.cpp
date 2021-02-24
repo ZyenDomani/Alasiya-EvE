@@ -272,7 +272,7 @@ void EntityList::Process() {
         }
 
         if (sConfig.debug.UseProfiling)
-            sProfile.AddTime(entitySProfile, GetTimeUSeconds() - profileStartTime);
+            sProfiler.AddTime(Profile::entityS, GetTimeUSeconds() - profileStartTime);
     }
 }
 

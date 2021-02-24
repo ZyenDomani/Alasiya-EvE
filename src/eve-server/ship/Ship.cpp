@@ -2,7 +2,7 @@
 #include "Client.h"
 #include "EntityList.h"
 #include "EVEServerConfig.h"
-#include "Profile.h"
+#include "Profiler.h"
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
 #include "character/Character.h"
@@ -88,7 +88,7 @@ void ShipItem::LogOut()
 
     pInventory->Unload();
 
-    // remove ship item from factory master list here, as *something* changes ship position when saving items from factory.
+    // remove ship item from factory master list here, as *something* changes ship position when saving from factory.
     sItemFactory.RemoveItem(m_itemID);
 
     // remove ship item from its' container's inventory list also.
@@ -2489,7 +2489,7 @@ void ShipSE::Process() {
         }
         // profile timer for the ship recharge shit
         if (sConfig.debug.UseProfiling)
-            sProfile.AddTime(shipProfile, GetTimeUSeconds() - profileStartTime);
+            sProfiler.AddTime(Profile::ship, GetTimeUSeconds() - profileStartTime);
 
         // proc heat on the 5s cap/shield tic, if enabled
         if (sConfig.testing.ShipHeat)

@@ -250,7 +250,7 @@ bool SystemManager::ProcessTic() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(systemProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::system, GetTimeUSeconds() - profileStartTime);
 
     return SystemActivity();
 }
@@ -282,7 +282,12 @@ void SystemManager::UnloadSystem() {
     m_anomMgr->Close();
 
     // remove static and dynamic entities
-    //  not removing ship items and solar system object from ItemFactory.
+    /*  this is not removing the following from ItemFactory
+     *    capsules
+     *   items in inactive ships
+     *
+     */
+
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {
@@ -318,7 +323,8 @@ void SystemManager::UnloadSystem() {
 
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
-    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %u npcs, %u entities, %u statics.", m_npcs.size(), m_entities.size(), m_staticEntities.size());
+    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %u npcs, %u entities, %u statics.", \
+                m_npcs.size(), m_entities.size(), m_staticEntities.size());
 
     // this is dupe container. contents unloaded in another call
     m_npcs.clear();
@@ -341,6 +347,9 @@ void SystemManager::UnloadSystem() {
 
     /** @todo finish this for lsc */
     m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);
+
+    // remove solar system item from ItemFactory
+    sItemFactory.RemoveItem(m_data.systemID);
     m_loaded = false;
 }
 

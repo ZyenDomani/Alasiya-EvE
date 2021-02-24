@@ -33,7 +33,7 @@
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
-#include "Profile.h"
+#include "Profiler.h"
 #include "Client.h"
 #include "inventory/AttributeEnum.h"
 #include "npc/NPC.h"
@@ -92,7 +92,7 @@ bool TargetManager::Process() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(targetsProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::targets, GetTimeUSeconds() - profileStartTime);
 
     return true;
 }

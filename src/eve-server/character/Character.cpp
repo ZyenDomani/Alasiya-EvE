@@ -334,6 +334,7 @@ CharacterRef Character::Spawn( CharacterData& charData, CorpData& corpData) {
 
 void Character::LogOut()
 {
+
     SaveFullCharacter();
     m_db.SetLogOffTime(m_itemID);
     if (!sConsole.IsShutdown())
@@ -342,8 +343,11 @@ void Character::LogOut()
 
     pInventory->Unload();
 
-    if (!m_pClient->IsCharCreation())
+    if (!m_pClient->IsCharCreation()) {
         sItemFactory.RemoveItem(m_itemID);
+        if (IsStation(m_charData.locationID))
+            ;   // do we need to do anything here?
+    }
 }
 
 void Character::Delete() {
@@ -364,7 +368,7 @@ float Character::balance(uint8 type)
     } else {
         _log(ACCOUNT__ERROR, "Character::balance() - invalid type %u", type);
     }
-    return 0;
+    return 0.0f;
 }
 
 bool Character::AlterBalance(float amount, uint8 type) {
@@ -570,6 +574,7 @@ int8 Character::GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected /*true
     // First, check for existence of skill trained or in training:
     if (requiredSkill.get() == nullptr)
         return (zeroForNotInjected ? 0 : -1);
+
     return (int8)requiredSkill->GetAttribute(AttrSkillLevel).get_uint32() ;
 }
 

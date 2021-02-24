@@ -546,7 +546,7 @@ int main( int argc, char* argv[] )
     }
     if (sConfig.debug.UseProfiling) {
         sLog.Green(" Server Profiling","Enabled.");
-        sProfile.Initialize();
+        sProfiler.Initialize();
     } else {
         sLog.Warning(" Server Profiling","Disabled.");
     }
@@ -855,7 +855,7 @@ int main( int argc, char* argv[] )
     EVETCPConnection* tcpc(nullptr);
 
     // clear profile data from server startup
-    sProfile.ClearAll();
+    sProfiler.ClearAll();
     sLog.Green(" Server Profiling","Profile Data Reset.");
     std::printf("\n");     // spacer
 

@@ -135,8 +135,8 @@ public:
     void TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed);
 
     /* Local Movement */
-    void Orbit(SystemEntity* pSE, double distance=0);
-    void Follow(SystemEntity* pSE, double distance=0);
+    void Orbit(SystemEntity* pSE, uint32 distance=0);
+    void Follow( SystemEntity* pSE, uint32 distance );
     void AlignTo(SystemEntity* pSE);
     void GotoPoint(const GPoint &point);
     void GotoDirection(const GPoint &direction);
@@ -283,8 +283,8 @@ protected:
     float m_activeSpeedFraction;        //fuzzy logic - speed % - ship's current speed setting as ratio of CSF to USF (or OSF)
     float m_maxOrbitSpeedFraction;      //fuzzy logic - speed % - ship's max speed based on orbit data
 
-    double m_targetDistance;            //in m
-    double m_followDistance;            //in m
+    uint32 m_followDistance;            //in m
+    uint32 m_targetDistance;            //in m
     double m_moveTime;                  //in ms     - movement timestamp container for calculating csf
 
     GPoint m_targetPoint;

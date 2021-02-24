@@ -365,7 +365,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(damageProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::damage, GetTimeUSeconds() - profileStartTime);
 
     return killed;
 }

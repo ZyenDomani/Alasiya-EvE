@@ -135,7 +135,7 @@ void SpawnMgr::Process() {
         }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(spawnProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::spawn, GetTimeUSeconds() - profileStartTime);
 }
 
 void SpawnMgr::MoveSpawn(NPC* pNPC, SystemBubble* pBubble)
@@ -369,7 +369,7 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble)
 
     /* this will throw off the accuracy of the profile, as this and SpawnMgr::Process() use the same data container */
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(spawnProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::spawn, GetTimeUSeconds() - profileStartTime);
     return true;
 }
 

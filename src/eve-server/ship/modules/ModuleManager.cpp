@@ -192,7 +192,7 @@ void ModuleManager::Process()
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(modulesProfile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::modules, GetTimeUSeconds() - profileStartTime);
 }
 
 bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
