@@ -658,7 +658,7 @@ void StaticDataMgr::GetMineralData(std::vector< matlData >& into)
         matlData data = matlData();
         data.typeID = cur.first;
         data.name = cur.second;
-        into.emplace(data);
+        into.push_back(data);
     }
 }
 
