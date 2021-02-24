@@ -21,7 +21,6 @@ public:
 
     static void posTest(Client* pClient);
 
-    static void SetBasePrice();
 };
 
 

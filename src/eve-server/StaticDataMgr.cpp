@@ -652,10 +652,10 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
     return false;
 }
 
-void StaticDataMgr::GetMineralData(std::vector< matlData >& into)
+void StaticDataMgr::GetMineralData(std::vector< Market::matlData >& into)
 {
     for (auto cur : m_minerals) {
-        matlData data = matlData();
+        Market::matlData data = Market::matlData();
         data.typeID = cur.first;
         data.name = cur.second;
         into.push_back(data);

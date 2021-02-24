@@ -13,13 +13,6 @@
  *     currently moving to specific eve-common/EVE_xxxx.h files
  */
 
-/* POD structure for mineral data used in pricing method */
-struct matlData {
-    uint16 typeID;
-    float price;
-    std::string name;
-};
-
 /* POD structure for certificate data */
 struct CharCerts {
     uint8 visibilityFlags;

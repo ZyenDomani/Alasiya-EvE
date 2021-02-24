@@ -55,6 +55,11 @@ public:
     // cached
     PyRep* GetOldPriceHistory(uint32 regionID, uint32 typeID);
 
+
+    // base price update method
+    void SetBasePrice();         // this uses current mineral values to estimate base price of item
+
+    
 protected:
     void Populate();
 

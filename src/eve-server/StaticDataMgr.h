@@ -20,6 +20,7 @@
 #include "POD_containers.h"
 
 #include "../eve-common/EVE_RAM.h"
+#include "../eve-common/EVE_Market.h"
 
 #include "map/MapDB.h"
 #include "system/cosmicMgrs/ManagerDB.h"
@@ -53,7 +54,7 @@ public:
     const char*         GetGroupName(uint16 grpID);
     const char*         GetCategoryName(uint8 catID);
 
-    void                GetMineralData(std::vector<matlData>& data);
+    void                GetMineralData(std::vector<Market::matlData>& data);
     void                GetMoonResouces(std::map<uint16, uint8>& data);
 
     bool                IsSkillTypeID(uint16 typeID);
