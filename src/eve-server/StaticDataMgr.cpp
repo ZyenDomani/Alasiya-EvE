@@ -39,6 +39,7 @@ m_npcDivisions(nullptr)
     m_moonGoo.clear();
     m_ramMatl.clear();
     m_regions.clear();
+    m_minerals.clear();
     m_bpMatlData.clear();
     m_systemData.clear();
     m_staticData.clear();
@@ -92,6 +93,7 @@ void StaticDataMgr::Clear()
     m_moonGoo.clear();
     m_ramMatl.clear();
     m_regions.clear();
+    m_minerals.clear();
     m_systemData.clear();
     m_staticData.clear();
     m_salvageMap.clear();
@@ -340,6 +342,11 @@ void StaticDataMgr::Populate()
     sLog.Cyan("    StaticDataMgr", "%u Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
+    FactoryDB::GetMinerals(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID, typeName FROM invTypes [where type=mineral]
+        m_minerals.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+    }
     FactoryDB::GetRAMMaterials(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
@@ -379,7 +386,7 @@ void StaticDataMgr::Populate()
             bpTypeData.materialModifier         = row.GetInt(10);
             bpTypeData.wasteFactor              = row.GetInt(11);
             bpTypeData.maxProductionLimit       = row.GetInt(12);
-            bpTypeData.chanceOfRE = row.GetFloat(13);
+            bpTypeData.chanceOfRE               = row.GetFloat(13);
             bpTypeData.catID                    = row.GetInt(14);
         m_bpTypeData.emplace(row.GetInt(0), bpTypeData);
     }
@@ -518,7 +525,7 @@ void StaticDataMgr::Populate()
         if (IsStation(locationID)) {
             locationID = GetStationSystem(locationID);
         } else if (!IsSolarSystem(locationID)) {
-            _log(SERVICE__WARNING, "Failed to query info:  locationID %u is neither station nor system.", locationID);
+            _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
             continue;
         }
 
@@ -645,6 +652,16 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
     return false;
 }
 
+void StaticDataMgr::GetMineralData(std::vector< matlData >& into)
+{
+    for (auto cur : m_minerals) {
+        matlData data = matlData();
+        data.typeID = cur.first;
+        data.name = cur.second;
+        into.emplace(data);
+    }
+}
+
 void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
 {
     // make copy
@@ -732,8 +749,8 @@ uint32 StaticDataMgr::GetWreckID(uint32 typeID)
 void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
     double profileStartTime = GetTimeUSeconds();
 
-    float randChance = 0.0f;
-    uint8 metaLevel = 0;
+    float randChance(0.0f);
+    uint8 metaLevel(0);
     std::vector<LootGroupType> lootGrpVec;
     lootGrpVec.clear();
 
@@ -955,12 +972,12 @@ uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
     return 0;
 }
 
-bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
+bool StaticDataMgr::GetSystemData(uint32 locationID, SystemData& data)
 {
     if (IsStation(locationID)) {
         locationID = GetStationSystem(locationID);
     } else if (!IsSolarSystem(locationID)) {
-        _log(SERVICE__WARNING, "Failed to query info:  locationID %u is neither station nor system.", locationID);
+        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
         return false;
     }
 
@@ -979,7 +996,7 @@ const char* StaticDataMgr::GetSystemName(uint32 locationID)
     if (IsStation(locationID)) {
         locationID = GetStationSystem(locationID);
     } else if (!IsSolarSystem(locationID)) {
-        _log(SERVICE__WARNING, "Failed to query info:  locationID %u is neither station nor system.", locationID);
+        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
         return "Error";
     }
 

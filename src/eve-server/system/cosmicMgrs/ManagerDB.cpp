@@ -297,7 +297,7 @@ void ManagerDB::GetSystemData(DBQueryResult& res)
         " FROM mapSolarSystems AS mss"
         " LEFT JOIN mapDenormalize AS md ON (md.itemID = mss.solarSystemID)"
     ))
-        codelog(DATABASE__ERROR, "Error in GetSystemInfo query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetSystemData query: %s", res.error.c_str());
 }
 
 void ManagerDB::GetStaticData(DBQueryResult& res)

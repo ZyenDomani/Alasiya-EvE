@@ -53,6 +53,7 @@ public:
     const char*         GetGroupName(uint16 grpID);
     const char*         GetCategoryName(uint8 catID);
 
+    void                GetMineralData(std::vector<matlData>& data);
     void                GetMoonResouces(std::map<uint16, uint8>& data);
 
     bool                IsSkillTypeID(uint16 typeID);
@@ -76,10 +77,10 @@ public:
     bool                GetStaticInfo(uint32 itemID, StaticData& data);
     uint16              GetStaticType(uint32 itemID);
 
-    // this specific cache method is designed to use EITHER a stationID OR a systemID to determine system data wanted.
+    // this specific cache method is designed to use either a stationID or a systemID to determine system data wanted.
     const char*         GetSystemName(uint32 locationID);       //  allan 3Aug16
-    // this specific cache method is designed to use EITHER a stationID OR a systemID to determine system data wanted.
-    bool                GetSystemInfo(uint32 locationID, SystemData& data);      //  allan 3Aug16
+    // this specific cache method is designed to use either a stationID or a systemID to determine system data wanted.
+    bool                GetSystemData(uint32 locationID, SystemData& data);      //  allan 3Aug16
 
     PyRep*              GetStationCount();
     // return regionID for given stationID
@@ -165,6 +166,7 @@ private:
     std::map<uint16, EvERam::bpTypeData>                m_bpTypeData;       // typeID/data
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
     std::map<uint16, std::string>                       m_skills;           // typeID/name
+    std::map<uint16, std::string>                       m_minerals;         // typeID/name
     std::map<uint32, StaticData>                        m_staticData;       // itemID/data
 
     std::multimap<uint16, EvERam::RamMaterials>         m_ramMatl;          // itemTypeID/data

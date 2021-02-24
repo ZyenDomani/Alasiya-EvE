@@ -95,7 +95,7 @@ m_secValue(1.1f)
     m_data = SystemData();
     m_killData = SystemKillData();
 
-    sDataMgr.GetSystemInfo(systemID, m_data);   // system data is now an internal memory (cached) object.  db is hit once at system boot.
+    sDataMgr.GetSystemData(systemID, m_data);   // system data is now an internal memory (cached) object.  db is hit once at system boot.
     m_secValue -= m_data.securityRating;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
 
     _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_data.name.c_str(), m_data.systemID);
@@ -282,12 +282,6 @@ void SystemManager::UnloadSystem() {
     m_anomMgr->Close();
 
     // remove static and dynamic entities
-    /*  this is not removing the following from ItemFactory
-     *    capsules
-     *   items in inactive ships
-     *
-     */
-
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {

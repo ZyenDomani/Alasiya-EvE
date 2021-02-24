@@ -693,11 +693,11 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         return;
     }
 
-    bool count = m_login;
-    bool wasDocked = IsStation(m_locationID);
+    bool count(m_login);
+    bool wasDocked(IsStation(m_locationID));
     m_locationID = locationID;
     // get data for new system.  this checks for stationID sent as locationID, so is safe here.
-    sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
+    sDataMgr.GetSystemData(m_locationID, m_SystemData);
 
     m_bubbleWait = false;           // allow client processing of subsequent destiny msgs
 
@@ -711,11 +711,11 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             CharNoLongerInStation();
             wasDocked = false;  // dont update station again on this call (redundant check later in this method)
         }
-        if (pShipSE != nullptr) {
+        if (pShipSE != nullptr)
             if (IsJump() and !m_autoPilot)
                 pShipSE->DestinyMgr()->Halt();
-        }
-        // remove from 'current' system before resetting system vars
+        
+        // remove from current system before resetting system vars
         m_system->RemoveEntity(pShipSE);
         m_system->RemoveClient(this, (count = true), IsJump());
         m_system = nullptr;
@@ -738,6 +738,13 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
         // register ourselves with new system manager (this wont hit on login)
         m_system->AddClient(this, count, IsJump());
+    }
+
+    if (InPod()) {
+        m_ship->Move(m_locationID, flagCapsule, true);
+    } else {
+        m_pod->Move(m_SystemData.systemID, flagCapsule, false);
+        m_ship->Move(m_locationID, flagNone, true);
     }
 
     /** @todo  verify 'pt' is within system boundaries */
@@ -798,13 +805,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
                 }
                 sFltSvc.UpdateBoost(m_fleet, IsFleetBoss(), wing, squad);
             }
-        }
-
-        if (InPod()) {
-            m_ship->Move(m_locationID, flagCapsule, true);
-        } else {
-            m_pod->Move(m_locationID, flagCapsule, false);
-            m_ship->Move(m_locationID, flagNone, true);
         }
 
         if (m_char->flag() != flagPilot)
@@ -1862,7 +1862,7 @@ void Client::InitSession(int32 characterID)
         pSession->SetInt("locationid", solarSystemID);
     }
 
-    sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
+    sDataMgr.GetSystemData(m_locationID, m_SystemData);
     if ((IsSolarSystem(m_SystemData.systemID))
     and (IsConstellation(m_SystemData.constellationID))
     and (IsRegion(m_SystemData.regionID)))
