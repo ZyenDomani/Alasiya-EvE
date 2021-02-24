@@ -429,6 +429,7 @@ uint32 WreckContainer::CreateItemID( ItemData &data)
 
 void WreckContainer::Delete()
 {
+    // verify this is actually called correctly
     m_delete = true;
     pInventory->LoadContents();
     pInventory->DeleteContents();
@@ -536,7 +537,6 @@ void WreckSE::Process() {
         m_deleteTimer.Disable();
         sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", m_contRef->itemID() );
         Delete();
-        m_contRef->Delete();
         delete this;
     }
 }
