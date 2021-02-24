@@ -33,6 +33,7 @@ public:
     static PyRep* GetMaterialCompositionOfItemType(const uint32 typeID);
 
     // for static data mgr
+    static bool GetMinerals(DBQueryResult& res);
     static bool IsRefinable(const uint16 typeID);
     static bool IsRecyclable(const uint16 typeID);
     static void GetRAMMaterials(DBQueryResult& res);

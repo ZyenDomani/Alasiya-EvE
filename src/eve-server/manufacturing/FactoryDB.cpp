@@ -31,6 +31,12 @@ bool FactoryDB::IsProducableBy(const uint32 assemblyLineID, const ItemType *pTyp
     return FactoryDB::GetMultipliers(assemblyLineID, pType, into);
 }
 
+bool FactoryDB::GetMinerals(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID = 18 AND published = 1"))   // minerals
+        codelog(DATABASE__ERROR, "Error in GetMinerals query: %s", res.error.c_str());
+}
+
 void FactoryDB::GetRAMMaterials(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT typeID, materialTypeID, quantity FROM invTypeMaterials"))

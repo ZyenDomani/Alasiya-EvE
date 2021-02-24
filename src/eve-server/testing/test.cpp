@@ -11,320 +11,109 @@
 #include "eve-server.h"
 
 #include "Client.h"
-#include "system/Container.h"
 #include "system/SystemEntity.h"
-#include "system/SystemManager.h"
 #include "testing/test.h"
 
 void testing::posTest(Client* pClient) {
     SystemEntity* mySE(pClient->GetShipSE());
 
-    // create and add markers for found data to visualize positions
-    /* ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
-     *           const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
-     */
-    FactionData data = FactionData();
-    ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, "Found Position Test", NULL_ORIGIN, "Position Test");
-    CargoContainerRef iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("tuple 1");
-        iRef->SetPosition(GPoint(506169425920,2437608374272,1636387389440));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("tuple 2");
-        iRef->SetPosition(GPoint(-1018362724352,948782891008,1636387389440));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("tuple 3");
-        iRef->SetPosition(GPoint(2007360077824,948782891008,1636387389440));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("tuple 4");
-        iRef->SetPosition(GPoint(506169425920,948782891008,154119258112));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("tuple 5");
-        iRef->SetPosition(GPoint(506169425920,948782891008,3236538089472));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    // create list positions
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("List 1");
-        iRef->SetPosition(GPoint(506169425920,-555071897600,1636387389440));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("List 2");
-        iRef->SetPosition(GPoint(-1018362724352,948782891008,1636387389440));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("List 3");
-        iRef->SetPosition(GPoint(506169425920,948782891008,154119258112));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("data");
-        iRef->SetPosition(GPoint(9814029035.87747,-280669480683.521,-171426724332.669));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    // create probe positions
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("probe 1 (470)");
-        iRef->SetPosition(GPoint(506169425920,2437608374272,1636387389440));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("probe 2 (440)");
-        iRef->SetPosition(GPoint(506169425920,-555071897600,1636387389440));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("probe 3 (473)");
-        iRef->SetPosition(GPoint(2007360077824,948782891008,1636387389440));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("probe 4 (446)");
-        iRef->SetPosition(GPoint(-1018362724352,948782891008,1636387389440));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("probe 5 (453)");
-        iRef->SetPosition(GPoint(506169425920,948782891008,154119258112));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-    iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
-    if (iRef.get() != nullptr) {
-        iRef->Rename("probe 6 (428)");
-        iRef->SetPosition(GPoint(506169425920,948782891008,3236538089472));
-        // create new container
-        ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-        if (cSE == nullptr)
-            return;
-        iRef->SetMySE(cSE);
-        mySE->SystemMgr()->AddMarker(cSE, false, true);
-    }
-
     sLog.Warning("\ttesting","Test competed");
 }
-/*
-                        [PyIntegerVar 9000000000000020470]
-                      [PyString "pos"]
-                      [PyObjectEx Type2]
-                        [PyTuple 2 items]
-                          [PyTuple 1 items]
-                            [PyToken foo.Vector3]
-                          [PyTuple 3 items]
-                            [PyFloat 506169425920]
-                            [PyFloat 2437608374272]
-                            [PyFloat 1636387389440]
-                        [PyIntegerVar 9000000000000020440]
-                      [PyString "pos"]
-                      [PyObjectEx Type2]
-                        [PyTuple 2 items]
-                          [PyTuple 1 items]
-                            [PyToken foo.Vector3]
-                          [PyTuple 3 items]
-                            [PyFloat 506169425920]
-                            [PyFloat -555071897600]
-                            [PyFloat 1636387389440]
-                        [PyIntegerVar 9000000000000020473]
-                      [PyString "pos"]
-                      [PyObjectEx Type2]
-                        [PyTuple 2 items]
-                          [PyTuple 1 items]
-                            [PyToken foo.Vector3]
-                          [PyTuple 3 items]
-                            [PyFloat 2007360077824]
-                            [PyFloat 948782891008]
-                            [PyFloat 1636387389440]
-                        [PyIntegerVar 9000000000000020446]
-                      [PyString "pos"]
-                      [PyObjectEx Type2]
-                        [PyTuple 2 items]
-                          [PyTuple 1 items]
-                            [PyToken foo.Vector3]
-                          [PyTuple 3 items]
-                            [PyFloat -1018362724352]
-                            [PyFloat 948782891008]
-                            [PyFloat 1636387389440]
-                        [PyIntegerVar 9000000000000020453]
-                      [PyString "pos"]
-                      [PyObjectEx Type2]
-                        [PyTuple 2 items]
-                          [PyTuple 1 items]
-                            [PyToken foo.Vector3]
-                          [PyTuple 3 items]
-                            [PyFloat 506169425920]
-                            [PyFloat 948782891008]
-                            [PyFloat 154119258112]
-                        [PyIntegerVar 9000000000000020428]
-                      [PyString "pos"]
-                      [PyObjectEx Type2]
-                        [PyTuple 2 items]
-                          [PyTuple 1 items]
-                            [PyToken foo.Vector3]
-                          [PyTuple 3 items]
-                            [PyFloat 506169425920]
-                            [PyFloat 948782891008]
-                            [PyFloat 3236538089472]
-            */
- /*
-  *    [PyString "pos"]
-  *    [PyList 6 items]
-  *      [PyObjectEx Type2]
-  *        [PyTuple 2 items]
-  *          [PyTuple 1 items]
-  *            [PyToken foo.Vector3]
-  *          [PyTuple 3 items]
-  *            [PyFloat 506169425920]
-  *            [PyFloat 2437608374272]
-  *            [PyFloat 1636387389440]
-  *      [PyObjectEx Type2]
-  *        [PyTuple 2 items]
-  *          [PyTuple 1 items]
-  *            [PyToken foo.Vector3]
-  *          [PyTuple 3 items]
-  *            [PyFloat -1018362724352]
-  *            [PyFloat 948782891008]
-  *            [PyFloat 1636387389440]
-  *      [PyObjectEx Type2]
-  *        [PyTuple 2 items]
-  *          [PyTuple 1 items]
-  *            [PyToken foo.Vector3]
-  *          [PyTuple 3 items]
-  *            [PyFloat 2007360077824]
-  *            [PyFloat 948782891008]
-  *            [PyFloat 1636387389440]
-  *      [PyObjectEx Type2]
-  *        [PyTuple 2 items]
-  *          [PyTuple 1 items]
-  *            [PyToken foo.Vector3]
-  *          [PyTuple 3 items]
-  *            [PyFloat 506169425920]
-  *            [PyFloat 948782891008]
-  *            [PyFloat 154119258112]
-  *      [PyList 3 items]
-  *        [PyObjectEx Type2]
-  *          [PyTuple 2 items]
-  *            [PyTuple 1 items]
-  *              [PyToken foo.Vector3]
-  *            [PyTuple 3 items]
-  *              [PyFloat 506169425920]
-  *              [PyFloat -555071897600]
-  *              [PyFloat 1636387389440]
-  *        [PyObjectEx Type2]
-  *          [PyTuple 2 items]
-  *            [PyTuple 1 items]
-  *              [PyToken foo.Vector3]
-  *            [PyTuple 3 items]
-  *              [PyFloat -1018362724352]
-  *              [PyFloat 948782891008]
-  *              [PyFloat 1636387389440]
-  *        [PyObjectEx Type2]
-  *          [PyTuple 2 items]
-  *            [PyTuple 1 items]
-  *              [PyToken foo.Vector3]
-  *            [PyTuple 3 items]
-  *              [PyFloat 506169425920]
-  *              [PyFloat 948782891008]
-  *              [PyFloat 154119258112]
-  *      [PyObjectEx Type2]
-  *        [PyTuple 2 items]
-  *          [PyTuple 1 items]
-  *            [PyToken foo.Vector3]
-  *          [PyTuple 3 items]
-  *            [PyFloat 506169425920]
-  *            [PyFloat 948782891008]
-  *            [PyFloat 3236538089472]
-  */
+
+void testing::SetBasePrice()
+{
+    /* method to estimate item base price, based on materials to manufacture that item
+     * this will fudge cost a bit for material delivery, factory setup, line run cost, and storage of raw and final items
+     *
+     * eventually, this will query materials prices,
+     * then set estimated prices for items based on ME0 BPO
+     *
+     * mineral prices are queried from db, based on median of buy/sell orders, leveraged with base price in db
+     * then, the base price is updated in db and saved for later use
+     *
+     * ships and modules are loaded and queried from static data for manufacturing materials
+     * those materials are queried (as required) for minerals needed
+     * once a total mineral value has been calculated, calculate estimated cost based on
+     * current mineral values.
+     * that cost will be modified for above additions (cost added)
+     *
+     *
+     * NOTES FOR IMPLEMETING THIS SHIT
+     *
+        //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
+        EvERam::RamMaterials ramMatls = EvERam::RamMaterials();
+        ramMatls.quantity       = row.GetInt(2);
+        ramMatls.materialTypeID = row.GetInt(1);
+
+        //SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, extra FROM ramTypeRequirements
+        EvERam::RamRequirements ramReq = EvERam::RamRequirements();
+        ramReq.activityID       = row.GetInt(1);
+        ramReq.requiredTypeID   = row.GetInt(2);
+        ramReq.quantity         = row.GetInt(3);
+        ramReq.damagePerJob     = row.GetFloat(4);
+        ramReq.extra            = row.GetBool(5);
+
+        //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
+        //  researchTechTime, productivityModifier, materialModifier, wasteFactor, maxProductionLimit, chanceOfRE, catID FROM invBlueprintTypes
+        EvERam::bpTypeData bpTypeData = EvERam::bpTypeData();
+        bpTypeData.parentBlueprintTypeID    = row.GetInt(1);
+        bpTypeData.productTypeID            = row.GetInt(2);
+        bpTypeData.productionTime           = row.GetInt(3);
+        bpTypeData.techLevel                = row.GetInt(4);
+        bpTypeData.researchProductivityTime = row.GetInt(5);
+        bpTypeData.researchMaterialTime     = row.GetInt(6);
+        bpTypeData.researchCopyTime         = row.GetInt(7);
+        bpTypeData.researchTechTime         = row.GetInt(8);
+        bpTypeData.productivityModifier     = row.GetInt(9);
+        bpTypeData.materialModifier         = row.GetInt(10);
+        bpTypeData.wasteFactor              = row.GetInt(11);
+        bpTypeData.maxProductionLimit       = row.GetInt(12);
+        bpTypeData.chanceOfRE               = row.GetFloat(13);
+        bpTypeData.catID                    = row.GetInt(14);
+
+     */
+
+    // get current mineral prices
+    /* catID
+     * 4        material
+     * 18       4       Mineral
+     * groupID 18 is minerals
+     *
+     * how to get from static data?
+     *  pull straight from db?
+     * ....neither.  hard-code minerals.
+     *    it's not like they change
+     */
+    std::vector< matlData > data;
+    sDataMgr.GetMineralData(data);
+
+    //  get mineral prices here and put into data vector
+
+    
+    // get shipIDs
+    //  which ones?
+    // start with frigates for testing
+
+
+    // get minerals required for ship
+    std::vector< EvERam::RequiredItem > matVec;
+    if (0)
+        sDataMgr.GetRamRequiredItems(typeID, EvERam::Activity::Manufacturing, matVec);
+
+    /*
+        matVec.typeID = it->second.materialTypeID;
+        matVec.quantity = it->second.quantity;
+    */
+
+
+    // determine base price of ship based on mineral requirements
+
+
+    // apply modifier to base price
+
+
+    // update db for 'new' base price
+
+
+
+}
