@@ -158,6 +158,10 @@ protected:
     /** @todo  this needs more work */
     void PayBounties();
 
+    /* hack to avoid errors with dock count */
+    void GetDockedCount();
+    void GetPlayerCount();
+
     bool LoadCosmicMgrs();
     bool LoadSystemStatics();
     bool LoadSystemDynamics();

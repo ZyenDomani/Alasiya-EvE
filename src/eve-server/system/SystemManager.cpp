@@ -903,11 +903,9 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
         --m_players;
         if (m_players < 0) {
             m_players = 0;
-            _log(PLAYER__ERROR, "player count for %s(%u) is <1", m_data.name.c_str(), m_data.systemID);
+            m_clients.clear();  // redundant but safe
+            _log(PLAYER__ERROR, "player count for %s(%u) is < 0", m_data.name.c_str(), m_data.systemID);
         }
-
-        if (m_players < 1)
-            m_clients.clear();
 
         _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
@@ -940,6 +938,11 @@ void SystemManager::SetDockCount(Client* pClient, bool docked/*false*/)
             _log(PLAYER__ERROR, "docked count for %s(%u) is <0.  Setting to 0.", m_data.name.c_str(), m_data.systemID);
         }
     }
+
+    if (m_players > sEntityList.GetPlayerCount())
+        GetPlayerCount();
+    if (m_docked > m_players)
+        GetDockedCount();
 
     MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
 
@@ -1597,6 +1600,19 @@ void SystemManager::ManipulateTimeData()
     //if (m_killData.killsDateTime < timeNow)
 
     MapDB::UpdateKillData(m_data.systemID, m_killData);
+}
+
+void SystemManager::GetDockedCount()
+{
+    m_docked = 0;
+    for (auto cur : m_clients)
+        if (cur.second->IsDocked())
+            ++m_docked;
+}
+
+void SystemManager::GetPlayerCount()
+{
+
 }
 
 /*

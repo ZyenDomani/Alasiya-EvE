@@ -533,8 +533,14 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 list->AddItem(new PyInt(entity.itemID));
                 // may need separate test for infrastructure hubs
             } break;
+            case EVEDB::invCategories::Deployable: {
+                pClient->SendNotifyMsg("Launching Deployables isnt available yet.");
+            } break;
+            case EVEDB::invCategories::SovereigntyStructure: {
+                pClient->SendNotifyMsg("Launching SovStructures isnt available yet.");
+            } break;
             default: {
-                _log(INV__ERROR, "ShipBound::Handle_Drop() - Item %s (cat %u) is neither drone nor structure.", iRef->name(), iRef->categoryID());
+                _log(INV__ERROR, "ShipBound::Handle_Drop() - Item %s (cat %u) is neither drone, structure or deployable.", iRef->name(), iRef->categoryID());
             }
         }
 

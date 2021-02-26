@@ -104,6 +104,7 @@ public:
 
     uint32 GetNPCCount()                                { return m_npcs; }
     uint32 GetClientCount() const                       { return m_clients.size(); }
+    uint32 GetPlayerCount() const                       { return m_players.size(); }
     uint32 GetSystemCount() const                       { return m_systems.size(); }
     uint32 GetStationCount() const                      { return m_stations.size(); }
     uint16 GetClientSeed()                              { return ++m_clientSeedID; }
