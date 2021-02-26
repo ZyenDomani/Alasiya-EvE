@@ -629,11 +629,7 @@ void MarketMgr::SetBasePrice()
      *
      */
 
-    // get current mineral prices
-    /* catID
-     * 4        material
-     * 18       4       Mineral
-     * groupID 18 is minerals
+    /* get current mineral prices
      *
      * how to get data?
      *  pull straight from db?
@@ -646,7 +642,7 @@ void MarketMgr::SetBasePrice()
     sDataMgr.GetMineralData(data);
 
     //  get mineral prices here and put into data vector
-
+    MarketDB::GetMineralPrices(data);
 
     // get shipIDs
     //  which ones?
@@ -655,8 +651,8 @@ void MarketMgr::SetBasePrice()
 
     // get minerals required for ship
     std::vector< EvERam::RequiredItem > matVec;
-    if (0)
-        sDataMgr.GetRamRequiredItems(typeID, EvERam::Activity::Manufacturing, matVec);
+
+    // sDataMgr.GetRamRequiredItems(typeID, EvERam::Activity::Manufacturing, matVec);
 
     /*
      *        matVec.typeID = it->second.materialTypeID;

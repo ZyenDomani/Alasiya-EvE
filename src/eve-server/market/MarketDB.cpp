@@ -491,3 +491,35 @@ void MarketDB::UpdateHistory()
                    "    COUNT(DISTINCT typeID)"
                    " FROM mktData");
 }
+
+void MarketDB::GetMineralPrices(std::vector< Market::matlData >& data)
+{
+    DBQueryResult res;
+    DBResultRow row;
+    for (auto cur : data) {
+        sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", cur.typeID);
+        if (res.GetRow(row))
+            cur.price = row.GetFloat(0);
+    }
+
+    /*  mineral prices in first column from rens 31/5/2010 @ 17:30  logged by me from IGB
+     * second price column is from Grismar 16/2/07
+     * typeID   Name            2010        2007
+     * 34      Tritanium        2.70        2.37
+     * 35      Pyerite          5.80        4.00
+     * 36      Mexallon        26.90       21.93
+     * 37      Isogen          49.16       64.06
+     * 38      Nocxium         99.02       93.76
+     * 39      Zydrine       1315.03     2347.36
+     * 40      Megacyte      2650.00     3989.06
+     * 11399   Morphite      5407.68    14291.00
+     *
+     */
+}
+
+void MarketDB::UpdateMineralPrices(std::vector< Market::matlData >& data)
+{
+    DBerror err;
+    for (auto cur : data)
+        sDatabase.RunQuery(err, "UPDATE invTypes SET basePrice=%f WHERE typeID= %u", cur.price, cur.typeID);
+}

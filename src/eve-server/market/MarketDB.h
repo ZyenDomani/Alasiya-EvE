@@ -60,6 +60,10 @@ public:
     uint32 StoreOrder(Market::SaveData& data);
 
 
+    /* for base price estimator */
+    static void GetMineralPrices(std::vector<Market::matlData>& data);
+    static void UpdateMineralPrices(std::vector<Market::matlData>& data);
+
     /* for marketMgr update service */
     static int64 GetUpdateTime();
     static void SetUpdateTime(int64 setTime);
