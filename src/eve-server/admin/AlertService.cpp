@@ -43,7 +43,7 @@ AlertService::AlertService(PyServiceMgr *mgr)
     m_dispatch->RegisterCall("GroupBeanDelivery", &AlertService::Handle_GroupBeanDelivery);
     m_dispatch->RegisterCall("SendClientStackTraceAlert", &AlertService::Handle_SendClientStackTraceAlert);
 
-    if (sConfig.server.UseStackTrace or is_log_enabled(CLIENT__STACK_TRACE))
+    if (sConfig.debug.StackTrace or is_log_enabled(CLIENT__STACK_TRACE))
         traceLogger = new PyTraceLog("evemu_client_stack_trace.txt", true, true);
 }
 
@@ -66,12 +66,12 @@ PyResult AlertService::Handle_BeanCount(PyCallArgs &call) {
     PyTuple *result = new PyTuple(2);
 
     // what we are sending back is just a static mErrorID and the command not to do anything with it.
-    if (sConfig.server.UseBeanCount or sConfig.debug.IsTestServer) {
+    if (sConfig.debug.UseBeanCount or sConfig.debug.IsTestServer) {
         result->items[0] = new PyNone();
     } else {
         result->items[0] = new PyInt(34135);    //ErrorID
     }
-    
+
     result->items[1] = new PyInt(0);        //loggingMode, 0=local, 1=DB (Capt: This isn't correct at all as it seems..)
 
     return (PyRep*)result;
@@ -115,7 +115,7 @@ PyResult AlertService::Handle_SendClientStackTraceAlert(PyCallArgs &call) {
     //call.Dump(CLIENT__CALL_DUMP);
     //  self.stacktraceLogMode[stackID[0]] = sm.ProxySvc('alert').SendClientStackTraceAlert(stackID, stackTrace, mode, nextErrorKeyHash)
 
-  if (sConfig.server.UseStackTrace or is_log_enabled(CLIENT__STACK_TRACE))
+  if (sConfig.debug.StackTrace or is_log_enabled(CLIENT__STACK_TRACE))
     traceLogger->logTrace(*call.tuple);
 
     return new PyNone();

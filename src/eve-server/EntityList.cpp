@@ -88,7 +88,7 @@ void EntityList::Initialize() {
     sLog.Green( "       ServerInit", "ClientSeed Initialized." );
 
     if (is_log_enabled(SERVER__STACKTRACE))
-        sConfig.server.StackTrace = true;
+        sConfig.debug.StackTrace = true;
 
     sLog.Blue("       EntityList", "Entity Manager Initialized.");
 }

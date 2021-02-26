@@ -165,7 +165,7 @@ bool ConsoleCommand::Process() {
                     sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRoF *100) );
                 } else {
                     sLog.Warning("      Missile Dmg","Normal.");
-                } 
+                }
                 if (sConfig.rates.turretRoF != 1.0) {
                     sLog.Green("       Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRoF *100) );
                 } else {
@@ -288,8 +288,8 @@ bool ConsoleCommand::Process() {
                 if (load_log_settings(sConfig.files.logSettings.c_str())) {
                     sLog.Green("  Alasiya's EvEMu", "Log settings reloaded from %s", sConfig.files.logSettings.c_str() );
                     // reset config switches based on log settings
-                    sConfig.server.StackTrace = is_log_enabled(SERVER__STACKTRACE);
-                    sConfig.server.UseBeanCount = is_log_enabled(SERVER__BEANCOUNT);
+                    sConfig.debug.StackTrace = is_log_enabled(SERVER__STACKTRACE);
+                    sConfig.debug.UseBeanCount = is_log_enabled(SERVER__BEANCOUNT);
                     sConfig.debug.IsTestServer = is_log_enabled(SERVER__TESTSERVER);
                 } else {
                     sLog.Warning("  Alasiya's EvEMu", "Unable to reload settings from %s", sConfig.files.logSettings.c_str() );

@@ -44,13 +44,10 @@ EVEServerConfig::EVEServerConfig()
     // items with /*x*/ behind them denote time identifier, with x = (s=seconds, m=minutes, etc)
 
     // server
-    server.UseBeanCount = false;
     server.TraderJoe = false;//N
     server.maxPlayers = 500;//N
-    server.UseStackTrace = false;
     server.BulkDataOD = false;
     server.NoobShipCheck = true;
-    server.StackTrace = false;
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
     server.DisableIGB = true;
@@ -223,6 +220,8 @@ EVEServerConfig::EVEServerConfig()
     testing.ShipHeat = false;
 
     // debug
+    debug.BeanCount = false;
+    debug.StackTrace = false;
     debug.BubbleTrack = false;
     debug.IsTestServer = true;
     debug.UseProfiling = false;
@@ -320,12 +319,9 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
 bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 {
     AddValueParser( "DisableIGB",           server.DisableIGB );
-    AddValueParser( "UseBeanCount",         server.UseBeanCount );
     AddValueParser( "TraderJoe",            server.TraderJoe );
     AddValueParser( "maxPlayers",           server.maxPlayers );
     AddValueParser( "NoobShipCheck",        server.NoobShipCheck );
-    AddValueParser( "StackTrace",           server.StackTrace );
-    AddValueParser( "UseStackTrace",        server.UseStackTrace );
     AddValueParser( "BulkDataOD",           server.BulkDataOD );
     AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
     AddValueParser( "idleSleepTime",        server.idleSleepTime );
@@ -345,12 +341,9 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     const bool result = ParseElementChildren( ele );
 
     RemoveParser( "DisableIGB" );
-    RemoveParser( "UseBeanCount" );
     RemoveParser( "TraderJoe" );
     RemoveParser( "maxPlayers" );
     RemoveParser( "NoobShipCheck" );
-    RemoveParser( "StackTrace" );
-    RemoveParser( "UseStackTrace" );
     RemoveParser( "BulkDataOD" );
     RemoveParser( "ServerSleepTime" );
     RemoveParser( "idleSleepTime" );
@@ -810,7 +803,8 @@ bool EVEServerConfig::ProcessCrime( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
 {
-
+    AddValueParser( "UseBeanCount",         debug.BeanCount );
+    AddValueParser( "UseStackTrace",        debug.StackTrace );
     AddValueParser( "IsTestServer",         debug.IsTestServer );
     AddValueParser( "UseProfiling",         debug.UseProfiling );
     AddValueParser( "UseShipTracking",      debug.UseShipTracking );
@@ -823,6 +817,8 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
 
     const bool result = ParseElementChildren( ele );
 
+    RemoveParser( "UseBeanCount" );
+    RemoveParser( "UseStackTrace" );
     RemoveParser( "IsTestServer" );
     RemoveParser( "UseProfiling" );
     RemoveParser( "UseShipTracking" );

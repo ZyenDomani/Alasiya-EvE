@@ -46,13 +46,10 @@ public:
 
     // From <server>
     struct {
-        bool UseBeanCount;
         bool TraderJoe;
-        bool UseStackTrace;
         bool DisableIGB;
         bool BulkDataOD;
         bool NoobShipCheck;
-        bool StackTrace;
         bool ModuleAutoOff;
         bool UnloadOnLinkAll;
         bool AllowNonPublished;
@@ -324,6 +321,8 @@ public:
 
     // From <debug>
     struct {
+        bool BeanCount;
+        bool StackTrace;
         bool BubbleTrack;
         bool SpawnTest;
         bool IsTestServer;    // to distinguish between live production server or experimental testing server

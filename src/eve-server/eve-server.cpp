@@ -513,11 +513,6 @@ int main( int argc, char* argv[] )
     std::printf("\n");     // spacer
 
     sLog.Blue("     ServerConfig", "Misc Switches");
-    if (sConfig.server.UseBeanCount) {
-        sLog.Green("     BeanCounting","Enabled.");
-    } else {
-        sLog.Warning("     BeanCounting","Disabled.");
-    }
     if (sConfig.server.ModuleDamageChance) {
         sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
     } else {
@@ -544,11 +539,21 @@ int main( int argc, char* argv[] )
     }  else {
         sLog.Error("     ServerConfig", "Live Server Enabled");
     }
+    if (sConfig.debug.StackTrace) {
+        sLog.Warning("       StackTrace", "Enabled");
+    }  else {
+        sLog.Warning("       StackTrace", "Disabled");
+    }
     if (sConfig.debug.UseProfiling) {
         sLog.Green(" Server Profiling","Enabled.");
         sProfiler.Initialize();
     } else {
         sLog.Warning(" Server Profiling","Disabled.");
+    }
+    if (sConfig.debug.UseBeanCount) {
+        sLog.Green("     BeanCounting","Enabled.");
+    } else {
+        sLog.Warning("     BeanCounting","Disabled.");
     }
     if (sConfig.debug.SpawnTest) {
         sLog.Warning("       Spawn Test","Enabled.");
@@ -1003,7 +1008,7 @@ static void SetupSignals()
 static void CatchSignal( int sig_num )
 {
     sLog.Error( "    Signal System", "Caught signal: %d", sig_num );
-    if (sConfig.server.StackTrace)
+    if (sConfig.debug.StackTrace)
         EvE::traceStack();
     //SafeSave();
     m_run = false;
