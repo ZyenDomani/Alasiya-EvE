@@ -424,7 +424,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     m_ship->SetShipShield(1.0);
     m_ship->SetShipCapacitorLevel(1.0);
 
-    // send MOTD and server data to player's 'local' chat channel
+    // send MOTD and server data to 'local' chat channel
     m_services.lsc_service->SendServerMOTD(this);
 
     return (m_loaded = true);
@@ -714,7 +714,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (pShipSE != nullptr)
             if (IsJump() and !m_autoPilot)
                 pShipSE->DestinyMgr()->Halt();
-        
+
         // remove from current system before resetting system vars
         m_system->RemoveEntity(pShipSE);
         m_system->RemoveClient(this, (count = true), IsJump());
@@ -1755,9 +1755,8 @@ void Client::ChannelLeft(LSCChannel *chan) {
 /************************************************************************/
 void Client::CharNoLongerInStation() {
     // clear station data
-    m_StationData = StationData();
     // remove client from station guest list
-    sEntityList.GetStationByID(m_locationID)->RemoveGuest(this);
+    sEntityList.GetStationByID(m_StationData.stationID)->RemoveGuest(this);
     m_system->SetDockCount(this, false);
     OnCharNoLongerInStation ocnis;
         ocnis.charID = m_char->itemID();
@@ -1769,13 +1768,15 @@ void Client::CharNoLongerInStation() {
         return;
     std::vector<Client*> clients;
     clients.clear();
-    sEntityList.GetStationGuestList(m_locationID, clients);
+    sEntityList.GetStationGuestList(m_StationData.stationID, clients);
     for (auto cur : clients) {
         PyIncRef(tmp);
         cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp); //consumed
     }
     PyDecRef(tmp);
 
+    // delete current station data
+    m_StationData = StationData();
 }
 
 void Client::CharNowInStation() {
