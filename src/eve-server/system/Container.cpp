@@ -98,8 +98,10 @@ CargoContainerRef CargoContainer::SpawnTemp(ItemData& data)
         return CargoContainerRef(nullptr);
 
     CargoContainerRef cRef = CargoContainerRef(new CargoContainer(containerID, *iType, data));
+    /* we dont need attribs or inventory here....these are position markers
     if (cRef.get() != nullptr)
         cRef->_Load();
+    */
 
     return cRef;
 }
