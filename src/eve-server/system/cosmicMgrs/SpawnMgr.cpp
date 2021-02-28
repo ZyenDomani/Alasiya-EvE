@@ -524,37 +524,37 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     SpawnGroup toSpawn = SpawnGroup();
     // these types are for ALL spawn types.
     if (f > 0) {
-        toSpawn.typeID = GetRandTypeID(1 +shipClass);
+        toSpawn.typeID = GetRandTypeID(1 + shipClass);
         toSpawn.quantity = f;
         m_toSpawn.push_back(toSpawn);
     }
     if (af > 0) {
-        toSpawn.typeID = GetRandTypeID(2 +shipClass);
+        toSpawn.typeID = GetRandTypeID(2 + shipClass);
         toSpawn.quantity = af;
         m_toSpawn.push_back(toSpawn);
     }
     if (d > 0) {
-        toSpawn.typeID = GetRandTypeID(3 +shipClass);
+        toSpawn.typeID = GetRandTypeID(3 + shipClass);
         toSpawn.quantity = d;
         m_toSpawn.push_back(toSpawn);
     }
     if (c > 0) {
-        toSpawn.typeID = GetRandTypeID(4 +shipClass);
+        toSpawn.typeID = GetRandTypeID(4 + shipClass);
         toSpawn.quantity = c;
         m_toSpawn.push_back(toSpawn);
     }
     if (ac > 0) {
-        toSpawn.typeID = GetRandTypeID(5 +shipClass);
+        toSpawn.typeID = GetRandTypeID(5 + shipClass);
         toSpawn.quantity = ac;
         m_toSpawn.push_back(toSpawn);
     }
     if (bc > 0) {
-        toSpawn.typeID = GetRandTypeID(6 +shipClass);
+        toSpawn.typeID = GetRandTypeID(6 + shipClass);
         toSpawn.quantity = bc;
         m_toSpawn.push_back(toSpawn);
     }
     if (bs > 0) {
-        toSpawn.typeID = GetRandTypeID(7 +shipClass);
+        toSpawn.typeID = GetRandTypeID(7 + shipClass);
         toSpawn.quantity = bs;
         m_toSpawn.push_back(toSpawn);
     }

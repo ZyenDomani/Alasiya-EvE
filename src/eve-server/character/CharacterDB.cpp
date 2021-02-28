@@ -275,7 +275,7 @@ PyRep* CharacterDB::ValidateCharNameRep(std::string name)
     // check for multiple spaces
     int found = name.find(" ");
     if (found != name.npos) {
-        found = name.find(" ", found +1, 1);
+        found = name.find(" ", found + 1, 1);
         if (found != name.npos)
             return new PyInt(-6);
     }
@@ -355,7 +355,7 @@ void CharacterDB::ValidateCharName(std::string name)
     // check for multiple spaces
     int found = name.find(" ");
     if (found != name.npos) {
-        found = name.find(" ", found +1, 1);
+        found = name.find(" ", found + 1, 1);
         if (found != name.npos)
             throw PyException( MakeUserError("CharNameInvalidMaxSpaces"));
     }

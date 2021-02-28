@@ -186,8 +186,8 @@ namespace FX {
              case CALC_DIVIDE:                          return ((val2 != 0) ? val1 / val2 : val1);
              case CALC_PERCENTAGE:                      return val1 * (1 + (val2 / 100));
              case CALC_REV_PERCENTAGE:                  return val1 / (1 + (val2 / 100));
-             case CALC_ADD_PERCENT:                     return val1 + (val2 /100);
-             case CALC_SUBTRACT_PERCENT:                return val1 - (val2 /100);
+             case CALC_ADD_PERCENT:                     return val1 + (val2 / 100);
+             case CALC_SUBTRACT_PERCENT:                return val1 - (val2 / 100);
              case CALC_ADD_RESIST:                      return val1 - (1 - val2);
              case CALC_SUBTRACT_RESIST:                 return val1 + (1 - val2);
      */

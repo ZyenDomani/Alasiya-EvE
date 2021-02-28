@@ -422,7 +422,7 @@ void CorporationDB::GiveMedalToCharacters(uint32 issuerID, uint32 corpID, int32 
     if (!first ) {
         DBerror err;
         sDatabase.RunQuery(err, query.str().c_str());
-        sDatabase.RunQuery(err, "UPDATE crpMedals SET noRecepients=noRecepients +1 WHERE medalID = %u", medalID );
+        sDatabase.RunQuery(err, "UPDATE crpMedals SET noRecepients=noRecepients + 1 WHERE medalID = %u", medalID );
     }
 
 }
@@ -950,7 +950,7 @@ void CorporationDB::DeleteTitle(uint32 corpID, uint16 titleID)
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM crpRoleTitles WHERE corpID = %u AND titleID = %u", corpID, titleID);
     std::string title = "Untitled ";
-    title += std::to_string(log2(titleID)+1);
+    title += std::to_string(log2(titleID) + 1);
     sDatabase.RunQuery(err, "INSERT INTO crpRoleTitles (corporationID, titleID, titleName) VALUES (%u,%u,'%s')", corpID, titleID, title.c_str());
 }
 
@@ -2131,8 +2131,8 @@ PyRep* CorporationDB::GetVotes(uint32 voteCaseID)
 void CorporationDB::CastVote(uint32 corpID, uint32 charID, uint32 voteCaseID, uint8 optionID)
 {   // working
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE crpVoteItems SET votesMade=votesMade +1 WHERE voteCaseID = %u", voteCaseID);
-    sDatabase.RunQuery(err, "UPDATE crpVoteOptions SET votesFor=votesFor +1 WHERE voteCaseID = %u AND optionID = %u", voteCaseID, optionID);
+    sDatabase.RunQuery(err, "UPDATE crpVoteItems SET votesMade=votesMade + 1 WHERE voteCaseID = %u", voteCaseID);
+    sDatabase.RunQuery(err, "UPDATE crpVoteOptions SET votesFor=votesFor + 1 WHERE voteCaseID = %u AND optionID = %u", voteCaseID, optionID);
     sDatabase.RunQuery(err,
             "INSERT INTO crpVotes (charID,corpID,voteCaseID,optionID)"
             " VALUES (%u,%u,%u,%u)", charID, corpID, voteCaseID, optionID);

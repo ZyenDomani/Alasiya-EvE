@@ -774,14 +774,14 @@ void Character::LoadPausedSkillQueue(uint16 typeID)
         skill = GetSkill(itr->typeID).get();
         if (skill == nullptr)
             continue;
-        nextLvl = skill->GetAttribute(AttrSkillLevel).get_uint32() +1;
+        nextLvl = skill->GetAttribute(AttrSkillLevel).get_uint32() + 1;
         if (nextLvl > EvESkill::MAXSKILLLEVEL)
             nextLvl = EvESkill::MAXSKILLLEVEL;
 
         if (itr->level == nextLvl) {
             currentSP = skill->GetCurrentSP(this, startTime);
         } else {
-            currentSP = skill->GetSPForLevel(itr->level -1);
+            currentSP = skill->GetSPForLevel(itr->level - 1);
         }
 
         nextSP = skill->GetSPForLevel(itr->level);
@@ -819,7 +819,7 @@ void Character::CancelSkillInTraining(bool update/*false*/)
         return;
 
     QueuedSkill qs = m_skillQueue.front();
-    uint8 nextLvl(m_inTraining->GetAttribute(AttrSkillLevel).get_uint32() +1);
+    uint8 nextLvl(m_inTraining->GetAttribute(AttrSkillLevel).get_uint32() + 1);
     if (nextLvl > EvESkill::MAXSKILLLEVEL)
         nextLvl = EvESkill::MAXSKILLLEVEL;
 
@@ -912,7 +912,7 @@ void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
 
     _log( SKILL__INFO, "Starting checks to add %s to training queue.", skill->name());
 
-    uint8 nextLvl(skill->GetAttribute(AttrSkillLevel).get_uint32() +1);
+    uint8 nextLvl(skill->GetAttribute(AttrSkillLevel).get_uint32() + 1);
     if (nextLvl > EvESkill::MAXSKILLLEVEL)
         nextLvl = EvESkill::MAXSKILLLEVEL;
 

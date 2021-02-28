@@ -602,9 +602,9 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
         rangeMod1 = probeVec.at(0)->GetRangeModifier(dist1);
         scanStr1 = probeVec.at(0)->GetScanStrength();
         data.deviation = probeVec.at(0)->GetDeviation() *1.3;  // fudge a bit for single probe
-        data.certainty = data.sig.sigStrength * (scanStr1 /rangeMod1) /2;
+        data.certainty = data.sig.sigStrength * (scanStr1 / rangeMod1) / 2;
         _log(SCAN__TRACE, "Scan::GetSignalData(1)  dist: %.3fAU, rangeMod: %.5f, scanStr: %.5f", \
-                dist1 /ONE_AU_IN_METERS, rangeMod1, scanStr1);
+                dist1 / ONE_AU_IN_METERS, rangeMod1, scanStr1);
     } else {
         /*  loop thru probes and get range mods and sigStrength for each.
          *  combine all probe's data to get good sum based on probe range and strength
@@ -622,7 +622,7 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
             // if player has signal acquisition and sensor linking both at l5, this will allow another pair of scan results
             if (count > max)
                 break;
-            angleMod = sin(itr->first /2);      // get value between 0 and 1 (fuzzy logic as angle modifier)
+            angleMod = sin(itr->first / 2);      // get value between 0 and 1 (fuzzy logic as angle modifier)
             // get sigStr from first probe
             dist1 = itr->second.first->GetPosition().distance(point);
             rangeMod1 = itr->second.first->GetRangeModifier(dist1);

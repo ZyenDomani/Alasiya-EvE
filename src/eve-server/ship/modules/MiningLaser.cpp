@@ -243,7 +243,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         // do not reset ice radius (our huge-ass chunks will probably never expire)
         if (!m_iMiner) {
             /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
-            double radius = exp((roidQuantity +112404.8) /25000);
+            double radius = exp((roidQuantity + 112404.8) /25000);
             // need to update players in bubble of this change.  not sure how yet
             roidRef->SetAttribute(AttrRadius, radius);
         }

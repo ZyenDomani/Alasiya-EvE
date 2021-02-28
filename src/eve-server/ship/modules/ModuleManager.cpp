@@ -1585,10 +1585,10 @@ void ModuleManager::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
     // update available slots
     if (pMod->isHighPower()) {
         if (pMod->isTurretFitted()) {
-            uint8 count = pShipItem->GetAttribute(AttrTurretSlotsLeft).get_uint32() +1;
+            uint8 count = pShipItem->GetAttribute(AttrTurretSlotsLeft).get_uint32() + 1;
             pShipItem->SetAttribute(AttrTurretSlotsLeft, count);
         } else if (pMod->isLauncherFitted()) {
-            uint8 count = pShipItem->GetAttribute(AttrLauncherSlotsLeft).get_uint32() +1;
+            uint8 count = pShipItem->GetAttribute(AttrLauncherSlotsLeft).get_uint32() + 1;
             pShipItem->SetAttribute(AttrLauncherSlotsLeft, count);
         }
         ++m_HighSlots;
@@ -1601,7 +1601,7 @@ void ModuleManager::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
     } else if (pMod->isRig()) {
         ++m_RigSlots;
         pShipItem->SetAttribute(AttrUpgradeLoad, (pShipItem->GetAttribute(AttrUpgradeLoad) - pMod->GetAttribute(AttrUpgradeCost)));
-        pShipItem->SetAttribute(AttrUpgradeSlotsLeft, pShipItem->GetAttribute(AttrUpgradeSlotsLeft) +1);
+        pShipItem->SetAttribute(AttrUpgradeSlotsLeft, pShipItem->GetAttribute(AttrUpgradeSlotsLeft) + 1);
     }
 }
 

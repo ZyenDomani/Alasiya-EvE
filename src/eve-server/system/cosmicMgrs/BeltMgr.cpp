@@ -285,9 +285,9 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     double roidradius = 0, theta = 0, randRadius = 0, elevation = 0;
     if (anomaly) {
         pcs += roidDist.size();
-        radius += (radius *secValue);
-        radius += (pcs * 1000 /4);
-        elevation = (radius/4);
+        radius += (radius * secValue);
+        radius += (pcs * 1000 / 4);
+        elevation = (radius / 4);
     } else if (ice) {  //880 total systems with ice. 293 in hisec
         //  ice needs to be 30k to 75k, with radius of 40k to 100k
         radius *= 3; //24k base
@@ -304,41 +304,41 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
         }
     } else {
         pcs += MakeRandomInt(5, 30);
-        radius += (radius *secValue);
-        radius += (pcs * 1000 /4);
-        elevation = (radius/4);
+        radius += (radius * secValue);
+        radius += (pcs * 1000 / 4);
+        elevation = (radius / 4);
     }
 
-    double degreeSeparation = (180/pcs);
+    double degreeSeparation = (180 / pcs);
     ++pcs;
     GPoint center(pSE->SysBubble()->GetCenter());
     GPoint mposition(NULL_ORIGIN);
     for (uint8 i = 1; i < pcs; ++i) {
         if (ice) {
             if (secRating > -0.2) {
-                roidradius = MakeRandomInt(20, 40) *1000; // (40k,70k)  72-102k radius
+                roidradius = MakeRandomInt(20, 40) * 1000; // (40k,70k)  72-102k radius
             } else {
-                roidradius = MakeRandomInt(40, 70) *1000; // (40k,80k)  82-112k radius
+                roidradius = MakeRandomInt(40, 70) * 1000; // (40k,80k)  82-112k radius
             }
             radius += roidradius;
-            elevation = (radius + (roidradius /2) /2);
+            elevation = (radius + (roidradius / 2) / 2);
         } else {
-            roidradius = MakeRandomInt(3000, 8000) *secValue;
+            roidradius = MakeRandomInt(3000, 8000) * secValue;
         }
         if (anomaly) {
             // random for anomaly...use the "special" placements at end of this file....eventually.
             theta = MakeRandomFloat(0, (EvE::Trig::Pi*2));
-            mposition.x = (radius + roidradius /5) * cos(theta);
-            mposition.z = (radius + roidradius /5) * sin(theta);
+            mposition.x = (radius + roidradius / 5) * cos(theta);
+            mposition.z = (radius + roidradius / 5) * sin(theta);
         } else if (type == 0) {
-            randRadius = MakeRandomFloat(-radius /4, radius /2);
+            randRadius = MakeRandomFloat(-radius / 4, radius / 2);
             // half-circle type
             theta = EvE::Trig::Deg2Rad(degreeSeparation * i);
             mposition.x = (randRadius + roidradius + radius) * cos(theta);
             mposition.z = (randRadius + roidradius + radius) * sin(theta);
         }
         mposition.y = MakeRandomFloat(-elevation, elevation);
-        SpawnAsteroid(beltID, GetAsteroidType(MakeRandomFloat(), roidDist), roidradius, (center +mposition), ice);
+        SpawnAsteroid(beltID, GetAsteroidType(MakeRandomFloat(), roidDist), roidradius, (center + mposition), ice);
     }
 
     std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);

@@ -588,7 +588,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         faction = GetFaction(sDataMgr.GetRegionRatFaction(m_system->GetRegionID()));
     }
 
-    uint32 templateID = (sig.dungeonType *10000) + (sec *1000) + (type *100) + (level *10) + faction;
+    uint32 templateID = (sig.dungeonType * 10000) + (sec * 1000) + (type * 100) + (level * 10) + faction;
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::MakeDungeon() - Calling Create for type %s(%u) using templateID %u", \
             sDunDataMgr.GetDungeonType(sig.dungeonType), sig.dungeonType, templateID);
@@ -835,7 +835,7 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
                 grp.x = (pos + it->second.x + radius) * -1;
                 grp.z = (pos + it->second.z + (radius*2)) * -1;
             } */
-            grp.y = it->second.y + MakeRandomInt(-5000, radius *2);
+            grp.y = it->second.y + MakeRandomInt(-5000, radius * 2);
             m_anomalyItems.push_back(grp);
             it = groupRange.first;
         }

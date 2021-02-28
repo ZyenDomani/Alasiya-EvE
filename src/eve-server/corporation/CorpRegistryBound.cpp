@@ -1481,7 +1481,7 @@ PyResult CorpRegistryBound::Handle_InsertApplication(PyCallArgs &call)
     if (!IsPlayerCorp(args.corpID))
         return nullptr;
     // check member limit
-    if (m_db.GetCorpMemberCount(args.corpID) +1 > m_db.GetCorpMemberLimit(args.corpID)) {
+    if (m_db.GetCorpMemberCount(args.corpID) + 1 > m_db.GetCorpMemberLimit(args.corpID)) {
         call.client->SendNotifyMsg("%s cannot accept any new members at this time.", m_db.GetCorpName(args.corpID).c_str());
         return nullptr;
     }

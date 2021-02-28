@@ -211,7 +211,7 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
         if (oldSec > maxGain.get_double())
             return;
     float killBonus = iRef->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
-    double secAward = (((10 -oldSec) *killBonus) +oldSec) /100;
+    double secAward = (((10 - oldSec) * killBonus) + oldSec) / 100;
     secAward *=  (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::FastTalk, true))));      // 5% increase
     if (killBonus and secAward) {
         secAward *= sConfig.rates.secRate;

@@ -218,7 +218,7 @@ void DestinyManager::ProcessState() {
             } else if (m_currentSpeedFraction < 0.749) {
                 if (m_userSpeedFraction < 0.7499)
                     SetSpeedFraction(1.0f, true);
-            } else if ((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp +0.3) {
+            } else if ((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp + 0.3) {
                 // catchall for turn checks messed up, and m_moveTime > ship align time
                 if (mySE->HasPilot()) {
                     _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > shipTimeToWarp.",  \
@@ -303,9 +303,9 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
      */
     if ((m_shipMaxAccelTime < 1.0) and (mySE->IsDynamicEntity()))
         if (!mySE->HasPilot()) {
-            m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
+            m_shipMaxAccelTime = (-log(0.001) * m_shipAgility);
         } else if (!mySE->GetPilot()->IsUndock()) {
-            m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
+            m_shipMaxAccelTime = (-log(0.001) * m_shipAgility);
         }
 
     // this needs to distinguish between fraction change and speedboost change
@@ -749,7 +749,7 @@ void DestinyManager::MoveObject() {
      * **UPDATE**  removed speed fraction checks for min/max speeds.  -allan 02Jul17
      */
 
-    double timeStamp = 0;   // keep all these timers in seconds.
+    double timeStamp(0);   // keep all these timers in seconds.
     // check for moving ship changing heading
     if (m_userSpeedFraction) {
         if (!m_orbiting or (m_orbiting > Destiny::Ball::Orbit::Far))
@@ -758,7 +758,7 @@ void DestinyManager::MoveObject() {
 
     timeStamp = (GetTimeMSeconds() - m_moveTime) /1000;
 
-    float speed = 0.0f;
+    float speed(0.0f);
     std::string move = "";
     // check to make sure we dont overrun usf/asf
     if (m_activeSpeedFraction == m_userSpeedFraction)
@@ -856,9 +856,9 @@ void DestinyManager::MoveObject() {
     // ships tend to "level out" when stopping.  try to mimic that here (wip)
     if (m_stop and (m_currentSpeedFraction < 0.85f) and (m_currentSpeedFraction > 0.09f)) {
         if (m_shipHeading.y < -0.05) {
-            m_shipHeading.y += 0.05;
+            m_shipHeading.y += 0.03;
         } else if (m_shipHeading.y > 0.05) {
-            m_shipHeading.y -= 0.05;
+            m_shipHeading.y -= 0.03;
         }
     }
 
@@ -898,7 +898,7 @@ void DestinyManager::MoveObject() {
         str += "  ";
         str += itoa(timeStamp);
         ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, str.c_str(), m_position, "Position Test");
-        CargoContainerRef iRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
+        CargoContainerRef iRef = CargoContainer::SpawnTemp(idata);
         if (iRef.get() != nullptr) {
             // create new container
             FactionData data = FactionData();
@@ -932,7 +932,7 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
     /** @todo revisit this to verify angle calcs */
     GVector toVec(m_position, m_targetPoint);
     toVec.normalize();
-    float dot = toVec.dotProduct(m_shipHeading);
+    float dot(toVec.dotProduct(m_shipHeading));
     if ((dot > 1.0f) or (dot < -1.0f)) {
         sLog.Error("Destiny::IsTurn()", "%s(%u) - shipHeading has screwed up.  dot is %.5f", mySE->GetName(), mySE->GetID(), dot);
         _log(DESTINY__ERROR, "Destiny::IsTurn() m_shipHeading: %.3f,%.3f,%.3f.  m_targetHeading: %.3f,%.3f,%.3f, toVec:%.3f,%.3f,%.3f", \
@@ -951,7 +951,7 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
         }
     }
     m_radians = std::acos(dot);
-    float degrees = EvE::Trig::Rad2Deg(m_radians);
+    float degrees(EvE::Trig::Rad2Deg(m_radians));
     if (degrees < TURN_ALIGNMENT/*4*/) {
         m_shipHeading = toVec;
         return false;
@@ -989,7 +989,7 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
  *   v2.normalize();              // { v0, v2 } is now an orthonormal basis
  *
  *   return v0*cos(theta) + v2*sin(theta);
- }
+ * }
  */
 
 //from new source at eve/client/script/ui/services\flightControls.py
@@ -1013,11 +1013,11 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
      */
 
     // this is off for rookie ship (maybe others)
-    float turnTime = (m_shipAgility /2);
+    float turnTime(m_shipAgility /2);
     if (!m_turning) {
         m_turning = true;
         //m_radians is set in IsTurn() on every tic
-        m_turnFraction = std::sqrt((std::cos(m_radians) + 1) /2);
+        m_turnFraction = std::sqrt((std::cos(m_radians) + 1) / 2);
         //this isnt used yet...used as comparison for testing time calc's
         m_alignTime = (EvE::Trig::Rad2Deg(m_radians) / m_degPerTic);
         if (is_log_enabled(DESTINY__TURN_TRACE))
@@ -1065,10 +1065,10 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
             // turn half of remaining turn (simulate greatest turn angle when (turn > 90*) and (speed < time)
             turnPercent = 0.4f;
         } else {
-            turnPercent = m_degPerTic / (degrees -100);
+            turnPercent = m_degPerTic / (degrees - 100);
         }
     } else if (degrees > m_degPerTic) {
-        turnPercent = m_degPerTic / degrees;
+        turnPercent = m_degPerTic / (degrees * 0.5);
     } else {
         // degrees < m_degPerTic, so complete turn and continue accel
         if (m_decel)
@@ -1087,7 +1087,8 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
 }
 
 void DestinyManager::ClearTurn() {
-    SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
+    //SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
+    SetPosition(m_position, true);
     m_turnTic = 0;
     m_turning = false;
     m_radians = 0.0f;
@@ -1249,7 +1250,7 @@ void DestinyManager::Orbit() {
                 radTarg, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
         MoveObject();
         return;
-    } else if ( (centers + m_targetDistance /3) < m_followDistance) {
+    } else if ( (centers + m_targetDistance / 3) < m_followDistance) {
         if (m_orbiting == Destiny::Ball::Orbit::TooClose) {
             MoveObject();
             return;
@@ -2002,7 +2003,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
             if (capNeeded > 1) {
                 m_targetDistance = (uint32)capNeeded * ONE_AU_IN_METERS;
                 GVector warp_direction(m_position, where);
-                GPoint newTarget(m_position +(warp_direction *m_targetDistance));
+                GPoint newTarget(m_position + (warp_direction *m_targetDistance));
 
                 m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), newTarget);
                 if (is_log_enabled(DESTINY__WARP_TRACE))

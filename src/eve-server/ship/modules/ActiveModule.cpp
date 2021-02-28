@@ -1336,13 +1336,13 @@ void ActiveModule::LaunchProbe()
         pClient->SetScan(new Scan(pClient));
 
     uint8 pcount = pClient->scan()->GetProbeCount();
-    if (pcount > (pClient->GetChar()->GetSkillLevel(EvESkill::Astrometrics) +3)) {
+    if (pcount > (pClient->GetChar()->GetSkillLevel(EvESkill::Astrometrics) + 3)) {
         pClient->SendErrorMsg("You can only control %u probes based on your current skills.", pcount);
         return;
     }
 
     GPoint pos(m_shipRef->position());
-    pos.MakeRandomPointOnSphere(MakeRandomFloat(500 +m_shipRef->radius(), 1500 +m_shipRef->radius()));
+    pos.MakeRandomPointOnSphere(MakeRandomFloat(500 + m_shipRef->radius(), 1500 + m_shipRef->radius()));
 
     //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity);
     // we are not changing singleton status of probes

@@ -215,10 +215,10 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     float cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_int()/*300*/, length = 0;
     uint16 numCycles = 0;
     double one = ((headRadius - 0.01f) /0.04);
-    length = one * 335 +1;  //293
+    length = one * 335 + 1;  //293
     double two = log2(length /25);  //3.584962501
-    cycleTime = EvE::max(floor(two) +1);    //4
-    cycleTime = 0.25 *(pow(2, cycleTime));  // this is (float) in hours (0.25, 0.5, etc)
+    cycleTime = EvE::max(floor(two) + 1);    //4
+    cycleTime = 0.25 * (pow(2, cycleTime));  // this is (float) in hours (0.25, 0.5, etc)
     numCycles = (uint16)(length / cycleTime);   //73
     int64 iCycleTime = cycleTime * EvE::Time::Hour;
 

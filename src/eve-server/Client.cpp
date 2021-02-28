@@ -1428,7 +1428,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
 
     m_movePoint = toData.position;
     // Make Jump-In point a random spot on ~10km radius sphere about the stargate radius
-    m_movePoint.MakeRandomPointOnSphereLayer(toData.radius +6500, toData.radius +9500);
+    m_movePoint.MakeRandomPointOnSphereLayer(toData.radius + 6500, toData.radius + 9500);
     m_moveSystemID = toData.systemID;
 /*
     char ci[25];

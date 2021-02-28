@@ -218,7 +218,7 @@ void MapDB::SetSystemActive(uint32 sysID, bool active/*false*/)
 void MapDB::AddJump(uint32 sysID)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = jumpsHour +1 WHERE solarSystemID = %u", sysID );
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = jumpsHour + 1 WHERE solarSystemID = %u", sysID );
 }
 
 // these next 3 are updated to use systemMgr to manage dynamic data for it's system, and call these on a timer to update periodically

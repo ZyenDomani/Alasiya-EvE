@@ -218,7 +218,7 @@ protected:
             return ShipItemRef( new ShipItem(shipID, type, data ));
 
         _log(ITEM__ERROR, "Trying to load %s as Ship.", sDataMgr.GetCategoryName(type.categoryID()));
-        if (sConfig.server.StackTrace)
+        if (sConfig.debug.StackTrace)
             EvE::traceStack();
         return RefPtr<_Ty>();
     }

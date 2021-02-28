@@ -352,9 +352,9 @@ float ReprocessingServiceBound::GetStanding(const Client* pClient) const
 {
     float standing = StandingDB::GetStanding(m_stationCorpID, pClient->GetCharacterID());
     if (standing < 0.0f) {
-        standing += ((10.0f +standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Diplomacy));
+        standing += ((10.0f + standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Diplomacy));
     } else {
-        standing += ((10.0f -standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Connections));
+        standing += ((10.0f - standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Connections));
     }
 
     return EvE::max(standing, StandingDB::GetStanding(m_stationCorpID, pClient->GetCorporationID()));

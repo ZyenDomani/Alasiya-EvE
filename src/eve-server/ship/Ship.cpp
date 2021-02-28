@@ -666,7 +666,7 @@ void ShipItem::LoadChargesToBank(EVEItemFlags flag, std::vector< int32 >& charge
     std::vector<GenericModule*> modVec;
     m_ModuleManager->GetModulesInBank(flag, modVec);
     for (auto cur : modVec) {
-        if (pos +1 > chargeIDs.size())
+        if (pos + 1 > chargeIDs.size())
             return;
         cRef = sItemFactory.GetItem(chargeIDs[pos]);
         if (cRef.get() == nullptr) {
@@ -1138,10 +1138,10 @@ void ShipItem::ProcessHeat()
     double start = GetTimeUSeconds();
     float heat(0.0f);
     // heat loop
-    for (uint16 i = AttrHeatHi; i < AttrHeatLow +1; ++i) {
+    for (uint16 i = AttrHeatHi; i < AttrHeatLow + 1; ++i) {
         heat = GetAttribute(i).get_float();
         // the ordering here is important
-        //heat -= log(-(heat +1));
+        //heat -= log(-(heat + 1));
         if (heat > 1.0f)
             heat -= DissipateHeat(i, heat);
         heat += GenerateHeat(i);
@@ -1179,7 +1179,7 @@ float ShipItem::GenerateHeat(uint16 attrID)
 
     /*  heat buildup
      * H = 3(e^t)
-     * t = (sum of active module's heat damage / 10) +1
+     * t = (sum of active module's heat damage / 10) + 1
      *   t must be > 1.0 to avoid negatives.  if no modules active, t=1.0 and log(1.0)=0
      *   this may look funny, but is rather accurate generation of module heat from normal op.
      */
@@ -1677,7 +1677,7 @@ uint8 ShipItem::GetLinkedCount(GenericModule* pMod)
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
     if (itr == m_linkedWeapons.end())
         return 1;
-    return itr->second.size() +1;
+    return itr->second.size() + 1;
 }
 
 uint8 ShipItem::GetLoadedLinkedCount(GenericModule* pMod)
@@ -2688,7 +2688,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
 
 void ShipSE::MakeDamageState(DoDestinyDamageState &into) {
     into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
-    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() +7;
+    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() + 7;
     into.timestamp = GetFileTimeNow();
     into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());

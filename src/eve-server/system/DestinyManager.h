@@ -293,7 +293,7 @@ protected:
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
     // movement methods
-    void MoveObject();                  //apply velocity to our position for for this round of movement
+    void MoveObject();                  //apply velocity to our position for this round of movement
     void Orbit();
     void Follow();                      //follow or approach object in space
     void BeginMovement();               //set initial variables for all movement (common code)

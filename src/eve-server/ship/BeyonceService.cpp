@@ -576,7 +576,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
             double s = 20 * std::pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
             s = EvE::max(0.5f, EvE::min(s, 10.5f));
-            double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(std::pow(warpToPoint.x, 2) + std::pow(warpToPoint.z, 2)))) +j;
+            double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(std::pow(warpToPoint.x, 2) + std::pow(warpToPoint.z, 2)))) + j;
             uint32 d = radius * (s + 1) + 1000000;
             warpToPoint.x += (d * std::sin(t));
             warpToPoint.y += (0.5f * radius * std::sin(j));
@@ -628,7 +628,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    distance += (call.client->GetShipSE()->GetRadius() *2); // add ship diameter to distance
+    distance += (call.client->GetShipSE()->GetRadius() * 2); // add ship diameter to distance
     pDestiny->WarpTo(warpToPoint, distance);
 
     return PyStatic.NewNone();

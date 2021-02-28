@@ -249,7 +249,7 @@ SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
             dir.normalize();
             _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::MakeBubble()::IsOverlap() - dir: %.3f,%.3f,%.3f", dir.x, dir.y, dir.z);
             // move pos away from center
-            pos = itr->second->GetCenter() + (dir * (BUBBLE_RADIUS_METERS *2));
+            pos = itr->second->GetCenter() + (dir * (BUBBLE_RADIUS_METERS * 2));
             break;
         }
 

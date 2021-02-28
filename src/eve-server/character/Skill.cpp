@@ -89,7 +89,7 @@ uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
     if (startTime > GetFileTimeNow())
         return currentSP;
 
-    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() +1;
+    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() + 1;
     if (level > EvESkill::MAXSKILLLEVEL)
         level = EvESkill::MAXSKILLLEVEL;
 
@@ -111,7 +111,7 @@ uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
 
 uint32 Skill::GetRemainingSP(Character* ch, int64 curTime/*0*/)
 {
-    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() +1;
+    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() + 1;
     if (level > EvESkill::MAXSKILLLEVEL)
         return 0;
 
@@ -131,14 +131,14 @@ uint32 Skill::GetRemainingSP(Character* ch, int64 curTime/*0*/)
 
 uint32 Skill::GetTrainingTime(Character* ch, int64 startTime/*0*/)
 {
-    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() +1;
+    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() + 1;
     if (level > EvESkill::MAXSKILLLEVEL)
         return 0;
 
     // get full sp needed for next level
     uint32 remainingSP(GetSPForLevel(level) - GetAttribute(AttrSkillPoints).get_uint32());
     // divide by spm to get time and convert to seconds
-    uint32 timeLeft((remainingSP /ch->GetSPPerMin(this)) *60);
+    uint32 timeLeft((remainingSP /ch->GetSPPerMin(this)) * 60);
 
     if (startTime == 0)
         return timeLeft;
@@ -174,7 +174,7 @@ void Skill::VerifySP()
     if (GetAttribute(AttrSkillPoints) == EvilZero)
         return;
 
-    uint8 level(GetAttribute(AttrSkillLevel).get_uint32() +1);
+    uint8 level(GetAttribute(AttrSkillLevel).get_uint32() + 1);
     if (level > EvESkill::MAXSKILLLEVEL) {
         level = EvESkill::MAXSKILLLEVEL;
         SetAttribute(AttrSkillLevel, level, false);
