@@ -49,7 +49,7 @@ protected:
         //and (type.groupID() != EVEDB::invGroups::Warp_Disruption_Probe)  this wont work here...
         and (type.groupID() != EVEDB::invGroups::Obsolete_Probes)) {
             _log(ITEM__ERROR, "Trying to load %s as Probe.", sDataMgr.GetCategoryName(type.categoryID()));
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }

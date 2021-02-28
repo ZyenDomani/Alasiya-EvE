@@ -111,7 +111,7 @@ protected:
             && (type.groupID() != EVEDB::invGroups::Spawn_Container) )
         {
             _log(ITEM__ERROR, "Trying to load %s as Container.", sDataMgr.GetCategoryName(type.categoryID()));
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }
@@ -217,7 +217,7 @@ protected:
     static RefPtr<_Ty> _LoadItem( uint32 containerID, const ItemType &type, const ItemData &data) {
         if (type.groupID() != EVEDB::invGroups::Wreck) {
             _log(ITEM__ERROR, "Trying to load %s as Wreck.", sDataMgr.GetCategoryName(type.categoryID()));
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }

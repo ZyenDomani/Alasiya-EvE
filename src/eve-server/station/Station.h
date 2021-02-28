@@ -55,7 +55,7 @@ protected:
     {
         if (data.groupID != EVEDB::invGroups::Station) {
             _log(ITEM__ERROR, "Trying to load %s as StationType.", sDataMgr.GetGroupName(data.groupID));
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return nullptr;
         }
@@ -129,7 +129,7 @@ protected:
     {
         if (type.groupID() != EVEDB::invGroups::Station) {
             _log(ITEM__ERROR, "Trying to load %s as Station.", sDataMgr.GetGroupName(type.groupID()));
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }

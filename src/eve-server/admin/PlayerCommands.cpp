@@ -282,7 +282,7 @@
     } else {
         sLog.Warning(" Server Profiling","Disabled.");
     }
-    if (sConfig.debug.UseBeanCount) {
+    if (sConfig.debug.BeanCount) {
         sLog.Green("     BeanCounting","Enabled.");
     } else {
         sLog.Warning("     BeanCounting","Disabled.");

@@ -83,7 +83,7 @@ protected:
     {
         if (type.categoryID() != EVEDB::invCategories::Celestial)  {
             _log(ITEM__ERROR, "Trying to load %s as Celestial.", sDataMgr.GetCategoryName(type.categoryID()));
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }

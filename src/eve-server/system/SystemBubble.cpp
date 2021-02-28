@@ -215,7 +215,7 @@ void SystemBubble::Add(SystemEntity* pSE)
         rangeToStar /= ONE_AU_IN_METERS;
         _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %u/%u Entities in bubble %u",\
                 rangeToStar, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
-        //if (sConfig.server.StackTrace)
+        //if (sConfig.debug.StackTrace)
         //    EvE::traceStack();
     }
 
@@ -252,7 +252,7 @@ void SystemBubble::Add(SystemEntity* pSE)
 void SystemBubble::Remove(SystemEntity *pSE) {
     //assume that the entity is properly registered for its ID
     if (pSE->m_bubble == nullptr) {
-        if (sConfig.server.StackTrace)
+        if (sConfig.debug.StackTrace)
             EvE::traceStack();
 		return;
     }
@@ -425,7 +425,7 @@ bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const
     if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
         float distance = m_center.distance(pt);
         bool check = false;
-        if (distance < m_radius +5000)  // 5k is the grey area between bubbles
+        if (distance < m_radius + 5000)  // 5k is the grey area between bubbles
             check = true;
 
         _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::InBubble(%u) - center: %.1f,%.1f,%.1f - distance: %.1f, check: %s", \
@@ -441,7 +441,7 @@ bool SystemBubble::IsOverlap( const GPoint& pt ) const
     if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
         float distance = m_center.distance(pt);
         bool check = false;
-        if (distance < m_radius *2 +10)
+        if (distance < m_radius * 2 + 10)
             check = true;
 
         _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::IsOverlap(%u) - center: %.1f,%.1f,%.1f - distance: %.1f, check: %s", \
@@ -824,7 +824,7 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble x
     GPoint center = m_center;
-    center.x += BUBBLE_RADIUS_METERS -5;
+    center.x += BUBBLE_RADIUS_METERS - 5;
     str.clear();
     str = "Bubble #";
     str += std::to_string(m_bubbleID);
@@ -834,7 +834,7 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble -x
     center = m_center;
-    center.x -= BUBBLE_RADIUS_METERS -5;
+    center.x -= BUBBLE_RADIUS_METERS - 5;
     str.clear();
     str = "Bubble #";
     str += std::to_string(m_bubbleID);
@@ -844,7 +844,7 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble y
     center = m_center;
-    center.y += BUBBLE_RADIUS_METERS -5;
+    center.y += BUBBLE_RADIUS_METERS - 5;
     str.clear();
     str = "Bubble #";
     str += std::to_string(m_bubbleID);
@@ -854,7 +854,7 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble -y
     center = m_center;
-    center.y -= BUBBLE_RADIUS_METERS -5;
+    center.y -= BUBBLE_RADIUS_METERS - 5;
     str.clear();
     str = "Bubble #";
     str += std::to_string(m_bubbleID);
@@ -864,7 +864,7 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble z
     center = m_center;
-    center.z += BUBBLE_RADIUS_METERS -5;
+    center.z += BUBBLE_RADIUS_METERS - 5;
     str.clear();
     str = "Bubble #";
     str += std::to_string(m_bubbleID);
@@ -874,7 +874,7 @@ void SystemBubble::MarkCenter()
 
     // create jetcan to mark bubble -z
     center = m_center;
-    center.z -= BUBBLE_RADIUS_METERS -5;
+    center.z -= BUBBLE_RADIUS_METERS - 5;
     str.clear();
     str = "Bubble #";
     str += std::to_string(m_bubbleID);

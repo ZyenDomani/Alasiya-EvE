@@ -57,7 +57,7 @@ protected:
     static RefPtr<_Ty> _LoadItem( uint32 asteroidID, const ItemType &type, const ItemData &data) {
         if (type.categoryID() != EVEDB::invCategories::Asteroid) {
             _log(ITEM__ERROR, "Trying to load %s as Asteroid.", sDataMgr.GetCategoryName(type.categoryID()));
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }

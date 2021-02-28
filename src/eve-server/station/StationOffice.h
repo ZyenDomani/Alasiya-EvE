@@ -50,7 +50,7 @@ protected:
     static RefPtr<_Ty> _LoadItem( uint32 officeID, const ItemType& type, const ItemData& idata) {
         if (type.id() != 27)  {
             _log(ITEM__ERROR, "Trying to load itemID %u as Office.", type.id());
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }

@@ -49,7 +49,7 @@ protected:
             return ModuleItemRef( new ModuleItem(modID, type, data ) );
 
         _log(ITEM__ERROR, "Trying to load %s as Module.", sDataMgr.GetCategoryName(type.categoryID()));
-        if (sConfig.server.StackTrace)
+        if (sConfig.debug.StackTrace)
             EvE::traceStack();
         return RefPtr<_Ty>();
     }

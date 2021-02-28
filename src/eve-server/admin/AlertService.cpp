@@ -66,7 +66,7 @@ PyResult AlertService::Handle_BeanCount(PyCallArgs &call) {
     PyTuple *result = new PyTuple(2);
 
     // what we are sending back is just a static mErrorID and the command not to do anything with it.
-    if (sConfig.debug.UseBeanCount or sConfig.debug.IsTestServer) {
+    if (sConfig.debug.BeanCount or sConfig.debug.IsTestServer) {
         result->items[0] = new PyNone();
     } else {
         result->items[0] = new PyInt(34135);    //ErrorID

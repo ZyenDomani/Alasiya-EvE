@@ -409,7 +409,7 @@ protected:
     static RefPtr<_Ty> _LoadItem( uint32 charID, const ItemType& type, const ItemData& data) {
         if( type.groupID() != EVEDB::invGroups::Character ) {
             _log(ITEM__ERROR, "Trying to load %s as Character.", sDataMgr.GetCategoryName(type.categoryID()));
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }

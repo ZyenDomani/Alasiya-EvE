@@ -67,7 +67,7 @@ protected:
         and (type.categoryID() != EVEDB::invCategories::SovereigntyStructure)
         and (type.categoryID() != EVEDB::invCategories::StructureUpgrade)) {
             _log(ITEM__ERROR, "Trying to load %s as Structure.", sDataMgr.GetCategoryName(type.categoryID()));
-            if (sConfig.server.StackTrace)
+            if (sConfig.debug.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }
