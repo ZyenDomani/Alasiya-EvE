@@ -130,7 +130,7 @@ namespace Market {
         uint32 memberID;     // corp member that placed order (0 for char order)
         float price;
     };
-    
+
     // POD structure for mineral data used in pricing method
     struct matlData {
         uint16 typeID;

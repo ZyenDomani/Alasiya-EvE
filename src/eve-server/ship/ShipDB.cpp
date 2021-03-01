@@ -58,7 +58,8 @@ bool ShipDB::InsertInsuranceByShipID(uint32 shipID, std::string name, uint32 own
     return sDatabase.RunQuery(err, "INSERT INTO shipInsurance"
             " (shipID, shipName, ownerID, isCorpItem, startDate, endDate, fraction, payOutAmount)"
             " VALUES (%u, '%s', %u, %u, %f, %f, %.2f, %f)",
-                       shipID, name.c_str(), ownerID, isCorpItem, GetFileTimeNow(), (GetFileTimeNow() + (EvE::Time::Week * numWeeks)), fraction, payOut );
+                       shipID, name.c_str(), ownerID, isCorpItem, GetFileTimeNow(), \
+                       (GetFileTimeNow() + (EvE::Time::Week * numWeeks)), fraction, payOut );
 }
 
 void ShipDB::DeleteInsuranceByShipID(uint32 shipID) {
@@ -74,7 +75,7 @@ float ShipDB::GetShipInsurancePayout(uint32 shipID) {
         return row.GetFloat(0);
 
     /** @todo  send mail to owner about no insurance, so limited payout. from SCC  */
-    return 150000;  //default to flat 150K for no insurance.
+    return 15000;  //default to flat 15K for no insurance.
 }
 
 bool ShipDB::IsShipInsured(uint32 shipID)

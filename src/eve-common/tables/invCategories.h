@@ -15,7 +15,7 @@ namespace EVEDB {
             Charge = 8,
             Blueprint = 9,
             Trading = 10,       // not sure how to use this one....may look into later
-            Entity = 11,
+            Entity = 11,        // includes control bunkers and player drones
             Bonus = 14,         // trait bonus/handicap.  not sure how/if to use these.
             Skill = 16,
             Commodity = 17,

@@ -34,6 +34,7 @@
 #include "effects/EffectsProcessor.h"
 #include "inventory/ItemDB.h"
 #include "market/MarketDB.h"
+#include "market/MarketMgr.h"
 #include "missions/MissionDataMgr.h"
 #include "threading/Threading.h"
 // #include "testing/test.h"
@@ -212,11 +213,11 @@ bool ConsoleCommand::Process() {
                 sLog.Green("  Alasiya's EvEMu", "Server Broadcast:");
                 sLog.Error(" Server Broadcast", " Not Available Yet." );
                 /** @todo  make this show in general chat channel */
-                //const char* buff = buf +2;
+                //const char* buff = buf + 2;
                 //SendMessage(buff);
             } else if (strncmp(buf, "n", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Notify:");
-                const char* buff = buf +2;
+                const char* buff = buf + 2;
                 std::vector<Client*> list;
                 sEntityList.GetClients(list);
                 for (auto cur : list)
@@ -224,7 +225,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("  Console Command", " Notification sent to all online clients." );
             } else if (strncmp(buf, "m", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Modal Message:");
-                const char* buff = buf +2;
+                const char* buff = buf + 2;
                 std::vector<Client*> list;
                 sEntityList.GetClients(list);
                 for (auto cur : list)
@@ -289,7 +290,7 @@ bool ConsoleCommand::Process() {
                     sLog.Green("  Alasiya's EvEMu", "Log settings reloaded from %s", sConfig.files.logSettings.c_str() );
                     // reset config switches based on log settings
                     sConfig.debug.StackTrace = is_log_enabled(SERVER__STACKTRACE);
-                    sConfig.debug.UseBeanCount = is_log_enabled(SERVER__BEANCOUNT);
+                    sConfig.debug.BeanCount = is_log_enabled(SERVER__BEANCOUNT);
                     sConfig.debug.IsTestServer = is_log_enabled(SERVER__TESTSERVER);
                 } else {
                     sLog.Warning("  Alasiya's EvEMu", "Unable to reload settings from %s", sConfig.files.logSettings.c_str() );
@@ -350,8 +351,9 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Running Server Test Code:");
-    sLog.Warning(" Server Test Code", "No Test Code at this time.");
-    //testing::posTest();
+    //sLog.Warning(" Server Test Code", "No Test Code at this time.");
+
+    sMktMgr.SetBasePrice();
 
     // execute code to begin filling missing data in mission db.
     //  first step:  get courier missionIDs

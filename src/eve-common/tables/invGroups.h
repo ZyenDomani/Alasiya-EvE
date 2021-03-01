@@ -666,6 +666,7 @@ namespace EVEDB {
             Mission_Caldari_State_Carrier = 866,
             Mission_Gallente_Federation_Carrier = 867,
             Mission_Minmatar_Republic_Carrier = 868,
+            Capital_Construction_Components = 873,
             Destructable_Station_Services = 874,
             Mission_Faction_Transports = 875,
             Target_Painting_Battery = 877,
