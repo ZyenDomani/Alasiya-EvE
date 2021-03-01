@@ -1,7 +1,7 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****     19 February 2021
+****     28 February 2021
 
     note:  this whole file needs to be reorganized (wip)
 
@@ -55,7 +55,7 @@ check/fix loading linked weapons
     - reloading grouped weapons should divide evenly between modules.
         it currently fills modules in slot order.
 
-check into making module tics faster (like targetMgr) for sub-tic timer calls/checks
+invul timer set on undock after login
 
 check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?  no...ins is queried when needed
@@ -87,6 +87,11 @@ error:
 
 23:51:06 [FxError] guid empty for F85 Peripheral Damage System I using effectID 2302
 
+this is used for pricing update based on minerals.  this query returns ~300 items
+SELECT * FROM `invTypeMaterials` WHERE `quantity` = 0
+
+materials for implants are wrong.  this leads to incorrect price estimates
+missing prices for salvage
 
 *******************************************************
 ********  improvements
@@ -647,6 +652,8 @@ all PackedRows are marshalled into a buffer, where None is inserted as zero.
 
 ****  make safe save method to verify and save data on segfault
 
+check into making module tics faster (like targetMgr) for sub-tic timer calls/checks
+
 aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for all clients in system
 
 drone chat window for drone specific msgs (using individual drone as sender)
@@ -807,7 +814,7 @@ implants....update existing data for more bonus.  as we are running ~60 on char 
     update for ~20+ or so points to make a difference with our attributes
     implant map in character.h  -currently unused/unimplemented
 
-turns use quanternion lerp curve (and mass/agility somehow)
+turns use quaternion lerp curve (and mass/agility somehow)
 
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend
