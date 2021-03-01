@@ -96,11 +96,19 @@ PyBoundObject* InsuranceService::CreateBoundObject( Client* pClient, const PyRep
     return new InsuranceBound( m_manager, &m_db );
 }
 
+PyResult InsuranceService::Handle_GetContractForShip( PyCallArgs& call ) {
+    return m_db.GetInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value());
+}
+
+PyResult InsuranceBound::Handle_UnInsureShip( PyCallArgs& call ) {
+    m_db->DeleteInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value());
+    return PyStatic.NewNone();
+}
 PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called in space */
     const ItemType *type = sItemFactory.GetType(PyRep::IntegerValue(call.tuple->GetItem(0)));
     if (type != nullptr)
-        return new PyFloat(type->basePrice() / 15);
+        return new PyFloat(type->basePrice() / 100);
 
     return PyStatic.NewZero();
 }
@@ -109,7 +117,7 @@ PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called when docked */
     const ItemType *type = sItemFactory.GetType(PyRep::IntegerValue(call.tuple->GetItem(0)));
     if (type != nullptr)
-        return new PyFloat(type->basePrice() / 15);
+        return new PyFloat(type->basePrice() / 100);
 
     return PyStatic.NewZero();
 }
@@ -126,10 +134,6 @@ PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
     }
 
     return m_db->GetInsuranceByOwnerID(call.client->GetCharacterID());
-}
-
-PyResult InsuranceService::Handle_GetContractForShip( PyCallArgs& call ) {
-    return m_db.GetInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value());
 }
 
 PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
@@ -158,17 +162,18 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
      *   Bronze     0.7       0.15
      *   Standard   0.6       0.1
      *   Basic      0.5       0.05
+     *   None       0.1       0.00
      */
     // calculate the fraction value
-    double paymentFraction = (args.amount / (shipRef->type().basePrice() / 15));
+    double paymentFraction = (args.amount / (shipRef->type().basePrice() / 100));
     if (paymentFraction < 0.05f) {
             // catchall for fuckedup prices.
         call.client->SendErrorMsg("Your payment of %.2f is below the minimum payment of %.2f required for coverage.", \
-                    args.amount, (shipRef->type().basePrice() / 15) * 0.05f);
+                    args.amount, (shipRef->type().basePrice() / 100) * 0.05f);
         return PyStatic.NewNone();
     }
 
-    float fraction = 0.0f;  // with no insurance, SCC pays 40%
+    float fraction(0.1f);  // with no insurance, SCC pays 40% on live.  we pay 10%
     if (paymentFraction == 0.05f) {
         fraction = 0.5f;
     } else if (paymentFraction == 0.1f) {
@@ -186,7 +191,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     if (fraction < 0.05f) {
         call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");
         throw PyException(MakeUserError("InsureShipFailed"));
-    } else if (fraction == 0.3f) {
+    } else if (fraction == 0.1f) {
         call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 75521.");
     }
 
@@ -200,7 +205,9 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     }
 
     uint8 numWeeks(12);
-    if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->name(), call.client->GetCharacterID(), fraction, shipRef->type().basePrice(), args.isCorp, numWeeks)) {
+    double payout(shipRef->type().basePrice() / 100);
+    payout *= fraction;
+    if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->name(), call.client->GetCharacterID(), fraction, payout, args.isCorp, numWeeks)) {
         //  it successfully added, now, have the player pay for the insurance
         std::string reason = "Insurance Premium on ";
         reason += call.client->GetShip()->itemName();
@@ -231,9 +238,4 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     m_manager->lsc_service->SendMail(corpSCC, call.client->GetCharacterID(), subject, body);
 
     return m_db->GetInsuranceByShipID(args.shipID);
-}
-
-PyResult InsuranceBound::Handle_UnInsureShip( PyCallArgs& call ) {
-    m_db->DeleteInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value());
-    return PyStatic.NewNone();
 }
