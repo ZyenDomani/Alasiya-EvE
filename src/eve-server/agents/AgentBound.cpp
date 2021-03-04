@@ -153,7 +153,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                     response += call.client->GetName();
                     response += "?";
                     agentSays->SetItem(0, new PyString(response));  //msgInfo  -- if tuple[0].string then return msgInfo
-                    agentSays->SetItem(1, new PyNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)
+                    agentSays->SetItem(1, PyStatic.NewNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)
                 }
 
                 // if agent does location, add this one...
@@ -294,7 +294,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                     m_agent->UpdateOffer(pchar->itemID(), offer);
                     m_agent->SendMissionUpdate(call.client, "prolong");
                     agentSays->SetItem(0, new PyString("I can give you 24 hours to think about it."));    //msgInfo  -- if tuple[0].string then return msgInfo
-                    agentSays->SetItem(1, new PyNone());    // ContentID  -- PyNone used when msgInfo is string to return without processing
+                    agentSays->SetItem(1, PyStatic.NewNone());    // ContentID  -- PyNone used when msgInfo is string to return without processing
                 }
             } break;
             case Decline: { //9
@@ -373,8 +373,8 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         xtraInfo->SetItemString("missionDeclined",  new PyBool(missionDeclined));
 
     if (agentSays->empty()) {
-        agentSays->SetItem(0, new PyNone());  // briefingID
-        agentSays->SetItem(1, new PyNone());  // ContentID
+        agentSays->SetItem(0, PyStatic.NewNone());  // briefingID
+        agentSays->SetItem(1, PyStatic.NewNone());  // ContentID
     }
     PyTuple* inner = new PyTuple(2);
         inner->SetItem(0, agentSays);
@@ -445,7 +445,7 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
                 briefingInfo->SetItemString("Mission Image", sMissionDataMgr.GetKillRes()); break;
         }
         // decline time OR expiration time.  if not decline then expiration
-        briefingInfo->SetItemString("Decline Time", new PyNone());   // -1 is generic decline msg
+        briefingInfo->SetItemString("Decline Time", PyStatic.NewNone());   // -1 is generic decline msg
         briefingInfo->SetItemString("Expiration Time", new PyLong(offer.expiryTime) );
 
     if (is_log_enabled(AGENT__RSP_DUMP)) {
@@ -635,11 +635,11 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
     PyList* giftList = new PyList();    // this is list of tuple(3)  typeID, quantity, extra
     /*
     PyDict* extra = new PyDict();    // 'extra' is either specificItemID or blueprint data.
-        extra->SetItemString("specificItemID", new PyNone());
-        extra->SetItemString("blueprintInfo", new PyNone());
+        extra->SetItemString("specificItemID", PyStatic.NewNone());
+        extra->SetItemString("blueprintInfo", PyStatic.NewNone());
     PyTuple* agentGift = new PyTuple(3);
-        agentGift->SetItem(0, new PyNone());
-        agentGift->SetItem(1, new PyNone());
+        agentGift->SetItem(0, PyStatic.NewNone());
+        agentGift->SetItem(1, PyStatic.NewNone());
         agentGift->SetItem(2, extra);
         giftList->AddItem(agentGift);
     */
@@ -648,8 +648,8 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
     PyList* normList = new PyList();    // this is list of tuple(3)  typeID, quantity, extra
     if (offer.rewardISK) {
         PyDict* extra = new PyDict();    // 'extra' is either specificItemID or blueprint data.
-            //extra->SetItemString("specificItemID", new PyNone());
-            //extra->SetItemString("blueprintInfo", new PyNone());
+            //extra->SetItemString("specificItemID", PyStatic.NewNone());
+            //extra->SetItemString("blueprintInfo", PyStatic.NewNone());
         PyTuple* normalRewards = new PyTuple(3);
             normalRewards->SetItem(0, new PyInt(itemTypeCredits));
             normalRewards->SetItem(1, new PyInt(offer.rewardISK));
@@ -658,8 +658,8 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
     }
     if (offer.rewardItemID) {
         PyDict* extra = new PyDict();    // 'extra' is either specificItemID or blueprint data.
-            //extra->SetItemString("specificItemID", new PyNone());
-            //extra->SetItemString("blueprintInfo", new PyNone());
+            //extra->SetItemString("specificItemID", PyStatic.NewNone());
+            //extra->SetItemString("blueprintInfo", PyStatic.NewNone());
         PyTuple* normalRewards = new PyTuple(3);
             normalRewards->SetItem(0, new PyInt(offer.rewardItemID));
             normalRewards->SetItem(1, new PyInt(offer.rewardItemQty));
@@ -671,11 +671,11 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
     PyList* collateralList = new PyList(); // this is list of tuple(3)  typeID, quantity, extra
     /*
     PyDict* extra = new PyDict();    // 'extra' is either specificItemID or blueprint data.
-        extra->SetItemString("specificItemID", new PyNone());
-        extra->SetItemString("blueprintInfo", new PyNone());
+        extra->SetItemString("specificItemID", PyStatic.NewNone());
+        extra->SetItemString("blueprintInfo", PyStatic.NewNone());
     PyTuple* collateral = new PyTuple(3);
-        collateral->SetItem(0, new PyNone());
-        collateral->SetItem(1, new PyNone());
+        collateral->SetItem(0, PyStatic.NewNone());
+        collateral->SetItem(1, PyStatic.NewNone());
         collateral->SetItem(2, extra);
         */
     objectiveData->SetItemString("collateral", collateralList);
@@ -683,8 +683,8 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
     PyList* bonusList = new PyList();   // this is list of tuple(4)  timeRemaining, typeID, quantity, extra
     if (offer.bonusTime > 0) {
         PyDict* extra = new PyDict();    // 'extra' is either specificItemID or blueprint data.
-            //extra->SetItemString("specificItemID", new PyNone());
-            //extra->SetItemString("blueprintInfo", new PyNone());
+            //extra->SetItemString("specificItemID", PyStatic.NewNone());
+            //extra->SetItemString("blueprintInfo", PyStatic.NewNone());
         PyTuple* bonusRewards = new PyTuple(4);
         if (offer.dateAccepted > 0) {
             bonusRewards->SetItem(0, new PyLong(offer.bonusTime - (offer.dateAccepted - offer.dateIssued) * EvE::Time::Minute));  // bonus time - elapsed time * minutes
@@ -699,8 +699,8 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
     // bonusList can be multiple items, usualy only item or isk for time bonus
     if (false/*bonus2*/) {
         PyDict* extra = new PyDict();    // 'extra' is either specificItemID or blueprint data.
-            //extra->SetItemString("specificItemID", new PyNone());
-            //extra->SetItemString("blueprintInfo", new PyNone());
+            //extra->SetItemString("specificItemID", PyStatic.NewNone());
+            //extra->SetItemString("blueprintInfo", PyStatic.NewNone());
         PyTuple* bonusRewards2 = new PyTuple(4);
             bonusRewards2->SetItem(0, new PyLong(12000000000)); //20m
             bonusRewards2->SetItem(1, new PyInt(itemTypeTrit));

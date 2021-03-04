@@ -342,7 +342,7 @@ PyObject* Agent::GetInfoServiceDetails()
         research->SetItemString("researchSummary", patentList);
         research->SetItemString("researchData", researchData);
     } else {
-        research->SetItemString("agentServiceType", new PyNone());
+        research->SetItemString("agentServiceType", PyStatic.NewNone());
     }
 
     /* for location agents....
@@ -402,7 +402,7 @@ PyObject* Agent::GetInfoServiceDetails()
         locate->SetItemString("callbackID", new PyInt(2));
         locate->SetItemString("lastUsed", new PyInt(0));
     } else {
-        locate->SetItemString("agentServiceType", new PyNone());
+        locate->SetItemString("agentServiceType", PyStatic.NewNone());
     }
 
     // for mission agents....

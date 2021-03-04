@@ -360,7 +360,7 @@ PyDict *ContainerSE::MakeSlimItem() {
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",          new PyInt(m_ownerID));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        slim->SetItemString("nameID",           new PyNone());
+        slim->SetItemString("nameID",           PyStatic.NewNone());
         slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
         slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
         slim->SetItemString("warFactionID",     IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
