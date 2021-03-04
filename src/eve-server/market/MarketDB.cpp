@@ -483,7 +483,7 @@ void MarketDB::UpdateHistory()
                    " SELECT"
                    "    regionID,"
                    "    typeID,"
-                   "    ((UNIX_TIMESTAMP(date) +11644473600) *10000000),"
+                   "    ((UNIX_TIMESTAMP(date) + 11644473600) * 10000000),"
                    "    price,"
                    "    price,"
                    "    price,"
@@ -492,14 +492,61 @@ void MarketDB::UpdateHistory()
                    " FROM mktData");
 }
 
-void MarketDB::GetMineralPrices(std::vector< Market::matlData >& data)
+
+/*  data retrieval for updating base pricing */
+
+void MarketDB::GetShipIDs(std::map< uint16, Inv::TypeData >& data)
 {
     DBQueryResult res;
     DBResultRow row;
-    for (auto cur : data) {
-        sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", cur.typeID);
+    // 178 ships using this query
+    sDatabase.RunQuery(res,
+                "SELECT t.typeID, t.basePrice "
+                " FROM invTypes AS t "
+                " LEFT JOIN invGroups AS g USING (groupID)"
+                " WHERE g.categoryID = %u"
+                " AND g.useBasePrice = 1"
+                " AND t.published = 1",
+                EVEDB::invCategories::Ship);
+
+    //sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u AND published = 1", EVEDB::invGroups::Frigate);
+    while (res.GetRow(row))
+        data[row.GetInt(0)] = Inv::TypeData();
+}
+
+void MarketDB::GetManufacturedItems(std::map< uint16, Inv::TypeData >& data)
+{
+    DBQueryResult res;
+    DBResultRow row;
+    //6602 items in this query
+    if (!sDatabase.RunQuery(res, "SELECT DISTINCT typeID FROM invTypeMaterials"))
+        codelog(DATABASE__ERROR, "Error in GetRAMMaterials query: %s", res.error.c_str());
+
+    while (res.GetRow(row))
+        data[row.GetInt(0)] = Inv::TypeData();
+}
+
+void MarketDB::GetBasePrices(std::map< uint16, Market::matlData >& data)
+{
+    DBQueryResult res;
+    DBResultRow row;
+    std::map< uint16, Market::matlData >::iterator itr;
+    for (itr = data.begin(); itr != data.end(); ++itr) {
+        sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
-            cur.price = row.GetFloat(0);
+            itr->second.price = row.GetFloat(0);
+    }
+}
+
+void MarketDB::GetMineralPrices(std::map< uint16, Market::matlData >& data)
+{
+    DBQueryResult res;
+    DBResultRow row;
+    std::map< uint16, Market::matlData >::iterator itr;
+    for (itr = data.begin(); itr != data.end(); ++itr) {
+        sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", itr->first);
+        if (res.GetRow(row))
+            itr->second.price = (row.GetFloat(0) * 110);
     }
 
     /*  mineral prices in first column from rens 31/5/2010 @ 17:30  logged by me from IGB
@@ -517,9 +564,16 @@ void MarketDB::GetMineralPrices(std::vector< Market::matlData >& data)
      */
 }
 
-void MarketDB::UpdateMineralPrices(std::vector< Market::matlData >& data)
+void MarketDB::UpdateInvPrice(std::map< uint16, Inv::TypeData >& data)
 {
     DBerror err;
     for (auto cur : data)
-        sDatabase.RunQuery(err, "UPDATE invTypes SET basePrice=%f WHERE typeID= %u", cur.price, cur.typeID);
+        sDatabase.RunQuery(err, "UPDATE invTypes SET basePrice=%f WHERE typeID= %u", cur.second.basePrice, cur.first);
+}
+
+void MarketDB::UpdateMktPrice(std::map< uint16, Market::matlData >& data)
+{
+    DBerror err;
+    for (auto cur : data)
+        sDatabase.RunQuery(err, "UPDATE invTypes SET basePrice=%u WHERE typeID= %u", cur.second.price, cur.first);
 }

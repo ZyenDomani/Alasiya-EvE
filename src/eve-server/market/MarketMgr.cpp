@@ -3,6 +3,8 @@
   * @name MarketMgr.cpp
   *   singleton object for storing, manipulating and managing in-game market data
   *   this mgr keeps track of market data without abusing the db on every call. (vs old system)
+  *   this mgr will also track mineral pricing, taking monthly averages, then updating base prices accordingly
+  *
   *
   * @Author:         Allan
   * @date:          19Dec17
@@ -82,8 +84,8 @@ void MarketMgr::Process()
 {
     // make cache timer of xx(time) then invalidate the price history cache
 
-    if (m_timeStamp > GetFileTimeNow())
-        UpdatePriceHistory();
+    //if (m_timeStamp > GetFileTimeNow())
+    //    UpdatePriceHistory();
 }
 
 void MarketMgr::SystemStartup(SystemData& data)
@@ -106,6 +108,7 @@ void MarketMgr::UpdatePriceHistory()
     cutoff_time -= cutoff_time % EvE::Time::Day;    //round down to an even day boundary.
     cutoff_time -= EvE::Time::Day * 2;  //the cutoff between "new" and "old" price history in days
 
+    /** @todo  this doesnt belong here...  */
     //build the history record from the recent market transactions.
     sDatabase.RunQuery(err,
             "INSERT INTO"
@@ -125,6 +128,7 @@ void MarketMgr::UpdatePriceHistory()
             //" GROUP BY regionID, typeID, transactionDate",
             Market::Type::Sell, cutoff_time);
 
+    /** @todo  this doesnt belong here...  */
     // remove the transactions which have been aged out?
     if (sConfig.market.DeleteOldTransactions)
         sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE transactionDate < %li", (cutoff_time - EvE::Time::Year));
@@ -152,6 +156,8 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
         //this method is not in cache yet, load up the contents and cache it
         DBQueryResult res;
+
+        /** @todo  this doesnt belong here...  */
         if(!sDatabase.RunQuery(res,
             "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
             " FROM mktHistory "
@@ -192,6 +198,8 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
         //this method is not in cache yet, load up the contents and cache it
         DBQueryResult res;
+
+        /** @todo  this doesnt belong here...  */
         if(!sDatabase.RunQuery(res,
             "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
             " FROM mktHistory WHERE regionID=%u AND typeID=%u"
@@ -576,22 +584,20 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
     }
 }
 
+
+// after finding price data from Crucible, this may be moot.   -allan 28Feb21
 void MarketMgr::SetBasePrice()
 {
     /* method to estimate item base price, based on materials to manufacture that item
-     * this will fudge cost a bit for material delivery, factory setup, line run cost, and storage of raw and final items
      *
-     * eventually, this will query materials prices,
-     * then set estimated prices for items based on ME0 BPO
-     *
-     * mineral prices are queried from db, based on median of buy/sell orders, leveraged with base price in db
-     * then, the base price is updated in db and saved for later use
+     * mineral prices are queried from db with a +10% markup
      *
      * ships and modules are loaded and queried from static data for manufacturing materials
      * those materials are queried (as required) for minerals needed
      * once a total mineral value has been calculated, calculate estimated cost based on
-     * current mineral values.
-     * that cost will be modified for above additions (cost added)
+     * current mineral values
+     *
+     * final prices will have markup based on item type
      *
      *
      * NOTES FOR IMPLEMETING THIS SHIT
@@ -601,73 +607,230 @@ void MarketMgr::SetBasePrice()
      *        ramMatls.quantity       = row.GetInt(2);
      *        ramMatls.materialTypeID = row.GetInt(1);
      *
-     *        //SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, extra FROM ramTypeRequirements
-     *        EvERam::RamRequirements ramReq = EvERam::RamRequirements();
-     *        ramReq.activityID       = row.GetInt(1);
-     *        ramReq.requiredTypeID   = row.GetInt(2);
-     *        ramReq.quantity         = row.GetInt(3);
-     *        ramReq.damagePerJob     = row.GetFloat(4);
-     *        ramReq.extra            = row.GetBool(5);
-     *
-     *        //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
-     *        //  researchTechTime, productivityModifier, materialModifier, wasteFactor, maxProductionLimit, chanceOfRE, catID FROM invBlueprintTypes
-     *        EvERam::bpTypeData bpTypeData = EvERam::bpTypeData();
-     *        bpTypeData.parentBlueprintTypeID    = row.GetInt(1);
-     *        bpTypeData.productTypeID            = row.GetInt(2);
-     *        bpTypeData.productionTime           = row.GetInt(3);
-     *        bpTypeData.techLevel                = row.GetInt(4);
-     *        bpTypeData.researchProductivityTime = row.GetInt(5);
-     *        bpTypeData.researchMaterialTime     = row.GetInt(6);
-     *        bpTypeData.researchCopyTime         = row.GetInt(7);
-     *        bpTypeData.researchTechTime         = row.GetInt(8);
-     *        bpTypeData.productivityModifier     = row.GetInt(9);
-     *        bpTypeData.materialModifier         = row.GetInt(10);
-     *        bpTypeData.wasteFactor              = row.GetInt(11);
-     *        bpTypeData.maxProductionLimit       = row.GetInt(12);
-     *        bpTypeData.chanceOfRE               = row.GetFloat(13);
-     *        bpTypeData.catID                    = row.GetInt(14);
+     * eventually, this will query all items that can be manufactured from BP or refined into minerals
      *
      */
 
-    /* get current mineral prices
-     *
-     * how to get data?
-     *  pull straight from db?
-     * ....nah.  hard-code minerals.
-     *    it's not like they change
-     * - nope.  pull from static data.  duh.
-     *
-     */
-    std::vector< Market::matlData > data;
-    sDataMgr.GetMineralData(data);
+    //  get mineral prices and put into data map
+    // typeID/data{typeID, price, name}
+    std::map<uint16, Market::matlData> mineralMap;
+    mineralMap.clear();
+    sDataMgr.GetMineralData(mineralMap);        // 8
 
-    //  get mineral prices here and put into data vector
-    MarketDB::GetMineralPrices(data);
+    // this will have to use db to get current data.
+    //  mineral prices are (will be) updated via a 'price average' method yet to be written
+    MarketDB::GetMineralPrices(mineralMap);
+
+    // get 'building blocks' used for cap ships and put into data map
+    //block typeID/vector<data{materialTypeID, qty}>
+    std::map<uint16, Market::matlData> materialMap;
+    materialMap.clear();
+    sDataMgr.GetBlockData(materialMap);         // 19
+
+    // get isotopes and gas from ice and clouds and put into data map
+    //block typeID/vector<data{materialTypeID, qty}>
+    sDataMgr.GetElementData(materialMap);         // 15
+
+    // may need to query all Cat::Material items and figure pricing for them
+    //  these may be reaction outputs from invTypeReactions
+
+    // may need to query all Cat::Commodity items and figure pricing for them
+    //  these are used for Grp::DataInterfaces (R.A.M. items)
+
+    // this will have to use db to get current data.
+    //  mineral prices are (will be) updated via a 'price average' method yet to be written
+    MarketDB::GetBasePrices(materialMap);
+
+
+    // combine material maps
+    materialMap.insert(mineralMap.begin(), mineralMap.end());
+
 
     // get shipIDs
-    //  which ones?
-    // start with frigates for testing
+    // ship typeID/data{inventory data}
+    std::map<uint16, Inv::TypeData> itemMap;
+    itemMap.clear();
+    // update this to get all items made from minerals, or made from items made from minerals (construction blocks)
+    //MarketDB::GetShipIDs(itemMap);
+    MarketDB::GetManufacturedItems(itemMap);
 
+    //ship typeID/vector<data{materialTypeID, qty}>
+    std::map<uint16, std::vector<EvERam::RamMaterials>> itemMatMap;
+    itemMatMap.clear();
+    std::map<uint16, Inv::TypeData>::iterator itemItr = itemMap.begin();
+    for (; itemItr != itemMap.end(); ++itemItr) {
+        // pull data for this ship  -need r/w iterator to work
+        sDataMgr.GetType(itemItr->first, itemItr->second);
 
-    // get minerals required for ship
-    std::vector< EvERam::RequiredItem > matVec;
-
-    // sDataMgr.GetRamRequiredItems(typeID, EvERam::Activity::Manufacturing, matVec);
-
-    /*
-     *        matVec.typeID = it->second.materialTypeID;
-     *        matVec.quantity = it->second.quantity;
-     */
+        // get minerals required for this ship
+        std::vector<EvERam::RamMaterials> matVec;
+        matVec.clear();
+        sDataMgr.GetRamMaterials(itemItr->first, matVec);
+        itemMatMap[itemItr->first] = matVec;
+    }
 
 
     // determine base price of ship based on mineral requirements
+    uint32 current(0);
+    Inv::GrpData gData = Inv::GrpData();
+    std::map<uint16, Market::matlData>::iterator materialItr = materialMap.begin();
+    std::map<uint16, std::vector<EvERam::RamMaterials>>::iterator itemMatItr = itemMatMap.end();
+    for (itemItr = itemMap.begin(); itemItr != itemMap.end(); ++itemItr) {
+        itemMatItr = itemMatMap.find(itemItr->first);
+        if (itemMatItr != itemMatMap.end()) {
+            current = itemItr->second.basePrice;
+            itemItr->second.basePrice = 0;
+            // reset basePrice
+            // sum mineral counts with current prices for this ship
+            for (auto cur2 : itemMatItr->second) {
+                materialItr = materialMap.find(cur2.materialTypeID);
+                if (materialItr == materialMap.end()) {
+                    sLog.Error("     SetBasePrice", "resource %u for %s(%u) not found in materialMap", \
+                    cur2.materialTypeID, itemItr->second.name.c_str(), itemItr->first);
+                    continue;
+                }
+                itemItr->second.basePrice += (materialItr->second.price * cur2.quantity);
+            }
 
+            gData = Inv::GrpData();
+            sDataMgr.GetGroup(itemItr->second.groupID, gData);
+            // apply modifier to base price according to item category
+            switch (gData.catID) {
+                case EVEDB::invCategories::Ship: {
+                    itemItr->second.basePrice *= 3;
+                } break;
+                case EVEDB::invCategories::Module: {
+                    itemItr->second.basePrice *= 4;
+                } break;
+                case EVEDB::invCategories::Charge: {
+                    itemItr->second.basePrice *= 1;
+                } break;
+                case EVEDB::invCategories::Material: {
+                    itemItr->second.basePrice *= 3;
+                } break;
+                case EVEDB::invCategories::Commodity: { // this includes drone compounds
+                    itemItr->second.basePrice *= 4;
+                } break;
+                case EVEDB::invCategories::Drone: {
+                    itemItr->second.basePrice *= 3.5;
+                } break;
+                case EVEDB::invCategories::Implant: {
+                    itemItr->second.basePrice *= 7;
+                } break;
+                case EVEDB::invCategories::Deployable: {
+                    itemItr->second.basePrice *= 2;
+                } break;
+                case EVEDB::invCategories::Structure: {
+                    itemItr->second.basePrice *= 3;
+                } break;
+                case EVEDB::invCategories::Reaction: {
+                    itemItr->second.basePrice *= 2;
+                } break;
+                case EVEDB::invCategories::Asteroid: {
+                    itemItr->second.basePrice *= 3;
+                } break;
+                case EVEDB::invCategories::Subsystem: {
+                    itemItr->second.basePrice *= 4;
+                } break;
+                case EVEDB::invCategories::StructureUpgrade: {
+                    itemItr->second.basePrice *= 5;
+                } break;
+                case EVEDB::invCategories::SovereigntyStructure: {
+                    itemItr->second.basePrice *= 5;
+                } break;
+                case EVEDB::invCategories::PlanetaryInteraction: {
+                    itemItr->second.basePrice *= 5;
+                } break;
+                case EVEDB::invCategories::PlanetaryResources: {
+                    itemItr->second.basePrice *= 6;
+                } break;
+                case EVEDB::invCategories::PlanetaryCommodities: {
+                    itemItr->second.basePrice *= 6;
+                } break;
+                case EVEDB::invCategories::Orbitals: {
+                    itemItr->second.basePrice *= 3;
+                } break;
+                case EVEDB::invCategories::Station: {
+                    itemItr->second.basePrice *= 8;
+                } break;
+                case EVEDB::invCategories::Celestial: {
+                    itemItr->second.basePrice *= 8;
+                } break;
+                case EVEDB::invCategories::Accessories: {
+                    // clone, voucher, outpost improvement/upgrade, plex
+                    itemItr->second.basePrice *= 8;
+                } break;
+                default: {
+                    itemItr->second.basePrice *= 2;
+                    sLog.Warning("     SetBasePrice", "Default hit for %s (id:%u, g:%u, c:%u)", \
+                            itemItr->second.name.c_str(), itemItr->first, gData.id, gData.catID);
+                }
+            }
 
-    // apply modifier to base price
-
+            if (itemItr->second.basePrice < 0.01) {
+                sLog.Error("     SetBasePrice", "Calculated updated price for %s(%u) is 0", \
+                           itemItr->second.name.c_str(), itemItr->first);
+            } else {
+                sLog.Blue("     SetBasePrice", "Calculated updated price for %s(%u) from %u to %.2f", \
+                          itemItr->second.name.c_str(), itemItr->first, current, itemItr->second.basePrice);
+            }
+        }
+    }
 
     // update db for 'new' base price
+    MarketDB::UpdateInvPrice(itemMap);
+}
 
+void MarketMgr::UpdateBlockPrice()
+{
+    //  get mineral prices and put into data map
+    // typeID/data{typeID, price, name}
+    std::map<uint16, Market::matlData> mineralMap;
+    mineralMap.clear();
+    sDataMgr.GetMineralData(mineralMap);        // 8
 
+    // get 'building blocks' used for cap ships and put into data map
+    //block typeID/vector<data{materialTypeID, qty}>
+    std::map< uint16, Market::matlData > blockMatMap;
+    blockMatMap.clear();
+    sDataMgr.GetBlockData(blockMatMap);         // 19
+
+    // this will have to use db to get current data.
+    //  mineral prices are (will be) updated via a 'price average' method yet to be written
+    MarketDB::GetMineralPrices(mineralMap);
+
+    // determine mineral cost for block type
+    std::vector<EvERam::RamMaterials> matVec;
+    std::vector<EvERam::RamMaterials>::iterator matItr;
+    std::map<uint16, Market::matlData>::iterator blockItr = blockMatMap.begin();
+    std::map<uint16, Market::matlData>::iterator mineralItr = mineralMap.begin();
+    for (; blockItr != blockMatMap.end(); ++blockItr) {
+        // get minerals required for this block
+        matVec.clear();
+        sDataMgr.GetRamMaterials(blockItr->first, matVec);
+        // sum mineral counts with current prices for this ship
+        for (auto cur : matVec) {
+            mineralItr = mineralMap.find(cur.materialTypeID);
+            if (mineralItr != mineralMap.end()) {
+                blockItr->second.price += (mineralItr->second.price * cur.quantity);
+            }
+        }
+    }
+
+    //  update block price
+    MarketDB::UpdateMktPrice(blockMatMap);
+}
+
+void MarketMgr::UpdateMineralPrice()
+{
+    //  get mineral prices and put into data map
+    // typeID/data{typeID, price, name}
+    std::map<uint16, Market::matlData> mineralMap;
+    mineralMap.clear();
+    sDataMgr.GetMineralData(mineralMap);        // 8
+
+    //  update mineral price
+    MarketDB::UpdateMktPrice(mineralMap);
 
 }
+

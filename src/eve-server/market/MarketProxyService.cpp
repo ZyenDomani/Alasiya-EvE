@@ -80,8 +80,8 @@ PyResult MarketProxyService::Handle_GetMarketGroups(PyCallArgs &call) {
 }
 
 PyResult MarketProxyService::Handle_StartupCheck(PyCallArgs &call) {
-    if (sMktMgr.NeedsUpdate())
-        sMktMgr.UpdatePriceHistory();
+    //if (sMktMgr.NeedsUpdate())
+    //    sMktMgr.UpdatePriceHistory();
     return nullptr;
 }
 

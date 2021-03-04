@@ -61,8 +61,13 @@ public:
 
 
     /* for base price estimator */
-    static void GetMineralPrices(std::vector<Market::matlData>& data);
-    static void UpdateMineralPrices(std::vector<Market::matlData>& data);
+    static void GetShipIDs(std::map<uint16, Inv::TypeData>& data);
+    static void GetBasePrices(std::map< uint16, Market::matlData >& data); 
+    static void GetMineralPrices(std::map< uint16, Market::matlData >& data);   // +10% markup
+    static void GetManufacturedItems(std::map<uint16, Inv::TypeData>& data);
+    static void UpdateInvPrice(std::map< uint16, Inv::TypeData >& data);
+    static void UpdateMktPrice(std::map< uint16, Market::matlData >& data);
+
 
     /* for marketMgr update service */
     static int64 GetUpdateTime();

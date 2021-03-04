@@ -39,6 +39,7 @@ m_npcDivisions(nullptr)
     m_moonGoo.clear();
     m_ramMatl.clear();
     m_regions.clear();
+    m_elements.clear();
     m_minerals.clear();
     m_bpMatlData.clear();
     m_systemData.clear();
@@ -93,6 +94,7 @@ void StaticDataMgr::Clear()
     m_moonGoo.clear();
     m_ramMatl.clear();
     m_regions.clear();
+    m_elements.clear();
     m_minerals.clear();
     m_systemData.clear();
     m_staticData.clear();
@@ -218,26 +220,24 @@ void StaticDataMgr::Populate()
     startTime = GetTimeMSeconds();
     ManagerDB::GetTypeData(*res);
     while (res->GetRow(row)) {
-        Inv::TypeData data = Inv::TypeData();
-        data.id = row.GetUInt(0);
-        data.groupID = row.GetUInt(1);
-        data.name = row.GetText(2);
-        data.description = row.GetText(3);
-        data.radius = row.GetFloat(4);
-        data.mass = row.GetFloat(5);
-        data.volume = row.GetFloat(6);
-        data.capacity = row.GetFloat(7);
-        data.portionSize = row.GetUInt(8);
-        data.race = row.GetUInt(9);
-        data.basePrice = row.GetDouble(10);
-        data.published = (sConfig.server.AllowNonPublished ? true : row.GetBool(11));
-        data.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(12));
-        data.chanceOfDuplicating = row.GetFloat(13);
-
-        // these will take a bit of work, but will eliminate multiple db hits on inventory/menu loading ingame
-        data.isRecyclable = FactoryDB::IsRecyclable(data.id);   // +30s to startup
-        data.isRefinable = FactoryDB::IsRefinable(data.id);     // +8s to startup
-
+        Inv::TypeData data              = Inv::TypeData();
+            data.id                     = row.GetUInt(0);
+            data.groupID                = row.GetUInt(1);
+            data.name                   = row.GetText(2);
+            data.description            = row.GetText(3);
+            data.radius                 = row.GetFloat(4);
+            data.mass                   = row.GetFloat(5);
+            data.volume                 = row.GetFloat(6);
+            data.capacity               = row.GetFloat(7);
+            data.portionSize            = row.GetUInt(8);
+            data.race                   = row.GetUInt(9);
+            data.basePrice              = row.GetDouble(10);
+            data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(11));
+            data.marketGroupID          = (row.IsNull(11) ? 0 : row.GetUInt(12));
+            data.chanceOfDuplicating    = row.GetFloat(13);
+            // these will take a bit of work, but will eliminate multiple db hits on inventory/menu loading ingame
+            data.isRecyclable           = FactoryDB::IsRecyclable(data.id);   // +30s to startup
+            data.isRefinable            = FactoryDB::IsRefinable(data.id);     // +8s to startup
         m_typeData.emplace(row.GetUInt(0), data);
     }
     sLog.Cyan("    StaticDataMgr", "%u Inventory Types loaded in %.3fms.", m_typeData.size(), (GetTimeMSeconds() - startTime));
@@ -304,10 +304,10 @@ void StaticDataMgr::Populate()
         m_stationSystem.emplace(row.GetInt(0), row.GetInt(1));
     }
 
-    std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.begin(), end = m_stationList.end();
+    std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.begin();
     for (auto cur : m_stationSystem) {
         itr = m_stationList.find(cur.second);
-        if (itr != end) {
+        if (itr != m_stationList.end()) {
             itr->second.push_back(cur.first);
         } else {
             std::vector<uint32> sVec;
@@ -342,10 +342,20 @@ void StaticDataMgr::Populate()
     sLog.Cyan("    StaticDataMgr", "%u Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
+    FactoryDB::GetBlocks(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID, typeName FROM invTypes [where type=ship construction block]
+        m_blocks.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+    }
     FactoryDB::GetMinerals(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=mineral]
         m_minerals.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+    }
+    FactoryDB::GetElements(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID, typeName FROM invTypes [where type=mineral]
+        m_elements.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
     FactoryDB::GetRAMMaterials(*res);
     while (res->GetRow(row)) {
@@ -652,13 +662,33 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
     return false;
 }
 
-void StaticDataMgr::GetMineralData(std::vector< Market::matlData >& into)
+void StaticDataMgr::GetElementData(std::map< uint16, Market::matlData >& into)
+{
+    for (auto cur : m_elements) {
+        Market::matlData data = Market::matlData();
+        data.typeID = cur.first;
+        data.name = cur.second;
+        into[cur.first] = data;
+    }
+}
+
+void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into)
 {
     for (auto cur : m_minerals) {
         Market::matlData data = Market::matlData();
         data.typeID = cur.first;
         data.name = cur.second;
-        into.push_back(data);
+        into[cur.first] = data;
+    }
+}
+
+void StaticDataMgr::GetBlockData(std::map< uint16, Market::matlData >& into)
+{
+    for (auto cur : m_blocks) {
+        Market::matlData data = Market::matlData();
+        data.typeID = cur.first;
+        data.name = cur.second;
+        into[cur.first] = data;
     }
 }
 

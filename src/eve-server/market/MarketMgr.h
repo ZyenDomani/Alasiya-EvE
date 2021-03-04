@@ -58,6 +58,8 @@ public:
 
     // base price update method
     void SetBasePrice();         // this uses current mineral values to estimate base price of item
+    void UpdateBlockPrice();
+    void UpdateMineralPrice();
 
     
 protected:

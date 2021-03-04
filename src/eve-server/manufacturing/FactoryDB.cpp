@@ -31,10 +31,22 @@ bool FactoryDB::IsProducableBy(const uint32 assemblyLineID, const ItemType *pTyp
     return FactoryDB::GetMultipliers(assemblyLineID, pType, into);
 }
 
+void FactoryDB::GetElements(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (422, 423)"))
+        codelog(DATABASE__ERROR, "Error in GetMinerals query: %s", res.error.c_str());
+}
+
 void FactoryDB::GetMinerals(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID = 18 AND published = 1"))   // minerals
         codelog(DATABASE__ERROR, "Error in GetMinerals query: %s", res.error.c_str());
+}
+
+void FactoryDB::GetBlocks(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID = 873"))   // construction blocks
+        codelog(DATABASE__ERROR, "Error in GetBlocks query: %s", res.error.c_str());
 }
 
 void FactoryDB::GetRAMMaterials(DBQueryResult& res)
@@ -370,7 +382,7 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
         " al.costInstall,"
         " alt.minCostPerHour,"
         " al.costPerHour,"
-        " al.ownerID,"
+        " al.ownerID,"                          //5
         " al.discountPerGoodStandingPoint,"
         " al.surchargePerBadStandingPoint"
         " FROM ramAssemblyLines AS al"
@@ -391,7 +403,7 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
     into.materialMultiplier     = row.GetFloat(0);
     into.timeMultiplier         = row.GetFloat(1);
     into.installCost            = row.GetFloat(2);
-    if (row.GetFloat(3) > row.GetFloat(4)) {
+    if (row.GetFloat(3) > row.GetFloat(4)) {            //min of base cost/hr vs minimum cost/hr
         into.usageCost          = row.GetFloat(3);
     } else {
         into.usageCost          = row.GetFloat(4);
@@ -402,7 +414,7 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
         return true;
 
     float standing(1), costModifier(1);
-    uint32 factionID = sDataMgr.GetCorpFaction(row.GetInt(5));
+    uint32 factionID(sDataMgr.GetCorpFaction(row.GetInt(5)));
     if (isCorpJob) {
         // this is only for PC corps.  take higher of (npc faction to pc corp)/2 or npc corp to pc corp
         float cStanding(StandingDB::GetStanding(row.GetInt(5), pChar->corporationID()));

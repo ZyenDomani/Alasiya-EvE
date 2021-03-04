@@ -54,7 +54,9 @@ public:
     const char*         GetGroupName(uint16 grpID);
     const char*         GetCategoryName(uint8 catID);
 
-    void                GetMineralData(std::vector<Market::matlData>& data);
+    void                GetBlockData(std::map< uint16, Market::matlData >& into);
+    void                GetElementData(std::map< uint16, Market::matlData >& into);
+    void                GetMineralData(std::map< uint16, Market::matlData >& into);
     void                GetMoonResouces(std::map<uint16, uint8>& data);
 
     bool                IsSkillTypeID(uint16 typeID);
@@ -69,10 +71,10 @@ public:
 
     bool                IsRefinable(uint16 typeID);
     bool                IsRecyclable(uint16 typeID);
-    void                GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs); // bp typeID/matls
-    void                GetRamMaterials(uint16 typeID, std::vector<EvERam::RamMaterials>& ramMatls);    // bp productID/matls
-    void                GetRamRequirements(uint16 typeID, std::vector< EvERam::RamRequirements >& ramReqs); // bp typeID/matls
-    // this is for ALL needed materials for RAM activity as listed.  these are NOT modified.
+    void                GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs); // bp typeID/data
+    void                GetRamMaterials(uint16 typeID, std::vector<EvERam::RamMaterials>& ramMatls);    // bp productTypeID/data{typeID/qty}
+    void                GetRamRequirements(uint16 typeID, std::vector< EvERam::RamRequirements >& ramReqs); // bp typeID/data
+    // this is for ALL needed materials for RAM activity from BP.  these are NOT modified.
     void                GetRamRequiredItems(const uint32 typeID, const int8 activity, std::vector<EvERam::RequiredItem> &into);
 
     bool                GetStaticInfo(uint32 itemID, StaticData& data);
@@ -167,6 +169,8 @@ private:
     std::map<uint16, EvERam::bpTypeData>                m_bpTypeData;       // typeID/data
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
     std::map<uint16, std::string>                       m_skills;           // typeID/name
+    std::map<uint16, std::string>                       m_blocks;           // typeID/name
+    std::map<uint16, std::string>                       m_elements;         // typeID/name
     std::map<uint16, std::string>                       m_minerals;         // typeID/name
     std::map<uint32, StaticData>                        m_staticData;       // itemID/data
 
