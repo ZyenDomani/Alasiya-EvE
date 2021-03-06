@@ -44,23 +44,17 @@ DBRowDescriptor::DBRowDescriptor(PyList* keywords)
 DBRowDescriptor::DBRowDescriptor( const DBQueryResult& res )
 : PyObjectEx_Type1( new PyToken( "blue.DBRowDescriptor" ), _CreateArgs() )
 {
-    uint32 cc = res.ColumnCount();
-
-    for( uint32 i(0); i < cc; ++i )
+    uint32 cc(res.ColumnCount());
+    for (uint32 i(0); i < cc; ++i)
         AddColumn( res.ColumnName( i ), res.ColumnType( i ) );
 }
 
 DBRowDescriptor::DBRowDescriptor( const DBResultRow& row )
 : PyObjectEx_Type1( new PyToken( "blue.DBRowDescriptor" ), _CreateArgs() )
 {
-    uint32 cc = row.ColumnCount();
-
-    for( uint32 i(0); i < cc; ++i )
+    uint32 cc(row.ColumnCount());
+    for (uint32 i(0); i < cc; ++i)
         AddColumn( row.ColumnName( i ), row.ColumnType( i ) );
-}
-
-DBRowDescriptor::~DBRowDescriptor() {
-
 }
 
 uint32 DBRowDescriptor::ColumnCount() const
@@ -80,7 +74,7 @@ DBTYPE DBRowDescriptor::GetColumnType( uint32 index ) const
 
 uint32 DBRowDescriptor::FindColumn( const char* name ) const
 {
-    uint32 cc = ColumnCount();
+    uint32 cc(ColumnCount());
     PyString* stringName = new PyString( name );
 
     for( uint32 i(0); i < cc; ++i ) {
@@ -136,14 +130,10 @@ CRowSet::CRowSet( DBRowDescriptor** rowDesc )
 
 }
 
-CRowSet::~CRowSet() {
-
-}
-
 PyPackedRow* CRowSet::NewRow()
 {
-    DBRowDescriptor* rowDesc = _GetRowDesc();
-    PyPackedRow* row = new PyPackedRow( rowDesc );
+    //DBRowDescriptor* rowDesc = _GetRowDesc();
+    PyPackedRow* row = new PyPackedRow( _GetRowDesc() );
 
     list().AddItem( row );
     return row;
@@ -199,14 +189,10 @@ CIndexedRowSet::CIndexedRowSet( DBRowDescriptor** rowDesc )
 
 }
 
-CIndexedRowSet::~CIndexedRowSet() {
-
-}
-
 PyPackedRow* CIndexedRowSet::NewRow( PyRep* key )
 {
-    DBRowDescriptor* rowDesc = _GetRowDesc();
-    PyPackedRow* row = new PyPackedRow( rowDesc );
+    //DBRowDescriptor* rowDesc = _GetRowDesc();
+    PyPackedRow* row = new PyPackedRow( _GetRowDesc() );
 
     dict().SetItem( key , row );
     return row;
@@ -246,10 +232,6 @@ PyDict* CIndexedRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 CFilterRowSet::CFilterRowSet( DBRowDescriptor** rowDesc )
 : PyObjectEx_Type2( _CreateArgs(), _CreateKeywords( *rowDesc ) )
 {
-
-}
-
-CFilterRowSet::~CFilterRowSet() {
 
 }
 

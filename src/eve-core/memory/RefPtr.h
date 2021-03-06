@@ -70,10 +70,12 @@ public:
      */
     virtual ~RefObject()
     {
-        // this isnt completely accurate yet.  disable to avoid crashes i cant trace 
+        // this isnt completely accurate yet.  disable to avoid crashes i cant trace
         //assert( mRefCount == 0);
         mDeleted = true;
     }
+
+    size_t GetCount()           { return mRefCount; }
 
 protected:
     /**
@@ -84,7 +86,7 @@ protected:
         if (mDeleted) {
             _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %u", mRefCount);
             EvE::traceStack();
-            return;
+            //return;
         }
         assert( mDeleted == false );
         ++mRefCount;
