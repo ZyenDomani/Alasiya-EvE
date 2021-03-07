@@ -194,8 +194,6 @@ PyRep *MarketDB::GetOrderRow(uint32 orderID) {
 
 //NOTE: needs a lot of work to implement orderRange
 uint32 MarketDB::FindBuyOrder(Call_PlaceCharOrder &call) {
-    float price = call.price + 0.01;
-
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT orderID"
@@ -210,7 +208,7 @@ uint32 MarketDB::FindBuyOrder(Call_PlaceCharOrder &call) {
         call.typeID,
         call.stationID,
         call.quantity,
-        price/*, sConfig.market.FindBuyOrder*/))
+        call.price + 0.01/*, sConfig.market.FindBuyOrder*/))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return 0;
