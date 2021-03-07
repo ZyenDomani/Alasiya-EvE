@@ -36,8 +36,11 @@ public:
     static bool IsRefinable(const uint16 typeID);
     static bool IsRecyclable(const uint16 typeID);
     static void GetBlocks(DBQueryResult& res);
-    static void GetElements(DBQueryResult& res);
+    static void GetSalvage(DBQueryResult& res);
     static void GetMinerals(DBQueryResult& res);
+    static void GetCompounds(DBQueryResult& res);
+    static void GetResources(DBQueryResult& res);
+    static void GetCommodities(DBQueryResult& res);
     static void GetRAMMaterials(DBQueryResult& res);
     static void GetBlueprintType(DBQueryResult& res);
     static void GetRAMRequirements(DBQueryResult& res);

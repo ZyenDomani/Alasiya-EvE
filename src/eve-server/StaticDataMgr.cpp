@@ -39,7 +39,7 @@ m_npcDivisions(nullptr)
     m_moonGoo.clear();
     m_ramMatl.clear();
     m_regions.clear();
-    m_elements.clear();
+    m_compounds.clear();
     m_minerals.clear();
     m_bpMatlData.clear();
     m_systemData.clear();
@@ -94,7 +94,7 @@ void StaticDataMgr::Clear()
     m_moonGoo.clear();
     m_ramMatl.clear();
     m_regions.clear();
-    m_elements.clear();
+    m_compounds.clear();
     m_minerals.clear();
     m_systemData.clear();
     m_staticData.clear();
@@ -344,7 +344,7 @@ void StaticDataMgr::Populate()
     startTime = GetTimeMSeconds();
     FactoryDB::GetBlocks(*res);
     while (res->GetRow(row)) {
-        //SELECT typeID, typeName FROM invTypes [where type=ship construction block]
+        //SELECT typeID, typeName FROM invTypes [where type=construction block]
         m_blocks.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
     FactoryDB::GetMinerals(*res);
@@ -352,10 +352,25 @@ void StaticDataMgr::Populate()
         //SELECT typeID, typeName FROM invTypes [where type=mineral]
         m_minerals.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
-    FactoryDB::GetElements(*res);
+    FactoryDB::GetCompounds(*res);
     while (res->GetRow(row)) {
-        //SELECT typeID, typeName FROM invTypes [where type=mineral]
-        m_elements.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        //SELECT typeID, typeName FROM invTypes [where type=compound]
+        m_compounds.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+    }
+    FactoryDB::GetSalvage(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID, typeName FROM invTypes [where type=salvage]
+        m_salvage.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+    }
+    FactoryDB::GetResources(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID, typeName FROM invTypes [where type=salvage]
+        m_resources.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+    }
+    FactoryDB::GetCommodities(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID, typeName FROM invTypes [where type=salvage]
+        m_commodities.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
     FactoryDB::GetRAMMaterials(*res);
     while (res->GetRow(row)) {
@@ -662,9 +677,9 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
     return false;
 }
 
-void StaticDataMgr::GetElementData(std::map< uint16, Market::matlData >& into)
+void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_elements) {
+    for (auto cur : m_compounds) {
         Market::matlData data = Market::matlData();
         data.typeID = cur.first;
         data.name = cur.second;
@@ -691,6 +706,37 @@ void StaticDataMgr::GetBlockData(std::map< uint16, Market::matlData >& into)
         into[cur.first] = data;
     }
 }
+
+void StaticDataMgr::GetSalvageData(std::map< uint16, Market::matlData >& into)
+{
+    for (auto cur : m_salvage) {
+        Market::matlData data = Market::matlData();
+        data.typeID = cur.first;
+        data.name = cur.second;
+        into[cur.first] = data;
+    }
+}
+
+void StaticDataMgr::GetPIResourceData(std::map< uint16, Market::matlData >& into)
+{
+    for (auto cur : m_resources) {
+        Market::matlData data = Market::matlData();
+        data.typeID = cur.first;
+        data.name = cur.second;
+        into[cur.first] = data;
+    }
+}
+
+void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& into)
+{
+    for (auto cur : m_commodities) {
+        Market::matlData data = Market::matlData();
+        data.typeID = cur.first;
+        data.name = cur.second;
+        into[cur.first] = data;
+    }
+}
+
 
 void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
 {

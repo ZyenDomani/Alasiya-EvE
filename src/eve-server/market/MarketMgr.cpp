@@ -627,34 +627,39 @@ void MarketMgr::SetBasePrice()
     materialMap.clear();
     sDataMgr.GetBlockData(materialMap);         // 19
 
-    // get isotopes and gas from ice and clouds and put into data map
-    //block typeID/vector<data{materialTypeID, qty}>
-    sDataMgr.GetElementData(materialMap);         // 15
+    // get compounds from ice and put into data map
+    sDataMgr.GetCompoundData(materialMap);         // 7
 
-    // may need to query all Cat::Material items and figure pricing for them
-    //  these may be reaction outputs from invTypeReactions
+    // need to query Cat::Material items for reaction outputs from invTypeReactions and figure pricing for them
 
-    // may need to query all Cat::Commodity items and figure pricing for them
-    //  these are used for Grp::DataInterfaces (R.A.M. items)
+    // need to query Cat::Commodity items used for Grp::DataInterfaces (R.A.M. items) and figure pricing for them
+
+    // get salvage items for rigs and other items made from them
+    sDataMgr.GetSalvageData(materialMap);         // 53
+
+    // get PI resources
+    sDataMgr.GetPIResourceData(materialMap);         // 15
+
+    // get PI commodities
+    sDataMgr.GetPICommodityData(materialMap);         // 66
 
     // this will have to use db to get current data.
     //  mineral prices are (will be) updated via a 'price average' method yet to be written
-    MarketDB::GetBasePrices(materialMap);
+    MarketDB::GetMaterialPrices(materialMap);
 
-
-    // combine material maps
+    // add minerals to material maps
     materialMap.insert(mineralMap.begin(), mineralMap.end());
 
 
-    // get shipIDs
-    // ship typeID/data{inventory data}
+    // item typeID/data{inventory data}
     std::map<uint16, Inv::TypeData> itemMap;
     itemMap.clear();
-    // update this to get all items made from minerals, or made from items made from minerals (construction blocks)
+    // this gets only ships
     //MarketDB::GetShipIDs(itemMap);
+    // this gets all items made from minerals either directly or indirectly
     MarketDB::GetManufacturedItems(itemMap);
 
-    //ship typeID/vector<data{materialTypeID, qty}>
+    //item typeID/vector<data{materialTypeID, qty}>
     std::map<uint16, std::vector<EvERam::RamMaterials>> itemMatMap;
     itemMatMap.clear();
     std::map<uint16, Inv::TypeData>::iterator itemItr = itemMap.begin();
@@ -662,7 +667,7 @@ void MarketMgr::SetBasePrice()
         // pull data for this ship  -need r/w iterator to work
         sDataMgr.GetType(itemItr->first, itemItr->second);
 
-        // get minerals required for this ship
+        // get materials required for this item
         std::vector<EvERam::RamMaterials> matVec;
         matVec.clear();
         sDataMgr.GetRamMaterials(itemItr->first, matVec);
@@ -670,7 +675,7 @@ void MarketMgr::SetBasePrice()
     }
 
 
-    // determine base price of ship based on mineral requirements
+    // estimate price of item based on mineral requirements
     double current(0);
     Inv::GrpData gData = Inv::GrpData();
     std::map<uint16, Market::matlData>::iterator materialItr = materialMap.begin();
@@ -694,7 +699,7 @@ void MarketMgr::SetBasePrice()
 
             gData = Inv::GrpData();
             sDataMgr.GetGroup(itemItr->second.groupID, gData);
-            // apply modifier to base price according to item category
+            // apply modifier to base price according to item category (complexity, rarity, demand)
             switch (gData.catID) {
                 case EVEDB::invCategories::Ship: {
                     itemItr->second.basePrice *= 3;
@@ -834,3 +839,18 @@ void MarketMgr::UpdateMineralPrice()
 
 }
 
+void MarketMgr::GetCruPrices()
+{
+    std::map<uint16, Market::matlData> materialMap;
+    materialMap.clear();
+    sDataMgr.GetMineralData(materialMap);       // 8
+    sDataMgr.GetBlockData(materialMap);         // 19
+    sDataMgr.GetSalvageData(materialMap);       // 53
+    sDataMgr.GetCompoundData(materialMap);      // 7
+    sDataMgr.GetPIResourceData(materialMap);    // 15
+    sDataMgr.GetPICommodityData(materialMap);   // 66
+
+    MarketDB::GetCruPriceAvg(materialMap);
+
+    MarketDB::UpdateMktPrice(materialMap);
+}

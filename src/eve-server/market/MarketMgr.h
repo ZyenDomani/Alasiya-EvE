@@ -60,8 +60,9 @@ public:
     void SetBasePrice();         // this uses current mineral values to estimate base price of item
     void UpdateBlockPrice();
     void UpdateMineralPrice();
+    void GetCruPrices();
 
-    
+
 protected:
     void Populate();
 

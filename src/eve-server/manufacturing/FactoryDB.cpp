@@ -31,10 +31,16 @@ bool FactoryDB::IsProducableBy(const uint32 assemblyLineID, const ItemType *pTyp
     return FactoryDB::GetMultipliers(assemblyLineID, pType, into);
 }
 
-void FactoryDB::GetElements(DBQueryResult& res)
+void FactoryDB::GetSalvage(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (422, 423)"))
-        codelog(DATABASE__ERROR, "Error in GetMinerals query: %s", res.error.c_str());
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (754, 966)"))
+        codelog(DATABASE__ERROR, "Error in GetSalvage query: %s", res.error.c_str());
+}
+
+void FactoryDB::GetCompounds(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID = 423"))
+        codelog(DATABASE__ERROR, "Error in GetCompounds query: %s", res.error.c_str());
 }
 
 void FactoryDB::GetMinerals(DBQueryResult& res)
@@ -47,6 +53,18 @@ void FactoryDB::GetBlocks(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID = 873"))   // construction blocks
         codelog(DATABASE__ERROR, "Error in GetBlocks query: %s", res.error.c_str());
+}
+
+void FactoryDB::GetCommodities(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (1042, 1034, 1040, 1041)"))   // PI Commodities
+        codelog(DATABASE__ERROR, "Error in GetCommodities query: %s", res.error.c_str());
+}
+
+void FactoryDB::GetResources(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (1032, 1033, 1035)"))   // PI Resources
+        codelog(DATABASE__ERROR, "Error in GetResources query: %s", res.error.c_str());
 }
 
 void FactoryDB::GetRAMMaterials(DBQueryResult& res)

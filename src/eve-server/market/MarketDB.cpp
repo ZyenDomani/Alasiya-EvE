@@ -458,10 +458,12 @@ int64 MarketDB::GetUpdateTime()
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return 0;
     }
+
     DBResultRow row;
-    if (!res.GetRow(row))
-        return 0;
-    return row.GetInt64(0);
+    if (res.GetRow(row))
+        return row.GetInt64(0);
+
+    return 0;
 }
 
 void MarketDB::SetUpdateTime(int64 setTime)
@@ -525,7 +527,7 @@ void MarketDB::GetManufacturedItems(std::map< uint16, Inv::TypeData >& data)
         data[row.GetInt(0)] = Inv::TypeData();
 }
 
-void MarketDB::GetBasePrices(std::map< uint16, Market::matlData >& data)
+void MarketDB::GetMaterialPrices(std::map< uint16, Market::matlData >& data)
 {
     DBQueryResult res;
     DBResultRow row;
@@ -576,4 +578,16 @@ void MarketDB::UpdateMktPrice(std::map< uint16, Market::matlData >& data)
     DBerror err;
     for (auto cur : data)
         sDatabase.RunQuery(err, "UPDATE invTypes SET basePrice=%f WHERE typeID= %u", cur.second.price, cur.first);
+}
+
+void MarketDB::GetCruPriceAvg(std::map< uint16, Market::matlData >& data)
+{
+    DBQueryResult res;
+    DBResultRow row;
+    std::map< uint16, Market::matlData >::iterator itr;
+    for (itr = data.begin(); itr != data.end(); ++itr) {
+        sDatabase.RunQuery(res, "SELECT AVG(avgPrice) FROM CruciblePriceHistory_Materials WHERE typeID = %u", itr->first);
+        if (res.GetRow(row))
+            itr->second.price = row.GetFloat(0);
+    }
 }

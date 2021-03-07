@@ -55,8 +55,11 @@ public:
     const char*         GetCategoryName(uint8 catID);
 
     void                GetBlockData(std::map< uint16, Market::matlData >& into);
-    void                GetElementData(std::map< uint16, Market::matlData >& into);
     void                GetMineralData(std::map< uint16, Market::matlData >& into);
+    void                GetSalvageData(std::map< uint16, Market::matlData >& into);
+    void                GetCompoundData(std::map< uint16, Market::matlData >& into);
+    void                GetPIResourceData(std::map< uint16, Market::matlData >& into);
+    void                GetPICommodityData(std::map< uint16, Market::matlData >& into);
     void                GetMoonResouces(std::map<uint16, uint8>& data);
 
     bool                IsSkillTypeID(uint16 typeID);
@@ -169,9 +172,6 @@ private:
     std::map<uint16, EvERam::bpTypeData>                m_bpTypeData;       // typeID/data
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
     std::map<uint16, std::string>                       m_skills;           // typeID/name
-    std::map<uint16, std::string>                       m_blocks;           // typeID/name
-    std::map<uint16, std::string>                       m_elements;         // typeID/name
-    std::map<uint16, std::string>                       m_minerals;         // typeID/name
     std::map<uint32, StaticData>                        m_staticData;       // itemID/data
 
     std::multimap<uint16, EvERam::RamMaterials>         m_ramMatl;          // itemTypeID/data
@@ -201,6 +201,13 @@ private:
     std::multimap<uint32, LootGroup>                    m_LootGroupMap;     // typeID/data
     std::multimap<uint32, LootGroupType>                m_LootGroupTypeMap; // typeID/data
 
+    /* for pricing methods */
+    std::map<uint16, std::string>                       m_blocks;           // typeID/name
+    std::map<uint16, std::string>                       m_salvage;          // typeID/name
+    std::map<uint16, std::string>                       m_minerals;         // typeID/name
+    std::map<uint16, std::string>                       m_compounds;        // typeID/name
+    std::map<uint16, std::string>                       m_resources;        // typeID/name
+    std::map<uint16, std::string>                       m_commodities;      // typeID/name
 };
 
 //Singleton

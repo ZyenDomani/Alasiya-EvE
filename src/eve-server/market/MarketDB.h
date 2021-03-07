@@ -62,12 +62,14 @@ public:
 
     /* for base price estimator */
     static void GetShipIDs(std::map<uint16, Inv::TypeData>& data);
-    static void GetBasePrices(std::map< uint16, Market::matlData >& data); 
     static void GetMineralPrices(std::map< uint16, Market::matlData >& data);   // +10% markup
+    static void GetMaterialPrices(std::map< uint16, Market::matlData >& data);
     static void GetManufacturedItems(std::map<uint16, Inv::TypeData>& data);
     static void UpdateInvPrice(std::map< uint16, Inv::TypeData >& data);
     static void UpdateMktPrice(std::map< uint16, Market::matlData >& data);
 
+    /* for dealing with Crucible price history */
+    static void GetCruPriceAvg(std::map< uint16, Market::matlData >& data);
 
     /* for marketMgr update service */
     static int64 GetUpdateTime();
