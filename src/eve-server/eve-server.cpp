@@ -856,12 +856,16 @@ int main( int argc, char* argv[] )
     #endif
     */
 
-    uint32 start = 0;
+    uint32 start(0);
     EVETCPConnection* tcpc(nullptr);
 
-    // clear profile data from server startup
-    sProfiler.ClearAll();
-    sLog.Green(" Server Profiling","Profile Data Reset.");
+    if (sConfig.debug.UseProfiling) {
+        // display startup data
+        sProfiler.PrintStartUpData();
+        // clear profile data from server startup
+        sProfiler.ClearAll();
+        sLog.Green(" Server Profiling","Profile Data Reset.");
+    }
     std::printf("\n");     // spacer
 
     sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime) / 1000);
@@ -870,9 +874,7 @@ int main( int argc, char* argv[] )
     ServiceDB::SetServerOnlineStatus(true);
     sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.");
 
-    std::string str = "Started on ";
-    str += currentDateTime();
-    sLog.Cyan("           Server", "%s", str.c_str());
+    sLog.Cyan("           Server", "Started on %s", currentDateTime().c_str());
 
     /////////////////////////////////////////////////////////////////////////////////////
     //     !!!  DO NOT PUT ANY INITIALIZATION CODE OR CALLS BELOW THIS LINE   !!!
@@ -950,7 +952,7 @@ int main( int argc, char* argv[] )
     sBubbleMgr.clear();
     /* Close the command dispatcher */
     command_dispatcher.Close();
-    /* Stop Console Command Interperter */
+    /* Stop Console Command Interpreter */
     //sConsole.Stop();
     /* close the db handler */
     sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
@@ -1056,7 +1058,7 @@ static void CleanUp() {
     sBubbleMgr.clear();
     /* Close the command dispatcher */
     //command_dispatcher.Close();
-    /* Stop Console Command Interperter */
+    /* Stop Console Command Interpreter */
     //sConsole.Stop();
     /* close the db handler */
     sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
@@ -1070,7 +1072,7 @@ static void CleanUp() {
     log_close_logfile();
 }
 
-/*      Freeze Detector Code taken from TrinityCore.  figure out how to implement here (based on seeing occational freezes on main)  -allan 29Dec15
+/*      Freeze Detector Code taken from TrinityCore.  figure out how to implement here (based on seeing occasional freezes on main)  -allan 29Dec15
  * void FreezeDetectorHandler(const boost::system::error_code& error)
  * {
  *    if (!error)
