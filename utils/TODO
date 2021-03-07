@@ -380,6 +380,12 @@ item contraband.....this needs implementing
 market code
     - determine and code methods for using arum as credit type
     - still needs more review for update/rewrite/improvements
+    - fix price shit....db uses double, code uses double, both should be long
+    - client has prices to 2 places (xxx.xx).  this is x100 to store/modify as integer.  ALL price data should be updated to use this
+    - update pricing queries to move decimal accordingly.  currently NOT moved, so prices are 100x higher (and no decimals)
+    - run thru mgr code to remove direct db calls (put in marketDB file)
+    - find 'safe' way to run history updates (in case of no transactions)
+    - need to run thru file to check for proper coding
 
 market for corp use
     - add checks for hangar location when placing sell orders
@@ -577,6 +583,10 @@ command .attrlist needs names as well as attrID
 *******************************************************
 *****************  MEMORY MANAGEMENT and code compliance
 
+DATA RACE!!
+    found data race on console log while running under valgrind.(imageSvr and BoundObject calls at same time)
+    go thru log and verify MT safe status
+
 RefObjects -
     - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
     - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr  (see core/utils/singleton.h)
@@ -586,20 +596,15 @@ RefObjects -
 Py* objects that have string as key need 'delete' called on string when destroyed per valgrind...cannot find ref to this error now
 Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
 
+PyDatabase may need d'tors coded
 
 see what can be done about bind_args->Clone() as it may be leaking memory
-
-    - not sure yet
-==26326== Conditional jump or move depends on uninitialised value(s)
-==26326==    at 0xF23B52: MarshalStream::VisitLong(PyLong const*) (EVEMarshal.cpp:122)
-==26326==  Uninitialised value was created by a heap allocation
-==26326==    at 0x4C28487: operator new(unsigned long) (in /usr/lib64/valgrind/vgpreload_memcheck-amd64-linux.so)
-==26326==    by 0xEC324F: DynamicEntityFactory::BuildEntity(SystemManager&, DBSystemDynamicEntity const&) (SystemManager.cpp:654)
-==26326==    by 0xEC1E7B: SystemManager::LoadPlayerDynamics() (SystemManager.cpp:469)
+90% of valgrind "Definitely Lost" errors are from "new PyInt()" calls.
+    - most of these are Encode() calls
 
 
 review all classes to add rule of 5 or =delete as required
-    - Py* objects done
+    - PyRep objects done
     - InventoryItem started (logging to see if other c'tors are used...so far not)
     -
 
@@ -671,6 +676,7 @@ ADD THIS....
 get npc *something* to check damage done by npc.
 once damage starts dropping, check distance and move accordingly
 
+charge chars for jetcans?
 
 rats should test for faction signals in system and set origin along that direction (to appear they came from their 'base' in system)
     - this should be fairly easy to set up
