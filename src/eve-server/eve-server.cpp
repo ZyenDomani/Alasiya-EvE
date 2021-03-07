@@ -217,14 +217,14 @@ int main( int argc, char* argv[] )
     sLog.Log("       Build Date", " %s", EVEMU_BUILD_DATE );
     sLog.Log("   Config Version", " %.1f", Config_Version );
     sLog.Log("      Log Version", " %.1f", Log_Version );
-    sLog.Log("   NPC AI Version", " %.2f", NPC_AI_Version );
-    sLog.Log(" Scanning Version", " %.2f", Scan_Version );
-    sLog.Log(" Drone AI Version", " %.2f", Drone_AI_Version );
-    sLog.Log("    NC AI Version", " %.2f", Civilian_AI_Version );
-    sLog.Log("Sentry AI Version", " %.2f", Sentry_AI_Version );
-    sLog.Log("   POS AI Version", " %.2f", POS_AI_Version );
     sLog.Log("TraderJoe Version", " %.2f", Joe_Version );
     sLog.Log(" Missions Version", " %.2f", Mission_Version );
+    sLog.Log("     Scan Version", " %.2f", Scan_Version );
+    sLog.Log("   NPC AI Version", " %.2f", NPC_AI_Version );
+    sLog.Log(" Drone AI Version", " %.2f", Drone_AI_Version );
+    sLog.Log("   Civ AI Version", " %.2f", Civilian_AI_Version );
+    sLog.Log("Sentry AI Version", " %.2f", Sentry_AI_Version );
+    sLog.Log("   POS AI Version", " %.2f", POS_AI_Version );
     std::printf("\n");     // spacer
 
     /* Load server log settings */

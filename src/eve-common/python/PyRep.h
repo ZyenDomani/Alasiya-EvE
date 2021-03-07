@@ -214,9 +214,9 @@ protected:
     // move c'tor
     PyRep(PyRep&& oth) = delete;
     // copy assignment
-    PyRep& operator= (const PyRep& oth) = delete;
+    PyRep& operator= (const PyRep& oth) = default;
     // move assignment
-    PyRep& operator= (PyRep&& oth) = delete;
+    PyRep& operator= (PyRep&& oth) = default;
 
     virtual ~PyRep()    { /* do we need to do anything here? */ }
 

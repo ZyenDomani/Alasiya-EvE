@@ -666,8 +666,10 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         rspShipState->items[1] = pClient->GetShip()->GetChargeState();      // loaded charges (subLocation)
         rspShipState->items[2] = pClient->GetShip()->GetLinkedWeapons();    // linked weapons
     rsp->SetItemString("shipState", rspShipState);
+
     if (is_log_enabled(SHIP__STATE))
         rsp->Dump(SHIP__STATE, "     ");
+    
     sItemFactory.UnsetUsingClient();
     return new PyObject("util.KeyVal", rsp );
 }

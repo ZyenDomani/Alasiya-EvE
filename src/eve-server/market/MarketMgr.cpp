@@ -671,7 +671,7 @@ void MarketMgr::SetBasePrice()
 
 
     // determine base price of ship based on mineral requirements
-    uint32 current(0);
+    double current(0);
     Inv::GrpData gData = Inv::GrpData();
     std::map<uint16, Market::matlData>::iterator materialItr = materialMap.begin();
     std::map<uint16, std::vector<EvERam::RamMaterials>>::iterator itemMatItr = itemMatMap.end();
@@ -679,8 +679,8 @@ void MarketMgr::SetBasePrice()
         itemMatItr = itemMatMap.find(itemItr->first);
         if (itemMatItr != itemMatMap.end()) {
             current = itemItr->second.basePrice;
-            itemItr->second.basePrice = 0;
             // reset basePrice
+            itemItr->second.basePrice = 0.0;
             // sum mineral counts with current prices for this ship
             for (auto cur2 : itemMatItr->second) {
                 materialItr = materialMap.find(cur2.materialTypeID);
@@ -771,7 +771,7 @@ void MarketMgr::SetBasePrice()
                 sLog.Error("     SetBasePrice", "Calculated updated price for %s(%u) is 0", \
                            itemItr->second.name.c_str(), itemItr->first);
             } else {
-                sLog.Blue("     SetBasePrice", "Calculated updated price for %s(%u) from %u to %.2f", \
+                sLog.Blue("     SetBasePrice", "Calculated updated price for %s(%u) from %.2f to %.2f", \
                           itemItr->second.name.c_str(), itemItr->first, current, itemItr->second.basePrice);
             }
         }
@@ -789,15 +789,15 @@ void MarketMgr::UpdateBlockPrice()
     mineralMap.clear();
     sDataMgr.GetMineralData(mineralMap);        // 8
 
+    // this will have to use db to get current data.
+    //  mineral prices are (will be) updated via a 'price average' method yet to be written
+    MarketDB::GetMineralPrices(mineralMap);
+
     // get 'building blocks' used for cap ships and put into data map
     //block typeID/vector<data{materialTypeID, qty}>
     std::map< uint16, Market::matlData > blockMatMap;
     blockMatMap.clear();
     sDataMgr.GetBlockData(blockMatMap);         // 19
-
-    // this will have to use db to get current data.
-    //  mineral prices are (will be) updated via a 'price average' method yet to be written
-    MarketDB::GetMineralPrices(mineralMap);
 
     // determine mineral cost for block type
     std::vector<EvERam::RamMaterials> matVec;

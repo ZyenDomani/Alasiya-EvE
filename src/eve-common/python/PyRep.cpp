@@ -99,6 +99,7 @@ int32 PyRep::hash() const
     return -1;
 }
 
+
 std::string PyRep::StringContent(PyRep* pRep)
 {
     if (pRep == nullptr)
@@ -540,8 +541,8 @@ PyTuple::PyTuple( const PyTuple& oth ) : PyRep( PyRep::PyTypeTuple ), items(oth.
 
 PyTuple::~PyTuple()
 {
-    for (auto cur : items)
-        PySafeDecRef(cur);
+    //for (auto cur : items)
+    //    PySafeDecRef(cur);
 }
 
 PyRep* PyTuple::Clone() const
@@ -609,8 +610,8 @@ PyList::PyList(const PyList& oth) : PyRep(PyRep::PyTypeList), items(oth.items) {
 
 PyList::~PyList()
 {
-    for (auto cur : items)
-        PySafeDecRef(cur);
+    //for (auto cur : items)
+    //    PySafeDecRef(cur);
 }
 
 PyRep* PyList::Clone() const
@@ -658,10 +659,12 @@ PyDict::PyDict( const PyDict& oth ) : PyRep( PyRep::PyTypeDict ), items(oth.item
 
 PyDict::~PyDict()
 {
+    /*
     for (auto cur : items) {
         PyDecRef(cur.first);
         PySafeDecRef(cur.second);
     }
+    */
 }
 
 PyRep* PyDict::Clone() const

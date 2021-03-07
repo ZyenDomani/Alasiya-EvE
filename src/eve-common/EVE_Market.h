@@ -131,7 +131,7 @@ namespace Market {
         float price;
     };
 
-    // POD structure for mineral data used in pricing method
+    // POD structure for material data used in pricing update functions
     struct matlData {
         uint16 typeID;
         float price;
