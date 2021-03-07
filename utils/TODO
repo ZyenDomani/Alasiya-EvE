@@ -222,6 +222,18 @@ systemmgr - use kills object instead of db hit
 dbcore - query retry enables runaway server when query causes server disconnection (error)
     - should this be limited?
     - note: it only happens for malformed queries (while testing) from what i've seen.
+    - may need null checks for mRow, mResult, mLengths (segfault on result returning NULL)
+    -   this happens very, very seldom (2-3 times that i can recall)
+    -   how much overhead will this add?
+    server startup and one client with null checks:   (subsequent runs)
+            DB   1505 times.    Hi: 16085.5000us        Lo: 167.5000us          Avg: 366.1477us
+            DB   1505 times.    Hi: 14954.2500us        Lo: 165.5000us          Avg: 305.4390us
+            DB   1508 times.    Hi: 11528.2500us        Lo: 163.2500us          Avg: 310.5827us
+
+    server startup and one client without null checks:  (initial run)
+            DB   1505 times.    Hi: 62847.0000us        Lo: 161.2500us          Avg: 364.7585us
+    - very odd....how are adding null checks faster??   db cache maybe?
+
 
 char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.
