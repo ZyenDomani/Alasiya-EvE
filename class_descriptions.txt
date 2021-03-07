@@ -9,19 +9,19 @@ official source should eventually use these, as they are conceived, designed, an
 
 ** NOTE:  i use the term "system" rather ambiguously here (and often).
     lowercase "system" is used to mean a server system in which code is run. (i.e. the bookmark system)
-    capitalized "System" means a solar system
+    solSystem means a solar system
 
 
 * names for systems used by ccp
 DogmaIM
     item instance manager
     processes item property changes
-    very blurry line between DogmaIM and DogmaLM
+    blurry line between DogmaIM and DogmaLM
 
 DogmaLM
     item location manager
     processes item location changes
-    very blurry line between DogmaIM and DogmaLM
+    blurry line between DogmaIM and DogmaLM
 
 Godma
     item attribute manager
@@ -33,9 +33,13 @@ Destiny
 Michelle
     client-side object movement manager
 
+Jennifer/Jessica
+    item renderer and misc python code snippets (probably more)
+    - this has never been seen outside CCP (in-house tool)
+
 LSC
     large scale chat
-    this system manages all chat communication
+    this system manages all chat communications and client notifications
 
 neocom
     client-side information manager
@@ -53,8 +57,8 @@ bubble
     also called a 'grid', these item containers hold data for all objects within its' sphere of influence (soi)
     all non-global objects on a players screen are contained in the players current bubble
     all non-static objects must be in a bubble, and can only be in one bubble at a time
-    suns, planets, moons, and stations are static objects and displayed separately
-    some dynamic objects are considered global and displayed separately (i.e. cyno fields, system blocade units, customs offices)
+    suns, planets, moons, and stations are static objects and displayed separately (except stations, are never in a bubble)
+    some dynamic objects are considered global and displayed separately (i.e. cyno fields, system blockade units, customs offices)
 
 bracket
     hud display manager for balls
@@ -121,8 +125,8 @@ throw
         - there have been SE updates that no longer really make much sense, but have yet to be fixed in class descriptions
 
     an InventoryItem represents a game object in the server
-        - these can be either objects or items
-        - these can be containers for other objects or items (a ship has an inventory, a wreck contains items, etc)
+        - this can be either an object or item or both
+        - this can be a container for other objects or items (a ship has an inventory, a wreck contains items, etc)
 
     items and objects are completely separate resources, but all objects are created for and from their respective item
         as an example, a ship item is derived from InventoryItem and processes all inventory-type calls.
@@ -132,7 +136,6 @@ throw
     all class pointers are derived from base class to allow generic dereferencing without knowing the specific derived class
     all class pointer lifetime is handled in derived classes where applicable
 
-    throws can only be made during client calls
 
 
 ***   Now, on to the class types  ***
@@ -146,11 +149,11 @@ eve-server
 
 EntityList
     main loop processor for server
-    this class is a container for all loaded Systems, connected Clients, players ingame, and holds counts for loaded DSEs
+    this class is a container for all loaded solSystems, connected Clients, players ingame, and holds counts for loaded DSEs
 
 BubbleManager
     main control for all SystemBubbles
-    keeps track of all bubbles (across all Systems) and used to determine placement for creating new bubbles
+    keeps track of all bubbles (across all solSystems) and used to determine placement for creating new bubbles
 
 PyServiceManager
     this manager is used to decode client calls and route packets to appropriate system for processing
@@ -164,8 +167,22 @@ ModuleFactory
     class to process ship module creation
     after creation, control of the module item is handed over to it's ship's ModuleManager
 
+& Effects
+    specific system to process effects
+    this includes skill, module, ship, attribute, and system effects
+
 & ConsoleManager
     interactive console class for running server
+
+& StaticDataMgr
+    handles loading and storage of static game data for entire server into easily-accessed memory objects
+
+& StatisticMgr
+     server information system for managing and saving trivial game data
+
+& Profiler
+    lightweight profiling code specifically for timing sections of running EvEmu application
+    this code is very basic, and very specific.
 
 
 * server system class objects *
@@ -216,7 +233,7 @@ SystemEntity
         (Containers, Wrecks, DeadSpace)
         Container
             ISE object of a cargo container item
-            unanchored objects have a timer for deletion from System when empty or after 2h
+            unanchored objects have a timer for deletion from solSystem when empty or after 2h
 
         Wreck
             ISE object of a destroyed ship object
@@ -237,8 +254,8 @@ SystemEntity
 
 SystemManager
     main control of solar system
-    maintains all objects within it's System
-    each System has its' own Manager instance
+    maintains all objects within it's solSystem
+    each solSystem has its' own Manager instance
 
 SystemBubble
     bubble objects in a solar system.
@@ -263,7 +280,7 @@ Inventory
 
 
 & CosmicManager
-    multiple classes to manage specific aspects of Systems
+    multiple classes to manage specific aspects of solSystems
     Anomaly
         anomaly creation and destruction
     Belt
@@ -276,11 +293,6 @@ Inventory
         npc spawning
     Wormhole (singleton)
         universe-wide wormhole management
-
-
-& Effects
-    specific system to process effects
-    this includes skill, module, ship, attribute, and system effects
 
 
 DogmaLM (Location Manager)
@@ -323,17 +335,13 @@ Agent
 
 
 & ModuleItem
-        a subclass of InventoryItem specially for ship modules.
-        this class processes all module calls and data
+    a subclass of InventoryItem specially for ship modules.
+    this class processes all module calls and data (activate/deactivate and effects)
 
 ModuleManager
-    the control code for ship modules, each ship has it's own instance of this class
-    specific code for processing module functions
-
-ModuleContainer
     class for containing, tracking and processing all modules fit on a ship
     has methods for install, remove, damage and destroy ship's modules
-    each ModuleManager has it's own instance of this class
+    each ship has it's own instance of this class
 
 Damage
     specific code for processing damage
@@ -347,17 +355,6 @@ TargetManager
 
 BookmarkManager
     system to manage all aspects of bookmarks
-
-
-& StaticDataMgr
-    handles loading and storage of static game data for entire server into easily-accessed memory objects
-
-& StatisticMgr
-     server information system for managing and saving trivial game data
-
-& Profile
-    lightweight profiling code specifically for timing sections of running EvEmu application
-    this code is very basic, and very specific.
 
 & DataClasses
     data containers that cannot be trivially constructed or destroyed (not POD)
