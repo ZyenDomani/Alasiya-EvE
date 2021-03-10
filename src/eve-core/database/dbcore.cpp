@@ -623,34 +623,22 @@ void DBResultRow::SetData( DBQueryResult* res, MYSQL_ROW& row, const ulong* leng
 
 uint32 DBResultRow::ColumnLength( uint32 index ) const
 {
-    if (mResult == nullptr)
-        return 0;
-
     if (index >= mResult->ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore::GetColumnLength: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
         EvE::traceStack();
         return 0;
     }
 
-    if (mLengths == nullptr)
-        return 0;
-
     return mLengths[ index ];
 }
 
 int32 DBResultRow::GetInt( uint32 index ) const
 {
-    if (mResult == nullptr)
-        return 0;
-
     if (index >= mResult->ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore::GetInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
         EvE::traceStack();
         return 0;
     }
-
-    if (mRow == nullptr)
-        return 0;
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
     return strtol( mRow[index], nullptr, 0 );
@@ -658,34 +646,22 @@ int32 DBResultRow::GetInt( uint32 index ) const
 
 bool DBResultRow::GetBool( uint32 index ) const
 {
-    if (mResult == nullptr)
-        return false;
-
     if (index >= mResult->ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore::GetBool: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
         EvE::traceStack();
         return false;
     }
 
-    if (mRow == nullptr)
-        return false;
-
     return  (mRow[index][0] != 0);
 }
 
 uint32 DBResultRow::GetUInt( uint32 index ) const
 {
-    if (mResult == nullptr)
-        return 0;
-
     if (index >= mResult->ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore::GetUInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
         EvE::traceStack();
         return 0;
     }
-
-    if (mRow == nullptr)
-        return 0;
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
     return strtoul( mRow[index], nullptr, 0 );
@@ -693,17 +669,11 @@ uint32 DBResultRow::GetUInt( uint32 index ) const
 
 int64 DBResultRow::GetInt64( uint32 index ) const
 {
-    if (mResult == nullptr)
-        return 0;
-
     if (index >= mResult->ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore::GetInt64: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
         EvE::traceStack();
         return 0;
     }
-
-    if (mRow == nullptr)
-        return 0;
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
     return strtoll( mRow[index], nullptr, 0 );
@@ -711,34 +681,22 @@ int64 DBResultRow::GetInt64( uint32 index ) const
 
 float DBResultRow::GetFloat( uint32 index ) const
 {
-    if (mResult == nullptr)
-        return 0.0f;
-
     if (index >= mResult->ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore::GetFloat: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
         EvE::traceStack();
         return 0.0f;
     }
 
-    if (mRow == nullptr)
-        return 0.0f;
-
     return strtof( mRow[index], nullptr );
 }
 
 double DBResultRow::GetDouble( uint32 index ) const
 {
-    if (mResult == nullptr)
-        return 0.0;
-
     if (index >= mResult->ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore::GetDouble: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
         EvE::traceStack();
         return 0.0;
     }
-
-    if (mRow == nullptr)
-        return 0.0;
 
     return strtod( mRow[index], nullptr );
 }
