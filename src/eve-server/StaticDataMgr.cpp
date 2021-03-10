@@ -235,6 +235,7 @@ void StaticDataMgr::Populate()
             data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(11));
             data.marketGroupID          = (row.IsNull(11) ? 0 : row.GetUInt(12));
             data.chanceOfDuplicating    = row.GetFloat(13);
+            data.metaLvl                = (row.IsNull(14) ? 0 : row.GetUInt(14));
             // these will take a bit of work, but will eliminate multiple db hits on inventory/menu loading ingame
             data.isRecyclable           = FactoryDB::IsRecyclable(data.id);   // +30s to startup
             data.isRefinable            = FactoryDB::IsRefinable(data.id);     // +8s to startup
@@ -342,10 +343,10 @@ void StaticDataMgr::Populate()
     sLog.Cyan("    StaticDataMgr", "%u Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
-    FactoryDB::GetBlocks(*res);
+    FactoryDB::GetComponents(*res);
     while (res->GetRow(row)) {
-        //SELECT typeID, typeName FROM invTypes [where type=construction block]
-        m_blocks.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        //SELECT typeID, typeName FROM invTypes [where type=composite or component]
+        m_components.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
     FactoryDB::GetMinerals(*res);
     while (res->GetRow(row)) {
@@ -364,12 +365,12 @@ void StaticDataMgr::Populate()
     }
     FactoryDB::GetResources(*res);
     while (res->GetRow(row)) {
-        //SELECT typeID, typeName FROM invTypes [where type=salvage]
+        //SELECT typeID, typeName FROM invTypes [where type=pi resource]
         m_resources.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
     FactoryDB::GetCommodities(*res);
     while (res->GetRow(row)) {
-        //SELECT typeID, typeName FROM invTypes [where type=salvage]
+        //SELECT typeID, typeName FROM invTypes [where type=pi commodity]
         m_commodities.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
     FactoryDB::GetRAMMaterials(*res);
@@ -626,6 +627,11 @@ const char* StaticDataMgr::GetTypeName(uint16 typeID)
     return "None";
 }
 
+void StaticDataMgr::GetTypes(std::map< uint16, Inv::TypeData >& into)
+{
+    into = m_typeData;
+}
+
 
 PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID)
 {
@@ -677,9 +683,9 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
     return false;
 }
 
-void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into)
+void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_compounds) {
+    for (auto cur : m_components) {
         Market::matlData data = Market::matlData();
         data.typeID = cur.first;
         data.name = cur.second;
@@ -697,9 +703,9 @@ void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into)
     }
 }
 
-void StaticDataMgr::GetBlockData(std::map< uint16, Market::matlData >& into)
+void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_blocks) {
+    for (auto cur : m_compounds) {
         Market::matlData data = Market::matlData();
         data.typeID = cur.first;
         data.name = cur.second;

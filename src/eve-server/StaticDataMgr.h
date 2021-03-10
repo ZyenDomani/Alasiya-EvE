@@ -50,14 +50,15 @@ public:
     void                GetCategory(uint8 catID, Inv::CatData &into);
     void                GetGroup(uint16 grpID, Inv::GrpData &into);
     void                GetType(uint16 typeID, Inv::TypeData &into);
+    void                GetTypes(std::map<uint16, Inv::TypeData> &into);
     const char*         GetTypeName(uint16 typeID);     // not sure if this will be needed
     const char*         GetGroupName(uint16 grpID);
     const char*         GetCategoryName(uint8 catID);
 
-    void                GetBlockData(std::map< uint16, Market::matlData >& into);
     void                GetMineralData(std::map< uint16, Market::matlData >& into);
     void                GetSalvageData(std::map< uint16, Market::matlData >& into);
     void                GetCompoundData(std::map< uint16, Market::matlData >& into);
+    void                GetComponentData(std::map< uint16, Market::matlData >& into);
     void                GetPIResourceData(std::map< uint16, Market::matlData >& into);
     void                GetPICommodityData(std::map< uint16, Market::matlData >& into);
     void                GetMoonResouces(std::map<uint16, uint8>& data);
@@ -202,11 +203,11 @@ private:
     std::multimap<uint32, LootGroupType>                m_LootGroupTypeMap; // typeID/data
 
     /* for pricing methods */
-    std::map<uint16, std::string>                       m_blocks;           // typeID/name
     std::map<uint16, std::string>                       m_salvage;          // typeID/name
     std::map<uint16, std::string>                       m_minerals;         // typeID/name
     std::map<uint16, std::string>                       m_compounds;        // typeID/name
     std::map<uint16, std::string>                       m_resources;        // typeID/name
+    std::map<uint16, std::string>                       m_components;       // typeID/name
     std::map<uint16, std::string>                       m_commodities;      // typeID/name
 };
 
@@ -216,3 +217,22 @@ private:
 
 
 #endif  // _EVE_SERVER_STATIC_DATAMANAGER_H__
+
+/*   module (meta) types
+ * metaGroupID  metaGroupName   description     iconID
+ * 1       Tech I
+ * 2       Tech II
+ * 3       Storyline
+ * 4       Faction
+ * 5       Officer
+ * 6       Deadspace
+ * 7       Frigate
+ * 8       Elite Frigate
+ * 9       Commander Frigate
+ * 10      Destroyer
+ * 11      Cruiser
+ * 12      Elite Cruiser
+ * 13      Commander Cruiser
+ * 14      Tech III
+ *
+ */
