@@ -353,8 +353,8 @@ void ConsoleCommand::Test()
     sLog.Green("  Alasiya's EvEMu", "Running Server Test Code:");
     //sLog.Warning(" Server Test Code", "No Test Code at this time.");
 
-    sMktMgr.GetCruPrices();
-    sLog.Blue("       MktPricing", "Base material Prices Updated");
+    //sMktMgr.GetCruPrices();
+    //sLog.Blue("       MktPricing", "Base material Prices Updated");
 
     sMktMgr.SetBasePrice();
 

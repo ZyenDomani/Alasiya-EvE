@@ -202,13 +202,13 @@ uint32 MarketDB::FindBuyOrder(Call_PlaceCharOrder &call) {
         "  AND typeID=%u"
         "  AND stationID=%u"
         "  AND volRemaining >= %u"
-        "  AND price >= %.2f"
+        "  AND price > %.2f"
         " ORDER BY price DESC"
         " LIMIT 1;",
         call.typeID,
         call.stationID,
         call.quantity,
-        call.price + 0.01/*, sConfig.market.FindBuyOrder*/))
+        call.price - 0.01/*, sConfig.market.FindBuyOrder*/))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return 0;
@@ -503,9 +503,9 @@ void MarketDB::GetShipIDs(std::map< uint16, Inv::TypeData >& data)
                 "SELECT t.typeID "
                 " FROM invTypes AS t "
                 " LEFT JOIN invGroups AS g USING (groupID)"
-                " WHERE g.categoryID = %u"
-                " AND g.useBasePrice = 1"
-                " AND t.published = 1",
+                " WHERE g.categoryID = %u",
+                //" AND g.useBasePrice = 1"
+                //" AND t.published = 1",
                 EVEDB::invCategories::Ship);
 
     //sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u AND published = 1", EVEDB::invGroups::Frigate);
@@ -533,7 +533,7 @@ void MarketDB::GetMaterialPrices(std::map< uint16, Market::matlData >& data)
     for (itr = data.begin(); itr != data.end(); ++itr) {
         sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
-            itr->second.price = row.GetFloat(0);
+            itr->second.price = (row.GetFloat(0) * 1.05);
     }
 }
 
@@ -545,21 +545,21 @@ void MarketDB::GetMineralPrices(std::map< uint16, Market::matlData >& data)
     for (itr = data.begin(); itr != data.end(); ++itr) {
         sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
-            itr->second.price = (row.GetFloat(0) * 110);
+            itr->second.price = (row.GetFloat(0) * 1.15);
     }
 
     /*  mineral prices in first column from rens 31/5/2010 @ 17:30  logged by me from IGB
      * second price column is from Grismar 16/2/07
-     * third price column is from ccp market dump, filtered and averaged for Crucible from Heimatar region
-     * typeID   Name            2010        2007        2012
-     * 34      Tritanium        2.70        2.37        3.61
-     * 35      Pyerite          5.80        4.00        5.45
-     * 36      Mexallon        26.90       21.93       49.75
-     * 37      Isogen          49.16       64.06       66.35
-     * 38      Nocxium         99.02       93.76      523.05
-     * 39      Zydrine       1315.03     2347.36      788.02
-     * 40      Megacyte      2650.00     3989.06     2775.04
-     * 11399   Morphite      5407.68    14291.00     3806.08
+     * third price column is from ccp market dump, filtered and averaged for Crucible era from all regions
+     * typeID   Name            2010        2007       2012
+     * 34      Tritanium        2.70        2.37        2.72315
+     * 35      Pyerite          5.80        4.00        4.90957
+     * 36      Mexallon        26.90       21.93       29.7163
+     * 37      Isogen          49.16       64.06       59.1943
+     * 38      Nocxium         99.02       93.76       94.227
+     * 39      Zydrine       1315.03     2347.36     1290.39
+     * 40      Megacyte      2650.00     3989.06     2707.67
+     * 11399   Morphite      5407.68    14291.00     4943.2
      *
      */
 }
@@ -567,8 +567,14 @@ void MarketDB::GetMineralPrices(std::map< uint16, Market::matlData >& data)
 void MarketDB::UpdateInvPrice(std::map< uint16, Inv::TypeData >& data)
 {
     DBerror err;
-    for (auto cur : data)
-        sDatabase.RunQuery(err, "UPDATE invTypes SET basePrice=%f WHERE typeID= %u", cur.second.basePrice, cur.first);
+    for (auto cur : data) {
+        if (cur.second.basePrice < 0.01) {
+            sLog.Error("     SetBasePrice", "Calculated price for %s(%u) is 0", \
+                    cur.second.name.c_str(), cur.first);
+        } else {
+            sDatabase.RunQuery(err, "UPDATE invTypes SET basePrice=%f WHERE typeID= %u", cur.second.basePrice, cur.first);
+        }
+    }
 }
 
 void MarketDB::UpdateMktPrice(std::map< uint16, Market::matlData >& data)
@@ -578,14 +584,14 @@ void MarketDB::UpdateMktPrice(std::map< uint16, Market::matlData >& data)
         sDatabase.RunQuery(err, "UPDATE invTypes SET basePrice=%f WHERE typeID= %u", cur.second.price, cur.first);
 }
 
-void MarketDB::GetCruPriceAvg(std::map< uint16, Market::matlData >& data)
+void MarketDB::GetCruPriceAvg(std::map< uint16, Inv::TypeData >& data)
 {
     DBQueryResult res;
     DBResultRow row;
-    std::map< uint16, Market::matlData >::iterator itr;
+    std::map< uint16, Inv::TypeData>::iterator itr;
     for (itr = data.begin(); itr != data.end(); ++itr) {
-        sDatabase.RunQuery(res, "SELECT AVG(avgPrice) FROM CruciblePriceHistory_Materials WHERE typeID = %u", itr->first);
+        sDatabase.RunQuery(res, "SELECT AVG(avgPrice) FROM CruciblePriceHistory WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
-            itr->second.price = row.GetFloat(0);
+            itr->second.basePrice = (row.IsNull(0) ? 0 : row.GetFloat(0));
     }
 }

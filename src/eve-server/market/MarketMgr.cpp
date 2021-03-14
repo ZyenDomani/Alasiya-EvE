@@ -621,18 +621,18 @@ void MarketMgr::SetBasePrice()
     //  mineral prices are (will be) updated via a 'price average' method yet to be written
     MarketDB::GetMineralPrices(mineralMap);
 
+
     // get 'building blocks' used for cap ships and put into data map
     //block typeID/vector<data{materialTypeID, qty}>
     std::map<uint16, Market::matlData> materialMap;
     materialMap.clear();
-    sDataMgr.GetBlockData(materialMap);         // 19
+    sDataMgr.GetComponentData(materialMap);         // 125
 
     // get compounds from ice and put into data map
     sDataMgr.GetCompoundData(materialMap);         // 7
 
-    // need to query Cat::Material items for reaction outputs from invTypeReactions and figure pricing for them
-
-    // need to query Cat::Commodity items used for Grp::DataInterfaces (R.A.M. items) and figure pricing for them
+    // get misc commodities and put into data map
+    sDataMgr.GetMiscCommodityData(materialMap);         // 456
 
     // get salvage items for rigs and other items made from them
     sDataMgr.GetSalvageData(materialMap);         // 53
@@ -643,12 +643,20 @@ void MarketMgr::SetBasePrice()
     // get PI commodities
     sDataMgr.GetPICommodityData(materialMap);         // 66
 
+    // hack to add this item to materialMap, instead of getting entire group
+    //  22175 is Codebreaker I, which is a reproc item from Purloined Sansha Codebreaker.
+    Market::matlData data = Market::matlData();
+    data.typeID = 22175;
+    data.name = "Codebreaker I";
+    materialMap[22175] = data;
+
     // this will have to use db to get current data.
     //  mineral prices are (will be) updated via a 'price average' method yet to be written
     MarketDB::GetMaterialPrices(materialMap);
 
     // add minerals to material maps
     materialMap.insert(mineralMap.begin(), mineralMap.end());
+    //sDataMgr.GetMineralData(materialMap);        // 8
 
 
     // item typeID/data{inventory data}
@@ -664,7 +672,7 @@ void MarketMgr::SetBasePrice()
     itemMatMap.clear();
     std::map<uint16, Inv::TypeData>::iterator itemItr = itemMap.begin();
     for (; itemItr != itemMap.end(); ++itemItr) {
-        // pull data for this ship  -need r/w iterator to work
+        // pull data for this item  -need r/w iterator to work
         sDataMgr.GetType(itemItr->first, itemItr->second);
 
         // get materials required for this item
@@ -676,155 +684,200 @@ void MarketMgr::SetBasePrice()
 
 
     // estimate price of item based on mineral requirements
+    bool found(true);
+    uint8 mLevel(0);
     double current(0);
     Inv::GrpData gData = Inv::GrpData();
+    EvERam::bpTypeData bpData = EvERam::bpTypeData();
+    // item typeID/data{inventory data}
+    std::map<uint16, Inv::TypeData> missingItemMap;
+    missingItemMap.clear();
     std::map<uint16, Market::matlData>::iterator materialItr = materialMap.begin();
     std::map<uint16, std::vector<EvERam::RamMaterials>>::iterator itemMatItr = itemMatMap.end();
     for (itemItr = itemMap.begin(); itemItr != itemMap.end(); ++itemItr) {
         itemMatItr = itemMatMap.find(itemItr->first);
-        if (itemMatItr != itemMatMap.end()) {
-            current = itemItr->second.basePrice;
-            // reset basePrice
-            itemItr->second.basePrice = 0.0;
-            // sum mineral counts with current prices for this ship
-            for (auto cur2 : itemMatItr->second) {
-                materialItr = materialMap.find(cur2.materialTypeID);
-                if (materialItr == materialMap.end()) {
-                    sLog.Error("     SetBasePrice", "resource %u for %s(%u) not found in materialMap", \
-                    cur2.materialTypeID, itemItr->second.name.c_str(), itemItr->first);
-                    continue;
-                }
-                itemItr->second.basePrice += (materialItr->second.price * cur2.quantity);
-            }
+        if (itemMatItr == itemMatMap.end())
+            continue;
 
-            gData = Inv::GrpData();
-            sDataMgr.GetGroup(itemItr->second.groupID, gData);
-            // apply modifier to base price according to item category (complexity, rarity, demand)
-            switch (gData.catID) {
-                case EVEDB::invCategories::Ship: {
-                    itemItr->second.basePrice *= 3;
-                } break;
-                case EVEDB::invCategories::Module: {
-                    itemItr->second.basePrice *= 4;
-                } break;
-                case EVEDB::invCategories::Charge: {
-                    itemItr->second.basePrice *= 1;
-                } break;
-                case EVEDB::invCategories::Material: {
-                    itemItr->second.basePrice *= 3;
-                } break;
-                case EVEDB::invCategories::Commodity: { // this includes drone compounds
-                    itemItr->second.basePrice *= 4;
-                } break;
-                case EVEDB::invCategories::Drone: {
-                    itemItr->second.basePrice *= 3.5;
-                } break;
-                case EVEDB::invCategories::Implant: {
-                    itemItr->second.basePrice *= 7;
-                } break;
-                case EVEDB::invCategories::Deployable: {
-                    itemItr->second.basePrice *= 2;
-                } break;
-                case EVEDB::invCategories::Structure: {
-                    itemItr->second.basePrice *= 3;
-                } break;
-                case EVEDB::invCategories::Reaction: {
-                    itemItr->second.basePrice *= 2;
-                } break;
-                case EVEDB::invCategories::Asteroid: {
-                    itemItr->second.basePrice *= 3;
-                } break;
-                case EVEDB::invCategories::Subsystem: {
-                    itemItr->second.basePrice *= 4;
-                } break;
-                case EVEDB::invCategories::StructureUpgrade: {
-                    itemItr->second.basePrice *= 5;
-                } break;
-                case EVEDB::invCategories::SovereigntyStructure: {
-                    itemItr->second.basePrice *= 5;
-                } break;
-                case EVEDB::invCategories::PlanetaryInteraction: {
-                    itemItr->second.basePrice *= 5;
-                } break;
-                case EVEDB::invCategories::PlanetaryResources: {
-                    itemItr->second.basePrice *= 6;
-                } break;
-                case EVEDB::invCategories::PlanetaryCommodities: {
-                    itemItr->second.basePrice *= 6;
-                } break;
-                case EVEDB::invCategories::Orbitals: {
-                    itemItr->second.basePrice *= 3;
-                } break;
-                case EVEDB::invCategories::Station: {
-                    itemItr->second.basePrice *= 8;
-                } break;
-                case EVEDB::invCategories::Celestial: {
-                    itemItr->second.basePrice *= 8;
-                } break;
-                case EVEDB::invCategories::Accessories: {
-                    // clone, voucher, outpost improvement/upgrade, plex
-                    itemItr->second.basePrice *= 8;
-                } break;
-                default: {
-                    itemItr->second.basePrice *= 2;
-                    sLog.Warning("     SetBasePrice", "Default hit for %s (id:%u, g:%u, c:%u)", \
-                            itemItr->second.name.c_str(), itemItr->first, gData.id, gData.catID);
-                }
-            }
-
-            if (itemItr->second.basePrice < 0.01) {
-                sLog.Error("     SetBasePrice", "Calculated updated price for %s(%u) is 0", \
-                           itemItr->second.name.c_str(), itemItr->first);
-            } else {
-                sLog.Blue("     SetBasePrice", "Calculated updated price for %s(%u) from %.2f to %.2f", \
-                          itemItr->second.name.c_str(), itemItr->first, current, itemItr->second.basePrice);
-            }
-        }
-    }
-
-    // update db for 'new' base price
-    MarketDB::UpdateInvPrice(itemMap);
-}
-
-void MarketMgr::UpdateBlockPrice()
-{
-    //  get mineral prices and put into data map
-    // typeID/data{typeID, price, name}
-    std::map<uint16, Market::matlData> mineralMap;
-    mineralMap.clear();
-    sDataMgr.GetMineralData(mineralMap);        // 8
-
-    // this will have to use db to get current data.
-    //  mineral prices are (will be) updated via a 'price average' method yet to be written
-    MarketDB::GetMineralPrices(mineralMap);
-
-    // get 'building blocks' used for cap ships and put into data map
-    //block typeID/vector<data{materialTypeID, qty}>
-    std::map< uint16, Market::matlData > blockMatMap;
-    blockMatMap.clear();
-    sDataMgr.GetBlockData(blockMatMap);         // 19
-
-    // determine mineral cost for block type
-    std::vector<EvERam::RamMaterials> matVec;
-    std::vector<EvERam::RamMaterials>::iterator matItr;
-    std::map<uint16, Market::matlData>::iterator blockItr = blockMatMap.begin();
-    std::map<uint16, Market::matlData>::iterator mineralItr = mineralMap.begin();
-    for (; blockItr != blockMatMap.end(); ++blockItr) {
-        // get minerals required for this block
-        matVec.clear();
-        sDataMgr.GetRamMaterials(blockItr->first, matVec);
+        found = true;
+        current = itemItr->second.basePrice;
+        // reset basePrice
+        itemItr->second.basePrice = 0.0;
         // sum mineral counts with current prices for this ship
-        for (auto cur : matVec) {
-            mineralItr = mineralMap.find(cur.materialTypeID);
-            if (mineralItr != mineralMap.end()) {
-                blockItr->second.price += (mineralItr->second.price * cur.quantity);
+        for (auto cur2 : itemMatItr->second) {
+            materialItr = materialMap.find(cur2.materialTypeID);
+            if (materialItr == materialMap.end()) {
+                sLog.Error("     SetBasePrice", "resource %u for %s(%u) not found in materialMap", \
+                        cur2.materialTypeID, itemItr->second.name.c_str(), itemItr->first);
+                missingItemMap[itemItr->first] = Inv::TypeData();
+                found = false;
+                continue;
             }
+            itemItr->second.basePrice += (materialItr->second.price * cur2.quantity);
         }
+        if (!found)
+            continue;
+
+        // add manuf costs to base price
+        // currently uses production time to add cost at line rental default of 1k install and 2500/hr
+        if (sDataMgr.GetBpDataForItem(itemItr->first, bpData)) {
+            itemItr->second.basePrice += 1000 + (2500 * (bpData.productionTime / 3600));  // time is in seconds
+        }
+
+        mLevel = itemItr->second.metaLvl;
+        gData = Inv::GrpData();
+        sDataMgr.GetGroup(itemItr->second.groupID, gData);
+
+        // apply modifier to base price according to item category (complexity, rarity, demand)
+        // these should also be adjusted for portion size
+        switch (gData.catID) {
+            case EVEDB::invCategories::Drone:{
+                itemItr->second.basePrice /= itemItr->second.portionSize;
+                // modify price based on meta
+                switch (mLevel) {
+                    case 0: {   //basic
+                        itemItr->second.basePrice *= 2;
+                    } break;
+                    case 1: {   //t1
+                        itemItr->second.basePrice *= 2.5;
+                    } break;
+                    case 2: {   //t2
+                        itemItr->second.basePrice *= 3.5;
+                    } break;
+                }
+            } break;
+            case EVEDB::invCategories::Celestial:
+            case EVEDB::invCategories::Entity:
+            case EVEDB::invCategories::Commodity:
+            case EVEDB::invCategories::Material:
+            case EVEDB::invCategories::Charge:{
+                if (mLevel)
+                    itemItr->second.basePrice *= mLevel;
+                itemItr->second.basePrice /= itemItr->second.portionSize;
+            } break;
+            case EVEDB::invCategories::Asteroid: {
+                if (mLevel)
+                    itemItr->second.basePrice *= mLevel;
+                // asteroids cannot be 'created' per se, but the mined ore can be sold.
+                //  this cat covers mined ore, so use same pricing method as charges
+                if (itemItr->first < 28000)
+                    itemItr->second.basePrice /= itemItr->second.portionSize;
+            } break;
+            case EVEDB::invCategories::Module: {
+                itemItr->second.basePrice *= 2;
+                // multiply price by metaLvl
+                if (mLevel) {
+                    switch (gData.id) {
+                        case EVEDB::invGroups::Rig_Mining:
+                        case EVEDB::invGroups::Rig_Armor:
+                        case EVEDB::invGroups::Rig_Shield:
+                        case EVEDB::invGroups::Rig_Energy_Weapon:
+                        case EVEDB::invGroups::Rig_Hybrid_Weapon:
+                        case EVEDB::invGroups::Rig_Projectile_Weapon:
+                        case EVEDB::invGroups::Rig_Drones:
+                        case EVEDB::invGroups::Rig_Launcher:
+                        case EVEDB::invGroups::Rig_Electronics:
+                        case EVEDB::invGroups::Rig_Energy_Grid:
+                        case EVEDB::invGroups::Rig_Astronautic:
+                        case EVEDB::invGroups::Rig_Electronics_Superiority:
+                        case EVEDB::invGroups::Rig_Security_Transponder:  {
+                            itemItr->second.basePrice *= (mLevel + 1);
+                        } break;
+                        default: {
+                            itemItr->second.basePrice *= (mLevel + 10);
+                        } break;
+                    }
+                }
+            } break;
+            case EVEDB::invCategories::Ship: {
+                // multiply price by metaLvl
+                if (mLevel)
+                    itemItr->second.basePrice *= mLevel;
+                // modify price based on class
+                switch (gData.id) {
+                    case EVEDB::invGroups::Frigate:
+                    case EVEDB::invGroups::Destroyer:
+                    case EVEDB::invGroups::Rookieship:
+                    case EVEDB::invGroups::Industrial: {
+                        itemItr->second.basePrice *= 2.1;       // +80%
+                    } break;
+                    case EVEDB::invGroups::CovertOps: {
+                        itemItr->second.basePrice *= 1.2;       // +20%
+                    } break;
+                    case EVEDB::invGroups::Capsule:
+                    case EVEDB::invGroups::Cruiser:
+                    case EVEDB::invGroups::Freighter:
+                    case EVEDB::invGroups::Battleship:
+                    case EVEDB::invGroups::Battlecruiser:
+                    case EVEDB::invGroups::Interdictor:
+                    case EVEDB::invGroups::Interceptor:
+                    case EVEDB::invGroups::HeavyInterdictors:
+                    case EVEDB::invGroups::IndustrialCommandShip:
+                    case EVEDB::invGroups::ElecAttackShip:
+                    case EVEDB::invGroups::Supercarrier:
+                    case EVEDB::invGroups::StrategicCruiser: {
+                        itemItr->second.basePrice *= 1.1;       // +10%
+                    } break;
+                    // these are good...
+                    case EVEDB::invGroups::Carrier:
+                    case EVEDB::invGroups::MiningBarge:
+                    case EVEDB::invGroups::StealthBomber:
+                    case EVEDB::invGroups::CapitalIndustrialShip: {
+                        itemItr->second.basePrice *= 1.5;       // +50%
+                    } break;
+                    case EVEDB::invGroups::Exhumer:
+                    case EVEDB::invGroups::Logistics:
+                    case EVEDB::invGroups::Marauder:
+                    case EVEDB::invGroups::BlackOps:
+                    case EVEDB::invGroups::CombatRecon:
+                    case EVEDB::invGroups::AssaultShip:
+                    case EVEDB::invGroups::TransportShip:
+                    case EVEDB::invGroups::HeavyAssaultShip:
+                    // these can only be crated in pos.
+                    case EVEDB::invGroups::Titan:
+                    case EVEDB::invGroups::Dreadnought:
+                    case EVEDB::invGroups::CommandShip: {
+                        itemItr->second.basePrice *= 0.6;       // -40%  these are all outrageous at calculated prices
+                    } break;
+                    case EVEDB::invGroups::JumpFreighter:  {
+                        itemItr->second.basePrice *= 0.35;        // this one is weird...
+                    } break;
+                    case EVEDB::invGroups::Shuttle: {
+                        itemItr->second.basePrice *= 3;        // x3 for shuttles
+                    } break;
+                    case EVEDB::invGroups::Prototype_Exploration_Ship:
+                    case EVEDB::invGroups::EliteBattleship: {
+                        itemItr->second.basePrice *= 1000;        // x1000
+                    } break;
+                }
+            } break;
+            case EVEDB::invCategories::Station: {
+                // for some reason, station pricing is way off....
+                itemItr->second.basePrice *= 100;
+            } break;
+        }
+
+        if (itemItr->second.basePrice < 0.01) {
+            sLog.Error("     SetBasePrice", "Calculated price for %s(%u) is 0", \
+                    itemItr->second.name.c_str(), itemItr->first);
+        } /*else {
+            sLog.Blue("     SetBasePrice", "Calculated price for %u %s(cat:%u - %s - meta %u) from %.2f to %.2f", \
+                    itemItr->first, itemItr->second.name.c_str(), gData.catID, gData.name.c_str(), \
+                    itemItr->second.metaLvl, current, itemItr->second.basePrice);
+        }*/
     }
 
-    //  update block price
-    MarketDB::UpdateMktPrice(blockMatMap);
+    // check for missing items and get average price using crucible mkt data table
+    if (missingItemMap.empty()) {
+        // update db for 'new' base price
+        MarketDB::UpdateInvPrice(itemMap);
+    } else {
+        MarketDB::GetCruPriceAvg(missingItemMap);
+        MarketDB::UpdateInvPrice(missingItemMap);
+        sLog.Error("     SetBasePrice", "Missing material.  run again.");
+    }
 }
+
 
 void MarketMgr::UpdateMineralPrice()
 {
@@ -841,16 +894,31 @@ void MarketMgr::UpdateMineralPrice()
 
 void MarketMgr::GetCruPrices()
 {
+    /*
     std::map<uint16, Market::matlData> materialMap;
     materialMap.clear();
-    sDataMgr.GetMineralData(materialMap);       // 8
-    sDataMgr.GetBlockData(materialMap);         // 19
+    // dont update minerals...they are set.
+    //sDataMgr.GetMineralData(materialMap);       // 8
     sDataMgr.GetSalvageData(materialMap);       // 53
     sDataMgr.GetCompoundData(materialMap);      // 7
+    sDataMgr.GetComponentData(materialMap);     // 114
     sDataMgr.GetPIResourceData(materialMap);    // 15
     sDataMgr.GetPICommodityData(materialMap);   // 66
 
     MarketDB::GetCruPriceAvg(materialMap);
 
     MarketDB::UpdateMktPrice(materialMap);
+    */
+
+    sLog.Warning("     SetBasePrice", "Getting types.");
+    std::map<uint16, Inv::TypeData> types;
+    sDataMgr.GetTypes(types);           //19669 unique items in type data
+    sLog.Green("     SetBasePrice", "GetTypes returned %u items.  Getting price avg.", types.size());
+    // delete the typeID '0'
+    types.erase(0);
+
+    MarketDB::GetCruPriceAvg(types);    //7723 unique items in price data
+    sLog.Green("     SetBasePrice", "Got Avg prices.  updating items.");
+    MarketDB::UpdateInvPrice(types);    //7712 non-zero prices
+    sLog.Cyan("     SetBasePrice", "Completed.");
 }

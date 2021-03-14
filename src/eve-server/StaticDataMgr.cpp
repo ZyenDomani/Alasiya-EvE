@@ -343,35 +343,40 @@ void StaticDataMgr::Populate()
     sLog.Cyan("    StaticDataMgr", "%u Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
-    FactoryDB::GetComponents(*res);
+    FactoryDB::GetComponents(*res);     //766
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=composite or component]
         m_components.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
-    FactoryDB::GetMinerals(*res);
+    FactoryDB::GetMinerals(*res);       //8
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=mineral]
         m_minerals.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
-    FactoryDB::GetCompounds(*res);
+    FactoryDB::GetCompounds(*res);      //181
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=compound]
         m_compounds.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
-    FactoryDB::GetSalvage(*res);
+    FactoryDB::GetSalvage(*res);        //53
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=salvage]
         m_salvage.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
-    FactoryDB::GetResources(*res);
+    FactoryDB::GetResources(*res);      //15
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=pi resource]
         m_resources.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
-    FactoryDB::GetCommodities(*res);
+    FactoryDB::GetCommodities(*res);    //66
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=pi commodity]
         m_commodities.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+    }
+    FactoryDB::GetMiscCommodities(*res);    //456
+    while (res->GetRow(row)) {
+        //SELECT typeID, typeName FROM invTypes [where type=misc commodity]
+        m_miscCommodities.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
     FactoryDB::GetRAMMaterials(*res);
     while (res->GetRow(row)) {
@@ -413,12 +418,13 @@ void StaticDataMgr::Populate()
             bpTypeData.wasteFactor              = row.GetInt(11);
             bpTypeData.maxProductionLimit       = row.GetInt(12);
             bpTypeData.chanceOfRE               = row.GetFloat(13);
-            bpTypeData.catID                    = row.GetInt(14);
+            bpTypeData.catID                    = (row.IsNull(14) ? 0 : row.GetInt(14));
         m_bpTypeData.emplace(row.GetInt(0), bpTypeData);
+        m_bpProductData.emplace(row.GetInt(2), bpTypeData);
     }
     for (auto cur : m_bpTypeData)
         m_bpMatlData[cur.first] = SetBPMatlType(cur.second.catID, cur.first, cur.second.productTypeID);
-    sLog.Cyan("    StaticDataMgr", "%u BP Type defs loaded in %.3fms.", (m_bpTypeData.size() + m_bpMatlData.size()), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%u BP Type defs loaded in %.3fms.", m_bpTypeData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetMoonResouces(*res);
@@ -743,6 +749,15 @@ void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& int
     }
 }
 
+void StaticDataMgr::GetMiscCommodityData(std::map< uint16, Market::matlData >& into)
+{
+    for (auto cur : m_miscCommodities) {
+        Market::matlData data = Market::matlData();
+        data.typeID = cur.first;
+        data.name = cur.second;
+        into[cur.first] = data;
+    }
+}
 
 void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
 {
@@ -891,6 +906,16 @@ void StaticDataMgr::GetBpTypeData(uint16 typeID, EvERam::bpTypeData& tData)
     } else {
         _log(DATA__MESSAGE, "Failed to query info for bpType %u: Type not found.", typeID);
     }
+}
+
+bool StaticDataMgr::GetBpDataForItem(uint16 typeID, EvERam::bpTypeData& tData)
+{
+    std::map<uint16, EvERam::bpTypeData>::iterator itr = m_bpProductData.find(typeID);
+    if (itr != m_bpProductData.end()) {
+        tData = itr->second;
+        return true;
+    }
+    return false;
 }
 
 bool StaticDataMgr::IsRecyclable(uint16 typeID)

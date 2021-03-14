@@ -61,6 +61,7 @@ public:
     void                GetComponentData(std::map< uint16, Market::matlData >& into);
     void                GetPIResourceData(std::map< uint16, Market::matlData >& into);
     void                GetPICommodityData(std::map< uint16, Market::matlData >& into);
+    void                GetMiscCommodityData(std::map< uint16, Market::matlData >& into);
     void                GetMoonResouces(std::map<uint16, uint8>& data);
 
     bool                IsSkillTypeID(uint16 typeID);
@@ -112,6 +113,7 @@ public:
     PyDict*             SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID);
     PyDict*             GetBPMatlData(uint16 typeID);   //this is called on EVERY "show info" of a blueprint
     void                GetBpTypeData(uint16 typeID, EvERam::bpTypeData& tData);
+    bool                GetBpDataForItem(uint16 typeID, EvERam::bpTypeData& tData);
 
     uint32              GetFactionCorp(uint32 factionID);
     uint32              GetCorpFaction(uint32 corpID);
@@ -209,6 +211,8 @@ private:
     std::map<uint16, std::string>                       m_resources;        // typeID/name
     std::map<uint16, std::string>                       m_components;       // typeID/name
     std::map<uint16, std::string>                       m_commodities;      // typeID/name
+    std::map<uint16, std::string>                       m_miscCommodities;  // typeID/name
+    std::map<uint16, EvERam::bpTypeData>                m_bpProductData;    // productTypeID/data
 };
 
 //Singleton

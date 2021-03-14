@@ -297,7 +297,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         }
 
         // determine escrow amount
-        float money = args.price * args.quantity;
+        float money(args.price * args.quantity);
 
         // set save data
         Market::SaveData data = Market::SaveData();
@@ -321,11 +321,11 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         data.escrow             = money;
 
         // these need a bit more data
-        data.contraband = false;   // does this need to check region/system?
+        data.contraband = false;   // does this need to check region/system?  yes
         data.jumps = 1;     // not sure if this is used....
 
         // create buy order
-        uint32 orderID = m_db.StoreOrder(data);
+        uint32 orderID(m_db.StoreOrder(data));
         if (orderID == 0) {
             _log(MARKET__ERROR, "PlaceCharOrder - Failed to record buy order in the DB.");
             call.client->SendErrorMsg("Failed to record the order.");
@@ -335,10 +335,10 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         std::string reason = "DESC:  Setting up buy order in ";
         reason += stDataMgr.GetStationName(args.stationID).c_str();
         // get data for computing broker fees
-        uint8 lvl = call.client->GetChar()->GetSkillLevel(EvESkill::BrokerRelations);
+        uint8 lvl(call.client->GetChar()->GetSkillLevel(EvESkill::BrokerRelations));
         //call.client->GetChar()->GetStandingModified();
         /** @todo standings incomplete.  need to finish */
-        float fee = EvEMath::Market::BrokerFee(lvl, 1, 1);
+        float fee(EvEMath::Market::BrokerFee(lvl, 1, 1));
         fee *= money;
         _log(MARKET__DEBUG, "PlaceCharOrder(buy) - %s: Escrow: %.2f, Fee: %.2f", args.useCorp?"Corp":"Player", money, fee);
         // take monies and record actions
@@ -363,8 +363,6 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             //  corp item in corp hangar
             // located = [officeFolderID, officeID] or None
             PyTuple* located = args.located->AsTuple();
-
-
         }
 
         //verify that they actually have the item in the quantity specified...
@@ -579,7 +577,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
     }
 
     sMktMgr.InvalidateOrdersCache(call.client->GetRegionID(), oInfo.typeID);
-    sMktMgr.SendOnOwnOrderChanged(call.client, args.orderID, Market::Action::Modify, oInfo.isCorp); //force a refresh of market data.
+    sMktMgr.SendOnOwnOrderChanged(call.client, args.orderID, Market::Action::Modify, oInfo.isCorp);
 
     return nullptr;
 }
@@ -620,7 +618,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     }
 
     sMktMgr.InvalidateOrdersCache(call.client->GetRegionID(), oInfo.typeID);
-    sMktMgr.SendOnOwnOrderChanged(call.client, args.orderID, Market::Action::Expiry, oInfo.isCorp, order); //force a refresh of market data.
+    sMktMgr.SendOnOwnOrderChanged(call.client, args.orderID, Market::Action::Expiry, oInfo.isCorp, order);
 
     return nullptr;
 }

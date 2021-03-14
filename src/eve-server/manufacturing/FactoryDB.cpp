@@ -39,7 +39,7 @@ void FactoryDB::GetSalvage(DBQueryResult& res)
 
 void FactoryDB::GetCompounds(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID = 423"))
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (282, 333, 423, 427, 530, 711, 712)"))
         codelog(DATABASE__ERROR, "Error in GetCompounds query: %s", res.error.c_str());
 }
 
@@ -49,10 +49,10 @@ void FactoryDB::GetMinerals(DBQueryResult& res)
         codelog(DATABASE__ERROR, "Error in GetMinerals query: %s", res.error.c_str());
 }
 
-void FactoryDB::GetBlocks(DBQueryResult& res)
+void FactoryDB::GetComponents(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID = 873"))   // construction blocks
-        codelog(DATABASE__ERROR, "Error in GetBlocks query: %s", res.error.c_str());
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (280, 283, 313, 334, 428, 429, 526, 536, 873, 886, 913, 964)"))   // components
+        codelog(DATABASE__ERROR, "Error in GetComponents query: %s", res.error.c_str());
 }
 
 void FactoryDB::GetCommodities(DBQueryResult& res)
@@ -61,9 +61,15 @@ void FactoryDB::GetCommodities(DBQueryResult& res)
         codelog(DATABASE__ERROR, "Error in GetCommodities query: %s", res.error.c_str());
 }
 
+void FactoryDB::GetMiscCommodities(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID = 314"))
+        codelog(DATABASE__ERROR, "Error in GetMinerals query: %s", res.error.c_str());
+}
+
 void FactoryDB::GetResources(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (1032, 1033, 1035)"))   // PI Resources
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (1031, 1032, 1033, 1035)"))   // PI Resources
         codelog(DATABASE__ERROR, "Error in GetResources query: %s", res.error.c_str());
 }
 
@@ -181,8 +187,8 @@ void FactoryDB::GetBlueprintType(DBQueryResult& res) {
         "  g.categoryID"
         " FROM invBlueprintTypes AS bt"
         "  LEFT JOIN invTypes AS t ON t.typeID = bt.blueprintTypeID"
-        "  LEFT JOIN invGroups AS g USING (groupID)"
-        " WHERE t.published = 1" ))
+        "  LEFT JOIN invGroups AS g USING (groupID)"))
+        //" WHERE t.published = 1" ))
     {
         codelog(DATABASE__ERROR, "Error in GetBlueprintType query: %s.", res.error.c_str());
     }
