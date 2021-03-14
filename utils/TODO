@@ -55,6 +55,8 @@ check/fix loading linked weapons
     - reloading grouped weapons should divide evenly between modules.
         it currently fills modules in slot order.
 
+warp scram should deactivate mwd and deny activation (it IS a micro WARP drive...)
+
 invul timer set on undock after login
 
 check repack/reproc ships for insurance and delete if applicable
@@ -64,10 +66,9 @@ also check containers for contents and remove/deny before repack
 check insurance payouts.   rounds full ship value up
     - this will need base prices fixed
 
-base prices
-    - need mineral prices set first (from cruc-era)
-    - write code (in test.cpp) to determine item base price based on ME0 BPO BOM and save to db
-    - make file for items missing data to do above run
+base price estimator code 95% complete.
+few prices wrong and not in crucible mkt data dump
+static category names are a bit off (semantics)
 
 check trade - ships retain insurance
 
@@ -404,6 +405,11 @@ market for corp use
     - will need more data and checks for using corp account key (wallet division) properly.  currently cash (div 1)
     - escrow and broker fee have "authorized by" msgs to implement....see common/eve-wallet.h
 
+market history
+    - change date on ccp history dump and put into mktHistory table
+    - may be cheating, but we'd have 'real' data for market history
+
+
 EVEItemFlags - update our code for the 89 flags defined in client
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
@@ -517,6 +523,7 @@ ibis?, navitas, bantam, probe, tormentor
 cruisers
 arbitrator, osprey, scythe, vexor
 
+some items dont have complete description in db (data is trunicated)
 
 go thru classes and rename per class type...
     -  *Item  for items
