@@ -1,21 +1,26 @@
--- seeds specified region with skills and ships
+-- seeds specified region with items
 -- regionID, 02: The Forge - 01:derelik - 30:heimatar - 16:lonetrek - 42:metropolis - 43:domain - 32:Sinq Laison
---  10000065, 10000020, 10000064, 10000068
+--  10000065, 10000020, 10000064, 10000068, 10000002, 10000001, 10000030, 10000016, 10000042, 10000043, 10000032
 set @regionid=10000001;
 set @saturation=0.8; -- fuzzy logic.  % of stations to fill with orders (random selection)
 
-use Alasiya_EvE;   -- set this to your db name
+use EvE_AlasiyaDev;   -- set this to your db name
 
 -- select stations to fill
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int, corporationID int, security float);
 truncate table tStations;
-select round(count(stationID)*@saturation) into @lim from staStations where regionID=@regionid ;
+select round(count(stationID)*@saturation) into @lim
+from staStations where regionID IN (10000065, 10000020, 10000064, 10000068, 10000002, 10000001, 10000030, 10000016, 10000042, 10000043, 10000032) ;
+
 set @i=0;
 insert into tStations
-  select stationID,solarSystemID,regionID, corporationID, security from staStations where (@i:=@i+1)<=@lim AND regionID=@regionid  order by rand();
+  select stationID,solarSystemID,regionID, corporationID, security
+  from staStations
+  where (@i:=@i+1)<=@lim AND regionID IN (10000065, 10000020, 10000064, 10000068, 10000002, 10000001, 10000030, 10000016, 10000042, 10000043, 10000032) ;
+  order by rand();
 
 -- actual seeding
-INSERT INTO mktOrders (typeID, charID, regionID, stationID, price, volEntered, volRemaining, issued,
+INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, volRemaining, issued,
 minVolume, duration, solarSystemID, jumps)
   SELECT typeID, corporationID, regionID, stationID, basePrice / security, 550, 550, 132478179209572976, 1, 250, solarSystemID, 1
   FROM tStations, invTypes inner join invGroups USING (groupID)
@@ -62,17 +67,22 @@ set @regionid=10000001;      --Derelik
 
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
 truncate table tStations;
-insert into tStations values (60014137, 30000053, 10000001);
+insert into tStations values
+(60014137, 30000053, 10000001), -- ibaria III
+(60014140, 30000055, 10000001), -- zemalu IXM2
+(60004591, 30002507, 10000030), -- abudban IX
+(60009112, 30002509, 10000030); -- odatrik V
+
 
 -- actual seeding
-INSERT INTO mktOrders (typeID, charID, regionID, stationID, price, volEntered, volRemaining, issued,
+INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, volRemaining, issued,
 minVolume, duration, solarSystemID, jumps)
   SELECT typeID, stationID, regionID, stationID, basePrice, 550, 550, 132478179209572976, 1, 250, solarSystemID, 1
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
   WHERE invTypes.published = 1
   AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 20, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
 UPDATE mktOrders SET price = 100 WHERE price = 0;
--- 11004 orders per station
+-- 11005 orders per station
 
 -- categoryID  categoryName
 -- 	4   Material
@@ -99,6 +109,3 @@ UPDATE mktOrders SET price = 100 WHERE price = 0;
 -- 	43  Planetary Commodities
 -- 	46  Orbitals
 
-
--- fix stations security value (missing in dump)
-UPDATE `staStations` SET `security`= (SELECT `security` FROM `mapSolarSystems` WHERE mapSolarSystems.solarSystemID = staStations.solarSystemID);
