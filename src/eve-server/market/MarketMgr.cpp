@@ -586,11 +586,13 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
 
 
 // after finding price data from Crucible, this may be moot.   -allan 28Feb21
+// it's not.  ccp market dump has serious price swings.  fixed this and implemented.  13Mar21
 void MarketMgr::SetBasePrice()
 {
     /* method to estimate item base price, based on materials to manufacture that item
      *
-     * mineral prices are queried from db with a +10% markup
+     * mineral prices are queried from db with a +15% markup
+     * material prices are queried from db with a +5% markup
      *
      * ships and modules are loaded and queried from static data for manufacturing materials
      * those materials are queried (as required) for minerals needed
@@ -599,15 +601,7 @@ void MarketMgr::SetBasePrice()
      *
      * final prices will have markup based on item type
      *
-     *
-     * NOTES FOR IMPLEMETING THIS SHIT
-     *
-     *        //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
-     *        EvERam::RamMaterials ramMatls = EvERam::RamMaterials();
-     *        ramMatls.quantity       = row.GetInt(2);
-     *        ramMatls.materialTypeID = row.GetInt(1);
-     *
-     * eventually, this will query all items that can be manufactured from BP or refined into minerals
+     * this will query all items that can be manufactured from BP or refined into minerals
      *
      */
 
