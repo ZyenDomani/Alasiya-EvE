@@ -75,7 +75,7 @@ public:
         mDeleted = true;
     }
 
-    size_t GetCount()           { return mRefCount; }
+    // size_t GetCount()           { return mRefCount; }
 
 protected:
     /**
@@ -86,7 +86,7 @@ protected:
         if (mDeleted) {
             _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %u", mRefCount);
             EvE::traceStack();
-            //return;
+            return;
         }
         assert( mDeleted == false );
         ++mRefCount;

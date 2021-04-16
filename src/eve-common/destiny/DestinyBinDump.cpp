@@ -62,13 +62,13 @@ void DumpUpdate(LogType into, const uint8 *data, uint32 len) {
 }
 
 uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
-    uint32 init_len = len;
+    uint32 init_len(len);
 
     const BallHeader *ballhead = (const BallHeader *) data;
     data += sizeof(BallHeader);
     len -= sizeof(BallHeader);
 
-    if ((ballhead->entityID == 0) or (ballhead->entityID > 2147483647)) { // max int32
+    if ((ballhead->entityID == 0) or (ballhead->entityID > 9223372036854775807)) { // max int64
         _log(into, "Error: Invalid entityID for ball %li", ballhead->entityID);
         return 0;
     }
