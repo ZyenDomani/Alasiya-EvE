@@ -326,6 +326,8 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     } else {
         // none of above conditionals hit....
         _log(MARKET__WARNING, "ExecuteBuyOrder - ownerID %u not corp, not char, not system, not joe.", oInfo.ownerID);
+        seller->SendNotifyMsg("Your order cannot be processed at this time.  Please try again later.");
+        return false;
     }
 
     // quantity status of seller's item vs buyer's order
@@ -337,21 +339,28 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
             iRef->Donate(oInfo.ownerID, args.stationID, flagHangar, true);
         } else if (isCorp) {
             iRef->Donate(oInfo.ownerID, args.stationID, flagCorpMarket, true);
+        } else if (isTrader) {
+            iRef->Delete();
         }
     } else if (iRef->quantity() > args.quantity) {
         // qty for sale > buy order amt
         qtyStatus = Market::QtyStatus::Over;
         //need to split item up...
-        InventoryItemRef siRef = iRef->Split(args.quantity);
-        if (siRef.get() == nullptr) {
-            _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to split %u %s.", siRef->itemID(), siRef->name());
-            return true;
-        }
-        //use the owner change packet to alert the buyer of the new item
-        if (isPlayer) {
-            siRef->Donate(oInfo.ownerID, args.stationID, flagHangar, true);
-        } else if (isCorp) {
-            siRef->Donate(oInfo.ownerID, args.stationID, flagCorpMarket, true);
+        if (isTrader) {
+            // trader joe is a blackhole.  subtract amount selling to him and call it a day.
+            iRef->AlterQuantity(-args.quantity, true);
+        } else {
+            InventoryItemRef siRef = iRef->Split(args.quantity);
+            if (siRef.get() == nullptr) {
+                _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to split %u %s.", siRef->itemID(), siRef->name());
+                return true;
+            }
+            //use the owner change packet to alert the buyer of the new item
+            if (isPlayer) {
+                siRef->Donate(oInfo.ownerID, args.stationID, flagHangar, true);
+            } else if (isCorp) {
+                siRef->Donate(oInfo.ownerID, args.stationID, flagCorpMarket, true);
+            }
         }
     } else {
         // qty for sale < buy order amt
@@ -361,6 +370,8 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
             iRef->Donate(oInfo.ownerID, args.stationID, flagHangar, true);
         } else if (isCorp) {
             iRef->Donate(oInfo.ownerID, args.stationID, flagCorpMarket, true);
+        } else if (isTrader) {
+            iRef->Delete();
         }
     }
 
