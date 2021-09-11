@@ -81,6 +81,9 @@ PyResult CalendarMgrService::Handle_DeleteEvent( PyCallArgs& call )
 
     CalendarDB::DeleteEvent(args.arg1); // eventID
 
+    // calendar must be reloaded to remove deleted event   -james
+    call.client->SendNotification("OnReloadCalendar", "charID", new PyTuple(0), false);
+
     return nullptr;
 }
 
@@ -202,7 +205,7 @@ PyResult CalendarMgrService::Handle_UpdateEventParticipants( PyCallArgs& call )
     }
 
     CalendarDB::UpdateEventParticipants(args);
-    
+
     //  this will need to update invitees and inform them of the invitation
     // their calendar is updated based on their response (SendEventResponse)
 

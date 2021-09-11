@@ -33,7 +33,7 @@
 void CalendarDB::DeleteEvent(uint32 eventID)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE sysCalendarEvents SET isDeleted = 1 WHERE eventID = %s", eventID);
+    sDatabase.RunQuery(err, "UPDATE sysCalendarEvents SET isDeleted = 1 WHERE eventID = %u", eventID);
 }
 
 // for personal char events
@@ -43,26 +43,6 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
     data = GetTimeParts(args.startDateTime);
 
     DBerror err;
-    if (!args.invitees->IsNone()) {
-        bool comma(false);
-        std::ostringstream str;
-        PyList* list(args.invitees->AsList());
-        PyList::const_iterator itr = list->begin(), end = list->end();
-        while (itr != end) {
-            if (comma) {
-                str << ",";
-            } else {
-                comma = true;
-            }
-            str << *itr;
-            ++itr;
-        }
-
-        sDatabase.RunQuery(err,
-                "INSERT INTO `sysCalendarInvitees`(`eventID`, `inviteeList`)"
-                " VALUES '%s'", str.str().c_str());
-    }
-
     uint32 eventID(0);
     if (args.duration) {
         if (!sDatabase.RunQueryLID(err, eventID,
@@ -86,6 +66,26 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
             codelog(DATABASE__ERROR, "Error in SaveNewEvent query: %s", err.c_str());
             return PyStatic.NewZero();
         }
+    }
+
+    if (!args.invitees->empty()) {
+        bool comma(false);
+        std::ostringstream str;
+        PyList* list(args.invitees->AsList());
+        PyList::const_iterator itr = list->begin(), end = list->end();
+        while (itr != end) {
+            if (comma) {
+                str << ",";
+            } else {
+                comma = true;
+            }
+            str << *itr;
+            ++itr;
+        }
+
+        sDatabase.RunQuery(err,
+                "INSERT INTO `sysCalendarInvitees`(`eventID`, `inviteeList`)"
+                " VALUES %u, '%s'", eventID, str.str().c_str());
     }
 
     return new PyInt(eventID);
