@@ -464,11 +464,11 @@ PyObject *WreckContainer::WreckContainerGetInfo()
 
 void WreckContainer::ValidateAddItem( EVEItemFlags flag, InventoryItemRef item ) const
 {
-    // throw();
         //  no code here.  should NOT be able to add items to a wreck container.
     //_log(INV__ERROR, "Adding item to wreck.");
     sLog.Error("ValidateAddItem", "Adding item to wreck");
     EvE::traceStack();
+    // assert(1);
 }
 
 void WreckContainer::RemoveItem(InventoryItemRef iRef)

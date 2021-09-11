@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 10.2
+ Log Version: 10.3
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -595,6 +595,12 @@ LOG_TYPE( SERVICE, MESSAGE, DISABLED, "SvcMsg" )
 LOG_TYPE( SERVICE, CALL_DUMP, DISABLED, "SvcCallDump" )
 LOG_TYPE( SERVICE, CALL_TRACE, DISABLED, "SvcCallTrace" )
 LOG_TYPE( SERVICE, CALL_ERROR, ENABLED, "SvcCallError" )
+
+LOG_CATEGORY( SOV )
+LOG_TYPE( SOV, ERROR, ENABLED, "SovError" )
+LOG_TYPE( SOV, WARNING, DISABLED, "SovWarning" )
+LOG_TYPE( SOV, INFO, DISABLED, "SovInfo" )
+LOG_TYPE( SOV, DEBUG, DISABLED, "SovDebug" )
 
 LOG_CATEGORY( TARGET )
 LOG_TYPE( TARGET, ERROR, ENABLED, "TargetError" )

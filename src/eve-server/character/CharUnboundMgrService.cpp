@@ -259,7 +259,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     if (charRef.get() == nullptr) {
         //a return to the client of 0 seems to be the only means of marking failure
         _log(CLIENT__ERROR, "Failed to create character '%s'", cdata.name.c_str());
-        sItemFactory.UnsetUsingClient();
+        sItemFactory.SetUsingClient();
         return PyStatic.NewZero();
     }
     charRef->SetClient(pClient);      // set client in char
@@ -277,7 +277,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     // query attribute bonuses from ancestry
     if (!m_db.GetAttributesFromAncestry(cdata.ancestryID, intelligence, charisma, perception, memory, willpower)) {
         _log(CLIENT__ERROR, "Failed to load char create details. Bloodline %u, ancestry %u.", char_type->bloodlineID(), cdata.ancestryID);
-        sItemFactory.UnsetUsingClient();
+        sItemFactory.SetUsingClient();
         return PyStatic.NewZero();
     }
     // triple attributes and save
@@ -365,7 +365,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     charRef->SaveFullCharacter();
 
     // Release the item factory now that the character is finished being accessed:
-    sItemFactory.UnsetUsingClient();
+    sItemFactory.SetUsingClient();
 
     // we need to report the charID to the ImageServer so it can correctly assign a previously received image
     sImageServer.ReportNewCharacter(pClient->GetUserID(), charRef->itemID());

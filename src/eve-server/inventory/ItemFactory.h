@@ -64,8 +64,7 @@ public:
 
     void SaveItems();
     void RemoveItem(uint32 itemID);
-    void SetUsingClient(Client *pClient)                { m_pClient = pClient; }
-    void UnsetUsingClient()                             { m_pClient = nullptr; }
+    void SetUsingClient(Client *pClient=nullptr)        { m_pClient = pClient; }
     void AddItem(InventoryItemRef iRef);
 
     InventoryDB* db()                                   { return m_db; }

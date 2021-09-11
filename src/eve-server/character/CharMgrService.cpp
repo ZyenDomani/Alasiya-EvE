@@ -312,10 +312,9 @@ PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
         m_db.AddBounty(args.arg1, call.client->GetCharacterID(), args.arg2);
         // new system gives target a mail from concord about placement of bounty and char name placing it.
     } else {
-        std::map<std::string, PyRep *> res;
-        res["amount"] = new PyFloat(args.arg2);
-        res["balance"] = new PyFloat(call.client->GetBalance());
-        throw(PyException(MakeUserError("NotEnoughMoney", res)));
+        throw UserError("NotEnoughMoney")
+                .AddISK("amount", args.arg2)
+                .AddISK("balance", call.client->GetBalance());
     }
 
     return PyStatic.NewNone();

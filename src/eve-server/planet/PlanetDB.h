@@ -50,7 +50,7 @@ public:
     void GetSchematicData(DBQueryResult& res);
     void GetSchematicTimes(DBQueryResult& res);
 
-    void UpdatePins(uint32 pinID, PI_CCPin* ccPin);
+    void UpdatePins(uint32 pinID, PI_CCPin* ccPin);     // save data for pinID.  send ID=0 to save all pins
     void UpdateECUPin(uint32 pinID, PI_CCPin* ccPin);
     void SavePins(PI_CCPin* ccPin); // this does NOT save contents, heads, or schematic data
     void SaveHeads(uint32 ccPinID, uint32 ownerID, uint32 ecuID, std::map< uint16, PI_Heads >& heads);

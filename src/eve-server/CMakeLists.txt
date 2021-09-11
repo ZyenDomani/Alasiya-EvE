@@ -431,7 +431,10 @@ SET( pos_INCLUDE
      "${TARGET_INCLUDE_DIR}/pos/PosMgrDB.h"
      "${TARGET_INCLUDE_DIR}/pos/Structure.h"
      "${TARGET_INCLUDE_DIR}/pos/Tower.h"
-     "${TARGET_INCLUDE_DIR}/pos/Weapon.h" )
+     "${TARGET_INCLUDE_DIR}/pos/Weapon.h"
+     "${TARGET_INCLUDE_DIR}/pos/TCU.h"
+     "${TARGET_INCLUDE_DIR}/pos/SBU.h"
+     "${TARGET_INCLUDE_DIR}/pos/IHub.h" )
 SET( pos_SOURCE
      "${TARGET_SOURCE_DIR}/pos/Array.cpp"
      "${TARGET_SOURCE_DIR}/pos/Battery.cpp"
@@ -441,7 +444,10 @@ SET( pos_SOURCE
      "${TARGET_SOURCE_DIR}/pos/PosMgrDB.cpp"
      "${TARGET_SOURCE_DIR}/pos/Structure.cpp"
      "${TARGET_SOURCE_DIR}/pos/Tower.cpp"
-     "${TARGET_SOURCE_DIR}/pos/Weapon.cpp" )
+     "${TARGET_SOURCE_DIR}/pos/Weapon.cpp"
+     "${TARGET_SOURCE_DIR}/pos/TCU.cpp"
+     "${TARGET_SOURCE_DIR}/pos/SBU.cpp"
+     "${TARGET_SOURCE_DIR}/pos/IHub.cpp" )
 
 SET( qaTools_INCLUDE
      "${TARGET_INCLUDE_DIR}/qaTools/encounterSpawnServer.h"
@@ -554,7 +560,6 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/KeeperService.h"
      "${TARGET_INCLUDE_DIR}/system/ScenarioService.h"
      "${TARGET_INCLUDE_DIR}/system/SolarSystem.h"
-     "${TARGET_INCLUDE_DIR}/system/SovereigntyMgrService.h"
      "${TARGET_INCLUDE_DIR}/system/SystemBubble.h"
      "${TARGET_INCLUDE_DIR}/system/SystemDB.h"
      "${TARGET_INCLUDE_DIR}/system/SystemEntity.h"
@@ -580,7 +585,6 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/KeeperService.cpp"
      "${TARGET_SOURCE_DIR}/system/ScenarioService.cpp"
      "${TARGET_SOURCE_DIR}/system/SolarSystem.cpp"
-     "${TARGET_SOURCE_DIR}/system/SovereigntyMgrService.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemBubble.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemDB.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemEntity.cpp"
@@ -606,6 +610,16 @@ SET( system_managers_SOURCE
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/ManagerDB.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/SpawnMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/WormholeMgr.cpp")
+
+SET( system_sov_INCLUDE
+     "${TARGET_INCLUDE_DIR}/system/sov/SovereigntyMgrService.h"
+     "${TARGET_INCLUDE_DIR}/system/sov/SovereigntyDB.h"
+     "${TARGET_INCLUDE_DIR}/system/sov/SovereigntyDataMgr.h")
+
+SET( system_sov_SOURCE
+     "${TARGET_SOURCE_DIR}/system/sov/SovereigntyMgrService.cpp"
+     "${TARGET_SOURCE_DIR}/system/sov/SovereigntyDB.cpp"
+     "${TARGET_SOURCE_DIR}/system/sov/SovereigntyDataMgr.cpp")
 
 SET( test_INCLUDE
     "${TARGET_INCLUDE_DIR}/testing/test.h")
@@ -650,6 +664,7 @@ SOURCE_GROUP( "src\\standing"      FILES ${standing_INCLUDE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_INCLUDE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_INCLUDE} )
 SOURCE_GROUP( "src\\system\\cosmicMgrs"  FILES ${system_managers_INCLUDE} )
+SOURCE_GROUP( "src\\system\\sov"   FILES ${system_sov_INCLUDE} )
 SOURCE_GROUP( "src\\system\\test"  FILES ${test_INCLUDE} )
 
 SOURCE_GROUP( "src"                FILES ${SOURCE} )
@@ -687,6 +702,7 @@ SOURCE_GROUP( "src\\standing"      FILES ${standing_SOURCE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_SOURCE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_SOURCE} )
 SOURCE_GROUP( "src\\system\\cosmicMgrs"  FILES ${system_managers_SOURCE} )
+SOURCE_GROUP( "src\\system\\sov"   FILES ${system_sov_SOURCE} )
 SOURCE_GROUP( "src\\system\\test"  FILES ${test_SOURCE} )
 
 ADD_EXECUTABLE( "${TARGET_NAME}"
@@ -725,6 +741,7 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${station_INCLUDE}        ${station_SOURCE}
                 ${system_INCLUDE}         ${system_SOURCE}
                 ${system_managers_INCLUDE} ${system_managers_SOURCE}
+                ${system_sov_INCLUDE}     ${system_sov_SOURCE}
                 ${test_INCLUDE}           ${test_SOURCE}
                 )
 

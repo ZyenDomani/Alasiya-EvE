@@ -160,7 +160,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
     } else {
         _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is not owned by calling character %s(%u) ", \
                     item->name(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
-         throw PyException(MakeUserError("CantDoThatWithSomeoneElsesStuff"));
+         throw UserError("CantDoThatWithSomeoneElsesStuff");
     }
 
     return item->GetMyInventory()->List( flagNone );
@@ -192,7 +192,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
     } else {
         iRef = sItemFactory.GetInventoryItemFromID( args.arg1 );
     }
-    sItemFactory.UnsetUsingClient();
+    sItemFactory.SetUsingClient();
     if (iRef.get() == nullptr) {
         _log(INV__ERROR, "GetInventoryFromId() - Unable to get inventoryItem for itemID %u", args.arg1);
         // send error to player?
@@ -310,7 +310,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
         _log(INV__WARNING, "GetInventory called for item %u (group: %u)", m_locationID, m_groupID);
         item = sItemFactory./*GetInventoryItemFromID*/GetItem(m_locationID);
     }
-    sItemFactory.UnsetUsingClient();
+    sItemFactory.SetUsingClient();
 
     if (item.get() == nullptr) {
         codelog(INV__ERROR, "%s: Unable to load item %u for flag %u", call.client->GetName(), m_locationID, args.container);
@@ -396,7 +396,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     InventoryItemRef iRef = sItemFactory.GetItem( args.itemID );
     if (iRef.get() == nullptr) {
         codelog(INV__ERROR, "%s: Unable to load item %u", call.client->GetName(), args.itemID);
-        sItemFactory.UnsetUsingClient();
+        sItemFactory.SetUsingClient();
         return nullptr;
     }
 
@@ -433,7 +433,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     }
 
     // Release the ItemFactory
-    sItemFactory.UnsetUsingClient();
+    sItemFactory.SetUsingClient();
 
     //OnItemNameChange
     // need to also check pos rename code.

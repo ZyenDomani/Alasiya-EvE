@@ -247,7 +247,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                     ItemData data(offer.courierTypeID, pchar->itemID(), locTemp, flagNone, offer.courierAmount);
                     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                     iRef->Move(offer.originID, flagHangar, true);
-                    sItemFactory.UnsetUsingClient();
+                    sItemFactory.SetUsingClient();
                 }
                 m_agent->UpdateOffer(pchar->itemID(), offer);
                 m_agent->SendMissionUpdate(call.client, "offer_accepted");
@@ -275,7 +275,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                     ItemData data(offer.rewardItemID, pchar->itemID(), locTemp, flagNone, offer.rewardItemQty);
                     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                     iRef->Move(m_agent->GetStationID(), flagHangar, true);
-                    sItemFactory.UnsetUsingClient();
+                    sItemFactory.SetUsingClient();
                 }
                 /** @todo  add fleet sharing  */
                 if (offer.rewardISK)

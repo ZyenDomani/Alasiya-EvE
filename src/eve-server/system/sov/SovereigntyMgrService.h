@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -22,6 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Reve
     Rewrite:    Allan
+    Updates:    James
 */
 
 #ifndef __SOVEREIGNTYMGR_SERVICE_H_INCL__
@@ -44,4 +45,17 @@ protected:
 
 };
 
+
 #endif
+
+/*
+ * OnSovereigntyAudioEvent
+ *
+ *
+ *    def OnSovereigntyAudioEvent(self, eventID, textParams):
+ *        if eventID in const.sovAudioEventFiles:
+ *            self.audio.SendUIEvent(unicode(const.sovAudioEventFiles[eventID][0]))
+ *            if const.sovAudioEventFiles[eventID][1] is not None:
+ *                eve.Message(const.sovAudioEventFiles[eventID][1], textParams)
+ * 
+ */

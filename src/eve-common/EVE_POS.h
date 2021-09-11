@@ -33,7 +33,7 @@ namespace EVEPOS {
         int8 status;        /* used to hold POS StructureStatus (online, reinforced, operating, etc) */
         int32 itemID;
         int32 towerID;
-        int32 moonID;
+        int32 anchorPointID;
         int64 timestamp;
     };
     struct TowerData {

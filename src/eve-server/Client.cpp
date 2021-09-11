@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -345,7 +345,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     if (m_char.get() == nullptr) {
         sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", charID);
         SendErrorMsg("Unable to locate Character.  Selection Failed.");
-        sItemFactory.UnsetUsingClient();
+        sItemFactory.SetUsingClient();
         CloseClientConnection();
         return false;
     }
@@ -409,7 +409,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     //johnsus - characterOnline mod
     ServiceDB::SetCharacterOnlineStatus(charID, true);
-    sItemFactory.UnsetUsingClient();
+    sItemFactory.SetUsingClient();
 
 
     SetStateTimer(Player::State::Login, Player::Timer::Login);
@@ -726,7 +726,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         // find our new system's manager
         sItemFactory.SetUsingClient(this);
         m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
-        sItemFactory.UnsetUsingClient();
+        sItemFactory.SetUsingClient();
         if (m_system == nullptr) {
             sLog.Error("Client", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->name(), m_char->itemID());
             SendErrorMsg("Unable to boot system.  Relog and try again.");
@@ -1016,7 +1016,7 @@ void Client::UpdateNewShip()
     sItemFactory.SetUsingClient(this);
     pShipSE->SetPilot(this);
     pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
-    sItemFactory.UnsetUsingClient();
+    sItemFactory.SetUsingClient();
 
     char ci[45];
     snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
@@ -1039,14 +1039,14 @@ void Client::CheckShipRef(ShipItemRef newShipRef)
 {
     if (newShipRef.get() == nullptr) {
         _log(PLAYER__ERROR, "CheckShipRef() - %s: newShipRef == NULL.", m_char->name());
-        throw PyException(MakeCustomError("Could not find ship's ItemRef.  Cannot Board.   Ref: ServerError 12321."));
+        throw CustomError("Could not find ship's ItemRef.  Cannot Board.   Ref: ServerError 12321.");
     } else if (!newShipRef->isSingleton()) {
         _log(PLAYER__MESSAGE, "%s tried to board ship %u, which is not assembled.", m_char->name(), newShipRef->itemID());
-        throw PyException(MakeCustomError("You cannot board a ship which is not assembled!"));
+        throw CustomError("You cannot board a ship which is not assembled!");
     } else if ((m_ship == newShipRef) and !m_login) {
         // if char is loging in, this will hit.  unknown about any other time.
         _log(PLAYER__MESSAGE, "%s tried to board active ship %u.", m_char->name(), newShipRef->itemID());
-        throw PyException(MakeCustomError("You are already aboard this ship."));
+        throw CustomError("You are already aboard this ship.");
     }
 }
 
@@ -1127,7 +1127,7 @@ void Client::Eject()
     if (m_pod.get() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Failed to get podItem for %s.", GetName());
         if (m_canThrow) {
-            throw PyException(MakeCustomError("Something bad happened as you prepared to eject.  Ref: ServerError 25107."));
+            throw CustomError("Something bad happened as you prepared to eject.  Ref: ServerError 25107.");
         } else {
             return;
         }
@@ -1136,7 +1136,7 @@ void Client::Eject()
     if (pShipSE->SysBubble() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Bubble is null for %s.", GetName());
         if (m_canThrow) {
-            throw PyException(MakeCustomError("Something bad happened as you prepared to eject.  Ref: ServerError 25107+1."));
+            throw CustomError("Something bad happened as you prepared to eject.  Ref: ServerError 25107+1.");
         } else {
             return;
         }
@@ -1181,7 +1181,7 @@ void Client::Eject()
         _log(PLAYER__ERROR, "%s Eject() - pShipSE = NULL for shipID %u.", m_char->name(), m_pod->itemID());
         // we should probably send char to their clone station if this happens....
         MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
-        throw PyException(MakeCustomError("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107."));
+        throw CustomError("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107.");
     }
 
     newShipSE->SetLauncherID(pShipSE->GetID());
@@ -1216,7 +1216,7 @@ void Client::ResetAfterPopped(GPoint& position)
         // we should probably send char to their clone station if this happens....
         MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
         SpawnNewRookieShip(m_locationID);
-        throw PyException(MakeCustomError("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107."));
+        throw CustomError("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107.");
     }
 
     newShipSE->SetLauncherID(pShipSE->GetID());
@@ -1613,7 +1613,7 @@ void Client::LoadStationHangar(uint32 stationID) {
     _log(PLAYER__INFO, "Client::LoadStationHangar() is loading personal hangar for %s(%u) in stationID %u",  m_char->name(), m_char->itemID(), stationID);
     sItemFactory.SetUsingClient(this);
     m_system->GetStationFromInventory(stationID)->GetMyInventory()->LoadContents();
-    sItemFactory.UnsetUsingClient();
+    sItemFactory.SetUsingClient();
 }
 
 void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
@@ -1643,7 +1643,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
         _log(INV__WARNING, "Client::MoveItem() - %s Unhandled NonPlayerItem %s (%u) from flag %s to flag %s.", \
         m_char->name(), iRef->name(), itemID, sDataMgr.GetFlagName(oldflag), sDataMgr.GetFlagName(flag));
     }
-    sItemFactory.UnsetUsingClient();
+    sItemFactory.SetUsingClient();
 }
 
 uint32 Client::GetLoyaltyPoints(uint32 corpID) {
@@ -1832,7 +1832,12 @@ void Client::InitSession(int32 characterID)
     pSession->SetInt("hqID",             (int32)(characterDataMap["corporationHQ"]));
     pSession->SetInt("baseID",           characterDataMap["baseID"]);
     pSession->SetInt("corpAccountKey",   characterDataMap["corpAccountKey"]);
-    pSession->SetInt("allianceid",       characterDataMap["allianceID"]);
+
+    //Only set allianceID if it is not 0
+    if (characterDataMap["allianceID"] != 0){
+        pSession->SetInt("allianceid", characterDataMap["allianceID"]);
+    }
+
     pSession->SetInt("warfactionid",     characterDataMap["warFactionID"]);
 
     pSession->SetLong("corprole",        characterDataMap["corpRole"]);
@@ -1913,7 +1918,12 @@ void Client::UpdateCorpSession(CorpData& data)
     pSession->SetInt("corpid", data.corporationID);
     pSession->SetInt("baseID", data.baseID);
     pSession->SetInt("hqID", data.corpHQ);
-    pSession->SetInt("allianceid", data.allianceID);
+
+    //Only set allianceID if it is not 0
+    if (data.allianceID != 0){
+        pSession->SetInt("allianceid", data.allianceID);
+    }
+
     pSession->SetInt("warfactionid", data.warFactionID);
     pSession->SetInt("corpAccountKey", data.corpAccountKey);
     pSession->SetLong("corprole", data.corpRole);
@@ -2538,7 +2548,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
         if (dest == nullptr) {
             sLog.Error("Client::CallReq","Unable to find service to handle call to: %s", packet->dest.service.c_str());
             packet->dest.Dump(CLIENT__CALL_DUMP, "    ");
-            throw PyException(MakeUserError("ServiceNotFound"));  // this msg is invalid ("Message not found")
+            throw UserError("ServiceNotFound"); // this message is invalid (message not found)
         }
     }
 
@@ -2546,7 +2556,9 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     PyCallArgs args(this, req.arg_tuple, req.arg_dict);
 
     //parts of call may be consumed here
-    m_canThrow = true;      // test for throwable.  -allan 29Jul16      should we use try/catch here?   yes
+    // test for throwable.  -allan 29Jul16      should we use try/catch here?   yeah, that would be better coding...
+    //  this may be moot, as only client calls can catch
+    m_canThrow = true;
     PyResult result(dest->Call(req.method, args));
     m_canThrow = false;
 

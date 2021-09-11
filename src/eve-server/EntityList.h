@@ -81,7 +81,7 @@ public:
     void RemovePlayer(Client* pClient);
     void AddNPC()                                       { ++m_npcs; }
     void RemoveNPC()                                    { --m_npcs; }
-    void SetService(PyServiceMgr* svc)                  { m_services = svc; }
+    void SetService(PyServiceMgr* svc=nullptr)          { m_services = svc; }
 
     // updated to use station guest list instead of full clientlist loop
     void GetStationGuestList(uint32 stationID, std::vector<Client* > &result) const;

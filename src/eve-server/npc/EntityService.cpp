@@ -167,7 +167,7 @@ PyResult EntityBound::Handle_CmdEngage(PyCallArgs &call) {
             if (tSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()) {
                 std::map<std::string, PyRep *> arg;
                 arg["target"] = new PyInt(args.arg);
-                throw PyException( MakeUserError("DeniedDroneTargetForceField", arg ));
+                throw UserError("DeniedDroneTargetForceField", arg);
             }
     }
         */

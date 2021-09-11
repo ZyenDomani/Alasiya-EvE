@@ -100,7 +100,7 @@ bool PosMgrDB::GetBaseData(EVEPOS::StructureData& data)
     if (!res.GetRow(row))
         return false;
     data.towerID = row.GetInt(0);
-    data.moonID = row.GetInt(1);
+    data.anchorPointID = row.GetInt(1);
     data.state = row.GetInt(2);
     data.status = row.GetInt(3);
     data.timestamp = row.GetInt64(4);
@@ -117,7 +117,7 @@ void PosMgrDB::SaveBaseData(EVEPOS::StructureData& data)
         "INSERT INTO posStructureData "
         "(itemID, towerID, moonID, state, status, timestamp, canUse, canView, canTake)"
         " VALUES ( %i, %i, %i, %i, %i, %li, %i, %i, %i)",
-        data.itemID, data.towerID, data.moonID, data.state, data.status, data.timestamp, data.use, data.view, data.take);
+        data.itemID, data.towerID, data.anchorPointID, data.state, data.status, data.timestamp, data.use, data.view, data.take);
 }
 
 void PosMgrDB::UpdateBaseData(EVEPOS::StructureData& data)

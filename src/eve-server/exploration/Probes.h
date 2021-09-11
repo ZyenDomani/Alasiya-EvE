@@ -101,7 +101,7 @@ public:
     void SendWarpStart(float travelTime);
     void SendWarpEnd();
 
-    void SetScan(Scan* pScan)                           { m_scan = pScan; }
+    void SetScan(Scan* pScan=nullptr)                   { m_scan = pScan; }
     void RemoveScan()                                   { m_scan = nullptr; }
     void StartStateTimer(uint16 time)                   { m_stateTimer.Start(time); }
 

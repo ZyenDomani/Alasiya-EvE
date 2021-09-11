@@ -565,22 +565,22 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     // verify they're not using bad words in their corp name
     for (const auto cur : badWords)
         if (EvE::icontains(args.corpName, cur))
-            throw PyException( MakeCustomError("Corp Name contains banned words"));
+            throw CustomError("Corp Name contains banned words");
 
     // this hits db directly, so test for possible sql injection code
     for (const auto cur : badCharsSearch)
         if (EvE::icontains(args.corpName, cur))
-            throw PyException( MakeCustomError("Corp Name contains invalid characters"));
+            throw CustomError("Corp Name contains invalid characters");
 
 
     // this hits db directly, so test for possible sql injection code
     for (const auto cur : badCharsSearch)
         if (EvE::icontains(args.corpTicker, cur))
-            throw PyException( MakeCustomError("Corp Ticker contains invalid characters"));
+            throw CustomError("Corp Ticker contains invalid characters");
 
     // verify ticker is available
     if (m_db.IsTickerTaken(args.corpTicker))
-        throw PyException(MakeUserError("CorpTickerNameInvalidTaken"));
+        throw UserError("CorpTickerNameInvalidTaken");
 
     double corp_cost = sConfig.rates.corpCost;
     if (pClient->GetBalance(Account::CreditType::ISK) < corp_cost) {

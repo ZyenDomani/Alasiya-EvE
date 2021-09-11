@@ -299,13 +299,13 @@ public:
 
     //  scan
     Scan* scan()                                        { return m_scan; }
-    void SetScan(Scan* pScan)                           { m_scan = pScan; }
+    void SetScan(Scan* pScan=nullptr)                   { m_scan = pScan; }
     // set scan timer in ms
     // this is used in scan.cpp after time calc's are done
     void SetScanTimer(uint16 time, bool useProbe=false) { m_scanTimer.Start(time);  m_scanProbe = useProbe; }
 
     //  trade
-    void SetTradeSession(TradeSession* ts)              { m_TS = ts; }
+    void SetTradeSession(TradeSession* ts=nullptr)      { m_TS = ts; }
     void ClearTradeSession()                            { m_TS = nullptr; }
     TradeSession* GetTradeSession()                     { return m_TS; }
 

@@ -490,7 +490,7 @@ void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin)
     Inserts << " (ccPinID, pinID, schematicID, programType, launchTime,";
     Inserts << " cycleTime, installTime, lastRunTime, receivedInputsLastCycle, hasReceivedInputs)";
 
-    bool first = true;
+    bool first(true);
     if (pinID) {
         std::map<uint32, PI_Pin>::iterator itr;
         itr = ccPin->pins.find(pinID);
