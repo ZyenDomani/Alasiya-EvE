@@ -78,11 +78,11 @@ StructureItemRef StructureItem::Spawn(ItemData &data)
         sRef->SetAttribute(AttrIsGlobal, EvilOne);
 
     // Create default dynamic attributes in the AttributeMap:
-    sRef->SetAttribute(AttrMass, sRef->type().mass(), false);
-    sRef->SetAttribute(AttrRadius, sRef->type().radius(), false);
-    sRef->SetAttribute(AttrVolume, sRef->type().volume(), false);
-    sRef->SetAttribute(AttrCapacity, sRef->type().capacity(), false);
-    sRef->SetAttribute(AttrShieldCharge, sRef->GetAttribute(AttrShieldCapacity), false);
+    sRef->SetAttribute(AttrMass,                sRef->type().mass(), false);
+    sRef->SetAttribute(AttrRadius,              sRef->type().radius(), false);
+    sRef->SetAttribute(AttrVolume,              sRef->type().volume(), false);
+    sRef->SetAttribute(AttrCapacity,            sRef->type().capacity(), false);
+    sRef->SetAttribute(AttrShieldCharge,        sRef->GetAttribute(AttrShieldCapacity), false);
 
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
@@ -136,9 +136,8 @@ void StructureItem::Delete()
 
 PyObject *StructureItem::StructureGetInfo()
 {
-    /** @todo  why calling itemID() here??  cant we just access member instead?  */
     if (!pInventory->LoadContents()) {
-        codelog(ITEM__ERROR, "%s (%u): Failed to load contents for Structure", name(), itemID());
+        codelog(ITEM__ERROR, "%s (%u): Failed to load contents for Structure", name(), m_itemID);
         return NULL;
     }
 
@@ -149,7 +148,7 @@ PyObject *StructureItem::StructureGetInfo()
     if (!Populate(entry))
         return NULL;
 
-    result.items[itemID()] = entry.Encode();
+    result.items[m_itemID] = entry.Encode();
 
     return result.Encode();
 }
