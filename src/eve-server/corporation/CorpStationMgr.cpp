@@ -248,8 +248,8 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     }
 */
     OfficeData odata = OfficeData();
-        // should corpname be in char's corp data?  i dont like hitting db for this.
-        odata.name = CorporationDB::GetCorpName(pClient->GetCorporationID());
+        // should corpname be in char's corp data?  i dont like hitting db for this.  is it even needed?
+        //odata.name = CorporationDB::GetCorpName(pClient->GetCorporationID());
         odata.ticker = pClient->GetChar()->corpTicker();
         odata.corporationID = pClient->GetCorporationID();
         odata.expiryTime = Win32TimeNow() + EvE::Time::Month;

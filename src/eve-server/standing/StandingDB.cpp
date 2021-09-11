@@ -99,7 +99,7 @@ PyRep* StandingDB::PrimeCharStandings(uint32 charID) {
         " WHERE itemID < 0"))
     {
         _log(DATABASE__ERROR, "Error in PrimeCharStandings query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -127,7 +127,7 @@ PyRep* StandingDB::GetStandingTransactions(Call_GetStandingTransactions& args) {
         " FROM repStandingChanges"
         " WHERE toID = %u AND fromID = %u", args.toID, args.fromID )) {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToRowset(res);
 }
@@ -214,7 +214,7 @@ PyRep* StandingDB::GetSystemSovInfo(uint32 systemID) {
      *        " FROM mapSystemSovInfo"
      *        "  WHERE solarSystemID = %u", systemID )) {
      *        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-     *        return NULL;
+     *        return nullptr;
 }
 
     Rsp_GetSystemSovereigntyInfo rsp;
