@@ -25,7 +25,12 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 There will be some response, like opening windows, but will not generate an error and will very seldom crash the server.</font><BR><BR><BR>
 <font color="orange">Last Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>14 February 2021</font><BR>
 <font color="orange">Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=red>Outdated</font> - <font color="yellow">Being Updated</font><BR>
-<font color="orange">Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=pink>All data currently under review.  Found discrepancies in pre-rewrite tests (before mid-2016)</font><BR><BR></table>
+<font color="orange">Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=pink>All data currently under review.  Found discrepancies in pre-rewrite tests (before mid-2016)</font><BR><BR>
+  <a href="https://scan.coverity.com/projects/zhyrohaad-alasiyaeve">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/23808/badge.svg"/>
+</a>
+  </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
