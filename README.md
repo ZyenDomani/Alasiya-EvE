@@ -1,5 +1,8 @@
 ***   tested under Mageia 5  GCC 4.9.2  GLIBC 2.2     ***
-
+<a href="https://scan.coverity.com/projects/zhyrohaad-alasiyaeve">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/23808/badge.svg"/>
+</a>
 
 # Status
 - ~65% functional.  see http://evemu.alasiya.net/?p=op_status for more info
