@@ -1362,6 +1362,9 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         _log( DESTINY__SETSTATE_DECODE, "    Decoded:" );
         Destiny::DumpUpdate( DESTINY__SETSTATE_DECODE, &( into.destiny_state->content() )[0], (uint32)into.destiny_state->content().size() );
     }
+    
+    //cleanup
+    SafeDelete(stateBuffer);
 }
 
 void SystemManager::SendStaticBall(SystemEntity* pSE)
@@ -1414,6 +1417,9 @@ void SystemManager::SendStaticBall(SystemEntity* pSE)
         PyIncRef(rsp);
         cur.second->QueueDestinyUpdate(&rsp, true);
     }
+    
+    //cleanup
+    SafeDelete(destinyBuffer);
 }
 
 void SystemManager::AddItemToInventory(InventoryItemRef iRef)

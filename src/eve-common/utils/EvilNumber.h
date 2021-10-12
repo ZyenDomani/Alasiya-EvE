@@ -250,75 +250,81 @@ public:
      */
     bool operator==(const EvilNumber& val)
     {
-        if (this->mType == evil_number_int && val.mType == evil_number_int)
+        if (this->mType == evil_number_int && val.mType == evil_number_int) {
             return this->iVal == val.iVal;
-        else if (this->mType == evil_number_float && val.mType == evil_number_float)
+	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
             return this->fVal == val.fVal;
-        else if (this->mType == evil_number_float)
+	} else if (this->mType == evil_number_float) {
             return this->fVal == double(val.iVal);
-        else
+	} else {
             return double(this->iVal) == val.fVal;
+	}
     }
 
     // doesnt work when compared to 0 (num != 0)
     bool operator!=(const EvilNumber& val)
     {
-        if (this->mType == evil_number_int && val.mType == evil_number_int)
+        if (this->mType == evil_number_int && val.mType == evil_number_int) {
             return this->iVal != val.iVal;
-        else if (this->mType == evil_number_float && val.mType == evil_number_float)
+	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
             return this->fVal != val.fVal;
-        else if (this->mType == evil_number_float)
+	} else if (this->mType == evil_number_float) {
             return this->fVal != double(val.iVal);
-        else
+	} else {
             return double(this->iVal) != val.fVal;
+	}
     }
 
     bool operator<(const EvilNumber& val)
     {
-        if (this->mType == evil_number_int && val.mType == evil_number_int)
+        if (this->mType == evil_number_int && val.mType == evil_number_int) {
             return this->iVal < val.iVal;
-        else if (this->mType == evil_number_float && val.mType == evil_number_float)
+	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
             return this->fVal < val.fVal;
-        else if (this->mType == evil_number_float)
+	} else if (this->mType == evil_number_float) {
             return this->fVal < double(val.iVal);
-        else
+	} else {
             return double(this->iVal) < val.fVal;
+	}
     }
 
     bool operator>(const EvilNumber& val)
     {
-        if (this->mType == evil_number_int && val.mType == evil_number_int)
+        if (this->mType == evil_number_int && val.mType == evil_number_int) {
             return this->iVal > val.iVal;
-        else if (this->mType == evil_number_float && val.mType == evil_number_float)
+	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
             return this->fVal > val.fVal;
-        else if (this->mType == evil_number_float)
+	} else if (this->mType == evil_number_float) {
             return this->fVal > double(val.iVal);
-        else
+	} else {
             return double(this->iVal) > val.fVal;
+	}
     }
 
     bool operator<=(const EvilNumber& val)
     {
-        if (this->mType == evil_number_int && val.mType == evil_number_int)
+        if (this->mType == evil_number_int && val.mType == evil_number_int) {
             return this->iVal <= val.iVal;
-        else if (this->mType == evil_number_float && val.mType == evil_number_float)
+	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
             return this->fVal <= val.fVal;
-        else if (this->mType == evil_number_float)
+	} else if (this->mType == evil_number_float) {
             return this->fVal <= double(val.iVal);
-        else
+	} else {
             return double(this->iVal) <= val.fVal;
+	}
     }
 
     bool operator>=(const EvilNumber& val)
     {
-        if (this->mType == evil_number_int && val.mType == evil_number_int)
+        if (this->mType == evil_number_int && val.mType == evil_number_int) {
             return this->iVal >= val.iVal;
-        else if (this->mType == evil_number_float && val.mType == evil_number_float)
+	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
             return this->fVal >= val.fVal;
-        else if (this->mType == evil_number_float)
+	} else if (this->mType == evil_number_float) {
             return this->fVal >= double(val.iVal);
-        else
+	} else {
             return double(this->iVal) >= val.fVal;
+	}
     }
 
     /************************************************************************/
@@ -360,12 +366,13 @@ public:
     std::string to_str()
     {
         char buff[32]; // max uint32 will result in a 10 char string, a float will result in a ? char string.
-        if (mType == evil_number_int)
+        if (mType == evil_number_int) {
             snprintf(buff, 32, "%li", iVal);
-        else if (mType == evil_number_float)
+	} else if (mType == evil_number_float) {
             snprintf(buff, 32, "%f", fVal);
-        else
+	} else {
             assert(false); // bleh crash..
+	}
         return std::string(buff);
     }
 
