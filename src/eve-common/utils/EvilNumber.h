@@ -201,7 +201,7 @@ public:
      * @return operator overload function for operator 'a' comparing to a value 'val' of type 'b'
      */
     #define LOGIC_OPERATOR(a, b) \
-        bool operator a ( b val) \
+        bool operator a (b val) \
         { \
             if (this->mType == evil_number_int) { \
                 return this->iVal a static_cast<int64>(val); \
@@ -209,6 +209,7 @@ public:
                 return this->fVal a static_cast<double>(val); \
             } else { \
                 assert(false); \
+                return false; \
             } \
         }
 
