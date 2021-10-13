@@ -159,7 +159,7 @@ void AnomalyMgr::Process() {
     if (m_procTimer.Check(/*!sConfig.debug.IsTestServer*/)) {
         if (m_Sigs < m_maxSigs)
             CreateAnomaly();
-        if (m_Anoms < (m_maxSigs /2))
+        if (m_Anoms < (m_maxSigs * 0.5f))
             CreateAnomaly(Dungeon::Type::Anomaly);
     }
 
@@ -379,7 +379,7 @@ uint8 AnomalyMgr::GetDungeonType()
             ++m_WH;
         } break;
         case Anomaly: {   // 7. this is noob dungeon, no probe required
-            if (m_Anoms > (m_maxSigs /2))
+            if (m_Anoms > (m_maxSigs * 0.5f))
                 return GetDungeonType();
         } break;
         case Unrated: {   // 8

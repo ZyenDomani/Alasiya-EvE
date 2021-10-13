@@ -588,7 +588,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
 
     //newStanding = EvEMath::Agent::AgentStandingIncrease(standing, (newStanding /10));     -- this isnt used.
     newStanding = EvEMath::Agent::MissionStandingIncrease(newStanding, pChar->GetSkillLevel(EvESkill::Social));
-    newStanding /= 8;
+    newStanding *= 0.125f;   //  1/8
 
     newStanding *= sConfig.standings.BaseMissionMultiplier;
 
@@ -629,7 +629,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
 
     if (pClient->InFleet() and (newStanding > 0)) {
         float fleetStanding = newStanding * sConfig.standings.FleetMissionMultiplier;
-        newStanding -= (fleetStanding /2);  // live does half,  but mission acceptor will get more here.
+        newStanding -= (fleetStanding * 0.5f);  // live does half,  but mission acceptor will get more here.
         // shared mission standings are from agent to character only.
         std::vector<Client*> clientVec;
         sFltSvc.GetFleetClientsInSystem(pClient, clientVec);

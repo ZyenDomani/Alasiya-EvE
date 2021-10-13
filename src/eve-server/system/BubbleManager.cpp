@@ -70,7 +70,7 @@ void BubbleManager::clear() {
 }
 
 void BubbleManager::Process() {
-    double profileStartTime = GetTimeUSeconds();
+    double profileStartTime(GetTimeUSeconds());
 
     for (auto cur : m_bubbles) {
         // process each belt and gate bubble for spawns
@@ -192,10 +192,10 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
 
 void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint &newCenter) {
     shipVelocity.normalize();
-    newCenter += (shipVelocity * (BUBBLE_RADIUS_METERS /2));
+    newCenter += (shipVelocity * (BUBBLE_RADIUS_METERS * 0.5f));
 }
 
-void BubbleManager::Remove(SystemEntity *ent) {
+void BubbleManager::Remove(SystemEntity* ent) {
     // suns, planets and moons arent in bubbles
     //if (ent->IsStaticEntity())
     //    return;

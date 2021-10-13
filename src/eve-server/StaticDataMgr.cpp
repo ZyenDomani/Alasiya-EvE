@@ -845,7 +845,7 @@ uint32 StaticDataMgr::GetWreckID(uint32 typeID)
 }
 
 void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
-    double profileStartTime = GetTimeUSeconds();
+    double profileStartTime(GetTimeUSeconds());
 
     float randChance(0.0f);
     uint8 metaLevel(0);

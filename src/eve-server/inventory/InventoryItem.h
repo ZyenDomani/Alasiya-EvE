@@ -73,9 +73,9 @@ public:
     // move c'tor
     InventoryItem(InventoryItem&& oth) noexcept;
     // copy assignment
-    InventoryItem& operator= (const InventoryItem& oth);
+    InventoryItem& operator= (const InventoryItem& oth) =delete;
     // move assignment
-    InventoryItem& operator= (InventoryItem&& oth) noexcept;
+    InventoryItem& operator= (InventoryItem&& oth) =delete;
 
     virtual ~InventoryItem() noexcept;
 

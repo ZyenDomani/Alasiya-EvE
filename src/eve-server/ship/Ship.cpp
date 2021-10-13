@@ -2452,7 +2452,7 @@ void ShipSE::Process() {
         return;
 
     if (m_processTimer.Check()) {
-        double profileStartTime = GetTimeUSeconds();
+        double profileStartTime(GetTimeUSeconds());
         // shield
         float Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
         float Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();

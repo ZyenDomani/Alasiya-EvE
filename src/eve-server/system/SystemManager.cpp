@@ -219,7 +219,7 @@ bool SystemManager::LoadCosmicMgrs()
 
 //called once per second from EntityList. (1Hz Tic)
 bool SystemManager::ProcessTic() {
-    double profileStartTime = GetTimeUSeconds();
+    double profileStartTime(GetTimeUSeconds());
 
     /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid
      *      when SE->Process() returns because Process() will add/remove from the map as needed
@@ -1043,8 +1043,8 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
         if ((pSE->IsCOSE())
         or  (pSE->isGlobal())) {
             m_staticEntities[itemID] = pSE;
-            if (pSE->IsOperSE()) //Entities which need to be acted upon while nobody is in the system    
-                m_opStaticEntities[itemID] = pSE;       
+            if (pSE->IsOperSE()) //Entities which need to be acted upon while nobody is in the system
+                m_opStaticEntities[itemID] = pSE;
             if (m_loaded)   // only update when system is already loaded
                 SendStaticBall(pSE);
         } else if (pSE->IsProbeSE()) {
@@ -1362,7 +1362,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         _log( DESTINY__SETSTATE_DECODE, "    Decoded:" );
         Destiny::DumpUpdate( DESTINY__SETSTATE_DECODE, &( into.destiny_state->content() )[0], (uint32)into.destiny_state->content().size() );
     }
-    
+
     //cleanup
     SafeDelete(stateBuffer);
 }
@@ -1417,7 +1417,7 @@ void SystemManager::SendStaticBall(SystemEntity* pSE)
         PyIncRef(rsp);
         cur.second->QueueDestinyUpdate(&rsp, true);
     }
-    
+
     //cleanup
     SafeDelete(destinyBuffer);
 }
@@ -1687,7 +1687,7 @@ bool SystemManager::SafeToUnload()
     for (auto cur: GetOperationalStatics()) {
         //If there are any ongoing operations by operational static structures, we don't want to unload the system until this is complete
         if (cur.second->IsPOSSE()) {
-            if ((cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Unanchoring) or 
+            if ((cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Unanchoring) or
             (cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Anchoring) or
             (cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Offlining) or
             (cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Onlining)) {

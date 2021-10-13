@@ -109,7 +109,7 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
      * test acDP < cone angle = point is inside cone.
      */
     bool test = false;
-    float dot(0), acDP(0), angle(args.ScanAngle/2);
+    float dot(0), acDP(0), angle(args.ScanAngle * 0.5f);
     std::vector<SystemEntity*> seVec;
     const GPoint vertex(m_client->GetShipSE()->GetPosition());
     const GPoint U(args.x, args.y, args.z);

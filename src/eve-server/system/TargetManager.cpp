@@ -49,17 +49,16 @@
 #include "system/SystemBubble.h"
 
 TargetManager::TargetManager(SystemEntity *self)
-: mySE(self)
+: mySE(self),
+m_canAttack(false)
 {
-    m_canAttack = false;
-
     m_modules.clear();
     m_targets.clear();
     m_targetedBy.clear();
 }
 
 bool TargetManager::Process() {
-    double profileStartTime = GetTimeUSeconds();
+    double profileStartTime(GetTimeUSeconds());
 
     if (m_targets.empty())
         return false;
@@ -241,8 +240,18 @@ void TargetManager::ClearTarget(SystemEntity *tSE) {
 }
 
 void TargetManager::ClearModules() {
+    // segfault/data race fix by Almamu.
+    ActiveModule* curModule(nullptr);
+    std::map<uint32, ActiveModule*>::iterator itr = m_modules.begin();
+    while (itr != m_modules.end()) {
+        curModule = itr->second;
+        itr = m_modules.erase(itr);
+        curModule->AbortCycle();
+    }
+    /*
     for (auto cur : m_modules)
         cur.second->AbortCycle();
+    */
 }
 
 void TargetManager::ClearAllTargets(bool notify/*true*/) {

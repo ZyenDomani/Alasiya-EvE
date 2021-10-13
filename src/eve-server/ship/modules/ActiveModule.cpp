@@ -1166,7 +1166,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.subLoc = PyStatic.NewNone();  //ENV_IDX_OTHER = 4
     }
 
-    timeLeft /= 1000;
+    timeLeft *= 0.0001f;
     //def OnGodmaShipEffect(self, itemID, effectID, t, start, active, environment, startTime, duration, repeat, randomSeed, error, actualStopTime = None, stall = True):
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

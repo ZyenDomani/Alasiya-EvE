@@ -1292,9 +1292,9 @@ void Character::SetLoginTime()
 uint16 Character::OnlineTime()
 {
     double onlineTime = m_charData.loginTime - GetFileTimeNow();
-    onlineTime /= 10000000;
+    onlineTime *= 0.00000001;
     onlineTime -= 11644473600;
-    onlineTime /= 60;
+    onlineTime *= 0.016667f;
     return (uint16)onlineTime;
 }
 

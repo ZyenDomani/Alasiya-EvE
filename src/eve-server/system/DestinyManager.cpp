@@ -127,7 +127,7 @@ void DestinyManager::Process() {
         return;
     }
 
-    double profileStartTime = GetTimeUSeconds();
+    double profileStartTime(GetTimeUSeconds());
     //check for and process Destiny::Ball::State changes.
     ProcessState();
 
@@ -587,7 +587,7 @@ void DestinyManager::Eject()
 //  check for collision.  called by Move()
 void DestinyManager::CheckBump()
 {
-    double profileStartTime = GetTimeUSeconds();
+    double profileStartTime(GetTimeUSeconds());
 
     //  collision detection code here
     /*  in this case, we are ONLY interested in objects
