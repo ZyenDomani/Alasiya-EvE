@@ -529,10 +529,17 @@ void TargetManager::Destroyed()
             mySE->GetName(), mySE->GetID(), m_modules.size(), m_targets.size(), m_targetedBy.size());
 
     std::string effect = "TargetDestroyed";
+
+    // segfault/data race fix by Almamu.
+    ActiveModule* curModule(nullptr);
+    std::map<uint32, ActiveModule*>::iterator itr = m_modules.begin();
+
     // iterate thru the map of modules targeting this object, and call Deactivate on each.
-    for (auto cur : m_modules) {
+    while (itr != m_modules.end()) {
+        curModule = itr->second;
+        itr = m_modules.erase(itr);
         //  some modules should immediately cease cycle when target destroyed.  miners are NOT in this call
-        switch (cur.second->groupID()) {
+        switch (curModule->groupID()) {
             case EVEDB::invGroups::Target_Painter:
             case EVEDB::invGroups::Tracking_Disruptor:
             case EVEDB::invGroups::Remote_Sensor_Damper:
@@ -546,13 +553,13 @@ void TargetManager::Destroyed()
             case EVEDB::invGroups::Projected_ECCM:
             case EVEDB::invGroups::Ship_Scanner:
             case EVEDB::invGroups::Cargo_Scanner: {
-                cur.second->AbortCycle();
+                curModule->AbortCycle();
             } break;
             case EVEDB::invGroups::Salvager:
                 // set success=false and fall thru
-                cur.second->GetProspectModule()->TargetDestroyed();
+                curModule->GetProspectModule()->TargetDestroyed();
             default: {
-                cur.second->Deactivate(effect);
+                curModule->Deactivate(effect);
             } break;
         }
     }
