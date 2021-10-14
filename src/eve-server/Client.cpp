@@ -824,10 +824,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     if (!m_login)
         m_ship->SaveShip(); // this saves everything on ship
 
-    uint32 stationID(0);
-    if (IsStation(m_locationID))
-        stationID = m_locationID;
-    m_char->SetLocation(stationID, m_SystemData);
+    m_char->SetLocation(IsStation(m_locationID) ? m_locationID : 0, m_SystemData);
 
     UpdateSession();
     SendSessionChange();
@@ -838,7 +835,7 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
         return;
     }
-    m_bubbleWait = false;        // allow client processing of subsquent destiny msgs
+    m_bubbleWait = false;        // allow client processing of subsequent destiny msgs
     m_setStateSent = false;
 
     bool updateShip = false;
@@ -1247,16 +1244,17 @@ void Client::ResetAfterPodded() {
 
     m_autoPilot = false;
 
-    MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
-
-    SpawnNewRookieShip(m_locationID);
     CreateNewPod();
     SetShip(m_pod);
+
+    MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
 
     m_ship->Move(m_locationID, flagHangar);
     m_ship->SaveShip();
     m_char->ResetClone();
     m_char->SaveCharacter();
+
+    SpawnNewRookieShip(m_locationID);
 
     //update session with new values
     UpdateSession();
