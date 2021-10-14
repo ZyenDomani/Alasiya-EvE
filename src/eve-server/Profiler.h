@@ -51,7 +51,8 @@ namespace Profile {
         damage      = 24,   //*
         parseFX     = 25,   //*
         applyFX     = 26,   //*
-        onTarg      = 27    //
+        onTarg      = 27,   //
+        clientCall  = 28    //*
     };
 }
 
@@ -81,6 +82,7 @@ private:
     std::vector<double> m_functions;
     std::vector<double> m_db;
     std::vector<double> m_client;
+    std::vector<double> m_clientCall;
     std::vector<double> m_map;
     std::vector<double> m_destiny;
     std::vector<double> m_system;

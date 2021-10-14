@@ -2523,6 +2523,7 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
 /************************************************************************/
 bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
 {
+    double profileStartTime(GetTimeUSeconds());
     PyCallable* dest(nullptr);
     if (packet->dest.service == "") {
         //bound object
@@ -2571,6 +2572,9 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     }
 
     _SendCallReturn(packet->dest, packet->source.callID, result);
+
+    if (sConfig.debug.UseProfiling)
+        sProfiler.AddTime(Profile::clientCall, GetTimeUSeconds() - profileStartTime);
 
     return true;
 }

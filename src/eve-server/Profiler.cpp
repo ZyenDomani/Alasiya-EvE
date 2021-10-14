@@ -139,6 +139,9 @@ void Profiler::AddTime(uint8 key, double value) {
         case 27:
             m_ontarget.push_back(value);
             break;
+        case 28:
+            m_clientCall.push_back(value);
+            break;
         default:
             sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
             break;
@@ -151,6 +154,7 @@ void Profiler::ClearAll()
     m_destiny.clear();
     m_map.clear();
     m_client.clear();
+    m_clientCall.clear();
     m_npc.clear();
     m_bubbles.clear();
     m_items.clear();
@@ -246,6 +250,9 @@ void Profiler::PrintProfile()
 
     //std::printf("\n");     // spacer
     std::printf("\t\tPeriodic Calls\n");
+    GetRunTimes(m_clientCall, h, l, a);
+    GetSize(m_clientCall.size(), fSize);
+    std::printf("  Client Calls   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_db, h, l, a);
     GetSize(m_db.size(), fSize);
     std::printf("            DB   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
@@ -384,7 +391,9 @@ std::string Profiler::GetKeyName(uint8& key)
         case Profile::colony:        return "Colony";    //  23,
         case Profile::damage:        return "Damage";    //  24,
         case Profile::parseFX:       return "ParseFX";   //  25,
-        case Profile::applyFX:       return "ApplyFX";   //  26
+        case Profile::applyFX:       return "ApplyFX";   //  26,
+        case Profile::onTarg:        return "OnTarget";  //  27,
+        case Profile::clientCall:    return "Client Calls"; // 28
         default:                     return "Invalid Key";
     }
 }
