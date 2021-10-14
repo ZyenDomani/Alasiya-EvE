@@ -1640,7 +1640,7 @@ void CharacterDB::VisitSystem(uint32 solarSystemID, uint32 charID) {
             "INSERT INTO chrVisitedSystems (characterID, solarSystemID, visits, lastDateTime)"
             "VALUES (%u, %u, 1, %f)"
             " ON DUPLICATE KEY UPDATE"
-            " visits = visits +1,"
+            " visits = visits+1,"
             " lastDateTime = %f", charID, solarSystemID, GetFileTimeNow(), GetFileTimeNow());
 }
 

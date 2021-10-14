@@ -347,7 +347,7 @@ void PlanetDB::LoadRoutes(uint32 ccPinID, std::map<uint16, PI_Route >& routes)
 
             while ((pos = tempPath.find_first_of(':')) > 0 ) {
                 tempString = tempPath.substr(0,pos);
-                tempPath = tempPath.substr(pos+1,tempPath.length()-1);
+                tempPath = tempPath.substr(pos + 1,tempPath.length() - 1);
                 route.path.insert(route.path.end(), (atoi(tempString.c_str())));
             }
             // insert last pinID

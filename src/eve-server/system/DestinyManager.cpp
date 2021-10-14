@@ -1224,7 +1224,7 @@ void DestinyManager::Orbit() {
     GPoint mPos(NULL_ORIGIN);
     float mPosAdj(0.0f);
     // check distances for this tic
-    if ((edges /2) > m_followDistance) {
+    if ((edges / 2) > m_followDistance) {
         if (m_orbiting == Destiny::Ball::Orbit::TooFar) {
             MoveObject();
             return;
@@ -1275,7 +1275,7 @@ void DestinyManager::Orbit() {
                 radTarg, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
         MoveObject();
         return;
-    } else if ((edges - m_targetDistance /4) > m_followDistance) {
+    } else if ((edges - m_targetDistance / 4) > m_followDistance) {
         m_orbiting = Destiny::Ball::Orbit::Far;
         // fudge distance for a smaller orbit
         // modify this based on calculated distance
@@ -1327,7 +1327,7 @@ void DestinyManager::Orbit() {
     // set heading for this tic
     GPoint mPosNext(NULL_ORIGIN);
     theta += m_orbitRadTic;
-    period = fmod(timeStamp+1, m_orbitTime) /m_orbitTime;
+    period = fmod(timeStamp + 1, m_orbitTime) / m_orbitTime;
     c = cos(EvE::Trig::Deg2Rad(360 * period));
     phi = EvE::Trig::Deg2Rad(inclination * c);
     mPosNext.x = radius * cos( theta );

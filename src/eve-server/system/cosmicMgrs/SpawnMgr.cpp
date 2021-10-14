@@ -730,7 +730,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             se.groupID = iRef->type().groupID();
             se.itemID = iRef->itemID();
             se.total = cur.quantity;
-            se.number = x+1;
+            se.number = x + 1;
             se.typeID = cur.typeID;
             se.spawnID = m_spawnID;
             se.corpID = corpID;
