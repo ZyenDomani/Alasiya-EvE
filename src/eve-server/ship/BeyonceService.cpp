@@ -178,6 +178,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
     } else if (pDestiny->IsWarping()) {
+        //ShipInWarp
         call.client->SendNotifyMsg( "You can't do this while warping");
         return PyStatic.NewNone();
     }
@@ -212,6 +213,8 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
     } else if (pDestiny->IsWarping()) {
+        //{'FullPath': u'UI/Inflight', 'messageID': 237387, 'label': u'CanNotChangeSpeedWhileWarping'}(u'You cannot change speed while warping', None, None)
+
         call.client->SendNotifyMsg( "You can't do this while warping");
         return PyStatic.NewNone();
     }
