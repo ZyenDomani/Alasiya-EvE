@@ -358,10 +358,11 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
             std::map<uint16, InventoryItemRef>::iterator itr = items.find(cur.typeID);
             if (itr != items.end())
                 if (itr->second->typeID() == cur.typeID) {
-                    if (itr->second->quantity() < qtyNeeded)
+                    if (itr->second->quantity() < qtyNeeded) {
                         qtyNeeded -= itr->second->quantity();
-                    else
+                    } else {
                         qtyNeeded = 0;
+                    }
                 }
 
                 if (qtyNeeded)
