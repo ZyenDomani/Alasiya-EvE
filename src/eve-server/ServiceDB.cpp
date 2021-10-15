@@ -81,7 +81,7 @@ bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& 
         sLog.Error( "ServiceDB", "Error in query: %s.", res.error.c_str() );
         failMsg = "Error in DB Query";
         failMsg += ": Account not found for ";
-        failMsg += eLogin;
+        failMsg += ccp.user_name;
         //failMsg += res.error.c_str();     // do we wanna sent the db error msg to client?
         return false;
     }
