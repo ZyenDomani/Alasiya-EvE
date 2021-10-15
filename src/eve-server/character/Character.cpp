@@ -85,7 +85,7 @@ CharacterType::CharacterType(uint16 _id, uint8 _bloodlineID, const Inv::TypeData
 }
 
 CharacterType *CharacterType::Load(uint16 typeID) {
-    return ItemType::Load<CharacterType>(typeID );
+    return ItemType::Load<CharacterType>(typeID);
 }
 
 /*
@@ -261,8 +261,8 @@ Character::~Character()
     SafeDelete(pInventory);
 }
 
-CharacterRef Character::Load( uint32 characterID) {
-    return InventoryItem::Load<Character>( characterID );
+CharacterRef Character::Load(uint32 characterID) {
+    return InventoryItem::Load<Character>(characterID);
 }
 
 bool Character::_Load() {
@@ -317,7 +317,7 @@ void Character::VerifySP()
     }
 }
 
-CharacterRef Character::Spawn( CharacterData& charData, CorpData& corpData) {
+CharacterRef Character::Spawn(CharacterData& charData, CorpData& corpData) {
     // make sure it's a character
     const CharacterType *ct = sItemFactory.GetCharacterType(charData.typeID);
     if (ct == nullptr)
@@ -540,8 +540,8 @@ PyRep* Character::GetSkillHistory() {
 }
 
 void Character::SaveSkillQueue() {
-    _log(SKILL__QUEUE, "%s(%u):  Saving skill queue.", name(), m_itemID );
-    m_db.SaveSkillQueue( m_itemID, m_skillQueue );
+    _log(SKILL__QUEUE, "%s(%u):  Saving skill queue.", name(), m_itemID);
+    m_db.SaveSkillQueue(m_itemID, m_skillQueue);
 }
 
 void Character::ClearSkillFlags()
@@ -561,15 +561,15 @@ uint8 Character::GetSPPerMin(Skill* skill)
 
 SkillRef Character::GetSkill(uint16 skillTypeID) const
 {
-    InventoryItemRef skill = pInventory->GetByTypeFlag( skillTypeID, flagSkill );
+    InventoryItemRef skill = pInventory->GetByTypeFlag(skillTypeID, flagSkill);
     if (skill.get() == nullptr)
-        skill = pInventory->GetByTypeFlag( skillTypeID, flagSkillInTraining );
+        skill = pInventory->GetByTypeFlag(skillTypeID, flagSkillInTraining);
 
-    return SkillRef::StaticCast( skill );
+    return SkillRef::StaticCast(skill);
 }
 
 int8 Character::GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected /*true*/) const {
-    SkillRef requiredSkill = GetSkill( skillTypeID );
+    SkillRef requiredSkill = GetSkill(skillTypeID);
     // First, check for existence of skill trained or in training:
     if (requiredSkill.get() == nullptr)
         return (zeroForNotInjected ? 0 : -1);
@@ -578,7 +578,7 @@ int8 Character::GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected /*true
 }
 
 bool Character::HasSkillTrainedToLevel(uint16 skillTypeID, uint8 skillLevel) const {
-    SkillRef requiredSkill = GetSkill( skillTypeID );
+    SkillRef requiredSkill = GetSkill(skillTypeID);
     // First, check for existence of skill
     if (requiredSkill.get() == nullptr)
         return false;
@@ -660,7 +660,7 @@ PyTuple *Character::SendSkillQueue() {
         SkillQueue_Element el;
         el.typeID = cur.typeID;
         el.level = cur.level;
-        list->AddItem( el.Encode() );
+        list->AddItem(el.Encode());
     }
 
     // and encapsulate it in a tuple with the free points
@@ -677,7 +677,7 @@ uint32 Character::GetTotalSP() {
     std::vector<InventoryItemRef> skills;
     pInventory->GetItemsByFlag(flagSkill, skills);
     for (auto cur : skills)
-        m_charData.skillPoints += cur->GetAttribute( AttrSkillPoints ).get_uint32();    // much cleaner and more accurate    -allan
+        m_charData.skillPoints += cur->GetAttribute(AttrSkillPoints).get_uint32();    // much cleaner and more accurate    -allan
 
     return m_charData.skillPoints;
 }
@@ -700,10 +700,10 @@ uint8 Character::InjectSkillIntoBrain(SkillRef skill) {
     // returns
     // 1=success, 2=prereqs, 3=already known, 4=split fail, 5=load fail
 
-    SkillRef oldSkill = GetSkill( skill->typeID() );
+    SkillRef oldSkill = GetSkill(skill->typeID());
     if (oldSkill.get() != nullptr) {
         /** @todo: build and send proper UserError for CharacterAlreadyKnowsSkill. */
-        m_pClient->SendNotifyMsg( "You already know this skill." );
+        m_pClient->SendNotifyMsg("You already know this skill.");
         return 3;
     }
 
@@ -711,20 +711,20 @@ uint8 Character::InjectSkillIntoBrain(SkillRef skill) {
      *  If so, send error, cancel inject and return. (flagID=61).
      */
 
-    if ( !skill->SkillPrereqsComplete( *this ) ) {
+    if (!skill->SkillPrereqsComplete(*this)) {
         /** @todo need to send back a response to the client.  need packet specs. */
         _log(SKILL__DEBUG, "%s(%u): Requested to inject %s (%u/%u) but prereq not complete.", \
-                name(), m_itemID, skill->name(), skill->typeID(), skill->itemID() );
-        m_pClient->SendNotifyMsg( "Injection failed.  Skill prerequisites incomplete." );
+                name(), m_itemID, skill->name(), skill->typeID(), skill->itemID());
+        m_pClient->SendNotifyMsg("Injection failed.  Skill prerequisites incomplete.");
         return 2;
     }
 
     // are we injecting from a stack of skills?
-    if ( skill->quantity() > 1 ) {
+    if (skill->quantity() > 1) {
         // split the stack to obtain single item
-        skill = SkillRef::StaticCast(skill->Split( 1 ));
-        if (skill.get() == nullptr ) {
-            _log( ITEM__ERROR, "%s (%u): Unable to split stack of %s (%u).", name(), m_itemID, skill->name(), skill->itemID() );
+        skill = SkillRef::StaticCast(skill->Split(1));
+        if (skill.get() == nullptr) {
+            _log(ITEM__ERROR, "%s (%u): Unable to split stack of %s (%u).", name(), m_itemID, skill->name(), skill->itemID());
             return 4;
         }
     }
@@ -895,7 +895,7 @@ void Character::CancelSkillInTraining(bool update/*false*/)
     // remove from queue, if applicable
     if (!m_skillQueue.empty())
         if (m_inTraining->typeID() == m_skillQueue.front().typeID)
-            m_skillQueue.erase( m_skillQueue.begin() );
+            m_skillQueue.erase(m_skillQueue.begin());
 
     m_inTraining = nullptr;
 }
@@ -909,7 +909,7 @@ void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
         return;
     }
 
-    _log( SKILL__INFO, "Starting checks to add %s to training queue.", skill->name());
+    _log(SKILL__INFO, "Starting checks to add %s to training queue.", skill->name());
 
     uint8 nextLvl(skill->GetAttribute(AttrSkillLevel).get_uint32() + 1);
     if (nextLvl > EvESkill::MAXSKILLLEVEL)
@@ -975,7 +975,7 @@ void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
     }
 
     // add to queue and save
-    m_skillQueue.push_back( qs );
+    m_skillQueue.push_back(qs);
     skill->SaveItem();
 
     float timeLeft = (qs.endTime - qs.startTime) / EvE::Time::Second;
@@ -1019,21 +1019,21 @@ void Character::SkillQueueLoop(bool update/*true*/)
     Skill* skill(nullptr);
     while (!m_skillQueue.empty()) {
         QueuedSkill qs = m_skillQueue.front();
-        skill = GetSkill( qs.typeID ).get();
+        skill = GetSkill(qs.typeID).get();
         if ((qs.typeID == 0) or (skill == nullptr)) {
-            _log( SKILL__WARNING, "SkillID %u to train was not found.  Erase and continue.", qs.typeID);
-            m_skillQueue.erase( m_skillQueue.begin() );
+            _log(SKILL__WARNING, "SkillID %u to train was not found.  Erase and continue.", qs.typeID);
+            m_skillQueue.erase(m_skillQueue.begin());
             continue;
         }
 
-        _log( SKILL__INFO, "Starting checks for %s.", skill->name());
+        _log(SKILL__INFO, "Starting checks for %s.", skill->name());
 
         if (qs.endTime == 0) {
             // this should not hit at this point.
             _log(SKILL__ERROR, "endTime wasnt set.  Erase from queue and continue.");
             skill->SetFlag(flagSkill, true);
             skill->SaveItem();
-            m_skillQueue.erase( m_skillQueue.begin() );
+            m_skillQueue.erase(m_skillQueue.begin());
             skill = nullptr;
             m_inTraining = nullptr;
             continue;
@@ -1054,7 +1054,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
             skill->SaveItem();
 
             // remove completed skill level from queue
-            m_skillQueue.erase( m_skillQueue.begin() );
+            m_skillQueue.erase(m_skillQueue.begin());
 
             // notify client
             if (update) {
@@ -1195,8 +1195,8 @@ PyDict *Character::GetCharInfo() {
     std::vector<InventoryItemRef> skills;
     skills.clear();
     //find all the skills contained within ourself.
-    pInventory->GetItemsByFlag(flagSkill, skills );
-    pInventory->GetItemsByFlag(flagSkillInTraining, skills );
+    pInventory->GetItemsByFlag(flagSkill, skills);
+    pInventory->GetItemsByFlag(flagSkillInTraining, skills);
 
     /** @todo  get implants and boosters here once implemented */
 
@@ -1219,7 +1219,7 @@ PyObject *Character::GetDescription() const {
     util_Row row;
         row.header.push_back("description");
         row.line = new PyList();
-        row.line->AddItemString( description().c_str() );
+        row.line->AddItemString(description().c_str());
     return row.Encode();
 }
 
@@ -1230,7 +1230,7 @@ void Character::AddItem(InventoryItemRef iRef)
 
     InventoryItem::AddItem(iRef);
 
-    _log( CHARACTER__INFO, "%s(%u) has been added to %s with flag %i.", iRef->name(), iRef->itemID(), name(), (uint8)iRef->flag() );
+    _log(CHARACTER__INFO, "%s(%u) has been added to %s with flag %i.", iRef->name(), iRef->itemID(), name(), (uint8)iRef->flag());
 }
 
 void Character::SetActiveShip(uint32 shipID)
@@ -1251,7 +1251,7 @@ void Character::ResetClone()
 }
 
 void Character::SaveCharacter() {
-    _log( CHARACTER__INFO, "Saving character info for %u.", m_itemID );
+    _log(CHARACTER__INFO, "Saving character info for %u.", m_itemID);
 
     // update skill points before save
     GetTotalSP();
@@ -1260,7 +1260,7 @@ void Character::SaveCharacter() {
 }
 
 void Character::SaveFullCharacter() {
-    _log( CHARACTER__INFO, "Saving full character info for %u.", m_itemID );
+    _log(CHARACTER__INFO, "Saving full character info for %u.", m_itemID);
     //GetTotalSP();
     SaveCharacter();
     m_db.SaveCorpData(m_itemID, m_corpData);
@@ -1311,16 +1311,16 @@ void Character::SetLogonMinutes() {
 }
 
 // certificate system
-bool Character::HasCertificate( uint32 certID ) const {
+bool Character::HasCertificate(uint32 certID) const {
     CertMap::const_iterator itr = m_certificates.find(certID);
     return (itr != m_certificates.end());
 }
 
-void Character::GetCertificates( CertMap &crt ) {
+void Character::GetCertificates(CertMap &crt) {
     crt = m_certificates;
 }
 
-void Character::GrantCertificate( uint32 certID )
+void Character::GrantCertificate(uint32 certID)
 {
     CharCerts cert = CharCerts();
         cert.certificateID = certID;
@@ -1330,13 +1330,13 @@ void Character::GrantCertificate( uint32 certID )
     m_cdb.AddCertificate(m_itemID, cert);
 }
 
-void Character::UpdateCertificate( uint32 certID, bool pub ) {
+void Character::UpdateCertificate(uint32 certID, bool pub) {
     m_cdb.UpdateCertificate(m_itemID, certID, pub);
 }
 
 void Character::SaveCertificates() {
-    _log( CHARACTER__INFO, "Saving Certificates of character %u", m_itemID );
-    m_cdb.SaveCertificates( m_itemID, m_certificates );
+    _log(CHARACTER__INFO, "Saving Certificates of character %u", m_itemID);
+    m_cdb.SaveCertificates(m_itemID, m_certificates);
 }
 
 // functions and methods for bookmark system (char mem maps)
