@@ -263,7 +263,6 @@ Client::~Client() {
                 // remove char from station
                 sEntityList.GetStationByID(m_locationID)->RemoveItem(m_char);
             }
-
         }
         // remove fleet data, remove char from ItemFactory cache, save SP and set logout time
         m_char->LogOut();
@@ -2657,7 +2656,6 @@ void Client::SendErrorMsg(const char* fmt, va_list args)
     SendNotification("OnRemoteMessage", "charid", &tmp);
 
     SafeFree(str);
-
 }
 
 //this displays a modal info dialog on the client side.

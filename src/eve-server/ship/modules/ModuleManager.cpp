@@ -1333,7 +1333,6 @@ void ModuleManager::GetModuleListOfRefsOrdered( std::vector< InventoryItemRef >&
 }
 
 void ModuleManager::GetModuleListOfRefsOrderedRev( std::vector< InventoryItemRef >& modVec ) {
-
     // this is to list all ship modules by order of hi, mid, low, rig, subsys
     // hi slots
     for (uint8 flag = flagHiSlot0; flag < flagFixedSlot; ++flag)

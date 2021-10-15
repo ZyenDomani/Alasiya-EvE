@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 host="localhost"    #Database Host

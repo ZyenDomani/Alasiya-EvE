@@ -1189,7 +1189,6 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
             _log(CORP__ERROR, "CorpRegistryBound::Handle_GetMemberIDsByQuery() - Invalid data size: %u.  Expected 3 or 4.", list->size());
             return nullptr;
         }
-
     }
 
     // get corp memberlist based on query
@@ -1353,9 +1352,9 @@ PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
     // get list of ids to pay.  this includes corp shareholders if paying to shares
     std::vector<uint32> toIDs;
     if (args.payShareholders) {
-
+        // nothing here yet.  wip
     } else {
-
+        // nothing here yet.  wip
     }
 
     // get total amount and divide by # of ids to pay

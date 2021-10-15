@@ -108,7 +108,7 @@ LSCService::~LSCService() {
 
 void LSCService::Init(CommandDispatcher* cd )
 {
-
+    // nothing here yet.  wip
 }
 
 /*

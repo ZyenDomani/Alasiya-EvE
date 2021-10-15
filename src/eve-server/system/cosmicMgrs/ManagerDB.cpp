@@ -373,8 +373,8 @@ void ManagerDB::GetSystemAnomalies(uint32 systemID, DBQueryResult& res)
 }
 
 void ManagerDB::GetSystemAnomalies(uint32 systemID, std::vector< CosmicSignature >& sigs)
-{// sysSignatures (sigID,sigItemID,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
-
+{
+    // sysSignatures (sigID,sigItemID,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
 }
 
 void ManagerDB::GetRegionFaction(DBQueryResult& res) {

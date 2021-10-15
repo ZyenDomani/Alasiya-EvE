@@ -108,7 +108,6 @@ protected:
 
 private:
     ShipItem* pShip;
-
 };
 
 PyCallable_Make_InnerDispatcher(ShipService)
@@ -120,7 +119,6 @@ ShipService::ShipService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     //PyCallable_REG_CALL(ShipService,);
-
 }
 
 ShipService::~ShipService() {
@@ -324,7 +322,6 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
 }
 
 PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
-
     //ShipIllegalTypeUndock
 
     /*  we could have some fun with these....
@@ -550,7 +547,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                     pClient->SendErrorMsg("Launching sovereignty structures is forbidden in empire space.");
                     return nullptr;
                 }
-                
+
                 //Check if client is part of an alliance
                 if (pClient->GetAllianceID() == 0) {
                     pClient->SendErrorMsg("You must be part of an alliance to launch a sovereignty structure.");
@@ -1016,7 +1013,6 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 }
 
 PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
-
     /* 13:05:41 [BindDump] NodeID: 888444 BindID: 129 calling AssembleShip in service manager 'ShipBound'
      * 13:05:41 [BindDump]   Call Arguments:
      * 13:05:41 [BindDump]       Tuple: 1 elements

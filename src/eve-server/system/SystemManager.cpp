@@ -1719,7 +1719,7 @@ void SystemManager::GetDockedCount()
 
 void SystemManager::GetPlayerCount()
 {
-
+    // nothing here yet.  wip
 }
 
 /*

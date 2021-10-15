@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 MYSQL_USER=nick
 MYSQL_PASS=none
 DB_NAME=evemu

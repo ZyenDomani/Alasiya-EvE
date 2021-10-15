@@ -90,12 +90,12 @@ void MarketMgr::Process()
 
 void MarketMgr::SystemStartup(SystemData& data)
 {
-
+    // nothing here yet.  wip
 }
 
 void MarketMgr::SystemShutdown(SystemData& data)
 {
-
+    // nothing here yet.  wip
 }
 
 void MarketMgr::UpdatePriceHistory()
@@ -301,7 +301,6 @@ void MarketMgr::InvalidateOrdersCache(uint32 regionID, uint32 typeID)
  */
 
 bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef iRef, Call_PlaceCharOrder& args, uint16 accountKey/*Account::KeyType::Cash*/) {
-
     Market::OrderInfo oInfo = Market::OrderInfo();
     if (!m_db.GetOrderInfo(orderID, oInfo)) {
         _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to get order info for #%u.", orderID);
@@ -894,7 +893,6 @@ void MarketMgr::UpdateMineralPrice()
 
     //  update mineral price
     MarketDB::UpdateMktPrice(mineralMap);
-
 }
 
 void MarketMgr::GetCruPrices()

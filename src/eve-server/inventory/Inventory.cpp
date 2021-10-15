@@ -608,7 +608,6 @@ float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
 }
 
 bool Inventory::HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) const {
-
     float capacity(GetRemainingCapacity(flag));
     float volume(iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float());
 

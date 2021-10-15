@@ -1245,7 +1245,7 @@ float ShipItem::DissipateHeat(uint16 attrID, float heat)
 
 void ShipItem::DamageGroup(GenericModule* pMod)
 {
-
+    // nothing here yet.  wip
 }
 
 /*
@@ -1291,16 +1291,13 @@ void ShipItem::HeatDamageCheck(GenericModule* pMod)
 
     std::vector<uint32> modVec;
     // if this module is grouped, all modules will take same damage.
-    if (pMod->IsLinked()) {
-
-    } else {
+    if (!pMod->IsLinked()) {
         // module not linked.  continue with default heat damage calc's
         // determine position and get adjacent modules
         uint8 flag = pMod->flag();
 
         // determine modules to damage and add to list
         uint32 moduleID(0);
-
 
         //modVec.push_back(moduleID);
     }
@@ -2266,7 +2263,6 @@ PyList* ShipItem::ShipGetModuleList() {
 }
 
 bool ShipItem::ValidateBoardShip(CharacterRef character) {
-
     bool result = false;
     EvilNumber skillTypeID(EvilZero);
 

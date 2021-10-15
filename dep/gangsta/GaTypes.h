@@ -40,7 +40,6 @@ namespace Ga
 	class GaExport GaVec3
 	{
 	public:
-
         GaVec3(const Parameter &oth);
 		GaExpInl GaVec3():x(0.0f),y(0.0f),z(0.0f){}
 		GaExpInl GaVec3(GaFloat v):x(v),y(v),z(v){}

@@ -376,7 +376,6 @@ void ConsoleCommand::UpdateStatus() {
 }
 
 void ConsoleCommand::FxProc(uint8 idx/*0*/) {
-
     double start = GetTimeMSeconds();
     sLog.Green("  Alasiya's EvEMu", "FxProcess(%u)", idx);
 

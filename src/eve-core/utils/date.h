@@ -964,10 +964,8 @@ operator<<(std::basic_ostream<CharT, Traits>& os, const year_month_weekday_last&
 #if !defined(_MSC_VER) || (_MSC_VER >= 1900)
 inline namespace literals
 {
-
 CONSTCD11 date::day  operator "" _d(unsigned long long d) NOEXCEPT;
 CONSTCD11 date::year operator "" _y(unsigned long long y) NOEXCEPT;
-
 }  // inline namespace literals
 #endif // !defined(_MSC_VER) || (_MSC_VER >= 1900)
 
@@ -1909,7 +1907,6 @@ operator<<(std::basic_ostream<CharT, Traits>& os, const weekday& wd)
 #if !defined(_MSC_VER) || (_MSC_VER >= 1900)
 inline namespace literals
 {
-
 CONSTCD11
 inline
 date::day
@@ -3914,7 +3911,6 @@ public:
     }
 
 private:
-
     template <class charT, class traits>
     friend
     std::basic_ostream<charT, traits>&
@@ -4980,7 +4976,6 @@ to_stream(std::basic_ostream<CharT, Traits>& os, const CharT* fmt,
                         os << d << ' '
                            << make_time(duration_cast<seconds>(fds.tod.to_duration()))
                            << ' ' << fds.ymd.year();
-
                     }
                     else  // *fmt == 'x'
                     {
@@ -7865,7 +7860,6 @@ public:
         , abbrev_(abbrev)
         , offset_(offset)
         {}
-
 };
 
 template <class Parsable, class CharT, class Traits, class Alloc>

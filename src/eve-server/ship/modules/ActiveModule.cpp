@@ -1370,5 +1370,5 @@ void ActiveModule::LaunchProbe()
 
 void ActiveModule::LaunchSnowBall()
 {
-
+    // nothing here yet.  wip
 }

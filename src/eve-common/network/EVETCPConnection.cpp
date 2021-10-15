@@ -160,7 +160,7 @@ void EVETCPConnection::DumpBuffer( Buffer* buf, packet_direction packet_directio
     FILE *logpacket;
     char timestamp[16];
     time_t rawtime = time(0);
-    tm *now = localtime(&rawtime);
+    tm *now = localtime_r(&rawtime);
     strftime(timestamp,16,"%y%m%d_%H%M%S",now);
 
     std::string path = EVEMU_ROOT "/packet_log/";
