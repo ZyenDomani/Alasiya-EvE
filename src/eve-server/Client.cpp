@@ -1979,7 +1979,7 @@ void Client::SendSessionChange()
         scn.changes->Dump(CLIENT__SESSION, "   Changes: ");
     }
 
-    scn.sessionID = pSession->GetSessionID();
+    scn.sessionID = 0; //pSession->GetSessionID();
     scn.clueless = 0;
     scn.nodesOfInterest.push_back(-1);  /* this means 'all nodes' */
     scn.nodesOfInterest.push_back(m_services.GetNodeID());  /* add current node to list */
@@ -2285,7 +2285,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     if (!ccp.user_password.empty()) {
         sLog.Warning("  Client::Login()", "%s(%li) - Using Plain Password", aData.name.c_str(), aData.clientID);
         if (strcmp(aData.password.c_str(), ccp.user_password.c_str()) != 0) {
-            failMsg = "The plain Password you entered is incorrect for this account.";
+            failMsg = "The Password you entered is incorrect for this account.";
             return _LoginFail(failMsg);
         }
     } else {
@@ -2332,7 +2332,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     pSession->SetInt("userid", aData.id);
     pSession->SetLong("role", aData.role);
     pSession->SetLong("clientID", 1000000L * aData.clientID + 888444);  // kinda arbitrary
-    pSession->SetLong("sessionID", pSession->GetSessionID());
+    pSession->SetLong("sessionID", 0 /*pSession->GetSessionID()*/);
 
     sLog.Green("  Client::Login()","Account %u (%s) logging in from %s", aData.id, aData.name.c_str(), EVEClientSession::GetAddress().c_str());
 
@@ -2362,7 +2362,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         ack.client_hash = PyStatic.NewNone();
         ack.user_clientid = 0; //GetClientID();  //241241000001103
         ack.live_updates = sLiveUpdateDB.GetUpdates();
-        ack.sessionID = pSession->GetSessionID();   //398773966249980114
+        ack.sessionID = 0; //pSession->GetSessionID();   //398773966249980114
     PyRep* res(ack.Encode());
     if (is_log_enabled(CLIENT__CALL_DUMP))
         res->Dump(CLIENT__CALL_DUMP, "    ");
