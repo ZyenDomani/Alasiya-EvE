@@ -1,9 +1,15 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****     28 February 2021
+****     8 October 2021
 
     note:  this whole file needs to be reorganized (wip)
+
+
+*******************************************************
+**********  misc items to update from my code
+
+
 
 *******************************************************
 **********  errors and other found shit...high priority
@@ -24,7 +30,13 @@ work on buglist, integrate this list in there where i can
     - cosmic systems
     -
 
+
 request for smartbombs
+
+
+as bubble code becomes more stable, consider updating/removing/recoding wander timer.
+    - every 60s for every bubble object is a bit much.
+    - check InBubble and IsOverlap code.
 
 11:45:54 [DestinyWarning] Warp Cap need for Rifter(140007395) is 0.0007
 
@@ -83,15 +95,18 @@ ship warp speed on attributes tab is wrong
 
 error:
 "turret not fitted on shipID (npc)"
+
+
 ...still not sure on this.  throws a shitton of errors in client error log
 "Cleaning session *clientID 2888444* because it's ID doesn't match  0"
 
-23:51:06 [FxError] guid empty for F85 Peripheral Damage System I using effectID 2302
 
 this is used for pricing update based on minerals.  this query returns ~300 items
 SELECT * FROM `invTypeMaterials` WHERE `quantity` = 0
 
+
 materials for implants are wrong.  this leads to incorrect price estimates
+
 missing prices for salvage
 
 *******************************************************
@@ -102,6 +117,10 @@ client login screen...these all need code to show data    CharacterDB::GetCharSe
     unreadMailCount:
     unprocessedNotifications:
 also need to optimize query....can join instead of using (current) multiple queries and variables
+
+check into cosmic manager enabling checks/code....kinda dont make sense)
+*** this below is wrong.  look into it.
+20:21:01 [CMgr Msg] AnomalyMgr Initialized for Ibaria(30000053) with 2 Max Signals for security class 0.37.  Test Server is enabled
 
 
 skill training...
@@ -122,7 +141,7 @@ AuditLogSecureContainer types not coded (data coded in EvE_Inventory.h)
 
 skill error on queue update   - see cruc/skills/skill_error_new
 
-look into changing (EvilNumber)DmgTypeAttribute to (struct)Inv::AttrData
+look into changing (EvilNumber)DmgTypeAttribute to (struct)Inv::AttrData  (started.  still being used by sDataMgr)
     - may be able to delete the EvilNumber class, as it was created only to deal with attribute data, which we are getting away from with the struct.
 
 journal msgs need to be implemented (wip)
@@ -140,6 +159,7 @@ go thru all updated effect data and look for 'improved' ship data to update ours
     - specialized holds from rhea (not available in cruc)
     - updated barges from current live patch (hot tanks)
 current fx data in db incomplete at best.  missing multiple items/defs
+23:51:06 [FxError] guid empty for F85 Peripheral Damage System I using effectID 2302
 isDefault used to send to activate for effectID
 go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
     - gfx display is wonky.  dunno why some show and some dont
@@ -277,6 +297,7 @@ pi working.  currently rewriting process code  -priority level: lo
 module/rack OL incomplete.  includes OL Heat (basic heat code done/working)  -priority level: low-med
 activemodule c'tor - check/verify needsCharge code as some modules listed use scripts
 
+dungeons - complete current wip code   -priority level: med-hi
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)   -priority level: low-med
     - figure out how to determine LCO in dungeon and spawn rats/waves near objects instead of middle of bubble
 
@@ -291,12 +312,13 @@ fleet boosts - apply directly to ship/modules when calculated
     - determine how to save fleetID for wrecks (SE has fleetID member...may save id to item.customdata)
     - MiningLaser::GetMiningVolume() uses calc's in method for boost.  this is in contrast with data in client (from GetAllInfo)
 
+shooting wrecks to destroy loot.
+    - this really is a thing on live.  implement it.
+    
 petition system missing most calls
     - this system hasnt been started
     - couple calls as skeleton code
     - notes for ~20 system calls (may be complete)
-
-dungeons - complete current wip code   -priority level: med-hi
 
 belt spawns - rework for better ship group selection   -priority level: med
 
@@ -371,6 +393,7 @@ pos - started. drop, anchor, unanchor, online, offline working but no in-class c
     - mgrDB needs looking over for data types
     - add checks for necessary items before online can be processed
     - timers (anchor/online) arent updated to client properly (non-persistent)
+    - add bm when tower, ihub, sbu, tcu anchored
 
 lsc system better, but incomplete and needs revisiting    -priority level: med-hi
     - may need xmlp code instead of muddled python decoding
@@ -382,7 +405,7 @@ can you repack t3 ships??
 when t3 ship killed, pilot will lose sp in a required skill for each of the 5 subsystems.
     not sure how this is determined, or how many sp lost.
 
-JumpCloneService needs work to allow capital ships `show info` tab to work in space.
+JumpCloneService needs work to allow capital ships `show info` tab to work in space.  hacked to avoid client error
     - this class is barely above skeleton code, and hardly researched.
     - jump clones arent even close to implementation, so its nbd at this point
 
@@ -432,10 +455,6 @@ contacts incomplete
 SparseBound will need work for RAM and lock votes (and more)
 check items in corp hangar for proper locationID/flagID
 
-
-alliances?  not yet.  need other shit finished first.
-started coding alliance db
-all alliance calls are skeleton code, except GetEmploymentRecord
 
 m_self is NOT being populated for non-piloted ships.   -priority level: low
 
@@ -523,7 +542,7 @@ ibis?, navitas, bantam, probe, tormentor
 cruisers
 arbitrator, osprey, scythe, vexor
 
-some items dont have complete description in db (data is trunicated)
+some items dont have complete description in db (data is truncated)
 
 go thru classes and rename per class type...
     -  *Item  for items
@@ -743,6 +762,10 @@ others cause multiple other effects.  is this something we can implement/exploit
 
 *******************************************************
 *****************   errata and miscellaneous bullshit
+
+remove /test from compilation (not needed for normal use)
+
+move skills to separate db table
 
 dont remember why i put this log in, but it got hit while testing earlier....
 19:54:01 [Service] config::GetMultiLocationsEx()
