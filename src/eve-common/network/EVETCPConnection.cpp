@@ -62,10 +62,11 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress/*true*/ )
     }
 
     bool success(false);
-    if (compress)
+    if (compress) {
         success = MarshalDeflate(rep, *pBuffer);
-    else
+    } else {
         success = MarshalDeflate(rep, *pBuffer, PACKET_SIZE_LIMIT);
+    }
 
     if (success) {
        // if (is_log_enabled(DEBUG__DEBUG))
@@ -160,7 +161,7 @@ void EVETCPConnection::DumpBuffer( Buffer* buf, packet_direction packet_directio
     FILE *logpacket;
     char timestamp[16];
     time_t rawtime = time(0);
-    tm *now = localtime_r(&rawtime);
+    tm *now = localtime(&rawtime);
     strftime(timestamp,16,"%y%m%d_%H%M%S",now);
 
     std::string path = EVEMU_ROOT "/packet_log/";

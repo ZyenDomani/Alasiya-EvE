@@ -98,7 +98,7 @@ time_t convTimePeriod ( uint32 dLength, char dType )
     time_t rawtime = 0;
     if (dLength == 0)
         return rawtime;
-    struct tm * ti = localtime_r( &rawtime );
+    struct tm * ti = localtime( &rawtime );
     switch(dType)
     {
         case 'h':        // hours
@@ -392,7 +392,7 @@ string ConvertTimeStampToDataTime(uint32 timestamp)
 {
     char szTempBuf[100];
     time_t t = (time_t)timestamp;
-    tm * pTM = localtime_r(&t);
+    tm * pTM = localtime(&t);
 
     string szResult;
     szResult += szDayNames[pTM->tm_wday];
