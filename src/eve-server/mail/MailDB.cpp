@@ -378,7 +378,6 @@ void MailDB::DeleteMail(int32 messageID)
     if (!sDatabase.RunQuery(err,
                             " DELETE FROM mailStatus "
                             " WHERE messageID = %u;" , messageID)) {
-
         codelog(DATABASE__ERROR, " Failed to delete mail" );
     }
 }
@@ -426,7 +425,6 @@ void MailDB::MoveToTrash(int32 messageID)
                             " SET statusMask = statusMask | %u" , messageID, mailStatusMaskTrashed)) {
         codelog(DATABASE__ERROR, " Failed to move message to trash" );
     }
-
 }
 
 void MailDB::MoveToTrashByLabel(int32 characterID, int32 labelID)
@@ -513,7 +511,6 @@ void MailDB::RemoveStatusMask(int32 messageID, int mask)
 
 void MailDB::ApplyLabelMask(int32 messageID, int mask)
 {
-
     DBerror err;
     if (!sDatabase.RunQuery(err,
                             " UPDATE mailStatus "
@@ -522,7 +519,6 @@ void MailDB::ApplyLabelMask(int32 messageID, int mask)
     {
         codelog(DATABASE__ERROR, " Failed to apply label mask to message" );
     }
-
 }
 
 void MailDB::RemoveLabelMask(int32 messageID, int mask)
@@ -606,7 +602,6 @@ int MailDB::BitFromLabelID(int id)
 
 PyDict *MailDB::GetJoinedMailingLists(uint32 characterID)
 {
-
     // @NOTE: May have to util.keyval this??j?
     DBQueryResult res;
 
@@ -772,25 +767,25 @@ void MailDB::SetMailingListDefaultAccess(int32 listID, int32 defaultAccess, int3
 
 void MailDB::DeleteMailingList(uint32 characterID, int32 listID)
 {
-
+    // nothing here yet.  wip
 }
 void MailDB::JoinMailingList(uint32 characterID, std::string name)
 {
-
+    // nothing here yet.  wip
 }
 void MailDB::LeaveMailingList(uint32 characterID, int32 listID)
 {
-
+    // nothing here yet.  wip
 }
 void MailDB::MailingListClearEntityAccess(int32 entity, int32 listID)
 {
-
+    // nothing here yet.  wip
 }
 void MailDB::MailingListSetEntityAccess(int32 entity, int32 access, int32 listID)
 {
-
+    // nothing here yet.  wip
 }
 void MailDB::MoveFromTrash(int32 messageID)
 {
-
+    // nothing here yet.  wip
 }

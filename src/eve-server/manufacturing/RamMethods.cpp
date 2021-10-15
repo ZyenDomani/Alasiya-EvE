@@ -336,7 +336,6 @@ void RamMethods::LocationRolesCheck(Client*const pClient, const CorpPathElement 
         // not hq  is this a base?
         /** @todo finish this.  */
     }
-
 }
 
 void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const PathElement& bomLocation, const Rsp_InstallJob& rsp, const std::vector< EvERam::RequiredItem >& reqItems)
@@ -599,7 +598,6 @@ void RamMethods::GetBOMItemsMap(const PathElement& bomLocation, std::map< uint16
 void RamMethods::GetAdjustedRamRequiredMaterials()
 {
     // will need to update this using above formula for correct material list
-
 }
 
 const char* RamMethods::GetActivityName(int8 activityID)
@@ -619,4 +617,3 @@ const char* RamMethods::GetActivityName(int8 activityID)
     }
     return "Undefined";
 }
-

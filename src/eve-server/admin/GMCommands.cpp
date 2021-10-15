@@ -89,7 +89,6 @@ PyResult Command_search(Client* who, CommandDB* db, PyServiceMgr* services, cons
 
 PyResult Command_giveisk(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-
     if (args.argCount() < 3) {
         throw CustomError("Correct Usage: /giveisk [entityID ('me'=self)] [amount]");
     }
@@ -491,7 +490,6 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
 
 PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-
     throw CustomError("This command is currently disabled.");
 /*
     uint32 typeID = 0;
@@ -733,7 +731,6 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
 }
 
 PyResult Command_online(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
-
     if (args.argCount() == 2)
     {
         if (strcmp("me", args.arg(1).c_str())!=0)
@@ -814,7 +811,6 @@ PyResult Command_unload(Client *who, CommandDB *db, PyServiceMgr *services, cons
 
 PyResult Command_repairmodules(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-
     if (args.argCount()==1)
         who->GetShip()->RepairModules();
     if (args.argCount()==2) {
@@ -906,7 +902,6 @@ PyResult Command_ban(Client* who, CommandDB* db, PyServiceMgr* services, const S
 
     if (args.argCount() == 2)
     {
-
         if (!args.isNumber(1))
         {
             const char *name = args.arg(1).c_str();
@@ -940,7 +935,6 @@ PyResult Command_unban(Client* who, CommandDB* db, PyServiceMgr* services, const
 {
     if (args.argCount() == 2)
     {
-
         if (!args.isNumber(1))
         {
             const char *name = args.arg(1).c_str();

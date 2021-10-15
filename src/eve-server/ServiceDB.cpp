@@ -42,7 +42,6 @@ uint32 ServiceDB::SetClientSeed()
 
 bool ServiceDB::ValidateAccountName(CryptoChallengePacket& ccp, std::string& failMsg)
 {
-
     if (ccp.user_name.empty()) {
         failMsg = "Account Name is empty.";
         return false;
@@ -76,9 +75,9 @@ bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& 
     DBQueryResult res;
     if ( !sDatabase.RunQuery( res,
         "SELECT accountID, clientID, password, hash, role, type, online, banned, logonCount, lastLogin"
-        " FROM account WHERE accountName = '%s'", eLogin.c_str() ) )
+        " FROM account WHERE accountName = '%s'", eLogin.c_str()))
     {
-        sLog.Error( "ServiceDB", "Error in query: %s.", res.error.c_str() );
+        sLog.Error( "ServiceDB", "Error in query: %s.", res.error.c_str());
         failMsg = "Error in DB Query";
         failMsg += ": Account not found for ";
         failMsg += ccp.user_name;
@@ -565,7 +564,6 @@ PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
 }
 
 void ServiceDB::GetCorpHangarNames(uint32 corpID, std::map<uint8, std::string> &hangarNames) {
-
     std::string table = "crpWalletDivisons";
     if (IsNPCCorp(corpID))
         table = "crpNPCWalletDivisons";
