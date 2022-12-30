@@ -422,8 +422,8 @@ void PlanetDB::SaveCommandCenter(uint32 pinID, uint32 charID, uint32 planetID, u
     DBerror err;
     if(!sDatabase.RunQuery(err,
         "INSERT INTO piCCPin (pinID, charID, planetID, typeID, latitude, longitude) "
-        " VALUES (%u, %u, %u, %u, %f, %f, %f)",
-                           pinID, charID, planetID, typeID, latitude, longitude))
+        " VALUES (%u, %u, %u, %u, %f, %f)",
+                pinID, charID, planetID, typeID, latitude, longitude))
     {
         _log(DATABASE__ERROR, "SaveCommandCenter - Unable to save CommandCenter: %s", err.GetError());
     }
@@ -447,15 +447,14 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
     Inserts << " isCommandCenter, isLaunchable, isProcess, isStorage, isECU,";
     Inserts << " schematicID, programType, headRadius, launchTime,";
     Inserts << " cycleTime, expiryTime, installTime, lastRunTime)";
-
-    bool first = true;
+    Inserts << " VALUES ";
+    bool save(false);
     uint32 ccPinID = ccPin->ccPinID;
     for (auto cur : ccPin->pins) {
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else {
+        if (save) {
             Inserts << ", ";
+        } else {
+            save = true;
         }
         Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.typeID << ", " << cur.second.ownerID << ", " << cur.second.level << ", " << cur.second.latitude << ", " << cur.second.longitude << ", ";
         Inserts << cur.second.isCommandCenter << ", " << cur.second.isLaunchable << ", " << cur.second.isProcess << ", " << cur.second.isStorage <<", " << cur.second.isECU << ", ";
@@ -463,7 +462,7 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
         Inserts << ", " << cur.second.cycleTime << ", " << cur.second.expiryTime << ", " << cur.second.installTime << ", " << cur.second.lastRunTime << ")";
     }
 
-    if (!first) {
+    if (save) {
         // finish creating the command.
         Inserts << " ON DUPLICATE KEY UPDATE ";
         Inserts << " schematicID=VALUES(schematicID), ";
@@ -564,15 +563,14 @@ void PlanetDB::UpdatePinTimes(PI_CCPin* ccPin)
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "INSERT INTO piPins";
-    Inserts << " (pinID, launchTime, installTime, lastRunTime)";
+    Inserts << " (pinID, launchTime, installTime, lastRunTime) VALUES ";
 
-    bool first = true;
+    bool save(false);
     for (auto cur : ccPin->pins) {
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else {
+        if (save) {
             Inserts << ", ";
+        } else {
+            save = true;
         }
         Inserts << "(" << cur.first << ", " << cur.second.lastLaunchTime << ", ";
         Inserts << cur.second.installTime << ", " << cur.second.lastRunTime << ")";
@@ -627,16 +625,15 @@ void PlanetDB::SaveLinks(PI_CCPin* ccPin)
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "INSERT INTO piLinks";
-    Inserts << " (ccPinID, linkID, level, endpoint1, endpoint2)";
+    Inserts << " (ccPinID, linkID, level, endpoint1, endpoint2) VALUES ";
 
-    bool first = true;
+    bool save(false);
     uint32 ccPinID = ccPin->ccPinID;
     for (auto cur : ccPin->links) {
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else {
+        if (save) {
             Inserts << ", ";
+        } else {
+            save = true;
         }
         Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.level << ", " << cur.second.endpoint1 << ", " << cur.second.endpoint2 << ")";
     }
@@ -690,19 +687,18 @@ void PlanetDB::SaveRoutes(PI_CCPin* ccPin)
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "INSERT INTO piRoutes";
-    Inserts << " (ccPinID, routeID, srcPinID, destPinID, path, typeID, itemQty)";
+    Inserts << " (ccPinID, routeID, srcPinID, destPinID, path, typeID, itemQty) VALUES ";
 
-    bool first = true;
+    bool save(false);
     std::string path;
     std::list<uint32>::iterator itr;
     uint32 ccPinID = ccPin->ccPinID;
     for (auto cur : ccPin->routes) {
         path.clear();
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else {
+        if (save) {
             Inserts << ", ";
+        } else {
+            save = true;
         }
         itr = cur.second.path.begin();
         while (itr != cur.second.path.end()) {
@@ -734,19 +730,18 @@ void PlanetDB::SaveContents(PI_CCPin* ccPin)
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "INSERT INTO piPinContents";
-    Inserts << " (ccPinID, pinID, typeID, itemQty)";
+    Inserts << " (ccPinID, pinID, typeID, itemQty) VALUES ";
 
-    bool first = true;
+    bool save(false);
     uint32 ccPinID = ccPin->ccPinID;
     std::map<uint16, uint32>::iterator itr;
     for (auto cur : ccPin->pins) {
         if (cur.second.isStorage) {
             for (itr = cur.second.contents.begin(); itr != cur.second.contents.end(); ++itr) {
-                if (first) {
-                    Inserts << " VALUES ";
-                    first = false;
-                } else {
+                if (save) {
                     Inserts << ", ";
+                } else {
+                    save = true;
                 }
                 Inserts << "(" << ccPinID << ", " << cur.first << ", " << itr->first << ", " << itr->second << ")";
             }
@@ -768,16 +763,15 @@ void PlanetDB::SavePinContents(uint32 ccPinID, uint32 pinID, std::map< uint16, u
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "INSERT INTO piPinContents";
-    Inserts << " (ccPinID, pinID, typeID, itemQty)";
+    Inserts << " (ccPinID, pinID, typeID, itemQty) VALUES ";
 
-    bool first = true;
+    bool save(false);
     std::map<uint16, uint32>::iterator itr;
     for (itr = contents.begin(); itr != contents.end(); ++itr) {
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else {
+        if (save) {
             Inserts << ", ";
+        } else {
+            save = true;
         }
         Inserts << "(" << ccPinID << ", " << pinID << ", " << itr->first << ", " << itr->second << ")";
     }

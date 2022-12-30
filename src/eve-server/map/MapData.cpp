@@ -13,6 +13,8 @@
 #include "map/MapData.h"
 #include "map/MapDB.h"
 #include "station/StationDataMgr.h"
+#include "system/SystemManager.h"
+#include "system/SystemEntity.h"
 
 #include "../../eve-common/EVE_Map.h"
 
@@ -24,10 +26,6 @@ m_pseudoSecurities(nullptr)
     m_regionJumps.clear();
     m_constJumps.clear();
     m_systemJumps.clear();
-}
-
-MapData::~MapData()
-{
 }
 
 void MapData::Close()
@@ -83,7 +81,7 @@ void MapData::Populate()
         }
     }
 
-    sLog.Cyan("          MapData", "%u Region jumps, %u Constellation jumps and %u System jumps loaded in %.3fms.", //
+    sLog.Cyan("          MapData", "%lu Region jumps, %lu Constellation jumps and %lu System jumps loaded in %.3fms.", //
               m_regionJumps.size(), m_constJumps.size(), m_systemJumps.size(), (GetTimeMSeconds() - start));
 
     // cleanup
@@ -223,7 +221,7 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
         } break;
     }
 
-    if (IsStation(offer.destinationID)) {
+    if (sDataMgr.IsStation(offer.destinationID)) {
         StationData data = StationData();
         stDataMgr.GetStationData(offer.destinationID, data);
         offer.destinationOwnerID    = data.corporationID;
@@ -240,4 +238,120 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
         offer.dungeonLocationID     = offer.destinationID;
         offer.dungeonSolarSystemID  = offer.destinationID;
     }
+}
+
+void MapData::GetPlanets(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBGPointEntity> planetIDs;
+    planetIDs.clear();
+    MapDB::GetPlanets(systemID, planetIDs, total);
+}
+
+void MapData::GetMoons(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBGPointEntity> moonIDs;
+    moonIDs.clear();
+    MapDB::GetMoons(systemID, moonIDs, total);
+}
+
+const GPoint MapData::GetRandPointOnPlanet(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBGPointEntity> planetIDs;
+    planetIDs.clear();
+    MapDB::GetPlanets(systemID, planetIDs, total);
+
+    if (planetIDs.empty())
+        return NULL_ORIGIN;
+
+    uint16 i = MakeRandomInt(1, total);
+    return (planetIDs[i].position + planetIDs[i].radius + 50000);
+}
+
+const GPoint MapData::GetRandPointOnMoon(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBGPointEntity> moonIDs;
+    moonIDs.clear();
+    MapDB::GetMoons(systemID, moonIDs, total);
+
+    if (moonIDs.empty())
+        return NULL_ORIGIN;
+
+    uint16 i = MakeRandomInt(1, total);
+    return (moonIDs[i].position + moonIDs[i].radius + 10000);
+}
+
+uint32 MapData::GetRandPlanet(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBGPointEntity> planetIDs;
+    planetIDs.clear();
+    MapDB::GetPlanets(systemID, planetIDs, total);
+
+    if (planetIDs.empty())
+        return 0;
+
+    uint16 i = MakeRandomInt(1, total);
+    return planetIDs[i].itemID;
+}
+
+const GPoint MapData::Get2RandPlanets(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBGPointEntity> planetIDs;
+    planetIDs.clear();
+    MapDB::GetPlanets(systemID, planetIDs, total);
+    /** @todo finish this */
+    return NULL_ORIGIN;
+}
+
+const GPoint MapData::Get3RandPlanets(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBGPointEntity> planetIDs;
+    planetIDs.clear();
+    MapDB::GetPlanets(systemID, planetIDs, total);
+    /** @todo finish this */
+
+    return NULL_ORIGIN;
+}
+
+uint32 MapData::GetRandMoon(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBGPointEntity> moonIDs;
+    moonIDs.clear();
+    MapDB::GetMoons(systemID, moonIDs, total);
+
+    if (moonIDs.empty())
+        return 0;
+
+    uint16 i = MakeRandomInt(1, total);
+    return moonIDs[i].itemID;
+}
+
+const GPoint MapData::GetRandPointInSystem(uint32 systemID, int64 distance) {
+    // get system max diameter, verify distance is within system.
+
+    return NULL_ORIGIN;
+}
+
+const GPoint MapData::GetAnomalyPoint(SystemManager* pSys)
+{
+    uint8 total = 0;
+    std::vector<DBGPointEntity> planetIDs;
+    planetIDs.clear();
+    MapDB::GetPlanets(pSys->GetID(), planetIDs, total);
+
+    SystemEntity* pSE(pSys->GetSE(planetIDs[MakeRandomInt(0, total)].itemID));
+
+    GPoint pos(pSE->GetPosition());
+    pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS / 3, ONE_AU_IN_METERS * 4);
+    return pos;
+}
+
+const GPoint MapData::GetAnomalyPoint(uint32 systemID)
+{
+    uint8 total = 0;
+    std::vector<DBGPointEntity> planetIDs;
+    planetIDs.clear();
+    MapDB::GetPlanets(systemID, planetIDs, total);
+    GPoint pos(planetIDs[MakeRandomInt(0, total)].position);
+    pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS / 3, ONE_AU_IN_METERS * 4);
+    return pos;
 }

@@ -1,6 +1,6 @@
  /**
   * @name ProbeItems.cpp
-  *     Probe Item/SE class for Alasiya EvEmu
+  *     Probe Item/SE class for EVEmu
   *
   * @Author:        Allan
   * @date:          10 March 2018
@@ -15,6 +15,7 @@
 #include "exploration/Probes.h"
 #include "exploration/Scan.h"
 #include "inventory/AttributeEnum.h"
+#include "inventory/Inventory.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 
@@ -31,7 +32,6 @@
 ProbeItem::ProbeItem(uint32 itemID, const ItemType& _type, const ItemData& _data)
 : InventoryItem(itemID, _type, _data)
 {
-
 }
 /*
             Scanner_Probe = 479,
@@ -61,15 +61,17 @@ ProbeItemRef ProbeItem::Spawn(ItemData& data)
 void ProbeItem::Delete() {
     // remove from current container's inventory.
     // this should be SolarSystem, but just in case, run tests anyway
-    if (IsValidLocation(locationID())) {
-        InventoryItemRef iRef = sItemFactory.GetItem(locationID());
+    if (IsValidLocationID(locationID())) {
+        InventoryItemRef iRef = sItemFactory.GetItemRef(locationID());
         if (iRef.get() != nullptr) {
             iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
         } else {
             _log(ITEM__ERROR, "ProbeItem::Delete() - Cant find location %u containing %s.", locationID(), name());
         }
-    } else {
+    } else if (locationID() != locTemp) {
+        // locTemp IS valid, but not for our test above
         _log(ITEM__ERROR, "ProbeItem::Delete() - Location %u containing %s is invalid.", locationID(), name());
+        EvE::traceStack();
     }
 
     // remove from DB
@@ -163,8 +165,8 @@ m_scanShips(false)
     // i think we may have to do probe modifiers here....they are not being done thru fx system
     Character* pChar = m_client->GetChar().get();
     // skills
-    m_scanStrength *= (1 + (0.1f * pChar->GetSkillLevel(EvESkill::AstrometricRangefinding)));   // +10% strength per level
-    // skill bonuses unique to Alasiya
+    m_scanStrength *= (1 + (0.1 * pChar->GetSkillLevel(EvESkill::AstrometricRangefinding)));   // +10% strength per level
+    // skill bonuses unique to EVEmu
     //m_scanStrength *= (1 + (0.01 * pChar->GetSkillLevel(EvESkill::Astrometrics)));             // +1% strength per level
     //m_scanStrength *= (1 + (0.01 * pChar->GetSkillLevel(EvESkill::SignatureAnalysis)));        // +1% strength per level
     //m_scanDeviation *= (1 - (0.01 * pChar->GetSkillLevel(EvESkill::Astrometrics)));            // -1% deviation per level
@@ -242,8 +244,11 @@ m_scanShips(false)
     */
 
 ProbeSE::~ProbeSE() {
-    if (m_scan != nullptr)
+    // remove from scan map, but check for abandoned probes (no scan)
+    if (m_scan != nullptr) {
         m_scan->RemoveProbe(this);
+        m_scan = nullptr;
+    }
 }
 
 bool ProbeSE::ProcessTic()
@@ -261,8 +266,10 @@ bool ProbeSE::ProcessTic()
             if (m_state == Probe::State::Warping)
                 SendWarpEnd();
             RemoveProbe();
+            // this will update qty in cargo and delete itemRef of returned probe
             m_self->MergeTypesInCargo(m_shipRef.get(), flagCargoHold);
-            delete(this);
+            // delete this SE
+            delete this;
             // delete from entity map
             return false;
         }
@@ -330,7 +337,7 @@ void ProbeSE::RecoverProbe(PyList* list)
     if (dist > BUBBLE_RADIUS_METERS){
         float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS /4);
         time = EvE::max(dist / wsm, 1);
-        //SendWarpStart(time);
+        SendWarpStart(time);
     } else {
         uint32 mv = m_self->GetAttribute(AttrMaxVelocity).get_uint32();
         time = EvE::max(dist / mv, 1);
@@ -392,20 +399,19 @@ void ProbeSE::RemoveProbe()
     m_system->RemoveEntity(this);
     // set item loc to null
     m_self->SetPosition(NULL_ORIGIN);
-    // remove from entity list
-    sEntityList.RemoveProbe(m_self->itemID());
 
-    if (m_client == nullptr)
-        return;
-    PyTuple* ev = new PyTuple(1);
+    if (m_client != nullptr) {
+        PyTuple* ev = new PyTuple(1);
         ev->SetItem(0, new PyLong(m_self->itemID()));
-    m_client->SendNotification("OnRemoveProbe", "clientID", &ev);  // this is sequenced
+        m_client->SendNotification("OnRemoveProbe", "clientID", &ev);  // this is sequenced
+    }
 }
 
 void ProbeSE::SendWarpStart(float travelTime/*0*/)
 {
     // remove from bubble
-    m_bubble->Remove(this);
+    if (m_bubble != nullptr)
+        m_bubble->Remove(this);
 
     PyToken* token = new PyToken("foo.Vector3");
     ScanResultPos posFrom;
@@ -432,7 +438,8 @@ void ProbeSE::SendWarpStart(float travelTime/*0*/)
     m_client->SendNotification("OnProbeWarpStart", "clientID", &tuple);  // this is sequenced
 
     // not sure if this will work right...slimItem is removed when probe warps out
-    //SendSlimChange();
+    if (m_bubble != nullptr)
+        SendSlimChange();
 }
 
 void ProbeSE::SendWarpEnd()

@@ -15,6 +15,7 @@
 #include "StaticDataMgr.h"
 #include "inventory/InventoryItem.h"
 
+class GenericModule;
 
 class ModuleItem
 : public InventoryItem
@@ -34,6 +35,10 @@ public:
     // this resets modifiers, sets attrOnline, then sends GodmaShipEffect
     void SetOnline(bool online=false, bool isRig=false);
 
+    // new shit for module removal
+    GenericModule* GetModule()                          { return m_Module; }
+    void SetModule(GenericModule* mModule)              { m_Module = mModule; }
+    
 protected:
     ModuleItem(uint32 _modID, const ItemType &_type, const ItemData &_data );
 
@@ -51,9 +56,11 @@ protected:
         _log(ITEM__ERROR, "Trying to load %s as Module.", sDataMgr.GetCategoryName(type.categoryID()));
         if (sConfig.debug.StackTrace)
             EvE::traceStack();
-        return RefPtr<_Ty>();
+        return RefPtr<_Ty>(nullptr);
     }
 
+private:
+    GenericModule* m_Module;
 };
 
 #endif /* !_EVE_SHIP_MODULES_MODULE_H_ */

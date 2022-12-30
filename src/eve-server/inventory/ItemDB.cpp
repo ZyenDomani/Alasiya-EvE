@@ -267,7 +267,8 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
     // start the insert into command.
     Inserts << "INSERT INTO entity";
     Inserts << " (itemID, typeID, ownerID, locationID, flag, contraband, singleton, quantity, x, y, z, customInfo)";
-    bool first = true;
+    Inserts << " VALUES ";
+    bool save(false);
     for (auto cur : data) {
         if (cur.position.isNaN() or cur.position.isInf()) {
             _log(DATABASE__ERROR, "ItemDB::SaveItems() - %u has invalid position", cur.itemID);
@@ -277,11 +278,10 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
             _log(DATABASE__ERROR, "ItemDB::SaveItems() - %u has invalid location", cur.itemID);
             continue;
         }
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else {
+        if (save) {
             Inserts << ", ";
+        } else {
+            save = true;
         }
         Inserts << "(" << cur.itemID << ", " << cur.typeID << ", " << cur.ownerID << ", " << cur.locationID << ", ";
         Inserts << cur.flag << ", " << cur.contraband << ", " << (cur.singleton ? 1 : 0) << ", ";
@@ -289,7 +289,7 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
         Inserts << ", " << std::to_string(cur.position.z) << ", '" << cur.customInfo << "')";
     }
 
-    if (!first) {
+    if (save) {
         Inserts << "ON DUPLICATE KEY UPDATE ";
         Inserts << "quantity=VALUES(quantity), ";
         Inserts << "ownerID=VALUES(ownerID), ";

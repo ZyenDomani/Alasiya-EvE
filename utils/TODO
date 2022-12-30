@@ -1,14 +1,15 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****     8 October 2021
+****     30 December 2022
 
     note:  this whole file needs to be reorganized (wip)
 
 
 *******************************************************
-**********  misc items to update from my code
+**********  misc items to update to my code
 
+check evemu_crucible for additions
 
 
 *******************************************************
@@ -33,6 +34,7 @@ work on buglist, integrate this list in there where i can
 
 request for smartbombs
 
+loading probes in station does not update count in hangar
 
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
     - every 60s for every bubble object is a bit much.
@@ -276,6 +278,9 @@ InventoryBound  incomplete
   SetPassword()
   RunRefiningProcess()
   TakeOutTrash()
+
+
+StaticDataMgr::GetSolarSystemData incomplete (unused)
 
 
 DogmaIMBound::Handle_Activate
@@ -869,6 +874,7 @@ implants....update existing data for more bonus.  as we are running ~60 on char 
     implant map in character.h  -currently unused/unimplemented
 
 turns use quaternion lerp curve (and mass/agility somehow)
+    maybe bezier curve? (would be easier to implement)
 
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend

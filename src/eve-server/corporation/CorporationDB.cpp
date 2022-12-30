@@ -281,17 +281,17 @@ void CorporationDB::SaveMedalData(int64 medalID, std::vector< Corp::MedalData >&
     query << "INSERT INTO crpMedalData(medalID, part, graphic, color)";
     query << "VALUES ";
 
-    bool first = true;
+    bool save(false);
     for (auto cur : dataList) {
-        if (first) {
-            first = false;
+        if (save) {
+            query << ", ";
         } else {
-            query << ",";
+            save = true;
         }
         query << "(" << std::to_string(medalID) << "," << std::to_string(cur.part) << ",'" << cur.graphic << "'," << std::to_string(cur.color) << ")";
     }
 
-    if (!first ) {
+    if (save) {
         DBerror err;
         sDatabase.RunQuery(err, query.str().c_str());
     }
@@ -1221,7 +1221,7 @@ void CorporationDB::AddRecruiters(uint16 adID, int32 corpID, std::vector< int32 
 
     bool first = true;
     for (auto cur : charVec) {
-        if (!IsCharacter(cur))
+        if (!IsCharacterID(cur))
             continue;
         if (first) {
             first = false;
@@ -1231,7 +1231,7 @@ void CorporationDB::AddRecruiters(uint16 adID, int32 corpID, std::vector< int32 
         str << "(" << adID << "," << corpID << "," << cur << ")";
     }
 
-    if (!first ) {
+    if (!first) {
         DBerror err;
         sDatabase.RunQuery(err, "DELETE FROM crpRecruiters WHERE corpID = %u AND adID = %u", corpID, adID);
         sDatabase.RunQuery(err, str.str().c_str());

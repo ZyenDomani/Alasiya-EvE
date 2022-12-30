@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -40,6 +40,8 @@
 #include "npc/NPCAI.h"
 #include "pos/Structure.h"
 #include "pos/Tower.h"
+#include "pos/sovStructures/TCU.h"
+#include "pos/sovStructures/IHub.h"
 #include "ship/Ship.h"
 #include "ship/modules/ActiveModule.h"
 #include "ship/modules/MiningLaser.h"
@@ -138,6 +140,29 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
                 mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), maxLockedTargets);
         return false;
     }
+
+    // Check if target is an invulnerable structure
+    if (tSE->IsTCUSE()) {
+        if (tSE->GetTCUSE()->GetState() == EVEPOS::StructureState::Online) {
+            mySE->GetPilot()->SendNotifyMsg("You cannot target an invulnerable structure.");
+            return false;
+        }
+    } else if (tSE->IsTowerSE()) {
+        if ((tSE->GetTowerSE()->GetState() == EVEPOS::StructureState::Reinforced) || (tSE->GetTowerSE()->GetState() == EVEPOS::StructureState::ArmorReinforced) || (tSE->GetTowerSE()->GetState() == EVEPOS::StructureState::SheildReinforced)) {
+            mySE->GetPilot()->SendNotifyMsg("You cannot target an invulnerable structure.");
+            return false;
+        }
+    } else if (tSE->IsIHubSE()) {
+        if (tSE->GetIHubSE()->GetState() == EVEPOS::StructureState::Online) {
+            mySE->GetPilot()->SendNotifyMsg("You cannot target an invulnerable structure.");
+            return false;
+        }
+    } else if (tSE->IsOutpostSE()) {
+            // For now, don't allow targeting outposts. This will need to be changed later.
+            mySE->GetPilot()->SendNotifyMsg("You cannot target an invulnerable structure.");
+            return false;
+    }
+
     // Check against max target range
     double maxTargetRange = sRef->GetAttribute(AttrMaxTargetRange).get_double();
     GVector rangeToTarget( mySE->GetPosition(), tSE->GetPosition() );
@@ -154,21 +179,22 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     // Calculate Time to Lock target:
-    float lockTime = TimeToLock( sRef, tSE );
+    float lockTime = TimeToLock(sRef, tSE);
 
     TargetEntry *te = new TargetEntry();
         te->state = TargMgr::State::Locking;
-        te->timer.Start(lockTime * 1000);      //timer has ms resolution
+        te->timer.Start(lockTime *1000);      //timer has ms resolution
     m_targets[tSE] = te;
     tSE->TargetMgr()->TargetedAdd(mySE);
 
-    _log(TARGET__INFO, "Pilot %s in %s(%u) started targeting %s(%u) (%.2fs lock time)", \
-            mySE->GetPilot()->GetName(), mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), lockTime);
+    if (is_log_enabled(TARGET__INFO))
+        _log(TARGET__INFO, "Pilot %s in %s(%u) started targeting %s(%u) at %.1fm with %.2fs lock time.", \
+                mySE->GetPilot()->GetName(), mySE->GetName(), mySE->GetID(), tSE->GetName(), \
+                tSE->GetID(), targetDistance, lockTime);
 
     sEntityList.AddTargMgr(mySE, this);
 
     Dump();
-
     return true;
 }
 
@@ -223,6 +249,8 @@ void TargetManager::RemoveTarget(SystemEntity* tSE) {
     }
     _log(TARGET__TRACE, "RemoveTarget:  %s(%u) has removed target %s(%u).", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+
+    Dump();
 }
 
 void TargetManager::ClearTarget(SystemEntity *tSE) {
@@ -240,18 +268,15 @@ void TargetManager::ClearTarget(SystemEntity *tSE) {
 }
 
 void TargetManager::ClearModules() {
-    // segfault/data race fix by Almamu.
-    ActiveModule* curModule(nullptr);
-    std::map<uint32, ActiveModule*>::iterator itr = m_modules.begin();
-    while (itr != m_modules.end()) {
-        curModule = itr->second;
-        itr = m_modules.erase(itr);
-        curModule->AbortCycle();
+    auto cur = m_modules.begin();
+    auto end = m_modules.end();
+
+    ActiveModule* module(nullptr);
+    while (cur != end) {
+        module = cur->second;
+        cur = m_modules.erase(cur);
+        module->AbortCycle();
     }
-    /*
-    for (auto cur : m_modules)
-        cur.second->AbortCycle();
-    */
 }
 
 void TargetManager::ClearAllTargets(bool notify/*true*/) {
@@ -278,6 +303,8 @@ void TargetManager::ClearTargets(bool notify/*true*/) {
 
     // no targets to process.  remove from proc map
     sEntityList.DeleteTargMgr(mySE);
+
+    Dump();
 }
 
 void TargetManager::ClearFromTargets() {
@@ -298,6 +325,8 @@ void TargetManager::ClearFromTargets() {
     for (auto cur : ToNotify)
         if (cur->TargetMgr() != nullptr)
             cur->TargetMgr()->TargetLost(mySE);
+
+    Dump();
 }
 
 void TargetManager::TargetLost(SystemEntity *tSE) {
@@ -332,6 +361,8 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
+
+    Dump();
 }
 
 void TargetManager::TargetedByLocked(SystemEntity* pSE) {
@@ -357,21 +388,28 @@ void TargetManager::TargetedByLost(SystemEntity* pSE) {
     TargetedLost(pSE);
 }
 
-/*
-    OnTarget.mode
-        add - targeting successful
-        clear - clear all targets
-        lost - target lost
-            - Docking
-            - Destroyed
+/*****************
+ * these are incomplete at this time....
+ *
+    OnTarget.mode ( - reason)
+        try - you begin target lock
+        add - you successfully locked a target
+        clear - you are clearing all targets
+        lost - you have lost a target
+            - Docking - target docking
+            - Destroyed - target destroyed
+            - StoppedTargeting - you canceled targeting
         otheradd - somebody else has targeted you
-        otherlost - somebody else has stopped targeting you
-            - WarpingOut
-            - StoppedTargeting
+        otherlost - somebody else has lost target lock on you
+            - Docking - they docked
+            - WarpingOut - they warped away
+            - StoppedTargeting - they canceled targeting (after lock completed)
+        otherfail - somebody else failed to target you
+            - WarpingOut - you warped away before their target lock completed  (notification; not OnTarget event)
 */
 
 void TargetManager::TargetAdded(SystemEntity* tSE) {
-    _log(TARGET__TRACE, "%s(%u) - adding target %s(%u).", \
+    _log(TARGET__TRACE, "%s(%u) - adding locked target %s(%u).", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
     if (!mySE->HasPilot())
         return;
@@ -517,10 +555,6 @@ void TargetManager::AddTargetModule(ActiveModule* pMod)
 {
     _log(TARGET__INFO, "Adding %s:%s to %s's activeModule list.", \
             pMod->GetShipRef()->name(), pMod->GetSelf()->name(), mySE->GetName() );
-    // i think this check is redundant...shouldnt be able to activate non-miner on roid.
-    if (mySE->IsAsteroidSE())
-        if (!pMod->IsMiningLaser())
-            return;
 
     m_modules.emplace(pMod->itemID(), pMod);
 }
@@ -529,9 +563,11 @@ void TargetManager::RemoveTargetModule(ActiveModule* pMod)
 {
     _log(TARGET__INFO, "Removing the %s on %s from %s's activeModule list.", \
             pMod->GetSelf()->name(), pMod->GetShipRef()->name(), mySE->GetName() );
+
     m_modules.erase(pMod->itemID());
 }
 
+// only called by SystemEntity::Killed()
 void TargetManager::Destroyed()
 {
     _log(TARGET__INFO, "%s(%u) has been destroyed. %u modules, %u targets, and %u targeters in maps.", \
@@ -539,16 +575,12 @@ void TargetManager::Destroyed()
 
     std::string effect = "TargetDestroyed";
 
-    // segfault/data race fix by Almamu.
-    ActiveModule* curModule(nullptr);
-    std::map<uint32, ActiveModule*>::iterator itr = m_modules.begin();
-
+    ActiveModule* module(nullptr);
     // iterate thru the map of modules targeting this object, and call Deactivate on each.
+    std::map<uint32, ActiveModule*>::iterator itr = m_modules.begin();
     while (itr != m_modules.end()) {
-        curModule = itr->second;
-        itr = m_modules.erase(itr);
         //  some modules should immediately cease cycle when target destroyed.  miners are NOT in this call
-        switch (curModule->groupID()) {
+        switch (itr->second->groupID()) {
             case EVEDB::invGroups::Target_Painter:
             case EVEDB::invGroups::Tracking_Disruptor:
             case EVEDB::invGroups::Remote_Sensor_Damper:
@@ -562,27 +594,52 @@ void TargetManager::Destroyed()
             case EVEDB::invGroups::Projected_ECCM:
             case EVEDB::invGroups::Ship_Scanner:
             case EVEDB::invGroups::Cargo_Scanner: {
-                curModule->AbortCycle();
+                // AbortCycle() will call AM::Clear(), which removes this module from m_modules
+                //  downside is we are trying to iterate thru m_modules.
+                module = itr->second;
+                // remove current module and advance the iterator
+                itr = m_modules.erase(itr);
+                module->AbortCycle();
             } break;
             case EVEDB::invGroups::Salvager:
                 // set success=false and fall thru
-                curModule->GetProspectModule()->TargetDestroyed();
+                itr->second->GetProspectModule()->TargetDestroyed();
             default: {
-                curModule->Deactivate(effect);
+                itr->second->Deactivate(effect);
+                ++itr;
             } break;
         }
     }
 
     ClearAllTargets();
-
     Dump();
+}
+
+void TargetManager::Depleted(InventoryItemRef iRef)
+{
+    // this should only be called by a non-miner module, if shooting roids are enabled.
+    std::map<uint32, ActiveModule*>::iterator itr = m_modules.find(iRef->itemID());
+    if (itr != m_modules.end()) {
+        // just in case, verify this isnt miner, but if it is, send to Depleted
+        if (itr->second->IsMiningLaser()) {
+            Depleted(itr->second->GetMiningModule());
+            return;
+        }
+    }
+    // remove this module from map.
+    m_modules.erase(iRef->itemID());
+    // if there are miners activated on this rock, get first one and send to Depleted()
+    //   to properly create mined ore and shut down modules
+    for (auto cur : m_modules)
+        if (cur.second->IsMiningLaser())
+            Depleted(cur.second->GetMiningModule());
 }
 
 // specific for asteroids; only called by asteroids
 void TargetManager::Depleted(MiningLaser* pMod)
 {
     if (!mySE->IsAsteroidSE()) {
-        codelog(MODULE__ERROR, "Depleted() called by Non Astroid %s", mySE->GetName());
+        codelog(MODULE__ERROR, "TargMgr::Depleted() called by Non Asteroid %s", mySE->GetName());
         return;
     }
     // remove master module here to avoid placement in map
@@ -592,7 +649,9 @@ void TargetManager::Depleted(MiningLaser* pMod)
     // iterate thru the map of modules and add to map as MiningLasers with their mining volume
     std::map<uint32, ActiveModule*>::iterator itr = m_modules.begin();
     while (itr != m_modules.end()) {
-        mMap.emplace(itr->second->GetMiningModule()->GetMiningVolume(), itr->second->GetMiningModule());
+        // we only want mining lasers here
+        if (itr->second->IsMiningLaser())
+            mMap.emplace(itr->second->GetMiningModule()->GetMiningVolume(), itr->second->GetMiningModule());
         itr = m_modules.erase(itr);     //remove module from map here to avoid segfault on rock delete
     }
 
@@ -600,22 +659,22 @@ void TargetManager::Depleted(MiningLaser* pMod)
     pMod->Depleted(mMap);
 }
 
-float TargetManager::TimeToLock ( ShipItemRef sRef, SystemEntity* tSE ) const {
+float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
     if ((tSE->IsAsteroidSE()) or (tSE->IsDeployableSE()) or (tSE->IsWreckSE())
         or  (tSE->IsContainerSE()) or (tSE->IsInanimateSE()))
         return 2.0f;
 
     //  fixed lock time  -allan 24Dec14  -updated 26May15   -revisited after new effects system implementation 25Mar17
-    uint32 scanRes = sRef->GetAttribute(AttrScanResolution).get_uint32();
-    uint32 sigRad = 25; // set base as capsule with 25m signature radius
+    uint32 scanRes(sRef->GetAttribute(AttrScanResolution).get_uint32());
+    uint32 sigRad(25); // set base as capsule with 25m signature radius
 
-    if ( tSE->GetSelf().get() != nullptr )
-        if ( tSE->GetSelf()->HasAttribute(AttrSignatureRadius) )
+    if (tSE->GetSelf().get() != nullptr)
+        if (tSE->GetSelf()->HasAttribute(AttrSignatureRadius))
             sigRad = tSE->GetSelf()->GetAttribute(AttrSignatureRadius).get_uint32();
 
         //https://wiki.eveonline.com/en/wiki/Targeting_speed
         //locktime = 40000/(scanres * asinh(sigrad)^2)
-        float time = ( 40000 /(scanRes * std::pow(asinh(sigRad), 2)));   // higher scan res means faster lock time.
+        float time(40000 / (scanRes * std::pow(asinh(sigRad), 2)));   // higher scan res means faster lock time.
 
         /*  distance-based modifier to targeting speed?         sure, why the hell not?   -allan 27.6.15
          *  +0.1s for each 10k distance
@@ -623,7 +682,7 @@ float TargetManager::TimeToLock ( ShipItemRef sRef, SystemEntity* tSE ) const {
          *     disMod = distance /10k (for 10k increments)
          *     time += disMod * 0.1
          */
-        double distance = sRef->position().distance( tSE->GetPosition());
+        double distance(sRef->position().distance(tSE->GetPosition()));
         // check for snipers... >85k distance do NOT need additional 7.5+s to targettime
         // should we check LRT skill for pilots to modify this?  yes....not sure how to modify time using this yet...
         /*
@@ -638,7 +697,7 @@ float TargetManager::TimeToLock ( ShipItemRef sRef, SystemEntity* tSE ) const {
         if (distance > 85000)
             distance -= 75000;
 
-        float disMod = distance /10000;
+        float disMod(distance /10000);
         if (disMod < 1)
             disMod = 0.0f;
         time += (disMod * 0.1f);
@@ -763,7 +822,6 @@ const char* TargetManager::GetStateName( uint8 state ) {
 }
 
 const char* TargetManager::GetModeName ( uint8 mode ) {
-
     switch(mode) {
         case TargMgr::Mode::None:       return "None";
         case TargMgr::Mode::Add:        return "Add";

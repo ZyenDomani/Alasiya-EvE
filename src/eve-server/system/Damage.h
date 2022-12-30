@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -32,9 +32,9 @@
 
 class Damage {
 public:
-    Damage(SystemEntity* pSE, InventoryItemRef wRef, float mod, uint16 eID);
-    Damage(SystemEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef, uint16 eID);
-    Damage(SystemEntity* pSE, InventoryItemRef wRef, float kin, float ther, float emp, float exp, float mod, uint16 eID);
+    Damage(SystemEntity* pSE, InventoryItemRef wRef, float mod);
+    Damage(SystemEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef);
+    Damage(SystemEntity* pSE, InventoryItemRef wRef, float kin, float ther, float emp, float exp, float mod);
     // constructor for Killed() methods of derived SystemEntity objects with no weapon
     Damage(SystemEntity *pSE, bool fatal_blow=false);
 
@@ -54,21 +54,20 @@ public:
                         {   // NOTE:  remember, these come in BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
                             // added checks here for > 95% resists, and < 1% to avoid crazy damage shit.
                             // also added checks for missing resists (some npcs have no hull resist in db which = 100% resist)
-                            if (kinetic_multiplier > 1.0) kinetic_multiplier = 1.0;
-                            if (kinetic_multiplier < 0.01) kinetic_multiplier = 0.01;
-                            if (thermal_multiplier > 1.0) thermal_multiplier = 1.0;
-                            if (thermal_multiplier < 0.01) thermal_multiplier = 0.01;
-                            if (em_multiplier > 1.0) em_multiplier = 1.0;
-                            if (em_multiplier < 0.01) em_multiplier = 0.01;
-                            if (explosive_multiplier > 1.0) explosive_multiplier = 1.0;
-                            if (explosive_multiplier < 0.01) explosive_multiplier = 0.01;
+                            if (kinetic_multiplier > 1.0f) kinetic_multiplier = 1.0f;
+                            if (kinetic_multiplier < 0.01f) kinetic_multiplier = 0.01f;
+                            if (thermal_multiplier > 1.0f) thermal_multiplier = 1.0f;
+                            if (thermal_multiplier < 0.01f) thermal_multiplier = 0.01f;
+                            if (em_multiplier > 1.0f) em_multiplier = 1.0f;
+                            if (em_multiplier < 0.01f) em_multiplier = 0.01f;
+                            if (explosive_multiplier > 1.0f) explosive_multiplier = 1.0f;
+                            if (explosive_multiplier < 0.01f) explosive_multiplier = 0.01f;
                             return Damage( srcSE, weaponRef,
                                            kinetic   * kinetic_multiplier,
                                            thermal   * thermal_multiplier,
                                            em        * em_multiplier,
                                            explosive * explosive_multiplier,
-                                           modifier,
-                                           effectID );
+                                           modifier);
     }
 
     Damage &operator *=(float factor)
@@ -82,7 +81,6 @@ public:
     }
 
     SystemEntity*           srcSE;     //we do not own this.
-    uint16                  effectID;   // why is this here?
     InventoryItemRef        weaponRef;
     InventoryItemRef        chargeRef;    // May be null.
 

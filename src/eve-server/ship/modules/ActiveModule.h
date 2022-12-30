@@ -60,8 +60,8 @@ public:
     virtual void        ReprocessCharge();
 
     /* ActiveModule methods */
-    virtual uint32      GetTargetID()           { return m_targetID; }
-    SystemEntity*       GetTargetSE()           { return m_targetSE; }
+    virtual uint32      GetTargetID()                   { return m_targetID; }
+    SystemEntity*       GetTargetSE()                   { return m_targetSE; }
 
     void                LaunchProbe();
     void                LaunchMissile();
@@ -86,6 +86,7 @@ protected:
     void                UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRef iRef);
 
     /* for linked weapons */
+    void                SetEffectID(uint16 effectID=0)  { m_effectID = effectID; }
     void                SetSlaveData(ShipSE* pShip);
 
     /* for modules that use charges */
@@ -101,6 +102,7 @@ protected:
     uint32              m_targetID;                     //passed to us by activate
 
     // protected to allow derived usage
+    bool                m_Stop :1;
     bool                m_usesCharge :1;
     bool                m_needsCharge :1;
     bool                m_needsTarget :1;
@@ -108,8 +110,6 @@ protected:
 private:
     Timer               m_timer;
     Timer               m_reloadTimer;
-
-    bool                m_Stop :1;
 
 };
 

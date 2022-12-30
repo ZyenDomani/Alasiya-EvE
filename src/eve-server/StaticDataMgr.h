@@ -22,8 +22,9 @@
 #include "../eve-common/EVE_RAM.h"
 #include "../eve-common/EVE_Market.h"
 
-#include "map/MapDB.h"
-#include "system/cosmicMgrs/ManagerDB.h"
+
+//struct CelestialObjectData;
+struct SolarSystemData;
 
 class StaticDataMgr
 : public Singleton< StaticDataMgr >
@@ -51,6 +52,7 @@ public:
     void                GetGroup(uint16 grpID, Inv::GrpData &into);
     void                GetType(uint16 typeID, Inv::TypeData &into);
     void                GetTypes(std::map<uint16, Inv::TypeData> &into);
+    const char*         GetAttrName(uint16 attrID);
     const char*         GetTypeName(uint16 typeID);     // not sure if this will be needed
     const char*         GetGroupName(uint16 grpID);
     const char*         GetCategoryName(uint8 catID);
@@ -98,6 +100,11 @@ public:
     // return systemID for given stationID
     uint32              GetStationSystem(uint32 stationID);
 
+    // not sure if we wanna put this in static data....503k items
+    //bool                GetCelestialObjectData(uint32 celestialID, CelestialObjectData &into);
+    // get system data for given systemID
+    bool                GetSolarSystemData(uint32 sysID, SolarSystemData &into);
+
     uint8               GetStationCount(uint32 systemID);
     bool                GetStationList(uint32 systemID, std::vector< uint32 >& data);
 
@@ -107,6 +114,8 @@ public:
     uint32              GetRegionRatFaction(uint32 regionID);
 
     uint8               GetWHSystemClass(uint32 systemID);
+    std::vector<uint32> GetWHDestinationTypes(uint32 classID) { return m_whClassDestinations[classID]; }
+    std::vector<uint32> GetWHClassSystems(uint8 classID) { return m_whClassSystems[classID]; }
 
     void                GetDgmTypeAttrVec(uint16 typeID, std::vector< DmgTypeAttribute >& typeAttrVec);
 
@@ -139,9 +148,15 @@ public:
 
     uint32              GetWreckFaction(uint32 typeID);
 
+    // methods to verify valid locationID
+    bool                IsStation(uint32 stationID=0);
+    bool                IsSolarSystem(uint32 systemID=0);
+
     // common place for *FULL* DBRowDescriptor Header creation.
     //  this way all users are using the exact same data
     DBRowDescriptor*    CreateHeader();
+
+    void                AddOutpost(StationData &stData);
 
 protected:
     void                Populate();
@@ -161,6 +176,8 @@ private:
 
     std::map<uint16, PyDict*>                           m_bpMatlData;       // typeID/dict*
     std::map<uint32, uint8>                             m_whRegions;        // regionID/classID
+    std::map<uint32, std::vector<uint32>>               m_whClassDestinations; //classID/typeID
+    std::map<uint32, std::vector<uint32>>               m_whClassSystems;   //classID/systemID
     std::map<uint32, uint32>                            m_regions;          // regionID/ownerFactionID
     std::map<uint32, uint32>                            m_ratRegions;       // regionID/ratFactionID
     std::map<uint32, SystemData>                        m_systemData;       // systemID/data
@@ -171,11 +188,13 @@ private:
     std::map<uint32, uint32>                            m_stationRegion;    // stationID/regionID
     std::map<uint32, uint32>                            m_stationConst;     // stationID/systemID
     std::map<uint32, uint32>                            m_stationSystem;    // stationID/systemID
+    std::map<uint32, SolarSystemData>                   m_solSysData;       // systemID/data
     std::map<uint32, uint8>                             m_factionRaces;     // factionID/raceID
     std::map<uint16, EvERam::bpTypeData>                m_bpTypeData;       // typeID/data
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
     std::map<uint16, std::string>                       m_skills;           // typeID/name
     std::map<uint32, StaticData>                        m_staticData;       // itemID/data
+    std::map<uint16, AttrTypeData>                      m_attrTypeData;     // attrID/data
 
     std::multimap<uint16, EvERam::RamMaterials>         m_ramMatl;          // itemTypeID/data
     std::multimap<uint16, EvERam::RamRequirements>      m_ramReq;           // bpTypeID/data

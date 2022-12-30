@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -29,8 +29,6 @@
 #include "ServiceDB.h"
 #include "packets/Map.h"
 
-class PyObject;
-class PyRep;
 
 class MapDB
 : public ServiceDB
@@ -46,6 +44,11 @@ public:
 
     /* for MapData class */
     static void GetSystemJumps(DBQueryResult& res);
+    static void GetGates(uint32 systemID, std::vector<DBGPointEntity>& gateIDs, uint8& total);
+    static void GetBelts(uint32 systemID, std::vector<DBGPointEntity>& beltIDs, uint8& total);
+    static void GetMoons(uint32 systemID, std::vector<DBGPointEntity>& moonIDs, uint8& total);
+    static void GetPlanets(uint32 systemID, std::vector<DBGPointEntity>& planetIDs, uint8& total);
+
 
     /* clear system dynamic data on server start */
     static void SystemStartup();
@@ -57,7 +60,7 @@ public:
     static PyRep* GetDynamicData(uint8 type, uint8 time);
     static void ManipulateTimeData();
     static void SetSystemActive(uint32 sysID, bool active=false);
-    
+
     static void AddJump(uint32 sysID);      // jumpsHour
     static void AddKill(uint32 sysID); /**killsHour, kills24Hours */
     static void AddPodKill(uint32 sysID);/**podKillsHour, podKills24Hour */

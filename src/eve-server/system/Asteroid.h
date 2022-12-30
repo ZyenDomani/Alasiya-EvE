@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -59,12 +59,12 @@ protected:
             _log(ITEM__ERROR, "Trying to load %s as Asteroid.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.debug.StackTrace)
                 EvE::traceStack();
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
         }
 
         AsteroidData adata = AsteroidData();
         if ( !ManagerDB::GetAsteroidData( asteroidID, adata ) )
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
 
         return AsteroidItemRef( new AsteroidItem(type, data, adata ) );
     }
@@ -94,8 +94,10 @@ public:
     /* SystemEntity interface */
     virtual void Delete();
     virtual void Process();
-    virtual void EncodeDestiny( Buffer& into );
+    virtual void Killed(Damage &damage);
+    virtual void EncodeDestiny(Buffer& into);
     virtual void MakeDamageState(DoDestinyDamageState &into);
+    virtual void SendDamageStateChanged();  /* this uses targetMgr update to send to all interested parties */
 
     /* specific functions handled in this class. */
     void Grow();

@@ -1,7 +1,7 @@
 /*
  * Asteroid.cpp
  *
- * asteroid item and entity classes for Alasiya EvEmu
+ * asteroid item and entity classes for EVEmu
  *
  * Original file/code by Zhur
  * Rewrite:     Allan
@@ -9,10 +9,11 @@
 
 
 #include "eve-server.h"
+#include "system/Asteroid.h"
 
 #include "EVEServerConfig.h"
 #include "system/DestinyManager.h"
-#include "system/Asteroid.h"
+#include "system/Damage.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/SystemBubble.h"
@@ -105,7 +106,7 @@ void AsteroidSE::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(SE__DESTINY, "AsteroidSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "AsteroidSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void AsteroidSE::MakeDamageState(DoDestinyDamageState &into) {
@@ -114,6 +115,25 @@ void AsteroidSE::MakeDamageState(DoDestinyDamageState &into) {
     into.timestamp = GetFileTimeNow();
     into.armor = 1.0;
     into.structure = 1.0;
+}
+
+void AsteroidSE::SendDamageStateChanged() {  //working 24Apr15
+    DoDestinyDamageState dmgState;
+    MakeDamageState(dmgState);
+    OnDamageStateChange dmgChange;
+    dmgChange.entityID = m_self->itemID();
+    dmgChange.state = dmgState.Encode();
+    PyTuple *up = dmgChange.Encode();
+    if (m_targMgr != nullptr)
+        m_targMgr->QueueUpdate(&up);
+    PySafeDecRef(up);
+}
+
+void AsteroidSE::Killed(Damage& damage)
+{
+    // determine active miner(s) and call Depleted()
+    m_targMgr->Depleted(damage.weaponRef);
+    Delete();
 }
 
 void AsteroidSE::Grow() {

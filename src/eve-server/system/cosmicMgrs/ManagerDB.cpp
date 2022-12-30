@@ -569,13 +569,13 @@ void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& ro
     // start the insert into command.
     Inserts << "INSERT INTO sysAsteroids";
     Inserts << " (itemID,itemName,typeID,systemID,beltID,quantity,radius,x, y, z)";
-    bool first = true;
+    Inserts << " VALUES ";
+    bool save(false);
     for (auto cur : roids) {
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else {
+        if (save) {
             Inserts << ", ";
+        } else {
+            save = true;
         }
         // itemID and attributeID keys.
         Inserts << "(" << cur.itemID << ", '" << cur.itemName << "', " << cur.typeID << ", " << systemID << ", " << cur.beltID << ", ";
@@ -583,7 +583,7 @@ void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& ro
         Inserts << ", " << std::to_string(cur.position.z) << ")";
     }
     // did we get at least 1 insert?
-    if (!first) {
+    if (save) {
         // finish creating the command.
         Inserts << "ON DUPLICATE KEY UPDATE ";
         Inserts << "quantity=VALUES(quantity), ";

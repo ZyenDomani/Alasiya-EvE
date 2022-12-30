@@ -115,18 +115,18 @@ bool CertificateMgrDB::SaveCertificates( uint32 characterID, const CertMap &data
     // start the insert into command.
     Inserts << "INSERT INTO chrCertificates";
     Inserts << " (characterID, certificateID, grantDate, visibilityFlags)";
-    bool first = true;
+    Inserts << " VALUES ";
+    bool save(false);
     for (auto cur : data) {
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else {
+        if (save) {
             Inserts << ", ";
+        } else {
+            save = true;
         }
         Inserts << "(" << characterID << ", " << cur.first << ", " << cur.second.grantDate << ", " << cur.second.visibilityFlags << ")";
     }
 
-    if (!first) {
+    if (save) {
         Inserts << "ON DUPLICATE KEY UPDATE ";
         Inserts << "visibilityFlags=VALUES(visibilityFlags)";
         DBerror err;

@@ -29,19 +29,20 @@ m_targMgr(nullptr),
 m_targetSE(nullptr),
 m_destinyMgr(nullptr),
 m_usesCharge(false),
-m_needsCharge(false),
+m_needsCharge(mRef->HasAttribute(AttrChargeGroup1)),
 m_needsTarget(false),
 m_targetID(0),
 m_effectID(0),
-m_Stop(true)
+m_Stop(true),
+// this is an internal variable only.
+m_reloadTime(mRef->GetAttribute(AttrReloadTime).get_uint32())
 {
     m_repeat = 1000;    //based on client data
 
-    // civilian turrets dont use charges.  this is checked/hacked in TurretModule() to fix error when firing.
-    m_needsCharge = mRef->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (mRef->groupID()) {
-            // these neither require nor consume charges...may be wrong.  some of these use scripts.  to verify
+            // civilian turrets dont use charges.  this is checked in TurretModule()
+            // these can use scripts as charge.  they can activate without scripts using 'default' values
             case EVEDB::invGroups::Remote_Sensor_Damper:
             case EVEDB::invGroups::Tracking_Link:
             case EVEDB::invGroups::Signal_Amplifier:
@@ -51,16 +52,15 @@ m_Stop(true)
             case EVEDB::invGroups::Projected_ECCM:
             case EVEDB::invGroups::Remote_Sensor_Booster:
             case EVEDB::invGroups::Tracking_Disruptor:
-            // t2 mining laser can be used without charge by using default extraction rate
-            case EVEDB::invGroups::Frequency_Mining_Laser: {
+            case EVEDB::invGroups::Frequency_Mining_Laser:
+                // this may need its' own class as it has different effects depending on usage
+            case EVEDB::invGroups::Warp_Disrupt_Field_Generator: {
                 m_usesCharge = true;
                 m_needsCharge = false;
             } break;
         }
     }
 
-    // this is an internal variable only.
-    m_reloadTime = GetAttribute(AttrReloadTime).get_uint32();
     /* our defaults:
      *  4s for turrets and scrips
      *  5s for snowball and probe launchers
@@ -109,20 +109,22 @@ m_Stop(true)
         }
     }
 
-    //Clear();
-    //GM_Modules = 353,
-
-    if (m_reloadTime or m_usesCharge) {
-        _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums. (uses charge: %s", \
-                mRef->name(), mRef->itemID(), m_reloadTime, m_usesCharge?"true":"false");
-    } else {
-        _log(MODULE__TRACE, "%s(%u) does not use reload time.", mRef->name(), mRef->itemID());
-    }
-
     if (!m_shipRef->HasPilot())
         return;
 
-    // these groups receive a 3% increase in scan range on Alasiya
+    //Clear();
+    //GM_Modules = 353,
+
+    if (is_log_enabled(MODULE__TRACE)) {
+        if (m_reloadTime or m_usesCharge) {
+            _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums. (uses charge: %s)", \
+                mRef->name(), mRef->itemID(), m_reloadTime, m_usesCharge?"true":"false");
+        } else {
+            _log(MODULE__TRACE, "%s(%u) does not use reload time.", mRef->name(), mRef->itemID());
+        }
+    }
+
+    // these groups receive a 3% increase in scan range
     switch (mRef->groupID()) {
         case EVEDB::invGroups::Ship_Scanner: {
             float range = GetAttribute(AttrShipScanRange).get_float();
@@ -181,7 +183,7 @@ void ActiveModule::Update()
     if (!m_shipRef->HasPilot())
         return;
 
-    // these groups receive a 3% increase in scan range on Alasiya
+    // these groups receive a 3% increase in scan range
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Ship_Scanner: {
             ResetAttribute(AttrShipScanRange);
@@ -271,7 +273,7 @@ void ActiveModule::Process()
             m_reloadTimer.Disable();
             // apply charge effects here after loading is complete, but only for empty modules (no previous charge fx)
             if (!m_chargeLoaded)
-                sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+                sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 
             m_ChargeState = Module::State::Loaded;
             m_chargeLoaded = true;
@@ -329,7 +331,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
                 m_modRef->name(), m_needsCharge?"True":"False", m_chargeLoaded?"True":"False", \
                 m_chargeRef.get() == nullptr ? "(none)": m_chargeRef->name());
         Clear();
-        throw CustomError("Your %s doesn't seem to be loaded.", m_modRef->name());
+        throw CustomError ("Your %s doesn't seem to be loaded.", m_modRef->name());
     }
     if (IsValidTarget(targetID)) {
         // this is just a guess.  may have to use groupID test to verify if this doesnt work right.
@@ -339,7 +341,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         m_targetSE = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
         if (m_targetSE == nullptr) {
             Clear();
-            throw UserError("DeniedActivateTargetNotPresent");
+            throw UserError ("DeniedActivateTargetNotPresent");
         }
     }
 
@@ -351,35 +353,42 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
          */
 
         // if target is non-combatant deny attack
-        if (sFxDataMgr.isOffensive(effectID))
-            if (m_targetSE->IsItemEntity() or m_targetSE->IsStaticEntity() or m_targetSE->IsWreckSE())
+        if (sFxDataMgr.isOffensive(effectID)) {
+            if (m_targetSE->IsItemEntity() or m_targetSE->IsStaticEntity())
                 // or (m_targetSE->IsLogin()))       // this is incomplete, so always returns false
             {
-                throw CustomError("You cannot attack the %s.", m_targetSE->GetName());
+                throw CustomError ("You cannot attack the %s.", m_targetSE->GetName());
             }
+
+            if (m_targetSE->IsWreckSE())
+                if (!sConfig.world.shootWrecks)
+                    throw CustomError ("Attacking wrecks is disabled.", m_targetSE->GetName());
+
+            if (m_targetSE->IsAsteroidSE())
+                if (!sConfig.world.shootRoids)
+                    throw CustomError ("Attacking asteroids is disabled.", m_targetSE->GetName());
+        }
 
         if (sFxDataMgr.isAssistance(effectID)) {
             if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
                 Clear();
-                throw UserError("DeniedActivateTargetAssistDisallowed");
+                throw UserError ("DeniedActivateTargetAssistDisallowed");
             }
             /** @todo criminal shit isnt written yet....fix this once it is.
             if (m_targetSE->HasPilot())
                 if (m_targetSE->GetPilot()->IsCriminal())
-                    throw UserError("ModuleActivationDeniedCriminalAssistance");
+                    throw UserError ("ModuleActivationDeniedCriminalAssistance");
              */
         }
         if (m_targetSE->IsCOSE()) {
             Clear();
-            throw CustomError("Attacking Customs Offices isn't implemented at this time.");
+            throw CustomError ("Attacking Customs Offices isn't implemented at this time.");
         }
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->AddTargetModule(this);
     }
 
-    m_Stop = false;
     m_repeat = repeat;
-
     m_effectID = effectID;
 
     if (!CanActivate()) {
@@ -387,6 +396,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         return;
     }
 
+    m_Stop = false;
     m_isWarpSafe = sFxDataMgr.isWarpSafe(m_effectID);
 
     ShipSE* pShip = m_shipRef->GetPilot()->GetShipSE();
@@ -408,11 +418,12 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     if (IsValidTarget(targetID))
         ApplyEffect(FX::State::Target, true);
 
-    std::vector<GenericModule*> modules;
     if (m_linkMaster) {
-        m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
+        std::vector<GenericModule*> modules;
+        m_shipRef->GetLinkedWeaponMods(this, modules);
         for (auto cur : modules) {
             cur->GetActiveModule()->SetSlaveData(pShip);
+            cur->GetActiveModule()->SetEffectID(effectID);
             cur->GetActiveModule()->ShowEffect(true, false);
         }
     } else {
@@ -459,7 +470,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 void ActiveModule::Deactivate(std::string effect/*""*/)
 {
     if (m_ModuleState != Module::State::Activated) {
-        _log(MODULE__TRACE, "ActiveModule::Deactivate - %s called Deactivate but is currently %s.", m_modRef->name(), GetModuleStateName(m_ModuleState));
+        _log(MODULE__TRACE, "ActiveModule::Deactivate - %s called Deactivate but is not currently Activated (%s).", m_modRef->name(), GetModuleStateName(m_ModuleState));
         return;
     }
 
@@ -509,6 +520,35 @@ uint32 ActiveModule::DoCycle()
         AbortCycle();
         return 0;
     }
+
+    // Check for (13) modules which consume items per-cycle (they only consume single type)
+    if (m_modRef->HasAttribute(AttrConsumptionType)) {
+        uint16 typeID(m_modRef->GetAttribute(AttrConsumptionType).get_uint32()); // cast uint32 to uint16
+        uint32 qtyNeed(m_modRef->GetAttribute(AttrConsumptionQuantity).get_uint32());
+        // verify character has require amount of consumption type available
+        if (!m_shipRef->GetMyInventory()->ContainsTypeQtyByFlag(typeID, EVEItemFlags::flagCargoHold, qtyNeed)) {
+            m_shipRef->GetPilot()->SendNotifyMsg("This module requires you to have %u units of %s in your cargo hold.", \
+                    qtyNeed, sItemFactory.GetType(typeID)->name().c_str());
+            AbortCycle();  // CHECK THIS  for initial activate
+            return 0;
+        } else {
+            /** @todo this may need more work later in the case of multiple stacks */
+            InventoryItemRef iRef(m_shipRef->GetMyInventory()->GetByTypeFlag(typeID, EVEItemFlags::flagCargoHold));
+            if (iRef.get() != nullptr) {
+                if (iRef->quantity() > qtyNeed) {
+                    //If we have all the quantity we need in the current stack, decrement the amount we need and break
+                    iRef->AlterQuantity(-qtyNeed, true);
+                } else {
+                    // Delete item
+                    iRef->SetQuantity(0, true, true);
+                }
+            } else {
+                AbortCycle();  // CHECK THIS  for initial activate
+                return 0;
+            }
+        }
+    }
+
     // not sure if this is entirely accurate...wip
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Projectile_Weapon:
@@ -588,7 +628,7 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Passive_Targeting_System: {
         } break;
         // these active modules will need specific code
-        case EVEDB::invGroups::Cynosural_Field:
+        case EVEDB::invGroups::Cynosural_Field_Generator:
         case EVEDB::invGroups::Covert_Cynosural_Field_Generator:
         case EVEDB::invGroups::Automated_Targeting_System: {
         } break;
@@ -613,12 +653,12 @@ uint32 ActiveModule::DoCycle()
         m_shipRef->HeatDamageCheck(this);
 
     EvilNumber cycleTime = 10000;   // default to 10s
-    if (m_modRef->HasAttribute(AttrSpeed, cycleTime)) {
-        ; //return cycleTime.get_int();
-    } else if (m_modRef->HasAttribute(AttrDuration, cycleTime)) {
-        ; //return cycleTime.get_int();
-    }
-    return cycleTime.get_int();
+    if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
+        return cycleTime.get_uint32();
+    if (m_modRef->HasAttribute(AttrDuration, cycleTime))
+        return cycleTime.get_uint32();
+    // if neither, return default
+    return cycleTime.get_uint32();
 }
 
 void ActiveModule::AbortCycle()
@@ -651,15 +691,16 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         EvE::traceStack();
     }
 
-    std::vector<GenericModule*> modules;
     if (m_linkMaster) {
-        m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
+        std::vector<GenericModule*> modules;
+        m_shipRef->GetLinkedWeaponMods(this, modules);
         for (auto cur : modules)
             cur->GetActiveModule()->ShowEffect(false, abort);
     } else {
         ShowEffect(false, abort);
     }
 
+    // Remove modifier added by module
     ApplyEffect(FX::State::Active, false);
     if (IsValidTarget(m_targetID)
     and (m_targetSE != nullptr))
@@ -806,7 +847,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         return;
     }
 
-    Client* pClient = m_shipRef->GetPilot();
+    Client* pClient(m_shipRef->GetPilot());
     if (pClient == nullptr) {
         _log(MODULE__WARNING, "ActiveModule::LoadCharge() for %s - Pilot is null.  Cannot load charge.", m_modRef->name());
         // these are just in case...
@@ -816,10 +857,10 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         return;
     }
 
-    uint8 loadQty = chargeRef->quantity();
+    uint8 loadQty(chargeRef->quantity());
 
     if (m_ChargeState == Module::State::Loaded) {
-        m_ChargeState == Module::State::Reloading;
+        m_ChargeState = Module::State::Reloading;
         if (m_chargeRef.get() != nullptr)
             loadQty += m_chargeRef->quantity();
         // dont change chargeRef if we're just reloading. new chargeRef is deleted on merge
@@ -861,7 +902,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     if (!m_reloadTimer.Enabled()) {
         // apply charge effects only for empty modules (no previous charge fx)
         if (!m_chargeLoaded)
-            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+            sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 
         // set immediately on login or when docked
         m_chargeLoaded = true;
@@ -897,20 +938,43 @@ void ActiveModule::UnloadCharge()
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
         }
 
-        // apply to containing module to properly remove effects
+        // apply to containing module to properly remove effects  -this doesnt work right for scripts.
         sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
     }
 
     m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
     m_ChargeState = Module::State::Unloaded;
     m_chargeLoaded = false;
+
+    // scripts boost one attrib, while reducing or deleting others.  once the attrib is deleted, i cant 'undo' without reload
+    EvilNumber typeID(EvilZero);
+    if (m_modRef->HasAttribute(AttrChargeGroup1, typeID))
+        switch (typeID.get_int()) {
+            // find what attribs were changed and reload them to default once charge is removed
+            case 907:   //    Tracking Script
+            case 909: { //    Tracking Disruption Script
+                m_modRef->ResetAttribute(AttrFalloffBonus, true);
+                m_modRef->ResetAttribute(AttrMaxRangeBonus, true);
+                m_modRef->ResetAttribute(AttrTrackingSpeedBonus, true);
+            } break;
+            case 908: { //    Warp Disruption Script
+                m_modRef->ResetAttribute(AttrSignatureRadiusBonus, true);
+                m_modRef->ResetAttribute(AttrMassBonusPercentage, true);
+                m_modRef->ResetAttribute(AttrSpeedFactorBonus, true);
+                m_modRef->ResetAttribute(AttrSpeedBoostFactorBonus, true);
+            } break;
+            //case 910:   //    Sensor Booster Script
+            case 911: { //    Sensor Dampener Script
+                m_modRef->ResetAttribute(AttrFalloffBonus, true);
+            } break;
+        }
 }
 
 void ActiveModule::ConsumeCharge() {
     if (m_linkMaster) {
         // remove charges from linked modules as applicable
         std::vector<GenericModule*> modules;
-        m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
+        m_shipRef->GetLinkedWeaponMods(this, modules);
         for (auto cur : modules)
             if (cur->isOnline() and cur->IsLoaded())
                 cur->GetLoadedChargeRef()->AlterQuantity(-1, cur->IsLoaded());
@@ -966,9 +1030,9 @@ void ActiveModule::ReprocessCharge()
         fxData data = fxData();
         data.action = FX::Action::dgmActInvalid;
         data.srcRef = m_chargeRef;
-        sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+        sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     } */
-    sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
     m_chargeRef->ClearModifiers();
 }
 
@@ -977,14 +1041,26 @@ bool ActiveModule::CanActivate()
     // there is still more to be done here.  wip
     //  modules that require specific tests are coded in their module class, which will call this if their specific checks pass
 
+    // Check for (13) modules which consume items.
+    if (m_modRef->HasAttribute(AttrConsumptionType)) {
+        uint16 typeID(m_modRef->GetAttribute(AttrConsumptionType).get_uint32()); // cast uint32 to uint16
+        uint32 qtyNeed(m_modRef->GetAttribute(AttrConsumptionQuantity).get_uint32());
+        // verify character has require amount of consumption type available
+        if (!m_shipRef->GetMyInventory()->ContainsTypeQtyByFlag(typeID, EVEItemFlags::flagCargoHold, qtyNeed)) {
+            m_shipRef->GetPilot()->SendNotifyMsg("This module requires you to have %u units of %s in your inventory.", \
+                    qtyNeed, sItemFactory.GetType(typeID)->name().c_str());
+            return false;
+        }
+    }
+
     // check distance for targetable actions
     if (m_targetSE != nullptr) {
         // weapons use ships AttrMaxTargetRange which is checked in TargetMgr
         if (m_turret or m_launcher)
-            return  true;
+            return true;
 
         // test for specific targets and distance here
-        float range = 0.0f;
+        float range(0.0f);
         using namespace EVEDB::invGroups;
         switch (groupID()) {
             case Tractor_Beam: {
@@ -1007,28 +1083,31 @@ bool ActiveModule::CanActivate()
                     return false;
                 }
 
-                // test for ownership here...wip
-                // once crim shit is implemented, allow for tractoring no matter owner.
-                bool owner(false), fleet(false), corp(false), ally(false), war(false);
-                if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
-                    owner = true;
-                if (m_targetSE->GetCorporationID() == m_shipRef->GetPilot()->GetCorporationID())
-                    corp = true;
-                if (m_targetSE->GetAllianceID() == m_shipRef->GetPilot()->GetAllianceID())
-                    ally = true;
-                if (m_targetSE->GetWarFactionID() == m_shipRef->GetPilot()->GetWarFactionID())
-                    war = true;
-                if (m_shipRef->GetPilot()->InFleet())
-                    if (m_shipRef->GetPilot()->GetFleetID() == m_targetSE->GetFleetID())
-                        fleet = true;
-                if (owner or fleet or corp or ally or war) {
-                    m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
-                } else {
-                    uint32 id = m_targetSE->GetID();
-                    Clear ();
-                    throw UserError("InvalidTargetCanOwner")
-                            .AddFormatValue("module", new PyInt(id));
-                }
+                    // test for ownership here...wip
+                    // once crim shit is implemented, allow for tractoring no matter owner.
+                    bool owner(false), fleet(false), corp(false), ally(false), war(false);
+                    if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
+                        owner = true;
+                    if (m_targetSE->GetCorporationID() == m_shipRef->GetPilot()->GetCorporationID())
+                        corp = true;
+                    if (m_targetSE->GetAllianceID() == m_shipRef->GetPilot()->GetAllianceID())
+                        ally = true;
+                    if (m_targetSE->GetWarFactionID() == m_shipRef->GetPilot()->GetWarFactionID())
+                        war = true;
+                    if (m_shipRef->GetPilot()->InFleet())
+                        if (m_shipRef->GetPilot()->GetFleetID() == m_targetSE->GetFleetID())
+                            fleet = true;
+
+                    if (owner or fleet or corp or ally or war) {
+                        m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
+                    } else {
+                        int id = m_targetSE->GetID ();
+
+                        Clear ();
+
+                        throw UserError ("InvalidTargetCanOwner")
+                                .AddFormatValue ("module", new PyInt (id));
+                    }
             } break;
             case Shield_Transporter: {
                 range = GetAttribute(AttrShieldTransferRange).get_float();
@@ -1099,16 +1178,22 @@ bool ActiveModule::CanActivate()
             return false;
         }
     }
+
     //AttrDeadspaceUnsafe
     //AttrMaxGroupActive
+    //ModuleRequiresFuel
     return true;
 }
 
 
 void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 {
-    if (m_effectID < 1)
-        _log(EFFECTS__ERROR, "fxID = 0 for %s.", m_modRef->name());
+    if (m_effectID < 1) {
+        // this is a major error.  make better warning.
+        //_log(EFFECTS__ERROR, "fxID = 0 for %s.", m_modRef->name());
+        sLog.Error("AM::ShowEffect()", "fxID=0 for %s.", m_modRef->name());
+        return;
+    }
 
     int64 abortTime(GetFileTimeNow());
     if (abort) {
@@ -1121,16 +1206,17 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         }
     }
 
-    uint16 effectID(m_effectID);
     // there may be others here like this...this is ONLY for OnSpecialFX data
     if ((m_effectID == EVEEffectID::useMissiles) and (m_chargeRef.get() != nullptr))   //operation defined by charge (use charge's default effectID)
-        effectID = m_chargeRef->type().GetDefaultEffect();
-    std::string guidStr = sFxDataMgr.GetEffectGuid(effectID);
+        m_effectID = m_chargeRef->type().GetDefaultEffect();
+    std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
     if (guidStr.empty())
-        _log(EFFECTS__ERROR, "guid empty for %s using effectID %u", m_modRef->name(), effectID);
+        _log(EFFECTS__ERROR, "guid empty for %s using effectID %u", m_modRef->name(), m_effectID);
 
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
-    uint32 timeLeft(GetRemainingCycleTimeMS());
+    int32 timeLeft(GetRemainingCycleTimeMS());
+    if (m_linked)
+        timeLeft = m_linkMaster->GetActiveModule()->GetRemainingCycleTimeMS();
 
     if (m_destinyMgr != nullptr)
         m_destinyMgr->SendSpecialEffect(
@@ -1166,7 +1252,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.subLoc = PyStatic.NewNone();  //ENV_IDX_OTHER = 4
     }
 
-    timeLeft *= 0.0001f;
+    timeLeft /= 1000;
     //def OnGodmaShipEffect(self, itemID, effectID, t, start, active, environment, startTime, duration, repeat, randomSeed, error, actualStopTime = None, stall = True):
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -1278,8 +1364,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 void ActiveModule::LaunchMissile()
 {
     // must not throw here...
-    //throw UserError("TargetingMissileToSelf");
-    //throw UserError("NoCharges");
+    //throw UserError ("TargetingMissileToSelf");
+    //throw UserError ("NoCharges");
 
     //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
 
@@ -1336,7 +1422,8 @@ void ActiveModule::LaunchProbe()
 
     uint8 pcount = pClient->scan()->GetProbeCount();
     if (pcount > (pClient->GetChar()->GetSkillLevel(EvESkill::Astrometrics) + 3)) {
-        pClient->SendErrorMsg("You can only control %u probes based on your current skills.", pcount);
+        pClient->SendErrorMsg("You can only control %u probes based on your current skills.", \
+                (pClient->GetChar()->GetSkillLevel(EvESkill::Astrometrics) + 3));
         return;
     }
 
@@ -1348,8 +1435,8 @@ void ActiveModule::LaunchProbe()
     ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagNone, 1);
     ProbeItemRef probeRef = sItemFactory.SpawnProbe(idata);
     if (probeRef.get() == nullptr)
-        throw CustomError("Unable to spawn item #%u:'%s' of type %u.", \
-                m_chargeRef->itemID(), m_chargeRef->name(), m_chargeRef->typeID());
+        throw CustomError ("Unable to spawn item #%u:'%s' of type %u.", \
+                m_chargeRef->itemID(), m_chargeRef->name(), m_chargeRef->typeID() );
 
     probeRef->SetPosition(pos);
     SystemManager* pSystem = pClient->SystemMgr();
@@ -1370,5 +1457,5 @@ void ActiveModule::LaunchProbe()
 
 void ActiveModule::LaunchSnowBall()
 {
-    // nothing here yet.  wip
+    // not used yet
 }

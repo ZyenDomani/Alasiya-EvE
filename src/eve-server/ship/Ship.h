@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -220,7 +220,7 @@ protected:
         _log(ITEM__ERROR, "Trying to load %s as Ship.", sDataMgr.GetCategoryName(type.categoryID()));
         if (sConfig.debug.StackTrace)
             EvE::traceStack();
-        return RefPtr<_Ty>();
+        return RefPtr<_Ty>(nullptr);
     }
 
     //bool LoadAttributes();
@@ -255,7 +255,8 @@ public:
     void DamageGroup(GenericModule* pMod);
     // to load with ammo
     void LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs);
-    void GetLinkedWeaponMods(EVEItemFlags flag, std::vector<GenericModule*> &modules);
+    // this is only called by link master
+    void GetLinkedWeaponMods(GenericModule* pMod, std::vector<GenericModule*> &modules);
 
 protected:
     /* linking weapons methods */
@@ -317,7 +318,7 @@ public:
     virtual PyDict *MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Killed(Damage &fatal_blow);            /* This method is defined in Damage.cpp */
+    virtual void Killed(Damage &damage);            /* This method is defined in Damage.cpp */
 
     /* virtual functions to be overridden in derived classes */
     virtual void MissileLaunched(Missile* pMissile)     { /* Do nothing here */ }
@@ -332,7 +333,7 @@ public:
 
     /* specific functions handled here. */
     void Dock();
-    void Jump();        // this sets ship cloak
+    void Jump(bool showCloak=true);        // this sets ship cloak
     void Warp();
     void RemoveTarget(SystemEntity* pSE);
     void SetPassword(std::string pass)                  { m_towerPass = pass; }
@@ -371,7 +372,7 @@ public:
 
     bool GetFleetSMBUsage()                             { return m_allowFleetSMBUsage; }
     void SetFleetSMBUsage(bool set=false)               { m_allowFleetSMBUsage = set; }
-    
+
 protected:
     ShipItemRef m_shipRef;
 
@@ -400,7 +401,6 @@ private:
 
     /* launched drones */
     std::map<uint32, InventoryItem*> m_drones;
-
 };
 
 #endif /* !__SHIP__H__INCL__ */

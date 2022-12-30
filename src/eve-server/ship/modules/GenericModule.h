@@ -25,6 +25,7 @@ class Prospector;
 class TurretModule;
 class SuperWeapon;
 class RigModule;
+class CynoModule;
 class SubSystemModule;
 
 /* generic module base class */
@@ -32,7 +33,7 @@ class GenericModule
 {
 public:
     GenericModule(ModuleItemRef mRef, ShipItemRef sRef);
-    virtual ~GenericModule();
+    virtual ~GenericModule()                            { /* do nothing here */ }
 
     /* generic functions handled in base class */
     void                Online();    // this function must NOT throw
@@ -64,12 +65,14 @@ public:
     virtual SuperWeapon*        GetSuperWeapon()        { return nullptr; }
     virtual RigModule*          GetRigModule()          { return nullptr; }
     virtual SubSystemModule*    GetSubSystemModule()    { return nullptr; }
+    virtual CynoModule*         GetCynoModule()         { return nullptr; }
     /* class type helpers.  public for anyone to access. */
     virtual bool        IsGenericModule() const         { return true; }
     virtual bool        IsPassiveModule() const         { return false; }
     virtual bool        IsActiveModule() const          { return false; }
     virtual bool        IsMiningLaser() const           { return false; }
     virtual bool        IsProspectModule() const        { return false; }
+    virtual bool        IsCynoModule() const            { return false; }
     virtual bool        IsRigModule() const             { return false; }   // check this in m_rigSlot?
     virtual bool        IsSubSystemModule() const       { return false; }   // check this in m_subSystem?
 
@@ -78,7 +81,7 @@ public:
     bool                IsLauncherModule()              { return m_launcher; }
     bool                IsOverloaded()                  { return m_overLoaded; }
     bool                IsLinked()                      { return m_linked; }
-    bool                IsMaster()                      { return m_linkMaster; }
+    bool                IsMaster()                      { return (m_linkMaster == this); }
     bool                IsDamaged()                     { return m_modRef->GetAttribute(AttrDamage) != EvilZero; }
     bool                IsActive()                      { return (m_ModuleState == Module::State::Activated ? true : m_ModuleState == Module::State::Deactivating ? true : false); }
     bool                IsLoading()                     { return m_ModuleState == Module::State::Loading; }
@@ -100,7 +103,7 @@ public:
     void SetModuleState(int8 state)                     { m_ModuleState = state; }
     void SetChargeState(int8 state)                     { m_ChargeState = state; }
     void SetLinked(bool set=false)                      { m_linked = set; }
-    void SetLinkMaster(bool set=false)                  { m_linkMaster = set; }
+    void SetLinkMaster(GenericModule* pMod)             { m_linkMaster = pMod; }
 
     int8 GetModuleState()                               { return m_ModuleState; }
     int8 GetChargeState()                               { return m_ChargeState; }
@@ -142,6 +145,7 @@ public:
 
 
 protected:
+    GenericModule*      m_linkMaster;
     const char*         GetModuleStateName(int8 state);
 
     ModuleItemRef       m_modRef;
@@ -153,7 +157,6 @@ protected:
 
     int16               m_repeat;
 
-    bool                m_linkMaster   :1;
     bool                m_linked       :1;
     bool                m_isWarpSafe   :1;
     bool                m_hiPower      :1;

@@ -317,8 +317,7 @@ void SentryAI::AttackTarget(SystemEntity* pTarget) {
              m_npc->GetThermal(),
              m_npc->GetEM(),
              m_npc->GetExplosive(),
-             m_formula.GetSentryToHit(m_npc, pTarget),
-             EVEEffectID::targetAttack
+             m_formula.GetSentryToHit(m_npc, pTarget)
     );
 
     d *= m_damageMultiplier;

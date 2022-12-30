@@ -108,18 +108,18 @@ void ShipDB::SaveWeaponGroups(uint32 shipID, std::multimap< uint32, uint32 >& da
     // start the insert data.
     Inserts << "INSERT INTO shipWeaponGroups";
     Inserts << " (shipID, masterID, slaveID)";
-    bool first = true;
+    Inserts << " VALUES ";
+    bool save(false);
     for (auto cur : data) {
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else {
+        if (save) {
             Inserts << ", ";
+        } else {
+            save = true;
         }
         Inserts << "(" << shipID << ", " << cur.first << ", " << cur.second << ")";
     }
 
-    if (!first)
+    if (save)
         if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
             _log(DATABASE__ERROR, "SaveLinkedWeapons - unable to save data - %s", err.c_str());
 }

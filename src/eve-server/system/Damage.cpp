@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -28,12 +28,12 @@
 #include "system/Damage.h"
 
 #include "../../eve-common/EVE_Damage.h"
-//#include "packets/Damage.h"
 
 #include "Client.h"
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "manufacturing/Blueprint.h"
+#include "map/MapDB.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
 #include "npc/Drone.h"
@@ -54,81 +54,70 @@ DAMAGE__DEBUG
 */
 
 // this is for turrets
-Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, float kin, float ther, float emp, float exp, float mod, uint16 eID)
-: srcSE(pSE), effectID(eID), weaponRef(wRef), chargeRef(InventoryItemRef(nullptr))
+Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef,
+               float kin, float ther, float emp, float exp, float mod)
+: srcSE(pSE), weaponRef(wRef), chargeRef(InventoryItemRef(nullptr)),
+em(emp), kinetic(kin), thermal(ther), explosive(exp), modifier(mod)
 {
-    em          = emp;
-    kinetic     = kin;
-    thermal     = ther;
-    explosive   = exp;
-    modifier    = mod;
 }
 
 // this is for npcs
-Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, float mod, uint16 eID)
-: srcSE(pSE), effectID(eID), weaponRef(wRef), chargeRef(InventoryItemRef(nullptr))
+Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, float mod)
+: srcSE(pSE), weaponRef(wRef), chargeRef(InventoryItemRef(nullptr)),modifier(mod),
+em(wRef->GetAttribute(AttrEmDamage).get_float()),
+kinetic(wRef->GetAttribute(AttrKineticDamage).get_float()),
+thermal(wRef->GetAttribute(AttrThermalDamage).get_float()),
+explosive(wRef->GetAttribute(AttrExplosiveDamage).get_float())
 {
-    modifier    = mod;
-
-    em          = wRef->GetAttribute(AttrEmDamage).get_float();
-    kinetic     = wRef->GetAttribute(AttrKineticDamage).get_float();
-    thermal     = wRef->GetAttribute(AttrThermalDamage).get_float();
-    explosive   = wRef->GetAttribute(AttrExplosiveDamage).get_float();
-
     _log(DAMAGE__WARNING, "Damage:C'tor - Called by source %s(%u) with weapon %s(%u).",
          srcSE->GetName(), srcSE->GetID(), wRef->name(), wRef->itemID() );
 }
 
 // this is for missiles
-Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef, uint16 eID)
-: srcSE(pSE), effectID(eID), weaponRef(wRef), chargeRef(cRef)
+Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef)
+: srcSE(pSE), weaponRef(wRef), chargeRef(cRef),modifier(1),
+em(cRef->GetAttribute(AttrEmDamage).get_float()),
+kinetic(cRef->GetAttribute(AttrKineticDamage).get_float()),
+thermal(cRef->GetAttribute(AttrThermalDamage).get_float()),
+explosive(cRef->GetAttribute(AttrExplosiveDamage).get_float())
 {
-    modifier    = 1;
-
-    em          = cRef->GetAttribute(AttrEmDamage).get_float();
-    kinetic     = cRef->GetAttribute(AttrKineticDamage).get_float();
-    thermal     = cRef->GetAttribute(AttrThermalDamage).get_float();
-    explosive   = cRef->GetAttribute(AttrExplosiveDamage).get_float();
-
     _log(DAMAGE__WARNING, "Damage:C'tor - Called by source %s(%u) with weapon %s(%u) using charge %s(%u).",
          srcSE->GetName(), srcSE->GetID(), wRef->name(), wRef->itemID(), cRef->name(), cRef->itemID() );
 }
 
 // No specific damage dealt here, just killed
 Damage::Damage(SystemEntity* pSE, bool fatal_blow/*false*/)
-: srcSE(pSE), effectID(EVEEffectID::targetAttack)
+: srcSE(pSE), em(0.0f),kinetic(0.0f),thermal(0.0f),explosive(0.0f),
+weaponRef(InventoryItemRef(nullptr)),
+chargeRef(InventoryItemRef(nullptr))
 {
     assert(fatal_blow and "Damage() fatal_blow called without 2nd param being true!");
-
-    em = kinetic = thermal = explosive = 0.0f;
-    weaponRef = InventoryItemRef(nullptr);
-    chargeRef = InventoryItemRef(nullptr);
 }
 
-bool SystemEntity::ApplyDamage(Damage &d) {
+bool SystemEntity::ApplyDamage(Damage &damage) {
     double profileStartTime(GetTimeUSeconds());
 
     if (is_log_enabled(DAMAGE__MESSAGE)) {
-        if (d.srcSE->IsNPCSE()) {
+        if (damage.srcSE->IsNPCSE()) {
             _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
-                    GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
-                    d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
-        } else if (d.srcSE->IsDroneSE()){
+                    GetName(), GetID(), damage.GetTotal(), damage.srcSE->GetName(), damage.srcSE->GetID(), \
+                    damage.GetKinetic(), damage.GetThermal(), damage.GetEM(), damage.GetExplosive() );
+        } else if (damage.srcSE->IsDroneSE()){
             _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
-                    GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
-                    d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
-        } else if (d.srcSE->HasPilot()) {
+                    GetName(), GetID(), damage.GetTotal(), damage.srcSE->GetName(), damage.srcSE->GetID(), \
+                    damage.GetKinetic(), damage.GetThermal(), damage.GetEM(), damage.GetExplosive() );
+        } else if (damage.srcSE->HasPilot()) {
             _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from %s's %s(%u) using %s(%u) %s with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
-                    GetName(), GetID(), d.GetTotal(), d.srcSE->GetPilot()->GetName(), d.srcSE->GetName(), d.srcSE->GetID(), \
-                    d.weaponRef->name(), d.weaponRef->itemID(), (d.chargeRef ? d.chargeRef->name() : ""), \
-                    d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
+                    GetName(), GetID(), damage.GetTotal(), damage.srcSE->GetPilot()->GetName(), damage.srcSE->GetName(), damage.srcSE->GetID(), \
+                    damage.weaponRef->name(), damage.weaponRef->itemID(), (damage.chargeRef ? damage.chargeRef->name() : ""), \
+                    damage.GetKinetic(), damage.GetThermal(), damage.GetEM(), damage.GetExplosive() );
         } else {
-            _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
+            _log(DAMAGE__MESSAGE, "%s(%u): Initializing %.2f damage from unknown source.", GetName(), GetID(), damage.GetTotal());
         }
     }
 
-    int8 damageID = 0;
-    switch (d.weaponRef->groupID()) {
+    int8 damageID(0);
+    switch (damage.weaponRef->groupID()) {
         case EVEDB::invGroups::Missile_Launcher_Assault:
         case EVEDB::invGroups::Missile_Launcher_Bomb:       // not sure here
         case EVEDB::invGroups::Missile_Launcher_Citadel:
@@ -140,7 +129,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         case EVEDB::invGroups::Missile_Launcher_Siege:
         case EVEDB::invGroups::Missile_Launcher_Standard: {
             // apply damage modifier from config
-            d *= sConfig.rates.missileDamage;
+            damage *= sConfig.rates.missileDamage;
             // should this be adjusted based on damage?
             damageID = 6;
         } break;
@@ -158,8 +147,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             damageID = MakeRandomInt(0,8);
         } break;
         default: {
-            float modifier = d.GetModifier();
-            d *= modifier;
+            float modifier = damage.GetModifier();
+            damage *= modifier;
                  if (modifier == 3.0f)   { damageID = 8; }  //strikes perfectly, wrecking
             else if (modifier > 1.2501f) { damageID = 7; } //places an excellent hit
             else if (modifier > 0.9999f) { damageID = 6; } //aims well
@@ -174,16 +163,16 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     }
 
     // apply damage modifier from config
-    d *= sConfig.rates.damageRate;
+    damage *= sConfig.rates.damageRate;
 
     // this is calculated and created on every call...
-    Damage DamageToShield = d.MultiplyDup(
+    Damage DamageToShield = damage.MultiplyDup(
         m_self->GetAttribute(AttrShieldKineticDamageResonance).get_float(),
         m_self->GetAttribute(AttrShieldThermalDamageResonance).get_float(),
         m_self->GetAttribute(AttrShieldEmDamageResonance).get_float(),
         m_self->GetAttribute(AttrShieldExplosiveDamageResonance).get_float() );
 
-    bool killed = false;
+    bool killed(false);
     float total_damage(0.0f);
     float shield_damage(DamageToShield.GetTotal());
     float available_shield(m_self->GetAttribute(AttrShieldCharge).get_float());
@@ -208,18 +197,18 @@ bool SystemEntity::ApplyDamage(Damage &d) {
              GetName(), GetID(), shield_damage, new_charge);
     } else {
         // get fraction of damage partial shield absorbs, and lower total damage by that fraction
-        d *= (1 - (available_shield /shield_damage));
+        damage *= (1 - (available_shield /shield_damage));
         total_damage += available_shield;
 
         if (available_shield > 0.0f) {
             _log(DAMAGE__INFO, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
-                 GetName(), GetID(), available_shield, d.GetTotal());
+                 GetName(), GetID(), available_shield, damage.GetTotal());
             m_self->SetAttribute(AttrShieldCharge, EvilZero);
         }
 
         //Armor:
         float available_armor = m_self->GetAttribute(AttrArmorHP).get_float() - m_self->GetAttribute(AttrArmorDamage).get_float();
-        Damage DamageToArmor = d.MultiplyDup(
+        Damage DamageToArmor = damage.MultiplyDup(
             m_self->GetAttribute(AttrArmorKineticDamageResonance).get_float(),
             m_self->GetAttribute(AttrArmorThermalDamageResonance).get_float(),
             m_self->GetAttribute(AttrArmorEmDamageResonance).get_float(),
@@ -229,7 +218,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         if (armor_damage <= available_armor) {
             if (HasPilot()) {
                 if ((available_armor /m_self->GetAttribute(AttrArmorHP).get_float()) < m_self->GetAttribute(AttrArmorUniformity).get_float()) {
-                    float new_damage = d.GetTotal() * 0.01;
+                    float new_damage = damage.GetTotal() * 0.01;
                     float hull_damage = m_self->GetAttribute(AttrDamage).get_float() + new_damage;
                     _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f leakthru damage to structure. New structure damage: %.2f",
                          GetName(), GetID(), new_damage, hull_damage);
@@ -244,19 +233,19 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to armor. New armor damage: %.2f",
                  GetName(), GetID(), armor_damage, new_damage);
         } else {
-            d *= (1 - (available_armor /armor_damage));
+            damage *= (1 - (available_armor /armor_damage));
             total_damage += available_armor;
 
             if (available_armor > 0) {
                 _log(DAMAGE__INFO, "%s(%u): Armor depleted with %.2f damage. %.2f damage remains.",
-                     GetName(), GetID(), available_armor, d.GetTotal());
+                     GetName(), GetID(), available_armor, damage.GetTotal());
                 m_self->SetAttribute(AttrArmorDamage, m_self->GetAttribute(AttrArmorHP));
             }
 
             //Hull/Structure:
             //The base hp and damage attributes represent structure.
             float available_hull = m_self->GetAttribute(AttrHP).get_float() - m_self->GetAttribute(AttrDamage).get_float();
-            Damage DamageToHull = d.MultiplyDup(
+            Damage DamageToHull = damage.MultiplyDup(
                 m_self->GetAttribute(AttrKineticDamageResonance).get_float(),
                 m_self->GetAttribute(AttrThermalDamageResonance).get_float(),
                 m_self->GetAttribute(AttrEmDamageResonance).get_float(),
@@ -293,8 +282,9 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
 
-        Killed(d);  // this must NOT remove dead SE from system.
-        SystemEntity::Killed(d);    // this removes dead SE from system then deletes itemRef and all its contents
+        Killed(damage);  // this must NOT remove dead SE from system. (except base class)
+        if (!IsSystemEntity())
+            SystemEntity::Killed(damage); // this removes dead SE from system then deletes itemRef and all its contents
     } else {
         /**
          * ALL dmg msgs working  22Apr15 (hacked - found the actual msgIDs)
@@ -304,8 +294,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         if (HasPilot()) {
             //  notify player of damage received
             PyDict* dict = new PyDict();
-                dict->SetItemString("source", new PyInt(d.srcSE->GetID()));
-                dict->SetItemString("weapon", new PyInt((d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID())));
+                dict->SetItemString("source", new PyInt(damage.srcSE->GetID()));
+                dict->SetItemString("weapon", new PyInt((damage.chargeRef.get() != nullptr ? damage.chargeRef->typeID() : damage.weaponRef->typeID())));
                 dict->SetItemString("target", new PyInt(GetID()));
                 dict->SetItemString("damage", new PyFloat(total_damage));
             PyTuple* tuple = new PyTuple(3);
@@ -314,17 +304,17 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 tuple->SetItem(2, dict);
             GetPilot()->QueueDestinyEvent(&tuple);
         }
-        if (d.srcSE->HasPilot()) {
+        if (damage.srcSE->HasPilot()) {
             //notify to player of damage done:
             PyDict* dict = new PyDict();
-                dict->SetItemString("weapon", new PyInt((d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID())));
+                dict->SetItemString("weapon", new PyInt((damage.chargeRef.get() != nullptr ? damage.chargeRef->typeID() : damage.weaponRef->typeID())));
                 dict->SetItemString("target", new PyInt(GetID()));
                 dict->SetItemString("damage", new PyFloat(total_damage));
             PyTuple* tuple = new PyTuple(3);
-            bool banked = false;
+            bool banked(false);
             tuple->SetItem(0, new PyString("OnDamageMessage"));
-            if (d.weaponRef->IsModuleItem()) {
-                GenericModule* pMod = d.srcSE->GetShipSE()->GetShipItemRef()->GetModule(d.weaponRef->flag());
+            if (damage.weaponRef->IsModuleItem()) {
+                GenericModule* pMod = damage.srcSE->GetShipSE()->GetShipItemRef()->GetModule(damage.weaponRef->flag());
                 if (pMod != nullptr)
                     if (pMod->IsLinked())
                         banked = true;
@@ -335,13 +325,13 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 tuple->SetItem(1, new PyString(Dmg::Msg::Given[damageID]));
             }
             tuple->SetItem(2, dict);
-            d.srcSE->GetPilot()->QueueDestinyEvent(&tuple);
-        } else if (d.srcSE->IsDroneSE()) {
+            damage.srcSE->GetPilot()->QueueDestinyEvent(&tuple);
+        } else if (damage.srcSE->IsDroneSE()) {
             // verify drone has owner set
-            if (d.srcSE->GetDroneSE()->GetOwner() != nullptr) {
+            if (damage.srcSE->GetDroneSE()->GetOwner() != nullptr) {
                 //  notify player of damage done by drone
                 PyDict* dict = new PyDict();
-                    dict->SetItemString("source", new PyInt(d.srcSE->GetID()));
+                    dict->SetItemString("source", new PyInt(damage.srcSE->GetID()));
                     dict->SetItemString("target", new PyInt(GetID()));
                 /*
                 PyTuple* tuple = new PyTuple(2);
@@ -354,10 +344,10 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                     tuple->SetItem(0, new PyString("OnDamageMessage"));
                     tuple->SetItem(1, new PyString(Dmg::Msg::Taken[damageID]));
                     tuple->SetItem(2, dict);
-                d.srcSE->GetDroneSE()->GetOwner()->QueueDestinyEvent(&tuple);
+                damage.srcSE->GetDroneSE()->GetOwner()->QueueDestinyEvent(&tuple);
             } else {
                 // make error about active drone with no owner set
-                _log(DRONE__WARNING, "Drone %u attacking %s with no owner set.", d.srcSE->GetID(), GetName());
+                _log(DRONE__WARNING, "Drone %u attacking %s with no owner set.", damage.srcSE->GetID(), GetName());
             }
         }
 
@@ -370,7 +360,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     return killed;
 }
 
-void ShipSE::Killed(Damage &fatal_blow) {
+void ShipSE::Killed(Damage &damage) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
 
@@ -381,7 +371,7 @@ void ShipSE::Killed(Damage &fatal_blow) {
      */
     uint32 killerID = 0, locationID = GetLocationID();
     Client* pClient(nullptr);
-    SystemEntity* killer(fatal_blow.srcSE);
+    SystemEntity* killer(damage.srcSE);
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();
@@ -433,6 +423,9 @@ void ShipSE::Killed(Damage &fatal_blow) {
             _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                     GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
+        // drop loot and add to wreck.
+        DropLoot(wreckItemRef, m_self->groupID(), killerID);
+
         DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
@@ -447,15 +440,12 @@ void ShipSE::Killed(Damage &fatal_blow) {
 
         if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
-            ; /** @todo make error msg here */  //  CustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
+            ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
             wreckItemRef->Delete();
             return;
         }
 
         m_destiny->SendJettisonPacket();
-        // wreck was created successfully.  drop loot and add to wreck.
-        DropLoot(wreckItemRef, m_self->groupID(), killerID);
-
         return;
     }
 
@@ -479,7 +469,7 @@ void ShipSE::Killed(Damage &fatal_blow) {
         }
 
     /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
-    CharKillData data = CharKillData();
+    KillData data = KillData();
         data.solarSystemID = m_system->GetID();
         data.victimCharacterID = pPilot->GetCharacterID();
         data.victimCorporationID = m_corpID;
@@ -492,9 +482,9 @@ void ShipSE::Killed(Damage &fatal_blow) {
         data.finalAllianceID = killer->GetAllianceID();
         data.finalFactionID = (killer->GetWarFactionID() > 500021 ? 500021 : killer->GetWarFactionID());
         data.finalShipTypeID = killer->GetTypeID();
-        data.finalWeaponTypeID = fatal_blow.weaponRef->typeID();
+        data.finalWeaponTypeID = damage.weaponRef->typeID();
         data.finalSecurityStatus = 0;   /* fix this */
-        data.finalDamageDone = fatal_blow.GetTotal();
+        data.finalDamageDone = damage.GetTotal();
 
         uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
             totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
@@ -622,6 +612,10 @@ void ShipSE::Killed(Damage &fatal_blow) {
             _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
             GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
+        DropLoot(wreckItemRef, groupID, killerID);
+        for (auto cur: survivedItems)
+            cur->Move(wreckItemRef->itemID(), flagNone); // populate wreck with items that survived
+
         DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
@@ -639,10 +633,5 @@ void ShipSE::Killed(Damage &fatal_blow) {
             wreckItemRef->Delete();
             return;
         }
-
-        DropLoot(wreckItemRef, groupID, killerID);
-
-        for (auto cur: survivedItems)
-            cur->Move(wreckItemRef->itemID(), flagNone); // populate wreck with items that survived
     }
 }
