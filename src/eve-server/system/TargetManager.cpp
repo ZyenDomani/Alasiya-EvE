@@ -158,7 +158,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
 
     TargetEntry *te = new TargetEntry();
         te->state = TargMgr::State::Locking;
-        te->timer.Start(lockTime *1000);      //timer has ms resolution
+        te->timer.Start(lockTime * 1000);      //timer has ms resolution
     m_targets[tSE] = te;
     tSE->TargetMgr()->TargetedAdd(mySE);
 
@@ -201,7 +201,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxL
     tSE->TargetMgr()->TargetedAdd(mySE);
 
     _log(TARGET__INFO, "NPC %s(%u) started targeting %s(%u) (%.2fs lock time)", \
-            mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), (lockTime /1000));
+            mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), (lockTime / 1000));
 
     sEntityList.AddTargMgr(mySE, this);
 
