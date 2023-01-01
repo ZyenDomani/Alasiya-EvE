@@ -73,6 +73,17 @@ m_killed(false)
     _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %.1f.", self->name(), self->itemID(), m_radius);
 }
 
+// copy c'tor
+SystemEntity::SystemEntity(const SystemEntity* oth)
+: m_self(oth->m_self),m_services(oth->m_services),m_system(oth->m_system),m_bubble(oth->m_bubble),
+m_destiny(oth->m_destiny),m_targMgr(oth->m_targMgr),m_killed(oth->m_killed),m_warID(oth->m_warID),
+m_allyID(oth->m_allyID),m_corpID(oth->m_corpID),m_fleetID(oth->m_fleetID),m_ownerID(oth->m_ownerID),
+m_radius(oth->m_radius),m_harmonic(oth->m_harmonic)
+{
+
+}
+
+
 void SystemEntity::Process() {
     if (m_killed) {
         _log(SE__DEBUG, "SE::Process() - %s(%u) is dead but still in system.", m_self->name(), m_self->itemID());
@@ -181,23 +192,28 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
     /*   allan 27Nov14    */
     std::vector<LootList> lootList;
     sDataMgr.GetLoot(groupID, lootList);
-    if (lootList.empty())
+    if (lootList.empty()) {
+        _log(LOOT__INFO, "lootList empty for %s(%u)", m_self->name(), m_self->itemID());
         return;
+    }
+
 
     uint32 quantity(0);
-    std::vector<LootList>::iterator cur = lootList.begin();
-    while (cur != lootList.end()) {
-        if (cur->minDrop == cur->maxDrop) {
-            quantity = cur->minDrop;
+    std::vector<LootList>::iterator itr = lootList.begin();
+    while (itr != lootList.end()) {
+        if (itr->minDrop == itr->maxDrop) {
+            quantity = itr->minDrop;
         } else {
-            quantity = (uint32)(MakeRandomInt(cur->minDrop, cur->maxDrop));
+            quantity = (uint32)(MakeRandomInt(itr->minDrop, itr->maxDrop));
         }
         if (quantity < 1)
             quantity = 1;
 
-        ItemData iLoot(cur->itemID, owner, wreckRef->itemID(), flagNone, quantity);
+        ItemData iLoot(itr->typeID, owner, wreckRef->itemID(), flagNone, quantity);
         wreckRef->AddItem(sItemFactory.SpawnItem(iLoot));
-        ++cur;
+        // get item name here...
+        _log(LOOT__INFO, "added %u of %u to list for %s(%u)", quantity, itr->typeID, m_self->name(), m_self->itemID());
+        ++itr;
     }
 }
 
@@ -260,6 +276,13 @@ StaticSystemEntity::StaticSystemEntity(InventoryItemRef self, PyServiceMgr &serv
 {
 }
 
+// copy c'tor
+StaticSystemEntity::StaticSystemEntity(const StaticSystemEntity* oth)
+: SystemEntity(oth->m_self, oth->m_services, oth->m_system)
+{
+
+}
+
 bool StaticSystemEntity::LoadExtras() {
     return true;
 }
@@ -297,6 +320,13 @@ BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* sys
 {
 }
 
+// copy c'tor
+BeltSE::BeltSE(const BeltSE* oth)
+: StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system)
+{
+
+}
+
 bool BeltSE::LoadExtras() {
     if (!StaticSystemEntity::LoadExtras())
         return false;
@@ -313,6 +343,13 @@ StargateSE::StargateSE(InventoryItemRef self, PyServiceMgr &services, SystemMana
 : StaticSystemEntity(self, services, system),
 m_sbuSE(nullptr)
 {
+}
+
+// copy c'tor
+StargateSE::StargateSE(const StargateSE* oth)
+: StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system)
+{
+    /** @todo  this is incomplete */
 }
 
 bool StargateSE::LoadExtras() {
@@ -450,6 +487,13 @@ FieldSE::FieldSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *s
     m_ownerID = data.ownerID;
 }
 
+// copy c'tor
+FieldSE::FieldSE(const FieldSE* oth)
+: ItemSystemEntity(oth->m_self, oth->m_services, oth->m_system)
+{
+    /** @todo  this is incomplete */
+}
+
 void FieldSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
@@ -467,7 +511,7 @@ void FieldSE::EncodeDestiny( Buffer& into )
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
+        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     if (head.mode == Ball::Mode::FIELD) {
         FIELD_Struct main;
@@ -496,6 +540,13 @@ m_invul(false)
     m_targMgr = new TargetManager(this);
 
     assert(m_targMgr != nullptr);
+}
+
+// copy c'tor
+ObjectSystemEntity::ObjectSystemEntity(const ObjectSystemEntity* oth)
+: SystemEntity(oth->m_self, oth->m_services, oth->m_system)
+{
+    /** @todo  this is incomplete */
 }
 
 ObjectSystemEntity::~ObjectSystemEntity()
@@ -538,9 +589,9 @@ PyDict* ObjectSystemEntity::MakeSlimItem() {
         slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",     IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
     return slim;
 }
 
@@ -605,6 +656,13 @@ m_frozen(false)
     assert(m_destiny != nullptr);
 }
 
+// copy c'tor
+DynamicSystemEntity::DynamicSystemEntity(const DynamicSystemEntity* oth)
+: SystemEntity(oth->m_self, oth->m_services, oth->m_system)
+{
+    /** @todo  this is incomplete */
+}
+
 DynamicSystemEntity::~DynamicSystemEntity()
 {
     if (m_targMgr != nullptr)
@@ -630,9 +688,9 @@ PyDict *DynamicSystemEntity::MakeSlimItem() {
         //slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
         //slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",     IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
     return (slim);
 }
 
@@ -653,7 +711,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
+        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
         data.inertia = m_destiny->GetInertia();

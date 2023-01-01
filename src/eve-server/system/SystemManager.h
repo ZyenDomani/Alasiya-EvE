@@ -27,7 +27,6 @@
 #ifndef __SYSTEMMANAGER_H_INCL__
 #define __SYSTEMMANAGER_H_INCL__
 
-#include "system/SystemGPoint.h"
 #include "system/BubbleManager.h"
 #include "system/SolarSystem.h"
 #include "system/SystemDB.h"
@@ -151,6 +150,9 @@ public:
     void GetAllEntities(std::vector<CosmicSignature>& vector);
 
     std::map<uint32, SystemEntity*> GetOperationalStatics() { return m_opStaticEntities; }
+    std::map<uint32, SystemEntity*> GetGates() { return m_gateMap; }
+
+    SystemEntity* GetEntityByID(uint32 itemID) { return m_entities.find(itemID)->second; }
 
     void GetClientList(std::vector<Client*>& cVec);
 
@@ -180,8 +182,6 @@ private:
 
     PyServiceMgr& m_services;
     SolarSystemRef m_solarSystemRef;
-
-    SystemGPoint mGP;
 
     // static system data
     SystemData m_data;

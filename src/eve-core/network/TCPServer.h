@@ -158,7 +158,7 @@ public:
         MutexLock lock( mMQueue );
 
         X* ret(nullptr);
-        if( !mQueue.empty() )
+        if ( !mQueue.empty() )
         {
             ret = mQueue.front();
             mQueue.pop();

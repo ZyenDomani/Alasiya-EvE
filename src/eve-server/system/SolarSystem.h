@@ -31,50 +31,6 @@
 #include "system/Celestial.h"
 
 /**
- * Data container for solarsystem data.
- */
-class SolarSystemData {
-public:
-    SolarSystemData(
-        const GPoint &_minPos = GPoint(0, 0, 0),
-        const GPoint &_maxPos = GPoint(0, 0, 0),
-        double _luminosity = 0.0,
-        bool _border = false,
-        bool _fringe = false,
-        bool _corridor = false,
-        bool _hub = false,
-        bool _international = false,
-        bool _regional = false,
-        bool _constellation = false,
-        double _security = 0.0,
-        uint32 _factionID = 0,
-        double _radius = 0.0,
-        uint32 _sunTypeID = 0,
-        const char *_securityClass = ""
-    );
-
-    // Data members:
-    GPoint minPosition;
-    GPoint maxPosition;
-    double luminosity;
-
-    // use bitfield to save some memory...
-    bool border :1;
-    bool fringe :1;
-    bool corridor :1;
-    bool hub :1;
-    bool international :1;
-    bool regional :1;
-    bool constellation :1;
-
-    double security;
-    uint32 factionID;
-    double radius;
-    uint32 sunTypeID;
-    std::string securityClass;
-};
-
-/**
  * CelestialObject which represents solar system.
  */
 class SolarSystem
@@ -142,19 +98,19 @@ protected:
             _log(ITEM__ERROR, "Trying to load %s as SolarSystem.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.debug.StackTrace)
                 EvE::traceStack();
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
         }
 
         // load celestial data
         CelestialObjectData cData = CelestialObjectData();
-        if (!sItemFactory.db()->GetCelestialObject(solarSystemID, cData))
-            return RefPtr<_Ty>();
+        if (!SystemDB::GetCelestialObjectData(solarSystemID, cData))
+            return RefPtr<_Ty>(nullptr);
 
         // load solar system data
         /** @todo is this data in static data?  if not, do we continue db hit? */
         SolarSystemData ssData = SolarSystemData();
-        if( !sItemFactory.db()->GetSolarSystem( solarSystemID, ssData ) )
-            return RefPtr<_Ty>();
+        if (!sDataMgr.GetSolarSystemData(solarSystemID, ssData))
+            return RefPtr<_Ty>(nullptr);
 
         return SolarSystemRef( new SolarSystem(solarSystemID, type, data, cData, ssData ) );
     }
@@ -162,6 +118,18 @@ protected:
     /*
      * Data members:
      */
+
+    /*
+     *    Border = Borders another Region or Constellation
+     *    Fringe = 1 connection to this system (dead end system)
+     *    Corridor = 2 connections to this system (in one side and out the other)
+     *    Hub = 3+ connections to this system
+     *    International = always has Border/Constellation, almost always Regional
+     *    Regional = always has Border/Constellation
+     *    Constellation = always the same as Border
+     *    Security = If it is positive, floor to nearest 1/10th gives the in-game security level. 0 or lower are 0.0 in-game.
+     */
+    
     bool m_border :1;
     bool m_fringe :1;
     bool m_corridor :1;

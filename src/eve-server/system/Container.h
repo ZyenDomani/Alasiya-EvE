@@ -113,7 +113,7 @@ protected:
             _log(ITEM__ERROR, "Trying to load %s as Container.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.debug.StackTrace)
                 EvE::traceStack();
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
         }
         return CargoContainerRef( new CargoContainer(containerID, type, data ) );
     }
@@ -219,7 +219,7 @@ protected:
             _log(ITEM__ERROR, "Trying to load %s as Wreck.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.debug.StackTrace)
                 EvE::traceStack();
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
         }
         return WreckContainerRef( new WreckContainer(containerID, type, data ) );
     }

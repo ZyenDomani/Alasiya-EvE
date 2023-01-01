@@ -27,58 +27,9 @@
 
 #include "system/SolarSystem.h"
 
-/** @note  NOTE::  this class is ONLY for the inventory item and associated references..... need to update this...  */
+/** @note this class is ONLY for the inventory item and associated references..... need to update this...  */
 
 
-/*
-    Border = Borders another Region or Constellation
-    Fringe = 1 connection to this system (dead end system)
-    Corridor = 2 connections to this system (in one side and out the other)
-    Hub = 3+ connections to this system
-    International = always has Border/Constellation, almost always Regional
-    Regional = always has Border/Constellation
-    Constellation = always the same as Border
-    Security = If it is positive, floor to nearest 1/10th gives the in-game security level. 0 or lower are 0.0 in-game.
-    */
-
-/** @todo  update this to remove redundant SolarSystemData and move to POD SystemData and load with sDataMgr  */
-
-/*
- * SolarSystemData
- */
-SolarSystemData::SolarSystemData(
-    const GPoint &_minPos,
-    const GPoint &_maxPos,
-    double _luminosity,
-    bool _border,
-    bool _fringe,
-    bool _corridor,
-    bool _hub,
-    bool _international,
-    bool _regional,
-    bool _constellation,
-    double _security,
-    uint32 _factionID,
-    double _radius,
-    uint32 _sunTypeID,
-    const char *_securityClass)
-: minPosition(_minPos),
-  maxPosition(_maxPos),
-  luminosity(_luminosity),
-  border(_border),
-  fringe(_fringe),
-  corridor(_corridor),
-  hub(_hub),
-  international(_international),
-  regional(_regional),
-  constellation(_constellation),
-  security(_security),
-  factionID(_factionID),
-  radius(_radius),
-  sunTypeID(_sunTypeID),
-  securityClass(_securityClass)
-{
-}
 
 /*
  * SolarSystem

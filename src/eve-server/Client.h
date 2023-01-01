@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -40,7 +40,6 @@
 #include "ship/Ship.h"
 #include "ship/modules/ModuleManager.h"
 #include "system/SystemEntity.h"
-#include "system/SystemGPoint.h"
 
 #include "../eve-common/EVE_Missions.h"
 #include "../eve-common/EVE_Player.h"
@@ -70,13 +69,13 @@ class Client
 public:
     Client(PyServiceMgr &services, EVETCPConnection** con);
     // copy c'tor
-    Client(const Client& oth) = delete;
+    Client(const Client& oth) =delete;
     // move c'tor
-    Client(Client&& oth) = delete;
+    Client(Client&& oth) =delete;
     // copy assignment
-    Client& operator= (const Client& oth) = delete;
+    Client& operator= (const Client& oth) =delete;
     // move assignment
-    Client& operator= (Client&& oth) = delete;
+    Client& operator= (Client&& oth) =delete;
 
     ~Client();
 
@@ -139,9 +138,9 @@ public:
     // fleet data
     int8 GetFleetRole()                                 { return pSession->GetCurrentInt("fleetrole"); }
 
-    bool InFleet()                                      { return IsFleet(m_fleet); }
-    bool IsFleetBoss()                                  { return (IsFleet(m_fleet) ? ((GetFleetRole() == Fleet::Role::FleetLeader) ? true : false) : false); }
-    bool IsFleetBooster()                               { return (IsFleet(m_fleet) ? ((GetFleetRole() == Fleet::Booster::No) ? false : true) : false); }
+    bool InFleet()                                      { return IsFleetID(m_fleet); }
+    bool IsFleetBoss()                                  { return (IsFleetID(m_fleet) ? ((GetFleetRole() == Fleet::Role::FleetLeader) ? true : false) : false); }
+    bool IsFleetBooster()                               { return (IsFleetID(m_fleet) ? ((GetFleetRole() == Fleet::Booster::No) ? false : true) : false); }
 
     uint32 GetFleetID() const                           { return m_fleet; }
     int32 GetWingID() const                             { return m_wing; }
@@ -149,10 +148,10 @@ public:
 
     uint32 GetShipID() const                            { return m_shipId; }
     uint32 GetLocationID() const                        { return m_locationID; }
-    uint32 GetSystemID() const                          { return m_SystemData.systemID; }
-    uint32 GetConstellationID() const                   { return m_SystemData.constellationID; }
-    uint32 GetRegionID() const                          { return m_SystemData.regionID; }
-    std::string GetSystemName() const                   { return m_SystemData.name; }
+    uint32 GetSystemID() const                          { return m_systemData.systemID; }
+    uint32 GetConstellationID() const                   { return m_systemData.constellationID; }
+    uint32 GetRegionID() const                          { return m_systemData.regionID; }
+    std::string GetSystemName() const                   { return m_systemData.name; }
 
     //  public functions to update client session when char's roles are changed
     void UpdateCorpSession(CorpData& data);
@@ -225,11 +224,14 @@ public:
     uint32 GetDockStationID()                           { return m_dockStationID; };
     GPoint GetDockPoint()                               { return m_dockPoint; }
     bool InPod()                                        { return (m_ship->groupID() == EVEDB::invGroups::Capsule); }
-    bool IsInSpace()                                    { return IsSolarSystem(m_locationID); }
-    bool IsDocked()                                     { return IsStation(m_locationID); }
+    bool IsInSpace()                                    { return sDataMgr.IsSolarSystem(m_locationID); }
+    bool IsDocked()                                     { return sDataMgr.IsStation(m_locationID); }
     bool IsDock()                                       { return (m_clientState == Player::State::Dock); }
     bool IsIdle()                                       { return (m_clientState == Player::State::Idle); }
-    bool IsJump()                                       { return (m_clientState == Player::State::Jump); }
+    bool IsGateJump()                                   { return (m_clientState == Player::State::Jump); }
+    bool IsDriveJump()                                  { return (m_clientState == Player::State::DriveJump); }
+    bool IsWormholeJump()                               { return (m_clientState == Player::State::WormholeJump); }
+    bool IsJump()                                       { return ((m_clientState == Player::State::DriveJump) or (m_clientState == Player::State::Jump) or (m_clientState == Player::State::WormholeJump)); } //Gate and Drive are both forms of jumping
     bool IsBoard()                                      { return (m_clientState == Player::State::Board); }
     bool IsInvul()                                      { return m_invul; }
     bool IsLogin()                                      { return m_login; }
@@ -251,6 +253,8 @@ public:
     void SetSessionChange(bool set=false)               { m_sessionChangeActive = set; }
     void SetBallPark();
     void StargateJump(uint32 fromGate, uint32 toGate);
+    void CynoJump(InventoryItemRef beacon);
+    void WormholeJump(InventoryItemRef wormhole);
 
     bool IsAutoPilot()                                  { return m_autoPilot; }
     void SetAutoPilot(bool set=false);
@@ -299,19 +303,19 @@ public:
 
     //  scan
     Scan* scan()                                        { return m_scan; }
-    void SetScan(Scan* pScan=nullptr)                   { m_scan = pScan; }
+    void SetScan(Scan* pScan)                           { m_scan = pScan; }
     // set scan timer in ms
     // this is used in scan.cpp after time calc's are done
     void SetScanTimer(uint16 time, bool useProbe=false) { m_scanTimer.Start(time);  m_scanProbe = useProbe; }
 
     //  trade
-    void SetTradeSession(TradeSession* ts=nullptr)      { m_TS = ts; }
+    void SetTradeSession(TradeSession* ts)              { m_TS = ts; }
     void ClearTradeSession()                            { m_TS = nullptr; }
     TradeSession* GetTradeSession()                     { return m_TS; }
 
     // character notification messages
     void CharNowInStation();
-    void CharNoLongerInStation();       // clears m_StationData
+    void CharNoLongerInStation();       // clears m_StationData and remove char from station guestList
 
     // portrait stuff....
     bool RecPic()                                       { return m_portrait; }
@@ -330,21 +334,22 @@ public:
     void SetTrainingEndTime(int64 endTime)              { m_skillTimer = endTime; }
 
 protected:
-    Scan* m_scan;
     ServiceDB m_sDB;
-    SystemData m_SystemData;
+    StationData m_stationData;
+    SystemData m_systemData;
     ShipItemRef m_ship;
     ShipItemRef m_pod;
-    StationData m_StationData;
     CharacterRef m_char;
     PyServiceMgr& m_services;
-    SystemGPoint m_SGP;     // interface to my variable 3-d point generating system  (which isnt finished yet... -allan)
+    Scan* m_scan;
     ShipSE* pShipSE;
     TradeSession* m_TS;
     ClientSession* pSession;
     SystemManager* m_system;    //we do not own this
 
     void ExecuteJump();
+    void ExecuteDriveJump();
+    void ExecuteWormholeJump();
     void DestroyShipSE();
 
     //void _AwardBounty(SystemEntity *who);
@@ -389,7 +394,9 @@ protected:
     Timer m_sessionTimer;    // used to prevent multiple session changes from occurring too fast
     Timer m_ballparkTimer;   // this is to properly send SetState data after a delay (cant do it correctly otherwise)
 
+    // this is GPoint on jump and dock heading on undock
     GPoint m_movePoint;
+    // dock location in space (absolute)
     GPoint m_dockPoint;
 
     std::set<LSCChannel*>   m_channels;    //we do not own these.
@@ -441,6 +448,7 @@ private:
     std::set<uint32> m_bindSet;
 
 protected:
+    void SendInitialSessionStatus ();
     void UpdateSession();
     void _SendPingRequest();
     void _SendException( const PyAddress& source, int64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );

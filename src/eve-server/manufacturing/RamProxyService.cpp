@@ -170,7 +170,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
     // load job Blueprint
     // bp in pos can be in hangar or array.  need to check both
-    InventoryItemRef installedItem = sItemFactory.GetItem( args.bpItemID );
+    InventoryItemRef installedItem = sItemFactory.GetItemRef( args.bpItemID );
     if (installedItem.get() == nullptr) {
         // this means item/location not loaded.
         //  get data from installedItem named args and continue
@@ -217,7 +217,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
              */
 
             PyDict* dict = call.byname["installedItem"]->AsDict();
-            installedItem = sItemFactory.GetItem( PyRep::IntegerValueU32(dict->GetItemString("itemID")) );
+            installedItem = sItemFactory.GetItemRef( PyRep::IntegerValueU32(dict->GetItemString("itemID")) );
             if (installedItem.get() == nullptr) {
                 // make error here.....
                 throw UserError("RamActivityRequiresABlueprint");
@@ -427,7 +427,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         } break;
         default: {
             locationID = args.lineLocationID;
-            if (IsStation(args.lineContainerID)) {
+            if (sDataMgr.IsStation(args.lineContainerID)) {
                 locationID = args.lineContainerID;
             } else {
                 sLog.Warning("InstallJob", "Location is not Station.  Needs work.");
@@ -442,7 +442,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     std::string reason = "DESC: Installing ";
     reason += sRamMthd.GetActivityName(args.activityID);
     reason += " job in ";
-    if (IsStation(locationID)) {
+    if (sDataMgr.IsStation(locationID)) {
         reason += stDataMgr.GetStationName(locationID);
     } else {    // test for POS after that system is more complete...
         reason += "Unknown Location";
@@ -479,7 +479,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         description += sRamMthd.GetActivityName(args.activityID);
         description += " job in ";
         /** @todo update this for pos names when that system is working */
-        if (IsStation(locationID)) {
+        if (sDataMgr.IsStation(locationID)) {
             description += stDataMgr.GetStationName(locationID);
         } else {  // POS installation
             description += "Unknown Location";
@@ -611,7 +611,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
     FactoryDB::CompleteJob(args.jobID, (args.cancel ? EvERam::Status::Abort : EvERam::Status::Delivered));
 
     // return item
-    InventoryItemRef installedItem = sItemFactory.GetItem(data.itemID);
+    InventoryItemRef installedItem = sItemFactory.GetItemRef(data.itemID);
     if (installedItem.get() == nullptr)
         return nullptr;
     installedItem->Move(args.containerID, data.outputFlag, true);

@@ -77,7 +77,7 @@ public:
     LSCService* lsc_service;
     ObjCacheService* cache_service;
 
-    // for shitz-n-giggles...command to list all bound objects in map
+    // for shitz-n-giggles...command to list all bound objects in vector
     void BoundObjectVec(std::vector<BoundObj>& vec);
 
 protected:

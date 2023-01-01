@@ -52,12 +52,12 @@ protected:
             _log(ITEM__ERROR, "Trying to load itemID %u as Office.", type.id());
             if (sConfig.debug.StackTrace)
                 EvE::traceStack();
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
         }
 
         OfficeData odata = OfficeData();
         if (!StationDB::GetOfficeData(officeID, odata))
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
 
         return StationOfficeRef(new StationOffice(officeID, type, idata, odata));
     }

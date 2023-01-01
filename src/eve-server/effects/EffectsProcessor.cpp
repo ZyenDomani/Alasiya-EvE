@@ -31,7 +31,11 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 {
     double profileStartTime(GetTimeUSeconds());
 
-    bool skill = false;
+    if (is_log_enabled(EFFECTS__TRACE) and 0)
+        _log(EFFECTS__TRACE, "FxProc::ParseExpression(): container: %s(%u) parsing %s ", \
+                pItem->name(), pItem->itemID(), expression.expressionName.c_str());
+
+    bool skill(false);
     switch (data.srcRef->categoryID()) {
         case  EVEDB::invCategories::Skill:
         case  EVEDB::invCategories::Implant: {  // cat::implant also covers grp::booster
@@ -272,11 +276,11 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
 {
+    double profileStartTime(GetTimeUSeconds());
 
     using namespace FX;
     //uint8 action = Action::dgmActInvalid;
     for (auto cur : pItem->m_modifiers) {  // k,v of assoc, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>
-    double profileStartTime(GetTimeUSeconds());
         /*
         if (cur.second.action) {
             action = cur.second.action;
@@ -319,11 +323,10 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     case Target::Char: {
                         if (cur.second.typeID) {
                             // ....char skills that require skill in 'srcRef' or defined in 'typeID'
-                            uint16 skillID = cur.second.typeID;
                             std::vector<InventoryItemRef> allSkills;
                             pChar->GetSkillsList(allSkills);
                             for (auto curSkill : allSkills)
-                                if (curSkill->HasReqSkill(skillID))
+                                if (curSkill->HasReqSkill(cur.second.typeID))
                                     itemRefVec.push_back(curSkill);
                         } else {
                             // ....character itself
@@ -464,7 +467,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             }
 
         // get srcAttr
-        EvilNumber srcValue = cur.second.srcRef->GetAttribute(cur.second.srcAttr);
+        EvilNumber srcValue(cur.second.srcRef->GetAttribute(cur.second.srcAttr));
         /*
         // check for inf/nan and then reset?  this will fuck up all previous fx processing on this value.
         if (srcValue.isNaN() or srcValue.isInf()) {
@@ -474,23 +477,23 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         } */
 
         // set target attr to modified value
-        EvilNumber targValue(EvilZero);
-        int8 opID(cur.first);
+        EvilNumber targValue(EvilZero), newValue(EvilZero);
         for (auto item : itemRefVec) {
             if (item.get() == nullptr)  // still occasional nulls in the vector (segfaults)
                 continue;
             // get targAttr
             targValue = item->GetAttribute(cur.second.targAttr);
             // check for inf/nan and then reset?  this will fuck up all previous fx processing on this value.
-            /*
+            // but it will allow continuing w/o error in subsequent processing
+
             if (targValue.isNaN() or targValue.isInf()) {
                 targValue = item->GetDefaultAttribute(cur.second.targAttr);
                 _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): targValue isInf or isNaN.  Data: %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ to %.3f.", \
                 cur.second.srcRef->name(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), \
-                    GetMathMethodName(opID), GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float());
-            } */
+                GetMathMethodName(cur.first), GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float());
+            }
 
-            switch (opID) {
+            switch (cur.first) {
                 case Math::PreMul:
                 case Math::PostMul:
                 case Math::PreDiv:
@@ -501,18 +504,18 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             }
 
             // send data to calculator
-            EvilNumber newValue = CalculateAttributeValue(targValue, srcValue, opID);
+            newValue = CalculateAttributeValue(targValue, srcValue, cur.first);
             // set new calculated value for target attribute
             _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u)=%.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", \
                     cur.first, cur.second.srcRef->name(), cur.second.srcRef->itemID(), \
-                    GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID), \
+                    GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(cur.first), \
                     GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float(), newValue.get_float());
 
+            // set new calculated value for target attribute
             // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)
             item->SetAttribute(cur.second.targAttr, newValue, update);
+            newValue = EvilZero;
         }
-        if (sConfig.debug.UseProfiling)
-            sProfiler.AddTime(Profile::applyFX, GetTimeUSeconds() - profileStartTime);
     }
     /*  not used
     if (action)
@@ -520,6 +523,9 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
      */
 
     pItem->ClearModifiers();
+
+    if (sConfig.debug.UseProfiling)
+        sProfiler.AddTime(Profile::applyFX, GetTimeUSeconds() - profileStartTime);
 }
 
 EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber val2/*src*/, int8 method)

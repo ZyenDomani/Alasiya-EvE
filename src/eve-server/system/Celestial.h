@@ -32,26 +32,6 @@
 #include "system/SystemEntity.h"
 
 /**
- * Data container for celestial object.
- */
-class CelestialObjectData
-{
-public:
-    CelestialObjectData(
-        double _radius = 0.0,
-        double _security = 0.0,
-        uint8 _celestialIndex = 0,
-        uint8 _orbitIndex = 0
-    );
-
-/* these have to be public for inventorydb to load into them */
-    double radius;
-    double security;
-    uint8 celestialIndex;
-    uint8 orbitIndex;
-};
-
-/**
  * InventoryItem for generic celestial object.
  */
 class CelestialObject
@@ -85,12 +65,12 @@ protected:
             _log(ITEM__ERROR, "Trying to load %s as Celestial.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.debug.StackTrace)
                 EvE::traceStack();
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
         }
 
         CelestialObjectData cData = CelestialObjectData();
-        if (!sItemFactory.db()->GetCelestialObject(celestialID, cData))
-            return RefPtr<_Ty>();
+        if (!SystemDB::GetCelestialObjectData(celestialID, cData))
+            return RefPtr<_Ty>(nullptr);
 
         return CelestialObjectRef( new CelestialObject(celestialID, type, data, cData ) );
     }

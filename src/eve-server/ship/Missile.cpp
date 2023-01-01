@@ -185,7 +185,7 @@ void Missile::EncodeDestiny( Buffer& into )
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
+        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
         data.maxSpeed = m_speed;
@@ -218,9 +218,9 @@ PyDict* Missile::MakeSlimItem() {
         slim->SetItemString("categoryID",               new PyInt(m_self->categoryID()));
         slim->SetItemString("name",                     new PyString(m_self->itemName()));
         slim->SetItemString("sourceModuleID",           new PyInt(m_modRef->itemID()));
-        slim->SetItemString("corpID",                   IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("securityStatus",           new PyFloat(0/*pChar->GetSecurityRating()*/)); /** @todo (allan) fix this */
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID)); // this is corp ID??
         slim->SetItemString("numLaunchers",             PyStatic.NewOne());  /** @todo (allan) fix this */
@@ -238,7 +238,7 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
 
 void Missile::HitTarget() {
     // Create Damage object:
-    Damage d(m_fromSE, m_modRef, m_self, EVEEffectID::missileLaunching);
+    Damage d(m_fromSE, m_modRef, m_self);
 
     /*  this is damage formula for missiles
      * Damage = D * MIN(1, Sr/Er, (Ev/V * Sr/Er)^(ln(DRF) / ln(DRS)) )

@@ -115,8 +115,8 @@ struct BountyData {
 };
 
 
-/* POD structure for character kill data  -allan 01May16 */
-struct CharKillData {
+/* POD structure for kill data  -allan 01May16 */
+struct KillData {
     uint16 victimShipTypeID;
     uint16 finalShipTypeID;
     uint16 finalWeaponTypeID;
@@ -238,15 +238,15 @@ struct RatSpawnClass { // notes for me while creating/writing/testing
 /* POD structure for loot groups */
 struct LootGroup {
     //uint32 groupID;
-    uint32 lootGroupID;
-    double dropChance;
+    uint16 lootGroupID;
+    float dropChance;
 };
 
 /* POD structure for loot types */
 struct LootGroupType {
     uint8 metaLevel;
-    uint32 lootGroupID;
-    uint32 typeID;
+    uint16 lootGroupID;
+    uint16 typeID;
     uint32 minQuantity;
     uint32 maxQuantity;
 };
@@ -255,9 +255,8 @@ struct LootGroupType {
 struct LootList {
     uint8 minDrop;
     uint8 maxDrop;
-    uint32 itemID;
+    uint16 typeID;
 };
-
 /* POD structure for statistic data */
 struct StatisticData {
     uint16 span;        // 45.5d in minutes (max)
@@ -280,11 +279,30 @@ struct SystemData {
     uint32 constellationID;
     uint32 regionID;
     uint32 factionID;
+    int64 radius;
     float securityRating;
     std::string name;
     std::string securityClass;
 };
 
+/* POD structure for solarsystem. */
+struct SolarSystemData {
+    bool border;
+    bool fringe;
+    bool corridor;
+    bool hub;
+    bool international;
+    bool regional;
+    bool constellation;
+    uint32 factionID;
+    uint32 sunTypeID;
+    double security;
+    double radius;
+    double luminosity;
+    GPoint minPosition;
+    GPoint maxPosition;
+    std::string securityClass;
+};
 struct SystemKillData {
     uint16 killsHour;
     uint16 kills24Hour;
@@ -312,8 +330,21 @@ struct StaticData {
     GPoint position;
 };
 
+/* POD structure for attribute type data. */
+struct AttrTypeData {
+    uint8 categoryID;
+    uint8 attributeCategory;
+    uint16 attributeID;
+    std::string attributeName;
+    std::string displayName;
+};
+
 /* POD structure for sovereignty */
 struct SovereigntyData {
+    uint8 contested;
+    uint8 stationCount;
+    uint8 militaryPoints;
+    uint8 industrialPoints;
     uint32 claimID;
     uint32 solarSystemID;
     uint32 constellationID;
@@ -321,12 +352,10 @@ struct SovereigntyData {
     uint32 corporationID;
     uint32 allianceID;
     uint32 claimStructureID;
-    int64 claimTime;
     uint32 hubID;
-    uint8 contested;
-    uint8 stationCount;
-    uint8 militaryPoints;
-    uint8 industrialPoints;
+    uint32 beaconID;
+    uint32 jammerID;
+    int64 claimTime;
 };
 
 /* Tags for sov multi-index container */
@@ -431,9 +460,6 @@ struct DBGPointEntity {
     uint8 idx;
     uint32 itemID;
     double radius;
-    double x;
-    double y;
-    double z;
     GPoint position;
 };
 

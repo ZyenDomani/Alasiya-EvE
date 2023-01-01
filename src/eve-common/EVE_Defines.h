@@ -232,7 +232,7 @@
 #define IsSquadID(itemID) \
 ((itemID >= minSquad) && (itemID < maxSquad))
 
-#define IsCorp(itemID) \
+#define IsCorpID(itemID) \
 (((itemID >= minNPCCorporation) && (itemID <= maxNPCCorporation)) \
 || ((itemID >= minPCCorporation) && (itemID < minAlliance)))
 
@@ -242,13 +242,13 @@
 #define IsPlayerCorp(itemID) \
 ((itemID >= minPCCorporation) && (itemID < minAlliance))
 
-#define IsAlliance(itemID) \
+#define IsAllianceID(itemID) \
 ((itemID >= minAlliance) && (itemID < minOffice))
 
 #define IsAgent(itemID) \
 ((itemID >= minAgent) && (itemID < maxAgent))
 
-#define IsFaction(itemID) \
+#define IsFactionID(itemID) \
 ((itemID >= minFaction) && (itemID < maxFaction))
 
 #define IsOfficeID(itemID) \

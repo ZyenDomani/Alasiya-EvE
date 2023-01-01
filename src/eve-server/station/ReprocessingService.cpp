@@ -67,7 +67,7 @@ PyBoundObject *ReprocessingService::CreateBoundObject(Client *pClient, const PyR
     }
 
     uint32 stationID = bind_args->AsInt()->value();
-    if (!IsStation(stationID)) {
+    if (!sDataMgr.IsStation(stationID)) {
         _log(SERVICE__ERROR, "%s: Expected stationID, but got %u.", pClient->GetName(), stationID);
         return nullptr;
     }
@@ -94,7 +94,7 @@ m_tax(0.0f)
     PyCallable_REG_CALL(ReprocessingServiceBound, GetQuotes);
     PyCallable_REG_CALL(ReprocessingServiceBound, Reprocess);
 
-    m_stationRef = sItemFactory.GetStationItem(stationID);
+    m_stationRef = sItemFactory.GetStationRef(stationID);
     if (m_stationRef.get() != nullptr)
         m_stationRef->GetRefineData(m_stationCorpID, m_staEfficiency, m_tax);
 }
@@ -172,7 +172,7 @@ PyResult ReprocessingServiceBound::Handle_GetQuotes(PyCallArgs &call) {
 }
 
 PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
-    if (!IsStation(call.client->GetLocationID())) {
+    if (!sDataMgr.IsStation(call.client->GetLocationID())) {
         _log(MANUF__WARNING, "Character %s tried to reprocess, but isn't is station.", call.client->GetName());
         return nullptr;
     }
@@ -208,7 +208,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
     InventoryItemRef iRef(nullptr);
     double tax = CalcTax(GetStanding(call.client));
     for (auto cur : args.items)  {
-        iRef = sItemFactory.GetItem(cur);
+        iRef = sItemFactory.GetItemRef(cur);
         if (iRef.get() == nullptr)
             continue;
 
@@ -229,7 +229,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         std::vector<Recoverable>::iterator itr = recoverables.begin();
         for (; itr != recoverables.end(); ++itr) {
             uint32 full = itr->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
-            uint32 quantity = uint32(full * efficiency * (1.0f - tax) );
+            uint32 quantity(floor(full * efficiency * (1.0f - tax)));
             if (quantity == 0)
                 continue;
 
@@ -286,7 +286,7 @@ float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient
 }
 
 PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
-    InventoryItemRef iRef = sItemFactory.GetItem( itemID );
+    InventoryItemRef iRef = sItemFactory.GetItemRef( itemID );
     if (iRef.get() == nullptr)
         return nullptr;    // No action as GetQuote is also called for reprocessed items (probably for check)
 
@@ -334,9 +334,9 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     for (auto cur :recoverables) {
         uint32 ratio = cur.amountPerBatch * quote.quantityToProcess / iRef->type().portionSize();
         Rsp_GetQuote_Recoverables_Line line;
-            line.typeID			= cur.typeID;
-            line.client			= uint32(efficiency * (1.0f - tax)   * ratio);
-            line.station		= uint32(efficiency * tax           * ratio);
+            line.typeID		= cur.typeID;
+            line.client		= uint32(efficiency * (1.0f - tax)   * ratio);
+            line.station	= uint32(efficiency * tax            * ratio);
             line.unrecoverable	= ratio - line.client - line.station;
         quote.lines->AddItem( line.Encode() );
     }

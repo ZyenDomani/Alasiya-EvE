@@ -121,7 +121,7 @@ bool ReaderToSQL( const char* table_name, const char* key_field, FILE* out, _Rea
     const size_t cc = reader.columnCount();
 
     const size_t key_col = reader.FindColumn( key_field );
-    if( cc == key_col )
+    if ( cc == key_col )
     {
         sLog.Error( "ReaderToSQL", "Unable to find key column '%s'.", key_field );
         return false;
@@ -153,7 +153,7 @@ bool ReaderToSQL( const char* table_name, const char* key_field, FILE* out, _Rea
                  ( key_col == col ? " PRIMARY KEY" : "" )
         );
 
-        if( 0 != col  )
+        if ( 0 != col  )
             field_list += ",";
         field_list += "`";
         field_list += colName;
@@ -178,9 +178,9 @@ bool ReaderToSQL( const char* table_name, const char* key_field, FILE* out, _Rea
     end = reader.end();
     for( size_t rowIndex = 0; cur != end; ++cur, ++rowIndex )
     {
-        if( 0 == ( rowIndex % INSERT_QUERY_ROW_LIMIT ) )
+        if ( 0 == ( rowIndex % INSERT_QUERY_ROW_LIMIT ) )
         {
-            if( 0 != rowIndex )
+            if ( 0 != rowIndex )
                 fprintf( out, ";\n" );
 
             fprintf( out, "INSERT INTO `%s`(%s) VALUES ", table_name, field_list.c_str() );
@@ -191,7 +191,7 @@ bool ReaderToSQL( const char* table_name, const char* key_field, FILE* out, _Rea
         fprintf( out, "(" );
         for( size_t col = 0; col < cc; ++col )
         {
-            if( col != 0 )
+            if ( col != 0 )
                 fprintf( out, "," );
 
             fprintf( out, "%s", cur.GetAsString( col ).c_str() );

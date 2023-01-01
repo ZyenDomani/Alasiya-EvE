@@ -70,7 +70,7 @@ PyResult AuthService::Handle_AmUnderage(PyCallArgs &call)
     call.Dump(SERVICE__CALL_DUMP);
 
     // return boolean
-    return new PyBool(false);
+    return PyStatic.NewFalse();
 }
 
 PyResult AuthService::Handle_AccruedTime(PyCallArgs &call)

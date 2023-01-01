@@ -366,7 +366,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         }
 
         //verify that they actually have the item in the quantity specified...
-        InventoryItemRef iRef = sItemFactory.GetItem( args.itemID );
+        InventoryItemRef iRef = sItemFactory.GetItemRef( args.itemID );
         if (iRef.get() == nullptr) {
             _log(ITEM__ERROR, "PlaceCharOrder - Failed to find item %i for sell order.", args.itemID);
             call.client->SendErrorMsg("Unable to find item to sell.");
@@ -414,9 +414,9 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         and call.client->GetStationID() == args.stationID ))   //and our ship is in the station
         {
             std::string itemLoc;
-            if (IsStation(iRef->locationID())) {
+            if (sDataMgr.IsStation(iRef->locationID())) {
                 itemLoc = stDataMgr.GetStationName(iRef->locationID());
-            } else if (IsSolarSystem(iRef->locationID())) {
+            } else if (sDataMgr.IsSolarSystem(iRef->locationID())) {
                 itemLoc = sDataMgr.GetSystemName(iRef->locationID());
             } else {
                 itemLoc = "an Invalid Location";

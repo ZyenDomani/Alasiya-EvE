@@ -172,26 +172,26 @@ bool PyXMLGenerator::VisitDict( const PyDict* rep )
     end = rep->end();
     for(; cur != end; ++cur)
     {
-        if( cur->first->IsString() )
+        if ( cur->first->IsString() )
         {
-            if( ktype == DictIntKey )
+            if ( ktype == DictIntKey )
             {
                 //we have varying key types, raw dict it is.
                 ktype = DictRaw;
                 break;
             }
-            else if( ktype == DictInline )
+            else if ( ktype == DictInline )
                 ktype = DictStringKey;
         }
-        else if( cur->first->IsInt() )
+        else if ( cur->first->IsInt() )
         {
-            if( ktype == DictStringKey )
+            if ( ktype == DictStringKey )
             {
                 //we have varying key types, raw dict it is.
                 ktype = DictRaw;
                 break;
             }
-            else if( ktype == DictInline )
+            else if ( ktype == DictInline )
                 ktype = DictIntKey;
         }
         else
@@ -201,37 +201,37 @@ bool PyXMLGenerator::VisitDict( const PyDict* rep )
             break;
         }
 
-        if( cur->second->IsString() )
+        if ( cur->second->IsString() )
         {
-            if( vtype == ValueInt || vtype == ValueReal )
+            if ( vtype == ValueInt || vtype == ValueReal )
                 vtype = ValueMixed;
-            else if( vtype == ValueUnknown )
+            else if ( vtype == ValueUnknown )
                 vtype = ValueString;
         }
-        else if(cur->second->IsInt())
+        else if (cur->second->IsInt())
         {
-            if( vtype == ValueString || vtype == ValueReal )
+            if ( vtype == ValueString || vtype == ValueReal )
                 vtype = ValueMixed;
-            else if( vtype == ValueUnknown )
+            else if ( vtype == ValueUnknown )
                 vtype = ValueInt;
         }
-        else if( cur->second->IsFloat() )
+        else if ( cur->second->IsFloat() )
         {
-            if( vtype == ValueString || vtype == ValueInt )
+            if ( vtype == ValueString || vtype == ValueInt )
                 vtype = ValueMixed;
-            else if(vtype == ValueUnknown)
+            else if (vtype == ValueUnknown)
                 vtype = ValueReal;
         }
         else
             vtype = ValueMixed;
     }
 
-    if( ktype == DictRaw )
+    if ( ktype == DictRaw )
     {
         fprintf( mInto, "%s<dict name=\"dict%u\" />\n", _pfx(), mItem++ );
         return true;
     }
-    else if( ktype == DictIntKey )
+    else if ( ktype == DictIntKey )
     {
         //cant do an inline dict, but can try a vector
         switch( vtype )
@@ -263,7 +263,7 @@ bool PyXMLGenerator::VisitDict( const PyDict* rep )
     end = rep->end();
     for(; cur != end; ++cur)
     {
-        if( !cur->first->IsString() )
+        if ( !cur->first->IsString() )
         {
             fprintf( mInto, "%s<!-- non-string dict key of type %s -->\n", _pfx(), cur->first->TypeString() );
             return false;
@@ -290,7 +290,7 @@ bool PyXMLGenerator::VisitList( const PyList* rep )
 {
     //for now presume we cant do anything useful with lists that contain
     //more than a few things...
-    if( rep->size() < 5 )
+    if ( rep->size() < 5 )
     {
         fprintf( mInto, "%s<listInline>\n", _pfx() );
 
@@ -328,34 +328,34 @@ bool PyXMLGenerator::VisitList( const PyList* rep )
         end = rep->end();
         for(; cur != end; cur++)
         {
-            if( (*cur)->IsString() )
+            if ( (*cur)->IsString() )
             {
-                if( eletype == TypeInteger || eletype == TypeReal )
+                if ( eletype == TypeInteger || eletype == TypeReal )
                 {
                     eletype = TypeMixed;
                     break;
                 }
-                else if( eletype == TypeUnknown )
+                else if ( eletype == TypeUnknown )
                     eletype = TypeString;
             }
-            else if( (*cur)->IsInt() )
+            else if ( (*cur)->IsInt() )
             {
-                if( eletype == TypeString || eletype == TypeReal )
+                if ( eletype == TypeString || eletype == TypeReal )
                 {
                     eletype = TypeMixed;
                     break;
                 }
-                else if( eletype == TypeUnknown )
+                else if ( eletype == TypeUnknown )
                     eletype = TypeInteger;
             }
-            else if( (*cur)->IsFloat() )
+            else if ( (*cur)->IsFloat() )
             {
-                if( eletype == TypeString || eletype == TypeInteger )
+                if ( eletype == TypeString || eletype == TypeInteger )
                 {
                     eletype = TypeMixed;
                     break;
                 }
-                else if( eletype == TypeUnknown )
+                else if ( eletype == TypeUnknown )
                     eletype = TypeReal;
             }
             else

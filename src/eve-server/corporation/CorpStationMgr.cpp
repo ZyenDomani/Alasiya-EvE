@@ -221,7 +221,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient = call.client;
+    Client* pClient(call.client);
 
     // see if corp has office in station already.
     if (pStationItem->GetOfficeID(pClient->GetCorporationID()))

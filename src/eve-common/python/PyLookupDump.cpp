@@ -40,11 +40,11 @@ PyLookupDumpVisitor::PyLookupDumpVisitor( PyLookupResolver* _resolver, LogType l
 
 bool PyLookupDumpVisitor::VisitInteger( const PyInt* rep )
 {
-    if( !PyLogDumpVisitor::VisitInteger( rep ) )
+    if ( !PyLogDumpVisitor::VisitInteger( rep ) )
         return false;
 
     const char* look = resolver()->LookupInt( rep->value() );
-    if( look != NULL )
+    if ( look != NULL )
         _print( "%s    %s", _pfx(), look );
 
     return true;
@@ -52,11 +52,11 @@ bool PyLookupDumpVisitor::VisitInteger( const PyInt* rep )
 
 bool PyLookupDumpVisitor::VisitString( const PyString* rep )
 {
-    if( !PyLogDumpVisitor::VisitString( rep ) )
+    if ( !PyLogDumpVisitor::VisitString( rep ) )
         return false;
 
     const char* look = resolver()->LookupString( rep->content().c_str() );
-    if( look != NULL )
+    if ( look != NULL )
         _print( "%s    %s", _pfx(), look );
 
     return true;
@@ -64,23 +64,23 @@ bool PyLookupDumpVisitor::VisitString( const PyString* rep )
 
 bool PyLookupResolver::LoadIntFile(const char *file) {
     FILE *f = fopen(file, "r");
-    if(f == NULL)
+    if (f == NULL)
         return false;
     char *buf = new char[10240];
     while(fgets(buf, 10240, f)) {
         //kill empty lines
-        if(*buf == '\n' || *buf == '\r' || *buf == '\0' || *buf == '|')
+        if (*buf == '\n' || *buf == '\r' || *buf == '\0' || *buf == '|')
             continue;
         //find the first delimiter
         char *p = buf;
         while(*p != '|' && *p != '\0' && *p != '\n' && *p != '\r') {
             p++;
         }
-        if(*p == '\0' || *p == '\n' || *p == '\r')
+        if (*p == '\0' || *p == '\n' || *p == '\r')
             continue;   //didnt find it
         *p = '\0';
         p++;
-        if(*p == '\n' || *p == '\r' || *p == '\0')
+        if (*p == '\n' || *p == '\r' || *p == '\0')
             continue;   //skip empty values
         //strip newline
         char *e = p;
@@ -89,7 +89,7 @@ bool PyLookupResolver::LoadIntFile(const char *file) {
         }
         *e = '\0';
         uint32 v = strtoul(buf, NULL, 10);
-        if(v < MIN_RESOLVABLE_INT)
+        if (v < MIN_RESOLVABLE_INT)
             continue;
         m_intRecords[v] = p;
     }
@@ -100,23 +100,23 @@ bool PyLookupResolver::LoadIntFile(const char *file) {
 
 bool PyLookupResolver::LoadStringFile(const char *file) {
     FILE *f = fopen(file, "r");
-    if(f == NULL)
+    if (f == NULL)
         return false;
     char *buf = new char[10240];
     while(fgets(buf, 10240, f)) {
         //kill empty lines
-        if(*buf == '\n' || *buf == '\r' || *buf == '\0' || *buf == '|')
+        if (*buf == '\n' || *buf == '\r' || *buf == '\0' || *buf == '|')
             continue;
         //find the first delimiter
         char *p = buf;
         while(*p != '|' && *p != '\0' && *p != '\n' && *p != '\r') {
             p++;
         }
-        if(*p == '\0' || *p == '\n' || *p == '\r')
+        if (*p == '\0' || *p == '\n' || *p == '\r')
             continue;   //didnt find it
         *p = '\0';
         p++;
-        if(*p == '\n' || *p == '\r' || *p == '\0')
+        if (*p == '\n' || *p == '\r' || *p == '\0')
             continue;   //skip empty values
         //strip newline
         char *e = p;
@@ -134,27 +134,27 @@ bool PyLookupResolver::LoadStringFile(const char *file) {
 
 const char *PyLookupResolver::LookupInt(int64 value) const {
     //hackish check for win32 time looking things...
-    if(value > 127900000000000000LL && value < 130000000000000000LL) {
+    if (value > 127900000000000000LL && value < 130000000000000000LL) {
         //this is not thread safe or reentrant..
         m_dateBuffer = Win32TimeToString(value);
         return(m_dateBuffer.c_str());
     }
 
-    if(value > 0xFFFFFFFFLL || value < MIN_RESOLVABLE_INT)
+    if (value > 0xFFFFFFFFLL || value < MIN_RESOLVABLE_INT)
         return NULL;
     std::map<uint32, std::string>::const_iterator res;
     res = m_intRecords.find(uint32(value));
-    if(res == m_intRecords.end())
+    if (res == m_intRecords.end())
         return NULL;
     return(res->second.c_str());
 }
 
 const char *PyLookupResolver::LookupString(const char *value) const {
-    if(*value == '\0')
+    if (*value == '\0')
         return NULL;
     std::map<std::string, std::string>::const_iterator res;
     res = m_strRecords.find(value);
-    if(res == m_strRecords.end())
+    if (res == m_strRecords.end())
         return NULL;
     return(res->second.c_str());
 }

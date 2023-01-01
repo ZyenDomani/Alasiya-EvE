@@ -135,7 +135,7 @@ public:
         assert(mInitialized && "PyTraceLog isn't initialized");
 
         // base object should be a tuple
-        if(tuple.IsTuple() == false)
+        if (tuple.IsTuple() == false)
         {
             _logInternMessage("trace error because the base object isn't a tuple");
             return false;
@@ -156,7 +156,7 @@ public:
         // tuple 0 should contain the error message or something binary
         PyRepTuple& tuple0_0 = tuple[0]->AsTuple();
         //tuple0_0[0] some integer... which I don't care about
-        if( tuple0_0[1]->IsString() == true )
+        if ( tuple0_0[1]->IsString() == true )
         {
             _logInternStringMessage(tuple0_0[1]);
         }

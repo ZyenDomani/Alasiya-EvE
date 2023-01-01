@@ -32,6 +32,7 @@
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "inventory/AttributeEnum.h"
+#include "map/MapDB.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
 #include "system/Container.h"
@@ -144,7 +145,7 @@ void NPC::EncodeDestiny( Buffer& into )
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
+        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
         data.maxSpeed = m_destiny->GetMaxVelocity();

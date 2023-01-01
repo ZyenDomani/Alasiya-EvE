@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    10.2
+    Version:    10.4
 */
 
 
@@ -63,6 +63,8 @@ EVEServerConfig::EVEServerConfig()
     server.LoadOldMissions = false;
     server.AsteroidsOnDScan = false;
     server.CargoMassAdditive = false;
+    server.LoadStaticRecyclable = false;
+    server.LoadStaticRefinable = false;
 
     // world
     world.chatLogs = false;//N
@@ -72,6 +74,9 @@ EVEServerConfig::EVEServerConfig()
     world.loginInfo = false;//N
     world.loginMsg = false;//N
     world.saveOnMove = false;
+    world.shootRoids = false;
+    world.shootWrecks = false;
+    world.highSecCyno = false;
     world.mailDelay = 5;//N
     world.StationDockDelay = 4 /*s*/;
     world.apWarptoDistance = 15000;
@@ -337,6 +342,8 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "LoadOldMissions",      server.LoadOldMissions );
     AddValueParser( "AsteroidsOnDScan",     server.AsteroidsOnDScan );
     AddValueParser( "CargoMassAdditive",    server.CargoMassAdditive );
+    AddValueParser( "LoadStaticRecyclable", server.LoadStaticRecyclable );
+    AddValueParser( "LoadStaticRefinable",  server.LoadStaticRefinable );
 
     const bool result = ParseElementChildren( ele );
 
@@ -358,6 +365,8 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "LoadOldMissions" );
     RemoveParser( "AsteroidsOnDScan" );
     RemoveParser( "CargoMassAdditive" );
+    RemoveParser( "LoadStaticRecyclable" );
+    RemoveParser( "LoadStaticRefinable" );
 
     return result;
 }
@@ -376,6 +385,9 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     AddValueParser( "StationDockDelay",  world.StationDockDelay );
     AddValueParser( "apWarptoDistance",  world.apWarptoDistance );
     AddValueParser( "shipBoardDistance", world.shipBoardDistance );
+    AddValueParser( "shootRoids",        world.shootRoids );
+    AddValueParser( "shootWrecks",       world.shootWrecks );
+    AddValueParser( "highSecCyno",       world.highSecCyno );
 
     const bool result = ParseElementChildren( ele );
 
@@ -391,6 +403,9 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     RemoveParser( "StationDockDelay" );
     RemoveParser( "apWarptoDistance" );
     RemoveParser( "shipBoardDistance" );
+    RemoveParser( "shootRoids" );
+    RemoveParser( "shootWrecks" );
+    RemoveParser( "highSecCyno" );
 
     return result;
 }

@@ -99,7 +99,7 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
     }
 
-    call.client->GetShip()->RemoveRig(sItemFactory.GetItem(args.arg));
+    call.client->GetShip()->RemoveRig(sItemFactory.GetItemRef(args.arg));
 
     return nullptr;
 }
@@ -245,13 +245,13 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
             continue;
         }
 
-        InventoryItemRef srcItem = sItemFactory.GetItem( data.sourceID );
+        InventoryItemRef srcItem = sItemFactory.GetItemRef( data.sourceID );
         if (srcItem.get() == nullptr) {
             _log(INV__WARNING, "Failed to load source item %u. Skipping.", data.sourceID);
             continue;
         }
 
-        InventoryItemRef destItem = sItemFactory.GetItem( data.destID );
+        InventoryItemRef destItem = sItemFactory.GetItemRef( data.destID );
         if (destItem.get() == nullptr) {
             _log(INV__WARNING, "Failed to load destination item %u. Skipping.", data.destID);
             continue;
@@ -268,7 +268,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
             destItem->Merge( srcItem, data.qty, true );
         // if false, error is thrown in ValidateAddItem() call
     }
-    sItemFactory.SetUsingClient();
+    sItemFactory.UnsetUsingClient();
 
     return nullptr;
 }
@@ -300,12 +300,12 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         toFlag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
     if (toFlag == flagLocked) {
         // corp role 'equip config' can move locked items (per client)
-        _log(INV__ERROR, "IB::Handle_Add() - item %u from %u sent flagLocked.  continuing but this needs to be fixed.", \
+        _log(INV__ERROR, "IB::Handle_Add() - item %u from %lu sent flagLocked.  continuing but this needs to be fixed.", \
                 args.itemID, args.containerID);
         toFlag = flagCargoHold;
     }
 
-    InventoryItemRef iRef = sItemFactory.GetItem(args.itemID);
+    InventoryItemRef iRef = sItemFactory.GetItemRef(args.itemID);
 
     bool moveStack = false;
     int32 quantity = 0;
@@ -355,7 +355,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     }
 
     if (call.tuple->items.size() != 2) {
-        _log(INV__ERROR, "IB::Handle_MultiAdd()  Unexpected number of elements in tuple: %u (should be 2).", call.tuple->items.size() );
+        _log(INV__ERROR, "IB::Handle_MultiAdd()  Unexpected number of elements in tuple: %lu (should be 2).", call.tuple->items.size() );
         return nullptr;
     }
 
@@ -397,11 +397,11 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     if (m_self->IsShipItem() and !moveStack) {
         std::vector<InventoryItemRef> itemVec;
         for (auto cur : args.itemIDs)
-            itemVec.push_back(sItemFactory.GetItem(cur));
+            itemVec.push_back(sItemFactory.GetItemRef(cur));
         args.itemIDs = CatSortItems(itemVec);
     }
 
-    _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
+    _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %lu items from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag), m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
     return MoveItems( call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, moveStack, capacity);
@@ -514,7 +514,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         toFlag = origFlag;
         quantity = origQty;
 
-        iRef = sItemFactory.GetItem(*itr);
+        iRef = sItemFactory.GetItemRef(*itr);
         if (iRef.get() == nullptr) {
             _log(INV__ERROR, "IB::MoveItems() - item %i not found.  continuing.", (*itr));
             continue;
@@ -559,7 +559,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 throw CustomError("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name());
 
             if (IsModuleSlot(toFlag)) {
-                if (IsSolarSystem(pShip->locationID()))
+                if (sDataMgr.IsSolarSystem(pShip->locationID()))
                     throw CustomError("You cannot exchange module slots in space.");
                 //ModulesNotLoadableInSpace  <-- this needs {device} but i dont know what module it is
 
@@ -630,7 +630,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             // check adding item to ship...if it fails, return to previous container
             if (m_self->GetShipItem()->AddItemByFlag(toFlag, iRef, pClient) < 1) {
                 //ALL items *should* have a loaded container item.
-                InventoryItemRef contRef = sItemFactory.GetItemContainer(*itr);
+                InventoryItemRef contRef = sItemFactory.GetItemContainerRef(*itr);
                 if (contRef.get() != nullptr) {
                     contRef->AddItem(iRef);
                 } else {
@@ -648,7 +648,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         }
     }
 
-    sItemFactory.SetUsingClient();
+    sItemFactory.UnsetUsingClient();
 
     if (iRef.get() == nullptr)
         return nullptr;
@@ -704,7 +704,7 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
         items.push_back(cur->itemID());
 
     if (sConfig.debug.IsTestServer and sConfig.debug.UseProfiling)
-        sLog.Warning("IB::CatSortItems", "%u items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
+        sLog.Warning("IB::CatSortItems", "%lu items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
 
     return items;  //returns sorted list
 }
@@ -744,7 +744,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
             (m_passive ? ":passive" : ""), sDataMgr.GetFlagName(oldFlag));
 
     // check for owner type of this inventory for reference checks
-    if (IsOffice(m_itemID)) {
+    if (IsOfficeID(m_itemID)) {
         // office owned by corp in station
         // check for owner or corp
         if (call.client->GetCorporationID() != m_ownerID)
@@ -757,13 +757,13 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     } else if (IsPlayerCorp(m_itemID)) {
         // this one probably will not be used.
         //  what items in a corp would be listed?  corpItem dont have inventory
-    } else if (IsCharacter(m_itemID)) { // this is checked in Inventory::List()
+    } else if (IsCharacterID(m_itemID)) { // this is checked in Inventory::List()
         // this is asking for skill list...char is a container for skills
         flag = flagNone;
     } else if (IsSolarSystem(m_itemID)) {
         //  not sure how to do this one...will have to check on WHEN system listing would be called
         */
-    } else if (IsStation(m_itemID)) {
+    } else if (sDataMgr.IsStation(m_itemID)) {
         // this will get owners items only, including corps
 
     } else if (IsControlBunker(m_itemID)) {
@@ -817,7 +817,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
         locationID = call.client->GetShipID();
 
     // when trying to copy vouchers to jetcan, location is solar system....grrrr
-    if (IsSolarSystem(locationID)) {
+    if (sDataMgr.IsSolarSystem(locationID)) {
         args.flag = flagCargoHold;
         locationID = call.client->GetShipID();
     }

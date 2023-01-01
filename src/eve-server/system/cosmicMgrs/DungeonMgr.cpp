@@ -14,6 +14,7 @@
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
 #include "StaticDataMgr.h"
+#include "math/Trig.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
@@ -21,8 +22,8 @@
 #include "system/cosmicMgrs/SpawnMgr.h"
 
 DungeonDataMgr::DungeonDataMgr()
+:  m_dungeonID(DUNGEON_ID)
 {
-    m_dungeonID = DUNGEON_ID;
 }
 
 int DungeonDataMgr::Initialize()
@@ -181,47 +182,32 @@ DungeonMgr::~DungeonMgr()
 
 bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
 {
+    if (anomMgr == nullptr) {
+        _log(COSMIC_MGR__ERROR, "System Init Fault. anomMgr == nullptr.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
+        return false;
+    }
+
+    if (spawnMgr == nullptr) {
+        _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
+        return false;
+    }
+
     m_anomMgr = anomMgr;
     m_spawnMgr = spawnMgr;
 
-    if (m_anomMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. anomMgr == nullptr.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
-        return m_initalized;
-    }
-
-    if (m_spawnMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
-        return m_initalized;
-    }
-
     if (!sConfig.cosmic.DungeonEnabled){
-        _log(COSMIC_MGR__MESSAGE, "Dungeon System Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
-        return true;
-    }
-
-    if (!sConfig.cosmic.AnomalyEnabled) {
-        _log(COSMIC_MGR__MESSAGE, "Anomaly System Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
-        return true;
-    }
-
-    if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
-        _log(COSMIC_MGR__MESSAGE, "SpawnMgr Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
-        return true;
-    }
-
-    if (!sConfig.cosmic.BeltEnabled) {
-        _log(COSMIC_MGR__MESSAGE, "BeltMgr Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__INIT, "Dungeon System Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return true;
     }
 
     m_spawnMgr->SetDungMgr(this);
     Load();
 
-    _log(COSMIC_MGR__MESSAGE, "DungeonMgr Initialized for %s(%u)", m_system->GetName(), m_system->GetID());
+    _log(COSMIC_MGR__INIT, "DungeonMgr Initialized for %s(%u)", m_system->GetName(), m_system->GetID());
 
     m_initalized = true;
 
-    return m_initalized;
+    return true;
 }
 
 // called from systemMgr
@@ -238,13 +224,13 @@ void DungeonMgr::Load()
     ManagerDB::GetSavedDungeons(m_system->GetID(), dungeons);
     /** @todo this will need more work as the system matures...
     for(auto dungeon : dungeons) {
-        InventoryItemRef dungeonRef = m_system->itemFactory()->GetItem( dungeon.dungeonID );
-        if( !dungeonRef ) {
+        InventoryItemRef dungeonRef = ItemFactory.GetItemRef( dungeon.dungeonID );
+        if ( !dungeonRef ) {
             _log(COSMIC_MGR__WARNING, "DungeonMgr::Load() -  Unable to spawn dungeon item #%u:'%s' of type %u.", dungeon.dungeonID, dungeon.typeID);
             continue;
         }
         AsteroidSE* asteroidObj = new AsteroidSE( dungeonRef, *(m_system->GetServiceMgr()), m_system );
-        if( !asteroidObj ) {
+        if ( !asteroidObj ) {
             _log(COSMIC_MGR__WARNING, "DungeonMgr::Load() -  Unable to spawn dungeon entity #%u:'%s' of type %u.", dungeon.dungeonID, dungeon.typeID);
             continue;
         }
@@ -794,7 +780,7 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
     // level is 0 to 9, system multiplier is 0.1 to 2.0 (x10 is 1-20)
     level *= (m_system->GetSecValue() *10);  // config variable here?
     // set origLevel 0 to 18, rounding up
-    uint8 origLevel = ceil(level /10);
+    uint8 origLevel = ceil(level / 10);
     if (origLevel < 1)
         origLevel = 1;
     for (auto cur : groupVec) {

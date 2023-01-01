@@ -28,7 +28,7 @@
  * with a way to access/track/boot as needed.
  *
  *  when one WH collapses, it will be in charge of creating new WH in the place of the old
- * one, making approprate connections, and tracking any other changes in the WH itself
+ * one, making appropriate connections, and tracking any other changes in the WH itself
  *
  *  this class is also in charge of all dynamic WH data in the db
  *
@@ -36,9 +36,9 @@
 
 WormholeMgr::WormholeMgr()
 :  m_updateTimer(0),
-    m_services(nullptr)
+    m_services(nullptr),
+    m_initalized(false)
 {
-    m_initalized = false;
 }
 
 WormholeMgr::~WormholeMgr()

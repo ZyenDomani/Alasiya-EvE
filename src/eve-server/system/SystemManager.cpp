@@ -30,6 +30,8 @@
 #include "account/AccountService.h"
 #include "chat/LSCService.h"
 #include "exploration/Probes.h"
+#include "map/MapData.h"
+#include "map/MapDB.h"
 #include "npc/Drone.h"
 #include "npc/NPC.h"
 #include "npc/Sentry.h"
@@ -42,9 +44,9 @@
 #include "pos/Module.h"
 #include "pos/Structure.h"
 #include "pos/Tower.h"
-#include "pos/TCU.h"
-#include "pos/SBU.h"
-#include "pos/IHub.h"
+#include "pos/sovStructures/TCU.h"
+#include "pos/sovStructures/SBU.h"
+#include "pos/sovStructures/IHub.h"
 #include "pos/Weapon.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"
@@ -126,7 +128,7 @@ SystemManager::~SystemManager() {
 bool SystemManager::BootSystem() {
     // dont fuck with this order...
 
-    m_solarSystemRef = sItemFactory.GetSolarSystem(m_data.systemID);
+    m_solarSystemRef = sItemFactory.GetSolarSystemRef(m_data.systemID);
     assert(m_solarSystemRef.get() != nullptr);
 
     if (!LoadSystemStatics()) {
@@ -196,6 +198,9 @@ bool SystemManager::BootSystem() {
 
 bool SystemManager::LoadCosmicMgrs()
 {
+    if (m_beltCount)
+        m_beltMgr->Init(m_data.regionID);  //nothing to check for in this init.
+
     if (!m_spawnMgr->Init()) {
         _log(SERVICE__ERROR, "Unable to load Spawn Manager during boot of system %u.", m_data.systemID);
         return false;
@@ -205,9 +210,6 @@ bool SystemManager::LoadCosmicMgrs()
         _log(SERVICE__ERROR, "Unable to load Dungeon Manager during boot of system %u.", m_data.systemID);
         return false;
     }
-
-    if (m_beltCount)
-        m_beltMgr->Init(m_data.regionID);  //nothing to check for in this init.
 
     if (!m_anomMgr->Init(m_beltMgr, m_dungMgr, m_spawnMgr)) {
         _log(SERVICE__ERROR, "Unable to load Anomaly Manager during boot of system %u.", m_data.systemID);
@@ -394,20 +396,20 @@ bool SystemManager::LoadSystemStatics() {
                 /** @todo (Allan) outposts are group::station - may need to hack this */
                 /*  types 12242 - 22298 in group 15 are outposts */
                 /*  types 29323 - 29390 in group 15 are wrecked stations */
-                StationItemRef itemRef = sItemFactory.GetStationItem(cur.itemID);
+                StationItemRef itemRef = sItemFactory.GetStationRef(cur.itemID);
                 StationSE *pSSE = new StationSE(itemRef, *(GetServiceMgr()), this);
                 sEntityList.AddStation(cur.itemID, itemRef);
                 pSE = pSSE;
             } break;
             case EVEDB::invGroups::Asteroid_Belt: {
-                CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = sItemFactory.GetCelestialRef(cur.itemID);
                 BeltSE *pBSE = new BeltSE(itemRef, *(GetServiceMgr()), this);
                 pBSE->SetBeltMgr(m_beltMgr);
                 ++m_beltCount;
                 pSE = pBSE;
             } break;
             case EVEDB::invGroups::Stargate: {
-                CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = sItemFactory.GetCelestialRef(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 StargateSE *pSSE = new StargateSE(itemRef, *(GetServiceMgr()), this);
                 m_gateMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pSSE));
@@ -415,21 +417,21 @@ bool SystemManager::LoadSystemStatics() {
                 pSE = pSSE;
             } break;
             case EVEDB::invGroups::Planet: {
-                CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = sItemFactory.GetCelestialRef(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 PlanetSE *pPSE = new PlanetSE(itemRef, *(GetServiceMgr()), this);
                 m_planetMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pPSE));
                 pSE = pPSE;
             } break;
             case EVEDB::invGroups::Moon: {
-                CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = sItemFactory.GetCelestialRef(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 MoonSE *pMSE = new MoonSE(itemRef, *(GetServiceMgr()), this);
                 m_moonMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pMSE));
                 pSE = pMSE;
             } break;
             case EVEDB::invGroups::Sun: {    // suns dont have anything special, so they are generic SSEs
-                CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = sItemFactory.GetCelestialRef(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 StaticSystemEntity *pSSE = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
                 pSE = pSSE;
@@ -457,7 +459,7 @@ bool SystemManager::LoadSystemStatics() {
         AddItemToInventory(pSE->GetSelf());
     }
 
-    _log(SERVER__INIT, "SystemManager::LoadSystemStatics() - %u Static System entities loaded for %s (%u)", entities.size(), m_data.name.c_str(), m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadSystemStatics() - %lu Static System entities loaded for %s (%u)", entities.size(), m_data.name.c_str(), m_data.systemID);
     entities.clear();
     return true;
 }
@@ -481,11 +483,11 @@ bool SystemManager::LoadSystemDynamics() {
         _log(ITEM__TRACE, "SystemManager::LoadSystemDynamics() - Loaded dynamic entity %u of type %u for %s(%u)", \
                     cur.itemID, cur.typeID, m_data.name.c_str(), m_data.systemID);
         if (pSE->GetPosition().isZero())
-            pSE->SetPosition(mGP.GetRandPointOnPlanet(m_data.systemID));
-            //pSE->SetPosition(mGP.GetRandPointOnMoon(m_data.systemID));
+            pSE->SetPosition(sMapData.GetRandPointOnPlanet(m_data.systemID));
+            //pSE->SetPosition(sMapData.GetRandPointOnMoon(m_data.systemID));
         AddEntity(pSE);
     }
-    _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %u Dynamic System entities loaded for %s(%u)", entities.size(), m_data.name.c_str(),m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %lu Dynamic System entities loaded for %s(%u)", entities.size(), m_data.name.c_str(),m_data.systemID);
 
     return true;
 }
@@ -508,8 +510,8 @@ bool SystemManager::LoadPlayerDynamics() {
         _log(ITEM__TRACE, "SystemManager::LoadPlayerDynamics() - Loaded dynamic entity %u of type %u for %s(%u)", \
                     cur.itemID, cur.typeID, m_data.name.c_str(),m_data.systemID);
         if (pSE->GetPosition().isZero())
-            pSE->SetPosition(mGP.GetRandPointOnMoon(m_data.systemID));
-            //pSE->SetPosition(mGP.GetRandPointOnPlanet(m_data.systemID));
+            pSE->SetPosition(sMapData.GetRandPointOnMoon(m_data.systemID));
+            //pSE->SetPosition(sMapData.GetRandPointOnPlanet(m_data.systemID));
         AddEntity(pSE);
     }
     _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %u Dynamic Player entities loaded for %s(%u)", \
@@ -533,7 +535,7 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, uint
     if (launcherID) {
         WreckSE* pWE = pSE->GetWreckSE();
         pWE->SetLaunchedByID(launcherID);
-        if (IsCharacter(entity.ownerID)) {
+        if (IsCharacterID(entity.ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(entity.ownerID);
             if (pClient->InFleet())
                 pWE->SetFleetID(pClient->GetFleetID());
@@ -552,7 +554,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
 
     switch (entity.categoryID) {
         case EVEDB::invCategories::Asteroid: {
-            InventoryItemRef asteroid = sItemFactory.GetItem( entity.itemID );
+            InventoryItemRef asteroid = sItemFactory.GetItemRef( entity.itemID );
             if (asteroid.get() == nullptr)
                 ; /** @todo make error msg here */
             AsteroidSE* aSE = new AsteroidSE(asteroid, *(sysMgr.GetServiceMgr()), &sysMgr);
@@ -560,7 +562,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             return aSE;
         } break;
         case EVEDB::invCategories::Ship: {
-            ShipItemRef ship = sItemFactory.GetShip( entity.itemID );
+            ShipItemRef ship = sItemFactory.GetShipRef( entity.itemID );
             if (ship.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
@@ -569,7 +571,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             return sSE;
         } break;
         case EVEDB::invCategories::Deployable: {
-            InventoryItemRef deployable = sItemFactory.GetItem( entity.itemID );
+            InventoryItemRef deployable = sItemFactory.GetItemRef( entity.itemID );
             if (deployable.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
@@ -581,7 +583,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
         //  these should go into m_staticEntities
         case EVEDB::invCategories::StructureUpgrade: // SOV upgrade structures   these may need their own class one day.
         case EVEDB::invCategories::Structure: {         // POS items
-            StructureItemRef structure = sItemFactory.GetStructure( entity.itemID );
+            StructureItemRef structure = sItemFactory.GetStructureRef( entity.itemID );
             if (structure.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
@@ -642,7 +644,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
         } break;
         case EVEDB::invCategories::SovereigntyStructure: {// SOV structures
             //Create item ref
-            StructureItemRef structure = sItemFactory.GetStructure( entity.itemID );
+            StructureItemRef structure = sItemFactory.GetStructureRef( entity.itemID );
             if (structure.get() == nullptr)
                 return nullptr;
             StructureSE* sSSE(nullptr);
@@ -672,7 +674,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             return sSSE;
         } break;
         case EVEDB::invCategories::Orbitals: {           // planet orbitals   these should go into m_staticEntities
-            StructureItemRef structure = sItemFactory.GetStructure( entity.itemID );
+            StructureItemRef structure = sItemFactory.GetStructureRef( entity.itemID );
             if (structure.get() == nullptr)
                 return nullptr;
                 /** @todo make error msg here */
@@ -716,7 +718,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 case EVEDB::invGroups::Cargo_Container:
                 case EVEDB::invGroups::Freight_Container:
                 case EVEDB::invGroups::Shipping_Crates: {
-                    CargoContainerRef contRef = sItemFactory.GetCargoContainer( entity.itemID );
+                    CargoContainerRef contRef = sItemFactory.GetCargoRef( entity.itemID );
                     if (contRef.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
@@ -749,7 +751,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 case EVEDB::invGroups::Covert_Beacon:
                 case EVEDB::invGroups::Harvestable_Cloud:
                 case EVEDB::invGroups::Planetary_Cloud: {
-                    CelestialObjectRef celestial = sItemFactory.GetCelestialObject( entity.itemID );
+                    CelestialObjectRef celestial = sItemFactory.GetCelestialRef( entity.itemID );
                     if (celestial.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
@@ -758,7 +760,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                     return cSE;
                 } break;
                 case EVEDB::invGroups::Wormhole: {
-                    CelestialObjectRef celestial = sItemFactory.GetCelestialObject( entity.itemID );
+                    CelestialObjectRef celestial = sItemFactory.GetCelestialRef( entity.itemID );
                     if (celestial.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
@@ -768,7 +770,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 } break;
                 case EVEDB::invGroups::Cosmic_Anomaly:
                 case EVEDB::invGroups::Cosmic_Signature: {
-                    CelestialObjectRef celestial = sItemFactory.GetCelestialObject( entity.itemID );
+                    CelestialObjectRef celestial = sItemFactory.GetCelestialRef( entity.itemID );
                     if (celestial.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
@@ -778,7 +780,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 } break;
                 case EVEDB::invGroups::Warp_Gate: { //accel gate
                     // does this need own item, or celestial, or generic or other?
-                    InventoryItemRef iRef = sItemFactory.GetItem( entity.itemID );
+                    InventoryItemRef iRef = sItemFactory.GetItemRef( entity.itemID );
                     //CelestialObjectRef celestial = sItemFactory.GetCelestialObject( entity.itemID );
                     if (iRef.get() == nullptr)
                         return nullptr;
@@ -793,7 +795,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             if (entity.groupID == EVEDB::invGroups::Spawn_Container ) {     // these are destructible objects found in dungeons
                 // For category=Entity, group=Spawn Container, create a CargoContainer object:
                 /** @todo  this needs its own class....there are 477 types, spawning everything..rats, modules, items, etc. */
-                CargoContainerRef contRef = sItemFactory.GetCargoContainer( entity.itemID );
+                CargoContainerRef contRef = sItemFactory.GetCargoRef( entity.itemID );
                 if (contRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */
@@ -805,7 +807,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             } else if ((entity.groupID == EVEDB::invGroups::Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Protective_Sentry_Gun)
                 or (entity.groupID == EVEDB::invGroups::Destructible_Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Mobile_Sentry_Gun))
             {
-                InventoryItemRef sentryRef = sItemFactory.GetItem( entity.itemID );
+                InventoryItemRef sentryRef = sItemFactory.GetItemRef( entity.itemID );
                 if (sentryRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */
@@ -814,7 +816,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 return SentrySE;
             }
             // Check for NPC ships/drones here (category 11):   NOT player drones (different category [18])
-            else if((entity.groupID == EVEDB::invGroups::Police_Drone) or (entity.groupID == EVEDB::invGroups::Pirate_Drone) or (entity.groupID == EVEDB::invGroups::LCO_Drone)
+            else if ((entity.groupID == EVEDB::invGroups::Police_Drone) or (entity.groupID == EVEDB::invGroups::Pirate_Drone) or (entity.groupID == EVEDB::invGroups::LCO_Drone)
                 or (entity.groupID == EVEDB::invGroups::Tutorial_Drone) or (entity.groupID == EVEDB::invGroups::Rogue_Drone) or (entity.groupID == EVEDB::invGroups::Faction_Drone)
                 or (entity.groupID == EVEDB::invGroups::Convoy) or (entity.groupID == EVEDB::invGroups::Convoy_Drone) or (entity.groupID == EVEDB::invGroups::Concord_Drone)
                 or (entity.groupID == EVEDB::invGroups::Mission_Drone) or (entity.groupID == EVEDB::invGroups::Deadspace_Overseer) or (entity.groupID == EVEDB::invGroups::Customs_Official)
@@ -846,7 +848,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Frigate) or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Cruiser)
                 or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship))
             {
-                InventoryItemRef npcRef = sItemFactory.GetItem( entity.itemID );
+                InventoryItemRef npcRef = sItemFactory.GetItemRef( entity.itemID );
                 if (npcRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */
@@ -858,7 +860,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             }
             // may have to create unique class for Billboard (EVEDB::invGroups::Billboard)
             else {
-                InventoryItemRef iRef = sItemFactory.GetItem( entity.itemID );
+                InventoryItemRef iRef = sItemFactory.GetItemRef( entity.itemID );
                 if (iRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */
@@ -868,7 +870,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             }
         } break;
         case EVEDB::invCategories::Drone: {             // Player Drones
-            InventoryItemRef drone = sItemFactory.GetItem( entity.itemID );
+            InventoryItemRef drone = sItemFactory.GetItemRef( entity.itemID );
             if (drone.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
@@ -879,7 +881,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
         case EVEDB::invCategories::Charge: {
             switch (entity.groupID) {
                 case EVEDB::invGroups::Scanner_Probe: {
-                    ProbeItemRef pRef = sItemFactory.GetProbeItem(entity.itemID);
+                    ProbeItemRef pRef = sItemFactory.GetProbeRef(entity.itemID);
                     if (pRef.get() == nullptr)
                         return nullptr;
                         /** @todo make error msg here */
@@ -1232,16 +1234,15 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
     if (!m_spawnMgr->IsInitialized())
         return;
 
-    uint8 count = m_beltCount;
-    if (count < 1)
+    if (m_beltCount < 1)
         return;
 
     if (is_log_enabled(SPAWN__MESSAGE))
-        _log(SPAWN__MESSAGE, "Spawn called for bubble %u(%u) in %s(%u)[%.4f], region %u.",
-             pBubble->GetID(), sBubbleMgr.GetBeltID(pBubble->GetID()), m_data.name.c_str(), m_data.systemID, m_data.securityRating, m_data.regionID);
-    if (count > 15)
-        count = 15;
-    if ((m_activeRatSpawns < count ) or (pBubble->IsGate())) {
+        _log(SPAWN__MESSAGE, "Spawn called for bubble %u(%u) in %s(%u)[%.4f], region %u.", \
+            pBubble->GetID(), sBubbleMgr.GetBeltID(pBubble->GetID()), m_data.name.c_str(), \
+            m_data.systemID, m_data.securityRating, m_data.regionID);
+
+    if ((m_activeRatSpawns < m_beltCount ) or (pBubble->IsGate())) {
         if (m_spawnMgr->DoSpawnForBubble(pBubble)) {
             m_ratBubbles.emplace(pBubble->GetID(), pBubble);
             if (is_log_enabled(SPAWN__TRACE))
@@ -1547,11 +1548,13 @@ void SystemManager::DScan(int64 range, const GPoint& pos, std::vector<SystemEnti
      * may not be in this version, but check for "scan inhibitor" POS module; ships in it are invis to dscan
      * AttrDScanImmune is from rhea expansion.  may be able to implement here.
      */
+
+    //  TO CHECK...does scan settings alter this or is entirely client-side?
     for (auto cur : m_entities) {
         // these dont show on dscan
         if (IsTempItem(cur.first))
             continue;
-        if (IsAsteroid(cur.first))
+        if (IsAsteroidID(cur.first))
             if (!sConfig.server.AsteroidsOnDScan)
                 continue;
         if (IsNPC(cur.first))

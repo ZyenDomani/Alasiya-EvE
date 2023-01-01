@@ -23,7 +23,6 @@
 #include "../eve-common/EVE_Market.h"
 
 
-//struct CelestialObjectData;
 struct SolarSystemData;
 
 class StaticDataMgr

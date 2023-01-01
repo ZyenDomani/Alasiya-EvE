@@ -112,7 +112,7 @@ PyResult SkillMgrBound::Handle_CharStopTrainingSkill(PyCallArgs &call) {
 PyResult SkillMgrBound::Handle_CharStartTrainingSkill( PyCallArgs& call ) {
     // sm.GetService('godma').GetSkillHandler().CharStartTrainingSkill(skillX.itemID, skillX.locationID)
     Call_TwoIntegerArgs args;
-    if( !args.Decode( call.tuple ) )
+    if ( !args.Decode( call.tuple ) )
     {
         codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
         return nullptr;
@@ -147,11 +147,11 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
     // make a list of skills successfully injected to display after injection
     // name, ret value  where 1=success, 2=prereqs, 3=already known, 4=split fail, 5=load fail
     std::map<std::string, uint8> skills;
-    SkillRef skill(nullptr);
+    SkillRef skillRef(nullptr);
     CharacterRef cRef(call.client->GetChar());
     for (auto cur : args.skills)  {
-        skill = sItemFactory.GetSkill(cur);
-        if (skill.get() == nullptr) {
+        skillRef = sItemFactory.GetSkillRef(cur);
+        if (skillRef.get() == nullptr) {
             _log( ITEM__ERROR, "%s: failed to load skill %u for injection.", call.client->GetName(), cur);
             std::string str = "Invalid Name #";
             str += std::to_string(cur);
@@ -159,7 +159,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
             continue;
         }
 
-        skills.emplace(skill->itemName(), cRef->InjectSkillIntoBrain(skill));
+        skills.emplace(skillRef->itemName(), cRef->InjectSkillIntoBrain(skillRef));
     }
 
     // build and populate status reply

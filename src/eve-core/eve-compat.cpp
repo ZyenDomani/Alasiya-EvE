@@ -31,7 +31,7 @@
 #ifndef HAVE_WINDOWS_H
 void Sleep( uint32 x )
 {
-    if( 0 < x )
+    if ( 0 < x )
         ::usleep( 1000 * x );
 }
 
@@ -85,7 +85,7 @@ int vasprintf( char** strp, const char* fmt, va_list ap )
         // Try to print into the buffer
         code = ::vsnprintf( *strp, size, fmt, ap );
         // Check for truncation
-        if( size <= code )
+        if ( size <= code )
             // Output truncated
             code = -1;
 
@@ -158,7 +158,7 @@ int vsprintf( std::string& str, const char* fmt, va_list ap )
         // Try to print into the buffer
         code = ::vsnprintf( &str[offset], size, fmt, ap );
         // Check for truncation
-        if( size <= code )
+        if ( size <= code )
             // Output truncated
             code = -1;
 
@@ -185,7 +185,7 @@ tm* localtime_r( const time_t* timep, tm* result )
 {
 #   ifdef HAVE_LOCALTIME_S
     const errno_t err = ::localtime_s( result, timep );
-    if( 0 != err )
+    if ( 0 != err )
     {
         errno = err;
         return NULL;

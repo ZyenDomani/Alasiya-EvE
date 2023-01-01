@@ -84,15 +84,16 @@ void Mutex::Unlock()
 /*************************************************************************/
 /* MRMutex                                                               */
 /*************************************************************************/
-MRMutex::MRMutex() {
-    rl = 0;
-    wr = 0;
-    wl = 0;
+MRMutex::MRMutex()
+: rl(0),
+lr(0),
+wl(0)
+{
 }
 
 MRMutex::~MRMutex() {
 #ifdef _EQDEBUG
-    if (wl || rl) {
+    if (wl or rl) {
         cout << "MRMutex::~MRMutex: poor cleanup detected: rl=" << rl << ", wl=" << wl << endl;
     }
 #endif
@@ -106,12 +107,11 @@ void MRMutex::ReadLock() {
 
 bool MRMutex::TryReadLock() {
     MCounters.Lock();
-    if (!wr && !wl) {
+    if (!lr && !wl) {
         ++rl;
         MCounters.Unlock();
         return true;
-    }
-    else {
+    } else {
         MCounters.Unlock();
         return false;
     }
@@ -134,15 +134,14 @@ void MRMutex::WriteLock() {
         ++wl;
         MCounters.Unlock();
         return;
-    }
-    else {
-        ++wr;
+    } else {
+        ++lr;
         MCounters.Unlock();
         while (1) {
             Sleep(1);
             MCounters.Lock();
             if (!rl && !wl) {
-                --wr;
+                --lr;
                 MCounters.Unlock();
                 return;
             }
@@ -157,8 +156,7 @@ bool MRMutex::TryWriteLock() {
         ++wl;
         MCounters.Unlock();
         return true;
-    }
-    else {
+    } else {
         MCounters.Unlock();
         return false;
     }
@@ -182,9 +180,9 @@ int32 MRMutex::ReadLockCount() {
     return ret;
 }
 
-int32 MRMutex::WriteLockCount() {
+int8 MRMutex::WriteLockCount() {
     MCounters.Lock();
-    int32 ret = wl;
+    int8 ret = wl;
     MCounters.Unlock();
     return ret;
 }

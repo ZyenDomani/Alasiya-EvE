@@ -279,7 +279,7 @@ bool Character::_Load() {
         return (m_loaded = false);
     }
     if (!m_skillQueue.empty()) {
-        SkillRef sRef = GetSkill(m_skillQueue.front().typeID);
+        SkillRef sRef = GetCharSkillRef(m_skillQueue.front().typeID);
         if (sRef.get() != nullptr) {
             sRef->SetFlag(flagSkillInTraining, false);
             m_inTraining = sRef.get();
@@ -323,7 +323,7 @@ CharacterRef Character::Spawn(CharacterData& charData, CorpData& corpData) {
         return CharacterRef(nullptr);
 
     uint32 characterID = CharacterDB::NewCharacter(charData, corpData);
-    if (!IsCharacter(characterID)) {
+    if (!IsCharacterID(characterID)) {
         _log(CHARACTER__ERROR, "Failed to get itemID for new character.");
         return CharacterRef(nullptr);
     }
@@ -336,14 +336,14 @@ void Character::LogOut()
     SaveFullCharacter();
     m_db.SetLogOffTime(m_itemID);
     if (!sConsole.IsShutdown())
-        if (IsFleet(m_fleetData.fleetID))
+        if (IsFleetID(m_fleetData.fleetID))
             sFltSvc.LeaveFleet(m_pClient);
 
     pInventory->Unload();
 
     if (!m_pClient->IsCharCreation()) {
         sItemFactory.RemoveItem(m_itemID);
-        if (IsStation(m_charData.locationID))
+        if (sDataMgr.IsStation(m_charData.locationID))
             ;   // do we need to do anything here?
     }
 }
@@ -530,7 +530,7 @@ void Character::GetSkillsList(std::vector<InventoryItemRef> &skills) const {
 }
 
 bool Character::HasSkill(uint16 skillTypeID) const {
-    return (GetSkill(skillTypeID).get() != nullptr);
+    return (GetCharSkillRef(skillTypeID).get() != nullptr);
 }
 
 PyRep* Character::GetSkillHistory() {
@@ -557,7 +557,7 @@ uint8 Character::GetSPPerMin(Skill* skill)
     return EvEMath::Skill::PointsPerMinute(primary, secondary);
 }
 
-SkillRef Character::GetSkill(uint16 skillTypeID) const
+SkillRef Character::GetCharSkillRef(uint16 skillTypeID) const
 {
     InventoryItemRef skill = pInventory->GetByTypeFlag(skillTypeID, flagSkill);
     if (skill.get() == nullptr)
@@ -567,7 +567,7 @@ SkillRef Character::GetSkill(uint16 skillTypeID) const
 }
 
 int8 Character::GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected /*true*/) const {
-    SkillRef requiredSkill = GetSkill(skillTypeID);
+    SkillRef requiredSkill = GetCharSkillRef(skillTypeID);
     // First, check for existence of skill trained or in training:
     if (requiredSkill.get() == nullptr)
         return (zeroForNotInjected ? 0 : -1);
@@ -576,7 +576,7 @@ int8 Character::GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected /*true
 }
 
 bool Character::HasSkillTrainedToLevel(uint16 skillTypeID, uint8 skillLevel) const {
-    SkillRef requiredSkill = GetSkill(skillTypeID);
+    SkillRef requiredSkill = GetCharSkillRef(skillTypeID);
     // First, check for existence of skill
     if (requiredSkill.get() == nullptr)
         return false;
@@ -698,7 +698,7 @@ uint8 Character::InjectSkillIntoBrain(SkillRef skill) {
     // returns
     // 1=success, 2=prereqs, 3=already known, 4=split fail, 5=load fail
 
-    SkillRef oldSkill = GetSkill(skill->typeID());
+    SkillRef oldSkill = GetCharSkillRef(skill->typeID());
     if (oldSkill.get() != nullptr) {
         /** @todo: build and send proper UserError for CharacterAlreadyKnowsSkill. */
         m_pClient->SendNotifyMsg("You already know this skill.");
@@ -756,7 +756,7 @@ void Character::LoadPausedSkillQueue(uint16 typeID)
     if (m_skillQueue.empty())
         return;
 
-    Skill* skill(GetSkill(typeID).get());
+    Skill* skill(GetCharSkillRef(typeID).get());
     if (typeID != m_skillQueue.front().typeID) {
         // skill to start != first skill in queue...do we just start removing skills till we find this typeID?
         _log(SKILL__WARNING, "LoadPausedSkillQueue() - type sent (%u) does not match first in queue (%u)",
@@ -768,7 +768,7 @@ void Character::LoadPausedSkillQueue(uint16 typeID)
     uint32 currentSP(0), nextSP(0);
     int64 startTime(GetFileTimeNow());
     for (SkillQueue::iterator itr = m_skillQueue.begin(); itr != m_skillQueue.end(); ++itr) {
-        skill = GetSkill(itr->typeID).get();
+        skill = GetCharSkillRef(itr->typeID).get();
         if (skill == nullptr)
             continue;
         nextLvl = skill->GetAttribute(AttrSkillLevel).get_uint32() + 1;
@@ -789,7 +789,7 @@ void Character::LoadPausedSkillQueue(uint16 typeID)
     }
 
     // get first skill, add start history and send begin training packet
-    skill = GetSkill(m_skillQueue.front().typeID).get();
+    skill = GetCharSkillRef(m_skillQueue.front().typeID).get();
     skill->SetFlag(flagSkillInTraining, true);
     skill->SaveItem();
 
@@ -899,7 +899,7 @@ void Character::CancelSkillInTraining(bool update/*false*/)
 }
 
 void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
-    Skill* skill(GetSkill(typeID).get());
+    Skill* skill(GetCharSkillRef(typeID).get());
     if (skill == nullptr) {
         //  skill not found.  cancel and return
         _log(SKILL__QUEUE, "Cannot find Skill %u.", typeID);
@@ -1017,7 +1017,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
     Skill* skill(nullptr);
     while (!m_skillQueue.empty()) {
         QueuedSkill qs = m_skillQueue.front();
-        skill = GetSkill(qs.typeID).get();
+        skill = GetCharSkillRef(qs.typeID).get();
         if ((qs.typeID == 0) or (skill == nullptr)) {
             _log(SKILL__WARNING, "SkillID %u to train was not found.  Erase and continue.", qs.typeID);
             m_skillQueue.erase(m_skillQueue.begin());
@@ -1064,7 +1064,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
                     tmp = ost.Encode();
                 } else {
                     // another skill in the works.  send combined update
-                    SkillRef sref = GetSkill(m_skillQueue.front().typeID);
+                    SkillRef sref = GetCharSkillRef(m_skillQueue.front().typeID);
                     if (sref.get() == nullptr) {
                         // that shit didnt work...revert to multiple packets
                         OnSkillTrained ost;

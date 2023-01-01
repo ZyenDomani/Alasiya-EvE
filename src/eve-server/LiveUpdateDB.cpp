@@ -44,8 +44,7 @@ PyList* LiveUpdateDB::GenerateUpdates()
             " FROM liveupdates";
     DBQueryResult res;
 
-    if (!sDatabase.RunQuery(res, query))
-    {
+    if (!sDatabase.RunQuery(res, query)) {
         codelog(DATABASE__ERROR, "Couldn't get live updates from database: %s", res.error.c_str());
         return nullptr;
     }
@@ -63,12 +62,11 @@ PyList* LiveUpdateDB::GenerateUpdates()
 
     // we need to manually create PyPackedRows since we don't want everything from the query in them
     PyList* list = new PyList(res.GetRowCount());
-    int listIndex = 0;
+    int listIndex(0);
     DBResultRow row;
-    while (res.GetRow(row))
-    {
+    while (res.GetRow(row)) {
         PyPackedRow* packedRow = new PyPackedRow(header);
-        for (int i = 0; i < 7; i++)
+        for (int i(0); i < 7; ++i)
             packedRow->SetField(i, DBColumnToPyRep(row, i));
 
         LiveUpdateInner inner;
@@ -79,8 +77,9 @@ PyList* LiveUpdateDB::GenerateUpdates()
         inner.methodName = row.GetText(7);
         packedRow->SetField(static_cast<uint32>(7) /* code */, inner.Encode());
 
-        list->SetItem(listIndex++, packedRow);
+        list->SetItem(++listIndex, packedRow);
     }
+
     list->Dump(NET__PRES_DEBUG, "    ");
 
     return list;

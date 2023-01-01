@@ -27,7 +27,8 @@
 #define EVE_INVENTORY_ITEM_DB
 
 #include "ServiceDB.h"
-#include "inventory/ItemType.h"
+
+class ItemData;
 
 class ItemDB
 {

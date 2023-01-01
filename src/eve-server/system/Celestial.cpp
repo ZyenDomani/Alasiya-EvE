@@ -30,16 +30,6 @@
 #include "system/Celestial.h"
 #include "system/SystemManager.h"
 
-/*
- * CelestialObjectData
- */
-CelestialObjectData::CelestialObjectData(double _radius, double _security, uint8 _celestialIndex, uint8 _orbitIndex)
-: radius(_radius),
-  security(_security),
-  celestialIndex(_celestialIndex),
-  orbitIndex(_orbitIndex)
-{
-}
 
 /*
  * CelestialObject
@@ -166,7 +156,7 @@ WormholeSE::WormholeSE(CelestialObjectRef self, PyServiceMgr& services, SystemMa
 {
     m_count = 0;
     m_wormholeAge = WormHole::Age::Adolescent;
-    m_wormholeSize = (WormHole::Size::Full /10);
+    m_wormholeSize = (WormHole::Size::Full / 10);
     // just guessing here....
     m_expiryDate = Win32TimeNow() + EvE::Time::Day;
     m_nebulaType = 11785;  // data found in eveGraphics table.  yes.  11781 - 11786 (class 1-6)  -3715 doesnt work

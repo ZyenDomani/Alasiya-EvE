@@ -14,8 +14,11 @@
 #include "ServiceDB.h"
 #include "../../eve-common/EVE_POS.h"
 
-class ReactorData;
+
+struct ReactorData;
+
 class StructureSE;
+
 class PosMgrDB
 : public ServiceDB
 {
@@ -24,10 +27,10 @@ public:
     PyRep* GetCorpControlTowers(uint32 corpID);
 
     static void GetLinkableJumpArrays(uint32 corpID, DBQueryResult& res);
+    static void GetCorpJumpArrays(uint32 corpID, DBQueryResult& res);
+    static void GetAllianceJumpArrays(uint32 allyID, DBQueryResult& res);
 
     void GetControlTowerFuelRequirements(DBQueryResult& res);
-    void GetCorpJumpArrays(uint32 corpID, DBQueryResult& res);
-
 
     // pos data methods
     void DeleteData(uint32 itemID);
@@ -42,6 +45,10 @@ public:
     bool GetBridgeData(EVEPOS::JumpBridgeData& data);
     void SaveBridgeData(EVEPOS::JumpBridgeData& data);
     void UpdateBridgeData(EVEPOS::JumpBridgeData& data);
+    void InstallBridgeLink(uint32 itemID, uint32 toSystemID, uint32 toItemID);
+    bool HasBridge(uint32 systemID);
+    void UninstallBridgeLink(uint32 itemID);
+    void UninstallRemoteBridgeLink(uint32 itemID);
 
     bool GetReactorData(ReactorData* pData, EVEPOS::StructureData& sData);
     void SaveReactorData(ReactorData* pData, EVEPOS::StructureData& sData);

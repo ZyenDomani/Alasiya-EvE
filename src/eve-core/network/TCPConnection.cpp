@@ -77,7 +77,7 @@ std::string TCPConnection::GetAddress()
     int len = snprintf( address, 22, "%s:%u", inet_ntoa( addr ), GetrPort() );
 
     /* snprintf will return < 0 when a error occurs so return empty string */
-    if( len < 0 )
+    if ( len < 0 )
         return std::string();
 
     return address;
@@ -109,9 +109,9 @@ bool TCPConnection::Connect( uint32 rIP, uint16 rPort, char* errbuf )
     server_sin.sin_port = htons( rPort );
 
     // Establish a connection to the server socket.
-    if( mSock->connect( (sockaddr*)&server_sin, sizeof( server_sin ) ) == SOCKET_ERROR )
+    if ( mSock->connect( (sockaddr*)&server_sin, sizeof( server_sin ) ) == SOCKET_ERROR )
     {
-        if( errbuf )
+        if ( errbuf )
             snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "%s", strerror( errno ) );
 
         SafeDelete( mSock );
@@ -125,7 +125,7 @@ bool TCPConnection::Connect( uint32 rIP, uint16 rPort, char* errbuf )
     mrPort = rPort;
     mSockState = STATE_CONNECTED;
     // Start processing thread if necessary
-    if( oldState == STATE_DISCONNECTED )
+    if ( oldState == STATE_DISCONNECTED )
         StartLoop();
 
     return true;
@@ -158,7 +158,7 @@ void TCPConnection::Disconnect()
     MutexLock lock( mMSock );
 
     state_t state = GetState();
-    if( state != STATE_CONNECTING && state != STATE_CONNECTED )
+    if ( state != STATE_CONNECTING && state != STATE_CONNECTED )
         return;
 
     // Change state
@@ -252,13 +252,13 @@ bool TCPConnection::Process() {
 
 bool TCPConnection::SendData( char* errbuf )
 {
-    if( errbuf )
+    if ( errbuf )
     errbuf[0] = 0;
 
     MutexLock lock( mMSock );
 
     state_t state = GetState();
-    if( state != STATE_CONNECTED && state != STATE_DISCONNECTING )
+    if ( state != STATE_CONNECTED && state != STATE_DISCONNECTING )
         return false;
 
     mMSendQueue.Lock();
@@ -276,7 +276,7 @@ bool TCPConnection::SendData( char* errbuf )
             if (errno == EWOULDBLOCK) {
                 status = 0;
             } else {
-                if( errbuf )
+                if ( errbuf )
                     snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "%s", strerror( errno ) );
                 SafeDelete( buf );
                 return false;
@@ -319,7 +319,7 @@ bool TCPConnection::RecvData( char* errbuf )
     while (true) {
         if (!mRecvBuf)
             mRecvBuf = new Buffer( TCPCONN_RECVBUF_SIZE );
-        else if( mRecvBuf->size() < TCPCONN_RECVBUF_SIZE )
+        else if ( mRecvBuf->size() < TCPCONN_RECVBUF_SIZE )
             mRecvBuf->Resize<uint8>( TCPCONN_RECVBUF_SIZE );
 
         status = mSock->recv( &(*mRecvBuf)[ 0 ], (uint)mRecvBuf->size(), MSG_DONTWAIT);

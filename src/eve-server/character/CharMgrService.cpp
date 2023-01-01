@@ -230,7 +230,7 @@ PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call )
 PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call)
 {
     Call_SingleIntegerArg arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -256,7 +256,7 @@ PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
 
     // single int arg: charid
     Call_SingleIntegerArg arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -270,7 +270,7 @@ PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
 PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
     //single int arg: char id or corp id
     Call_SingleIntegerArg arg;
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -278,7 +278,7 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
     /*if(IsAgent(args.arg)) {
         //handle agents special right now...
         PyRep *result = m_db.GetAgentPublicInfo(args.arg);
-        if(result == nullptr) {
+        if (result == nullptr) {
             codelog(CLIENT__ERROR, "%s: Failed to find agent %u", call.client->GetName(), args.arg);
             return nullptr;
         }
@@ -345,7 +345,7 @@ PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
     Call_TwoIntegerArgs args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
@@ -368,36 +368,36 @@ PyResult CharMgrService::Handle_GetCharacterDescription(PyCallArgs &call)
 {
     //takes characterID
     Call_SingleIntegerArg args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
     sItemFactory.SetUsingClient(call.client);
-    CharacterRef c = sItemFactory.GetCharacter(args.arg);
-    if (!c ) {
+    CharacterRef cRef = sItemFactory.GetCharacterRef(args.arg);
+    if (!cRef ) {
         _log(CHARACTER__ERROR, "GetCharacterDescription failed to load character %u.", args.arg);
         return nullptr;
     }
 
-    return new PyString(c->description());
+    return new PyString(cRef->description());
 }
 
 PyResult CharMgrService::Handle_SetCharacterDescription(PyCallArgs &call)
 {
     //takes WString of bio
     Call_SingleStringArg args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
-    CharacterRef c = call.client->GetChar();
-    if (!c ) {
+    CharacterRef cRef = call.client->GetChar();
+    if (!cRef ) {
         _log(CHARACTER__ERROR, "SetCharacterDescription called with no char!");
         return nullptr;
     }
-    c->SetDescription(args.arg.c_str());
+    cRef->SetDescription(args.arg.c_str());
 
     return nullptr;
 }
@@ -550,7 +550,7 @@ PyResult CharMgrService::Handle_GetNote( PyCallArgs& call )
     uint32 itemID = call.tuple->GetItem(0)->AsInt()->value();
 
 	PyString *str = m_db.GetNote(ownerID, itemID);
-    if(!str)
+    if (!str)
         str = new PyString("");
 
     return str;
@@ -559,7 +559,7 @@ PyResult CharMgrService::Handle_GetNote( PyCallArgs& call )
 PyResult CharMgrService::Handle_SetNote(PyCallArgs &call)
 {
     Call_SetNote args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }

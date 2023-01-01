@@ -120,7 +120,6 @@ m_pShieldSE(nullptr)
         m_tsize = 1;  // do something constructive here cause size is wrong
     m_soi = m_self->GetAttribute(AttrPosStructureControlDistanceMax).get_int() * m_tsize;
 
-
     m_tdata = EVEPOS::TowerData();
 
     /** @note these are defined, but i dunno what they are
@@ -147,11 +146,11 @@ void TowerSE::Init()
     m_harmonic = m_tdata.harmonic;
     if ((m_harmonic > EVEPOS::Harmonic::Offline)
     and (!m_tdata.password.empty())
-    and (m_data.state > EVEPOS::StructureStatus::Anchored))
+    and (m_data.state > EVEPOS::StructureState::Anchored))
         CreateForceField();
 
     // if tower anchored, tell moon this is its tower
-    if (m_data.state > EVEPOS::StructureStatus::Unanchored)
+    if (m_data.state > EVEPOS::StructureState::Unanchored)
         m_moonSE->SetTower(this);
 
     // set tower in bubble
@@ -169,7 +168,6 @@ void TowerSE::Init()
      */
 
     // take resources, move items, process reactions or whatever needs to be done (follow PI proc code)
-
 }
 
 void TowerSE::InitData() {
@@ -196,12 +194,13 @@ void TowerSE::Process()
     // starbase charter checks for empire space
 
     // tower-specific tests here
-    
+
     /*  Enable base call to Process Anchoring, Targeting and Movement  */
     StructureSE::Process();
 }
 
 /*
+ * 473     prototypingBonus    250000  NULL
  * 556     anchoringDelay  1800000     NULL
  * 650     maxStructureDistance    50000   NULL
  * 676     unanchoringDelay    NULL    3600000
@@ -218,10 +217,10 @@ void TowerSE::SetOnline()
     m_data.timestamp = GetFileTimeNow();
     m_self->SetFlag(flagStructureActive);
     m_procState = EVEPOS::ProcState::Online;
-    m_data.state = EVEPOS::StructureStatus::Online;
+    m_data.state = EVEPOS::StructureState::Online;
     m_harmonic = EVEPOS::Harmonic::Online;
     m_tdata.harmonic = m_harmonic;
-    SetTimer(m_self->GetAttribute(AttrPosControlTowerPeriod).get_int());
+    SetTimer(m_self->GetAttribute(AttrOnliningDelay).get_int());
 
     if ((m_harmonic > EVEPOS::Harmonic::Offline)
     and (!m_tdata.password.empty()))
@@ -274,7 +273,6 @@ void TowerSE::Online()
 
     // reset timers
     StructureSE::Online();
-
 }
 
 void TowerSE::Operating()
@@ -288,20 +286,17 @@ void TowerSE::Operating()
 
     // reset timers
     StructureSE::Operating();
-
 }
 
 void TowerSE::ReinforceTower()
 {
     //  see how many stront is in tower and set timer accordingly
     // Strontium Clathrates   s:100  m:200  l:400
-
 }
 
 void TowerSE::Reinforced()
 {
     // dunno what to do here yet.
-
 }
 
 void TowerSE::UpdatePassword()
@@ -334,7 +329,7 @@ void TowerSE::UpdatePassword()
         m_harmonic = EVEPOS::Harmonic::Online;
         m_tdata.harmonic = m_harmonic;
 
-        if (m_data.state > EVEPOS::StructureStatus::Anchored)
+        if (m_data.state > EVEPOS::StructureState::Anchored)
             CreateForceField();
     }
 
@@ -497,7 +492,7 @@ void TowerSE::CreateForceField()
     if (ifRef.get() == nullptr)
         return;  // we'll get over it
     ifRef->SetPosition(GetPosition());
-    ifRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
+    ifRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius), false);
     FactionData data = FactionData();
         data.allianceID = m_allyID;
         data.corporationID = m_corpID;
@@ -521,12 +516,12 @@ PyDict* TowerSE::MakeSlimItem()
     slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
     slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
     slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-    slim->SetItemString("corpID",                   IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-    slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+    slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+    slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+    slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
     slim->SetItemString("posTimestamp",             new PyLong(m_data.timestamp));
     slim->SetItemString("posState",                 new PyInt(m_data.state));
-    slim->SetItemString("incapacitated",            new PyInt((m_data.state == EVEPOS::StructureStatus::Incapacitated) ? 1 : 0));
+    slim->SetItemString("incapacitated",            new PyInt((m_data.state == EVEPOS::StructureState::Incapacitated) ? 1 : 0));
     slim->SetItemString("posDelayTime",             new PyInt(m_delayTime));
 
     if (is_log_enabled(POS__SLIMITEM)) {

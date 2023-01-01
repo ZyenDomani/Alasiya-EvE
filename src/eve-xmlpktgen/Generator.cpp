@@ -86,7 +86,7 @@ void Generator::RegisterProcessors()
 const char* Generator::GetEncodeType( const TiXmlElement* element )
 {
     std::map<std::string, std::string>::const_iterator res = smEncTypes.find( element->Value() );
-    if( res == smEncTypes.end() )
+    if ( res == smEncTypes.end() )
         return "PyRep";
 
     return res->second.c_str();
@@ -94,7 +94,7 @@ const char* Generator::GetEncodeType( const TiXmlElement* element )
 
 void Generator::LoadEncTypes()
 {
-    if( !smEncTypesLoaded ) {
+    if ( !smEncTypesLoaded ) {
         smEncTypes[ "elementDef" ] = "PyRep";
         smEncTypes[ "element" ] = "PyRep";
         smEncTypes[ "elementPtr" ] = "PyRep";

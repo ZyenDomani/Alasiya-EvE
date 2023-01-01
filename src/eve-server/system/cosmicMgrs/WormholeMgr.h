@@ -15,7 +15,6 @@
 
 #include "ServiceDB.h"
 #include "utils/Singleton.h"
-#include "system/SystemGPoint.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 /* this class will control all aspects of
@@ -41,7 +40,6 @@ public:
     void CreateExit(SystemManager* pFromSys, SystemManager* pToSys);
 
 private:
-    SystemGPoint m_gp;
     ManagerDB* m_mdb;
     ServiceDB* m_sdb;
     PyServiceMgr* m_services;

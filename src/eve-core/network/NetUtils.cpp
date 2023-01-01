@@ -31,20 +31,20 @@ uint32 ResolveIP(const char* hostname, char* errbuf) {
 #ifdef HAVE_WINSOCK2_H
     static InitWinsock ws;
 #endif /* !HAVE_WINSOCK2_H */
-    if( errbuf )
+    if ( errbuf )
         errbuf[0] = 0;
 
-    if( hostname == NULL )
+    if ( hostname == NULL )
     {
-        if( errbuf )
+        if ( errbuf )
             snprintf(errbuf, ERRBUF_SIZE, "ResolveIP(): hostname == NULL");
         return 0;
     }
 
     hostent* phostent = gethostbyname( hostname );
-    if( phostent == NULL)
+    if ( phostent == NULL)
     {
-        if( errbuf )
+        if ( errbuf )
 #ifdef HAVE_WINSOCK2_H
             snprintf( errbuf, ERRBUF_SIZE, "Unable to get the host name. Error: %i", WSAGetLastError() );
 #else /* !HAVE_WINSOCK2_H */

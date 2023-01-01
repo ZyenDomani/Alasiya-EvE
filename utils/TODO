@@ -34,6 +34,10 @@ work on buglist, integrate this list in there where i can
 
 request for smartbombs
 
+update headers to fix 'class' vs 'struct' declarations
+
+**** weapon hardpoints not decreasing
+
 loading probes in station does not update count in hangar
 
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
@@ -56,6 +60,12 @@ after unloading module using ungroup, tried loading charge to newly-ungrouped mo
 
 prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
+
+ *****  modules not shutting down when deactivated ***
+this includes shoot roids - turrets do not deactivate
+when shooting roids, if there are miners activated, use 'roid depleted' to complete their cycle
+
+when shooting wrecks, all loot should be destroyed
 
 module add/remove isnt fully thought out at this point.
     - will need complete walk thru to verify proper operation
@@ -296,6 +306,7 @@ GetMyInventory()->ContainsTypeByFlag
     - finish contents-by-flag map for this method
 
 pi working.  currently rewriting process code  -priority level: lo
+    - rename/refactor comet0's original code?  i still dont like the names he used. :/
     - check/rewrite planet xml code as needed (minor improvement)
     - check if xml is needed or if structs are ok for all uses (improve code bloat)
     - code checks for route levels and mat'l volume xfer'd (limit volume xfer)
@@ -400,6 +411,7 @@ pos - started. drop, anchor, unanchor, online, offline working but no in-class c
     - add checks for necessary items before online can be processed
     - timers (anchor/online) arent updated to client properly (non-persistent)
     - add bm when tower, ihub, sbu, tcu anchored
+    - ** init (et Al.) will need complete review **
 
 lsc system better, but incomplete and needs revisiting    -priority level: med-hi
     - may need xmlp code instead of muddled python decoding

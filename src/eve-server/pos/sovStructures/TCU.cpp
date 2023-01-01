@@ -22,7 +22,7 @@
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "planet/Planet.h"
-#include "pos/TCU.h"
+#include "pos/sovStructures/TCU.h"
 #include "packets/Sovereignty.h"
 #include "system/Container.h"
 #include "system/Damage.h"
@@ -37,7 +37,7 @@ TCUSE::TCUSE(StructureItemRef structure, PyServiceMgr &services, SystemManager *
 
 void TCUSE::Init()
 {
-    _log(SE__TRACE, "TCUSE %s(%u) is being initialised", m_self->name(), m_self->itemID());
+    _log(SE__TRACE, "TCUSE %s(%u) is being initialized", m_self->name(), m_self->itemID());
     StructureSE::Init();
 
     // check for valid bubble
@@ -63,11 +63,10 @@ void TCUSE::SetOnline()
         sovData.allianceID = m_allyID;
         sovData.claimStructureID = m_data.itemID;
         sovData.claimTime = GetFileTimeNow();
-
     svDataMgr.AddSovClaim(sovData);
 
     //Send ProcessSovStatusChanged Notification
-    PyDict *args = new PyDict();
+    PyDict *args = new PyDict;
     _log(SOV__DEBUG, "Sending ProcessSovStatusChanged for %u:%u", sovData.solarSystemID, sovData.allianceID);
 
     args->SetItemString("contested", new PyInt(sovData.contested));
@@ -83,12 +82,15 @@ void TCUSE::SetOnline()
         data->SetItem(1, new PyObject("util.KeyVal", args));
 
     std::vector<Client*> list;
-    m_system->GetClientList(list);
+    sEntityList.GetClients(list);
     for (auto cur : list)
-        if (cur->GetChar().get() != nullptr) {
+    {
+        if (cur != nullptr)
+        {
             cur->SendNotification("ProcessSovStatusChanged", "clientID", &data);
-            _log(SOV__DEBUG, "ProcessSovStatusChanged sent to client %u", cur->GetClientID());
+            _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s (%u)", cur->GetName(), cur->GetCharID());
         }
+    }
 }
 
 void TCUSE::SetOffline()
@@ -104,12 +106,15 @@ void TCUSE::SetOffline()
         data->SetItem(1, PyStatic.NewNone());
 
     std::vector<Client*> list;
-    m_system->GetClientList(list);
+    sEntityList.GetClients(list);
     for (auto cur : list)
-        if (cur->GetChar().get() != nullptr) {
+    {
+        if (cur != nullptr)
+        {
             cur->SendNotification("ProcessSovStatusChanged", "clientID", &data);
-            _log(SOV__DEBUG, "ProcessSovStatusChanged sent to client %u", cur->GetClientID());
+            _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s(%u)", cur->GetName(), cur->GetCharID());
         }
+    }
 
     StructureSE::SetOffline();
 }

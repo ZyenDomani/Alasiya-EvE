@@ -35,8 +35,10 @@ int StationDataMgr::Initialize()
 void StationDataMgr::Close()
 {
     /** @todo put a save method here which will save anything changed before shutdown */
-    for (auto cur : m_stationPyData)
-        PySafeDecRef(cur.second);
+    //for (auto cur : m_stationPyData)
+    //    PySafeDecRef(cur.second);
+
+    Clear();
 
     sLog.Warning("   StationDataMgr", "Station Data Manager has been closed." );
 }
@@ -217,11 +219,11 @@ bool StationDataMgr::GetStationData(uint32 stationID, StationData& data)
     std::map<uint32, StationData>::iterator itr = m_stationData.find(stationID);
     if (itr != m_stationData.end()) {
         data = itr->second;
-        return true;
+        return true;      // not sure what this actually does yet
     } else {
         _log(DATABASE__MESSAGE, "Failed to query data for station %u: Station not found.", stationID);
     }
-    return true;
+    return false;       // not sure what this actually does yet
 }
 
 PyObject* StationDataMgr::GetStationPyData(uint32 stationID)
@@ -259,7 +261,7 @@ PyRep* StationDataMgr::GetStationItemBits(uint32 stationID)
 
 void StationDataMgr::GetStationOfficeIDs(uint32 locationID, std::vector<OfficeData> &data)
 {
-    if (IsStation(locationID)) {
+    if (sDataMgr.IsStation(locationID)) {
         auto range = m_stationOfficeData.equal_range(locationID);
         for (auto itr = range.first; itr != range.second; ++itr)
             data.push_back(itr->second);
@@ -268,7 +270,7 @@ void StationDataMgr::GetStationOfficeIDs(uint32 locationID, std::vector<OfficeDa
         for (auto itr = range.first; itr != range.second; ++itr)
             if (itr->second.folderID == locationID)
                 data.push_back(itr->second);
-    } else if (IsOffice(locationID)) {
+    } else if (IsOfficeID(locationID)) {
         // no better way to do this one yet.....iterate thru the whole map?
         // this is full map of station data.  need to find station to cut down on loop time.
         for (auto cur : m_stationOfficeData)

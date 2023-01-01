@@ -208,7 +208,7 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
         return PyStatic.NewNone();
     }
 
-    InventoryItemRef itemRef = sItemFactory.GetItem(args.arg);
+    InventoryItemRef itemRef = sItemFactory.GetItemRef(args.arg);
     if (itemRef.get() == nullptr ) {
         _log(INV__ERROR, "Unable to load item %u", args.arg);
         return PyStatic.NewNone();
@@ -306,17 +306,17 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     if (args.moduleIDs.empty())
         return nullptr;
     if (args.moduleIDs.size() > 1) {
-        sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "args.moduleIDs.size = %u.", args.moduleIDs.size() );
+        sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "args.moduleIDs.size = %lu.", args.moduleIDs.size() );
         call.Dump(MODULE__WARNING);
     }
 
     // Get Reference to Ship and Charge
     ShipItemRef sRef = call.client->GetShip();
-    GenericModule* pMod = sRef->GetModule(sItemFactory.GetItem(args.moduleIDs[0])->flag());
+    GenericModule* pMod = sRef->GetModule(sItemFactory.GetItemRef(args.moduleIDs[0])->flag());
     if (pMod == nullptr)
         throw UserError("ModuleNoLongerPresentForCharges");
 
-    InventoryItemRef cRef = sItemFactory.GetItem(args.itemID);
+    InventoryItemRef cRef = sItemFactory.GetItemRef(args.itemID);
     sRef->LoadCharge(cRef, pMod->flag());
 
     // returns nodeID and timestamp
@@ -356,7 +356,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
         sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "passed shipID %u != current shipID %u.", args.shipID, sRef->itemID() );
 
     // if shipID passed in call isnt active ship (from client->GetShip()), would this work right?
-    GenericModule* pMod = sRef->GetModule(sItemFactory.GetItem(args.masterID)->flag());
+    GenericModule* pMod = sRef->GetModule(sItemFactory.GetItemRef(args.masterID)->flag());
     if (pMod == nullptr)
         throw UserError("ModuleNoLongerPresentForCharges");
 
@@ -365,7 +365,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     if (pMod->IsLinked()) {
         sRef->LoadLinkedWeapons(pMod, args.itemIDs);
     } else {
-        sRef->LoadCharge(sItemFactory.GetItem(args.itemIDs.at(0)), pMod->flag());
+        sRef->LoadCharge(sItemFactory.GetItemRef(args.itemIDs.at(0)), pMod->flag());
     }
 
     // not sure why im not using this, as call is to load bank...
@@ -517,13 +517,6 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
                         .AddFormatValue ("item", new PyInt (ptSE->GetID ()));
     }
 
-    if (sConfig.debug.IsTestServer)
-        if (is_log_enabled(TARGET__MESSAGE)) {
-            GVector vectorToTarget( mySE->GetPosition(), tSE->GetPosition());
-            _log(TARGET__MESSAGE, "DogmaIM::AddTarget() - %s(%u) targeting %s(%u) at distance of %.2f meters.", \
-                    mySE->GetName(), mySE->GetID(), tSE->GetName(), args.arg, vectorToTarget.length() );
-        }
-
     if (!mySE->TargetMgr()->StartTargeting( tSE, pClient->GetShip())) {
         _log(TARGET__WARNING, "AddTarget() - TargMgr.StartTargeting() failed.");
         throw UserError ("DeniedTargetingAttemptFailed")
@@ -609,7 +602,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         PyDict* charResult = pClient->GetChar()->GetCharInfo();
         if (charResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
-            sItemFactory.SetUsingClient();
+            sItemFactory.UnsetUsingClient();
             return PyStatic.NewNone();
         }
         rsp->SetItemString("charInfo", charResult);
@@ -622,7 +615,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         PyDict* shipResult = pClient->GetShip()->GetShipInfo();
         if (shipResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
-            sItemFactory.SetUsingClient();
+            sItemFactory.UnsetUsingClient();
             return PyStatic.NewNone();
         }
         rsp->SetItemString("shipInfo", shipResult);
@@ -644,7 +637,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     if (is_log_enabled(SHIP__STATE))
         rsp->Dump(SHIP__STATE, "     ");
 
-    sItemFactory.SetUsingClient();
+    sItemFactory.UnsetUsingClient();
     return new PyObject("util.KeyVal", rsp );
 }
 
@@ -1073,7 +1066,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return new PyList();
+        return PyStatic.mtList();
     }
 
     // not supported yet
@@ -1089,7 +1082,7 @@ PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return new PyList();
+        return PyStatic.mtList();
     }
 
     // not supported yet

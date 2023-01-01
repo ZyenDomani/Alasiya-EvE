@@ -41,7 +41,7 @@
 bool InventoryDB::GetCharacterType(uint8 bloodlineID, CharacterTypeData &into) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         "  bloodlineName,"
         "  raceID,"
@@ -66,7 +66,7 @@ bool InventoryDB::GetCharacterType(uint8 bloodlineID, CharacterTypeData &into) {
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__MESSAGE, "No data found for bloodline %u.", bloodlineID);
         return false;
     }
@@ -90,13 +90,13 @@ bool InventoryDB::GetCharacterType(uint8 bloodlineID, CharacterTypeData &into) {
 
 bool InventoryDB::GetCharacterTypeByBloodline(uint8 bloodlineID, uint16& characterTypeID) {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT typeID FROM bloodlineTypes WHERE bloodlineID = %u", bloodlineID)) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID FROM bloodlineTypes WHERE bloodlineID = %u", bloodlineID)) {
         codelog(DATABASE__ERROR, "Failed to query bloodline %u: %s.", bloodlineID, res.error.c_str());
         return false;
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__MESSAGE, "No data for bloodline %u.", bloodlineID);
         return false;
     }
@@ -108,13 +108,13 @@ bool InventoryDB::GetCharacterTypeByBloodline(uint8 bloodlineID, uint16& charact
 
 bool InventoryDB::GetBloodlineByCharacterType(uint16 characterTypeID, uint8 &bloodlineID) {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT bloodlineID FROM bloodlineTypes WHERE typeID = %u", characterTypeID)) {
+    if (!sDatabase.RunQuery(res, "SELECT bloodlineID FROM bloodlineTypes WHERE typeID = %u", characterTypeID)) {
         codelog(DATABASE__ERROR, "Failed to query character type %u: %s.", characterTypeID, res.error.c_str());
         return false;
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__MESSAGE, "No data for character type %u.", characterTypeID);
         return false;
     }
@@ -125,13 +125,13 @@ bool InventoryDB::GetBloodlineByCharacterType(uint16 characterTypeID, uint8 &blo
 }
 
 bool InventoryDB::GetCharacterType(uint16 characterTypeID, uint8 &bloodlineID, CharacterTypeData &into) {
-    if(!GetBloodlineByCharacterType(characterTypeID, bloodlineID))
+    if (!GetBloodlineByCharacterType(characterTypeID, bloodlineID))
         return false;
     return GetCharacterType(bloodlineID, into);
 }
 
 bool InventoryDB::GetCharacterTypeByBloodline(uint8 bloodlineID, uint16 &characterTypeID, CharacterTypeData &into) {
-    if(!GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
+    if (!GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
         return false;
     return GetCharacterType(bloodlineID, into);
 }
@@ -145,9 +145,9 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
     query << "SELECT itemID FROM entity WHERE locationID = ";
     query << od.locID;
 
-    if (IsSolarSystem(od.locID)) {
+    if (sDataMgr.IsSolarSystem(od.locID)) {
         query << " AND ownerID = " << od.ownerID;
-    } else if (IsStation(od.locID)) {
+    } else if (sDataMgr.IsStation(od.locID)) {
         if (od.ownerID == 1) {
             /* this will get agents in station */
             query << " AND ownerID < " << maxNPCItem;
@@ -160,7 +160,7 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
                 query << " AND ownerID = " << od.ownerID;
             }
         }
-    } else if (IsCharacter(od.locID)) {
+    } else if (IsCharacterID(od.locID)) {
         if (od.ownerID == 1) {
             // not sure what to do here....
         } else if (IsPlayerCorp(od.corpID)) {
@@ -169,7 +169,7 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
         } else {
             query << " AND ownerID = " << od.ownerID;
         }
-    } else if (IsOffice(od.locID)) {
+    } else if (IsOfficeID(od.locID)) {
         // may not need this, as location is officeID, but items MAY be owned by players in corp hangar.
         //query << " AND ownerID = " << od.ownerID;
     }
@@ -177,7 +177,7 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
     query << " ORDER BY itemID";
 
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res,query.str().c_str() )) {
+    if (!sDatabase.RunQuery(res,query.str().c_str() )) {
         codelog(DATABASE__ERROR, "Error in GetItemContents query for locationID %u: %s", od.locID, res.error.c_str());
         return false;
     }
@@ -195,7 +195,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<
 {
     DBQueryResult res;
 
-    if( !sDatabase.RunQuery( res,
+    if ( !sDatabase.RunQuery( res,
         "SELECT "
         "  itemID"
         " FROM entity "
@@ -220,7 +220,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
 {
     DBQueryResult res;
 
-    if( !sDatabase.RunQuery( res,
+    if ( !sDatabase.RunQuery( res,
         "SELECT "
         "  itemID"
         " FROM entity "
@@ -252,7 +252,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
     DBQueryResult res;
 
     if (IsAgent(characterID)) {
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "   0 as accountID,"
             "   title,"
@@ -286,7 +286,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
             return false;
             }
     } else {
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "   accountID,"
             "   title,"
@@ -323,7 +323,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__MESSAGE, "No data found for character %u.", characterID);
         return false;
     }
@@ -425,7 +425,7 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         into.baseID = row.GetInt(12);
     }
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         "  taxRate,"
         "  stationID,"
@@ -440,7 +440,7 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         return false;
     }
 
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__MESSAGE, "No HQ found for character's %u corporation.", characterID);
         return false;
     }
@@ -458,9 +458,9 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
 bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &into) {
     DBQueryResult res;
 
-    if( IsStaticMapItem(celestialID)) {
+    if ( IsStaticMapItem(celestialID)) {
         // This Celestial object is a static celestial, so get its data from the 'mapDenormalize' table:
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "  security, radius, celestialIndex, orbitIndex"
             " FROM mapDenormalize"
@@ -472,7 +472,7 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
         }
 
         DBResultRow row;
-        if(!res.GetRow(row)) {
+        if (!res.GetRow(row)) {
             _log(DATABASE__MESSAGE, "Static Celestial object %u not found.", celestialID);
             return false;
         }
@@ -484,7 +484,7 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
     } else {
         // Quite possibly, this Celestial object is a dynamic one, so try to get its data from the 'entity' table,
         // and if it's not there either, then flag an error.
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "  entity.itemID, "
             "  invTypes.radius "
@@ -498,7 +498,7 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
         }
 
         DBResultRow row;
-        if(!res.GetRow(row)) {
+        if (!res.GetRow(row)) {
             _log(DATABASE__MESSAGE, "Dynamic Celestial object %u not found.", celestialID);
             return false;
         }
@@ -515,7 +515,7 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
 bool InventoryDB::GetSolarSystem(uint32 solarSystemID, SolarSystemData &into) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         "  xMin, yMin, zMin,"
         "  xMax, yMax, zMax,"
@@ -530,7 +530,7 @@ bool InventoryDB::GetSolarSystem(uint32 solarSystemID, SolarSystemData &into) {
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__MESSAGE, "No data found for solar system %u.", solarSystemID);
         return false;
     }

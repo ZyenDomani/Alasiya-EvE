@@ -77,7 +77,7 @@ PyBoundObject *EntityService::CreateBoundObject(Client* pClient, const PyRep* bi
     }
 
     uint32 systemID = bind_args->AsInt()->value();
-    if (!IsSolarSystem(systemID)) {
+    if (!sDataMgr.IsSolarSystem(systemID)) {
         codelog(SERVICE__ERROR, "%s: Expected systemID, but got %u.", pClient->GetName(), systemID);
         return nullptr;
     }
@@ -176,7 +176,7 @@ PyResult EntityBound::Handle_CmdEngage(PyCallArgs &call) {
     call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdRelinquishControl(PyCallArgs &call) {
@@ -185,7 +185,7 @@ PyResult EntityBound::Handle_CmdRelinquishControl(PyCallArgs &call) {
     call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdDelegateControl(PyCallArgs &call) {
@@ -194,7 +194,7 @@ PyResult EntityBound::Handle_CmdDelegateControl(PyCallArgs &call) {
     call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdAssist(PyCallArgs &call) {
@@ -203,7 +203,7 @@ PyResult EntityBound::Handle_CmdAssist(PyCallArgs &call) {
     call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdGuard(PyCallArgs &call) {
@@ -212,7 +212,7 @@ PyResult EntityBound::Handle_CmdGuard(PyCallArgs &call) {
     call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdMine(PyCallArgs &call) {
@@ -236,7 +236,7 @@ PyResult EntityBound::Handle_CmdMine(PyCallArgs &call) {
     /** @todo MAKE CHECKS IN MINING LASER FOR DRONES BEFORE COMPLETING THIS FUNCTION  **/
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdMineRepeatedly(PyCallArgs &call) {
@@ -259,7 +259,7 @@ PyResult EntityBound::Handle_CmdMineRepeatedly(PyCallArgs &call) {
     /** @todo MAKE CHECKS IN MINING LASER FOR DRONES BEFORE COMPLETING THIS FUNCTION  **/
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdUnanchor(PyCallArgs &call) {
@@ -268,7 +268,7 @@ PyResult EntityBound::Handle_CmdUnanchor(PyCallArgs &call) {
     call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdReturnHome(PyCallArgs &call) {
@@ -288,7 +288,7 @@ PyResult EntityBound::Handle_CmdReturnHome(PyCallArgs &call) {
 
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdReturnBay(PyCallArgs &call) {
@@ -338,7 +338,7 @@ PyResult EntityBound::Handle_CmdReturnBay(PyCallArgs &call) {
         tuple1->SetItem(1, dict);
     return tuple1;
     */
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdAbandonDrone(PyCallArgs &call) {
@@ -354,7 +354,7 @@ PyResult EntityBound::Handle_CmdAbandonDrone(PyCallArgs &call) {
     call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::Handle_CmdReconnectToDrones(PyCallArgs &call) {
@@ -371,5 +371,5 @@ PyResult EntityBound::Handle_CmdReconnectToDrones(PyCallArgs &call) {
     call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    return PyStatic.mtDict();
 }

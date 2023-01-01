@@ -174,7 +174,7 @@ PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
      *
      */
 
-    return new PyList();
+    return PyStatic.mtList();
 }
 
 PyResult UserService::Handle_ReverseRedeem( PyCallArgs& call )
@@ -184,7 +184,7 @@ PyResult UserService::Handle_ReverseRedeem( PyCallArgs& call )
     call.Dump(CHARACTER__DEBUG);
 
     return nullptr;
-    
+
     /* {'messageKey': 'ReverseRedeemingCompleted', 'dataID': 17877681, 'suppressable': False, 'bodyID': 257344, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257343, 'messageID': 2917}
      * {'messageKey': 'ReverseRedeemingFatalError', 'dataID': 17877443, 'suppressable': False, 'bodyID': 257253, 'messageType': 'error', 'urlAudio': '', 'urlIcon': '', 'titleID': 257252, 'messageID': 2918}
      * {'messageKey': 'ReverseRedeemingIllegalType', 'dataID': 17877511, 'suppressable': False, 'bodyID': 257279, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257278, 'messageID': 2913}

@@ -78,7 +78,7 @@ uint32 DBRowDescriptor::FindColumn( const char* name ) const
     PyString* stringName = new PyString( name );
 
     for( uint32 i(0); i < cc; ++i ) {
-        if( stringName->hash() == GetColumnName( i )->hash() ) {
+        if ( stringName->hash() == GetColumnName( i )->hash() ) {
             PyDecRef( stringName );
             return i;
         }

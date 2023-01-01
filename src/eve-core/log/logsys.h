@@ -36,16 +36,10 @@
  *      - _hex(TYPE, data, length) - Log hex dump in any context.
  * Types are defined in logtypes.h
  *
- *
- *
- *
- * this is very C-ish, not C++ish, but thats how I felt like writting it
- *
- *
+ * this is very C-ish, not C++ish, but thats how I felt like writing it
  *
  */
 
-#include <execinfo.h>
 
 
 #define LOG_CATEGORY(category) LOG_ ##category ,
@@ -103,7 +97,7 @@ inline void _log( LogType type, const char* fmt, ... )
     va_list args;
     va_start( args, fmt );
 
-    if( is_log_enabled( type ) )
+    if ( is_log_enabled( type ) )
         log_messageVA( type, fmt, args );
 
     va_end( args );
@@ -114,7 +108,7 @@ inline void codelog( LogType type, const char* fmt, ... )
     va_list args;
     va_start( args, fmt );
 
-    if( is_log_enabled( type ) )
+    if ( is_log_enabled( type ) )
         log_messageVA( type, fmt, args );
 
     va_end(args);

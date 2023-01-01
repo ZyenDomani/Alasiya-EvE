@@ -166,8 +166,7 @@ double SuperWeapon::DoCycle()
                  m_chargeRef->GetAttribute(AttrThermalDamage).get_float(),     // thermal damage
                  m_chargeRef->GetAttribute(AttrEmDamage).get_float(),     // em damage
                  m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float(),     // explosive damage
-                 1,
-                 effectProjectileFired       // from EVEEffectID::
+                 1
         );
 
         m_targetSE->ApplyDamage(d);

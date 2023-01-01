@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -117,6 +117,12 @@ namespace EvE {
     const char* FormatTime(double time=-1);
 
     double trunicate2(double dig=0);
+
+    // methods to print stack trace with file:line
+    std::string getExecPath();
+    std::string sh(std::string cmd);
+    // this is SLOOOWWW as shit!
+    void traceStackLN(void);
 }
 
 #endif /* !__MISC_H__INCL__ */

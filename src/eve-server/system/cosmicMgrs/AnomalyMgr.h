@@ -16,7 +16,6 @@
  *  a new iteration of this class is created for each system as that system is booted.
  */
 
-#include "system/SystemGPoint.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 
@@ -56,7 +55,6 @@ class AnomalyMgr
 protected:
     ManagerDB m_mdb;
     ServiceDB m_sdb;
-    SystemGPoint m_gp;
 
     uint8 GetDungeonType();
 

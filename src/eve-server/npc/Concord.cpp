@@ -137,7 +137,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
+        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
         data.maxSpeed = m_destiny->GetMaxVelocity();
@@ -220,10 +220,10 @@ void Concord::UseShieldRecharge()
 
 void Concord::UseArmorRepairer()
 {
-    if( m_armorDamage > 0 )
+    if ( m_armorDamage > 0 )
     {
         m_armorDamage -= GetSelf()->GetAttribute(AttrEntityArmorRepairAmount).get_float();
-        if( m_armorDamage < 0.0 )
+        if ( m_armorDamage < 0.0 )
             m_armorDamage = 0.0;
     } else
         AI()->DisableRepTimers();

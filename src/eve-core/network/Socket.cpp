@@ -90,7 +90,7 @@ Socket* Socket::accept( sockaddr* addr, unsigned int* addrlen )
 {
     SOCKET sock = ::accept( mSock, addr, addrlen );
 
-    if( sock != INVALID_SOCKET )
+    if ( sock != INVALID_SOCKET )
         return new Socket( sock );
     else
         return nullptr;

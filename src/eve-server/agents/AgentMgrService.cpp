@@ -283,7 +283,7 @@ PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
     //no args
   _log(AGENT__INFO, "AgentMgrBound::Handle_GetMyEpicJournalDetails() - size= %u", call.tuple->size() );
 
-    return new PyList();
+  return PyStatic.mtList();
 }
 
 PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)

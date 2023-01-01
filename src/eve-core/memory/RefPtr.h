@@ -70,12 +70,16 @@ public:
      */
     virtual ~RefObject()
     {
-        // this isnt completely accurate yet.  disable to avoid crashes i cant trace
-        //assert( mRefCount == 0);
+
+        if (mDeleted) {
+            _log(REFPTR__ERROR, "~RefObject() - mDeleted: true");
+            EvE::traceStack();
+        }
         mDeleted = true;
     }
 
-    // size_t GetCount()           { return mRefCount; }
+    uint16 GetCount()           { return mRefCount; }
+    bool IsDeleted()            { return mDeleted; }
 
 protected:
     /**
@@ -116,7 +120,7 @@ protected:
     }
 
     /// Reference count of instance.
-    mutable size_t mRefCount;
+    mutable uint16 mRefCount;
     mutable bool mDeleted;
 };
 

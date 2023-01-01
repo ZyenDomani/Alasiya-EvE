@@ -477,7 +477,7 @@ public:
         const const_iterator< T > index = begin< T >();
 
         // do we have enough space?
-        if( 1 <= end< T >() - index )
+        if ( 1 <= end< T >() - index )
         {
             // yes, we do: assign the value
             AssignAt< T >( index, value );
@@ -508,7 +508,7 @@ public:
             index = begin< typename std::iterator_traits< Iter >::value_type >();
 
         // do we have enough space?
-        if( last - first <= end< typename std::iterator_traits< Iter >::value_type >() - index )
+        if ( last - first <= end< typename std::iterator_traits< Iter >::value_type >() - index )
         {
             // yes, we do: assign the value
             AssignSeqAt< Iter >( index, first, last );
@@ -557,7 +557,7 @@ public:
         assert( last - first <= end< typename std::iterator_traits< Iter >::value_type >() - index );
 
         // is there anything to assign?
-        if( first != last )
+        if ( first != last )
         {
             // turn the iterator into byte offset
             const size_type _index = ( index.template As< uint8 >() - begin< uint8 >() );
@@ -653,7 +653,7 @@ public:
         const size_type _requiredSize = sizeof( T ) * requiredCount;
 
         // reallocate if necessary
-        if( _index + _requiredSize > capacity() )
+        if ( _index + _requiredSize > capacity() )
             _Reallocate( _index + _requiredSize );
     }
 
@@ -701,7 +701,7 @@ public:
         const size_type _requiredSize = sizeof( T ) * requiredCount;
 
         // has a gap been created?
-        if( _index + _requiredSize > _oldSize )
+        if ( _index + _requiredSize > _oldSize )
             // fill it with value
             memset( &mBuffer[ _oldSize ], fill, _index + _requiredSize - _oldSize );
     }
@@ -768,7 +768,7 @@ protected:
         assert( requiredSize <= newCapacity );
 
         // has the capacity changed?
-        if( newCapacity != capacity() )
+        if ( newCapacity != capacity() )
         {
             // reallocate
             mBuffer = (uint8*)realloc( mBuffer, newCapacity );
@@ -793,16 +793,16 @@ protected:
         size_type newCapacity = 0;
 
         // if more than 0x100 bytes required, return next power of 2
-        if( 0x100 < requiredSize )
+        if ( 0x100 < requiredSize )
             newCapacity = (size_type)npowof2( requiredSize );
         // else if non-zero, return 0x100 bytes
-        else if( 0 < requiredSize )
+        else if ( 0 < requiredSize )
             newCapacity = 0x100;
         // else return 0 bytes
 
         /* if current capacity is sufficient and at the same time smaller
            than the new capacity, return current one ... saves resources */
-        if( requiredSize <= currentCapacity && currentCapacity < newCapacity )
+        if ( requiredSize <= currentCapacity && currentCapacity < newCapacity )
             return currentCapacity;
         else
             return newCapacity;

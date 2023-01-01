@@ -57,7 +57,8 @@ public:
 
     void Clear( const char* name );
     void EncodeChanges( PyDict* into );
-
+    void EncodeInitialState (PyDict* into);
+    
     int64 GetSessionID()  { return m_sessionID; }
 
 protected:

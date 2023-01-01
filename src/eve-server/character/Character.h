@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -31,6 +31,7 @@
 #include "character/CertificateMgrService.h"
 #include "character/CharacterDB.h"
 #include "character/Skill.h"
+#include "corporation/CorporationDB.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryDB.h"
 #include "inventory/InventoryItem.h"
@@ -136,7 +137,7 @@ protected:
         // query character type data
         uint8 bloodlineID(0);
         CharacterTypeData charData;
-        if (!sItemFactory.db()->GetCharacterType(typeID, bloodlineID, charData) )
+        if (!CharacterDB::GetCharacterType(typeID, bloodlineID, charData) )
             return nullptr;
 
         return new CharacterType( typeID, bloodlineID, data, charData );
@@ -197,8 +198,8 @@ private:
  */
 class CharacterPortrait {
     // use default c'tor et. al.
-public:
 
+public:
     void Build(uint32 charID, PyDict* data);
 
 private:
@@ -212,8 +213,8 @@ class Character
 : public InventoryItem
 {
     friend class InventoryItem;    // to let it construct us
-public:
 
+public:
     virtual void Delete();
 
     /**
@@ -236,7 +237,7 @@ public:
     // skills
     bool            HasSkill(uint16 skillTypeID) const;
     bool            HasSkillTrainedToLevel(uint16 skillTypeID, uint8 skillLevel) const;
-    SkillRef        GetSkill(uint16 skillTypeID) const;
+    SkillRef        GetCharSkillRef(uint16 skillTypeID) const;
     int8            GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected = true) const;
     PyRep*          GetRAMSkills();
     Skill*          GetSkillInTraining() const          { return m_inTraining; }
@@ -346,7 +347,7 @@ public:
     void                    ResetClone();
 
     void                    PayBounty(CharacterRef cRef);
-    void                    LogKill(CharKillData data)          { m_db.SaveKillOrLoss(data); }
+    void                    LogKill(KillData data)          { ServiceDB::SaveKillOrLoss(data); }
 
     //  saves
     void                    LogOut();
@@ -407,25 +408,25 @@ protected:
     // Template loader:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 charID, const ItemType& type, const ItemData& data) {
-        if( type.groupID() != EVEDB::invGroups::Character ) {
+        if (type.groupID() != EVEDB::invGroups::Character) {
             _log(ITEM__ERROR, "Trying to load %s as Character.", sDataMgr.GetCategoryName(type.categoryID()));
             if (sConfig.debug.StackTrace)
                 EvE::traceStack();
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
         }
         CharacterData charData = CharacterData();
-        if( !sItemFactory.db()->GetCharacterData( charID, charData ) )
-            return RefPtr<_Ty>();
+        if (!CharacterDB::GetCharacterData(charID, charData))
+            return RefPtr<_Ty>(nullptr);
 
         CorpData corpData = CorpData();
-        if( !sItemFactory.db()->GetCorpData( charID, corpData ) )
-            return RefPtr<_Ty>();
+        if (!CharacterDB::GetCharCorpData(charID, corpData))
+            return RefPtr<_Ty>(nullptr);
 
         // cast the type
-        const CharacterType& charType = static_cast<const CharacterType& >( type );
+        const CharacterType& charType = static_cast<const CharacterType& >(type);
 
         // construct the character item
-        return CharacterRef( new Character( charID, charType, data, charData, corpData ) );
+        return CharacterRef(new Character(charID, charType, data, charData, corpData));
     }
 
 
@@ -451,8 +452,7 @@ private:
 
     uint32 m_loginTime;
 
-    std::map<uint8, InventoryItemRef>  m_implantMap;    // slotID/itemRef 
-
+    std::map<uint8, InventoryItemRef>  m_implantMap;    // slotID/itemRef
 };
 
 #endif /* !__CHARACTER__H__INCL__ */

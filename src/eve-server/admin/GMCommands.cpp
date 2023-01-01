@@ -404,7 +404,7 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
         throw CustomError("Argument 5 must be remaining licensed production runs. (got %s)", args.arg(5).c_str());
 
     int blueprintID = atoi(args.arg(1).c_str());
-    BlueprintRef bp = sItemFactory.GetBlueprint(blueprintID);
+    BlueprintRef bp = sItemFactory.GetBlueprintRef(blueprintID);
     if (!bp)
         throw CustomError("Failed to load blueprint %u.", blueprintID);
 
@@ -431,7 +431,7 @@ PyResult Command_getattr(Client* who, CommandDB* db, PyServiceMgr* services, con
         throw CustomError("2nd argument must be attributeID (got %s).", args.arg(2).c_str());
     const ItemAttributeMgr::Attr attribute = (ItemAttributeMgr::Attr)atoi(args.arg(2).c_str());
 
-    InventoryItemRef item = sItemFactory.GetItem(itemID);
+    InventoryItemRef item = sItemFactory.GetItemRef(itemID);
     if (item.get() == nullptr)
         throw CustomError("Failed to load item %u.", itemID);
     */
@@ -476,7 +476,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
     if (itemID < minPlayerItem)
         throw CustomError("1st argument must be a valid 'entity' table itemID that MUST be larger >= 140000000. (got %s)", args.arg(1).c_str());
 
-    InventoryItemRef item = sItemFactory.GetItem(itemID);
+    InventoryItemRef item = sItemFactory.GetItemRef(itemID);
     if (item.get() == nullptr)
         throw CustomError("Failed to load item %u.", itemID);
 
@@ -586,7 +586,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
         std::vector<uint32> skillList;
         db->FullSkillList(skillList);
 
-        SkillRef skill;
+        SkillRef skillRef;
         //uint8 oldLevel = 0;
         uint16 skillID = 0;
         //uint32 oldPoints = 0, newPoints = 0;
@@ -597,13 +597,13 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
             if (character->HasSkillTrainedToLevel(skillID, level)) {
                 return PyStatic.NewNone();
             } else if (character->HasSkill(skillID)) {
-                skill = character->GetSkill(skillID);
+                skillRef = character->GetCharSkillRef(skillID);
                 //oldLevel = skill->GetAttribute(AttrSkillLevel).get_uint32();
                 //oldPoints = skill->GetAttribute(AttrSkillPoints).get_uint32();
-                skill->SetAttribute(AttrSkillLevel, level);
-                skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
-                if (skill->flag() == flagSkillInTraining) {
-                    skill->SetFlag(flagSkill, false);
+                skillRef->SetAttribute(AttrSkillLevel, level);
+                skillRef->SetAttribute(AttrSkillPoints, skillRef->GetSPForLevel(level));
+                if (skillRef->flag() == flagSkillInTraining) {
+                    skillRef->SetFlag(flagSkill, false);
                 }
             } else {    // Character DOES NOT have this skill
                 ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
@@ -612,9 +612,9 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 if (item.get() == nullptr) {
                     throw CustomError("Unable to create item of type %s.", item->typeID());
                 } else {
-                    skill = SkillRef::StaticCast(item);
-                    skill->SetAttribute(AttrSkillLevel, level);
-                    skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
+                    skillRef = SkillRef::StaticCast(item);
+                    skillRef->SetAttribute(AttrSkillLevel, level);
+                    skillRef->SetAttribute(AttrSkillPoints, skillRef->GetSPForLevel(level));
                 }
             }
 
@@ -682,45 +682,45 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
     if ((pTarget == nullptr) or (character.get() == nullptr))
         throw CustomError("ERROR: Unable to validate character object.");
 
-    SkillRef skill;
+    SkillRef skillRef;
     if (character->HasSkillTrainedToLevel(skillID, level)) {
         // already trained to requested level
         return PyStatic.NewNone();
     } else if (character->HasSkill(skillID)) {
         // has skill injected, so update level
-        skill = character->GetSkill(skillID);
-        if (skill.get() == nullptr){
+        skillRef = character->GetCharSkillRef(skillID);
+        if (skillRef.get() == nullptr){
             throw CustomError("Unable to get item for skillID %u.", skillID);
             return new PyString ("Skill Gifting Failure - Unable to get item for skillID %u.", skillID);
         }
-        newPoints = skill->GetSPForLevel(level);
-        skill->SetAttribute(AttrSkillLevel, level);
-        skill->SetAttribute(AttrSkillPoints, newPoints);
+        newPoints = skillRef->GetSPForLevel(level);
+        skillRef->SetAttribute(AttrSkillLevel, level);
+        skillRef->SetAttribute(AttrSkillPoints, newPoints);
         //check for and remove this skill from training queue
-        character->RemoveFromQueue(skill);
+        character->RemoveFromQueue(skillRef);
     } else {
         // Character does not have this skill
         std::ostringstream str;
         str << "Skill Gift by ";
         str << who->GetCharName();
         ItemData idata(skillID, ownerID, pTarget->GetLocationID(), flagSkill, 1, str.str().c_str());
-        skill = sItemFactory.SpawnSkill(idata);
-        if (skill.get() == nullptr)
+        skillRef = sItemFactory.SpawnSkill(idata);
+        if (skillRef.get() == nullptr)
             throw CustomError("Unable to create item for skillID %u.", skillID);
 
-        newPoints = skill->GetSPForLevel(level);
-        skill->SetAttribute(AttrSkillLevel, level);
-        skill->SetAttribute(AttrSkillPoints, newPoints);
-        skill->ChangeSingleton(true);
-        skill->Move(pTarget->GetCharacterID(), flagSkill, true);
+        newPoints = skillRef->GetSPForLevel(level);
+        skillRef->SetAttribute(AttrSkillLevel, level);
+        skillRef->SetAttribute(AttrSkillPoints, newPoints);
+        skillRef->ChangeSingleton(true);
+        skillRef->Move(pTarget->GetCharacterID(), flagSkill, true);
     }
 
-    skill->SaveItem();
+    skillRef->SaveItem();
     //  save gm skill gift in history  -allan
     character->SaveSkillHistory(EvESkill::Event::GMGift, GetFileTimeNow(), ownerID, skillID, level, newPoints);
 
     OnAdminSkillChange oasc;
-        oasc.skillItemID = skill->itemID();
+        oasc.skillItemID = skillRef->itemID();
         oasc.skillTypeID = skillID;
         oasc.newSP = newPoints;
     PyTuple* tmp = oasc.Encode();
@@ -850,15 +850,15 @@ PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const
     const char *attributeName = args.arg(2).c_str();
     float attributeValue = atof(args.arg(4).c_str());
 
-    InventoryItemRef i;
+    InventoryItemRef iRef;
     if (args.arg(1) == "me") {
-        i = sItemFactory.GetItem(who->GetShip().get()->itemID());
+        iRef = sItemFactory.GetItemRef(who->GetShip().get()->itemID());
     } else {
-        i = sItemFactory.GetItem(atoi(args.arg(1).c_str()));
+        iRef = sItemFactory.GetItemRef(atoi(args.arg(1).c_str()));
     }
 
 
-    i->SetAttribute(db->GetAttributeID(attributeName), attributeValue);
+    iRef->SetAttribute(db->GetAttributeID(attributeName), attributeValue);
     /** @todo  for modules and ships, this will need to call some kind of 'reload' to reset the attrib mem object before new attrib takes affect.  */
 
     return nullptr;

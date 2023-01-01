@@ -93,7 +93,7 @@ void FactoryDB::SetJobEventID(const uint32 jobID, const uint32 eventID)
 
 bool FactoryDB::DeleteBlueprint(uint32 blueprintID) {
     DBerror err;
-    if(!sDatabase.RunQuery(err, "DELETE FROM invBlueprints WHERE itemID=%u", blueprintID)) {
+    if (!sDatabase.RunQuery(err, "DELETE FROM invBlueprints WHERE itemID=%u", blueprintID)) {
         _log(DATABASE__ERROR, "Failed to delete blueprint %u: %s.", blueprintID, err.c_str());
         return false;
     }
@@ -103,7 +103,7 @@ bool FactoryDB::DeleteBlueprint(uint32 blueprintID) {
 PyRep* FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT requiredTypeID AS typeID, quantity"
         " FROM ramTypeRequirements"
         " WHERE typeID = (SELECT blueprintTypeID FROM invBlueprintTypes WHERE productTypeID = %u)"
@@ -119,7 +119,7 @@ PyRep* FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) {
 
 bool FactoryDB::SaveBlueprintData(uint32 blueprintID, EvERam::bpData& data) {
     DBerror err;
-    if(!sDatabase.RunQuery(err,
+    if (!sDatabase.RunQuery(err,
         "INSERT INTO invBlueprints"
         "  (itemID, copy, mLevel, pLevel, runs)"
         " VALUES"
@@ -139,7 +139,7 @@ bool FactoryDB::SaveBlueprintData(uint32 blueprintID, EvERam::bpData& data) {
 
 bool FactoryDB::GetBlueprint(uint32 blueprintID, EvERam::bpData& into) {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         "  copy,"
         "  mLevel,"

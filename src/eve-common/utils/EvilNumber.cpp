@@ -138,7 +138,7 @@ inline void EvilNumber::CheckIntegrity()
 
 bool EvilNumber::isNaN()
 {
-    if( mType == evil_number_nan )
+    if ( mType == evil_number_nan )
         return true;
     if ( mType == evil_number_int )
         return false;
@@ -291,7 +291,7 @@ EvilNumber EvilNumber::pow( const EvilNumber & val1, const EvilNumber & val2 )
         exponent.fVal = (double)(val2.iVal);
     exponent.mType = evil_number_float;
 
-    if( val1.mType == evil_number_float )
+    if ( val1.mType == evil_number_float )
         result.fVal = std::pow( val1.fVal, exponent.fVal );
     else
         result.fVal = std::pow( (double)(val1.iVal), exponent.fVal );

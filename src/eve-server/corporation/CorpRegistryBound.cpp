@@ -1022,7 +1022,7 @@ PyResult CorpRegistryBound::Handle_MoveCompanyShares(PyCallArgs &call) {
         return nullptr;
     }
 
-    if (IsCorp(args.toShareholderID)) {
+    if (IsCorpID(args.toShareholderID)) {
         call.client->SendInfoModalMsg("You cannot give shares to a corporation.");
         return nullptr;
     }
@@ -1433,7 +1433,7 @@ PyResult CorpRegistryBound::Handle_UpdateMember(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
-    if (!IsCharacter(args.charID))
+    if (!IsCharacterID(args.charID))
         return nullptr;
 
     int64 oldRole = 0;
@@ -1628,7 +1628,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             sEntityList.CorpNotify(ocmc.oldCorpID, Notify::Types::CorpNews, "OnCorporationMemberChanged", "corpid", ocmc.Encode());
 
         CorpData data = CorpData();
-            sItemFactory.db()->GetCorpData(args.charID, data);
+            CharacterDB::GetCharCorpData(args.charID, data);
             data.corpAccountKey = Account::KeyType::Cash;
             data.corpRole = Corp::Role::Member;
             data.rolesAtAll = Corp::Role::Member;
@@ -2299,7 +2299,7 @@ PyResult CorpRegistryBound::Handle_GetLockedItemLocations( PyCallArgs& call )
 
     //this returns an empty list for me on live.
     //  ...because there are no locked items for your corp. :/
-    return new PyList();
+    return PyStatic.mtList();
 }
 
 PyResult CorpRegistryBound::Handle_AddCorporateContact(PyCallArgs &call) {

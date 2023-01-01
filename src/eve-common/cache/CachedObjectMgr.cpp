@@ -244,11 +244,11 @@ void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer **pbuf)
 
     if (res != m_cachedObjects.end()) {
 
-        sLog.Debug("CachedObjMgr","Destroying old cached object with ID '%s' of length %u with checksum 0x%x", str.c_str(), res->second->cache->content().size(), res->second->version);
+        sLog.Debug("CachedObjMgr","Destroying old cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), res->second->cache->content().size(), res->second->version);
         SafeDelete( res->second );
     }
 
-    sLog.Debug("CachedObjMgr","Registering new cached object with ID '%s' of length %u with checksum 0x%x", str.c_str(), r->cache->content().size(), r->version);
+    sLog.Debug("CachedObjMgr","Registering new cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), r->cache->content().size(), r->version);
 
     m_cachedObjects[str] = r;
 }

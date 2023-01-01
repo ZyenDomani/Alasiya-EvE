@@ -210,7 +210,7 @@ public:
 
     bool VisitInteger( const PyInt* rep )
     {
-        if( !result.empty() )
+        if ( !result.empty() )
             result += ".";
 
         std::stringstream ss;
@@ -226,7 +226,7 @@ public:
     bool VisitBuffer( const PyBuffer* rep ) { return false; }
     bool VisitString( const PyString* rep )
     {
-        if( !result.empty() )
+        if ( !result.empty() )
             result += ".";
         result += rep->content();
 

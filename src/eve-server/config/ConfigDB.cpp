@@ -39,9 +39,9 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     station.clear();
 
     for (auto cur : entityIDs) {
-        if (IsCorp(cur)) {
+        if (IsCorpID(cur)) {
             corp.push_back(cur);
-        } else if (IsAlliance(cur)) {
+        } else if (IsAllianceID(cur)) {
             ally.push_back(cur);
         } else if (IsCharacterID(cur)) {
             player.push_back(cur);
@@ -168,7 +168,7 @@ PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityID
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT allianceID, shortName FROM alnAlliance" )) {
         codelog(DATABASE__ERROR, "Error in GetMultiAllianceShortNamesEx query: %s", res.error.c_str());
-        return new PyInt(0);
+        return PyStatic.NewZero();
     }
 
     return DBResultToTupleSet(res);
@@ -273,7 +273,7 @@ PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs)
         " WHERE corporationID in (%s)", ids.c_str()))
     {
         codelog(DATABASE__ERROR, "Error in GetMultiCorpTickerNamesEx query: %s", res.error.c_str());
-        return new PyInt(0);
+        return PyStatic.NewZero();
     }
 
     return DBResultToRowList(res);
@@ -294,7 +294,7 @@ PyRep *ConfigDB::GetMultiGraphicsEx(const std::vector<int32> &entityIDs) {
         " WHERE graphicID in (%s)", ids.c_str()))
     {
         codelog(DATABASE__ERROR, "Error in GetMultiGraphicsEx query: %s", res.error.c_str());
-        return new PyInt(0);
+        return PyStatic.NewZero();
     }
 
     return DBResultToRowList(res);
@@ -391,7 +391,7 @@ PyRep *ConfigDB::GetMultiInvTypesEx(const std::vector<int32> &entityIDs) {
         " WHERE typeID in (%s)", ids.c_str()))
     {
         codelog(DATABASE__ERROR, "Error in GetMultiInvTypesEx query: %s", res.error.c_str());
-        return new PyInt(0);
+        return PyStatic.NewZero();
     }
 
     return DBResultToRowList(res);
@@ -441,7 +441,7 @@ PyRep *ConfigDB::GetCelestialStatistic(uint32 celestialID) {
         " WHERE celestialID = %u", celestialID))
         {
             codelog(DATABASE__ERROR, "Error in GetCelestialStatistic query: %s", res.error.c_str());
-            return new PyInt(0);
+            return PyStatic.NewZero();
         }
 
     return DBResultToCRowset(res);
@@ -491,7 +491,7 @@ PyRep *ConfigDB::GetDynamicCelestials(uint32 solarSystemID) {
         " AND itemID > %d",   //this is min itemid for outposts   (pos' do NOT go here)
         solarSystemID, EVEDB::invGroups::Station, maxNPCStation )) {
         codelog(DATABASE__ERROR, "Error in GetDynamicCelestials query: %s", result.error.c_str());
-            return new PyInt(0);
+            return PyStatic.NewZero();
     }
 
     return DBResultToCRowset(result);
@@ -501,7 +501,7 @@ PyRep *ConfigDB::GetTextsForGroup(const std::string & langID, uint32 textgroup) 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT textLabel, `text` FROM intro WHERE langID = '%s' AND textgroup = %u", langID.c_str(), textgroup)) {
         codelog(DATABASE__ERROR, "Error in GetTextsForGroup query: %s", res.error.c_str());
-        return new PyInt(0);
+        return PyStatic.NewZero();
     }
 
     return DBResultToRowset(res);

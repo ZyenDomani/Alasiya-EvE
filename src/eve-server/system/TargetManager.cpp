@@ -615,6 +615,7 @@ void TargetManager::Destroyed()
     Dump();
 }
 
+// specific for asteroids; only called by asteroids
 void TargetManager::Depleted(InventoryItemRef iRef)
 {
     // this should only be called by a non-miner module, if shooting roids are enabled.
@@ -679,7 +680,7 @@ float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
         /*  distance-based modifier to targeting speed?         sure, why the hell not?   -allan 27.6.15
          *  +0.1s for each 10k distance
          *     distance = pos - targ.pos
-         *     disMod = distance /10k (for 10k increments)
+         *     disMod = distance / 10k (for 10k increments)
          *     time += disMod * 0.1
          */
         double distance(sRef->position().distance(tSE->GetPosition()));
@@ -697,7 +698,7 @@ float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
         if (distance > 85000)
             distance -= 75000;
 
-        float disMod(distance /10000);
+        float disMod(distance / 10000);
         if (disMod < 1)
             disMod = 0.0f;
         time += (disMod * 0.1f);

@@ -31,8 +31,6 @@
 
 #include "StaticDataMgr.h"
 #include "effects/EffectsData.h"
-#include "inventory/AttributeMap.h"
-#include "inventory/ItemFactory.h"
 
 /*
  * LOADING INVOKATION EXPLANATION:

@@ -104,7 +104,7 @@ void ImageServerConnection::ProcessHeaders()
             sLog.Error("     Image Server","Image for itemID %u not found.", _id);
             NotFound();
             return;
-        } else if (IsCharacter(_id)) {
+        } else if (IsCharacterID(_id)) {
             sLog.Error("     Image Server","Image for charID %u not found.", _id);
             NotFound();
             return;

@@ -62,7 +62,7 @@ NewLog::NewLog(std::string logPath)
 mTime( 0 )
 {
     // open default logfile
-    if( logPath.empty() )
+    if ( logPath.empty() )
         logPath = EVEMU_ROOT "/logs/";
 
     SetLogfileDefault(logPath);
@@ -88,7 +88,7 @@ void NewLog::Initialize()
 void NewLog::InitializeLogging( std::string logPath )
 {
     // open default logfile
-    if( logPath.empty() )
+    if ( logPath.empty() )
         logPath = EVEMU_ROOT "/logs/";
 
     m_initialized = true;
@@ -206,10 +206,10 @@ bool NewLog::SetLogfile( const char* filename )
 
     FILE* file = NULL;
 
-    if( NULL != filename )
+    if ( NULL != filename )
     {
         file = fopen( filename, "w" );
-        if( NULL == file )
+        if ( NULL == file )
             return false;
     }
 
@@ -220,7 +220,7 @@ bool NewLog::SetLogfile( FILE* file )
 {
     MutexLock l( mMutex );
 
-    if( NULL != mLogfile )
+    if ( NULL != mLogfile )
         assert( 0 == fclose( mLogfile ) );
 
     mLogfile = file;
@@ -229,7 +229,7 @@ bool NewLog::SetLogfile( FILE* file )
 
 void NewLog::PrintMsg( Color color, char pfx, const char* source, const char* fmt, va_list ap )
 {
-    if( !m_initialized )
+    if ( !m_initialized )
         return;
 
     MutexLock l( mMutex );
@@ -239,7 +239,7 @@ void NewLog::PrintMsg( Color color, char pfx, const char* source, const char* fm
     SetColor( color );
     Print( " %c ", pfx );
 
-    if( source && *source )
+    if ( source && *source )
     {
         SetColor( COLOR_WHITE );
         Print( "%s: ", source );
@@ -280,7 +280,7 @@ void NewLog::PrintVa( const char* fmt, va_list ap )
 {
     MutexLock l( mMutex );
 
-    if( NULL != mLogfile )
+    if ( NULL != mLogfile )
     {
         // this is a design flaw ( UNIX related )
         va_list ap2;

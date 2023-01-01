@@ -46,7 +46,7 @@ int main( int argc, char* argv[] )
     // parse options
     for(; 0 < argc; --argc, ++argv )
     {
-        if( '-' != argv[0][0] )
+        if ( '-' != argv[0][0] )
             // end of options
             break;
 
@@ -54,7 +54,7 @@ int main( int argc, char* argv[] )
         {
             /* include dir */
             case 'I':
-                if( 1 < argc )
+                if ( 1 < argc )
                 {
                     // consume next argument
                     dirInclude = argv[1];
@@ -69,7 +69,7 @@ int main( int argc, char* argv[] )
 
             /* source dir */
             case 'S':
-                if( 1 < argc )
+                if ( 1 < argc )
                 {
                     // consume next argument
                     dirSource = argv[1];
@@ -94,7 +94,7 @@ int main( int argc, char* argv[] )
         }
     }
 
-    if( 0 == argc )
+    if ( 0 == argc )
     {
         sLog.Error( "XMLPktGen", "Error processing files: no files given" );
         return -1;
@@ -108,14 +108,14 @@ int main( int argc, char* argv[] )
 
         // locate a slash
         size_t slash = name.rfind( '/' );
-        if( std::string::npos == slash )
+        if ( std::string::npos == slash )
             slash = name.rfind( '\\' );
-        if( std::string::npos == slash )
+        if ( std::string::npos == slash )
             slash = -1;
 
         // locate a dot
         size_t dot = name.rfind( '.' );
-        if( slash > dot || std::string::npos == dot )
+        if ( slash > dot || std::string::npos == dot )
             dot = name.length();
 
         name = name.substr( slash + 1, dot - slash - 1 );
@@ -123,7 +123,7 @@ int main( int argc, char* argv[] )
         gen.SetHeaderFile( ( dirInclude + '/' + name + ".h" ).c_str() );
         gen.SetSourceFile( ( dirSource + '/' + name + ".cpp" ).c_str() );
 
-        if( !gen.ParseFile( *argv ) )
+        if ( !gen.ParseFile( *argv ) )
             return -1;
     }
 

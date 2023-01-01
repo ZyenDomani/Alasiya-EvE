@@ -24,6 +24,8 @@
  *    Rewrite:    Allan
  */
 
+#include <chrono>
+
 #include "eve-server.h"
 // version
 #include "../eve-common/EVEVersion.h"
@@ -238,7 +240,7 @@ int main( int argc, char* argv[] )
     if (!sConfig.files.logDir.empty()) {
         //sLog.InitializeLogging(sConfig.files.logDir);
         std::string logFile = sConfig.files.logDir + "eve-server.log";
-        if( log_open_logfile( logFile.c_str() ) ) {
+        if ( log_open_logfile( logFile.c_str() ) ) {
             sLog.Green( "       ServerInit", "Found log directory %s", sConfig.files.logDir.c_str() );
         } else {
             sLog.Warning( "       ServerInit", "Unable to find log directory '%s', only logging to the screen now.", sConfig.files.logDir.c_str() );
@@ -291,6 +293,21 @@ int main( int argc, char* argv[] )
         sLog.Green("   Grid Unloading","Enabled.  Grids will unload after %u seconds of inactivity.", sConfig.world.gridUnloadTime);
     } else {
         sLog.Warning("   Grid Unloading","Disabled.");
+    }
+    if (sConfig.world.shootRoids) {
+        sLog.Green("  Shoot Asteroids","Enabled.");
+    } else {
+        sLog.Warning("  Shoot Asteroids","Disabled.");
+    }
+    if (sConfig.world.shootWrecks) {
+        sLog.Green("     Shoot Wrecks","Enabled.");
+    } else {
+        sLog.Warning("     Shoot Wrecks","Disabled.");
+    }
+    if (sConfig.world.highSecCyno) {
+        sLog.Green("  Cyno in HighSec","Enabled.");
+    } else {
+        sLog.Warning("  Cyno in HighSec","Disabled.");
     }
     std::printf("\n");     // spacer
 
@@ -509,6 +526,16 @@ int main( int argc, char* argv[] )
         }  else {
             sLog.Warning(" Delayed Bounties","Delay for Fleet Bounty Sharing is Disabled.  Fleet Sharing of Bounties is immediate.");
         }
+    }
+    if (sConfig.server.LoadStaticRecyclable) {
+        sLog.Green(" Load Recyclables","Enabled.");
+    } else {
+        sLog.Warning(" Load Recyclables","Disabled.");
+    }
+    if (sConfig.server.LoadStaticRefinable) {
+        sLog.Green("  Load Refinables","Enabled.");
+    } else {
+        sLog.Warning("  Load Refinables","Disabled.");
     }
     std::printf("\n");     // spacer
 

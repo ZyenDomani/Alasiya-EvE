@@ -95,7 +95,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
     }
     /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
     if (is_log_enabled(ATTRIBUTE__INFO))
-        _log(ATTRIBUTE__INFO, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.name());
+        _log(ATTRIBUTE__INFO, "AttributeMap::Load()  Loaded %lu attribs for %s.", mAttributes.size(), mItem.name());
     return true;
 }
 
@@ -121,7 +121,7 @@ bool AttributeMap::Save() {
     std::vector<Inv::AttrData> attribs;
     attribs.clear();
     AttrMapItr itr = mAttributes.begin(), end = mAttributes.end();
-    if (IsCharacter(mItem.itemID())) {
+    if (IsCharacterID(mItem.itemID())) {
         for (; itr != end; ++itr) {
             switch (itr->first) {
                 case AttrCharisma:
@@ -209,7 +209,7 @@ bool AttributeMap::Save() {
     }
 
     if (!attribs.empty())
-        ItemDB::SaveAttributes(IsCharacter(mItem.itemID()), attribs);
+        ItemDB::SaveAttributes(IsCharacterID(mItem.itemID()), attribs);
     return true;
 }
 
@@ -343,12 +343,12 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
         return true;
     // check owner
     if ((mItem.ownerID() == 1)
-    and (!IsCharacter(mItem.itemID())))
+    and (!IsCharacterID(mItem.itemID())))
         return true;
 
     // i dunno wtf i put this here....modules maybe?
     /*
-    if (IsCharacter(mItem.ownerID())) {
+    if (IsCharacterID(mItem.ownerID())) {
         Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
         if (pClient->IsDocked())
             return true;
@@ -395,10 +395,10 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
         return true;
 
     if ((mItem.ownerID() == 1)
-    and (!IsCharacter(mItem.itemID())))
+    and (!IsCharacterID(mItem.itemID())))
         return true;
 /*
-    if (IsCharacter(mItem.ownerID())) {
+    if (IsCharacterID(mItem.ownerID())) {
         Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
         if (pClient->IsDocked())
             return true;
@@ -433,7 +433,7 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
         // there is no code to get corp AND loc in multicast.  it sends to both
         MulticastTarget mct;
         mct.corporations.insert(mItem.ownerID());
-        if (IsStation(mItem.locationID())) {
+        if (sDataMgr.IsStation(mItem.locationID())) {
             mct.locations.insert(mItem.locationID());
             sEntityList.Multicast("OnItemChange", "*stationid&corpid", &attrChange, mct);
         } else {
@@ -441,11 +441,11 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
         }
     }
 
-    if (IsCorp(mItem.ownerID()))
+    if (IsCorpID(mItem.ownerID()))
         return true;
 
     Client* pClient(nullptr);
-    if (IsCharacter(mItem.itemID())) {
+    if (IsCharacterID(mItem.itemID())) {
         pClient = sEntityList.FindClientByCharID(mItem.itemID());
     } else {
         pClient = sEntityList.FindClientByCharID(mItem.ownerID());
@@ -581,7 +581,7 @@ void AttributeMap::DeleteAttribute(uint16 attrID) {
         mAttributes.erase(itr);
         // if it's not in the map, it's not in db, either...
         DBerror err;
-        if (IsCharacter(mItem.itemID())) {
+        if (IsCharacterID(mItem.itemID())) {
             if (!sDatabase.RunQuery(err, "DELETE FROM chrCharacterAttributes WHERE charID = %u AND attributeID = %u", mItem.itemID(), attrID)) {
                 _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
             }

@@ -54,7 +54,7 @@ void StreamPacketizer::Process()
         cur = (start + *len);
     }
 
-    if( cur != mBuffer.begin<uint8>() )
+    if ( cur != mBuffer.begin<uint8>() )
         mBuffer.AssignSeq( cur, end );
 }
 

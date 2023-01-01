@@ -136,7 +136,10 @@ public:
 
     /* PC Module Methods (for module deactivation on target removed) */
     void                Destroyed();    // this does NOT remove target from targeters map
+    // only called by MiningLaser
     void                Depleted(MiningLaser* pMod);
+    // only called by non-lasers
+    void                Depleted(InventoryItemRef iRef);
     void                AddTargetModule(ActiveModule* pMod);
     void                RemoveTargetModule(ActiveModule* pMod);
 

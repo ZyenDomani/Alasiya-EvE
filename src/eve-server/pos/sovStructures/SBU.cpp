@@ -22,8 +22,8 @@
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "planet/Planet.h"
-#include "pos/SBU.h"
-#include "pos/TCU.h"
+#include "pos/sovStructures/SBU.h"
+#include "pos/sovStructures/TCU.h"
 #include "system/Container.h"
 #include "system/Damage.h"
 #include "system/SystemBubble.h"
@@ -57,16 +57,22 @@ void SBUSE::SetOnline()
     StructureSE::SetOnline();
 
     // If more than 50 percent of gates have an SBU, the TCU should be vulnerable
-    if ((GetSBUs() / GetGates()) > 0.5) {
+    if ((GetSBUs() / GetGates()) > 0.5)
+    {
         _log(SOV__DEBUG, "- STATE CHANGE - This system has %u SBUs installed in the total of %u stargates. The TCU is now vulnerable to attack.", (int)GetSBUs(), (int)GetGates());
         // Make the TCU vulnerable
         for (auto cur : m_system->GetOperationalStatics())
+        {
             if (cur.second->IsTCUSE())
+            {
                 cur.second->GetTCUSE()->SetVulnerable();
-
+            }
+        }
         // Mark the system as contested
         MarkContested(m_system->GetID(), true);
-    } else {
+    }
+    else
+    {
         _log(SOV__DEBUG, "This system has %u SBUs installed in the total of %u stargates. The TCU is invulnerable.", (int)GetSBUs(), (int)GetGates());
     }
 }
@@ -76,16 +82,22 @@ void SBUSE::SetOffline()
     // Ensure that the SBU is offline before we check ratio
     StructureSE::SetOffline();
 
-    if ((GetSBUs() / GetGates()) <= 0.5) {
+    if ((GetSBUs() / GetGates()) <= 0.5)
+    {
         _log(SOV__DEBUG, "- STATE CHANGE - This system has %u SBUs installed in the total of %u stargates. The TCU is no longer vulnerable to attack.", (int)GetSBUs(), (int)GetGates());
         // Make the TCU invulnerable
         for (auto cur : m_system->GetOperationalStatics())
+        {
             if (cur.second->IsTCUSE())
+            {
                 cur.second->GetTCUSE()->SetOnline();
-
+            }
+        }
         // Unmark the system as contested
         MarkContested(m_system->GetID(), false);
-    } else {
+    }
+    else
+    {
         _log(SOV__DEBUG, "This system has %u SBUs installed in the total of %u stargates. The TCU is vulnerable.", (int)GetSBUs(), (int)GetGates());
     }
 }
@@ -119,25 +131,26 @@ void SBUSE::MarkContested(uint32 systemID, bool contested)
     data->SetItem(0, new PyInt(systemID));
     data->SetItem(1, new PyObject("util.KeyVal", args));
 
-    // update players in system with sov change
-    std::vector<Client*> list;
-    m_system->GetClientList(list);
+    std::vector<Client *> list;
+    sEntityList.GetClients(list);
     for (auto cur : list)
-        if (cur->GetChar().get() != nullptr) {
+    {
+        if (cur->GetChar().get() != nullptr)
+        {
+            PyIncRef(data);
             cur->SendNotification("ProcessSovStatusChanged", "clientID", &data);
-            _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s (%u)", cur->GetName(), cur->GetClientID());
+            _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s(%u)", cur->GetName(), cur->GetCharID());
         }
+    }
+
+    // cleanup
+    PyDecRef(data);
 }
 
 // Calculate number of gates in the system
 float SBUSE::GetGates()
 {
-    int numberOfGates = 0;
-    for (auto cur : m_system->GetOperationalStatics())
-        if (cur.second->IsGateSE())
-            ++numberOfGates;
-
-    return (float)numberOfGates;
+    return (float)m_system->GetGates().size();
 }
 
 // Calculate number of SBUs in the system
@@ -145,9 +158,15 @@ float SBUSE::GetSBUs()
 {
     int numberOfSBUs = 0;
     for (auto cur : m_system->GetOperationalStatics())
-        if (cur.second->IsSBUSE())   //Only increment the number of SBUs if they are online
-            if (cur.second->GetSBUSE()->GetState() == EVEPOS::StructureStatus::Online)
-                ++numberOfSBUs;
-
+    {
+        if (cur.second->IsSBUSE())
+        {
+            //Only increment the number of SBUs if they are online
+            if (cur.second->GetSBUSE()->GetState() == EVEPOS::StructureState::Online)
+            {
+                numberOfSBUs++;
+            }
+        }
+    }
     return (float)numberOfSBUs;
 }

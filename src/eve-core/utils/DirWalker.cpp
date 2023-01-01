@@ -84,13 +84,13 @@ bool DirWalker::OpenDir( const char* dir, const char* suffix )
 void DirWalker::CloseDir()
 {
 #ifdef HAVE_WINDOWS_H
-    if( INVALID_HANDLE_VALUE != mFind )
+    if ( INVALID_HANDLE_VALUE != mFind )
         ::FindClose( mFind );
 
     mValid = false;
     mFirst = false;
 #else /* !HAVE_WINDOWS_H */
-    if( NULL != mDir )
+    if ( NULL != mDir )
         ::closedir( mDir );
 
     mFile = NULL;
@@ -101,17 +101,17 @@ void DirWalker::CloseDir()
 bool DirWalker::NextFile()
 {
 #ifdef HAVE_WINDOWS_H
-    if( INVALID_HANDLE_VALUE == mFind )
+    if ( INVALID_HANDLE_VALUE == mFind )
         return false;
 
-    if( mFirst )
+    if ( mFirst )
         mFirst = false;
     else
         mValid = ( TRUE == ::FindNextFile( mFind, &mFindData ) );
 
     return mValid;
 #else /* !HAVE_WINDOWS_H */
-    if( NULL == mDir )
+    if ( NULL == mDir )
         return false;
 
     // We need to do the suffix matching here
@@ -120,9 +120,9 @@ bool DirWalker::NextFile()
         const std::string filename( currentFileName() );
         const size_t pos = filename.rfind( mSuffix );
 
-        if( std::string::npos == pos )
+        if ( std::string::npos == pos )
             continue;
-        else if( filename.length() != ( pos + mSuffix.length() ) )
+        else if ( filename.length() != ( pos + mSuffix.length() ) )
             continue;
         else
             return true;

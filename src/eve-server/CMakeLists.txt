@@ -432,9 +432,10 @@ SET( pos_INCLUDE
      "${TARGET_INCLUDE_DIR}/pos/Structure.h"
      "${TARGET_INCLUDE_DIR}/pos/Tower.h"
      "${TARGET_INCLUDE_DIR}/pos/Weapon.h"
-     "${TARGET_INCLUDE_DIR}/pos/TCU.h"
-     "${TARGET_INCLUDE_DIR}/pos/SBU.h"
-     "${TARGET_INCLUDE_DIR}/pos/IHub.h" )
+     "${TARGET_INCLUDE_DIR}/pos/JumpBridge.h"
+     "${TARGET_INCLUDE_DIR}/pos/sovStructures/TCU.h"
+     "${TARGET_INCLUDE_DIR}/pos/sovStructures/SBU.h"
+     "${TARGET_INCLUDE_DIR}/pos/sovStructures/IHub.h")
 SET( pos_SOURCE
      "${TARGET_SOURCE_DIR}/pos/Array.cpp"
      "${TARGET_SOURCE_DIR}/pos/Battery.cpp"
@@ -445,9 +446,10 @@ SET( pos_SOURCE
      "${TARGET_SOURCE_DIR}/pos/Structure.cpp"
      "${TARGET_SOURCE_DIR}/pos/Tower.cpp"
      "${TARGET_SOURCE_DIR}/pos/Weapon.cpp"
-     "${TARGET_SOURCE_DIR}/pos/TCU.cpp"
-     "${TARGET_SOURCE_DIR}/pos/SBU.cpp"
-     "${TARGET_SOURCE_DIR}/pos/IHub.cpp" )
+     "${TARGET_SOURCE_DIR}/pos/JumpBridge.cpp"
+     "${TARGET_SOURCE_DIR}/pos/sovStructures/TCU.cpp"
+     "${TARGET_SOURCE_DIR}/pos/sovStructures/SBU.cpp"
+     "${TARGET_SOURCE_DIR}/pos/sovStructures/IHub.cpp")
 
 SET( qaTools_INCLUDE
      "${TARGET_INCLUDE_DIR}/qaTools/encounterSpawnServer.h"
@@ -480,6 +482,7 @@ SET( ship_SOURCE
 
 SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/ActiveModule.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/CynoModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/GenericModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/MiningLaser.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleItem.h"
@@ -494,6 +497,7 @@ SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/TurretModule.h" )
 SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/ActiveModule.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/CynoModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/GenericModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/MiningLaser.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/ModuleItem.cpp"
@@ -563,7 +567,6 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/SystemBubble.h"
      "${TARGET_INCLUDE_DIR}/system/SystemDB.h"
      "${TARGET_INCLUDE_DIR}/system/SystemEntity.h"
-     "${TARGET_INCLUDE_DIR}/system/SystemGPoint.h"
      "${TARGET_INCLUDE_DIR}/system/SystemManager.h"
      "${TARGET_INCLUDE_DIR}/system/TargetManager.h"
      "${TARGET_INCLUDE_DIR}/system/WorldSpaceServer.h"
@@ -588,7 +591,6 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/SystemBubble.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemDB.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemEntity.cpp"
-     "${TARGET_SOURCE_DIR}/system/SystemGPoint.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemManager.cpp"
      "${TARGET_SOURCE_DIR}/system/TargetManager.cpp"
      "${TARGET_SOURCE_DIR}/system/WorldSpaceServer.cpp"

@@ -162,7 +162,7 @@ bool PyPacket::Decode(PyRep **in_packet)
     }
 
     if (tuple->items.size() != 7) {
-        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body does not contain a tuple of length 7 (is %u)", tuple->items.size());
+        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body does not contain a tuple of length 7 (is %lu)", tuple->items.size());
         PyDecRef(packet);
         return false;
     }
@@ -345,7 +345,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
     }
 
     if (tuple->items.size() < 3) {
-        codelog(NET__PACKET_ERROR, "Not enough elements in address tuple: %u", tuple->items.size());
+        codelog(NET__PACKET_ERROR, "Not enough elements in address tuple: %lu", tuple->items.size());
         tuple->Dump(NET__PACKET_ERROR, "  ");
         PyDecRef(base);
         PyDecRef(tuple);

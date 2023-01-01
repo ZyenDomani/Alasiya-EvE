@@ -586,7 +586,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
     if (pSysMgr != nullptr)
         newStanding *= pSysMgr->GetSecValue(); // 0.0018 to .76
 
-    //newStanding = EvEMath::Agent::AgentStandingIncrease(standing, (newStanding /10));     -- this isnt used.
+    //newStanding = EvEMath::Agent::AgentStandingIncrease(standing, (newStanding / 10));     -- this isnt used.
     newStanding = EvEMath::Agent::MissionStandingIncrease(newStanding, pChar->GetSkillLevel(EvESkill::Social));
     newStanding *= 0.125f;   //  1/8
 

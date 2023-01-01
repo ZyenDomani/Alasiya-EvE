@@ -137,7 +137,7 @@ PyRep *AccountDB::GetWalletDivisionsInfo(uint32 corpID) {
 PyRep* AccountDB::GetJournal(uint32 ownerID, int8 entryTypeID, uint16 accountKey, int64 fromDate, bool reverse/*false*/)
 {
     std::string tblName = "jnlCharacters";
-    if (IsCorp(ownerID))
+    if (IsCorpID(ownerID))
         tblName = "jnlCorporations";
 
     std::string entryType = "";
@@ -179,7 +179,7 @@ void AccountDB::AddJournalEntry(uint32 ownerID, int8 entryTypeID, uint32 ownerFr
     sDatabase.DoEscapeString(eDesc, description);
 
     std::string tblName = "jnlCharacters";
-    if (IsCorp(ownerID))
+    if (IsCorpID(ownerID))
         tblName = "jnlCorporations";
 
     // dont care if this fails...

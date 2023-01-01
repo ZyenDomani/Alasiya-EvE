@@ -203,7 +203,7 @@ PyRep* StandingDB::GetSystemSovInfo(uint32 systemID) {
      *
      *    PyDict *args = new PyDict;
      *
-     *    if(!sDatabase.RunQuery(res,
+     *    if (!sDatabase.RunQuery(res,
      *        "SELECT"
      *        "   corporationID,"
      *        "   allianceID,"

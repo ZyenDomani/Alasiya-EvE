@@ -247,7 +247,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                     ItemData data(offer.courierTypeID, pchar->itemID(), locTemp, flagNone, offer.courierAmount);
                     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                     iRef->Move(offer.originID, flagHangar, true);
-                    sItemFactory.SetUsingClient();
+                    sItemFactory.UnsetUsingClient();
                 }
                 m_agent->UpdateOffer(pchar->itemID(), offer);
                 m_agent->SendMissionUpdate(call.client, "offer_accepted");
@@ -275,7 +275,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                     ItemData data(offer.rewardItemID, pchar->itemID(), locTemp, flagNone, offer.rewardItemQty);
                     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                     iRef->Move(m_agent->GetStationID(), flagHangar, true);
-                    sItemFactory.SetUsingClient();
+                    sItemFactory.UnsetUsingClient();
                 }
                 /** @todo  add fleet sharing  */
                 if (offer.rewardISK)
@@ -764,7 +764,7 @@ PyTuple* AgentBound::GetMissionObjectives(Client* pClient, MissionOffer& offer)
 {
     // set mission objectiveData based on mission type.
     PyDict* dropoffLocation = new PyDict();
-    if (IsStation(offer.destinationID)) {
+    if (sDataMgr.IsStation(offer.destinationID)) {
         dropoffLocation->SetItemString("typeID", new PyInt(offer.destinationTypeID) );
         dropoffLocation->SetItemString("locationID", new PyInt(offer.destinationID) );
         dropoffLocation->SetItemString("solarsystemID", new PyInt(offer.destinationSystemID) );

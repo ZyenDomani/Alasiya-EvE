@@ -204,7 +204,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
     if (call.byname.find("memberless") != call.byname.end())
         memberless = (call.byname.find("memberless")->second->AsInt()->value() ? true : false);
 
-    Client* pClient = call.client;
+    Client* pClient(call.client);
     ChannelCreateReply reply;
 
     // create/get channel info
@@ -960,26 +960,26 @@ void LSCService::CreateSystemChannel(int32 channelID)
     int32 messageID = -1, grpMsgID = 0;
     uint32 ownerID = channelID;
 
-    /** @todo  i know this isnt used much, but wtf was i thinking hitting db for names, when they are in static data?? */
-    if (IsRegion(channelID)) {
+    /** @todo  update static data to include names, then query that for these names.  */
+    if (IsRegionID(channelID)) {
         type = LSC::Type::region;
         name = "Region";
         motd = m_db->GetRegionName(channelID);
         grpMsgID = 1;
-    } else if (IsConstellation(channelID)) {
+    } else if (IsConstellationID(channelID)) {
         type = LSC::Type::constellation;
         name = "Constellation";
         motd = m_db->GetConstellationName(channelID);
         grpMsgID = 2;
-    } else if (IsKSpace(channelID)) {
+    } else if (IsKSpaceID(channelID)) {
         type = LSC::Type::solarsystem2;
         name = "Local";
-        motd = m_db->GetSolarSystemName(channelID);
+        motd = sDataMgr.GetSystemName(channelID);
         grpMsgID = 3;
-    } else if (IsWSpace(channelID)) {
+    } else if (IsWSpaceID(channelID)) {
         type = LSC::Type::solarsystem;
         name = "System";
-        motd = m_db->GetSolarSystemName(channelID);
+        motd = sDataMgr.GetSystemName(channelID);
         grpMsgID = 3;
     } else if (IsNPCCorp(channelID)) {
         type = LSC::Type::corp;
@@ -992,19 +992,19 @@ void LSCService::CreateSystemChannel(int32 channelID)
         motd = m_db->GetCorporationName(channelID);
         grpMsgID = 263235;
         messageID = 0;
-    } else if (IsAlliance(channelID)) {
+    } else if (IsAllianceID(channelID)) {
         type = LSC::Type::alliance;
         name = "Alliance";
         motd = m_db->GetAllianceName(channelID);
         grpMsgID = 5;
         messageID = 0;
-    } else if (IsFleet(channelID)) {
+    } else if (IsFleetID(channelID)) {
         type = LSC::Type::fleet;
         name = sFltSvc.GetFleetName(channelID);
         motd = sFltSvc.GetFleetDescription(channelID);
         messageID = 0;
         ownerID = sFltSvc.GetFleetLeaderID(channelID);
-    } else if (IsWing(channelID)) {
+    } else if (IsWingID(channelID)) {
         type = LSC::Type::wing;
         name = sFltSvc.GetWingName(channelID);
         motd = name;
@@ -1013,7 +1013,7 @@ void LSCService::CreateSystemChannel(int32 channelID)
         messageID = 0;
         //ownerID = sFltSvc.GetWingLeaderID(channelID);
         ownerID = sFltSvc.GetFleetLeaderID(channelID);
-    } else if (IsSquad(channelID)) {
+    } else if (IsSquadID(channelID)) {
         type = LSC::Type::squad;
         name = sFltSvc.GetSquadName(channelID);
         motd = name;
@@ -1224,7 +1224,7 @@ void LSCService::SendMail(uint32 sender, const std::vector<int32> &recipients, c
 
     for(; cur != end; cur++) {
         uint32 messageID = m_db->StoreMail(sender, *cur, subject.c_str(), content.c_str(), notify.sentTime);
-        if(messageID == 0) {
+        if (messageID == 0) {
             _log(SERVICE__ERROR, "Failed to store message from %u for recipient %u", sender, *cur);
             continue;
         }
@@ -1286,7 +1286,7 @@ PyResult LSCService::Handle_DeleteMessages(PyCallArgs &call) {
         return nullptr;
     }
 
-    if(args.channelID != (int32)call.client->GetCharacterID()) {
+    if (args.channelID != (int32)call.client->GetCharacterID()) {
         _log(SERVICE__ERROR, "%s (%d) tried to delete messages in channel %u. Denied.", call.client->GetName(), call.client->GetCharacterID(), args.channelID);
         return nullptr;
     }

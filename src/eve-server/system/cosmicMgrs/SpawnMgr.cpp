@@ -48,7 +48,6 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
 {
     m_spawnID = 1;
 
-    m_ratEnabled = false;
     m_initalized = false;
 
     m_spawns.clear();
@@ -65,27 +64,28 @@ bool SpawnMgr::Init()
     m_initalized = true;
 
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
-        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initializing SpawnMgr for %s(%u) - config option off.", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__INIT, "Belt Spawns Disabled while Initializing SpawnMgr for %s(%u) - config option off.", m_system->GetName(), m_system->GetID());
         return true;
     }
 
     if (m_system->BeltCount() < 1) {
-        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initializing SpawnMgr for %s(%u) - no belts.", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__INIT, "Belt Spawns Disabled for %s(%u) - no belts.", m_system->GetName(), m_system->GetID());
         return true;
     }
 
-    m_ratEnabled = true;
     m_groupTimerSetTime = 150;  // (in seconds) 2.5m default check time. this will allow a max wait time of 7.5m for respawn
 
-    _log(COSMIC_MGR__MESSAGE, "SpawnMgr Fully Initialized for %s(%u)", m_system->GetName(), m_system->GetID());
+
+    _log(COSMIC_MGR__INIT, "SpawnMgr Initialized for %s(%u)", m_system->GetName(), m_system->GetID());
+    _log(COSMIC_MGR__INIT, "Roaming Belt Spawns are %s", sConfig.npc.RoamingSpawns ? "enabled" : "disabled");
+    _log(COSMIC_MGR__INIT, "Static Gate Spawns are %s", sConfig.npc.StaticSpawns ? "enabled" : "disabled");
+
     return m_initalized;
 }
 
 // this is only for rats.
 void SpawnMgr::Process() {
     if (!m_initalized)
-        return;
-    if (!m_ratEnabled)
         return;
 
     double profileStartTime(GetTimeUSeconds());
@@ -216,7 +216,7 @@ void SpawnMgr::StartRatGroupTimer()
 {
     if (m_ratGroupTimer.Enabled()) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::StartRatGroupTimer() - Group Spawn Timer currently running.  Time left: %us", m_ratGroupTimer.GetRemainingTime() /1000);
+            _log(SPAWN__MESSAGE, "SpawnMgr::StartRatGroupTimer() - Group Spawn Timer currently running.  Time left: %us", m_ratGroupTimer.GetRemainingTime() / 1000);
         return;
     }
     m_ratGroupTimer.Start(m_groupTimerSetTime *1000);
@@ -318,7 +318,7 @@ void SpawnMgr::DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID)
 {
     if (pBubble == nullptr)
         return;
-    if (!IsRegion(regionID))
+    if (!IsRegionID(regionID))
         return;
     pBubble->SetIncursion();
     // unknown parameters at this time
@@ -328,7 +328,7 @@ void SpawnMgr::DoSpawnForMission(SystemBubble* pBubble, uint32 regionID)
 {
     if (pBubble == nullptr)
         return;
-    if (!IsRegion(regionID))
+    if (!IsRegionID(regionID))
         return;
     pBubble->SetMission();
     // unknown parameters at this time
@@ -343,11 +343,19 @@ void SpawnMgr::DoSpawnForMission(SystemBubble* pBubble, uint32 regionID)
 
 bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble)
 {
-    if (!m_ratEnabled)
-        return false;
     if (pBubble == nullptr)
         return false;
-    double profileStartTime(GetTimeUSeconds());
+
+    if (pBubble->IsBelt()) {
+        if (!sConfig.cosmic.BeltEnabled)
+            return false;
+        if (!sConfig.npc.RoamingSpawns)
+            return false;
+    }
+
+    if (pBubble->IsGate())
+        if (!sConfig.npc.StaticSpawns)
+            return false;
 
     if (FindSpawnForBubble(pBubble->GetID())) {
         _log(SPAWN__TRACE, "SpawnMgr::FindSpawnForBubble() returned true for bubble %u.", pBubble->GetID());
@@ -367,9 +375,6 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble)
     if (pBubble->IsGate())
         m_system->IncGateSpawnCount();
 
-    /* this will throw off the accuracy of the profile, as this and SpawnMgr::Process() use the same data container */
-    if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::spawn, GetTimeUSeconds() - profileStartTime);
     return true;
 }
 
@@ -458,7 +463,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     // get faction's shipClass and groupID map...is this feasible?  it's fine...there's only 21 at this time.
     if (sDataMgr.GetNPCGroups(factionID, m_factionGroups)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %u.", m_factionGroups.size());    //should be 21 (22 for drones)
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %lu.", m_factionGroups.size());    //should be 21 (22 for drones)
     } else {
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No RatFaction data for faction %u.  Cancelling spawn.", factionID);
         return false;
@@ -467,7 +472,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     RatSpawnClassVec spawnEntry;
     if (sDataMgr.GetNPCClasses(sClass, spawnEntry)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %u, class: %s(%u).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %u, class: %s(%lu).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
     } else {
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %u (%s).  Cancelling spawn.", sClass, GetSpawnClassName(sClass).c_str());
         return false;
@@ -478,7 +483,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         ++level;    // increment wave
         // check wave # vs possible waves.  (oob check)
         if (spawnEntry.size() < level) {
-            _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - spawnEntry.size (%u) < level (%u) for anomaly class %s.  Cancelling spawn.", spawnEntry.size(), level, GetSpawnClassName(sClass).c_str());
+            _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - spawnEntry.size (%lu) < level (%u) for anomaly class %s.  Cancelling spawn.", spawnEntry.size(), level, GetSpawnClassName(sClass).c_str());
             return false;
         }
         /** @todo  test for overseer wave and spawn correct overseer for this anomaly  */

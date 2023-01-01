@@ -54,7 +54,7 @@ bool ClassDestructGenerator::ProcessElementDef( const TiXmlElement* field )
         name, name
     );
 
-    if( !ParseElementChildren( field ) )
+    if ( !ParseElementChildren( field ) )
         return false;
 
     fprintf( mOutputFile,

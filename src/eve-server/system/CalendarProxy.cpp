@@ -74,7 +74,7 @@ PyResult CalendarProxy::Handle_GetEventList( PyCallArgs& call )
         list->AddItem(res);
 
     // get alliance events
-    if (IsAlliance(call.client->GetAllianceID())) {
+    if (IsAllianceID(call.client->GetAllianceID())) {
         res = CalendarDB::GetEventList(call.client->GetAllianceID(), args.arg1, args.arg2);
         if (res != nullptr)
             list->AddItem(res);

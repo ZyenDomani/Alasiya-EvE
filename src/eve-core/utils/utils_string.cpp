@@ -50,9 +50,9 @@ bool IsNumber( char c )
 bool IsNumber( const char* str, size_t len )
 {
     // skip sign if there is one
-    if( len >= 1 )
+    if ( len >= 1 )
     {
-        if(    '-' == str[0]
+        if (    '-' == str[0]
             || '+' == str[0] )
         {
             str += 1;
@@ -60,15 +60,15 @@ bool IsNumber( const char* str, size_t len )
         }
     }
 
-    if( 0 == len )
+    if ( 0 == len )
         return false;
 
     bool seenDec = false;
     for(; len > 0; ++str, --len)
     {
-        if( !IsNumber( *str ) )
+        if ( !IsNumber( *str ) )
         {
-            if( !seenDec && '.' == *str )
+            if ( !seenDec && '.' == *str )
                 seenDec = true;
             else
                 return false;
@@ -91,9 +91,9 @@ bool IsHexNumber( char c )
 bool IsHexNumber( const char* str, size_t len )
 {
     // skip sign if there is one
-    if( 1 >= len )
+    if ( 1 >= len )
     {
-        if(    '-' == str[0]
+        if (    '-' == str[0]
             || '+' == str[0] )
         {
             str += 1;
@@ -102,9 +102,9 @@ bool IsHexNumber( const char* str, size_t len )
     }
 
     // skip "0x" or "0X" prefix if there is one
-    if( 2 >= len )
+    if ( 2 >= len )
     {
-        if(    '0' == str[0]
+        if (    '0' == str[0]
             && (    'x' == str[1]
                  || 'X' == str[1] ) )
         {
@@ -113,12 +113,12 @@ bool IsHexNumber( const char* str, size_t len )
         }
     }
 
-    if( 0 == len )
+    if ( 0 == len )
         return false;
 
     for(; len > 0; ++str, --len)
     {
-        if( !IsHexNumber( *str ) )
+        if ( !IsHexNumber( *str ) )
             return false;
     }
 
@@ -142,7 +142,7 @@ bool IsPrintable( const char* str, size_t len )
 {
     for(; len > 0; ++str, --len)
     {
-        if( !IsPrintable( *str ) )
+        if ( !IsPrintable( *str ) )
             return false;
     }
 
@@ -168,7 +168,7 @@ const char* itoa( int64 num )
 
 void ListToINString( const std::vector<int32>& ints, std::string& into, const char* if_empty )
 {
-    if( ints.empty() )
+    if ( ints.empty() )
     {
         into = if_empty;
         return;
@@ -190,7 +190,7 @@ void ListToINString( const std::vector<int32>& ints, std::string& into, const ch
     end = ints.end();
     for(; cur != end; ++cur)
     {
-        if( ( cur + 1 ) != end )
+        if ( ( cur + 1 ) != end )
             format_index += snprintf( &into[ format_index ], 12, "%i,", *cur );
         else
             // last value to be printed
@@ -200,7 +200,7 @@ void ListToINString( const std::vector<int32>& ints, std::string& into, const ch
 
 void MakeUpperString( const char* source, char* target )
 {
-    if( !target )
+    if ( !target )
         return;
 
     for(; *source; ++target, ++source )
@@ -211,7 +211,7 @@ void MakeUpperString( const char* source, char* target )
 
 void MakeLowerString( const char* source, char* target )
 {
-    if( !target )
+    if ( !target )
         return;
 
     for(; *source; ++target, ++source )
@@ -227,13 +227,13 @@ bool PyDecodeEscape( const char* str, Buffer& into )
 
     while( str < end )
     {
-        if( *str != '\\' )
+        if ( *str != '\\' )
         {
             into.Append< char >( *str++ );
             continue;
         }
 
-        if( ++str == end )
+        if ( ++str == end )
             //ended with a \ char
             return false;
 
@@ -262,24 +262,24 @@ bool PyDecodeEscape( const char* str, Buffer& into )
             case '6':
             case '7':
                 c = str[-1] - '0';
-                if( '0' <= *str && *str <= '7' )
+                if ( '0' <= *str && *str <= '7' )
                 {
                     c = ( c << 3 ) + *str++ - '0';
-                    if( '0' <= *str && *str <= '7' )
+                    if ( '0' <= *str && *str <= '7' )
                         c = ( c << 3 ) + *str++ - '0';
                 }
                 into.Append< uint8 >( c );
                 break;
 
         case 'x':
-            if( isxdigit( str[0] ) && isxdigit( str[1] ) )
+            if ( isxdigit( str[0] ) && isxdigit( str[1] ) )
             {
                 unsigned int x = 0;
                 c = *str++;
 
-                if( isdigit(c) )
+                if ( isdigit(c) )
                     x = c - '0';
-                else if( islower(c) )
+                else if ( islower(c) )
                     x = 10 + c - 'a';
                 else
                     x = 10 + c - 'A';
@@ -287,9 +287,9 @@ bool PyDecodeEscape( const char* str, Buffer& into )
                 x = x << 4;
                 c = *str++;
 
-                if( isdigit(c) )
+                if ( isdigit(c) )
                     x += c - '0';
-                else if( islower(c) )
+                else if ( islower(c) )
                     x += 10 + c - 'a';
                 else
                     x += 10 + c - 'A';
@@ -326,7 +326,7 @@ void SplitPath( const std::string& path, std::vector<std::string>& into )
 
     for(; *p != '\0'; ++p)
     {
-        if( *p == '/' || *p == '\\' )
+        if ( *p == '/' || *p == '\\' )
         {
             into.push_back( std::string( begin, len ) );
             len = 0;
@@ -338,6 +338,6 @@ void SplitPath( const std::string& path, std::vector<std::string>& into )
         }
     }
 
-    if( begin < p )
+    if ( begin < p )
         into.push_back( std::string( begin, len ) );
 }

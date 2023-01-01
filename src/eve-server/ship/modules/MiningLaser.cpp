@@ -41,7 +41,7 @@ MiningLaser::MiningLaser(ModuleItemRef mRef, ShipItemRef sRef)
     } else if (m_modRef->groupID() == EVEDB::invGroups::Frequency_Mining_Laser) {
         m_rMiner = true;
         m_reloadTime = 8000;    // this is not set in ActiveModule c'tor.  easier/cheaper to set here.
-    } else if(m_modRef->groupID() == EVEDB::invGroups::Strip_Miner) {
+    } else if (m_modRef->groupID() == EVEDB::invGroups::Strip_Miner) {
         m_rMiner = true;
     }
 

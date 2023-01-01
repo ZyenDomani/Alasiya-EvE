@@ -99,6 +99,7 @@ protected:
 private:
     void CreateStaticChannels();
     LSCChannel *GetChannelByID(int32 channelID);
+    // iterate thru entire list and string::comp for name
     LSCChannel *GetChannelByName(std::string  channelName);
     LSCChannel *CreateChannel(int32 channelID, uint32 ownerID, const char* name, std::string motd, const char* password, const char* compkey,
                               LSC::Type type = LSC::Type::normal, uint32 cspa = 0, int32 groupMessageID = 0, int32 channelMessageID = 0,

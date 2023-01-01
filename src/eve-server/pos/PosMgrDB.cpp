@@ -54,7 +54,6 @@ PyRep* PosMgrDB::GetCorpControlTowers(uint32 corpID)
 }
 
 void PosMgrDB::GetControlTowerFuelRequirements(DBQueryResult& res) {
-
     if (!sDatabase.RunQuery(res,
             "SELECT controlTowerTypeID, resourceTypeID, purpose, quantity, minSecurityLevel, factionID, wormholeClassID"
             " FROM invControlTowerResources"
@@ -74,6 +73,24 @@ void PosMgrDB::GetLinkableJumpArrays(uint32 corpID, DBQueryResult& res)
     }
 }
 
+bool PosMgrDB::HasBridge(uint32 systemID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+            "SELECT systemID FROM posJumpBridgeData"
+            " WHERE systemID = %u", systemID))
+    {
+        codelog(DATABASE__ERROR, "Error in GetBaseData query: %s", res.error.c_str());
+        return false;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row))
+        return false;
+
+    return true;
+}
+
 void PosMgrDB::GetCorpJumpArrays(uint32 corpID, DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
@@ -84,12 +101,21 @@ void PosMgrDB::GetCorpJumpArrays(uint32 corpID, DBQueryResult& res)
     }
 }
 
+void PosMgrDB::GetAllianceJumpArrays(uint32 allyID, DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+            "SELECT itemID, systemID, toItemID, toTypeID, toSystemID"
+            " FROM posJumpBridgeData WHERE allyID = %u", allyID))
+    {
+        codelog(DATABASE__ERROR, "Error in GetAllianceJumpArrays query: %s", res.error.c_str());
+    }
+}
 
 bool PosMgrDB::GetBaseData(EVEPOS::StructureData& data)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-            "SELECT towerID, moonID, state, status, timestamp, canUse, canView, canTake FROM posStructureData"
+            "SELECT towerID, anchorpointID, state, status, timestamp, canUse, canView, canTake FROM posStructureData"
             " WHERE itemID = %u", data.itemID))
     {
         codelog(DATABASE__ERROR, "Error in GetBaseData query: %s", res.error.c_str());
@@ -100,7 +126,7 @@ bool PosMgrDB::GetBaseData(EVEPOS::StructureData& data)
     if (!res.GetRow(row))
         return false;
     data.towerID = row.GetInt(0);
-    data.anchorPointID = row.GetInt(1);
+    data.anchorpointID = row.GetInt(1);
     data.state = row.GetInt(2);
     data.status = row.GetInt(3);
     data.timestamp = row.GetInt64(4);
@@ -115,9 +141,9 @@ void PosMgrDB::SaveBaseData(EVEPOS::StructureData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO posStructureData "
-        "(itemID, towerID, moonID, state, status, timestamp, canUse, canView, canTake)"
+        "(itemID, towerID, anchorpointID, state, status, timestamp, canUse, canView, canTake)"
         " VALUES ( %i, %i, %i, %i, %i, %li, %i, %i, %i)",
-        data.itemID, data.towerID, data.anchorPointID, data.state, data.status, data.timestamp, data.use, data.view, data.take);
+        data.itemID, data.towerID, data.anchorpointID, data.state, data.status, data.timestamp, data.use, data.view, data.take);
 }
 
 void PosMgrDB::UpdateBaseData(EVEPOS::StructureData& data)
@@ -179,7 +205,6 @@ void PosMgrDB::SaveTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sD
         tData.anchor, tData.unanchor, tData.online, tData.offline);
 }
 
-
 bool PosMgrDB::GetBridgeData(EVEPOS::JumpBridgeData& data)
 {
     DBQueryResult res;
@@ -235,6 +260,36 @@ void PosMgrDB::UpdateBridgeData(EVEPOS::JumpBridgeData& data)
         data.allyID, data.toItemID, data.toTypeID, data.toSystemID, escPass.c_str(), data.allowCorp, data.allowAlliance, data.itemID);
 }
 
+void PosMgrDB::InstallBridgeLink(uint32 itemID, uint32 toSystemID, uint32 toItemID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "UPDATE posJumpBridgeData SET "
+        " toItemID=%i, toTypeID=27897, toSystemID=%i "
+        " WHERE itemID=%i",
+        toItemID, toSystemID, itemID);
+}
+
+void PosMgrDB::UninstallBridgeLink(uint32 itemID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "UPDATE posJumpBridgeData SET "
+        " toItemID=0, toTypeID=0, toSystemID=0 "
+        " WHERE itemID=%i",
+        itemID);
+}
+
+void PosMgrDB::UninstallRemoteBridgeLink(uint32 itemID) //Removes a link from the remote bridge
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "UPDATE posJumpBridgeData SET "
+        " toItemID=0, toTypeID=0, toSystemID=0 "
+        " WHERE itemID=(SELECT toItemID FROM posJumpBridgeData WHERE itemID=%i)",
+        itemID);
+}
+
 bool PosMgrDB::GetReactorData(ReactorData* pData, EVEPOS::StructureData& sData)
 {
     return true;
@@ -250,12 +305,11 @@ void PosMgrDB::SaveReactorData(ReactorData* pData, EVEPOS::StructureData& sData)
     std::map<uint32, EVEPOS::POS_Resource> demands;         // itemID, resourceData(typeID/quantity)
     std::map<uint32, EVEPOS::POS_Resource> supplies;        // itemID, resourceData(typeID/quantity)
 */
-
 }
 
 void PosMgrDB::UpdateReactorData(ReactorData* pData, EVEPOS::StructureData& sData)
 {
-
+    // not used yet.
 }
 
 bool PosMgrDB::GetCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& oData)

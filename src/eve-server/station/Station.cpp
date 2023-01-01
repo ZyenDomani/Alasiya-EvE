@@ -84,6 +84,32 @@ StationItemRef StationItem::Load( uint32 stationID)
     return InventoryItem::Load<StationItem>(stationID);
 }
 
+StationItemRef StationItem::Spawn( ItemData &data) {
+    if (data.typeID == EVEDB::invGroups::Station) {
+        StationType* iType = StationType::Load(data.typeID);
+        uint32 itemID = StationItem::CreateItemID(data);
+        if (itemID == 0)
+            return StationItemRef(nullptr);
+        StationItemRef stationRef = StationItem::Load(itemID);
+        if (stationRef.get() == nullptr)
+            return StationItemRef(nullptr);
+
+        stationRef->SetAttribute(AttrShieldCharge,  stationRef->GetAttribute(AttrShieldCapacity), false);     // Shield Charge
+        stationRef->SetAttribute(AttrArmorDamage,   EvilZero, false);                                         // Armor Damage
+        stationRef->SetAttribute(AttrMass,          iType->mass(), false);           // Mass
+        stationRef->SetAttribute(AttrRadius,        iType->radius(), false);       // Radius
+        stationRef->SetAttribute(AttrVolume,        iType->volume(), false);       // Volume
+        stationRef->SetAttribute(AttrCapacity,      iType->capacity(), false);   // Capacity
+
+        return stationRef;
+    } else if (data.typeID == EVEDB::invGroups::Station_Services) {
+        // this should never hit...throw error
+        codelog(INV__ERROR, "II::Spawn called for unhandled item type %u in locID: %u.", data.typeID, data.locationID);
+        return StationItemRef(nullptr);
+    }
+    return StationItemRef(nullptr);
+}
+
 bool StationItem::_Load() {
     if (!pInventory->LoadContents())
         return false;
@@ -119,14 +145,14 @@ uint32 StationItem::GetOfficeID(uint32 corpID)
 
 void StationItem::AddLoadedOffice(uint32 officeID)
 {
-    if (!IsOffice(officeID))
+    if (!IsOfficeID(officeID))
         return;
     m_officeLoaded.emplace(officeID, true);
 }
 
 bool StationItem::IsOfficeLoaded(uint32 officeID)
 {
-    if (!IsOffice(officeID))
+    if (!IsOfficeID(officeID))
         return false;
     std::map<uint32, bool>::const_iterator itr = m_officeLoaded.find(officeID);
     if (itr != m_officeLoaded.end())
@@ -136,7 +162,7 @@ bool StationItem::IsOfficeLoaded(uint32 officeID)
 
 void StationItem::RemoveLoadedOffice(uint32 officeID)
 {
-    if (!IsOffice(officeID))
+    if (!IsOfficeID(officeID))
         return;
     m_officeLoaded.erase(officeID);
 }
@@ -151,7 +177,7 @@ void StationItem::LoadStationOffice(uint32 corpID)
     if (IsOfficeLoaded(officeID))
         return;
     _log(CORP__TRACE, "StationItem::LoadStationOffice() is loading corp office %u in stationID %u", officeID, m_stationID);
-    StationOfficeRef oRef = sItemFactory.GetOffice(officeID);
+    StationOfficeRef oRef = sItemFactory.GetOfficeRef(officeID);
     if (oRef->GetMyInventory() == nullptr) {   // not sure why this would be null, but i *may* have seen errors from it
         _log(ITEM__ERROR, "StationItem::LoadStationOffice() - GetMyInventory() for corp office %u in stationID %u is NULL.", officeID, m_stationID);
         return;
@@ -318,9 +344,9 @@ PyDict *StationSE::MakeSlimItem() {
     PyDict *slim = new PyDict();
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",     IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",          new PyInt(m_ownerID));
         slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));

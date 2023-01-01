@@ -14,8 +14,10 @@
 
 #include "EVEServerConfig.h"
 #include "Client.h"
+#include "EntityList.h"
 #include "StaticDataMgr.h"
 #include "effects/EffectsDataMgr.h"
+#include "inventory/Inventory.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleItem.h"
 #include "ship/modules/ModuleManager.h"
@@ -301,7 +303,7 @@ GenericModule* ModuleManager::GetModule(EVEItemFlags flag)
 
 GenericModule* ModuleManager::GetModule(uint32 itemID)
 {
-    InventoryItemRef iRef = sItemFactory.GetItem(itemID);
+    InventoryItemRef iRef = sItemFactory.GetItemRef(itemID);
     if (iRef.get() != nullptr)
         return GetModule(iRef->flag());
 
@@ -1049,7 +1051,7 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
 
     chargeRef->SetAttribute(AttrQuantity, EvilZero);    // OMAC
 
-    if (IsStation(pShipItem->locationID())) {
+    if (sDataMgr.IsStation(pShipItem->locationID())) {
         StationItemRef sRef = sEntityList.GetStationByID(pShipItem->locationID());
         if (sRef.get() != nullptr) {
             InventoryItemRef iRef = sRef->GetMyInventory()->GetByTypeFlag(chargeRef->typeID(), flagHangar);
@@ -1159,7 +1161,7 @@ void ModuleManager::UnloadAllModules()
         if (cur.second != nullptr)
             cur.second->UnloadCharge();
     // can this be called when docked?
-    //bool docked = IsStation(pShipItem->locationID());
+    //bool docked = sDataMgr.IsStation(pShipItem->locationID());
     for (auto cur : m_charges)
         UnloadModule(cur.second->flag());
 
@@ -1456,7 +1458,7 @@ void ModuleManager::GetActiveModulesHeat(uint8 rack, float& heat)
     for (auto cur : modVecAll)
         if (cur->IsActive()) {
             if (!cur->IsOverloaded())
-                heat += cur->GetAttribute(AttrHeatDamage).get_float() /10;
+                heat += cur->GetAttribute(AttrHeatDamage).get_float() / 10;
         } else {
             //AttrHeatAbsorbtionRateModifier    -- if this module is inactive, it will absorb this much heat.
             heat -= cur->GetAttribute(AttrHeatAbsorbtionRateModifier).get_float() *10;

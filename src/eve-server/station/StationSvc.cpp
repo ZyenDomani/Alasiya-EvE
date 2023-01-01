@@ -63,8 +63,8 @@ PyResult StationSvc::Handle_GetSolarSystem(PyCallArgs &call) {
 
     ObjectCachedMethodID method_id(GetName(), "GetSolarSystem");
 
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        PyPackedRow *t = SystemDB::GetSolarSystem(arg.arg);
+    if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
+        PyPackedRow *t = SystemDB::GetSolarSystemPackedRow(arg.arg);
 
         m_manager->cache_service->GiveCache(method_id, (PyRep **)&t);
     }

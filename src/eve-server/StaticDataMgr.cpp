@@ -12,9 +12,6 @@
  */
 
 
-#include "../eve-common/EVE_Character.h"
-#include "../eve-common/EVE_POS.h"
-
 #include "StaticDataMgr.h"
 #include "EVEServerConfig.h"
 #include "database/EVEDBUtils.h"
@@ -23,6 +20,9 @@
 #include "station/StationDB.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
+
+#include "../eve-common/EVE_Character.h"
+#include "../eve-common/EVE_POS.h"
 
 /*
  * DATA__ERROR          # specific "data not found but should be there" msgs
@@ -245,8 +245,10 @@ void StaticDataMgr::Populate()
             data.chanceOfDuplicating    = row.GetFloat(13);
             data.metaLvl                = (row.IsNull(14) ? 0 : row.GetUInt(14));
             // these will take a bit of work, but will eliminate multiple db hits on inventory/menu loading ingame
-            data.isRecyclable           = FactoryDB::IsRecyclable(data.id);   // +5s to startup
-            data.isRefinable            = FactoryDB::IsRefinable(data.id);     // +3s to startup
+            if (sConfig.server.LoadStaticRecyclable)
+                data.isRecyclable           = FactoryDB::IsRecyclable(data.id);   // +5s to startup
+            if (sConfig.server.LoadStaticRefinable)
+                data.isRefinable            = FactoryDB::IsRefinable(data.id);     // +3s to startup
         m_typeData.emplace(row.GetUInt(0), data);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Inventory Types loaded in %.3fms.", m_typeData.size(), (GetTimeMSeconds() - startTime));
@@ -255,13 +257,13 @@ void StaticDataMgr::Populate()
     ManagerDB::GetAttributeTypes(*res);
     while (res->GetRow(row)) {
         //SELECT attributeID, attributeName, attributeCategory, displayName, categoryID FROM dgmAttribute
-        AttrTypeData typeData               = AttrTypeData();
+        AttrTypeData typeData           = AttrTypeData();
         typeData.attributeID            = row.GetInt(0);
         typeData.attributeName          = (row.IsNull(1) ? "*none*" : row.GetText(1));
         typeData.attributeCategory      = (row.IsNull(2) ? 0        : row.GetInt(2));
         typeData.displayName            = (row.IsNull(3) ? "*none*" : row.GetText(3));
         typeData.categoryID             = (row.IsNull(4) ? 0        : row.GetInt(4));
-        m_attrTypeData.emplace(row.GetInt(0), typeData);
+        m_attrTypeData[row.GetInt(0)] = typeData;
     }
     sLog.Cyan("    StaticDataMgr", "%lu Attribute data sets loaded in %.3fms.", m_attrTypeData.size(), (GetTimeMSeconds() - startTime));
 
@@ -277,7 +279,7 @@ void StaticDataMgr::Populate()
         sysData.securityClass     = (row.IsNull(4) ? "0" : row.GetText(4));
         sysData.securityRating    = row.GetFloat(5);    // this gives system trueSec
         sysData.factionID         = (row.IsNull(6) ? 0 : row.GetUInt(6));
-        m_systemData.emplace(row.GetInt(0), sysData);
+        m_systemData[row.GetInt(0)] = sysData;
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - startTime));
 /*
@@ -293,7 +295,7 @@ void StaticDataMgr::Populate()
         sysData.securityClass     = (row.IsNull(4) ? "0" : row.GetText(4));
         sysData.securityRating    = row.GetFloat(5);    // this gives system trueSec
         sysData.factionID         = (row.IsNull(6) ? 0 : row.GetUInt(6));
-        m_solSysData.emplace(row.GetInt(0), sysData);
+        m_solSysData[row.GetInt(0)] = sysData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static SolarSystem data sets loaded in %.3fms.", m_solSysData.size(), (GetTimeMSeconds() - startTime));
 */
@@ -302,14 +304,14 @@ void StaticDataMgr::Populate()
     ManagerDB::GetWHSystemClass(*res);
     while (res->GetRow(row)) {
         //SELECT locationID, wormholeClassID FROM mapLocationWormholeClasses
-        m_whRegions.emplace(row.GetInt(0), row.GetInt(1));
+        m_whRegions[row.GetInt(0)] = row.GetInt(1);
     }
     sLog.Cyan("    StaticDataMgr", "%lu WH System Classes loaded in %.3fms.", m_whRegions.size(), (GetTimeMSeconds() - startTime));
 
     // Load wormhole destination classes into static memory object
     startTime = GetTimeMSeconds();
     int size = 0;
-    for (int i = 1; i < 10; i++) {
+    for (int i = 1; i < 10; ++i) {
         ManagerDB::GetWHClassDestinations(i, *res);
         DBResultRow row;
         m_whClassDestinations[i];
@@ -325,7 +327,7 @@ void StaticDataMgr::Populate()
     // Load wormhole system classes into static memory object
     startTime = GetTimeMSeconds();
     size = 0;
-    for (int i = 1; i < 10; i++) {
+    for (int i = 1; i < 10; ++i) {
         ManagerDB::GetWHClassSystems(i, *res);
         DBResultRow row;
         m_whClassSystems[i];
@@ -350,7 +352,7 @@ void StaticDataMgr::Populate()
         data.typeID             = row.GetInt(4);
         data.radius             = row.GetFloat(5);
         data.position           = GPoint(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
-        m_staticData.emplace(row.GetInt(0), data);
+        m_staticData[row.GetInt(0)] = data;
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
 
@@ -358,22 +360,22 @@ void StaticDataMgr::Populate()
     MapDB::GetStationCount(*res);
     while (res->GetRow(row)) {
         //SELECT map.solarSystemID, count(sta.stationID) FROM staStations sta
-        m_stationCount.emplace(row.GetInt(0), row.GetInt(1));
+        m_stationCount[row.GetInt(0)] = row.GetInt(1);
     }
     StationDB::GetStationRegion(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, regionID FROM staStations
-        m_stationRegion.emplace(row.GetInt(0), row.GetInt(1));
+        m_stationRegion[row.GetInt(0)] = row.GetInt(1);
     }
     StationDB::GetStationConstellation(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, constellationID FROM staStations
-        m_stationConst.emplace(row.GetInt(0), row.GetInt(1));
+        m_stationConst[row.GetInt(0)] = row.GetInt(1);
     }
     StationDB::GetStationSystem(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, solarSystemID FROM staStations
-        m_stationSystem.emplace(row.GetInt(0), row.GetInt(1));
+        m_stationSystem[row.GetInt(0)] = row.GetInt(1);
     }
 
     std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.begin();
@@ -409,7 +411,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetSkillList(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=skill]
-        m_skills.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        m_skills[row.GetInt(0)] = row.GetText(1);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
@@ -417,37 +419,37 @@ void StaticDataMgr::Populate()
     FactoryDB::GetComponents(*res);     //766
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=composite or component]
-        m_components.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        m_components[row.GetInt(0)] = row.GetText(1);
     }
     FactoryDB::GetMinerals(*res);       //8
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=mineral]
-        m_minerals.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        m_minerals[row.GetInt(0)] = row.GetText(1);
     }
     FactoryDB::GetCompounds(*res);      //181
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=compound]
-        m_compounds.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        m_compounds[row.GetInt(0)] = row.GetText(1);
     }
     FactoryDB::GetSalvage(*res);        //53
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=salvage]
-        m_salvage.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        m_salvage[row.GetInt(0)] = row.GetText(1);
     }
     FactoryDB::GetResources(*res);      //15
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=pi resource]
-        m_resources.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        m_resources[row.GetInt(0)] = row.GetText(1);
     }
     FactoryDB::GetCommodities(*res);    //66
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=pi commodity]
-        m_commodities.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        m_commodities[row.GetInt(0)] = row.GetText(1);
     }
     FactoryDB::GetMiscCommodities(*res);    //456
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=misc commodity]
-        m_miscCommodities.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+        m_miscCommodities[row.GetInt(0)] = row.GetText(1);
     }
     FactoryDB::GetRAMMaterials(*res);
     while (res->GetRow(row)) {
@@ -490,7 +492,7 @@ void StaticDataMgr::Populate()
             bpTypeData.maxProductionLimit       = row.GetInt(12);
             bpTypeData.chanceOfRE               = row.GetFloat(13);
             bpTypeData.catID                    = (row.IsNull(14) ? 0 : row.GetInt(14));
-        m_bpTypeData.emplace(row.GetInt(0), bpTypeData);
+        m_bpTypeData[row.GetInt(0)] = bpTypeData;
         m_bpProductData.emplace(row.GetInt(2), bpTypeData);
     }
     for (auto cur : m_bpTypeData)
@@ -501,7 +503,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetMoonResouces(*res);
     while (res->GetRow(row)) {
         //SELECT typeID,volume FROM invTypes [where group=moongoo]
-        m_moonGoo.emplace(row.GetInt(0), (uint8)(row.GetFloat(1) *10));
+        m_moonGoo[row.GetInt(0)] = (uint8)(row.GetFloat(1) *10);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Moon Resources loaded in %.3fms.", m_moonGoo.size(), (GetTimeMSeconds() - startTime));
 
@@ -728,7 +730,7 @@ PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID)
         return new PyInt(itr->second);
 
     _log(DATA__WARNING, "Failed to query system info for agent %u: Agent not found.", agentID);
-    return new PyInt(0);
+    return PyStatic.NewZero()->AsInt();
 }
 
 void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
@@ -968,7 +970,7 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
             if (!lootGrpVec.empty()) {
                 LootList loot_list;
                 uint16 i = MakeRandomInt(0, lootGrpVec.size());
-                loot_list.itemID = lootGrpVec[i].typeID;
+                loot_list.typeID = lootGrpVec[i].typeID;
                 loot_list.minDrop = lootGrpVec[i].minQuantity;
                 loot_list.maxDrop = lootGrpVec[i].maxQuantity;
                 lootList.push_back(loot_list);

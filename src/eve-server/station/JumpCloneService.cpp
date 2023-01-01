@@ -35,12 +35,12 @@ class JumpCloneBound
 public:
     PyCallable_Make_Dispatcher(JumpCloneBound)
 
-    JumpCloneBound(PyServiceMgr *mgr, StationDB *db, uint32 locationID, uint8 locGroupID )
+    JumpCloneBound(PyServiceMgr *mgr, StationDB *db, uint32 locationID)
     : PyBoundObject(mgr),
       m_db(db),
       m_dispatch(new Dispatcher(this)),
       m_locationID(locationID),     // station or ship
-      m_locGroupID(locGroupID)      // solarsystem(for ship) = 5, station = 15
+      m_locGroupID(EVEDB::invGroups::Station)      // solarsystem(for ship) = 5, station = 15
     {
         _SetCallDispatcher(m_dispatch);
 
@@ -64,6 +64,8 @@ public:
          'OnStationJumpCloneCacheInvalidated',
          'OnShipJumpCloneInstallationCanceled']
          */
+        if (sDataMgr.IsStation(m_locationID))
+            m_locGroupID = EVEDB::invGroups::Solar_System;
     }
     virtual ~JumpCloneBound() { delete m_dispatch; }
     virtual void Release() {
@@ -110,7 +112,7 @@ PyBoundObject* JumpCloneService::CreateBoundObject( Client* pClient, const PyRep
     _log( CLIENT__MESSAGE, "JumpCloneService bind request for:" );
     bind_args->Dump( CLIENT__MESSAGE, "    " );
 
-    return new JumpCloneBound( m_manager, &m_db, 0, 0 );
+    return new JumpCloneBound(m_manager, &m_db, pClient->GetLocationID());
 }
 
 PyResult JumpCloneBound::Handle_InstallCloneInStation( PyCallArgs &call ) {
@@ -140,17 +142,9 @@ PyResult JumpCloneBound::Handle_GetCloneState(PyCallArgs &call) {
 PyResult JumpCloneBound::Handle_GetShipCloneState(PyCallArgs &call) {
     _log(CHARACTER__INFO, "JumpCloneBound::Handle_GetShipCloneState()");
 
-    PyDict* dict = new PyDict();
-    PyDict* clones = new PyDict();  //jumpCloneID, locationID [, ownerID - for shipClones only]
-    PyDict* implants = new PyDict();  //jumpCloneID, implants{tuple of implantID?, typeID}
-    //PyTuple* implants = new PyTuple(2);
-
-    dict->SetItemString( "clones", clones );
-    dict->SetItemString( "implants", implants );
-    dict->SetItemString( "timeLastJump", new PyLong(GetFileTimeNow() -(EvE::Time::Hour *MakeRandomFloat(1, 23))) );   /** @todo fix this to call.client->GetChar()->LastJumpTime()*/
-
-    // returns list
-    return new PyObject( "util.KeyVal", dict );
+    //Define PyList for ship clones (not dict since client is looking to index and iterate thru list)
+    PyList* clones = new PyList();
+    return clones;
 }
 
 PyResult JumpCloneBound::Handle_GetStationCloneState(PyCallArgs &call) {

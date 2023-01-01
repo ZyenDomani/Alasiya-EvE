@@ -278,7 +278,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
 
     double newBalanceFrom(0), newBalanceTo(0);
     Client* pClientFrom(nullptr);
-    if (IsCharacter(fromID)) {
+    if (IsCharacterID(fromID)) {
         pClientFrom = sEntityList.FindClientByCharID(fromID);
         if (pClientFrom == nullptr) {
             // sender is offline. xfer funds thru db.
@@ -304,10 +304,10 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     }
 
     Client* pClientTo(nullptr);
-    if (IsCharacter(toID)) {
+    if (IsCharacterID(toID)) {
         pClientTo = sEntityList.FindClientByCharID(toID);
         if (pClientTo == nullptr) {
-            // receipient is offline. xfer funds thru db
+            // recipient is offline. xfer funds thru db
             newBalanceTo = AccountDB::OfflineFundXfer(toID, amount, toCurrency);
         } else {
             // this will throw if it fails
@@ -356,7 +356,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     }
 
     // just in case something went wrong.....
-    if (!IsCorp(corpID))
+    if (!IsCorpID(corpID))
         return;
     // is tax worth the accounting hassle? (from corp pov)  default is 5k
     if (tax < sConfig.rates.TaxAmount)

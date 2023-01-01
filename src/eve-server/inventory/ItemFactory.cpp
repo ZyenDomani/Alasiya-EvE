@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -50,14 +50,8 @@ ItemFactory::ItemFactory()
 m_nextTempID(0),
 m_nextNPCID(0),
 m_nextDroneID(0),
-m_nextMissileID(0),
-m_db(nullptr)
+m_nextMissileID(0)
 {
-}
-
-ItemFactory::~ItemFactory()
-{
-    SafeDelete(m_db);
 }
 
 int ItemFactory::Initialize()
@@ -75,15 +69,13 @@ int ItemFactory::Initialize()
     m_nextMissileID = MISSILE_ID;
     m_nextDroneID = DRONE_ID;
 
-    m_db = new InventoryDB();
-
     sLog.Blue("      ItemFactory", "Item Factory Initialized.");
     return 1;
 }
 
 void ItemFactory::Close()
 {
-    sLog.Warning("      ItemFactory", "%u Items, %u Types still in list", \
+    sLog.Warning("      ItemFactory", "%lu Items, %lu Types still in list", \
                 m_items.size(), m_types.size());
     // types
     for (auto cur : m_types)
@@ -170,7 +162,7 @@ uint32 ItemFactory::GetNextMissileID()
 
 Inventory* ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     // do we need to check trade containers here?
-    if (!IsValidLocation(itemID))
+    if (!IsValidLocationID(itemID))
         return nullptr;
 
     InventoryItemRef iRef(nullptr);
@@ -178,7 +170,7 @@ Inventory* ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     if (itr != m_items.end()) {
         iRef = itr->second;
     } else if (load) {
-        iRef = GetItem(itemID);
+        iRef = GetItemRef(itemID);
     }
 
     if (iRef.get() == nullptr)
@@ -187,19 +179,19 @@ Inventory* ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     return iRef->GetMyInventory();
 }
 
-InventoryItemRef ItemFactory::GetInventoryItemFromID(uint32 itemID, bool load /*true*/) {
+InventoryItemRef ItemFactory::GetItemRefFromID(uint32 itemID, bool load /*true*/) {
     InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
     if (itr != m_items.end()) {
         iRef = itr->second;
     } else if (load) {
-        iRef = GetItem(itemID);
+        iRef = GetItemRef(itemID);
     }
 
     return iRef;
 }
 
-InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load/*true*/)
+InventoryItemRef ItemFactory::GetItemContainerRef(uint32 itemID, bool load/*true*/)
 {
     InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
@@ -208,7 +200,7 @@ InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load/*true*/)
         itr = m_items.find(iRef->locationID());
         iRef = itr->second;
     } else if (load) {
-        iRef = GetItem(itemID);
+        iRef = GetItemRef(itemID);
         itr = m_items.find(itemID);
         if (itr != m_items.end()) {
             iRef = itr->second;
@@ -232,7 +224,7 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true
         itr = m_items.find(iRef->locationID());
         iRef = itr->second;
     } else if (load) {
-        iRef = GetItem(itemID);
+        iRef = GetItemRef(itemID);
         itr = m_items.find(itemID);
         if (itr != m_items.end()) {
             iRef = itr->second;
@@ -276,7 +268,7 @@ const CharacterType* ItemFactory::GetCharacterType(uint16 characterTypeID) {
 const CharacterType* ItemFactory::GetCharacterTypeByBloodline(uint16 bloodlineID) {
     // Unfortunately, we have it indexed by typeID, so we must get it ...
     uint16 characterTypeID;
-    if (!InventoryDB::GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
+    if (!CharacterDB::GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
         return nullptr;
     return GetCharacterType(characterTypeID);
 }
@@ -293,13 +285,13 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
             _log(ITEM__WARNING, "ItemFactory::_GetItem() called on invalid Item %u", itemID);
             //if (sConfig.debug.StackTrace)
             //    EvE::traceStack();
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
         }
 
         // load the item
         RefPtr<_Ty> item = _Ty::Load(itemID);
         if (!item)
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
 
         //we keep the original ref.
         itr = m_items.insert(std::make_pair(itemID, item)).first;
@@ -308,62 +300,62 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
     return RefPtr<_Ty>::StaticCast(itr->second);
 }
 
-InventoryItemRef ItemFactory::GetItem(uint32 itemID)
+InventoryItemRef ItemFactory::GetItemRef(uint32 itemID)
 {
     return _GetItem<InventoryItem>(itemID);
 }
 
-BlueprintRef ItemFactory::GetBlueprint(uint32 blueprintID)
+BlueprintRef ItemFactory::GetBlueprintRef(uint32 blueprintID)
 {
     return _GetItem<Blueprint>(blueprintID);
 }
 
-CharacterRef ItemFactory::GetCharacter(uint32 characterID)
+CharacterRef ItemFactory::GetCharacterRef(uint32 characterID)
 {
     return _GetItem<Character>(characterID);
 }
 
-ShipItemRef ItemFactory::GetShip(uint32 shipID)
+ShipItemRef ItemFactory::GetShipRef(uint32 shipID)
 {
     return _GetItem<ShipItem>(shipID);
 }
 
-CelestialObjectRef ItemFactory::GetCelestialObject(uint32 celestialID)
+CelestialObjectRef ItemFactory::GetCelestialRef(uint32 celestialID)
 {
     return _GetItem<CelestialObject>(celestialID);
 }
 
-SolarSystemRef ItemFactory::GetSolarSystem(uint32 solarSystemID)
+SolarSystemRef ItemFactory::GetSolarSystemRef(uint32 solarSystemID)
 {
     return _GetItem<SolarSystem>(solarSystemID);
 }
 
-StationItemRef ItemFactory::GetStationItem(uint32 stationID)
+StationItemRef ItemFactory::GetStationRef(uint32 stationID)
 {
     return _GetItem<StationItem>(stationID);
 }
 
-SkillRef ItemFactory::GetSkill(uint32 skillID)
+SkillRef ItemFactory::GetSkillRef(uint32 skillID)
 {
     return _GetItem<Skill>(skillID);
 }
 
-AsteroidItemRef ItemFactory::GetAsteroid(uint32 asteroidID)
+AsteroidItemRef ItemFactory::GetAsteroidRef(uint32 asteroidID)
 {
     return _GetItem<AsteroidItem>(asteroidID);
 }
 
-StationOfficeRef ItemFactory::GetOffice(uint32 officeID)
+StationOfficeRef ItemFactory::GetOfficeRef(uint32 officeID)
 {
     return _GetItem<StationOffice>(officeID);
 }
 
-StructureItemRef ItemFactory::GetStructure(uint32 structureID)
+StructureItemRef ItemFactory::GetStructureRef(uint32 structureID)
 {
     return _GetItem<StructureItem>(structureID);
 }
 
-CargoContainerRef ItemFactory::GetCargoContainer(uint32 containerID)
+CargoContainerRef ItemFactory::GetCargoRef(uint32 containerID)
 {
     return _GetItem<CargoContainer>(containerID);
 }
@@ -373,12 +365,12 @@ WreckContainerRef ItemFactory::GetWreckContainer(uint32 containerID)
     return _GetItem<WreckContainer>(containerID);
 }
 
-ModuleItemRef ItemFactory::GetModuleItem(uint32 moduleID)
+ModuleItemRef ItemFactory::GetModuleRef(uint32 moduleID)
 {
     return _GetItem<ModuleItem>(moduleID);
 }
 
-ProbeItemRef ItemFactory::GetProbeItem(uint32 probeID) {
+ProbeItemRef ItemFactory::GetProbeRef(uint32 probeID) {
     return _GetItem<ProbeItem>(probeID);
 }
 
@@ -431,6 +423,24 @@ StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
 AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
 {
     AsteroidItemRef iRef = AsteroidItem::Spawn(idata, adata);
+    if (iRef.get() != nullptr)
+        AddItem(iRef);
+
+    return iRef;
+}
+
+StationItemRef ItemFactory::SpawnOutpost(ItemData &idata)
+{
+    StationItemRef iRef = StationItem::Spawn(idata);
+    if (iRef.get() != nullptr)
+        AddItem(iRef);
+
+    return iRef;
+}
+
+CelestialObjectRef ItemFactory::SpawnWormhole(ItemData &idata)
+{
+    CelestialObjectRef iRef = CelestialObject::Spawn(idata);
     if (iRef.get() != nullptr)
         AddItem(iRef);
 

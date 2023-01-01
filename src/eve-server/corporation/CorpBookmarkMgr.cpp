@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -67,7 +67,7 @@ PyResult CorpBookmarkMgr::Handle_GetBookmarks(PyCallArgs& call)
 {
     /*
     ObjectCachedMethodID method_id(GetName(), "GetBookmarks");
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
+    if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
         PyTuple *tuple = new PyTuple(2);
             tuple->SetItem(0, m_db.GetBookmarks(call.client->GetCorporationID()));
             tuple->SetItem(1, m_db.GetFolders(call.client->GetCorporationID()));
@@ -93,7 +93,7 @@ PyResult CorpBookmarkMgr::Handle_UpdateBookmark(PyCallArgs& call) {
         return nullptr;
     }
 
-    m_db.UpdateBookmark(args.bookmarkID, args.ownerID, PyRep::StringContent(args.memo), PyRep::StringContent(args.comment), args.folderID);
+    m_db.UpdateBookmark(args);
 
     return PyStatic.NewNone();
 }
@@ -106,7 +106,7 @@ PyResult CorpBookmarkMgr::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
         return nullptr;
     }
 
-    m_db.UpdateBookmark(args.bookmarkID, args.ownerID, PyRep::StringContent(args.memo), PyRep::StringContent(args.comment), args.folderID);
+    m_db.UpdateBookmark(args);
 
     return PyStatic.NewNone();
 }
@@ -131,7 +131,7 @@ PyResult CorpBookmarkMgr::Handle_MoveBookmarksToFolder(PyCallArgs& call)
     for (size_t i = 0; i < bmList->size(); ++i)
         bmIDs.push_back(bmList->GetItem(i)->AsInt()->value());
 
-    m_db.MoveBookmarkToFolder(args.folderID, &bmIDs);
+    m_db.MoveBookmarkToFolder(args.folderID, bmIDs);
 
     return m_db.GetBookmarksInFolder(args.folderID);
 }
@@ -160,12 +160,12 @@ PyResult CorpBookmarkMgr::Handle_CreateFolder(PyCallArgs& call)
     /** @todo sanitize name */
     std::string name = PyRep::StringContent(call.tuple->GetItem( 0 ));
 
-    uint32 ownerID = call.client->GetCharacterID();
+    uint32 ownerID = call.client->GetCorporationID();
     Rsp_CreateFolder result;
         result.ownerID = ownerID;
-        result.folderID = m_db.SaveNewFolder(name, ownerID);
+        result.folderID = m_db.SaveNewFolder(name, ownerID, call.client->GetCharacterID());
         result.folderName = name;
-        result.creatorID = ownerID;
+        result.creatorID = call.client->GetCharacterID();
 
     result.Dump(BOOKMARK__RSP_DUMP, "    ");
     return result.Encode();
@@ -181,7 +181,23 @@ PyResult CorpBookmarkMgr::Handle_DeleteFolder(PyCallArgs& call)
 {
     //deleteFolder, bookmarks = self.corpBookmarkMgr.DeleteFolder(folderID, bookmarkIDs)
     call.Dump(BOOKMARK__CALL_DUMP);
-    return PyStatic.NewNone();
+    uint32 folderID(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
+
+    // call db to get list of bmIDs in deleted folder.  return result with this data
+    std::vector< int32 > bmIDs;
+    bmIDs.clear();
+    m_db.GetBookmarkByFolderID(folderID, bmIDs);
+
+    PyList* list = new PyList();
+    for (auto cur : bmIDs) {
+        PyDict* dict = new PyDict();
+        dict->SetItemString("bookmarkID", new PyInt(cur));
+        list->AddItem(new PyObject("util.KeyVal", dict));
+    }
+
+    m_db.DeleteFolder(folderID);
+
+    return list;
 }
 
 PyResult CorpBookmarkMgr::Handle_MoveFoldersToDB(PyCallArgs& call)
@@ -196,6 +212,7 @@ PyResult CorpBookmarkMgr::Handle_DeleteBookmarks(PyCallArgs& call)
     //deletedBookmarks = self.corpBookmarkMgr.DeleteBookmarks(bookmarkIDs)
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_DeleteBookmarks args;
+
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
@@ -205,8 +222,14 @@ PyResult CorpBookmarkMgr::Handle_DeleteBookmarks(PyCallArgs& call)
         return PyStatic.NewNone();
 
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
-    for (size_t i = 0; i < bmList->size(); ++i)
-        m_db.ChangeOwner(bmList->GetItem(i)->AsInt()->value());
 
-    return bmList;
+    PyList* list = new PyList();
+    for (size_t i = 0; i < bmList->size(); ++i) {
+        uint32 bmID = bmList->GetItem(i)->AsInt()->value();
+        m_db.ChangeOwner(bmID, 1);
+        PyDict* dict = new PyDict();
+        dict->SetItemString("bookmarkID", new PyInt(bmID));
+        list->AddItem(new PyObject("util.KeyVal", dict));
+    }
+    return list;
 }

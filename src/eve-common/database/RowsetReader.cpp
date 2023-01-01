@@ -38,7 +38,7 @@ size_t BaseRowsetReader::FindColumn( const char* name )
 
     for( uint32 i = 0; i < cc; ++i )
     {
-        if( 0 == strcmp( name, columnName( i ) ) )
+        if ( 0 == strcmp( name, columnName( i ) ) )
             return i;
     }
 
@@ -104,7 +104,7 @@ std::string BaseRowsetReader::iterator::GetAsString( size_t index ) const
 
 const BaseRowsetReader::iterator& BaseRowsetReader::iterator::operator++()
 {
-    if( _baseReader()->rowCount() > _rowIndex() )
+    if ( _baseReader()->rowCount() > _rowIndex() )
         _SetRow( _rowIndex() + 1 );
 
     return *this;
@@ -112,7 +112,7 @@ const BaseRowsetReader::iterator& BaseRowsetReader::iterator::operator++()
 
 const BaseRowsetReader::iterator& BaseRowsetReader::iterator::operator--()
 {
-    if( 0 < _rowIndex() )
+    if ( 0 < _rowIndex() )
         _SetRow( _rowIndex() - 1 );
 
     return *this;
@@ -120,9 +120,9 @@ const BaseRowsetReader::iterator& BaseRowsetReader::iterator::operator--()
 
 bool BaseRowsetReader::iterator::operator==( const iterator& other ) const
 {
-    if( _baseReader() != other._baseReader() )
+    if ( _baseReader() != other._baseReader() )
         return false;
-    else if( _rowIndex() != other._rowIndex() )
+    else if ( _rowIndex() != other._rowIndex() )
         return false;
     return true;
 }
@@ -132,7 +132,7 @@ bool BaseRowsetReader::iterator::operator==( const iterator& other ) const
 /************************************************************************/
 bool PyRowsetReader::iterator::IsNone( size_t index ) const
 {
-    if( NULL == GetRep( index ) )
+    if ( NULL == GetRep( index ) )
         return true;
     return BaseRowsetReader::iterator::IsNone( index );
 }
@@ -197,7 +197,7 @@ RowsetReader::iterator::iterator( RowsetReader* parent, size_t rowIndex )
 
 void RowsetReader::iterator::_SetRow( size_t rowIndex )
 {
-    if( _rowIndex() != rowIndex )
+    if ( _rowIndex() != rowIndex )
     {
         mRow = ( mParent->rowCount() > rowIndex
                  ? mParent->_GetRow( rowIndex )
@@ -231,7 +231,7 @@ TuplesetReader::iterator::iterator( TuplesetReader* parent, size_t rowIndex )
 
 void TuplesetReader::iterator::_SetRow( size_t rowIndex )
 {
-    if( _rowIndex() != rowIndex )
+    if ( _rowIndex() != rowIndex )
     {
         mRow = ( mParent->rowCount() > rowIndex
                  ? mParent->_GetRow( rowIndex )
@@ -254,7 +254,7 @@ SetSQLDumper::SetSQLDumper( const char* table, const char* keyField, FILE* out )
 bool SetSQLDumper::VisitTuple( const PyTuple* rep )
 {
     //first we want to check to see if this could possibly even be a tupleset.
-    if(    2 == rep->size()
+    if (    2 == rep->size()
         && rep->GetItem( 0 )->IsList()
         && rep->GetItem( 1 )->IsList() )
     {
@@ -269,7 +269,7 @@ bool SetSQLDumper::VisitTuple( const PyTuple* rep )
         end = possible_header->end();
         for(; valid && cur != end; ++cur)
         {
-            if( !(*cur)->IsString() )
+            if ( !(*cur)->IsString() )
                 valid = false;
         }
 
@@ -277,26 +277,26 @@ bool SetSQLDumper::VisitTuple( const PyTuple* rep )
         end = possible_items->end();
         for(; valid && cur != end; ++cur)
         {
-            if( !(*cur)->IsList() )
+            if ( !(*cur)->IsList() )
                 valid = false;
 
             //it would be possible I guess to check each element of each item to make sure
             //it is a terminal type (non-container), but I dont care right now.
         }
 
-        if( valid )
+        if ( valid )
         {
             //ok, it looks like a tupleset... nothing we can do now but interpret it as one...
             util_Tupleset rowset;
 
             //must be duplicated in order to be decoded ...
             PyTuple* dup = new PyTuple( *rep );
-            if( !rowset.Decode( &dup ) )
+            if ( !rowset.Decode( &dup ) )
                 sLog.Error( "SetSQLDumper", "Unable to interpret tuple as a tupleset, it may not even be one." );
             else
             {
                 TuplesetReader reader( rowset );
-                if( ReaderToSQL<TuplesetReader>( mTable.c_str(), mKeyField.c_str(), mOut, reader ) )
+                if ( ReaderToSQL<TuplesetReader>( mTable.c_str(), mKeyField.c_str(), mOut, reader ) )
                     return true;
 
                 sLog.Error( "SetSQLDumper", "Failed to convert tupleset to SQL." );
@@ -310,19 +310,19 @@ bool SetSQLDumper::VisitTuple( const PyTuple* rep )
 
 bool SetSQLDumper::VisitObject( const PyObject* rep )
 {
-    if( rep->type()->content() == "util.Rowset" )
+    if ( rep->type()->content() == "util.Rowset" )
     {
         //we found a friend, decode it
         util_Rowset rowset;
 
         //must be duplicated in order to be decoded ...
         PyObject* dup = new PyObject( *rep );
-        if( !rowset.Decode( &dup ) )
+        if ( !rowset.Decode( &dup ) )
             sLog.Error( "SetSQLDumper", "Unable to load a rowset from the object body!" );
         else
         {
             RowsetReader reader( rowset );
-            if( ReaderToSQL<RowsetReader>( mTable.c_str(), mKeyField.c_str(), mOut, reader ) )
+            if ( ReaderToSQL<RowsetReader>( mTable.c_str(), mKeyField.c_str(), mOut, reader ) )
                 return true;
 
             sLog.Error( "SetSQLDumper", "Failed to convert rowset to SQL." );

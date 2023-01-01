@@ -38,12 +38,12 @@ void build_hex_line( const uint8* buffer, size_t length, size_t offset, char* re
 
     for( size_t i = 0; i < 16; i++ )
     {
-        if( i == 8 )
+        if ( i == 8 )
         {
             ret += snprintf( ret, length, " -" );
         }
 
-        if( ( i + offset ) < length )
+        if ( ( i + offset ) < length )
         {
             uint8 c = *(const uint8*)( buffer + offset + i );
 
@@ -88,7 +88,7 @@ void pfxHexDumpPreview( const char* pfx, FILE* into, const uint8* data, size_t l
 {
     char buffer[80];
 
-    if( length > HEX_DUMP_PREVIEW_LIMIT )
+    if ( length > HEX_DUMP_PREVIEW_LIMIT )
     {
         pfxHexDump( pfx, into, data, HEX_DUMP_PREVIEW_LIMIT - 32 );
         fprintf( into, "%s ... truncated ...\n", pfx );
@@ -104,7 +104,7 @@ void pfxHexDumpPreview( const char* pfx, LogType type, const uint8* data, size_t
 {
     char buffer[80];
 
-    if( length > HEX_DUMP_PREVIEW_LIMIT )
+    if ( length > HEX_DUMP_PREVIEW_LIMIT )
     {
         pfxHexDump( pfx, type, data, HEX_DUMP_PREVIEW_LIMIT - 32 );
         _log( type, "%s ... truncated ...", pfx );

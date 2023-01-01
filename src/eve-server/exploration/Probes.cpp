@@ -155,7 +155,7 @@ m_scanShips(false)
     m_rangeFactor = self->GetAttribute(AttrRangeFactor).get_uint32();
     m_scanStrength = self->GetAttribute(AttrBaseSensorStrength).get_float();
     m_scanDeviation = self->GetAttribute(AttrBaseMaxScanDeviation).get_float();
-    m_baseScanRange = self->GetAttribute(AttrBaseScanRange).get_float() * (ONE_AU_IN_METERS /100);
+    m_baseScanRange = self->GetAttribute(AttrBaseScanRange).get_float() * (ONE_AU_IN_METERS / 100);
 
     // not sure about this one yet....moon survey.  will need special initializers here
     if (self->groupID() == EVEDB::invGroups::Survey_Probe) {
@@ -500,9 +500,9 @@ PyDict* ProbeSE::MakeSlimItem()
     slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
     slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
     slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-    slim->SetItemString("corpID",                   IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-    slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+    slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+    slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+    slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
     slim->SetItemString("numLaunchers",             PyStatic.NewOne());
     slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()): PyStatic.NewNone());
     slim->SetItemString("securityStatus",           new PyFloat(m_secStatus));
@@ -524,9 +524,9 @@ void ProbeSE::SendSlimChange()
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("categoryID",               new PyInt(m_self->categoryID()));
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-        slim->SetItemString("corpID",                   IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("numLaunchers",             PyStatic.NewOne());
         slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()):PyStatic.NewNone());
         slim->SetItemString("securityStatus",           new PyFloat(m_secStatus));

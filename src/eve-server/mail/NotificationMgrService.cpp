@@ -106,7 +106,7 @@ PyResult NotificationMgrService::Handle_GetByGroupID(PyCallArgs &call)
     }
 
     int groupID = args.arg;
-    return new PyTuple(0);
+    return PyStatic.mtTuple();
 }
 
 PyResult NotificationMgrService::Handle_GetUnprocessed(PyCallArgs &call)
@@ -114,7 +114,7 @@ PyResult NotificationMgrService::Handle_GetUnprocessed(PyCallArgs &call)
     // called when mail window's notifications tab opened
     // see /journal/GetUnprocessed for info..
 
-    return new PyTuple(0);
+    return PyStatic.mtTuple();
 }
 
 PyResult NotificationMgrService::Handle_MarkGroupAsProcessed(PyCallArgs &call)
@@ -170,7 +170,7 @@ PyResult NotificationMgrService::Handle_DeleteNotifications(PyCallArgs &call)
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
-    
+
     PyRep* notificationsIDs = args.arg;
     return nullptr;
 }

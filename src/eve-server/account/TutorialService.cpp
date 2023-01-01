@@ -69,25 +69,25 @@ PyResult TutorialService::Handle_GetTutorialInfo(PyCallArgs &call) {
     Rsp_GetTutorialInfo rsp;
 
     rsp.pagecriterias = m_db.GetPageCriterias(args.tutorialID);
-    if(rsp.pagecriterias == NULL) {
+    if (rsp.pagecriterias == NULL) {
         codelog(SERVICE__ERROR, "An error occured while getting pagecriterias for tutorial %u.", args.tutorialID);
         return nullptr;
     }
 
     rsp.pages = m_db.GetPages(args.tutorialID);
-    if(rsp.pages == NULL) {
+    if (rsp.pages == NULL) {
         codelog(SERVICE__ERROR, "An error occured while getting pages for tutorial %u.", args.tutorialID);
         return nullptr;
     }
 
     rsp.tutorial = m_db.GetTutorial(args.tutorialID);
-    if(rsp.tutorial == NULL) {
+    if (rsp.tutorial == NULL) {
         codelog(SERVICE__ERROR, "An error occured while getting tutorial %u.", args.tutorialID);
         return nullptr;
     }
 
     rsp.criterias = m_db.GetTutorialCriterias(args.tutorialID);
-    if(rsp.criterias == NULL) {
+    if (rsp.criterias == NULL) {
         codelog(SERVICE__ERROR, "An error occured while getting criterias for tutorial %u.", args.tutorialID);
         return nullptr;
     }
@@ -244,7 +244,7 @@ PyResult TutorialService::Handle_GetTutorialAgents(PyCallArgs &call) {
     sLog.White( "TutorialService::Handle_GetTutorialAgents()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return new PyInt( 0 );
+    return PyStatic.NewZero();
 }
 
 PyResult TutorialService::Handle_GetCriterias(PyCallArgs &call) {
@@ -1126,7 +1126,7 @@ PyResult TutorialService::Handle_GetContextHelp( PyCallArgs& call )
 PyResult TutorialService::Handle_GetCharacterTutorialState( PyCallArgs& call ) {
   /*  Empty Call  */
 
-    return new PyInt( 0 );
+  return PyStatic.NewZero();
 }
 
 PyResult TutorialService::Handle_GetTutorialsAndConnections( PyCallArgs& call ) {

@@ -303,7 +303,7 @@ uint8 MarshalStringTable::LookupIndex( const std::string& str )
 uint8 MarshalStringTable::LookupIndex( const char* str )
 {
     StringTableMapConstItr res = mStringTableMap.find( hash( str ) );
-    if( mStringTableMap.end() == res )
+    if ( mStringTableMap.end() == res )
         return STRING_TABLE_ERROR;
 
     return res->second;
@@ -311,7 +311,7 @@ uint8 MarshalStringTable::LookupIndex( const char* str )
 
 const char* MarshalStringTable::LookupString( uint8 index )
 {
-    if( --index < s_mStringTableSize )
+    if ( --index < s_mStringTableSize )
         return s_mStringTable[ index ];
     else
         return nullptr;

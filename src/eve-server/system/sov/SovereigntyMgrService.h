@@ -45,17 +45,4 @@ protected:
 
 };
 
-
 #endif
-
-/*
- * OnSovereigntyAudioEvent
- *
- *
- *    def OnSovereigntyAudioEvent(self, eventID, textParams):
- *        if eventID in const.sovAudioEventFiles:
- *            self.audio.SendUIEvent(unicode(const.sovAudioEventFiles[eventID][0]))
- *            if const.sovAudioEventFiles[eventID][1] is not None:
- *                eve.Message(const.sovAudioEventFiles[eventID][1], textParams)
- * 
- */

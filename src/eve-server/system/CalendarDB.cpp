@@ -95,11 +95,11 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
 PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, uint32 creatorID, Call_CreateEvent &args)
 {
     uint8 flag(Calendar::Flag::Invalid);
-    if (IsCharacter(ownerID)) {
+    if (IsCharacterID(ownerID)) {
      flag = Calendar::Flag::Personal;
-    } else if (IsCorp(ownerID)) { // this would also be Automated for pos fuel
+    } else if (IsCorpID(ownerID)) { // this would also be Automated for pos fuel
         flag = Calendar::Flag::Corp;
-    } else if (IsAlliance(ownerID)) {
+    } else if (IsAllianceID(ownerID)) {
         flag = Calendar::Flag::Alliance;
     } else if (ownerID == 1) {
         flag = Calendar::Flag::CCP;

@@ -94,7 +94,7 @@ protected:
     uint32 ReadSizeEx()
     {
         uint32 size = Read<uint8>();
-        if( 0xFF == size )
+        if ( 0xFF == size )
             size = Read<uint32>();
 
         return size;
@@ -160,11 +160,11 @@ private:
     /** Loads variable length integer from stream. */
     PyRep* LoadIntegerVar();
     /** Loads minus one integer from stream. */
-    PyRep* LoadIntegerMinusOne() { return new PyInt( -1 ); }
+    PyRep* LoadIntegerMinusOne() { return PyStatic.NewNegOne(); }
     /** Loads zero integer from stream. */
-    PyRep* LoadIntegerZero() { return new PyInt( 0 ); }
+    PyRep* LoadIntegerZero() { return PyStatic.NewZero(); }
     /** Loads one integer from stream. */
-    PyRep* LoadIntegerOne() { return new PyInt( 1 ); }
+    PyRep* LoadIntegerOne() { return PyStatic.NewOne(); }
 
     /** Loads real from stream. */
     PyRep* LoadReal() { return new PyFloat( Read<double>() ); }
@@ -198,7 +198,7 @@ private:
     PyRep* LoadBuffer();
 
     /** Loads empty tuple from stream. */
-    PyRep* LoadTupleEmpty() { return new PyTuple( 0 ); }
+    PyRep* LoadTupleEmpty() { return PyStatic.mtTuple(); }
     /** Loads tuple from stream. */
     PyRep* LoadTuple();
     /** Loads one-element tuple from stream. */
@@ -207,7 +207,7 @@ private:
     PyRep* LoadTupleTwo();
 
     /** Loads empty list from stream. */
-    PyRep* LoadListEmpty() { return new PyList( 0 ); }
+    PyRep* LoadListEmpty() { return PyStatic.mtList(); }
     /** Loads list from stream. */
     PyRep* LoadList();
     /** Loads one-element list from stream. */

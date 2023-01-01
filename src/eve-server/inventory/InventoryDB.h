@@ -32,9 +32,7 @@
 
 class CharacterTypeData;
 class ShipTypeData;
-class CharacterAppearance;
 class CelestialObjectData;
-class SolarSystemData;
 
 class InventoryDB
 : public ServiceDB

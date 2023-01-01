@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -33,10 +33,11 @@
 #include "corporation/CorpData.h"
 
 
+struct OfficeData;
+
 class Client;
 class PyRep;
 class PyObject;
-class OfficeData;
 
 class CorporationDB
 : public ServiceDB
@@ -100,8 +101,9 @@ public:
     PyRep *GetCorpInfo(uint32 corpID);
 
     PyRep* GetContacts(uint32 corpID);
-    void AddContact(uint32 corpID);
-    void UpdateContact(uint32 corpID);
+    void AddContact(uint32 ownerID, Call_CorporateContactData corpData);
+    void UpdateContact(int32 relationshipID, uint32 contactID, uint32 ownerID);
+    void RemoveContact(uint32 contactID, uint32 ownerID);
 
     PyRep* GetLabels(uint32 corpID);
     void SetLabel(uint32 corpID, uint32 color, std::string name);
@@ -120,7 +122,7 @@ public:
     int32 GetCorpIDforChar(int32 charID);
     uint32 GetStationOwner(uint32 stationID);
     uint32 GetStationCorporationCEO(uint32 stationID);
-    uint32 GetCorporationCEO(uint32 corpID);
+    static uint32 GetCorporationCEO(uint32 corpID);
     uint16 GetCorpMemberCount(uint32 corpID);
     uint16 GetCorpMemberLimit(uint32 corpID);
 
@@ -177,6 +179,10 @@ public:
 
     static void UpdateCorpHQ(uint32 corpID, uint32 stationID);
     static void GetMemberIDs(uint32 corpID, std::vector<uint32>& ids, bool online=true);
+
+    static bool GetCorporationBySchool(uint32 schoolID, uint32 &corporationID);
+    static bool GetLocationCorporationByCareer(CharacterData &cdata, uint32 &corporationID);
+    static bool DoesCorporationExist(uint32 corpID);
 };
 
 #endif

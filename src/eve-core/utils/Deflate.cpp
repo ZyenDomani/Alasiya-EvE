@@ -23,6 +23,8 @@
     Author:        Zhur
 */
 
+#include <zlib.h>
+
 #include "eve-core.h"
 
 #include "utils/Deflate.h"
@@ -37,7 +39,7 @@ bool IsDeflated( const Buffer& data )
 bool DeflateData( Buffer& data )
 {
     Buffer dataDeflated;
-    if( !DeflateData( data, dataDeflated ) )
+    if ( !DeflateData( data, dataDeflated ) )
         return false;
 
     data = dataDeflated;
@@ -53,7 +55,7 @@ bool DeflateData( const Buffer& input, Buffer& output )
 
     int res = compress( &*out, (uLongf*)&outputSize, &input[0], input.size() );
 
-    if( Z_OK == res )
+    if ( Z_OK == res )
     {
         output.ResizeAt( out, outputSize );
         return true;
@@ -68,7 +70,7 @@ bool DeflateData( const Buffer& input, Buffer& output )
 bool InflateData( Buffer& data )
 {
     Buffer dataInflated;
-    if( !InflateData( data, dataInflated ) )
+    if ( !InflateData( data, dataInflated ) )
         return false;
 
     data = dataInflated;
@@ -91,7 +93,7 @@ bool InflateData( const Buffer& input, Buffer& output )
         res = uncompress( &*out, (uLongf*)&outputSize, &input[0], input.size() );
     } while( Z_BUF_ERROR == res );
 
-    if( Z_OK == res )
+    if ( Z_OK == res )
     {
         output.ResizeAt( out, outputSize );
         return true;

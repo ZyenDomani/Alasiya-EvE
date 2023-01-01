@@ -24,6 +24,8 @@
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "manufacturing/Blueprint.h"
+#include "map/MapDB.h"
+#include "math/Trig.h"
 #include "packets/Planet.h"
 #include "planet/CustomsOffice.h"
 #include "planet/Planet.h"
@@ -79,7 +81,7 @@ void CustomsSE::InitData()
     // init all data.
     m_cData.state = EVEPOS::EntityState::Anchored;  // allow corp settings menu
     m_cData.timestamp = 0;
-    m_cData.status = EVEPOS::StructureStatus::Online;
+    m_cData.status = EVEPOS::StructureState::Online;
     m_cData.allowAlliance = false;
     m_cData.allowStandings  = false;
     m_cData.ownerID = m_self->ownerID();
@@ -236,7 +238,7 @@ void CustomsSE::VerifyAddItem(InventoryItemRef iRef)
 
 void CustomsSE::GetEffectState(PyList& into)
 {
-
+    // not used yet - cannot use OnSpecialFX14 packet. (no clue why i put this in here)
 }
 
 void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
@@ -274,9 +276,9 @@ void CustomsSE::SendSlimUpdate()
         slim->SetItemString("itemID",                   new PyLong(m_cData.itemID));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-        slim->SetItemString("corpID",                   IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("posTimestamp",             new PyLong(m_cData.timestamp));
         slim->SetItemString("posState",                 new PyInt(m_cData.state));
         slim->SetItemString("incapacitated",            PyStatic.NewZero());
@@ -293,7 +295,7 @@ void CustomsSE::SendSlimUpdate()
 
 void CustomsSE::SetAnchor(Client* pClient, GPoint& pos)
 {
-    if (m_cData.status > EVEPOS::StructureStatus::Unanchored) {
+    if (m_cData.status > EVEPOS::StructureState::Unanchored) {
         pClient->SendErrorMsg("The %s is already anchored", m_self->name());
         return;  // make error here?
     }
@@ -308,7 +310,7 @@ void CustomsSE::SetAnchor(Client* pClient, GPoint& pos)
     m_self->SaveItem();
 
     m_cData.state = EVEPOS::EntityState::Anchoring;
-    m_cData.status = EVEPOS::StructureStatus::Anchored;
+    m_cData.status = EVEPOS::StructureState::Anchored;
     //m_delayTime = m_self->GetAttribute(AttrAnchoringDelay).get_int();
     //m_procTimer.SetTimer(m_delayTime);
     m_cData.timestamp = GetFileTimeNow();
@@ -332,11 +334,11 @@ void CustomsSE::SetAnchor(Client* pClient, GPoint& pos)
 
 void CustomsSE::PullAnchor()
 {
-    if (m_cData.status > EVEPOS::StructureStatus::Anchored)
+    if (m_cData.status > EVEPOS::StructureState::Anchored)
         return;  // make error here?
 
     m_cData.state = EVEPOS::EntityState::Unanchoring;
-    m_cData.status = EVEPOS::StructureStatus::Unanchored;
+    m_cData.status = EVEPOS::StructureState::Unanchored;
     //m_delayTime = m_self->GetAttribute(AttrUnanchoringDelay).get_int();
     //m_procTimer.SetTimer(m_delayTime);
     m_cData.timestamp = GetFileTimeNow();
@@ -404,9 +406,9 @@ PyDict *CustomsSE::MakeSlimItem() {
     slim->SetItemString("itemID",               new PyLong(m_cData.itemID));
     slim->SetItemString("typeID",               new PyInt(m_self->typeID()));
     slim->SetItemString("ownerID",              new PyInt(m_ownerID));  //1000148 for interbus customs office (to be done on creation)
-    slim->SetItemString("corpID",               IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-    slim->SetItemString("allianceID",           IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID",         IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+    slim->SetItemString("corpID",               IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+    slim->SetItemString("allianceID",           IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+    slim->SetItemString("warFactionID",         IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
     slim->SetItemString("level",                new PyInt(m_oData.level));
     slim->SetItemString("orbitalTimestamp",     new PyLong(m_cData.timestamp));
     slim->SetItemString("planetID",             new PyInt(m_oData.planetID));  // planetID for this orbital
@@ -485,7 +487,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
     /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
     /** @todo  check for tower/tcu/sbu/jammer and make killmail */
     /** @todo send pos mail/notification to corp members */
-    CharKillData data = CharKillData();
+    KillData data = KillData();
         data.solarSystemID = m_system->GetID();
         data.victimCharacterID = 0; // charID = 0 means strucuture/item
         data.victimCorporationID = m_corpID;

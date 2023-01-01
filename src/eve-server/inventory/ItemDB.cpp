@@ -25,8 +25,10 @@
 
 
 #include "eve-server.h"
+#include "StaticDataMgr.h"
 
 #include "inventory/ItemDB.h"
+#include "inventory/ItemType.h" //ItemData
 
 
 bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
@@ -34,7 +36,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
     DBQueryResult res;
 
     // For ranges of itemIDs we use specialized tables:
-    if (IsRegion(itemID)) {
+    if (IsRegionID(itemID)) {
         //region
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -46,7 +48,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for region %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if (IsConstellation(itemID)) {
+    } else if (IsConstellationID(itemID)) {
         //contellation
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -58,7 +60,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for contellation %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if (IsSolarSystem(itemID)) {
+    } else if (sDataMgr.IsSolarSystem(itemID)) {
         //solar system
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -70,7 +72,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for solar system %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if (IsStargate(itemID)) {
+    } else if (IsStargateID(itemID)) {
         //use mapDenormalize LEFT-JOIN-ing mapSolarSystems to get factionID
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -83,7 +85,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for stargate %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if (IsStation(itemID)) {
+    } else if (sDataMgr.IsStation(itemID)) {
         //station
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -95,7 +97,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for station %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if (IsCelestial(itemID)) {
+    } else if (IsCelestialID(itemID)) {
         //use mapDenormalize
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -107,7 +109,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for universe celestial %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if (IsAsteroid(itemID)) {
+    } else if (IsAsteroidID(itemID)) {
         //use sysAsteroids
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -119,7 +121,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for asteroid %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if (IsCharacter(itemID)) {
+    } else if (IsCharacterID(itemID)) {
         //use chrCharacters
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -131,7 +133,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for character %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if (IsOffice(itemID)) {
+    } else if (IsOfficeID(itemID)) {
         //use staOffices
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -157,7 +159,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__MESSAGE, "ItemDB::GetItem() - Item %u not found.", itemID);
         return false;
     }
@@ -192,7 +194,7 @@ uint32 ItemDB::NewItem(const ItemData &data) {
     sDatabase.DoEscapeString(nameEsc, data.name);
     sDatabase.DoEscapeString(customInfoEsc, data.customInfo);
 
-    if(!sDatabase.RunQueryLID(err, uid,
+    if (!sDatabase.RunQueryLID(err, uid,
         "INSERT INTO entity ("
         "   itemName, typeID, ownerID, locationID, flag,"
         "   contraband, singleton, quantity, x, y, z,"
@@ -213,7 +215,7 @@ void ItemDB::UpdateLocation(uint32 itemID, uint32 locationID, EVEItemFlags flag)
 {
     DBerror err;
     sDatabase.RunQuery(err, "UPDATE entity SET locationID = %u, flag = %u WHERE itemID = %u", \
-    locationID, (uint16)flag, itemID);
+            locationID, (uint16)flag, itemID);
 }
 
 bool ItemDB::SaveItem(uint32 itemID, const ItemData &data) {
@@ -232,7 +234,7 @@ bool ItemDB::SaveItem(uint32 itemID, const ItemData &data) {
     sDatabase.DoEscapeString(customInfoEsc, data.customInfo);
 
     DBerror err;
-    if(!sDatabase.RunQuery(err,
+    if (!sDatabase.RunQuery(err,
         "UPDATE entity"
         " SET"
         "  itemName = '%s',"
@@ -271,11 +273,11 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
     bool save(false);
     for (auto cur : data) {
         if (cur.position.isNaN() or cur.position.isInf()) {
-            _log(DATABASE__ERROR, "ItemDB::SaveItems() - %u has invalid position", cur.itemID);
+            _log(PHYSICS__WARNING, "ItemDB::SaveItems() - %u has invalid position", cur.itemID);
             continue;
         }
         if (cur.locationID == 0) {
-            _log(DATABASE__ERROR, "ItemDB::SaveItems() - %u has invalid location", cur.itemID);
+            _log(INV__WARNING, "ItemDB::SaveItems() - %u has invalid location", cur.itemID);
             continue;
         }
         if (save) {
@@ -385,5 +387,5 @@ void ItemDB::GetItems(uint16 catID, std::map< uint16, std::string >& typeIDs) {
 
     DBResultRow row;
     while(res.GetRow(row))
-        typeIDs.emplace(row.GetUInt(0), row.GetText(1));
+        typeIDs[row.GetUInt(0)] = row.GetText(1);
 }

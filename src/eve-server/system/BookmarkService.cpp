@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -64,7 +64,6 @@ BookmarkService::BookmarkService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(BookmarkService, MoveBookmarksToFolder);
     PyCallable_REG_CALL(BookmarkService, AddBookmarkFromVoucher);
     PyCallable_REG_CALL(BookmarkService, CopyBookmarks);
-
 }
 
 BookmarkService::~BookmarkService() {
@@ -91,7 +90,7 @@ PyResult BookmarkService::Handle_CreateFolder(PyCallArgs &call) {
     uint32 ownerID = call.client->GetCharacterID();
     Rsp_CreateFolder result;
         result.ownerID = ownerID;
-        result.folderID = m_db.SaveNewFolder(name, ownerID);
+        result.folderID = m_db.SaveNewFolder(name, ownerID, ownerID);
         result.folderName = name;
         result.creatorID = ownerID;
 
@@ -150,7 +149,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     BmData data = BmData();
     data.memo = PyRep::StringContent(args.memo);
     data.note = PyRep::StringContent(args.comment);
-    data.ownerID = call.client->GetCharacterID();
+    data.ownerID = args.ownerID;
     data.creatorID = data.ownerID;
     data.created = GetFileTimeNow();
 
@@ -163,7 +162,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         data.point = call.client->GetShipSE()->GetPosition();       // Get x,y,z location.  bm type is coordinate as "spot in xxx system"
         data.locationID = call.client->GetLocationID();       // locationID of bm is current sol system
         data.itemID = data.locationID;      //  itemID = locationID for coord bm.  shows jumps, s/c/r in bm window, green in system
-    } else if (IsStation(args.itemID)) {  // not player-owned, check for station.
+    } else if (sDataMgr.IsStation(args.itemID)) {  // not player-owned, check for station.
         SystemEntity* pSE = call.client->SystemMgr()->GetSE(args.itemID);
         if (pSE == nullptr) {
             // send player error also
@@ -173,11 +172,11 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         data.itemID =  args.itemID;  // this is stationID (for bm description)
         data.locationID = call.client->GetSystemID();       // get sol system of current station
     } else {      // char is passing systemID from map.  char is marking a solar systemID for bm
-        if (IsRegion(args.itemID)) {
+        if (IsRegionID(args.itemID)) {
             data.typeID = EVEDB::invTypes::Region;
-        } else if (IsConstellation(args.itemID)) {
+        } else if (IsConstellationID(args.itemID)) {
             data.typeID = EVEDB::invTypes::Constellation;
-        } else if (IsSolarSystem(args.itemID)) {
+        } else if (sDataMgr.IsSolarSystem(args.itemID)) {
             data.typeID = EVEDB::invTypes::SolarSystem;
         }
         data.locationID = args.itemID;  // this is systemID from map
@@ -289,7 +288,7 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
     for (size_t i = 0; i < bmList->size(); ++i)
         bmIDs.push_back(bmList->GetItem(i)->AsInt()->value());
 
-    m_db.MoveBookmarkToFolder(args.folderID, &bmIDs);
+    m_db.MoveBookmarkToFolder(args.folderID, bmIDs);
 
     return m_db.GetBookmarksInFolder(args.folderID);
 }
@@ -315,7 +314,7 @@ PyResult BookmarkService::Handle_AddBookmarkFromVoucher(PyCallArgs &call) {
      *    args.ownerID
      *    args.folderID
      */
-    InventoryItemRef iRef = sItemFactory.GetItem(args.itemID);
+    InventoryItemRef iRef = sItemFactory.GetItemRef(args.itemID);
     if (iRef.get() == nullptr) {
         codelog(ITEM__ERROR, "%s: Failed to retrieve bookmark data for voucherID %u", call.client->GetName(), args.itemID);
         return nullptr;
@@ -383,7 +382,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
 
     PyList* list = new PyList();
     for (size_t i = 0; i < bmList->size(); ++i) {
-        InventoryItemRef iRef = sItemFactory.GetItem(bmList->GetItem(i)->AsInt()->value());
+        InventoryItemRef iRef = sItemFactory.GetItemRef(bmList->GetItem(i)->AsInt()->value());
         if (iRef.get() == nullptr) {
             codelog(ITEM__ERROR, "%s: Failed to retrieve bookmark data for voucherID %u", call.client->GetName(), bmList->GetItem(i)->AsInt()->value());
             continue;

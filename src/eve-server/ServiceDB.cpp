@@ -25,6 +25,7 @@
 */
 
 #include <boost/algorithm/string.hpp>
+
 #include "eve-server.h"
 
 #include "EntityList.h"
@@ -149,8 +150,8 @@ bool ServiceDB::IncrementLoginCount( uint32 accountID )
 
 uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, const char* passHash, int64 role )
 {
-    uint32 accountID = 0;
-    uint32 clientID = sEntityList.GetClientSeed();
+    uint32 accountID(0);
+    uint32 clientID(sEntityList.GetClientSeed());
 
     DBerror err;
     if ( !sDatabase.RunQueryLID( err, accountID,
@@ -208,7 +209,7 @@ void ServiceDB::SetAccountBanStatus(uint32 accountID, bool banned) {
     }
 }
 
-void ServiceDB::SaveKillOrLoss(CharKillData &data) {
+void ServiceDB::SaveKillOrLoss(KillData &data) {
     DBerror err;
     sDatabase.RunQuery(err,
             " INSERT INTO chrKillTable (solarSystemID, victimCharacterID, victimCorporationID, victimAllianceID, victimFactionID,"
@@ -360,7 +361,7 @@ PyRep* ServiceDB::LookupChars(const char *match, bool exact) {
     std::string matchEsc;
     sDatabase.DoEscapeString(matchEsc, match);
     if (matchEsc == "__ALL__") {
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT "
             "   characterID AS ownerID"
             " FROM chrCharacters"
@@ -370,7 +371,7 @@ PyRep* ServiceDB::LookupChars(const char *match, bool exact) {
             return nullptr;
         }
     } else {
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT "
             "   itemID AS ownerID"
             " FROM entity"
@@ -542,11 +543,11 @@ PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
     DBResultRow row;
     PyDict* dict = new PyDict();
     for (auto cur : itemIDs) {
-        if (IsCharacter(cur)) {
+        if (IsCharacterID(cur)) {
             sDatabase.RunQuery(res, "SELECT characterID, characterName, typeID FROM chrCharacters WHERE characterID = %u", cur);
         } else if (IsPlayerCorp(cur)) {
             sDatabase.RunQuery(res, "SELECT corporationID, corporationName, typeID FROM crpCorporation WHERE corporationID = %u", cur);
-        } else if (IsAlliance(cur)) {
+        } else if (IsAllianceID(cur)) {
             sDatabase.RunQuery(res, "SELECT allianceID, allianceName, typeID FROM alnAlliance WHERE allianceID = %u", cur);
         } else {
             ; // make error

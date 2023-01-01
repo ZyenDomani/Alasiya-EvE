@@ -177,9 +177,9 @@ public:
     /**
      * @brief Clones object.
      *
-     * @return Indentical copy of object.
+     * @return Identical copy of object.
      */
-    virtual PyRep* Clone() const = 0;
+    virtual PyRep* Clone() const;
     /**
      * @brief Visits object.
      *
@@ -188,7 +188,7 @@ public:
      * @retval true  Visit successful.
      * @retval false Error during visit.
      */
-    virtual bool visit( PyVisitor& v ) const = 0;
+    virtual bool visit( PyVisitor& v ) const;
     /**
      * @brief virtual function to generate a hash value of a object.
      *
@@ -207,19 +207,31 @@ public:
     // None returns 0. Returned as unsigned 32b int
     static uint32 IntegerValueU32(PyRep* pRep);
 
-protected:
+    /*
+    friend void swap(PyRep& first, PyRep& second) {
+        // enable ADL
+        using std::swap;
+        swap(first.mType, second.mType);
+    } */
+
     PyRep( PyType t );
     // copy c'tor
     PyRep( const PyRep& oth );
     // move c'tor
     PyRep(PyRep&& oth) = delete;
+    /*
+    : PyRep(oth.mType) {
+        std::swap(*this, oth);
+        PyDecRef(&oth);
+    } */
     // copy assignment
-    PyRep& operator= (const PyRep& oth) = default;
+    PyRep& operator= (const PyRep& oth) = delete;
     // move assignment
-    PyRep& operator= (PyRep&& oth) = default;
+    PyRep& operator= (PyRep&& oth) = delete;
 
-    virtual ~PyRep()    { /* do we need to do anything here? */ }
+    virtual ~PyRep();
 
+protected:
     const PyType mType;
 };
 
@@ -236,8 +248,19 @@ public:
     PyInt( const PyInt& oth );
     // move c'tor
     PyInt(PyInt&& oth) = delete;
+    /*
+    : PyInt(oth.mValue) {
+        std::swap(*this, oth);
+        PyDecRef(&oth);
+    } */
     // copy assignment
-    PyInt& operator= (const PyInt& oth) = delete;
+    PyInt& operator=(PyInt oth) = delete;
+    /*
+    {
+        std::swap(*this, oth);
+        return *this;
+    } */
+
     // move assignment
     PyInt& operator= (PyInt&& oth) = delete;
 
@@ -248,8 +271,9 @@ public:
 
     int32 hash() const;
 
-protected:
     virtual ~PyInt()    { /* do we need to do anything here? */ }
+
+protected:
     const int32 mValue;
 };
 
@@ -265,9 +289,19 @@ public:
     // copy c'tor
     PyLong( const PyLong& oth );
     // move c'tor
-    PyLong(PyLong&& oth) = delete;
+    PyLong(PyLong&& oth)  = delete;
+    /*
+    : PyLong(oth.mValue) {
+        std::swap(*this, oth);
+        PyDecRef(&oth);
+    } */
     // copy assignment
-    PyLong& operator= (const PyLong& oth) = delete;
+    PyLong& operator=(PyLong oth)  = delete;
+    /*
+    {
+        std::swap(*this, oth);
+        return *this;
+    } */
     // move assignment
     PyLong& operator= (PyLong&& oth) = delete;
 
@@ -279,8 +313,9 @@ public:
 
     int32 hash() const;
 
-protected:
     virtual ~PyLong()    { /* do we need to do anything here? */ }
+
+protected:
     const int64 mValue;
 };
 
@@ -292,16 +327,27 @@ protected:
 class PyFloat : public PyRep
 {
 public:
+    // default c'tor
     PyFloat( const double& i );
     // copy c'tor
     PyFloat( const PyFloat& oth );
     // move c'tor
-    PyFloat(PyFloat&& oth) = delete;
+    PyFloat(PyFloat&& oth)  = delete;
+    /*
+    : PyFloat(oth.mValue) {
+        std::swap(*this, oth);
+        PyDecRef(&oth);
+    } */
     // copy assignment
-    PyFloat& operator= (const PyFloat& oth) = delete;
+    PyFloat& operator=(PyFloat oth)  = delete;
+    /*
+    {
+        std::swap(*this, oth);
+        return *this;
+    } */
+
     // move assignment
     PyFloat& operator= (PyFloat&& oth) = delete;
-
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -310,8 +356,9 @@ public:
 
     int32 hash() const;
 
-protected:
     virtual ~PyFloat()    { /* do we need to do anything here? */ }
+
+protected:
     const double mValue;
 };
 
@@ -323,13 +370,25 @@ protected:
 class PyBool : public PyRep
 {
 public:
+    // default c'tor
     PyBool( bool i );
     // copy c'tor
     PyBool( const PyBool& oth );
     // move c'tor
     PyBool(PyBool&& oth) = delete;
+    /*
+    : PyBool(oth.mValue) {
+        std::swap(*this, oth);
+        PyDecRef(&oth);
+    } */
     // copy assignment
-    PyBool& operator= (const PyBool& oth) = delete;
+    PyBool& operator=(PyBool oth) = delete;
+    /*
+    {
+        std::swap(*this, oth);
+        return *this;
+    } */
+
     // move assignment
     PyBool& operator= (PyBool&& oth) = delete;
 
@@ -339,8 +398,9 @@ public:
 
     bool value() const { return mValue; }
 
-protected:
     virtual ~PyBool()    { /* do we need to do anything here? */ }
+
+protected:
     const bool mValue;
 };
 
@@ -352,13 +412,25 @@ protected:
 class PyNone : public PyRep
 {
 public:
+    // default c'tor
     PyNone();
     // copy c'tor
     PyNone( const PyNone& oth );
     // move c'tor
     PyNone(PyNone&& oth) = delete;
+    /*
+    : PyNone() {
+        std::swap(*this, oth);
+        PyDecRef(&oth);
+    } */
     // copy assignment
-    PyNone& operator= (const PyNone& oth) = delete;
+    PyNone& operator=(PyNone oth) = delete;
+    /*
+    {
+        std::swap(*this, oth);
+        return *this;
+    } */
+
     // move assignment
     PyNone& operator= (PyNone&& oth) = delete;
 
@@ -368,7 +440,6 @@ public:
 
     int32 hash() const;
 
-protected:
     virtual ~PyNone()    { /* do we need to do anything here? */ }
 };
 
@@ -415,9 +486,9 @@ public:
      */
     size_t size() const;
 
-protected:
     virtual ~PyBuffer();
 
+protected:
     const Buffer* const mValue;
     mutable int32 mHashCache;
 };
@@ -460,8 +531,9 @@ public:
     // updated to use std::hash for strings.  better checks without collision (so far)
     int32 hash() const;
 
+    virtual ~PyString()   { /* do we need to do anything here? */ }
+
 protected:
-    virtual ~PyString();
     const std::string mValue;
     mutable int32 mHashCache;
 };
@@ -508,8 +580,9 @@ public:
     // updated to use std::hash for strings.  better checks without collision (so far)
     int32 hash() const;
 
-protected:
     virtual ~PyWString()    { /* do we need to do anything here? */ }
+
+protected:
     const std::string mValue;
     mutable int32 mHashCache;
 };
@@ -537,9 +610,20 @@ public:
     /** Copy constructor. */
     PyToken( const PyToken& oth );
     // move c'tor
-    PyToken(PyToken&& oth) = delete;
+    PyToken(PyToken&& oth)  = delete;
+    /*
+    : PyToken(oth.mValue) {
+        std::swap(*this, oth);
+        PyDecRef(&oth);
+    } */
     // copy assignment
-    PyToken& operator= (const PyToken& oth) = delete;
+    PyToken& operator=(PyToken oth) = delete;
+    /*
+    {
+        std::swap(*this, oth);
+        return *this;
+    } */
+
     // move assignment
     PyToken& operator= (PyToken&& oth) = delete;
 
@@ -554,8 +638,9 @@ public:
      */
     const std::string& content() const { return mValue; }
 
-protected:
     virtual ~PyToken()    { /* do we need to do anything here? */ }
+
+protected:
     const std::string mValue;
 };
 
@@ -571,7 +656,7 @@ public:
     typedef storage_type::iterator          iterator;
     typedef storage_type::const_iterator    const_iterator;
 
-    PyTuple( size_t item_count );
+    PyTuple( size_t item_count=0 );
     // copy c'tor
     PyTuple( const PyTuple& oth );
     // move c'tor
@@ -627,8 +712,7 @@ public:
     // This needs to be public for now.
     storage_type items;
 
-protected:
-    virtual ~PyTuple();
+    virtual ~PyTuple()   { /* do we need to do anything here? */ }
 };
 
 /**
@@ -643,7 +727,7 @@ public:
     typedef storage_type::iterator          iterator;
     typedef storage_type::const_iterator    const_iterator;
 
-    PyList( size_t item_count = 0 );
+    PyList( size_t item_count=0);
     // copy c'tor
     PyList( const PyList& oth );
     // move c'tor
@@ -707,7 +791,6 @@ public:
     // This needs to be public:
     storage_type items;
 
-protected:
     virtual ~PyList();
 };
 
@@ -813,7 +896,6 @@ public:
 
     storage_type items;
 
-protected:
     virtual ~PyDict();
 };
 
@@ -844,9 +926,9 @@ public:
     PyString* type() const { return mType; }
     PyRep* arguments() const { return mArguments; }
 
-protected:
     virtual ~PyObject();
 
+protected:
     PyString* mType;
     PyRep* const mArguments;
 };
@@ -892,10 +974,9 @@ public:
     dict_type& dict()                                   { return *mDict; }
     const dict_type& dict() const                       { return *mDict; }
 
-
-protected:
     virtual ~PyObjectEx();
 
+protected:
     PyRep* const mHeader;
     const bool mIsType2;
 
@@ -922,8 +1003,9 @@ public:
 
     PyRep* FindKeyword( const char* keyword ) const;
 
-protected:
     virtual ~PyObjectEx_Type1()    { /* do we need to do anything here? */ }
+
+protected:
     static PyTuple* _CreateHeader( PyToken* type, PyTuple* args, bool enclosed=false );
     static PyTuple* _CreateHeader( PyObjectEx_Type1* args1, PyTuple* args2, bool enclosed=false );
     static PyTuple* _CreateHeader( PyToken* type, PyTuple* args, PyDict* keywords, bool enclosed=false );
@@ -946,8 +1028,9 @@ public:
 
     PyRep* FindKeyword( const char* keyword ) const;
 
-protected:
     virtual ~PyObjectEx_Type2()    { /* do we need to do anything here? */ }
+
+protected:
     static PyTuple* _CreateHeader( PyTuple* args, PyDict* keywords, bool enclosed=false );
     static PyTuple* _CreateHeader( PyToken* args, PyDict* keywords, bool enclosed=false );
 };
@@ -994,9 +1077,9 @@ public:
 
     int32 hash() const;
 
-protected:
     virtual ~PyPackedRow();
 
+protected:
     DBRowDescriptor* const mHeader;
     storage_type* const mFields;
 };
@@ -1020,9 +1103,9 @@ public:
 
     PyRep* sub() const { return mSub; }
 
-protected:
     virtual ~PySubStruct();
 
+protected:
     PyRep* const mSub;
 };
 
@@ -1053,9 +1136,9 @@ public:
     //call to ensure that `decoded` represents `data` IF DECODED IS NULL
     void DecodeData() const;
 
-protected:
     virtual ~PySubStream();
 
+protected:
     //if both are non-NULL, they are considered to be equivalent
     mutable PyBuffer* mData;
     mutable PyRep* mDecoded;
@@ -1081,9 +1164,9 @@ public:
     PyRep* stream() const { return mStream; }
     uint32 checksum() const { return mChecksum; }
 
-protected:
     virtual ~PyChecksumedStream();
 
+protected:
     PyRep* const mStream;
     const uint32 mChecksum;
 };
@@ -1125,7 +1208,6 @@ class BuiltinSet : public PyObjectEx_Type1
 public:
     BuiltinSet() : PyObjectEx_Type1( new PyToken("collections.defaultdict"), new_tuple(new PyToken("__builtin__.set")) ) {}
 
-protected:
     virtual ~BuiltinSet()    { /* do we need to do anything here? */ }
 };
 
@@ -1134,7 +1216,6 @@ class CacheOK : public PyObjectEx_Type1
 public:
     CacheOK() : PyObjectEx_Type1( new PyToken("objectCaching.CacheOK"), new_tuple("CacheOK") ) {}
 
-protected:
     virtual ~CacheOK()    { /* do we need to do anything here? */ }
 };
 

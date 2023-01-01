@@ -12,6 +12,7 @@
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
+#include "map/MapDB.h"
 #include "npc/Sentry.h"
 #include "npc/SentryAI.h"
 #include "system/Container.h"
@@ -100,7 +101,7 @@ void Sentry::EncodeDestiny( Buffer& into )
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (IsAlliance(m_allyID) ? m_allyID : -1);
+        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     STOP_Struct main;
         main.formationID = 0xFF;

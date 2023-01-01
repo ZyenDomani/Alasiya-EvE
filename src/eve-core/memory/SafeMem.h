@@ -125,7 +125,7 @@ inline void SafeRelease( T*& p, F f )
 {
     /* We don't know if the function accepts
        NULL pointers, like delete or free. */
-    if( NULL != p )
+    if ( NULL != p )
         f( p );
 
     p = nullptr;

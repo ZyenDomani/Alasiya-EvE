@@ -257,7 +257,9 @@ PyResult PosMgrBound::Handle_InstallJumpBridgeLink(PyCallArgs &call) {
         return nullptr;
     }
 
-    /** @todo  finish this.. */
+    // Install jump bridge link both ways
+    m_db.InstallBridgeLink(args.itemID, args.toSystemID, args.toItemID);
+    m_db.InstallBridgeLink(args.toItemID, call.client->GetSystemID(), args.itemID);
 
     return PyStatic.NewNone();
 }
@@ -272,7 +274,14 @@ PyResult PosMgrBound::Handle_UninstallJumpBridgeLink(PyCallArgs &call) {
     _log(POS__TRACE,  "PosMgrBound::Handle_UninstallJumpBridgeLink()");
     call.Dump(POS__DUMP);
 
-    /** @todo  finish this.. */
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
+    m_db.UninstallRemoteBridgeLink(arg.arg);
+    m_db.UninstallBridgeLink(arg.arg);
 
     return PyStatic.NewNone();
 }
@@ -572,6 +581,10 @@ PyResult PosMgrBound::Handle_SetShipPassword( PyCallArgs &call ) {
      * 13:16:17 [SvcCall]         [ 0] WString: 'test'             << password
      */
 
+    // havent been able to call this while docked, but there is an error msg for it.
+    if (call.client->IsDocked())
+        throw UserError("CannotSetShieldHarmonicPassword");
+
     call.client->GetShipSE()->SetPassword(PyRep::StringContent(call.tuple->GetItem(0)));
 
     return PyStatic.NewNone();
@@ -667,8 +680,8 @@ PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
     if (pTSE->IsTowerSE()) {
         uint32 dist = pTSE->GetSelf()->radius() + call.client->GetShip()->radius();
         call.client->GetShipSE()->DestinyMgr()->WarpTo(pos, dist);
+        /** @todo add tower anchor position to bookmark */
     }
-
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
     tuple->SetItem(0, new PyString(GetBindStr()));    // node info here

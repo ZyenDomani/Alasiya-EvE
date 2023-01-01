@@ -121,10 +121,10 @@ bool EVETCPConnection::ProcessReceivedData( char* errbuf )
 
 bool EVETCPConnection::RecvData( char* errbuf )
 {
-    if( !TCPConnection::RecvData( errbuf ) )
+    if ( !TCPConnection::RecvData( errbuf ) )
         return false;
 
-    if( mTimeoutTimer.Check() ) {
+    if ( mTimeoutTimer.Check() ) {
         if (errbuf != nullptr)
             snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "Connection timeout" );
         return false;
@@ -166,7 +166,7 @@ void EVETCPConnection::DumpBuffer( Buffer* buf, packet_direction packet_directio
 
     std::string path = EVEMU_ROOT "/packet_log/";
     path += timestamp;
-    if(packet_direction == PACKET_INBOUND)
+    if (packet_direction == PACKET_INBOUND)
         path += "_client_";
     else
         path += "_server_";

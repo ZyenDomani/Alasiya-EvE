@@ -3,8 +3,8 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2006 - 2021 The EVEmu Team
+    For the latest information visit https://evemu.dev
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -80,12 +80,12 @@ bool PyVisitor::VisitObjectEx(const PyObjectEx* rep)
     if (!rep->header()->visit(*this))
         return false;
 
-    PyObjectEx::const_list_iterator lItr = rep->list().begin(), lEnd = rep->list().end();
+    PyList::const_iterator lItr = rep->list().begin(), lEnd = rep->list().end();
     for (; lItr != lEnd; ++lItr) {
         if (!(*lItr)->visit(*this))
             return false;
     }
-    PyObjectEx::const_dict_iterator dItr = rep->dict().begin(), dEnd = rep->dict().end();
+    PyDict::const_iterator dItr = rep->dict().begin(), dEnd = rep->dict().end();
     for (; dItr != dEnd; ++dItr) {
         if (!dItr->first->visit(*this))
             return false;
@@ -101,7 +101,7 @@ bool PyVisitor::VisitPackedRow(const PyPackedRow* rep)
     if (!rep->header()->visit(*this))
         return false;
 
-    PyPackedRow::const_iterator itr = rep->begin(), end = rep->end();
+    PyList::const_iterator itr = rep->begin(), end = rep->end();
     for (;  itr != end; ++itr)
         if (!(*itr)->visit(*this))
             return false;

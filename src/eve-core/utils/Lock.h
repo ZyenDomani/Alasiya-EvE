@@ -80,7 +80,7 @@ public:
     : mObject( object ),
       mLocked( false )
     {
-        if( lock )
+        if ( lock )
             Relock();
     }
     /**
@@ -104,7 +104,7 @@ public:
      */
     void Relock()
     {
-        if( !isLocked() )
+        if ( !isLocked() )
             mObject.Lock();
 
         mLocked = true;
@@ -114,7 +114,7 @@ public:
      */
     void Unlock()
     {
-        if( isLocked() )
+        if ( isLocked() )
             mObject.Unlock();
 
         mLocked = false;

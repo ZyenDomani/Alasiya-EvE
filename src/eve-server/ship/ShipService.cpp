@@ -153,9 +153,9 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient = call.client;
+    Client* pClient(call.client);
 
-    ShipSE* pShipSE =  pClient->GetShipSE();
+    ShipSE* pShipSE(pClient->GetShipSE());
     if (pShipSE == nullptr)
         throw CustomError("Invalid Ship.  Ref: ServerError xxxxx");
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
@@ -221,7 +221,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     }
 
     //no arguments.
-    Client* pClient = call.client;
+    Client* pClient(call.client);
     /** @todo create and implement "Weapon Flag"....
      *      Weapon Flag --  the 60-sec timer started upon any offensive weapon activation
      *   this will be in client's criminaltimer object
@@ -270,11 +270,11 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call)
     }
 
     //  sends itemID of ship to leave
-    Client* pClient = call.client;
+    Client* pClient(call.client);
     uint32 podID = pClient->GetPodID();
     ShipItemRef podRef = pClient->SystemMgr()->GetShipFromInventory(podID);
     if (podRef.get() == nullptr)
-        podRef = sItemFactory.GetShip(podID);
+        podRef = sItemFactory.GetShipRef(podID);
 
     //verify owner (not sure why pod doesnt have correct owner...)
     podRef->ChangeOwner(pClient->GetCharacterID(), false);
@@ -301,8 +301,8 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient = call.client;
-    ShipItemRef newShipRef = sItemFactory.GetShip(args.newShipID);
+    Client* pClient(call.client);
+    ShipItemRef newShipRef = sItemFactory.GetShipRef(args.newShipID);
     if (newShipRef.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
         throw CustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173+1");
@@ -338,7 +338,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
         throw CustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173");
     }
 
-    Client* pClient = call.client;
+    Client* pClient(call.client);
     ShipItemRef pShip = pClient->GetShip();
     if (pShip.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get ship item.", pClient->GetName());
@@ -377,7 +377,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
     _log(SHIP__INFO, "ShipBound::Handle_Drop()");
     call.Dump(SHIP__INFO);
 
-    if (IsStation(call.client->GetLocationID())) {
+    if (sDataMgr.IsStation(call.client->GetLocationID())) {
         _log(SERVICE__ERROR, "%s: Trying to drop items when not in space!", call.client->GetName());
         return nullptr;
     }
@@ -395,7 +395,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
     bool dropped = false, shipDrop = false;
 
-    Client* pClient = call.client;
+    Client* pClient(call.client);
     SystemManager* pSystem = pClient->SystemMgr();
     if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
@@ -415,7 +415,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
         location.MakeRandomPointOnSphereLayer(500,1500);
         qty = PyToDropList->items.at(i)->AsTuple()->items.at(1)->AsInt()->value();
         itemID = PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value();
-        iRef = sItemFactory.GetItem(itemID);
+        iRef = sItemFactory.GetItemRef(itemID);
         if (iRef.get() == nullptr) {
             sLog.Error("ShipBound::Handle_Drop()", "%s: Unable to find item %u to drop.", pClient->GetName(), itemID);
             continue;
@@ -806,6 +806,15 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     }
 
     /** @todo complete error msgs here */
+
+    //CannotScoopTargetedShip
+    //CantScoopAnchoring
+    //CantScoopOwnerNpc
+    //CantScoopThat
+    //ScoopObjectGone
+    //ShpScoopSecureCC
+    //CanOnlyScoopIfUnanchored
+
     // returns error on error else mtDict
     return PyStatic.mtDict();
 }
@@ -851,14 +860,14 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     // loop thru items to see if there is a container in this list.
     for (; itr != args.ints.end(); ++itr) {
         // running this list twice is fuckedup, but not sure of another way to determine if container is in jettison list.
-        iRef = sItemFactory.GetItem(*itr);
+        iRef = sItemFactory.GetItemRef(*itr);
         if (iRef.get() == nullptr)
             continue;
         switch (iRef->categoryID()) {
             case EVEDB::invCategories::Structure:
             case EVEDB::invCategories::SovereigntyStructure:
             case EVEDB::invCategories::StructureUpgrade: {
-                sRef = sItemFactory.GetStructure(*itr);
+                sRef = sItemFactory.GetStructureRef(*itr);
                 if (sRef.get() == nullptr)
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
@@ -872,7 +881,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 itr = args.ints.erase(itr);
             } break;
             case EVEDB::invCategories::Orbitals: {
-                sRef = sItemFactory.GetStructure(*itr);
+                sRef = sItemFactory.GetStructureRef(*itr);
                 if (sRef.get() == nullptr)
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
@@ -886,7 +895,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 itr = args.ints.erase(itr);
             } break;
             case EVEDB::invCategories::Deployable: {
-                cRef = sItemFactory.GetItem(*itr);
+                cRef = sItemFactory.GetItemRef(*itr);
                 if (cRef.get() == nullptr)
                     throw CustomError("Unable to spawn Deployable item of type %u.", cRef->typeID());
 
@@ -912,7 +921,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                     case EVEDB::invGroups::Freight_Container: {
                         /** @todo (allan)  check these for accuracy  */
                         /** @todo (allan)  *****  there are stipulations on placement of these items.  *****  */
-                        ccRef = sItemFactory.GetCargoContainer(*itr);
+                        ccRef = sItemFactory.GetCargoRef(*itr);
                         if (ccRef.get() == nullptr)
                             throw CustomError("Unable to spawn item of type %u.", ccRef->typeID());
 
@@ -949,7 +958,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
     // container check complete, loop thru list for other items
     for (auto cur : args.ints) {
-        iRef = sItemFactory.GetItem(cur);
+        iRef = sItemFactory.GetItemRef(cur);
         if (iRef.get() == nullptr)
             continue;
 
@@ -1097,7 +1106,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 
     ShipItemRef ship(nullptr);
     for (auto cur : itemIDList) {
-        ship = sItemFactory.GetShip(cur);
+        ship = sItemFactory.GetShipRef(cur);
 
         if (ship.get() == nullptr) {
             _log(ITEM__ERROR, "Failed to load ship %u to assemble.", cur);
@@ -1125,7 +1134,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
             InventoryItemRef subSystemItem(nullptr);
             PyList::const_iterator itr = subSystemList->begin(), end = subSystemList->end();
             while (itr != end) {
-                subSystemItem = sItemFactory.GetItem(PyRep::IntegerValueU32(*itr));
+                subSystemItem = sItemFactory.GetItemRef(PyRep::IntegerValueU32(*itr));
                 if (subSystemItem.get() != nullptr)
                     subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_uint32()), true);
                 ++itr;

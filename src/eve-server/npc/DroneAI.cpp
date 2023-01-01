@@ -344,19 +344,17 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
                                              pTarget->GetID(),
                                              0,guid,1,1,1,m_attackSpeed,0,gfxID);
 
-    Damage d(m_pDrone,
+    Damage dam(m_pDrone,
              m_pDrone->GetSelf(),
              m_pDrone->GetKinetic(),
              m_pDrone->GetThermal(),
              m_pDrone->GetEM(),
              m_pDrone->GetExplosive(),
-             m_formula.GetDroneToHit(m_pDrone, pTarget),
-             EVEEffectID::targetAttack
+             m_formula.GetDroneToHit(m_pDrone, pTarget)
             );
 
-    d *= m_pDrone->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
-    d *= sConfig.rates.damageRate;      /** @todo this should be a separate config value */
-    pTarget->ApplyDamage(d);
+    dam *= m_pDrone->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
+    pTarget->ApplyDamage(dam);
 }
 
 

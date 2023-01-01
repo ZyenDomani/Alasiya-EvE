@@ -26,7 +26,7 @@
 #ifndef __ITEM_REF__H__INCL__
 #define __ITEM_REF__H__INCL__
 
-#include "eve-common.h"
+#include "memory/RefPtr.h"
 
 class AsteroidItem;
 class InventoryItem;

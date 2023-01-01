@@ -106,7 +106,7 @@ void XMLParser::AddParser( const char* name, ElementParser* parser )
 void XMLParser::RemoveParser( const char* name )
 {
     std::map<std::string, ElementParser*>::iterator res = mParsers.find( name );
-    if( mParsers.end() != res ) {
+    if ( mParsers.end() != res ) {
         SafeDelete(res->second);
         mParsers.erase(res);
     }

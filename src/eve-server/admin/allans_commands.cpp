@@ -375,7 +375,7 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              "Inertia: %.3f<br>" //27
              "Heading: %.3f,%.3f,%.3f<br>", //21
                 pClient->GetShipSE()->GetName(), pClient->GetShipID(), dm->GetMass(), dm->GetAlignTime(),
-             dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() /10), dm->GetWarpTime(),
+             dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10), dm->GetWarpTime(),
              dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(), dm->GetAgility(), dm->GetInertia(),
              heading.x, heading.y, heading.z
             );
@@ -463,7 +463,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     } else {
         //Command_list(pClient,db,services,args);
         inventoryID = pClient->GetSystemID();
-        SolarSystemRef system = sItemFactory.GetSolarSystem(inventoryID);
+        SolarSystemRef system = sItemFactory.GetSolarSystemRef(inventoryID);
         if (system.get() == nullptr)
             throw CustomError("Cannot find System Reference for systemID %u", inventoryID);
         inv = system->GetMyInventory();
@@ -478,8 +478,23 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     str << "%s<br>";
     str << "InventoryID %u(%p) (Item %p) has %u items.<br><br>"; //70
 
-    for (auto cur : invMap)
-        str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()) << "): " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
+    if (IsSolarSystemID(inventoryID)) {
+        SystemEntity* pSE(nullptr);
+        SystemManager* sMgr = pClient->SystemMgr();
+        for (auto cur : invMap) {
+            pSE = sMgr->GetEntityByID(cur.first);
+            if (pSE == nullptr)
+                continue;
+            if (pSE->SysBubble() == nullptr) {
+                str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()) << ")[n/a]: " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
+            } else {
+                str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()) << ")[" << pSE->SysBubble()->GetID() << "]: " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
+            }
+        }
+    } else {
+        for (auto cur : invMap)
+            str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()) << "): " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
+    }
 
     int count = invMap.size();
     int size = count * 90;
@@ -499,7 +514,7 @@ PyResult Command_shipinventory(Client* pClient, CommandDB* db, PyServiceMgr* ser
     std::map<uint32, InventoryItemRef> invMap;
     invMap.clear();
     uint32 inventoryID = pClient->GetShipID();
-    ShipItemRef ship = sItemFactory.GetShip(inventoryID);
+    ShipItemRef ship = sItemFactory.GetShipRef(inventoryID);
     Inventory* inv = ship->GetMyInventory();
     inv->GetInventoryMap(invMap);
 
@@ -571,7 +586,7 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
         throw CustomError("Argument 1 must be a valid itemID.");
     uint32 itemID(atol(args.arg(1).c_str()));
 
-    InventoryItemRef iRef(sItemFactory.GetItem(itemID));
+    InventoryItemRef iRef(sItemFactory.GetItemRef(itemID));
     if (iRef.get() == nullptr) {
         // make error msg here
         return nullptr;

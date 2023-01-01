@@ -30,31 +30,31 @@
 template<>
 bool str2< bool >( const char* str )
 {
-    if( !::strcasecmp( str, "true" ) )
+    if ( !::strcasecmp( str, "true" ) )
         return true;
-    else if( !::strcasecmp( str, "false" ) )
+    else if ( !::strcasecmp( str, "false" ) )
         return false;
-    else if( !::strcasecmp( str, "yes" ) )
+    else if ( !::strcasecmp( str, "yes" ) )
         return true;
-    else if( !::strcasecmp( str, "no" ) )
+    else if ( !::strcasecmp( str, "no" ) )
         return false;
-    else if( !::strcasecmp( str, "y" ) )
+    else if ( !::strcasecmp( str, "y" ) )
         return true;
-    else if( !::strcasecmp( str, "n" ) )
+    else if ( !::strcasecmp( str, "n" ) )
         return false;
-    else if( !::strcasecmp( str, "on" ) )
+    else if ( !::strcasecmp( str, "on" ) )
         return true;
-    else if( !::strcasecmp( str, "off" ) )
+    else if ( !::strcasecmp( str, "off" ) )
         return false;
-    else if( !::strcasecmp( str, "enable" ) )
+    else if ( !::strcasecmp( str, "enable" ) )
         return true;
-    else if( !::strcasecmp( str, "disable" ) )
+    else if ( !::strcasecmp( str, "disable" ) )
         return false;
-    else if( !::strcasecmp( str, "enabled" ) )
+    else if ( !::strcasecmp( str, "enabled" ) )
         return true;
-    else if( !::strcasecmp( str, "disabled" ) )
+    else if ( !::strcasecmp( str, "disabled" ) )
         return false;
-    else if( str2< int >( str ) )
+    else if ( str2< int >( str ) )
         return true;
     else
         return false;

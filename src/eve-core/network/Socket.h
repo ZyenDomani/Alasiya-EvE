@@ -26,6 +26,8 @@
 #ifndef __SOCKET_H__INCL__
 #define __SOCKET_H__INCL__
 
+#include <sys/socket.h>
+
 /**
  * @brief Simple wrapper for sockets.
  *

@@ -115,8 +115,8 @@ PyObject *DBResultToRowset(DBQueryResult &result)
 
 PyTuple *DBResultToTupleSet(DBQueryResult &result) {
     uint32 cc = result.ColumnCount();
-    if(cc == 0)
-        return new PyTuple(0);
+    if (cc == 0)
+        return PyStatic.mtTuple();
 
     PyTuple *res = new PyTuple(2);
 
@@ -146,10 +146,10 @@ PyObject *DBResultToIndexRowset(DBQueryResult &result, const char *key) {
     uint32 key_index(0);
 
     for(key_index = 0; key_index < cc; ++key_index)
-        if(strcmp(key, result.ColumnName(key_index)) == 0)
+        if (strcmp(key, result.ColumnName(key_index)) == 0)
             break;
 
-    if(key_index == cc)
+    if (key_index == cc)
     {
         sLog.Error("EVEDBUtils", "DBResultToIndexRowset | Failed to find key column '%s' in result for IndexRowset", key);
         return nullptr;
@@ -164,7 +164,7 @@ PyObject *DBResultToIndexRowset(DBQueryResult &result, uint32 key_index) {
     //start building the IndexRowset
     PyDict *args = new PyDict();
 
-    if(cc == 0 || cc < key_index)
+    if (cc == 0 || cc < key_index)
         return new PyObject( "util.IndexRowset", args );
 
     //list off the column names:
@@ -230,7 +230,7 @@ PyObject *DBRowToRow(DBResultRow &row, const char *type)
 
 PyTuple *DBResultToRowList(DBQueryResult &result, const char *type) {
     uint32 cc = result.ColumnCount();
-    if(cc == 0)
+    if (cc == 0)
         return(new PyTuple(0));
 
     PyList *cols = new PyList(cc);
@@ -346,7 +346,7 @@ PyDict *DBResultToPackedRowDict( DBQueryResult &result, const char *key )
         if (strcmp(key, result.ColumnName(key_index)) == 0)
             break;
 
-    if(key_index == cc)
+    if (key_index == cc)
     {
         sLog.Error("EVEDBUtils", "DBResultToPackedRowDict | Failed to find key column '%s' in result for CIndexRowset", key);
         return NULL;
@@ -422,10 +422,10 @@ PyObjectEx *DBResultToCIndexedRowset( DBQueryResult &result, const char *key )
     uint32 key_index(0);
 
     for(key_index = 0; key_index < cc; key_index++)
-        if(strcmp(key, result.ColumnName(key_index)) == 0)
+        if (strcmp(key, result.ColumnName(key_index)) == 0)
             break;
 
-    if(key_index == cc)
+    if (key_index == cc)
     {
         sLog.Error("EVEDBUtils", "DBResultToCIndexedRowset | Failed to find key column '%s' in result for CIndexRowset", key);
         return NULL;
@@ -480,11 +480,11 @@ void DBResultToUIntUIntDict(DBQueryResult &result, std::map<uint32, uint32> &int
     //add a line entry for each result row:
     DBResultRow row;
     while(result.GetRow(row)) {
-        if(row.IsNull(0))
+        if (row.IsNull(0))
             continue;   //no working with NULL keys...
             uint32 k = row.GetUInt(0);
         uint32 v(0);
-        if(row.IsNull(1))
+        if (row.IsNull(1))
             v = 0;      //we can deal with assuming NULL == 0
             else
                 v = row.GetUInt(1);

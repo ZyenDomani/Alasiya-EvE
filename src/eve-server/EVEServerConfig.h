@@ -22,13 +22,15 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    10.2
+    Version:    10.4
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
 #define __EVE_SERVER_CONFIG__H__INCL__
 
 #include "eve-server.h"
+
+#include "utils/XMLParserEx.h"
 
 
 /**
@@ -58,6 +60,8 @@ public:
         bool LoadOldMissions;
         bool AsteroidsOnDScan;
         bool CargoMassAdditive;
+        bool LoadStaticRecyclable;
+        bool LoadStaticRefinable;
         uint8 ServerSleepTime;
         uint8 MaxThreadReport;
         uint8 BountyPayoutTimer;
@@ -76,6 +80,9 @@ public:
         bool loginMsg;
         bool saveOnMove;
         bool saveOnUpdate;
+        bool shootRoids;
+        bool shootWrecks;
+        bool highSecCyno;
         uint8 mailDelay;
         uint8 StationDockDelay;
         uint16 shipBoardDistance;

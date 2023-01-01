@@ -191,8 +191,8 @@ public:
      *    Call object's virtual _Load()
      *
      *  static _Load( <identifier>[, <data-argument>, ...]):
-     *    retreives specific item data from db for created items, or creates default data for new items.
      *    retrieves type info from static data
+     *    retrieves specific item data from db for created items or creates default data for new items.
      *    Call static _Ty::LoadItem()
      *
      *  static _Ty::LoadItem():
@@ -228,11 +228,11 @@ protected:
         // static load
         RefPtr<_Ty> i = _Ty::template _Load<_Ty>( itemID );
         if (!i)
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
 
         // virtual load (load attributes)
         if (!i->_Load())
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
 
         return i;
     }
@@ -244,12 +244,12 @@ protected:
         // pull the specific item info from db
         ItemData data;
         if (!ItemDB::GetItem(itemID, data))
-            return RefPtr<_Ty>();
+            return RefPtr<_Ty>(nullptr);
 
         // obtain type
         const ItemType *type = sItemFactory.GetType( data.typeID );
-        if( type == nullptr )
-            return RefPtr<_Ty>();
+        if ( type == nullptr )
+            return RefPtr<_Ty>(nullptr);
 
         return _Ty::template _LoadItem<_Ty>( itemID, *type, data );
     }

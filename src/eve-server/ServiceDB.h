@@ -47,7 +47,7 @@ public:
     static bool IncrementLoginCount(uint32 accountID );
     static void UpdatePassword(uint32 accountID, const char* pass);
 
-    static void SaveKillOrLoss(CharKillData& data);
+    static void SaveKillOrLoss(KillData& data);
 
     uint32 GetStationOwner(uint32 stationID);
 

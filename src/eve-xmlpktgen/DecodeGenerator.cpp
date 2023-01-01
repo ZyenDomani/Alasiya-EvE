@@ -1306,7 +1306,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
         //finally, check the "found" flags for each expected element.
         count = 0;
         while ((i = field->IterateChildren(i))) {
-            if(i->Type() == TiXmlNode::TINYXML_ELEMENT)  {
+            if (i->Type() == TiXmlNode::TINYXML_ELEMENT)  {
                 const TiXmlElement* ele = i->ToElement();
 
                 //we only handle dictInlineEntry elements

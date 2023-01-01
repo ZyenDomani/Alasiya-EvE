@@ -102,7 +102,7 @@ InventoryItem& InventoryItem::operator= ( const InventoryItem& oth )
     sLog.Error("InventoryItem()", "InventoryItem copy assign called.");
     EvE::traceStack();
     assert(0);
-    
+
     oth.GetAttributeMap()->CopyAttributes(pAttributeMap->mAttributes);
 
     m_itemID = oth.itemID();
@@ -247,7 +247,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(uint32 itemID, const ItemType &type, const 
             return Blueprint::_LoadItem<Blueprint>(itemID, type, data);
         } break;
         case EVEDB::invCategories::Asteroid: {
-            if (IsAsteroid(itemID))
+            if (IsAsteroidID(itemID))
                 return AsteroidItem::_LoadItem<AsteroidItem>(itemID, type, data);
             // mined ore.  create default item
             return InventoryItemRef(new InventoryItem(itemID, type, data ));
@@ -584,8 +584,8 @@ void InventoryItem::Delete()
         Move(locJunkyard, flagNone, true);
     } else {
         // remove from current container's inventory
-        if (IsValidLocation(m_data.locationID)) {
-            InventoryItemRef iRef = sItemFactory.GetItem(m_data.locationID);
+        if (IsValidLocationID(m_data.locationID)) {
+            InventoryItemRef iRef = sItemFactory.GetItemRef(m_data.locationID);
             if (iRef.get() != nullptr) {
                 iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
             } else {
@@ -602,7 +602,7 @@ void InventoryItem::Delete()
 
 void InventoryItem::ToVirtual(uint32 locationID)
 {
-    InventoryItemRef iRef = sItemFactory.GetItemContainer(m_itemID, false);
+    InventoryItemRef iRef = sItemFactory.GetItemContainerRef(m_itemID, false);
     if (iRef.get() != nullptr) {
         // verify this gets inventory containing item before trying to manipulate
         //Inventory* pInv = iRef->GetMyInventory();
@@ -640,7 +640,7 @@ void InventoryItem::Rename(std::string name)
         tuple->SetItem(1, list);
 
     // get owner
-    if (IsCharacter(m_data.ownerID)) {
+    if (IsCharacterID(m_data.ownerID)) {
         // this will be the most-used case
         Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
         if (pClient == nullptr)
@@ -652,7 +652,7 @@ void InventoryItem::Rename(std::string name)
         }
     } else if (IsPlayerCorp(m_data.ownerID)) {
         // bcast to all online corp members
-        if (IsStation(m_data.locationID)) {
+        if (sDataMgr.IsStation(m_data.locationID)) {
             sEntityList.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateStation, "OnCfgDataChanged", "charid", tuple);
         } else {
             sEntityList.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateSystem, "OnCfgDataChanged", "solarsystemid", tuple);
@@ -669,7 +669,7 @@ void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/
         return;
     }
 
-    if (!IsValidLocation(new_location)) {
+    if (!IsValidLocationID(new_location)) {
         _log(ITEM__ERROR, "II::Donate() - %u is invalid location", new_location);
         return;
     }
@@ -685,8 +685,8 @@ void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/
     or ((new_location == m_data.locationID) // or same container
         and (new_flag != m_data.flag))) {   //  but different flag
         // remove from current location
-        if (IsValidLocation(m_data.locationID)) {
-            iRef = sItemFactory.GetItem(m_data.locationID);
+        if (IsValidLocationID(m_data.locationID)) {
+            iRef = sItemFactory.GetItemRef(m_data.locationID);
             if (iRef.get() != nullptr) {
                 iRef->RemoveItem(InventoryItemRef(this));
             } else {
@@ -704,7 +704,7 @@ void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/
     or ((old_location == m_data.locationID) // or same container
         and (old_flag != m_data.flag))) {   //  but different flag
         // add to new location
-        iRef = sItemFactory.GetItem(m_data.locationID);
+        iRef = sItemFactory.GetItemRef(m_data.locationID);
         if (iRef.get() != nullptr) {
             iRef->AddItem(InventoryItemRef(this));
         } else {
@@ -749,14 +749,18 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
     or ((new_location == m_data.locationID) // or same container
         and (new_flag != m_data.flag))) {   //  but different flag
         // remove from current location
-        if (IsValidLocation(m_data.locationID)) {
-            iRef = sItemFactory.GetItem(m_data.locationID);
+        if (IsValidLocationID(m_data.locationID)) {
+            iRef = sItemFactory.GetItemRef(m_data.locationID);
             if (iRef.get() != nullptr) {
                 iRef->RemoveItem(InventoryItemRef(this));
             } else {
                 _log(ITEM__ERROR, "II::Move() - Cant find location %u containing %s.", m_data.locationID, m_data.name.c_str());
             }
+        } else {
+            _log(ITEM__WARNING, "II::Move()::Remove() - %u is invalid location.", m_data.locationID);
         }
+    } else {
+        _log(ITEM__TRACE, "II::Move()::Remove() - same same same.");
     }
 
     // update data
@@ -767,20 +771,24 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
     or ((old_location == m_data.locationID) // or same container
         and (old_flag != m_data.flag))) {   //  but different flag
         // add to new location
-        if (IsValidLocation(m_data.locationID)) {
-            iRef = sItemFactory.GetItem(m_data.locationID);
+        if (IsValidLocationID(m_data.locationID)) {
+            iRef = sItemFactory.GetItemRef(m_data.locationID);
             if (iRef.get() != nullptr) {
                 iRef->AddItem(InventoryItemRef(this));
             } else {
                 _log(ITEM__ERROR, "II::Move() - Cant find location %u to add %s.", m_data.locationID, m_data.name.c_str());
             }
+        } else {
+            _log(ITEM__WARNING, "II::Move()::Add() - %u is invalid location.", m_data.locationID);
         }
+    } else {
+        _log(ITEM__TRACE, "II::Move()::Add() - same same same.");
     }
 
     if (IsTempItem(m_itemID) or IsNPC(m_itemID))
         return;
 
-    if (IsValidLocation(m_data.locationID) and (!m_delete))
+    if (IsValidLocationID(m_data.locationID) and (!m_delete))
         ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);
 
     //notify about the changes.
@@ -832,8 +840,8 @@ void InventoryItem::Relocate(uint32 locID, EVEItemFlags flag) {
     or ((old_location == m_data.locationID) // or same container
         and (old_flag != m_data.flag))) {   //  but different flag
         // add to new location
-        if (IsValidLocation(m_data.locationID)) {
-            iRef = sItemFactory.GetItem(m_data.locationID);
+        if (IsValidLocationID(m_data.locationID)) {
+            iRef = sItemFactory.GetItemRef(m_data.locationID);
             if (iRef.get() != nullptr) {
                 iRef->AddItem(InventoryItemRef(this));
             } else {
@@ -843,7 +851,7 @@ void InventoryItem::Relocate(uint32 locID, EVEItemFlags flag) {
         }
     }
 
-    if (IsValidLocation(m_data.locationID))
+    if (IsValidLocationID(m_data.locationID))
         ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);
 
     //notify about the changes.
@@ -873,7 +881,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
     // AlterQuantity will delete items with qty < 1
     if (!to_merge->AlterQuantity(-qty, notify)) {
         _log(ITEM__ERROR, "II::Merge() - %s (%u): Failed to remove quantity %u.", to_merge->name(), to_merge->itemID(), qty);
-        if (IsCharacter(m_data.ownerID)) {
+        if (IsCharacterID(m_data.ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
             if (pClient != nullptr)
                 pClient->SendErrorMsg("Internal Server Error.  Ref: ServerError 63138");
@@ -883,7 +891,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
 
     if (!AlterQuantity(qty, notify)) {
         _log(ITEM__ERROR, "%s (%u): Failed to add quantity %u.", m_data.name.c_str(), m_itemID, qty);
-        if (IsCharacter(m_data.ownerID)) {
+        if (IsCharacterID(m_data.ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
             if (pClient != nullptr)
                 pClient->SendErrorMsg("Internal Server Error.  Ref: ServerError 63238");
@@ -951,7 +959,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZe
     if (m_data.quantity > maxEveItem) {
         codelog(ITEM__ERROR, "II::SetQuantity() - %s(%u): quantity overflow", m_data.name.c_str(), m_itemID);
         m_data.quantity = maxEveItem -1;
-        if (IsCharacter(m_data.ownerID)) {
+        if (IsCharacterID(m_data.ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
             if (pClient != nullptr)
                 pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.<br>If you try to add any more to this stack, you will lose items.  This is your only warning.", m_data.name.c_str());
@@ -966,7 +974,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZe
 
     // how are we gonna do modules owned by corp here???
     if (IsFittingSlot(m_data.flag) and (m_type.categoryID() == EVEDB::invCategories::Charge))
-        if (IsCharacter(m_data.ownerID)/* or IsPlayerCorp(m_data.ownerID)*/) {
+        if (IsCharacterID(m_data.ownerID)/* or IsPlayerCorp(m_data.ownerID)*/) {
             Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
             SetAttribute(AttrQuantity, m_data.quantity, pClient == nullptr ? notify : pClient->IsInSpace());
         }
@@ -1054,7 +1062,7 @@ void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
 
 //contents of changes are consumed and cleared
 void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) {
-    if (IsNPCCorp(toID) or (toID == 1) or IsFaction(toID))   //IsValidOwner()
+    if (IsNPCCorp(toID) or (toID == 1) or IsFactionID(toID))   //IsValidOwner()
         return;
     if (sConsole.IsShutdown())
         return;
@@ -1072,7 +1080,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     }
 
     //TODO: figure out the appropriate list of interested people...
-    if (IsCharacter(toID)) {
+    if (IsCharacterID(toID)) {
         Client* pClient = sEntityList.FindClientByCharID(toID);
         if (pClient == nullptr)
             return;
@@ -1083,7 +1091,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         //else
             pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this is for single items
     } else if (IsPlayerCorp(toID)) {
-        if (IsStation(m_data.locationID)) {
+        if (sDataMgr.IsStation(m_data.locationID)) {
             sEntityList.CorpNotify(toID, Notify::Types::ItemUpdateStation, "OnItemChange","*stationid&corpid", tmp);
         } else {
             sEntityList.CorpNotify(toID, Notify::Types::ItemUpdateSystem, "OnItemChange","corpid", tmp);
@@ -1170,7 +1178,7 @@ void InventoryItem::GetItemRow(PyPackedRow* into) const
 {
     int32 qty = (m_data.singleton ? -1 : m_data.quantity);
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
-        if (sItemFactory.GetBlueprint(m_itemID)->copy())
+        if (sItemFactory.GetBlueprintRef(m_itemID)->copy())
             qty = -2;
 
     into->SetField("itemID",       new PyLong(m_itemID));
@@ -1183,7 +1191,7 @@ void InventoryItem::GetItemRow(PyPackedRow* into) const
     into->SetField("quantity",     new PyInt(qty));
     /*
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint) {
-        if (sItemFactory.GetBlueprint(m_itemID)->copy()) {
+        if (sItemFactory.GetBlueprintRef(m_itemID)->copy()) {
             into->SetField("stacksize",    new PyInt(1));
             into->SetField("singleton",    new PyInt(2));
         } else {
@@ -1249,7 +1257,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             es.env_effectID = 16;
             /** @todo fix this once we start tracking effects */
             // on login, this is current time
-            if (IsCharacter(m_itemID)) {
+            if (IsCharacterID(m_itemID)) {
                 es.startTime = GetFileTimeNow() - EvE::Time::Minute; // m_timestamp
             } else {
                 es.startTime = GetFileTimeNow() - EvE::Time::Minute; // GetAttribute(AttrStartTime).get_int();
