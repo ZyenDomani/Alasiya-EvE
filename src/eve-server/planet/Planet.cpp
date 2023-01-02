@@ -303,7 +303,7 @@ void PlanetSE::CreateCustomsOffice()
     uint32 radius = m_self->radius();
     srandom(m_self->itemID());
     int64 rand = random();
-    double j = (((rand / RAND_MAX) -1.0) / 3.0);
+    double j = (((rand / RAND_MAX) - 1.0) / 3.0);
     double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
     s = EvE::max(0.5, EvE::min(s, 10.5));
     double t = asin((pos.x/fabs(pos.x)) * (pos.z / sqrt(pow(pos.x, 2) + pow(pos.z, 2)))) +j;

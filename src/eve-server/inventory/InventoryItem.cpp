@@ -958,7 +958,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZe
 
     if (m_data.quantity > maxEveItem) {
         codelog(ITEM__ERROR, "II::SetQuantity() - %s(%u): quantity overflow", m_data.name.c_str(), m_itemID);
-        m_data.quantity = maxEveItem -1;
+        m_data.quantity = maxEveItem - 1;
         if (IsCharacterID(m_data.ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
             if (pClient != nullptr)

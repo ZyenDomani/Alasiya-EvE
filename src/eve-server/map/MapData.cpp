@@ -153,7 +153,7 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
 
                 while (run) {
                     run = false;
-                    systemID = sysList.at(MakeRandomInt(0, (sysList.size() -1)));
+                    systemID = sysList.at(MakeRandomInt(0, (sysList.size() - 1)));
                     if (station and (sDataMgr.GetStationCount(systemID) < 1)) {
                         run = true;
                         ++count;
@@ -174,7 +174,7 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
                 } else {
                     bool run = true;
                     while (run) {
-                        offer.destinationID = list.at(MakeRandomInt(0, (list.size() -1)));
+                        offer.destinationID = list.at(MakeRandomInt(0, (list.size() - 1)));
                         if (offer.destinationID != pAgent->GetStationID())
                             run = false;
                     }

@@ -64,6 +64,8 @@ static const uint32 PING_INTERVAL_MS = 600000; //10m
 Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 : EVEClientSession(con),
   m_TS(nullptr),
+  m_pod(ShipItemRef(nullptr)),
+  m_ship(ShipItemRef(nullptr)),
   m_char(CharacterRef(nullptr)),
   m_scan(nullptr),
   pShipSE(nullptr),
@@ -71,6 +73,8 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_system(nullptr),
   m_services(services),
   m_movePoint(NULL_ORIGIN),
+  m_systemData(SystemData()),
+  m_stationData(StationData()),
   m_clientState(Player::State::Idle),
   m_stateTimer(0),
   m_ballparkTimer(0),
@@ -88,12 +92,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_destinyUpdateQueue(new PyList()),
   m_nextNotifySequence(0)
 {
-    m_pod = ShipItemRef(nullptr);
-    m_ship = ShipItemRef(nullptr);
-
-    m_systemData = SystemData();
-    m_stationData = StationData();
-
     m_afk = false;
     m_login = true;
     m_invul = true;
@@ -1203,7 +1201,12 @@ void Client::ResetAfterPodded() {
     SendSessionChange();
 }
 
+/** @todo look over this....may be incomplete/incorrect */
 void Client::SetShip(ShipItemRef shipRef) {
+    if (shipRef.get() == nullptr) {
+        /* error here */
+    }
+
     shipRef->ChangeOwner(m_char->itemID());
     if (pShipSE != nullptr)
         pShipSE->SetPilot(nullptr);
@@ -1608,16 +1611,16 @@ void Client::JumpOutEffect(uint32 locationID)
 std::string Client::GetStateName(int8 state)
 {
     switch (state) {
-        case Player::State::Idle:      return "Idle";
-        case Player::State::Jump:      return "Jump";
-        case Player::State::DriveJump: return "DriveJump";
-        case Player::State::WormholeJump: return "WormholeJump";
-        case Player::State::Dock:      return "Dock";
-        case Player::State::Undock:    return "Undock";
-        case Player::State::Killed:    return "Killed";
-        case Player::State::Logout:    return "Logout";
-        case Player::State::Board:     return "Board";
-        case Player::State::Login:     return "Login";
+        case Player::State::Idle:               return "Idle";
+        case Player::State::Jump:               return "Jump";
+        case Player::State::DriveJump:          return "DriveJump";
+        case Player::State::WormholeJump:       return "WormholeJump";
+        case Player::State::Dock:               return "Dock";
+        case Player::State::Undock:             return "Undock";
+        case Player::State::Killed:             return "Killed";
+        case Player::State::Logout:             return "Logout";
+        case Player::State::Board:              return "Board";
+        case Player::State::Login:              return "Login";
     }
     return "Undefined";
 }
@@ -2074,6 +2077,7 @@ void Client::SendSessionChange()
     packet->userid = GetUserID();
 
     packet->payload = scn.Encode();
+    // should anything go here?
     packet->named_payload = nullptr;
 
     if (is_log_enabled(CLIENT__SESSION_DUMP)) {
@@ -2692,7 +2696,6 @@ bool Client::Handle_Notify(PyPacket* packet)
     return true;
 }
 
-// NOTE: 'OnRemoteMessage' can be disabled in client
 //this displays a modal error dialog on the client side.
 void Client::SendErrorMsg(const char* fmt, ...)
 {
@@ -2708,6 +2711,8 @@ void Client::SendErrorMsg(const char* fmt, ...)
     n.args[ "error" ] = new PyString(str);
 
     PyTuple* tmp = n.Encode();
+
+    // NOTE: 'OnRemoteMessage' can be disabled in client
     SendNotification("OnRemoteMessage", "charid", &tmp);
 
     SafeFree(str);
@@ -2724,6 +2729,8 @@ void Client::SendErrorMsg(const char* fmt, va_list args)
     n.args[ "error" ] = new PyString(str);
 
     PyTuple* tmp = n.Encode();
+
+    // NOTE: 'OnRemoteMessage' can be disabled in client
     SendNotification("OnRemoteMessage", "charid", &tmp);
 
     SafeFree(str);
@@ -2744,6 +2751,8 @@ void Client::SendInfoModalMsg(const char* fmt, ...)
     n.args[ "msg" ] = new PyString(str);
 
     PyTuple* tmp = n.Encode();
+
+    // NOTE: 'OnRemoteMessage' can be disabled in client
     SendNotification("OnRemoteMessage", "charid", &tmp);
 
     SafeFree(str);
@@ -2764,6 +2773,8 @@ void Client::SendNotifyMsg(const char* fmt, ...)
     n.args[ "notify" ] = new PyString(str);
 
     PyTuple* tmp = n.Encode();
+
+    // NOTE: 'OnRemoteMessage' can be disabled in client
     SendNotification("OnRemoteMessage", "charid", &tmp);
 
     SafeFree(str);
@@ -2780,6 +2791,8 @@ void Client::SendNotifyMsg(const char* fmt, va_list args)
     n.args[ "notify" ] = new PyString(str);
 
     PyTuple* tmp = n.Encode();
+
+    // NOTE: 'OnRemoteMessage' can be disabled in client
     SendNotification("OnRemoteMessage", "charid", &tmp);
 
     SafeFree(str);

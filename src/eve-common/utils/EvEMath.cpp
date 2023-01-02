@@ -14,7 +14,7 @@ uint32 EvEMath::Skill::PointsAtLevel(uint8 level, float rank)
 {
     if (level > EvESkill::MAXSKILLLEVEL)
         level = EvESkill::MAXSKILLLEVEL;
-    float ret = pow(sqrt(32), (level -1)) * EvESkill::skillPointMultiplier * rank;
+    float ret = pow(sqrt(32), (level - 1)) * EvESkill::skillPointMultiplier * rank;
     return (uint32)ceil(ret);
 }
 

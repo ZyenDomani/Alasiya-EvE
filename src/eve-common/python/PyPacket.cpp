@@ -84,10 +84,11 @@ PyPacket *PyPacket::Clone() const
         res->dest = dest;
         res->userid = userid;
         res->payload = payload->Clone()->AsTuple();
-    if (named_payload == nullptr)
+    if (named_payload == nullptr) {
         res->named_payload = nullptr;
-    else
+    } else {
         res->named_payload = named_payload->Clone()->AsDict();
+    }
     return res;
 }
 
@@ -245,10 +246,11 @@ PyRep *PyPacket::Encode() {
     //dest
     arg_tuple->items[2] = dest.Encode();
     //userid
-    if (userid == 0)
+    if (userid == 0) {
         arg_tuple->items[3] = PyStatic.NewNone();
-    else
+    } else {
         arg_tuple->items[3] = new PyInt(userid);
+    }
 
     //payload
     arg_tuple->items[4] = payload;     // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
@@ -465,54 +467,61 @@ PyRep *PyAddress::Encode() {
             t = new PyTuple(3);
             t->items[0] = new PyInt((int)type);
 
-            if (service.empty())
+            if (service.empty()) {
                 t->items[1] = PyStatic.NewNone();
-            else
+            } else {
                 t->items[1] = new PyString(service.c_str());
+            }
 
-            if (objectID == 0)
+            if (objectID == 0) {
                 t->items[2] = PyStatic.NewNone();
-            else
+            } else {
                 t->items[2] = new PyLong(objectID);
+            }
         } break;
         case Node: {
             t = new PyTuple(4);
             t->items[0] = new PyInt((int)type);
             t->items[1] = new PyLong(objectID);
 
-            if (service.empty())
+            if (service.empty()) {
                 t->items[2] = PyStatic.NewNone();
-            else
+            } else {
                 t->items[2] = new PyString(service.c_str());
+            }
 
-            if (callID == 0)
+            if (callID == 0) {
                 t->items[3] = PyStatic.NewNone();
-            else
+            } else {
                 t->items[3] = new PyLong(callID);
+            }
         } break;
         case Client: {
             t = new PyTuple(4);
             t->items[0] = new PyInt((int)type);
             t->items[1] = new PyLong(objectID);
 
-            if (callID == 0)
+            if (callID == 0) {
                 t->items[2] = PyStatic.NewNone();
-            else
+            } else {
                 t->items[2] = new PyLong(callID);
+            }
 
-            if (service.empty())
+            if (service.empty()) {
                 t->items[3] = PyStatic.NewNone();
-            else
+            } else {
                 t->items[3] = new PyString(service.c_str());
+            }
         } break;
         case Broadcast: {
             t = new PyTuple(4);
             t->items[0] = new PyInt((int)type);
             //broadcastID
-            if (service.empty())
+            if (service.empty()) {
                 t->items[1] = PyStatic.NewNone();
-            else
+            } else {
                 t->items[1] = new PyString(service.c_str());
+            }
             //narrowcast
             t->items[2] = new PyList(); // LSC uses tuple here, others None() or empty List()
             //typeID
@@ -563,10 +572,11 @@ PyCallStream *PyCallStream::Clone() const {
     res->remoteObjectStr = remoteObjectStr;
     res->method = method;
     res->arg_tuple = arg_tuple->Clone()->AsTuple();
-    if (arg_dict == nullptr)
+    if (arg_dict == nullptr) {
         res->arg_dict = nullptr;
-    else
+    } else {
         res->arg_dict = arg_dict->Clone()->AsDict();
+    }
 
     return res;
 }
@@ -574,10 +584,11 @@ PyCallStream *PyCallStream::Clone() const {
 void PyCallStream::Dump(LogType type, PyVisitor& dumper)
 {
     _log(type, "Call Stream:");
-    if (remoteObject == 0)
+    if (remoteObject == 0) {
         _log(type, "  Remote Object: '%s'", remoteObjectStr.c_str());
-    else
+    } else {
         _log(type, "  Remote Object: %u", remoteObject);
+    }
     _log(type, "  Method: %s", method.c_str());
     _log(type, "  Arguments:");
     arg_tuple->visit( dumper );
@@ -758,22 +769,26 @@ PyTuple *PyCallStream::Encode() {
     PyTuple *res_tuple = new PyTuple(4);
 
     //remoteObject
-    if (remoteObject == 0)
+    if (remoteObject == 0) {
         res_tuple->items[0] = new PyString(remoteObjectStr.c_str());
-    else
+    } else {
         res_tuple->items[0] = new PyInt(remoteObject);
+    }
 
     //method name
     res_tuple->items[1] = new PyString(method.c_str());
 
     //args
-    res_tuple->items[2] = arg_tuple;     // no need to clone here.  set actual rep in item, and it will be cleaned up by d'tor later
+    // set actual rep in item, and it will be cleaned up by d'tor later
+    res_tuple->items[2] = arg_tuple;
 
     //options
-    if (arg_dict == nullptr)
+    if (arg_dict == nullptr) {
         res_tuple->items[3] = PyStatic.NewNone();
-    else
-        res_tuple->items[3] = arg_dict;     // no need to clone here.  set actual rep in item, and it will be cleaned up by d'tor later
+    } else {
+        // set actual rep in item, and it will be cleaned up by d'tor later
+        res_tuple->items[3] = arg_dict;
+    }
 
     //now that we have the main arg tuple, build the unknown stuff around it...
     PyTuple *it2 = new PyTuple(2);
@@ -781,7 +796,8 @@ PyTuple *PyCallStream::Encode() {
         it2->items[1] = new PySubStream(res_tuple);
     PyTuple *it1 = new PyTuple(2);
         it1->items[0] = it2;
-        it1->items[1] = PyStatic.NewNone();    //this is the "channel" dict if populated.
+        //this is the "channel" dict if populated.  obviously incomplete
+        it1->items[1] = PyStatic.NewNone();
     return it1;
 }
 
@@ -997,7 +1013,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 PyTuple *EVENotificationStream::Encode() {
     PyTuple *t4 = new PyTuple(2);
         t4->SetItem(0, PyStatic.NewOne());
-        t4->SetItem(1, args);       // no need to clone here.  set actual rep in item, and it will be cleaned up by d'tor later
+        t4->SetItem(1, args);       // set actual rep in item, and it will be cleaned up by d'tor later
     PyTuple *t3 = new PyTuple(2);
         t3->SetItem(0, new PyInt(0));
         t3->SetItem(1, t4);
