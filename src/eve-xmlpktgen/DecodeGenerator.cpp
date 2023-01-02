@@ -213,14 +213,14 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
     const char* v = top();
     if (none_marker != nullptr)
         fprintf(mOutputFile,
-                "    if (%s->IsNone())\n"
+                "    if (%s->IsNone()) {\n"
                 "        %s = %s;\n"
-                "    else\n",
+                "    } else {\n",
                 v,
                 name, none_marker
         );
 
-    fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
+    fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n}\n", name, v);
 
     /*
     fprintf(mOutputFile,
@@ -294,23 +294,23 @@ bool ClassDecodeGenerator::ProcessReal(const TiXmlElement* field)
     const char* v = top();
     if (none_marker != nullptr)
         fprintf(mOutputFile,
-                "    if (%s->IsNone())\n"
+                "    if (%s->IsNone()) {\n"
                 "        %s = %s;\n"
-                "    else ",
+                "    } else ",
                 v,
                 name, none_marker
        );
 
     fprintf(mOutputFile,
-            "    if (%s->IsFloat())\n"
+            "    if (%s->IsFloat()) {\n"
             "        %s = %s->AsFloat()->value();\n"
-            "    else ",
+            "    } else ",
             v,
             name, v
     );
 
     if (safe != nullptr) {
-        fprintf(mOutputFile, "\n    %s = PyRep::IntegerValue(%s);\n", name, v);
+        fprintf(mOutputFile, "{\n    %s = PyRep::IntegerValue(%s);\n}\n", name, v);
     } else {
         fprintf(mOutputFile,
                 "{\n"
@@ -401,17 +401,17 @@ bool ClassDecodeGenerator::ProcessString(const TiXmlElement* field)
     const char* v = top();
     if (none_marker != nullptr)
         fprintf(mOutputFile,
-                "    if (%s->IsNone())\n"
+                "    if (%s->IsNone()) {\n"
                 "        %s = \"%s\";\n"
-                "    else ",
+                "    } else ",
                 v,
                 name, none_marker
        );
 
     fprintf(mOutputFile,
-            "    if (%s->IsString())\n"
+            "    if (%s->IsString()) {\n"
             "        %s = %s->AsString()->content();\n"
-            "    else ",
+            "    } else ",
             v,
             name, v
     );
@@ -486,18 +486,18 @@ bool ClassDecodeGenerator::ProcessWString(const TiXmlElement* field)
     const char* v = top();
     if (none_marker != nullptr)
         fprintf(mOutputFile,
-                "    if (%s->IsNone())\n"
+                "    if (%s->IsNone()) {\n"
                 "        %s = \"%s\";\n"
-                "    else ",
+                "    } else ",
                 v,
                 name, none_marker
         );
 
     /** @todo update these to use  PyRep::StringContent()  */
     fprintf(mOutputFile,
-            "    if (%s->IsWString())\n"
+            "    if (%s->IsWString()) {\n"
             "        %s = %s->AsWString()->content();\n"
-            "    else ",
+            "    } else ",
             v,
             name, v
     );
@@ -579,9 +579,9 @@ bool ClassDecodeGenerator::ProcessToken(const TiXmlElement* field)
     const char* v = top();
     if (optional)
         fprintf(mOutputFile,
-            "    if (%s->IsNone())\n"
+            "    if (%s->IsNone()) {\n"
             "        %s = nullptr;\n"
-            "    else ",
+            "    } else ",
             v,
                 name
        );
@@ -660,9 +660,9 @@ bool ClassDecodeGenerator::ProcessObject(const TiXmlElement* field)
     const char* v = top();
     if (optional) {
         fprintf(mOutputFile,
-            "    if (%s->IsNone())\n"
+            "    if (%s->IsNone()) {\n"
             "        %s = nullptr;\n"
-            "    else ",
+            "    } else ",
             v,
                 name
        );
@@ -747,9 +747,9 @@ bool ClassDecodeGenerator::ProcessObjectEx(const TiXmlElement* field)
     const char* v = top();
     if (optional) {
         fprintf(mOutputFile,
-            "    if (%s->IsNone())\n"
+            "    if (%s->IsNone()) {\n"
             "        %s = nullptr;\n"
-            "    else",
+            "    } else",
             v,
                 name
        );
@@ -795,9 +795,9 @@ bool ClassDecodeGenerator::ProcessTuple(const TiXmlElement* field)
     const char* v = top();
     if (optional)
         fprintf(mOutputFile,
-            "    if (%s->IsNone())\n"
+            "    if (%s->IsNone()) {\n"
             "        %s = nullptr;\n"
-            "    else",
+            "    } else",
             v,
                 name
        );
@@ -892,9 +892,9 @@ bool ClassDecodeGenerator::ProcessList(const TiXmlElement* field)
     const char* v = top();
     if (optional)
         fprintf(mOutputFile,
-            "    if (%s->IsNone())\n"
+            "    if (%s->IsNone()) {\n"
             "        %s = nullptr;\n"
-            "    else",
+            "    } else",
             v,
             name
        );
@@ -1140,9 +1140,9 @@ bool ClassDecodeGenerator::ProcessDict(const TiXmlElement* field)
     const char* v = top();
     if (optional)
         fprintf(mOutputFile,
-            "    if (%s->IsNone())\n"
+            "    if (%s->IsNone()) {\n"
             "        %s = nullptr;\n"
-            "    else",
+            "    } else",
             v,
                 name
        );

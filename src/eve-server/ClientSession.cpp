@@ -37,6 +37,7 @@
  *
  * @author Almamu
  */
+// not sure where he gets this list from....my packet logs show this being sent to client
 static std::map<std::string, bool> NONPERSISTVARS = {
     {"clientID", true},
     {"sessionID", true},

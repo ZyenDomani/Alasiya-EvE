@@ -15,9 +15,12 @@ check evemu_crucible for additions
 *******************************************************
 **********  errors and other found shit...high priority
 
+
+!! destiny (all space movement)
+PyRep items need rule of 5 finished/tested (mostly copy c'tor/copy assignment for Clone())
+
 work on buglist, integrate this list in there where i can
     - modules/fitting
-    - destiny (all space movement)
     - lsc
     - drones
     - standings
@@ -31,10 +34,6 @@ work on buglist, integrate this list in there where i can
     - cosmic systems
     -
 
-holy shit!!!
-when loading py* items while iterating thru using ++i, the FIRST slot (0) is NULL (0x0)
-change this shit to use i++, which will return value before being incremented and will avoid the NULL at beginning
-
 
 request for smartbombs
 
@@ -44,11 +43,7 @@ update headers to fix 'class' vs 'struct' declarations
 
 loading probes in station does not update count in hangar
 
-as bubble code becomes more stable, consider updating/removing/recoding wander timer.
-    - every 60s for every bubble object is a bit much.
-    - check InBubble and IsOverlap code.
-
-11:45:54 [DestinyWarning] Warp Cap need for Rifter(140007395) is 0.0007
+wtf???  11:45:54 [DestinyWarning] Warp Cap need for Rifter(140007395) is 0.0007
 
 verify skill attr 'in training' is being properly removed
 
@@ -94,10 +89,6 @@ also check containers for contents and remove/deny before repack
 check insurance payouts.   rounds full ship value up
     - this will need base prices fixed
 
-base price estimator code 95% complete.
-few prices wrong and not in crucible mkt data dump
-static category names are a bit off (semantics)
-
 check trade - ships retain insurance
 
 check for item ownership before rename
@@ -128,6 +119,10 @@ missing prices for salvage
 *******************************************************
 ********  improvements
 
+as bubble code becomes more stable, consider updating/removing/recoding wander timer.
+    - every 60s for every bubble object is a bit much.
+    - check InBubble and IsOverlap code.
+
 client login screen...these all need code to show data    CharacterDB::GetCharSelectInfo
     upcomingEventCount:
     unreadMailCount:
@@ -138,6 +133,10 @@ check into cosmic manager enabling checks/code....kinda dont make sense)
 *** this below is wrong.  look into it.
 20:21:01 [CMgr Msg] AnomalyMgr Initialized for Ibaria(30000053) with 2 Max Signals for security class 0.37.  Test Server is enabled
 
+
+base price estimator code 95% complete.
+few prices wrong and not in crucible mkt data dump
+static category names are a bit off (semantics)
 
 skill training...
     2x training bonus for new chars (<30d)
@@ -805,6 +804,7 @@ dont remember why i put this log in, but it got hit while testing earlier....
 GM/WM slash commands arent parsed in server (rclick '/create this type'....etc)
 
 i have a sneaky suspicion 'throw' isnt used properly throughout the entire codebase
+    -- i should have noted this better...i dont remember where/why i got this idea
 
 update console commands to use complete words instead of first letter
     - this will enable greater command control and passing of arguments

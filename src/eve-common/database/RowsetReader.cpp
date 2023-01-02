@@ -121,7 +121,7 @@ bool BaseRowsetReader::iterator::operator==( const iterator& other ) const
 {
     if ( _baseReader() != other._baseReader() )
         return false;
-    else if ( _rowIndex() != other._rowIndex() )
+    if ( _rowIndex() != other._rowIndex() )
         return false;
     return true;
 }

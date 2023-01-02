@@ -277,23 +277,25 @@ bool PyDecodeEscape( const char* str, Buffer& into )
                 unsigned int x = 0;
                 c = *str++;
 
-                if ( isdigit(c) )
+                if ( isdigit(c) ) {
                     x = c - '0';
-                else if ( islower(c) )
+                } else if ( islower(c) ) {
                     x = 10 + c - 'a';
-                else
+                } else {
                     x = 10 + c - 'A';
+                }
 
                 x = x << 4;
                 c = *str++;
 
-                if ( isdigit(c) )
+                if ( isdigit(c) ) {
                     x += c - '0';
-                else if ( islower(c) )
+                } else if ( islower(c) ) {
                     x += 10 + c - 'a';
-                else
+                } else {
                     x += 10 + c - 'A';
-
+                }
+                
                 into.Append< uint8 >( x );
                 break;
             }

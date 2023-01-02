@@ -104,10 +104,11 @@ bool DirWalker::NextFile()
     if ( INVALID_HANDLE_VALUE == mFind )
         return false;
 
-    if ( mFirst )
+    if ( mFirst ) {
         mFirst = false;
-    else
+    } else {
         mValid = ( TRUE == ::FindNextFile( mFind, &mFindData ) );
+    }
 
     return mValid;
 #else /* !HAVE_WINDOWS_H */
@@ -120,12 +121,13 @@ bool DirWalker::NextFile()
         const std::string filename( currentFileName() );
         const size_t pos = filename.rfind( mSuffix );
 
-        if ( std::string::npos == pos )
+        if ( std::string::npos == pos ) {
             continue;
-        else if ( filename.length() != ( pos + mSuffix.length() ) )
+        } else if ( filename.length() != ( pos + mSuffix.length() ) ) {
             continue;
-        else
+        } else {
             return true;
+        }
     }
 
     return false;

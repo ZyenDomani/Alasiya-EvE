@@ -229,18 +229,19 @@ const char* EvE::FormatTime(int64 time/*-1*/) {
     int M(fmod(months, 12.0));
 
     std::ostringstream uptime;
-    if (M)
+    if (M) {
         uptime << M << "M" << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
-    else if (w)
+    } else if (w) {
         uptime << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
-    else if (d)
+    } else if (d) {
         uptime << d << "d" << h << "h" << m << "m" << s << "s";
-    else if (h)
+    }else if (h) {
         uptime << h << "h" << m << "m" << s << "s";
-    else if (m)
+    } else if (m) {
         uptime << m << "m" << s << "s";
-    else
+    } else {
         uptime << s << "s";
+    }
 
     return uptime.str().c_str();
 }
@@ -265,18 +266,19 @@ const char* EvE::FormatTime(double time/*-1*/) {
     int M(fmod(months, 12.0));
 
     std::ostringstream uptime;
-    if (M)
+    if (M) {
         uptime << M << "M" << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
-    else if (w)
+    } else if (w) {
         uptime << w << "w" << d << "d" << h << "h" << m << "m" << s << "s";
-    else if (d)
+    } else if (d) {
         uptime << d << "d" << h << "h" << m << "m" << s << "s";
-    else if (h)
+    } else if (h) {
         uptime << h << "h" << m << "m" << s << "s";
-    else if (m)
+    } else if (m) {
         uptime << m << "m" << s << "s";
-    else
+    } else {
         uptime << s << "s";
+    }
 
     return uptime.str().c_str();
 }

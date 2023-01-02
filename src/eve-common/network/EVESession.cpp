@@ -94,10 +94,11 @@ PyPacket* EVEClientSession::PopPacket() {
 PyPacket* EVEClientSession::_HandleVersion( PyRep* rep ) {
     //we are waiting for their version information...
     VersionExchangeClient ve;
-    if ( !ve.Decode( &rep ) )
+    if ( !ve.Decode( &rep ) ) {
         sLog.Error("_HandleVersion", "%s: Received invalid version exchange!", GetAddress().c_str());
-    else if ( _VerifyVersion( ve ) )
+    } else if ( _VerifyVersion( ve ) ) {
         mPacketHandler = &EVEClientSession::_HandleCommand;
+    }
 
     // recurse
     return PopPacket();
@@ -105,14 +106,14 @@ PyPacket* EVEClientSession::_HandleVersion( PyRep* rep ) {
 
 PyPacket* EVEClientSession::_HandleCommand( PyRep* rep ) {
     //check if it actually is tuple
-    if ( !rep->IsTuple() )
+    if ( !rep->IsTuple() ) {
         sLog.Error("_HandleCommand", "%s: Invalid packet during waiting for command (tuple expected).", GetAddress().c_str());
-    else if ( rep->AsTuple()->size() == 2 ) {    // decode
+    } else if ( rep->AsTuple()->size() == 2 ) {    // decode
         //QC = Queue Check
         NetCommand_QC cmd;
-        if ( !cmd.Decode( &rep ) )
+        if ( !cmd.Decode( &rep ) ) {
             sLog.Error("_HandleCommand", "%s: Failed to decode 2-arg command.", GetAddress().c_str());
-        else {
+        } else {
             sLog.Debug("_HandleCommand", "%s: Got Queue Check command.", GetAddress().c_str());
 
             //they return position in queue
@@ -146,10 +147,11 @@ PyPacket* EVEClientSession::_HandleCommand( PyRep* rep ) {
 
 PyPacket* EVEClientSession::_HandleCrypto( PyRep* rep ) {
     CryptoRequestPacket cr;
-    if ( !cr.Decode( &rep ) )
+    if ( !cr.Decode( &rep ) ) {
         sLog.Error("_HandleCrypto", "%s: Received invalid crypto request!", GetAddress().c_str());
-    else if ( _VerifyCrypto( cr ) )
+    } else if ( _VerifyCrypto( cr ) ) {
         mPacketHandler = &EVEClientSession::_HandleAuthentication;
+    }
 
     // recurse
     return PopPacket();
@@ -158,21 +160,23 @@ PyPacket* EVEClientSession::_HandleCrypto( PyRep* rep ) {
 PyPacket* EVEClientSession::_HandleAuthentication( PyRep* rep ) {
     //just to be sure
     CryptoChallengePacket ccp;
-    if ( !ccp.Decode( &rep ) )
+    if ( !ccp.Decode( &rep ) ) {
         sLog.Error("_HandleAuthentication", "%s: Received invalid crypto challenge!", GetAddress().c_str());
-    else if ( _VerifyLogin( ccp ) )
+    } else if ( _VerifyLogin( ccp ) ){
         mPacketHandler = &EVEClientSession::_HandleFuncResult;
+    }
 
     return PopPacket();
 }
 
 PyPacket* EVEClientSession::_HandleFuncResult( PyRep* rep ) {
     CryptoHandshakeResult hr;
-    if ( !hr.Decode( &rep ) )
+    if ( !hr.Decode( &rep ) ) {
         sLog.Error("_HandleFuncResult", "%s: Received invalid crypto handshake result!", GetAddress().c_str());
-    else if ( _VerifyFuncResult( hr ) )
+    } else if ( _VerifyFuncResult( hr ) ) {
         mPacketHandler = &EVEClientSession::_HandlePacket;
-
+    }
+    
     return PopPacket();
 }
 

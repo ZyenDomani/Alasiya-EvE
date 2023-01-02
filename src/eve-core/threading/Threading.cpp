@@ -55,9 +55,9 @@ void Threading::Process() {
     FD_SET(0, &rSoc);
     FD_SET(0, &wSoc);
     int status = select(nfds, &rSoc, &wSoc, nullptr, &tv);
-    if (status == 0) /* nothing ready yet */
+    if (status == 0) { /* nothing ready yet */
         return;
-    else if (status == -1) {  /* error */
+    } else if (status == -1) {  /* error */
         _log(THREAD__ERROR, "Process() - select() returned: %s", strerror(status));
         return;
     }

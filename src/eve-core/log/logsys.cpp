@@ -60,9 +60,9 @@ void log_hex(LogType type, const void *data, unsigned long length, unsigned char
 }
 
 void log_phex(LogType type, const void *data, unsigned long length, unsigned char padding) {
-    if (length <= 1024)
+    if (length <= 1024) {
         log_hex(type, data, length, padding);
-    else {
+    } else {
         char buffer[80];
         log_hex(type, data, 1024-32, padding);
         log_message(type, " ... truncated ...");
@@ -186,11 +186,11 @@ bool load_log_settings(const char *filename) {
 
         //first make sure we understand the value
         bool enabled;
-        if (!strcasecmp(value, "on") || !strcasecmp(value, "yes") || !strcasecmp(value, "enabled") || !strcmp(value, "1"))
+        if (!strcasecmp(value, "on") || !strcasecmp(value, "yes") || !strcasecmp(value, "enabled") || !strcmp(value, "1")) {
             enabled = true;
-        else if (!strcasecmp(value, "off") || !strcasecmp(value, "no") || !strcasecmp(value, "disabled") || !strcmp(value, "0"))
+        } else if (!strcasecmp(value, "off") || !strcasecmp(value, "no") || !strcasecmp(value, "disabled") || !strcmp(value, "0")) {
             enabled = false;
-        else {
+        } else {
             printf("Unable to parse value '%s' from %s around line %u. Skipping.\n", value, filename, i);
             continue;
         }
@@ -225,10 +225,11 @@ bool load_log_settings(const char *filename) {
         }
 
         //got it all figured out, do something now...
-        if (enabled)
+        if (enabled) {
             log_enable(LogType(r));
-        else
+        } else {
             log_disable(LogType(r));
+        }
     }
     fclose(f);
     return true;

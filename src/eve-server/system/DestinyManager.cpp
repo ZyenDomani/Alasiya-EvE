@@ -2298,12 +2298,13 @@ void DestinyManager::SetMaxVelocity(float maxVelocity)
 {
     float maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     /*
-    if (mySE->IsMissileSE() or mySE->IsNPCSE())
+    if (mySE->IsMissileSE() or mySE->IsNPCSE()) {
         maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
-    else if (mySE->IsShipSE() or mySE->IsDroneSE())
+    } else if (mySE->IsShipSE() or mySE->IsDroneSE()) {
         maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float();   // this is depreciated.  used as an absolute max speed, accounting for ab/mwd
-    else
+    } else {
         ; // make error here?
+    }
         */
     if (mySE->IsShipSE())
         if (is_log_enabled(DESTINY__TRACE))

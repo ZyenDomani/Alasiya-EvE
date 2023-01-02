@@ -79,10 +79,11 @@ bool PyDumpVisitor::VisitBuffer( const PyBuffer* rep )
 
 bool PyDumpVisitor::VisitString( const PyString *rep )
 {
-    if (IsPrintable( rep ) )
+    if (IsPrintable(rep)) {
         _print( "%s    String: '%s'", _pfx(), rep->content().c_str() );
-    else
+    } else {
         _print( "%sBinary String: (len=%lu)", _pfx(), rep->content().length() );
+    }
 
     return true;
 }
@@ -90,10 +91,11 @@ bool PyDumpVisitor::VisitString( const PyString *rep )
 bool PyDumpVisitor::VisitWString( const PyWString* rep )
 {
     // how to do it correctly?
-    if (IsPrintable( rep ) )
+    if (IsPrintable(rep)) {
         _print( "%s   WString: '%s'", _pfx(), rep->content().c_str() );
-    else
+    } else {
         _print( "%ssBinary WString: (len=%lu)'", _pfx(), rep->content().length() );
+    }
 
     return true;
 }
@@ -108,15 +110,18 @@ bool PyDumpVisitor::VisitToken( const PyToken* rep )
 bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
 {
     bool res(true);
-    if (rep->empty())
+    if (rep->empty()) {
         _print( "%s Tuple: Empty", _pfx() );
-    else  {
+    } else {
         _print( "%s Tuple: %lu elements", _pfx(), rep->size() );
 
         PyTuple::const_iterator cur = rep->begin(), end = rep->end();
         for ( uint8 i(0); cur != end; cur++, i++ )  {
-            if (*cur == nullptr)
+            if (*cur == nullptr) {
+                _pfxExtend( "  [%2u]  nullptr", i );
+                _pfxWithdraw();
                 continue;
+            }
             if (i > 100 && !fullNested()) {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;
@@ -133,15 +138,18 @@ bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
 bool PyDumpVisitor::VisitList( const PyList* rep )
 {
     bool res(true);
-    if (rep->empty())
+    if (rep->empty()) {
         _print( "%s  List: Empty", _pfx() );
-    else {
+    } else {
         _print( "%s  List: %lu elements", _pfx(), rep->size() );
 
         PyList::const_iterator cur = rep->begin(), end = rep->end();
         for (uint8 i(0); cur != end; cur++, i++ )  {
-            if (*cur == nullptr)
+            if (*cur == nullptr) {
+                _pfxExtend( "  [%2u]  nullptr", i );
+                _pfxWithdraw();
                 continue;
+            }
             if (i > 100 && !fullNested()) {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;
@@ -157,9 +165,9 @@ bool PyDumpVisitor::VisitList( const PyList* rep )
 
 bool PyDumpVisitor::VisitDict( const PyDict* rep )
 {
-    if (rep->empty())
+    if (rep->empty()) {
         _print( "%s Dictionary: Empty", _pfx() );
-    else {
+    } else {
         _print( "%s Dictionary: %lu entries", _pfx(), rep->size() );
 
         PyDict::const_iterator cur = rep->begin(), end = rep->end();
@@ -173,14 +181,14 @@ bool PyDumpVisitor::VisitDict( const PyDict* rep )
             bool res = cur->first->visit( *this );
             _pfxWithdraw();
 
-            if (!res )
+            if (!res)
                 return false;
 
             _pfxExtend( "  [%2u] Value: ", i );
             res = cur->second->visit( *this );
             _pfxWithdraw();
 
-            if (!res )
+            if (!res)
                 return false;
         }
     }
@@ -283,10 +291,11 @@ bool PyDumpVisitor::VisitPackedRow( const PyPackedRow* rep )
         _pfxExtend( "    [%2u] %s: ", i, rep->header()->GetColumnName( i )->content().c_str() );
 
         bool res(true);
-        if ((*itr) == nullptr )
+        if ((*itr) == nullptr ) {
             _print( "%s  (None)", _pfx() );
-        else
+        } else {
             res = (*itr)->visit( *this );
+        }
 
         _pfxWithdraw();
 
@@ -356,10 +365,11 @@ void PyLogDumpVisitor::_dump( const char* pfx, const uint8* data, size_t len )
     if (!is_log_enabled( logHexType() ) )
         return;
 
-    if (fullHex() )
+    if (fullHex()) {
         pfxHexDump( pfx, logHexType(), data, len );
-    else
+    } else {
         pfxHexDumpPreview( pfx, logHexType(), data, len );
+    }
 }
 
 PyFileDumpVisitor::PyFileDumpVisitor( FILE* _file, const char* pfx, bool full_nested/*false*/, bool full_hex/*false*/ )
@@ -382,8 +392,9 @@ void PyFileDumpVisitor::_print( const char* fmt, ... )
 
 void PyFileDumpVisitor::_dump( const char* pfx, const uint8* data, size_t len )
 {
-    if (fullHex())
+    if (fullHex()) {
         pfxHexDump( pfx, file(), data, len );
-    else
+    } else {
         pfxHexDumpPreview( pfx, file(), data, len );
+    }
 }

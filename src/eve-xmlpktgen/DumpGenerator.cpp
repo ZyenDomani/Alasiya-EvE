@@ -106,11 +106,11 @@ bool ClassDumpGenerator::ProcessElementPtr( const TiXmlElement* field )
         "\n"
         "    std::string %s_n( pfx );\n"
         "    %s_n += \"    \";\n"
-        "    if (%s != nullptr)\n"
+        "    if (%s != nullptr) [\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
-        "    else\n"
+        "    } else {\n"
         "        _log( l_type, \"%%sERROR: ElementPtr = nullptr.\", %s_n.c_str() );\n"
-        "\n",
+        "    }\n",
         name, name, name, name,
         name, name, name
     );
@@ -131,11 +131,11 @@ bool ClassDumpGenerator::ProcessRaw( const TiXmlElement* field )
         "\n"
         "    std::string %s_n( pfx );\n"
         "    %s_n += \"    \";\n"
-        "    if (%s != nullptr)\n"
+        "    if (%s != nullptr) {\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
-        "    else\n"
+        "    } else [\n"
         "        _log( l_type, \"%%sERROR: raw = nullptr.\", %s_n.c_str() );\n"
-        "\n",
+        "    }\n",
         name, name, name, name,
         name, name, name
     );
@@ -319,11 +319,11 @@ bool ClassDumpGenerator::ProcessToken( const TiXmlElement* field )
         "\n"
         "    std::string %s_n( pfx );\n"
         "    %s_n += \"    \";\n"
-        "    if (%s != nullptr)\n"
+        "    if (%s != nullptr) {\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
-        "    else\n"
+        "    } else {\n"
         "        _log( l_type, \"%%sERROR: token = nullptr.\", %s_n.c_str() );\n"
-        "\n",
+        "    }\n",
         name, name, name, name,
         name, name, name
     );
@@ -361,11 +361,11 @@ bool ClassDumpGenerator::ProcessObject( const TiXmlElement* field )
         "\n"
         "    std::string %s_n( pfx );\n"
         "    %s_n += \"    \";\n"
-        "    if (%s != nullptr)\n"
+        "    if (%s != nullptr) {\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
-        "    else \n"
+        "    } else {\n"
         "        _log( l_type, \"%%s    nullptr\", pfx );\n"
-        "\n",
+        "    }\n",
         name, name, name,
         name, name, name
     );
@@ -401,11 +401,11 @@ bool ClassDumpGenerator::ProcessObjectEx( const TiXmlElement* field )
         "\n"
         "    std::string %s_n( pfx );\n"
         "    %s_n += \"    \";\n"
-        "    if (%s != nullptr)\n"
+        "    if (%s != nullptr) {\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
-        "    else\n"
+        "    } else {\n"
         "        _log( l_type, \"%%s    nullptr\", pfx );\n"
-        "\n",
+        "    }\n",
         name, type, name,
         name, name, name, name
     );
@@ -426,11 +426,11 @@ bool ClassDumpGenerator::ProcessTuple( const TiXmlElement* field )
         "\n"
         "    std::string %s_n( pfx );\n"
         "    %s_n += \"    \";\n"
-        "    if (%s != nullptr)\n"
+        "    if (%s != nullptr) {\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
-        "    else\n"
+        "    } else {\n"
         "        _log( l_type, \"%%sERROR: tuple = nullptr.\", %s_n.c_str() );\n"
-        "\n",
+        "    }\n",
         name, name, name,
         name, name, name, name
     );
@@ -457,11 +457,11 @@ bool ClassDumpGenerator::ProcessList( const TiXmlElement* field )
         "\n"
         "    std::string %s_n( pfx );\n"
         "    %s_n += \"    \";\n"
-        "    if (%s != nullptr)\n"
+        "    if (%s != nullptr) {\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
-        "    else\n"
+        "    } else {\n"
         "        _log( l_type, \"%%sERROR: list = nullptr.\", %s_n.c_str() );\n"
-        "\n",
+        "    }\n",
         name, name, name,
         name, name, name, name
     );
@@ -550,11 +550,11 @@ bool ClassDumpGenerator::ProcessDict( const TiXmlElement* field )
         "\n"
         "    std::string %s_n( pfx );\n"
         "    %s_n += \"    \";\n"
-        "    if (%s != nullptr)\n"
+        "    if (%s != nullptr) {\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
-        "    else\n"
+        "    } else {\n"
         "        _log( l_type, \"%%sERROR: dict = nullptr.\", %s_n.c_str() );\n"
-        "\n",
+        "    }\n",
         name, name, name,
         name, name, name, name
     );

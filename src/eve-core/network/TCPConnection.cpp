@@ -317,11 +317,12 @@ bool TCPConnection::RecvData( char* errbuf )
 
     int status = 0;
     while (true) {
-        if (!mRecvBuf)
+        if (!mRecvBuf) {
             mRecvBuf = new Buffer( TCPCONN_RECVBUF_SIZE );
-        else if ( mRecvBuf->size() < TCPCONN_RECVBUF_SIZE )
+        } else if ( mRecvBuf->size() < TCPCONN_RECVBUF_SIZE ) {
             mRecvBuf->Resize<uint8>( TCPCONN_RECVBUF_SIZE );
-
+        }
+        
         status = mSock->recv( &(*mRecvBuf)[ 0 ], (uint)mRecvBuf->size(), MSG_DONTWAIT);
         if (status == SOCKET_ERROR) {
             if (errno == EWOULDBLOCK)

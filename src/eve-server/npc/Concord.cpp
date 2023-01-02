@@ -293,15 +293,17 @@ m_armorRepairDuration(who->GetSelf()->GetAttribute(AttrEntityArmorRepairDuration
     m_warpScramblerTimer.Disable();    //not implemented yet
     m_shieldBoosterTimer.Disable(); //waiting till engaged
 
-    if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float())
+    if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float()) {
         m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float();
-    else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float())
+    }  else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float()) {
         m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float();
+    }
 
-    if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float())
+    if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float()) {
         m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
-    else if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float())
+    } else if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float()) {
         m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
+    }
 
     /** @todo  change this to use config file */
     m_entityAttackRange = 300000;
@@ -646,18 +648,17 @@ void ConcordAI::AttackTarget(SystemEntity* pTarget) {
                                            pTarget->GetID(),
                                            0,guid,1,1,1,m_attackSpeed,0);
 
-    Damage d(m_npc,
+    Damage dam(m_npc,
              m_npc->GetSelf(),
              m_npc->GetKinetic(),
              m_npc->GetThermal(),
              m_npc->GetEM(),
              m_npc->GetExplosive(),
-             m_formula.GetNPCToHit(m_npc, pTarget),
-             EVEEffectID::targetAttack
+             m_formula.GetNPCToHit(m_npc, pTarget)
             );
 
-    d *= m_npc->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
-    pTarget->ApplyDamage(d);
+    dam *= m_npc->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
+    pTarget->ApplyDamage(dam);
 }
 
 double ConcordAI::GetTargetTime()
@@ -665,18 +666,19 @@ double ConcordAI::GetTargetTime()
     double targetTime = (m_npc->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
     float radius = m_npc->GetSelf()->GetAttribute(AttrRadius).get_float();
     if (!targetTime) {
-        if (radius < 30)
+        if (radius < 30) {
             targetTime = 1500;
-        else if (radius < 60)
+        } else if (radius < 60) {
             targetTime = 2500;
-        else if (radius < 150)
+        } else if (radius < 150) {
             targetTime = 4000;
-        else if (radius < 280)
+        } else if (radius < 280) {
             targetTime = 6000;
-        else if (radius < 550)
-            targetTime = 8000;
-        else
+        } else if (radius < 550) {
+           targetTime = 8000;
+        } else {
             targetTime = 13000;
+        }
     }
     return targetTime;
 }

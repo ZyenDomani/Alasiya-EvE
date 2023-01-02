@@ -223,22 +223,17 @@ PyRep* UnmarshalStream::LoadIntegerVar()
     const uint32 len = ReadSizeEx();
     const Buffer::const_iterator<uint8> data = Read<uint8>( len );
 
-    if ( sizeof( int32 ) >= len )
-    {
+    if ( sizeof( int32 ) >= len ) {
         int32 intval(0);
         memcpy( &intval, &*data, len );
 
         return new PyInt( intval );
-    }
-    else if ( sizeof( int64 ) >= len )
-    {
+    } else if ( sizeof( int64 ) >= len ) {
         int64 intval(0);
         memcpy( &intval, &*data, len );
 
         return new PyLong( intval );
-    }
-    else
-    {
+    } else {
         //int64 is not big enough
         //just pass it up to the application layer as a buffer...
         return new PyBuffer( data, data + len );

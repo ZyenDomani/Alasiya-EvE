@@ -715,7 +715,7 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
             capacity += totalVolume;
             _log(INV__CAPY, "Inventory::ValidateAddItem() - flag() %s (%u) == iRef->flag() %s (%u) - test capacity changed to %.2f",
                     sDataMgr.GetFlagName(flag), flag, sDataMgr.GetFlagName(iRef->flag()), iRef->flag(), capacity);
-    }
+        }
 
     // check capy for single unit
     if (capacity < volume) { // smallest volume is 0.0025
@@ -724,74 +724,76 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
             std::map<std::string, PyRep *> args;
             args["volume"] = new PyFloat(volume);
             sItemFactory.UnsetUsingClient();
-            if (IsCargoHoldFlag(flag))
+            if (IsCargoHoldFlag(flag)) {
                 throw UserError ("NotEnoughCargoSpace")
                 .AddAmount ("volume", volume)
                 .AddAmount ("available", capacity);
-            else if (flag == flagShipHangar)
+            } else if (flag == flagShipHangar) {
                 throw UserError ("NotEnoughCargoSpaceFor1Unit")
                 .AddAmount ("volume", volume)
                 .AddFormatValue ("type", new PyInt (iRef->itemID ()))
                 .AddAmount ("required", volume)
                 .AddAmount ("free", capacity);
-            else if (IsSpecialHoldFlag(flag))
+            } else if (IsSpecialHoldFlag(flag)) {
                 throw UserError ("NotEnoughSpecialBaySpaceOverload")
                 .AddAmount ("volume", volume)
                 .AddFormatValue ("item", new PyInt (iRef->itemID ()))
                 .AddAmount ("maximum", GetCapacity (flag))
                 .AddAmount ("user", GetStoredVolume (flag));
-            else if (IsModuleSlot(flag))
+            } else if (IsModuleSlot(flag)) {
                 throw UserError ("NotEnoughChargeSpace")
                 .AddAmount ("volume", volume)
                 .AddAmount ("capacity", GetCapacity (flag));
-            else if (IsHangarFlag(flag))
+            } else if (IsHangarFlag(flag)) {
                 throw UserError ("NotEnoughSpaceOverload")
                 .AddAmount ("volume", volume)
                 .AddLocationName ("item", iRef->itemID ())
                 .AddAmount ("maximum", GetCapacity (flag))
                 .AddAmount ("user", GetStoredVolume (flag));
-            else if (flag == flagDroneBay)
+            } else if (flag == flagDroneBay) {
                 throw UserError ("NotEnoughDroneBaySpaceOverload")
                 .AddAmount ("volume", volume)
                 .AddLocationName ("item", iRef->itemID ())
                 .AddAmount ("maximum", GetCapacity (flag))
                 .AddAmount ("used", GetStoredVolume (flag));
-            else
+            } else {
                 throw UserError ("NoSpaceForThatOverload")
                 .AddAmount ("volume", volume)
                 .AddFormatValue ("item", new PyInt (iRef->itemID ()))
                 .AddAmount ("maximum", GetCapacity (flag))
                 .AddAmount ("used", GetStoredVolume (flag));
+            }
         }
         return false;
     }
 
     // check capy for all units
     if (totalVolume > capacity) {
-        if (IsSpecialHoldFlag(flag))
+        if (IsSpecialHoldFlag(flag)) {
             throw UserError ("NotEnoughSpecialBaySpace")
             .AddAmount ("volume", totalVolume)
             .AddAmount ("available", capacity);
-        else if (flag == flagDroneBay)
+        } else if (flag == flagDroneBay) {
             throw UserError ("NotEnoughDroneBaySpace")
             .AddAmount ("volume", totalVolume)
             .AddAmount ("available", capacity);
-        else if (IsHangarFlag(flag))
+        } else if (IsHangarFlag(flag)) {
             throw UserError ("NotEnoughCargoSpaceOverload")
             .AddAmount ("volume", totalVolume)
             .AddLocationName ("item", iRef->itemID ())
             .AddAmount ("maximum", GetCapacity (flag))
             .AddAmount ("used", GetStoredVolume (flag));
-        else if (IsCargoHoldFlag(flag))
+        } else if (IsCargoHoldFlag(flag)) {
             throw UserError ("NotEnoughCargoSpace")
             .AddAmount ("volume", totalVolume)
             .AddAmount ("available", capacity);
-        else
+        } else {
             throw UserError ("NoSpaceForThat")
             .AddAmount ("volume", totalVolume)
             .AddFormatValue ("itemTypeName", new PyInt (iRef->itemID ()))
             .AddAmount ("itemVolume", totalVolume)
             .AddAmount ("volumeAvailable", capacity);
+        }
         return false;
     }
 

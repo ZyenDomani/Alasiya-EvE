@@ -61,8 +61,7 @@ void SovereigntyDataMgr::Populate()
     auto &bySolar = m_sovData.get<SovDataBySolarSystem>();
 
     SovereigntyDB::GetSovereigntyData(*res);
-    while (res->GetRow(row))
-    {
+    while (res->GetRow(row)) {
         SovereigntyData sData = SovereigntyData();
         sData.solarSystemID = row.GetUInt(0);
         sData.constellationID = row.GetUInt(1);
@@ -101,8 +100,7 @@ void SovereigntyDataMgr::GetInfo()
 uint32 SovereigntyDataMgr::GetSystemAllianceID(uint32 systemID)
 {
     auto it = m_sovData.get<SovDataBySolarSystem>().find(systemID);
-    if (it != m_sovData.get<SovDataBySolarSystem>().end())
-    {
+    if (it != m_sovData.get<SovDataBySolarSystem>().end())  {
         SovereigntyData sData = *it;
         return sData.allianceID;
     }
@@ -112,12 +110,10 @@ uint32 SovereigntyDataMgr::GetSystemAllianceID(uint32 systemID)
 SovereigntyData SovereigntyDataMgr::GetSovereigntyData(uint32 systemID)
 {
     auto it = m_sovData.get<SovDataBySolarSystem>().find(systemID);
-    if (it != m_sovData.get<SovDataBySolarSystem>().end())
-    {
+    if (it != m_sovData.get<SovDataBySolarSystem>().end()) {
         SovereigntyData sData = *it;
         return sData;
-    } else
-    {
+    } else {
         //Return empty object in case we don't find anything
         SovereigntyData sData;
         return sData;
@@ -132,8 +128,7 @@ PyRep *SovereigntyDataMgr::GetSystemSovereignty(uint32 systemID)
     //Figure out if this system is in empire space
     sDataMgr.GetSystemData(systemID, sysData);
 
-    if (sysData.factionID)
-    { //If we have a factionID, we can set the system's sov data to it
+    if (sysData.factionID) { //If we have a factionID, we can set the system's sov data to it
         args->SetItemString("contested", PyStatic.NewZero());
         args->SetItemString("corporationID", PyStatic.NewZero());
         args->SetItemString("claimTime", new PyLong(0));
@@ -142,12 +137,9 @@ PyRep *SovereigntyDataMgr::GetSystemSovereignty(uint32 systemID)
         args->SetItemString("allianceID", new PyInt(sysData.factionID));
         args->SetItemString("solarSystemID", new PyInt(systemID));
         _log(SOV__INFO, "SovereigntyDataMgr::GetSystemSovereignty(): Faction system %u found, assigning factionID as allianceID.", systemID);
-    }
-    else
-    {
+    } else {
         auto it = m_sovData.get<SovDataBySolarSystem>().find(systemID);
-        if (it != m_sovData.get<SovDataBySolarSystem>().end())
-        {
+        if (it != m_sovData.get<SovDataBySolarSystem>().end()) {
             SovereigntyData sData = *it;
             _log(SOV__INFO, "SovereigntyDataMgr::GetSystemSovereignty(): Found sov data for solarSystemID %u.", systemID);
             _log(SOV__DEBUG, "== data (GetSystemSovereignty()) ==");
@@ -165,9 +157,7 @@ PyRep *SovereigntyDataMgr::GetSystemSovereignty(uint32 systemID)
             args->SetItemString("hubID", new PyInt(sData.hubID));
             args->SetItemString("allianceID", new PyInt(sData.allianceID));
             args->SetItemString("solarSystemID", new PyInt(sData.solarSystemID));
-        }
-        else
-        {
+        } else {
             _log(SOV__INFO, "SovereigntyDataMgr::GetSystemSovereignty(): No data for solarSystemID %u. Sending blank SovereigntyData object.", systemID);
             args->SetItemString("contested", PyStatic.NewNone());
             args->SetItemString("corporationID", PyStatic.NewNone());
@@ -184,8 +174,7 @@ PyRep *SovereigntyDataMgr::GetSystemSovereignty(uint32 systemID)
 PyRep *SovereigntyDataMgr::GetAllianceSystems() //Get all systems associated with all alliances?
 {
     PyList *list = new PyList();
-    for (auto &it : m_sovData.get<SovDataBySolarSystem>())
-    {
+    for (auto &it : m_sovData.get<SovDataBySolarSystem>()) {
         _log(SOV__DEBUG, "== data (GetAllianceSystems()) ==");
         _log(SOV__DEBUG, "claimID: %u", it.claimID);
         _log(SOV__DEBUG, "solarSystemID: %u", it.solarSystemID);
@@ -207,9 +196,9 @@ PyRep *SovereigntyDataMgr::GetAllianceBeacons(uint32 allianceID) //Get all beaco
                  m_sovData.get<SovDataByAlliance>().equal_range(allianceID)))
     {
         // Don't add systems where no beacon exists
-        if (sData.beaconID == 0) {
+        if (sData.beaconID == 0)
             continue;
-        }
+
         _log(SOV__DEBUG, "== data (GetAllianceBeacons()) ==");
         _log(SOV__DEBUG, "solarSystemID: %u", sData.solarSystemID);
         _log(SOV__DEBUG, "beaconID: %u", sData.beaconID);
@@ -235,8 +224,7 @@ PyRep *SovereigntyDataMgr::GetCurrentSovData(uint32 locationID)
     header->AddColumn("claimedFor", DBTYPE_I4);
     CRowSet *rowset = new CRowSet(&header);
 
-    if (IsConstellationID(locationID))
-    {
+    if (IsConstellationID(locationID)) {
         for (SovereigntyData const &sData : boost::make_iterator_range(
                  m_sovData.get<SovDataByConstellation>().equal_range(locationID)))
         {
@@ -250,14 +238,12 @@ PyRep *SovereigntyDataMgr::GetCurrentSovData(uint32 locationID)
         }
     }
     //Get all unique alliances in the region who hold sovereignty
-    else if (IsRegionID(locationID))
-    {
+    else if (IsRegionID(locationID)) {
         std::vector<uint32> cv;
         for (SovereigntyData const &sData : boost::make_iterator_range(
                  m_sovData.get<SovDataByRegion>().equal_range(locationID)))
         {
-            if (!(std::find(cv.begin(), cv.end(), sData.constellationID) != cv.end()))
-            {
+            if (!(std::find(cv.begin(), cv.end(), sData.constellationID) != cv.end())) {
                 PyPackedRow *row = rowset->NewRow();
                 row->SetField("locationID", new PyInt(sData.constellationID));
                 row->SetField("allianceID", new PyInt(sData.allianceID));
@@ -268,9 +254,7 @@ PyRep *SovereigntyDataMgr::GetCurrentSovData(uint32 locationID)
                 cv.push_back(sData.constellationID);
             }
         }
-    }
-    else if (sDataMgr.IsSolarSystem(locationID))
-    {
+    } else if (sDataMgr.IsSolarSystem(locationID)) {
         for (SovereigntyData const &sData : boost::make_iterator_range(
                  m_sovData.get<SovDataByRegion>().equal_range(locationID)))
         {
@@ -302,9 +286,7 @@ void SovereigntyDataMgr::AddSovClaim(SovereigntyData data)
     //Delete existing records in container which match the systemID
     auto it = m_sovData.get<SovDataBySolarSystem>().find(data.solarSystemID);
     if (it != m_sovData.get<SovDataBySolarSystem>().end())
-    {
         bySolar.erase(data.solarSystemID);
-    }
 
     UpdateClaim(data.solarSystemID);
 }
@@ -380,8 +362,7 @@ void SovereigntyDataMgr::UpdateClaim(uint32 systemID)
     DBResultRow row;
 
     SovereigntyDB::GetSovereigntyDataForSystem(*res, systemID);
-    while (res->GetRow(row))
-    {
+    while (res->GetRow(row)) {
         SovereigntyData sData = SovereigntyData();
         sData.solarSystemID = row.GetUInt(0);
         sData.constellationID = row.GetUInt(1);

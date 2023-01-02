@@ -146,16 +146,14 @@ bool PyXMLGenerator::VisitChecksumedStream( const PyChecksumedStream* rep )
 
 bool PyXMLGenerator::VisitDict( const PyDict* rep )
 {
-    enum
-    {
+    enum {
         DictInline,
         DictStringKey,
         DictIntKey,
         DictRaw
     } ktype;
 
-    enum
-    {
+    enum {
         ValueUnknown,
         ValueString,
         ValueInt,
@@ -167,75 +165,59 @@ bool PyXMLGenerator::VisitDict( const PyDict* rep )
     vtype = ValueUnknown;
 
     //this is kinda a hack, but we want to try and classify the contents of this dict:
-    PyDict::const_iterator cur, end;
-    cur = rep->begin();
-    end = rep->end();
-    for(; cur != end; cur++)
-    {
-        if ( cur->first->IsString() )
-        {
-            if ( ktype == DictIntKey )
-            {
+    PyDict::const_iterator cur = rep->begin(),  end = rep->end();
+    for(; cur != end; cur++) {
+        if ( cur->first->IsString() ) {
+            if ( ktype == DictIntKey ) {
                 //we have varying key types, raw dict it is.
                 ktype = DictRaw;
                 break;
-            }
-            else if ( ktype == DictInline )
+            } else if ( ktype == DictInline ) {
                 ktype = DictStringKey;
-        }
-        else if ( cur->first->IsInt() )
-        {
-            if ( ktype == DictStringKey )
-            {
+            }
+        } else if ( cur->first->IsInt() ) {
+            if ( ktype == DictStringKey ) {
                 //we have varying key types, raw dict it is.
                 ktype = DictRaw;
                 break;
-            }
-            else if ( ktype == DictInline )
+            } else if ( ktype == DictInline ) {
                 ktype = DictIntKey;
-        }
-        else
-        {
+            }
+        } else {
             //anything but those key types is more than we can think about, keep it raw.
             ktype = DictRaw;
             break;
         }
 
-        if ( cur->second->IsString() )
-        {
-            if ( vtype == ValueInt || vtype == ValueReal )
+        if ( cur->second->IsString() ) {
+            if ( vtype == ValueInt || vtype == ValueReal ) {
                 vtype = ValueMixed;
-            else if ( vtype == ValueUnknown )
+            } else if ( vtype == ValueUnknown ) {
                 vtype = ValueString;
-        }
-        else if (cur->second->IsInt())
-        {
-            if ( vtype == ValueString || vtype == ValueReal )
+            }
+        } else if (cur->second->IsInt()) {
+            if ( vtype == ValueString || vtype == ValueReal ) {
                 vtype = ValueMixed;
-            else if ( vtype == ValueUnknown )
+            } else if ( vtype == ValueUnknown ) {
                 vtype = ValueInt;
-        }
-        else if ( cur->second->IsFloat() )
-        {
-            if ( vtype == ValueString || vtype == ValueInt )
+            }
+        } else if ( cur->second->IsFloat() ) {
+            if ( vtype == ValueString || vtype == ValueInt ) {
                 vtype = ValueMixed;
-            else if (vtype == ValueUnknown)
+            } else if (vtype == ValueUnknown) {
                 vtype = ValueReal;
-        }
-        else
+            }
+        } else {
             vtype = ValueMixed;
+        }
     }
 
-    if ( ktype == DictRaw )
-    {
+    if ( ktype == DictRaw ) {
         fprintf( mInto, "%s<dict name=\"dict%u\" />\n", _pfx(), mItem++ );
         return true;
-    }
-    else if ( ktype == DictIntKey )
-    {
+    } else if ( ktype == DictIntKey ) {
         //cant do an inline dict, but can try a vector
-        switch( vtype )
-        {
+        switch( vtype ) {
         case ValueString:
             fprintf( mInto, "%s<dictInt name=\"dict%u\" type=\"string\" />\n", _pfx(), mItem++ );
             break;
@@ -261,10 +243,8 @@ bool PyXMLGenerator::VisitDict( const PyDict* rep )
     //! visit dict elements.
     cur = rep->begin();
     end = rep->end();
-    for(; cur != end; cur++)
-    {
-        if ( !cur->first->IsString() )
-        {
+    for(; cur != end; cur++) {
+        if ( !cur->first->IsString() ) {
             fprintf( mInto, "%s<!-- non-string dict key of type %s -->\n", _pfx(), cur->first->TypeString() );
             return false;
         }
@@ -290,8 +270,7 @@ bool PyXMLGenerator::VisitList( const PyList* rep )
 {
     //for now presume we cant do anything useful with lists that contain
     //more than a few things...
-    if ( rep->size() < 5 )
-    {
+    if ( rep->size() < 5 ) {
         fprintf( mInto, "%s<listInline>\n", _pfx() );
 
         _pfxExtend( "    " );
@@ -300,8 +279,7 @@ bool PyXMLGenerator::VisitList( const PyList* rep )
         PyList::const_iterator cur, end;
         cur = rep->begin();
         end = rep->end();
-        for( uint32 i = 0; cur != end; cur++, i++ )
-        {
+        for( uint32 i = 0; cur != end; cur++, i++ ) {
             fprintf( mInto, "%s<!-- %u -->\n", _pfx(), i );
             (*cur)->visit( *this );
         }
@@ -309,11 +287,8 @@ bool PyXMLGenerator::VisitList( const PyList* rep )
         _pfxWithdraw();
 
         fprintf( mInto, "%s</listInline>\n", _pfx() );
-    }
-    else
-    {
-        enum
-        {
+    } else {
+        enum {
             TypeUnknown,
             TypeString,
             TypeInteger,
@@ -323,50 +298,36 @@ bool PyXMLGenerator::VisitList( const PyList* rep )
         eletype = TypeUnknown;
 
         //scan the list to see if we can classify the contents.
-        PyList::const_iterator cur, end;
-        cur = rep->begin();
-        end = rep->end();
-        for(; cur != end; cur++)
-        {
-            if ( (*cur)->IsString() )
-            {
-                if ( eletype == TypeInteger || eletype == TypeReal )
-                {
+        PyList::const_iterator cur = rep->begin(),  end = rep->end();
+        for(; cur != end; cur++) {
+            if ( (*cur)->IsString() ) {
+                if ( eletype == TypeInteger || eletype == TypeReal ) {
                     eletype = TypeMixed;
                     break;
-                }
-                else if ( eletype == TypeUnknown )
+                } else if ( eletype == TypeUnknown ) {
                     eletype = TypeString;
-            }
-            else if ( (*cur)->IsInt() )
-            {
-                if ( eletype == TypeString || eletype == TypeReal )
-                {
+                }
+            } else if ( (*cur)->IsInt() ) {
+                if ( eletype == TypeString || eletype == TypeReal ) {
                     eletype = TypeMixed;
                     break;
-                }
-                else if ( eletype == TypeUnknown )
+                } else if ( eletype == TypeUnknown ) {
                     eletype = TypeInteger;
-            }
-            else if ( (*cur)->IsFloat() )
-            {
-                if ( eletype == TypeString || eletype == TypeInteger )
-                {
+                }
+            } else if ( (*cur)->IsFloat() ) {
+                if ( eletype == TypeString || eletype == TypeInteger ) {
                     eletype = TypeMixed;
                     break;
-                }
-                else if ( eletype == TypeUnknown )
+                } else if ( eletype == TypeUnknown ) {
                     eletype = TypeReal;
-            }
-            else
-            {
+                }
+            } else {
                 eletype = TypeMixed;
                 break;
             }
         }
 
-        switch( eletype )
-        {
+        switch( eletype ) {
         case TypeString:
             fprintf( mInto, "%s<listStr name=\"list%u\" />\n", _pfx(), mItem++ );
             break;
@@ -396,8 +357,7 @@ bool PyXMLGenerator::VisitTuple( const PyTuple* rep )
     PyTuple::const_iterator cur, end;
     cur = rep->begin();
     end = rep->end();
-    for(uint32 i = 0; cur != end; cur++, i++)
-    {
+    for (uint32 i = 0; cur != end; cur++, i++) {
         fprintf( mInto, "%s<!-- %d -->\n", _pfx(), i );
         (*cur)->visit( *this );
     }

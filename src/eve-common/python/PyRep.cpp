@@ -120,46 +120,49 @@ bool PyRep::visit(PyVisitor& v) const
 
 std::string PyRep::StringContent(PyRep* pRep)
 {
-    if (pRep == nullptr)
+    if (pRep == nullptr) {
         return "";
-    else if (pRep->IsString())
+    } else if (pRep->IsString()) {
         return pRep->AsString()->content();
-    else if (pRep->IsWString())
+    } else if (pRep->IsWString()) {
         return pRep->AsWString()->content();
-    else if (pRep->IsNone())
+    } else if (pRep->IsNone()) {
         return "";
-
+    }
+}
     sLog.Error("PyRep::StringContent()", "Expected PyString or PyWString but got %s.", pRep->TypeString());
     return "";
 }
 
 int64 PyRep::IntegerValue(PyRep* pRep)
 {
-    if (pRep == nullptr)
+    if (pRep == nullptr) {
         return 0;
-    else if (pRep->IsInt())
+    } else if (pRep->IsInt()) {
         return pRep->AsInt()->value();
-    else if (pRep->IsLong())
+    } else if (pRep->IsLong()) {
         return pRep->AsLong()->value();
-    else if (pRep->IsFloat())
+    } else if (pRep->IsFloat()) {
         return pRep->AsFloat()->value();
-    else if (pRep->IsBool())
+    } else if (pRep->IsBool()) {
         return pRep->AsBool()->value();
+    }
 
     return 0;
 }
 
 uint32 PyRep::IntegerValueU32(PyRep* pRep) {
-    if (pRep == nullptr)
+    if (pRep == nullptr) {
         return 0;
-    else if (pRep->IsInt())
+    } else if (pRep->IsInt()) {
         return pRep->AsInt()->value();
-    else if (pRep->IsLong())
+    } else if (pRep->IsLong()) {
         return pRep->AsLong()->value();
-    else if (pRep->IsFloat())
+    } else if (pRep->IsFloat()) {
         return pRep->AsFloat()->value();
-    else if (pRep->IsBool())
+    } else if (pRep->IsBool()) {
         return pRep->AsBool()->value();
+    }
 
     return 0;
 }

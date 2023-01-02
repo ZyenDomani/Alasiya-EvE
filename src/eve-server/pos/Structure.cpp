@@ -637,8 +637,7 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
         }
     }
 
-    if (m_tower)
-    {
+    if (m_tower) {
         // hack for warping to moons
         // this puts ship at Az: 0.785332, Ele: 0.615505, angle: 1.5708
         //warpToPoint -= (radius * 1.25);
@@ -656,9 +655,7 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
         if (is_log_enabled(POS__TRACE))
             _log(POS__TRACE, "StructureSE::Anchor() - TowerSE %s(%u) new position %.2f, %.2f, %.2f at %s",
                  GetName(), m_data.itemID, pos.x, pos.y, pos.z, m_moonSE->GetName());
-    }
-    else if (m_sbu)
-    {
+    } else if (m_sbu) {
         //verify anchor distance from stargate
         uint32 distance(m_gateSE->GetPosition().distance(m_self->position()));
         //uint32 anchorMin(m_self->GetAttribute(AttrAnchorDistanceMin).get_uint32());
@@ -682,14 +679,10 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
         if (is_log_enabled(POS__TRACE))
             _log(POS__TRACE, "StructureSE::Anchor() - SBUSE %s(%u) is anchoring %u m from %s",
                  GetName(), m_data.itemID, distance, m_gateSE->GetName());
-    }
-    else if (m_tcu or m_ihub)
-    {
+    } else if (m_tcu or m_ihub) {
         // these are anchored anywhere in system.
         m_destiny->SetPosition(pos);
-    }
-    else if (m_platform)
-    {
+    } else if (m_platform) {
         //verify anchor distance from planet
         uint32 distance(m_planetSE->GetPosition().distance(m_self->position()));
         uint32 anchorMax = (m_planetSE->GetRadius() + 150000000);
@@ -700,11 +693,8 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
             return;
         }
         m_destiny->SetPosition(pos);
-    }
-    else
-    {
-        if (!m_moonSE->HasTower())
-        {
+    } else {
+        if (!m_moonSE->HasTower()) {
             // this should never hit...
             pClient->SendErrorMsg("There is no tower anchored at this moon.  You cannot anchor any structure without a tower");
             return;
@@ -789,20 +779,15 @@ void StructureSE::Activate(int32 effectID)
 
     // check effectID, check current state, check current timer, set new state, update timer
 
-    if (m_tower)
-    {
+    if (m_tower) {
         // if tower, check fuel quantity for onlining
         //  if qty sufficient, begin online proc and send OnSlimItemChange and OnSpecialFX
-    }
-    else if (m_module)
-    {
-        if (m_towerSE == nullptr)
-        {
+    } else if (m_module) {
+        if (m_towerSE == nullptr) {
             _log(POS__ERROR, "POS Module %s(%u) has no TowerSE for tower %u", m_self->name(), m_data.itemID, m_data.towerID);
             return;
         }
-        if (!m_towerSE->HasCPU(m_self->GetAttribute(AttrCpu).get_float()))
-        {
+        if (!m_towerSE->HasCPU(m_self->GetAttribute(AttrCpu).get_float())) {
             // throwing an error negates further processing
             float total = m_towerSE->GetSelf()->GetAttribute(AttrCpuOutput).get_float();
             float remaining = total - m_towerSE->GetCPULoad();
@@ -812,8 +797,7 @@ void StructureSE::Activate(int32 effectID)
                     .AddAmount ("remaining", remaining)
                     .AddFormatValue ("moduleType", new PyInt (m_self->typeID ()));
         }
-        if (!m_towerSE->HasPG(m_self->GetAttribute(AttrPower).get_float()))
-        {
+        if (!m_towerSE->HasPG(m_self->GetAttribute(AttrPower).get_float())) {
             // throwing an error negates further processing
             float total = m_towerSE->GetSelf()->GetAttribute(AttrPowerOutput).get_float();
             float remaining = total - m_towerSE->GetPGLoad();
@@ -1012,19 +996,14 @@ void StructureSE::EncodeDestiny(Buffer &into)
     head.posX = x();
     head.posY = y();
     head.posZ = z();
-    if (m_tcu or m_ihub or m_sbu)
-    {
+    if (m_tcu or m_ihub or m_sbu) {
         // may need to update this after things are working
         head.mode = Ball::Mode::RIGID;
         head.flags = Ball::Flag::IsGlobal;
-    }
-    else if (m_tower)
-    {
+    } else if (m_tower) {
         head.mode = Ball::Mode::STOP;
         head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? Ball::Flag::IsFree : 0) /*Ball::Flag::HasMiniBalls*/;
-    }
-    else
-    {
+    } else {
         head.mode = Ball::Mode::RIGID;
         //TODO check for miniballs and add here if found.
         head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? Ball::Flag::IsFree : 0 /*Ball::Flag::IsMassive*/) /*Ball::Flag::HasMiniBalls*/;
@@ -1032,8 +1011,7 @@ void StructureSE::EncodeDestiny(Buffer &into)
     into.Append(head);
 
     /** @todo these may need more work....  */
-    if (head.mode != Ball::Mode::RIGID)
-    {
+    if (head.mode != Ball::Mode::RIGID) {
         MassSector mass = MassSector();
         mass.cloak = 0;
         mass.corporationID = m_corpID;
@@ -1080,14 +1058,11 @@ void StructureSE::EncodeDestiny(Buffer &into)
         [Radius: 796.5781]
         [Offset: (0, 2598, 1)]
     */
-    if (head.mode == Ball::Mode::RIGID)
-    {
+    if (head.mode == Ball::Mode::RIGID) {
         RIGID_Struct main;
         main.formationID = 0xFF;
         into.Append(main);
-    }
-    else if (head.mode == Ball::Mode::STOP)
-    {
+    } else if (head.mode == Ball::Mode::STOP) {
         STOP_Struct main;
         main.formationID = 0xFF;
         into.Append(main);
@@ -1113,19 +1088,14 @@ PyDict *StructureSE::MakeSlimItem()
     slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
     slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
 
-    if (m_module or m_tower)
-    { // for control towers and structures
+    if (m_module or m_tower) { // for control towers and structures
         slim->SetItemString("posTimestamp", new PyLong(m_data.timestamp));
         slim->SetItemString("incapacitated", new PyInt(m_data.state == EVEPOS::StructureState::Incapacitated));
         slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
-    }
-    else if (m_tcu)
-    {
+    } else if (m_tcu) {
         slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
         slim->SetItemString("posTimestamp", PyStatic.NewNone());
-    }
-    else if (m_miner)
-    {
+    } else if (m_miner) {
         PyTuple *tuple = new PyTuple(3);
         tuple->SetItem(0, new PyFloat(m_rotation.x));
         tuple->SetItem(1, new PyFloat(m_rotation.y));
@@ -1137,8 +1107,7 @@ PyDict *StructureSE::MakeSlimItem()
     if (m_module)
         slim->SetItemString("controlTowerID", new PyLong(m_data.towerID));
 
-    if (is_log_enabled(POS__SLIMITEM))
-    {
+    if (is_log_enabled(POS__SLIMITEM)) {
         _log(POS__SLIMITEM, "StructureSE::MakeSlimItem() - %s(%u)", GetName(), m_data.itemID);
         slim->Dump(POS__SLIMITEM, "     ");
     }
@@ -1183,9 +1152,10 @@ void StructureSE::GetEffectState(PyList &into)
     // set guid here depending on tower state
     switch (m_data.state) {
         case EVEPOS::StructureState::Online:
-        case EVEPOS::StructureState::Operating:
+        case EVEPOS::StructureState::Operating: {
             fxState->SetItemString(6, "effects.StructureOnline");
             break;
+        }
         case EVEPOS::StructureState::Incapacitated:
         case EVEPOS::StructureState::Unanchored:
         case EVEPOS::StructureState::Anchored:
@@ -1194,9 +1164,10 @@ void StructureSE::GetEffectState(PyList &into)
         case EVEPOS::StructureState::Vulnerable:
         case EVEPOS::StructureState::SheildReinforced:
         case EVEPOS::StructureState::ArmorReinforced:
-        case EVEPOS::StructureState::Invulnerable:
+        case EVEPOS::StructureState::Invulnerable: {
             fxState->SetItemString(6, "effects.StructureOffline");
             break;
+        }
     }
 
     fxState->SetItem(7, PyStatic.NewFalse());         // isOffensive
@@ -1223,25 +1194,17 @@ void StructureSE::Killed(Damage &damage)
     Client *pClient(nullptr);
     SystemEntity *killer = damage.srcSE;
 
-    if (killer->HasPilot())
-    {
+    if (killer->HasPilot()) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
-    }
-    else if (killer->IsDroneSE())
-    {
+    } else if (killer->IsDroneSE()) {
         pClient = sEntityList.FindClientByCharID(killer->GetSelf()->ownerID());
-        if (pClient == nullptr)
-        {
+        if (pClient == nullptr) {
             sLog.Error("StructureSE::Killed()", "killer == IsDrone and pPlayer == nullptr");
-        }
-        else
-        {
+        } else {
             killerID = pClient->GetCharacterID();
         }
-    }
-    else
-    {
+    } else {
         killerID = killer->GetID();
     }
 
@@ -1251,27 +1214,22 @@ void StructureSE::Killed(Damage &damage)
     std::map<uint32, InventoryItemRef> deadShipInventory;
     deadShipInventory.clear();
     m_self->GetMyInventory()->GetInventoryMap(deadShipInventory);
-    if (!deadShipInventory.empty())
-    {
+    if (!deadShipInventory.empty()) {
         uint32 s = 0, d = 0, x = 0;
-        for (auto cur : deadShipInventory)
-        {
+        for (auto cur : deadShipInventory) {
             d = 0;
             x = cur.second->quantity();
             s = (cur.second->isSingleton() ? 1 : 0);
-            if (cur.second->categoryID() == EVEDB::invCategories::Blueprint)
-            {
+            if (cur.second->categoryID() == EVEDB::invCategories::Blueprint) {
                 // singleton for bpo = 1, bpc = 2.
                 BlueprintRef bpRef = BlueprintRef::StaticCast(cur.second);
                 s = (bpRef->copy() ? 2 : s);
             }
             blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() << " s=" << s;
             // all items have 50% chance of drop, even from popped ship
-            if (IsEven(MakeRandomInt(0, 100)))
-            {
+            if (IsEven(MakeRandomInt(0, 100))) {
                 // item survived.  check qty for drop
-                if (x > 1)
-                {
+                if (x > 1) {
                     d = MakeRandomInt(0, x);
                     x -= d;
                 }
@@ -1319,8 +1277,7 @@ void StructureSE::Killed(Damage &damage)
     MapDB::AddKill(locationID);
     MapDB::AddFactionKill(locationID);
 
-    if (pClient != nullptr)
-    {
+    if (pClient != nullptr) {
         //award kill bounty.
         //AwardBounty( pClient );
         if (m_system->GetSystemSecurityRating() > 0)
@@ -1328,14 +1285,12 @@ void StructureSE::Killed(Damage &damage)
     }
 
     GPoint wreckPosition = m_destiny->GetPosition();
-    if (wreckPosition.isNaN())
-    {
+    if (wreckPosition.isNaN()) {
         sLog.Error("StructureSE::Killed()", "Wreck Position is NaN");
         return;
     }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
-    if (!IsWreckTypeID(wreckTypeID))
-    {
+    if (!IsWreckTypeID(wreckTypeID)) {
         sLog.Error("StructureSE::Killed()", "Could not get wreckType for %s of type %u", m_self->name(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
@@ -1345,8 +1300,7 @@ void StructureSE::Killed(Damage &damage)
     wreck_name += " Wreck";
     ItemData wreckItemData(wreckTypeID, killerID, locationID, flagNone, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer(wreckItemData);
-    if (wreckItemRef.get() == nullptr)
-    {
+    if (wreckItemRef.get() == nullptr) {
         sLog.Error("StructureSE::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
         return;
     }
@@ -1372,8 +1326,7 @@ void StructureSE::Killed(Damage &damage)
     wreckEntity.typeID = wreckTypeID;
     wreckEntity.position = wreckPosition;
 
-    if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID()))
-    {
+    if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
         sLog.Error("StructureSE::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
         wreckItemRef->Delete();
         return;
@@ -1384,6 +1337,7 @@ void StructureSE::Killed(Damage &damage)
 void StructureSE::Anchor()
 {
 }
+
 void StructureSE::Offline()
 {
 }

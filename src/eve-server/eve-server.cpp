@@ -261,9 +261,9 @@ int main( int argc, char* argv[] )
     }
     /* removed code for this  25 March 2020
     uint16 m_idle = sConfig.server.idleSleepTime;       // default 1s.  max 65.535s
-    if (m_idle == 1000)
+    if (m_idle == 1000) {
         sLog.Green("  Idle Sleep Time","Default at 1000ms.");
-    else {
+    } else {
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
         sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", m_idle);
     } */
@@ -864,9 +864,9 @@ int main( int argc, char* argv[] )
             if (affinity & (1 << i))
                 CPU_SET(i, &mask);
 
-        if (sched_setaffinity(0, sizeof(mask), &mask))
+        if (sched_setaffinity(0, sizeof(mask), &mask)) {
             sLog->outError("Can't set used processors (hex): %x, error: %s", affinity, strerror(errno));
-        else {
+        } else {
             CPU_ZERO(&mask);
             sched_getaffinity(0, sizeof(mask), &mask);
             sLog->outString("Using processors (bitmask, hex): %lx", *(__cpu_mask*)(&mask));
