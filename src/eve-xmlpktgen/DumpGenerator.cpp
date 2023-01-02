@@ -106,7 +106,7 @@ bool ClassDumpGenerator::ProcessElementPtr( const TiXmlElement* field )
         "\n"
         "    std::string %s_n( pfx );\n"
         "    %s_n += \"    \";\n"
-        "    if (%s != nullptr) [\n"
+        "    if (%s != nullptr) {\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
         "    } else {\n"
         "        _log( l_type, \"%%sERROR: ElementPtr = nullptr.\", %s_n.c_str() );\n"
@@ -133,7 +133,7 @@ bool ClassDumpGenerator::ProcessRaw( const TiXmlElement* field )
         "    %s_n += \"    \";\n"
         "    if (%s != nullptr) {\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
-        "    } else [\n"
+        "    } else {\n"
         "        _log( l_type, \"%%sERROR: raw = nullptr.\", %s_n.c_str() );\n"
         "    }\n",
         name, name, name, name,

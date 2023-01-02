@@ -129,7 +129,7 @@ std::string PyRep::StringContent(PyRep* pRep)
     } else if (pRep->IsNone()) {
         return "";
     }
-}
+    
     sLog.Error("PyRep::StringContent()", "Expected PyString or PyWString but got %s.", pRep->TypeString());
     return "";
 }

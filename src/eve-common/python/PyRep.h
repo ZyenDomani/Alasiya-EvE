@@ -27,8 +27,6 @@
 #ifndef EVE_PY_REP_H
 #define EVE_PY_REP_H
 
-#include <assert.h>
-
 
 class PyInt;
 class PyLong;
