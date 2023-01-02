@@ -311,7 +311,7 @@ uint8 MarshalStringTable::LookupIndex( const char* str )
 
 const char* MarshalStringTable::LookupString( uint8 index )
 {
-    if ( index-- < s_mStringTableSize )
+    if ( --index < s_mStringTableSize )
         return s_mStringTable[ index ];
     else
         return nullptr;
