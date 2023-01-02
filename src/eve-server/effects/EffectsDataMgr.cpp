@@ -157,7 +157,7 @@ Effect FxDataMgr::GetEffect(uint16 eID)
 void FxDataMgr::GetTypeEffect(uint16 typeID, std::vector< TypeEffects >& typeEffMap)
 {
     auto itr = m_typeFxMap.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second; it++)
         typeEffMap.push_back(it->second);
 }
 

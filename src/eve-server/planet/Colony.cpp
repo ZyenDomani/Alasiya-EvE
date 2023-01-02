@@ -504,7 +504,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     // routeID is sent as tempID like pins.
     std::list<uint32> list1;
     list1.clear();
-    for (size_t i = 0; i < path->size(); ++i) {
+    for (size_t i = 0; i < path->size(); i++) {
         if (path->GetItem(i)->IsTuple()) {
             list1.push_back(PyRep::IntegerValue(path->GetItem(i)->AsTuple()->GetItem(1)));
         } else if (path->GetItem(i)->IsInt()) {
@@ -601,7 +601,7 @@ void Colony::UpgradeCommandCenter(uint32 pinID, int8 level) {
 void Colony::UpgradeLink(uint32 src, uint32 dest, uint8 level)
 {
     std::map<uint32, PI_Link>::iterator itr = ccPin->links.begin();
-    for (; itr != ccPin->links.end(); ++itr)
+    for (; itr != ccPin->links.end(); itr++)
         if (itr->second.endpoint1 == src)
             if (itr->second.endpoint2 == dest) {
                 itr->second.level = level;
@@ -682,7 +682,7 @@ void Colony::RemovePin(uint32 pinID)
 void Colony::RemoveLink(uint32 src, uint32 dest)
 {
     std::map<uint32, PI_Link>::iterator itr = ccPin->links.begin();
-    for (; itr != ccPin->links.end(); ++itr)
+    for (; itr != ccPin->links.end(); itr++)
         if (itr->second.endpoint1 == src)
             if (itr->second.endpoint2 == dest) {
                 _log(COLONY__INFO, "Colony::RemoveLink() - Removing linkID %u - src: %u, dest: %u", itr->first, src, dest);
@@ -1429,7 +1429,7 @@ void Colony::ProcessECUs(bool& updateTimes)
             _log(COLONY__DEBUG, "Colony::ProcessECUs() - ECU pin %u - begin processing with %u cycles (%0.2f / %0.2f)", \
                     ecu.first, cycles, delta, (ecu.second.cycleTime / EvE::Time::Hour));
         auto destRouteItr = m_destRoutes.equal_range(plant->first);
-        for (auto it = destRouteItr.first; it != destRouteItr.second; ++it) {
+        for (auto it = destRouteItr.first; it != destRouteItr.second; it++) {
             // verify this route begins at this pin.
             //if (it->second.srcPinID != ecu.first)
             //    continue;
@@ -1532,7 +1532,7 @@ void Colony::ProcessPlants(bool& updateTimes)
         // plants must be processed in order to correctly make products and send to downstream recipients.
         // this allows for both silo->plant->silo->plant and silo->plant->plant->plant->silo routing (or any combination of plant and silo routing)
         auto cycleItr = m_plantMap.equal_range(curCycle);
-        for (auto it = cycleItr.first; it != cycleItr.second; ++it) {
+        for (auto it = cycleItr.first; it != cycleItr.second; it++) {
             _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Processing for Plant %u", it->second);
 
             // first, find plant pin in plant map
@@ -1613,7 +1613,7 @@ void Colony::ProcessPlants(bool& updateTimes)
             // third, check supply routes for available matls and xfer to this plant
             _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Input Route loop for Plant %u.", plant->first);
             auto destRouteItr = m_destRoutes.equal_range(plant->first);
-            for (auto it = destRouteItr.first; it != destRouteItr.second; ++it) {
+            for (auto it = destRouteItr.first; it != destRouteItr.second; it++) {
                 // we are ONLY checking routes TO this plant.
                 //if (it->second.destPinID != plant->first)
                 //    continue;
@@ -1803,7 +1803,7 @@ void Colony::ProcessPlants(bool& updateTimes)
                 // at this point, *SOMETHING* has changed in this plant, so send it to update
                 destPin->second.update = true;
                 auto srcRouteItr = m_srcRoutes.equal_range(plant->first);
-                for (auto it = srcRouteItr.first; it != srcRouteItr.second; ++it) {
+                for (auto it = srcRouteItr.first; it != srcRouteItr.second; it++) {
                     // verify this route begins at this plant.  should be only ONE route here for this output
                     //if (route.second.srcPinID != plant->first)
                     //    continue;

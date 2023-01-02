@@ -72,7 +72,7 @@ void MissionDataMgr::Process()
             if (itr->second.expiryTime < GetFileTimeNow()) {
                 pAgent = sEntityList.GetAgent(itr->second.agentID);
                 pClient = sEntityList.FindClientByCharID(itr->first);
-                // notify client if they are online.  eventaully we'll send mail also
+                // notify client if they are online.  eventually we'll send mail also
                 if (itr->second.stateID == Mission::State::Accepted) {
                     pAgent->SendMissionUpdate(pClient, "failed");
                     itr->second.stateID = Mission::State::Failed;
@@ -98,7 +98,7 @@ void MissionDataMgr::Process()
                 pAgent = nullptr;
                 pClient = nullptr;
             } else {
-                ++itr;
+                itr++;
             }
         }
     }
@@ -383,14 +383,14 @@ void MissionDataMgr::AddMissionOffer(uint32 charID, MissionOffer& data)
 void MissionDataMgr::RemoveMissionOffer(uint32 charID, MissionOffer& data)
 {
     auto itr = m_offers.equal_range(charID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second; it++)
         if (it->second.agentID == data.agentID) {
             m_offers.erase(it);
             break;
         }
 
     itr = m_aoffers.equal_range(data.agentID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second; it++)
         if (it->second.characterID == charID) {
             m_aoffers.erase(it);
             break;
@@ -400,21 +400,21 @@ void MissionDataMgr::RemoveMissionOffer(uint32 charID, MissionOffer& data)
 void MissionDataMgr::LoadAgentOffers(const uint32 agentID, std::map< uint32, MissionOffer >& data)
 {
     auto itr = m_aoffers.equal_range(agentID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second; it++)
         data[it->second.characterID] = (it->second);
 }
 
 void MissionDataMgr::LoadMissionOffers(uint32 charID, std::vector<MissionOffer>& data)
 {
     auto itr = m_offers.equal_range(charID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second; it++)
         data.push_back(it->second);
 
     // config switch to allow loading/displaying of expired/completed mission offers
     // not completely working yet.....AgentMgrService::Handle_GetMyJournalDetails() will need work to implement this.
     if (sConfig.server.LoadOldMissions) {
         auto itr = m_xoffers.equal_range(charID);
-        for (auto it = itr.first; it != itr.second; ++it)
+        for (auto it = itr.first; it != itr.second; it++)
             data.push_back(it->second);
     }
 }
@@ -453,11 +453,11 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
             std::vector<CourierData> cVec;
             if (important) {
                 auto itr = m_courierImp.equal_range(level);
-                for (auto it = itr.first; it != itr.second; ++it)
+                for (auto it = itr.first; it != itr.second; it++)
                     cVec.push_back(it->second);
             } else {
                 auto itr = m_courier.equal_range(level);
-                for (auto it = itr.first; it != itr.second; ++it)
+                for (auto it = itr.first; it != itr.second; it++)
                     cVec.push_back(it->second);
             }
             cData = cVec[MakeRandomInt(0, (cVec.size() -1))];
@@ -490,11 +490,11 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
             std::vector<CourierData> cVec;
             if (important) {
                 auto itr = m_miningImp.equal_range(level);
-                for (auto it = itr.first; it != itr.second; ++it)
+                for (auto it = itr.first; it != itr.second; it++)
                     cVec.push_back(it->second);
             } else {
                 auto itr = m_mining.equal_range(level);
-                for (auto it = itr.first; it != itr.second; ++it)
+                for (auto it = itr.first; it != itr.second; it++)
                     cVec.push_back(it->second);
             }
             cData = cVec[MakeRandomInt(0, (cVec.size() -1))];
@@ -582,14 +582,14 @@ std::string MissionDataMgr::GetTypeLabel(uint8 typeID)
 void MissionDataMgr::UpdateMissionData(uint32 charID, MissionOffer& data)
 {
     auto itr = m_offers.equal_range(charID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second; it++)
         if (it->second.agentID == data.agentID) {
             it->second = data;
             break;
         }
 
     itr = m_aoffers.equal_range(data.agentID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second; it++)
         if (it->second.characterID == charID) {
             it->second = data;
             break;

@@ -225,7 +225,7 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
     cRef->ClearSkillQueue(true);
     SkillQueue_Element el;
     std::vector<PyRep*>::const_iterator cur = args.queue->begin(), end = args.queue->end();
-    for (; cur != end; ++cur) {
+    for (; cur != end; cur++) {
         if (!el.Decode(*cur))         {
             _log(SERVICE__ERROR, "%s: Failed to decode element of SkillQueue (%u). Skipping.", call.client->GetName(), *cur);
             continue;

@@ -222,7 +222,7 @@ void BeltMgr::Save() {
 void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list)
 {
     auto range = m_asteroids.equal_range(beltID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         list.push_back(itr->second);
 }
 
@@ -314,7 +314,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     ++pcs;
     GPoint center(pSE->SysBubble()->GetCenter());
     GPoint mposition(NULL_ORIGIN);
-    for (uint8 i = 1; i < pcs; ++i) {
+    for (uint8 i = 1; i < pcs; i++) {
         if (ice) {
             if (secRating > -0.2) {
                 roidradius = MakeRandomInt(20, 40) * 1000; // (40k,70k)  72-102k radius
@@ -363,7 +363,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
 uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, uint16>& roids) {
     std::unordered_multimap<float, uint16>::const_iterator cur = roids.begin();
     float chance = 0.0;
-    for(; cur != roids.end(); ++cur ) {
+    for(; cur != roids.end(); cur++ ) {
         chance += cur->first;
         _log(COSMIC_MGR__DEBUG, "BeltMgr::GetAsteroidType - checking %u with chance %.3f(%.3f)", cur->second, chance, p);
         if (chance > p )
@@ -427,7 +427,7 @@ void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
     m_db.RemoveAsteroid(pASE->GetID());
     // this doesnt work right.  not sure why yet.
     auto range = m_asteroids.equal_range(beltID);
-    for (auto itr = range.first; itr != range.second; ++itr) {
+    for (auto itr = range.first; itr != range.second; itr++) {
         if (itr->second == pASE) {
             m_asteroids.erase(itr);
             return;

@@ -151,7 +151,7 @@ void StationDataMgr::AddOffice(uint32 stationID, OfficeData& data)
 void StationDataMgr::LoadOffices(uint32 stationID, std::map<uint32, OfficeData>& data)
 {
     auto range = m_stationOfficeData.equal_range(stationID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         data.emplace(itr->second.officeID, itr->second);
 }
 
@@ -177,7 +177,7 @@ uint32 StationDataMgr::GetOwnerID(uint32 stationID)
 uint32 StationDataMgr::GetOfficeIDForCorp(uint32 stationID, uint32 corpID)
 {
     auto range = m_stationOfficeData.equal_range(stationID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         if (itr->second.corporationID == corpID)
             return itr->second.officeID;
     return 0;
@@ -263,11 +263,11 @@ void StationDataMgr::GetStationOfficeIDs(uint32 locationID, std::vector<OfficeDa
 {
     if (sDataMgr.IsStation(locationID)) {
         auto range = m_stationOfficeData.equal_range(locationID);
-        for (auto itr = range.first; itr != range.second; ++itr)
+        for (auto itr = range.first; itr != range.second; itr++)
             data.push_back(itr->second);
     } else if (IsOfficeFolder(locationID)) {
         auto range = m_stationOfficeData.equal_range((locationID - STATION_OFFICE_OFFSET));
-        for (auto itr = range.first; itr != range.second; ++itr)
+        for (auto itr = range.first; itr != range.second; itr++)
             if (itr->second.folderID == locationID)
                 data.push_back(itr->second);
     } else if (IsOfficeID(locationID)) {

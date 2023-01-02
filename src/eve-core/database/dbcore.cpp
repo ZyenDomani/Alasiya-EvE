@@ -382,7 +382,7 @@ bool DBcore::IsSafeString(const char *str) {
 }
 
 bool DBcore::IsSafeString(std::string &s) {
-    for (uint i = 0; i < s.length(); ++i) {
+    for (uint i = 0; i < s.length(); i++) {
         switch (s[i]) {
             case '\'':
             case '\\':
@@ -544,7 +544,7 @@ void DBQueryResult::SetResult( MYSQL_RES* res, uint32 colCount )
 
     if (mResult != nullptr) {
         mFields = new MYSQL_FIELD*[ mColumnCount ];
-        for( uint16 i = 0; i < mColumnCount; ++i )
+        for( uint16 i = 0; i < mColumnCount; i++ )
             mFields[ i ] = mysql_fetch_field( mResult );
     }
 }

@@ -92,7 +92,7 @@ void BubbleManager::Process() {
             }
             if ((*itr)->HasDynamics())
                 (*itr)->ProcessWander(m_wanderers);
-            ++itr;
+            itr++;
         }
 
         if (!m_wanderers.empty()) {
@@ -148,7 +148,7 @@ void BubbleManager::RemoveEmpty()
             RemoveBubble((*itr)->GetSystem()->GetID(), (*itr));
             itr = m_bubbles.erase(itr);
         } else {
-            ++itr;
+            itr++;
         }
     }
 }
@@ -222,7 +222,7 @@ SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &pos) cons
                 pos.x, pos.y, pos.z, systemID);
 
     auto range = m_sysBubbleMap.equal_range(systemID);
-    for ( auto itr = range.first; itr != range.second; ++itr )
+    for ( auto itr = range.first; itr != range.second; itr++ )
         if (itr->second->InBubble(pos))
             return itr->second;
 
@@ -242,7 +242,7 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
 SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
     // determine if new center (pos) is within 2x radius of another bubble center. (overlap)
     auto range = m_sysBubbleMap.equal_range(sysMgr->GetID());
-    for ( auto itr = range.first; itr != range.second; ++itr )
+    for ( auto itr = range.first; itr != range.second; itr++ )
         if (itr->second->IsOverlap(pos)) {
             GVector dir(itr->second->GetCenter(), pos);
             dir.normalize();
@@ -274,7 +274,7 @@ SystemBubble* BubbleManager::FindBubbleByID(uint16 bubbleID)
 void BubbleManager::ClearSystemBubbles(uint32 systemID)
 {
     auto range = m_sysBubbleMap.equal_range(systemID);
-    for (auto itr = range.first; itr != range.second; ++itr){
+    for (auto itr = range.first; itr != range.second; itr++) {
         m_bubbles.remove(itr->second);
         m_bubbleIDMap.erase(itr->second->GetID());
     }
@@ -285,7 +285,7 @@ void BubbleManager::ClearSystemBubbles(uint32 systemID)
 void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB)
 {
     auto range = m_sysBubbleMap.equal_range(systemID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         if (itr->second == pSB) {
             m_sysBubbleMap.erase(itr);
             return;
@@ -305,7 +305,7 @@ void BubbleManager::RemoveSpawnID(uint16 bubbleID, uint32 spawnID)
 {
     // is this right??
     auto range = m_spawnIDs.equal_range(bubbleID);
-    for (auto itr = range.first; itr != range.second; ++itr )
+    for (auto itr = range.first; itr != range.second; itr++ )
         if (itr->second == spawnID) {
             m_spawnIDs.erase(itr);
             return;
@@ -323,7 +323,7 @@ uint32 BubbleManager::GetBeltID(uint16 bubbleID)
 uint32 BubbleManager::GetBubbleCount(uint32 systemID) {
     uint32 count = 0;
     auto range = m_sysBubbleMap.equal_range(systemID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         ++count;
     return count;
 }
@@ -354,7 +354,7 @@ void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
 void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSignature>& anom) {
     ContainerSE* cSE(nullptr);
     auto range = m_sysBubbleMap.equal_range(systemID);
-    for (auto itr = range.first; itr != range.second; ++itr) {
+    for (auto itr = range.first; itr != range.second; itr++) {
         cSE = itr->second->GetCenterMarker();
         if (cSE == nullptr)
             continue;
@@ -388,12 +388,12 @@ void BubbleManager::RemoveMarkers() {
 
 void BubbleManager::MarkCenters(uint32 systemID) {
     auto range = m_sysBubbleMap.equal_range(systemID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         itr->second->MarkCenter();
 }
 
 void BubbleManager::RemoveMarkers(uint32 systemID) {
     auto range = m_sysBubbleMap.equal_range(systemID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         itr->second->RemoveMarkers();
 }

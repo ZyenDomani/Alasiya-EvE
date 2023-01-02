@@ -170,7 +170,7 @@ bool PyXMLGenerator::VisitDict( const PyDict* rep )
     PyDict::const_iterator cur, end;
     cur = rep->begin();
     end = rep->end();
-    for(; cur != end; ++cur)
+    for(; cur != end; cur++)
     {
         if ( cur->first->IsString() )
         {
@@ -261,7 +261,7 @@ bool PyXMLGenerator::VisitDict( const PyDict* rep )
     //! visit dict elements.
     cur = rep->begin();
     end = rep->end();
-    for(; cur != end; ++cur)
+    for(; cur != end; cur++)
     {
         if ( !cur->first->IsString() )
         {
@@ -300,7 +300,7 @@ bool PyXMLGenerator::VisitList( const PyList* rep )
         PyList::const_iterator cur, end;
         cur = rep->begin();
         end = rep->end();
-        for( uint32 i = 0; cur != end; ++cur, ++i )
+        for( uint32 i = 0; cur != end; cur++, i++ )
         {
             fprintf( mInto, "%s<!-- %u -->\n", _pfx(), i );
             (*cur)->visit( *this );
@@ -396,7 +396,7 @@ bool PyXMLGenerator::VisitTuple( const PyTuple* rep )
     PyTuple::const_iterator cur, end;
     cur = rep->begin();
     end = rep->end();
-    for(uint32 i = 0; cur != end; ++cur, ++i)
+    for(uint32 i = 0; cur != end; cur++, i++)
     {
         fprintf( mInto, "%s<!-- %d -->\n", _pfx(), i );
         (*cur)->visit( *this );

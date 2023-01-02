@@ -1,0 +1,57 @@
+
+     movement is set according to time, speed fraction, and objects' maximum configured speed.
+     all *Fraction variables use fuzzy logic
+     -allan 8Oct14  -major update 20Nov15  -added prop mod code 29Mar17
+      -base movement rewrite/update 18Oct21
+
+      speed is the actual distance an object travels over a given time
+       -> time is measured in seconds
+       -> distance measured in meters
+      m_maxSpeed is ship maximum speed based on user input and current configuration.
+       -> set in UpdateVelocity()
+       -> only used for logging
+      m_maxShipSpeed (MSS) is the maximum speed an object can travel in a given time
+       -> measured in m/s
+       -> initially set by UpdateShipVariables() based on ship configuration
+       -> reset by SpeedBoost() for prop mods
+      m_userSpeedFraction (USF) is user-set fraction of max ship speed (fractional from speedo or full from command).
+       -> sets m_maxSpeed
+       -> used with ASF and MSS to set speed
+       -> range is 0.0 for stop and 1.0 for full
+      m_prevSpeedFraction (PSF) is previous speed fraction
+       -> reset on every speed change
+       -> used to calculate estimated time to change speed
+       -> used to set speed when speed changes via user input or prop mod
+       -> can be > 1.0 based on other factors (deactivating prop mod at full speed will give PSF > 1.0)
+      m_activeSpeedFraction (ASF) this is the percentage of ship max speed for the given tic.
+       -> set in MoveObject()
+       -> uses USF and MSS to set speed
+      m_timeFraction (TF) holds current euler value for time.
+       -> this is the current percent of change between previous speed and requested speed.
+       -> range is 0.0 to 1.0
+       -> set in MoveObject()
+       -> sets ASF (directly)
+       -> sets velocity (indirectly)
+      m_maxOrbitSpeedFraction (OSF) is ship's max speed based on orbit data
+       -> may not be used after update
+      m_moveTime is timestamp when move change started
+       -> data type is (double) FileTime
+       -> set in BeginMovement()
+       -> reset on every speed change
+       -> used to calculate TF
+      m_targetPoint holds current target coords.
+       -> set by goto, warp, align, follow, orbit
+       -> sets m_shipHeading
+      m_shipHeading holds current direction and is set in _Turn()
+       -> used with speed to set m_velocity
+      m_velocity is current ship velocity.  set in MoveObject()
+       -> m_velocity = m_shipHeading * (ASF * MSS)
+       -> this is the variable used for position tracking.
+      m_shipAccelTime is calculated time to complete requested speed change
+       -> measured in seconds
+       -> set on all speed changes
+      m_shipMaxAccelTime is calculated time for ship to accelerate from stop to full
+       -> measured in seconds
+       -> initially set by UpdateShipVariables() based on ship configuration
+       -> reset by SpeedBoost() for prop mods
+    

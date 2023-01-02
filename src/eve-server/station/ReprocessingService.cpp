@@ -227,7 +227,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             continue;
 
         std::vector<Recoverable>::iterator itr = recoverables.begin();
-        for (; itr != recoverables.end(); ++itr) {
+        for (; itr != recoverables.end(); itr++) {
             uint32 full = itr->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
             uint32 quantity(floor(full * efficiency * (1.0f - tax)));
             if (quantity == 0)

@@ -208,7 +208,7 @@ void ItemType::LoadEffects()
 bool ItemType::HasEffect(uint16 effectID) const
 {
     std::unordered_multimap<int8, Effect>::const_iterator itr = m_stateFxMap.begin();
-    for (; itr != m_stateFxMap.end(); ++itr)
+    for (; itr != m_stateFxMap.end(); itr++)
         if (itr->second.effectID == effectID)
             return true;
     return false;
@@ -217,7 +217,7 @@ bool ItemType::HasEffect(uint16 effectID) const
 void ItemType::GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const
 {
     auto itr = m_stateFxMap.equal_range(state);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second; it++)
         effectMap.insert(std::pair<uint16, Effect>(it->second.effectID, it->second));
 }
 

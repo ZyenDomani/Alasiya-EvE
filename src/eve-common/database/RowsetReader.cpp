@@ -36,9 +36,8 @@ size_t BaseRowsetReader::FindColumn( const char* name )
 {
     const uint32 cc = columnCount();
 
-    for( uint32 i = 0; i < cc; ++i )
-    {
-        if ( 0 == strcmp( name, columnName( i ) ) )
+    for (uint32 i = 0; i < cc; i++) {
+        if (0 == strcmp(name, columnName(i)))
             return i;
     }
 
@@ -267,7 +266,7 @@ bool SetSQLDumper::VisitTuple( const PyTuple* rep )
 
         cur = possible_header->begin();
         end = possible_header->end();
-        for(; valid && cur != end; ++cur)
+        for(; valid && cur != end; cur++)
         {
             if ( !(*cur)->IsString() )
                 valid = false;
@@ -275,7 +274,7 @@ bool SetSQLDumper::VisitTuple( const PyTuple* rep )
 
         cur = possible_items->begin();
         end = possible_items->end();
-        for(; valid && cur != end; ++cur)
+        for(; valid && cur != end; cur++)
         {
             if ( !(*cur)->IsList() )
                 valid = false;

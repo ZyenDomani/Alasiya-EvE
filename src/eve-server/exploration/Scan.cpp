@@ -158,7 +158,7 @@ void Scan::RequestScans(PyDict* dict) {
 
     uint32 probeID(0);
     PyDict::const_iterator cItr = dict->begin();
-    for (; cItr != dict->end(); ++cItr) {
+    for (; cItr != dict->end(); cItr++) {
         // find probe in map....
         probeID = PyRep::IntegerValueU32(cItr->first);  // key
         std::map<uint32, ProbeSE*>::iterator pItr = m_probeMap.find(probeID);
@@ -618,7 +618,7 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
         float probeSig1(0), probeSig2(0);
         // reverse-iterate to use highest values first
         std::map<float, std::pair<ProbeSE*, ProbeSE*>>::reverse_iterator itr = angleMap.rbegin(), end = angleMap.rend();
-        for (; itr != end; ++itr) {
+        for (; itr != end; itr++) {
             // we are using top 3 angle pairs of 2 probes/angle, which gives 6 total scans for str calc.
             // if player has signal acquisition and sensor linking both at l5, this will allow another pair of scan results
             if (count > max)

@@ -204,7 +204,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
 
         if (mbl->count) {
             _log( into, "    MiniBall Count: %d", mbl->count );
-            for( uint16 r = 0; r < mbl->count; ++r ) {
+            for( uint16 r = 0; r < mbl->count; r++ ) {
                 const MiniBall* mini = (const MiniBall*)data;
                 data += sizeof( MiniBall );
                 len -= sizeof( MiniBall );

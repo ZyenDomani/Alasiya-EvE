@@ -212,7 +212,7 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
     std::vector<Corp::MedalData> dataList;
     //if (is_log_enabled(CORP__PKT_TRACE))
     //    args.data->Dump(CORP__PKT_TRACE, "");
-    for (PyList::const_iterator itr = args.data->begin(); itr != args.data->end(); ++itr) {
+    for (PyList::const_iterator itr = args.data->begin(); itr != args.data->end(); itr++) {
         list = (*itr)->AsList();
         if (list == nullptr)
             continue;
@@ -333,7 +333,7 @@ PyResult CorporationService::Handle_GiveMedalToCharacters(PyCallArgs &call)
 
     // can award one medal to multiple chars at once, at 5m isk per award
     std::vector< uint32 > charVec;
-    for (PyList::const_iterator itr = args.recipientIDs->begin(); itr != args.recipientIDs->end(); ++itr)
+    for (PyList::const_iterator itr = args.recipientIDs->begin(); itr != args.recipientIDs->end(); itr++)
         charVec.push_back(PyRep::IntegerValue(*itr));
 
     uint32 cost = sConfig.rates.medalAwardCost;

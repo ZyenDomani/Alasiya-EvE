@@ -1229,7 +1229,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
         result.invItem = PyStatic.NewNone();
-        for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; ++itr)
+        for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; itr++)
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         return true;
     }
@@ -1268,7 +1268,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
         result.activeEffects[es.env_effectID] = es.Encode();
     }
 
-    for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; ++itr) {
+    for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; itr++) {
         //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
         if ((*itr).first == AttrWarpSpeedMultiplier) {
             result.attributes[AttrWarpSpeedMultiplier] = new PyFloat((*itr).second.get_float() /3);

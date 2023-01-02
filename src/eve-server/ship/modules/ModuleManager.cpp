@@ -869,7 +869,7 @@ PyRep* ModuleManager::ModuleRepair(uint32 modID)
 
     GenericModule* pMod = GetModule(modID);
     if (pMod == nullptr) {
-        _log(MODULE__ERROR, "MM::ModuleRepair() - module %s not found.", modID);
+        _log(MODULE__ERROR, "MM::ModuleRepair() - module %u not found.", modID);
         return PyStatic.NewFalse();
     }
 
@@ -883,7 +883,7 @@ void ModuleManager::StopModuleRepair(uint32 modID)
 {
     GenericModule* pMod = GetModule(modID);
     if (pMod == nullptr) {
-        _log(MODULE__ERROR, "MM::ModuleRepair() - module %s not found.", modID);
+        _log(MODULE__ERROR, "MM::ModuleRepair() - module %u not found.", modID);
         return;
     }
 
@@ -1530,12 +1530,12 @@ void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod)
         if (pMod->isTurretFitted()) {
             // apply config modifier, if applicable
             pMod->GetSelf()->MultiplyAttribute(AttrSpeed, sConfig.rates.turretRoF);
-            uint8 count = pShipItem->GetAttribute(AttrTurretSlotsLeft).get_uint32() -1;
+            uint8 count = pShipItem->GetAttribute(AttrTurretSlotsLeft).get_uint32() - 1;
             pShipItem->SetAttribute(AttrTurretSlotsLeft, count, update);
         } else if (pMod->isLauncherFitted()) {
             // apply config modifier, if applicable
             pMod->GetSelf()->MultiplyAttribute(AttrSpeed, sConfig.rates.missileRoF);
-            uint8 count = pShipItem->GetAttribute(AttrLauncherSlotsLeft).get_uint32() -1;
+            uint8 count = pShipItem->GetAttribute(AttrLauncherSlotsLeft).get_uint32() - 1;
             pShipItem->SetAttribute(AttrLauncherSlotsLeft, count, update);
         }
         --m_HighSlots;

@@ -64,7 +64,7 @@ bool IsNumber( const char* str, size_t len )
         return false;
 
     bool seenDec = false;
-    for(; len > 0; ++str, --len)
+    for(; len > 0; str++, len--)
     {
         if ( !IsNumber( *str ) )
         {
@@ -116,7 +116,7 @@ bool IsHexNumber( const char* str, size_t len )
     if ( 0 == len )
         return false;
 
-    for(; len > 0; ++str, --len)
+    for(; len > 0; str++, len--)
     {
         if ( !IsHexNumber( *str ) )
             return false;
@@ -140,7 +140,7 @@ bool IsPrintable( char c )
 
 bool IsPrintable( const char* str, size_t len )
 {
-    for(; len > 0; ++str, --len)
+    for(; len > 0; str++, len--)
     {
         if ( !IsPrintable( *str ) )
             return false;
@@ -188,7 +188,7 @@ void ListToINString( const std::vector<int32>& ints, std::string& into, const ch
     std::vector<int32>::const_iterator cur, end;
     cur = ints.begin();
     end = ints.end();
-    for(; cur != end; ++cur)
+    for(; cur != end; cur++)
     {
         if ( ( cur + 1 ) != end )
             format_index += snprintf( &into[ format_index ], 12, "%i,", *cur );
@@ -203,7 +203,7 @@ void MakeUpperString( const char* source, char* target )
     if ( !target )
         return;
 
-    for(; *source; ++target, ++source )
+    for(; *source; target++, source++ )
         *target = toupper( *source );
 
     *target = 0;
@@ -214,7 +214,7 @@ void MakeLowerString( const char* source, char* target )
     if ( !target )
         return;
 
-    for(; *source; ++target, ++source )
+    for(; *source; target++, source++ )
         *target = tolower( *source );
 
     *target = 0;

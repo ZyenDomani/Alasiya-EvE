@@ -140,7 +140,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
     uint32 damage(0);
     std::vector<InventoryItemRef> itemRefVec;
     PyList::const_iterator itr = args.itemIDs->begin(), end = args.itemIDs->end();
-    for (; itr != end; ++itr) {
+    for (; itr != end; itr++) {
         iRef = sItemFactory.GetItemRef(PyRep::IntegerValueU32(*itr));
         if (iRef.get() == nullptr)
             continue;
@@ -347,13 +347,13 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
         ;  // skipChecks is populated....do something constructive here
 
     /** @todo  may have to switch to station inventory to get item to check if this is container, and remove items BEFORE repacking!!  */
-    for (PyDict::const_iterator dictItr = args.dict->begin(); dictItr != args.dict->end(); ++dictItr) {
+    for (PyDict::const_iterator dictItr = args.dict->begin(); dictItr != args.dict->end(); dictItr++) {
         // Dictionary key is LocationID, value is tuple of itemID/item locationID
         //locationID = dictItr->first->AsInt()->value();
         pList = dictItr->second->AsList();
         if (pList != nullptr) {
             // Iterate through list.
-            for (PyList::const_iterator listItr = pList->begin(); listItr != pList->end(); ++listItr) {
+            for (PyList::const_iterator listItr = pList->begin(); listItr != pList->end(); listItr++) {
                 // List is tuples of itemID, LocationID pairs.
                 tuple = (*listItr)->AsTuple();
                 if (tuple != nullptr) {

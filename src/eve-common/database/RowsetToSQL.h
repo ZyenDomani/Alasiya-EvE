@@ -99,11 +99,9 @@ void ClassifyColumnTypes( std::vector<ReaderColumnContentDesc>& into, _Reader& r
     into.clear();
     into.resize( cc );
 
-    typename _Reader::iterator cur, end;
-    cur = reader.begin();
-    end = reader.end();
-    for(; cur != end; ++cur)
-        for( size_t col = 0; col < cc; ++col )
+    typename _Reader::iterator cur = reader.begin(), end = reader.end();
+    for (; cur != end; cur++)
+        for (size_t col = 0; col < cc; col++)
             into[col].Process( cur.GetType( col ) );
 }
 
@@ -139,7 +137,7 @@ bool ReaderToSQL( const char* table_name, const char* key_field, FILE* out, _Rea
     );
 
     std::string field_list;
-    for( size_t col = 0; col < cc; ++col )
+    for( size_t col = 0; col < cc; col++ )
     {
         const char* colName = reader.columnName( col );
         const ReaderColumnContentDesc& colDesc = types[col];
@@ -176,7 +174,7 @@ bool ReaderToSQL( const char* table_name, const char* key_field, FILE* out, _Rea
     typename _Reader::iterator cur, end;
     cur = reader.begin();
     end = reader.end();
-    for( size_t rowIndex = 0; cur != end; ++cur, ++rowIndex )
+    for( size_t rowIndex = 0; cur != end; cur++, rowIndex++ )
     {
         if ( 0 == ( rowIndex % INSERT_QUERY_ROW_LIMIT ) )
         {
@@ -189,7 +187,7 @@ bool ReaderToSQL( const char* table_name, const char* key_field, FILE* out, _Rea
             fprintf( out, "," );
 
         fprintf( out, "(" );
-        for( size_t col = 0; col < cc; ++col )
+        for( size_t col = 0; col < cc; col++ )
         {
             if ( col != 0 )
                 fprintf( out, "," );

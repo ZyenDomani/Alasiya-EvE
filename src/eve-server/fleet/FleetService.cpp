@@ -877,7 +877,7 @@ void FleetService::RenameSquad(uint32 squadID, std::string name)
 bool FleetService::IsWingActive(int32 wingID)
 {
     auto range = m_wingSquads.equal_range(wingID);
-    for (auto itr = range.first; itr != range.second; ++itr) {
+    for (auto itr = range.first; itr != range.second; itr++) {
         std::map<uint32, SquadData>::iterator sItr = m_squadDataMap.find(itr->second);
         if (sItr != m_squadDataMap.end())
             if (sItr->second.members.size() > 0);
@@ -889,14 +889,14 @@ bool FleetService::IsWingActive(int32 wingID)
 void FleetService::GetSquadIDs(uint32 wingID, std::vector< uint32 >& squadIDs)
 {
     auto range = m_wingSquads.equal_range(wingID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         squadIDs.push_back(itr->second);
 }
 
 void FleetService::GetWingIDs(uint32 fleetID, std::vector< uint32 >& wingIDs)
 {
     auto range = m_fleetWings.equal_range(fleetID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         wingIDs.push_back(itr->second);
 }
 
@@ -924,7 +924,7 @@ void FleetService::GetSquadData(uint32 squadID, SquadData& data)
 void FleetService::GetMemeberVec(uint32 fleetID, std::vector< Client* >& data)
 {
     auto range = m_fleetMembers.equal_range(fleetID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         data.push_back(itr->second);
 }
 
@@ -1151,13 +1151,13 @@ void FleetService::GetRandUnitIDs(uint32 fleetID, int32& wingID, int32& squadID)
 {
     std::vector<uint32> wings, squads;
     auto range = m_fleetWings.equal_range(fleetID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         wings.push_back(itr->second);
 
     wingID = wings.at(MakeRandomInt(0, wings.size()));
 
     range = m_wingSquads.equal_range(wingID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         squads.push_back(itr->second);
 
     // make sure there is room in this squad for another member
@@ -1224,7 +1224,7 @@ void FleetService::RemoveMember(Client* pClient)
     }
 
     auto range = m_fleetMembers.equal_range(fleetID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         if (itr->second == pClient) {
             m_fleetMembers.erase(itr);
             break;
@@ -1609,7 +1609,7 @@ bool FleetService::AddJoinRequest(uint32 fleetID, Client* pClient)
 {
     // ensure only one request per client
     auto range = m_joinReq.equal_range(fleetID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         if (itr->second == pClient)
             return false;
     m_joinReq.emplace(fleetID, pClient);
@@ -1619,14 +1619,14 @@ bool FleetService::AddJoinRequest(uint32 fleetID, Client* pClient)
 void FleetService::GetJoinRequests(uint32 fleetID, std::vector< Client* >& data)
 {
     auto range = m_joinReq.equal_range(fleetID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         data.push_back(itr->second);
 }
 
 void FleetService::RemoveJoinRequest(uint32 fleetID, Client* pClient)
 {
     auto range = m_joinReq.equal_range(fleetID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; itr++)
         if (itr->second == pClient) {
             m_joinReq.erase(itr);
             return;

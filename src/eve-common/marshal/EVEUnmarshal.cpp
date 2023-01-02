@@ -338,7 +338,7 @@ PyRep* UnmarshalStream::LoadTuple()
     const uint32 count = ReadSizeEx();
     PyTuple* tuple = new PyTuple( count );
 
-    for ( uint32 i(0); i < count; ++i ) {
+    for ( uint32 i(0); i < count; i++ ) {
         PyRep* rep = LoadRep();
         if (rep == nullptr) {
             PyDecRef( tuple );
@@ -531,8 +531,7 @@ PyRep* UnmarshalStream::LoadPackedRow()
     uint32 cc = row->header()->ColumnCount();
     size_t sum(0);
 
-    for ( uint32 i(0); i < cc; i++ )
-    {
+    for ( uint32 i(0); i < cc; i++ ) {
         uint8 size = DBTYPE_GetSizeBits( row->header()->GetColumnType( i ) );
 
         sizeMap.insert( std::make_pair( size, i ) );
@@ -549,8 +548,7 @@ PyRep* UnmarshalStream::LoadPackedRow()
     std::multimap< uint8, uint32, std::greater< uint8 > >::iterator cur, end;
     cur = sizeMap.begin();
     end = sizeMap.end();
-    for (; cur != end; ++cur)
-    {
+    for (; cur != end; cur++) {
         const uint32 index = cur->second;
 
         switch( row->header()->GetColumnType( index ) )

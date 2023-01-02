@@ -258,7 +258,7 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
 
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
     //std::vector<int32> bmIDs;
-    for (size_t i = 0; i < bmList->size(); ++i)
+    for (size_t i = 0; i < bmList->size(); i++)
         m_db.ChangeOwner(bmList->GetItem(i)->AsInt()->value());
         //bmIDs.push_back(bmList->GetItem(i)->AsInt()->value());
 
@@ -285,7 +285,7 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
 
     std::vector<int32> bmIDs;
-    for (size_t i = 0; i < bmList->size(); ++i)
+    for (size_t i = 0; i < bmList->size(); i++)
         bmIDs.push_back(bmList->GetItem(i)->AsInt()->value());
 
     m_db.MoveBookmarkToFolder(args.folderID, bmIDs);
@@ -381,7 +381,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
 
     PyList* list = new PyList();
-    for (size_t i = 0; i < bmList->size(); ++i) {
+    for (size_t i = 0; i < bmList->size(); i++) {
         InventoryItemRef iRef = sItemFactory.GetItemRef(bmList->GetItem(i)->AsInt()->value());
         if (iRef.get() == nullptr) {
             codelog(ITEM__ERROR, "%s: Failed to retrieve bookmark data for voucherID %u", call.client->GetName(), bmList->GetItem(i)->AsInt()->value());

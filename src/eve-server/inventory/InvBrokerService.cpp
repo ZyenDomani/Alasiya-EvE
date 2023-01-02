@@ -452,7 +452,7 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
     }
 
     std::vector<int32>::const_iterator cur = args.items.begin(), end = args.items.end();
-    for(; cur != end; ++cur) {
+    for(; cur != end; cur++) {
         InventoryItemRef item = sItemFactory.GetItemRef( *cur );
         if (item.get() == nullptr) {
             _log(INV__ERROR, "%s: Unable to load item %u to delete it. Skipping.", call.client->GetName(), *cur);

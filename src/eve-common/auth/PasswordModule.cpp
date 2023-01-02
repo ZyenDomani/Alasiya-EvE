@@ -110,7 +110,7 @@ bool PasswordModule::GeneratePassHash(
     ShaModule::sha_update( &shaObj, _user, _userLen );
 
     // The hashing loop
-    for( size_t i = 0; i < 1000; ++i )
+    for( size_t i(0); i < 1000; i++ )
     {
         // Store the digest
         ShaModule::sha_digest( &shaObj, digest );

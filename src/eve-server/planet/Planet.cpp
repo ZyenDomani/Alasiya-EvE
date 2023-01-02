@@ -87,18 +87,18 @@ bool PlanetSE::LoadExtras() {
     m_data.dist_5 = MakeRandomInt(min, 75) * sysSec + MakeRandomFloat(0, 4);
 
     //if (sysSec > 1) {
-        for (uint16 i=0; i<3600; ++i)  //this cannot use numList
+        for (uint16 i=0; i<3600; i++)  //this cannot use numList
             m_data.buffer_1 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (uint16 i=0; i<3600; ++i)
+        for (uint16 i=0; i<3600; i++)
             m_data.buffer_2 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (uint16 i=0; i<3600; ++i)
+        for (uint16 i=0; i<3600; i++)
             m_data.buffer_3 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (uint16 i=0; i<3600; ++i)
+        for (uint16 i=0; i<3600; i++)
             m_data.buffer_4 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (uint16 i=0; i<3600; ++i)
+        for (uint16 i=0; i<3600; i++)
             m_data.buffer_5 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
     /* } else {
-        for (uint16 i=0; i<1000; ++i) {
+        for (uint16 i=0; i<1000; i++) {
             m_data.buffer_1 += asciiList[MakeRandomInt(0,57)];   // random fill buffer to capacity, 1k8 bytes.
             m_data.buffer_2 += alphaList[MakeRandomInt(0,26)];   // random fill buffer to capacity, 1k8 bytes.
             m_data.buffer_3 += numList[MakeRandomInt(0,10)];   // random fill buffer to capacity, 1k8 bytes.

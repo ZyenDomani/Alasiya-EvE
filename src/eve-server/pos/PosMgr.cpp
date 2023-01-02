@@ -502,7 +502,7 @@ PyResult PosMgrBound::Handle_SetStarbasePermissions(PyCallArgs &call) {
 
     PyList* list2 = rep2->AsList();
     //list2->Dump(POS__RSP_DUMP, "    ");
-    for (PyList::const_iterator itr = list2->begin(); itr != list2->end(); ++itr) {
+    for (PyList::const_iterator itr = list2->begin(); itr != list2->end(); itr++) {
         if (!(*itr)->IsList()) {
             codelog(POS__ERROR, "usageFlagsList - itr item is not PyList: %s", (*itr)->TypeString());
             continue;

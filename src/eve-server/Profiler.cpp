@@ -337,7 +337,7 @@ void Profiler::GetRunTimes(std::vector< double >& container, float& h, float& l,
 
     uint32 size = container.size();
     float total(0.0f), lo(0.0f), hi(0.0f);
-    for (uint32 i = 0; i < size; ++i) {
+    for (uint32 i = 0; i < size; i++) {
         total += container.at(i);
         if ((lo > container.at(i)) or (lo < 0.000001f))
             lo = container.at(i);

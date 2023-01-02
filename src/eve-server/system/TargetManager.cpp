@@ -498,7 +498,7 @@ SystemEntity* TargetManager::GetFirstTarget(bool need_locked/*false*/) {
         return m_targets.begin()->first;
 
     std::map<SystemEntity *, TargetEntry *>::iterator itr = m_targets.begin();
-    for (; itr != m_targets.end(); ++itr)
+    for (; itr != m_targets.end(); itr++)
         if (itr->second->state == TargMgr::State::Locked)
             return itr->first;
 
@@ -511,7 +511,7 @@ PyList* TargetManager::GetTargets() const {
         return result;
 
     std::map<SystemEntity *, TargetEntry *>::const_iterator itr = m_targets.begin();
-    for (; itr != m_targets.end(); ++itr)
+    for (; itr != m_targets.end(); itr++)
         result->AddItemInt( itr->first->GetID() );
 
     return result;
@@ -523,7 +523,7 @@ PyList* TargetManager::GetTargeters() const {
         return result;
 
     std::map<SystemEntity*, TargetedByEntry*>::const_iterator itr = m_targetedBy.begin();
-    for(; itr != m_targetedBy.end(); ++itr)
+    for(; itr != m_targetedBy.end(); itr++)
         result->AddItemInt( itr->first->GetID() );
 
     return result;
@@ -536,7 +536,7 @@ SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/
         return nullptr;
 
     std::map<SystemEntity*, TargetEntry*>::const_iterator itr = m_targets.begin();
-    for (; itr != m_targets.end(); ++itr) {
+    for (; itr != m_targets.end(); itr++) {
         if (itr->first->GetID() != targetID)
             continue;
         //found it...

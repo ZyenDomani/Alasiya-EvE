@@ -669,8 +669,9 @@ uint16 PlanetDB::SaveRoute(uint32 ccPinID, PI_Route& route)
     std::list<uint32>::iterator itr = route.path.begin();
     while (itr != route.path.end()) {
         path += std::to_string(*itr);
-        if (++itr != route.path.end())
+        if (itr != route.path.end())
             path += ":";
+        ++itr;
     }
     if (!sDatabase.RunQueryLID(err, routeID,
         "INSERT INTO `piRoutes`(`ccPinID`, `srcPinID`, `destPinID`, `state`, `priority`, `path`, `typeID`, `itemQty`) "
@@ -703,8 +704,9 @@ void PlanetDB::SaveRoutes(PI_CCPin* ccPin)
         itr = cur.second.path.begin();
         while (itr != cur.second.path.end()) {
             path += std::to_string(*itr);
-            if (++itr != cur.second.path.end())
+            if (itr != cur.second.path.end())
                 path += ":";
+            ++itr;
         }
         Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.srcPinID << ", " << cur.second.destPinID << ", '" << path << "', ";
         Inserts << cur.second.commodityTypeID << ", " << cur.second.commodityQuantity << ")";
@@ -737,7 +739,7 @@ void PlanetDB::SaveContents(PI_CCPin* ccPin)
     std::map<uint16, uint32>::iterator itr;
     for (auto cur : ccPin->pins) {
         if (cur.second.isStorage) {
-            for (itr = cur.second.contents.begin(); itr != cur.second.contents.end(); ++itr) {
+            for (itr = cur.second.contents.begin(); itr != cur.second.contents.end(); itr++) {
                 if (save) {
                     Inserts << ", ";
                 } else {
@@ -768,7 +770,7 @@ void PlanetDB::SavePinContents(uint32 ccPinID, uint32 pinID, std::map< uint16, u
 
     bool save(false);
     std::map<uint16, uint32>::iterator itr;
-    for (itr = contents.begin(); itr != contents.end(); ++itr) {
+    for (itr = contents.begin(); itr != contents.end(); itr++) {
         if (save) {
             Inserts << ", ";
         } else {

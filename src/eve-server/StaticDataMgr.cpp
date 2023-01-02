@@ -311,7 +311,7 @@ void StaticDataMgr::Populate()
     // Load wormhole destination classes into static memory object
     startTime = GetTimeMSeconds();
     int size = 0;
-    for (int i = 1; i < 10; ++i) {
+    for (int i = 1; i < 10; i++) {
         ManagerDB::GetWHClassDestinations(i, *res);
         DBResultRow row;
         m_whClassDestinations[i];
@@ -327,7 +327,7 @@ void StaticDataMgr::Populate()
     // Load wormhole system classes into static memory object
     startTime = GetTimeMSeconds();
     size = 0;
-    for (int i = 1; i < 10; ++i) {
+    for (int i = 1; i < 10; i++) {
         ManagerDB::GetWHClassSystems(i, *res);
         DBResultRow row;
         m_whClassSystems[i];
@@ -735,13 +735,13 @@ PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID)
 
 void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
     auto itr = m_salvageMap.equal_range(factionID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second;it++)
         itemList.push_back(it->second);
 }
 
 bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<float, uint16>& roids) {
     auto groupRange = m_oreBySecClass.equal_range(secClass);
-    for (auto it = groupRange.first; it != groupRange.second; ++it) {
+    for (auto it = groupRange.first; it != groupRange.second;it++) {
         _log(MINING__INFO, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
         roids.insert(std::pair<float, uint32>(it->second.chance, it->second.typeID));
     }
@@ -752,7 +752,7 @@ bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<fl
 void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< DmgTypeAttribute >& typeAttrVec)
 {
     auto itr = m_typeAttrMap.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second;it++)
         typeAttrVec.push_back(it->second);
 }
 
@@ -856,7 +856,7 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID)
         return 0;
     std::vector< uint16 > typeVec;
     auto classRange = m_npcTypes.equal_range(sClass);
-    for (auto it = classRange.first; it != classRange.second; ++it) {
+    for (auto it = classRange.first; it != classRange.second;it++) {
         for (auto itr : it->second)
             if (itr.first == groupID) {
                 for (auto tItr : itr.second)
@@ -875,7 +875,7 @@ bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec)
 {
     /*  this is now invalid.....
     auto groupRange = m_npcTypes.equal_range(groupID);
-    for (auto it = groupRange.first; it != groupRange.second; ++it)
+    for (auto it = groupRange.first; it != groupRange.second;it++)
         typeVec.push_back(it->second);
 
     return !typeVec.empty();
@@ -886,7 +886,7 @@ bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec)
 bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& groupMap)
 {
     auto groupRange = m_npcGroups.equal_range(factionID);
-    for (auto it = groupRange.first; it != groupRange.second; ++it)
+    for (auto it = groupRange.first; it != groupRange.second;it++)
         groupMap.emplace(it->second.shipClass, it->second.groupID);
 
     return !groupMap.empty();
@@ -895,7 +895,7 @@ bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& gr
 bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& classMap)
 {
     auto classRange = m_npcClasses.equal_range(sClass);
-    for (auto it = classRange.first; it != classRange.second; ++it) {
+    for (auto it = classRange.first; it != classRange.second;it++) {
         RatSpawnClass spawnClass = RatSpawnClass();
         spawnClass.type = it->second.type;
         spawnClass.sub = it->second.sub;
@@ -938,7 +938,7 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
     auto range = m_LootGroupMap.equal_range(groupID);
-    for (auto it = range.first; it != range.second; ++it) {
+    for (auto it = range.first; it != range.second;it++) {
         _log(LOOT__INFO, "checking lootGroup %u with chance of %.2f", it->second.lootGroupID, it->second.dropChance);
         // make lootMap of lootGroupID's
         if (MakeRandomFloat(0, 1) < it->second.dropChance) {
@@ -963,7 +963,7 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
              */
 
             auto range2 = m_LootGroupTypeMap.equal_range(it->second.lootGroupID);
-            for (auto it2 = range2.first; it2 != range2.second; ++it2)
+            for (auto it2 = range2.first; it2 != range2.second;it2++)
                 if (it2->second.metaLevel == metaLevel)
                     lootGrpVec.push_back(it2->second);
 
@@ -1023,7 +1023,7 @@ bool StaticDataMgr::IsRefinable(uint16 typeID)
 void StaticDataMgr::GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs)
 {
     auto itr = m_ramReq.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second;it++)
         if ((it->second.activityID == activityID) and (it->second.extra) and !(IsSkillTypeID(it->second.requiredTypeID))) {
             EvERam::RequiredItem data = EvERam::RequiredItem();
             data.typeID = it->second.requiredTypeID;
@@ -1038,14 +1038,14 @@ void StaticDataMgr::GetRamReturns(uint16 typeID, int8 activityID, std::vector< E
 void StaticDataMgr::GetRamMaterials(uint16 typeID, std::vector< EvERam::RamMaterials >& ramMatls)
 {
     auto itr = m_ramMatl.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second;it++)
         ramMatls.push_back(it->second);
 }
 
 void StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< EvERam::RamRequirements >& ramReqs)
 {
     auto itr = m_ramReq.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second;it++)
         ramReqs.push_back(it->second);
 }
 
@@ -1055,7 +1055,7 @@ void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity
         std::map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
         if (itr != m_bpTypeData.end()) {
             auto range = m_ramMatl.equal_range(itr->second.productTypeID);
-            for (auto it = range.first; it != range.second; ++it) {
+            for (auto it = range.first; it != range.second;it++) {
                 EvERam::RequiredItem data = EvERam::RequiredItem();
                 data.typeID = it->second.materialTypeID;
                 data.quantity = it->second.quantity;
@@ -1065,7 +1065,7 @@ void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity
     }
 
     auto itr = m_ramReq.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second;it++)
         if (it->second.activityID == activity) {
             EvERam::RequiredItem data = EvERam::RequiredItem();
             data.typeID = it->second.requiredTypeID;
@@ -1086,7 +1086,7 @@ PyRep* StaticDataMgr::GetStationCount()
         tuple->SetItem(0, new PyInt(itr->first));
         tuple->SetItem(1, new PyInt(itr->second));
         list->AddItem(tuple);
-        ++itr;
+       ++itr;
     }
     return list;
 }
@@ -1493,7 +1493,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             Manufacturing->SetItemString("rawMaterials", matlListManuf);
             CRowSet *rowset = new CRowSet(&header);
             PyList::const_iterator itr = extraListManuf->begin();
-            for (; itr != extraListManuf->end(); ++itr) {
+            for (; itr != extraListManuf->end();itr++) {
                 PyPackedRow* from = (*itr)->AsPackedRow();
                 PyPackedRow* into = rowset->NewRow();
                 into->SetField((uint32)0, from->GetField(0));
@@ -1537,7 +1537,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             Duplicating->SetItemString("rawMaterials", matlListDup);
             CRowSet *rowset = new CRowSet(&header);
             PyList::const_iterator itr = extraListDup->begin();
-            for (; itr != extraListDup->end(); ++itr) {
+            for (; itr != extraListDup->end();itr++) {
                 PyPackedRow* from = (*itr)->AsPackedRow();
                 PyPackedRow* into = rowset->NewRow();
                 into->SetField((uint32)0, from->GetField(0));

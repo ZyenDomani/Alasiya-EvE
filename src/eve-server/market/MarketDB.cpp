@@ -529,7 +529,7 @@ void MarketDB::GetMaterialPrices(std::map< uint16, Market::matlData >& data)
     DBQueryResult res;
     DBResultRow row;
     std::map< uint16, Market::matlData >::iterator itr;
-    for (itr = data.begin(); itr != data.end(); ++itr) {
+    for (itr = data.begin(); itr != data.end(); itr++) {
         sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
             itr->second.price = (row.GetFloat(0) * 1.05);
@@ -541,7 +541,7 @@ void MarketDB::GetMineralPrices(std::map< uint16, Market::matlData >& data)
     DBQueryResult res;
     DBResultRow row;
     std::map< uint16, Market::matlData >::iterator itr;
-    for (itr = data.begin(); itr != data.end(); ++itr) {
+    for (itr = data.begin(); itr != data.end(); itr++) {
         sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
             itr->second.price = (row.GetFloat(0) * 1.15);
@@ -588,7 +588,7 @@ void MarketDB::GetCruPriceAvg(std::map< uint16, Inv::TypeData >& data)
     DBQueryResult res;
     DBResultRow row;
     std::map< uint16, Inv::TypeData>::iterator itr;
-    for (itr = data.begin(); itr != data.end(); ++itr) {
+    for (itr = data.begin(); itr != data.end(); itr++) {
         sDatabase.RunQuery(res, "SELECT AVG(avgPrice) FROM CruciblePriceHistory WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
             itr->second.basePrice = (row.IsNull(0) ? 0 : row.GetFloat(0));

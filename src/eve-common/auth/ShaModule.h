@@ -189,7 +189,7 @@ public:
         memcpy(W, sha_info->data, sizeof(sha_info->data));
         longReverse(W, (int)sizeof(sha_info->data), sha_info->Endianness);
 
-        for (i = 16; i < 80; ++i) {
+        for (i = 16; i < 80; i++) {
             W[i] = W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16];
 
             /* extra rotation fix */

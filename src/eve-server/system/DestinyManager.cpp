@@ -3090,12 +3090,12 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
             _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdate() (u:%lu, e:%lu) called as 'self_only' for %s(%i)", \
                     sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
-        for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); ++itr) {
+        for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); itr++) {
             PyIncRef(*itr);
             mySE->GetPilot()->QueueDestinyUpdate(&(*itr));
         }
 
-        for (std::vector<PyTuple*>::iterator itr = events.begin(); itr != events.end(); ++itr) {
+        for (std::vector<PyTuple*>::iterator itr = events.begin(); itr != events.end(); itr++) {
             PyIncRef(*itr);
             mySE->GetPilot()->QueueDestinyEvent(&(*itr));
         }

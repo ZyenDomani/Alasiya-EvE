@@ -342,7 +342,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     sRamMthd.GetBOMItems( bomLocPath, items );
 
     std::vector<EvERam::RequiredItem>::iterator itemItr = reqItems.begin();
-    for (; itemItr != reqItems.end(); ++itemItr) {
+    for (; itemItr != reqItems.end(); itemItr++) {
         if (itemItr->isSkill)
             continue;       // not interested
 
@@ -353,7 +353,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
         // consume required materials
         std::vector<InventoryItemRef>::iterator refItr = items.begin();
-        for (; refItr != items.end(); ++refItr)
+        for (; refItr != items.end(); refItr++)
             if ((*refItr)->typeID() == itemItr->typeID) {
                 if (qtyNeeded >= (*refItr)->quantity()) {
                     qtyNeeded -= (*refItr)->quantity();

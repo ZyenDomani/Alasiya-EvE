@@ -487,7 +487,7 @@ bool ClassDumpGenerator::ProcessListInt( const TiXmlElement* field )
         "    _log( l_type, \"%%s%s: Integer list with %%lu entries\", pfx, %s.size() );\n"
         "\n"
         "    std::vector<int32>::const_iterator cur = %s.begin();\n"
-        "    for (int index = 0; cur != %s.end(); ++cur, ++index )\n"
+        "    for (int index = 0; cur != %s.end(); cur++, ++index )\n"
         "        _log( l_type, \"%%s   [%%02d] %%d\", pfx, index, (*cur) );\n"
         "\n",
         name, name, name, name
@@ -508,7 +508,7 @@ bool ClassDumpGenerator::ProcessListLong( const TiXmlElement* field )
         "    _log( l_type, \"%%s%s: Integer list with %%lu entries\", pfx, %s.size() );\n"
         "\n"
         "    std::vector<int64>::const_iterator cur = %s.begin();\n"
-        "    for (int index = 0; cur != %s.end(); ++cur, ++index )\n"
+        "    for (int index = 0; cur != %s.end(); cur++, ++index )\n"
         "        _log( l_type, \"%%s   [%%02d] %%li\", pfx, index, (*cur) );\n"
         "\n",
         name, name, name, name

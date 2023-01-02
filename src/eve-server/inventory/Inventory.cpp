@@ -244,8 +244,9 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     }
 
     /** @todo @note  this isnt working right, and im not sure why yet...  */
+    // test after changing iteration (pre to post)
     auto range = m_contentsByFlag.equal_range(iRef->flag());
-    for (auto cur = range.first; cur != range.second; ++cur) {
+    for (auto cur = range.first; cur != range.second; cur++) {
         if (cur->second == iRef) {
             m_contentsByFlag.erase(cur);
             _log(INV__TRACE, "Inventory::RemoveItem(2) - %s(%u) removed from %s(%u) flagMap at %s.", \
@@ -371,7 +372,7 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     while (!done) { //check if sorted
         done = true;  //assume sorted
         //iterate though list
-        for (int i = 0, i2 = 1; (i < itemVec.size()) && (i2 < itemVec.size()); ++i, ++i2) {
+        for (int i = 0, i2 = 1; (i < itemVec.size()) && (i2 < itemVec.size()); i++, i2++) {
             if ((IsModuleSlot(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) {
                 //check if each pair is sorted by category.  subsystems > charges > modules
                 if (itemVec[i]->categoryID() > itemVec[i2]->categoryID()) {
@@ -431,7 +432,7 @@ InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
 
 InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const {
     auto range = m_contentsByFlag.equal_range(flag);
-    for ( auto itr = range.first; itr != range.second; ++itr )
+    for ( auto itr = range.first; itr != range.second; itr++ )
         if (itr->second->typeID() == typeID)
             return itr->second;
 
@@ -445,7 +446,7 @@ void Inventory::GetInventoryMap( std::map< uint32, InventoryItemRef >& invMap ) 
 
 uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
     auto range = m_contentsByFlag.equal_range(flag);
-    for ( auto itr = range.first; itr != range.second; ++itr )
+    for ( auto itr = range.first; itr != range.second; itr++ )
             items.push_back(itr->second);
     return items.size();
 }
@@ -453,7 +454,7 @@ uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef
 bool Inventory::GetTypesByFlag(EVEItemFlags flag, std::map< uint16, InventoryItemRef >& items)
 {
     auto range = m_contentsByFlag.equal_range(flag);
-    for ( auto itr = range.first; itr != range.second; ++itr )
+    for ( auto itr = range.first; itr != range.second; itr++ )
         items.emplace(itr->second->typeID(), itr->second);
 
     if (items.size() > 0)
@@ -476,7 +477,7 @@ InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
 
 bool Inventory::GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef& iRef) const {
     auto range = m_contentsByFlag.equal_range(flag);
-    for ( auto itr = range.first; itr != range.second; ++itr ) {
+    for ( auto itr = range.first; itr != range.second; itr++ ) {
         iRef = itr->second;
         return true;
     }
@@ -565,7 +566,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
     std::map<uint16, InventoryItemRef>::iterator tItr = types.end();
 
     auto range = m_contentsByFlag.equal_range(locFlag);
-    for (auto itr = range.first; itr != range.second; ++itr) {
+    for (auto itr = range.first; itr != range.second; itr++) {
         iRef = itr->second;
         // check to avoid removing modules (and their charges) from ship
         if (IsModuleSlot(iRef->flag()))
@@ -600,7 +601,7 @@ float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
                 totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
     } else {
         auto range = m_contentsByFlag.equal_range(flag);
-        for ( auto itr = range.first; itr != range.second; ++itr )
+        for ( auto itr = range.first; itr != range.second; itr++ )
             totalVolume += itr->second->quantity() * itr->second->GetAttribute(AttrVolume).get_float();
             // This formula is a hybrid of both old and new ones...and it works \o/
     }

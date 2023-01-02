@@ -2643,7 +2643,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::clientCall, GetTimeUSeconds() - profileStartTime);
-    
+
     return true;
 }
 
@@ -2662,7 +2662,7 @@ bool Client::Handle_Notify(PyPacket* packet)
 
         uint32 nodeID(0), bindID(0);
         PyList::const_iterator cur = notify.elements->begin();
-        for (; cur != notify.elements->end(); ++cur) {
+        for (; cur != notify.elements->end(); cur++) {
             if (!element.Decode(*cur)) {
                 sLog.Error("Client::Notify","Notification '%s' from %s: Failed to decode element. Skipping.", notify.method.c_str(),  m_char->name());
                 continue;
@@ -2808,7 +2808,7 @@ void Client::SelfChatMessage(const char* fmt, ...)
     //this is such a pile of crap, but im not sure whats better.
     //maybe a private message...
     std::set<LSCChannel*>::iterator itr = m_channels.begin();
-    for (; itr != m_channels.end(); ++itr)
+    for (; itr != m_channels.end(); itr++)
         (*itr)->SendMessage(this, str, true);
 
     //m_channels[

@@ -36,7 +36,7 @@ Seperator::Seperator( const char* str, const char* divs, const char* quotes )
     bool inQuote = false, isDiv = false, isQuote = false;
     std::string* cur(nullptr);
 
-    for (size_t len = strlen( str ); len > 0; ++str, --len ) {
+    for (size_t len = strlen( str ); len > 0; str++, len-- ) {
         const char c = *str;
         isDiv = (strchr(divs, c) != NULL);
         isQuote = (strchr( quotes, c) != NULL);

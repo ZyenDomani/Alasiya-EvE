@@ -359,7 +359,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
             onlineModules->Dump(MODULE__INFO, "   ");
         }
         PyDict::const_iterator cur = onlineModules->begin(), end = onlineModules->end();
-        for (; cur != end; ++cur)
+        for (; cur != end; cur++)
             pShip->AddModuleToOnlineVec(cur->second->AsInt()->value());
     }
 
@@ -408,7 +408,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
     InventoryItemRef iRef(nullptr);
     PyDict* dict = new PyDict();
-    for (uint32 i = 0; i < PyToDropList->size(); ++i) {
+    for (uint32 i = 0; i < PyToDropList->size(); i++) {
         dropped = false;
         PyList* list = new PyList();
         GPoint location(pShip->position());
@@ -447,7 +447,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
                 // This item is a drone, so launch it into space:
                 if (qty > 1) {
-                    for (uint8 i = 0; i < qty; ++i) {
+                    for (uint8 i = 0; i < qty; i++) {
                         InventoryItemRef newItem = iRef->Split(1);
                         if (newItem.get() == nullptr) {
                             _log(INV__ERROR, "ShipBound::Handle_Drop() - Error splitting item %u. Skipping.", iRef->itemID());
@@ -771,7 +771,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     InventoryItemRef iRef(nullptr);
     SystemManager* pSysMgr(pClient->SystemMgr());
     std::vector<int32>::const_iterator cur = args.ints.begin();
-    for(; cur != args.ints.end(); ++cur) {
+    for(; cur != args.ints.end(); cur++) {
         pDroneSE = pSysMgr->GetSE(*cur);
         if (pDroneSE == nullptr) {
             _log(SERVICE__ERROR, "%s: Unable to find droneSE %u to scoop.", pClient->GetName(), *cur);
@@ -858,7 +858,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     //args contains id's of items to jettison
     std::vector<int32>::iterator itr = args.ints.begin();
     // loop thru items to see if there is a container in this list.
-    for (; itr != args.ints.end(); ++itr) {
+    for (; itr != args.ints.end(); itr++) {
         // running this list twice is fuckedup, but not sure of another way to determine if container is in jettison list.
         iRef = sItemFactory.GetItemRef(*itr);
         if (iRef.get() == nullptr)

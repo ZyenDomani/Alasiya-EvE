@@ -1141,7 +1141,7 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
     PyDict* dict = call.tuple->GetItem(0)->AsDict();
 
     std::map<int16, int8> attribs;
-    for (PyDict::const_iterator itr = dict->begin(); itr != dict->end(); ++itr)
+    for (PyDict::const_iterator itr = dict->begin(); itr != dict->end(); itr++)
         attribs[PyRep::IntegerValueU32(itr->first)] = PyRep::IntegerValue(itr->second);
 
     call.client->GetShipSE()->UpdateDrones(attribs);

@@ -61,7 +61,7 @@ void PlanetDataMgr::_Populate()
 void PlanetDataMgr::GetPlanetData(uint32 planetID, std::vector<uint16> &typeIDs)
 {
     auto itr = m_planetData.equal_range(planetID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    for (auto it = itr.first; it != itr.second; it++)
         typeIDs.push_back(it->second);
 }
 
@@ -296,7 +296,7 @@ uint32 PIDataMgr::GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleT
     uint32 val = 0;
     if (numCycles > 120)    // hardcoded in client
         numCycles = 120;
-    for (int i=1; i <= numCycles; ++i)
+    for (int i=1; i <= numCycles; i++)
         val += GetProgramOutput(iRef, cycleTime, i * cycleTime);
     return val;
 }

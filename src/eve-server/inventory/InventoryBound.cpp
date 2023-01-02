@@ -167,10 +167,10 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
 
     PyDict* dictIn = args.importData->AsDict();
     std::map<uint32, uint16> importItems, exportItems;
-    for (PyDict::const_iterator itr = dictIn->begin(); itr != dictIn->end(); ++itr)
+    for (PyDict::const_iterator itr = dictIn->begin(); itr != dictIn->end(); itr++)
         importItems[PyRep::IntegerValueU32(itr->first)] = PyRep::IntegerValue(itr->second);
     PyDict* dictOut = args.exportData->AsDict();
-    for (PyDict::const_iterator itr = dictOut->begin(); itr != dictOut->end(); ++itr)
+    for (PyDict::const_iterator itr = dictOut->begin(); itr != dictOut->end(); itr++)
         exportItems[PyRep::IntegerValueU32(itr->first)] = PyRep::IntegerValue(itr->second);
 
     // ok, so from here, we need to get officeRef->officeSE->planet->colony to make xfer....crazy shit
@@ -237,7 +237,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     */
 
     std::vector<PyRep *>::const_iterator itr = args.mergeData->begin(), end = args.mergeData->end();
-    for (; itr != end; ++itr) {
+    for (; itr != end; itr++) {
         // sourceID, destID, qty
         MultiMergeData data;
         if (!data.Decode( *itr )) {
@@ -509,7 +509,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
     sItemFactory.SetUsingClient(pClient);
 
     std::vector<int32>::const_iterator itr = items.begin();
-    for (; itr != items.end(); ++itr) {
+    for (; itr != items.end(); itr++) {
         // reset vars for adding multiple items
         toFlag = origFlag;
         quantity = origQty;
@@ -687,7 +687,7 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
     while (!done) {
         done = true;  //assume sorted
         //iterate though list
-        for (int i = 0, i2 = 1; (i < itemVec.size()) and (i2 < itemVec.size()); ++i, ++i2) {
+        for (int i = 0, i2 = 1; (i < itemVec.size()) and (i2 < itemVec.size()); i++, i2++) {
             //check if each pair is sorted by category.   modules -> charges -> subsystems
             if (itemVec[i]->categoryID() < itemVec[i2]->categoryID()) {
                 //it's not, so flip the values
@@ -827,7 +827,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
     } else {
         BookmarkDB m_db;
         PyList::const_iterator itr = args.bmIDs->begin();
-        for (; itr != args.bmIDs->end(); ++itr) {
+        for (; itr != args.bmIDs->end(); itr++) {
             //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
             ItemData iData( 51, call.client->GetCharacterID(), locTemp, flagNone, 1, itoa(PyRep::IntegerValueU32(*itr)));
             InventoryItemRef iRef = sItemFactory.SpawnItem( iData );

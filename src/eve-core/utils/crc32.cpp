@@ -100,7 +100,7 @@ const uint32 CRC32_LOOKUP_TABLE[ 0x100 ] =
 
 uint32 CRC32::Update( const uint8* buf, size_t bufsize, uint32 crc32 )
 {
-    for( size_t i = 0; i < bufsize; ++i )
+    for( size_t i = 0; i < bufsize; i++ )
         crc32 = ( crc32 >> 8 ) ^ CRC32_LOOKUP_TABLE[ buf[ i ] ^ ( crc32 & 0x000000FF ) ];
 
     return crc32;

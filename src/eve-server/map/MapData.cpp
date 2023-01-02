@@ -92,34 +92,31 @@ void MapData::Populate()
 
 void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffer& offer)
 {
-    using namespace Mission::Type;
-    using namespace Agents::Range;
-
-    uint8 destRange = offer.range;
-    bool station = true, ship = false;    // will have to tweak this later for particular mission events
+    uint8 destRange(offer.range);
+    bool station(true), ship(false);    // will have to tweak this later for particular mission events
 
     // determine distance based on preset range from db or in some cases, mission type and agent level
     switch(misionType) {
-        case Tutorial: {
+        case Mission::Type::Tutorial: {
             // always same system?
-            destRange = SameSystem;
+            destRange = Agents::Range::SameSystem;
         } break;
-        case Data:
-        case Trade:
-        case Courier:
-        case Research: {
+        case Mission::Type::Data:
+        case Mission::Type::Trade:
+        case Mission::Type::Courier:
+        case Mission::Type::Research: {
             //destRange += m_data.level *2;
         } break;
-        case Arc:
-        case Anomic:
-        case Burner:
-        case Cosmos: {
+        case Mission::Type::Arc:
+        case Mission::Type::Anomic:
+        case Mission::Type::Burner:
+        case Mission::Type::Cosmos: {
             station = false;
             destRange += pAgent->GetLevel();
         } break;
-        case Mining:
-        case Encounter:
-        case Storyline: {
+        case Mission::Type::Mining:
+        case Mission::Type::Encounter:
+        case Mission::Type::Storyline: {
             station = false;
             //destRange = offer.range;
         } break;
@@ -127,10 +124,10 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
 
     switch(destRange) {
         case 0:
-        case SameSystem: //1
-        case SameOrNeighboringSystemSameConstellation:    //2
-        case NeighboringSystemSameConstellation:  //4
-        case SameConstellation:  {  //6
+        case Agents::Range::SameSystem: //1
+        case Agents::Range::SameOrNeighboringSystemSameConstellation:    //2
+        case Agents::Range::NeighboringSystemSameConstellation:  //4
+        case Agents::Range::SameConstellation:  {  //6
             uint32 systemID = pAgent->GetSystemID();
             if (station)
                 if (sDataMgr.GetStationCount(systemID) < 2)
@@ -142,7 +139,7 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
                 uint8 count = 0;
                 std::vector<uint32> sysList;
                 auto itr = m_systemJumps.equal_range(systemID);
-                for (auto it = itr.first; it != itr.second; ++it)
+                for (auto it = itr.first; it != itr.second; it++)
                     sysList.push_back(it->second);
                 /** @todo not sure why this is empty, but have segfaults from empty vector. */
                 if (sysList.empty()) {
@@ -191,8 +188,8 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
         // could use data from mapSolarSystemJumps - fromRegionID, fromConstellationID, fromSolarSystemID, toSolarSystemID, toConstellationID, toRegionID
 
         /** @todo  make function to find route from origin to constellation/region jump point.  */
-        case SameOrNeighboringSystem:  //3
-        case NeighboringSystem: {  //5
+        case Agents::Range::SameOrNeighboringSystem:  //3
+        case Agents::Range::NeighboringSystem: {  //5
             uint32 systemID = pAgent->GetSystemID();
             if (IsEven(MakeRandomInt(0, 100))) {
                 // same constellation
@@ -204,20 +201,20 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
                 ;  // code here for agent in ship
             }
         } break;
-        case SameOrNeighboringConstellationSameRegion:   //7
-        case NeighboringConstellationSameRegion: {  //9
+        case Agents::Range::SameOrNeighboringConstellationSameRegion:   //7
+        case Agents::Range::NeighboringConstellationSameRegion: {  //9
             if (station)
                 sDataMgr.GetStationConstellation(pAgent->GetStationID());
         } break;
-        case SameOrNeighboringConstellation:  //8
-        case NeighboringConstellation: {    //10
+        case Agents::Range::SameOrNeighboringConstellation:  //8
+        case Agents::Range::NeighboringConstellation: {    //10
             if (station)
                 sDataMgr.GetStationRegion(pAgent->GetStationID());
         } break;
         // not sure how to do these two yet....
-        case NearestEnemyCombatZone: {  //11
+        case Agents::Range::NearestEnemyCombatZone: {  //11
         } break;
-        case NearestCareerHub: {    //12
+        case Agents::Range::NearestCareerHub: {    //12
         } break;
     }
 

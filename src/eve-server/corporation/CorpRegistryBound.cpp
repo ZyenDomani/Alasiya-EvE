@@ -545,7 +545,7 @@ PyResult CorpRegistryBound::Handle_GetMembersByIds(PyCallArgs &call) {
     }
 
     PyList* list = new PyList();
-    for (PyList::const_iterator itr = args.memberIDs->begin(); itr != args.memberIDs->end(); ++itr)
+    for (PyList::const_iterator itr = args.memberIDs->begin(); itr != args.memberIDs->end(); itr++)
         list->AddItem(new PyObject("util.KeyVal", m_db.GetMember(PyRep::IntegerValueU32(*itr))));
 
     if (is_log_enabled(CORP__RSP_DUMP))
@@ -730,7 +730,7 @@ PyResult CorpRegistryBound::Handle_UpdateTitles(PyCallArgs &call) {
 
     Call_UpdateTitleData args;
     PyList* list = rep->AsList();
-    for (PyList::const_iterator itr = list->begin(); itr != list->end(); ++itr) {
+    for (PyList::const_iterator itr = list->begin(); itr != list->end(); itr++) {
         if (!(*itr)->IsList()) {
             codelog(CORP__ERROR, "itr item is not PyList: %s", (*itr)->TypeString());
             continue;
@@ -934,7 +934,7 @@ PyResult CorpRegistryBound::Handle_CreateRecruitmentAd(PyCallArgs &call) {
 
     std::vector<int32> recruiters;
     recruiters.clear();
-    for (PyList::const_iterator itr = args.recruiters->begin(); itr != args.recruiters->end(); ++itr)
+    for (PyList::const_iterator itr = args.recruiters->begin(); itr != args.recruiters->end(); itr++)
         recruiters.push_back(PyRep::IntegerValue(*itr));
     //recruiters.push_back((*itr)->AsInt()->value());
 
@@ -999,7 +999,7 @@ PyResult CorpRegistryBound::Handle_UpdateRecruitmentAd(PyCallArgs &call) {
 
     std::vector<int32> recruiters;
     recruiters.clear();
-    for (PyList::const_iterator itr = args.recruiters->begin(); itr != args.recruiters->end(); ++itr)
+    for (PyList::const_iterator itr = args.recruiters->begin(); itr != args.recruiters->end(); itr++)
         recruiters.push_back(PyRep::IntegerValue(*itr));
 
     // if no recruiters defined, default to creating character
@@ -1124,7 +1124,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
     bool set = false;
     // decode query format
     PyList* list(nullptr);
-    for (PyList::const_iterator itr = args.data->begin(); itr != args.data->end(); ++itr) {
+    for (PyList::const_iterator itr = args.data->begin(); itr != args.data->end(); itr++) {
         list = (*itr)->AsList();
         if (list == nullptr)
             continue;

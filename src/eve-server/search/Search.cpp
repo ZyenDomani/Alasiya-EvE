@@ -93,9 +93,9 @@ PyResult Search::Handle_QuickQuery( PyCallArgs& call )  {
 }
 
 void Search::Replace(std::string &str) {
-    for (uint i = 0; i < str.length(); ++i)
+    for (uint i = 0; i < str.length(); i++)
         switch (str[i]) {
-			case '*':
-                str[i] = '%';
-		}
+                case '*':
+                    str[i] = '%';
+            }
 }

@@ -128,7 +128,7 @@ bool LSCChannel::JoinChannel(Client* pClient) {
     MulticastTarget mct;
     std::map<uint32, LSCChannelChar>::iterator cur;
     cur = m_chars.begin();
-    for( ; cur != m_chars.end(); ++cur )
+    for( ; cur != m_chars.end(); cur++ )
         mct.characters.insert( cur->first );
     PyTuple *answer = join.Encode();
     sEntityList.Multicast( "OnLSC", GetTypeString(), &answer, mct );
@@ -154,7 +154,7 @@ void LSCChannel::LeaveChannel(Client *pClient)
     MulticastTarget mct;
     std::map<uint32, LSCChannelChar>::iterator cur;
     cur = m_chars.begin();
-    for(; cur != m_chars.end(); ++cur)
+    for(; cur != m_chars.end(); cur++)
         mct.characters.insert( cur->first );
 
     OnLSC_LeaveChannel leave;
@@ -198,7 +198,7 @@ void LSCChannel::SendMessage(Client * c, const char * message, bool self/*false*
         mct.characters.insert(c->GetCharacterID());
     } else {
         std::map<uint32, LSCChannelChar>::iterator itr = m_chars.begin();
-        for(; itr != m_chars.end(); ++itr)
+        for(; itr != m_chars.end(); itr++)
             mct.characters.insert( itr->first );
     }
 

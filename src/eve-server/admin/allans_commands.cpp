@@ -1030,7 +1030,7 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     } else {
         qty = 0;
         auto range = cargoMap.equal_range(flagCargoHold);
-        for ( auto itr = range.first; itr != range.second; ++itr ) {
+        for ( auto itr = range.first; itr != range.second; itr++ ) {
             ++count;
             qty = itr->second->quantity();
             str << "    " << qty << " " << itr->second->itemName();
@@ -1051,7 +1051,7 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
             } else {
                 qty = 0;
                 auto range = cargoMap.equal_range(cur.second);
-                for ( auto itr = range.first; itr != range.second; ++itr ) {
+                for ( auto itr = range.first; itr != range.second; itr++ ) {
                     ++count;
                     qty = itr->second->quantity();
                     str << "    " << qty << " " << itr->second->itemName();
@@ -1079,7 +1079,7 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
         } else {
             qty = 0;
             auto range = cargoMap.equal_range(flagHangar);
-            for ( auto itr = range.first; itr != range.second; ++itr ) {
+            for ( auto itr = range.first; itr != range.second; itr++ ) {
                 ++count;
                 qty = itr->second->quantity();
                 str << "    " << qty << " " << itr->second->itemName();
@@ -1096,7 +1096,7 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
             } else {
                 qty = 0;
                 auto range = cargoMap.equal_range(i);
-                for ( auto itr = range.first; itr != range.second; ++itr ) {
+                for ( auto itr = range.first; itr != range.second; itr++ ) {
                     ++count;
                     qty = itr->second->quantity();
                     str << "    " << qty << " " << itr->second->itemName();

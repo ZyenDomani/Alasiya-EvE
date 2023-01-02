@@ -36,7 +36,7 @@
 bool PyVisitor::VisitTuple(const PyTuple* rep)
 {
     PyTuple::const_iterator itr = rep->begin(), end = rep->end();
-    for (;  itr != end; ++itr) {
+    for (;  itr != end; itr++) {
         //  if/when segfault here and (*itr) == 0x0 then tuple count != tuple->SetItem()
         if (!(*itr)->visit(*this))
             return false;
@@ -47,7 +47,7 @@ bool PyVisitor::VisitTuple(const PyTuple* rep)
 bool PyVisitor::VisitList(const PyList* rep)
 {
     PyList::const_iterator itr = rep->begin(), end = rep->end();
-    for (;  itr != end; ++itr)
+    for (;  itr != end; itr++)
         if (!(*itr)->visit(*this))
             return false;
 
@@ -57,7 +57,7 @@ bool PyVisitor::VisitList(const PyList* rep)
 bool PyVisitor::VisitDict(const PyDict* rep)
 {
     PyDict::const_iterator itr = rep->begin(), end = rep->end();
-    for (;  itr != end; ++itr) {
+    for (;  itr != end; itr++) {
         if (!itr->first->visit(*this))
             return false;
         if (!itr->second->visit(*this))
@@ -81,12 +81,12 @@ bool PyVisitor::VisitObjectEx(const PyObjectEx* rep)
         return false;
 
     PyList::const_iterator lItr = rep->list().begin(), lEnd = rep->list().end();
-    for (; lItr != lEnd; ++lItr) {
+    for (; lItr != lEnd; lItr++) {
         if (!(*lItr)->visit(*this))
             return false;
     }
     PyDict::const_iterator dItr = rep->dict().begin(), dEnd = rep->dict().end();
-    for (; dItr != dEnd; ++dItr) {
+    for (; dItr != dEnd; dItr++) {
         if (!dItr->first->visit(*this))
             return false;
         if (!dItr->second->visit(*this))
@@ -102,7 +102,7 @@ bool PyVisitor::VisitPackedRow(const PyPackedRow* rep)
         return false;
 
     PyList::const_iterator itr = rep->begin(), end = rep->end();
-    for (;  itr != end; ++itr)
+    for (;  itr != end; itr++)
         if (!(*itr)->visit(*this))
             return false;
 

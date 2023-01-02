@@ -359,7 +359,7 @@ eve-server: /usr/local/src/eve/Alasiya-EvE/src/eve-common/python/PyRep.h:141: Py
     //dict->Dump(PLANET__DUMP, "   ");
     std::map<uint16, uint32> items;
     PyDict::const_iterator itr = dict->begin();
-    for (; itr != dict->end(); ++itr)
+    for (; itr != dict->end(); itr++)
         items.insert(std::pair<uint16, uint32>(PyRep::IntegerValue(itr->first), PyRep::IntegerValue(itr->second)));
 
     return m_colony->LaunchCommodities(args.pinID, items);
@@ -390,7 +390,7 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
     PyDict* dict = call.tuple->GetItem(1)->AsDict();
     std::map<uint16, uint32> items;
     PyDict::const_iterator itr = dict->begin();
-    for (; itr != dict->end(); ++itr)
+    for (; itr != dict->end(); itr++)
         items.insert(std::pair<uint16, uint32>(PyRep::IntegerValue(itr->first), PyRep::IntegerValue(itr->second)));
 
     PyList* list = call.tuple->GetItem(0)->AsList();

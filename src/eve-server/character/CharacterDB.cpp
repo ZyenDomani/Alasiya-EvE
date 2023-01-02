@@ -1562,7 +1562,7 @@ bool CharacterDB::SaveSkillQueue(uint32 characterID, SkillQueue &data) {
 
     std::string query;
 
-    for (uint8 i = 0; i < data.size(); ++i) {
+    for (uint8 i = 0; i < data.size(); i++) {
         const QueuedSkill &qs = data[i];
         char buf[80];
         snprintf(buf, sizeof(buf), "(%u, %u, %u, %u, %li, %li)", characterID, i, qs.typeID, qs.level, qs.startTime, qs.endTime );
@@ -1594,7 +1594,7 @@ bool CharacterDB::SavePausedSkillQueue(uint32 characterID, SkillQueue &data) {
 
     std::string query;
 
-    for (uint8 i = 0; i < data.size(); ++i) {
+    for (uint8 i = 0; i < data.size(); i++) {
         const QueuedSkill &qs = data[i];
         char buf[30];
         snprintf(buf, sizeof(buf), "(%u, %u, %u, %u)", characterID, i, qs.typeID, qs.level);

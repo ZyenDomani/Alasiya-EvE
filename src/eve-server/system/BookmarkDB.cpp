@@ -314,7 +314,7 @@ bool BookmarkDB::DeleteBookmarks(std::vector<int32>* bookmarkList)
     std::string listString;
 
     std::size_t size = bookmarkList->size();
-    for (int8 i=0; i<size; ++i) {
+    for (int8 i=0; i<size; i++) {
         st << bookmarkList->at(i);
         if (i < (size-1))
             st << ", ";
@@ -408,7 +408,7 @@ void BookmarkDB::MoveBookmarkToFolder(int32 folderID, std::vector<int32>& bookma
 {
     std::stringstream st;
     std::size_t size = bookmarkList.size();
-    for (int8 i=0; i<size; ++i) {
+    for (int8 i=0; i<size; i++) {
         st << bookmarkList[i];
         if (i < (size-1))
             st << ", ";

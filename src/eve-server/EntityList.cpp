@@ -146,7 +146,7 @@ void EntityList::Add( Client* pClient ) {
 void EntityList::Remove(Client* pClient) {
     /* note:  will get expensive for many clients  */
     std::vector<Client*>::iterator itr = m_clients.begin();
-    for (; itr != m_clients.end(); ++itr)
+    for (; itr != m_clients.end(); itr++)
         if ((*itr) == pClient) {
             m_clients.erase(itr);
             return;

@@ -31,6 +31,10 @@ work on buglist, integrate this list in there where i can
     - cosmic systems
     -
 
+holy shit!!!
+when loading py* items while iterating thru using ++i, the FIRST slot (0) is NULL (0x0)
+change this shit to use i++, which will return value before being incremented and will avoid the NULL at beginning
+
 
 request for smartbombs
 
@@ -660,9 +664,9 @@ see what can be done about bind_args->Clone() as it may be leaking memory
 
 
 review all classes to add rule of 5 or =delete as required
-    - PyRep objects done
-    - InventoryItem done
-    -
+    - PyRep Classes needs lots-o-work and thought
+    - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd)
+    - others?
 
 *******************************************************
 *****************  Fx shit
@@ -704,8 +708,8 @@ remove "Notify*" from notify names....implement better naming convention (see ab
 
 all PackedRows are marshalled into a buffer, where None is inserted as zero.
     - this negates client conditional checks like using "if x is None:" because x=0 will return false in that check, which makes shit weird
-    - UPDATE:  client patched to correct this, using "if x == 0:" after above "None" check
-    - UPDATE AGAIN:  Almamu rewrote the marshal/unmarshal code to fix this.  not in my branch yet
+    - UPDATE:  client patched (hacked) to correct this, using "if x == 0:" after above "None" check
+    - UPDATE AGAIN:  Almamu rewrote the marshal/unmarshal code to fix this (real fix).
 
 check/add dynamic tables to Dump.sh to avoid copying local server data to repo
 
@@ -735,7 +739,7 @@ ADD THIS....
 get npc *something* to check damage done by npc.
 once damage starts dropping, check distance and move accordingly (ai check?)
 
-charge chars for jetcans?
+charge chars for jetcans? (100isk?, 1000isk?)
 
 rats should test for faction signals in system and set origin along that direction (to appear they came from their 'base' in system)
     - this should be fairly easy to set up

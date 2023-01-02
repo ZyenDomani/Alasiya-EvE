@@ -31,7 +31,7 @@
 /**  @note
  *      this list should only be updated by running the following script within client context
  *      (thanks comet0)
- * 
+ *
  * --
  * import blue
  * values = sorted(blue.marshal.stringTable, key=blue.marshal.stringTable.get)
@@ -311,7 +311,7 @@ uint8 MarshalStringTable::LookupIndex( const char* str )
 
 const char* MarshalStringTable::LookupString( uint8 index )
 {
-    if ( --index < s_mStringTableSize )
+    if ( index-- < s_mStringTableSize )
         return s_mStringTable[ index ];
     else
         return nullptr;

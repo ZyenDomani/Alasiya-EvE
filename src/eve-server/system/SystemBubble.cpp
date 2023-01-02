@@ -927,14 +927,14 @@ void SystemBubble::BubblecastDestiny(std::vector<PyTuple *> &updates, std::vecto
 }
 
 void SystemBubble::BubblecastDestinyUpdate(std::vector<PyTuple *> &updates, const char *desc) const {
-    for (std::vector<PyTuple *>::iterator cur = updates.begin(); cur != updates.end(); ++cur)
+    for (std::vector<PyTuple *>::iterator cur = updates.begin(); cur != updates.end(); cur++)
         BubblecastDestinyUpdate(&(*cur), desc);
 
     updates.clear();
 }
 
 void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const char *desc) const {
-    for (std::vector<PyTuple *>::iterator cur = events.begin(); cur != events.end(); ++cur)
+    for (std::vector<PyTuple *>::iterator cur = events.begin(); cur != events.end(); cur++)
         BubblecastDestinyEvent(&(*cur), desc);
 
     events.clear();

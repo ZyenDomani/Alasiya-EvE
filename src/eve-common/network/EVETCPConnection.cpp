@@ -174,7 +174,7 @@ void EVETCPConnection::DumpBuffer( Buffer* buf, packet_direction packet_directio
     logpacket = fopen(path.c_str(), "w");
 
     Buffer::iterator<uint8> cur = buf->begin<uint8>();
-    for (; cur != buf->end<uint8>(); ++cur) {
+    for (; cur != buf->end<uint8>(); cur++) {
         uint8 test = *cur;
         fputc(test, logpacket);
     }

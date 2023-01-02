@@ -556,7 +556,7 @@ void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> 
             endi = items.end();
         }
 
-        for (; curi != endi and qtyReq > 0; ++curi) {
+        for (; curi != endi and qtyReq > 0; curi++) {
             if (((*curi)->typeID() == cur.typeID)
             and (((*curi)->ownerID() == pClient->GetCharacterID())
               or ((*curi)->ownerID() == pClient->GetCorporationID()))) {

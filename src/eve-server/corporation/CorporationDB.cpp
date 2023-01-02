@@ -1060,7 +1060,7 @@ bool CorporationDB::UpdateTitle(uint32 corpID, Call_UpdateTitleData& args, PyDic
     std::string query = "UPDATE crpRoleTitles SET ";
 
     int N = dbQ.size();
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; i++) {
         query += dbQ[i];
         if (i < N - 1)
             query += ", ";
@@ -2089,7 +2089,7 @@ void CorporationDB::AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCas
 
     std::vector<Corp::VoteCaseOptions> data;
     PyList* list = rep->AsList();
-    for (PyList::const_iterator itr = list->begin(); itr != list->end(); ++itr) {
+    for (PyList::const_iterator itr = list->begin(); itr != list->end(); itr++) {
         if (!(*itr)->IsList()) {
             _log(CORP__ERROR, "itr item is not PyList: %s", rep->TypeString());
             continue;

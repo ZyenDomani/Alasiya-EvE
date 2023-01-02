@@ -256,7 +256,7 @@ bool MarshalStream::VisitDict( const PyDict* rep )
 
     //we have to reverse the order of key/value to be value/key, so do not call base class.
     PyDict::const_iterator cur = rep->begin(), end = rep->end();
-    for (; cur != end; ++cur) {
+    for (; cur != end; cur++) {
         if ( !cur->second->visit( *this ) )
             return false;
         if ( !cur->first->visit( *this ) )
@@ -283,7 +283,7 @@ bool MarshalStream::VisitObjectEx( const PyObjectEx* rep )
         return false;
 
     PyList::const_iterator lItr = rep->list().begin(), lEnd = rep->list().end();
-    for (; lItr != lEnd; ++lItr ) {
+    for (; lItr != lEnd; lItr++ ) {
         if ( !(*lItr )->visit( *this ) )
             return false;
     }
@@ -291,7 +291,7 @@ bool MarshalStream::VisitObjectEx( const PyObjectEx* rep )
     Put<uint8>( Op_PackedTerminator );
 
     PyDict::const_iterator dItr = rep->dict().begin(), dEnd = rep->dict().end();
-    for (; dItr != dEnd; ++dItr ) {
+    for (; dItr != dEnd; dItr++ ) {
         if ( !dItr->first->visit( *this ) )
             return false;
         if ( !dItr->second->visit( *this ) )
@@ -321,21 +321,19 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* pyPackedRow )
     size_t nullsBitLength = 0;
 
     // go through all the columns to gather the required information
-    for (uint32_t i = 0; i < columnCount; i ++)
-    {
+    for (uint32_t i = 0; i < columnCount; i++) {
         DBTYPE columnType = header->GetColumnType (i);
         uint8_t size = DBTYPE_GetSizeBits (columnType);
 
         // count booleans
-        if (columnType == DBTYPE_BOOL)
-        {
+        if (columnType == DBTYPE_BOOL) {
             // register the boolean in the list and increase the length
             booleanColumns.insert (std::make_pair (i, booleansBitLength));
-            booleansBitLength ++;
+            booleansBitLength++;
         }
 
         // also count all columns as possible nulls
-        nullsBitLength ++;
+        nullsBitLength++;
 
         // increase the bytedata length only if a column is longer than 7 bits
         // this is used as an indicator of what is written in the first second, or third part
@@ -343,7 +341,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* pyPackedRow )
             byteDataBitLength += size;
 
         // add the column to the list
-        sizeMap.insert (std::make_pair (size, i));
+        sizeMap.insert(std::make_pair (size, i));
     }
 
     // reserve the space for the buffers
@@ -358,13 +356,11 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* pyPackedRow )
     // limit the search to booleans, the rest of the values are encoded differently
     end = sizeMap.lower_bound( 1 );
     PyRep* value(nullptr);
-    for (; cur != end; ++cur)
-    {
+    for (; cur != end; cur++) {
         value = pyPackedRow->GetField(cur->second);
 
         // handle the column being none
-        if (value->IsNone() == true)
-        {
+        if (value->IsNone()) {
             // get the bit this column should be written at
             unsigned long nullBit = cur->second + booleansBitLength;
             unsigned long nullByte = nullBit >> 3;
@@ -376,8 +372,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* pyPackedRow )
 
         // ensure that the proper value is written
         // the values will be ignored if a none flag is set, but they must be present
-        switch (header->GetColumnType (cur->second))
-        {
+        switch (header->GetColumnType (cur->second)) {
             case DBTYPE_CY:
             case DBTYPE_I8:
             case DBTYPE_UI8:
@@ -419,12 +414,11 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* pyPackedRow )
     cur = sizeMap.lower_bound( 1 );
     end = sizeMap.lower_bound( 0 );
     PyBool* b(nullptr);
-    for (; cur != end; ++cur)
-    {
+    for (; cur != end; cur++) {
         b = pyPackedRow->GetField(cur->second)->AsBool();
 
         // false values do not need anything to be done
-        if (b->value() == false)
+        if (!b->value())
             continue;
 
         // get the bit this boolean should be written at
@@ -446,7 +440,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* pyPackedRow )
     // finally append items that are not packed like strings or byte buffers
     cur = sizeMap.lower_bound( 0 );
     end = sizeMap.end();
-    for (; cur != end; ++cur) {
+    for (; cur != end; cur++) {
         value = pyPackedRow->GetField(cur->second );
         if (!value->visit(*this))
             return false;

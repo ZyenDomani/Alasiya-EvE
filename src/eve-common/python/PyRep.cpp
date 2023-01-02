@@ -622,7 +622,7 @@ bool PyTuple::visit( PyVisitor& v ) const
 void PyTuple::clear()
 {
     iterator cur = items.begin(), end = items.end();
-    for (; cur != end; ++cur)
+    for (; cur != end; cur++)
         PySafeDecRef( *cur );
 
     items.clear();
@@ -635,7 +635,7 @@ PyTuple& PyTuple::operator=( const PyTuple& oth )
     items.resize( oth.size() );
     iterator cur = items.begin(), end = items.end();
     const_iterator cur_oth = oth.begin(), oth_end = oth.end();
-    for (; cur != end && cur_oth != oth_end; ++cur, ++cur_oth) {
+    for (; cur != end && cur_oth != oth_end; cur++, cur_oth++) {
         if (*cur_oth == nullptr ) {
             *cur = nullptr;
         } else {
@@ -696,7 +696,7 @@ bool PyList::visit( PyVisitor& v ) const
 void PyList::clear()
 {
     iterator cur = items.begin(), end = items.end();
-    for (; cur != end; ++cur)
+    for (; cur != end; cur++)
         PySafeDecRef( *cur );
 
     items.clear();
@@ -710,7 +710,7 @@ PyList& PyList::operator=( const PyList& oth )
     items.resize( oth.size() );
     iterator cur = items.begin(), end = items.end();
     const_iterator cur_oth = oth.begin(), oth_end = oth.end();
-    for (; cur != end && cur_oth != oth_end; ++cur, ++cur_oth) {
+    for (; cur != end && cur_oth != oth_end; cur++, cur_oth++) {
         if (*cur_oth == nullptr ) {
             *cur = nullptr;
         } else {
@@ -754,7 +754,7 @@ bool PyDict::visit( PyVisitor& v ) const
 void PyDict::clear()
 {
     iterator cur = items.begin();
-    for (; cur != items.end(); ++cur) {
+    for (; cur != items.end(); cur++) {
         PyDecRef( cur->first );
         PySafeDecRef( cur->second );
     }
@@ -820,7 +820,7 @@ PyDict& PyDict::operator=( const PyDict& oth )
     //sLog.Yellow("PyDict()", "Copy assignment.");
     clear();
     const_iterator cur = oth.begin(), end = oth.end();
-    for (; cur != end; ++cur) {
+    for (; cur != end; cur++) {
         if (cur->second == nullptr ) {
             SetItem( cur->first->Clone(), nullptr );
         } else {
@@ -940,7 +940,7 @@ PyRep* PyObjectEx_Type1::FindKeyword( const char* keyword ) const
     PyDict* kw = GetKeywords();
 
     PyDict::const_iterator cur = kw->begin();
-    for (; cur != kw->end(); ++cur) {
+    for (; cur != kw->end(); cur++) {
         if (cur->first->IsString() )
             if (cur->first->AsString()->content() == keyword )
                 return cur->second;
@@ -1045,7 +1045,7 @@ PyRep* PyObjectEx_Type2::FindKeyword( const char* keyword ) const
 {
     PyDict* kw = GetKeywords();
     PyDict::const_iterator cur = kw->begin();
-    for (; cur != kw->end(); ++cur)
+    for (; cur != kw->end(); cur++)
         if ( cur->first->IsString() )
             if ( cur->first->AsString()->content() == keyword )
                 return cur->second;
