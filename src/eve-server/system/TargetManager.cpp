@@ -418,6 +418,7 @@ void TargetManager::TargetAdded(SystemEntity* tSE) {
         te.mode = "add";
         te.targetID = tSE->GetID();
     up = te.Encode();
+    // should this be bubblecast?  *victim* targeted by *aggressor*
     mySE->GetPilot()->QueueDestinyEvent(&up);
     OnDamageStateChange odsc;
         odsc.entityID = tSE->GetID();

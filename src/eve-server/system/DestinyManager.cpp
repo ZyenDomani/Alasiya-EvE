@@ -107,6 +107,11 @@ mvPacket(nullptr)
     m_shipHeading = GVector( NULL_ORIGIN );
     m_targetHeading = GVector( NULL_ORIGIN );
 
+    m_curvePercent = 0.0f;
+    m_curveStart = GPoint( NULL_ORIGIN );
+    m_curveApex = GPoint( NULL_ORIGIN );
+    m_curveEnd = GPoint( NULL_ORIGIN );
+
     m_radius = mySE->GetRadius();
     m_position = mySE->GetPosition();
 
@@ -335,7 +340,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
      *  m_targetPoint holds current target coords.
      *   -> set by goto, warp, align, follow, orbit
      *   -> sets m_shipHeading
-     *  m_shipHeading holds current direction and is set in _Turn()
+     *  m_shipHeading holds current direction and is set in Turn()
      *   -> used with speed to set m_velocity
      *  m_velocity is current ship velocity.  set in MoveObject()
      *   -> m_velocity = m_shipHeading * (ASF * MSS)
@@ -384,7 +389,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
     }
 
     if (!updates.empty())
-        SendDestinyUpdate(updates);
+        SendDestinyUpdates(updates);
 }
 
 void DestinyManager::UpdateVelocity(bool isMoving) {
@@ -669,7 +674,7 @@ void DestinyManager::Bounce(GVector direction, float speed)
         du.y = m_shipHeading.y;
         du.z = m_shipHeading.z;
     updates.push_back(du.Encode());
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
     Stop();
 }
 
@@ -818,11 +823,12 @@ void DestinyManager::MoveObject() {
 
     // ships tend to "level out" when stopping.  try to mimic that here (wip)
     // this will also need *something* with ship agility
-    if (m_stop and (m_timeFraction > 0.5f)) {
-        if (m_shipHeading.y < -0.15f) {
-            m_shipHeading.y += 0.05f;
-        } else if (m_shipHeading.y > 0.15f) {
-            m_shipHeading.y -= 0.05f;
+    // using rifter to check/set base numbers
+    if (m_stop and (m_activeSpeedFraction < 0.7f)) {
+        if (m_shipHeading.y < -0.3f) {
+            m_shipHeading.y += 0.15f;
+        } else if (m_shipHeading.y > 0.3f) {
+            m_shipHeading.y -= 0.15f;
         }
     }
 
@@ -854,8 +860,8 @@ void DestinyManager::MoveObject() {
 
     if (sEntityList.GetTracking()) {
         // only create can when ship is moving significant amount
-        if (m_activeSpeedFraction > 0.002f) {
-            // create jetcan to visualize object movement
+        if (m_activeSpeedFraction > sConfig.debug.ShipTrackingTime) {
+            // create jetcan to visualize movement
             std::string str = mySE->GetName();
             str += "  ";
             str += itoa(timeStamp);
@@ -919,47 +925,23 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
             return false;
         }
     }
+
     m_radians = std::acos(dot);
     float degrees(EvE::Trig::Rad2Deg(m_radians));
-    if (degrees < TURN_ALIGNMENT/*4*/) {
+    if (degrees < TURN_ALIGNMENT) {
         m_shipHeading = toVec;
         return false;
     }
+
     if (is_log_enabled(DESTINY__TURN_TRACE)) {
         _log(DESTINY__TURN_TRACE, "Destiny::IsTurn() - %s(%u): dot: %.5f, radians:%.5f, degrees:%.3f",\
             mySE->GetName(), mySE->GetID(), dot, m_radians, degrees);
         _log(DESTINY__TURN_TRACE, "Destiny::IsTurn() m_shipHeading: %.3f,%.3f,%.3f.  m_targetHeading: %.3f,%.3f,%.3f", \
             m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z);
     }
+
     return true;
 }
-
-/* Quaternion slerp(Quaternion const &v0, Quaternion const &v1, double t) {
- *   // v0 and v1 should be unit length or else something broken will happen.
- *
- *   // Compute the cosine of the angle between the two vectors.
- *   double dot = dot_product(v0, v1);
- *
- *   const double DOT_THRESHOLD = 0.9995;
- *   if (dot > DOT_THRESHOLD) {
- *       // If the inputs are too close for comfort, linearly interpolate
- *       // and normalize the result.
- *
- *       Quaternion result = v0 + t*(v1 – v0);
- *       result.normalize();
- *       return result;
- *   }
- *
- *   Clamp(dot, -1, 1);           // Robustness: Stay within domain of acos()
- *   double theta_0 = acos(dot);  // theta_0 = angle between input vectors
- *   double theta = theta_0*t;    // theta = angle between v0 and result
- *
- *   Quaternion v2 = v1 – v0*dot;
- *   v2.normalize();              // { v0, v2 } is now an orthonormal basis
- *
- *   return v0*cos(theta) + v2*sin(theta);
- * }
- */
 
 //from new source at eve/client/script/ui/services\flightControls.py
 //  self.curve = trinity.Tr2QuaternionLerpCurve()
@@ -968,34 +950,38 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
         if (mySE->GetPilot()->IsUndock())
             return;
 
-    ++m_turnTic;
-
     if (!IsTurn()) {
         if (m_turning)
             ClearTurn();
         return;
     }
+
+
     /*when changing directions....
      *  m_moveTime will have to be reset - handled in UpdateVelocity()
      *  m_shipHeading will have to be reset - reset here and used in MoveObject() (our calling function)
      *  check for decel, then call UpdateVelocity() to set variables as needed.  Move() will handle the rest.
      *
      * this below isnt right, hack is almost close
-     *   m_degPerTic = (60.0f - m_shipAgility) / 10;  ([this file]:2317, reset for ab/mwd [this file]:2154)
+     *   m_degPerTic = 60.0f / m_massMKg * m_shipInertia;  ([this file]:2317, reset for ab/mwd [this file]:2154)
      */
 
     // this is off for rookie ship (maybe others)
-    float turnTime(m_shipAgility / 2.2);
+    float turnTime(m_shipAgility / m_shipInertia);
     if (!m_turning) {
         m_turning = true;
         //m_radians is set in IsTurn() on every tic
         m_turnFraction = std::sqrt((std::cos(m_radians) + 1) / 2);
         //this isnt used yet...used as comparison for testing time calc's
         m_alignTime = (EvE::Trig::Rad2Deg(m_radians) / m_degPerTic);
-        if (is_log_enabled(DESTINY__TURN_TRACE))
-            _log(DESTINY__TURN_TRACE, "Destiny::Turn() - %s(%u): Agility:%.3f, Inertia:%.3f, alignTime:%.3f, turnTime:%.3f, turnFraction:%.3f, m_degPerTic:%.3f", \
-                mySE->GetName(), mySE->GetID(), m_shipAgility, m_shipInertia, m_alignTime, turnTime, m_turnFraction, m_degPerTic);
+
+        if (is_log_enabled(DESTINY__TURN_TRACE)) {
+            _log(DESTINY__TURN_TRACE, "Destiny::Turn() - %s(%u): Agility:%.3f, Inertia:%.3f, alignTime:%.3f, turnFraction:%.3f, m_degPerTic:%.3f", \
+                    mySE->GetName(), mySE->GetID(), m_shipAgility, m_shipInertia, m_alignTime, m_turnFraction, m_degPerTic);
+        }
     }
+
+    ++m_turnTic;
 
     // logic to determine speed changes for turning
     if (m_turnTic == 1)
@@ -1026,16 +1012,17 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
      * Dreadnought      ~55
      * Zephyr           5
      */
+
     // set ship turn amount based on position in turn, current speed and ship agility
     GVector deltaHeading(m_shipHeading, m_targetHeading);
     float turnPercent(0.1f);
     float degrees(EvE::Trig::Rad2Deg(m_radians));
-    if (degrees > 100) {
+    if (degrees > 90) {
         if (m_decel and (m_turnTic > turnTime)) {
             // turn half of remaining turn (simulate greatest turn angle when (turn > 90*) and (speed < time)
             turnPercent = 0.3f;
         } else {
-            turnPercent = m_degPerTic / (degrees - 100);
+            turnPercent = m_degPerTic / (degrees - 90);
         }
     } else if (degrees > m_degPerTic) {
         turnPercent = m_degPerTic / (degrees * 0.5);
@@ -1063,6 +1050,30 @@ void DestinyManager::ClearTurn() {
     m_radians = 0.0f;
     m_turnFraction = 0.0f;
     m_alignTime = m_timeToEnterWarp;
+    m_curveApex = GPoint( NULL_ORIGIN );
+    m_curveEnd = GPoint( NULL_ORIGIN );
+    m_curveStart = GPoint( NULL_ORIGIN );
+}
+
+void DestinyManager::MarkPoint(const GPoint& position, std::string& name, std::string& desc)
+{
+    // create jetcan to visualize movement
+    ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, name.c_str(), position, desc.c_str());
+    CargoContainerRef cRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
+    if (cRef.get() != nullptr) {
+        // create new container
+        FactionData data = FactionData();
+        ContainerSE* cSE = new ContainerSE(cRef, mySE->GetServices(), mySE->SystemMgr(), data);
+        if (cSE == nullptr) {
+            _log(DESTINY__WARNING, "MarkCurve() could not create SE for %s (%s)", name.c_str(), desc.c_str());
+            return;
+        }
+        cRef->SetMySE(cSE);
+        cSE->AnchorContainer();
+        mySE->SystemMgr()->AddMarker(cSE);
+        return;
+    }
+    _log(DESTINY__WARNING, "MarkCurve() could not create Item for %s (%s)", name.c_str(), desc.c_str());
 }
 
 void DestinyManager::Follow() {
@@ -1088,7 +1099,7 @@ void DestinyManager::Follow() {
                     ssf.entityID = mySE->GetID();
                     ssf.fraction = 0;
                 updates.push_back(ssf.Encode());
-                SendDestinyUpdate(updates);
+                SendDestinyUpdates(updates);
             }
             m_velocity = NULL_ORIGIN_V;
             m_tractorPause = true;
@@ -1112,7 +1123,7 @@ void DestinyManager::Follow() {
                     ssf.entityID = mySE->GetID();
                     ssf.fraction = 1;
                 updates.push_back(ssf.Encode());
-                SendDestinyUpdate(updates);
+                SendDestinyUpdates(updates);
             }
             m_tractorPause = false;
             m_velocity = m_shipHeading * m_maxSpeed;
@@ -1724,7 +1735,7 @@ void DestinyManager::BeginMovement() {
             sbmass.entityID = mySE->GetID();
             sbmass.mass = m_mass;
         updates.push_back(sbmass.Encode());
-        SendDestinyUpdate(updates); //consumed
+        SendDestinyUpdates(updates); //consumed
         m_hasSentShipUpdates = true;
     }
 
@@ -1760,7 +1771,8 @@ void DestinyManager::BeginMovement() {
         m_targetPoint =  (point * 1.0e16);
         GVector targHeading(m_position, m_targetPoint);
         targHeading.normalize();
-        m_targetHeading = m_shipHeading = targHeading;
+        m_shipHeading = targHeading;
+        m_targetHeading = targHeading;
     }
 
     if (m_orbiting == Destiny::Ball::Orbit::None) {
@@ -1801,10 +1813,9 @@ void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
     m_ballMode = Destiny::Ball::Mode::FOLLOW;
     m_targetPoint = pSE->GetPosition();
 
-    if (pSE->IsStationSE()) {
-        // this makes ship approach station dock elevation (y), instead of approaching to stations "center point" position (where icon is)
+    // this makes ship approach station dock elevation (y), instead of approaching to stations "center point" position (where icon is)
+    if (pSE->IsStationSE())
         m_targetPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
-    }
 
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
@@ -1831,7 +1842,7 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
         ClearOrbit();
 
     m_ballMode = Destiny::Ball::Mode::GOTO;
-    m_targetPoint = direction *1.0e16;
+    m_targetPoint = direction * 1.0e16;
     BeginMovement();
 
     CmdGotoDirection du;
@@ -1916,7 +1927,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
             sfx.start = true;
             sfx.active = true;
         updates.push_back(sfx.Encode());
-        SendDestinyUpdate(updates);
+        SendDestinyUpdates(updates);
         if (is_log_enabled(NPC__MESSAGE))
             _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %u",\
                     mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), mySE->SysBubble()->GetID(), \
@@ -2022,7 +2033,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
         sfx.start = true;
         sfx.active = true;
     updates.push_back(sfx.Encode());
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
     updates.clear();
     //set massive for warp, per client, but self-only
      SetBallMassive bm;
@@ -2207,7 +2218,7 @@ void DestinyManager::SetUndockSpeed() {
         du.y = m_shipHeading.y;
         du.z = m_shipHeading.z;
     updates.push_back(du.Encode());
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
 }
 
 PyResult DestinyManager::AttemptDockOperation() {
@@ -2332,7 +2343,7 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     m_shipAgility = m_massMKg * m_shipInertia;
     m_alignTime = (-log(0.25) * m_shipAgility);
     m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
-    m_degPerTic = (60.0f - m_shipAgility) / 10;  // this isnt right....
+    m_degPerTic = 60.0f / m_massMKg * m_shipInertia;;  // this isnt right....
     m_maxShipSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     // reset ship max speed using updated m_maxShipSpeed
     m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;
@@ -2353,7 +2364,7 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         sbms.entityID = mySE->GetID();
         sbms.speed = m_maxShipSpeed;
         updates.push_back(sbms.Encode());
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
     m_hasSentShipUpdates = true;    // just in case, as this is re-sent in BeginMovement()
 
     // this is just for debug logging
@@ -2401,7 +2412,7 @@ void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
         sbms.entityID = mySE->GetID();
         sbms.speed = m_maxShipSpeed;
         updates.push_back(sbms.Encode());
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
     m_hasSentShipUpdates = true;    // just in case, as this is re-sent in BeginMovement()
 
     SetSpeedFraction(m_userSpeedFraction, true);
@@ -2454,7 +2465,7 @@ Battleships 0.155
      *  agility is an internal-use variable.
      */
     m_shipAgility = m_massMKg * m_shipInertia;
-    m_degPerTic = (60.0f - m_shipAgility) / 10;
+    m_degPerTic = 60.0f / m_massMKg * m_shipInertia;
     // set a maximum acceleration time (based on ship variables)
     m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
 
@@ -2486,7 +2497,7 @@ Battleships 0.155
             sbspeed.entityID = mySE->GetID();
             sbspeed.speed = m_maxShipSpeed;
         updates.push_back(sbspeed.Encode());
-        SendDestinyUpdate(updates); //consumed
+        SendDestinyUpdates(updates); //consumed
     }
 }
 
@@ -2527,7 +2538,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
         miss.unk1 = 1;
         miss.unk2 = 1;
     updates.push_back(miss.Encode());
-    SendDestinyUpdate(updates); //consumed
+    SendDestinyUpdates(updates); //consumed
 }
 
 void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
@@ -2566,7 +2577,7 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
         shipItem->SetItem(0, new PyString("OnSlimItemChange"));
         shipItem->SetItem(1, shipData);
     updates.push_back(shipItem);
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
 
     UpdateShipVariables();
     SendBallInteractive(newShipRef, true);
@@ -2680,7 +2691,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)
         fb.targetID = pShipSE->GetID();
         fb.range = m_followDistance;
     updates.push_back(fb.Encode());
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
 }
 
 void DestinyManager::TractorBeamStop()
@@ -2700,7 +2711,7 @@ void DestinyManager::TractorBeamStop()
         sbmass.entityID = mySE->GetID();
         sbmass.mass = m_mass;
     updates.push_back(sbmass.Encode());
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
 }
 
 /*
@@ -2979,7 +2990,7 @@ void DestinyManager::SendJumpOutEffect(std::string JumpEffect, uint32 shipID) co
         effect.repeat = 0;
         effect.startTime = GetFileTimeNow();
     updates.push_back(effect.Encode());
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
 }
 
 void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
@@ -3005,7 +3016,7 @@ void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
         sbv.y = 0.0;
         sbv.z = 0.0;
     updates.push_back(sbv.Encode());
-    SendDestinyUpdate(updates);
+    SendDestinyUpdates(updates);
 }
 
 void DestinyManager::SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool isGlobal/*false*/) const {
@@ -3048,31 +3059,17 @@ void DestinyManager::SendSetState() const {
     mySE->GetPilot()->SetStateSent(true);
 }
 
-void DestinyManager::SendMovementPacket()
-{
+void DestinyManager::SendMovementPacket() {
     SendSingleDestinyUpdate(&mvPacket);
     PySafeDecRef(mvPacket);
 }
 
-void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*/) const
-{
-    std::vector<PyTuple*> updates;
-    std::vector<PyTuple*> events(1, *ev);   // create vector of size "1" and insert "*ev" into it
-    SendDestinyUpdate(updates, events, self_only);
-}
-
 void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false*/) const {
     std::vector<PyTuple*> updates(1, *up);   // create vector of size "1" and insert "*up" into it
-    std::vector<PyTuple*> events;
-    SendDestinyUpdate(updates, events, self_only);
+    SendDestinyUpdates(updates, self_only);
 }
 
-void DestinyManager::SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self_only/*false*/) const {
-    std::vector<PyTuple*> events;
-    SendDestinyUpdate(updates, events, self_only);
-}
-
-void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vector<PyTuple*>& events, bool self_only/*false*/) const {
+void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool self_only/*false*/) const {
     // this check shouldnt be needed...
     if (!mySE->SystemMgr()->IsLoaded())
         return;
@@ -3081,52 +3078,87 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
             // this entity is NOT a player ship...change to BubbleCast (or silently fail)
             if (mySE->SysBubble() != nullptr) {
                 if (is_log_enabled(DESTINY__UPDATES))
-                    _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update (u:%lu, e:%lu) for stamp %u to bubbleID %u from %s(%u)", \
-                            sEntityList.GetStamp(), updates.size(), events.size(), sEntityList.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
-                mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
+                    _log( DESTINY__UPDATES, "[%u] BubbleCasting %lu DestinyUpdates to bubbleID %u from %s(%u)", \
+                            sEntityList.GetStamp(), updates.size(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                mySE->SysBubble()->BubblecastDestinyUpdate(updates, "DestinyUpdates");
             }
             return;
         }
         if (is_log_enabled(PLAYER__MESSAGE))
-            _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdate() (u:%lu, e:%lu) called as 'self_only' for %s(%i)", \
-                    sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+            _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdates() called as 'self_only' for %s(%i)", \
+                    sEntityList.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); itr++) {
             PyIncRef(*itr);
             mySE->GetPilot()->QueueDestinyUpdate(&(*itr));
         }
-
-        for (std::vector<PyTuple*>::iterator itr = events.begin(); itr != events.end(); itr++) {
-            PyIncRef(*itr);
-            mySE->GetPilot()->QueueDestinyEvent(&(*itr));
-        }
     } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all bubbles in a system
         if (is_log_enabled(DESTINY__UPDATES))
-            _log(DESTINY__UPDATES, "[%u] BubbleCasting global structure destiny update (u:%u, e:%u) for stamp %u to all bubbles from %s(%u)", \
-                    sEntityList.GetStamp(), updates.size(), events.size(), sEntityList.GetStamp(), \
-                    (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
-                    (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
+            _log(DESTINY__UPDATES, "[%u] BubbleCasting Structure DestinyUpdates in %s from %s(%u)", \
+                    sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName()), mySE->GetID();
 
-        //Get all clients in the system which the SE is in
-        /** @todo  this isnt right....will segfault.  needs to be fixed */
+        //Get all clients in our system
         std::vector<Client*> cv;
         mySE->SystemMgr()->GetClientList(cv);
-        for(auto const& value: cv) {
-            value->GetShipSE()->SysBubble()->BubblecastDestiny(updates, events, "destiny");
-        }
+        for (auto const& player : cv)
+            if (player->IsInSpace())
+                player->QueueDestinyUpdates(updates);
     } else if (mySE->SysBubble() != nullptr) {
         if (is_log_enabled(DESTINY__UPDATES))
-            _log(DESTINY__UPDATES, "[%u] BubbleCasting destiny update (u:%u, e:%u) for stamp %u to bubbleID %u from %s(%u)", \
-                    sEntityList.GetStamp(), updates.size(), events.size(), sEntityList.GetStamp(), mySE->SysBubble()->GetID(),   \
-                    (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
+            _log(DESTINY__UPDATES, "[%u] BubbleCasting %lu DestinyUpdates to bubbleID %u from %s(%u)", \
+                    sEntityList.GetStamp(), updates.size(), mySE->SysBubble()->GetID(),   \
+                    (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()), \
                     (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
-        mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
+            mySE->SysBubble()->BubblecastDestinyUpdate(updates, "DestinyUpdates");
     } else {
-        _log(DESTINY__WARNING, "[%u] Cannot BubbleCast destiny update (u:%u, e:%u); entity (%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
-                sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetID() );
+        _log(DESTINY__WARNING, "[%u] Cannot BubbleCast %lu DestinyUpdates; entity (%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
+                sEntityList.GetStamp(), updates.size(), mySE->GetID() );
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();
-        //sBubbleMgr.Add(mySE);
-        //mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
+    }
+}
+
+void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*/) const {
+    // this check shouldnt be needed...
+    if (!mySE->SystemMgr()->IsLoaded())
+        return;
+    if (self_only) {
+        if (!mySE->HasPilot()) {
+            // this entity is NOT a player ship...change to BubbleCast (or silently fail)
+            if (mySE->SysBubble() != nullptr) {
+                if (is_log_enabled(DESTINY__UPDATES))
+                    _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny event to bubbleID %u from %s(%u)", \
+                    sEntityList.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                mySE->SysBubble()->BubblecastDestinyEvent(ev, "DestinyEvent");
+            }
+            return;
+        }
+        if (is_log_enabled(PLAYER__MESSAGE))
+            _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdates() DestinyEvent called as 'self_only' for %s(%i)", \
+                sEntityList.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+
+        mySE->GetPilot()->QueueDestinyEvent(ev);
+    } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all players in a system
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] BubbleCasting Structure DestinyEvent in %s from %s(%u)", \
+            sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName()), mySE->GetID();
+
+        //Get all clients in our system
+        std::vector<Client*> cv;
+        for (auto const& player : cv)
+            if (player->IsInSpace())
+                player->QueueDestinyEvent(ev);
+    } else if (mySE->SysBubble() != nullptr) {
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] BubbleCasting DestinyEvent to bubbleID %u from %s(%u)", \
+                    sEntityList.GetStamp(), mySE->SysBubble()->GetID(),   \
+            (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
+            (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
+        mySE->SysBubble()->BubblecastDestinyEvent(ev, "DestinyEvent" );
+    } else {
+        _log(DESTINY__WARNING, "[%u] Cannot BubbleCast DestinyEvent; entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
+                sEntityList.GetStamp(), mySE->GetName(), mySE->GetID() );
+        if (sConfig.debug.IsTestServer)
+            EvE::traceStack();
     }
 }

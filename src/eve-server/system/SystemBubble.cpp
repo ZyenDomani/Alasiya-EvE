@@ -918,14 +918,6 @@ void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::st
 }
 
 
-void SystemBubble::BubblecastDestiny(std::vector<PyTuple *> &updates, std::vector<PyTuple *> &events, const char *desc) const {
-    if (m_players.empty())
-        return;
-
-    BubblecastDestinyUpdate(updates, desc);
-    BubblecastDestinyEvent(events, desc);
-}
-
 void SystemBubble::BubblecastDestinyUpdate(std::vector<PyTuple *> &updates, const char *desc) const {
     for (std::vector<PyTuple *>::iterator cur = updates.begin(); cur != updates.end(); cur++)
         BubblecastDestinyUpdate(&(*cur), desc);

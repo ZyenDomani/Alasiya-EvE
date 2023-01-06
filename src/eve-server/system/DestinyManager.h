@@ -69,6 +69,8 @@ class SystemManager;
 // common variables to denote accpetable alignment deviations
 static const float TURN_ALIGNMENT = 4.0f;
 static const float WARP_ALIGNMENT = 6.0f;
+
+// for testing only.  this isnt right.
 static const uint16 BUMP_DISTANCE = 50;     //in meters.  < this = hit.
 
 /*
@@ -102,8 +104,7 @@ public:
 
     void SendSingleDestinyEvent(PyTuple** ev, bool self_only=false) const;
     void SendSingleDestinyUpdate(PyTuple** up, bool self_only=false) const;
-    void SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self_only=false) const;
-    void SendDestinyUpdate(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, bool self_only=false) const;
+    void SendDestinyUpdates(std::vector<PyTuple*> &updates, bool self_only=false) const;
 
     /* Informational query functions: */
     const GPoint &GetPosition() const                   { return m_position; }
@@ -324,10 +325,21 @@ private:
 
     // Internal Turn Methods    -allan  Aug - Oct, 2015
     bool IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement
-    void Turn();                       //apply velocity and heading updates as needed for turning
+    void Turn();                       //apply velocity and heading updates as needed for turning.  called by MoveObject()
     void ClearTurn();
+    // bezier turn data (wip)      -allan  Jan 2023
+    float m_curvePercent;               // (0,1) for curve duration
+    GPoint m_curveStart;
+    GPoint m_curveApex;
+    GPoint m_curveEnd;
+    // get point for bezier curve (wip)
+    int64 getPt( int64 from, int64 to, float perc ) {
+        int64 diff(from - to);
+        return from + ( diff * perc );
+    }
+    void MarkPoint(const GPoint& position, std::string& name, std::string& desc);
 
-    // Internal Orbit shit      -allan  Jan 2020
+    // Internal Orbit shit
     GPoint ComputePosition(double curRad);   // currently testing...wip
     double m_inclination;               //inclination of orbit
     double m_longAscNode;               //longitude of ascending node

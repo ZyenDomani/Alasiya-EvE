@@ -348,14 +348,14 @@ void SystemManager::UnloadSystem() {
 
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
-    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %u npcs, %u entities, %u statics.", \
+    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %lu npcs, %lu entities, %lu statics.", \
                 m_npcs.size(), m_entities.size(), m_staticEntities.size());
 
-    // this is dupe container. contents unloaded in another call
+    // this is dupe container. contents unloaded in another call *** note call here ***
     m_npcs.clear();
     // at this point, system entity list should be clear...but just in case, hit it again
     m_entities.clear();
-    // this is dupe container. contents unloaded in another call
+    // this is dupe container. contents unloaded in another call *** note call here ***
     m_ticEntities.clear();
     // at this point, system static entity list should be clear...but just in case, hit it again
     m_staticEntities.clear();

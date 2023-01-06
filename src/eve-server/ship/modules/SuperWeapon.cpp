@@ -128,7 +128,7 @@ void SuperWeapon::StopCycle(bool abort)
     if (m_destinyMgr->IsWarping() or (m_bubble == nullptr))
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     else
-        m_bubble->BubblecastDestinyEvent(&tuple, "destiny");
+        m_bubble->BubblecastDestinyEvent(&tuple, "DestinyEvent");
 }
 
 double SuperWeapon::DoCycle()
@@ -242,7 +242,7 @@ void SuperWeapon::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdates(updates, events, false);
     //m_shipRef->GetPilot()->QueueDestinyEvent(&tup);
 }
 

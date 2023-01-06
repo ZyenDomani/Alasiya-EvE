@@ -39,7 +39,7 @@
  COMMAND( bubblelist, Acct::Role::PROGRAMMER,
           " - show current objects in bubble, their destiny state, and movement speed." )
  COMMAND( track, Acct::Role::PROGRAMMER,
-          " - toggles current object movement tracking state." )
+          " - toggles object movement tracking state." )
  COMMAND( attrlist, Acct::Role::PROGRAMMER,
           " - show current attributes for itemID given in args." )
  COMMAND( warpto, Acct::Role::GMH,
@@ -48,7 +48,7 @@
           " - note giving you detailed fleet boost information")
  COMMAND( fleetinvite, Acct::Role::PLAYER,
           " - sets fleet invite scope to <arg> or none")
- COMMAND( getposition, Acct::Role::PLAYER,
+ COMMAND( getpositiondata, Acct::Role::PLAYER,
           " - gets positional data between ship and moon (for pos placement testing)")
  COMMAND( bubbletrack, Acct::Role::PROGRAMMER,
           " - enable/disable bubble outline tracking." )

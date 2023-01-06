@@ -292,9 +292,10 @@ public:
     void UpdateSessionInt( const char *sessionType, int value );
 
     PyRep *GetAggressors() const;
-    void QueueDestinyUpdate(PyTuple** update, bool DoPackage=false, bool IsSetState=false);
     void QueueDestinyEvent(PyTuple** multiEvent);
-    void FlushQueue();
+    void QueueDestinyUpdates(std::vector< PyTuple* >& updates);
+    void QueueDestinyUpdate(PyTuple** update, bool DoPackage=false, bool IsSetState=false);
+    void FlushQueue()                                   { _SendQueuedUpdates(); }
 
     //  mission
     void RemoveMissionItem(uint16 typeID, uint32 qty);
@@ -474,3 +475,27 @@ private:
 };
 
 #endif
+
+/*
+        if si.zoneid:
+            sessValues['worldspaceid'] = si.zoneid
+            sessValues['stationid2'] = si.stationID
+            station = self.stationSvc.GetStation(si.stationID)
+            sessValues['solarsystemid2'] = station.solarSystemID
+        elif si.stationID:
+            sessValues['stationid'] = si.stationID
+            sessValues['stationid2'] = si.stationID
+            sessValues['worldspaceid'] = si.stationID
+            station = self.stationSvc.GetStation(si.stationID)
+            sessValues['solarsystemid2'] = station.solarSystemID
+        elif si.solarSystemID:
+            sessValues['solarsystemid'] = si.solarSystemID
+            sessValues['solarsystemid2'] = si.solarSystemID
+        if 'solarsystemid2' in sessValues:
+            if sessValues['solarsystemid2'] is not None:
+                primeditems = sm.services['i2'].__primeditems__
+                if sessValues['solarsystemid2'] in primeditems:
+                    sessValues['constellationid'] = primeditems[sessValues['solarsystemid2']].locationID
+                    sessValues['regionid'] = primeditems[sessValues['constellationid']].locationID
+        return sessValues
+    */

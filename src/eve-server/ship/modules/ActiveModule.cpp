@@ -1325,7 +1325,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     or   m_destinyMgr->IsWarping()) {
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     } else {
-        m_bubble->BubblecastDestinyEvent(&tuple, "destiny");
+        m_bubble->BubblecastDestinyEvent(&tuple, "DestinyEvent");
     }
 }
 /*

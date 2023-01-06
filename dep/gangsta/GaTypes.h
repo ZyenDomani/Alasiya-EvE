@@ -25,439 +25,520 @@
 
 namespace Ga
 {
-	class GaException {
-	public:
-		GaException(){}
-		GaException(const char *msg) { m_msg = msg; }
-		GaException(const std::string &msg) { m_msg = msg; }
-		const std::string &Description() { return m_msg; }
-	private:
-		std::string m_msg;
-	};
+class GaException {
+public:
+    GaException() {}
+    GaException(const char *msg) {
+        m_msg = msg;
+    }
+    GaException(const std::string &msg) {
+        m_msg = msg;
+    }
+    const std::string &Description() {
+        return m_msg;
+    }
+private:
+    std::string m_msg;
+};
 
-    class GaQuat;
+class GaQuat;
 
-	class GaExport GaVec3
-	{
-	public:
-        GaVec3(const Parameter &oth);
-		GaExpInl GaVec3():x(0.0f),y(0.0f),z(0.0f){}
-		GaExpInl GaVec3(GaFloat v):x(v),y(v),z(v){}
-		GaExpInl GaVec3(const GaFloat *v):x(v[0]),y(v[1]),z(v[2]){}
-		GaExpInl GaVec3(GaFloat X,GaFloat Y,GaFloat Z):x(X),y(Y),z(Z){}
-		GaExpInl GaVec3(const GaVec3& oth):x(oth.x),y(oth.y),z(oth.z){}
+class GaExport GaVec3 {
+public:
+    GaVec3(const Parameter &oth);
+    GaExpInl GaVec3():x(0.0f),y(0.0f),z(0.0f) {}
+    GaExpInl GaVec3(GaFloat v):x(v),y(v),z(v) {}
+    GaExpInl GaVec3(const GaFloat *v):x(v[0]),y(v[1]),z(v[2]) {}
+    GaExpInl GaVec3(GaFloat X,GaFloat Y,GaFloat Z):x(X),y(Y),z(Z) {}
+    GaExpInl GaVec3(const GaVec3& oth):x(oth.x),y(oth.y),z(oth.z) {}
 
-		GaExpInl GaVec3 operator-(const GaVec3 &oth) const
-		{
-			return GaVec3(x - oth.x,y - oth.y,z - oth.z);
-		}
+    GaExpInl GaVec3 operator-(const GaVec3 &oth) const
+    {
+        return GaVec3(x - oth.x,y - oth.y,z - oth.z);
+    }
 
-		GaExpInl GaVec3 operator*(GaFloat s) const
-		{
-			return GaVec3(x * s,y * s,z * s);
-		}
+    GaExpInl GaVec3 operator*(GaFloat s) const
+    {
+        return GaVec3(x * s,y * s,z * s);
+    }
 
-		GaExpInl GaVec3 operator/(GaFloat s) const
-		{
-			return GaVec3(x / s,y / s,z / s);
-		}
+    GaExpInl GaVec3 operator/(GaFloat s) const
+    {
+        return GaVec3(x / s,y / s,z / s);
+    }
 
-		GaExpInl GaVec3 operator*(const GaVec3 &oth) const
-		{
-                    return GaVec3(x * oth.x,y * oth.y,z * oth.z);
-		}
+    GaExpInl GaVec3 operator*(const GaVec3 &oth) const
+    {
+        return GaVec3(x * oth.x,y * oth.y,z * oth.z);
+    }
 
-		GaExpInl GaVec3& operator=(const GaVec3& oth)
-		{
-			x = oth.x;
-			y = oth.y;
-			z = oth.z;
+    GaExpInl GaVec3& operator=(const GaVec3& oth)
+    {
+        x = oth.x;
+        y = oth.y;
+        z = oth.z;
 
-			return *this;
-		}
+        return *this;
+    }
 
-		GaExpInl bool operator!=(const GaVec3& oth) const
-		{
-			return (x != oth.x) || (y != oth.y) || (z != oth.z);
-		}
+    GaExpInl bool operator!=(const GaVec3& oth) const
+    {
+        return (x != oth.x) || (y != oth.y) || (z != oth.z);
+    }
 
-		GaExpInl bool operator==(const GaVec3& oth) const
-		{
-			return (x == oth.x) && (y == oth.y) && (z == oth.z);
-		}
+    GaExpInl bool operator==(const GaVec3& oth) const
+    {
+        return (x == oth.x) && (y == oth.y) && (z == oth.z);
+    }
 
-		GaExpInl GaVec3 operator+(const GaVec3 &oth) const
-		{
-			return GaVec3(x + oth.x,y + oth.y,z + oth.z);
-		}
+    GaExpInl GaVec3 operator+(const GaVec3 &oth) const
+    {
+        return GaVec3(x + oth.x,y + oth.y,z + oth.z);
+    }
 
-		GaExpInl GaVec3& operator+=(const GaVec3 &oth)
-		{
-			x += oth.x;
-			y += oth.y;
-			z += oth.z;
+    GaExpInl GaVec3& operator+=(const GaVec3 &oth)
+    {
+        x += oth.x;
+        y += oth.y;
+        z += oth.z;
 
-			return *this;
-		}
+        return *this;
+    }
 
-		GaExpInl GaVec3& operator-=(const GaVec3 &oth)
-		{
-			x -= oth.x;
-			y -= oth.y;
-			z -= oth.z;
+    GaExpInl GaVec3& operator-=(const GaVec3 &oth)
+    {
+        x -= oth.x;
+        y -= oth.y;
+        z -= oth.z;
 
-			return *this;
-		}
+        return *this;
+    }
 
-		GaExpInl GaVec3& operator*=(GaFloat f)
-		{
-			x *= f;
-			y *= f;
-			z *= f;
+    GaExpInl GaVec3& operator*=(GaFloat f)
+    {
+        x *= f;
+        y *= f;
+        z *= f;
 
-			return *this;
-		}
+        return *this;
+    }
 
-		GaExpInl GaVec3& operator/=(GaFloat f)
-		{
-			x /= f;
-			y /= f;
-			z /= f;
+    GaExpInl GaVec3& operator/=(GaFloat f)
+    {
+        x /= f;
+        y /= f;
+        z /= f;
 
-			return *this;
-		}
+        return *this;
+    }
 
-		GaExpInl GaVec3& operator*=(const GaVec3& oth)
-		{
-			x *= oth.x;
-			y *= oth.y;
-			z *= oth.z;
+    GaExpInl GaVec3& operator*=(const GaVec3& oth)
+    {
+        x *= oth.x;
+        y *= oth.y;
+        z *= oth.z;
 
-			return *this;
-		}
+        return *this;
+    }
 
-		GaExpInl GaVec3 crossProduct(const GaVec3 &oth) const
-		{
-			return GaVec3
-			(
-			 (y * oth.z) - (oth.y * z),
-			 (z * oth.x) - (oth.z * x),
-			 (x * oth.y) - (oth.x * y)
-			);
-		}
+    GaExpInl GaVec3 crossProduct(const GaVec3 &oth) const
+    {
+        return GaVec3
+               (
+                   (y * oth.z) - (oth.y * z),
+                   (z * oth.x) - (oth.z * x),
+                   (x * oth.y) - (oth.x * y)
+               );
+    }
 
-		GaExpInl GaFloat dotProduct(const GaVec3 &oth) const
-		{
-			return (x * oth.x + y * oth.y + z * oth.z);
-		}
+    //the cosine of the angle between the two vectors.
+    GaExpInl GaFloat dotProduct(const GaVec3 &oth) const
+    {
+        return (x * oth.x + y * oth.y + z * oth.z);
+    }
 
-		GaExpInl GaFloat lengthSquared() const {return (x * x) + (y * y) + (z * z);}
-		GaExpInl GaFloat length() const {return Math::squareRoot(lengthSquared());}
+    GaExpInl GaFloat lengthSquared() const {
+        return (x * x) + (y * y) + (z * z);
+    }
+    GaExpInl GaFloat length() const {
+        return Math::squareRoot(lengthSquared());
+    }
 
-		GaExpInl GaFloat distance(const GaVec3& oth) const
-		{
-			return Math::squareRoot( pow((oth.x - x), 2) + pow((oth.y - y), 2) + pow((oth.z - z), 2) );
-		}
+    GaExpInl GaFloat distance(const GaVec3& oth) const
+    {
+        return Math::squareRoot( pow((oth.x - x), 2) + pow((oth.y - y), 2) + pow((oth.z - z), 2) );
+    }
 
-		GaExpInl GaFloat normalize()
-		{
-			GaFloat len = length();
-			if(len > Math::GaEpsilon)
-			{
-				GaFloat inv = 1.0 / len;
-
-				x *= inv;
-				y *= inv;
-				z *= inv;
-			}
-			return(len);	//just in case they want it
-		}
-
-		// angle in degrees
-		GaFloat angle(float ax, float ay, float bx, float by);
-        // angle between 2 vectors in degrees
-        GaExpInl GaFloat angle(const Ga::GaVec3 oth) const
+    // transform position to unit vector
+    GaExpInl GaFloat normalize()
+    {
+        GaFloat len = length();
+        if(len > Math::GaEpsilon)
         {
-            return acos(this->dotProduct(oth)/(this->length()*oth.length()));
+            GaFloat inv = 1.0 / len;
+
+            x *= inv;
+            y *= inv;
+            z *= inv;
         }
+        return len;	//just in case they want it
+    }
 
-        GaVec3 slerp(Ga::GaVec3 v0, Ga::GaVec3 v1, double t);
+    // angle in degrees
+    GaFloat angle(float ax, float ay, float bx, float by);
+    // angle between 2 vectors in degrees
+    GaExpInl GaFloat angle(const Ga::GaVec3 oth) const
+    {
+        return acos(this->dotProduct(oth)/(this->length()*oth.length()));
+    }
 
-        //optimized checks for a very common case
-        GaExpInl bool isZero() const {
-            return ((x == 0.0f) and (y == 0.0f) and (z == 0.0f));
-        }
-        GaExpInl bool isNotZero() const {
-            return ((x != 0.0f) or (y != 0.0f) or (z != 0.0f));
-        }
-        GaExpInl bool isNaN() const {
-            return (isnan(x) or isnan(y) or isnan(z));
-        }
-        GaExpInl bool isInf() const {
-            return (isinf(x) or isinf(y) or isinf(z));
-        }
-        GaVec3 rotationTo(const Ga::GaVec3& pos) const;
+    GaVec3 slerp(Ga::GaVec3 v0, Ga::GaVec3 v1, double t);
 
-        GaVec3 &operator=(const Parameter &oth);
+    //optimized checks for a very common case
+    GaExpInl bool isZero() const {
+        return ((x == 0.0f) and (y == 0.0f) and (z == 0.0f));
+    }
+    GaExpInl bool isNotZero() const {
+        return ((x != 0.0f) or (y != 0.0f) or (z != 0.0f));
+    }
+    GaExpInl bool isNaN() const {
+        return (isnan(x) or isnan(y) or isnan(z));
+    }
+    GaExpInl bool isInf() const {
+        return (isinf(x) or isinf(y) or isinf(z));
+    }
+    GaVec3 rotationTo(const Ga::GaVec3& pos) const;
 
-		//GaVec3 rotByQuat(GaVec3 v, GaQuat q);
-        //GaVec3 angleRot(GaVec3 from, GaVec3 to, double angle);
+    GaVec3 &operator=(const Parameter &oth);
 
-		GaFloat x,y,z;
-	};
+    //GaVec3 rotByQuat(GaVec3 v, GaQuat q);
+    //GaVec3 angleRot(GaVec3 from, GaVec3 to, double angle);
 
-	//commutative.
-	GaExpInl GaVec3 operator*(const GaFloat c, const GaVec3 &v1) {
-		return(v1 * c);
-	}
-	GaExpInl GaVec3 operator/(const GaFloat c, const GaVec3 &v1) {
-		return(v1 / c);
-	}
+    GaFloat x,y,z;
+};
 
-	class GaExport GaQuat
-	{
-	public:
-		static GaQuat		IDENTITY;
-		static GaQuat		ZERO;
+//commutative.
+GaExpInl GaVec3 operator*(const GaFloat c, const GaVec3 &v1) {
+    return(v1 * c);
+}
+GaExpInl GaVec3 operator/(const GaFloat c, const GaVec3 &v1) {
+    return(v1 / c);
+}
 
-		GaExpInl GaQuat():w(0),v(0,0,0){}
-		GaExpInl GaQuat(GaFloat W,const GaVec3 &V):w(W),v(V){}
-		GaExpInl GaQuat(GaFloat W,GaFloat X,GaFloat Y,GaFloat Z):w(W),v(X,Y,Z){}
+class GaExport GaQuat
+{
+public:
+    static GaQuat		IDENTITY;
+    static GaQuat		ZERO;
 
-		GaQuat(const GaRadian &a,const GaVec3 &axis);
-		GaQuat(const GaMat3x3 &rot);
+    GaExpInl GaQuat():w(0),v(0,0,0) {}
+    GaExpInl GaQuat(GaFloat W,const GaVec3 &V):w(W),v(V) {}
+    GaExpInl GaQuat(GaFloat W,GaFloat X,GaFloat Y,GaFloat Z):w(W),v(X,Y,Z) {}
 
-		GaExpInl GaVec3 operator*(const GaVec3 &vec) const
-		{
-			GaVec3 uv = v.crossProduct(vec);
-			GaVec3 uuv = v.crossProduct(uv);
+    GaQuat(const GaRadian &a,const GaVec3 &axis);
+    GaQuat(const GaMat3x3 &rot);
 
-			uv *= (2.0f * w);
-			uuv *= 2.0f;
+    GaExpInl GaVec3 operator*(const GaVec3 &vec) const
+    {
+        GaVec3 uv = v.crossProduct(vec);
+        GaVec3 uuv = v.crossProduct(uv);
 
-			return GaVec3(vec.x + uv.x + uuv.x,vec.y + uv.y + uuv.y,vec.z + uv.z + uuv.z);
-		}
+        uv *= (2.0f * w);
+        uuv *= 2.0f;
 
-		GaExpInl GaQuat operator*(const GaQuat &oth) const
-		{
-			return GaQuat
-			(
-				w * oth.w   - v.x * oth.v.x - v.y * oth.v.y - v.z * oth.v.z,
-                w * oth.v.x + v.x * oth.w   + v.y * oth.v.z - v.z * oth.v.y,
-                w * oth.v.y + v.y * oth.w   + v.z * oth.v.x - v.x * oth.v.z,
-                w * oth.v.z + v.z * oth.w   + v.x * oth.v.y - v.y * oth.v.x
-			);
-		}
+        return GaVec3(vec.x + uv.x + uuv.x,vec.y + uv.y + uuv.y,vec.z + uv.z + uuv.z);
+    }
 
-		GaExpInl GaQuat& operator=(const GaQuat& oth)
-		{
-			w = oth.w;
-			v = oth.v;
+    GaExpInl GaQuat operator*(const GaQuat &oth) const
+    {
+        return GaQuat
+               (
+                   w * oth.w   - v.x * oth.v.x - v.y * oth.v.y - v.z * oth.v.z,
+                   w * oth.v.x + v.x * oth.w   + v.y * oth.v.z - v.z * oth.v.y,
+                   w * oth.v.y + v.y * oth.w   + v.z * oth.v.x - v.x * oth.v.z,
+                   w * oth.v.z + v.z * oth.w   + v.x * oth.v.y - v.y * oth.v.x
+               );
+    }
 
-			return *this;
-		}
+    GaExpInl GaQuat& operator=(const GaQuat& oth)
+    {
+        w = oth.w;
+        v = oth.v;
 
-		GaQuat &operator=(const Parameter &oth);
-		GaQuat(const Parameter &oth);
+        return *this;
+    }
 
-		GaQuat inverse() const;
+    GaQuat &operator=(const Parameter &oth);
+    GaQuat(const Parameter &oth);
 
-		GaFloat w;
-		GaVec3 v;
-	};
+    GaQuat inverse() const;
 
-	class GaExport GaMat3x3
-	{
-	public:
-		GaExpInl GaMat3x3(){}
+    GaFloat w;
+    GaVec3 v;
+};
 
-		GaExpInl GaMat3x3(const GaFloat *v)
-		{
-			m[0][0] = v[0]; m[0][1] = v[1]; m[0][2] = v[2];
-			m[1][0] = v[3]; m[1][1] = v[4]; m[1][2] = v[5];
-			m[2][0] = v[6]; m[2][1] = v[7]; m[2][2] = v[8];
-		}
+class GaExport GaMat3x3
+{
+public:
+    GaExpInl GaMat3x3() {}
 
-		GaExpInl GaMat3x3(GaFloat m00,GaFloat m01,GaFloat m02,
-				  GaFloat m10,GaFloat m11,GaFloat m12,
-		    GaFloat m20,GaFloat m21,GaFloat m22)
-		{
-			m[0][0] = m00; m[0][1] = m01; m[0][2] = m02;
-			m[1][0] = m10; m[1][1] = m11; m[1][2] = m12;
-			m[2][0] = m20; m[2][1] = m21; m[2][2] = m22;
-		}
+    GaExpInl GaMat3x3(const GaFloat *v)
+    {
+        m[0][0] = v[0];
+        m[0][1] = v[1];
+        m[0][2] = v[2];
+        m[1][0] = v[3];
+        m[1][1] = v[4];
+        m[1][2] = v[5];
+        m[2][0] = v[6];
+        m[2][1] = v[7];
+        m[2][2] = v[8];
+    }
 
-		GaExpInl GaMat3x3(const GaQuat &q)
-		{
-			GaFloat fTx  = 2.0*q.v.x;
-			GaFloat fTy  = 2.0*q.v.y;
-			GaFloat fTz  = 2.0*q.v.z;
-			GaFloat fTwx = fTx*q.w;
-			GaFloat fTwy = fTy*q.w;
-			GaFloat fTwz = fTz*q.w;
-			GaFloat fTxx = fTx*q.v.x;
-			GaFloat fTxy = fTy*q.v.x;
-			GaFloat fTxz = fTz*q.v.x;
-			GaFloat fTyy = fTy*q.v.y;
-			GaFloat fTyz = fTz*q.v.y;
-			GaFloat fTzz = fTz*q.v.z;
+    GaExpInl GaMat3x3(GaFloat m00,GaFloat m01,GaFloat m02,
+                      GaFloat m10,GaFloat m11,GaFloat m12,
+                      GaFloat m20,GaFloat m21,GaFloat m22)
+    {
+        m[0][0] = m00;
+        m[0][1] = m01;
+        m[0][2] = m02;
+        m[1][0] = m10;
+        m[1][1] = m11;
+        m[1][2] = m12;
+        m[2][0] = m20;
+        m[2][1] = m21;
+        m[2][2] = m22;
+    }
 
-			m[0][0] = 1.0-(fTyy+fTzz);
-			m[0][1] = fTxy-fTwz;
-			m[0][2] = fTxz+fTwy;
-			m[1][0] = fTxy+fTwz;
-			m[1][1] = 1.0-(fTxx+fTzz);
-			m[1][2] = fTyz-fTwx;
-			m[2][0] = fTxz-fTwy;
-			m[2][1] = fTyz+fTwx;
-			m[2][2] = 1.0-(fTxx+fTyy);
-		}
+    GaExpInl GaMat3x3(const GaQuat &q)
+    {
+        GaFloat fTx  = 2.0*q.v.x;
+        GaFloat fTy  = 2.0*q.v.y;
+        GaFloat fTz  = 2.0*q.v.z;
+        GaFloat fTwx = fTx*q.w;
+        GaFloat fTwy = fTy*q.w;
+        GaFloat fTwz = fTz*q.w;
+        GaFloat fTxx = fTx*q.v.x;
+        GaFloat fTxy = fTy*q.v.x;
+        GaFloat fTxz = fTz*q.v.x;
+        GaFloat fTyy = fTy*q.v.y;
+        GaFloat fTyz = fTz*q.v.y;
+        GaFloat fTzz = fTz*q.v.z;
 
-		GaExpInl GaFloat *operator[](GaUint i)
-		{
-			assert(i < 3 && "GaMat3x3: subscript out of range");
-			return m[i];
-		}
+        m[0][0] = 1.0-(fTyy+fTzz);
+        m[0][1] = fTxy-fTwz;
+        m[0][2] = fTxz+fTwy;
+        m[1][0] = fTxy+fTwz;
+        m[1][1] = 1.0-(fTxx+fTzz);
+        m[1][2] = fTyz-fTwx;
+        m[2][0] = fTxz-fTwy;
+        m[2][1] = fTyz+fTwx;
+        m[2][2] = 1.0-(fTxx+fTyy);
+    }
 
-		const GaExpInl GaFloat *const operator[](GaUint i) const
-		{
-			assert(i < 3 && "GaMat3x3: subscript out of range");
-			return m[i];
-		}
+    GaExpInl GaFloat *operator[](GaUint i)
+    {
+        assert(i < 3 && "GaMat3x3: subscript out of range");
+        return m[i];
+    }
 
-		GaFloat m[3][3];
-	};
+    const GaExpInl GaFloat *const operator[](GaUint i) const
+    {
+        assert(i < 3 && "GaMat3x3: subscript out of range");
+        return m[i];
+    }
 
-	class GaExport GaMat4x4
-	{
-	public:
-		GaExpInl GaMat4x4(){}
+    GaFloat m[3][3];
+};
 
-		GaExpInl GaMat4x4(const GaFloat *v)
-		{
-			m[0][0] = v[ 0]; m[0][1] = v[ 1]; m[0][2] = v[ 2]; m[0][3] = v[ 3];
-			m[1][0] = v[ 4]; m[1][1] = v[ 5]; m[1][2] = v[ 6]; m[1][3] = v[ 7];
-			m[2][0] = v[ 8]; m[2][1] = v[ 9]; m[2][2] = v[10]; m[2][3] = v[11];
-			m[3][0] = v[12]; m[3][1] = v[13]; m[3][2] = v[14]; m[3][3] = v[15];
-		}
+class GaExport GaMat4x4
+{
+public:
+    GaExpInl GaMat4x4() {}
 
-		GaExpInl GaMat4x4(GaFloat m00,GaFloat m01,GaFloat m02,GaFloat m03,
-				  GaFloat m10,GaFloat m11,GaFloat m12,GaFloat m13,
-		    GaFloat m20,GaFloat m21,GaFloat m22,GaFloat m23,
-		    GaFloat m30,GaFloat m31,GaFloat m32,GaFloat m33)
-		{
-			m[0][0] = m00; m[0][1] = m01; m[0][2] = m02; m[0][3] = m03;
-			m[1][0] = m10; m[1][1] = m11; m[1][2] = m12; m[1][3] = m13;
-			m[2][0] = m20; m[2][1] = m21; m[2][2] = m22; m[2][3] = m23;
-			m[3][0] = m30; m[3][1] = m31; m[3][2] = m32; m[3][3] = m33;
-		}
+    GaExpInl GaMat4x4(const GaFloat *v)
+    {
+        m[0][0] = v[ 0];
+        m[0][1] = v[ 1];
+        m[0][2] = v[ 2];
+        m[0][3] = v[ 3];
+        m[1][0] = v[ 4];
+        m[1][1] = v[ 5];
+        m[1][2] = v[ 6];
+        m[1][3] = v[ 7];
+        m[2][0] = v[ 8];
+        m[2][1] = v[ 9];
+        m[2][2] = v[10];
+        m[2][3] = v[11];
+        m[3][0] = v[12];
+        m[3][1] = v[13];
+        m[3][2] = v[14];
+        m[3][3] = v[15];
+    }
 
-		GaExpInl GaMat4x4(const GaVec3 &p,const GaQuat &q)
-		{
-			GaMat3x3 rot(q);
+    GaExpInl GaMat4x4(GaFloat m00,GaFloat m01,GaFloat m02,GaFloat m03,
+                      GaFloat m10,GaFloat m11,GaFloat m12,GaFloat m13,
+                      GaFloat m20,GaFloat m21,GaFloat m22,GaFloat m23,
+                      GaFloat m30,GaFloat m31,GaFloat m32,GaFloat m33)
+    {
+        m[0][0] = m00;
+        m[0][1] = m01;
+        m[0][2] = m02;
+        m[0][3] = m03;
+        m[1][0] = m10;
+        m[1][1] = m11;
+        m[1][2] = m12;
+        m[1][3] = m13;
+        m[2][0] = m20;
+        m[2][1] = m21;
+        m[2][2] = m22;
+        m[2][3] = m23;
+        m[3][0] = m30;
+        m[3][1] = m31;
+        m[3][2] = m32;
+        m[3][3] = m33;
+    }
 
-			m[0][0] = rot[0][0]; m[0][1] = rot[0][1]; m[0][2] = rot[0][2]; m[0][3] = p.x;
-			m[1][0] = rot[1][0]; m[1][1] = rot[1][1]; m[1][2] = rot[1][2]; m[1][3] = p.y;
-			m[2][0] = rot[2][0]; m[2][1] = rot[2][1]; m[2][2] = rot[2][2]; m[2][3] = p.z;
-			m[3][0] = 0.0;       m[3][1] = 0.0;       m[3][2] = 0.0;       m[3][3] = 1.0;
-		}
+    GaExpInl GaMat4x4(const GaVec3 &p,const GaQuat &q)
+    {
+        GaMat3x3 rot(q);
 
-		GaExpInl GaMat4x4 operator*(const GaMat4x4 &oth) const
-		{
-			GaMat4x4 o;
+        m[0][0] = rot[0][0];
+        m[0][1] = rot[0][1];
+        m[0][2] = rot[0][2];
+        m[0][3] = p.x;
+        m[1][0] = rot[1][0];
+        m[1][1] = rot[1][1];
+        m[1][2] = rot[1][2];
+        m[1][3] = p.y;
+        m[2][0] = rot[2][0];
+        m[2][1] = rot[2][1];
+        m[2][2] = rot[2][2];
+        m[2][3] = p.z;
+        m[3][0] = 0.0;
+        m[3][1] = 0.0;
+        m[3][2] = 0.0;
+        m[3][3] = 1.0;
+    }
 
-			o.m[0][0] = m[0][0] * oth.m[0][0] + m[0][1] * oth.m[1][0] + m[0][2] * oth.m[2][0] + m[0][3] * oth.m[3][0];
-			o.m[0][1] = m[0][0] * oth.m[0][1] + m[0][1] * oth.m[1][1] + m[0][2] * oth.m[2][1] + m[0][3] * oth.m[3][1];
-			o.m[0][2] = m[0][0] * oth.m[0][2] + m[0][1] * oth.m[1][2] + m[0][2] * oth.m[2][2] + m[0][3] * oth.m[3][2];
-			o.m[0][3] = m[0][0] * oth.m[0][3] + m[0][1] * oth.m[1][3] + m[0][2] * oth.m[2][3] + m[0][3] * oth.m[3][3];
+    GaExpInl GaMat4x4 operator*(const GaMat4x4 &oth) const
+    {
+        GaMat4x4 o;
 
-			o.m[1][0] = m[1][0] * oth.m[0][0] + m[1][1] * oth.m[1][0] + m[1][2] * oth.m[2][0] + m[1][3] * oth.m[3][0];
-			o.m[1][1] = m[1][0] * oth.m[0][1] + m[1][1] * oth.m[1][1] + m[1][2] * oth.m[2][1] + m[1][3] * oth.m[3][1];
-			o.m[1][2] = m[1][0] * oth.m[0][2] + m[1][1] * oth.m[1][2] + m[1][2] * oth.m[2][2] + m[1][3] * oth.m[3][2];
-			o.m[1][3] = m[1][0] * oth.m[0][3] + m[1][1] * oth.m[1][3] + m[1][2] * oth.m[2][3] + m[1][3] * oth.m[3][3];
+        o.m[0][0] = m[0][0] * oth.m[0][0] + m[0][1] * oth.m[1][0] + m[0][2] * oth.m[2][0] + m[0][3] * oth.m[3][0];
+        o.m[0][1] = m[0][0] * oth.m[0][1] + m[0][1] * oth.m[1][1] + m[0][2] * oth.m[2][1] + m[0][3] * oth.m[3][1];
+        o.m[0][2] = m[0][0] * oth.m[0][2] + m[0][1] * oth.m[1][2] + m[0][2] * oth.m[2][2] + m[0][3] * oth.m[3][2];
+        o.m[0][3] = m[0][0] * oth.m[0][3] + m[0][1] * oth.m[1][3] + m[0][2] * oth.m[2][3] + m[0][3] * oth.m[3][3];
 
-			o.m[2][0] = m[2][0] * oth.m[0][0] + m[2][1] * oth.m[1][0] + m[2][2] * oth.m[2][0] + m[2][3] * oth.m[3][0];
-			o.m[2][1] = m[2][0] * oth.m[0][1] + m[2][1] * oth.m[1][1] + m[2][2] * oth.m[2][1] + m[2][3] * oth.m[3][1];
-			o.m[2][2] = m[2][0] * oth.m[0][2] + m[2][1] * oth.m[1][2] + m[2][2] * oth.m[2][2] + m[2][3] * oth.m[3][2];
-			o.m[2][3] = m[2][0] * oth.m[0][3] + m[2][1] * oth.m[1][3] + m[2][2] * oth.m[2][3] + m[2][3] * oth.m[3][3];
+        o.m[1][0] = m[1][0] * oth.m[0][0] + m[1][1] * oth.m[1][0] + m[1][2] * oth.m[2][0] + m[1][3] * oth.m[3][0];
+        o.m[1][1] = m[1][0] * oth.m[0][1] + m[1][1] * oth.m[1][1] + m[1][2] * oth.m[2][1] + m[1][3] * oth.m[3][1];
+        o.m[1][2] = m[1][0] * oth.m[0][2] + m[1][1] * oth.m[1][2] + m[1][2] * oth.m[2][2] + m[1][3] * oth.m[3][2];
+        o.m[1][3] = m[1][0] * oth.m[0][3] + m[1][1] * oth.m[1][3] + m[1][2] * oth.m[2][3] + m[1][3] * oth.m[3][3];
 
-			o.m[3][0] = m[3][0] * oth.m[0][0] + m[3][1] * oth.m[1][0] + m[3][2] * oth.m[2][0] + m[3][3] * oth.m[3][0];
-			o.m[3][1] = m[3][0] * oth.m[0][1] + m[3][1] * oth.m[1][1] + m[3][2] * oth.m[2][1] + m[3][3] * oth.m[3][1];
-			o.m[3][2] = m[3][0] * oth.m[0][2] + m[3][1] * oth.m[1][2] + m[3][2] * oth.m[2][2] + m[3][3] * oth.m[3][2];
-			o.m[3][3] = m[3][0] * oth.m[0][3] + m[3][1] * oth.m[1][3] + m[3][2] * oth.m[2][3] + m[3][3] * oth.m[3][3];
+        o.m[2][0] = m[2][0] * oth.m[0][0] + m[2][1] * oth.m[1][0] + m[2][2] * oth.m[2][0] + m[2][3] * oth.m[3][0];
+        o.m[2][1] = m[2][0] * oth.m[0][1] + m[2][1] * oth.m[1][1] + m[2][2] * oth.m[2][1] + m[2][3] * oth.m[3][1];
+        o.m[2][2] = m[2][0] * oth.m[0][2] + m[2][1] * oth.m[1][2] + m[2][2] * oth.m[2][2] + m[2][3] * oth.m[3][2];
+        o.m[2][3] = m[2][0] * oth.m[0][3] + m[2][1] * oth.m[1][3] + m[2][2] * oth.m[2][3] + m[2][3] * oth.m[3][3];
 
-			return o;
-		}
+        o.m[3][0] = m[3][0] * oth.m[0][0] + m[3][1] * oth.m[1][0] + m[3][2] * oth.m[2][0] + m[3][3] * oth.m[3][0];
+        o.m[3][1] = m[3][0] * oth.m[0][1] + m[3][1] * oth.m[1][1] + m[3][2] * oth.m[2][1] + m[3][3] * oth.m[3][1];
+        o.m[3][2] = m[3][0] * oth.m[0][2] + m[3][1] * oth.m[1][2] + m[3][2] * oth.m[2][2] + m[3][3] * oth.m[3][2];
+        o.m[3][3] = m[3][0] * oth.m[0][3] + m[3][1] * oth.m[1][3] + m[3][2] * oth.m[2][3] + m[3][3] * oth.m[3][3];
 
-		GaExpInl GaFloat *operator[](GaUint i)
-		{
-			assert(i < 4 && "GaMax4x4: subscript out of range");
-			return m[i];
-		}
+        return o;
+    }
 
-		GaExpInl const GaFloat *const operator[](GaUint i) const
-		{
-			assert(i < 4 && "GaMax4x4: subscript out of range");
-			return m[i];
-		}
+    GaExpInl GaFloat *operator[](GaUint i)
+    {
+        assert(i < 4 && "GaMax4x4: subscript out of range");
+        return m[i];
+    }
 
-		GaExpInl GaVec3 operator*(const GaVec3 &v) const
-		{
-			GaFloat w = 1.0f / ( m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] );
+    GaExpInl const GaFloat *const operator[](GaUint i) const
+    {
+        assert(i < 4 && "GaMax4x4: subscript out of range");
+        return m[i];
+    }
 
-			GaVec3 r(
-				( m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] ) * w,
-                ( m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] ) * w,
-                ( m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] ) * w );
+    GaExpInl GaVec3 operator*(const GaVec3 &v) const
+    {
+        GaFloat w = 1.0f / ( m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] );
 
-			return r;
-		}
+        GaVec3 r(
+            ( m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] ) * w,
+            ( m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] ) * w,
+            ( m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] ) * w );
 
-		GaExpInl void toFloatMatrix(float *o)
-		{
-			o[0] = m[0][0]; o[4] = m[0][1];  o[8] = m[0][2]; o[12] = m[0][3];
-			o[1] = m[1][0]; o[5] = m[1][1];  o[9] = m[1][2]; o[13] = m[1][3];
-			o[2] = m[2][0]; o[6] = m[2][1]; o[10] = m[2][2]; o[14] = m[2][3];
-			o[3] = m[3][0]; o[7] = m[3][1]; o[11] = m[3][2]; o[15] = m[3][3];
-		}
+        return r;
+    }
 
-		GaExpInl GaMat4x4 operator*(GaFloat s)
-		{
-			return GaMat4x4
-			(
-				s*m[0][0], s*m[0][1], s*m[0][2], s*m[0][3],
-                s*m[1][0], s*m[1][1], s*m[1][2], s*m[1][3],
-                s*m[2][0], s*m[2][1], s*m[2][2], s*m[2][3],
-                s*m[3][0], s*m[3][1], s*m[3][2], s*m[3][3]
-			);
-		}
+    GaExpInl void toFloatMatrix(float *o)
+    {
+        o[0] = m[0][0];
+        o[4] = m[0][1];
+        o[8] = m[0][2];
+        o[12] = m[0][3];
+        o[1] = m[1][0];
+        o[5] = m[1][1];
+        o[9] = m[1][2];
+        o[13] = m[1][3];
+        o[2] = m[2][0];
+        o[6] = m[2][1];
+        o[10] = m[2][2];
+        o[14] = m[2][3];
+        o[3] = m[3][0];
+        o[7] = m[3][1];
+        o[11] = m[3][2];
+        o[15] = m[3][3];
+    }
 
-		GaMat4x4 inverse() const;
-		GaMat4x4 adjoint() const;
-		GaFloat determinant() const;
+    GaExpInl GaMat4x4 operator*(GaFloat s)
+    {
+        return GaMat4x4
+               (
+                   s*m[0][0], s*m[0][1], s*m[0][2], s*m[0][3],
+                   s*m[1][0], s*m[1][1], s*m[1][2], s*m[1][3],
+                   s*m[2][0], s*m[2][1], s*m[2][2], s*m[2][3],
+                   s*m[3][0], s*m[3][1], s*m[3][2], s*m[3][3]
+               );
+    }
 
-		GaFloat m[4][4];
-	};
+    GaMat4x4 inverse() const;
+    GaMat4x4 adjoint() const;
+    GaFloat determinant() const;
 
-	class GaExport GaDegree
-	{
-	public:
-		GaExpInl GaDegree()                     { d = 0; }
-		GaExpInl GaDegree(GaFloat a)            { d = a; }
-		GaDegree(const GaRadian &a);
+    GaFloat m[4][4];
+};
 
-		GaFloat d;
-	};
+class GaExport GaDegree
+{
+public:
+    GaExpInl GaDegree()                     {
+        d = 0;
+    }
+    GaExpInl GaDegree(GaFloat a)            {
+        d = a;
+    }
+    GaDegree(const GaRadian &a);
 
-	class GaExport GaRadian
-	{
-	public:
-		GaExpInl GaRadian()                     { r = 0; }
-		GaExpInl GaRadian(GaFloat a)            { r = a; }
-		GaExpInl GaRadian(const GaDegree &a)    { r = a.d * Math::GaDegreesInRadian; }
+    GaFloat d;
+};
 
-		GaFloat r;
-	};
+class GaExport GaRadian
+{
+public:
+    GaExpInl GaRadian()                     {
+        r = 0;
+    }
+    GaExpInl GaRadian(GaFloat a)            {
+        r = a;
+    }
+    GaExpInl GaRadian(const GaDegree &a)    {
+        r = a.d * Math::GaDegreesInRadian;
+    }
+
+    GaFloat r;
+};
 }
 
 #endif

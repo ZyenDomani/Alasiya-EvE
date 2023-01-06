@@ -326,7 +326,7 @@ void CustomsSE::SetAnchor(Client* pClient, GPoint& pos)
         sbr.entityID = m_self->itemID();
         sbr.radius = m_self->radius();
     updates.push_back(sbr.Encode());
-    m_destiny->SendDestinyUpdate(updates); //consumed
+    m_destiny->SendDestinyUpdates(updates); //consumed
 
     //SendEffectUpdate(anchorDropForOrbitals, true);
     m_destiny->SendSpecialEffect(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);

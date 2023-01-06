@@ -71,10 +71,10 @@ std::string TCPConnection::GetAddress()
 {
     /* "The Matrix is a system, Neo. That system is our enemy. But when you're inside, you look around, what do you see?" */
     in_addr addr;
-    addr.s_addr = GetrIP();
+    addr.s_addr = mrIP; //GetrIP();
 
     char address[22];
-    int len = snprintf( address, 22, "%s:%u", inet_ntoa( addr ), GetrPort() );
+    int len = snprintf( address, 22, "%s:%u", inet_ntoa( addr ), mrPort );
 
     /* snprintf will return < 0 when a error occurs so return empty string */
     if ( len < 0 )
@@ -90,15 +90,14 @@ bool TCPConnection::Connect( uint32 rIP, uint16 rPort, char* errbuf )
 
     MutexLock lock( mMSock );
 
-    if (GetState() == STATE_DISCONNECTED) {
+    if (mSockState == STATE_DISCONNECTED) {
         mMSock.Unlock();
         // Wait for working thread to stop.
         WaitLoop();
         mMSock.Lock();
     }
 
-    state_t oldState = GetState();
-    if (oldState != STATE_DISCONNECTED && oldState != STATE_CONNECTING)
+    if (mSockState != STATE_DISCONNECTED && mSockState != STATE_CONNECTING)
         return false;
 
     mSock = new Socket( AF_INET, SOCK_STREAM, 0 );
@@ -125,7 +124,7 @@ bool TCPConnection::Connect( uint32 rIP, uint16 rPort, char* errbuf )
     mrPort = rPort;
     mSockState = STATE_CONNECTED;
     // Start processing thread if necessary
-    if ( oldState == STATE_DISCONNECTED )
+    if ( mSockState == STATE_DISCONNECTED )
         StartLoop();
 
     return true;
@@ -136,14 +135,14 @@ void TCPConnection::AsyncConnect( uint32 rIP, uint16 rPort )
     // Changing state; acquire mutex
     MutexLock lock( mMSock );
 
-    if (GetState() == STATE_DISCONNECTED) {
+    if (mSockState == STATE_DISCONNECTED) {
         mMSock.Unlock();
         // Wait for working thread to stop.
         WaitLoop();
         mMSock.Lock();
     }
 
-    if (GetState() != STATE_DISCONNECTED)
+    if (mSockState != STATE_DISCONNECTED)
         return;
 
     mrIP = rIP;
@@ -156,9 +155,7 @@ void TCPConnection::AsyncConnect( uint32 rIP, uint16 rPort )
 void TCPConnection::Disconnect()
 {
     MutexLock lock( mMSock );
-
-    state_t state = GetState();
-    if ( state != STATE_CONNECTING && state != STATE_CONNECTED )
+    if ( mSockState != STATE_CONNECTING && mSockState != STATE_CONNECTED )
         return;
 
     // Change state
@@ -174,7 +171,7 @@ bool TCPConnection::Send( Buffer** data )
     // Check we are in STATE_CONNECTED
     MutexLock sockLock( mMSock );
 
-    if (GetState() != STATE_CONNECTED) {
+    if (mSockState != STATE_CONNECTED) {
         SafeDelete( buf );
         return false;
     }
@@ -191,16 +188,10 @@ bool TCPConnection::Send( Buffer** data )
 void TCPConnection::StartLoop()
 {
     /** @note  update this to use thread pool instead of creating new threads.
-     * check with sThread.XXXX() for avalible thread from current thread pool.
-     * if one is avalible, it will be used, and if not, sThread will create a new one
+     * check with sThread.XXXX() for availible thread from current thread pool.
+     * if one is availible, it will be used, and if not, sThread will create a new one
      */
     sThread.CreateThread(TCPConnectionLoop, this);
-    /*   ORIGINAL CODE HERE
-    // Spawn new thread
-    pthread_t thread;
-    pthread_create( &thread, nullptr, TCPConnectionLoop, this );
-    _log(THREAD__WARNING, "StartLoop() - Created thread ID 0x%X for TCPConnectionLoop", thread);
-    sThread.AddThread(thread);*/
 }
 
 void TCPConnection::WaitLoop()
@@ -215,9 +206,9 @@ void TCPConnection::WaitLoop()
 bool TCPConnection::Process() {
     char errbuf[ TCPCONN_ERRBUF_SIZE ];
     MutexLock lock( mMSock );
-    switch (GetState()) {
+    switch (mSockState) {
         case STATE_CONNECTING: {
-            if (!Connect( GetrIP(), GetrPort(), errbuf)) {
+            if (!Connect( mrIP, mrPort, errbuf)) {
                 _log(TCP_CLIENT__TRACE, "Process() - Connecting Failed at %s: %s", GetAddress().c_str(), errbuf );
                 return false;
             }
@@ -256,9 +247,7 @@ bool TCPConnection::SendData( char* errbuf )
     errbuf[0] = 0;
 
     MutexLock lock( mMSock );
-
-    state_t state = GetState();
-    if ( state != STATE_CONNECTED && state != STATE_DISCONNECTING )
+    if ((mSockState != STATE_CONNECTED) && (mSockState != STATE_DISCONNECTING ))
         return false;
 
     mMSendQueue.Lock();
@@ -268,10 +257,11 @@ bool TCPConnection::SendData( char* errbuf )
         buf = mSendQueue.front();
         mSendQueue.pop_front();
         mMSendQueue.Unlock();
-        if (mSendQueue.empty())
+        if (mSendQueue.empty()) {
             status = mSock->send( &(*buf)[ 0 ], (uint)buf->size(), MSG_NOSIGNAL);
-        else
+        } else {
             status = mSock->send( &(*buf)[ 0 ], (uint)buf->size(), (MSG_NOSIGNAL | MSG_MORE) );
+        }
         if (status == SOCKET_ERROR) {
             if (errno == EWOULDBLOCK) {
                 status = 0;
@@ -283,13 +273,13 @@ bool TCPConnection::SendData( char* errbuf )
             }
         }
 
-        if ((size_t)status > buf->size()) {
+        if (status > buf->size()) {
             if (errbuf)
                 snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "WTF?!?   status > size." );
 
             SafeDelete( buf );
             return false;
-        } else if ((size_t)status < buf->size()) {
+        } else if (status < buf->size()) {
             if (status > 0)
                 buf->AssignSeq( buf->begin<uint8>() + status, buf->end<uint8>() );
             MutexLock queueLock( mMSendQueue );
@@ -310,9 +300,7 @@ bool TCPConnection::RecvData( char* errbuf )
         errbuf[0] = 0;
 
     MutexLock lock( mMSock );
-
-    state_t state = GetState();
-    if ((state != STATE_CONNECTED) && (state != STATE_DISCONNECTING))
+    if ((mSockState != STATE_CONNECTED) && (mSockState != STATE_DISCONNECTING))
         return false;
 
     int status = 0;
@@ -322,7 +310,7 @@ bool TCPConnection::RecvData( char* errbuf )
         } else if ( mRecvBuf->size() < TCPCONN_RECVBUF_SIZE ) {
             mRecvBuf->Resize<uint8>( TCPCONN_RECVBUF_SIZE );
         }
-        
+
         status = mSock->recv( &(*mRecvBuf)[ 0 ], (uint)mRecvBuf->size(), MSG_DONTWAIT);
         if (status == SOCKET_ERROR) {
             if (errno == EWOULDBLOCK)
@@ -351,9 +339,7 @@ bool TCPConnection::RecvData( char* errbuf )
 void TCPConnection::DoDisconnect()
 {
     MutexLock lock( mMSock );
-
-    state_t state = GetState();
-    if ((state != STATE_CONNECTED) && (state != STATE_DISCONNECTING))
+    if ((mSockState != STATE_CONNECTED) && (mSockState != STATE_DISCONNECTING))
         return;
 
     ClearBuffers();

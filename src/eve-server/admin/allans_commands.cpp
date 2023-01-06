@@ -883,7 +883,7 @@ PyResult Command_fleetinvite(Client* pClient, CommandDB* db, PyServiceMgr* servi
     return new PyString(reply);
 }
 
-PyResult Command_getposition(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_getpositiondata(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (!pClient->IsInSpace())
         throw CustomError("You're not in space.");

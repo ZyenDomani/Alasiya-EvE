@@ -119,6 +119,10 @@ missing prices for salvage
 *******************************************************
 ********  improvements
 
+allianceid/warfactionid
+  in packet logs, this is either None or an int.
+  ours are int.  0 or -1 if none
+
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
     - every 60s for every bubble object is a bit much.
     - check InBubble and IsOverlap code.
@@ -419,6 +423,7 @@ pos - started. drop, anchor, unanchor, online, offline working but no in-class c
 lsc system better, but incomplete and needs revisiting    -priority level: med-hi
     - may need xmlp code instead of muddled python decoding
     - whole system needs update or possible rewrite
+    - "join channel" window->corp has "None" as corp name
 
 link/unlink need a bit more logic work (as per notes in code)
 
@@ -715,6 +720,8 @@ check/add dynamic tables to Dump.sh to avoid copying local server data to repo
 *******************************************************
 *****************  ideas for later
 
+rename EntityList to EntityManager/EntityMgr
+
 ***  look into using sql prepared statements for oft-used queries  (undecided atm)
 
 ****  make safe save method to verify and save data on segfault
@@ -784,6 +791,17 @@ others cause multiple other effects.  is this something we can implement/exploit
 
 *******************************************************
 *****************   errata and miscellaneous bullshit
+
+spawn system calls.....found this in logs)
+17:38:52 [SpawnMsg] SpawnMgr::PrepSpawn() - faction: Angel Cartel, region 10000001. (config set false)
+17:38:52 [SpawnMsg] SpawnMgr::PrepSpawn() - m_factionGroups size is 21.
+17:38:52 [SpawnMsg] SpawnMgr::PrepSpawn() - spawnEntry - size: 5, class: Hideaway(20).
+17:38:52 [SpawnMsg] SpawnMgr::PrepSpawn() - toSpawn size is 1.
+17:38:52 [SpawnMsg] SpawnMgr::MakeSpawn() - Creating spawn class Hideaway for Angel Cartel in bubbleID 8 (anomaly = true).
+17:38:52 [SpawnTrace] MakeSpawn() adding SpawnEntry with ID 1 to m_spawns. Class: Hideaway, Group:Anomaly, Level: 1.
+17:38:52 [SpawnTrace] MakeSpawn() adding SpawnEntry with ID 1 to m_spawns. Class: Hideaway, Group:Anomaly, Level: 1.
+17:38:52 [SpawnTrace] MakeSpawn() completed in Ibaria(30000053) with 1 bubbles in m_bubbles and 2 entities in m_spawns.
+***  why calling MakeSpawn() twice??
 
 see about removing code that isnt used  (common/utils/utils  and core/utils/*)
 

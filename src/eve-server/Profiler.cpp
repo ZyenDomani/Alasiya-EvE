@@ -24,9 +24,9 @@ int Profiler::Initialize() {
 
 void Profiler::AddTime(uint8 key, double value) {
     if (sConfig.debug.ProfileTraceTime > 0)
-        if (value > sConfig.debug.ProfileTraceTime *1000) {
-            sLog.Warning("  Profile Manager", "Long Profile Time on key %s, time %.3f.", GetKeyName(key).c_str(), value);
-            //EvE::traceStack();
+        if (value > sConfig.debug.ProfileTraceTime * 1000) {
+            sLog.Warning("  Profile Manager", "Long Profile Time on key %s, time %.3fms.", GetKeyName(key).c_str(), value / 1000);
+            EvE::traceStack();
         }
     /*
     Profile::destiny     = 1,    *

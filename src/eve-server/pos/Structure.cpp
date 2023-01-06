@@ -718,14 +718,14 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
 
     std::vector<PyTuple *> updates;
     SetBallFree sbf;
-    sbf.entityID = m_self->itemID();
-    sbf.is_free = false;
+     sbf.entityID = m_self->itemID();
+     sbf.is_free = false;
     updates.push_back(sbf.Encode());
     SetBallRadius sbr;
-    sbr.entityID = m_self->itemID();
-    sbr.radius = m_self->radius();
+     sbr.entityID = m_self->itemID();
+     sbr.radius = m_self->radius();
     updates.push_back(sbr.Encode());
-    m_destiny->SendDestinyUpdate(updates); //consumed
+    m_destiny->SendDestinyUpdates(updates); //consumed
     m_destiny->SendSpecialEffect(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
 }
 

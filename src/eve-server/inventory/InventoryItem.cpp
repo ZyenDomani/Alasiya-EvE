@@ -653,7 +653,7 @@ void InventoryItem::Rename(std::string name)
     } else if (IsPlayerCorp(m_data.ownerID)) {
         // bcast to all online corp members
         if (sDataMgr.IsStation(m_data.locationID)) {
-            sEntityList.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateStation, "OnCfgDataChanged", "charid", tuple);
+            sEntityList.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateStation, "OnCfgDataChanged", "corpid", tuple);
         } else {
             sEntityList.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateSystem, "OnCfgDataChanged", "solarsystemid", tuple);
         }

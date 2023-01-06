@@ -431,6 +431,7 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
 
     if (IsPlayerCorp(mItem.ownerID())) {
         // there is no code to get corp AND loc in multicast.  it sends to both
+        /** @todo update this to use CorpNotify() */
         MulticastTarget mct;
         mct.corporations.insert(mItem.ownerID());
         if (sDataMgr.IsStation(mItem.locationID())) {

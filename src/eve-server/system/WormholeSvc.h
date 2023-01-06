@@ -57,4 +57,42 @@ protected:
                  8: 'UI/Wormholes/Classes/LowSecuritySpace',
                  9: 'UI/Wormholes/Classes/NullSecuritySpace'}
 
+
+
+            if invtype.groupID == const.groupWormhole:
+                desc2 = ''
+                slimItem = sm.StartService('michelle').GetItem(itemID)
+                if slimItem:
+                    wormholeClasses = {0: 'UI/Wormholes/Classes/UnknownSpaceDescription',
+                     1: 'UI/Wormholes/Classes/UnknownSpaceDescription',
+                     2: 'UI/Wormholes/Classes/UnknownSpaceDescription',
+                     3: 'UI/Wormholes/Classes/UnknownSpaceDescription',
+                     4: 'UI/Wormholes/Classes/DangerousUnknownSpaceDescription',
+                     5: 'UI/Wormholes/Classes/DangerousUnknownSpaceDescription',
+                     6: 'UI/Wormholes/Classes/DeadlyUnknownSpaceDescription',
+                     7: 'UI/Wormholes/Classes/HighSecuritySpaceDescription',
+                     8: 'UI/Wormholes/Classes/LowSecuritySpaceDescription',
+                     9: 'UI/Wormholes/Classes/NullSecuritySpaceDescription'}
+                    wClass = localization.GetByLabel(wormholeClasses.get(slimItem.otherSolarSystemClass))
+                    if slimItem.wormholeAge >= 3:
+                        wAge = localization.GetByLabel('UI/InfoWindow/WormholeAgeAboutToClose')
+                    elif slimItem.wormholeAge >= 2:
+                        wAge = localization.GetByLabel('UI/InfoWindow/WormholeAgeReachingTheEnd')
+                    elif slimItem.wormholeAge >= 1:
+                        wAge = localization.GetByLabel('UI/InfoWindow/WormholeAgeStartedDecaying')
+                    elif slimItem.wormholeAge >= 0:
+                        desc2 += localization.GetByLabel('UI/InfoWindow/WormholeAgeNew') + '<br>'
+                        wAge = localization.GetByLabel('UI/InfoWindow/WormholeAgeNew')
+                    else:
+                        wAge = ''
+                    if slimItem.wormholeSize < 0.5:
+                        remaining = localization.GetByLabel('UI/InfoWindow/WormholeSizeStabilityCriticallyDisrupted')
+                    elif slimItem.wormholeSize < 1:
+                        remaining = localization.GetByLabel('UI/InfoWindow/WormholeSizeStabilityReduced')
+                    else:
+                        remaining = localization.GetByLabel('UI/InfoWindow/WormholeSizeNotDisrupted')
+                    desc = localization.GetByLabel('UI/InfoWindow/WormholeDescription', wormholeName=desc, wormholeClass=wClass, wormholeAge=wAge, remaining=remaining)
+
+
+                    
                  */

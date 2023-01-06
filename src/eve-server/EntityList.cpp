@@ -80,7 +80,7 @@ void EntityList::Initialize() {
     m_startTime = GetFileTimeNow();
 
     /* start the timers */
-    m_targTimer.Start(250);     // testing targeting and scan probes at 4/sec
+    m_targTimer.Start(500);     // testing targeting and scan probes at 2/sec
     m_stampTimer.Start(1000);   // 1hz tic timer
     m_minuteTimer.Start(60000); // does this need to be accurate?
 
@@ -198,6 +198,7 @@ void EntityList::Process() {
         }
     }
 
+    // testing targeting and scan probes at 2/sec
     if (m_targTimer.Check()) {
         std::unordered_map<SystemEntity*, TargetManager*>::iterator titr = m_targMgrs.begin();
         while (titr != m_targMgrs.end()) {
@@ -258,6 +259,7 @@ void EntityList::Process() {
             if (m_minutes % 5 == 0) { // ~5m
                 sWHMgr.Process();
                 // write something to tic corps vote cases.
+                /** @todo  this slow.  update/remove as needed. */
                 for (auto cur : m_systems)
                     cur.second->UpdateData();   // update active system timers and dynamic data every 5m
             }
@@ -326,6 +328,18 @@ void EntityList::GetClients(std::vector<Client*> &result) const {
         result.push_back(cur.second);
 }
 
+void EntityList::GetCorpClients(std::vector<Client*> &result, uint32 corpID) const {
+    std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(corpID);
+    if (cItr == m_corpMembers.end())
+        return;
+
+    corpRole::const_iterator itr = cItr->second.begin(), end = cItr->second.end();
+    while (itr != end) {
+        if (itr->first != nullptr)
+            result.push_back(itr->first);
+        ++itr;
+    }
+}
 // this method is corrected, as stations have their own guestlist now.
 void EntityList::GetStationGuestList(uint32 stationID, std::vector<Client*> &result) const {
     std::map<uint32, StationItemRef>::const_iterator itr = m_stations.find(stationID);
@@ -430,8 +444,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTy
 
     // determine who in corp needs to be notified
     using namespace Notify::Types;
-    //using namespace Corp::Role;
-    // auto doesnt work here...dunno why yet.
+    // this will only use a single iteration.
     corpRole::const_iterator itr = cItr->second.begin(), end = cItr->second.end();
     switch (bCastType) {
         case CorpNews:
@@ -594,6 +607,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTy
     PyDecRef(payload);
 }
 
+// Broadcast() is only used by Fleet() and Agent() (so far)
 void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const {
     //build a little notification out of it.
     EVENotificationStream notify;
@@ -764,9 +778,9 @@ Client* EntityList::FindClientByName(const char* name) const {
 void EntityList::RegisterSID(int64 &sessionID) {
     /*  this whole method is just made up...eventually it will return a unique long long */
     /* max for int64 = 9223372036854775807 */
-    std::set<int64>::iterator cur = m_sessions.find(sessionID);
+    std::set<int64>::iterator itr = m_sessions.find(sessionID);
     std::pair<std::_Rb_tree_const_iterator<int64>, bool > test;
-    if (cur == m_sessions.end())
+    if (itr == m_sessions.end())
         test = m_sessions.insert(sessionID);
     if (test.second)
         return;

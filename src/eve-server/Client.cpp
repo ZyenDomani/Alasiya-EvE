@@ -214,7 +214,8 @@ bool Client::ProcessNet()
     // cleanup
     SafeDelete(p);
     // send queue
-    _SendQueuedUpdates();
+    /** @note   testing this on 1Hz tic */
+    //_SendQueuedUpdates();
 
     return true;
 }
@@ -231,7 +232,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     InitSession(charID);
     if (!m_validSession){
         sLog.Error("Client::SelectCharacter()", "Failed to init session for char %u.", charID);
-        SendErrorMsg("Unable to Initalize Character session.  Selection Failed.");
+        SendErrorMsg("Unable to Initialize Character session.  Selection Failed.");
         CloseClientConnection();
         return false;
     }
@@ -529,6 +530,9 @@ void Client::ProcessClient() {
             }
             pShipSE->ApplyBoost(bData);
         }
+
+    /** @note   testing this on 1Hz tic */
+    _SendQueuedUpdates();
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::client, GetTimeUSeconds() - profileStartTime);
@@ -1864,12 +1868,11 @@ void Client::InitSession(int32 characterID)
     pSession->SetInt("baseID",           characterDataMap["baseID"]);
     pSession->SetInt("corpAccountKey",   characterDataMap["corpAccountKey"]);
 
-    //Only set allianceID if it is not 0
-    if (characterDataMap["allianceID"] != 0){
-        pSession->SetInt("allianceid", characterDataMap["allianceID"]);
-    }
+    //Only set allianceID if it is not 0 -dunno who set this
+    //if (characterDataMap["allianceID"] != 0)
+    pSession->SetInt("allianceid",      (int32)(characterDataMap["allianceID"] > 0 ? characterDataMap["allianceID"] : -1));
 
-    pSession->SetInt("warfactionid",     characterDataMap["warFactionID"]);
+    pSession->SetInt("warfactionid",    (int32)(characterDataMap["warFactionID"] > 0 ? characterDataMap["warFactionID"] : -1));
 
     pSession->SetLong("corprole",        characterDataMap["corpRole"]);
     pSession->SetLong("rolesAtAll",      characterDataMap["rolesAtAll"]);
@@ -1950,12 +1953,11 @@ void Client::UpdateCorpSession(CorpData& data)
     pSession->SetInt("baseID", data.baseID);
     pSession->SetInt("hqID", data.corpHQ);
 
-    //Only set allianceID if it is not 0
-    if (data.allianceID != 0){
-        pSession->SetInt("allianceid", data.allianceID);
-    }
+    //Only set allianceID if it is not 0  --again, dunno who set this
+    // if (data.allianceID != 0){
+    pSession->SetInt("allianceid", (data.allianceID > 0 ? data.allianceID : -1));
 
-    pSession->SetInt("warfactionid", data.warFactionID);
+    pSession->SetInt("warfactionid", (data.warFactionID > 0 ? data.warFactionID : -1));
     pSession->SetInt("corpAccountKey", data.corpAccountKey);
     pSession->SetLong("corprole", data.corpRole);
     pSession->SetLong("rolesAtAll", data.rolesAtAll);
@@ -2092,15 +2094,18 @@ void Client::SendSessionChange()
     //SafeDelete(packet);
 }
 
-void Client::FlushQueue() {
-    if ((!m_destinyUpdateQueue->empty())
-        or (!m_destinyEventQueue->empty()))
-        _SendQueuedUpdates();
+void Client::QueueDestinyUpdates(std::vector< PyTuple* >& updates) {
+    for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); itr++) {
+        PyIncRef(*itr);
+        QueueDestinyUpdate(&(*itr));
+    }
 }
 
 void Client::QueueDestinyEvent(PyTuple** event) {
     if ((event == nullptr) or ((*event) == nullptr))
         return;
+    if (is_log_enabled(CLIENT__QUEUE_DUMP))
+        (*event)->Dump(CLIENT__QUEUE_DUMP, "");
     m_destinyEventQueue->AddItem(*event);
     //PyDecRef(*event);
 }
@@ -2110,6 +2115,8 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         return;
     if (sDataMgr.IsStation(m_locationID))
         return;
+    if (is_log_enabled(CLIENT__QUEUE_DUMP))
+        (*update)->Dump(CLIENT__QUEUE_DUMP, "");
     DoDestinyAction act;
         act.stamp = sEntityList.GetStamp();
     if (DoPackage/* or m_packaged*/) {
@@ -2120,9 +2127,9 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             // this will package all current updates (and those coming in before next flush) into
             //   a single PackagedAction packet, which is then inserted into the DoDestinyAction packet.
             PyList* paList = new PyList();
-                paList->AddItem(*update);
             if (!m_destinyUpdateQueue->empty())
                 paList->AddItem(m_destinyUpdateQueue);
+            paList->AddItem(*update);
             PackagedAction pa;
                 pa.substream = new PySubStream(paList);
             act.update = pa.Encode();
@@ -2133,8 +2140,6 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             dum.updates->AddItem(act.Encode());
             dum.waitForBubble = m_bubbleWait;
         PyTuple* t = dum.Encode();
-        if (is_log_enabled(CLIENT__QUEUE_DUMP))
-            t->Dump(CLIENT__QUEUE_DUMP, "");
         SendNotification("DoDestinyUpdate", "clientID", &t, false);
         PyDecRef(t);
     } else {
@@ -2151,8 +2156,6 @@ void Client::_SendQueuedUpdates() {
                 dum.updates = m_destinyUpdateQueue;
                 dum.waitForBubble = m_bubbleWait;
             PyTuple* t = dum.Encode();
-            if (is_log_enabled(CLIENT__QUEUE_DUMP))
-                t->Dump(CLIENT__QUEUE_DUMP, "");
             SendNotification("DoDestinyUpdate", "clientID", &t);
         } else {
             DoDestinyUpdateMain dum;
@@ -2160,16 +2163,12 @@ void Client::_SendQueuedUpdates() {
                 dum.events = m_destinyEventQueue;
                 dum.waitForBubble = m_bubbleWait;
             PyTuple* t = dum.Encode();
-            if (is_log_enabled(CLIENT__QUEUE_DUMP))
-                t->Dump(CLIENT__QUEUE_DUMP, "");
             SendNotification("DoDestinyUpdate", "clientID", &t);
         }
     } else if (!m_destinyEventQueue->empty()) {
         Notify_OnMultiEvent nom;
             nom.events = m_destinyEventQueue;
         PyTuple* t = nom.Encode();
-        if (is_log_enabled(CLIENT__QUEUE_DUMP))
-            t->Dump(CLIENT__QUEUE_DUMP, "");
         SendNotification("OnMultiEvent", "charid", &t);
     } //else nothing to be sent ...
 

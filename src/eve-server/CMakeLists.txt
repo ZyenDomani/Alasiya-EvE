@@ -118,6 +118,7 @@ SET( agent_SOURCE
 
 SET( alliance_INCLUDE
      "${TARGET_INCLUDE_DIR}/alliance/AllianceBound.h"
+     "${TARGET_INCLUDE_DIR}/alliance/AllianceData.h"
      "${TARGET_INCLUDE_DIR}/alliance/AllianceRegistry.h"
      "${TARGET_INCLUDE_DIR}/alliance/AllianceDB.h")
 SET( alliance_SOURCE

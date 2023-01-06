@@ -304,6 +304,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                 tuple->SetItem(2, dict);
             GetPilot()->QueueDestinyEvent(&tuple);
         }
+        // should these be bubblecast?  would be a SHITTON of data on wire 
         if (damage.srcSE->HasPilot()) {
             //notify to player of damage done:
             PyDict* dict = new PyDict();

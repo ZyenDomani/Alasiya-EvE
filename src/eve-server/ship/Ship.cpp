@@ -1546,7 +1546,7 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
     // send 'new' group data to client
     m_pilot->QueueDestinyEvent(&tuple);
     // send immediately (otherwise it will wait until after this call returns, which negates this hack
-    //m_pilot->FlushQueue();
+    m_pilot->FlushQueue();
 
     // return slaveID, which client will use to delete it's map and continue processing
     return slaveID;

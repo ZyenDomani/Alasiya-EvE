@@ -1,0 +1,29 @@
+)
+17:11:15 [AllyCall] AllianceBound::Handle_GetAllianceContacts() size=0
+17:11:15 [AllyCallDump]   Call Arguments:
+17:11:15 [AllyCallDump]      Tuple: Empty
+17:11:15 [AllyCallDump]  Named Arguments:
+17:11:15 [AllyCallDump]   machoVersion
+17:11:15 [AllyCallDump]        Integer: 1
+17:11:15 [Service] onlineStatus::GetInitialState()
+17:11:15 [Service] alert::BeanCount()
+17:11:15 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #7 logged at  01/03/2023 17:11:14
+Caught at:
+/common/lib/bluepy.py(86) CallWrapper
+/../carbon/common/script/sys/servicemanager.py(780) MollycoddledUthread
+Thrown at:
+/../carbon/common/script/sys/servicemanager.py(777) MollycoddledUthread
+/client/script/ui/shared/neocom/addressbook.py(109) OnSessionChanged
+/client/script/ui/shared/neocom/addressbook.py(240) GetContacts
+/../carbon/common/script/sys/cfg.py(1054) Prime
+        i = 0
+        fuxorcheck = 1
+        self = <Instance of Recordset.EveOwners>
+                       Key column: ownerID, Cache entries: 11413
+                       Field names: ownerID, ownerName, typeID, gender, ownerNameID
+        keys = None
+TypeError: 'NoneType' object is not iterable
+Thread Locals:  session was <Session: (sid:7743270278433772631, clientID:0, mutating:0, locationid:30000053, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:57058, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, allianceid:-1, warfactionid:-1, corpid:98000001, shipid:140007395, solarsystemid:30000053, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
+
+EXCEPTION END

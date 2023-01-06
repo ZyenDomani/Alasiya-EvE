@@ -324,7 +324,7 @@ void TowerSE::UpdatePassword()
             sbh.mass = -1;      // always -1
             sbh.harmonic = m_harmonic;
         updates.push_back(sbh.Encode());
-        m_destiny->SendDestinyUpdate(updates); //consumed
+        m_destiny->SendDestinyUpdates(updates); //consumed
     } else {
         m_harmonic = EVEPOS::Harmonic::Online;
         m_tdata.harmonic = m_harmonic;

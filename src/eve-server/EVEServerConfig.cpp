@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    10.4
+    Version:    10.5
 */
 
 
@@ -236,6 +236,7 @@ EVEServerConfig::EVEServerConfig()
     debug.SpawnTest = false;
     debug.AnomalyFaction = 0;
     debug.ProfileTraceTime = 150/*ms*/;
+    debug.ShipTrackingTime = 0.05;/*ASF min speed*/
 
     // database
     database.host = "localhost";
@@ -829,6 +830,7 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
     AddValueParser( "SpawnTest",            debug.SpawnTest );
     AddValueParser( "DeleteTrackingCans",   debug.DeleteTrackingCans );
     AddValueParser( "ProfileTraceTime",     debug.ProfileTraceTime );
+    AddValueParser( "ShipTrackingTime",     debug.ShipTrackingTime );
 
     const bool result = ParseElementChildren( ele );
 
@@ -843,6 +845,7 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
     RemoveParser( "SpawnTest" );
     RemoveParser( "BubbleTrack" );
     RemoveParser( "ProfileTraceTime" );
+    RemoveParser( "ShipTrackingTime" );
 
     return result;
 }

@@ -105,8 +105,6 @@ public:
     void RemoveExclusive(SystemEntity* pSE);
     void AddBallExclusive(SystemEntity* about_who);
 
-    //send a set of destiny events and updates to every client in the bubble.
-    void BubblecastDestiny(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, const char* desc) const;
     //send a set of destiny updates to every client in the bubble.
     void BubblecastDestinyUpdate(std::vector<PyTuple*> &updates, const char* desc) const;
     //send a set of destiny events to every client in the bubble.
