@@ -438,8 +438,9 @@ void EntityList::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTy
     std::map<uint32, Client*> cMap;
     std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(corpID);
     if (cItr == m_corpMembers.end()) {
+        // no corp members online now.  nothing to do here.
         PySafeDecRef(payload);
-        return; // no corp members online now.  nothing to do here.
+        return;
     }
 
     // determine who in corp needs to be notified
@@ -577,7 +578,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTy
                     cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 if ((itr->second & Corp::Role::Auditor) == Corp::Role::Auditor)
                     cMap.emplace(itr->first->GetCharacterID(), itr->first);
-                // this may need to check if player has access to division changed - will require a LOT more code
+                // this will need to check if player has access to division changed - will require a LOT more code
                 if ((itr->second & Corp::Role::JuniorAccountant) == Corp::Role::JuniorAccountant)
                     cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
@@ -601,7 +602,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTy
 
     for (auto cur : cMap) {
         PyIncRef(payload);
-        cur.second->SendNotification( notifyType, idType, payload, false );   // are any of these sequenced?
+        cur.second->SendNotification( notifyType, idType, payload, false );   // are any of these sequenced?  doubt it
     }
 
     PyDecRef(payload);

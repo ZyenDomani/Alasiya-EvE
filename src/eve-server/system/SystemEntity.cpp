@@ -430,7 +430,7 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
             slim->SetItemString("dunWipeNPC", new PyBool(0));   //?
             slim->SetItemString("dunKeyQuantity", PyStatic.NewOne());   //?
             slim->SetItemString("dunKeyTypeID", new PyInt(m_keyType));   //Training Complex Passkey   group Acceleration_Gate_Keys
-            slim->SetItemString("dunOpenUntil", new PyInt(Win32TimeNow()+EvE::Time::Hour));   //?
+            slim->SetItemString("dunOpenUntil", new PyLong(Win32TimeNow()+EvE::Time::Hour));   //?
             slim->SetItemString("dunRoomName", new PyString("Lobby"));   //?
             slim->SetItemString("dunMusicUrl", new PyString("res:/Sound/Music/Ambient031combat.ogg"));
         }

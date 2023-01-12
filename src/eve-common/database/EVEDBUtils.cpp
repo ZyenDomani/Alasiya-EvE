@@ -280,10 +280,11 @@ PyDict *DBResultToIntIntDict(DBQueryResult &result) {
         int32 k = row.GetInt(0);
         if (k == 0)
             continue;   //likely a non-integer key
-        if (row.IsNull(1))
+        if (row.IsNull(1)) {
             res->SetItem( new PyInt(k), PyStatic.NewNone() );
-        else
+        } else {
             res->SetItem( new PyInt(k), new PyInt(row.GetInt(1)) );
+        }
     }
 
     return res;

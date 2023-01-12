@@ -215,44 +215,44 @@ SystemBubble* BubbleManager::FindBubble(SystemEntity *ent) const {
     return FindBubble(ent->SystemMgr()->GetID(), ent->GetPosition());
 }
 
-SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &pos) const {
+SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &position) const {
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
     _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::FindBubble() - Searching point %.1f, %.1f, %.1f in system %u.", \
-                pos.x, pos.y, pos.z, systemID);
+                position.x, position.y, position.z, systemID);
 
     auto range = m_sysBubbleMap.equal_range(systemID);
     for ( auto itr = range.first; itr != range.second; itr++ )
-        if (itr->second->InBubble(pos))
+        if (itr->second->InBubble(position))
             return itr->second;
 
     //not in any existing bubble.
     return nullptr;
 }
 
-SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
+SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& position)
 {
-    SystemBubble* pBubble(FindBubble(sysMgr->GetID(), pos));
+    SystemBubble* pBubble(FindBubble(sysMgr->GetID(), position));
     if (pBubble == nullptr)
-        pBubble = MakeBubble(sysMgr, pos);
+        pBubble = MakeBubble(sysMgr, position);
 
     return pBubble;
 }
 
-SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint pos) {
+SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint position) {
     // determine if new center (pos) is within 2x radius of another bubble center. (overlap)
     auto range = m_sysBubbleMap.equal_range(sysMgr->GetID());
     for ( auto itr = range.first; itr != range.second; itr++ )
-        if (itr->second->IsOverlap(pos)) {
-            GVector dir(itr->second->GetCenter(), pos);
+        if (itr->second->IsOverlap(position)) {
+            GVector dir(itr->second->GetCenter(), position);
             dir.normalize();
             _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::MakeBubble()::IsOverlap() - dir: %.3f,%.3f,%.3f", dir.x, dir.y, dir.z);
             // move pos away from center
-            pos = itr->second->GetCenter() + (dir * (BUBBLE_RADIUS_METERS * 2));
+            position = itr->second->GetCenter() + (dir * (BUBBLE_RADIUS_METERS * 2));
             break;
         }
 
-    SystemBubble* pBubble = new SystemBubble(sysMgr, pos, BUBBLE_RADIUS_METERS);
+    SystemBubble* pBubble = new SystemBubble(sysMgr, position, BUBBLE_RADIUS_METERS);
     if (pBubble != nullptr) {
         m_bubbles.push_back(pBubble);
         m_bubbleIDMap.emplace(pBubble->GetID(), pBubble);

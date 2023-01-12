@@ -49,7 +49,7 @@
     PyTuple* tuple = new PyTuple(7);
     tuple->SetItem(0, itr_1);
     tuple->SetItem(1, GenerateLockdownCachedObject());
-    tuple->SetItem(2, new PyNone());
+    tuple->SetItem(2, new PyNone());  PyStatic.NewNone();
 
     // build the tuple based on above packet...may not need, as that is cached packet....
     PyTuple* first = new PyTuple(2);
@@ -64,7 +64,7 @@
         second->SetItem(2, third);
     PyTuple* data = new PyTuple(7);
         data->SetItem(0, first);
-        data->SetItem(1, new PyNone()); //unknown
+        data->SetItem(1, new PyNone()); //unknown   PyStatic.NewNone();
         data->SetItem(2, new PyInt(704421)); //unknown - nodeID?
         data->SetItem(3, PyStatic.NewOne()); //unknown
         data->SetItem(4, new PySubStream(new PyString("http:://eve.alasiya.net/")));
@@ -779,7 +779,7 @@ PyObject *PyCachedObject::Encode()
 {
     PyTuple *arg_tuple = new PyTuple(7);
     arg_tuple->items[0] = new_tuple(new PyLong(timestamp), new PyInt(version));
-    arg_tuple->items[1] = new PyNone();
+    arg_tuple->items[1] = PyStatic.NewNone();
     arg_tuple->items[2] = new PyInt(nodeID);
     arg_tuple->items[3] = new PyInt(shared?1:0);
 

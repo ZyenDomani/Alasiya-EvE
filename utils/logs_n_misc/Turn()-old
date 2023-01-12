@@ -1,0 +1,79 @@
+
+//from new source at eve/client/script/ui/services\flightControls.py
+//  self.curve = trinity.Tr2QuaternionLerpCurve()  - tried multiple iterations of this....never got close.
+// same with bezier curve
+void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for BS.  05Jun17
+    if (mySE->HasPilot())
+        if (mySE->GetPilot()->IsUndock())
+            return;
+
+    if (!IsTurn()) {
+        if (m_turning)
+            ClearTurn();
+        return;
+    }
+
+    /*when changing directions....
+     *  m_stateStamp (old - m_moveTime) will have to be reset - handled in UpdateVelocity()
+     *  m_shipHeading will have to be reset - reset here and used in MoveObject() (our calling function)
+     *  check for decel, then call UpdateVelocity() to set variables as needed.  Move() will handle the rest.
+     *
+     */
+
+    // m_radians = rad remaining in turn.  set in IsTurn() on every tic
+    float degrees(EvE::Trig::Rad2Deg(m_radians));
+
+    if (!m_turning) {
+        // first tic on new turn angle.  set all variables
+        m_turning = true;
+
+        // degrees per tic is determined by turn angle and ship align time.
+        m_degPerTic = degrees / m_alignTime;
+
+        // logic to determine speed changes for turning
+        /* min speed when turning changes at same time during turn, regardless of ship or configuration
+         * the amount of change solely depends on degree of turn.
+         * equation from "Ship Motion in Eve Online", Pt2, by Scheulagh Santorine, Ph.D
+         */
+        // will need some way to update this after min speed and turn in progress.
+        // maybe use m_turnFraction?
+        m_userSpeedFraction = m_activeSpeedFraction * std::sqrt((std::cos(degrees) + 1) / 2);
+        UpdateVelocity(true);
+
+        if (is_log_enabled(DESTINY__TURN_TRACE)) {
+            _log(DESTINY__TURN_TRACE, "Destiny::Turn() - %s(%u): Agility:%.3f, Inertia:%.3f, alignTime:%.3f, turnFraction:%.3f, m_degPerTic:%.3f", \
+                    mySE->GetName(), mySE->GetID(), m_shipAgility, m_shipInertia, m_alignTime, m_turnFraction, m_degPerTic);
+        }
+    }
+
+    ++m_turnTic;
+
+    // set ship turn amount based on position in turn, current speed and ship agility
+    GVector deltaHeading(m_shipHeading, m_targetHeading);
+    float turnPercent(0.1f);
+    if (degrees > 90) {
+        if (m_decel and (m_turnTic < m_alignTime)) {
+            // turn half of remaining turn (simulate greatest turn angle when (turn > 90*) and (speed < time)
+            turnPercent = 0.5f;
+        }
+    } else if (degrees > m_degPerTic) {
+        turnPercent = m_degPerTic / (degrees * 0.5);
+    } else {
+        // degrees < m_degPerTic, so complete turn and continue accel
+        if (m_decel) {
+            // decel complete...continue turn
+            UpdateVelocity(true);
+        }
+    }
+
+    if (turnPercent > 0.9f) {
+        _log(DESTINY__ERROR, "Destiny::Turn() - turnTic:%u, degRemain:%.3f, turnPercent:%.2f", m_turnTic, degrees, turnPercent);
+        turnPercent = 0.9;
+    }
+
+    deltaHeading *= turnPercent;
+    m_shipHeading += deltaHeading;
+    if (is_log_enabled(DESTINY__TURN_TRACE))
+        _log(DESTINY__TURN_TRACE, "Destiny::Turn() - tf:%.3f, turnTic:%u, degRemain:%.3f  (deltaHeading:%.5f, %.5f, %.5f * turnPercent:%.2f) = shipHeading:%.3f, %.3f, %.3f", \
+            m_timeFraction, m_turnTic, degrees, deltaHeading.x, deltaHeading.y, deltaHeading.z, turnPercent, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+}

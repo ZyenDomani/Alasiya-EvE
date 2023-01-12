@@ -572,7 +572,7 @@ int main( int argc, char* argv[] )
         sLog.Warning("       StackTrace", "Disabled");
     }
     if (sConfig.debug.UseProfiling) {
-        sLog.Green(" Server Profiling","Enabled.");
+        sLog.Green(" Server Profiling","Enabled.  Msg when runtime > %ums", sConfig.debug.ProfileTraceTime);
         sProfiler.Initialize();
     } else {
         sLog.Warning(" Server Profiling","Disabled.");
@@ -593,7 +593,7 @@ int main( int argc, char* argv[] )
         sLog.Warning("  Bubble Tracking","Disabled.");
     }
     if (sConfig.debug.UseShipTracking) {
-        sLog.Warning("    Ship Tracking","Enabled.");
+        sLog.Warning("    Ship Tracking","Enabled.  Cans stop when ASF < %.2f", sConfig.debug.ShipTrackingTime);
     }  else {
         sLog.Warning("    Ship Tracking","Disabled.");
     }

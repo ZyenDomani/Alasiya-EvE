@@ -1,0 +1,41 @@
+)
+22:58:24 [Service] holoscreenMgr::GetTwoHourCache()
+22:58:24 [Service] holoscreenMgr::GetRuntimeCache()
+22:58:24 [Service] holoscreenMgr::GetTwoHourCache()
+22:58:24 [Service] alert::BeanCount()
+22:58:24 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #6 logged at  01/07/2023 22:58:24 Uncaught (non-http) error with the mainscreen news ticker in GetNewsTickerData()
+Caught at:
+/common/lib/bluepy.py(86) CallWrapper
+/../carbon/client/script/graphics/uidesktopcomponent.py(101) UpdateUIDesktop_t
+/../carbon/client/script/graphics/uidesktopcomponent.py(111) UpdateUIDesktop
+/client/script/ui/station/captainsquarters/screens.py(13) UpdateCQMainScreen
+/client/script/ui/services/holoscreensvc.py(80) OnMainScreenDesktopCreated
+/client/script/ui/services/holoscreensvc.py(176) PlayTemplates
+/client/script/ui/services/holoscreensvc.py(691) GetNewsTickerData
+Thrown at:
+/client/script/ui/services/holoscreensvc.py(674) GetNewsTickerData
+/../carbon/client/script/ui/control/browser/browserutil.py(1079) GetStringFromURL
+/common/stdlib/urllib2.py(126) urlopen
+/common/stdlib/urllib2.py(397) open
+/common/stdlib/urllib2.py(510) http_response
+/common/stdlib/urllib2.py(429) error
+/common/stdlib/urllib2.py(369) _call_chain
+/common/stdlib/urllib2.py(616) http_error_302
+/common/stdlib/urllib2.py(391) open
+/common/stdlib/urllib2.py(409) _open
+/common/stdlib/urllib2.py(369) _call_chain
+/common/stdlib/urllib2.py(1233) https_open
+/common/stdlib/urllib2.py(1192) do_open
+        err = SSLError(1, '_ssl.c:777: error:140773E8:SSL routines:SSL23_GET_SERVER_HELLO:reason(1000)')
+        h = <httplib.HTTPSConnection instance at 0x397F5E40>
+        self = <urllib2.HTTPSHandler instance at 0x05909418>
+        req = <urllib2.Request instance at 0x397F50A8>
+        headers = {'Connection': 'close', 'Host': 'www.eveonline.com', 'User-Agent': 'CCP-minibrowser/3.0'}
+        host = 'www.eveonline.com'
+        http_class = <class httplib.HTTPSConnection at 0x09BC2340>
+URLError: <urlopen error [Errno 1] _ssl.c:777: error:140773E8:SSL routines:SSL23_GET_SERVER_HELLO:reason(1000)>
+Thread Locals:  session was <Session: (sid:2491458442771001453, clientID:0, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:9159, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, allianceid:-1, warfactionid:-1, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
+
+EXCEPTION END
+

@@ -352,7 +352,8 @@ void StaticDataMgr::Populate()
         data.typeID             = row.GetInt(4);
         data.radius             = row.GetFloat(5);
         data.position           = GPoint(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
-        m_staticData[row.GetInt(0)] = data;
+        //m_staticData[row.GetInt(0)] = data;
+        m_staticData.emplace(std::pair<uint32, StaticData>(row.GetInt(0), data));
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
 

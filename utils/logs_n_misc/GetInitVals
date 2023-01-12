@@ -1,0 +1,182 @@
+
+    def AppGetStartupData(self):
+        configSvc = sm.GetService('config')
+        initdata = configSvc.GetInitVals()
+        self.GotInitData(initdata)
+        configSvc.RegisterTablesForUpdates()
+
+
+    def GotInitData(self, initdata):
+        cfg.LogInfo('App GotInitData')
+        util.config.GotInitData(self, initdata)
+        self.dgmunits = self.LoadBulkIndex('dgmunits', const.cacheDogmaUnits, 'unitID')
+        self.invbptypes = self.LoadBulkIndex('invbptypes', const.cacheInvBlueprintTypes, 'blueprintTypeID')
+        self.invcategories = self.LoadBulkIndex('invcategories', const.cacheInvCategories, 'categoryID', InvCategory)
+        self.invmetagroups = self.LoadBulkIndex('invmetagroups', const.cacheInvMetaGroups, 'metaGroupID', InvMetaGroup)
+        self.invgroups = self.LoadBulkIndex('invgroups', const.cacheInvGroups, 'groupID', InvGroup)
+        self.invtypes = self.LoadBulkIndex('invtypes', const.cacheInvTypes, 'typeID', InvType)
+        self.invtypereactions = self.LoadBulkFilter('invtypereactions', const.cacheInvTypeReactions, 'reactionTypeID')
+        self.invmetatypes = self.LoadBulkIndex('invmetatypes', const.cacheInvMetaTypes, 'typeID')
+        self.invmetatypesByParent = self.LoadBulkFilter('invmetatypesByParent', const.cacheInvMetaTypes, 'parentTypeID')
+        invcontrabandtypes = self.LoadBulk(None, const.cacheInvContrabandTypes)
+        self.invcontrabandTypesByFaction = {}
+        self.invcontrabandFactionsByType = {}
+        self.bulkIDsToCfgNames[const.cacheInvContrabandTypes] = ['invcontrabandTypesByFaction', 'invcontrabandFactionsByType']
+        for each in invcontrabandtypes:
+            if each.factionID not in self.invcontrabandTypesByFaction:
+                self.invcontrabandTypesByFaction[each.factionID] = {}
+            self.invcontrabandTypesByFaction[each.factionID][each.typeID] = each
+            if each.typeID not in self.invcontrabandFactionsByType:
+                self.invcontrabandFactionsByType[each.typeID] = {}
+            self.invcontrabandFactionsByType[each.typeID][each.factionID] = each
+
+        self.dgmattribs = self.LoadBulkIndex('dgmattribs', const.cacheDogmaAttributes, 'attributeID', DgmAttribute)
+        self.dgmeffects = self.LoadBulkIndex('dgmeffects', const.cacheDogmaEffects, 'effectID', DgmEffect)
+        self.dgmtypeattribs = self.LoadBulkFilter('dgmtypeattribs', const.cacheDogmaTypeAttributes, 'typeID')
+        self.dgmtypeeffects = self.LoadBulkFilter('dgmtypeeffects', const.cacheDogmaTypeEffects, 'typeID')
+        self.dgmexpressions = self.LoadBulkIndex('dgmexpressions', const.cacheDogmaExpressions, 'expressionID')
+        self.shiptypes = self.LoadBulkIndex('shiptypes', const.cacheShipTypes, 'shipTypeID')
+        self.ramaltypes = self.LoadBulkIndex('ramaltypes', const.cacheRamAssemblyLineTypes, 'assemblyLineTypeID')
+        self.ramaltypesdetailpercategory = self.LoadBulkFilter('ramaltypesdetailpercategory', const.cacheRamAssemblyLineTypesCategory, 'assemblyLineTypeID', virtualColumns=[('activityID', RamActivityVirtualColumn)])
+        self.ramaltypesdetailpergroup = self.LoadBulkFilter('ramaltypesdetailpergroup', const.cacheRamAssemblyLineTypesGroup, 'assemblyLineTypeID', virtualColumns=[('activityID', RamActivityVirtualColumn)])
+        self.ramactivities = self.LoadBulkIndex('ramactivities', const.cacheRamActivities, 'activityID', RamActivity)
+        self.ramcompletedstatuses = self.LoadBulkIndex('ramcompletedstatuses', const.cacheRamCompletedStatuses, 'completedStatus', RamCompletedStatus)
+        self.invtypematerials = self.LoadBulkFilter('invtypematerials', const.cacheInvTypeMaterials, 'typeID')
+        self.staoperationtypes = self.LoadBulkIndex('staoperationtypes', const.cacheStaOperations, 'operationID')
+        ramtyperequirements = self.LoadBulk('ramtyperequirements', const.cacheRamTypeRequirements)
+        d = {}
+        for row in ramtyperequirements:
+            key = (row.typeID, row.activityID)
+            if key in d:
+                d[key].append(row)
+            else:
+                d[key] = [row]
+
+        self.ramtyperequirements = d
+        self.mapcelestialdescriptions = self.LoadBulkIndex('mapcelestialdescriptions', const.cacheMapCelestialDescriptions, 'itemID', MapCelestialDescription)
+        self.certificates = self.LoadBulkIndex('certificates', const.cacheCertificates, 'certificateID', Certificate)
+        self.certificaterelationships = self.LoadBulkIndex('certificaterelationships', const.cacheCertificateRelationships, 'relationshipID')
+        self.certificateRelationshipsByChildID = self.LoadBulkIndex('certificateRelationshipsByChildID', const.cacheCertificateRelationships, 'relationshipID')
+        self.locationwormholeclasses = self.LoadBulkIndex('locationwormholeclasses', const.cacheMapLocationWormholeClasses, 'locationID')
+        self.nebulas = self.LoadBulkIndex('nebulas', const.cacheMapNebulas, 'locationID')
+        self.schematics = self.LoadBulkIndex('schematics', const.cachePlanetSchematics, 'schematicID', Schematic)
+        self.schematicstypemap = self.LoadBulkFilter('schematicstypemap', const.cachePlanetSchematicsTypeMap, 'schematicID')
+        self.schematicspinmap = self.LoadBulkFilter('schematicspinmap', const.cachePlanetSchematicsPinMap, 'schematicID')
+        self.schematicsByPin = self.LoadBulkFilter('schematicsByPin', const.cachePlanetSchematicsPinMap, 'pinTypeID')
+        self.schematicsByType = self.LoadBulkFilter('schematicsByType', const.cachePlanetSchematicsTypeMap, 'typeID')
+        self.groupsByCategories = self.LoadBulkFilter('groupsByCategories', const.cacheInvGroups, 'categoryID')
+        self.typesByGroups = self.LoadBulkFilter('typesByGroups', const.cacheInvTypes, 'groupID')
+        self.typesByMarketGroups = self.LoadBulkFilter('typesByMarketGroups', const.cacheInvTypes, 'marketGroupID')
+        self.billtypes = self.LoadBulkIndex('billtypes', const.cacheActBillTypes, 'billTypeID', Billtype)
+        self.overviewDefaults = self.LoadBulkIndex('overviewDefaults', const.cacheChrDefaultOverviews, 'overviewID', OverviewDefault)
+        self.overviewDefaultGroups = self.LoadBulkFilter('overviewDefaultGroups', const.cacheChrDefaultOverviewGroups, 'overviewID')
+        self.bloodlineNames = self.LoadBulkFilter('bloodlineNames', const.cacheChrBloodlineNames, 'bloodlineID')
+        self.bloodlines = self.LoadBulkIndex('bloodlines', const.cacheChrBloodlines, 'bloodlineID')
+        self.factions = self.LoadBulkIndex('factions', const.cacheChrFactions, 'factionID', Faction)
+        self.races = self.LoadBulkIndex('races', const.cacheChrRaces, 'raceID')
+        self.npccorporations = self.LoadBulkIndex('npccorporations', const.cacheCrpNpcCorporations, 'corporationID')
+        self.corptickernames = self.LoadBulk('corptickernames', const.cacheCrpTickerNamesStatic, Recordset(CrpTickerNames, 'corporationID', 'GetCorpTickerNamesEx', 'GetMultiCorpTickerNamesEx'), tableID=const.cacheCrpNpcCorporations)
+        self.messages = self.LoadBulkIndex('messages', const.cacheEveMessages, 'messageKey')
+        if boot.role == 'client':
+            self.localdb = sqlite3.connect(blue.paths.ResolvePathForWriting(u'app:/bulkdata/mapbulk.db'))
+            self.localdb.row_factory = sqlite3.Row
+        else:
+            self.localdb = None
+        self.LoadEveOwners()
+        self.LoadEveLocations()
+        allianceshortnameRowHeader = blue.DBRowDescriptor((('allianceID', const.DBTYPE_I4), ('shortName', const.DBTYPE_WSTR)))
+        self.allianceshortnameRowset = dbutil.CRowset(allianceshortnameRowHeader, [])
+        self.allianceshortnames = Recordset(AllShortNames, 'allianceID', 'GetAllianceShortNamesEx', 'GetMultiAllianceShortNamesEx')
+        self.ConvertData(self.allianceshortnameRowset, self.allianceshortnames)
+        positionRowHeader = blue.DBRowDescriptor((('itemID', const.DBTYPE_I8),
+         ('x', const.DBTYPE_R5),
+         ('y', const.DBTYPE_R5),
+         ('z', const.DBTYPE_R5),
+         ('yaw', const.DBTYPE_R4),
+         ('pitch', const.DBTYPE_R4),
+         ('roll', const.DBTYPE_R4)))
+        positionRowset = dbutil.CRowset(positionRowHeader, [])
+        self.positions = Recordset(Position, 'itemID', 'GetPositionEx', 'GetPositionsEx')
+        self.ConvertData(positionRowset, self.positions)
+        self.__containercategories__ = (const.categoryStation,
+         const.categoryShip,
+         const.categoryTrading,
+         const.categoryStructure)
+        self.__containergroups__ = (const.groupCargoContainer,
+         const.groupSecureCargoContainer,
+         const.groupAuditLogSecureContainer,
+         const.groupFreightContainer,
+         const.groupConstellation,
+         const.groupRegion,
+         const.groupSolarSystem,
+         const.groupMissionContainer)
+        self.__chargecompatiblegroups__ = (const.groupFrequencyMiningLaser,
+         const.groupEnergyWeapon,
+         const.groupProjectileWeapon,
+         const.groupMissileLauncher,
+         const.groupCapacitorBooster,
+         const.groupHybridWeapon,
+         const.groupScanProbeLauncher,
+         const.groupComputerInterfaceNode,
+         const.groupMissileLauncherBomb,
+         const.groupMissileLauncherCruise,
+         const.groupMissileLauncherDefender,
+         const.groupMissileLauncherAssault,
+         const.groupMissileLauncherSiege,
+         const.groupMissileLauncherHeavy,
+         const.groupMissileLauncherHeavyAssault,
+         const.groupMissileLauncherRocket,
+         const.groupMissileLauncherStandard,
+         const.groupMissileLauncherCitadel,
+         const.groupMissileLauncherSnowball,
+         const.groupBubbleProbeLauncher,
+         const.groupSensorBooster,
+         const.groupRemoteSensorBooster,
+         const.groupRemoteSensorDamper,
+         const.groupTrackingComputer,
+         const.groupTrackingDisruptor,
+         const.groupTrackingLink,
+         const.groupWarpDisruptFieldGenerator)
+        self.__containerVolumes__ = {const.groupAssaultShip: 2500.0,
+         const.groupBattlecruiser: 15000.0,
+         const.groupBattleship: 50000.0,
+         const.groupBlackOps: 50000.0,
+         const.groupCapitalIndustrialShip: 1000000.0,
+         const.groupCapsule: 500.0,
+         const.groupCarrier: 1000000.0,
+         const.groupCombatReconShip: 10000.0,
+         const.groupCommandShip: 15000.0,
+         const.groupCovertOps: 2500.0,
+         const.groupCruiser: 10000.0,
+         const.groupStrategicCruiser: 10000.0,
+         const.groupDestroyer: 5000.0,
+         const.groupDreadnought: 1000000.0,
+         const.groupElectronicAttackShips: 2500.0,
+         const.groupEliteBattleship: 50000.0,
+         const.groupExhumer: 3750.0,
+         const.groupForceReconShip: 10000.0,
+         const.groupFreighter: 1000000.0,
+         const.groupFrigate: 2500.0,
+         const.groupHeavyAssaultShip: 10000.0,
+         const.groupHeavyInterdictors: 10000.0,
+         const.groupIndustrial: 20000.0,
+         const.groupIndustrialCommandShip: 500000.0,
+         const.groupInterceptor: 2500.0,
+         const.groupInterdictor: 5000.0,
+         const.groupJumpFreighter: 1000000.0,
+         const.groupLogistics: 10000.0,
+         const.groupMarauders: 50000.0,
+         const.groupMiningBarge: 3750.0,
+         const.groupSupercarrier: 1000000.0,
+         const.groupPrototypeExplorationShip: 500.0,
+         const.groupRookieship: 2500.0,
+         const.groupShuttle: 500.0,
+         const.groupStealthBomber: 2500.0,
+         const.groupTitan: 10000000.0,
+         const.groupTransportShip: 20000.0,
+         const.groupCargoContainer: 1000.0,
+         const.groupMissionContainer: 1000.0,
+         const.groupSecureCargoContainer: 1000.0,
+         const.groupAuditLogSecureContainer: 1000.0,
+         const.groupFreightContainer: 1000.0,
+         963: 5000}

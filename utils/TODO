@@ -17,7 +17,6 @@ check evemu_crucible for additions
 
 
 !! destiny (all space movement)
-PyRep items need rule of 5 finished/tested (mostly copy c'tor/copy assignment for Clone())
 
 work on buglist, integrate this list in there where i can
     - modules/fitting
@@ -148,6 +147,11 @@ skill training...
 EVEDB::invGroups::Spawn_Container needs it own class
     - mostly for dungeons/deadspace
     - 477 types
+
+InventoryItem -
+    when changing flags, will have to determine objects container, then
+    write method to update items' flag in Inventory.
+    -- this is cause of "pilot/ship not found in xxx" on login/logout/jump (ship and pilot flags change)
 
 remove InventoryDB (m_db) and associated code from itemfactory
 remove character queries from InventoryDB
@@ -668,7 +672,7 @@ see what can be done about bind_args->Clone() as it may be leaking memory
 
 
 review all classes to add rule of 5 or =delete as required
-    - PyRep Classes needs lots-o-work and thought
+    - PyRep Classes done
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd)
     - others?
 
@@ -792,6 +796,10 @@ others cause multiple other effects.  is this something we can implement/exploit
 *******************************************************
 *****************   errata and miscellaneous bullshit
 
+
+all classes need init list corrected
+    - should be same order as declarations
+    
 spawn system calls.....found this in logs)
 17:38:52 [SpawnMsg] SpawnMgr::PrepSpawn() - faction: Angel Cartel, region 10000001. (config set false)
 17:38:52 [SpawnMsg] SpawnMgr::PrepSpawn() - m_factionGroups size is 21.

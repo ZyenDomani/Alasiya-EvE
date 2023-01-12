@@ -995,6 +995,16 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
     if (m_data.flag == flag)
         return true;
 
+    // update flag in current container's inventory
+    if (IsValidLocationID(m_data.locationID)) {
+        InventoryItemRef iRef = sItemFactory.GetItemRef(m_data.locationID);
+        if (iRef.get() != nullptr) {
+            iRef->GetMyInventory()->UpdateFlag(flag, InventoryItemRef(this));
+        } else {
+            _log(ITEM__ERROR, "II::SetFlag() - Cant find location %u containing %s.", m_data.locationID, m_data.name.c_str());
+        }
+    }
+
     EVEItemFlags old_flag = m_data.flag;
     m_data.flag = flag;
 

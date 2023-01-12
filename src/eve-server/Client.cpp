@@ -202,7 +202,7 @@ bool Client::ProcessNet()
     while ((p = PopPacket())) {
         try {
             if (!DispatchPacket(p))
-                sLog.Error("Client", "%s: Failed to dispatch packet of type %s (%i).", m_char->name(), MACHONETMSG_TYPE_NAMES[ p->type ], (int)p->type);
+                sLog.Error("Client", "Failed to dispatch packet of type %s (%i).", MACHONETMSG_TYPE_NAMES[ p->type ], (int)p->type);
         }
         catch(PyException& e) {
             _SendException(p->dest, p->source.callID, p->type, WRAPPEDEXCEPTION, &e.ssException);
@@ -215,7 +215,7 @@ bool Client::ProcessNet()
     SafeDelete(p);
     // send queue
     /** @note   testing this on 1Hz tic */
-    //_SendQueuedUpdates();
+    _SendQueuedUpdates();
 
     return true;
 }
@@ -532,7 +532,7 @@ void Client::ProcessClient() {
         }
 
     /** @note   testing this on 1Hz tic */
-    _SendQueuedUpdates();
+    //_SendQueuedUpdates();
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::client, GetTimeUSeconds() - profileStartTime);
@@ -872,7 +872,7 @@ void Client::DockToStation() {
     m_autoPilot = false;
     m_setStateSent = false;
     m_clientState = Player::State::Idle;
-    _log(AUTOPILOT__TRACE, "DockToStation()() - m_clientState set to Idle");
+    _log(AUTOPILOT__TRACE, "DockToStation() - m_clientState set to Idle");
     pShipSE->DestinyMgr()->DockingAccepted();
     m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
 
@@ -2525,6 +2525,7 @@ void Client::_SendPingRequest()
     QueuePacket(packet);
 }
 
+/** @todo fix this to provide a somewhat accurate response */
 void Client::_SendPingResponse(const PyAddress& source, int64 callID)
 {
     PyPacket* packet = new PyPacket();
@@ -2547,37 +2548,37 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
     PyTuple* pingTuple(nullptr);
 
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 20));        // this should be the time the packet was received (we cheat here a bit)
+    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));     // this should be the time the packet was received (we cheat here a bit)
     pingTuple->SetItem(1, new PyLong(Win32TimeNow()));             // this is the time the packet is (handled/written) by the (proxy/server) so we're cheating a bit again.
     pingTuple->SetItem(2, new PyString("proxy::handle_message"));
     pingList->AddItem(pingTuple);
 
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 20));
+    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
     pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
     pingTuple->SetItem(2, new PyString("proxy::writing"));
     pingList->AddItem(pingTuple);
 
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 20));
+    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
     pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
     pingTuple->SetItem(2, new PyString("server::handle_message"));
     pingList->AddItem(pingTuple);
 
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 20));
+    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
     pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
     pingTuple->SetItem(2, new PyString("server::turnaround"));
     pingList->AddItem(pingTuple);
 
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 20));
+    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
     pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
     pingTuple->SetItem(2, new PyString("proxy::handle_message"));
     pingList->AddItem(pingTuple);
 
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 20));
+    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
     pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
     pingTuple->SetItem(2, new PyString("proxy::writing"));
     pingList->AddItem(pingTuple);

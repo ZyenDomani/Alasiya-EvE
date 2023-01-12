@@ -86,6 +86,8 @@ public:
     InventoryItemRef FindFirstByFlag(EVEItemFlags flag) const;
     InventoryItemRef GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag=flagNone);
 
+    void UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const;
+
     /* Primary packet builders */
     CRowSet* List(EVEItemFlags flag, uint32 ownerID = 0) const;
 

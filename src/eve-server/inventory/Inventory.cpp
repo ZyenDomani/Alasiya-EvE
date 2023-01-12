@@ -349,7 +349,6 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     //15:40:20 [ItemTrace] Inventory::SortVector() - 30 items sorted in 28.250us with 87 loops.i
     //22:09:28 [InvTrace] Inventory::SortVector() - 47 items sorted in 129.250us with 644 loops.
 
-
     // std::swap
     //12:57:36 [ItemTrace] Inventory::SortVector() - 21 items sorted in 16.000us with 60 loops.
     //13:00:55 [ItemTrace] Inventory::SortVector() - 15 items sorted in 20.750us with 28 loops.
@@ -407,6 +406,14 @@ InventoryItemRef Inventory::GetByID(uint32 id) const {
         return res->second;
 
     return InventoryItemRef(nullptr);
+}
+
+void Inventory::UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const
+{
+    // this method is for changing flags for existing items in our inventory
+    /** @todo  finish this...  */
+    mContents;
+    m_contentsByFlag;
 }
 
 // for stations only...can get expensive for stations that have many players loaded

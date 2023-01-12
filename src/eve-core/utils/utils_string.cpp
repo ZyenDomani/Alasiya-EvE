@@ -295,7 +295,7 @@ bool PyDecodeEscape( const char* str, Buffer& into )
                 } else {
                     x += 10 + c - 'A';
                 }
-                
+
                 into.Append< uint8 >( x );
                 break;
             }
@@ -312,11 +312,11 @@ bool PyDecodeEscape( const char* str, Buffer& into )
 
 void SearchReplace( std::string& subject, const std::string& search, const std::string& replace )
 {
-    std::string::size_type pos = 0;
-    while( ( pos = subject.find( search, pos ) ) != std::string::npos )
+    std::string::size_type index = 0;
+    while( ( index = subject.find( search, index ) ) != std::string::npos )
     {
-        subject.replace( pos, search.length(), replace );
-        pos += replace.length();
+        subject.replace( index, search.length(), replace );
+        index += replace.length();
     }
 }
 

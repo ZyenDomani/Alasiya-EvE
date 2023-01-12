@@ -1,0 +1,86 @@
+)
+21:29:06 [DestinyUpdate] [1906] BubbleCasting 1 DestinyUpdates to bubbleID 5 from Allan(90000000)
+21:29:11 [Bound] BeyonceBound::CmdGotoDirection()
+21:29:11 [AP Msg] Allan called GotoDirection. AP: false
+21:29:11 [MoveTrace] Destiny::SetSpeedFraction() - Rifter(140007395):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false,accel: false, decel: false
+21:29:11 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 441.25, accel: true, decel: false, delta: 1.000
+21:29:11 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 47.61, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+21:29:11 [DestinyUpdate] [1911] BubbleCasting 1 DestinyUpdates to bubbleID 5 from Allan(90000000)
+21:29:11 [DestinyUpdate] [1911] BubbleCasting 1 DestinyUpdates to bubbleID 5 from Allan(90000000)
+21:29:12 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 77.607 m/s (tf:0.1759 asf:0.1759 sec: 1.00000).
+21:29:13 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 141.565 m/s (tf:0.3208 asf:0.3208 sec: 2.00000).
+21:29:14 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 194.274 m/s (tf:0.4403 asf:0.4403 sec: 3.00000).
+21:29:15 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 237.712 m/s (tf:0.5387 asf:0.5387 sec: 4.00000).
+21:29:16 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 273.511 m/s (tf:0.6199 asf:0.6199 sec: 5.00000).
+21:29:17 [ClientTimer] Client::ProcessClient():  SetSessionChange to false for Allan(90000000)
+21:29:17 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 303.013 m/s (tf:0.6867 asf:0.6867 sec: 6.00000).
+21:29:18 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 327.326 m/s (tf:0.7418 asf:0.7418 sec: 7.00000).
+21:29:19 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 347.363 m/s (tf:0.7872 asf:0.7872 sec: 8.00000).
+21:29:19 [Bound] BeyonceBound::CmdGotoDirection()
+21:29:19 [AP Msg] Allan called GotoDirection. AP: false
+21:29:19 [MoveTrace] Destiny::SetSpeedFraction() - Rifter(140007395):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false,accel: false, decel: false
+21:29:19 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395): Speed Change - USF: 1.00, ASF: 0.79, TF: 0.79, PSF: 0.79, pSpeed: 347.36, mSpeed: 441.25, accel: true, decel: false, delta: 0.213
+21:29:19 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395):  USF != 0 and ship is Moving.   --Begin Accel  AccelTime: 10.13, USF: 1.00, ASF: 0.79, TF: 0.79, PSF: 0.79
+21:29:19 [DestinyUpdate] [1919] BubbleCasting 1 DestinyUpdates to bubbleID 5 from Allan(90000000)
+21:29:19 [DestinyUpdate] [1919] BubbleCasting 1 DestinyUpdates to bubbleID 5 from Allan(90000000)
+21:29:20 [TurnTrace] Destiny::IsTurn() - Rifter(140007395): dot: 0.41811, radians:1.13943, degrees:65.285
+21:29:20 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.989,-0.102,-0.107.  m_targetHeading: -0.317,-0.031,-0.948
+21:29:20 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395): Speed Change - USF: 1.00, ASF: 0.27, TF: 0.79, PSF: 0.79, pSpeed: 117.29, mSpeed: 441.25, accel: true, decel: false, delta: 0.734
+21:29:20 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395):  USF != 0 and ship is Moving.   --Begin Accel  AccelTime: 34.96, USF: 1.00, ASF: 0.27, TF: 0.79, PSF: 0.79
+21:29:20 [TurnTrace] Destiny::Turn() - Rifter(140007395): Agility:5.170, Inertia:2.440, alignTime:7.167, ASF:0.266, m_degPerTic:9.110
+21:29:20 [TurnTrace] Destiny::Turn() - tf:0.787, turnTic:1, degRemain:65.285  (deltaHeading:0.22697, 0.02401, -0.28389 * turnPercent:0.34) = shipHeading:-0.762, -0.078, -0.391
+21:29:20 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating in turn at 363.876 m/s (tf:0.1759 asf:0.8246 ps:117.29 psf:0.7872, sec: 1.00000).
+21:29:21 [TurnTrace] Destiny::IsTurn() - Rifter(140007395): dot: 0.61459, radians:0.90893, degrees:52.078
+21:29:21 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.762,-0.078,-0.391.  m_targetHeading: -0.317,-0.031,-0.948
+21:29:21 [TurnTrace] Destiny::Turn() - tf:0.176, turnTic:2, degRemain:52.078  (deltaHeading:0.27459, 0.02905, -0.34346 * turnPercent:0.62) = shipHeading:-0.487, -0.049, -0.735
+21:29:21 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating in turn at 377.485 m/s (tf:0.3208 asf:0.8555 ps:117.29 psf:0.7872, sec: 2.00000).
+21:29:22 [TurnTrace] Destiny::IsTurn() - Rifter(140007395): dot: 0.85230, radians:0.55044, degrees:31.538
+21:29:22 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.487,-0.049,-0.735.  m_targetHeading: -0.317,-0.031,-0.948
+21:29:22 [TurnTrace] Destiny::Turn() - tf:0.321, turnTic:3, degRemain:31.538  (deltaHeading:0.17031, 0.01802, -0.21302 * turnPercent:1.00) = shipHeading:-0.317, -0.031, -0.948
+21:29:22 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating in turn at 388.700 m/s (tf:0.4403 asf:0.8809 ps:117.29 psf:0.7872, sec: 3.00000).
+21:29:23 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 397.942 m/s (tf:0.5387 asf:0.9019 ps:117.29 psf:0.7872, sec: 4.00000).
+21:29:24 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 405.559 m/s (tf:0.6199 asf:0.9191 ps:117.29 psf:0.7872, sec: 5.00000).
+21:29:25 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 411.837 m/s (tf:0.6867 asf:0.9333 ps:117.29 psf:0.7872, sec: 6.00000).
+21:29:26 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 417.010 m/s (tf:0.7418 asf:0.9451 ps:117.29 psf:0.7872, sec: 7.00000).
+21:29:27 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 421.273 m/s (tf:0.7872 asf:0.9547 ps:117.29 psf:0.7872, sec: 8.00000).
+21:29:28 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 424.787 m/s (tf:0.8246 asf:0.9627 ps:117.29 psf:0.7872, sec: 9.00000).
+21:29:29 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is accelerating at 427.682 m/s (tf:0.8555 asf:0.9693 ps:117.29 psf:0.7872, sec: 10.00000).
+21:29:29 [Bound] BeyonceBound::CmdStop()
+21:29:29 [AP Msg] Allan called Stop. AP: false, Invul: false
+21:29:29 [MoveTrace] Destiny::SetSpeedFraction() - Rifter(140007395):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false,accel: false, decel: false
+21:29:29 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395):  USF == 0 and ship is Moving.   --Decel for Stop  AccelTime: 46.15, USF: 0.00, ASF: 0.97, TF: 0.86, PSF: 0.97
+21:29:29 [DestinyUpdate] [1929] BubbleCasting 1 DestinyUpdates to bubbleID 5 from Allan(90000000)
+21:29:30 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 352.461 m/s (tf:0.1759 asf:0.7988 ps:427.68 psf:0.9693, sec: 1.00000).
+21:29:31 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 290.470 m/s (tf:0.3208 asf:0.6583 ps:427.68 psf:0.9693, sec: 2.00000).
+21:29:32 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 239.382 m/s (tf:0.4403 asf:0.5425 ps:427.68 psf:0.9693, sec: 3.00000).
+21:29:33 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 197.279 m/s (tf:0.5387 asf:0.4471 ps:427.68 psf:0.9693, sec: 4.00000).
+21:29:34 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 162.582 m/s (tf:0.6199 asf:0.3685 ps:427.68 psf:0.9693, sec: 5.00000).
+21:29:35 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 133.987 m/s (tf:0.6867 asf:0.3037 ps:427.68 psf:0.9693, sec: 6.00000).
+21:29:36 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 110.421 m/s (tf:0.7418 asf:0.2502 ps:427.68 psf:0.9693, sec: 7.00000).
+21:29:37 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 91.000 m/s (tf:0.7872 asf:0.2062 ps:427.68 psf:0.9693, sec: 8.00000).
+21:29:38 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 74.995 m/s (tf:0.8246 asf:0.1700 ps:427.68 psf:0.9693, sec: 9.00000).
+21:29:39 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 61.805 m/s (tf:0.8555 asf:0.1401 ps:427.68 psf:0.9693, sec: 10.00000).
+21:29:40 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 50.934 m/s (tf:0.8809 asf:0.1154 ps:427.68 psf:0.9693, sec: 11.00000).
+21:29:41 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 41.976 m/s (tf:0.9019 asf:0.0951 ps:427.68 psf:0.9693, sec: 12.00000).
+21:29:42 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 34.593 m/s (tf:0.9191 asf:0.0784 ps:427.68 psf:0.9693, sec: 13.00000).
+21:29:43 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 28.509 m/s (tf:0.9333 asf:0.0646 ps:427.68 psf:0.9693, sec: 14.00000).
+21:29:44 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 23.495 m/s (tf:0.9451 asf:0.0532 ps:427.68 psf:0.9693, sec: 15.00000).
+21:29:45 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 19.363 m/s (tf:0.9547 asf:0.0439 ps:427.68 psf:0.9693, sec: 16.00000).
+21:29:46 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 15.957 m/s (tf:0.9627 asf:0.0362 ps:427.68 psf:0.9693, sec: 17.00000).
+21:29:47 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 13.150 m/s (tf:0.9693 asf:0.0298 ps:427.68 psf:0.9693, sec: 18.00000).
+21:29:48 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 10.838 m/s (tf:0.9747 asf:0.0246 ps:427.68 psf:0.9693, sec: 19.00000).
+21:29:49 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 8.931 m/s (tf:0.9791 asf:0.0202 ps:427.68 psf:0.9693, sec: 20.00000).
+21:29:50 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 7.361 m/s (tf:0.9828 asf:0.0167 ps:427.68 psf:0.9693, sec: 21.00000).
+21:29:51 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 6.066 m/s (tf:0.9858 asf:0.0137 ps:427.68 psf:0.9693, sec: 22.00000).
+21:29:52 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 4.999 m/s (tf:0.9883 asf:0.0113 ps:427.68 psf:0.9693, sec: 23.00000).
+21:29:53 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 4.120 m/s (tf:0.9904 asf:0.0093 ps:427.68 psf:0.9693, sec: 24.00000).
+21:29:54 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 3.395 m/s (tf:0.9921 asf:0.0077 ps:427.68 psf:0.9693, sec: 25.00000).
+21:29:55 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 2.798 m/s (tf:0.9935 asf:0.0063 ps:427.68 psf:0.9693, sec: 26.00000).
+21:29:56 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 2.306 m/s (tf:0.9946 asf:0.0052 ps:427.68 psf:0.9693, sec: 27.00000).
+21:29:57 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 1.900 m/s (tf:0.9956 asf:0.0043 ps:427.68 psf:0.9693, sec: 28.00000).
+21:29:58 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 1.566 m/s (tf:0.9963 asf:0.0035 ps:427.68 psf:0.9693, sec: 29.00000).
+21:29:59 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 1.291 m/s (tf:0.9970 asf:0.0029 ps:427.68 psf:0.9693, sec: 30.00000).
+21:30:00 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 1.064 m/s (tf:0.9975 asf:0.0024 ps:427.68 psf:0.9693, sec: 31.00000).
+21:30:01 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 0.877 m/s (tf:0.9980 asf:0.0020 ps:427.68 psf:0.9693, sec: 32.00000).
+21:30:02 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 0.722 m/s (tf:0.9983 asf:0.0016 ps:427.68 psf:0.9693, sec: 33.00000).
+21:30:03 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is decelerating at 0.595 m/s (tf:0.9986 asf:0.0013 ps:427.68 psf:0.9693, sec: 34.00000).

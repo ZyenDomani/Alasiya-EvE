@@ -86,9 +86,8 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
     PyRep* serverinfo(m_manager->cache_service->GetCacheHint(str));
     PyDecRef( str );
 
-    PyDict* initvals = new PyDict();
     PyTuple* result = new PyTuple( 2 );
         result->SetItem( 0, serverinfo );
-        result->SetItem( 1, initvals );
+        result->SetItem( 1, PyStatic.mtDict() );
     return result;
 }

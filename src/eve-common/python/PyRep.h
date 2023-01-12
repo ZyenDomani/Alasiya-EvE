@@ -208,27 +208,20 @@ public:
     // None returns 0. Returned as unsigned 32b int
     static uint32 IntegerValueU32(PyRep* pRep);
 
-    /*
-    friend void swap(PyRep& first, PyRep& second) {
-        // enable ADL
-        using std::swap;
-        swap(first.mType, second.mType);
-    } */
-
     PyRep( PyType t );
     // copy c'tor
     PyRep( const PyRep& oth );
     // move c'tor
-    PyRep(PyRep&& oth) = delete;
+   //PyRep(PyRep&& oth) = delete;
     /*
     : PyRep(oth.mType) {
         std::swap(*this, oth);
         PyDecRef(&oth);
     } */
     // copy assignment
-    PyRep& operator= (const PyRep& oth) = delete;
+   //PyRep& operator= (const PyRep& oth) = delete;
     // move assignment
-    PyRep& operator= (PyRep&& oth) = delete;
+   //PyRep& operator= (PyRep&& oth) = delete;
 
     virtual ~PyRep();
 
@@ -248,14 +241,14 @@ public:
     // copy c'tor
     PyInt( const PyInt& oth );
     // move c'tor
-    PyInt(PyInt&& oth) = delete;
+    //PyInt(PyInt&& oth) = delete;
     /*
     : PyInt(oth.mValue) {
         std::swap(*this, oth);
         PyDecRef(&oth);
     } */
     // copy assignment
-    PyInt& operator=(PyInt oth) = delete;
+    //PyInt& operator=(PyInt oth) = delete;
     /*
     {
         std::swap(*this, oth);
@@ -263,7 +256,7 @@ public:
     } */
 
     // move assignment
-    PyInt& operator= (PyInt&& oth) = delete;
+    //PyInt& operator= (PyInt&& oth) = delete;
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -290,21 +283,21 @@ public:
     // copy c'tor
     PyLong( const PyLong& oth );
     // move c'tor
-    PyLong(PyLong&& oth)  = delete;
+    //PyLong(PyLong&& oth)  = delete;
     /*
     : PyLong(oth.mValue) {
         std::swap(*this, oth);
         PyDecRef(&oth);
     } */
     // copy assignment
-    PyLong& operator=(PyLong oth)  = delete;
+    //PyLong& operator=(PyLong oth)  = delete;
     /*
     {
         std::swap(*this, oth);
         return *this;
     } */
     // move assignment
-    PyLong& operator= (PyLong&& oth) = delete;
+    //PyLong& operator= (PyLong&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -333,14 +326,14 @@ public:
     // copy c'tor
     PyFloat( const PyFloat& oth );
     // move c'tor
-    PyFloat(PyFloat&& oth)  = delete;
+    //PyFloat(PyFloat&& oth)  = delete;
     /*
     : PyFloat(oth.mValue) {
         std::swap(*this, oth);
         PyDecRef(&oth);
     } */
     // copy assignment
-    PyFloat& operator=(PyFloat oth)  = delete;
+   // PyFloat& operator=(PyFloat oth)  = delete;
     /*
     {
         std::swap(*this, oth);
@@ -348,7 +341,7 @@ public:
     } */
 
     // move assignment
-    PyFloat& operator= (PyFloat&& oth) = delete;
+    //PyFloat& operator= (PyFloat&& oth) = delete;
 
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
@@ -376,14 +369,14 @@ public:
     // copy c'tor
     PyBool( const PyBool& oth );
     // move c'tor
-    PyBool(PyBool&& oth) = delete;
+    //PyBool(PyBool&& oth) = delete;
     /*
     : PyBool(oth.mValue) {
         std::swap(*this, oth);
         PyDecRef(&oth);
     } */
     // copy assignment
-    PyBool& operator=(PyBool oth) = delete;
+    //PyBool& operator=(PyBool oth) = delete;
     /*
     {
         std::swap(*this, oth);
@@ -391,7 +384,7 @@ public:
     } */
 
     // move assignment
-    PyBool& operator= (PyBool&& oth) = delete;
+    //PyBool& operator= (PyBool&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -418,14 +411,14 @@ public:
     // copy c'tor
     PyNone( const PyNone& oth );
     // move c'tor
-    PyNone(PyNone&& oth) = delete;
+    //PyNone(PyNone&& oth) = delete;
     /*
     : PyNone() {
         std::swap(*this, oth);
         PyDecRef(&oth);
     } */
     // copy assignment
-    PyNone& operator=(PyNone oth) = delete;
+    //PyNone& operator=(PyNone oth) = delete;
     /*
     {
         std::swap(*this, oth);
@@ -433,7 +426,7 @@ public:
     } */
 
     // move assignment
-    PyNone& operator= (PyNone&& oth) = delete;
+    //PyNone& operator= (PyNone&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -611,14 +604,14 @@ public:
     /** Copy constructor. */
     PyToken( const PyToken& oth );
     // move c'tor
-    PyToken(PyToken&& oth)  = delete;
+    //PyToken(PyToken&& oth)  = delete;
     /*
     : PyToken(oth.mValue) {
         std::swap(*this, oth);
         PyDecRef(&oth);
     } */
     // copy assignment
-    PyToken& operator=(PyToken oth) = delete;
+    //PyToken& operator=(PyToken oth) = delete;
     /*
     {
         std::swap(*this, oth);
@@ -626,7 +619,7 @@ public:
     } */
 
     // move assignment
-    PyToken& operator= (PyToken&& oth) = delete;
+    //PyToken& operator= (PyToken&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -661,11 +654,11 @@ public:
     // copy c'tor
     PyTuple( const PyTuple& oth );
     // move c'tor
-    PyTuple(PyTuple&& oth) = delete;
+    //PyTuple(PyTuple&& oth) = delete;
     // copy assignment
     PyTuple& operator= (const PyTuple& oth);
     // move assignment
-    PyTuple& operator= (PyTuple&& oth) = delete;
+    //PyTuple& operator= (PyTuple&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -698,10 +691,11 @@ public:
         PyRep** rep = &items.at( index );
 
         PySafeDecRef( *rep );
-        if (object == nullptr)
+        if (object == nullptr) {
             *rep = new PyNone();
-        else
+        } else {
             *rep = object;
+        }
         PyIncRef( *rep );
     }
 
@@ -732,11 +726,11 @@ public:
     // copy c'tor
     PyList( const PyList& oth );
     // move c'tor
-    PyList(PyList&& oth) = delete;
+    //PyList(PyList&& oth) = delete;
     // copy assignment
     PyList& operator= (const PyList& oth);
     // move assignment
-    PyList& operator= (PyList&& oth) = delete;
+    //PyList& operator= (PyList&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -769,10 +763,11 @@ public:
         PyRep** rep = &items.at( index );
 
         PySafeDecRef( *rep );
-        if (object == nullptr)
+        if (object == nullptr) {
             *rep = new PyNone();
-        else
+        } else {
             *rep = object;
+        }
         PyIncRef( *rep );
     }
     /**
@@ -837,11 +832,11 @@ public:
     // copy c'tor
     PyDict( const PyDict& oth );
     // move c'tor
-    PyDict(PyDict&& oth) = delete;
+    //PyDict(PyDict&& oth) = delete;
     // copy assignment
     PyDict& operator= (const PyDict& oth);
     // move assignment
-    PyDict& operator= (PyDict&& oth) = delete;
+    //PyDict& operator= (PyDict&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -914,11 +909,11 @@ public:
     // copy c'tor
     PyObject( const PyObject& oth );
     // move c'tor
-    PyObject(PyObject&& oth) = delete;
+    //PyObject(PyObject&& oth) = delete;
     // copy assignment
     PyObject& operator= (const PyObject& oth);
     // move assignment
-    PyObject& operator= (PyObject&& oth) = delete;
+    //PyObject& operator= (PyObject&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -956,11 +951,11 @@ public:
     // copy c'tor
     PyObjectEx( const PyObjectEx& oth );
     // move c'tor
-    PyObjectEx(PyObjectEx&& oth) = delete;
+    //PyObjectEx(PyObjectEx&& oth) = delete;
     // copy assignment
     PyObjectEx& operator= (const PyObjectEx& oth);
     // move assignment
-    PyObjectEx& operator= (PyObjectEx&& oth) = delete;
+    //PyObjectEx& operator= (PyObjectEx&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -1053,11 +1048,11 @@ public:
     // copy c'tor
     PyPackedRow( const PyPackedRow& oth );
     // move c'tor
-    PyPackedRow(PyPackedRow&& oth) = delete;
+    //PyPackedRow(PyPackedRow&& oth) = delete;
     // copy assignment
     PyPackedRow& operator= (const PyPackedRow& oth);
     // move assignment
-    PyPackedRow& operator= (PyPackedRow&& oth) = delete;
+    //PyPackedRow& operator= (PyPackedRow&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -1092,11 +1087,11 @@ public:
     // copy c'tor
     PySubStruct( const PySubStruct& oth );
     // move c'tor
-    PySubStruct(PySubStruct&& oth) = delete;
+    //PySubStruct(PySubStruct&& oth) = delete;
     // copy assignment
-    PySubStruct& operator= (const PySubStruct& oth) = delete;
+    //PySubStruct& operator= (const PySubStruct& oth) = delete;
     // move assignment
-    PySubStruct& operator= (PySubStruct&& oth) = delete;
+    //PySubStruct& operator= (PySubStruct&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -1118,11 +1113,11 @@ public:
     // copy c'tor
     PySubStream( const PySubStream& oth );
     // move c'tor
-    PySubStream(PySubStream&& oth) = delete;
+    //PySubStream(PySubStream&& oth) = delete;
     // copy assignment
-    PySubStream& operator= (const PySubStream& oth) = delete;
+    //PySubStream& operator= (const PySubStream& oth) = delete;
     // move assignment
-    PySubStream& operator= (PySubStream&& oth) = delete;
+    //PySubStream& operator= (PySubStream&& oth) = delete;
 
 
     PyRep* Clone() const;
@@ -1152,11 +1147,11 @@ public:
     // copy c'tor
     PyChecksumedStream( const PyChecksumedStream& oth );
     // move c'tor
-    PyChecksumedStream(PyChecksumedStream&& oth) = delete;
+    //PyChecksumedStream(PyChecksumedStream&& oth) = delete;
     // copy assignment
-    PyChecksumedStream& operator= (const PyChecksumedStream& oth) = delete;
+    //PyChecksumedStream& operator= (const PyChecksumedStream& oth) = delete;
     // move assignment
-    PyChecksumedStream& operator= (PyChecksumedStream&& oth) = delete;
+    //PyChecksumedStream& operator= (PyChecksumedStream&& oth) = delete;
 
 
     PyRep* Clone() const;
