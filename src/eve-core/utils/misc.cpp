@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan
 */
 
 // { backtrace, backtrace_symbols, backtrace_symbols_fd } header file.
@@ -290,6 +291,21 @@ double EvE::trunicate2(double dig)
     return ret;
     //return (double)((int)dig*100)/100;
 }
+
+bool EvE::AlmostEquals(float mine, float hers, uint8 precision/*5*/)
+{
+    int32 first = fabs(mine) * std::pow(10, precision);
+    int32 second = fabs(hers) * std::pow(10, precision);
+    return (first == second);
+}
+
+bool EvE::AlmostEquals(double mine, double hers, uint8 precision/*10*/)
+{
+    int64 first = fabs(mine) * std::pow(10, precision);
+    int64 second = fabs(hers) * std::pow(10, precision);
+    return (first == second);
+}
+
 
 std::string EvE::getExecPath()
 {

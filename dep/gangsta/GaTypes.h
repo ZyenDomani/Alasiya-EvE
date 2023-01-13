@@ -170,6 +170,7 @@ public:
     }
 
     // transform position to unit vector
+    // returns length
     GaExpInl GaFloat normalize()
     {
         GaFloat len = length();

@@ -42,10 +42,10 @@ SET( log_SOURCE
 
 SET( math_INCLUDE
      "${TARGET_INCLUDE_DIR}/math/gpoint.h"
-     "${TARGET_INCLUDE_DIR}/math/Trig.h")
-     #"${TARGET_INCLUDE_DIR}/math/Vector3D.h")
+     "${TARGET_INCLUDE_DIR}/math/Trig.h" )
+     #"${TARGET_INCLUDE_DIR}/math/Vec3.h" )
 SET( math_SOURCE
-     #"${TARGET_SOURCE_DIR}/math/Vector3D.cpp"
+     #"${TARGET_SOURCE_DIR}/math/Vec3.cpp" 
      )
 
 SET( memory_INCLUDE
@@ -82,6 +82,7 @@ SET( utils_INCLUDE
      "${TARGET_INCLUDE_DIR}/utils/Deflate.h"
      "${TARGET_INCLUDE_DIR}/utils/DirWalker.h"
      "${TARGET_INCLUDE_DIR}/utils/FastInt.h"
+     "${TARGET_INCLUDE_DIR}/utils/GoogleTest.h"
      "${TARGET_INCLUDE_DIR}/utils/Lock.h"
      "${TARGET_INCLUDE_DIR}/utils/misc.h"
      "${TARGET_INCLUDE_DIR}/utils/Seperator.h"

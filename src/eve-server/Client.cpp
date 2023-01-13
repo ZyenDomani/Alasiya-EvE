@@ -213,8 +213,7 @@ bool Client::ProcessNet()
 
     // cleanup
     SafeDelete(p);
-    // send queue
-    /** @note   testing this on 1Hz tic */
+    // send update queue
     _SendQueuedUpdates();
 
     return true;
@@ -530,9 +529,6 @@ void Client::ProcessClient() {
             }
             pShipSE->ApplyBoost(bData);
         }
-
-    /** @note   testing this on 1Hz tic */
-    //_SendQueuedUpdates();
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::client, GetTimeUSeconds() - profileStartTime);

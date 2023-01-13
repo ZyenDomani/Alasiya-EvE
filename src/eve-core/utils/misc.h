@@ -21,10 +21,12 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan
 */
 
 #ifndef __MISC_H__INCL__
 #define __MISC_H__INCL__
+
 #include <eve-compat.h>
 
 /**
@@ -117,6 +119,11 @@ namespace EvE {
     const char* FormatTime(double time=-1);
 
     double trunicate2(double dig=0);
+
+    // floating point comparison to 'precision' places
+    bool AlmostEquals(float mine, float hers, uint8 precision=5);
+    // floating point comparison to 'precision' places
+    bool AlmostEquals(double mine, double hers, uint8 precision=10);
 
     // methods to print stack trace with file:line
     std::string getExecPath();

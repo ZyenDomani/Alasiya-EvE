@@ -151,20 +151,20 @@ bool SystemManager::BootSystem() {
         return false;
     }
 
-    // check for operational static entities which need to be initialized (such as sovereignty structures)
-    for (auto cur: m_opStaticEntities)
-        if (cur.second ->IsTCUSE()) {
-            cur.second->GetTCUSE()->Init();
-        } else if (cur.second ->IsSBUSE()) {
-            cur.second->GetSBUSE()->Init();
-        } else if (cur.second ->IsIHubSE()) {
-            cur.second->GetIHubSE()->Init();
-        }
-
     // system is loaded.  check for items that need initialization
     for (auto cur : m_ticEntities)
         if (cur.second->IsPOSSE())
             cur.second->GetPOSSE()->Init();
+
+    // check for operational static entities which need to be initialized (such as sovereignty structures)
+    for (auto cur: m_opStaticEntities)  {
+        if (cur.second->IsTCUSE())
+            cur.second->GetTCUSE()->Init();
+        if (cur.second->IsSBUSE())
+            cur.second->GetSBUSE()->Init();
+        if (cur.second->IsIHubSE())
+            cur.second->GetIHubSE()->Init();
+    }
 
     // check planets for colony/customs office
     /* does not work as intended
@@ -182,7 +182,7 @@ bool SystemManager::BootSystem() {
     m_services.lsc_service->CreateSystemChannel(m_data.constellationID);
     m_services.lsc_service->CreateSystemChannel(m_data.systemID);
 
-    // inform MarketBot of loaded system and stations in this system.
+    // inform MarketBot of loaded system and its stations
     //sMktBotMgr.AddSystem();
 
     // set system active for system status page
@@ -220,44 +220,55 @@ bool SystemManager::LoadCosmicMgrs()
     return true;
 }
 
-//called once per second from EntityList. (1Hz Tic)
+//called on 1Hz tic from EntityList.
 bool SystemManager::ProcessTic() {
     double profileStartTime(GetTimeUSeconds());
 
     /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid
-     *      when SE->Process() returns because Process() will add/remove from the map as needed
+     * when SE->Process() returns because Process() will add/remove from the map as needed
      *      (new objects, destroyed objects, moved objects, etc)
-     *  std::map internally orders items by key(itemID here), so use an int var to hold last-processed itemID (mLast).
+     *  std::map internally orders items by key(itemID here), so use var to hold last-processed itemID (mLast).
      *  when iteration starts over, increment until cur > mLast and continue from there to end of list.
+     * note:  this will get expensive for many items (like ship tracking)
      */
     std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin();
     uint32 mLast(0);
     while (itr != m_ticEntities.end()) {
-        if (mLast >= itr->first) {
-            ++itr;
-            continue;
-        }
+        mLast = itr->first;
 
-         /* main process call. */
-        mLast = itr->first;     // not sure if this will slow this down or not.  check profile
+        /* main process call. */
         itr->second->Process();
 
+        // something in the list has changed.
+        // usually, it is NOT the cur SE here...
+        // this entity has killed, popped, removed, depleted, etc the entity that has changed the list.
         if (m_entityChanged) {
             m_entityChanged = false;
-            itr = m_ticEntities.begin();
-            continue;
+            //at this point, iterator is still valid UNLESS it is the item being deleted.
+            // will need more testing  but using .find() is MUCH faster than iterating thru entire list as previously coded
+            itr = m_ticEntities.find(mLast);
+
+            if (itr == m_ticEntities.end()) {
+                // cur SE is the iterator being deleted.  make note and break out.
+                // NOTE:  do NOT start over here, as that will allow all previous SE a second action in this tic.
+                sLog.Error("SysMgr", "list changed and mLast=end()");
+                break;
+            }
         }
+
+        // move on to next one.
         ++itr;
     }
 
     // tic for sov structures (as they aren't in ticEntities)
-    for (auto cur : m_opStaticEntities)
+    for (auto cur : m_opStaticEntities) {
         if (cur.second->IsTCUSE())
             cur.second->GetTCUSE()->Process();
-        else if (cur.second ->IsSBUSE())
+        if (cur.second ->IsSBUSE())
             cur.second->GetSBUSE()->Process();
-        else if (cur.second ->IsIHubSE())
+        if (cur.second ->IsIHubSE())
             cur.second->GetIHubSE()->Process();
+    }
 
     // check bounty timer
     if (m_bountyTimer.Check(sConfig.server.BountyPayoutDelayed))
@@ -271,7 +282,7 @@ bool SystemManager::ProcessTic() {
 
     // process planets for PI
     if (m_minutetimer.Check()) {
-        //++m_minutes;  // not used at this time
+        ++m_minutes;  // not used at this time
         for (auto cur : m_planetMap)
             cur.second->Process();
     }
@@ -1532,7 +1543,7 @@ void SystemManager::GetClientList(std::vector< Client* >& cVec)
         cVec.push_back(cur.second);
 }
 
-void SystemManager::DScan(int64 range, const GPoint& pos, std::vector<SystemEntity*>& vector )
+void SystemManager::DScan(int64 range, const GPoint& position, std::vector<SystemEntity*>& vector )
 {
     /** @todo finish this for correct dscan entity reporting
      * all ships (not cloaked)
@@ -1550,7 +1561,7 @@ void SystemManager::DScan(int64 range, const GPoint& pos, std::vector<SystemEnti
      * AttrDScanImmune is from rhea expansion.  may be able to implement here.
      */
 
-    //  TO CHECK...does scan settings alter this or is entirely client-side?
+    //  TO CHECK...do scan settings alter this or is entirely client-side?
     for (auto cur : m_entities) {
         // these dont show on dscan
         if (IsTempItem(cur.first))
@@ -1572,7 +1583,7 @@ void SystemManager::DScan(int64 range, const GPoint& pos, std::vector<SystemEnti
             if (cur.second->DestinyMgr()->IsCloaked())
                 continue;
         // made it this far.  add item to scan list
-        if (pos.distance(cur.second->GetPosition()) < range)
+        if (position.distance(cur.second->GetPosition()) < range)
             vector.push_back(cur.second);
     }
 }
@@ -1661,7 +1672,7 @@ void SystemManager::UpdateData()
     MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
 
     uint16 jumps = 0;
-    uint16 stamp = sEntityList.GetStamp() -60;
+    uint16 stamp = sEntityList.GetStamp() - 60;
     std::map<uint32, uint8>::iterator itr = m_jumpMap.begin();
     while (itr != m_jumpMap.end()) {
         if (itr->first < stamp) {
@@ -1681,7 +1692,9 @@ void SystemManager::UpdateData()
         if (m_activityTime == 0)
             if (m_clients.empty())
                 if (m_jumpMap.empty())
-                    m_activityTime = sEntityList.GetStamp() -50;
+                    m_activityTime = sEntityList.GetStamp() - 50;
+
+    // this needs work....current profile shows ~2s time on current code
     ManipulateTimeData();
 }
 
@@ -1710,7 +1723,33 @@ void SystemManager::ManipulateTimeData()
 
     //if (m_killData.killsDateTime < timeNow)
 
-    MapDB::UpdateKillData(m_data.systemID, m_killData);
+    // disabled for now...crazy profile times from this....
+    /** @todo ...
+     * 10:40:07 W   Profile Manager: Long Profile Time on key DB, time 1960.498ms.  <<-- !!!  2 sec???
+     * backtrace() returned 11 addresses
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN3EvE10traceStackEv+0x27) [0x1185e22]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN8Profiler7AddTimeEhd+0x100) [0xadcb7a]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6DBcore14DoQuery_lockedER7DBerrorPKcib+0x313) [0x117d0fb]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6DBcore8RunQueryER7DBerrorPKcz+0x106) [0x117ca60]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN5MapDB14UpdateKillDataEjR14SystemKillData+0x11d) [0xd96d05]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager18ManipulateTimeDataEv+0x41) [0xf865af]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager10UpdateDataEv+0x17e) [0xf863be]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList7ProcessEv+0x5e6) [0xabfcc2]
+     *
+     * 10:50:08 W   Profile Manager: Long Profile Time on key DB, time 2135.552ms.
+     * backtrace() returned 11 addresses
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN3EvE10traceStackEv+0x27) [0x1185e22]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN8Profiler7AddTimeEhd+0x100) [0xadcb7a]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6DBcore14DoQuery_lockedER7DBerrorPKcib+0x313) [0x117d0fb]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6DBcore8RunQueryER7DBerrorPKcz+0x106) [0x117ca60]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN5MapDB14UpdateKillDataEjR14SystemKillData+0x11d) [0xd96d05]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager18ManipulateTimeDataEv+0x41) [0xf865af]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager10UpdateDataEv+0x17e) [0xf863be]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList7ProcessEv+0x5e6) [0xabfcc2]
+     *
+     */
+
+    //MapDB::UpdateKillData(m_data.systemID, m_killData);
 }
 
 void SystemManager::GetDockedCount()

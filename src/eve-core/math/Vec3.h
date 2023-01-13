@@ -30,41 +30,50 @@
 #ifndef VECTOR3D_H
 #define	VECTOR3D_H
 
-#include "utils/misc.h"
 
-#include <math.h>
+#include "../utils/misc.h"
 
-class Vector3D
+
+class Vec3
 {
 public:
     double x, y, z;
 
-    Vector3D()
+    Vec3()
     {
-        x = y = z = 0;
+        x = 0;
+        y = 0;
+        z = 0;
     }
 
-    Vector3D(double nx, double ny, double nz)
+    Vec3(double nx, double ny, double nz)
     {
         x = nx;
         y = ny;
         z = nz;
     }
 
-    Vector3D(const Vector3D &v)
+    Vec3(const Vec3 &v)
     {
         x = v.x;
         y = v.y;
         z = v.z;
     }
 
+    Vec3(const Vec3 &from, const Vec3 &to)
+    {
+        x = (to.x - from.x);
+        y = (to.y - from.y);
+        z = (to.z - from.z);
+    }
+
     /**
      * Return a copy of the vector.
      * @return The copy of the vector.
      */
-    Vector3D copy() const
+    Vec3 copy() const
     {
-        return Vector3D(*this);
+        return Vec3(*this);
     }
 
     /**
@@ -95,7 +104,7 @@ public:
      * @note If both Vectors are unit Vectors then the result is the cosine of the angle between them.
      * otherwise it's scaled by the product of there lengths.
      */
-    double dotProduct(const Vector3D &v) const;
+    double dotProduct(const Vec3 &v) const;
 
     /**
      * Calculate the cross product of this vector and the provided vector.
@@ -104,14 +113,14 @@ public:
      * @note The resultant vector is perpendicular to a plane formed by the two vectors.
      * @note The magnitude of the result is the area formed by the parallelogram of the two vectors.
      */
-    Vector3D crossProduct(const Vector3D &v) const;
+    Vec3 crossProduct(const Vec3 &v) const;
 
     /**
      * Calculate the reflection vector for a surface with the specified normal.
      * @param norm The surface normal of the surface to reflect from.
      * @return The reflection vector.
      */
-    Vector3D reflection(Vector3D norm) const;
+    Vec3 reflection(Vec3 norm) const;
 
     /**
      * Calculate the refraction vector for a surface with the specified normal.
@@ -119,7 +128,7 @@ public:
      * @param fact The refraction factor.
      * @return The refraction vector.
      */
-    Vector3D refraction(Vector3D norm, double fact) const;
+    Vec3 refraction(Vec3 norm, double fact) const;
 
     /**
      * Set the values of the vector.
@@ -132,33 +141,33 @@ public:
      * Set the values of the vector.
      * @param v The new value for the vector.
      */
-    void set(const Vector3D &v);
+    void set(const Vec3 &v);
 
-    bool operator==(const Vector3D &v)
+    bool operator==(const Vec3 &v)
     {
         return v.x == x && v.y == y && v.z == z;
     }
-    bool operator!=(const Vector3D &v)
+    bool operator!=(const Vec3 &v)
     {
         return v.x != x || v.y != y || v.z != z;
     }
 
-    Vector3D& operator=(const Vector3D &v);
+    Vec3& operator=(const Vec3 &v);
 
-    Vector3D operator+(const Vector3D &v) const;
-    Vector3D& operator+=(const Vector3D &v);
-    Vector3D operator-(const Vector3D &v) const;
-    Vector3D& operator-=(const Vector3D &v);
-    Vector3D operator*(const Vector3D &v) const;
-    Vector3D& operator*=(const Vector3D &v);
-    Vector3D operator/(const Vector3D &v) const;
-    Vector3D& operator/=(const Vector3D &v);
+    Vec3 operator+(const Vec3 &v) const;
+    Vec3& operator+=(const Vec3 &v);
+    Vec3 operator-(const Vec3 &v) const;
+    Vec3& operator-=(const Vec3 &v);
+    Vec3 operator*(const Vec3 &v) const;
+    Vec3& operator*=(const Vec3 &v);
+    Vec3 operator/(const Vec3 &v) const;
+    Vec3& operator/=(const Vec3 &v);
 
-    //scale the Vector3D
-    Vector3D operator*(const double &k) const;
-    Vector3D& operator*=(const double &k);
-    Vector3D operator/(const double &k) const;
-    Vector3D& operator/=(const double &k);
+    //scale the Vec3
+    Vec3 operator*(const double &k) const;
+    Vec3& operator*=(const double &k);
+    Vec3 operator/(const double &k) const;
+    Vec3& operator/=(const double &k);
 
     bool isNotZero()
     {

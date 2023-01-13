@@ -235,7 +235,7 @@ void EntityList::Process() {
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
         while (itr != m_systems.end()) {
             if (itr->second == nullptr) { /* this shouldnt happen.  log error to make note */
-                sLog.Error(" EntityList::Proc", "Deleting System %u", itr->first);
+                sLog.Error(" EntityList::Proc", "Deleting System %u because itr->second=nullptr", itr->first);
                 itr = m_systems.erase(itr);
                 continue;
             } else if (!itr->second->ProcessTic()) {    /* Process each loaded system */
@@ -268,7 +268,7 @@ void EntityList::Process() {
                 sConsole.UpdateStatus();
             }
             if (m_minutes % 60 == 0) { // ~1h
-                MapDB::ManipulateTimeData();
+                MapDB::ManipulateTimeData();    // not used - does nothing at this time
                 sMktMgr.Process();  // not used - does nothing at this time
             }
         }

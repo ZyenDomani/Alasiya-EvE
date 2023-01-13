@@ -358,19 +358,19 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
     DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
     GPoint heading(dm->GetHeading());
 
-    char reply[300];
-    snprintf(reply, 300,
+    char reply[350];
+    snprintf(reply, 350,
              "Destiny Variable List for %s<br><br>" //60
-             "ShipID: %u<br>"
+             "ShipID: %u<br>" //28
              "Mass: %.2f<br>" //28
-             "AlignTime: %.2f<br>" //27
+             "AlignTime: %.3f<br>" //27
              "AccelTime: %.2f<br>"
              "MaxSpeed: %.2f<br>" //27
              "WarpSpeed: %.2f<br>" //27
-             "WarpTime: %.2f<br>" //27
+             "WarpTime: %.3f<br>" //27
              "WarpDropSpeed: %.2f<br>" //27
              "Radius: %.2f<br>" //27
-             "CapNeed: %.2f<br>" //27
+             "CapNeed: %.8f<br>" //27
              "Agility: %.3f<br>" //27
              "Inertia: %.3f<br>" //27
              "Heading: %.3f,%.3f,%.3f<br>", //21

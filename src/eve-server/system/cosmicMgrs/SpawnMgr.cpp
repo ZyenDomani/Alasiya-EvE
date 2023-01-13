@@ -749,8 +749,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
                 se.stamp = sEntityList.GetStamp(); // set time of this spawn for ??
             }
             m_spawns.emplace(pBubble->GetID(), se);
-            _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry with ID %u to m_spawns. Class: %s, Group:%s, Level: %u.", \
-                        se.spawnID, GetSpawnClassName(se.spawnClass).c_str(), GetSpawnGroupName(se.spawnGroup).c_str(), level);
+            _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry for %s with ID %u to m_spawns. Class: %s, Group:%s, Level: %u.", \
+                iRef->name(), se.spawnID, GetSpawnClassName(se.spawnClass).c_str(), GetSpawnGroupName(se.spawnGroup).c_str(), level);
         }
     }
 
