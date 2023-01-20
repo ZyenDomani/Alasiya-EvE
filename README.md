@@ -5,7 +5,7 @@
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/23808/badge.svg"/>
 </a>
-<a href="https://www.codefactor.io/repository/github/zhyrohaad/alasiya-eve"><img src="https://www.codefactor.io/repository/github/zhyrohaad/alasiya-eve/badge?s=9a1e60e42db9f8dd8af5c62252dc034812fede32" alt="CodeFactor" /></a>
+<a href="https://www.codefactor.io/repository/github/zyendomani/alasiya-eve"><img src="https://www.codefactor.io/repository/github/zyendomani/alasiya-eve/badge?s=633e0a6e1d656f3e4783924a400a34261abe49f4" alt="CodeFactor" /></a>
 
 # Status
 - ~65% functional.  see http://evemu.alasiya.net/?p=op_status for more info
