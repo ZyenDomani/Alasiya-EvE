@@ -1,9 +1,9 @@
 ***   tested under Mageia 5  GCC 4.9.2  GLIBC 2.2     ***
 
 
-<a href="https://scan.coverity.com/projects/zhyrohaad-alasiyaeve">
+<a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
   <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/23808/badge.svg"/>
+       src="https://scan.coverity.com/projects/27332/badge.svg"/>
 </a>
 <a href="https://www.codefactor.io/repository/github/zyendomani/alasiya-eve"><img src="https://www.codefactor.io/repository/github/zyendomani/alasiya-eve/badge?s=633e0a6e1d656f3e4783924a400a34261abe49f4" alt="CodeFactor" /></a>
 
