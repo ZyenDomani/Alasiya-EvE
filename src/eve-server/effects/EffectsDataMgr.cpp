@@ -31,8 +31,9 @@ FxDataMgr::~FxDataMgr()
 
 int FxDataMgr::Initialize()
 {
+    double start = GetTimeMSeconds();
     Populate();
-    sLog.Blue("        FxDataMgr", "Effects Data Manager Initialized.");
+    sLog.Blue("        FxDataMgr", "Effects Data Manager Initialized in %.2fms", GetTimeMSeconds() - start);
     return 1;
 }
 

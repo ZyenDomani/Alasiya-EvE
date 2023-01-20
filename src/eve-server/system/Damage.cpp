@@ -283,11 +283,12 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
 
         Killed(damage);  // this must NOT remove dead SE from system. (except base class)
+
         if (!IsSystemEntity())
             SystemEntity::Killed(damage); // this removes dead SE from system then deletes itemRef and all its contents
     } else {
         /**
-         * ALL dmg msgs working  22Apr15 (hacked - found the actual msgIDs)
+         * ALL dmg msgs working  22Apr15 (was hacked - found the actual msgIDs)
          * fixed msgIDs and removed xmlp  - 15Sept19
          * @todo  still need to check/add detailed dmg msgs
          */
@@ -304,7 +305,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                 tuple->SetItem(2, dict);
             GetPilot()->QueueDestinyEvent(&tuple);
         }
-        // should these be bubblecast?  would be a SHITTON of data on wire 
+        // should these be bubblecast?  would be a SHITTON of data on wire
         if (damage.srcSE->HasPilot()) {
             //notify to player of damage done:
             PyDict* dict = new PyDict();

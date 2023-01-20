@@ -297,7 +297,7 @@ StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManag
     // Create default dynamic attributes in the AttributeMap:
     station->SetAttribute(AttrOnline,             EvilOne, false);
     station->SetAttribute(AttrCapacity,           STATION_HANGAR_MAX_CAPACITY, false);
-    station->SetAttribute(AttrInertia,            EvilOne, false);
+    station->SetAttribute(AttrInertiaMod,            EvilOne, false);
     station->SetAttribute(AttrDamage,             EvilZero, false);
     station->SetAttribute(AttrShieldCapacity,     20000000.0, false);
     station->SetAttribute(AttrShieldCharge,       station->GetAttribute(AttrShieldCapacity), false);

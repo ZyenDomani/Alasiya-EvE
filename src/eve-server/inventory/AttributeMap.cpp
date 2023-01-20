@@ -308,6 +308,18 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify
 
 EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
 {
+    if ((attrID == AttrAgilityMultiplier)
+    or (attrID == AttrAgilityBonus)
+    or (attrID == AttrAgility)
+    or (attrID == AttrTurnAngle)
+    or (attrID == AttrAdvancedAgility)
+    or (attrID == AttrActivationTargetLoss)
+    or (attrID == AttrAdvancedCapitalAgility)
+    or (attrID == AttrNewAgility)) {
+        sLog.Warning("AttrMap - Change", "Attribute %u called.  printing stacktrace.", attrID);
+        EvE::traceStack();
+    }
+
     AttrMapConstItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end())
         return itr->second;
@@ -338,6 +350,18 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
     // check for internal skill time data
     if (attrID == AttrStartTime)
         return true;
+
+    if ((attrID == AttrAgilityMultiplier)
+    or (attrID == AttrAgilityBonus)
+    or (attrID == AttrAgility)
+    or (attrID == AttrTurnAngle)
+    or (attrID == AttrAdvancedAgility)
+    or (attrID == AttrActivationTargetLoss)
+    or (attrID == AttrAdvancedCapitalAgility)
+    or (attrID == AttrNewAgility)) {
+        sLog.Warning("AttrMap - Change", "Attribute %u called.  printing stacktrace.", attrID);
+        EvE::traceStack();
+    }
     // check for changes
     if (old_val == new_val)
         return true;
@@ -393,6 +417,18 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
 bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
     if (attrID == AttrStartTime)
         return true;
+
+    if ((attrID == AttrAgilityMultiplier)
+    or (attrID == AttrAgilityBonus)
+    or (attrID == AttrAgility)
+    or (attrID == AttrTurnAngle)
+    or (attrID == AttrAdvancedAgility)
+    or (attrID == AttrActivationTargetLoss)
+    or (attrID == AttrAdvancedCapitalAgility)
+    or (attrID == AttrNewAgility)) {
+        sLog.Warning("AttrMap - Add", "Attribute %u called.  printing stacktrace.", attrID);
+        EvE::traceStack();
+    }
 
     if ((mItem.ownerID() == 1)
     and (!IsCharacterID(mItem.itemID())))
@@ -486,12 +522,13 @@ void AttributeMap::CopyAttributes(std::map< uint16, EvilNumber >& attrMap)
 
 void AttributeMap::SaveShipState()
 {
+    // do we need to save others for persistence here?
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "REPLACE INTO entity_attributes ";
     Inserts << " (itemID, attributeID, valueInt, valueFloat) VALUES";
     bool save(false);
-    AttrMap::iterator cur = mAttributes.find(AttrShieldCharge);
+    AttrMap::iterator cur = mAttributes.find(AttrCapacitorCharge);
     if (cur != mAttributes.end()) {
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
@@ -501,7 +538,7 @@ void AttributeMap::SaveShipState()
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }
     }
-    cur = mAttributes.find(AttrArmorDamage);
+    cur = mAttributes.find(AttrShieldCharge);
     if (cur != mAttributes.end()) {
         if (save)
             Inserts << ",";
@@ -514,6 +551,18 @@ void AttributeMap::SaveShipState()
         }
     }
     cur = mAttributes.find(AttrDamage);
+    if (cur != mAttributes.end()) {
+        if (save)
+            Inserts << ",";
+        save = true;
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_double() << ")";
+        }
+    }
+    cur = mAttributes.find(AttrArmorDamage);
     if (cur != mAttributes.end()) {
         if (save)
             Inserts << ",";

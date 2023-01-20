@@ -194,16 +194,20 @@ void ShipItem::InitAttribs()
     // Create default dynamic attributes in the AttributeMap
     SetAttribute(AttrOnline,                            EvilOne, false);
     SetAttribute(AttrVolume,                            GetPackagedVolume(), false);
-    SetAttribute(AttrMass,                              type().mass());
+    SetAttribute(AttrMass,                              type().mass(), false);
+    SetAttribute(AttrRadius,                            type().radius(), false);
     SetAttribute(AttrCpuLoad,                           EvilZero, false);
     SetAttribute(AttrPowerLoad,                         EvilZero, false);
     // rig shit
     SetAttribute(AttrUpgradeLoad,                       EvilZero, false);
+    // set ship agility
+    float agility = type().mass() * GetAttribute(AttrInertiaMod).get_float();
+    SetAttribute(AttrAgility, agility, false);
 
     // Check for existence of attributes.  if not loaded then set them to default values:
     if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, EvilZero, false);
     if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, EvilZero, false);
-    // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
+    // shield and cap are part of persistence, and loaded on attrib map initialization.  check for and set to full if no saved value found
     if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrShieldCharge,  GetAttribute(AttrShieldCapacity), false);
     if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrCapacitorCharge,  GetAttribute(AttrCapacitorCapacity), false);
     if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((float)BUBBLE_RADIUS_METERS), false);
@@ -1129,7 +1133,7 @@ void ShipItem::ProcessHeat()
     double start = GetTimeUSeconds();
     float heat(0.0f);
     // heat loop
-    for (uint16 i = AttrHeatHi; i < AttrHeatLow + 1; ++i) {
+    for (uint16 i = AttrHeatHi; i < AttrHeatLow + 1; i++) {
         heat = GetAttribute(i).get_float();
         // the ordering here is important
         //heat -= log(-(heat + 1));
@@ -2590,14 +2594,14 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         }
     into.Append( head);
     MassSector mass = MassSector();
-        mass.mass = m_destiny->GetMass();
+        mass.mass = m_self->GetAttribute(AttrMass).get_double();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass);
     DataSector data = DataSector();
-        data.inertia = m_destiny->GetInertia();
+        data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
         data.maxSpeed = m_destiny->GetMaxVelocity();
         data.velX = m_destiny->GetVelocity().x;
         data.velY = m_destiny->GetVelocity().y;
@@ -2735,7 +2739,7 @@ void ShipSE::RemoveBoost()
     _log( FLEET__TRACE, "ShipSE::RemoveBoost() - %s(%u)", GetName(), GetID());
 
     m_shipRef->SetAttribute(AttrArmorHP, m_oldArmor);
-    m_shipRef->SetAttribute(AttrInetia, m_oldInertia);
+    m_shipRef->SetAttribute(AttrInertiaMod, m_oldInertia);
     m_shipRef->SetAttribute(AttrShieldCapacity, m_oldShield);
     m_shipRef->SetAttribute(AttrScanResolution, m_oldScanRes);
     m_shipRef->SetAttribute(AttrMaxTargetRange, m_oldTargetRange);
@@ -2757,7 +2761,7 @@ void ShipSE::ApplyBoost(BoostData& bData)
 
     m_boost             = bData;
     m_oldArmor          = m_shipRef->GetAttribute(AttrArmorHP).get_uint32();
-    m_oldInertia        = m_shipRef->GetAttribute(AttrInetia).get_float();
+    m_oldInertia        = m_shipRef->GetAttribute(AttrInertiaMod).get_float();
     m_oldShield         = m_shipRef->GetAttribute(AttrShieldCapacity).get_uint32();
     m_oldScanRes        = m_shipRef->GetAttribute(AttrScanResolution).get_uint32();
     m_oldTargetRange    = m_shipRef->GetAttribute(AttrMaxTargetRange).get_uint32();
@@ -2768,13 +2772,14 @@ void ShipSE::ApplyBoost(BoostData& bData)
     uint32 targRange    = m_oldTargetRange * (1.0f + (0.02f * m_boost.info));// 2% increase/level
     float inertia       = m_oldInertia     * (1.0f - (0.02f * m_boost.skirmish));// 2% decrease/level
 
-    m_shipRef->SetAttribute(AttrInetia, inertia);   // lower inertia = lower agility = faster ship
+    m_shipRef->SetAttribute(AttrInertiaMod, inertia);   // lower inertia = lower agility = faster ship
     m_shipRef->SetAttribute(AttrArmorHP, armorHP);
     m_shipRef->SetAttribute(AttrScanResolution, scanRes);  // higher scanRes = faster targeting
     m_shipRef->SetAttribute(AttrShieldCapacity, shieldHP);
     m_shipRef->SetAttribute(AttrMaxTargetRange, targRange);
 
     m_destiny->UpdateShipVariables();
+    /** @todo anything that is currently using targRange or inertia will have to be reset after this */
 
     m_boosted = true;
 }

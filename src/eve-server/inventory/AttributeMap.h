@@ -45,6 +45,7 @@ public:
     ~AttributeMap() noexcept;
 
     void SetAttribute(uint16 attrID, EvilNumber& num, bool notify=true);
+    // used by Missiles and Modules
     void MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify=false);
 
     EvilNumber GetAttribute(const uint16 attrID) const;
@@ -117,9 +118,6 @@ protected:
     InventoryItem& mItem;
 
     AttrMap mAttributes;
-
-private:
-    InventoryDB m_db;
 
 };
 

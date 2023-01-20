@@ -110,7 +110,8 @@ public:
     /* public type queries  */
     uint16                  typeID() const              { return m_type.id(); }
     uint16                  groupID() const             { return m_type.groupID(); }
-    double                  radius() const              { return (HasAttribute(AttrRadius) ? GetAttribute(AttrRadius).get_double() : 1.0); }
+    double                  radius() const              { return (HasAttribute(AttrRadius) ? GetAttribute(AttrRadius).get_double() : m_type.radius()); }
+
     uint8                   categoryID() const          { return m_type.categoryID(); }
     bool                    isGlobal() const            { return (HasAttribute(AttrIsGlobal) ? GetAttribute(AttrIsGlobal).get_bool() : false); }
     bool                    IsOnline()                  { return GetAttribute(AttrOnline).get_bool(); }

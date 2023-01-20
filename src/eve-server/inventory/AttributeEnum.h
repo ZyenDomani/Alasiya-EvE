@@ -30,12 +30,12 @@
 
 enum EveAttrEnum {
     AttrOnline = 2,
-    AttrDamage = 3,
+    AttrDamage = 3,                                     // current hull damage this item has sustained
     AttrMass = 4,
     AttrStartTime = 5,                                  // filetime of when event started (or will start) - specific to Alasiya
     AttrCapacitorNeed = 6,                              //dischargeAttributeID in dgmEffects
     AttrMinRange = 8,                                   // only used by 22476 which is non-published
-    AttrHP = 9,
+    AttrHP = 9,                                         // total hull hp
     AttrPowerOutput = 11,
     AttrLowSlots = 12,
     AttrMedSlots = 13,
@@ -69,7 +69,7 @@ enum EveAttrEnum {
     AttrCapacitorBonus = 67,
     AttrShieldBonus = 68,
     AttrRateBonus = 69,
-    AttrInetia = 70,                                    // listed in db as "agility", this is actually Inertia, where agility is an internal variable
+    AttrInertiaMod = 70,                                // The Inertia Modifier of the object sent to client after mods
     AttrCapacityBonus = 72,
     AttrDuration = 73,                                  //durationAttributeID in dgmEffects
     AttrHpToCapacity = 75,                              // dunno what this is for
@@ -117,7 +117,7 @@ enum EveAttrEnum {
     AttrMainColor = 124,
     AttrShipScanRange = 125,                            //rangeAttributeID in dgmEffects
     AttrCargoScanRange = 126,                           //rangeAttributeID in dgmEffects
-    AttrAmmoLoaded = 127,
+    AttrAmmoLoaded = 127,                               // what is this???  module attr with ammo type here?
     // chargeSize is for ammo/crystals only (having this defined sets size tag on item pic)
     AttrChargeSize = 128,                               //1 = small, 2 = medium, 3 = large, 4 = xlarge
     AttrMaxPassengers = 129,
@@ -142,12 +142,12 @@ enum EveAttrEnum {
     AttrArmorHPMultiplier = 148,
     AttrCargoCapacityMultiplier = 149,
     AttrStructureHPMultiplier = 150,
-    AttrAgilityBonus = 151,
+    AttrAgilityBonus = 151,                             //Bonus to the agility for a ship  (effect 12003 - attr151 on char)
     AttrMaxPassengersBonus = 152,
     AttrWarpCapacitorNeed = 153,
     AttrProximityRange = 154,
     AttrIncapacitationRatio = 156,
-    AttrOrbitRange = 157,
+    AttrOrbitRange = 157,                               // is this NPC or Drone?
     AttrFalloff = 158,                                  //falloffAttributeID in dgmEffects
     AttrTrackingSpeed = 160,                            //trackingSpeedAttributeID in dgmEffects
     AttrVolume = 161,
@@ -158,7 +158,7 @@ enum EveAttrEnum {
     AttrMemory = 166,
     AttrPerception = 167,
     AttrWillpower = 168,
-    AttrAgilityMultiplier = 169,
+    AttrAgilityMultiplier = 169,                        //Multiplier to the agility of an object
     AttrCustomCharismaBonus = 170,
     AttrCustomWillpowerBonus = 171,
     AttrCustomPerceptionBonus = 172,
@@ -512,7 +512,7 @@ enum EveAttrEnum {
     AttrAnchoringDelay = 556,
     AttrMaxFlightTimeBonus = 557,
     AttrExplosionRangeBonus = 558,
-    AttrInertia = 559,
+    AttrAgility = 559,                                  // agility is the product of the Inertia Modifier and the mass of the ship, it determines how fast the ship can accelerate and how fast it can fly when orbiting.
     AttrCloakingTargetingDelay = 560,
     AttrShipBonusGB2 = 561,
     AttrEntityFactionLoss = 562,
@@ -578,8 +578,8 @@ enum EveAttrEnum {
     AttrEntityArmorRepairAmount = 631,
     AttrInterceptorGF = 632,
     AttrMetaLevel = 633,
-    AttrNewAgility = 634,
-    AttrTurnAngle = 635,
+    AttrNewAgility = 634,                               //Maximum "Thrust angle" for an object in Radians, 0 to pi (3.14).  ** dunno what this is for **
+    AttrTurnAngle = 635,                                //Maximum turn angle of a ship in Radians, 0 to pi (3.14). ** ditto **
     AttrEntityShieldBoostDuration = 636,
     AttrEntityShieldBoostAmount = 637,
     AttrEntityArmorRepairDelayChance = 638,
@@ -778,9 +778,9 @@ enum EveAttrEnum {
     AttrSquadronCommandBonus = 850,
     AttrShieldBoostCapacitorBonus = 851,
     AttrSiegeModeWarpStatus = 852,
-    AttrAdvancedAgility = 853,
+    AttrAdvancedAgility = 853,                          //Attribute on ship to make advanced command affect only ships that we want.
     AttrDisallowAssistance = 854,
-    AttrActivationTargetLoss = 855,
+    AttrActivationTargetLoss = 855,                     // what is this for?
     AttrAoeFalloffBonus = 857,
     AttrMissileEntityAoeCloudSizeMultiplier = 858,
     AttrMissileEntityAoeVelocityMultiplier = 859,
@@ -797,7 +797,7 @@ enum EveAttrEnum {
     AttrJumpDriveRangeBonus = 870,
     AttrJumpDriveDurationBonus = 871,
     AttrDisallowOffensiveModifiers = 872,
-    AttrAdvancedCapitalAgility = 874,
+    AttrAdvancedCapitalAgility = 874,                   //Attribute on ship to make advanced command affect only ships that we want.
     AttrDreadnoughtShipBonusA1 = 875,
     AttrDreadnoughtShipBonusA2 = 876,
     AttrDreadnoughtShipBonusC1 = 877,

@@ -21,8 +21,8 @@ struct Effect {
     bool isAssistance;
     bool disallowAutoRepeat;
     bool isWarpSafe;
-    uint16 effectID;
     uint8 effectState;
+    uint16 effectID;
     uint16 preExpression;
     uint16 postExpression;
     uint16 npcUsageChanceAttributeID;
@@ -153,7 +153,7 @@ namespace FX {
 
     namespace Action {  // this are coded and are applied on the fly as needed.
         enum {
-            Invalid               = 0,
+            Invalid                  = 0,
             ATTACK                   = 13,
             CARGOSCAN                = 14,
             CHEATTELEDOCK            = 15,
@@ -195,7 +195,7 @@ namespace FX {
     namespace Operands {
         enum {
             // @note  '//*' denotes implemented
-            ADD = 1,             //*
+            ADD = 1,
             AGGM = 2,            //*
             AGSM = 3,            //*
             AGORSM = 4,          //*
@@ -204,7 +204,7 @@ namespace FX {
             ALGM = 7,            //*
             ALM = 8,             //*
             ALRSM = 9,           //*
-            AND = 10,            //*
+            AND = 10,
             AORSM = 11,          //*
             ATT = 12,            //*
             ATTACK = 13,
@@ -219,7 +219,7 @@ namespace FX {
             DEFATTRIBUTE = 22,   //*
             DEFBOOL = 23,        //*
             DEFENVIDX = 24,      //*
-            DEFFLOAT = 25,       //*
+            DEFFLOAT = 25,
             DEFGROUP = 26,       //*
             DEFINT = 27,         //*
             DEFSTRING = 28,      //*
@@ -227,15 +227,15 @@ namespace FX {
             ECMBURST = 30,
             EFF = 31,            //*
             EMPWAVE = 32,
-            EQ = 33,             //*
+            EQ = 33,
             GA = 34,             //*
             GET = 35,            //*
             GETTYPE = 36,        //*
             GM = 37,             //*
-            GT = 38,             //*
-            GTE = 39,            //*
+            GT = 38,
+            GTE = 39,
             IA = 40,             //*
-            IF = 41,             //*
+            IF = 41,
             INC = 42,            //*
             INCN = 43,           //*
             LAUNCH = 44,
@@ -246,7 +246,7 @@ namespace FX {
             SRLG = 49,           //*
             MINE = 50,
             MUL = 51,            //*
-            OR = 52,             //*
+            OR = 52,
             POWERBOOST = 53,
             RGGM = 54,           //*
             RGSM = 55,           //*
@@ -261,13 +261,13 @@ namespace FX {
             RSA = 64,            //*
             SET = 65,            //*
             SHIPSCAN = 66,
-            SKILLCHECK = 67,     //*
+            SKILLCHECK = 67,
             SUB = 68,            //*
             SURVEYSCAN = 69,
             TARGETHOSTILES = 70,
             TARGETSILENTLY = 71,
             TOOLTARGETSKILLS = 72,
-            UE = 73,             //*
+            UE = 73,
             VERIFYTARGETGROUP = 74,
             SPEEDBOOST = 75      //*
         };

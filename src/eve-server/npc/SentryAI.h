@@ -14,7 +14,6 @@
 class Sentry;
 class SystemEntity;
 class Timer;
-class EvilNumber;
 
 class SentryAI {
 protected:

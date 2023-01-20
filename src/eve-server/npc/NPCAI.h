@@ -49,7 +49,6 @@ namespace NPCAI {
 class NPC;
 class SystemEntity;
 class Timer;
-class EvilNumber;
 
 class NPCAIMgr {
 protected:

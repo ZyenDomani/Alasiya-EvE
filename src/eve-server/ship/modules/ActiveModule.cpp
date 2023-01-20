@@ -652,7 +652,7 @@ uint32 ActiveModule::DoCycle()
     if (m_overLoaded)
         m_shipRef->HeatDamageCheck(this);
 
-    EvilNumber cycleTime = 10000;   // default to 10s
+    EvilNumber cycleTime(10000);   // default to 10s
     if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         return cycleTime.get_uint32();
     if (m_modRef->HasAttribute(AttrDuration, cycleTime))

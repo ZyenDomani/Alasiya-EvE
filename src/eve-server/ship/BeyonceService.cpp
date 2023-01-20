@@ -224,17 +224,20 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
-    /** @todo  rework this...this is to set speed ONLY...NOT to begin moving.  */
+
     // client should not legally send anything < 0.1 (except on rare occasion a 0.0 instead of Stop.)
-    if ((arg.arg != 0) && (arg.arg < 0.1))
+    if ((arg.arg != 0.0) && (arg.arg < 0.01))
         return PyStatic.NewNone();
 
     //sLog.Warning( "BeyonceBound", "Handle_CmdSetSpeedFraction %.2f", arg.arg );
-    if (!call.client->IsUndock()){
-        if (pDestiny->IsMoving()) {
-            pDestiny->SetSpeedFraction(arg.arg);
+    if (!call.client->IsUndock()) {
+        // need to update move time first
+        pDestiny->SetMoveTimeNow();
+        if (pDestiny->IsTurning()) {
+            // do not reset turnTime here
+            pDestiny->UpdateSpeedFraction(arg.arg);
         } else {
-            pDestiny->SetSpeedFraction(arg.arg, true);
+            pDestiny->SetSpeedFraction(arg.arg, (!pDestiny->IsMoving()));
         }
     }
 
@@ -296,6 +299,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
+    sLog.Cyan("GotoDirection", "%.4f, %.4f, %.4f", arg.x, arg.y, arg.z);
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
@@ -388,10 +392,6 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    double range =
-        args.range->IsInt()
-        ? args.range->AsInt()->value()
-        : args.range->AsFloat()->value();
 
     SystemEntity* pEntity = pSystem->GetSE(args.entityID);
     if (pEntity == nullptr) {
@@ -402,7 +402,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    pDestiny->Orbit(pEntity, range);
+    pDestiny->Orbit(pEntity, PyRep::IntegerValueU32(args.range));
 
     return PyStatic.NewNone();
 }
@@ -631,7 +631,6 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    distance += (call.client->GetShipSE()->GetRadius() * 2); // add ship diameter to distance
     pDestiny->WarpTo(warpToPoint, distance);
 
     return PyStatic.NewNone();

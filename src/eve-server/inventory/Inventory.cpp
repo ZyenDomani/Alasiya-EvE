@@ -257,6 +257,7 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
 
     _log(INV__WARNING,"Inventory::RemoveItem(2) - %s(%u) flagMap does not contain %s(%u) in %s.", \
             m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+    //EvE::traceStack();
 }
 
 void Inventory::DeleteContents()
@@ -410,10 +411,15 @@ InventoryItemRef Inventory::GetByID(uint32 id) const {
 
 void Inventory::UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const
 {
+    //  incomplete...wont compile
     // this method is for changing flags for existing items in our inventory
-    /** @todo  finish this...  */
-    mContents;
-    m_contentsByFlag;
+    /*
+    auto range = m_contentsByFlag.equal_range(iRef->flag());
+    for ( auto itr = range.first; itr != range.second; itr++ )
+        if (itr->second == iRef)
+            m_contentsByFlag.erase(itr);
+    m_contentsByFlag.emplace(newFlag, iRef);
+    */
 }
 
 // for stations only...can get expensive for stations that have many players loaded

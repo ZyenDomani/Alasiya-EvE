@@ -284,7 +284,7 @@ void Profiler::PrintProfile()
     } else {
         std::printf("       Concord   Disabled.\n");
     }
-
+/*
     //std::printf("\n");     // spacer
     std::printf("\t\tUnimplemented Calls\n");
     GetRunTimes(m_server, h, l, a);
@@ -295,7 +295,7 @@ void Profiler::PrintProfile()
     std::printf("        *Items   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_items.size(),  h, l, a );
     GetRunTimes(m_functions, h, l, a);
     std::printf("    *Functions   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_functions.size(), h, l, a );
-
+*/
     std::printf(" Profile Times Compiled in %.4fus\n", (GetTimeUSeconds() -startTime) );
 }
 
@@ -312,6 +312,7 @@ void Profiler::PrintStartUpData()
     GetRunTimes(m_itemload, h, l, a);
     GetSize(m_itemload.size(), fSize);
     std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    /*
     std::printf("\n");     // spacer
     std::printf("\t\tUnimplemented Calls\n");
     GetRunTimes(m_server, h, l, a);
@@ -322,7 +323,7 @@ void Profiler::PrintStartUpData()
     std::printf("        *Items   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_items.size(),  h, l, a );
     GetRunTimes(m_functions, h, l, a);
     std::printf("    *Functions   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_functions.size(), h, l, a );
-
+    */
     std::printf(" Profile Times Compiled in %.4fus\n", (GetTimeUSeconds() -startTime) );
 }
 

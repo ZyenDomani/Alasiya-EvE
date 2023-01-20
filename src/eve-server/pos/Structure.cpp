@@ -1013,23 +1013,23 @@ void StructureSE::EncodeDestiny(Buffer &into)
     /** @todo these may need more work....  */
     if (head.mode != Ball::Mode::RIGID) {
         MassSector mass = MassSector();
-        mass.cloak = 0;
-        mass.corporationID = m_corpID;
-        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-        mass.harmonic = m_harmonic;
-        mass.mass = m_self->type().mass();
+            mass.cloak = 0;
+            mass.corporationID = m_corpID;
+            mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
+            mass.harmonic = m_harmonic;
+            mass.mass = m_self->type().mass();
         into.Append(mass);
     }
 
     if (m_data.state < EVEPOS::StructureState::Anchored) {
         DataSector data = DataSector();
-        data.inertia = 1;
-        data.velX = 0;
-        data.velY = 0;
-        data.velZ = 0;
-        data.maxSpeed = 1;
-        data.speedfraction = 0;
-        into.Append( data );
+            data.inertia = 1;
+            data.velX = 0;
+            data.velY = 0;
+            data.velZ = 0;
+            data.maxSpeed = 1;
+            data.speedfraction = 0;
+        into.Append(data);
     }
 
 
@@ -1272,10 +1272,9 @@ void StructureSE::Killed(Damage &damage)
 
     ServiceDB::SaveKillOrLoss(data);
 
-    uint32 locationID = GetLocationID();
     //  log faction kill in dynamic data   -allan
-    MapDB::AddKill(locationID);
-    MapDB::AddFactionKill(locationID);
+    MapDB::AddKill(GetLocationID());
+    MapDB::AddFactionKill(GetLocationID());
 
     if (pClient != nullptr) {
         //award kill bounty.
@@ -1298,7 +1297,7 @@ void StructureSE::Killed(Damage &damage)
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
-    ItemData wreckItemData(wreckTypeID, killerID, locationID, flagNone, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
+    ItemData wreckItemData(wreckTypeID, killerID, GetLocationID(), flagNone, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer(wreckItemData);
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("StructureSE::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
@@ -1315,22 +1314,23 @@ void StructureSE::Killed(Damage &damage)
         cur->Move(wreckItemRef->itemID(), flagNone); // populate wreck with items that survived
 
     DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
-    wreckEntity.allianceID = killer->GetAllianceID();
-    wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-    wreckEntity.corporationID = killer->GetCorporationID();
-    wreckEntity.factionID = m_warID;
-    wreckEntity.groupID = EVEDB::invGroups::Wreck;
-    wreckEntity.itemID = wreckItemRef->itemID();
-    wreckEntity.itemName = wreck_name;
-    wreckEntity.ownerID = killerID;
-    wreckEntity.typeID = wreckTypeID;
-    wreckEntity.position = wreckPosition;
+        wreckEntity.allianceID = killer->GetAllianceID();
+        wreckEntity.categoryID = EVEDB::invCategories::Celestial;
+        wreckEntity.corporationID = killer->GetCorporationID();
+        wreckEntity.factionID = m_warID;
+        wreckEntity.groupID = EVEDB::invGroups::Wreck;
+        wreckEntity.itemID = wreckItemRef->itemID();
+        wreckEntity.itemName = wreck_name;
+        wreckEntity.ownerID = killerID;
+        wreckEntity.typeID = wreckTypeID;
+        wreckEntity.position = wreckPosition;
 
     if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
         sLog.Error("StructureSE::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
         wreckItemRef->Delete();
         return;
     }
+    
     m_destiny->SendJettisonPacket();
 }
 

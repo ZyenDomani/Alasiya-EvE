@@ -707,14 +707,14 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         head.flags = Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
-        mass.mass = m_destiny->GetMass();
+        mass.mass = m_self->GetAttribute(AttrMass).get_double();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
-        data.inertia = m_destiny->GetInertia();
+        data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
         data.maxSpeed = m_destiny->GetMaxVelocity();
         data.velX = m_destiny->GetVelocity().x;
         data.velY = m_destiny->GetVelocity().y;

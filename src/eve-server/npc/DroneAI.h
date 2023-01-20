@@ -40,7 +40,6 @@ namespace DroneAI {
 class DroneSE;
 class SystemEntity;
 class Timer;
-class EvilNumber;
 
 class DroneAIMgr {
 public:

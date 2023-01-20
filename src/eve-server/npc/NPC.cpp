@@ -54,7 +54,7 @@ m_AI(new NPCAIMgr(this))
     m_ownerID = data.ownerID;
 
     // Create default dynamic attributes in the AttributeMap:
-    m_self->SetAttribute(AttrInertia,             EvilOne, false);
+    m_self->SetAttribute(AttrInertiaMod,             EvilOne, false);
     m_self->SetAttribute(AttrDamage,              EvilZero, false);
     m_self->SetAttribute(AttrArmorDamage,         EvilZero, false);
     m_self->SetAttribute(AttrWarpCapacitorNeed,   0.00001, false);
@@ -141,7 +141,7 @@ void NPC::EncodeDestiny( Buffer& into )
         head.flags = Ball::Flag::IsMassive | Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
-        mass.mass = m_destiny->GetMass();
+        mass.mass = m_self->GetAttribute(AttrMass).get_double();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
@@ -152,7 +152,7 @@ void NPC::EncodeDestiny( Buffer& into )
         data.velX = m_destiny->GetVelocity().x;
         data.velY = m_destiny->GetVelocity().y;
         data.velZ = m_destiny->GetVelocity().z;
-        data.inertia = m_destiny->GetInertia();
+        data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     switch (mode) {

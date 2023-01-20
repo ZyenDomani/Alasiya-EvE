@@ -76,6 +76,24 @@ namespace Dmg {
     }
 }
 
+/*  many of these to copy from for proper packet building
+ *
+                  [PyList 3 items]
+                    [PyString "OnDamageMessage"]
+                    [PyString "AttackHit3RD"]
+                    [PyDict 4 kvp]
+                      [PyString "owner"]
+                      [PyTuple 2 items]
+                        [PyInt 2]
+                        [PyInt 1000127]
+                      [PyString "weapon"]
+                      [PyInt 209]
+                      [PyString "splash"]
+                      [PyString ""]
+                      [PyString "damage"]
+                      [PyFloat 127.150736555292]
+        */
+
 /*
  * {'messageID': 260410, 'label': u'AttackMiss1Body'}(u'Your {[item]weapon.name} misses {target} completely.', None, {u'{target}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'target'}, u'{[item]weapon.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'weapon'}})
  * {'messageID': 260413, 'label': u'AttackMiss2Body'}(u'Your {[item]weapon.name} barely misses {target}.', None, {u'{target}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'target'}, u'{[item]weapon.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'weapon'}})

@@ -355,6 +355,7 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
     if (!pClient->GetShipSE()->DestinyMgr())
         pClient->SetDestiny(NULL_ORIGIN);
 
+    InventoryItemRef sRef = pClient->GetShipSE()->GetSelf();
     DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
     GPoint heading(dm->GetHeading());
 
@@ -372,13 +373,15 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              "Radius: %.2f<br>" //27
              "CapNeed: %.8f<br>" //27
              "Agility: %.3f<br>" //27
-             "Inertia: %.3f<br>" //27
+             "InertiaMod: %.3f<br>" //27
              "Heading: %.3f,%.3f,%.3f<br>", //21
-                pClient->GetShipSE()->GetName(), pClient->GetShipID(), dm->GetMass(), dm->GetAlignTime(),
+             pClient->GetShipSE()->GetName(), pClient->GetShipID(),
+             sRef->GetAttribute(AttrMass).get_float(), dm->GetAlignTime(),
              dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10), dm->GetWarpTime(),
-             dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(), dm->GetAgility(), dm->GetInertia(),
-             heading.x, heading.y, heading.z
-            );
+             dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(),
+             sRef->GetAttribute(AttrAgility).get_double(),
+             sRef->GetAttribute(AttrInertiaMod).get_double(),
+             heading.x, heading.y, heading.z);
 
     pClient->SendInfoModalMsg(reply);
 

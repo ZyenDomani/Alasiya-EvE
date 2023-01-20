@@ -473,10 +473,10 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             if (itemRef.get() == nullptr)
                 return InventoryItemRef(nullptr);
             // THESE SHOULD BE MOVED INTO A _type::Spawn() function that does not exist yet
-            itemRef->SetAttribute(AttrMass,           iType->mass(), false);           // Mass
-            itemRef->SetAttribute(AttrRadius,         iType->radius(), false);       // Radius
-            itemRef->SetAttribute(AttrVolume,         iType->volume(), false);       // Volume
-            itemRef->SetAttribute(AttrCapacity,       iType->capacity(), false);   // Capacity
+            itemRef->SetAttribute(AttrMass,             iType->mass(), false);           // Mass
+            itemRef->SetAttribute(AttrRadius,           iType->radius(), false);       // Radius
+            itemRef->SetAttribute(AttrVolume,           iType->volume(), false);       // Volume
+            itemRef->SetAttribute(AttrCapacity,         iType->capacity(), false);   // Capacity
             return itemRef;
         } break;
         case EVEDB::invCategories::Charge: {
@@ -510,8 +510,8 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             }
             if (itemRef.get() == nullptr)
                 return InventoryItemRef(nullptr);
-            itemRef->SetAttribute(AttrMass,       iType->mass(), false);         // Mass
-            itemRef->SetAttribute(AttrRadius,     iType->radius(), false);       // Radius
+            itemRef->SetAttribute(AttrMass,             iType->mass(), false);         // Mass
+            itemRef->SetAttribute(AttrRadius,           iType->radius(), false);       // Radius
             return itemRef;
         } break;
         case EVEDB::invCategories::Station: {
