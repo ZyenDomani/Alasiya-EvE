@@ -17,6 +17,14 @@ check evemu_crucible for additions
 
 
 !! destiny (all space movement)
+-- even with heading identical (client and server) there is still some deviation after turning...i dont understand where its from
+
+ships  ---  attrAgility will need to be recalc'd and reset anytime inertia or mass changes.
+    -- there are also modules that modify all of these variables.  these need verification
+    -  this needs to be complete and correct before i can finish destiny movement
+    - after looking into this more, the fx system isnt set up to calculate some effects properly,
+        namely, anything dealing with skilllevels
+
 
 work on buglist, integrate this list in there where i can
     - modules/fitting
@@ -32,6 +40,9 @@ work on buglist, integrate this list in there where i can
     - lp
     - cosmic systems
     -
+
+all movement commands should be checked for spam/multiple calls within (x) timeframe.
+    - this will totally fuck up current code, especially if turns are involved
 
 
 request for smartbombs
@@ -105,6 +116,7 @@ error:
 
 ...still not sure on this.  throws a shitton of errors in client error log
 "Cleaning session *clientID 2888444* because it's ID doesn't match  0"
+*** found (something) about it in old logs....see /home/allan/Desktop/eve_packets/clientID_data? for more (sparse) info
 
 
 this is used for pricing update based on minerals.  this query returns ~300 items
@@ -117,6 +129,12 @@ missing prices for salvage
 
 *******************************************************
 ********  improvements
+
+go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/32/64)
+
+remove GPoint/GVector code and replace with evemoo's code (after thorough review)
+    - float/double not needed and math on those are expensive.  replace with int64
+    - note:  client logs show all position data is pyfloat (some float.7, some double.15)
 
 allianceid/warfactionid
   in packet logs, this is either None or an int.
@@ -164,7 +182,7 @@ AuditLogSecureContainer types not coded (data coded in EvE_Inventory.h)
 
 skill error on queue update   - see cruc/skills/skill_error_new
 
-look into changing (EvilNumber)DmgTypeAttribute to (struct)Inv::AttrData  (started.  still being used by sDataMgr)
+look into changing (EvilNumber)DmgTypeAttribute to (struct)Inv::AttrData  (started.  still being used by sDataMgr and AttributeMgr)
     - may be able to delete the EvilNumber class, as it was created only to deal with attribute data, which we are getting away from with the struct.
     - the db will have to be verified for int/float values, as some identical-types have both (some int, some float)
 
@@ -183,6 +201,9 @@ go thru all updated effect data and look for 'improved' ship data to update ours
     - specialized holds from rhea (not available in cruc)
     - updated barges from current live patch (hot tanks)
 current fx data in db incomplete at best.  missing multiple items/defs
+effects processing incomplete.
+    - must have skills skillLvl working somehow to implement proper agility processing
+    
 23:51:06 [FxError] guid empty for F85 Peripheral Damage System I using effectID 2302
 isDefault used to send to activate for effectID
 go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
@@ -680,7 +701,9 @@ review all classes to add rule of 5 or =delete as required
 *****************  Fx shit
 
 ***  ideas
-
+something about changing fx calc data to fx code....i dont remember what i was thinking now...
+seems like fx system isnt as complete as i thought, and there are more interconnected workings than i have coded/working
+namely, inertiaMod and agility shit (which is driving me nuts atm)
 
 ***  errors
 
@@ -799,7 +822,7 @@ others cause multiple other effects.  is this something we can implement/exploit
 
 all classes need init list corrected
     - should be same order as declarations
-    
+
 spawn system calls.....found this in logs)
 17:38:52 [SpawnMsg] SpawnMgr::PrepSpawn() - faction: Angel Cartel, region 10000001. (config set false)
 17:38:52 [SpawnMsg] SpawnMgr::PrepSpawn() - m_factionGroups size is 21.
