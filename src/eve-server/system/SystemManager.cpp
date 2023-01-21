@@ -966,11 +966,8 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
 
     if (count) {
         --m_players;
-        if (m_players < 1) {
-            m_players = 0;
+        if (m_players < 1)
             m_clients.clear();  // redundant but safe
-            _log(PLAYER__ERROR, "player count for %s(%u) is < 0", m_data.name.c_str(), m_data.systemID);
-        }
 
         _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);

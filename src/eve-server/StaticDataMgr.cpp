@@ -619,7 +619,7 @@ void StaticDataMgr::Populate()
         GroupType.maxQuantity = row.GetInt(4);
         m_LootGroupTypeMap.emplace(row.GetInt(0), GroupType);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu loot groups and %u loot group types loaded in %.3fms.",
+    sLog.Cyan("    StaticDataMgr", "%lu loot groups and %lu loot group types loaded in %.3fms.",
               m_LootGroupMap.size(), m_LootGroupTypeMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
@@ -776,7 +776,7 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
 
 void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_components) {
+    for (auto &cur : m_components) {
         Market::matlData data = Market::matlData();
         data.price = 0.0f;
         data.typeID = cur.first;
@@ -865,9 +865,9 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID)
     std::vector< uint16 > typeVec;
     auto classRange = m_npcTypes.equal_range(sClass);
     for (auto &it = classRange.first; it != classRange.second; it++) {
-        for (auto itr : it->second)
+        for (auto &itr : it->second)
             if (itr.first == groupID) {
-                for (auto tItr : itr.second)
+                for (auto &tItr : itr.second)
                     typeVec.push_back(tItr);
                 break;
             }
@@ -1411,8 +1411,8 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     ramReqs.clear();
     GetRamRequirements(typeID, ramReqs);
     //GetRamRequirements(prodID, ramReqs);
-    for (auto cur : ramReqs) {
-        PyPackedRow* row = new PyPackedRow(header);
+    PyPackedRow* row = new PyPackedRow(header);
+    for (auto &cur : ramReqs) {
             row->SetField("quantity",        new PyInt(cur.quantity));
             row->SetField("requiredTypeID",  new PyInt(cur.requiredTypeID));
             row->SetField("damagePerJob",    new PyFloat(cur.damagePerJob));
@@ -1422,6 +1422,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             case Activity::Manufacturing: {         //1
                 /** @todo  this needs work.  dunno how to remove 'extra' materials from this list */
                 manuf = true;
+                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListManuf->AddItem(row);
                 } else if (cur.extra) {
@@ -1435,6 +1436,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::ResearchTime: {          //3
                 te = true;
+                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListTE->AddItem(row);
                 } else {
@@ -1443,6 +1445,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::ResearchMaterial: {      //4
                 me = true;
+                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListME->AddItem(row);
                 } else {
@@ -1451,6 +1454,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::Copying: {               //5
                 copy = true;
+                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListCopy->AddItem(row);
                 } else {
@@ -1459,6 +1463,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::Duplicating: {           //6
                 dup = true;
+                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListDup->AddItem(row);
                 } else if (cur.extra) {
@@ -1469,6 +1474,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::ReverseEngineering: {    //7
                 re = true;
+                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListRE->AddItem(row);
                 } else {
@@ -1477,6 +1483,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::Invention: {             //8
                 invent = true;
+                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListInvent->AddItem(row);
                 } else {
@@ -1573,6 +1580,8 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     }
 
     // cleanup
+    PyDecRef(row);
+    PyDecRef(header);
     PyDecRef(matlListManuf);
     PyDecRef(skillListManuf);
     PyDecRef(extraListManuf);

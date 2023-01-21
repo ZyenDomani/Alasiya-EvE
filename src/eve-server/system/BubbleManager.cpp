@@ -346,6 +346,7 @@ void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
             sig.position = cSE->GetPosition();
             sig.scanAttributeID = AttrScanMagnetometricStrength;   // result.strengthAttributeID
             sig.scanGroupID = Scanning::Group::Signature;
+            sig.dungeonType = Dungeon::Type::None;
         anom.push_back(sig);
         cSE = nullptr;
     }
@@ -370,6 +371,7 @@ void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSi
             sig.position = cSE->GetPosition();
             sig.scanAttributeID = AttrScanMagnetometricStrength;
             sig.scanGroupID = Scanning::Group::Signature;
+            sig.dungeonType = Dungeon::Type::None;
         anom.push_back(sig);
         cSE = nullptr;
     }

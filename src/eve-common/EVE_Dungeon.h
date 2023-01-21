@@ -10,6 +10,7 @@
 namespace Dungeon {
     namespace Type {
         enum {
+            None            = 0, // placeholder to correctly init data
             Mission         = 1, // npc mission
             Gravimetric     = 2, // roids
             Magnetometric   = 3, // salvage and archeology
@@ -157,7 +158,7 @@ namespace Dungeon {
         double y;
         double z;
     };
-    
+
     /* POD structure entries for dungeon data */
     struct Template {
         uint8 dunTypeID;

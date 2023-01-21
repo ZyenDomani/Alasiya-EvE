@@ -697,6 +697,7 @@ PyResult CorpRegistryBound::Handle_UpdateTitle(PyCallArgs &call) {
         sEntityList.Multicast("OnTitleChanged", "corpid", &notif, mct);
     }
 
+    PyDecRef(updates);
     //OnTitleChanged
     return nullptr;
 }

@@ -357,6 +357,8 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 // error
                 _log(AGENT__ERROR, "AgentBound::Handle_DoAction() - unhandled buttonID %u", actionID );
                 call.client->SendErrorMsg("Internal Server Error. Ref: ServerError xxxxx.");
+                PyDecRef(agentSays);
+                PyDecRef(dialog);
                 return nullptr;
             }
         }

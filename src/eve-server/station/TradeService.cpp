@@ -223,6 +223,7 @@ void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSe
 {
     // trade canceled.  send items back to owner. (monies not taken at this point)
     PyDict* dict = new PyDict();
+    // what is this used for?  is this complete??
     dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(pTSes->m_tradeSession.containerID));
 
     uint32 stationID = pTSes->m_tradeSession.stationID;
@@ -235,6 +236,8 @@ void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSe
 
         itemRef->Move(stationID, flagHangar, true);
     }
+
+    PyDecRef(dict);
 }
 
 PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
@@ -422,6 +425,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     } else {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_MultiAdd() : %s(%u) & %s(%u) - clients are neither mine nor hers.", \
                 pClient->GetName(), pClient->GetCharacterID(), pOther->GetName(), pOther->GetCharacterID());
+        PyDecRef(dict);
         return PyStatic.NewNone();
     }
 
@@ -474,6 +478,8 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     //  reset states after offer changes.
     pTSes->m_tradeSession.myState  = false;
     pTSes->m_tradeSession.herState = false;
+
+    PyDecRef(dict);
     // return none
     return PyStatic.NewNone();
 }
