@@ -126,7 +126,7 @@ PyTuple* DBRowDescriptor::_CreateArgs()
 CRowSet::CRowSet( DBRowDescriptor** rowDesc )
 : PyObjectEx_Type2( _CreateArgs(), _CreateKeywords( *rowDesc ) )
 {
-
+    // nothing to do here
 }
 
 PyPackedRow* CRowSet::NewRow()
@@ -185,7 +185,7 @@ PyDict* CRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 CIndexedRowSet::CIndexedRowSet( DBRowDescriptor** rowDesc )
 : PyObjectEx_Type2( _CreateArgs(), _CreateKeywords( *rowDesc ) )
 {
-
+    // nothing to do here
 }
 
 PyPackedRow* CIndexedRowSet::NewRow( PyRep* key )
@@ -230,7 +230,7 @@ PyDict* CIndexedRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 CFilterRowSet::CFilterRowSet( DBRowDescriptor** rowDesc )
 : PyObjectEx_Type2( _CreateArgs(), _CreateKeywords( *rowDesc ) )
 {
-
+    // nothing to do here
 }
 
 CRowSet* CFilterRowSet::NewRowset( PyRep* key )

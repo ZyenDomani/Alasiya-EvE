@@ -53,7 +53,6 @@ void StationDataMgr::Clear()
     m_stationData.clear();
     m_stationPyData.clear();
     m_stationOfficeData.clear();
-
 }
 
 void StationDataMgr::Populate()

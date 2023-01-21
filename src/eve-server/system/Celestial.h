@@ -102,7 +102,6 @@ public:
 
     /* SystemEntity interface */
     virtual void                MakeDamageState(DoDestinyDamageState &into);
-
 };
 
 class AnomalySE : public CelestialSE {

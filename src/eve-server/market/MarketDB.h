@@ -76,13 +76,6 @@ public:
     static void SetUpdateTime(int64 setTime);
 
     static void UpdateHistory();
-
 };
 
-
-
-
-
 #endif
-
-

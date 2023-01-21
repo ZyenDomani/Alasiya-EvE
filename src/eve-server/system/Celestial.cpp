@@ -111,7 +111,7 @@ void CelestialSE::MakeDamageState(DoDestinyDamageState &into)
 AnomalySE::AnomalySE(CelestialObjectRef self, PyServiceMgr& services, SystemManager* system)
 : CelestialSE(self, services, system)
 {
-
+    // nothing to do here
 }
 
 void AnomalySE::EncodeDestiny(Buffer& into)
@@ -162,7 +162,6 @@ WormholeSE::WormholeSE(CelestialObjectRef self, PyServiceMgr& services, SystemMa
     m_nebulaType = 11785;  // data found in eveGraphics table.  yes.  11781 - 11786 (class 1-6)  -3715 doesnt work
     // no clue what this is...may not be used.  seen 33, 263, 27 in logs
     m_dunSpawnID = 0;
-
 }
 
 void WormholeSE::EncodeDestiny(Buffer& into)

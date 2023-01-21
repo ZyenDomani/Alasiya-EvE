@@ -274,9 +274,7 @@ void DroneAIMgr::TargetLost(SystemEntity* pTarget) {
                 _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) lost, but more targets remain.",
                      m_pDrone->GetName(), m_pDrone->GetID(), pTarget->GetName(), pTarget->GetID());
             }
-
         } break;
-
         default:
             break;
     }

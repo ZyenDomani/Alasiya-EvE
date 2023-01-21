@@ -157,7 +157,6 @@ public:
 
 
 protected:
-
     float               TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const;
 
     static const char*  GetModeName(uint8 mode);

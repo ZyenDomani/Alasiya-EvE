@@ -116,7 +116,6 @@ BulkMgrService::BulkMgrService( PyServiceMgr *mgr )
     PyCallable_REG_CALL(BulkMgrService, GetFullFilesChunk);
     PyCallable_REG_CALL(BulkMgrService, GetUnsubmittedChunk);
     PyCallable_REG_CALL(BulkMgrService, GetUnsubmittedChanges);
-
 }
 
 BulkMgrService::~BulkMgrService() {
@@ -342,11 +341,11 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
             response->SetItem(1, PyStatic.NewNone());
         }
     } else if (args.chunkSetID == 1) {
-
+        // nothing to do here
     } else if (args.chunkSetID == 2) {
-
+        // nothing to do here
     } else if (args.chunkSetID == 3) {
-
+        // nothing to do here
     }
 
     response->SetItem(0, toBeChanged);

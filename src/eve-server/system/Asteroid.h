@@ -71,7 +71,6 @@ protected:
 
 private:
     AsteroidData m_data;
-
 };
 
 
@@ -102,8 +101,6 @@ public:
     /* specific functions handled in this class. */
     void Grow();
     void SetMgr(BeltMgr* beltMgr, uint32 beltID)        { m_beltMgr = beltMgr; m_beltID = beltID; }
-
-protected:
 
 private:
     BeltMgr* m_beltMgr;

@@ -24,7 +24,6 @@ EntityService::EntityService(PyServiceMgr *mgr)
 m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
-
 }
 
 EntityService::~EntityService() {

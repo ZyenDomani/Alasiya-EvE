@@ -164,7 +164,6 @@ private:
     Timer m_beginFindTarget;
     Timer m_warpScramblerTimer;
     Timer m_webifierTimer;
-
 };
 
 class ConcordSpawnMgr
@@ -172,8 +171,5 @@ class ConcordSpawnMgr
 public:
     ConcordSpawnMgr();
     virtual ~ConcordSpawnMgr()     { /* do nothing here */ }
-
-private:
-
 };
 #endif  // EVE_SYSTEM_CONCORD_H

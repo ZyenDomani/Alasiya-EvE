@@ -331,7 +331,6 @@ protected:
 private:
     // fx timestamp
     int64   m_timestamp;        // not implemented yet
-
 };
 
 #endif

@@ -24,11 +24,6 @@ FxDataMgr::FxDataMgr()
     m_typeFxMap.clear();
 }
 
-FxDataMgr::~FxDataMgr()
-{
-
-}
-
 int FxDataMgr::Initialize()
 {
     double start = GetTimeMSeconds();
@@ -176,7 +171,6 @@ Operand FxDataMgr::GetOperand(uint16 oID)
     if (itr != m_opMap.end())
         return itr->second;
     return m_opMap.at(0);
-
 }
 
 bool FxDataMgr::isWarpSafe(uint16 eID)

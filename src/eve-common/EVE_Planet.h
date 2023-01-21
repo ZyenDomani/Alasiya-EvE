@@ -207,7 +207,6 @@ struct PI_Pin {
 
 class PI_CCPin {
 public:
-
     PI_CCPin()                                          { Init(); }
     ~PI_CCPin()                                         { /* do nothing here */ }
 

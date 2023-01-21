@@ -51,7 +51,6 @@ class SystemEntity;
 class Timer;
 
 class NPCAIMgr {
-protected:
 public:
     NPCAIMgr(NPC *who);
     ~NPCAIMgr()                                         { /* do nothing here */ }

@@ -357,5 +357,5 @@ void MapDB::AddPodKill(uint32 sysID) {
 
 void MapDB::ManipulateTimeData()
 {
-
+    // nothing to do here
 }

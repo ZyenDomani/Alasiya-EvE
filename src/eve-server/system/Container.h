@@ -275,7 +275,6 @@ protected:
 
 private:
     bool m_abandoned;
-
 };
 
 #endif /* !__CONTAINER__H__INCL__ */

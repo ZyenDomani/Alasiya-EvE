@@ -70,7 +70,6 @@ public:
      */
     virtual ~RefObject()
     {
-
         if (mDeleted) {
             _log(REFPTR__ERROR, "~RefObject() - mDeleted: true");
             EvE::traceStack();

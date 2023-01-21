@@ -168,7 +168,6 @@ private:
     float m_scanRange;          // in km.  sent from client
     float m_scanStrength;       // scan str in decimal.  unsure of uom
     float m_scanDeviation;      // max scan deviation for this probe, in % where 1.0 = 100
-
 };
 
 #endif  // EVEMU_EXPLORE_PROBES_H_

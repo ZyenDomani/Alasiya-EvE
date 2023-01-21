@@ -70,7 +70,6 @@ public:
 
     // for calendar events
     static void SetJobEventID(const uint32 jobID, const uint32 eventID);
-
 };
 
 #endif  // EVE_MANUF_FACTORYDB_H

@@ -38,7 +38,6 @@ class StationType
 {
     friend class ItemType; // to let it construct us
 public:
-
     static StationType *Load(uint16 stationTypeID);
 
 protected:
@@ -164,7 +163,6 @@ private:
 
     std::map<uint32, OfficeData>                        m_officeMap;   // officeID/data
     std::map<uint32, bool>                              m_officeLoaded;
-
 };
 
 
@@ -193,7 +191,6 @@ public:
 
     /* specific functions handled here. */
     void UnloadStation();
-
 };
 
 #endif /* !__STATION__H__INCL__ */

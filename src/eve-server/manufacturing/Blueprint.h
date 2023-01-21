@@ -193,7 +193,6 @@ protected:
 private:
     const BlueprintType &m_bpType;
     EvERam::bpData m_data;
-
 };
 
 #endif /* !__BLUEPRINT_ITEM__H__INCL__ */

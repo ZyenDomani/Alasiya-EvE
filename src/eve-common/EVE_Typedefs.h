@@ -108,7 +108,6 @@ typedef enum {
      * DE = last 2 actual faction numbers as defined in FactionDef
      */
     salvageSleepers     = 0
-
 } FactionSalvageDef;
 
 typedef enum {
