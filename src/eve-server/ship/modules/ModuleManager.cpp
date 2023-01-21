@@ -167,7 +167,7 @@ void ModuleManager::LoadOnline() {
     while (ritr != rend) {
         if (ritr->second != nullptr)
             ritr->second->Online();
-            ++ritr;
+        ++ritr;
     }
     // process lo,mid,hi slots in that order.
     std::map<uint8, GenericModule*>::iterator itr = m_fittings.begin(), end = m_fittings.end();
@@ -175,7 +175,7 @@ void ModuleManager::LoadOnline() {
         if (itr->second != nullptr)
             if (itr->second->GetAttribute(AttrOnline).get_bool())
                 itr->second->Online();
-            ++itr;
+        ++itr;
     }
 }
 
@@ -190,7 +190,7 @@ void ModuleManager::Process()
         if (itr->second != nullptr)
             if (itr->second->GetAttribute(AttrOnline).get_bool())
                 itr->second->Process();
-            ++itr;
+        ++itr;
     }
 
     if (sConfig.debug.UseProfiling)
@@ -886,7 +886,7 @@ void ModuleManager::StopModuleRepair(uint32 modID)
         _log(MODULE__ERROR, "MM::ModuleRepair() - module %u not found.", modID);
         return;
     }
-    
+
     // need to finish this...
 }
 

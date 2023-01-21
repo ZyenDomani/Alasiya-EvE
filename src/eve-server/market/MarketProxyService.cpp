@@ -556,7 +556,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
     // we need to pull data from db for typeID and isCorp...
     Market::OrderInfo oInfo = Market::OrderInfo();
     if (!m_db.GetOrderInfo(args.orderID, oInfo)) {
-        _log(MARKET__ERROR, "ModifyCharOrder - Failed to get info about order #%u.", args.orderID);
+        _log(MARKET__ERROR, "ModifyCharOrder - Failed to get info about order #%i.", args.orderID);
         return nullptr;
     }
 
@@ -571,7 +571,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
                         Account::KeyType::Cash, Account::KeyType::Escrow);
 
     if (!m_db.AlterOrderPrice(args.orderID, args.newPrice)) {
-        _log(MARKET__ERROR, "ModifyCharOrder - Failed to modify price for order #%u.", call.client->GetName(), args.orderID);
+        _log(MARKET__ERROR, "ModifyCharOrder - Failed to modify price for order #%i.", call.client->GetName(), args.orderID);
         return nullptr;
     }
 
@@ -590,7 +590,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
 
     Market::OrderInfo oInfo = Market::OrderInfo();
     if (!m_db.GetOrderInfo(args.orderID, oInfo)) {
-        _log(MARKET__ERROR, "CancelCharOrder - Failed to get info about order #%u.", call.client->GetName(), args.orderID);
+        _log(MARKET__ERROR, "CancelCharOrder - Failed to get info about order #%i.", call.client->GetName(), args.orderID);
         return nullptr;
     }
 
@@ -612,13 +612,14 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
 
     PyRep* order(m_db.GetOrderRow(args.orderID));
     if (!m_db.DeleteOrder(args.orderID)) {
-        _log(MARKET__ERROR, "CancelCharOrder - Failed to delete order #%u.", args.orderID);
+        _log(MARKET__ERROR, "CancelCharOrder - Failed to delete order #%i.", args.orderID);
         return nullptr;
     }
 
     sMktMgr.InvalidateOrdersCache(call.client->GetRegionID(), oInfo.typeID);
     sMktMgr.SendOnOwnOrderChanged(call.client, args.orderID, Market::Action::Expiry, oInfo.isCorp, order);
 
+    PySafeDecRef(order);
     return nullptr;
 }
 

@@ -432,8 +432,9 @@ PyRep *MarketDB::GetMarketGroups() {
         uint32 index(0);
         pyrow->SetField(index++, pid); //parentGroupID
         pyrow->SetField(index++, new PyInt(row.GetUInt(1))); //marketGroupID
-        pyrow->SetField(index++, new PyString(row.GetText(2))); //marketGroupName
-        pyrow->SetField(index++, new PyString(row.GetText(3))); //description
+        // these next 2 call SetField(char indexName, pyrep) which puts nulls in data, which will crash in marshalling
+        pyrow->SetField(index++, (PyRep*)new PyString(row.GetText(2))); //marketGroupName
+        pyrow->SetField(index++, (PyRep*)new PyString(row.GetText(3))); //description
         pyrow->SetField(index++, row.IsNull(4) ? PyStatic.NewNone() : new PyInt(row.GetUInt(4))); //graphicID
         pyrow->SetField(index++, new PyBool(row.GetBool(5))); //hasTypes
         pyrow->SetField(index++, row.IsNull(6) ? PyStatic.NewNone() : new PyInt(row.GetUInt(6))); // iconID

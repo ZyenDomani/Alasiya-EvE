@@ -584,11 +584,13 @@ void WreckSE::EncodeDestiny( Buffer& into )
 
 PyDict *WreckSE::MakeSlimItem() {
     _log(SE__SLIMITEM, "MakeSlimItem for WreckSE %s(%u)", m_self->name(), m_self->itemID());
+    /** @note this isnt used...should it be?
     PyTuple* nameID = new PyTuple(2);
         nameID->SetItem(0,  new PyString("UI/Inflight/WreckNameShipName"));
     PyDict* shipName = new PyDict;
         shipName->SetItem("shipName", new PyInt(0));    // does this need data here?
         nameID->SetItem(1, shipName);
+        */
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
