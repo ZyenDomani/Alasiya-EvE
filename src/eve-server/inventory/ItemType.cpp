@@ -114,12 +114,12 @@ _Ty* ItemType::_LoadType(uint16 typeID, const Inv::TypeData& data) {
 bool ItemType::_Load()
 {
     // load type attribs
-    std::vector< DmgTypeAttribute > typeAttrVec;
+    std::vector< Inv::DmgTypeAttribute > typeAttrVec;
     sDataMgr.GetDgmTypeAttrVec(m_type.id, typeAttrVec);
     for (auto cur : typeAttrVec)
         m_AttributeMap.insert(std::pair<uint16, EvilNumber>(cur.attributeID, cur.value));
 
-    // load attributes that are needed but NOT in default DgmTypeAttributes set (but found in invTypes)
+    // load attributes found in invTypes
     if (m_type.mass)
         m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrMass, m_type.mass));
     if (m_type.radius)

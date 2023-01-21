@@ -45,6 +45,11 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 
     using namespace FX;
     switch(expression.operandID) {
+        // these 3 not used here, as they are only used by effect 16 (Online), which is covered in GenericModule class.
+        case Operands::IF:     //'If(%(arg1)s), Then (%(arg2)s)'    -- std conditional.  (if x then y)
+        case Operands::AND:    //'(%(arg1)s) AND (%(arg2)s)'  -- used with 'if' in arg1 as 'x'.   (if (x AND y) then ....)
+        case Operands::OR: {    //'%(arg1)s OR %(arg2)s'       -- used with 'if' in arg2 as 'y'.   ((if x then y) OR z)  (used as "else" or elif)
+        } break;
         // these return the given expressionValue
         case Operands::DEFBOOL:   //23  this evaulates to 'true' (Bool(1))
         case Operands::DEFINT: {  //27  this is used as  0,1,2,{raceID}
@@ -193,11 +198,6 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             pItem->RemoveModifier(data);
         } break;
         /*
-        // next 3 not used here, as they are only used by effect 16 (Online), which is covered in GenericModule class.
-        case Operands::OR:     //'%(arg1)s OR %(arg2)s'       -- used with 'if' in arg2 as 'y'.   ((if x then y) OR z)  (used as "else" or elif)
-        case Operands::AND:    //'(%(arg1)s) AND (%(arg2)s)'  -- used with 'if' in arg1 as 'x'.   (if (x AND y) then ....)
-        case Operands::IF: {    //'If(%(arg1)s), Then (%(arg2)s)'    -- std conditional.  (if x then y)
-        } break;
         // trivial attribute operations
         case Operands::ADD: {      //1, (%(arg1)s)+(%(arg2)s)
             // this isnt complete.
@@ -254,6 +254,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             data.action = expression.operandID;
            // pItem->AddModifier(data);
         } break;
+        */
         default: {              // in case the op hasnt been defined, make a note here
             if (is_log_enabled(EFFECTS__UNDEFINED)) {
                 std::ostringstream ret;
@@ -267,7 +268,6 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 _log(EFFECTS__UNDEFINED, "FxProc::ParseExpression() - %s", ret.str().c_str());
             }
         } break;
-        */
     }
 
     if (sConfig.debug.UseProfiling)

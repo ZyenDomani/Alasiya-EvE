@@ -396,7 +396,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetTypeAttributes(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes
-        DmgTypeAttribute typeAttr = DmgTypeAttribute();
+        Inv::DmgTypeAttribute typeAttr = Inv::DmgTypeAttribute();
         typeAttr.attributeID = row.GetInt(1);
         if (row.IsNull(2)) {
             typeAttr.value = row.GetDouble(3);
@@ -750,10 +750,10 @@ bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<fl
     return !roids.empty();
 }
 
-void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< DmgTypeAttribute >& typeAttrVec)
+void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< Inv::DmgTypeAttribute >& typeAttrVec)
 {
     auto itr = m_typeAttrMap.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second;it++)
+    for (auto it = itr.first; it != itr.second; it++)
         typeAttrVec.push_back(it->second);
 }
 

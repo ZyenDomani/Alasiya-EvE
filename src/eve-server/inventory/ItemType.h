@@ -154,11 +154,10 @@ public:
 private:
     Inv::GrpData m_group;
     Inv::TypeData m_type;
-    uint16 m_defaultFxID;                 // default effectID
+    uint16 m_defaultFxID;                               // default effectID
 
     std::map<uint16, uint8> m_reqSkillMap;              // k,v map of required skill, level for this ItemType, if any.
     std::map<uint16, EvilNumber> m_AttributeMap;        // k,v map of attributeID, value
-
 };
 
 /*

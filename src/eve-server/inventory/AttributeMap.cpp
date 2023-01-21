@@ -144,7 +144,7 @@ bool AttributeMap::Save() {
                     Inv::AttrData data = Inv::AttrData();
                     data.itemID = mItem.itemID();
                     data.attrID = itr->first;
-                    data.type = false;
+                    data.decimal = false;
                     data.valueInt = itr->second.get_int();
                     attribs.push_back(data);
                 }
@@ -197,10 +197,10 @@ bool AttributeMap::Save() {
                 data.itemID = mItem.itemID();
                 data.attrID = itr->first;
                 if (itr->second.isInt()) {
-                    data.type = false;
+                    data.decimal = false;
                     data.valueInt = itr->second.get_int();
                 } else {
-                    data.type = true;
+                    data.decimal = true;
                     data.valueFloat = itr->second.get_double();
                 }
                 attribs.push_back(data);

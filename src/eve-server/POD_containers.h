@@ -330,14 +330,6 @@ struct StaticData {
     GPoint position;
 };
 
-/* POD structure for attribute type data. */
-struct AttrTypeData {
-    uint8 categoryID;
-    uint8 attributeCategory;
-    uint16 attributeID;
-    std::string attributeName;
-    std::string displayName;
-};
 
 /* POD structure for sovereignty */
 struct SovereigntyData {
@@ -426,12 +418,6 @@ struct FactionData {
     int32 factionID;
     uint32 ownerID;
     uint32 corporationID;
-};
-
-/* structure for type attributes */
-struct DmgTypeAttribute {
-    uint16 attributeID;
-    EvilNumber value;
 };
 
 /* structure for loading static system items */

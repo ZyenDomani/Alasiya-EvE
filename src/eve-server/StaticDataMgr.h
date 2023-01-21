@@ -116,7 +116,7 @@ public:
     std::vector<uint32> GetWHDestinationTypes(uint32 classID) { return m_whClassDestinations[classID]; }
     std::vector<uint32> GetWHClassSystems(uint8 classID) { return m_whClassSystems[classID]; }
 
-    void                GetDgmTypeAttrVec(uint16 typeID, std::vector< DmgTypeAttribute >& typeAttrVec);
+    void                GetDgmTypeAttrVec(uint16 typeID, std::vector< Inv::DmgTypeAttribute >& typeAttrVec);
 
     PyDict*             SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID);
     PyDict*             GetBPMatlData(uint16 typeID);   //this is called on EVERY "show info" of a blueprint
@@ -152,7 +152,7 @@ public:
     bool                IsSolarSystem(uint32 systemID=0);
 
     // common place for *FULL* DBRowDescriptor Header creation.
-    //  this way all users are using the exact same data
+    //  this way all users have the exact same data
     DBRowDescriptor*    CreateHeader();
 
     void                AddOutpost(StationData &stData);
@@ -193,13 +193,13 @@ private:
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
     std::map<uint16, std::string>                       m_skills;           // typeID/name
     std::map<uint32, StaticData>                        m_staticData;       // itemID/data
-    std::map<uint16, AttrTypeData>                      m_attrTypeData;     // attrID/data
+    std::map<uint16, Inv::AttrTypeData>                      m_attrTypeData;     // attrID/data
 
     std::multimap<uint16, EvERam::RamMaterials>         m_ramMatl;          // itemTypeID/data
     std::multimap<uint16, EvERam::RamRequirements>      m_ramReq;           // bpTypeID/data
     std::multimap<std::string, OreTypeChance>           m_oreBySecClass;    // systemSecClass/data
 
-    std::multimap<uint16, DmgTypeAttribute>             m_typeAttrMap;      // typeID/data<attrID, value>
+    std::multimap<uint16, Inv::DmgTypeAttribute>        m_typeAttrMap;      // typeID/data
 
     /* spawn data */
     // roid rats
@@ -242,19 +242,19 @@ private:
 
 /*   module (meta) types
  * metaGroupID  metaGroupName   description     iconID
- * 1       Tech I
- * 2       Tech II
- * 3       Storyline
- * 4       Faction
- * 5       Officer
- * 6       Deadspace
- * 7       Frigate
- * 8       Elite Frigate
- * 9       Commander Frigate
- * 10      Destroyer
- * 11      Cruiser
- * 12      Elite Cruiser
- * 13      Commander Cruiser
- * 14      Tech III
+ *      1       Tech I
+ *      2       Tech II
+ *      3       Storyline
+ *      4       Faction
+ *      5       Officer
+ *      6       Deadspace
+ *      7       Frigate
+ *      8       Elite Frigate
+ *      9       Commander Frigate
+ *      10      Destroyer
+ *      11      Cruiser
+ *      12      Elite Cruiser
+ *      13      Commander Cruiser
+ *      14      Tech III
  *
  */

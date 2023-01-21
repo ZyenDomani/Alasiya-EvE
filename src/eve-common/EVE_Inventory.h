@@ -106,11 +106,26 @@ namespace Inv {
 
     /* POD structure for saving attribute data */
     struct AttrData {
-        bool            type;          // 0=int, 1=float
+        bool            decimal;          // 0=int, 1=float
         uint16          attrID;
         uint32          itemID;
         int64           valueInt;
         double          valueFloat;
+    };
+
+    /* POD structure for attribute type data. */
+    struct AttrTypeData {
+        uint8           categoryID;
+        uint8           attributeCategory;
+        uint16          attributeID;
+        std::string     attributeName;
+        std::string     displayName;
+    };
+
+    /* structure for type attributes */
+    struct DmgTypeAttribute {
+        uint16          attributeID;
+        EvilNumber      value;
     };
 
 }
