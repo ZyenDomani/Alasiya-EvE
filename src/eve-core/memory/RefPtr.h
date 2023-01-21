@@ -103,7 +103,7 @@ protected:
     {
         if (mDeleted) {
             _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %i", mRefCount);
-            EvE::traceStack();
+            EvE::traceStackLN();        // this is painfully slow
             return;
         }
 

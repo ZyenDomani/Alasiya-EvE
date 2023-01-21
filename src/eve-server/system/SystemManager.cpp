@@ -924,7 +924,7 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*f
         return;
     if (m_clients.find(pClient->GetCharacterID()) == m_clients.end()) {
         m_clients[pClient->GetCharacterID()] = pClient;
-        _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %u clients now in system. count %s", \
+        _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %lu clients now in system. count %s", \
                     pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size(), count?"true":"false");
     } else {
         // error for player already in client map
@@ -1615,6 +1615,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
     /** @todo this should be updated/current/correct in system's AnomalyMgr.  try to get data from there for this list  */
     for (auto &cur : m_ticEntities) {
         CosmicSignature sig = CosmicSignature();
+        sig.bubbleID = 0;
         sig.dungeonType = Dungeon::Type::Anomaly;
         sig.ownerID = cur.second->GetOwnerID();
         sig.sigID = sEntityList.GetAnomalyID();         // result.id

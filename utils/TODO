@@ -130,7 +130,7 @@ missing prices for salvage
 *******************************************************
 ********  improvements
 
-go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/32/64)
+go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
 
 remove GPoint/GVector code and replace with evemoo's code (after thorough review)
     - float/double not needed and math on those are expensive.  replace with int64
@@ -150,17 +150,13 @@ client login screen...these all need code to show data    CharacterDB::GetCharSe
     unprocessedNotifications:
 also need to optimize query....can join instead of using (current) multiple queries and variables
 
-check into cosmic manager enabling checks/code....kinda dont make sense)
-*** this below is wrong.  look into it.
+check into cosmic manager enabling checks/code....kinda dont make sense (may have done this already)
+*** this below is wrong.  look into it.  UD: why is this wrong?
 20:21:01 [CMgr Msg] AnomalyMgr Initialized for Ibaria(30000053) with 2 Max Signals for security class 0.37.  Test Server is enabled
-
 
 base price estimator code 95% complete.
 few prices wrong and not in crucible mkt data dump
 static category names are a bit off (semantics)
-
-skill training...
-    2x training bonus for new chars (<30d)
 
 EVEDB::invGroups::Spawn_Container needs it own class
     - mostly for dungeons/deadspace
@@ -180,11 +176,13 @@ remove *lsc_service and *cache_service from PyServiceMgr
 
 AuditLogSecureContainer types not coded (data coded in EvE_Inventory.h)
 
+client python (liveupdate) hack client to provide missing skill event msgs
+skill training...
+    2x training bonus for new chars (<30d)
+
 skill error on queue update   - see cruc/skills/skill_error_new
 
-look into changing (EvilNumber)DmgTypeAttribute to (struct)Inv::AttrData  (started.  still being used by sDataMgr and AttributeMgr)
-    - may be able to delete the EvilNumber class, as it was created only to deal with attribute data, which we are getting away from with the struct.
-    - the db will have to be verified for int/float values, as some identical-types have both (some int, some float)
+look into benefits of changing skillQueue from vector to list (suggested for multiple/often add/delete ops)
 
 journal msgs need to be implemented (wip)
 
@@ -203,7 +201,7 @@ go thru all updated effect data and look for 'improved' ship data to update ours
 current fx data in db incomplete at best.  missing multiple items/defs
 effects processing incomplete.
     - must have skills skillLvl working somehow to implement proper agility processing
-    
+
 23:51:06 [FxError] guid empty for F85 Peripheral Damage System I using effectID 2302
 isDefault used to send to activate for effectID
 go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
@@ -353,7 +351,7 @@ dungeon mgr - factionID of "region sov" needs to be written to determine region 
 fleetData.h needs to be moved to common/EVE_Fleet.h and PODs put in fleet namespace
 FleetBound could use updates (client->getchar->name, etc)
 
-fleet boosts - apply directly to ship/modules when calculated
+fleet boosts - apply directly to ship/modules when calculated  (maybe try to use fxproc to apply, as ccp designed it)
     - set leadership skill modifiers on char item, then have fleet boosts pull directly from char
     - apply either when undocking or as fleet is created and use OnModuleAttributeChange packet
     - this will give proper data to client when GetAllInfo() is sent

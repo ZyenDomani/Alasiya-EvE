@@ -78,7 +78,7 @@ m_spawnTimer(0)
 SystemBubble::~SystemBubble()
 {
     if (m_hasMarkers)
-        for (auto cur : m_markers) {
+        for (auto &cur : m_markers) {
             cur.second->Delete(); // delete marker cans here
             SafeDelete(cur.second);
         }
@@ -86,7 +86,7 @@ SystemBubble::~SystemBubble()
 
 void SystemBubble::clear() {
     if (m_hasMarkers)
-        for (auto cur : m_markers) {
+        for (auto &cur : m_markers) {
             cur.second->Delete(); // delete marker cans here
             SafeDelete(cur.second);
         }
@@ -216,7 +216,7 @@ void SystemBubble::Add(SystemEntity* pSE)
         GVector direction(startPoint, NULL_ORIGIN);
         double rangeToStar = direction.length();
         rangeToStar /= ONE_AU_IN_METERS;
-        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %u/%u Entities in bubble %u",\
+        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
                 rangeToStar, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
         //if (sConfig.debug.StackTrace)
         //    EvE::traceStack();
@@ -357,7 +357,7 @@ void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
     if (m_dynamicEntities.empty())
         return;
 
-    for (auto cur : m_dynamicEntities) {
+    for (auto &cur : m_dynamicEntities) {
         if (cur.second->DestinyMgr() != nullptr)
             if (cur.second->DestinyMgr()->IsCloaked())
                 continue;
@@ -370,7 +370,7 @@ void SystemBubble::GetAllEntities(std::map< uint32, SystemEntity* >& into) const
     if (m_dynamicEntities.empty())
         return;
 
-    for (auto cur : m_dynamicEntities)
+    for (auto &cur : m_dynamicEntities)
         into.emplace(cur.first, cur.second);
 }
 
@@ -380,7 +380,7 @@ void SystemBubble::GetEntityVec(std::vector< SystemEntity* >& into) const
     if (m_players.empty())
         return;
 
-    for (auto cur : m_dynamicEntities)
+    for (auto &cur : m_dynamicEntities)
         into.push_back(cur.second);
 }
 
@@ -395,7 +395,7 @@ void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
     if (m_players.empty())
         return;
 
-    for (auto cur : m_players)
+    for (auto &cur : m_players)
         into.push_back(cur.second);
 }
 
@@ -405,7 +405,7 @@ SystemEntity* SystemBubble::GetRandomEntity()
     if (m_dynamicEntities.empty())
         return nullptr;
 
-    for (auto cur : m_dynamicEntities) {
+    for (auto &cur : m_dynamicEntities) {
         if (cur.second->IsWreckSE())
             return cur.second;
         if (cur.second->IsObjectEntity())
@@ -416,7 +416,7 @@ SystemEntity* SystemBubble::GetRandomEntity()
 
 uint32 SystemBubble::CountNPCs() {
     uint32 count = 0;
-    for (auto cur : m_dynamicEntities)
+    for (auto &cur : m_dynamicEntities)
         if (cur.second->IsNPCSE())
             ++count;
 
@@ -432,7 +432,7 @@ bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const
             check = true;
 
         _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::InBubble(%u) - center: %.1f,%.1f,%.1f - distance: %.1f, check: %s", \
-                m_center.x, m_center.y, m_center.z, m_bubbleID, distance, check?"true":"false");
+                m_bubbleID, m_center.x, m_center.y, m_center.z, distance, check?"true":"false");
         return check;
     }
 
@@ -448,7 +448,7 @@ bool SystemBubble::IsOverlap( const GPoint& pt ) const
             check = true;
 
         _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::IsOverlap(%u) - center: %.1f,%.1f,%.1f - distance: %.1f, check: %s", \
-                m_center.x, m_center.y, m_center.z, m_bubbleID, distance, check?"true":"false");
+                m_bubbleID, m_center.x, m_center.y, m_center.z, distance, check?"true":"false");
         return check;
     }
 
@@ -457,7 +457,7 @@ bool SystemBubble::IsOverlap( const GPoint& pt ) const
 
 void SystemBubble::PrintEntityList() {
     bool found = false;
-    for (auto cur : m_dynamicEntities) {
+    for (auto &cur : m_dynamicEntities) {
         found = false;
         if (cur.second->isGlobal())  //this should only hit beacons and cynos as global AND not static
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Global.", cur.second->GetName(), cur.second->GetID() );
@@ -544,7 +544,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     AddBalls addballs;
     addballs.slims = new PyList();
 
-    for (auto cur : m_dynamicEntities) {
+    for (auto &cur : m_dynamicEntities) {
         if (cur.second->DestinyMgr() != nullptr)
             if (cur.second->DestinyMgr()->IsCloaked())
                 continue;
@@ -595,7 +595,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     addballs2.stateStamp = sEntityList.GetStamp();
     addballs2.extraBallData = new PyList();
 
-    for (auto cur : m_dynamicEntities) {
+    for (auto &cur : m_dynamicEntities) {
         if (cur.second->IsMissileSE() or cur.second->IsContainerSE()) {
             addballs2.extraBallData->AddItem(cur.second->MakeSlimItem());
         } else {
@@ -732,7 +732,7 @@ void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
 
     RemoveBallsFromBP remove_balls;
 
-    for (auto cur : m_dynamicEntities)
+    for (auto &cur : m_dynamicEntities)
         remove_balls.balls.push_back(cur.first);
 
     if (remove_balls.balls.empty())
@@ -757,7 +757,7 @@ PyObject* SystemBubble::GetDroneState() const
         header->SetItemString(5, "controllerOwnerID");
         header->SetItemString(6, "targetID");
     PyList* lines = new PyList();
-    for (auto cur : m_drones) {
+    for (auto &cur : m_drones) {
         PyList* line = new PyList(7);
             line->SetItem(0, new PyInt(cur.first));
             line->SetItem(1, new PyInt(cur.second->GetOwnerID()));
@@ -779,8 +779,8 @@ PyObject* SystemBubble::GetDroneState() const
 
 void SystemBubble::SyncPos() {
     // send positions of all dSE in bubble to all players in bubble
-    for (auto player : m_players)
-        for (auto dse : m_dynamicEntities) {
+    for (auto &player : m_players)
+        for (auto &dse : m_dynamicEntities) {
             SetBallPosition du;
                 du.entityID = dse.first;
                 du.x = dse.second->GetPosition().x;
@@ -793,7 +793,7 @@ void SystemBubble::SyncPos() {
 
 void SystemBubble::CmdDropLoot()
 {
-    for (auto dse : m_dynamicEntities) {
+    for (auto &dse : m_dynamicEntities) {
         if (dse.second->IsNPCSE())
             dse.second->GetNPCSE()->CmdDropLoot();
     }
@@ -803,7 +803,7 @@ void SystemBubble::CmdDropLoot()
 void SystemBubble::RemoveMarkers()
 {
     if (m_hasMarkers)
-        for (auto cur : m_markers) {
+        for (auto &cur : m_markers) {
             m_system->RemoveEntity(cur.second);
             cur.second->Delete(); // delete marker cans here
             SafeDelete(cur.second);
@@ -936,7 +936,7 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
 {
     if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
         (*payload)->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-    for (auto cur : m_players) {
+    for (auto &cur : m_players) {
         _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
         cur.second->QueueDestinyUpdate(payload);
@@ -945,7 +945,7 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
 
 void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const char* desc, SystemEntity* pSE ) const
 {
-    for (auto cur : m_players) {
+    for (auto &cur : m_players) {
         // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
         if (cur.second->GetShipSE() != pSE) {
@@ -960,7 +960,7 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 {
     if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
         (*payload)->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-    for (auto cur : m_players) {
+    for (auto &cur : m_players) {
         _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
         cur.second->QueueDestinyEvent(payload);
@@ -969,7 +969,7 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 
 void SystemBubble::BubblecastSendNotification(const char* notifyType, const char* idType, PyTuple** payload, bool seq)
 {
-    for (auto cur : m_players) {
+    for (auto &cur : m_players) {
         _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
         cur.second->SendNotification( notifyType, idType, payload, seq );

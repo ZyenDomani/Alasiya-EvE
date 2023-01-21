@@ -33,10 +33,10 @@
  * Data container for celestial object.
  */
 struct CelestialObjectData {
-    uint8 celestialIndex;
-    uint8 orbitIndex;
-    double radius;
-    double security;
+    uint8 celestialIndex=0;
+    uint8 orbitIndex=0;
+    double radius=0.0;
+    double security=0.0;
 };
 
 

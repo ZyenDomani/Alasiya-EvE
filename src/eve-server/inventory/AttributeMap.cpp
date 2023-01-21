@@ -316,7 +316,7 @@ EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
     or (attrID == AttrActivationTargetLoss)
     or (attrID == AttrAdvancedCapitalAgility)
     or (attrID == AttrNewAgility)) {
-        sLog.Warning("AttrMap - Change", "Attribute %u called.  not printing stacktrace.", attrID);
+        sLog.Warning("AttrMap - Get", "Attribute %u called.  not printing stacktrace.", attrID);
         //EvE::traceStack();
     }
 

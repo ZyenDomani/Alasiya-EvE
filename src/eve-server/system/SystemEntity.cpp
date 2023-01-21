@@ -140,7 +140,7 @@ void SystemEntity::EncodeDestiny( Buffer& into )
     RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-    _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void SystemEntity::Killed(Damage& fatal_blow)
@@ -313,7 +313,7 @@ void StaticSystemEntity::EncodeDestiny( Buffer& into ) {
     RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-    _log(SE__DESTINY, "SSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
+    _log(SE__DESTINY, "SSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
 }
 
 BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -323,7 +323,8 @@ BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* sys
 
 // copy c'tor
 BeltSE::BeltSE(const BeltSE* oth)
-: StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system)
+: StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system),
+m_beltMgr(nullptr)
 {
     // nothing to do here
 }
@@ -342,13 +343,16 @@ bool BeltSE::LoadExtras() {
 
 StargateSE::StargateSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(self, services, system),
-m_sbuSE(nullptr)
+m_sbuSE(nullptr),
+m_jumps(nullptr)
 {
 }
 
 // copy c'tor
 StargateSE::StargateSE(const StargateSE* oth)
-: StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system)
+: StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system),
+m_sbuSE(nullptr),
+m_jumps(nullptr)
 {
     /** @todo  this is incomplete */
 }
@@ -464,7 +468,7 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(SE__DESTINY, "ISE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "ISE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
@@ -524,7 +528,7 @@ void FieldSE::EncodeDestiny( Buffer& into )
         into.Append( main );
     }
 
-    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *FieldSE::MakeSlimItem()
@@ -545,7 +549,8 @@ m_invul(false)
 
 // copy c'tor
 ObjectSystemEntity::ObjectSystemEntity(const ObjectSystemEntity* oth)
-: SystemEntity(oth->m_self, oth->m_services, oth->m_system)
+: SystemEntity(oth->m_self, oth->m_services, oth->m_system),
+m_invul(false)
 {
     /** @todo  this is incomplete */
 }
@@ -578,7 +583,7 @@ void ObjectSystemEntity::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(SE__DESTINY, "OSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "OSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict* ObjectSystemEntity::MakeSlimItem() {
@@ -618,6 +623,7 @@ void ObjectSystemEntity::UpdateDamage()
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
     //source->QueueDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void ObjectSystemEntity::Killed(Damage &fatal_blow)
@@ -659,7 +665,9 @@ m_frozen(false)
 
 // copy c'tor
 DynamicSystemEntity::DynamicSystemEntity(const DynamicSystemEntity* oth)
-: SystemEntity(oth->m_self, oth->m_services, oth->m_system)
+: SystemEntity(oth->m_self, oth->m_services, oth->m_system),
+m_invul(false),
+m_frozen(false)
 {
     /** @todo  this is incomplete */
 }
@@ -726,7 +734,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(SE__DESTINY, "DSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "DSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void DynamicSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
@@ -752,6 +760,7 @@ void DynamicSystemEntity::UpdateDamage()
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
     //source->QueueDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DynamicSystemEntity::AwardBounty(Client* pClient)
@@ -775,6 +784,7 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
     data.fromKey = Account::KeyType::Cash;
     data.toKey = Account::KeyType::Cash;
     data.reason = reason;
+    data.amount = 0.0f;
 
     // handle distribution to fleets
     if (pClient->InFleet()) {
