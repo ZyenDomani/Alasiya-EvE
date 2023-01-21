@@ -347,7 +347,6 @@ void ConcordAI::Process() {
                         }
                         return;
                     } else if (!pTarget->SysBubble()) {
-
                         m_npc->TargetMgr()->ClearTarget(pTarget);
                         //m_npc->TargetMgr()->OnTarget(pTarget, TargMgr::Mode::Lost);
                         return;
@@ -520,7 +519,6 @@ void ConcordAI::ClearTargets() {
 }
 
 void ConcordAI::ClearAllTargets() {
-
     //m_npc->TargetMgr()->ClearAllTargets();
     m_npc->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::ClientReq);
 }
@@ -593,9 +591,7 @@ void ConcordAI::TargetLost(SystemEntity* pTarget) {
                 _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) lost, but more targets remain.",
                      m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
             }
-
         } break;
-
         default:
             break;
     }
@@ -689,6 +685,7 @@ void ConcordAI::DisableRepTimers()
     m_shieldBoosterTimer.Disable();
 }
 
-ConcordSpawnMgr::ConcordSpawnMgr() {
-
+ConcordSpawnMgr::ConcordSpawnMgr()
+{
+    // nothing to do here
 }

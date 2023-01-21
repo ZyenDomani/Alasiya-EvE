@@ -676,7 +676,6 @@ const char* FxProc::GetStateName(int8 id)
         case FX::State::Invalid:
         default:                       return "Invalid";
     }
-
 }
 
 
@@ -789,5 +788,4 @@ void FxProc::DecodeExpression(Expression expression, fxData& data)
             DecodeExpression(sFxDataMgr.GetExpression(expression.arg2), data);
         } break;
     }
-
 }

@@ -109,10 +109,11 @@ EvilNumber::EvilNumber( double val ) : mType(evil_number_float)
 PyRep* EvilNumber::GetPyObject()
 {
     if (mType == evil_number_int) {
-        if ( iVal > INT_MAX || iVal < INT_MIN)
+        if ((iVal > INT_MAX) or (iVal < INT_MIN)) {
             return (PyRep*)new PyLong(iVal);
-        else
+        } else {
             return (PyRep*)new PyInt((int32)(iVal));
+        }
     } else if (mType == evil_number_float) {
         return (PyRep*)new PyFloat(fVal);
     } else {

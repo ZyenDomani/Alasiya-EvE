@@ -102,8 +102,8 @@ public:
     EvilNumber operator-(const EvilNumber& val)
     {    return _Subtract(*this, val);   }
 
-	EvilNumber operator-()
-	{    return _Multiply(EvilNumber(-1.0), *this);   }
+    EvilNumber operator-()
+    {    return _Multiply(EvilNumber(-1.0), *this);   }
 
     EvilNumber operator-=(const EvilNumber& val)
     {    return _SelfSubtract(val);     }

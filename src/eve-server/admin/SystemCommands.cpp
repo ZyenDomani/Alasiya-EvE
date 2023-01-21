@@ -399,7 +399,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             }
         }
     }
-    
+
     /** @todo this needs to reset client bp/systemData for new system, if applicable */
     if (pOtherClient != nullptr) {
         pOtherClient->JumpOutEffect(pOtherClient->GetLocationID());
@@ -414,7 +414,6 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
 }
 
 static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
-
     int typeID = -1;
     if (args.isNumber(1)) {
         typeID = atoi(args.arg(1).c_str());

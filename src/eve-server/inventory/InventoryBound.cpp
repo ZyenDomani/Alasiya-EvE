@@ -768,7 +768,6 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
 
     } else if (IsControlBunker(m_itemID)) {
         // not sure what this is yet
-
     }
     /*
      *    if (IsCargoHoldFlag(flag)) {

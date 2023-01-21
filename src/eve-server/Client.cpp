@@ -1426,7 +1426,6 @@ void Client::WormholeJump(InventoryItemRef wormhole) {
     m_movePoint = destWh->position();
     m_movePoint.MakeRandomPointOnSphere(2000);
     SetStateTimer(Player::State::WormholeJump, Player::Timer::Jumping);
-
 }
 
 void Client::ExecuteJump() {

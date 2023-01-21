@@ -80,7 +80,7 @@ m_destiny(oth->m_destiny),m_targMgr(oth->m_targMgr),m_killed(oth->m_killed),m_wa
 m_allyID(oth->m_allyID),m_corpID(oth->m_corpID),m_fleetID(oth->m_fleetID),m_ownerID(oth->m_ownerID),
 m_radius(oth->m_radius),m_harmonic(oth->m_harmonic)
 {
-
+    // nothing to do here
 }
 
 
@@ -274,13 +274,14 @@ void SystemEntity::Abandon()
 StaticSystemEntity::StaticSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
+    // nothing to do here
 }
 
 // copy c'tor
 StaticSystemEntity::StaticSystemEntity(const StaticSystemEntity* oth)
 : SystemEntity(oth->m_self, oth->m_services, oth->m_system)
 {
-
+    // nothing to do here
 }
 
 bool StaticSystemEntity::LoadExtras() {
@@ -324,7 +325,7 @@ BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* sys
 BeltSE::BeltSE(const BeltSE* oth)
 : StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system)
 {
-
+    // nothing to do here
 }
 
 bool BeltSE::LoadExtras() {

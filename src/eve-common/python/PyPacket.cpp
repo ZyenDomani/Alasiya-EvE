@@ -66,7 +66,7 @@ userid(0),
 payload(nullptr),
 named_payload(nullptr)
 {
-
+    // nothing to do here
 }
 
 PyPacket::~PyPacket()
@@ -274,7 +274,7 @@ objectID(0),
 callID(0),
 service("")
 {
-
+    // nothing to do here
 }
 
 void PyAddress::Dump(FILE *into, const char *pfx) const {

@@ -886,8 +886,8 @@ void ModuleManager::StopModuleRepair(uint32 modID)
         _log(MODULE__ERROR, "MM::ModuleRepair() - module %u not found.", modID);
         return;
     }
-
-
+    
+    // need to finish this...
 }
 
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)

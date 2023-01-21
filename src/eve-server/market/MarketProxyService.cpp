@@ -271,9 +271,8 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             //   these may be written already.  will have to check
 
             accountKey = call.client->GetCorpAccountKey();
-
         } else {
-
+            // nothing to do here?
         }
 
         //is this standing order or immediate?
