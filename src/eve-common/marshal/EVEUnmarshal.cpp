@@ -268,8 +268,7 @@ PyRep* UnmarshalStream::LoadStringTable()
     const uint8 index = Read<uint8>();
 
     const char* str = sMarshalStringTable.LookupString( index );
-    if ( NULL == str )
-    {
+    if (str == nullptr) {
         assert( false );
         sLog.Error( "Unmarshal", "String Table Item %u is out of range!", index );
 
@@ -277,8 +276,8 @@ PyRep* UnmarshalStream::LoadStringTable()
         snprintf( ebuf, 64, "Invalid String Table Item %u", index );
         return new PyString( ebuf );
     }
-    else
-        return new PyString( str );
+
+    return new PyString( str );
 }
 
 PyRep* UnmarshalStream::LoadWStringUCS2Char()
@@ -349,7 +348,7 @@ PyRep* UnmarshalStream::LoadTuple()
 PyRep* UnmarshalStream::LoadTupleOne()
 {
     PyRep* i = LoadRep();
-    if ( NULL == i )
+    if (i == nullptr)
         return nullptr;
 
     PyTuple* tuple = new PyTuple( 1 );
@@ -361,13 +360,12 @@ PyRep* UnmarshalStream::LoadTupleOne()
 PyRep* UnmarshalStream::LoadTupleTwo()
 {
     PyRep* i = LoadRep();
-    if ( NULL == i )
+    if (i == nullptr)
         return nullptr;
 
     PyRep* j = LoadRep();
-    if ( NULL == j )
-    {
-        PyDecRef( i );
+    if (j == nullptr) {
+        PyDecRef(i);
         return nullptr;
     }
 
@@ -401,7 +399,7 @@ PyRep* UnmarshalStream::LoadList()
 PyRep* UnmarshalStream::LoadListOne()
 {
     PyRep* i = LoadRep();
-    if ( NULL == i )
+    if (i == nullptr)
         return nullptr;
 
     PyList* list = new PyList();
@@ -413,22 +411,24 @@ PyRep* UnmarshalStream::LoadListOne()
 PyRep* UnmarshalStream::LoadDict()
 {
     const uint32 count = ReadSizeEx();
-    PyDict* dict = new PyDict;
+    PyDict* dict = new PyDict();
 
     for ( uint32 i(0); i < count; i++ )
     {
         PyRep* value = LoadRep();
-        if ( NULL == value )
-            return nullptr;
-
-        PyRep* key = LoadRep();
-        if ( NULL == key )
-        {
-            PyDecRef( value );
+        if (value == nullptr) {
+            PyDecRef(dict);
             return nullptr;
         }
 
-        dict->SetItem( key, value );
+        PyRep* key = LoadRep();
+        if (key == nullptr) {
+            PyDecRef(dict);
+            PyDecRef(value);
+            return nullptr;
+        }
+
+        dict->SetItem(key, value);
     }
 
     return dict;
@@ -437,7 +437,7 @@ PyRep* UnmarshalStream::LoadDict()
 PyRep* UnmarshalStream::LoadObject()
 {
     PyRep* type = LoadRep();
-    if ( NULL == type )
+    if (type == nullptr)
         return nullptr;
 
     if ( !type->IsString() )
@@ -449,8 +449,7 @@ PyRep* UnmarshalStream::LoadObject()
     }
 
     PyRep* arguments = LoadRep();
-    if ( NULL == arguments )
-    {
+    if (arguments == nullptr) {
         PyDecRef( type );
         return nullptr;
     }
@@ -481,7 +480,7 @@ PyRep* UnmarshalStream::LoadSubStruct()
     // This is actually a remote object specification
 
     PyRep* ss = LoadRep();
-    if ( NULL == ss )
+    if (ss == nullptr)
         return nullptr;
 
     return new PySubStruct( ss );
@@ -492,7 +491,7 @@ PyRep* UnmarshalStream::LoadChecksumedStream()
     const uint32 sum = Read<uint32>();
 
     PyRep* ss = LoadRep();
-    if ( NULL == ss )
+    if (ss == nullptr)
         return nullptr;
 
     return new PyChecksumedStream( ss, sum );
@@ -507,7 +506,7 @@ PyRep* UnmarshalStream::LoadPackedRow()
      *
      */
     PyRep* header_element = LoadRep();
-    if ( NULL == header_element )
+    if (header_element == nullptr)
         return nullptr;
 
     Buffer unpacked;
@@ -628,7 +627,7 @@ PyRep* UnmarshalStream::LoadPackedRow()
             case DBTYPE_WSTR:
             {
                 PyRep* el = LoadRep();
-                if ( NULL == el )
+                if (el )
                 {
                     PyDecRef( row );
                     return nullptr;
@@ -638,8 +637,10 @@ PyRep* UnmarshalStream::LoadPackedRow()
             } break;
 
             case DBTYPE_EMPTY:
-            case DBTYPE_ERROR:
+            case DBTYPE_ERROR: {
+                PySafeDecRef(row);
                 return nullptr;
+            }
         }
     }
 
@@ -658,19 +659,18 @@ PyRep* UnmarshalStream::LoadSavedStreamElement()
     const uint32 index = ReadSizeEx();
 
     PyRep* obj = GetStoredObject( index );
-    if ( NULL == obj )
-    {
+    if (obj == nullptr) {
         sLog.Error( "Unmarshal", "SavedStreamElement: Got invalid stored object." );
         return nullptr;
     }
 
-    return obj->Clone();
+    return obj; //obj->Clone();
 }
 
 PyObjectEx* UnmarshalStream::LoadObjectEx( bool is_type_2 )
 {
     PyRep* header = LoadRep();
-    if ( NULL == header )
+    if (header == nullptr)
         return nullptr;
 
     PyObjectEx* obj = new PyObjectEx( is_type_2, header );
@@ -678,8 +678,7 @@ PyObjectEx* UnmarshalStream::LoadObjectEx( bool is_type_2 )
     while( Op_PackedTerminator != Peek<uint8>() )
     {
         PyRep* el = LoadRep();
-        if ( NULL == el )
-        {
+        if (el == nullptr) {
             PyDecRef( obj );
             return nullptr;
         }
@@ -692,15 +691,13 @@ PyObjectEx* UnmarshalStream::LoadObjectEx( bool is_type_2 )
     while( Op_PackedTerminator != Peek<uint8>() )
     {
         PyRep* key = LoadRep();
-        if ( NULL == key )
-        {
+        if (key == nullptr) {
             PyDecRef( obj );
             return nullptr;
         }
 
         PyRep* value = LoadRep();
-        if ( NULL == value )
-        {
+        if (value == nullptr) {
             PyDecRef( key );
             PyDecRef( obj );
             return nullptr;

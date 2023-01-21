@@ -193,7 +193,7 @@ bool PyPacket::Decode(PyRep **in_packet)
             type = (MACHONETMSG_TYPE) PyRep::IntegerValue(tuple->items[0]);
         } break;
         default: {
-            codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Unknown message type %i", PyRep::IntegerValue(tuple->items[0]));
+            codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Unknown message type %li", PyRep::IntegerValue(tuple->items[0]));
             PyDecRef(packet);
             return false;
         } break;
@@ -448,7 +448,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
             }*/
         }   break;
         default: {
-            codelog(NET__PACKET_ERROR, "Unknown address type: %i", PyRep::IntegerValue(tuple->items[0]));
+            codelog(NET__PACKET_ERROR, "Unknown address type: %li", PyRep::IntegerValue(tuple->items[0]));
             PyDecRef(base);
             PySafeDecRef(tuple);
             return false;

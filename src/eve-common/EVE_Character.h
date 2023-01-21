@@ -15,10 +15,13 @@ namespace Char {
             Caldari     = 1,
             Minmatar    = 2,
             Amarr       = 4,
-            Ammatar     = 6,        // not an actual race, but combo of Minmatar and Amarr
+            Sansha      = 5,    // Caldari + Amarr
+            Ammatar     = 6,    // Minmatar + Amarr
             Gallente    = 8,
+            Guristas    = 9,    // Caldari + Gallente
+            Serpentis   = 10,   // Minmatar + Gallente
             Jove        = 16,
-            Pirate      = 32,
+            Pirate      = 32,   //Incursion Sansha?
             Sleepers    = 64,
             ORE         = 128
         };

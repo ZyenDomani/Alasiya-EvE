@@ -56,7 +56,7 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress/*true*/ )
     pBuffer->ResizeAt( bufLen, 1 );
 
     if (PACKET_SIZE_LIMIT < pBuffer->size()) {
-        sLog.Error( "Network", "Packet length %u exceeds hardcoded packet length limit %lu.", pBuffer->size(), PACKET_SIZE_LIMIT );
+        sLog.Error( "Network", "Packet length %lu exceeds hardcoded packet length limit %u.", pBuffer->size(), PACKET_SIZE_LIMIT );
         SafeDelete( pBuffer );
         return;
     }

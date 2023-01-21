@@ -129,7 +129,7 @@ std::string PyRep::StringContent(PyRep* pRep)
     } else if (pRep->IsNone()) {
         return "";
     }
-    
+
     sLog.Error("PyRep::StringContent()", "Expected PyString or PyWString but got %s.", pRep->TypeString());
     return "";
 }
@@ -232,10 +232,11 @@ int32 PyLong::hash() const
     /* This is designed so that Python ints and longs with the
     same value hash to the same value, otherwise comparisons
     of mapping keys will turn out weird */
+    /* Coverity says this is dead code... i!<0
     if (i < 0 ) {
         sign = -1;
         i = -(i);
-    }
+    } */
     /* The following loop produces a C long x such that (unsigned long)x
     is congruent to the absolute value of v modulo ULONG_MAX.  The
     resulting x is nonzero if and only if v is. */
@@ -1083,11 +1084,11 @@ PyTuple* PyObjectEx_Type2::_CreateHeader( PyToken* args, PyDict* keywords, bool 
     PyTuple* body = new PyTuple( 2 );
         body->SetItem( 0, args );
         body->SetItem( 1, keywords );
-
+    /*
     if (enclosed) {
         PyTuple* head = new PyTuple( 1 );
             head->SetItem( 0, body );
-    }
+    } */
 
     return body; // head;
 }
