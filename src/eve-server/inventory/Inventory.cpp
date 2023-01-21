@@ -178,7 +178,7 @@ bool Inventory::LoadContents() {
         return false;
     }
 
-    for (auto cur : items) {
+    for (auto &cur : items) {
         if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_myID))
             continue;
         InventoryItemRef iRef = sItemFactory.GetItemRef(cur);
@@ -246,7 +246,7 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     /** @todo @note  this isnt working right, and im not sure why yet...  */
     // test after changing iteration (pre to post)
     auto range = m_contentsByFlag.equal_range(iRef->flag());
-    for (auto cur = range.first; cur != range.second; cur++) {
+    for (auto &cur = range.first; cur != range.second; cur++) {
         if (cur->second == iRef) {
             m_contentsByFlag.erase(cur);
             _log(INV__TRACE, "Inventory::RemoveItem(2) - %s(%u) removed from %s(%u) flagMap at %s.", \
@@ -293,13 +293,13 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
     PyPackedRow* row(nullptr);
     // office hangars list ALL items.  client separates by division flag
     if (IsOfficeID(m_myID) or IsCharacterID(m_myID)) {
-        for (auto cur : mContents) {
+        for (auto &cur : mContents) {
             row = into->NewRow();
             cur.second->GetItemRow(row);
         }
     } else if (m_self->categoryID() == EVEDB::invCategories::Ship) {
         bool space = sDataMgr.IsSolarSystem(m_self->locationID());
-        for (auto cur : mContents) {
+        for (auto &cur : mContents) {
             // this also fills module/charges in fit window when docked.
             //  charges not sent like this in space (uses subLocation sent via shipInfo())
             if (space and IsFittingSlot(cur.second->flag()))
@@ -309,7 +309,7 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
             cur.second->GetItemRow(row);
         }
     } else {
-        for (auto cur : mContents) {
+        for (auto &cur : mContents) {
             if (((ownerID == 0)        or (cur.second->ownerID() == ownerID))
             and ((flag == flagNone) or (cur.second->flag() == flag))) {
                 row = into->NewRow();
@@ -320,13 +320,13 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
 }
 
 void Inventory::GetCargoList(std::multimap< uint8, InventoryItemRef >& cargoMap) {
-    for (auto cur : mContents)
+    for (auto &cur : mContents)
         cargoMap.emplace(cur.second->flag(), cur.second);
 }
 
 float Inventory::GetCorpHangerCapyUsed() const {
     float totalVolume(0.0f);
-    for (auto cur : mContents)
+    for (auto &cur : mContents)
         if (IsHangarFlag(cur.second->flag()))
             totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
     return totalVolume;
@@ -335,7 +335,7 @@ float Inventory::GetCorpHangerCapyUsed() const {
 void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
     std::vector<InventoryItemRef> itemVecTmp;
     itemVecTmp.clear();
-    for (auto cur : mContents)
+    for (auto &cur : mContents)
         itemVecTmp.push_back(cur.second);
     /* sorting method to put modules first, charges second, and cargo last
      *  this is needed to correctly fit modules BEFORE trying to load charges
@@ -430,13 +430,13 @@ void Inventory::GetInvForOwner(uint32 ownerID, std::vector< InventoryItemRef >& 
         _log(INV__ERROR, "GetInvForOwner called on non-station item %s(%u)", m_self->name(), m_myID);
         EvE::traceStack();
     }
-    for (auto cur : mContents)
+    for (auto &cur : mContents)
         if (cur.second->ownerID() == ownerID)
             items.push_back(cur.second);
 }
 
 InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
-    for (auto cur : mContents)
+    for (auto &cur : mContents)
         if (cur.second->flag() == flag)
             return cur.second;
 
@@ -453,7 +453,7 @@ InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) cons
 }
 
 void Inventory::GetInventoryMap( std::map< uint32, InventoryItemRef >& invMap ) {
-    for (auto cur : mContents)
+    for (auto &cur : mContents)
         invMap.emplace(cur.first, cur.second);
 }
 
@@ -481,7 +481,7 @@ InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
     if (GetItemsByFlag(flag, items) < 1)
         return InventoryItemRef(nullptr);
 
-    for (auto cur : items)
+    for (auto &cur : items)
         if (cur->typeID() == typeID )
             return cur;
 
@@ -505,7 +505,7 @@ uint32 Inventory::GetItemsByFlagRange(EVEItemFlags lowflag, EVEItemFlags highfla
 {
     // i dont yet see a better way to do this one...
     uint32 count = 0;
-    for (auto cur : mContents)
+    for (auto &cur : mContents)
         if (cur.second->flag() >= lowflag && cur.second->flag() <= highflag) {
             items.push_back(cur.second);
             ++count;
@@ -517,7 +517,7 @@ uint32 Inventory::GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<In
 {
     // i dont yet see a better way to do this one...
     uint32 count = 0;
-    for (auto cur : mContents)
+    for (auto &cur : mContents)
         if (flags.find(cur.second->flag()) != flags.end()) {
             items.push_back(cur.second);
             ++count;
@@ -528,7 +528,7 @@ uint32 Inventory::GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<In
 bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty/*0*/) const
 {
     uint32 count(0);
-    for (auto cur : mContents) {
+    for (auto &cur : mContents) {
         if (cur.second->typeID() == typeID ) {
             if (cur.second->quantity() >= qty) {
                 return true;
@@ -548,7 +548,7 @@ bool Inventory::ContainsTypeQtyByFlag(uint16 typeID, EVEItemFlags flag, uint32 q
     if (GetItemsByFlag(flag, itemVec) < 1)
         return false;
 
-    for (auto cur : itemVec) {
+    for (auto &cur : itemVec) {
         if (cur->quantity() >= qty) {
             return true;
         } else {
@@ -564,7 +564,7 @@ bool Inventory::ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag) const
     std::vector<InventoryItemRef> itemVec;
     if (GetItemsByFlag(flag, itemVec) < 1)
         return false;
-    for (auto cur : itemVec)
+    for (auto &cur : itemVec)
         if (cur->typeID() == typeID)
             return true;
     return false;
@@ -601,7 +601,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
         }
     }
 
-    for (auto cur : delVec)
+    for (auto &cur : delVec)
         cur->Delete();
 }
 
@@ -609,7 +609,7 @@ float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
 {
     float totalVolume(0.0f);
     if (IsHangarFlag(flag) and combined) {
-        for (auto cur : mContents)
+        for (auto &cur : mContents)
             if (IsHangarFlag(cur.second->flag()))
                 totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
     } else {
@@ -684,7 +684,7 @@ float Inventory::GetCapacity(EVEItemFlags flag) const {
             //for ship, this is TOTAL capy for all corp hangars (they share capy)
             if (m_self->HasAttribute(AttrHasCorporateHangars))
                 return m_self->GetAttribute(AttrCorporateHangarCapacity).get_float();
-        }
+        } break;
         case flagHangar: {
             if (sDataMgr.IsStation(m_myID))
                 return maxHangarCapy;

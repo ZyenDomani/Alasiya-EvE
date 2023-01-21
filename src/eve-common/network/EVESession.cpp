@@ -50,8 +50,8 @@ EVEClientSession::~EVEClientSession() {
 void EVEClientSession::Reset() {
     mPacketHandler = nullptr;
 
+    // Connection has been lost, there's no point in reset
     if ( GetState() != TCPConnection::STATE_CONNECTED )
-        // Connection has been lost, there's no point in reset
         return;
 
     VersionExchangeServer version;
@@ -75,6 +75,7 @@ void EVEClientSession::QueuePacket( PyPacket* packet ) {
     }
 
     mNet->QueueRep( res );
+    SafeDelete(packet);
 }
 
 PyPacket* EVEClientSession::PopPacket() {
@@ -100,6 +101,8 @@ PyPacket* EVEClientSession::_HandleVersion( PyRep* rep ) {
         mPacketHandler = &EVEClientSession::_HandleCommand;
     }
 
+    // cleanup
+    //PySafeDecRef(rep);
     // recurse
     return PopPacket();
 }
@@ -141,6 +144,8 @@ PyPacket* EVEClientSession::_HandleCommand( PyRep* rep ) {
         }
     }
 
+    // cleanup
+    //PySafeDecRef(rep);
     // recurse
     return PopPacket();
 }
@@ -153,6 +158,8 @@ PyPacket* EVEClientSession::_HandleCrypto( PyRep* rep ) {
         mPacketHandler = &EVEClientSession::_HandleAuthentication;
     }
 
+    // cleanup
+    //PySafeDecRef(rep);
     // recurse
     return PopPacket();
 }
@@ -166,6 +173,8 @@ PyPacket* EVEClientSession::_HandleAuthentication( PyRep* rep ) {
         mPacketHandler = &EVEClientSession::_HandleFuncResult;
     }
 
+    // cleanup
+    //PySafeDecRef(rep);
     return PopPacket();
 }
 
@@ -176,7 +185,9 @@ PyPacket* EVEClientSession::_HandleFuncResult( PyRep* rep ) {
     } else if ( _VerifyFuncResult( hr ) ) {
         mPacketHandler = &EVEClientSession::_HandlePacket;
     }
-    
+
+    // cleanup
+    //PySafeDecRef(rep);
     return PopPacket();
 }
 
@@ -190,5 +201,7 @@ PyPacket* EVEClientSession::_HandlePacket( PyRep* rep ) {
         return PopPacket();
     }
 
+    // cleanup
+    //PySafeDecRef(rep);
     return p;
 }

@@ -41,13 +41,18 @@
 
 
 ConsoleCommand::ConsoleCommand()
+: plscc(nullptr),
+ pBubbles(nullptr),
+ pSystems(nullptr),
+ pCommand(nullptr),
+ buf(nullptr),
+ m_haltServer(false),
+ m_dbError(false)
 {
 }
 
 void ConsoleCommand::Initialize(CommandDispatcher* cd)
 {
-    m_dbError = false;
-    m_haltServer = false;
     pCommand = cd;
     tv.tv_sec = 0;
     tv.tv_usec = 0;
@@ -112,7 +117,7 @@ bool ConsoleCommand::Process() {
                 if (clients) {
                     std::vector<Client*> list;
                     sEntityList.GetClients(list);
-                    for (auto cur : list) {
+                    for (auto &cur : list) {
                         if (cur->GetChar().get() == nullptr) {
                             sLog.Magenta("      Connections", " Account %u Connected, but no character selected yet.", cur->GetUserID() );
                             continue;
@@ -128,7 +133,7 @@ bool ConsoleCommand::Process() {
                 uint8 aThreads = std::thread::hardware_concurrency();
                 float vm(0.0f), rss(0.0f), user(0.0f), kernel(0.0f);
                 Status(state, threads, vm, rss, user, kernel);
-                sLog.Warning("    Server Status", "  S: %s | T: %d(%u) | RSS: %.3fMb | VM: %.3fMb | U: %.2f | K: %.2f", \
+                sLog.Warning("    Server Status", "  S: %s | T: %li(%u) | RSS: %.3fMb | VM: %.3fMb | U: %.2f | K: %.2f", \
                         state.data(), threads, aThreads, rss, vm, user, kernel );
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
@@ -220,7 +225,7 @@ bool ConsoleCommand::Process() {
                 const char* buff = buf + 2;
                 std::vector<Client*> list;
                 sEntityList.GetClients(list);
-                for (auto cur : list)
+                for (auto &cur : list)
                     cur->SendNotifyMsg( buff );
                 sLog.Warning("  Console Command", " Notification sent to all online clients." );
             } else if (strncmp(buf, "m", 1) == 0) {
@@ -228,7 +233,7 @@ bool ConsoleCommand::Process() {
                 const char* buff = buf + 2;
                 std::vector<Client*> list;
                 sEntityList.GetClients(list);
-                for (auto cur : list)
+                for (auto &cur : list)
                     cur->SendInfoModalMsg( buff );
                 sLog.Warning("  Console Command", " Modal Message sent to all online clients." );
             } else if (strncmp(buf, "p", 1) == 0) {
@@ -430,12 +435,12 @@ void ConsoleCommand::FxProc(uint8 idx/*0*/) {
         }
     }
 
-    for (auto cur : typeIDs) {
+    for (auto &cur : typeIDs) {
         sLog.Yellow("CC::FxProc", "Processing %s (%u)", cur.second.c_str(), cur.first);
         // proc and print skill fx
         std::vector< TypeEffects > typeEffMap;
         sFxDataMgr.GetTypeEffect(cur.first, typeEffMap);
-        for (auto cur2: typeEffMap)
+        for (auto &cur2: typeEffMap)
             sFxProc.DecodeEffects(cur2.effectID);
     }
 

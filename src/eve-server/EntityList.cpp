@@ -99,7 +99,7 @@ void EntityList::Shutdown() {
      * call d'tor on all connected clients
      * server run loop will exit after control is returned from this function, which will clean up remaining items.
      */
-    for (auto cur : m_clients)
+    for (auto &cur : m_clients)
         SafeDelete(cur);
 
     m_clients.clear();
@@ -115,13 +115,13 @@ void EntityList::Close()
                     m_clients.size(), m_systems.size(), m_agents.size(), m_stations.size());
     }
 
-    for (auto cur : m_clients)
+    for (auto &cur : m_clients)
         SafeDelete(cur);
 
-    for (auto cur : m_agents)
+    for (auto &cur : m_agents)
         SafeDelete(cur.second);
 
-    for (auto cur : m_systems) {
+    for (auto &cur : m_systems) {
         cur.second->UnloadSystem();
         SafeDelete(cur.second);
     }
@@ -224,7 +224,7 @@ void EntityList::Process() {
 
         ++m_stamp;
 
-        for (auto cur : m_players)
+        for (auto &cur : m_players)
             if (cur.second->IsValidSession())   // verify client is constructed before calling ProcessClient() on it
                 cur.second->ProcessClient();
 
@@ -260,7 +260,7 @@ void EntityList::Process() {
                 sWHMgr.Process();
                 // write something to tic corps vote cases.
                 /** @todo  this slow.  update/remove as needed. */
-                for (auto cur : m_systems)
+                for (auto &cur : m_systems)
                     cur.second->UpdateData();   // update active system timers and dynamic data every 5m
             }
             if (m_minutes % 15 == 0) { // ~15m
@@ -324,7 +324,7 @@ Agent* EntityList::GetAgent(uint32 agentID) {
 }
 
 void EntityList::GetClients(std::vector<Client*> &result) const {
-    for (auto cur : m_players)
+    for (auto &cur : m_players)
         result.push_back(cur.second);
 }
 
@@ -600,7 +600,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTy
         } break;
     }
 
-    for (auto cur : cMap) {
+    for (auto &cur : cMap) {
         PyIncRef(payload);
         cur.second->SendNotification( notifyType, idType, payload, false );   // are any of these sequenced?  doubt it
     }
@@ -625,13 +625,13 @@ void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple**
 }
 
 void EntityList::Broadcast(const PyAddress &dest, EVENotificationStream &noti) const {
-    for (auto cur : m_players)
+    for (auto &cur : m_players)
         cur.second->SendNotification(dest, noti);
 }
 
 void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const {
     std::map<uint32, Client*>::const_iterator itr = m_players.begin();
-    for (auto cur : cset) {
+    for (auto &cur : cset) {
         itr = m_players.find(cur);
         if (itr != m_players.end())
             itr->second->SendNotification(dest, noti);
@@ -672,7 +672,7 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
         } break;
     };
 
-    for (auto cur : cVec) {
+    for (auto &cur : cVec) {
         PyIncRef(payload);
         cur->SendNotification( notifyType, idType, &payload, seq );
     }
@@ -688,7 +688,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
     in_payload = nullptr;
 
     if (!mcset.characters.empty())
-        for (auto cur : mcset.characters) {
+        for (auto &cur : mcset.characters) {
             std::map<uint32, Client*>::iterator itr = m_players.find(cur);
             if ( itr != m_players.end()) {
                 PyIncRef(payload);
@@ -700,7 +700,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
         SystemManager* pSysMgr(nullptr);
         std::vector<Client*> cVec;
         cVec.clear();
-        for (auto cur : mcset.locations) {
+        for (auto &cur : mcset.locations) {
             if (sDataMgr.IsStation(cur)) {
                 GetStationGuestList(cur, cVec);
             } else if (sDataMgr.IsSolarSystem(cur)) {
@@ -713,7 +713,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
                 EvE::traceStack();
             }
         }
-        for (auto cur : cVec) {
+        for (auto &cur : cVec) {
             PyIncRef(payload);
             cur->SendNotification( notifyType, idType, &payload, seq );
         }
@@ -723,7 +723,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
     if (!mcset.corporations.empty()) {
         sLog.Error("EntityList::Multicast 2", "Corporation MulticastTarget called.");
         EvE::traceStack();
-        for (auto cur : mcset.corporations) {
+        for (auto &cur : mcset.corporations) {
             std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(cur);
             if (cItr == m_corpMembers.end())
                 continue;
@@ -746,7 +746,7 @@ void EntityList::Multicast(const character_set &cset, const char* notifyType, co
     in_payload = nullptr;
 
     std::map<uint32, Client*>::const_iterator itr = m_players.begin();
-    for (auto cur : cset) {
+    for (auto &cur : cset) {
         itr = m_players.find(cur);
         if (itr != m_players.end()) {
             PyIncRef(payload);
@@ -766,7 +766,7 @@ void EntityList::Unicast(uint32 charID, const char* notifyType, const char* idTy
 
 //used by gmCommands....i dont like this one either....but at least it's use will be seldom
 Client* EntityList::FindClientByName(const char* name) const {
-    for (auto cur : m_players) {
+    for (auto &cur : m_players) {
         CharacterRef cRef = cur.second->GetChar();
         if (cRef.get() != nullptr)
             if (strcmp(cRef->name(), name) == 0)

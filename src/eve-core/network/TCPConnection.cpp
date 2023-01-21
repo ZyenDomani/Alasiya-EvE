@@ -214,26 +214,26 @@ bool TCPConnection::Process() {
             }
             _log(TCP_CLIENT__INFO, "Process() - TCP connectection from %s", GetAddress().c_str() );
             return true;
-        }
+        } break;
         case STATE_CONNECTED: {
             if (!RecvData(errbuf)) {
                 _log(TCP_CLIENT__TRACE, "Process() - Connected RecvData() Failed at %s: %s", GetAddress().c_str(), errbuf );
                 return false;
             }
             if (!SendData(errbuf)) {
-                _log(TCP_CLIENT__TRACE, "Process() - Connected SendData() Failed at", "%s: %s", GetAddress().c_str(), errbuf );
+                _log(TCP_CLIENT__TRACE, "Process() - Connected SendData() Failed at %s: %s", GetAddress().c_str(), errbuf );
                 return false;
             }
             return true;
-        }
+        } break;
         case STATE_DISCONNECTING: {
             if (!SendData(errbuf)) {
-                _log(TCP_CLIENT__TRACE, "Process() - Disconnecting SendData() Failed at", "%s: %s", GetAddress().c_str(), errbuf );
+                _log(TCP_CLIENT__TRACE, "Process() - Disconnecting SendData() Failed at %s: %s", GetAddress().c_str(), errbuf );
                 return false;
             }
             DoDisconnect();
             return true;
-        }
+        } break;
         case STATE_DISCONNECTED:
         default: {
             return false;

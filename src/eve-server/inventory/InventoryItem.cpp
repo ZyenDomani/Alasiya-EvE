@@ -359,7 +359,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(uint32 itemID, const ItemType &type, const 
                     _log(ITEM__WARNING, "item %u (type %u, group %u,  cat %u) is not handled in II::_LoadItem::Entity.", itemID, type.id(), type.groupID(), type.categoryID());
                 }
             }
-        }
+        } break;
         default: {
             _log(ITEM__WARNING, "item %u (type %u, group %u,  cat %u) is not handled in II::_LoadItem.", itemID, type.id(), type.groupID(), type.categoryID());
         } break;
@@ -643,8 +643,11 @@ void InventoryItem::Rename(std::string name)
     if (IsCharacterID(m_data.ownerID)) {
         // this will be the most-used case
         Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
-        if (pClient == nullptr)
+        if (pClient == nullptr) {
+            PySafeDecRef(list);
+            PySafeDecRef(tuple);
             return;  //  make error here?
+        }
         if (pClient->IsDocked()) {
             pClient->SendNotification("OnCfgDataChanged", "charid", &tuple, false); //unsequenced.
         } else { // client in space.  sent update to all clients in bubble
@@ -660,6 +663,10 @@ void InventoryItem::Rename(std::string name)
     }
 
     /** @todo  if renaming a POS or other space object, we'll need to BubblecastSendNotification instead of CorpNotify  */
+
+    //cleanu
+    //PySafeDecRef(list);
+    //PySafeDecRef(tuple);
 }
 
 void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*true*/)
@@ -1030,7 +1037,7 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     if (m_data.singleton)
         if (m_data.quantity > 1) {
             _log(ITEM__WARNING, "%s(%u) is changing singleton to %s and qty is currently %u", \
-                    m_data.name.c_str(), m_itemID, singleton?"On":"Off");
+                    m_data.name.c_str(), m_itemID, singleton?"On":"Off", m_data.quantity);
             m_data.quantity = -1;
         }
 
@@ -1107,6 +1114,8 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
             sEntityList.CorpNotify(toID, Notify::Types::ItemUpdateSystem, "OnItemChange","corpid", tmp);
         }
     }
+
+    PySafeDecRef(tmp);
 }
 
 void InventoryItem::SaveItem()

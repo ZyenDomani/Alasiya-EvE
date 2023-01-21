@@ -159,7 +159,7 @@ std::string GetMTimeTillNow(double fromTime)
 EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
 {
     // time sent as (windows)FILETIME; convert to unix time
-    double time(filetime /EvE::Time::Second);// to Seconds
+    long time(filetime / EvE::Time::Second);// to Seconds
     time -= SECS_BETWEEN_EPOCHS;    // epoc offset
 
     // Calculate total days

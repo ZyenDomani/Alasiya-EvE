@@ -113,7 +113,7 @@ void XMLParser::RemoveParser( const char* name )
 }
 
 void XMLParser::ClearParsers() {
-    for (auto cur : mParsers)
+    for (auto &cur : mParsers)
         SafeDelete(cur.second);
 
     mParsers.clear();

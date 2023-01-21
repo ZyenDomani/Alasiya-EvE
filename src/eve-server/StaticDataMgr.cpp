@@ -80,7 +80,7 @@ void StaticDataMgr::Close()
     PySafeDecRef(m_factionInfo);
     PySafeDecRef(m_npcDivisions);
 
-    for (auto cur : m_bpMatlData)
+    for (auto &cur : m_bpMatlData)
         PySafeDecRef(cur.second);
 
     sLog.Warning("    StaticDataMgr", "Static Data Manager has been closed.");
@@ -127,7 +127,7 @@ void StaticDataMgr::Clear()
     PySafeDecRef(m_factionInfo);
     PySafeDecRef(m_npcDivisions);
 
-    for (auto cur : m_bpMatlData)
+    for (auto &cur : m_bpMatlData)
         PySafeDecRef(cur.second);
     m_bpMatlData.clear();
 }
@@ -321,7 +321,7 @@ void StaticDataMgr::Populate()
         size += m_whClassDestinations[i].size();
     }
 
-    sLog.Cyan("    StaticDataMgr", "%lu WH Destination Classes loaded in %.3fms.",
+    sLog.Cyan("    StaticDataMgr", "%i WH Destination Classes loaded in %.3fms.",
               size, (GetTimeMSeconds() - startTime));
 
     // Load wormhole system classes into static memory object
@@ -337,7 +337,7 @@ void StaticDataMgr::Populate()
         size += m_whClassSystems[i].size();
     }
 
-    sLog.Cyan("    StaticDataMgr", "%lu WH Class Systems loaded in %.3fms.",
+    sLog.Cyan("    StaticDataMgr", "%i WH Class Systems loaded in %.3fms.",
               size, (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
@@ -380,7 +380,7 @@ void StaticDataMgr::Populate()
     }
 
     std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.begin();
-    for (auto cur : m_stationSystem) {
+    for (auto &cur : m_stationSystem) {
         itr = m_stationList.find(cur.second);
         if (itr != m_stationList.end()) {
             itr->second.push_back(cur.first);
@@ -496,7 +496,7 @@ void StaticDataMgr::Populate()
         m_bpTypeData[row.GetInt(0)] = bpTypeData;
         m_bpProductData.emplace(row.GetInt(2), bpTypeData);
     }
-    for (auto cur : m_bpTypeData)
+    for (auto &cur : m_bpTypeData)
         m_bpMatlData[cur.first] = SetBPMatlType(cur.second.catID, cur.first, cur.second.productTypeID);
     sLog.Cyan("    StaticDataMgr", "%lu BP Type defs loaded in %.3fms.", m_bpTypeData.size(), (GetTimeMSeconds() - startTime));
 
@@ -736,13 +736,13 @@ PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID)
 
 void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
     auto itr = m_salvageMap.equal_range(factionID);
-    for (auto it = itr.first; it != itr.second;it++)
+    for (auto &it = itr.first; it != itr.second;it++)
         itemList.push_back(it->second);
 }
 
 bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<float, uint16>& roids) {
     auto groupRange = m_oreBySecClass.equal_range(secClass);
-    for (auto it = groupRange.first; it != groupRange.second;it++) {
+    for (auto &it = groupRange.first; it != groupRange.second;it++) {
         _log(MINING__INFO, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
         roids.insert(std::pair<float, uint32>(it->second.chance, it->second.typeID));
     }
@@ -753,7 +753,7 @@ bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<fl
 void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< Inv::DmgTypeAttribute >& typeAttrVec)
 {
     auto itr = m_typeAttrMap.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto &it = itr.first; it != itr.second; it++)
         typeAttrVec.push_back(it->second);
 }
 
@@ -778,6 +778,7 @@ void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)
 {
     for (auto cur : m_components) {
         Market::matlData data = Market::matlData();
+        data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
         into[cur.first] = data;
@@ -786,8 +787,9 @@ void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)
 
 void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_minerals) {
+    for (auto &cur : m_minerals) {
         Market::matlData data = Market::matlData();
+        data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
         into[cur.first] = data;
@@ -796,8 +798,9 @@ void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into)
 
 void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_compounds) {
+    for (auto &cur : m_compounds) {
         Market::matlData data = Market::matlData();
+        data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
         into[cur.first] = data;
@@ -806,8 +809,9 @@ void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into)
 
 void StaticDataMgr::GetSalvageData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_salvage) {
+    for (auto &cur : m_salvage) {
         Market::matlData data = Market::matlData();
+        data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
         into[cur.first] = data;
@@ -816,8 +820,9 @@ void StaticDataMgr::GetSalvageData(std::map< uint16, Market::matlData >& into)
 
 void StaticDataMgr::GetPIResourceData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_resources) {
+    for (auto &cur : m_resources) {
         Market::matlData data = Market::matlData();
+        data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
         into[cur.first] = data;
@@ -826,8 +831,9 @@ void StaticDataMgr::GetPIResourceData(std::map< uint16, Market::matlData >& into
 
 void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_commodities) {
+    for (auto &cur : m_commodities) {
         Market::matlData data = Market::matlData();
+        data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
         into[cur.first] = data;
@@ -836,8 +842,9 @@ void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& int
 
 void StaticDataMgr::GetMiscCommodityData(std::map< uint16, Market::matlData >& into)
 {
-    for (auto cur : m_miscCommodities) {
+    for (auto &cur : m_miscCommodities) {
         Market::matlData data = Market::matlData();
+        data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
         into[cur.first] = data;
@@ -847,7 +854,7 @@ void StaticDataMgr::GetMiscCommodityData(std::map< uint16, Market::matlData >& i
 void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
 {
     // make copy
-    for (auto cur : m_moonGoo)
+    for (auto &cur : m_moonGoo)
         data.emplace(cur.first, cur.second);
 }
 
@@ -857,7 +864,7 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID)
         return 0;
     std::vector< uint16 > typeVec;
     auto classRange = m_npcTypes.equal_range(sClass);
-    for (auto it = classRange.first; it != classRange.second;it++) {
+    for (auto &it = classRange.first; it != classRange.second; it++) {
         for (auto itr : it->second)
             if (itr.first == groupID) {
                 for (auto tItr : itr.second)
@@ -1387,7 +1394,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         std::vector<EvERam::RamMaterials> ramMatls;
         ramMatls.clear();
         GetRamMaterials(prodID, ramMatls);
-        for (auto cur : ramMatls) {
+        for (auto &cur : ramMatls) {
             PyPackedRow* row = new PyPackedRow(header);
                 row->SetField("quantity",        new PyInt(cur.quantity));
                 row->SetField("requiredTypeID",  new PyInt(cur.materialTypeID));

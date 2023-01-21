@@ -77,6 +77,7 @@ EVEServerConfig::EVEServerConfig()
     world.shootRoids = false;
     world.shootWrecks = false;
     world.highSecCyno = false;
+    world.saveOnUpdate = false;
     world.mailDelay = 5;//N
     world.StationDockDelay = 4 /*s*/;
     world.apWarptoDistance = 15000;

@@ -52,11 +52,11 @@ PyServiceMgr::~PyServiceMgr() {
 }
 
 void PyServiceMgr::Close() {
-    for (auto cur : m_svcList)
+    for (auto &cur : m_svcList)
         SafeDelete(cur.second);
 
     PyBoundObject* bo(nullptr);
-    for (auto cur : m_boundObjects) {
+    for (auto &cur : m_boundObjects) {
         bo = cur.second.object;
         if (is_log_enabled(SERVICE__MESSAGE))
             _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
@@ -283,7 +283,7 @@ void PyServiceMgr::ClearBoundObject(uint32 bindID)
 
 void PyServiceMgr::BoundObjectVec(std::vector< BoundObj >& vec)
 {
-    for (auto cur : m_boundObjects)
+    for (auto &cur : m_boundObjects)
         vec.push_back(cur.second);
 }
 

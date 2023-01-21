@@ -310,7 +310,7 @@ void Character::VerifySP()
 {
     std::vector<InventoryItemRef> skills;
     pInventory->GetItemsByFlag(flagSkill, skills);
-    for (auto cur : skills) {
+    for (auto &cur : skills) {
         SkillRef::StaticCast(cur)->VerifyAttribs();
         SkillRef::StaticCast(cur)->VerifySP();
     }
@@ -483,7 +483,7 @@ void Character::ResetModifiers()
     ResetAttributes();
     std::vector<InventoryItemRef> allSkills;
     pInventory->GetItemsByFlag(flagSkill, allSkills);
-    for (auto curSkill : allSkills) {
+    for (auto &curSkill : allSkills) {
         curSkill->ClearModifiers();
         curSkill->ResetAttributes();
     }
@@ -500,10 +500,10 @@ void Character::ProcessEffects(ShipItem* pShip)
 
     Effect curEffect = Effect();
     std::vector<TypeEffects> typeFx;
-    for (auto curSkill : allSkills) {
+    for (auto &curSkill : allSkills) {
         typeFx.clear();
         sFxDataMgr.GetTypeEffect(curSkill->typeID(), typeFx);
-        for (auto curFx : typeFx) {
+        for (auto &curFx : typeFx) {
             curEffect = sFxDataMgr.GetEffect(curFx.effectID);
             fxData data = fxData();
             data.action = FX::Action::Invalid;
@@ -546,7 +546,7 @@ void Character::ClearSkillFlags()
 {
     std::vector<InventoryItemRef> skills;
     pInventory->GetItemsByFlag(flagSkill, skills);
-    for (auto cur : skills)
+    for (auto &cur : skills)
         cur->SetFlag(flagSkill, false);
 }
 
@@ -639,7 +639,7 @@ void Character::RemoveFromQueue(SkillRef sRef)
     for (; itr != m_skillQueue.end(); ++itr) {
         if (sRef->typeID() == itr->typeID)
             if (sRef->GetAttribute(AttrSkillLevel).get_uint32() >= itr->level)
-                m_skillQueue.erase(itr);
+                itr = m_skillQueue.erase(itr);
     }
     SkillQueueLoop();
 }
@@ -654,7 +654,7 @@ void Character::ClearSkillQueue(bool update/*false*/)
 PyTuple *Character::SendSkillQueue() {
     // get current skill queue
     PyList *list = new PyList();
-    for (auto cur : m_skillQueue) {
+    for (auto &cur : m_skillQueue) {
         SkillQueue_Element el;
         el.typeID = cur.typeID;
         el.level = cur.level;
@@ -674,7 +674,7 @@ uint32 Character::GetTotalSP() {
     m_charData.skillPoints = 0;
     std::vector<InventoryItemRef> skills;
     pInventory->GetItemsByFlag(flagSkill, skills);
-    for (auto cur : skills)
+    for (auto &cur : skills)
         m_charData.skillPoints += cur->GetAttribute(AttrSkillPoints).get_uint32();    // much cleaner and more accurate    -allan
 
     return m_charData.skillPoints;
@@ -1117,7 +1117,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
         m_inTraining = skill;
 
         if (is_log_enabled(SKILL__INFO)) {
-            float timeLeft = (qs.endTime - curTime) / EvE::Time::Second;
+            double timeLeft = (qs.endTime - curTime) / EvE::Time::Second;
             const char* formatedTime = EvE::FormatTime(timeLeft);
             _log(SKILL__INFO, "Training started.  %s to train %u sp for level %u", \
                     formatedTime, nextSP - skill->GetCurrentSP(this, qs.startTime), qs.level);
@@ -1199,7 +1199,7 @@ PyDict *Character::GetCharInfo() {
     /** @todo  get implants and boosters here once implemented */
 
     //encode an entry for each one.
-    for (auto cur : skills) {
+    for (auto &cur : skills) {
         Rsp_CommonGetInfo_Entry entry;
         if (cur->Populate(entry)) {
             result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry.Encode()));

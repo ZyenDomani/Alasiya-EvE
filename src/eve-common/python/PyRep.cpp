@@ -737,7 +737,7 @@ PyDict::PyDict( const PyDict& oth ) : PyRep( PyRep::PyTypeDict ), items(oth.item
 PyDict::~PyDict()
 {
     /*
-    for (auto cur : items) {
+    for (auto &cur : items) {
         PyDecRef(cur.first);
         PySafeDecRef(cur.second);
     }

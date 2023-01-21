@@ -112,7 +112,7 @@ m_secValue(1.1f)
 SystemManager::~SystemManager() {
     if (m_players or !m_clients.empty()) {
         _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %u clients in mmaps", m_data.systemID, m_players, m_clients.size());
-        for (auto cur : m_clients)
+        for (auto &cur : m_clients)
             sEntityList.Remove(cur.second);
     }
 
@@ -152,12 +152,12 @@ bool SystemManager::BootSystem() {
     }
 
     // system is loaded.  check for items that need initialization
-    for (auto cur : m_ticEntities)
+    for (auto &cur : m_ticEntities)
         if (cur.second->IsPOSSE())
             cur.second->GetPOSSE()->Init();
 
     // check for operational static entities which need to be initialized (such as sovereignty structures)
-    for (auto cur: m_opStaticEntities)  {
+    for (auto &cur: m_opStaticEntities)  {
         if (cur.second->IsTCUSE())
             cur.second->GetTCUSE()->Init();
         if (cur.second->IsSBUSE())
@@ -168,7 +168,7 @@ bool SystemManager::BootSystem() {
 
     // check planets for colony/customs office
     /* does not work as intended
-    for (auto cur : m_planetMap)
+    for (auto &cur : m_planetMap)
         if (cur.second->GetPlanetSE()->HasColony())
             if (!cur.second->GetPlanetSE()->HasCOSE())
                 cur.second->GetPlanetSE()->CreateCustomsOffice();
@@ -261,7 +261,7 @@ bool SystemManager::ProcessTic() {
     }
 
     // tic for sov structures (as they aren't in ticEntities)
-    for (auto cur : m_opStaticEntities) {
+    for (auto &cur : m_opStaticEntities) {
         if (cur.second->IsTCUSE())
             cur.second->GetTCUSE()->Process();
         if (cur.second ->IsSBUSE())
@@ -283,7 +283,7 @@ bool SystemManager::ProcessTic() {
     // process planets for PI
     if (m_minutetimer.Check()) {
         ++m_minutes;  // not used at this time
-        for (auto cur : m_planetMap)
+        for (auto &cur : m_planetMap)
             cur.second->Process();
     }
 
@@ -402,7 +402,7 @@ bool SystemManager::LoadSystemStatics() {
     }
 
     SystemEntity* pSE(nullptr);
-    for (auto cur : entities) {
+    for (auto &cur : entities) {
         switch (cur.groupID) {
             case EVEDB::invGroups::Station: {
                 /** @todo (Allan) outposts are group::station - may need to hack this */
@@ -485,7 +485,7 @@ bool SystemManager::LoadSystemDynamics() {
     }
 
     SystemEntity* pSE(nullptr);
-    for (auto cur : entities) {
+    for (auto &cur : entities) {
         pSE = DynamicEntityFactory::BuildEntity(*this, cur);
         if (pSE == nullptr) {
             sLog.Error( "SystemManager::LoadSystemDynamics()", "Failed to create entity for item %u (grp: %u, type %u)",
@@ -513,7 +513,7 @@ bool SystemManager::LoadPlayerDynamics() {
     }
 
     SystemEntity* pSE(nullptr);
-    for (auto cur : entities) {
+    for (auto &cur : entities) {
         pSE = DynamicEntityFactory::BuildEntity(*this, cur);
         if (pSE == nullptr) {
             sLog.Error( "SystemManager::LoadPlayerDynamics()", "Failed to create entity for item %u (grp: %u, type %u)", cur.itemID, cur.groupID, cur.typeID);
@@ -966,7 +966,7 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
 
     if (count) {
         --m_players;
-        if (m_players < 0) {
+        if (m_players < 1) {
             m_players = 0;
             m_clients.clear();  // redundant but safe
             _log(PLAYER__ERROR, "player count for %s(%u) is < 0", m_data.name.c_str(), m_data.systemID);
@@ -1140,7 +1140,7 @@ void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/, bool ad
             addballs2.Dump( DESTINY__BALL_DUMP, "    " );
         //send the update
         PyTuple* up = addballs2.Encode();
-        for (auto cur : m_clients) {
+        for (auto &cur : m_clients) {
             PyIncRef(up);
             cur.second->QueueDestinyUpdate(&up, true);
         }
@@ -1217,12 +1217,12 @@ recStoreItems = 'STOREITEMS'
      *
      *
      */
-    for (auto cur : m_bountyMap) {
+    for (auto &cur : m_bountyMap) {
         std::string reason = "NBLT: "; //this needs to be populated as [NBL(T): type:amt, type:amt, ... ] to get proper shit in client
         std::map<uint32, RatDataMap>::iterator itr = m_ratMap.find(cur.first);
         if (itr != m_ratMap.end()) {
             count = itr->second.size();
-            for (auto cur : itr->second) {
+            for (auto &cur : itr->second) {
                 reason += std::to_string(cur.first);
                 reason += ":";
                 reason += std::to_string(cur.second);
@@ -1306,7 +1306,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     std::map<uint32, SystemEntity*> visibleEntities;
 
     // get all static entities for this system
-    for (auto cur : m_staticEntities)
+    for (auto &cur : m_staticEntities)
         visibleEntities.emplace(cur.first, cur.second);
 
     // get our ship.  bubble->GetEntities() does not include cloaked items
@@ -1325,7 +1325,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     into.allianceBridges->clear();  //activeBeacon and activeBridge data found in fleetSvc.py
 
     //go through all visible entities and gather the info we need...
-    for (auto cur : visibleEntities) {
+    for (auto &cur : visibleEntities) {
         if (!cur.second->IsMissileSE() or !cur.second->IsFieldSE())
             into.damageState[ cur.first ] = cur.second->MakeDamageState();
 
@@ -1426,7 +1426,7 @@ void SystemManager::SendStaticBall(SystemEntity* pSE)
     //send the update
     PyTuple* rsp = addballs2.Encode();
     // does this need to be incremented?  the others do...
-    for (auto cur : m_clients) {
+    for (auto &cur : m_clients) {
         PyIncRef(rsp);
         cur.second->QueueDestinyUpdate(&rsp, true);
     }
@@ -1496,7 +1496,7 @@ SystemEntity* SystemManager::GetPlanet(uint32 planetID)
 uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos)
 {
     std::map<double, SystemEntity*> sorted;
-    for (auto cur : m_planetMap)
+    for (auto &cur : m_planetMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
 
     std::map<double, SystemEntity*>::iterator itr = sorted.begin();
@@ -1507,7 +1507,7 @@ uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos)
 SystemEntity* SystemManager::GetClosestPlanetSE(const GPoint& myPos)
 {
     std::map<double, SystemEntity*> sorted;
-    for (auto cur : m_planetMap)
+    for (auto &cur : m_planetMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
 
     std::map<double, SystemEntity*>::iterator itr = sorted.begin();
@@ -1518,7 +1518,7 @@ SystemEntity* SystemManager::GetClosestPlanetSE(const GPoint& myPos)
 SystemEntity* SystemManager::GetClosestGateSE(const GPoint& myPos)
 {
     std::map<double, SystemEntity*> sorted;
-    for (auto cur : m_gateMap)
+    for (auto &cur : m_gateMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
 
     std::map<double, SystemEntity*>::iterator itr = sorted.begin();
@@ -1529,7 +1529,7 @@ SystemEntity* SystemManager::GetClosestGateSE(const GPoint& myPos)
 SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos)
 {
     std::map<double, SystemEntity*> sorted;
-    for (auto cur : m_moonMap)
+    for (auto &cur : m_moonMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
 
     std::map<double, SystemEntity*>::iterator itr = sorted.begin();
@@ -1539,7 +1539,7 @@ SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos)
 
 void SystemManager::GetClientList(std::vector< Client* >& cVec)
 {
-    for (auto cur : m_clients)
+    for (auto &cur : m_clients)
         cVec.push_back(cur.second);
 }
 
@@ -1562,7 +1562,7 @@ void SystemManager::DScan(int64 range, const GPoint& position, std::vector<Syste
      */
 
     //  TO CHECK...do scan settings alter this or is entirely client-side?
-    for (auto cur : m_entities) {
+    for (auto &cur : m_entities) {
         // these dont show on dscan
         if (IsTempItem(cur.first))
             continue;
@@ -1597,7 +1597,7 @@ PyRep* SystemManager::GetCurrentEntities()
      */
 
     PyList* list = new PyList();
-    for (auto cur : m_ticEntities) {
+    for (auto &cur : m_ticEntities) {
         PyDict* dict = new PyDict();
             dict->SetItemString("itemID", new PyInt(cur.first));
             dict->SetItemString("ownerName", new PyString(sDataMgr.GetOwnerName(cur.second->GetOwnerID())));
@@ -1616,7 +1616,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 {
     /** @todo this will need to put entity's sigID into anomaly map for Scan::WarpTo object */
     /** @todo this should be updated/current/correct in system's AnomalyMgr.  try to get data from there for this list  */
-    for (auto cur : m_ticEntities) {
+    for (auto &cur : m_ticEntities) {
         CosmicSignature sig = CosmicSignature();
         sig.dungeonType = Dungeon::Type::Anomaly;
         sig.ownerID = cur.second->GetOwnerID();
@@ -1701,7 +1701,7 @@ void SystemManager::UpdateData()
 // checks for if it is safe to mark the system for unloading
 bool SystemManager::SafeToUnload()
 {
-    for (auto cur: GetOperationalStatics()) {
+    for (auto &cur: GetOperationalStatics()) {
         //If there are any ongoing operations by operational static structures, we don't want to unload the system until this is complete
         if (cur.second->IsPOSSE()) {
             if ((cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Unanchoring) or
@@ -1755,7 +1755,7 @@ void SystemManager::ManipulateTimeData()
 void SystemManager::GetDockedCount()
 {
     m_docked = 0;
-    for (auto cur : m_clients)
+    for (auto &cur : m_clients)
         if (cur.second->IsDocked())
             ++m_docked;
 }

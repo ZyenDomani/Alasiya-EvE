@@ -396,7 +396,7 @@ void ShipItem::UpdateMass()
     std::map< uint32, InventoryItemRef > invMap;
     pInventory->GetInventoryMap(invMap);
     uint32 mass(GetAttribute(AttrMass).get_uint32());
-    for (auto cur : invMap)
+    for (auto &cur : invMap)
         mass += cur.second->type().mass() * cur.second->quantity();
 
     // may have to adjust this for player login
@@ -573,7 +573,7 @@ void ShipItem::AddModuleToOnlineVec(uint32 modID)
 void ShipItem::GetModuleItemVec( std::vector< InventoryItemRef >& iRefVec ) {
     std::map<uint32, InventoryItemRef> invMap;
     pInventory->GetInventoryMap( invMap );
-    for (auto cur : invMap )
+    for (auto &cur : invMap )
         if (IsModuleSlot(cur.second->flag()))
             iRefVec.push_back(cur.second);
 }
@@ -669,7 +669,7 @@ void ShipItem::LoadChargesToBank(EVEItemFlags flag, std::vector< int32 >& charge
     InventoryItemRef cRef(nullptr);
     std::vector<GenericModule*> modVec;
     m_ModuleManager->GetModulesInBank(flag, modVec);
-    for (auto cur : modVec) {
+    for (auto &cur : modVec) {
         if (pos + 1 > chargeIDs.size())
             return;
         cRef = sItemFactory.GetItemRef(chargeIDs[pos]);
@@ -983,7 +983,7 @@ void ShipItem::RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fr
 {
     /** @todo  this isnt right....needs update */
     EvilNumber amount(EvilZero), damage(EvilZero);
-    for (auto cur : itemRefVec) {
+    for (auto &cur : itemRefVec) {
         damage = cur->GetAttribute(AttrDamage);
         if (damage < 0.01)
             continue;
@@ -1305,7 +1305,7 @@ void ShipItem::HeatDamageCheck(GenericModule* pMod)
         //modVec.push_back(moduleID);
     }
 
-    for (auto cur : modVec)
+    for (auto &cur : modVec)
         DamageModule(cur);
 }
 
@@ -1319,7 +1319,7 @@ void ShipItem::StripFitting()
 
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
-    for (auto cur : moduleList) {
+    for (auto &cur : moduleList) {
         m_ModuleManager->UnfitModule(cur->itemID());
         cur->Move(locationID(), flag, true);
     }
@@ -1329,7 +1329,7 @@ void ShipItem::EmptyCargo()
 {
     std::map<uint32, InventoryItemRef> invMap;
     pInventory->GetInventoryMap( invMap );
-    for (auto cur : invMap )
+    for (auto &cur : invMap )
         cur.second->Move(locationID(), flagHangar, true);
 }
 
@@ -1344,7 +1344,7 @@ void ShipItem::GetLinkedWeaponMods( GenericModule* pMod, std::vector< GenericMod
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
     if (itr != m_linkedWeapons.end()) {
         modules.push_back(pMod);
-        for (auto cur : itr->second)
+        for (auto &cur : itr->second)
             modules.push_back(cur);
     } else {
         // master not found.  wtf?
@@ -1413,7 +1413,7 @@ void ShipItem::LinkAllWeapons()
     m_ModuleManager->GetWeapons(weaponList);
 
     // remove current links
-    for (auto cur : weaponList) {
+    for (auto &cur : weaponList) {
         if (sConfig.server.UnloadOnLinkAll)
             m_ModuleManager->UnloadCharge(cur);
         cur->SetLinked(false);
@@ -1454,7 +1454,7 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
         } else if (master == nullptr) {
             // lets check if this module will match a master already in list before making new master...
             bool match(false);
-            for (auto item : m_linkedWeapons)
+            for (auto &item : m_linkedWeapons)
                 if (item.first->typeID() == (*itr)->typeID()) {
                     //master = item.first;
                     if (is_log_enabled(MODULE__INFO))
@@ -1486,7 +1486,7 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
                 LinkWeapon(master, (*itr));
                 itr = weaponList.erase(itr);
             } else {
-                for (auto item : m_linkedWeapons)
+                for (auto &item : m_linkedWeapons)
                     if (item.first->typeID() == (*itr)->typeID()) {
                         //master = item.first;
                         if (is_log_enabled(MODULE__INFO))
@@ -1628,7 +1628,7 @@ void ShipItem::UnlinkGroup(uint32 memberID, bool update/*false*/)
         }
     } else {
         // this module isnt master... loop thru all links to see if we can find it
-        for (auto cur : m_linkedWeapons) {
+        for (auto &cur : m_linkedWeapons) {
             std::list<GenericModule*>::iterator itr2 = cur.second.begin();
             while (itr2 != cur.second.end()) {
                 if ((*itr2) == pMod1) {
@@ -1646,7 +1646,7 @@ void ShipItem::UnlinkAllWeapons()
 {
     std::list< GenericModule* > weaponList;
     m_ModuleManager->GetWeapons(weaponList);
-    for (auto cur : weaponList) {
+    for (auto &cur : weaponList) {
         if (cur->IsActive())
             throw UserError ("CantUngroupModuleActive");
         if (cur->IsLoading())
@@ -1688,9 +1688,9 @@ PyRep* ShipItem::GetLinkedWeapons()
         return PyStatic.NewNone();
 
     PyDict* result = new PyDict();
-    for (auto cur : m_linkedWeapons) {
+    for (auto &cur : m_linkedWeapons) {
         PyList* slaves = new PyList();
-        for (auto slave : cur.second)
+        for (auto &slave : cur.second)
             slaves->AddItem(new PyInt(slave->itemID()));
         result->SetItem(new PyInt(cur.first->itemID()), slaves);
     }
@@ -1707,11 +1707,11 @@ void ShipItem::OfflineGroup(GenericModule* pMod)
     if (pMod->IsMaster()) {
         std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
         if (itr != m_linkedWeapons.end())
-            for (auto cur : itr->second)
+            for (auto &cur : itr->second)
                 cur->Offline();
     } else {
         // this module isnt master... loop thru all links to see if we can find it
-        for (auto cur : m_linkedWeapons) {
+        for (auto &cur : m_linkedWeapons) {
             std::list<GenericModule*>::iterator itr = cur.second.begin();
             while (itr != cur.second.end()) {
                 if ((*itr) == pMod) {
@@ -1729,8 +1729,8 @@ void ShipItem::SaveWeaponGroups()
     std::multimap< uint32, uint32 > data;
     data.clear();
     if (!m_linkedWeapons.empty())
-        for (auto cur : m_linkedWeapons)
-            for (auto slave : cur.second)
+        for (auto &cur : m_linkedWeapons)
+            for (auto &slave : cur.second)
                 data.emplace(cur.first->itemID(), slave->itemID());
 
     ShipDB::SaveWeaponGroups(m_itemID, data);
@@ -1813,11 +1813,11 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
         m_pilot->GetChar()->ResetModifiers();
         std::vector< InventoryItemRef > modVec;
         m_ModuleManager->GetModuleListOfRefsAsc(modVec);
-        for (auto cur : modVec)
+        for (auto &cur : modVec)
             cur->ResetAttributes();
         std::map<EVEItemFlags, InventoryItemRef> charges;
         m_ModuleManager->GetLoadedCharges(charges);
-        for (auto cur : charges)
+        for (auto &cur : charges)
             cur.second->ResetAttributes();
 
         // do we remove fx here?  nah, we've reset everything at this point.
@@ -1829,7 +1829,7 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
     _log(EFFECTS__TRACE, "ShipItem::ProcessShipEffects()");
-    for (auto it : type().m_stateFxMap) {
+    for (auto &it : type().m_stateFxMap) {
         fxData data = fxData();
         data.action = FX::Action::Invalid;
         data.srcRef = static_cast<InventoryItemRef>(this);
@@ -1857,11 +1857,11 @@ void ShipItem::ClearModuleModifiers()
     //m_ModuleManager->OfflineAll();
     std::vector< InventoryItemRef > modVec;
     m_ModuleManager->GetModuleListOfRefsAsc(modVec);
-    for (auto cur : modVec)
+    for (auto &cur : modVec)
         cur->ClearModifiers();
     std::map<EVEItemFlags, InventoryItemRef> charges;
     m_ModuleManager->GetLoadedCharges(charges);
-    for (auto cur : charges)
+    for (auto &cur : charges)
         cur.second->ClearModifiers();
 }
 
@@ -1877,11 +1877,11 @@ void ShipItem::ResetEffects() {
     m_pilot->GetChar()->ResetModifiers();
     std::vector< InventoryItemRef > modVec;
     m_ModuleManager->GetModuleListOfRefsAsc(modVec);
-    for (auto cur : modVec)
+    for (auto &cur : modVec)
         cur->ResetAttributes();
     std::map<EVEItemFlags, InventoryItemRef> charges;
     m_ModuleManager->GetLoadedCharges(charges);
-    for (auto cur : charges)
+    for (auto &cur : charges)
         cur.second->ResetAttributes();
 
     ProcessEffects(true, true/*sDataMgr.IsSolarSystem(locationID())*/);
@@ -1932,7 +1932,7 @@ std::string ShipItem::GetShipDNA()
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
 
     /** @todo update this for multiples of modules */
-    for (auto cur : moduleList) {
+    for (auto &cur : moduleList) {
         if (IsRigSlot(cur->flag())) {
             modRig << cur->typeID() << ";" << cur->quantity() << ":";
         } else if (IsHiSlot(cur->flag())) {
@@ -1950,7 +1950,7 @@ std::string ShipItem::GetShipDNA()
 
     std::map<EVEItemFlags, InventoryItemRef> chargeList;
     m_ModuleManager->GetLoadedCharges(chargeList);
-    for (auto cur : chargeList)
+    for (auto &cur : chargeList)
         charges << cur.second->typeID() << ";" << cur.second->quantity() << ":";
 
     /* not sure how to get drones yet.  will work on later */
@@ -2166,7 +2166,7 @@ PyDict* ShipItem::GetShipInfo()
     pInventory->GetItemsByFlagRange(flagRigSlot0, flagRigSlot2, equipped);
     pInventory->GetItemsByFlagRange(flagSubSystem0, flagSubSystem4, equipped);
     //encode each one...
-    for (auto cur : equipped) {
+    for (auto &cur : equipped) {
         Rsp_CommonGetInfo_Entry entry2;
         if (cur->Populate(entry2)) {
             if (cur->categoryID() == EVEDB::invCategories::Charge) {
@@ -2210,7 +2210,7 @@ PyDict* ShipItem::GetShipState() {
     // Create entries for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
-    for (auto cur : moduleList)
+    for (auto &cur : moduleList)
         result->SetItem(new PyInt(cur->itemID()), cur->GetItemStatusRow());
 
     return result;
@@ -2233,7 +2233,7 @@ PyDict* ShipItem::GetChargeState() {
         return result;
 
     // Create entries in "shipState" dictionary for loaded charges on ship:
-    for (auto cur : charges)
+    for (auto &cur : charges)
         result->SetItem(new PyInt((uint16)cur.first), cur.second->GetChargeStatusRow(itemID()));
 
     return result;
@@ -2249,7 +2249,7 @@ PyList* ShipItem::ShipGetModuleList() {
     // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
-    for (auto cur : moduleList) {
+    for (auto &cur : moduleList) {
         PyTuple* module = new PyTuple(2);
         module->SetItem(0, new PyInt(cur->typeID()));
         module->SetItem(1, new PyInt(cur->itemID()));
@@ -2708,7 +2708,7 @@ PyDict* ShipSE::MakeSlimItem() {
     //m_self->GetMyInventory()->GetItemsByFlagRange(flagSubSystem0, flagSubSystem7, items);
     if (!items.empty()) {
         PyList *list = new PyList();
-        for (auto cur : items)
+        for (auto &cur : items)
             list->AddItem(new_tuple(cur->itemID(), cur->typeID()));
 
         slim->SetItemString("modules", list );
@@ -2838,7 +2838,7 @@ void ShipSE::ScoopDrone(SystemEntity* pSE) {
 
 void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
     // update drones in space with new attrib settings
-    for (auto cur : m_drones) {
+    for (auto &cur : m_drones) {
         cur.second->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
         cur.second->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
         cur.second->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
@@ -2849,7 +2849,7 @@ void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
 void ShipSE::AbandonDrones() {
     SystemEntity* pSE(nullptr);
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
-    for (auto cur : m_drones) {
+    for (auto &cur : m_drones) {
         pSE = m_system->GetSE(cur.first);
         if (pSE != nullptr)
             if (pSE->IsDroneSE()) {

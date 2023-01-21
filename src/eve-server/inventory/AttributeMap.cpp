@@ -72,10 +72,10 @@ bool AttributeMap::Load(bool reset/*false*/) {
         DBQueryResult res;
         if (IsCharacterID(mItem.itemID())) {
             if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID()))
-                _log(DATABASE__ERROR, "AttributeMap", "Error in char db load query: %s", res.error.c_str());
+                _log(DATABASE__ERROR, "AttributeMap Error in char db load query: %s", res.error.c_str());
         } else {
             if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID()))
-                _log(DATABASE__ERROR, "AttributeMap", "Error in item db load query: %s", res.error.c_str());
+                _log(DATABASE__ERROR, "AttributeMap Error in item db load query: %s", res.error.c_str());
         }
 
         DBResultRow row;
@@ -516,7 +516,7 @@ void AttributeMap::ResetAttribute(uint16 attrID, bool notify/*false*/) {
 
 void AttributeMap::CopyAttributes(std::map< uint16, EvilNumber >& attrMap)
 {
-    for (auto cur : mAttributes)
+    for (auto &cur : mAttributes)
         attrMap[cur.first] =  cur.second;
 }
 

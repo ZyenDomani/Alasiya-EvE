@@ -208,6 +208,20 @@ public:
     }
 
     /**
+     * @brief Move operator.
+     *
+     * @param[in] oth Object to move the reference from.
+     */
+    RefPtr& operator=( const RefPtr&& oth )
+    {
+        if (*this)
+            (*this)->DecRef();
+        mPtr = oth.get();
+        if (*this)
+            (*this)->IncRef();
+        return *this;
+    }
+    /**
      * @return Stored reference.
      */
     X* get() const { return mPtr; }

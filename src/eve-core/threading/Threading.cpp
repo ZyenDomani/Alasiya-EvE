@@ -20,7 +20,13 @@
 
 
 Threading::Threading()
+: buf(nullptr),
+nfds(0),
+sleepTime(0),
+bufferLen(0)
 {
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
 }
 
 Threading::~Threading()

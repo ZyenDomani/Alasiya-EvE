@@ -70,6 +70,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_scan(nullptr),
   pShipSE(nullptr),
   pSession(new ClientSession()),
+  m_shipId(0),
   m_system(nullptr),
   m_services(services),
   m_movePoint(NULL_ORIGIN),
@@ -90,7 +91,8 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_uncloakTimer(0),
   m_destinyEventQueue(new PyList()),
   m_destinyUpdateQueue(new PyList()),
-  m_nextNotifySequence(0)
+  m_nextNotifySequence(0),
+  m_scanProbe(false)
 {
     m_afk = false;
     m_login = true;
@@ -2016,6 +2018,7 @@ void Client::SendInitialSessionStatus ()
     }
 
     QueuePacket(packet);
+    //SafeDelete(packet);
 }
 
 void Client::SendSessionChange()
@@ -2084,6 +2087,7 @@ void Client::SendSessionChange()
     }
 
     QueuePacket(packet);
+    //SafeDelete(packet);
 
     // clean up packet after being created by 'new'
     //SafeDelete(packet);
@@ -2241,6 +2245,7 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
     }
 
     QueuePacket(packet);
+    //SafeDelete(packet);
 }
 
 /************************************************************************/
@@ -2469,6 +2474,7 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyResult &rs
     }
 
     QueuePacket(packet);
+    //SafeDelete(packet);
 }
 
 void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_TYPE msgType, MACHONETERR_TYPE errCode, PyRep** payload)
@@ -2494,6 +2500,7 @@ void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_T
 
     packet->payload = e.Encode();
     QueuePacket(packet);
+    //SafeDelete(packet);
 }
 
 void Client::_SendPingRequest()
@@ -2518,6 +2525,7 @@ void Client::_SendPingRequest()
     packet->named_payload = new PyDict();
 
     QueuePacket(packet);
+    //SafeDelete(packet);
 }
 
 /** @todo fix this to provide a somewhat accurate response */
@@ -2582,8 +2590,8 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
     packet->payload = new PyTuple(1);
     packet->payload->SetItem(0, pingList);
 
-    // Don't clone so it eats the ret object upon sending.
     QueuePacket(packet);
+    //SafeDelete(packet);
 }
 
 /************************************************************************/

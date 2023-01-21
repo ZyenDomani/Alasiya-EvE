@@ -138,7 +138,7 @@ void ClientSession::EncodeChanges(PyDict* into)
 
 void ClientSession::EncodeInitialState (PyDict* into)
 {
-    for (auto cur : *mSession) {
+    for (auto &cur : *mSession) {
         PyTuple* valueTuple(cur.second->AsTuple());
         valueTuple->SetItem(2, PyStatic.NewFalse());
         // add the value to the initial state only if required
