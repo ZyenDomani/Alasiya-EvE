@@ -14,24 +14,16 @@
 
 class ErrorHandler
 {
-
   public:
       ErrorHandler();
       ~ErrorHandler();
-
-  private:
-
 };
 
 class FreakOut
 {
-
 public:
     FreakOut();
     ~FreakOut();
-
-private:
-
 };
 
 #endif  // _EVE_ERROR_ERRORHANDLER_H_

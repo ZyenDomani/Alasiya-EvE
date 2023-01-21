@@ -91,7 +91,6 @@ private:
     std::map<uint32, CosmicSignature> m_sigByItemID;            // signatures in system - need probes to scan down
     std::map<uint32, CosmicSignature> m_anomByItemID;           // anomalies in system - no probes needed
     std::map<std::string, CosmicSignature> m_sigBySigID;        // map for all signatures in system
-
 };
 
 #endif  // EVEMU_SYSTEM_ANOMALYMGR_H_

@@ -67,7 +67,6 @@ private:
     PyString* CourierPNG;
     PyString* MiningPNG;
     PyString* KillPNG;
-
 };
 
 //Singleton

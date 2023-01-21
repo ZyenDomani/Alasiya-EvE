@@ -47,7 +47,6 @@ public:
 
     // only used in ConsoleCommands to test/process fx data
     static void GetItems(uint16 catID, std::map<uint16, std::string> &typeIDs);
-
 };
 
 

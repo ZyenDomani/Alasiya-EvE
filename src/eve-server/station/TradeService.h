@@ -65,7 +65,6 @@ protected:
     PyCallable_DECL_CALL(InitiateTrade);
 
     uint32 m_SessionID;
-
 };
 
 class TradeSession
@@ -105,7 +104,6 @@ public:
     Session m_tradeSession;         // 2 party trade session of this bound object
 
     std::list<TradeItems> m_tradelist;    //list of items for this trade session
-
 };
 
 #endif//__TRADE_SERVICE_H_INCL__

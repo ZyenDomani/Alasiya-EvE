@@ -84,7 +84,6 @@ protected:
 
     double m_speed;
     double m_hullHP;
-
 };
 
 #endif  //EVE_SHIP_MISSILE_H

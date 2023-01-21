@@ -63,7 +63,6 @@ public:
         PyCallable_REG_CALL(ScanBound, RecoverProbes);
         PyCallable_REG_CALL(ScanBound, ReconnectToLostProbes);
         PyCallable_REG_CALL(ScanBound, DestroyProbe);
-
     }
         /**
 
@@ -105,7 +104,6 @@ ScanMgrService::ScanMgrService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(ScanMgrService, GetSystemScanMgr);
-
 }
 
 ScanMgrService::~ScanMgrService() {

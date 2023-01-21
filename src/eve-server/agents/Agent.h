@@ -77,7 +77,6 @@ private:
     bool m_important;
 
     uint16 m_buttonID;
-
 };
 
 #endif  // _EVE_SERVER_AGENT_H

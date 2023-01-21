@@ -118,7 +118,6 @@ protected:
     InventoryItem& mItem;
 
     AttrMap mAttributes;
-
 };
 
 #endif /* __EVE_ATTRIBUTE_MGR__H__INCL__ */

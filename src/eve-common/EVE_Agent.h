@@ -30,11 +30,11 @@ struct AgentData {
 };
 
 struct AgentOffers {
-
+    // not used yet
 };
 
 struct AgentActions {
-
+    // not used yet
 };
 
 namespace Agents {

@@ -42,7 +42,6 @@ protected:
     Dispatcher *const m_dispatch;
 
     PyCallable_DECL_CALL(GetSystemSovereigntyInfo);
-
 };
 
 #endif

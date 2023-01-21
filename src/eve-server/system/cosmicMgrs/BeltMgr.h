@@ -81,7 +81,6 @@ private:
     std::map<uint32, InventoryItemRef> m_belts;
     /*  this map contains beltID, asteroidSE for entire system */
     std::unordered_multimap<uint32, AsteroidSE*> m_asteroids;
-
 };
 
 #endif  // EVEMU_SYSTEM_BELTMGR_H_

@@ -42,7 +42,6 @@ public:
 
     static void AddJournalEntry(uint32 ownerID, int8 entryTypeID, uint32 ownerFromID, uint32 ownerToID, int8 currency, uint16 accountKey, \
                                 double amount, double newBalance, std::string description, uint32 referenceID = 0);
-
 };
 
 

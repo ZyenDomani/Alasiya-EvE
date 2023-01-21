@@ -21,7 +21,6 @@ class FleetBound
  : public PyBoundObject
 {
   public:
-
      FleetBound(PyServiceMgr* mgr, uint32 fleetID);
 
      virtual ~FleetBound();
@@ -69,7 +68,6 @@ class FleetBound
 
   private:
     uint32 m_fleetID;
-
 };
 
 #endif  // EVEMU_SRC_FLEET_BOUND_H_

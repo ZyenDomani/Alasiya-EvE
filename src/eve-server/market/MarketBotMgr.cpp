@@ -73,11 +73,11 @@ void MarketBotMgr::Process()
 
 void MarketBotMgr::AddSystem()
 {
-
+    // not used yet
 }
 
 void MarketBotMgr::RemoveSystem()
 {
-
+    // not used yet
 }
 

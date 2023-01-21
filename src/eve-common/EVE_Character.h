@@ -40,7 +40,6 @@ namespace Char {
             JinMei      = 1384,
             Khanid      = 1385,
             Vherokior   = 1386
-
         };
     }
 

@@ -133,7 +133,6 @@ private:
     uint16 m_soi;   // Sphere Of Influence, 45km max
 
     std::map<uint32, StructureSE*> m_structs;  // structID/pSSE
-
 };
 
 #endif  // EVEMU_POS_TOWER_H_

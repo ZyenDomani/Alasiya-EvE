@@ -51,7 +51,6 @@ protected:
 
 private:
     AllianceDB m_db;
-
 };
 
 #endif  // EVE_ALLIANCE_ALLIANCEREGISTRY_H_

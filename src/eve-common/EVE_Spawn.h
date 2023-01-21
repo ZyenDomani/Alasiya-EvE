@@ -32,7 +32,7 @@ namespace Spawn {
             Hauler       = 10,
             Commander    = 11,
             Officer      = 12,
-            
+
             BeltSpawn    = 19,   // test spot for non-belt/gate
 
             // W.I.P.
@@ -108,7 +108,6 @@ namespace Spawn {
 
             // Mission spawns   -this will be a LOT of data...650+ missions (that i know of at this time)
             // these will start at 1k
-
         };
     }
 
@@ -119,7 +118,7 @@ namespace Spawn {
             Roaming     = 1,    //roid/gate/rats
             Static      = 2,    //ded sites are 'static'
             Anomaly     = 3,    //basic combat site
-            Combat      = 4,    // non-anomaly combat site
+            Combat      = 4,    //non-anomaly combat site
             Deadspace   = 5,    //all non-static, non-combat sites
             Mission     = 6,
             Incursion   = 7,

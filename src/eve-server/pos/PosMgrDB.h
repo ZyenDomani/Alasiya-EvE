@@ -67,7 +67,6 @@ public:
     void UpdateUsageFlags(int32 itemID, EVEPOS::StructureData& data);
     void UpdateDeployFlags(int32 itemID, EVEPOS::TowerData& data);
     void UpdateHarmonicAndPassword(int32 itemID, EVEPOS::TowerData& data);
-
 };
 
 #endif  // EVEMU_POS_POSMGR_H_

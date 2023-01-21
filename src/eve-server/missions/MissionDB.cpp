@@ -139,6 +139,4 @@ void MissionDB::RemoveMissionItem(uint32 charID, uint16 typeID, uint32 qty)
             qty = 0;
         }
     }
-
 }
-
