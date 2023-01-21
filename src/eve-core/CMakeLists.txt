@@ -45,7 +45,7 @@ SET( math_INCLUDE
      "${TARGET_INCLUDE_DIR}/math/Trig.h" )
      #"${TARGET_INCLUDE_DIR}/math/Vec3.h" )
 SET( math_SOURCE
-     #"${TARGET_SOURCE_DIR}/math/Vec3.cpp" 
+     #"${TARGET_SOURCE_DIR}/math/Vec3.cpp"
      )
 
 SET( memory_INCLUDE
@@ -77,12 +77,10 @@ SET( threading_SOURCE
 
 SET( utils_INCLUDE
      "${TARGET_INCLUDE_DIR}/utils/Buffer.h"
-     "${TARGET_INCLUDE_DIR}/utils/crc32.h"
-#     "${TARGET_INCLUDE_DIR}/utils/date.h"
+     #"${TARGET_INCLUDE_DIR}/utils/crc32.h"
      "${TARGET_INCLUDE_DIR}/utils/Deflate.h"
      "${TARGET_INCLUDE_DIR}/utils/DirWalker.h"
      "${TARGET_INCLUDE_DIR}/utils/FastInt.h"
-     "${TARGET_INCLUDE_DIR}/utils/GoogleTest.h"
      "${TARGET_INCLUDE_DIR}/utils/Lock.h"
      "${TARGET_INCLUDE_DIR}/utils/misc.h"
      "${TARGET_INCLUDE_DIR}/utils/Seperator.h"
@@ -95,7 +93,7 @@ SET( utils_INCLUDE
      "${TARGET_INCLUDE_DIR}/utils/XMLParser.h"
      "${TARGET_INCLUDE_DIR}/utils/XMLParserEx.h" )
 SET( utils_SOURCE
-     "${TARGET_SOURCE_DIR}/utils/crc32.cpp"
+     #"${TARGET_SOURCE_DIR}/utils/crc32.cpp"
      "${TARGET_SOURCE_DIR}/utils/Deflate.cpp"
      "${TARGET_SOURCE_DIR}/utils/DirWalker.cpp"
      "${TARGET_SOURCE_DIR}/utils/misc.cpp"

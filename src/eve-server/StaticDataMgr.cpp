@@ -257,7 +257,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetAttributeTypes(*res);
     while (res->GetRow(row)) {
         //SELECT attributeID, attributeName, attributeCategory, displayName, categoryID FROM dgmAttribute
-        AttrTypeData typeData           = AttrTypeData();
+        Inv::AttrTypeData typeData      = Inv::AttrTypeData();
         typeData.attributeID            = row.GetInt(0);
         typeData.attributeName          = (row.IsNull(1) ? "*none*" : row.GetText(1));
         typeData.attributeCategory      = (row.IsNull(2) ? 0        : row.GetInt(2));
@@ -715,7 +715,7 @@ void StaticDataMgr::GetTypes(std::map< uint16, Inv::TypeData >& into)
 
 const char* StaticDataMgr::GetAttrName(uint16 attrID)
 {
-    std::map<uint16, AttrTypeData>::const_iterator itr = m_attrTypeData.find(attrID);
+    std::map<uint16, Inv::AttrTypeData>::const_iterator itr = m_attrTypeData.find(attrID);
     if (itr != m_attrTypeData.end())
         return itr->second.attributeName.c_str();
         //return itr->second.displayName.c_str();
