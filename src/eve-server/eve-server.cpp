@@ -593,7 +593,7 @@ int main( int argc, char* argv[] )
         sLog.Warning("  Bubble Tracking","Disabled.");
     }
     if (sConfig.debug.UseShipTracking) {
-        sLog.Warning("    Ship Tracking","Enabled.  Cans stop when ASF < %.2f", sConfig.debug.ShipTrackingTime);
+        sLog.Warning("    Ship Tracking","Enabled.  Cans stop when ASF < %.4f", sConfig.debug.ShipTrackingTime);
     }  else {
         sLog.Warning("    Ship Tracking","Disabled.");
     }

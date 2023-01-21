@@ -44,7 +44,7 @@ PyResult Command_siglist(Client* pClient, CommandDB* db, PyServiceMgr* services,
     str << "There are currently %u active signals in %s(%u)<br>"; //80
     str << "aID iID bubbleID type 'Name'<br>"; //30
 
-    for (auto sigs : sig) {
+    for (auto &sigs : sig) {
         // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
         str << sigs.sigID.c_str() << " "  << sigs.sigItemID << " " << sigs.bubbleID << " " << pAM->GetScanGroupName(sigs.scanGroupID) << " '" << sigs.sigName.c_str() << "'<br>"; //120
     }
@@ -69,7 +69,7 @@ PyResult Command_heal(Client* pClient, CommandDB* db, PyServiceMgr* services, co
         uint32 entity = atoi(args.arg(1).c_str());
 
         Client *target = sEntityList.FindClientByCharID(entity);
-        if (target == NULL)
+        if (target == nullptr)
             throw CustomError("Cannot find Character by the entityID %d", entity);
 
         target->GetShip()->Heal();
@@ -89,7 +89,7 @@ PyResult Command_healtarget(Client* pClient, CommandDB* db, PyServiceMgr* servic
         uint32 entity = atoi(args.arg(1).c_str());
 
         Client *target = sEntityList.FindClientByCharID(entity);
-        if (target == NULL)
+        if (target == nullptr)
             throw CustomError("Cannot find Character by the entityID %d", entity);
 
         target->GetShip()->Heal();
@@ -141,8 +141,6 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     if (!pClient->GetShipSE()->SysBubble())
         if (pClient->IsInSpace())
             pClient->EnterSystem(pClient->GetSystemID());
-        else
-            throw CustomError("You must be in space to list system inventory.");
 
     SystemManager* pSys = pClient->GetShipSE()->SystemMgr();
     uint16 beltCount = pSys->BeltCount();
@@ -164,7 +162,7 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     str << "Players: %u<br>"; //23
     str << "<br>"; //5
 
-    for (auto cur : into) {
+    for (auto &cur : into) {
         if (cur.second == nullptr)
             continue;
         str << cur.first << ": ";
@@ -172,10 +170,11 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
         if (cur.second->isGlobal())
             global = "(global)";
         str << global.c_str();
-        if (cur.second->SysBubble() != nullptr)
+        if (cur.second->SysBubble() != nullptr) {
             str << " bubbleID: " << cur.second->SysBubble()->GetID() << "  "; // 13 + 27 + 40 for name (80)
-        else
+        } else {
             str << " (no bubble)  "; // 13 + 27 + 40 for name (80)
+        }
         if (cur.second->DestinyMgr() != nullptr) {
             std::string modeStr = "Rigid";
             if (!cur.second->IsStaticEntity()) {
@@ -198,8 +197,9 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
 
             str << modeStr.c_str() << " (csf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
             str << cur.second->DestinyMgr()->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
-        } else
+        } else {
             str << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
+        }
     }
 
     int count = into.size();
@@ -237,7 +237,7 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
     str << "Players: %u<br>"; //23
     str << "<br>"; //5
 
-    for (auto cur : into) {
+    for (auto &cur : into) {
         if (cur.second == nullptr)
             continue;
         if (cur.second->DestinyMgr() != nullptr) {
@@ -260,10 +260,11 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
                 }
             }
             str << cur.first;
-            if (cur.second->isGlobal())
+            if (cur.second->isGlobal()) {
                 str << ": (global) ";
-            else
+            } else {
                 str << ": ";
+            }
             str << modeStr.c_str() << " (csf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
             str << cur.second->DestinyMgr()->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         } else {
@@ -429,7 +430,7 @@ PyResult Command_beltlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     str.clear();
     str << "BeltID %u has %u roids in it.<br><br>"; //40
 
-    for (auto cur : invMap)
+    for (auto &cur : invMap)
         str << cur->GetName() << ": " << cur->GetID() << "<br>"; // 20 + 40 for name (60)
 
     int count = invMap.size();
@@ -484,7 +485,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     if (IsSolarSystemID(inventoryID)) {
         SystemEntity* pSE(nullptr);
         SystemManager* sMgr = pClient->SystemMgr();
-        for (auto cur : invMap) {
+        for (auto &cur : invMap) {
             pSE = sMgr->GetEntityByID(cur.first);
             if (pSE == nullptr)
                 continue;
@@ -495,7 +496,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
             }
         }
     } else {
-        for (auto cur : invMap)
+        for (auto &cur : invMap)
             str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()) << "): " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
     }
 
@@ -527,7 +528,7 @@ PyResult Command_shipinventory(Client* pClient, CommandDB* db, PyServiceMgr* ser
     str << "InventoryID %u(%p) (Ship %p) has %u items.<br><br>"; //50
 
     // update to sort by slot...pilot, lo, mid, hi, rig, subsystem, cargo, {other cargo}
-    for (auto cur : invMap)
+    for (auto &cur : invMap)
         str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()) << "): " << cur.second->itemName() << "<br>"; // 20 + 40 for name (60)
 
     int count = invMap.size();
@@ -555,19 +556,21 @@ PyResult Command_skilllist(Client* pClient, CommandDB* db, PyServiceMgr* service
     str.clear();
     str << "InventoryID %u(%p) of %s has %u skills.<br><br>"; //80
 
-    for (auto cur : invMap) {
+    for (auto &cur : invMap) {
         if (cur.second->flag() == flagSkillInTraining)
             str << "<color=aqua>";
         str << cur.first << " - " << cur.second->itemName();    //45
         str  << " (" << cur.second->GetAttribute(AttrSkillLevel).get_uint32() << ") "; //3
-        if (cur.second->GetAttribute(AttrSkillPoints).get_type() == evil_number_int)    //15
+        if (cur.second->GetAttribute(AttrSkillPoints).get_type() == evil_number_int) {    //15
             str << "[i-" << cur.second->GetAttribute(AttrSkillPoints).get_int();
-        else
+        } else {
             str << "[f-" << cur.second->GetAttribute(AttrSkillPoints).get_float();
-        if (cur.second->flag() == flagSkillInTraining)
+        }
+        if (cur.second->flag() == flagSkillInTraining) {
             str << "]</color><br>";
-        else
+        } else {
             str << "]<br>"; // 45 + 3 + 15 + 5 (70)
+        }
     }
 
     int count = invMap.size();
@@ -602,17 +605,18 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     str.clear();
     str << "%s (%u) has %u attributes.<br><br>"; //70
 
-    for (auto cur : attrMap) {
-        str << cur.first << " ";  //15
-        if (cur.second.get_type() == evil_number_int)    //15
+    for (auto &cur : attrMap) {
+        str << sDataMgr.GetAttrName(cur.first) << "(" << cur.first << ") ";  //35
+        if (cur.second.get_type() == evil_number_int) {    //15
             str << "i- " << cur.second.get_int();
-        else
+        } else {
             str << "f- " << cur.second.get_float();
+        }
         str << "<br>"; // 3 + 15 + 15 (40)
     }
 
     int count = attrMap.size();
-    int size = count * 40;
+    int size = count * 90;
     size += 70;
     char reply[size];
     snprintf(reply, size, str.str().c_str(), iRef->name(), itemID, count);
@@ -720,8 +724,9 @@ PyResult Command_track(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     if (tracking) {
         sEntityList.SetTracking(false);
         track = "disabled";
-    } else
+    } else {
         sEntityList.SetTracking(true);
+    }
 
     char reply[30];
     snprintf(reply, 30, "Ship Tracking is %s.", track.c_str());
@@ -926,12 +931,13 @@ PyResult Command_players(Client* pClient, CommandDB* db, PyServiceMgr* services,
     str.clear();
     str << "Active Player List:<br>" << cVec.size() << " Online Players.<br>";
 
-    for (auto cur : cVec) {
+    for (auto &cur : cVec) {
         str << cur->GetName();
-        if (cur->IsDocked())
+        if (cur->IsDocked()) {
             str << " is docked in ";
-        else
+        } else {
             str << " is flying around ";
+        }
         str << cur->GetSystemName().c_str() << "<br>";
     }
 
@@ -950,8 +956,9 @@ PyResult Command_showall(Client* pClient, CommandDB* db, PyServiceMgr* services,
     if (pClient->IsShowall()) {
         pClient->SetShowAll(false);
         showall = "Disabled";
-    } else
+    } else {
         pClient->SetShowAll(true);
+    }
 
     char reply[35];
     snprintf(reply, 35, "Show All on Scanner is %s.", showall.c_str());
@@ -966,8 +973,9 @@ PyResult Command_autostop(Client* pClient, CommandDB* db, PyServiceMgr* services
     if (pClient->AutoStop()) {
         pClient->SetAutoStop(false);
         stop = "Disabled";
-    } else
+    } else {
         pClient->SetAutoStop(true);
+    }
 
     char reply[35];
     snprintf(reply, 35, "Module Auto-Stop is %s.", stop.c_str());
@@ -1042,7 +1050,7 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     }
 
     // loop thru cargo list in all possible holds
-    for (auto cur : cargoAttrToFlag) {
+    for (auto &cur : cargoAttrToFlag) {
         if ( shipRef->HasAttribute(cur.first) and ( shipRef->GetAttribute(cur.first) > EvilZero)) {
             ++count;
             str << "<br>" << sDataMgr.GetFlagName(cur.second);
@@ -1170,7 +1178,7 @@ PyResult Command_bindList(Client* pClient, CommandDB* db, PyServiceMgr* services
 
     std::vector<PyServiceMgr::BoundObj> vec;
     pClient->services().BoundObjectVec(vec);
-    for (auto cur : vec) {
+    for (auto &cur : vec) {
         str << cur.client->GetName() << ": " << cur.object->bindID() << " ";    //40
         str << cur.object->GetName() << "<br>";         //60
     }

@@ -682,7 +682,7 @@ PyList::PyList(const PyList& oth) : PyRep(PyRep::PyTypeList), items(oth.items)
 
 PyList::~PyList()
 {
-    //for (auto cur : items)
+    //for (auto &cur : items)
     //    PySafeDecRef(cur);
 }
 

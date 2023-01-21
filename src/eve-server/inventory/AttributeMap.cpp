@@ -316,8 +316,8 @@ EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
     or (attrID == AttrActivationTargetLoss)
     or (attrID == AttrAdvancedCapitalAgility)
     or (attrID == AttrNewAgility)) {
-        sLog.Warning("AttrMap - Change", "Attribute %u called.  printing stacktrace.", attrID);
-        EvE::traceStack();
+        sLog.Warning("AttrMap - Change", "Attribute %u called.  not printing stacktrace.", attrID);
+        //EvE::traceStack();
     }
 
     AttrMapConstItr itr = mAttributes.find(attrID);
@@ -359,8 +359,8 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
     or (attrID == AttrActivationTargetLoss)
     or (attrID == AttrAdvancedCapitalAgility)
     or (attrID == AttrNewAgility)) {
-        sLog.Warning("AttrMap - Change", "Attribute %u called.  printing stacktrace.", attrID);
-        EvE::traceStack();
+        sLog.Warning("AttrMap - Change", "Attribute %u called.  not printing stacktrace.", attrID);
+        //EvE::traceStack();
     }
     // check for changes
     if (old_val == new_val)

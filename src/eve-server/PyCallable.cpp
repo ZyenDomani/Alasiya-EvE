@@ -32,9 +32,6 @@ PyCallable::PyCallable()
 {
 }
 
-PyCallable::~PyCallable()
-{
-}
 
 PyResult PyCallable::Call(const std::string &method, PyCallArgs &args) {
     //call the dispatcher, capturing the result.
@@ -105,7 +102,7 @@ ssNamedResult(namedResult)
 {}
 
 PyResult::PyResult( const PyResult& oth ) : ssResult( nullptr ), ssNamedResult( nullptr ) { *this = oth; }
-PyResult::~PyResult() { PySafeDecRef( ssResult ); PySafeDecRef( ssNamedResult ); }
+//PyResult::~PyResult() { PySafeDecRef( ssResult ); PySafeDecRef( ssNamedResult ); }
 
 PyResult& PyResult::operator=( const PyResult& oth )
 {
