@@ -1580,7 +1580,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     }
 
     // cleanup
-    //PyDecRef(row);    // this isnt required.  throws deleted=true on DecRef 
+    //PyDecRef(row);    // this is cleaned up elsewhere.  throws deleted=true on DecRef
     PyDecRef(header);
     PyDecRef(matlListManuf);
     PyDecRef(skillListManuf);

@@ -66,7 +66,7 @@ PyList* LiveUpdateDB::GenerateUpdates()
     DBResultRow row;
     while (res.GetRow(row)) {
         PyPackedRow* packedRow = new PyPackedRow(header);
-        for (int i(0); i < 7; i++)
+        for (uint32 i(0); i < 7; i++)
             packedRow->SetField(i, DBColumnToPyRep(row, i));
 
         LiveUpdateInner inner;
@@ -75,7 +75,7 @@ PyList* LiveUpdateDB::GenerateUpdates()
         inner.codeType = row.GetText(9);
         inner.objectID = row.GetText(8);
         inner.methodName = row.GetText(7);
-        packedRow->SetField(static_cast<uint32>(7) /* code */, inner.Encode());
+        packedRow->SetField((uint32)(7) /* code */, inner.Encode());
 
         list->SetItem(listIndex++, packedRow);
     }

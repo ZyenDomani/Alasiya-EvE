@@ -43,6 +43,7 @@ work on buglist, integrate this list in there where i can
 
 all movement commands should be checked for spam/multiple calls within (x) timeframe.
     - this will totally fuck up current code, especially if turns are involved
+    - multiple calls to Stop() already implemented (circa 2016)
 
 
 request for smartbombs

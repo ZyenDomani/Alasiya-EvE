@@ -122,10 +122,11 @@ bool MarshalStream::VisitLong( const PyLong* rep )
 
 bool MarshalStream::VisitBoolean( const PyBool* rep )
 {
-    if (rep->value())
+    if (rep->value()) {
         Put<uint8>( Op_PyTrue );
-    else
+    } else {
         Put<uint8>( Op_PyFalse );
+    }
 
     return true;
 }
@@ -442,6 +443,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* pyPackedRow )
     end = sizeMap.end();
     for (; cur != end; cur++) {
         value = pyPackedRow->GetField(cur->second );
+        // not checking invalid pointer here on purpose to allow debugging the populating code errors
         if (!value->visit(*this))
             return false;
     }
