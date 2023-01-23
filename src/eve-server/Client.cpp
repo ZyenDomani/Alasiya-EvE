@@ -1846,36 +1846,33 @@ void Client::InitSession(int32 characterID)
         return;
     }
 
-    int32 stationID         = (int32)(characterDataMap["stationID"]);
-    int32 solarSystemID     = (int32)(characterDataMap["solarSystemID"]);
-    m_shipId                = (int32)(characterDataMap["shipID"]);
+    int32 stationID         = (characterDataMap["stationID"]);
+    int32 solarSystemID     = (characterDataMap["solarSystemID"]);
+    m_shipId                = (characterDataMap["shipID"]);
 
-    pSession->SetInt("genderID",         (int32)(characterDataMap["gender"]));
-    pSession->SetInt("bloodlineID",      (int32)(characterDataMap["bloodlineID"]));
-    pSession->SetInt("raceID",           (int32)(characterDataMap["raceID"]));
+    pSession->SetInt("genderID",         (characterDataMap["gender"]));
+    pSession->SetInt("bloodlineID",      (characterDataMap["bloodlineID"]));
+    pSession->SetInt("raceID",           (characterDataMap["raceID"]));
     pSession->SetInt("charid",           characterID);
-    pSession->SetInt("corpid",           (int32)(characterDataMap["corporationID"]));
+    pSession->SetInt("corpid",           (characterDataMap["corporationID"]));
 
-    pSession->SetInt("cloneStationID",   (int32)(characterDataMap["cloneStationID"]));
+    pSession->SetInt("cloneStationID",   (characterDataMap["cloneStationID"]));
     pSession->SetInt("solarsystemid2",   solarSystemID);
-    pSession->SetInt("constellationid",  (int32)(characterDataMap["constellationID"]));
-    pSession->SetInt("regionid",         (int32)(characterDataMap["regionID"]));
+    pSession->SetInt("constellationid",  (characterDataMap["constellationID"]));
+    pSession->SetInt("regionid",         (characterDataMap["regionID"]));
 
-    pSession->SetInt("hqID",             (int32)(characterDataMap["corporationHQ"]));
+    pSession->SetInt("hqID",             (characterDataMap["corporationHQ"]));
     pSession->SetInt("baseID",           characterDataMap["baseID"]);
     pSession->SetInt("corpAccountKey",   characterDataMap["corpAccountKey"]);
-
-    //Only set allianceID if it is not 0 -dunno who set this
-    //if (characterDataMap["allianceID"] != 0)
-    pSession->SetInt("allianceid",      (int32)(characterDataMap["allianceID"] > 0 ? characterDataMap["allianceID"] : -1));
-
-    pSession->SetInt("warfactionid",    (int32)(characterDataMap["warFactionID"] > 0 ? characterDataMap["warFactionID"] : -1));
 
     pSession->SetLong("corprole",        characterDataMap["corpRole"]);
     pSession->SetLong("rolesAtAll",      characterDataMap["rolesAtAll"]);
     pSession->SetLong("rolesAtBase",     characterDataMap["rolesAtBase"]);
     pSession->SetLong("rolesAtHQ",       characterDataMap["rolesAtHQ"]);
     pSession->SetLong("rolesAtOther",    characterDataMap["rolesAtOther"]);
+
+    pSession->SetInt("allianceid",      (characterDataMap["allianceID"] > 0 ? characterDataMap["allianceID"] : -1));
+    pSession->SetInt("warfactionid",    (characterDataMap["warFactionID"] > 0 ? characterDataMap["warFactionID"] : -1));
 
     /*  solarSystemID != 0  -character in space
      *   also used as current system in following menus:
@@ -1949,12 +1946,9 @@ void Client::UpdateCorpSession(CorpData& data)
     pSession->SetInt("corpid", data.corporationID);
     pSession->SetInt("baseID", data.baseID);
     pSession->SetInt("hqID", data.corpHQ);
-
-    //Only set allianceID if it is not 0  --again, dunno who set this
-    // if (data.allianceID != 0){
     pSession->SetInt("allianceid", (data.allianceID > 0 ? data.allianceID : -1));
-
     pSession->SetInt("warfactionid", (data.warFactionID > 0 ? data.warFactionID : -1));
+
     pSession->SetInt("corpAccountKey", data.corpAccountKey);
     pSession->SetLong("corprole", data.corpRole);
     pSession->SetLong("rolesAtAll", data.rolesAtAll);

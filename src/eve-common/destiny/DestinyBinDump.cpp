@@ -69,12 +69,12 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     len -= sizeof(BallHeader);
 
     if ((ballhead->entityID == 0) or (ballhead->entityID > 9223372036854775807)) { // max int64
-        _log(into, "Error: Invalid entityID for ball %li", ballhead->entityID);
+        _log(into, "Error: Invalid entityID for ball %lli", ballhead->entityID);
         return 0;
     }
 
     if (ballhead->mode > MAX_DSTBALL) {
-        _log(into, "Error: Invalid ball mode %u for ball %li", ballhead->mode, ballhead->entityID);
+        _log(into, "Error: Invalid ball mode %u for ball %lli", ballhead->mode, ballhead->entityID);
         return 0;
     }
 
@@ -90,7 +90,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         len  -= name->name_len*sizeof(uint16);
     }
     */
-    _log(into, "entity: %li, mode: %s(%u) flags: %s", ballhead->entityID, modeNames[ballhead->mode], ballhead->mode, Destiny::GetFlagNames(ballhead->flags).c_str());
+    _log(into, "entity: %lli, mode: %s(%u) flags: %s", ballhead->entityID, modeNames[ballhead->mode], ballhead->mode, Destiny::GetFlagNames(ballhead->flags).c_str());
     _log(into, "   pos: %.2f, %.2f, %.2f, radius: %.1f", ballhead->posX, ballhead->posY, ballhead->posZ, ballhead->radius);
 
     if (ballhead->mode != Ball::Mode::RIGID) {

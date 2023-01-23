@@ -75,7 +75,7 @@ PyList* LiveUpdateDB::GenerateUpdates()
         inner.codeType = row.GetText(9);
         inner.objectID = row.GetText(8);
         inner.methodName = row.GetText(7);
-        packedRow->SetField((uint32)(7) /* code */, inner.Encode());
+        packedRow->SetField(7 /* code */, inner.Encode());
 
         list->SetItem(listIndex++, packedRow);
     }

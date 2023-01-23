@@ -1158,14 +1158,14 @@ PyPackedRow* InventoryItem::GetItemStatusRow() const {
 }
 
 void InventoryItem::GetItemStatusRow(PyPackedRow* into ) const {
-    into->SetField("instanceID",    new PyLong(m_itemID ));
-    into->SetField("online",        new PyBool((HasAttribute(AttrOnline) ? GetAttribute(AttrOnline).get_bool() : false) ));
-    into->SetField("damage",        new PyFloat((HasAttribute(AttrDamage) ? GetAttribute(AttrDamage).get_float() : 0) ));
-    into->SetField("charge",        new PyFloat((HasAttribute(AttrCapacitorCharge) ? GetAttribute(AttrCapacitorCharge).get_float() : 0) ));
-    into->SetField("skillPoints",   new PyInt((HasAttribute(AttrSkillPoints) ? GetAttribute(AttrSkillPoints).get_uint32() : 0) ));
-    into->SetField("armorDamage",   new PyFloat((HasAttribute(AttrArmorDamageAmount) ? GetAttribute(AttrArmorDamageAmount).get_float() : 0.0) ));
-    into->SetField("shieldCharge",  new PyFloat((HasAttribute(AttrShieldCharge) ? GetAttribute(AttrShieldCharge).get_float() : 0.0) ));
-    into->SetField("incapacitated", new PyBool((HasAttribute(AttrIsIncapacitated) ? GetAttribute(AttrIsIncapacitated).get_bool() : false) ));
+    into->SetFieldC("instanceID",    new PyLong(m_itemID ));
+    into->SetFieldC("online",        new PyBool((HasAttribute(AttrOnline) ? GetAttribute(AttrOnline).get_bool() : false) ));
+    into->SetFieldC("damage",        new PyFloat((HasAttribute(AttrDamage) ? GetAttribute(AttrDamage).get_float() : 0) ));
+    into->SetFieldC("charge",        new PyFloat((HasAttribute(AttrCapacitorCharge) ? GetAttribute(AttrCapacitorCharge).get_float() : 0) ));
+    into->SetFieldC("skillPoints",   new PyInt((HasAttribute(AttrSkillPoints) ? GetAttribute(AttrSkillPoints).get_uint32() : 0) ));
+    into->SetFieldC("armorDamage",   new PyFloat((HasAttribute(AttrArmorDamageAmount) ? GetAttribute(AttrArmorDamageAmount).get_float() : 0.0) ));
+    into->SetFieldC("shieldCharge",  new PyFloat((HasAttribute(AttrShieldCharge) ? GetAttribute(AttrShieldCharge).get_float() : 0.0) ));
+    into->SetFieldC("incapacitated", new PyBool((HasAttribute(AttrIsIncapacitated) ? GetAttribute(AttrIsIncapacitated).get_bool() : false) ));
 }
 
 /*  charge info for specific module  */
@@ -1181,9 +1181,9 @@ PyPackedRow* InventoryItem::GetChargeStatusRow(uint32 shipID) const {
 }
 
 void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
-    into->SetField("instanceID",     new PyLong(shipID));  // locationID
-    into->SetField("flagID",         new PyInt(m_data.flag));
-    into->SetField("typeID",         new PyInt(m_type.id()));
+    into->SetFieldC("instanceID",     new PyLong(shipID));  // locationID
+    into->SetFieldC("flagID",         new PyInt(m_data.flag));
+    into->SetFieldC("typeID",         new PyInt(m_type.id()));
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const
@@ -1200,31 +1200,31 @@ void InventoryItem::GetItemRow(PyPackedRow* into) const
         if (sItemFactory.GetBlueprintRef(m_itemID)->copy())
             qty = -2;
 
-    into->SetField("itemID",       new PyLong(m_itemID));
-    into->SetField("typeID",       new PyInt(m_type.id()));
-    into->SetField("ownerID",      new PyInt(m_data.ownerID));
-    into->SetField("locationID",   new PyInt(m_data.locationID));
-    into->SetField("flagID",       new PyInt(m_data.flag));
-    into->SetField("groupID",      new PyInt(type().groupID()));
-    into->SetField("categoryID",   new PyInt(type().categoryID()));
-    into->SetField("quantity",     new PyInt(qty));
+    into->SetFieldC("itemID",       new PyLong(m_itemID));
+    into->SetFieldC("typeID",       new PyInt(m_type.id()));
+    into->SetFieldC("ownerID",      new PyInt(m_data.ownerID));
+    into->SetFieldC("locationID",   new PyInt(m_data.locationID));
+    into->SetFieldC("flagID",       new PyInt(m_data.flag));
+    into->SetFieldC("groupID",      new PyInt(type().groupID()));
+    into->SetFieldC("categoryID",   new PyInt(type().categoryID()));
+    into->SetFieldC("quantity",     new PyInt(qty));
     /*
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint) {
         if (sItemFactory.GetBlueprintRef(m_itemID)->copy()) {
-            into->SetField("stacksize",    new PyInt(1));
-            into->SetField("singleton",    new PyInt(2));
+            into->SetFieldC("stacksize",    new PyInt(1));
+            into->SetFieldC("singleton",    new PyInt(2));
         } else {
-            into->SetField("stacksize",    new PyInt(m_data.singleton? -1 : m_data.quantity));
-            into->SetField("singleton",    new PyInt(m_data.singleton?1:0));
+            into->SetFieldC("stacksize",    new PyInt(m_data.singleton? -1 : m_data.quantity));
+            into->SetFieldC("singleton",    new PyInt(m_data.singleton?1:0));
         }
     } else {
-        into->SetField("stacksize",    new PyInt(m_data.singleton? -1 : m_data.quantity));
-        into->SetField("singleton",    new PyInt(m_data.singleton?1:0));
+        into->SetFieldC("stacksize",    new PyInt(m_data.singleton? -1 : m_data.quantity));
+        into->SetFieldC("singleton",    new PyInt(m_data.singleton?1:0));
     }
     */
     // customInfo is actually used in client (but i dont think it's a string)
     //if const.ixLocationID in change and item.customInfo == logConst.eventUndock:
-    into->SetField("customInfo",   new PyString(m_data.customInfo));
+    into->SetFieldC("customInfo",   new PyString(m_data.customInfo));
 }
 
 bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )

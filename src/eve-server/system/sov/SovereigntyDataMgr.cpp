@@ -229,12 +229,12 @@ PyRep *SovereigntyDataMgr::GetCurrentSovData(uint32 locationID)
                  m_sovData.get<SovDataByConstellation>().equal_range(locationID)))
         {
             PyPackedRow *row = rowset->NewRow();
-            row->SetField("locationID", new PyInt(sData.solarSystemID));
-            row->SetField("allianceID", new PyInt(sData.allianceID));
-            row->SetField("stationCount", new PyInt(sData.stationCount));
-            row->SetField("militaryPoints", new PyInt(sData.militaryPoints));
-            row->SetField("industrialPoints", new PyInt(sData.industrialPoints));
-            row->SetField("claimedFor", new PyInt(sData.allianceID));
+            row->SetFieldC("locationID", new PyInt(sData.solarSystemID));
+            row->SetFieldC("allianceID", new PyInt(sData.allianceID));
+            row->SetFieldC("stationCount", new PyInt(sData.stationCount));
+            row->SetFieldC("militaryPoints", new PyInt(sData.militaryPoints));
+            row->SetFieldC("industrialPoints", new PyInt(sData.industrialPoints));
+            row->SetFieldC("claimedFor", new PyInt(sData.allianceID));
         }
     }
     //Get all unique alliances in the region who hold sovereignty
@@ -245,12 +245,12 @@ PyRep *SovereigntyDataMgr::GetCurrentSovData(uint32 locationID)
         {
             if (!(std::find(cv.begin(), cv.end(), sData.constellationID) != cv.end())) {
                 PyPackedRow *row = rowset->NewRow();
-                row->SetField("locationID", new PyInt(sData.constellationID));
-                row->SetField("allianceID", new PyInt(sData.allianceID));
-                row->SetField("stationCount", new PyInt(sData.stationCount));
-                row->SetField("militaryPoints", new PyInt(sData.militaryPoints));
-                row->SetField("industrialPoints", new PyInt(sData.industrialPoints));
-                row->SetField("claimedFor", new PyInt(sData.allianceID));
+                row->SetFieldC("locationID", new PyInt(sData.constellationID));
+                row->SetFieldC("allianceID", new PyInt(sData.allianceID));
+                row->SetFieldC("stationCount", new PyInt(sData.stationCount));
+                row->SetFieldC("militaryPoints", new PyInt(sData.militaryPoints));
+                row->SetFieldC("industrialPoints", new PyInt(sData.industrialPoints));
+                row->SetFieldC("claimedFor", new PyInt(sData.allianceID));
                 cv.push_back(sData.constellationID);
             }
         }
@@ -259,12 +259,12 @@ PyRep *SovereigntyDataMgr::GetCurrentSovData(uint32 locationID)
                  m_sovData.get<SovDataByRegion>().equal_range(locationID)))
         {
             PyPackedRow *row = rowset->NewRow();
-            row->SetField("locationID", new PyInt(sData.solarSystemID));
-            row->SetField("allianceID", new PyInt(sData.allianceID));
-            row->SetField("stationCount", new PyInt(sData.stationCount));
-            row->SetField("militaryPoints", new PyInt(sData.militaryPoints));
-            row->SetField("industrialPoints", new PyInt(sData.industrialPoints));
-            row->SetField("claimedFor", new PyInt(sData.allianceID));
+            row->SetFieldC("locationID", new PyInt(sData.solarSystemID));
+            row->SetFieldC("allianceID", new PyInt(sData.allianceID));
+            row->SetFieldC("stationCount", new PyInt(sData.stationCount));
+            row->SetFieldC("militaryPoints", new PyInt(sData.militaryPoints));
+            row->SetFieldC("industrialPoints", new PyInt(sData.industrialPoints));
+            row->SetFieldC("claimedFor", new PyInt(sData.allianceID));
         }
     }
 

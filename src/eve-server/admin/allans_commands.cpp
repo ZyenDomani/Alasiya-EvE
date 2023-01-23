@@ -587,10 +587,14 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     /* this command is used to debug attributes
      * wip.   -allan 15Mar17
      */
+    uint32 itemID(0);
 
-    if (!args.isNumber(1))
-        throw CustomError("Argument 1 must be a valid itemID.");
-    uint32 itemID(atol(args.arg(1).c_str()));
+    if (args.isNumber(1)) {
+        itemID = atol(args.arg(1).c_str());
+    } else {
+        // default to current ship
+        itemID = pClient->GetShipID();
+    }
 
     InventoryItemRef iRef(sItemFactory.GetItemRef(itemID));
     if (iRef.get() == nullptr) {

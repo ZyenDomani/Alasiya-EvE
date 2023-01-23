@@ -443,7 +443,6 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* pyPackedRow )
     end = sizeMap.end();
     for (; cur != end; cur++) {
         value = pyPackedRow->GetField(cur->second );
-        // not checking invalid pointer here on purpose to allow debugging the populating code errors
         if (!value->visit(*this))
             return false;
     }

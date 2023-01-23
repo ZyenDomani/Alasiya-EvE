@@ -52,8 +52,8 @@ bool DBTYPE_IsCompatible( DBTYPE type, const PyRep* rep )
         // represents NULL
         return true;
 
-    // why is this hacked here?
-    //return true;
+    // why is this hacked here?  is this really needed?
+    return true;
 
     switch( type )
     {

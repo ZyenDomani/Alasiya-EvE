@@ -429,18 +429,16 @@ PyRep *MarketDB::GetMarketGroups() {
         }
 
         PyPackedRow* pyrow = rowset->NewRow();
-        uint32 index(0);
-        pyrow->SetField(index++, pid); //parentGroupID
-        pyrow->SetField(index++, new PyInt(row.GetUInt(1))); //marketGroupID
-        // these next 2 call SetField(char indexName, pyrep) which puts nulls in data, which will crash in marshalling
-        pyrow->SetField(index++, (PyRep*)new PyString(row.GetText(2))); //marketGroupName
-        pyrow->SetField(index++, (PyRep*)new PyString(row.GetText(3))); //description
-        pyrow->SetField(index++, row.IsNull(4) ? PyStatic.NewNone() : new PyInt(row.GetUInt(4))); //graphicID
-        pyrow->SetField(index++, new PyBool(row.GetBool(5))); //hasTypes
-        pyrow->SetField(index++, row.IsNull(6) ? PyStatic.NewNone() : new PyInt(row.GetUInt(6))); // iconID
-        pyrow->SetField(index++, new PyInt(row.GetUInt(7))); //dataID
-        pyrow->SetField(index++, new PyInt(row.GetUInt(8))); //marketGroupNameID
-        pyrow->SetField(index,   new PyInt(row.GetUInt(9))); //descriptionID
+        pyrow->SetField(0, pid); //parentGroupID
+        pyrow->SetField(1, new PyInt(row.GetUInt(1))); //marketGroupID
+        pyrow->SetField(2, new PyString(row.GetText(2))); //marketGroupName
+        pyrow->SetField(3, new PyString(row.GetText(3))); //description
+        pyrow->SetField(4, row.IsNull(4) ? PyStatic.NewNone() : new PyInt(row.GetUInt(4))); //graphicID
+        pyrow->SetField(5, new PyBool(row.GetBool(5))); //hasTypes
+        pyrow->SetField(6, row.IsNull(6) ? PyStatic.NewNone() : new PyInt(row.GetUInt(6))); // iconID
+        pyrow->SetField(7, new PyInt(row.GetUInt(7))); //dataID
+        pyrow->SetField(8, new PyInt(row.GetUInt(8))); //marketGroupNameID
+        pyrow->SetField(9,   new PyInt(row.GetUInt(9))); //descriptionID
     }
 
     _log(MARKET__DB_TRACE, "GetMarketGroups returned %li keys.", filterRowset->GetKeyCount());

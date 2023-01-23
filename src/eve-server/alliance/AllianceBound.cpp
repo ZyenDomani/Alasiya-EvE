@@ -73,12 +73,26 @@ AllianceBound::AllianceBound(PyServiceMgr *mgr, AllianceDB &db, uint32 allyID)
     m_allyID = allyID;
 }
 
+/** @todo  these should only be called by alliance members, afaik...
+ * client does some checks, but 0 != None so some still get thru.
+ *   may have to verify some here until we can get PyNone returns to client
+ */
+
 PyResult AllianceBound::Handle_GetAlliance(PyCallArgs &call)
 {
     // Works
     //   self.members = self.GetMoniker().GetAlliance()
     _log(ALLY__CALL, "AllianceBound::Handle_GetAlliance() size=%li", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+
+    /*
+     * 13:28:01 [AllyCall] AllianceBound::Handle_GetAlliance() size=0
+     * 13:28:01 [AllyCallDump]   Call Arguments:
+     * 13:28:01 [AllyCallDump]      Tuple: Empty
+     * 13:28:01 [AllyCallDump]  Named Arguments:
+     * 13:28:01 [AllyCallDump]   machoVersion
+     * 13:28:01 [AllyCallDump]        Integer: 1
+     */
 
     // called by member of this alliance
     return m_db.GetAlliance(m_allyID);

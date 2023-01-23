@@ -371,15 +371,15 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
         dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(args.arg2));
 
     PyPackedRow* row = new PyPackedRow( sDataMgr.CreateHeader() );
-        row->SetField("itemID",        new PyLong(mTI.itemID));
-        row->SetField("typeID",        new PyInt(mTI.typeID));
-        row->SetField("ownerID",       new PyInt(mTI.ownerID));
-        row->SetField("locationID",    new PyInt(mTI.locationID));
-        row->SetField("flagID",        new PyInt(mTI.flagID));
-        row->SetField("groupID",       new PyInt(mTI.groupID));
-        row->SetField("categoryID",    new PyInt(mTI.categoryID));
-        row->SetField("quantity",      new PyInt(mTI.singleton?-1:mTI.quantity));
-        row->SetField("customInfo",    new PyString(mTI.customInfo));
+        row->SetFieldC("itemID",        new PyLong(mTI.itemID));
+        row->SetFieldC("typeID",        new PyInt(mTI.typeID));
+        row->SetFieldC("ownerID",       new PyInt(mTI.ownerID));
+        row->SetFieldC("locationID",    new PyInt(mTI.locationID));
+        row->SetFieldC("flagID",        new PyInt(mTI.flagID));
+        row->SetFieldC("groupID",       new PyInt(mTI.groupID));
+        row->SetFieldC("categoryID",    new PyInt(mTI.categoryID));
+        row->SetFieldC("quantity",      new PyInt(mTI.singleton?-1:mTI.quantity));
+        row->SetFieldC("customInfo",    new PyString(mTI.customInfo));
 
     PyTuple* tuple = new PyTuple(2);
         tuple->SetItem(0, row);
@@ -457,15 +457,15 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
         itemRef->Move(tradeContID, (EVEItemFlags)flag, true);
 
         PyPackedRow* row = new PyPackedRow( header );
-            row->SetField("itemID",        new PyLong(mTI.itemID));
-            row->SetField("typeID",        new PyInt(mTI.typeID));
-            row->SetField("ownerID",       new PyInt(mTI.ownerID));
-            row->SetField("locationID",    new PyInt(mTI.locationID));
-            row->SetField("flagID",        new PyInt(mTI.flagID));
-            row->SetField("groupID",       new PyInt(mTI.groupID));
-            row->SetField("categoryID",    new PyInt(mTI.categoryID));
-            row->SetField("quantity",      new PyInt(mTI.singleton?-1:mTI.quantity));
-            row->SetField("customInfo",    new PyString(mTI.customInfo));
+            row->SetFieldC("itemID",        new PyLong(mTI.itemID));
+            row->SetFieldC("typeID",        new PyInt(mTI.typeID));
+            row->SetFieldC("ownerID",       new PyInt(mTI.ownerID));
+            row->SetFieldC("locationID",    new PyInt(mTI.locationID));
+            row->SetFieldC("flagID",        new PyInt(mTI.flagID));
+            row->SetFieldC("groupID",       new PyInt(mTI.groupID));
+            row->SetFieldC("categoryID",    new PyInt(mTI.categoryID));
+            row->SetFieldC("quantity",      new PyInt(mTI.singleton?-1:mTI.quantity));
+            row->SetFieldC("customInfo",    new PyString(mTI.customInfo));
         PyTuple* tuple = new PyTuple(2);
             tuple->SetItem(0, row);
             tuple->SetItem(1, dict);
@@ -487,15 +487,15 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
 PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
     TradeSession* pTSes = call.client->GetTradeSession();
     PyPackedRow* row = new PyPackedRow( sDataMgr.CreateHeader() );
-        row->SetField("itemID",        new PyLong(pTSes->m_tradeSession.containerID));
-        row->SetField("typeID",        new PyInt(53));     // type Trade Window
-        row->SetField("ownerID",       PyStatic.NewOne());      // EvE_System
-        row->SetField("locationID",    new PyInt(pTSes->m_tradeSession.stationID));
-        row->SetField("flagID",        PyStatic.NewNone());
-        row->SetField("quantity",      new PyInt(-1));     // singleton
-        row->SetField("groupID",       new PyInt(EVEDB::invGroups::Trade_Session ) );
-        row->SetField("categoryID",    new PyInt(EVEDB::invCategories::Trading));
-        row->SetField("customInfo",    PyStatic.NewNone());
+        row->SetFieldC("itemID",        new PyLong(pTSes->m_tradeSession.containerID));
+        row->SetFieldC("typeID",        new PyInt(53));     // type Trade Window
+        row->SetFieldC("ownerID",       PyStatic.NewOne());      // EvE_System
+        row->SetFieldC("locationID",    new PyInt(pTSes->m_tradeSession.stationID));
+        row->SetFieldC("flagID",        PyStatic.NewNone());
+        row->SetFieldC("quantity",      PyStatic.NewNegOne());     // singleton
+        row->SetFieldC("groupID",       new PyInt(EVEDB::invGroups::Trade_Session ) );
+        row->SetFieldC("categoryID",    new PyInt(EVEDB::invCategories::Trading));
+        row->SetFieldC("customInfo",    PyStatic.NewNone());
     return row;
 }
 
@@ -514,15 +514,15 @@ PyResult TradeBound::Handle_List(PyCallArgs &call) {
     DBRowDescriptor* header = sDataMgr.CreateHeader();
     for (auto cur : pTSes->m_tradelist) {
         PyPackedRow* row = new PyPackedRow( header );
-            row->SetField("itemID",        new PyLong(cur.itemID));
-            row->SetField("typeID",        new PyInt(cur.typeID));
-            row->SetField("ownerID",       new PyInt(cur.ownerID));
-            row->SetField("locationID",    new PyInt(cur.locationID));
-            row->SetField("flagID",        new PyInt(cur.flagID));
-            row->SetField("groupID",       new PyInt(cur.groupID));
-            row->SetField("quantity",      new PyInt(cur.singleton?-1:cur.quantity));
-            row->SetField("categoryID",    new PyInt(cur.categoryID));
-            row->SetField("customInfo",    new PyString(cur.customInfo));
+            row->SetFieldC("itemID",        new PyLong(cur.itemID));
+            row->SetFieldC("typeID",        new PyInt(cur.typeID));
+            row->SetFieldC("ownerID",       new PyInt(cur.ownerID));
+            row->SetFieldC("locationID",    new PyInt(cur.locationID));
+            row->SetFieldC("flagID",        new PyInt(cur.flagID));
+            row->SetFieldC("groupID",       new PyInt(cur.groupID));
+            row->SetFieldC("quantity",      new PyInt(cur.singleton?-1:cur.quantity));
+            row->SetFieldC("categoryID",    new PyInt(cur.categoryID));
+            row->SetFieldC("customInfo",    new PyString(cur.customInfo));
         list->AddItem(row);
     }
 

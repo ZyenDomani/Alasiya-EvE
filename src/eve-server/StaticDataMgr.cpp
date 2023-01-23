@@ -256,7 +256,7 @@ void StaticDataMgr::Populate()
     startTime = GetTimeMSeconds();
     ManagerDB::GetAttributeTypes(*res);
     while (res->GetRow(row)) {
-        //SELECT attributeID, attributeName, attributeCategory, displayName, categoryID FROM dgmAttribute
+        //SELECT attributeID, attributeName, attributeCategory, displayName, categoryID FROM dgmAttributeTypes
         Inv::AttrTypeData typeData      = Inv::AttrTypeData();
         typeData.attributeID            = row.GetInt(0);
         typeData.attributeName          = (row.IsNull(1) ? "*none*" : row.GetText(1));
@@ -1396,9 +1396,9 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         GetRamMaterials(prodID, ramMatls);
         for (auto &cur : ramMatls) {
             PyPackedRow* row = new PyPackedRow(header);
-                row->SetField("quantity",        new PyInt(cur.quantity));
-                row->SetField("requiredTypeID",  new PyInt(cur.materialTypeID));
-                row->SetField("damagePerJob",    new PyFloat(1.0f));
+                row->SetFieldC("quantity",        new PyInt(cur.quantity));
+                row->SetFieldC("requiredTypeID",  new PyInt(cur.materialTypeID));
+                row->SetFieldC("damagePerJob",    new PyFloat(1.0f));
             matlListManuf->AddItem(row);
         }
     }
@@ -1413,9 +1413,9 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     //GetRamRequirements(prodID, ramReqs);
     PyPackedRow* row = new PyPackedRow(header);
     for (auto &cur : ramReqs) {
-            row->SetField("quantity",        new PyInt(cur.quantity));
-            row->SetField("requiredTypeID",  new PyInt(cur.requiredTypeID));
-            row->SetField("damagePerJob",    new PyFloat(cur.damagePerJob));
+        row->SetFieldC("quantity",        new PyInt(cur.quantity));
+        row->SetFieldC("requiredTypeID",  new PyInt(cur.requiredTypeID));
+        row->SetFieldC("damagePerJob",    new PyFloat(cur.damagePerJob));
 
         using namespace EvERam;
         switch(cur.activityID) {
@@ -1511,9 +1511,9 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             for (; itr != extraListManuf->end();itr++) {
                 PyPackedRow* from = (*itr)->AsPackedRow();
                 PyPackedRow* into = rowset->NewRow();
-                into->SetField((uint32)0, from->GetField(0));
-                into->SetField((uint32)1, from->GetField(1));
-                into->SetField((uint32)2, from->GetField(2));
+                into->SetField(0, from->GetField(0));
+                into->SetField(1, from->GetField(1));
+                into->SetField(2, from->GetField(2));
             }
         Manufacturing->SetItemString("extras", rowset);     // have to build a crowset for this
         rsp->SetItem(new PyInt(1), new PyObject("util.KeyVal", Manufacturing));
@@ -1555,9 +1555,9 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             for (; itr != extraListDup->end();itr++) {
                 PyPackedRow* from = (*itr)->AsPackedRow();
                 PyPackedRow* into = rowset->NewRow();
-                into->SetField((uint32)0, from->GetField(0));
-                into->SetField((uint32)1, from->GetField(1));
-                into->SetField((uint32)2, from->GetField(2));
+                into->SetField(0, from->GetField(0));
+                into->SetField(1, from->GetField(1));
+                into->SetField(2, from->GetField(2));
             }
         Duplicating->SetItemString("extras", rowset);    // have to build a crowset for this
         rsp->SetItem(new PyInt(6), new PyObject("util.KeyVal", Duplicating));

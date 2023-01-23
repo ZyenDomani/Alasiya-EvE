@@ -1132,7 +1132,7 @@ bool PyPackedRow::SetField( uint32 index, PyRep* value )
     return true;
 }
 
-bool PyPackedRow::SetField( const char* colName, PyRep* value )
+bool PyPackedRow::SetFieldC( const char* colName, PyRep* value )
 {
     return SetField( mHeader->FindColumn( colName ), value );
 }

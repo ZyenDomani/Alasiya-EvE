@@ -139,7 +139,9 @@ remove GPoint/GVector code and replace with evemoo's code (after thorough review
 
 allianceid/warfactionid
   in packet logs, this is either None or an int.
-  ours are int.  0 or -1 if none
+  ours are int.  0 or -1 if none cause we still cant send PyNone in session (or elsewhere) yet.
+  not sure if these are right....
+also....check james' alliance code for proper functionality...not sure about some of those variables
 
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
     - every 60s for every bubble object is a bit much.
@@ -353,7 +355,7 @@ fleetData.h needs to be moved to common/EVE_Fleet.h and PODs put in fleet namesp
 FleetBound could use updates (client->getchar->name, etc)
 
 fleet boosts - apply directly to ship/modules when calculated  (maybe try to use fxproc to apply, as ccp designed it)
-    - set leadership skill modifiers on char item, then have fleet boosts pull directly from char
+    - leadership skill modifiers set on skill item.   look into using fxproc to apply
     - apply either when undocking or as fleet is created and use OnModuleAttributeChange packet
     - this will give proper data to client when GetAllInfo() is sent
     - many fleet error msgs in client unused - noted in fleetdata.h

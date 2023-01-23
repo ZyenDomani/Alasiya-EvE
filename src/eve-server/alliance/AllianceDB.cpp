@@ -72,8 +72,9 @@ PyRep *AllianceDB::GetAlliance(uint32 allyID)
     }
 
     DBResultRow row;
-    if (!res.GetRow(row))
-    {
+    if (!res.GetRow(row)) {
+        // got this while testing....
+        //13:28:01 [AllyDBWarning] GetAlliance(/backups/local/src/eve/Alasiya-EvE/src/eve-server/alliance/AllianceDB.cpp:77): Unable to find alliance's data (4294967295)
         codelog(ALLY__DB_WARNING, "Unable to find alliance's data (%u)", allyID);
         return nullptr;
     }
@@ -140,8 +141,7 @@ bool AllianceDB::GetCurrentApplicationInfo(uint32 allyID, uint32 corpID, Allianc
     }
 
     DBResultRow row;
-    if (!res.GetRow(row))
-    {
+    if (!res.GetRow(row)) {
         codelog(ALLY__DB_WARNING, "There's no previous application.");
         aInfo.valid = false;
         return false;
@@ -184,8 +184,7 @@ bool AllianceDB::InsertApplication(Alliance::ApplicationInfo &aInfo)
 
 bool AllianceDB::UpdateApplication(const Alliance::ApplicationInfo &aInfo)
 {
-    if (!aInfo.valid)
-    {
+    if (!aInfo.valid) {
         _log(ALLY__DB_WARNING, "UpdateApplication(): info contains invalid data");
         return false;
     }
@@ -269,8 +268,7 @@ void AllianceDB::RemoveContact(uint32 contactID, uint32 ownerID)
 PyRep *AllianceDB::GetLabels(uint32 allyID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT labelID, color, name FROM alnLabels WHERE ownerID = %u", allyID))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT labelID, color, name FROM alnLabels WHERE ownerID = %u", allyID)) {
         codelog(DATABASE__ERROR, "Error on query: %s", res.error.c_str());
         return nullptr;
     }
@@ -343,10 +341,8 @@ uint32 AllianceDB::GetExecutorID(uint32 allyID)
     }
 
     DBResultRow row;
-    while (res.GetRow(row))
-    {
+    if (res.GetRow(row))
         executorID = row.GetUInt(0);
-    }
 
     return executorID;
 }
@@ -516,8 +512,7 @@ PyRep *AllianceDB::GetRankedAlliances()
 bool AllianceDB::CreateAllianceChangePacket(OnAllianceChanged &ac, uint32 oldAllyID, uint32 newAllyID)
 {
     // New Alliance \/
-    if (newAllyID == 0)
-    {
+    if (newAllyID == 0) {
         ac.allianceIDNew = PyStatic.NewNone();
         ac.allianceNameNew = PyStatic.NewNone();
         ac.descriptionNew = PyStatic.NewNone();
@@ -531,9 +526,7 @@ bool AllianceDB::CreateAllianceChangePacket(OnAllianceChanged &ac, uint32 oldAll
         ac.urlNew = PyStatic.NewNone();
         ac.deletedNew = PyStatic.NewNone();
         ac.dictatorialNew = PyStatic.NewNone();
-    }
-    else
-    {
+    } else {
         DBQueryResult res;
         if (!sDatabase.RunQuery(res,
                                 " SELECT "
@@ -548,8 +541,7 @@ bool AllianceDB::CreateAllianceChangePacket(OnAllianceChanged &ac, uint32 oldAll
         }
 
         DBResultRow row;
-        if (!res.GetRow(row))
-        {
+        if (!res.GetRow(row)) {
             codelog(ALLY__DB_WARNING, "Unable to find new alliance's data (%u)", newAllyID);
             return false;
         }
@@ -570,8 +562,7 @@ bool AllianceDB::CreateAllianceChangePacket(OnAllianceChanged &ac, uint32 oldAll
     }
 
     // Old Alliance \/
-    if (oldAllyID == 0)
-    {
+    if (oldAllyID == 0) {
         ac.allianceIDOld = PyStatic.NewNone();
         ac.allianceNameOld = PyStatic.NewNone();
         ac.descriptionOld = PyStatic.NewNone();
@@ -585,9 +576,7 @@ bool AllianceDB::CreateAllianceChangePacket(OnAllianceChanged &ac, uint32 oldAll
         ac.urlOld = PyStatic.NewNone();
         ac.deletedOld = PyStatic.NewNone();
         ac.dictatorialOld = PyStatic.NewNone();
-    }
-    else
-    {
+    } else {
         DBQueryResult res;
         if (!sDatabase.RunQuery(res,
                                 " SELECT "
@@ -602,8 +591,7 @@ bool AllianceDB::CreateAllianceChangePacket(OnAllianceChanged &ac, uint32 oldAll
         }
 
         DBResultRow row;
-        if (!res.GetRow(row))
-        {
+        if (!res.GetRow(row)) {
             codelog(ALLY__DB_WARNING, "Unable to find old alliance's data (%u)", oldAllyID);
             return false;
         }

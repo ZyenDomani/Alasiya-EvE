@@ -707,7 +707,7 @@ public:
     // This needs to be public for now.
     storage_type items;
 
-    virtual ~PyTuple()   { /* do we need to do anything here? */ }
+    virtual ~PyTuple()   { /* Clear(); */ }
 };
 
 /**
@@ -1069,7 +1069,7 @@ public:
     PyRep* GetField( size_t index ) const { return mFields->GetItem( index ); }
 
     bool SetField( uint32 index, PyRep* value );
-    bool SetField( const char* colName, PyRep* value );
+    bool SetFieldC( const char* colName, PyRep* value );
 
     int32 hash() const;
 
