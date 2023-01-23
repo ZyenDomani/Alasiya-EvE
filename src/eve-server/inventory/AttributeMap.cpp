@@ -328,10 +328,7 @@ EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
 
 bool AttributeMap::HasAttribute(const uint16 attrID) const
 {
-    AttrMapConstItr itr = mAttributes.find(attrID);
-    if (itr != mAttributes.end())
-        return true;
-    return false;
+    return (mAttributes.find(attrID) != mAttributes.end());
 }
 
 bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const

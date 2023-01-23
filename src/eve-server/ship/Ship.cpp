@@ -165,6 +165,7 @@ void ShipItem::Init()
     // load linked weapons (if available)
     LoadWeaponGroups();
 
+    /** @todo theres more to be done here for this to work .... */
     if (sConfig.server.CargoMassAdditive)
         UpdateMass();
 }
@@ -200,7 +201,8 @@ void ShipItem::InitAttribs()
     SetAttribute(AttrPowerLoad,                         EvilZero, false);
     // rig shit
     SetAttribute(AttrUpgradeLoad,                       EvilZero, false);
-    // set ship agility
+
+    // set ship agility - internal only, and this may not be right
     float agility = type().mass() * GetAttribute(AttrInertiaMod).get_float();
     SetAttribute(AttrAgility, agility, false);
 

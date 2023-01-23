@@ -142,7 +142,7 @@ enum EveAttrEnum {
     AttrArmorHPMultiplier = 148,
     AttrCargoCapacityMultiplier = 149,
     AttrStructureHPMultiplier = 150,
-    AttrAgilityBonus = 151,                             //Bonus to the agility for a ship  (effect 12003 - attr151 on char)
+    AttrInertiaBonus = 151,                             //Bonus to the Inertia Modifier of an object
     AttrMaxPassengersBonus = 152,
     AttrWarpCapacitorNeed = 153,
     AttrProximityRange = 154,
@@ -158,7 +158,7 @@ enum EveAttrEnum {
     AttrMemory = 166,
     AttrPerception = 167,
     AttrWillpower = 168,
-    AttrAgilityMultiplier = 169,                        //Multiplier to the agility of an object
+    AttrInertiaMultiplier = 169,                        //Multiplier to the Inertia Modifier of an object
     AttrCustomCharismaBonus = 170,
     AttrCustomWillpowerBonus = 171,
     AttrCustomPerceptionBonus = 172,

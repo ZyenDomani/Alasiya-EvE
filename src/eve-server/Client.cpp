@@ -764,7 +764,7 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
         return;
     }
-    m_bubbleWait = false;        // allow client processing of subsquent destiny msgs
+    m_bubbleWait = false;        // allow client processing of subsequent destiny msgs
     m_setStateSent = false;
 
     bool updateShip = false;
@@ -909,7 +909,7 @@ void Client::UndockFromStation() {
     m_dockPoint = m_stationData.dockPosition;
     m_movePoint = m_stationData.dockOrientation;
 
-    m_ship->Undock();
+    m_ship->Undock();   // fx processed here
 
     /** @todo  this needs a bit of work to match live....
      * @update we are really close now.  02Jan19

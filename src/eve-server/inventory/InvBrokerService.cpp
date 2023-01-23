@@ -118,9 +118,7 @@ InvBrokerService::~InvBrokerService() {
 
 PyBoundObject* InvBrokerService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     InvBroker_BindArgs args;
-    //crap
-    PyRep* tmp(bind_args->Clone());
-    if (!args.Decode(&tmp)) {
+    if (!args.Decode(&bind_args)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode bind args.", GetName());
         return nullptr;
     }

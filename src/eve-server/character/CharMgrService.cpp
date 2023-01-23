@@ -187,9 +187,7 @@ PyBoundObject *CharMgrService::CreateBoundObject(Client *pClient, const PyRep *b
     _log(CHARACTER__BIND, "CharMgrService bind request:");
     bind_args->Dump(CHARACTER__BIND, "    ");
     Call_TwoIntegerArgs args;
-    //crap
-    PyRep* tmp(bind_args->Clone());
-    if (!args.Decode(&tmp)) {
+    if (!args.Decode(&bind_args)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }

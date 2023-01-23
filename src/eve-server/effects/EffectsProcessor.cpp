@@ -99,7 +99,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             if (expression.expressionGroupID) {
                 data.grpID = expression.expressionGroupID;
             } else if (expression.expressionValue != "") {
-                ;   // will have to figure out how to do this one.
+                ;   // will have to figure out how to do this one. (hasnt been called yet)
                 _log(EFFECTS__WARNING, "FxProc::ParseExpression(): opGROUP using expressionValue %s called by %s",\
                         expression.expressionValue.c_str(), expression.expressionName.c_str());
             } else {
@@ -112,7 +112,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             if (expression.expressionTypeID) {
                 data.typeID = expression.expressionTypeID;
             } else if (expression.expressionValue != "") {
-                ;   // will have to figure out how to do this one.
+                ;   // will have to figure out how to do this one. (hasnt been called yet)
                 _log(EFFECTS__WARNING, "FxProc::ParseExpression(): opTYPEID using expressionValue %s", expression.expressionValue.c_str());
             } else {
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): opTYPEID called with no expressionTypeID or expressionValue defined");
