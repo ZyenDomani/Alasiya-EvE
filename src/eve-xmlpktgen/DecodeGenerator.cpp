@@ -616,7 +616,7 @@ bool ClassDecodeGenerator::ProcessObjectInline(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n"
-        "    PyObject* %s(%s->AsObject());\n\n",
+        "    const PyObject* %s(%s->AsObject());\n\n",
         v,
             mName, iname, v,
         iname, v
@@ -633,6 +633,7 @@ bool ClassDecodeGenerator::ProcessObjectInline(const TiXmlElement* field)
     if (!ParseElementChildren(field, 2))
         return false;
 
+    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -650,34 +651,20 @@ bool ClassDecodeGenerator::ProcessObjectEx(const TiXmlElement* field)
         return false;
     }
 
-    bool optional = false;
-    const char* optional_str = field->Attribute("optional");
-    if (optional_str != nullptr)
-        optional = str2<bool>(optional_str);
-
+    const char* v = top();
     fprintf(mOutputFile,
         "    PySafeDecRef(%s);\n",
-        name
-   );
-
-    const char* v = top();
-    if (optional) {
-        fprintf(mOutputFile,
-            "    if (%s->IsNone()) {\n"
-            "        %s = nullptr;\n"
-            "    } else",
-            v,
-                name
-       );
-    }
-
-    fprintf(mOutputFile,
-        "    if (%s->IsObjectEx()) {\n"
+        "    if (%s->IsNone()) {\n"
+        "        %s = nullptr;\n"
+        "    } else if (%s->IsObjectEx()) {\n"
         "        %s = (%s*)%s->AsObjectEx();\n"
         "    } else {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n",
+        name,
+        v,
+        name,
         v,
         name, type, v,
             name,
