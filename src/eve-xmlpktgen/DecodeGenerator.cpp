@@ -587,7 +587,7 @@ bool ClassDecodeGenerator::ProcessObject(const TiXmlElement* field)
     //make sure its an object
     fprintf(mOutputFile,
         "    if (%s->IsObject()) {\n"
-        "        const %s = %s->AsObject();\n"
+        "        %s = %s->AsObject();\n"
         "        //PyIncRef(%s);\n"
         "    } else {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString());\n"
@@ -651,9 +651,13 @@ bool ClassDecodeGenerator::ProcessObjectEx(const TiXmlElement* field)
         return false;
     }
 
-    const char* v = top();
     fprintf(mOutputFile,
         "    PySafeDecRef(%s);\n",
+        name
+   );
+
+    const char* v = top();
+    fprintf(mOutputFile,
         "    if (%s->IsNone()) {\n"
         "        %s = nullptr;\n"
         "    } else if (%s->IsObjectEx()) {\n"
@@ -662,7 +666,6 @@ bool ClassDecodeGenerator::ProcessObjectEx(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n",
-        name,
         v,
         name,
         v,
@@ -843,7 +846,7 @@ bool ClassDecodeGenerator::ProcessListInline(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n"
-        "    PyList* %s(%s->AsList());\n"
+        "    const PyList* %s(%s->AsList());\n"
         "    if (%s->size() != %u) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong size: expected %d, but got %%lu\", %s->size());\n"
         "        PyDecRef(%s);\n"
@@ -891,7 +894,7 @@ bool ClassDecodeGenerator::ProcessListInt(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n"
-        "    PyList* %s(%s->AsList());\n"
+        "    const PyList* %s(%s->AsList());\n"
         "    %s.clear();\n\n"
         "    PyList::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index(0); %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
@@ -939,7 +942,7 @@ bool ClassDecodeGenerator::ProcessListLong(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n"
-        "    PyList* %s(%s->AsList());\n"
+        "    const PyList* %s(%s->AsList());\n"
         "    %s.clear();\n\n"
         "    PyList::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index(0); %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
@@ -994,7 +997,7 @@ bool ClassDecodeGenerator::ProcessListStr(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n"
-        "    PyList* %s(%s->AsList());\n"
+        "    const PyList* %s(%s->AsList());\n"
         "    %s.clear();\n\n"
         "    PyList::const_iterator %s_cur = %s->begin();\n"
         "    for (uint32 %s_index(0); %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
@@ -1282,7 +1285,7 @@ bool ClassDecodeGenerator::ProcessDictRaw(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n"
-        "    PyDict* %s(%s->AsDict());\n"
+        "    const PyDict* %s(%s->AsDict());\n"
         "    %s.clear();\n\n"
         "    PyDict::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index(0); %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
@@ -1338,7 +1341,7 @@ bool ClassDecodeGenerator::ProcessDictInt(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n"
-        "    PyDict* %s(%s->AsDict());\n"
+        "    const PyDict* %s(%s->AsDict());\n"
         "    %s.clear();\n\n"
         "    PyDict::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index(0); %s_cur != %s->end(); %s_cur++, ++%s_index) {\n"
@@ -1384,7 +1387,7 @@ bool ClassDecodeGenerator::ProcessDictStr(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n"
-        "    PyDict* %s(%s->AsDict());\n"
+        "    const PyDict* %s(%s->AsDict());\n"
         "    %s.clear();\n\n"
         "    PyDict::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index(0); %s_cur != %s->end(); %s_cur++, ++%s_index) {\n"
@@ -1464,7 +1467,7 @@ bool ClassDecodeGenerator::ProcessSubStructInline(const TiXmlElement* field)
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a substruct: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n\n"
-        "    PySubStruct* %s(%s->AsSubStruct());\n\n",
+        "    const PySubStruct* %s(%s->AsSubStruct());\n\n",
         v,
             mName, iname, v,
         iname, v
