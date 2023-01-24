@@ -135,7 +135,7 @@
 
   <elementDef name="Call_SingleIntegerArg">
     <tupleInline>
-      <int name="arg"  safe="true" none_marker="0" />
+      <int name="arg" />
     </tupleInline>
   </elementDef>
 
@@ -147,8 +147,8 @@
 
   <elementDef name="Call_TwoIntegerArgs">
     <tupleInline>
-      <int name="arg1"  safe="true" none_marker="0" />
-      <int name="arg2"  safe="true" none_marker="0" />
+      <int name="arg1"  />
+      <int name="arg2"  />
     </tupleInline>
   </elementDef>
 
@@ -175,7 +175,7 @@
 
   <elementDef name="Call_SingleStringArg">
     <tupleInline>
-      <string name="arg"  safe="true" none_marker="" />
+      <string name="arg"  />
     </tupleInline>
   </elementDef>
 
@@ -199,7 +199,7 @@
 
   <elementDef name="Call_IntBoolArg">
     <tupleInline>
-      <int name="arg1"  safe="true" none_marker="0" />
+      <int name="arg1"  />
       <bool name="arg2" />
     </tupleInline>
   </elementDef>
@@ -217,14 +217,14 @@
       <!-- 0 -->
         <raw name="bindParams" />
       <!-- 1 -->
-      <int name="justQuery"  safe="true" none_marker="0" />
+      <int name="justQuery"  />
     </tupleInline>
   </elementDef>
 
   <elementDef name="CallMachoBindObject_call">
       <tupleInline>
         <!-- 0 -->
-        <string name="method_name"  safe="true" none_marker="" />
+        <string name="method_name"  />
         <!-- 1 -->
         <tuple name="arguments" />
         <!-- 2 -->
@@ -295,18 +295,18 @@
   <elementDef name="CallGetInventoryFromId">
     <tupleInline>
         <!-- 0 -->
-        <int name="entityID"  safe="true" none_marker="0" />
+        <int name="entityID"  />
         <!-- 1 -->
-        <int name="passive"  safe="true" none_marker="0" />
+        <int name="passive"  />
     </tupleInline>
   </elementDef>
 
   <elementDef name="CallGetMessageDetails">
     <tupleInline>
       <!-- 0 -->
-      <int name="channelID"  safe="true" none_marker="0" />
+      <int name="channelID"  />
       <!-- 1 -->
-      <int name="messageID"  safe="true" none_marker="0" />
+      <int name="messageID"  />
     </tupleInline>
   </elementDef>
 
@@ -315,7 +315,7 @@
       <!-- 0 -->
       <listInline>
         <!-- 0 -->
-        <int name="messageID"  safe="true" none_marker="0" />
+        <int name="messageID"  />
       </listInline>
     </tupleInline>
   </elementDef>
@@ -369,37 +369,37 @@
 
   <elementDef name="ServerNotification_ReleaseObj">
     <tupleInline>
-        <string name="boundID"  safe="true" none_marker="" />
+        <string name="boundID"  />
         <long name="timestamp" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Notify_OnRemoteMessage">
     <tupleInline>
-      <string name="msgType"  safe="true" none_marker="" />
+      <string name="msgType"  />
       <dictStr name="args" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_InsureShip">
       <tupleInline>
-          <int name="shipID"  safe="true" none_marker="0" />
+          <int name="shipID"  />
           <real name="amount" />
-          <int name="isCorp"  safe="true" none_marker="0" />
+          <int name="isCorp"  />
       </tupleInline>
   </elementDef>
 
   <elementDef name="Call_SearchQuery">
       <tupleInline>
-          <string name="str" safe="true" none_marker="" />
+          <string name="str" />
           <listInt name="ids" />
       </tupleInline>
   </elementDef>
 
   <elementDef name="Call_BoardShip">
     <tupleInline>
-      <int name="newShipID"  safe="true" none_marker="0" />
-      <int name="oldShipID"  safe="true" none_marker="0" />
+      <int name="newShipID"  />
+      <int name="oldShipID"  />
     </tupleInline>
   </elementDef>
 

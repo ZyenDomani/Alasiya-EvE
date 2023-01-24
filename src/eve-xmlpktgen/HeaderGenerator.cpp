@@ -84,7 +84,7 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
         "\n"
         "    void Dump(LogType type, const char* pfx = \" \") const;\n"
         "\n"
-        "    bool Decode(PyRep* packet);\n"
+        "    bool Decode(const PyRep* packet);\n"
         "    bool Decode(PyRep** packet);\n"
         "    bool Decode(%s** packet);\n"
         "    %s* Encode() const;\n"

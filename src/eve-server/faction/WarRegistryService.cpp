@@ -108,7 +108,7 @@ PyBoundObject *WarRegistryService::CreateBoundObject(Client *pClient, const PyRe
 
 PyResult WarRegistryBound::Handle_GetWars( PyCallArgs& call )
 {
-    sLog.Debug( "WarRegistryBound", "Called GetWars stub." );
+    sLog.Debug("WarRegistryBound", "Called GetWars stub.");
 
     util_IndexRowset irowset;
 

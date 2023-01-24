@@ -207,7 +207,7 @@ void UnmarshalStream::StoreObject( uint32 index, PyRep* object )
     if ( 0 < index )
     {
         PyIncRef( object );
-        mStoredObjects->SetItem( --index, object );
+        mStoredObjects->SetItem( index--, object );
     }
 }
 

@@ -44,24 +44,18 @@ int main( int argc, char* argv[] )
     std::string dirSource = ".";
 
     // parse options
-    for(; 0 < argc; --argc, ++argv )
-    {
-        if ( '-' != argv[0][0] )
-            // end of options
+    for (; 0 < argc; --argc, ++argv ) {
+        if ( '-' != argv[0][0] )  // end of options
             break;
 
-        switch( argv[0][1] )
-        {
+        switch( argv[0][1] ) {
             /* include dir */
             case 'I':
-                if ( 1 < argc )
-                {
+                if ( 1 < argc ) {
                     // consume next argument
                     dirInclude = argv[1];
                     --argc, ++argv;
-                }
-                else
-                {
+                } else {
                     sLog.Error( "XMLPktGen", "Error parsing options: no parameter for include dir" );
                     return -1;
                 }
@@ -69,14 +63,11 @@ int main( int argc, char* argv[] )
 
             /* source dir */
             case 'S':
-                if ( 1 < argc )
-                {
+                if ( 1 < argc ) {
                     // consume next argument
                     dirSource = argv[1];
                     --argc, ++argv;
-                }
-                else
-                {
+                } else {
                     sLog.Error( "XMLPktGen", "Error parsing options: no parameter for source dir" );
                     return -1;
                 }
@@ -94,16 +85,14 @@ int main( int argc, char* argv[] )
         }
     }
 
-    if ( 0 == argc )
-    {
+    if (argc == 0) {
         sLog.Error( "XMLPktGen", "Error processing files: no files given" );
         return -1;
     }
 
     // process files
     XMLPacketGen gen;
-    for(; 0 < argc; --argc, ++argv )
-    {
+    for (; 0 < argc; --argc, ++argv ) {
         std::string name = *argv;
 
         // locate a slash

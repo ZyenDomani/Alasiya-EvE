@@ -892,7 +892,7 @@ public:
 
     storage_type items;
 
-    virtual ~PyDict();
+    virtual ~PyDict()                                   { clear(); }
 };
 
 /**

@@ -734,16 +734,6 @@ PyDict::PyDict( const PyDict& oth ) : PyRep( PyRep::PyTypeDict ), items(oth.item
     //sLog.Cyan("PyDict()", "Copy C'tor.");
 }
 
-PyDict::~PyDict()
-{
-    /*
-    for (auto &cur : items) {
-        PyDecRef(cur.first);
-        PySafeDecRef(cur.second);
-    }
-    */
-}
-
 PyRep* PyDict::Clone() const
 {
     //sLog.Magenta("PyDict()", "Clone.");
