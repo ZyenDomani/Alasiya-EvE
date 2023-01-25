@@ -41,7 +41,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="OnCorporationChanged">
+  <elementDef name="OnCorporationChanged" decode="false" >
     <tupleInline>
       <int name="corpID" />
       <dictInline>
@@ -307,7 +307,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="OnAllianceChanged">
+  <elementDef name="OnAllianceChanged" decode="false" >
     <tupleInline>
       <int name="allianceID" />
       <dictInline>
@@ -604,7 +604,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="OnCorporationApplicationChanged">
+  <elementDef name="OnCorporationApplicationChanged" decode="false" >
     <tupleInline>
       <int name="charID" />
       <int name="corpID" />
@@ -675,7 +675,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="OnAllianceApplicationChanged">
+  <elementDef name="OnAllianceApplicationChanged" decode="false" >
     <tupleInline>
       <int name="allianceID" />
       <int name="corpID" />
@@ -726,7 +726,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="MemberAttributeUpdate">
+  <elementDef name="MemberAttributeUpdate" decode="false" >
     <dictInline>
       <dictInlineEntry key="grantableRolesAtOther">
         <tupleInline>
@@ -815,7 +815,7 @@
     </dictInline>
   </elementDef>
 
-  <elementDef name="OnCorpMemberChange">
+  <elementDef name="OnCorpMemberChange" decode="false" >
     <tupleInline>
       <int name="charID" />
       <dictInline>
@@ -843,7 +843,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="OnAllianceMemberChange">
+  <elementDef name="OnAllianceMemberChange" decode="false" >
     <tupleInline>
       <int name="allyID" />
       <int name="corpID" />

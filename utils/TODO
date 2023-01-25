@@ -526,6 +526,7 @@ RefObjects -
     -  this may be more work than it's worth, but current Ref* objects arent being tracked properly
     -  the other option is to find/fix the current tracking for Ref* objects, which is only partly implemented (at best) and only partially understood
     -- understanding more about this, and adding tracking where its needed.  most problems now are in xmlp gen'd data
+    --  updating xmlp generators for better mem mgmt (currently working decode())  - see xmlp below for more info
 
 PyDict objects that have string as key need 'delete' called on string when destroyed per valgrind...cannot find ref to this error now
 PyDict objects that have long int as key need 'delete' called on key when destroyed (mem leak)
@@ -540,6 +541,31 @@ PyDatabase (et al.) may need d'tors coded
     - PyRep Classes done but still testing
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?
+
+
+*******************************************************
+*******************************************************
+*****************  xmlp shit
+
+(bloat fix)
+look into using "CALL_", "RSP_", "NOTIFY_" with "encode=true/false" and "decode=true/false" for including/omitting the bloated encode/decode sections
+  - this will be involved and rather time-consuming
+  - will be good time to rework xmlp formatting for missing bracket on else calls ('if' part has bracket, 'else' does not because its' printed via conditional)
+  - multiple mem leaks (encode) and uninitialized pointers (c'tor) found from coverity scan.  look into fixing those also.
+
+
+**CURRENT - working on DecodeGenerator only atm**
+  - updating add DecRef() calls and update conditional layout/processing
+  - reworking code to fix bracket mismatch
+  - added notes about copy/move c'tor and assigns - these will need check/verify to assure proper decref (either here or calling function)
+  - added "decode=*true/false*" switch to (dis)allow generation of python decoding code in packet source files
+
+
+remove "Notify*" from notify names....implement better naming convention (see above)
+
+
+  <elementDef name="GodmaError"><!-- more to this than template has here.  fix later  -->
+
 
 
 *******************************************************
@@ -903,23 +929,6 @@ finish dot commands
 
   do i want to put unfinished/unimplemented calls here?  not really...
   there are a lot, and will take a while to complete that list.
-
-
-*******************************************************
-*******************************************************
-*****************  xmlp shit
-
-(bloat fix)
-look into using "CALL_", "RSP_", "NOTIFY_" with "encode=true/false" and "decode=true/false" for including/omitting the bloated encode/decode sections
-  - this will be involved and rather time-consuming
-  - will be good time to rework xmlp formatting for missing bracket on else calls ('if' part has bracket, 'else' does not because its' printed via conditional)
-  - multiple mem leaks (encode) and uninitialized pointers (c'tor) found from coverity scan.  look into fixing those also.
-
-remove "Notify*" from notify names....implement better naming convention (see above)
-
-
-  <elementDef name="GodmaError"><!-- more to this than template has here.  fix later  -->
-
 
 
 *******************************************************

@@ -67,6 +67,12 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
         return false;
     }
 
+    //  new switch to (dis)allow decoding.    -xmlp bloat wip
+    bool decode(true);
+    const char* decode_str = field->Attribute("decode");
+    if (decode_str != nullptr)
+        decode = str2<bool>(decode_str);
+
     const TiXmlElement* main = field->FirstChildElement();
     if (main->NextSiblingElement() != nullptr) {
         std::cout << std::endl <<  "ClassHeaderGenerator::ProcessElementDef: <element> at line " << field->Row() << " contains more than one root element, skipping.";
@@ -74,6 +80,7 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
     }
 
     const char* encode_type = GetEncodeType( main );
+
     fprintf( mOutputFile,
         "class %s\n"
         "{\n"
@@ -83,33 +90,35 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
         "    ~%s();\n"
         "\n"
         "    void Dump(LogType type, const char* pfx = \" \") const;\n"
-        "\n"
-        "    bool Decode(const PyRep* packet);\n"
-        "    bool Decode(PyRep** packet);\n"
-        "    bool Decode(%s** packet);\n"
+        "\n",
+        name,
+        name,
+        name, name,
+        name
+    );
+
+    if (decode) {
+        fprintf( mOutputFile,
+            "    bool Decode(const PyRep* packet);\n"
+            "    bool Decode(PyRep** packet);\n"
+            "    bool Decode(%s** packet);\n",
+            encode_type
+        );
+    }
+
+    fprintf( mOutputFile,
         "    %s* Encode() const;\n"
         "\n"
         "    %s& operator=(const %s& oth);\n"
         "\n",
-        name,
-
-        name,
-        name, name,
-        name,
-
-            encode_type,
         encode_type,
-
         name, name
     );
 
-    if (!ParseElement( main ) )
+    if (!ParseElement(main))
         return false;
 
-    fprintf( mOutputFile,
-        "};\n"
-        "\n"
-    );
+    fprintf( mOutputFile, "};\n\n");
 
     ClearNames();
 

@@ -97,7 +97,7 @@ WarRegistryService::~WarRegistryService()
 
 PyBoundObject *WarRegistryService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     Call_TwoIntegerArgs args;
-    if (!args.Decode(&bind_args)) {
+    if (!args.Decode(bind_args)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode bind args.", GetName());
         return nullptr;
     }

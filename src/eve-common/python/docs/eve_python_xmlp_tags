@@ -47,7 +47,7 @@ defines a whole dictionary with strings used for ALL key values
 <dictRaw name="items" key="uint32" value="uint32" pykey="Int" pyvalue="Int" />
 <dictRaw name="dict_raw_name" key="Ctype" value="Cval" pykey="Ptype" pyvalue="Pval" />
 defines a whole dictionary with "Ctype" of a C/C++ type (such as uint32) as keys and value type specified by "Cval"
-with the Python type specified by "Ptype" and the Python type specified by "Pval"
+with the Python key type specified by "Ptype" and the Python value type specified by "Pval"
 
 <stringInline value="string_value" />
 specifies a constant PyString value that contains the string "string_value"
@@ -70,33 +70,28 @@ specifies a list of PyInt objects with the name "list_name"
 <listStr name="list_name" />
 specifies a list of PyString objects with the name "list_name"; no explicit
 
-<string name="string_name" safe="*true/false*"/>
+<string name="string_name" />
 simple object type PyString with the name "string_name"
-(optional)safe adds check for WString in decoder (unknown on encode)
 
-<wstring name="wstring_name" safe="*true/false*"/>
+<wstring name="wstring_name" />
 simple object type PyWString with the name "wstring_name"
-(optional)safe adds check for String in decoder (unknown on encode)
 
 <real name="real_name" safe="*true/false*/>
 simple object type PyFloat with the name "real_name"
 (optional) safe adds all other numeric types to decoder and prints warning if any of them hit
 
-<int name="int_name" safe="*true/false*/>
+<int name="int_name" />
 simple object type PyInt with the name "int_name"
-(optional) safe adds all other numeric types to decoder and prints warning if any of them hit
 
-<long name="long_name" safe="*true/false*/>
+<long name="long_name" />
 simple object type PyLong with the name "long_name"
-(optional) safe adds all other numeric types to decoder and prints warning if any of them hit
 
-<bool name="bool_name" safe="*true/false*/>
+<bool name="bool_name" />
 simple object type PyBool with the name "bool_name"
-(optional) safe adds all other numeric types to decoder and prints warning if any of them hit
 
 <*type* *identifier* none_marker="*value*" />
 for decoding, none_marker means if this tag IsNone(), initialize an *identifier* of *type* to *value*
-for encoding, none_marker means if *identifier* == *value*, set *identifier* to new PyNone()  (for sending to client)
+for encoding, none_marker means if *identifier* == *value*, set *identifier* to PyStatic.NewNone()  (for sending to client)
 
 <*type* *identifier* optional="*true/false*" />
 for token, pyobject dict and ??  optional means if this tag IsNone(), set *identifier* to nullptr
@@ -109,7 +104,7 @@ for token, pyobject dict and ??  optional means if this tag IsNone(), set *ident
 "safe" will decode given numeric type into *type* listed
   - update.  decoder now uses PyRep::IntegerValue() which will test for all integer types, including 'none'
   - this renders 'safe' and 'none_marker' useless on decoding int and long types
-  - 'safe' enables PyRep::IntegerValue() decoding on float and real types
+  - 'safe' enables PyRep::IntegerValue() decoding on float and real types  *** we dont want this!!! ***
 
 there is "default" in all numeric tags which initializes variable to this value if set.
 if "default" is not set, variable is initialized to "0".
@@ -119,6 +114,12 @@ if "default" is not set, variable is initialized to "0".
 "none_marker" and "safe" for integer types has been depreciated.  "real" still uses these tags
 "none_marker" on int will force decoder to use given value if field is None  (useful for using -1 instead of 0 if field is None)
 code as been updated to use PyRep::IntegerValue(), which checks for PyRep type and decodes accordingly, with PyNone decoding as "0"
+
+
+***** UPDATE AGAIN *****
+working on bloat as defined in my TODO list.
+added "decode=*true/false*" switch to (dis)allow generation of decode code.
+TODO...add decode check in HeaderGenerator file to (dis)allow creation of Decode() declarations
 
 
 defined types

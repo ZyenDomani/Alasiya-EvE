@@ -95,7 +95,7 @@ DST_WARPEXIT = 11
 
   <include file="packets/General.h" />
 
-  <elementDef name="DoDestinyUpdateMain">
+  <elementDef name="DoDestinyUpdateMain" decode="false" >
     <tupleInline>
       <!-- 0: list of DoDestinyAction -->
         <list name="updates" />
@@ -107,7 +107,7 @@ DST_WARPEXIT = 11
   </elementDef>
 
   <!-- same call as above, completely omitting the events arg. -->
-  <elementDef name="DoDestinyUpdateMain_2">
+  <elementDef name="DoDestinyUpdateMain_2" decode="false" >
     <tupleInline>
         <!-- 0: list of DoDestinyAction -->
         <list name="updates" />
@@ -116,7 +116,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="PackagedAction">
+  <elementDef name="PackagedAction" decode="false" >
     <tupleInline>
       <!-- 0 -->
       <stringInline value="PackagedAction" />
@@ -127,7 +127,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestinyAction">
+  <elementDef name="DoDestinyAction" decode="false" >
     <tupleInline>
       <!-- stamp -->
       <int name="stamp" />
@@ -136,7 +136,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SetState">
+  <elementDef name="SetState" decode="false" >
     <tupleInline>
       <!-- 0 -->
       <stringInline value="SetState" />
@@ -188,7 +188,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SlimItem">
+  <elementDef name="SlimItem" decode="false" >
     <objectInline>
         <stringInline value="foo.SlimItem" />
         <dictInline>
@@ -235,7 +235,7 @@ DST_WARPEXIT = 11
     def AddBalls(self, chunk):
         state, slims, damageDict = chunk
         -->
-  <elementDef name="AddBalls">
+  <elementDef name="AddBalls" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="AddBalls" />
@@ -265,7 +265,7 @@ DST_WARPEXIT = 11
                 damageState = None
         -->
 
-  <elementDef name="AddBalls2">
+  <elementDef name="AddBalls2" decode="false" >
     <tupleInline>
       <!-- 0-->
       <int name="stateStamp" />
@@ -286,7 +286,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestinyDamageState">
+  <elementDef name="DoDestinyDamageState" decode="false" >
     <tupleInline>
       <tupleInline>
         <!-- this is a ratio from 0-1 -->
@@ -302,7 +302,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestinyDamageState3">
+  <elementDef name="DoDestinyDamageState3" decode="false" >
     <tupleInline>
         <real name="shield" default="0" />
         <real name="armor" default="0" />
@@ -310,7 +310,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="DamageDetails">
+  <elementDef name="DamageDetails" decode="false" >
     <listInline>
       <tupleInline>
           <real name="shield" />
@@ -322,7 +322,7 @@ DST_WARPEXIT = 11
     </listInline>
   </elementDef>
 
-  <elementDef name="RemoveBallFromBP">
+  <elementDef name="RemoveBallFromBP" decode="false" >
     <tupleInline>
       <!-- 0: call -->
       <stringInline value="RemoveBall" />
@@ -333,7 +333,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="RemoveBallsFromBP">
+  <elementDef name="RemoveBallsFromBP" decode="false" >
     <tupleInline>
       <!-- 0: call -->
       <stringInline value="RemoveBalls" />
@@ -344,7 +344,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="OnSpecialFX10">
+  <elementDef name="OnSpecialFX10" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="OnSpecialFX" />
@@ -374,7 +374,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="OnSpecialFX14">
+  <elementDef name="OnSpecialFX14" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="OnSpecialFX" />
@@ -412,7 +412,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="OnDamageStateChange">
+  <elementDef name="OnDamageStateChange" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="OnDamageStateChange" />
@@ -597,7 +597,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallSpeed">
+  <elementDef name="SetBallSpeed" decode="false" >
     <tupleInline>
       <stringInline value="SetMaxSpeed" />
       <tupleInline>
@@ -607,7 +607,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallPosition">
+  <elementDef name="SetBallPosition" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallPosition" />
@@ -621,7 +621,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallAgility">
+  <elementDef name="SetBallAgility" decode="false" >
       <tupleInline>
         <stringInline value="SetBallAgility" />
         <tupleInline>
@@ -631,7 +631,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallVelocity">
+  <elementDef name="SetBallVelocity" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallVelocity" />
@@ -645,7 +645,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallMass">
+  <elementDef name="SetBallMass" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallMass" />
@@ -657,7 +657,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallRadius">
+  <elementDef name="SetBallRadius" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallRadius" />
@@ -669,7 +669,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallMassive">
+  <elementDef name="SetBallMassive" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallMassive" />
@@ -682,7 +682,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallFree">
+  <elementDef name="SetBallFree" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallFree" />
@@ -695,7 +695,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallGlobal">
+  <elementDef name="SetBallGlobal" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallGlobal" />
@@ -708,7 +708,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallTroll">
+  <elementDef name="SetBallTroll" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallTroll" />
@@ -720,7 +720,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallBoid">
+  <elementDef name="SetBallBoid" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBoid" />
@@ -732,7 +732,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallInteractive">
+  <elementDef name="SetBallInteractive" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallInteractive" />
@@ -746,7 +746,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallHarmonic">
+  <elementDef name="SetBallHarmonic" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallHarmonic" />
@@ -761,7 +761,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBallCloak">
+  <elementDef name="SetBallCloak" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="CloakBall" />
@@ -788,7 +788,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="OnDockingAccepted">
+  <elementDef name="OnDockingAccepted" decode="false" >
         <!-- OnDockingAccepted(self, dockingStartPos, dockingEndPos, stationID): -->
       <tupleInline>
         <!-- 0: ship position -->
@@ -808,7 +808,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="TerminalExplosion">
+  <elementDef name="TerminalExplosion" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="TerminalExplosion" />
@@ -821,7 +821,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="OnDroneStateChange">
+  <elementDef name="OnDroneStateChange" decode="false" >
       <tupleInline>
         <!-- 0 -->
         <stringInline value="OnDroneStateChange" />

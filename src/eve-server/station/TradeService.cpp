@@ -114,7 +114,7 @@ PyBoundObject* TradeService::CreateBoundObject(Client* pClient, const PyRep *bin
     // each client's trade session has it's own bound object.
     //   create code for multiple sessions per client, using TradeBound and TradeSession.
     Trade_BindArgs args;
-    if (!args.Decode(&bind_args)) {
+    if (!args.Decode(bind_args)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode bind args.", GetName());
         return nullptr;
     }
