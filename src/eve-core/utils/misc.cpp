@@ -333,6 +333,19 @@ std::string EvE::sh(std::string cmd)
     return result;
 }
 
+/** NOTE:  this is nice, but not right....the method is on wrong line...
+ * example...
+ * EvE::traceStackLN()
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:342RefObject::DecRef() const
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+ * 
+ *
+ */
 void EvE::traceStackLN(void)
 {
     uint8 nptrs(0);
