@@ -49,7 +49,7 @@ bool ClassDecodeGenerator::ProcessElementDef(const TiXmlElement* field)
 
     mName = field->Attribute("name");
     if (mName == nullptr)  {
-        _log(COMMON__ERROR, "<element> at line %i is missing the name attribute, skipping.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen:: <element> at line %i is missing the name attribute, skipping.", field->Row());
         return false;
     }
 
@@ -72,8 +72,8 @@ bool ClassDecodeGenerator::ProcessElementDef(const TiXmlElement* field)
         "bool %s::Decode(PyRep** packet) {\n"
         "    bool res = Decode(*packet);\n"
         "    // consume packet\n"
-        "    //PyDecRef(*packet);\n"
-        "    //*packet = nullptr;\n"
+        "    PyDecRef(*packet);\n"
+        "    *packet = nullptr;\n"
         "    return res;\n"
         "}\n\n"
         "bool %s::Decode(%s** packet) {\n"
@@ -120,7 +120,7 @@ bool ClassDecodeGenerator::ProcessElementPtr(const TiXmlElement* field)
 
     const char* type = field->Attribute("type");
     if (type == nullptr) {
-        _log(COMMON__ERROR, "field at line %i is missing the type attribute, skipping.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen::ProcessElementPtr field at line %i is missing the type attribute, skipping.", field->Row());
         return false;
     }
 
@@ -220,16 +220,20 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
 	*/
     const char* v = top();
     const char* none_marker = field->Attribute("none_marker");
-    if (none_marker != nullptr)
+    if (none_marker != nullptr) {
         fprintf(mOutputFile,
-                "    if (%s->IsNone()) {\n"
-                "        %s = %s;\n"
-                "    } else\n",
-                v,
-                name, none_marker
+            "    if (%s->IsNone()) {\n"
+            "        %s = %s;\n"
+            "    } else {\n"
+            "        %s = (int32)PyRep::IntegerValue(%s);\n"
+            "    }\n",
+            v,
+            name, none_marker,
+            name, v
         );
-
-    fprintf(mOutputFile, "    %s = (int32)PyRep::IntegerValue(%s);\n", name, v);
+    } else {
+        fprintf(mOutputFile, "    %s = (int32)PyRep::IntegerValue(%s);\n", name, v);
+    }
 
     pop();
     return true;
@@ -245,16 +249,20 @@ bool ClassDecodeGenerator::ProcessLong(const TiXmlElement* field)
 
     const char* v = top();
     const char* none_marker = field->Attribute("none_marker");
-    if (none_marker != nullptr)
+    if (none_marker != nullptr) {
         fprintf(mOutputFile,
-                "    if (%s->IsNone()) {\n"
-                "        %s = %s;\n"
-                "    } else ",
-                v,
-                name, none_marker
-       );
-
-    fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
+            "    if (%s->IsNone()) {\n"
+            "        %s = %s;\n"
+            "    } else {\n"
+            "        %s = PyRep::IntegerValue(%s);\n"
+            "    }\n",
+            v,
+            name, none_marker,
+            name, v
+        );
+    } else {
+        fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
+    }
 
     pop();
     return true;
@@ -271,34 +279,35 @@ bool ClassDecodeGenerator::ProcessReal(const TiXmlElement* field)
     const char* v = top();
 
     const char* none_marker = field->Attribute("none_marker");
-    if (none_marker != nullptr)
+    if (none_marker != nullptr) {
         fprintf(mOutputFile,
                 "    if (%s->IsNone()) {\n"
                 "        %s = %s;\n"
-                "    } else ",
-                v,
-                name, none_marker
-       );
-
-    fprintf(mOutputFile,
-            "    if (%s->IsFloat()) {\n"
-            "        %s = %s->AsFloat()->value();\n"
-            "    } else ",
-            v,
-            name, v
-    );
-
-    const char* safe = field->Attribute("safe");
-    if (safe != nullptr) {
-        fprintf(mOutputFile, "{\n    %s = PyRep::IntegerValue(%s);\n}\n", name, v);
-    } else {
-        fprintf(mOutputFile,
-                "{\n"
+                "    } else if (%s->IsFloat()) {\n"
+                "        %s = %s->AsFloat()->value();\n"
+                "    } else {\n"
                 "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a Double: %%s\", %s->TypeString());\n"
-                "        //PyDecRef(%s);        // this shit aint right...cant get base item name here yet...\n"
+                "        //PyDecRef(%s);        // this shit aint right...cant get base item name here yet...testing\n"
                 "        return false;\n"
                 "    }\n\n",
-                mName, v, v, v
+                v,
+                name, none_marker,
+                v,
+                name, v,
+                mName, v, v,
+                top()
+       );
+    } else {
+        fprintf(mOutputFile,
+            "    if (%s->IsFloat()) {\n"
+            "        %s = %s->AsFloat()->value();\n"
+            "    } else {\n"
+            "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a Double: %%s\", %s->TypeString());\n"
+            "        return false;\n"
+            "    }\n\n",
+            v,
+                name, v,
+                mName, v, v
         );
     }
 
@@ -351,7 +360,8 @@ bool ClassDecodeGenerator::ProcessBuffer(const TiXmlElement* field)
             "    if (%s->IsBuffer()) {\n"
             "        %s = %s->AsBuffer();\n"
             "    } else if (%s->IsString()) {\n"
-            "        %s = new PyBuffer(*%s->AsString());\n"
+            "        // testing this too \n"
+            "        %s = std::move(new PyBuffer(*%s->AsString()));\n"
             "	     //1 need to find and SafeDelete() this 'new' before it goes out of scope\n"
             "    } else {\n"
             "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a buffer: %%s\", %s->TypeString());\n"
@@ -411,7 +421,7 @@ bool ClassDecodeGenerator::ProcessStringInline(const TiXmlElement* field)
 {
     const char* value = field->Attribute("value");
     if (value == nullptr) {
-        _log(COMMON__ERROR, "String element at line %i has no value attribute.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen::ProcessStringInline String element at line %i has no value attribute.", field->Row());
         return false;
     }
 
@@ -484,7 +494,7 @@ bool ClassDecodeGenerator::ProcessWStringInline(const TiXmlElement* field)
 {
     const char* value = field->Attribute("value");
     if (!value)   {
-        _log(COMMON__ERROR, "WString element at line %i has no value attribute.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen::ProcessWStringInline element at line %i has no value attribute.", field->Row());
         return false;
     }
 
@@ -554,7 +564,7 @@ bool ClassDecodeGenerator::ProcessTokenInline(const TiXmlElement* field)
 {
     const char* value = field->Attribute("value");
     if (!value)  {
-        _log(COMMON__ERROR, "Token element at line %i has no value attribute.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen::ProcessTokenInline Token element at line %i has no value attribute.", field->Row());
         return false;
     }
 
@@ -662,7 +672,7 @@ bool ClassDecodeGenerator::ProcessObjectInline(const TiXmlElement* field)
     if (!ParseElementChildren(field, 2))
         return false;
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -797,7 +807,7 @@ bool ClassDecodeGenerator::ProcessTupleInline(const TiXmlElement* field)
     if (!ParseElementChildren(field))
         return false;
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -894,7 +904,7 @@ bool ClassDecodeGenerator::ProcessListInline(const TiXmlElement* field)
     if (!ParseElementChildren(field))
         return false;
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -946,7 +956,7 @@ bool ClassDecodeGenerator::ProcessListInt(const TiXmlElement* field)
             name
    );
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -973,8 +983,8 @@ bool ClassDecodeGenerator::ProcessListLong(const TiXmlElement* field)
         "    PyList::const_iterator %s_cur = %s->begin();\n"
         "    for (uint16 %s_index(0); %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
         "        if ((*%s_cur)->IsLong()) {\n"
-        "            PyLong* t = PyRep::IntegerValue(*%s_cur);\n"
-        "            %s.push_back(t->value());\n"
+        "            //  return const ref to copy c'tor then send to push_back()\n"
+        "            %s.push_back(PyRep::IntegerValue(*%s_cur));\n"
         "	 //2 i think this is using copy c'tor, as move c'tors and both assigns are disabled.\n"
         "	 //  if thats the case (and i think it is), this copy will need to be decref'd\n"
         "        } else {\n"
@@ -998,7 +1008,7 @@ bool ClassDecodeGenerator::ProcessListLong(const TiXmlElement* field)
 		iname
    );
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -1050,7 +1060,7 @@ bool ClassDecodeGenerator::ProcessListStr(const TiXmlElement* field)
             name
    );
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -1271,7 +1281,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
         }
     }
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -1358,7 +1368,7 @@ bool ClassDecodeGenerator::ProcessDictRaw(const TiXmlElement* field)
             name
    );
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -1408,7 +1418,7 @@ bool ClassDecodeGenerator::ProcessDictInt(const TiXmlElement* field)
             name, iname
    );
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -1459,7 +1469,7 @@ bool ClassDecodeGenerator::ProcessDictStr(const TiXmlElement* field)
             name, iname
    );
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -1501,7 +1511,7 @@ bool ClassDecodeGenerator::ProcessSubStreamInline(const TiXmlElement* field)
     if (!ParseElementChildren(field, 1))
         return false;
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }
@@ -1533,7 +1543,7 @@ bool ClassDecodeGenerator::ProcessSubStructInline(const TiXmlElement* field)
     if (!ParseElementChildren(field, 1))
         return false;
 
-    fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
+    //fprintf(mOutputFile,"\n    PyDecRef(%s);\n", iname);
     pop();
     return true;
 }

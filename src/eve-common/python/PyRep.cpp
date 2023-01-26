@@ -840,8 +840,8 @@ PyObject::PyObject(const PyObject& oth)
 
 PyObject::~PyObject()
 {
-    PyDecRef( mType );
-    PyDecRef( mArguments );
+    //PyDecRef( mType );
+    //PyDecRef( mArguments );
 }
 
 PyRep* PyObject::Clone() const
@@ -868,10 +868,10 @@ mHeader(oth.header()->Clone()), mIsType2(oth.isType2()), mList(oth.mList), mDict
 
 PyObjectEx::~PyObjectEx()
 {
-    PySafeDecRef( mHeader );
+    //PySafeDecRef( mHeader );
 
-    PyDecRef( mList );
-    PyDecRef( mDict );
+    //PyDecRef( mList );
+    //PyDecRef( mDict );
 }
 
 PyRep* PyObjectEx::Clone() const

@@ -1,7 +1,7 @@
 
 <elements>
 
-  <elementDef name="Call_AddCorporation">
+  <elementDef name="Call_AddCorporation" encode="false">
     <tupleInline>
       <string name="corpName" safe="true" />
       <string name="corpTicker" safe="true" />
@@ -19,7 +19,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SuggestedTickerName">
+  <elementDef name="SuggestedTickerName" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
       <dictInline>
@@ -30,7 +30,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="SuggestedShortName">
+  <elementDef name="SuggestedShortName" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
       <dictInline>
@@ -449,7 +449,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="GetMembersRet">
+  <elementDef name="GetMembersRet" decode="false">
     <tupleInline>
       <int name="characterID" />
       <int name="corporationID" />
@@ -473,7 +473,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="OnObjectPublicAttributesUpdated">
+  <elementDef name="OnObjectPublicAttributesUpdated" decode="false">
   <!--
         [PyString "OnObjectPublicAttributesUpdated"]
         [PyList 0 items]
@@ -551,7 +551,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="OfficeAttributeUpdate">
+  <elementDef name="OfficeAttributeUpdate" decode="false">
     <dictInline>
       <dictInlineEntry key="typeID">
         <tupleInline>
@@ -580,7 +580,7 @@
     </dictInline>
   </elementDef>
 
-  <elementDef name="OnOfficeRentalChanged">
+  <elementDef name="OnOfficeRentalChanged" decode="false">
     <tupleInline>
       <int name="ownerID" />
       <int name="officeID" />
@@ -588,14 +588,14 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_InsertApplication">
+  <elementDef name="Call_InsertApplication" encode="false">
     <tupleInline>
       <int name="corpID" />
       <wstring name="message" none_marker="0" safe="true" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateApplicationOffer">
+  <elementDef name="Call_UpdateApplicationOffer" encode="false">
     <tupleInline>
       <int name="charID" />
       <wstring name="appText" none_marker="0" safe="true" />
@@ -870,7 +870,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="OnTitleChanged">
+  <elementDef name="OnTitleChanged" decode="false">
     <tupleInline>
       <int name="corpID" />
       <int name="titleID" />
@@ -878,14 +878,14 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Notify_IntRaw">
+  <elementDef name="Notify_IntRaw" decode="false">
     <tupleInline>
       <int name="key" />
       <dict name="data" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateApplication">
+  <elementDef name="Call_UpdateApplication" encode="false">
     <tupleInline>
       <int name="corpID" />
       <string name="message" none_marker="0" safe="true"/>
@@ -894,7 +894,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateDivisionNames">
+  <elementDef name="Call_UpdateDivisionNames" encode="false">
     <tupleInline>
       <string name="div1" none_marker="0" safe="true"/>
       <string name="div2" none_marker="0" safe="true"/>
@@ -913,7 +913,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateCorporation">
+  <elementDef name="Call_UpdateCorporation" encode="false">
     <tupleInline>
       <string name="description" safe="true"/>
       <string name="address" none_marker="0" safe="true"/>
@@ -921,7 +921,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateLogo">
+  <elementDef name="Call_UpdateLogo" encode="false">
     <tupleInline>
       <int name="shape1" none_marker="0" />
       <int name="shape2" none_marker="0" />
@@ -933,7 +933,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetRecruitmentAdsByCriteria">
+  <elementDef name="Call_GetRecruitmentAdsByCriteria" encode="false">
     <tupleInline>
       <long name="typeMask" none_marker="0" safe="true" />
       <int name="inAlliance" safe="true"/><!-- integer boolean -->
@@ -942,7 +942,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_CreateRecruitmentAd">
+  <elementDef name="Call_CreateRecruitmentAd" encode="false">
     <tupleInline>
       <int name="days" none_marker="0" />
       <long name="typeMask" none_marker="0" safe="true" />
@@ -954,7 +954,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateRecruitmentAd">
+  <elementDef name="Call_UpdateRecruitmentAd" encode="false">
     <tupleInline>
       <int name="adID" safe="true"/>
       <long name="typeMask" none_marker="0" safe="true" />
@@ -966,20 +966,20 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_SetCloneTypeID">
+  <elementDef name="Call_SetCloneTypeID" encode="false">
     <tupleInline>
       <int name="CloneTypeID" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetAssetInventory">
+  <elementDef name="Call_GetAssetInventory" encode="false">
     <tupleInline>
       <int name="corpID" safe="true" />
       <string name="flag" none_marker="0" safe="true" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_AuditMember">
+  <elementDef name="Call_AuditMember" encode="false">
     <tupleInline>
       <int name="charID" safe="true" />
       <long name="fromDate" none_marker="0" />
@@ -988,7 +988,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetAssetInventoryForLocation">
+  <elementDef name="Call_GetAssetInventoryForLocation" encode="false">
     <tupleInline>
       <int name="corpID" />
       <int name="locationID" />
@@ -996,20 +996,20 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetRecentKillsAndLosses">
+  <elementDef name="Call_GetRecentKillsAndLosses" encode="false">
     <tupleInline>
       <int name="number" />
       <int name="offset" none_marker="0" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetMembersByID">
+  <elementDef name="Call_GetMembersByID" encode="false">
     <tupleInline>
       <list name="memberIDs" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetMemberIDsByQuery_Main">
+  <elementDef name="Call_GetMemberIDsByQuery_Main" encode="false">
     <tupleInline>
       <list name="data" />
       <int name="includeImplied" safe="true" none_marker="0" /><!-- integer boolean -->
@@ -1017,7 +1017,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetMemberIDsByQuery_List3">
+  <elementDef name="Call_GetMemberIDsByQuery_List3" encode="false">
     <listInline>
       <string name="queryType" />
       <int name="searchOp" none_marker="0" />
@@ -1025,7 +1025,7 @@
     </listInline>
   </elementDef>
 
-  <elementDef name="Call_GetMemberIDsByQuery_List4">
+  <elementDef name="Call_GetMemberIDsByQuery_List4" encode="false">
     <listInline>
       <int name="joinOp" />
       <string name="queryType" />
@@ -1034,7 +1034,7 @@
     </listInline>
   </elementDef>
 
-  <elementDef name="Call_ExecuteActions">
+  <elementDef name="Call_ExecuteActions" encode="false">
     <tupleInline>
       <list name="charIDs" />
       <string name="verb" />
@@ -1050,7 +1050,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_CreateAlliance">
+  <elementDef name="Call_CreateAlliance" encode="false">
     <tupleInline>
       <wstring name="allianceName" safe="true"/>
       <string name="shortName" safe="true"/>
@@ -1059,21 +1059,21 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateAlliance">
+  <elementDef name="Call_UpdateAlliance" encode="false">
     <tupleInline>
       <wstring name="description" none_marker="0" safe="true"/>
       <string name="url" none_marker="0" safe="true"/>
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_ApplyToJoinAlliance">
+  <elementDef name="Call_ApplyToJoinAlliance" encode="false">
     <tupleInline>
       <int name="allianceID" />
       <wstring name="applicationText"/>
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateAllianceApplication">
+  <elementDef name="Call_UpdateAllianceApplication" encode="false">
     <tupleInline>
       <int name="corporationID" />
       <wstring name="applicationText"/>
@@ -1081,34 +1081,34 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_CorporateContactData">
+  <elementDef name="Call_CorporateContactData" encode="false">
     <tupleInline>
       <int name="contactID" />
       <int name="relationshipID" none_marker="0" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_EditCorporateContacts">
+  <elementDef name="Call_EditCorporateContacts" encode="false">
     <tupleInline>
       <list name="contactIDs" />
       <int name="relationshipID" none_marker="0" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_RemoveCorporateContacts">
+  <elementDef name="Call_RemoveCorporateContacts" encode="false">
     <tupleInline>
       <list name="contactIDs" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_PayoutDividend">
+  <elementDef name="Call_PayoutDividend" encode="false">
     <tupleInline>
-      <int name="payShareholders" none_marker="0" safe="true" /><!-- integer boolean -->
+      <int name="payShareholders" none_marker="0" /><!-- integer boolean -->
       <real name="payoutAmount" none_marker="0" safe="true" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateMember">
+  <elementDef name="Call_UpdateMember" encode="false">
     <tupleInline>
       <int name="charID" />
       <string name="title" none_marker="0" safe="true"/>
@@ -1128,13 +1128,13 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateTitle">
+  <elementDef name="Call_UpdateTitle" encode="false">
     <tupleInline>
       <object name="object" type="PyObject" optional="true" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateTitleData">
+  <elementDef name="Call_UpdateTitleData" encode="false">
     <tupleInline>
       <int name="titleID" />
       <string name="titleName" none_marker="0" safe="true"/>
@@ -1149,7 +1149,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_InsertVoteCase">
+  <elementDef name="Call_InsertVoteCase" encode="false">
     <tupleInline>
       <string name="voteCaseText" none_marker="0" safe="true"/>
       <string name="description" none_marker="0" safe="true"/>
@@ -1161,7 +1161,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetVoteCases">
+  <elementDef name="Call_GetVoteCases" encode="false">
     <tupleInline>
       <int name="corpid" none_marker="0" safe="true" />
       <int name="status" none_marker="0" safe="true" />
@@ -1169,7 +1169,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_MoveShares">
+  <elementDef name="Call_MoveShares" encode="false">
     <tupleInline>
       <int name="corporationID" />
       <int name="toShareholderID" />
@@ -1178,7 +1178,7 @@
   </elementDef>
 
   <!-- this one is for updating shares owned by corp.  it sends to all online corp members as ("OnShareChange", "*corpid&corprole") -->
-  <elementDef name="OnCorpShareChange">
+  <elementDef name="OnCorpShareChange" decode="false">
     <tupleInline>
       <int name="ownerID" />
       <int name="corpID" />
@@ -1194,7 +1194,7 @@
   </elementDef>
 
   <!-- this one is for updating recipient of shares as ("OnShareChange", "charid") -->
-  <elementDef name="OnCharShareChange">
+  <elementDef name="OnCharShareChange" decode="false">
     <tupleInline>
       <int name="ownerID" />
       <int name="corpID" />
@@ -1227,7 +1227,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_CreateMedal">
+  <elementDef name="Call_CreateMedal" encode="false">
     <tupleInline>
       <string name="title" safe="true" />
       <string name="description" safe="true" />
@@ -1235,7 +1235,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_AwardMedal">
+  <elementDef name="Call_AwardMedal" encode="false">
     <tupleInline>
       <int name="medalID" safe="true" none_marker="0" />
       <list name="recipientIDs" />
@@ -1243,7 +1243,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_InsertVote">
+  <elementDef name="Call_InsertVote" encode="false">
     <tupleInline>
       <int name="corpID" safe="true" />
       <int name="voteCaseID" safe="true" />
@@ -1251,7 +1251,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetStationServiceAccessRule">
+  <elementDef name="Call_GetStationServiceAccessRule" encode="false">
     <tupleInline>
       <int name="stationID" safe="true" />
       <int name="serviceID" safe="true" />

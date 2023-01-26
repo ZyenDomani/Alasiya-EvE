@@ -55,7 +55,7 @@ const char* const XMLPacketGen::smGenFileComment =
 "  along with this program; if not, write to the Free Software\n"
 "  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n"
 "  \n\n"
-"  Updated by Allan, 2016 - 2021"
+"  Updated by Allan, 2016 - 2023"
 "  \n"
 "*/";
 

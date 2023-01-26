@@ -1,7 +1,7 @@
 
 <elements>
 
-  <elementDef name="FleetBindRSP">
+  <elementDef name="FleetBindRSP" decode="false">
     <objectInline>
       <stringInline value="util.Moniker" />
       <tupleInline>
@@ -14,7 +14,7 @@
   </elementDef>
 
   <!-- not used...may not need this -->
-  <elementDef name="FleetInitCall">
+  <elementDef name="FleetInitCall" encode="false">
     <tupleInline>
       <tupleInline>
         <int name="myShipTypeID" none_marker="0"/>
@@ -23,7 +23,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SendBroadCastCall">
+  <elementDef name="SendBroadCastCall" encode="false">
     <tupleInline>
         <string name="msg" />
         <int name="group"  none_marker="0"/>
@@ -31,7 +31,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="FleetInviteCall">
+  <elementDef name="FleetInviteCall" encode="false">
     <tupleInline>
         <int name="charID" />
         <int name="wingID" none_marker="0"/>
@@ -40,14 +40,14 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SetBoosterCall">
+  <elementDef name="SetBoosterCall" encode="false">
     <tupleInline>
         <int name="charID" />
         <int name="booster" none_marker="0"/>
     </tupleInline>
   </elementDef>
 
-  <elementDef name="MoveMemberCall">
+  <elementDef name="MoveMemberCall" encode="false">
     <tupleInline>
         <int name="charID" />
         <int name="wingID" none_marker="0"/>
@@ -57,7 +57,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="MemberChangedRSP">
+  <elementDef name="MemberChangedRSP" decode="false">
     <tupleInline>
         <int name="charID" />
         <int name="fleetID" />
@@ -75,7 +75,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="ActiveStatusRSP">
+  <elementDef name="ActiveStatusRSP" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
         <dictInline>
@@ -99,7 +99,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="GetInitStateRSP">
+  <elementDef name="GetInitStateRSP" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
       <dictInline>
@@ -149,7 +149,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="MemberRSP">
+  <elementDef name="MemberRSP" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
       <dictInline>
@@ -194,7 +194,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="WingRSP">
+  <elementDef name="WingRSP" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
       <dictInline>
@@ -211,7 +211,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="SquadRSP">
+  <elementDef name="SquadRSP" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
       <dictInline>
@@ -225,7 +225,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="JoinFleetRSP">
+  <elementDef name="JoinFleetRSP" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
       <dictInline>
@@ -270,7 +270,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="FleetAdvertCall">
+  <elementDef name="FleetAdvertCall" encode="false">
     <tupleInline>
       <objectInline>
       <stringInline value="util.KeyVal" />
@@ -313,7 +313,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="AvalibleFleetsRSP">
+  <elementDef name="AvalibleFleetsRSP" decode="false">
     <objectInline>
     <stringInline value="util.KeyVal" />
       <dictInline>

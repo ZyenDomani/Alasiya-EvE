@@ -38,7 +38,7 @@ bool ClassHeaderGenerator::RegisterName( const char* name, uint32 row )
 {
     if (mNamesUsed.find( name ) != mNamesUsed.end() )
     {
-        std::cout << std::endl <<  "ClassHeaderGenerator::RegisterName: Field at line " << row << ": The name '" << name << "' is already used.";
+        std::cout << std::endl <<  "HeaderGen::RegisterName: Field at line " << row << ": The name '" << name << "' is already used.";
 
         return false;
     }
@@ -63,9 +63,15 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
 {
     const char* name = field->Attribute("name");
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessElementDef: <element> at line " << field->Row() << " contains more than one root element, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessElementDef: <element> at line " << field->Row() << " contains more than one root element, skipping.";
         return false;
     }
+
+    //  new switch to (dis)allow encoding.    -xmlp bloat wip
+    bool encode(true);
+    const char* encode_str = field->Attribute("encode");
+    if (encode_str != nullptr)
+        encode = str2<bool>(encode_str);
 
     //  new switch to (dis)allow decoding.    -xmlp bloat wip
     bool decode(true);
@@ -75,7 +81,7 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
 
     const TiXmlElement* main = field->FirstChildElement();
     if (main->NextSiblingElement() != nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessElementDef: <element> at line " << field->Row() << " contains more than one root element, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessElementDef: <element> at line " << field->Row() << " contains more than one root element, skipping.";
         return false;
     }
 
@@ -106,12 +112,17 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
         );
     }
 
+    if (encode) {
+        fprintf( mOutputFile,
+            "    %s* Encode() const;\n"
+            "\n",
+            encode_type
+        );
+    }
+
     fprintf( mOutputFile,
-        "    %s* Encode() const;\n"
-        "\n"
         "    %s& operator=(const %s& oth);\n"
         "\n",
-        encode_type,
         name, name
     );
 
@@ -129,12 +140,12 @@ bool ClassHeaderGenerator::ProcessElement( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessElement: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessElement: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
     const char* type = field->Attribute( "type" );
     if (type == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessElement: field at line " << field->Row() << " is missing the type attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessElement: field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
 
@@ -153,12 +164,12 @@ bool ClassHeaderGenerator::ProcessElementPtr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessElementPtr: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessElementPtr: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
     const char* type = field->Attribute( "type" );
     if (type == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessElementPtr: field at line " << field->Row() << " is missing the type attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessElementPtr: field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
 
@@ -177,7 +188,7 @@ bool ClassHeaderGenerator::ProcessRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessRaw: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessRaw: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -196,7 +207,7 @@ bool ClassHeaderGenerator::ProcessInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessInt: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessInt: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -204,8 +215,8 @@ bool ClassHeaderGenerator::ProcessInt( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-             "    int32\t\t%s;\n",
-             name
+        "    int32\t\t%s;\n",
+        name
     );
 
     return true;
@@ -215,7 +226,7 @@ bool ClassHeaderGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessLong: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessLong: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -223,8 +234,8 @@ bool ClassHeaderGenerator::ProcessLong( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-             "    int64\t\t%s;\n",
-             name
+        "    int64\t\t%s;\n",
+        name
     );
 
     return true;
@@ -234,7 +245,7 @@ bool ClassHeaderGenerator::ProcessReal( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessReal: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessReal: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -253,7 +264,7 @@ bool ClassHeaderGenerator::ProcessBool( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessBool: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessBool: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -277,7 +288,7 @@ bool ClassHeaderGenerator::ProcessBuffer( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessBuffer: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessBuffer: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -296,7 +307,7 @@ bool ClassHeaderGenerator::ProcessString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessString: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessString: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -320,7 +331,7 @@ bool ClassHeaderGenerator::ProcessWString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessWString: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessWString: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -344,7 +355,7 @@ bool ClassHeaderGenerator::ProcessToken( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessToken: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessToken: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -368,7 +379,7 @@ bool ClassHeaderGenerator::ProcessObject( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessObject: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessObject: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -389,12 +400,12 @@ bool ClassHeaderGenerator::ProcessObjectEx( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessObjectEx: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessObjectEx: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
     const char* type = field->Attribute( "type" );
     if (type == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessObjectEx: field at line " << field->Row() << " is missing the type attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessObjectEx: field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
 
@@ -413,7 +424,7 @@ bool ClassHeaderGenerator::ProcessTuple( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessTuple: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessTuple: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -437,7 +448,7 @@ bool ClassHeaderGenerator::ProcessList( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessList: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessList: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -461,13 +472,14 @@ bool ClassHeaderGenerator::ProcessListInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessListInt: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessListInt: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     if (!RegisterName(name, field->Row()))
         return false;
 
+	// is this actually a vector, or should it be a list?
     fprintf( mOutputFile,
         "    std::vector<int32>\t%s;\n",
         name
@@ -480,13 +492,14 @@ bool ClassHeaderGenerator::ProcessListLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessListLong: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessListLong: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     if (!RegisterName(name, field->Row()))
         return false;
 
+	// is this actually a vector, or should it be a list?
     fprintf( mOutputFile,
         "    std::vector<int64>\t%s;\n",
         name
@@ -499,7 +512,7 @@ bool ClassHeaderGenerator::ProcessListStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessListStr: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessListStr: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -518,7 +531,7 @@ bool ClassHeaderGenerator::ProcessDict( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessDict: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessDict: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -543,7 +556,7 @@ bool ClassHeaderGenerator::ProcessDictInlineEntry( const TiXmlElement* field )
     //we dont really even care about this...
     const char* key = field->Attribute( "key" );
     if (!key) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessDictInlineEntry: field at line " << field->Row() << " is missing the key attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessDictInlineEntry: field at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }
 
@@ -554,28 +567,28 @@ bool ClassHeaderGenerator::ProcessDictRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessDictRaw: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessDictRaw: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     const char* key = field->Attribute( "key" );
     if (key == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessDictRaw: field at line " << field->Row() << " is missing the key attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessDictRaw: field at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }
     const char* pykey = field->Attribute( "pykey" );
     if (pykey == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessDictRaw: field at line " << field->Row() << " is missing the pykey attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessDictRaw: field at line " << field->Row() << " is missing the pykey attribute, skipping.";
         return false;
     }
     const char* value = field->Attribute( "value" );
     if (value == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessDictRaw: field at line " << field->Row() << " is missing the value attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessDictRaw: field at line " << field->Row() << " is missing the value attribute, skipping.";
         return false;
     }
     const char* pyvalue = field->Attribute( "pyvalue" );
     if (pyvalue == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessDictRaw: field at line " << field->Row() << " is missing the pyvalue attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessDictRaw: field at line " << field->Row() << " is missing the pyvalue attribute, skipping.";
         return false;
     }
 
@@ -594,7 +607,7 @@ bool ClassHeaderGenerator::ProcessDictInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessDictInt: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessDictInt: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -613,7 +626,7 @@ bool ClassHeaderGenerator::ProcessDictStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessDictStr: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "HeaderGen::ProcessDictStr: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 

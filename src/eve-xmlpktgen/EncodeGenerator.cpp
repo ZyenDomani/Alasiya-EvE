@@ -21,11 +21,16 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:        Allan
 */
 
 #include "eve-xmlpktgen.h"
 
 #include "EncodeGenerator.h"
+
+/** @todo  i think this whole class uses copy but doesnt track/handle temp lifetimes.
+ *   this is one of the worst offenders of mem mgmt we have
+ */
 
 ClassEncodeGenerator::ClassEncodeGenerator( FILE* outputFile )
 : Generator( outputFile ),
@@ -37,6 +42,14 @@ ClassEncodeGenerator::ClassEncodeGenerator( FILE* outputFile )
 
 bool ClassEncodeGenerator::ProcessElementDef( const TiXmlElement* field )
 {
+    //  new switch to (dis)allow encoding.    -xmlp bloat wip
+    bool encode(true);
+    const char* encode_str = field->Attribute("encode");
+    if (encode_str != nullptr)
+        encode = str2<bool>(encode_str);
+    if (!encode)
+        return true;
+
     mName = field->Attribute( "name" );
     if (mName == nullptr) {
         std::cout << std::endl <<  "ClassEncodeGenerator:: <element> at line " << field->Row() << " is missing the name attribute, skipping.";
@@ -53,8 +66,7 @@ bool ClassEncodeGenerator::ProcessElementDef( const TiXmlElement* field )
     fprintf( mOutputFile,
         "%s* %s::Encode() const\n"
         "{\n"
-        "    %s* res(nullptr);\n"
-        "\n",
+        "    %s* res(nullptr);\n\n",
         encode_type, mName,
             encode_type
     );
@@ -68,8 +80,7 @@ bool ClassEncodeGenerator::ProcessElementDef( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    return res;\n"
-        "}\n"
-        "\n"
+        "}\n\n"
     );
 
     return true;
@@ -84,8 +95,7 @@ bool ClassEncodeGenerator::ProcessElement( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = %s.Encode();\n"
-        "\n",
+        "    %s = %s.Encode();\n\n",
         top(), name
     );
 
@@ -108,8 +118,7 @@ bool ClassEncodeGenerator::ProcessElementPtr( const TiXmlElement* field )
         "    } else {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null. Encoding a PyNone\");\n"
         "        %s = PyStatic.NewNone();\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         name, v, name,
         mName, name, v
     );
@@ -134,8 +143,7 @@ bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field )
         "    } else {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
         "        %s = PyStatic.NewNone();\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         name,
             v, name,
             name,
@@ -157,19 +165,25 @@ bool ClassEncodeGenerator::ProcessInt( const TiXmlElement* field )
 
     const char* none_marker = field->Attribute( "none_marker" );
     const char* v = top();
-    if (none_marker != nullptr)
-        fprintf(mOutputFile,
-                "    if (%s == %s ) {\n"
-                "        %s = PyStatic.NewNone();\n"
-                "    } else\n",
-                name, none_marker,
-                v
-        );
-
-    fprintf(mOutputFile,
-            "    %s = new PyInt( %s );\n",
+    if (none_marker != nullptr) {
+        fprintf( mOutputFile,
+            "    if (%s == %s ) {\n"
+            "        %s = PyStatic.NewNone();\n"
+            "    } else {\n"
+            "        // testing move semantics here...\n"
+            "        %s = std::move(new PyInt(%s));\n"
+            "    }\n",
+            name, none_marker,
+            v,
             v, name
-    );
+        );
+    } else {
+        fprintf(mOutputFile,
+            "   // testing move semantics here...\n"
+            "   %s = std::move(new PyInt(%s));\n",
+            v, name
+        );
+    }
 
     pop();
     return true;
@@ -185,19 +199,23 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
 
     const char* none_marker = field->Attribute( "none_marker" );
     const char* v = top();
-    if (none_marker != nullptr )
+    if (none_marker != nullptr ) {
         fprintf( mOutputFile,
-                 "    if (%s == %s ) {\n"
-                 "        %s = PyStatic.NewNone();\n"
-                 "    } else\n",
-                 name, none_marker,
-                 v
+            "    if (%s == %s ) {\n"
+            "        %s = PyStatic.NewNone();\n"
+            "    } else {\n"
+            "        %s = new PyLong( %s );\n"
+            "    }\n",
+            name, none_marker,
+            v,
+            v, name
         );
-
-    fprintf( mOutputFile,
-             "    %s = new PyLong( %s );\n",
-             v, name
-    );
+    } else {
+        fprintf( mOutputFile,
+            "    %s = new PyLong( %s );\n",
+            v, name
+        );
+    }
 
     pop();
     return true;
@@ -213,19 +231,23 @@ bool ClassEncodeGenerator::ProcessReal( const TiXmlElement* field )
 
     const char* none_marker = field->Attribute( "none_marker" );
     const char* v = top();
-    if (none_marker != nullptr )
+    if (none_marker != nullptr ) {
         fprintf( mOutputFile,
-                "    if (%s == %s ) {\n"
-                "        %s = PyStatic.NewNone();\n"
-                "    } else\n",
-                name, none_marker,
-                v
+            "    if (%s == %s ) {\n"
+            "        %s = PyStatic.NewNone();\n"
+            "    } else {\n"
+            "       %s = new PyFloat( %s );\n"
+            "    }\n",
+            name, none_marker,
+            v,
+            v, name
         );
-
-    fprintf( mOutputFile,
+    } else {
+        fprintf( mOutputFile,
             "    %s = new PyFloat( %s );\n",
             v, name
-    );
+        );
+    }
 
     pop();
     return true;
@@ -275,8 +297,7 @@ bool ClassEncodeGenerator::ProcessBuffer( const TiXmlElement* field )
         "    } else {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty buffer.\");\n"
         "        %s = new PyBuffer( 0 );\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         name,
             v, name,
             name,
@@ -298,19 +319,23 @@ bool ClassEncodeGenerator::ProcessString( const TiXmlElement* field )
 
     const char* none_marker = field->Attribute( "none_marker" );
     const char* v = top();
-    if (none_marker != nullptr )
+    if (none_marker != nullptr ) {
         fprintf( mOutputFile,
-                "    if (%s == \"%s\" ) {\n"
-                "        %s = PyStatic.NewNone();\n"
-                "    } else\n",
-                name, none_marker,
-                v
+            "    if (%s == \"%s\" ) {\n"
+            "        %s = PyStatic.NewNone();\n"
+            "    } else {\n"
+            "        %s = new PyString( %s );\n"
+            "    }\n",
+            name, none_marker,
+            v,
+            v, name
         );
-
-    fprintf( mOutputFile,
+    } else {
+        fprintf( mOutputFile,
             "    %s = new PyString( %s );\n",
             v, name
-    );
+        );
+    }
 
     pop();
     return true;
@@ -343,19 +368,23 @@ bool ClassEncodeGenerator::ProcessWString( const TiXmlElement* field )
     }
     const char* none_marker = field->Attribute( "none_marker" );
     const char* v = top();
-    if (none_marker != nullptr )
+    if (none_marker != nullptr ) {
         fprintf( mOutputFile,
-                "    if (%s == \"%s\" ) {\n"
-                "        %s = PyStatic.NewNone();\n"
-                "    } else\n",
-                name, none_marker,
-                v
+            "    if (%s == \"%s\" ) {\n"
+            "        %s = PyStatic.NewNone();\n"
+            "    } else {\n"
+            "        %s = new PyWString( %s );\n"
+            "    }\n",
+            name, none_marker,
+            v,
+            v, name
         );
-
-    fprintf( mOutputFile,
+    } else {
+        fprintf( mOutputFile,
             "    %s = new PyWString( %s );\n",
             v, name
-    );
+        );
+    }
 
     pop();
     return true;
@@ -397,31 +426,31 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
         fprintf( mOutputFile,
                 "    if (%s == nullptr) {\n"
                 "        %s = PyStatic.NewNone();\n"
-                "    } else\n",
+                "    } else {\n"
+                "        %s = %s;\n"
+                "        //PyIncRef(%s);\n"
+                "    }\n\n",
                 name,
-                v
+                 v,
+                 v, name,
+                 name
         );
     } else {
         fprintf( mOutputFile,
                 "    if (%s == nullptr) {\n"
                 "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
                 "        %s = PyStatic.NewNone();\n"
-                "    } else\n",
+                "    } else {\n"
+                "        %s = %s;\n"
+                "        //PyIncRef(%s);\n"
+                "    }\n\n",
                 name,
                 mName, name,
-                v
+                 v,
+                 v, name,
+                 name
         );
     }
-
-    fprintf( mOutputFile,
-             "    {\n"
-             "        %s = %s;\n"
-             "        PyIncRef(%s);\n"
-             "    }\n"
-             "\n",
-             v, name,
-                name
-    );
 
     pop();
     return true;
@@ -463,31 +492,31 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
         fprintf( mOutputFile,
             "    if (%s == nullptr) {\n"
             "        %s = PyStatic.NewNone();\n"
-            "    } else\n",
+            "    } else {\n"
+            "        %s = %s;\n"
+            "        //PyIncRef(%s);\n"
+            "    }\n",
             name,
-                v
+            v,
+            v, name,
+            name
         );
     } else {
         fprintf( mOutputFile,
             "    if (%s == nullptr) {\n"
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
             "        %s = PyStatic.NewNone();\n"
-            "    } else\n",
+            "    } else {\n"
+            "        %s = %s;\n"
+            "        //PyIncRef(%s);\n"
+            "    }\n",
             name,
                 mName, name,
-            v
+                 v,
+                 v, name,
+                 name
         );
     }
-
-    fprintf( mOutputFile,
-             "    {\n"
-             "        %s = %s;\n"
-             "        PyIncRef(%s);\n"
-             "    }\n"
-             "\n",
-             v, name,
-             name
-    );
 
     pop();
     return true;
@@ -550,31 +579,31 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
         fprintf( mOutputFile,
             "    if (%s == nullptr) {\n"
             "        %s = PyStatic.NewNone();\n"
-            "    } else\n",
+            "    } else {\n"
+            "        %s = %s;\n"
+            "        //PyIncRef(%s);\n"
+            "    }\n\n",
             name,
-                v
+            v,
+            v, name,
+            name
         );
     } else {
         fprintf( mOutputFile,
             "    if (%s == nullptr) {\n"
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
             "        %s = PyStatic.NewNone();\n"
-            "    } else\n",
+            "    } else {\n"
+            "        %s = %s;\n"
+            "        //PyIncRef(%s);\n"
+            "    }\n\n",
             name,
-                mName, name,
-                v
+            mName, name,
+                v,
+                v, name,
+                name
         );
     }
-
-    fprintf( mOutputFile,
-             "    {\n"
-             "        %s = %s;\n"
-             "        PyIncRef(%s);\n"
-             "    }\n"
-             "\n",
-             v, name,
-             name
-    );
 
     pop();
     return true;
@@ -598,7 +627,7 @@ bool ClassEncodeGenerator::ProcessTuple( const TiXmlElement* field )
         "    if (%s == nullptr) {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty tuple.\");\n"
         "        %s = new PyTuple( 0 );\n"
-        "    } else\n",
+        "    } else",
         name,
             mName, name,
             v
@@ -606,19 +635,18 @@ bool ClassEncodeGenerator::ProcessTuple( const TiXmlElement* field )
 
     if (optional)
         fprintf( mOutputFile,
-            "    if (%s->empty()) {\n"
+            " if (%s->empty()) {\n"
             "        %s = PyStatic.NewNone();\n"
-            "    } else\n",
+            "    } else",
             name,
                 v
         );
 
     fprintf( mOutputFile,
-             "    {\n"
+             " {\n"
              "        %s = %s;\n"
-             "        PyIncRef(%s);\n"
-             "    }\n"
-             "\n",
+             "        //PyIncRef(%s);\n"
+             "    }\n\n",
              v, name,
              name
     );
@@ -661,8 +689,7 @@ bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    %s = %s;\n"
-        "\n",
+        "    %s = %s;\n\n",
         top(), iname
     );
 
@@ -689,7 +716,7 @@ bool ClassEncodeGenerator::ProcessList( const TiXmlElement* field )
         "    if (%s == nullptr) {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty list.\");\n"
         "        %s = new PyList();\n"
-        "    } else\n",
+        "    } else",
         name,
             mName, name,
             v
@@ -697,19 +724,18 @@ bool ClassEncodeGenerator::ProcessList( const TiXmlElement* field )
 
     if (optional)
         fprintf( mOutputFile,
-            "    if (%s->empty()) {\n"
+            " if (%s->empty()) {\n"
             "        %s = PyStatic.NewNone();\n"
-            "    } else\n",
+            "    } else",
             name,
                 v
         );
 
     fprintf( mOutputFile,
-             "    {\n"
+             " {\n"
              "        %s = %s;\n"
-             "        PyIncRef(%s);\n"
-             "    }\n"
-             "\n",
+             "        //PyIncRef(%s);\n"
+             "    }\n\n",
              v, name,
              name
     );
@@ -751,8 +777,7 @@ bool ClassEncodeGenerator::ProcessListInline( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    %s = %s;\n"
-        "\n",
+        "    %s = %s;\n\n",
         top(), iname
     );
 
@@ -773,10 +798,9 @@ bool ClassEncodeGenerator::ProcessListInt( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PyList* %s = new PyList();\n"
-        "    for (auto cur : %s)\n"
+        "    for (auto &cur : %s)\n"
         "        %s->AddItemInt(cur);\n"
-        "    %s = %s;\n"
-        "\n",
+        "    %s = %s;\n\n",
         rname, name, rname,
         top(), rname
     );
@@ -798,10 +822,9 @@ bool ClassEncodeGenerator::ProcessListLong( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PyList *%s = new PyList();\n"
-        "    for (auto cur : %s)\n"
+        "    for (auto &cur : %s)\n"
         "        %s->AddItemLong(cur);\n"
-        "    %s = %s;\n"
-        "\n",
+        "    %s = %s;\n\n",
         rname, name,
         rname,
         top(), rname
@@ -824,10 +847,9 @@ bool ClassEncodeGenerator::ProcessListStr( const TiXmlElement* field )
 
     fprintf( mOutputFile,
              "    PyList *%s = new PyList();\n"
-             "    for (auto cur : %s)\n"
+             "    for (auto &cur : %s)\n"
              "        %s->AddItemString(cur.c_str());\n"
-             "    %s = %s;\n"
-             "\n",
+             "    %s = %s;\n\n",
              rname, name,
              rname,
              top(), rname
@@ -855,7 +877,7 @@ bool ClassEncodeGenerator::ProcessDict( const TiXmlElement* field )
         "    if (%s == nullptr) {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty dict.\");\n"
         "        %s = new PyDict();\n"
-        "    } else\n",
+        "    } else",
         name,
             mName, name,
             v
@@ -863,19 +885,18 @@ bool ClassEncodeGenerator::ProcessDict( const TiXmlElement* field )
 
     if (optional)
         fprintf( mOutputFile,
-            "    if (%s->empty()) {\n"
+            " if (%s->empty()) {\n"
             "        %s = PyStatic.NewNone();\n"
-            "    } else\n",
+            "    } else",
             name,
                 v
         );
 
     fprintf( mOutputFile,
-             "    {\n"
+             " {\n"
              "        %s = %s;\n"
              "        PyIncRef(%s);\n"
-             "    }\n"
-             "\n",
+             "    }\n\n",
              v, name,
              name
     );
@@ -939,32 +960,31 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
             //taking the keyType into account
             if (keyTypeInt ) {
                 fprintf( mOutputFile,
-                         "    %s->SetItem(new PyInt( %s ), %s);\n"
-                         "    PyIncRef(%s);\n",
-                         iname, key, vname,
-                         vname
+                    "    %s->SetItem(new PyInt( %s ), %s);\n"
+                    "    //PyIncRef(%s);\n",
+                    iname, key, vname,
+                    vname
                 );
             } else if (keyTypeLong ) {
-                    fprintf( mOutputFile,
-                             "    %s->SetItem(new PyLong( %s ), %s);\n"
-                             "    PyIncRef(%s);\n",
-                             iname, key, vname,
-                             vname
-                    );
+                fprintf( mOutputFile,
+                    "    %s->SetItem(new PyLong( %s ), %s);\n"
+                    "    //PyIncRef(%s);\n",
+                    iname, key, vname,
+                    vname
+                );
             } else {
                 fprintf( mOutputFile,
-                         "    %s->SetItemString(\"%s\", %s);\n"
-                         "    PyIncRef(%s);\n",
-                         iname, key, vname,
-                         vname
+                    "    %s->SetItemString(\"%s\", %s);\n"
+                    "    //PyIncRef(%s);\n",
+                    iname, key, vname,
+                    vname
                 );
             }
         }
     }
 
     fprintf( mOutputFile,
-        "    %s = %s;\n"
-        "\n",
+        "    %s = %s;\n\n",
         top(), iname
     );
 
@@ -1005,10 +1025,9 @@ bool ClassEncodeGenerator::ProcessDictRaw( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PyDict* %s = new PyDict();\n"
-        "    for (auto cur : %s) \n"
+        "    for (auto &cur : %s) \n"
         "        %s->SetItem(new Py%s(cur.first), new Py%s(cur.second));\n"
-        "    %s = %s;\n"
-        "\n",
+        "    %s = %s;\n\n",
         rname,
         name,
             rname, pykey, pyvalue,
@@ -1032,11 +1051,10 @@ bool ClassEncodeGenerator::ProcessDictInt( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PyDict* %s = new PyDict();\n"
-        "    for (auto cur : %s) {\n"
+        "    for (auto &cur : %s) {\n"
         "        %s->SetItem(new PyInt(cur.first ), cur.second);\n"
         "        PyIncRef(cur.second);\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    %s = %s;\n",
         iname,
         name,
@@ -1062,11 +1080,10 @@ bool ClassEncodeGenerator::ProcessDictStr( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PyDict* %s = new PyDict();\n"
-        "    for (auto cur : %s) {\n"
+        "    for (auto &cur : %s) {\n"
         "        %s->SetItemString(cur.first.c_str(), cur.second);\n"
         "        PyIncRef(cur.second);\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    %s = %s;\n",
         iname,
         name,

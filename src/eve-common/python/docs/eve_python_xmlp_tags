@@ -1,22 +1,25 @@
 ====================
 XMLP Tags and their uses:
 (UD by allan for Alasiya_EvE code)
-latest: 7Aug19
+latest: 25Jan23
 ====================
 
 <elementDef>
-the outermost wrapper tag around an entire XMLP structure, close with </elementDef>
+the outermost wrapper tag around an entire XMLP class structure, close with </elementDef>
 
 <element name="notes" type="util_Rowset" />
 you supply the actual object (not just a pointer) to the util_Rowset
+this is used for nexted xmlp defines   mostly client and destiny packets
 
 <elementPtr type="xmlp-type" name="sender" />
 you supply a pointer to the "xmlp-type" class object instance
+this is used for nexted xmlp defines   mostly client and destiny packets
 
 <raw name="name" />
 encodes/decodes object to PyRep*
 
 <objectEx name="name" type2="*true/false*">
+i still dont fully understand what "type2" is...
 
 <objectInline>
 specifies a PyObject object, closed by </objectInline>
@@ -44,10 +47,10 @@ defines a whole dictionary with integers used for ALL key values
 <dictStr name="dict_name" />
 defines a whole dictionary with strings used for ALL key values
 
-<dictRaw name="items" key="uint32" value="uint32" pykey="Int" pyvalue="Int" />
 <dictRaw name="dict_raw_name" key="Ctype" value="Cval" pykey="Ptype" pyvalue="Pval" />
-defines a whole dictionary with "Ctype" of a C/C++ type (such as uint32) as keys and value type specified by "Cval"
+defines a whole dictionary with "Ctype" of a C/C++ type (such as uint32) as keys and value  of a C/C++ type specified by "Cval"
 with the Python key type specified by "Ptype" and the Python value type specified by "Pval"
+i.e. <dictRaw name="items" key="uint32" value="uint32" pykey="Int" pyvalue="Int" />
 
 <stringInline value="string_value" />
 specifies a constant PyString value that contains the string "string_value"
@@ -79,6 +82,7 @@ simple object type PyWString with the name "wstring_name"
 <real name="real_name" safe="*true/false*/>
 simple object type PyFloat with the name "real_name"
 (optional) safe adds all other numeric types to decoder and prints warning if any of them hit
+(optional) safe does nothing on encoder
 
 <int name="int_name" />
 simple object type PyInt with the name "int_name"
@@ -96,30 +100,21 @@ for encoding, none_marker means if *identifier* == *value*, set *identifier* to 
 <*type* *identifier* optional="*true/false*" />
 for token, pyobject dict and ??  optional means if this tag IsNone(), set *identifier* to nullptr
 
-<raw *identifier* unusual="*true/false*" />
-(optional) unusual adds all Py* types to decoder (for raw only) and prints warning if any of them hit
-    as a catch-all, if none of them hit, raw decodes as PyRep.
+<*type* *identifier* default="*value*" />
+for decoding, not used yet
+for encoding, not used yet
+initialize an *identifier* of *type* to *value*, else initialize to "0" or nullptr.
 
 
-"safe" will decode given numeric type into *type* listed
-  - update.  decoder now uses PyRep::IntegerValue() which will test for all integer types, including 'none'
-  - this renders 'safe' and 'none_marker' useless on decoding int and long types
-  - 'safe' enables PyRep::IntegerValue() decoding on float and real types  *** we dont want this!!! ***
+<raw *identifier* />
+raw decodes as PyType listed in element def.
 
-there is "default" in all numeric tags which initializes variable to this value if set.
-if "default" is not set, variable is initialized to "0".
 
 
 ***** UPDATE *****
-"none_marker" and "safe" for integer types has been depreciated.  "real" still uses these tags
-"none_marker" on int will force decoder to use given value if field is None  (useful for using -1 instead of 0 if field is None)
-code as been updated to use PyRep::IntegerValue(), which checks for PyRep type and decodes accordingly, with PyNone decoding as "0"
-
-
-***** UPDATE AGAIN *****
 working on bloat as defined in my TODO list.
-added "decode=*true/false*" switch to (dis)allow generation of decode code.
-TODO...add decode check in HeaderGenerator file to (dis)allow creation of Decode() declarations
+added "decode=*true/false*" switch to (dis)allow generation of decoding code.
+added "encode=*true/false*" switch to (dis)allow generation of encoding code.
 
 
 defined types
