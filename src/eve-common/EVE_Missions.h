@@ -9,78 +9,78 @@
 #define EVE_MISSIONS_H
 
 struct MissionData {
-        bool important;
-        uint8 level;
-        uint8 typeID;
-        uint8 range;
-        uint16 missionID;
-        uint32 briefingID;
-        uint32 constellationID;
-        uint32 corporationID;
-        uint32 dungeonID;
-        std::string name;
+        bool important = false;
+        uint8 level = 0;
+        uint8 typeID = 0;
+        uint8 range = 0;
+        uint16 missionID = 0;
+        uint32 briefingID = 0;
+        uint32 constellationID = 0;
+        uint32 corporationID = 0;
+        uint32 dungeonID = 0;
+        std::string name = "none";
 };
 
 class PyList;
 struct MissionOffer {
-    bool important;
-    bool storyline;
-    bool remoteOfferable;
-    bool remoteCompletable;
-    uint8 stateID;
-    uint8 typeID;
-    uint8 range;
-    uint16 bonusTime;           // time in minutes
-    uint16 missionID;           // this is mission title messageID for locale
-    uint16 rewardLP;
-    uint16 rewardItemID;
-    uint16 rewardItemQty;
-    uint16 courierTypeID;
-    uint16 courierAmount;
-    uint16 destinationTypeID;
-    uint32 offerID;
-    uint32 agentID;
-    uint32 briefingID;          // this is mission briefing messageID for locale
+    bool important = false;
+    bool storyline = false;
+    bool remoteOfferable = false;
+    bool remoteCompletable = false;
+    uint8 stateID = 0;
+    uint8 typeID = 0;
+    uint8 range = 0;
+    uint16 bonusTime = 0;           // time in minutes
+    uint16 missionID = 0;           // this is mission title messageID for locale
+    uint16 rewardLP = 0;
+    uint16 rewardItemID = 0;
+    uint16 rewardItemQty = 0;
+    uint16 courierTypeID = 0;
+    uint16 courierAmount = 0;
+    uint16 destinationTypeID = 0;
+    uint32 offerID = 0;
+    uint32 agentID = 0;
+    uint32 briefingID = 0;          // this is mission briefing messageID for locale
     //uint32 contentID;           // on live, this is specific char data for mission keywords.  we're not using it
-    uint32 characterID;
-    uint32 rewardISK;
-    uint32 bonusISK;
-    uint32 originID;
-    uint32 originOwnerID;
-    uint32 originSystemID;
-    uint32 destinationID;
-    uint32 destinationOwnerID;
-    uint32 destinationSystemID;
-    uint32 dungeonLocationID;
-    uint32 dungeonSolarSystemID;
-    uint32 acceptFee;
-    float courierItemVolume;
-    double expiryTime;
-    double dateIssued;
-    double dateAccepted;
-    double dateCompleted;
-    std::string name;
-    PyList* bookmarks;
+    uint32 characterID = 0;
+    uint32 rewardISK = 0;
+    uint32 bonusISK = 0;
+    uint32 originID = 0;
+    uint32 originOwnerID = 0;
+    uint32 originSystemID = 0;
+    uint32 destinationID = 0;
+    uint32 destinationOwnerID = 0;
+    uint32 destinationSystemID = 0;
+    uint32 dungeonLocationID = 0;
+    uint32 dungeonSolarSystemID = 0;
+    uint32 acceptFee = 0;
+    float courierItemVolume = 0.0f;
+    double expiryTime = 0.0;
+    double dateIssued = 0.0;
+    double dateAccepted = 0.0;
+    double dateCompleted = 0.0;
+    std::string name = "none";
+    PyList* bookmarks = nullptr;
 };
 
 struct CourierData {
     bool important;
     bool storyline;
-    uint8 level;
-    uint8 typeID;
-    uint8 range;
-    uint8 raceID;
-    uint16 bonusTime;
-    uint16 missionID;
-    uint16 itemTypeID;
-    uint16 itemQty;
-    uint16 rewardItemID;
-    uint16 rewardItemQty;
-    uint32 briefingID;
-    uint32 rewardISK;
-    uint32 bonusISK;
-    float itemVolume;
-    std::string name;
+    uint8 level = 0;
+    uint8 typeID = 0;
+    uint8 range = 0;
+    uint8 raceID = 0;
+    uint16 bonusTime = 0;
+    uint16 missionID = 0;
+    uint16 itemTypeID = 0;
+    uint16 itemQty = 0;
+    uint16 rewardItemID = 0;
+    uint16 rewardItemQty = 0;
+    uint32 briefingID = 0;
+    uint32 rewardISK = 0;
+    uint32 bonusISK = 0;
+    float itemVolume = 0.0f;
+    std::string name = "none";
 };
 
 namespace Mission {
