@@ -130,12 +130,15 @@ char creation - figure certs and set skills accordingly
     IntegerValue(PyRep* pRep);
     IntegerValueU32(PyRep* pRep);
 
+search for "GetOperationalStatics" and review this code system...
 
 skill error on queue update   - see cruc/skills/skill_error_new
 
 look into benefits of changing skillQueue from vector to list (suggested for multiple/often add/delete ops)
 
 go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
+while you're at it, verify member initalization is correct.  i know destiny isnt (and it's member list is huge)
+	- im sure its not the only one...but some (or most) of my 'newer' classes should be right.
 
 remove GPoint/GVector code and replace with evemoo's Vec3 code (after thorough review)
     - float/double not needed and math on those are expensive.  replace with int64
@@ -149,7 +152,7 @@ InventoryItem -
     when changing flags, will have to determine objects container, then
     write method to update items' flag in Inventory.
     -- this is cause of "pilot/ship not found in xxx" on login/logout/jump (ship and pilot flags change)
-      ****  no, this is due to multiple remove calls
+      ****  no, this is due to multiple remove calls....trace and fix
 
 remove InventoryDB (m_db) and associated code from itemfactory
 remove character queries from InventoryDB
@@ -549,19 +552,28 @@ PyDatabase (et al.) may need d'tors coded
       --  ...i dont think move semantics are implemented or working for these....copy is (compiler generated - it complained)
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?
-    
+
+look into adding "...emplace(std::move(data))" to staticDataMgr shit  (or whatever the push_back, insert, et al command is)
 
 *******************************************************
 *******************************************************
 *****************  xmlp shit
 
+character.xmlp - ally and faction should be *raw* instead of *int* to allow sending of PyNone()
+	- this *should* correct client checks of "IsNone()" for proper processing
+-- NOTE:  i bet this is why when i send "PyNone" for some values, the client still gets "PyInt(0)"  !!!!
+****  check ALL client tests of "IsNone" and verify data type is set correctly  -- pita but would solve a LOT of problems.
+can also run thru code and check for anything returning "-1".  most of these should probably be "PyNone"
+
 (bloat fix)
-look into using "CALL_", "RSP_", "NOTIFY_" with "encode=true/false" and "decode=true/false" for including/omitting the bloated encode/decode sections
-  - this will be involved and rather time-consuming
-    -- encode/decode done.  was easy
-  - will be good time to rework xmlp formatting for missing bracket on else calls ('if' part has bracket, 'else' does not because its' printed via conditional)
-    -- encode/decode done.  was easy
-  - multiple mem leaks (encode) and uninitialized pointers (c'tor) found from coverity scan.  look into fixing those also.
+look into using "encode=*true/false*" and "decode=*true/false*" for including/omitting the bloated encode/decode sections
+  -  done.  was easy  (saved 150kb on corpPkts alone)
+  - will be good time to rework formatting for missing bracket on else calls ('if' part has bracket, 'else' does not because its' printed via conditional)
+    -- encode/decode - wip and almost done
+  - multiple mem leaks (encode) and uninitialized pointers (c'tor) found from coverity scan.
+    -- working on encoding  - testing
+    -- unintialized pointers are diff story....gonna take a while to find and figure out.  nope...done in ~5m
+    *** may very well be easier than i originally thought....use in-class member initializers!  (its a thing since c++/0x11)
 
 
 **CURRENT - working on DecodeGenerator atm**
