@@ -244,7 +244,7 @@ const char* EvE::FormatTime(int64 time/*-1*/) {
         uptime << s << "s";
     }
 
-    return uptime.str().c_str();
+    return (uptime.str().c_str());
 }
 
 const char* EvE::FormatTime(double time/*-1*/) {
@@ -281,7 +281,7 @@ const char* EvE::FormatTime(double time/*-1*/) {
         uptime << s << "s";
     }
 
-    return uptime.str().c_str();
+    return (uptime.str().c_str());
 }
 
 double EvE::trunicate2(double dig)
@@ -343,7 +343,7 @@ std::string EvE::sh(std::string cmd)
  * /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
  * /backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
  * /backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
- * 
+ *
  *
  */
 void EvE::traceStackLN(void)

@@ -145,7 +145,7 @@ void MRMutex::WriteLock() {
                 MCounters.Unlock();
                 return;
             }
-            MCounters.Lock();
+            MCounters.Unlock();
         }
     }
 }

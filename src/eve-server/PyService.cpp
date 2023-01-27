@@ -98,6 +98,8 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
         CallMachoBindObject_call boundcall;
         if (!boundcall.Decode(&args.call)) {
             codelog(SERVICE__ERROR, "%s Service: Failed to decode boundcall arguments", GetName());
+            PyDecRef(rsp);
+            PyDecRef(oid);
             return nullptr;
         }
 

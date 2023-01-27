@@ -46,7 +46,7 @@ void StationDataMgr::Close()
 
 void StationDataMgr::Clear()
 {
-    for (auto cur : m_stationPyData)
+    for (auto &cur : m_stationPyData)
         PySafeDecRef(cur.second);
 
     m_serviceMask.clear();
@@ -272,7 +272,7 @@ void StationDataMgr::GetStationOfficeIDs(uint32 locationID, std::vector<OfficeDa
     } else if (IsOfficeID(locationID)) {
         // no better way to do this one yet.....iterate thru the whole map?
         // this is full map of station data.  need to find station to cut down on loop time.
-        for (auto cur : m_stationOfficeData)
+        for (auto &cur : m_stationOfficeData)
             if (cur.second.officeID == locationID) {
                 data.push_back(cur.second);
                 return;
@@ -291,7 +291,7 @@ uint32 StationDataMgr::GetOfficeRentalFee(uint32 stationID)
 
 void StationDataMgr::LoadStationPyData()
 {
-    for (auto cur : m_stationData) {
+    for (auto &cur : m_stationData) {
         PyDict* dict = new PyDict();
             dict->SetItemString("stationID", new PyInt(cur.first));
             dict->SetItemString("ownerID", new PyInt(cur.second.corporationID));

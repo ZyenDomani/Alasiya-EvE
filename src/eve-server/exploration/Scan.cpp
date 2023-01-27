@@ -535,8 +535,11 @@ struct CosmicSignature {
                 ring->AddItem(new PyObjectEx(false, oed_tuple));
             }
         }
-        if (isRing)
+        if (isRing) {
             list->AddItem(ring);
+        } else {
+            PyDecRef(ring);
+        }
         data.probes = tuple;
         data.probePos = list;
         // there is *something* here where one of the positions is given as a nested list of objects

@@ -107,10 +107,13 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
         case Mission::Type::Research: {
             //destRange += m_data.level *2;
         } break;
-        case Mission::Type::Arc:
+        case Mission::Type::Cosmos:
+        case Mission::Type::Arc: {
+            // not sure if this is right yet...
+            ship = true;
+        }
         case Mission::Type::Anomic:
-        case Mission::Type::Burner:
-        case Mission::Type::Cosmos: {
+        case Mission::Type::Burner: {
             station = false;
             destRange += pAgent->GetLevel();
         } break;
