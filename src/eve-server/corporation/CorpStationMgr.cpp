@@ -214,7 +214,7 @@ PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
 PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     // corp role is checked in client before this button is shown.  no need to check here.
     // 1 param, corp rent price
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -407,7 +407,7 @@ PyResult CorpStationMgrIMBound::Handle_SetHomeStation(PyCallArgs &call) {
     /** @todo this is once a year on live, unless a new char changes corps.
      *  we will need to make other checks when this is called, as i dont think client checks anything.
      */
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

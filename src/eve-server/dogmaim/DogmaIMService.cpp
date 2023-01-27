@@ -200,7 +200,7 @@ PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call)
 
 PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
     // called when item 'row' info not in shipState data from GetAllInfo() return
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
@@ -381,7 +381,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     // flag, targetList = self.GetDogmaLM().AddTarget(tid)
     // as a note, targetList isnt used once call returns to client
     // throws here void returns.  client will raise throw (and ignore return)
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
@@ -530,7 +530,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
     Client* pClient(call.client);
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -601,6 +601,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         if (charResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
             sItemFactory.UnsetUsingClient();
+            PyDecRef(rsp);
             return PyStatic.NewNone();
         }
         rsp->SetItemString("charInfo", charResult);
@@ -614,6 +615,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         if (shipResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
             sItemFactory.UnsetUsingClient();
+            PyDecRef(rsp);
             return PyStatic.NewNone();
         }
         rsp->SetItemString("shipInfo", shipResult);
@@ -624,6 +626,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     // Set "shipState" in the Dictionary  -fixed 26Mar16  -UD to add linked weapons 7Jan19
     if (pClient->GetShip().get() == nullptr) {
         _log(SERVICE__ERROR, "Unable to build shipState for %u", pClient->GetShipID());
+        PyDecRef(rsp);
         return PyStatic.NewNone();
     }
     PyTuple* rspShipState = new PyTuple(3);
@@ -680,7 +683,7 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -735,7 +738,7 @@ PyResult DogmaIMBound::Handle_DestroyWeaponBank(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
     //info = self.remoteDogmaLM.UnlinkAllModules(shipID)
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -1046,7 +1049,7 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
     // self.dogmaLM.CancelOverloading(itemID)
 
     Client* pClient(call.client);
-    Call_SingleIntegerArg args;   //itemID
+    SingleIntegerArg args;   //itemID
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -1061,7 +1064,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
      *   moduleIDs is list of modules in rack.
      */
     Client* pClient(call.client);
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.mtList();
@@ -1077,7 +1080,7 @@ PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
      *   moduleIDs is list of modules in rack.
      */
     Client* pClient(call.client);
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.mtList();
@@ -1093,7 +1096,7 @@ PyResult DogmaIMBound::Handle_InitiateModuleRepair(PyCallArgs& call) {
     //  res = self.GetDogmaLM().InitiateModuleRepair(itemID)
     // see notes in ModuleManager::ModuleRepair()
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewFalse();
@@ -1105,7 +1108,7 @@ PyResult DogmaIMBound::Handle_InitiateModuleRepair(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_StopModuleRepair(PyCallArgs& call) {
     //  self.GetDogmaLM().StopModuleRepair(itemID)
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

@@ -102,7 +102,7 @@ PyResult RamProxyService::Handle_AssemblyLinesSelectAlliance(PyCallArgs &call) {
 }
 
 PyResult RamProxyService::Handle_AssemblyLinesGet(PyCallArgs &call) {
-    Call_SingleIntegerArg arg;  // containerID (stationID)
+    SingleIntegerArg arg;  // containerID (stationID)
     if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Unable to decode args.");
         return nullptr;

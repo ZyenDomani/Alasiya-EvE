@@ -77,7 +77,7 @@
   <elementDef name="CryptoChallengePacket">
     <tupleInline>
         <!-- 0 -->
-        <string name="clientChallenge" safe="true" none_marker="" />
+        <string name="clientChallenge" none_marker="" />
         <!-- 1 -->
         <dictInline>
           <dictInlineEntry key="macho_version">
@@ -100,10 +100,10 @@
           </dictInlineEntry>
           <dictInlineEntry key="user_password">
               <!-- <objectEx name="user_password" type="PasswordString" optional="true" />  old shit.  -->
-              <wstring name="user_password" safe="true" none_marker="" />
+              <wstring name="user_password" none_marker="" />
           </dictInlineEntry>
           <dictInlineEntry key="user_password_hash">
-              <string name="user_password_hash" safe="true" none_marker="" />
+              <string name="user_password_hash" none_marker="" />
           </dictInlineEntry>
           <dictInlineEntry key="user_languageid">
               <wstring name="user_languageid" />

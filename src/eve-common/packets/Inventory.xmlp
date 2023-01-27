@@ -2,7 +2,7 @@
 
 <elements>
 
-  <elementDef name="CallSetLabel">
+  <elementDef name="CallSetLabel" encode="false">
     <tupleInline>
       <int name="itemID" />
       <raw name="itemName" />
@@ -16,21 +16,21 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Inventory_GetInventory">
+  <elementDef name="Inventory_GetInventory" encode="false">
     <tupleInline>
       <int name="container" />
-      <int name="ownerID" none_marker="0" safe="true" />
+      <int name="ownerID" none_marker="0" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_TrashItems">
+  <elementDef name="Call_TrashItems" encode="false">
       <tupleInline>
           <listInt name="items" />
           <int name="locationID" />
       </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_RemoveCharge">
+  <elementDef name="Call_RemoveCharge" encode="false">
     <tupleInline>
       <int name="shipID" />
       <int name="flagID" />
@@ -38,7 +38,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_Add_3">
+  <elementDef name="Call_Add_3" encode="false">
     <tupleInline>
       <int name="itemID" />
       <int name="quantity" />
@@ -46,21 +46,21 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_Add_2">
+  <elementDef name="Call_Add_2" encode="false">
     <tupleInline>
       <int name="itemID" />
       <int name="containerID" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_MultiAdd_2">
+  <elementDef name="Call_MultiAdd_2" encode="false">
     <tupleInline>
       <listInt name="itemIDs" />
       <int name="containerID" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_MultiAdd_3">
+  <elementDef name="Call_MultiAdd_3" encode="false">
     <tupleInline>
       <listInt name="itemIDs" />
       <int name="quantity" none_marker="1" /> <!-- almost always 1 on a multiadd -->
@@ -68,7 +68,7 @@
     </tupleInline>
   </elementDef>
 
-    <elementDef name="Call_Drop3">
+    <elementDef name="Call_Drop3" encode="false">
         <tupleInline>
             <list name="toDrop" />
             <int name="ownerID" none_marker="1" />
@@ -76,7 +76,7 @@
         </tupleInline>
     </elementDef>
 
-  <elementDef name="Inventory_CallReplaceCharges">
+  <elementDef name="Inventory_CallReplaceCharges" encode="false">
     <tupleInline>
       <int name="flag" />
       <int name="itemID" />
@@ -84,7 +84,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_MultiMerge">
+  <elementDef name="Call_MultiMerge" encode="false">
     <tupleInline>
       <list name="mergeData"/>
       <int name="locationID"/>
@@ -99,32 +99,32 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Inventory_CallStackAll">
+  <elementDef name="Inventory_CallStackAll" encode="false">
     <tupleInline>
       <int name="locationFlag" none_marker="0"/>
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_AssembleShip">
+  <elementDef name="Call_AssembleShip" encode="false">
     <tupleInline>
       <listInt name="items" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_AssembleShipWithName">
+  <elementDef name="Call_AssembleShipWithName" encode="false">
     <tupleInline>
       <int name="itemID" />
       <stringInline value="itemName" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_List">
+  <elementDef name="Call_List" encode="false">
     <tupleInline>
       <int name="flag" none_marker="0" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_CreateVouchers">
+  <elementDef name="Call_CreateVouchers" encode="false">
     <tupleInline>
         <list name="bmIDs" />
         <int name="flag" />
@@ -132,7 +132,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_PlanetCustomsXfer">
+  <elementDef name="Call_PlanetCustomsXfer" encode="false">
     <tupleInline>
         <int name="spaceportPinID" />
         <dict name="importData" />
@@ -141,7 +141,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="EntityEffectState">
+  <elementDef name="EntityEffectState" decode="false">
     <listInline>
       <!--
       the first 7 fields are the standard effect `environment`
@@ -172,7 +172,7 @@
     </listInline>
   </elementDef>
 
-  <elementDef name="Rsp_CommonGetInfo_Entry">
+  <elementDef name="Rsp_CommonGetInfo_Entry" decode="false">
     <dictInline>
       <dictInlineEntry key="itemID">
         <!-- this is different for modules and charges -->
@@ -199,14 +199,14 @@
     </dictInline>
   </elementDef>
 
-  <elementDef name="Rsp_ItemGetInfo">
+  <elementDef name="Rsp_ItemGetInfo" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
           <element name="entry" type="Rsp_CommonGetInfo_Entry" />
     </objectInline>
   </elementDef>
 
-  <elementDef name="Rsp_CommonGetInfo">
+  <elementDef name="Rsp_CommonGetInfo" decode="false">
     <objectInline>
       <stringInline value="util.IndexRowset" />
         <dictInline>
@@ -237,7 +237,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="NotifyOnItemChange">
+  <elementDef name="NotifyOnItemChange" decode="false">
     <tupleInline>
       <!-- 0: this is an ItemRow -->
       <raw name="itemRow" />
@@ -246,17 +246,17 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetOptionsForItemTypes">
+  <elementDef name="Call_GetOptionsForItemTypes" encode="false">
     <tupleInline>
         <dictInt name="typeIDs" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Rsp_GetOptionsForItemTypes">
+  <elementDef name="Rsp_GetOptionsForItemTypes" decode="false">
       <dictInt name="typeIDs" />
   </elementDef>
 
-  <elementDef name="Rsp_GetOptionsForItemTypes_Arg">
+  <elementDef name="Rsp_GetOptionsForItemTypes_Arg" decode="false">
     <objectInline>
         <stringInline value="util.KeyVal" />
           <dictInline>

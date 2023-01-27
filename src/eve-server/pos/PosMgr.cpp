@@ -274,7 +274,7 @@ PyResult PosMgrBound::Handle_UninstallJumpBridgeLink(PyCallArgs &call) {
     _log(POS__TRACE,  "PosMgrBound::Handle_UninstallJumpBridgeLink()");
     call.Dump(POS__DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
@@ -317,7 +317,7 @@ PyResult PosMgrBound::Handle_GetTowerNotificationSettings(PyCallArgs &call) {
         return new PyObject("util.Row", dict);
     }
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyObject("util.Row", dict);
@@ -377,7 +377,7 @@ PyResult PosMgrBound::Handle_GetTowerSentrySettings(PyCallArgs &call) {
         return new PyObject("util.Row", data);
     }
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyObject("util.Row", data);
@@ -434,7 +434,7 @@ PyResult PosMgrBound::Handle_GetStarbasePermissions(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
@@ -544,7 +544,7 @@ if self.moon[1] is not None:
         return PyStatic.NewNone();
     }
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
@@ -696,7 +696,7 @@ PyResult PosMgrBound::Handle_GetMoonProcessInfoForTower(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();

@@ -94,7 +94,7 @@ PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call)
 
 PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::DestroyFitting() for %s(%u)", m_self->name(), m_itemID);
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)){
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
     }
@@ -110,7 +110,7 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
     EVEItemFlags stackFlag = m_flag;
 
     if (call.tuple->items.size() != 0) {
-        Call_SingleIntegerArg arg;
+        SingleIntegerArg arg;
         if (!arg.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
@@ -565,7 +565,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
                 // we are wanting to change slots on a fitted module.
                 pShip->MoveModuleSlot(fromFlag, toFlag);
-                Call_SingleIntegerArg result;
+                SingleIntegerArg result;
                 result.arg = iRef->itemID();
                 return result.Encode();
             } else {
@@ -655,7 +655,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
     if (items.size() == 1) {
         //call returns itemID for single-item adds...not sure about others
-        Call_SingleIntegerArg result;
+        SingleIntegerArg result;
         result.arg = iRef->itemID();
         return result.Encode();
     }

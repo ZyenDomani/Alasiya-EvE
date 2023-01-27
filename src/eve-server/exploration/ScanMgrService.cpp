@@ -215,7 +215,7 @@ PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
     _log(SCAN__TRACE, "ScanBound::Handle_DestroyProbe() - size= %lu", call.tuple->size() );
     call.Dump(SCAN__DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception

@@ -483,7 +483,7 @@ PyResult FleetBound::Handle_RejectJoinRequest(PyCallArgs &call) {
     sLog.Warning("FleetBound", "Handle_RejectJoinRequest() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->name());
         return PyStatic.NewNone();
@@ -611,7 +611,7 @@ PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
     sLog.Warning("FleetBound", "Handle_MakeLeader() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arg.", call.client->GetChar()->name());
         return PyStatic.NewNone();
@@ -725,7 +725,7 @@ PyResult FleetBound::Handle_KickMember(PyCallArgs &call) {
     sLog.Warning("FleetBound", "Handle_KickMember() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->name());
         return PyStatic.NewFalse();
@@ -750,7 +750,7 @@ PyResult FleetBound::Handle_CreateSquad(PyCallArgs &call) {
     sLog.Warning("FleetBound", "Handle_CreateSquad() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->name());
         return nullptr;
@@ -767,7 +767,7 @@ PyResult FleetBound::Handle_DeleteWing(PyCallArgs &call) {
     sLog.Warning("FleetBound", "Handle_DeleteWing() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->name());
         return nullptr;
@@ -784,7 +784,7 @@ PyResult FleetBound::Handle_DeleteSquad(PyCallArgs &call) {
     sLog.Warning("FleetBound", "Handle_DeleteSquad() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->name());
         return nullptr;

@@ -292,17 +292,17 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    Call_PointArg arg;
+    PointArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
-    sLog.Cyan("GotoDirection", "%.4f, %.4f, %.4f", arg.x, arg.y, arg.z);
+    //sLog.Cyan("GotoDirection", "%.4f, %.4f, %.4f", arg.x, arg.y, arg.z);
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    const GPoint dir = GPoint(arg.x, arg.y, arg.z);
+    const GPoint dir(arg.x, arg.y, arg.z);
     pDestiny->GotoDirection(dir);
 
     return PyStatic.NewNone();
@@ -321,7 +321,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();

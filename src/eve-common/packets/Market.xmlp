@@ -7,7 +7,7 @@
       <int name="typeID" />
       <real name="price" />
       <int name="quantity" />
-      <int name="bid" safe="true" /><!-- integer boolean -->
+      <int name="bid" /><!-- integer boolean -->
       <int name="orderRange" />
       <int name="itemID" />
       <int name="minVolume" />
@@ -21,7 +21,7 @@
     <tupleInline>
       <int name="orderID" />
       <real name="newPrice" />
-      <bool name="bid" safe="true" />
+      <bool name="bid" />
       <int name="stationID" />
       <int name="solarSystemID" />
       <real name="price" />

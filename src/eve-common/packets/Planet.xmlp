@@ -70,7 +70,7 @@
         </tupleInline>
     </elementDef>
 
-    <elementDef name="Call_AddMoveExtractorHead">
+    <elementDef name="Call_AddMoveExtractorHead" encode="false">
         <tupleInline>
             <int name="ecuID" />
             <int name="headID" />
@@ -79,7 +79,7 @@
         </tupleInline>
     </elementDef>
 
-    <elementDef name="Call_InstallProgram">
+    <elementDef name="Call_InstallProgram" encode="false">
         <tupleInline>
             <int name="ecuID" />
             <int name="typeID" none_marker="0"/>   <!-- extracted resource typeID - 0 if deleting/stopping program -->
@@ -87,7 +87,7 @@
         </tupleInline>
     </elementDef>
 
-    <elementDef name="Call_CreateRoute">
+    <elementDef name="Call_CreateRoute" encode="false">
         <tupleInline>
             <tupleInline>
                 <int name="pinType" />
@@ -99,14 +99,14 @@
         </tupleInline>
     </elementDef>
 
-    <elementDef name="Call_PrioritizeRoute">
+    <elementDef name="Call_PrioritizeRoute" encode="false">
         <tupleInline>
             <int name="routeID" />
             <int name="priority" />
         </tupleInline>
     </elementDef>
 
-    <elementDef name="Call_ProgramResults">
+    <elementDef name="Call_ProgramResults" encode="false">
         <tupleInline>
             <int name="ecuID" />
             <int name="typeID" />
@@ -115,20 +115,20 @@
         </tupleInline>
     </elementDef>
 
-    <elementDef name="Call_LaunchCommodities">
+    <elementDef name="Call_LaunchCommodities" encode="false">
         <tupleInline>
             <int name="pinID" />
             <raw name="dict" />
         </tupleInline>
     </elementDef>
 
-  <elementDef name="Call_ResourceDataDict">
+  <elementDef name="Call_ResourceDataDict" encode="false">
       <dictInline>
         <dictInlineEntry key="proximity">
           <int name="proximity" />
         </dictInlineEntry>
         <dictInlineEntry key="updateTime">
-          <long name="updateTime" safe="true" />
+          <long name="updateTime" />
         </dictInlineEntry>
         <dictInlineEntry key="advancedPlanetology">
           <int name="advancedPlanetology" />
@@ -151,39 +151,39 @@
       </dictInline>
   </elementDef>
 
-    <elementDef name="Call_UpdateSettings">
+    <elementDef name="Call_UpdateSettings" encode="false">
         <tupleInline>
             <int name="orbitalID" />
-            <int name="reinforceValue" safe="true" />
+            <int name="reinforceValue" />
             <raw name="taxRateValues" />
-            <int name="standingValue" safe="true" />
-            <bool name="allowAlliance" safe="true" />
-            <bool name="allowStandings" safe="true" />
+            <int name="standingValue" />
+            <bool name="allowAlliance" />
+            <bool name="allowStandings" />
         </tupleInline>
     </elementDef>
 
-  <elementDef name="Call_TaxRateValuesDict">
+  <elementDef name="Call_TaxRateValuesDict" encode="false">
       <dictInline>
         <dictInlineEntry key="corporation">
-          <real name="corporation" safe="true" default="0.05" />
+          <real name="corporation" default="0.05" />
         </dictInlineEntry>
         <dictInlineEntry key="alliance">
-          <real name="alliance" safe="true" default="0.07" />
+          <real name="alliance" default="0.07" />
         </dictInlineEntry>
         <dictInlineEntry key="standingHorrible">
-          <real name="standingHorrible" safe="true" default="0.2" />
+          <real name="standingHorrible" default="0.2" />
         </dictInlineEntry>
         <dictInlineEntry key="standingBad">
-          <real name="standingBad" safe="true" default="0.1" />
+          <real name="standingBad" default="0.1" />
         </dictInlineEntry>
         <dictInlineEntry key="standingNeutral">
-          <real name="standingNeutral" safe="true" default="0.08" />
+          <real name="standingNeutral" default="0.08" />
         </dictInlineEntry>
         <dictInlineEntry key="standingGood">
-          <real name="standingGood" safe="true" default="0.05" />
+          <real name="standingGood" default="0.05" />
         </dictInlineEntry>
         <dictInlineEntry key="standingHigh">
-          <real name="standingHigh" safe="true" default="0.02" />
+          <real name="standingHigh" default="0.02" />
         </dictInlineEntry>
       </dictInline>
   </elementDef>

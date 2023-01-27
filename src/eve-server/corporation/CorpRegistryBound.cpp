@@ -268,7 +268,7 @@ PyResult CorpRegistryBound::Handle_GetRecruiters(PyCallArgs &call)
 
 PyResult CorpRegistryBound::Handle_DeleteTitle(PyCallArgs &call)
 {   // working
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -280,7 +280,7 @@ PyResult CorpRegistryBound::Handle_DeleteTitle(PyCallArgs &call)
 
 PyResult CorpRegistryBound::Handle_DeleteRecruitmentAd(PyCallArgs &call)
 {   // working
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -304,7 +304,7 @@ PyResult CorpRegistryBound::Handle_GetSharesByShareholder(PyCallArgs &call)
 
 PyResult CorpRegistryBound::Handle_GetCorporations(PyCallArgs &call) {
     // working
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -326,7 +326,7 @@ PyResult CorpRegistryBound::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
 PyResult CorpRegistryBound::Handle_GetMember(PyCallArgs &call)
 {   // not working
     _log(CORP__CALL, "CorpRegistryBound::Handle_GetMember()");
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -342,7 +342,7 @@ PyResult CorpRegistryBound::Handle_GetMember(PyCallArgs &call)
 
 PyResult CorpRegistryBound::Handle_SetAccountKey(PyCallArgs &call)
 {   // working
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -488,7 +488,7 @@ PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call)
 PyResult CorpRegistryBound::Handle_GetMembersPaged(PyCallArgs &call) {
     //return self.GetCorpRegistry().GetMembersPaged(page)
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

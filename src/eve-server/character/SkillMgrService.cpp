@@ -244,7 +244,7 @@ PyResult SkillMgrBound::Handle_CharStartTrainingSkillByTypeID( PyCallArgs& call 
 {
     // called when skill queue empty or paused
     // sends skill typeID to start training
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
         return nullptr;
@@ -298,7 +298,7 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
      *            [PyInt 2]                   << operation
      *            [PyFloat 3]                 << value
      */
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -320,7 +320,7 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
 PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 {
     //sends itemid
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -335,7 +335,7 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
 {
     //sends itemid
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

@@ -3,10 +3,10 @@
 
   <elementDef name="Call_AddCorporation" encode="false">
     <tupleInline>
-      <string name="corpName" safe="true" />
-      <string name="corpTicker" safe="true" />
-      <string name="description" safe="true" />
-      <string name="url" safe="true" />
+      <string name="corpName" />
+      <string name="corpTicker" />
+      <string name="description" />
+      <string name="url" />
       <real name="taxRate" />
       <raw name="shape1" />
       <raw name="shape2" />
@@ -59,8 +59,8 @@
         </dictInlineEntry>
         <dictInlineEntry key="description">
           <tupleInline>
-            <raw name="descriptionOld" none_marker="0" />
-            <string name="descriptionNew" none_marker="0" />
+            <raw name="descriptionOld" />
+            <string name="descriptionNew" none_marker="*none*" />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="tickerName">
@@ -72,7 +72,7 @@
         <dictInlineEntry key="url">
           <tupleInline>
             <raw name="urlOld" none_marker="0" />
-            <string name="urlNew" none_marker="0" />
+            <string name="urlNew" none_marker="*none*" />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="taxRate">
@@ -125,25 +125,25 @@
         </dictInlineEntry>
         <dictInlineEntry key="allianceID">
           <tupleInline>
-            <raw name="allianceIDOld" none_marker="0" />
-            <raw name="allianceIDNew" none_marker="0" />
+            <raw name="allianceIDOld"  />
+            <raw name="allianceIDNew"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="warFactionID">
           <tupleInline>
-            <raw name="warFactionIDOld" none_marker="0" />
-            <raw name="warFactionIDNew" none_marker="0" />
+            <raw name="warFactionIDOld"  />
+            <raw name="warFactionIDNew"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="shares">
           <tupleInline>
-            <raw name="sharesOld" none_marker="0" />
+            <raw name="sharesOld"  />
             <long name="sharesNew" />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="memberCount">
           <tupleInline>
-            <raw name="memberCountOld" none_marker="0" />
+            <raw name="memberCountOld"  />
             <int name="memberCountNew" />
           </tupleInline>
         </dictInlineEntry>
@@ -161,128 +161,128 @@
         </dictInlineEntry>
         <dictInlineEntry key="shape1">
           <tupleInline>
-            <raw name="shape1Old" none_marker="0" />
-            <raw name="shape1New" none_marker="0" />
+            <raw name="shape1Old"  />
+            <raw name="shape1New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="shape2">
           <tupleInline>
-            <raw name="shape2Old" none_marker="0" />
-            <raw name="shape2New" none_marker="0" />
+            <raw name="shape2Old"  />
+            <raw name="shape2New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="shape3">
           <tupleInline>
-            <raw name="shape3Old" none_marker="0" />
-            <raw name="shape3New" none_marker="0" />
+            <raw name="shape3Old"  />
+            <raw name="shape3New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="color1">
           <tupleInline>
-            <raw name="color1Old" none_marker="0" />
-            <raw name="color1New" none_marker="0" />
+            <raw name="color1Old"  />
+            <raw name="color1New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="color2">
           <tupleInline>
-            <raw name="color2Old" none_marker="0" />
-            <raw name="color2New" none_marker="0" />
+            <raw name="color2Old"  />
+            <raw name="color2New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="color3">
           <tupleInline>
-            <raw name="color3Old" none_marker="0" />
-            <raw name="color3New" none_marker="0" />
+            <raw name="color3Old"  />
+            <raw name="color3New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="typeface">
           <tupleInline>
-            <raw name="typefaceOld" none_marker="0" />
-            <raw name="typefaceNew" none_marker="0" />
+            <raw name="typefaceOld"  />
+            <raw name="typefaceNew"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="division1">
           <tupleInline>
-            <raw name="division1Old" none_marker="0" />
-            <raw name="division1New" none_marker="0" />
+            <raw name="division1Old"  />
+            <raw name="division1New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="division2">
           <tupleInline>
-            <raw name="division2Old" none_marker="0" />
-            <raw name="division2New" none_marker="0" />
+            <raw name="division2Old"  />
+            <raw name="division2New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="division3">
           <tupleInline>
-            <raw name="division3Old" none_marker="0" />
-            <raw name="division3New" none_marker="0" />
+            <raw name="division3Old"  />
+            <raw name="division3New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="division4">
           <tupleInline>
-            <raw name="division4Old" none_marker="0" />
-            <raw name="division4New" none_marker="0" />
+            <raw name="division4Old"  />
+            <raw name="division4New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="division5">
           <tupleInline>
-            <raw name="division5Old" none_marker="0" />
-            <raw name="division5New" none_marker="0" />
+            <raw name="division5Old"  />
+            <raw name="division5New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="division6">
           <tupleInline>
-            <raw name="division6Old" none_marker="0" />
-            <raw name="division6New" none_marker="0" />
+            <raw name="division6Old"  />
+            <raw name="division6New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="division7">
           <tupleInline>
-            <raw name="division7Old" none_marker="0" />
-            <raw name="division7New" none_marker="0" />
+            <raw name="division7Old"  />
+            <raw name="division7New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="walletDivision1">
           <tupleInline>
-            <raw name="walletDivision1Old" none_marker="0" />
-            <raw name="walletDivision1New" none_marker="0" />
+            <raw name="walletDivision1Old"  />
+            <raw name="walletDivision1New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="walletDivision2">
           <tupleInline>
-            <raw name="walletDivision2Old" none_marker="0" />
-            <raw name="walletDivision2New" none_marker="0" />
+            <raw name="walletDivision2Old"  />
+            <raw name="walletDivision2New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="walletDivision3">
           <tupleInline>
-            <raw name="walletDivision3Old" none_marker="0" />
-            <raw name="walletDivision3New" none_marker="0" />
+            <raw name="walletDivision3Old"  />
+            <raw name="walletDivision3New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="walletDivision4">
           <tupleInline>
-            <raw name="walletDivision4Old" none_marker="0" />
-            <raw name="walletDivision4New" none_marker="0" />
+            <raw name="walletDivision4Old"  />
+            <raw name="walletDivision4New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="walletDivision5">
           <tupleInline>
-            <raw name="walletDivision5Old" none_marker="0" />
-            <raw name="walletDivision5New" none_marker="0" />
+            <raw name="walletDivision5Old"  />
+            <raw name="walletDivision5New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="walletDivision6">
           <tupleInline>
-            <raw name="walletDivision6Old" none_marker="0" />
-            <raw name="walletDivision6New" none_marker="0" />
+            <raw name="walletDivision6Old"  />
+            <raw name="walletDivision6New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="walletDivision7">
           <tupleInline>
-            <raw name="walletDivision7Old" none_marker="0" />
-            <raw name="walletDivision7New" none_marker="0" />
+            <raw name="walletDivision7Old"  />
+            <raw name="walletDivision7New"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="deleted">
@@ -325,8 +325,8 @@
         </dictInlineEntry>
         <dictInlineEntry key="description">
           <tupleInline>
-            <raw name="descriptionOld" none_marker="0" />
-            <raw name="descriptionNew" none_marker="0" />
+            <raw name="descriptionOld"  />
+            <raw name="descriptionNew"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="typeID">
@@ -373,8 +373,8 @@
         </dictInlineEntry>
         <dictInlineEntry key="url">
           <tupleInline>
-            <raw name="urlOld" none_marker="0" />
-            <raw name="urlNew" none_marker="0" />
+            <raw name="urlOld"  />
+            <raw name="urlNew"  />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="deleted">
@@ -591,16 +591,16 @@
   <elementDef name="Call_InsertApplication" encode="false">
     <tupleInline>
       <int name="corpID" />
-      <wstring name="message" none_marker="0" safe="true" />
+      <wstring name="message" none_marker="*none*" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_UpdateApplicationOffer" encode="false">
     <tupleInline>
       <int name="charID" />
-      <wstring name="appText" none_marker="0" safe="true" />
+      <wstring name="appText" none_marker="*none*" />
       <int name="newStatus" />
-      <long name="appDateTime" none_marker="0" safe="true" />
+      <long name="appDateTime" none_marker="0" />
     </tupleInline>
   </elementDef>
 
@@ -888,7 +888,7 @@
   <elementDef name="Call_UpdateApplication" encode="false">
     <tupleInline>
       <int name="corpID" />
-      <string name="message" none_marker="0" safe="true"/>
+      <string name="message" none_marker="*none*" />
       <int name="status" /> <!-- ? -->
       <long name="date" none_marker="0" />
     </tupleInline>
@@ -896,27 +896,27 @@
 
   <elementDef name="Call_UpdateDivisionNames" encode="false">
     <tupleInline>
-      <string name="div1" none_marker="0" safe="true"/>
-      <string name="div2" none_marker="0" safe="true"/>
-      <string name="div3" none_marker="0" safe="true"/>
-      <string name="div4" none_marker="0" safe="true"/>
-      <string name="div5" none_marker="0" safe="true"/>
-      <string name="div6" none_marker="0" safe="true"/>
-      <string name="div7" none_marker="0" safe="true"/>
-      <string name="wallet1" none_marker="0" safe="true"/>
-      <string name="wallet2" none_marker="0" safe="true"/>
-      <string name="wallet3" none_marker="0" safe="true"/>
-      <string name="wallet4" none_marker="0" safe="true"/>
-      <string name="wallet5" none_marker="0" safe="true"/>
-      <string name="wallet6" none_marker="0" safe="true"/>
-      <string name="wallet7" none_marker="0" safe="true"/>
+      <string name="div1" none_marker="*none*" />
+      <string name="div2" none_marker="*none*" />
+      <string name="div3" none_marker="*none*" />
+      <string name="div4" none_marker="*none*" />
+      <string name="div5" none_marker="*none*" />
+      <string name="div6" none_marker="*none*" />
+      <string name="div7" none_marker="*none*" />
+      <string name="wallet1" none_marker="*none*" />
+      <string name="wallet2" none_marker="*none*" />
+      <string name="wallet3" none_marker="*none*" />
+      <string name="wallet4" none_marker="*none*" />
+      <string name="wallet5" none_marker="*none*" />
+      <string name="wallet6" none_marker="*none*" />
+      <string name="wallet7" none_marker="*none*" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_UpdateCorporation" encode="false">
     <tupleInline>
-      <string name="description" safe="true"/>
-      <string name="address" none_marker="0" safe="true"/>
+      <string name="description" />
+      <string name="address" none_marker="*none*" />
       <real name="tax" none_marker="0" />
     </tupleInline>
   </elementDef>
@@ -929,14 +929,14 @@
       <int name="color1" none_marker="0" />
       <int name="color2" none_marker="0" />
       <int name="color3" none_marker="0" />
-      <string name="typeface" none_marker="0" /> <!-- Prolly always none -->
+      <string name="typeface" none_marker="arial" /> <!-- Prolly always none -->
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_GetRecruitmentAdsByCriteria" encode="false">
     <tupleInline>
-      <long name="typeMask" none_marker="0" safe="true" />
-      <int name="inAlliance" safe="true"/><!-- integer boolean -->
+      <long name="typeMask" none_marker="0" />
+      <int name="inAlliance" /><!-- integer boolean -->
       <int name="minMembers" none_marker="0" />
       <int name="maxMembers" none_marker="0" />
     </tupleInline>
@@ -945,23 +945,23 @@
   <elementDef name="Call_CreateRecruitmentAd" encode="false">
     <tupleInline>
       <int name="days" none_marker="0" />
-      <long name="typeMask" none_marker="0" safe="true" />
-      <int name="allianceID" none_marker="0" safe="true"/><!-- integer boolean -->
-      <string name="description" none_marker="0" safe="true" />
+      <long name="typeMask" none_marker="0" />
+      <int name="allianceID" none_marker="0" /><!-- integer boolean -->
+      <string name="description" none_marker="*none*" />
       <int name="channelID" none_marker="0" />
       <list name="recruiters" />
-      <string name="title" none_marker="0" safe="true" />
+      <string name="title" none_marker="*none*" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_UpdateRecruitmentAd" encode="false">
     <tupleInline>
-      <int name="adID" safe="true"/>
-      <long name="typeMask" none_marker="0" safe="true" />
-      <string name="description" none_marker="0" safe="true" />
+      <int name="adID" />
+      <long name="typeMask" none_marker="0" />
+      <string name="description" none_marker="*none*" />
       <int name="channelID" none_marker="0" />
       <list name="recruiters" />
-      <string name="title" none_marker="0" safe="true" />
+      <string name="title" none_marker="*none*" />
       <int name="addedDays" none_marker="0" />
     </tupleInline>
   </elementDef>
@@ -974,14 +974,14 @@
 
   <elementDef name="Call_GetAssetInventory" encode="false">
     <tupleInline>
-      <int name="corpID" safe="true" />
-      <string name="flag" none_marker="0" safe="true" />
+      <int name="corpID" />
+      <string name="flag" none_marker="*none*" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_AuditMember" encode="false">
     <tupleInline>
-      <int name="charID" safe="true" />
+      <int name="charID" />
       <long name="fromDate" none_marker="0" />
       <long name="toDate" none_marker="0" />
       <int name="rowsPerPage" none_marker="0" />
@@ -992,7 +992,7 @@
     <tupleInline>
       <int name="corpID" />
       <int name="locationID" />
-      <string name="flag" none_marker="0" />
+      <string name="flag" none_marker="*flagNone*" />
     </tupleInline>
   </elementDef>
 
@@ -1012,8 +1012,8 @@
   <elementDef name="Call_GetMemberIDsByQuery_Main" encode="false">
     <tupleInline>
       <list name="data" />
-      <int name="includeImplied" safe="true" none_marker="0" /><!-- integer boolean -->
-      <int name="searchTitles" safe="true" none_marker="0" /><!-- integer boolean -->
+      <int name="includeImplied" none_marker="0" /><!-- integer boolean -->
+      <int name="searchTitles" none_marker="0" /><!-- integer boolean -->
     </tupleInline>
   </elementDef>
 
@@ -1039,30 +1039,30 @@
       <list name="charIDs" />
       <string name="verb" />
       <string name="queryType" />
-      <string name="value" safe="true"/>
+      <string name="value" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_AddBulletin">
     <tupleInline>
-      <string name="title" safe="true"/>
-      <string name="body" safe="true"/>
+      <string name="title" />
+      <string name="body" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_CreateAlliance" encode="false">
     <tupleInline>
-      <wstring name="allianceName" safe="true"/>
-      <string name="shortName" safe="true"/>
-      <wstring name="description" none_marker="0" safe="true"/>
-      <wstring name="url" none_marker="0" safe="true"/>
+      <wstring name="allianceName" />
+      <string name="shortName" />
+      <wstring name="description" none_marker="*none*" />
+      <wstring name="url" none_marker="*none*" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_UpdateAlliance" encode="false">
     <tupleInline>
-      <wstring name="description" none_marker="0" safe="true"/>
-      <string name="url" none_marker="0" safe="true"/>
+      <wstring name="description" none_marker="*none*" />
+      <string name="url" none_marker="*none*" />
     </tupleInline>
   </elementDef>
 
@@ -1104,14 +1104,14 @@
   <elementDef name="Call_PayoutDividend" encode="false">
     <tupleInline>
       <int name="payShareholders" none_marker="0" /><!-- integer boolean -->
-      <real name="payoutAmount" none_marker="0" safe="true" />
+      <real name="payoutAmount" none_marker="0" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_UpdateMember" encode="false">
     <tupleInline>
       <int name="charID" />
-      <string name="title" none_marker="0" safe="true"/>
+      <string name="title" none_marker="*none*" />
       <int name="divisionID" none_marker="0" />
       <int name="squadronID" none_marker="0" />
       <long name="roles" none_marker="0" />
@@ -1137,7 +1137,7 @@
   <elementDef name="Call_UpdateTitleData" encode="false">
     <tupleInline>
       <int name="titleID" />
-      <string name="titleName" none_marker="0" safe="true"/>
+      <string name="titleName" none_marker="*none*" />
       <long name="roles" none_marker="0" />
       <long name="grantableRoles" none_marker="0" />
       <long name="rolesAtHQ" none_marker="0" />
@@ -1151,8 +1151,8 @@
 
   <elementDef name="Call_InsertVoteCase" encode="false">
     <tupleInline>
-      <string name="voteCaseText" none_marker="0" safe="true"/>
-      <string name="description" none_marker="0" safe="true"/>
+      <string name="voteCaseText" none_marker="*none*" />
+      <string name="description" none_marker="*none*" />
       <int name="corporationID" />
       <int name="voteType" none_marker="0" />
       <object name="voteCaseOptions" type="PyObject" optional="true" />
@@ -1163,9 +1163,9 @@
 
   <elementDef name="Call_GetVoteCases" encode="false">
     <tupleInline>
-      <int name="corpid" none_marker="0" safe="true" />
-      <int name="status" none_marker="0" safe="true" />
-      <int name="maxLen" none_marker="0" safe="true" />
+      <int name="corpid" none_marker="0" />
+      <int name="status" none_marker="0" />
+      <int name="maxLen" none_marker="0" />
     </tupleInline>
   </elementDef>
 
@@ -1229,32 +1229,32 @@
 
   <elementDef name="Call_CreateMedal" encode="false">
     <tupleInline>
-      <string name="title" safe="true" />
-      <string name="description" safe="true" />
+      <string name="title" />
+      <string name="description" />
       <list name="data" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_AwardMedal" encode="false">
     <tupleInline>
-      <int name="medalID" safe="true" none_marker="0" />
+      <int name="medalID" none_marker="0" />
       <list name="recipientIDs" />
-      <string name="reason" safe="true" />
+      <string name="reason" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_InsertVote" encode="false">
     <tupleInline>
-      <int name="corpID" safe="true" />
-      <int name="voteCaseID" safe="true" />
-      <int name="voteValue" safe="true" />
+      <int name="corpID" />
+      <int name="voteCaseID" />
+      <int name="voteValue" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_GetStationServiceAccessRule" encode="false">
     <tupleInline>
-      <int name="stationID" safe="true" />
-      <int name="serviceID" safe="true" />
+      <int name="stationID" />
+      <int name="serviceID" />
     </tupleInline>
   </elementDef>
 

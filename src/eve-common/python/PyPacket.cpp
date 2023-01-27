@@ -247,7 +247,7 @@ PyRep *PyPacket::Encode() {
     arg_tuple->items[2] = dest.Encode();
     //userid
     if (userid == 0) {
-        arg_tuple->items[3] = PyStatic.NewNone();
+        arg_tuple->items[3] = PyStatic.NewZero();
     } else {
         arg_tuple->items[3] = new PyInt(userid);
     }

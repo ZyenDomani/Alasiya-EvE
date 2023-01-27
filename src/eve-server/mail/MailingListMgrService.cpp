@@ -108,7 +108,7 @@ PyResult MailingListMgrService::Handle_Leave(PyCallArgs& call)
 {
     // @TODO: Stub
     sLog.Debug("MailingListMgrService", "Called Leave stub" );
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -123,7 +123,7 @@ PyResult MailingListMgrService::Handle_Delete(PyCallArgs& call)
 {
     // @TODO: Stub
     sLog.Debug("MailingListMgrService", "Called Delete stub" );
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -157,7 +157,7 @@ PyResult MailingListMgrService::Handle_GetMembers(PyCallArgs& call)
 {
     // @TODO: Stub
     sLog.Debug("MailingListMgrService", "Called GetMembers stub" );
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -254,7 +254,7 @@ PyResult MailingListMgrService::Handle_GetInfo(PyCallArgs& call)
 {
     // @TODO: Stub
     sLog.Debug("MailingListMgrService", "Called GetInfo stub" );
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -273,7 +273,7 @@ PyResult MailingListMgrService::Handle_GetSettings(PyCallArgs& call)
 {
     // @TODO: Test
     sLog.Debug("MailingListMgrService", "Called GetSettings stub" );
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -292,7 +292,7 @@ PyResult MailingListMgrService::Handle_GetWelcomeMail(PyCallArgs& call)
 {
     // @TODO: Stub
     sLog.Debug("MailingListMgrService", "Called GetWelcomeMail stub" );
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -332,7 +332,7 @@ PyResult MailingListMgrService::Handle_ClearWelcomeMail(PyCallArgs& call)
 {
     // @TODO: Stub
     sLog.Debug("MailingListMgrService", "Called ClearWelcomeMail stub" );
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

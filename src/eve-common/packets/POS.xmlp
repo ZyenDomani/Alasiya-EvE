@@ -13,27 +13,27 @@
   <elementDef name="SetTowerSentrySettings">
     <tupleInline>
       <int name="structureID" />
-      <real name="standing" none_marker="0" safe="true" />
-      <real name="status" none_marker="0" safe="true" />
-      <bool name="statusDrop" none_marker="0" safe="true" />
-      <bool name="corpWar" none_marker="0" safe="true" />
-      <bool name="useAllianceStandings" none_marker="0" safe="true" />
+      <real name="standing" none_marker="0" />
+      <real name="status" none_marker="0" />
+      <bool name="statusDrop" none_marker="0" />
+      <bool name="corpWar" none_marker="0" />
+      <bool name="useAllianceStandings" none_marker="0" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="SetTowerPassword2">
     <tupleInline>
       <int name="towerID" />
-      <raw name="password" safe="true" />
+      <raw name="password" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="SetTowerPassword4">
     <tupleInline>
       <int name="towerID" />
-      <raw name="password" safe="true" />
-      <bool name="allowCorp" none_marker="0" safe="true" />
-      <bool name="allowAlliance" none_marker="0" safe="true" />
+      <raw name="password" />
+      <bool name="allowCorp" none_marker="0" />
+      <bool name="allowAlliance" none_marker="0" />
     </tupleInline>
   </elementDef>
 
@@ -41,9 +41,9 @@
     <tupleInline>
       <int name="structureID" />
       <tupleInline>
-        <long name="posX" none_marker="0" safe="true" />
-        <long name="posY" none_marker="0" safe="true" />
-        <long name="posZ" none_marker="0" safe="true" />
+        <long name="posX" none_marker="0" />
+        <long name="posY" none_marker="0" />
+        <long name="posZ" none_marker="0" />
       </tupleInline>
     </tupleInline>
   </elementDef>

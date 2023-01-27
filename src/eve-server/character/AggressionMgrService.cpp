@@ -69,7 +69,7 @@ protected:
 PyResult AggressionMgrBound::Handle_GetCriminalTimeStamps(PyCallArgs &call)
 {
     // arguments: charID
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -81,7 +81,7 @@ PyResult AggressionMgrBound::Handle_GetCriminalTimeStamps(PyCallArgs &call)
 PyResult AggressionMgrBound::Handle_CheckLootRightExceptions(PyCallArgs &call)
 {
     // arguments: containerID
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

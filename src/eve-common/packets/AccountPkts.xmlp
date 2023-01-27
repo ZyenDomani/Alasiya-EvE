@@ -4,7 +4,7 @@
 
   <include file="packets/General.h" />
 
-  <elementDef name="AuthenticationReq">
+  <elementDef name="AuthenticationReq" encode="false">
     <tupleInline>
       <!-- 0: clientinfo -->
       <dictInline soft="true">
@@ -70,7 +70,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="RspPing">
+  <elementDef name="RspPing" decode="false">
     <tupleInline>
       <substreamInline>
         <long name="timestamp" />

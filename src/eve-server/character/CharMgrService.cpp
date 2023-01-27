@@ -227,7 +227,7 @@ PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call)
 {
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -253,7 +253,7 @@ PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
     // this is called by corp/editMember
 
     // single int arg: charid
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -267,7 +267,7 @@ PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
     //single int arg: char id or corp id
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -365,7 +365,7 @@ PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
 PyResult CharMgrService::Handle_GetCharacterDescription(PyCallArgs &call)
 {
     //takes characterID
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

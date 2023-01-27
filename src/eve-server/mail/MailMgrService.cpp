@@ -150,7 +150,7 @@ PyResult MailMgrService::Handle_CreateLabel(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_DeleteLabel(PyCallArgs &call)
 {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -262,7 +262,7 @@ PyResult MailMgrService::Handle_MarkAsRead(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAsReadByLabel(PyCallArgs &call)
 {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -276,7 +276,7 @@ PyResult MailMgrService::Handle_MarkAsReadByLabel(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAsReadByList(PyCallArgs &call)
 {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -303,7 +303,7 @@ PyResult MailMgrService::Handle_MarkAsUnread(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAsUnreadByLabel(PyCallArgs &call)
 {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -318,7 +318,7 @@ PyResult MailMgrService::Handle_MarkAsUnreadByLabel(PyCallArgs &call)
 PyResult MailMgrService::Handle_MarkAsUnreadByList(PyCallArgs &call)
 {
     // @TODO: Stub
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -372,7 +372,7 @@ PyResult MailMgrService::Handle_MoveToTrash(PyCallArgs &call)
 PyResult MailMgrService::Handle_MoveToTrashByLabel(PyCallArgs &call)
 {
     // @TODO: Stub
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -387,7 +387,7 @@ PyResult MailMgrService::Handle_MoveToTrashByLabel(PyCallArgs &call)
 PyResult MailMgrService::Handle_MoveToTrashByList(PyCallArgs &call)
 {
     // @TODO: Stub
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

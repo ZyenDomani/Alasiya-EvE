@@ -63,7 +63,7 @@ PyResult DevToolsProviderService::Handle_GetLoader(PyCallArgs& call)
 
 PyResult DevToolsProviderService::Handle_ExceptionFluentExample (PyCallArgs& call)
 {
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
 
     if (arg.Decode (call.tuple) == false)
     {

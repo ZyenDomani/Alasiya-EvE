@@ -10,7 +10,7 @@
                         [PyInt 4]         << cacheSolarSystemObjects???  cant find another reference for this.  always 4 so far.
                         [PyInt 26513]
                         -->
-  <elementDef name="Rsp_RemoteMsg_SalvageFail">
+  <elementDef name="Rsp_RemoteMsg_SalvageFail" decode="false">
     <tupleInline>
       <stringInline value="OnRemoteMessage" />
       <stringInline value="SalvagingFailure" />
@@ -23,7 +23,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Rsp_SalvagingSuccess">
+  <elementDef name="Rsp_SalvagingSuccess" decode="false">
     <tupleInline>
       <stringInline value="SalvagingSuccess" />
       <dictInline>

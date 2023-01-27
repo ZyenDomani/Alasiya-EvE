@@ -197,7 +197,7 @@ PyResult FactionWarMgrService::Handle_GetFactionMilitiaCorporation(PyCallArgs &c
      */
   _log(FACWAR__CALL, "FacWarMgr::Handle_GetFactionMilitiaCorporation() size= %lu", call.tuple->size() );
   call.Dump(FACWAR__CALL_DUMP);
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

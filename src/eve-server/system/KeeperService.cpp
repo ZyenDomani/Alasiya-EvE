@@ -147,7 +147,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     _log(DUNG__CALL,  "KeeperService::Handle_ActivateAccelerationGate  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

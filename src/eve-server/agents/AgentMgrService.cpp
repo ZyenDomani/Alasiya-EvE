@@ -103,7 +103,7 @@ PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {
 
 PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
 {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

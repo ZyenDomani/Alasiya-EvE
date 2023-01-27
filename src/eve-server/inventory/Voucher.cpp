@@ -57,7 +57,7 @@ PyResult VoucherService::Handle_GetObject( PyCallArgs& call ) {
     //return PyStatic.NewNone();
 
     PyDict* dict = new PyDict();
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return dict;

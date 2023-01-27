@@ -74,7 +74,7 @@
   <!-- This should probably find a new home some day, as its really a detail of the marshalling procedure -->
   <!-- Not used now. -->
   <!--
-  <elementDef name="dbutil_RowList">
+  <elementDef name="dbutil_RowList" encode="false" decode="false">
     <objectEx name="root" type2="true">
       <tupleInline>
         <tupleInline>
@@ -89,7 +89,7 @@
     </objectEx>
   </elementDef>
 
-  <elementDef name="dbutil_RowList_header">
+  <elementDef name="dbutil_RowList_header" encode="false" decode="false">
     <tupleInline>
      <tupleInline>
        <string name="type" default="dbutil.RowList" type1="true" />
@@ -105,7 +105,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="dbutil_RowDict_header">
+  <elementDef name="dbutil_RowDict_header" encode="false" decode="false">
     <tupleInline>
      <tupleInline>
        <string name="type" default="dbutil.RowDict" type1="true" />
@@ -133,26 +133,26 @@
   CallGetOwnerNoteLabels
   -->
 
-  <elementDef name="Call_SingleIntegerArg">
+  <elementDef name="SingleIntegerArg">
     <tupleInline>
       <int name="arg" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_SingleRealArg">
+  <elementDef name="Call_SingleRealArg" encode="false">
     <tupleInline>
       <real name="arg" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_TwoIntegerArgs">
+  <elementDef name="Call_TwoIntegerArgs" encode="false">
     <tupleInline>
       <int name="arg1"  />
       <int name="arg2"  />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_PointArg">
+  <elementDef name="PointArg">
     <tupleInline>
       <real name="x" />
       <real name="y" />
@@ -160,44 +160,44 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_SingleBoolArg">
+  <elementDef name="Call_SingleBoolArg" encode="false">
     <tupleInline>
       <bool name="arg" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_TwoBoolArgs">
+  <elementDef name="Call_TwoBoolArgs" encode="false">
     <tupleInline>
       <bool name="arg1" />
       <bool name="arg2" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_SingleStringArg">
+  <elementDef name="Call_SingleStringArg" encode="false">
     <tupleInline>
       <string name="arg"  />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_SingleWStringArg">
+  <elementDef name="Call_SingleWStringArg" encode="false">
     <tupleInline>
       <wstring name="arg" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_SingleArg">
+  <elementDef name="Call_SingleArg" encode="false">
     <tupleInline>
       <raw name="arg" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_SingleIntList">
+  <elementDef name="Call_SingleIntList" encode="false">
     <tupleInline>
       <listInt name="ints" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_IntBoolArg">
+  <elementDef name="Call_IntBoolArg" encode="false">
     <tupleInline>
       <int name="arg1"  />
       <bool name="arg2" />
@@ -205,14 +205,14 @@
   </elementDef>
 
 
-  <elementDef name="CallGetMultiOwnersEx">
+  <elementDef name="CallGetMultiOwnersEx" encode="false">
     <tupleInline>
       <!-- 0 -->
       <listInt name="entities" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="CallMachoResolveObject">
+  <elementDef name="CallMachoResolveObject" encode="false">
     <tupleInline>
       <!-- 0 -->
         <raw name="bindParams" />
@@ -221,7 +221,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="CallMachoBindObject_call">
+  <elementDef name="CallMachoBindObject_call" encode="false">
       <tupleInline>
         <!-- 0 -->
         <string name="method_name"  />
@@ -232,7 +232,7 @@
       </tupleInline>
   </elementDef>
 
-  <elementDef name="CallMachoBindObject">
+  <elementDef name="CallMachoBindObject" encode="false">
     <tupleInline>
       <!-- 0 -->
         <raw name="bindParams" />
@@ -271,7 +271,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="macho_WrongMachoNode">
+  <elementDef name="macho_WrongMachoNode" decode="false">
     <objectInline>
         <stringInline value="macho.WrongMachoNode" />
       <dictInline>
@@ -282,7 +282,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="NotifyOnAggressionChange">
+  <elementDef name="NotifyOnAggressionChange" decode="false">
     <tupleInline>
       <!-- 0 -->
       <int name="integer0" />
@@ -292,7 +292,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="CallGetInventoryFromId">
+  <elementDef name="CallGetInventoryFromId" encode="false">
     <tupleInline>
         <!-- 0 -->
         <int name="entityID"  />
@@ -301,7 +301,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="CallGetMessageDetails">
+  <elementDef name="CallGetMessageDetails" encode="false">
     <tupleInline>
       <!-- 0 -->
       <int name="channelID"  />
@@ -310,7 +310,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="CallMarkMessagesRead">
+  <elementDef name="CallMarkMessagesRead" encode="false">
     <tupleInline>
       <!-- 0 -->
       <listInline>
@@ -336,7 +336,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SessionInitialState">
+  <elementDef name="SessionInitialState" decode="false">
     <tupleInline>
       <long name="sessionID" default="0" />
       <long name="sessionType" default="5" />
@@ -374,14 +374,14 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Notify_OnRemoteMessage">
+  <elementDef name="Notify_OnRemoteMessage" decode="false">
     <tupleInline>
       <string name="msgType"  />
       <dictStr name="args" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_InsureShip">
+  <elementDef name="Call_InsureShip" encode="false">
       <tupleInline>
           <int name="shipID"  />
           <real name="amount" />
@@ -389,36 +389,36 @@
       </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_SearchQuery">
+  <elementDef name="Call_SearchQuery" encode="false">
       <tupleInline>
           <string name="str" />
           <listInt name="ids" />
       </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_BoardShip">
+  <elementDef name="Call_BoardShip" encode="false">
     <tupleInline>
       <int name="newShipID"  />
       <int name="oldShipID"  />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Beyonce_Formation">
+  <elementDef name="Beyonce_Formation" decode="false">
     <tupleInline>
       <!-- 0: Name of formation -->
       <string name="name" />
       <!-- 1: Tuple of positions -->
       <tupleInline>
-        <element name="pos1" type="Call_PointArg" />
-        <element name="pos2" type="Call_PointArg" />
-        <element name="pos3" type="Call_PointArg" />
-        <element name="pos4" type="Call_PointArg" />
+        <element name="pos1" type="PointArg" />
+        <element name="pos2" type="PointArg" />
+        <element name="pos3" type="PointArg" />
+        <element name="pos4" type="PointArg" />
       </tupleInline>
     </tupleInline>
   </elementDef>
 
   <!-- this is loaded in static data mgr, and used in corpdata, and i didnt know where it fit best, so i put it here. -->
-  <elementDef name="GetFactionInfoRsp">
+  <elementDef name="GetFactionInfoRsp" decode="false">
     <tupleInline>
         <!-- 0: factionIDbyNPCCorpID: dict: corpID -> factionID    -->
       <dictRaw name="factionIDbyNPCCorpID" key="uint32"  pykey="Int" value="uint32" pyvalue="Int" />

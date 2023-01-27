@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+	Updates:	Allan
 */
 
 #include "eve-xmlpktgen.h"
@@ -177,7 +178,7 @@ bool ClassHeaderGenerator::ProcessElementPtr( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    %s*\t%s;\n",
+        "    %s*\t%s = nullptr;\n",
         type, name
     );
 
@@ -196,7 +197,7 @@ bool ClassHeaderGenerator::ProcessRaw( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    PyRep*\t\t%s;\n",
+        "    PyRep*\t%s = nullptr;\n",
         name
     );
 
@@ -215,7 +216,7 @@ bool ClassHeaderGenerator::ProcessInt( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    int32\t\t%s;\n",
+        "    int32\t%s = 0;\n",
         name
     );
 
@@ -234,7 +235,7 @@ bool ClassHeaderGenerator::ProcessLong( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    int64\t\t%s;\n",
+        "    int64\t%s = 0;\n",
         name
     );
 
@@ -253,7 +254,7 @@ bool ClassHeaderGenerator::ProcessReal( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    double\t\t%s;\n",
+        "    double\t%s = 0.0;\n",
         name
     );
 
@@ -272,7 +273,7 @@ bool ClassHeaderGenerator::ProcessBool( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    bool\t\t%s;\n",
+        "    bool\t%s = false;\n",
         name
     );
 
@@ -296,7 +297,7 @@ bool ClassHeaderGenerator::ProcessBuffer( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    PyBuffer*\t%s;\n",
+        "    PyBuffer*\t%s = nullptr;\n",
         name
     );
 
@@ -315,7 +316,7 @@ bool ClassHeaderGenerator::ProcessString( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    std::string\t\t%s;\n",
+        "    std::string\t%s = \"\";\n",
         name
     );
 
@@ -339,7 +340,7 @@ bool ClassHeaderGenerator::ProcessWString( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    std::string\t\t%s;\n",
+        "    std::string\t%s = \"\";\n",
         name
     );
 
@@ -363,7 +364,7 @@ bool ClassHeaderGenerator::ProcessToken( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    PyToken*\t\t%s;\n",
+        "    PyToken*\t%s = nullptr;\n",
         name
     );
 
@@ -384,7 +385,7 @@ bool ClassHeaderGenerator::ProcessObject( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    PyObject*\t%s;\n",
+        "    PyObject*\t%s = nullptr;\n",
         name
     );
 
@@ -413,7 +414,7 @@ bool ClassHeaderGenerator::ProcessObjectEx( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    %s*\t%s;\n",
+        "    %s*\t%s = nullptr;\n",
         type, name
     );
 
@@ -432,7 +433,7 @@ bool ClassHeaderGenerator::ProcessTuple( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    PyTuple*\t\t%s;\n",
+        "    PyTuple*\t%s = nullptr;\n",
         name
     );
 
@@ -456,7 +457,7 @@ bool ClassHeaderGenerator::ProcessList( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    PyList*\t\t%s;\n",
+        "    PyList*\t%s = nullptr;\n",
         name
     );
 
@@ -481,6 +482,7 @@ bool ClassHeaderGenerator::ProcessListInt( const TiXmlElement* field )
 
 	// is this actually a vector, or should it be a list?
     fprintf( mOutputFile,
+        "    // not sure how to member-initalize this\n"
         "    std::vector<int32>\t%s;\n",
         name
     );
@@ -501,6 +503,7 @@ bool ClassHeaderGenerator::ProcessListLong( const TiXmlElement* field )
 
 	// is this actually a vector, or should it be a list?
     fprintf( mOutputFile,
+        "    // not sure how to member-initalize this\n"
         "    std::vector<int64>\t%s;\n",
         name
     );
@@ -520,6 +523,7 @@ bool ClassHeaderGenerator::ProcessListStr( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
+        "    // not sure how to member-initalize this\n"
         "    std::vector<std::string>\t%s;\n",
         name
     );
@@ -539,7 +543,7 @@ bool ClassHeaderGenerator::ProcessDict( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    PyDict*\t\t%s;\n",
+        "    PyDict*\t%s = nullptr;\n",
         name
     );
 
@@ -596,6 +600,7 @@ bool ClassHeaderGenerator::ProcessDictRaw( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
+        "    // not sure how to member-initalize this\n"
         "    std::map<%s, %s>\t%s;\n",
         key, value, name
     );
@@ -615,6 +620,7 @@ bool ClassHeaderGenerator::ProcessDictInt( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
+        "    // not sure how to member-initalize this\n"
         "    std::map<int32, PyRep*>\t%s;\n",
         name
     );
@@ -634,6 +640,7 @@ bool ClassHeaderGenerator::ProcessDictStr( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
+        "    // not sure how to member-initalize this\n"
         "    std::map<std::string, PyRep*>\t%s;\n",
         name
     );

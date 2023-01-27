@@ -426,7 +426,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="CmdSetSpeedFraction">
+  <elementDef name="CmdSetSpeedFraction" decode="false">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetSpeedFraction" />
@@ -440,7 +440,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="CmdFollowBall">
+  <elementDef name="CmdFollowBall" decode="false">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="FollowBall" />
@@ -454,7 +454,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="CmdStop">
+  <elementDef name="CmdStop" decode="false">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="Stop" />
@@ -466,7 +466,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="CmdWarpTo">
+  <elementDef name="CmdWarpTo" decode="false">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="WarpTo" />
@@ -488,7 +488,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="CmdGotoDirection">
+  <elementDef name="CmdGotoDirection" decode="false">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="GotoDirection" />
@@ -502,7 +502,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="CmdAlignTo">
+  <elementDef name="CmdAlignTo" decode="false">
     <tupleInline>
       <!-- 0 -->
       <stringInline value="AlignTo" />
@@ -513,7 +513,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="CmdGotoPoint">
+  <elementDef name="CmdGotoPoint" decode="false">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="GotoPoint" />
@@ -527,7 +527,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="CmdOrbit">
+  <elementDef name="CmdOrbit" decode="false">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="Orbit" />
@@ -540,44 +540,44 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="CallAlignTo">
+  <elementDef name="CallAlignTo" encode="false">
     <tupleInline>
-      <int name="entityID"  safe="true" none_marker="0" />
+      <int name="entityID" none_marker="0" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="CallWarpToStuff">
+  <elementDef name="CallWarpToStuff" encode="false">
     <tupleInline>
-      <string name="type"  safe="true" none_marker="" />
-      <int name="ID"  safe="true" none_marker="0" />
+      <string name="type" none_marker="" />
+      <int name="ID" none_marker="0" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="CallWarpToStuffAutopilot">
+  <elementDef name="CallWarpToStuffAutopilot" encode="false">
     <tupleInline>
-      <int name="destID"  safe="true" none_marker="0" />
+      <int name="destID" none_marker="0" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_StargateJump">
+  <elementDef name="Call_StargateJump" encode="false">
     <tupleInline>
-      <int name="fromStargateID"  safe="true" none_marker="0" />
-      <int name="toStargateID"  safe="true" none_marker="0" />
-      <int name="shipID"  safe="true" none_marker="0" />
+      <int name="fromStargateID" none_marker="0" />
+      <int name="toStargateID" none_marker="0" />
+      <int name="shipID" none_marker="0" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_FollowBall">
+  <elementDef name="Call_FollowBall" encode="false">
     <tupleInline>
-      <int name="ballID"  safe="true" none_marker="0" />
+      <int name="ballID" none_marker="0" />
       <!-- may be integer or real -->
       <raw name="distance" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_Orbit">
+  <elementDef name="Call_Orbit" encode="false">
     <tupleInline>
-      <int name="entityID"  safe="true" none_marker="0" />
+      <int name="entityID" none_marker="0" />
       <!-- may be integer or real -->
       <raw name="range" />
     </tupleInline>

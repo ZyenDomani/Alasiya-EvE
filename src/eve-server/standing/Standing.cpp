@@ -78,7 +78,7 @@ PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call) {
 /** @todo  need to add a standing from corpCONCORD to any/all charID, corpID, allyID  for security rating (as seen in client code) */
 
 PyResult Standing::Handle_GetSecurityRating(PyCallArgs &call) {
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

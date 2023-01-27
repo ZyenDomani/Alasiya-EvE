@@ -317,6 +317,8 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
     if (bulkFileID < 0) {
         _log(BULKDATA__ERROR, "BulkMgrService::Handle_GetFullFilesChunk(): chunkSetID: %u, chunkNumber: %u, bulkFileID: %i", args.chunkSetID, args.chunkNumber, bulkFileID);
         // make and send client error also.  may be able to throw here.
+        PySafeDecRef(response);
+        PySafeDecRef(toBeChanged);
         return PyStatic.NewNone();
     }
 

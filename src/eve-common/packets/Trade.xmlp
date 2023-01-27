@@ -1,6 +1,6 @@
 <elements>
 
-  <elementDef name="InitiateTradeRsp_WithCash">
+  <elementDef name="InitiateTradeRsp_WithCash" decode="false">
     <objectInline>
       <stringInline value="util.Moniker" />
       <tupleInline>
@@ -24,7 +24,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="InitiateTradeRsp_NoCash">
+  <elementDef name="InitiateTradeRsp_NoCash" decode="false">
     <objectInline>
       <stringInline value="util.Moniker" />
       <tupleInline>
@@ -58,7 +58,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="TradeListRsp">
+  <elementDef name="TradeListRsp" decode="false">
     <objectInline>
       <stringInline value="util.Row" />
       <dictInline>

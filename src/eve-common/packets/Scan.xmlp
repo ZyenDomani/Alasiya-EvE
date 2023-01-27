@@ -2,29 +2,29 @@
 <elements>
 <!--  This is all scanning-related packets.  -->
 
-    <elementDef name="Call_RequestScan">
+    <elementDef name="Call_RequestScan" encode="false">
         <objectInline>
             <stringInline value="util.KeyVal" />
             <objectEx name="pos" type="PyObjectEx" optional="true" />
         </objectInline>
     </elementDef>
 
-    <elementDef name="Call_ConeScan">
+    <elementDef name="Call_ConeScan" encode="false">
         <tupleInline>
             <real name="ScanAngle" />
-            <long name="range" safe="true" />
+            <long name="range" />
             <real name="x" />
             <real name="y" />
             <real name="z" />
         </tupleInline>
     </elementDef>
 
-    <elementDef name="Call_ProbeDataObj">
+    <elementDef name="Call_ProbeDataObj" encode="false">
         <objectInline>
             <stringInline value="util.KeyVal" />
             <dictInline>
                 <dictInlineEntry key="probeID">
-                    <int name="probeID" safe="true" />
+                    <int name="probeID" />
                 </dictInlineEntry>
                 <dictInlineEntry key="typeID">
                     <int name="typeID" />
@@ -39,7 +39,7 @@
                     <int name="rangeStep" />
                 </dictInlineEntry>
                 <dictInlineEntry key="scanRange">
-                    <real name="scanRange"  safe="true" />
+                    <real name="scanRange"  />
                 </dictInlineEntry>
                 <dictInlineEntry key="pos">
                     <objectEx name="pos" type="PyObjectEx" optional="true" />
@@ -61,7 +61,7 @@
 
 -->
 
-    <elementDef name="DirectionScanResult">
+    <elementDef name="DirectionScanResult" decode="false">
         <objectInline>
             <stringInline value="util.KeyVal" />
             <dictInline>
@@ -102,7 +102,7 @@
     [PyNone]
     -->
 
-    <elementDef name="OnSystemScanStarted">
+    <elementDef name="OnSystemScanStarted" decode="false">
         <tupleInline>
             <long name="timestamp" />
             <int name="duration" />
@@ -115,7 +115,7 @@
             <stringInline value="util.KeyVal" />
             <dictInline>
                 <dictInlineEntry key="probeID">
-                    <int name="probeID" safe="true" />
+                    <int name="probeID" />
                 </dictInlineEntry>
                 <dictInlineEntry key="typeID">
                     <int name="typeID" />
@@ -150,7 +150,7 @@
         </objectInline>
     </elementDef>
 
-    <elementDef name="OnSystemScanStopped">
+    <elementDef name="OnSystemScanStopped" decode="false">
         <tupleInline>
             <!-- ScanProbesDict data -->
             <dict name="scanProbesDict" />
@@ -161,7 +161,7 @@
         </tupleInline>
     </elementDef>
 
-    <elementDef name="SystemScanResult">
+    <elementDef name="SystemScanResult" decode="false">
         <objectInline>
             <stringInline value="util.KeyVal" />
             <dictInline>

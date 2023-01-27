@@ -92,7 +92,7 @@
             <string name="motd" />
             <string name="comparisonKey" />
             <bool name="memberless" default="false" />
-            <string name="password" none_marker="0" />
+            <string name="password" none_marker="empty" />
             <bool name="mailingList" default="false" />
             <int name="cspa" default="0" />
             <bool name="temporary" default="false" />
@@ -371,8 +371,8 @@
   <elementDef name="Call_Page">
     <tupleInline>
       <listInt name="recipients" />
-      <wstring name="subject" safe="true" />
-      <wstring name="body" safe="true"/>
+      <wstring name="subject" />
+      <wstring name="body" />
     </tupleInline>
   </elementDef>
 

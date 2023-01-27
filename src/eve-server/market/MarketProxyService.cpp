@@ -109,7 +109,7 @@ PyResult MarketProxyService::Handle_GetRegionBest(PyCallArgs &call) {
 
 // this is called 3x on every market transaction
 PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -119,7 +119,7 @@ PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
 }
 
 PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -168,7 +168,7 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
 }
 
 PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
-    Call_SingleIntegerArg args; //typeID
+    SingleIntegerArg args; //typeID
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -613,6 +613,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     PyRep* order(m_db.GetOrderRow(args.orderID));
     if (!m_db.DeleteOrder(args.orderID)) {
         _log(MARKET__ERROR, "CancelCharOrder - Failed to delete order #%i.", args.orderID);
+        PySafeDecRef(order);
         return nullptr;
     }
 

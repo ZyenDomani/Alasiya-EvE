@@ -99,7 +99,7 @@ PyResult NotificationMgrService::Handle_GetByGroupID(PyCallArgs &call)
                         [PyInt 11]
               */
               // yes, i have the packet, but wtf is this?
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -119,7 +119,7 @@ PyResult NotificationMgrService::Handle_GetUnprocessed(PyCallArgs &call)
 
 PyResult NotificationMgrService::Handle_MarkGroupAsProcessed(PyCallArgs &call)
 {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -148,7 +148,7 @@ PyResult NotificationMgrService::Handle_MarkAsProcessed(PyCallArgs &call)
 
 PyResult NotificationMgrService::Handle_DeleteGroupNotifications(PyCallArgs &call)
 {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

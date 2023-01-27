@@ -114,7 +114,7 @@ PyResult AllianceBound::Handle_DeclareExecutorSupport(PyCallArgs &call)
     _log(ALLY__CALL, "AllianceBound::Handle_DeclareExecutorSupport() size=%li", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -132,7 +132,7 @@ PyResult AllianceBound::Handle_DeleteMember(PyCallArgs &call)
     _log(ALLY__CALL, "AllianceBound::Handle_DeleteMember() size=%li", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -439,7 +439,7 @@ PyResult AllianceBound::Handle_DeleteBulletin(PyCallArgs &call)
     _log(ALLY__CALL, "AllianceBound::Handle_DeleteBulletin() size=%li", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());

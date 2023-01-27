@@ -1,13 +1,18 @@
 ====================
-XMLP Tags and their uses:
+XMLP Tags, Descriptions and their uses:
 (UD by allan for Alasiya_EvE code)
 latest: 25Jan23
 ====================
 
+xmlp = XML Packet
+this is client/server communication over network/internet
+decryption and definitions/outlines of the packets are documented in server/common/python/docs/
+
+
 <elementDef>
 the outermost wrapper tag around an entire XMLP class structure, close with </elementDef>
 
-<element name="notes" type="util_Rowset" />
+<element name="name" type="util_Rowset" />
 you supply the actual object (not just a pointer) to the util_Rowset
 this is used for nexted xmlp defines   mostly client and destiny packets
 
@@ -16,10 +21,12 @@ you supply a pointer to the "xmlp-type" class object instance
 this is used for nexted xmlp defines   mostly client and destiny packets
 
 <raw name="name" />
-encodes/decodes object to PyRep*
+all data is determined in code
+decode sets object to PyRep*
+encode...if object is null, sends PyNone, else sends data as set in code
 
 <objectEx name="name" type2="*true/false*">
-i still dont fully understand what "type2" is...
+i still dont fully understand what "type1/type2" is...
 
 <objectInline>
 specifies a PyObject object, closed by </objectInline>
@@ -33,81 +40,85 @@ specifies a PyNone object
 <dictInline>
 wrap a dictionary in this and its closing tag </dictInline>
 
-<dictInlineEntry key="dict_key_string" key_type="*int/long*" soft="*true/false*">
-this defines an expected dictionary key value as a string "dict_key_string", use inside <dictInline>
-(optional)key_type means this entry is an integer or long instead of a string, and encoded accordingly
-(optional)soft = (return false on invalid decode?)
+<dictInlineEntry key="key_ident" key_type="*int/long*" soft="*true/false*">
+this defines a dictionary key as a string named "key_ident".
+these are used inside <dictInline> elements
+(encode - optional)key_type means this entry is an integer or long instead of a string, and encoded accordingly
+(decode - optional)soft = make error note and continue on invalid decode   --is this right?
 
-<dict name="dict_name" />
+<dict name="name" />
 defines a whole dictionary object of type PyDict
 
-<dictInt name="dict_name" />
+<dictInt name="name" />
 defines a whole dictionary with integers used for ALL key values
 
-<dictStr name="dict_name" />
+<dictStr name="name" />
 defines a whole dictionary with strings used for ALL key values
 
-<dictRaw name="dict_raw_name" key="Ctype" value="Cval" pykey="Ptype" pyvalue="Pval" />
+<dictRaw name="name" key="Ctype" value="Cval" pykey="Ptype" pyvalue="Pval" />
 defines a whole dictionary with "Ctype" of a C/C++ type (such as uint32) as keys and value  of a C/C++ type specified by "Cval"
 with the Python key type specified by "Ptype" and the Python value type specified by "Pval"
 i.e. <dictRaw name="items" key="uint32" value="uint32" pykey="Int" pyvalue="Int" />
 
-<stringInline value="string_value" />
-specifies a constant PyString value that contains the string "string_value"
+<stringInline value="value" />
+specifies a constant PyString with a value of "value"
 
 <tupleInline>
 wrap a tuple in this and its closing tag </tupleInline>
 
-<tuple name="tuple_name" />
+<tuple name="name" />
 specifies a tuple object of type PyTuple
 
 <listInline>
 wrap a list in this and its closing tag </listInline>
 
-<list name="list_name" />
-specifies a list of objects with the name "list_name"
+<list name="name" />
+specifies a list of objects identified as "name"
 
-<listInt name="list_name" />
-specifies a list of PyInt objects with the name "list_name"
+<listInt name="name" />
+specifies a list of PyInt objects identified as "name"
 
-<listStr name="list_name" />
-specifies a list of PyString objects with the name "list_name"; no explicit
+<listStr name="name" />
+specifies a list of PyString objects identified as "name"; no explicit
 
-<string name="string_name" />
-simple object type PyString with the name "string_name"
+<string name="name" />
+simple object type PyString identified as "name"
 
-<wstring name="wstring_name" />
-simple object type PyWString with the name "wstring_name"
+<wstring name="name" />
+simple object type PyWString identified as "name"
 
-<real name="real_name" safe="*true/false*/>
-simple object type PyFloat with the name "real_name"
-(optional) safe adds all other numeric types to decoder and prints warning if any of them hit
-(optional) safe does nothing on encoder
+<real name="name" >
+simple object type PyFloat identified as "name"
 
-<int name="int_name" />
-simple object type PyInt with the name "int_name"
+<int name="name" />
+simple object type PyInt identified as "name"
 
-<long name="long_name" />
-simple object type PyLong with the name "long_name"
+<long name="name" />
+simple object type PyLong identified as "name"
 
-<bool name="bool_name" />
-simple object type PyBool with the name "bool_name"
-
-<*type* *identifier* none_marker="*value*" />
-for decoding, none_marker means if this tag IsNone(), initialize an *identifier* of *type* to *value*
-for encoding, none_marker means if *identifier* == *value*, set *identifier* to PyStatic.NewNone()  (for sending to client)
-
-<*type* *identifier* optional="*true/false*" />
-for token, pyobject dict and ??  optional means if this tag IsNone(), set *identifier* to nullptr
-
-<*type* *identifier* default="*value*" />
-for decoding, not used yet
-for encoding, not used yet
-initialize an *identifier* of *type* to *value*, else initialize to "0" or nullptr.
+<bool name="name" />
+simple object type PyBool identified as "name"
 
 
-<raw *identifier* />
-raw decodes as PyType listed in element def.
+integer, decimal, string types... "none_marker" means "default" because "default" is a keyword.  :/
+<*type* *name* (optional)none_marker="*value*"/>
+decoding...
+	none_marker means if this tag IsNone(), initialize an *name* of *type* to *value*
+	if none_marker isnt used, initialize an *name* of *type* to "0".
+
+encoding...these should never be null.  throw error and initialize a *name* of *type* to "0".
+
+
+all container types...
+<*type* *name* />
+decoding...
+	if *name* IsNone() set to PyNone() and update code to test for this....why??? it's already a none...
+
+encoding...
+	for tuple, list, dict... if *name* is empty, set to PyStatic.mt*type*()
+	others... if *name* is null, set to empty*type*
+
+**NOTE:  under no circumstances should any xmlp tags be null after encode/decode (nor should they throw errors)
 
 
 
@@ -115,6 +126,8 @@ raw decodes as PyType listed in element def.
 working on bloat as defined in my TODO list.
 added "decode=*true/false*" switch to (dis)allow generation of decoding code.
 added "encode=*true/false*" switch to (dis)allow generation of encoding code.
+updated default actions as defined in descriptions above
+added class member init in headers
 
 
 defined types

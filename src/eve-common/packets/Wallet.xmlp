@@ -13,15 +13,15 @@
   <elementDef name="Call_GiveCash">
     <tupleInline>
       <int name="toID" />
-      <real name="amount" safe="true" />
-      <string name="reason" none_marker="0" safe="true" />
+      <real name="amount" />
+      <string name="reason" none_marker="*none*" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_GiveCorpCash">
     <tupleInline>
       <int name="toID" />
-      <real name="amount" safe="true"/>
+      <real name="amount" />
       <int name="fromAcctKey" />
     </tupleInline>
   </elementDef>
@@ -33,10 +33,10 @@
     <tupleInline>
       <int name="accountKey" />
       <long name="fromDate" />
-      <int name="entryTypeID" none_marker="0" safe="true" />
-      <bool name="corpAccount" none_marker="0" safe="true" /> <!-- corpAccount could be either bool or interger  -->
-      <int name="transactionID" none_marker="0" safe="true" />
-      <int name="rev" none_marker="0" safe="true" />
+      <int name="entryTypeID" none_marker="0" />
+      <bool name="corpAccount" none_marker="0" /> <!-- corpAccount could be either bool or interger  -->
+      <int name="transactionID" none_marker="0" />
+      <int name="rev" none_marker="0" />
     </tupleInline>
   </elementDef>
 
@@ -46,7 +46,7 @@
       <list name="accountKeys" />
       <long name="fromDate" />
       <int name="entryTypeID" none_marker="0" />
-      <int name="corpAccount" safe="true" /> <!-- corpAccount could be either bool or interger  -->
+      <int name="corpAccount" /> <!-- corpAccount could be either bool or interger  -->
       <int name="transactionID" none_marker="0" />
       <int name="rev" none_marker="0" />
     </tupleInline>

@@ -38,7 +38,7 @@
   <elementDef name="Call_Dogma_Activate">
     <tupleInline>
       <int name="itemID" />
-      <wstring name="effectName" safe="true" />
+      <wstring name="effectName" />
       <!-- optional: -->
       <int name="target" none_marker="0" default="0" />
       <int name="repeat" />
@@ -48,7 +48,7 @@
   <elementDef name="Call_Dogma_Deactivate">
     <tupleInline>
       <int name="itemID" />
-      <wstring name="effectName" safe="true" />
+      <wstring name="effectName" />
     </tupleInline>
   </elementDef>
 
@@ -67,7 +67,7 @@
       <int name="chargeTypeID" />
       <listInt name="itemIDs" />
       <int name="chargeLocationID" />
-      <int name="qty" none_marker="0" safe="true" />
+      <int name="qty" none_marker="0" />
     </tupleInline>
   </elementDef>
 
@@ -129,13 +129,13 @@
 
   <elementDef name="GodmaEnvironment">
     <listInline>
-      <int name="selfID" none_marker="0" default="0" />
-      <int name="charID" none_marker="0" default="0" />
-      <int name="shipID" none_marker="0" default="0" />
+      <int name="selfID" none_marker="0" />
+      <int name="charID" none_marker="0" />
+      <int name="shipID" none_marker="0" />
       <raw name="target" /> <!-- targetID or PyNone-->
       <raw name="subLoc" /> <!-- GodmaSubLoc goes here with charge data or PyNone-->
       <raw name="area" /><!-- ALWAYS a PyList, even empty -->
-      <int name="effectID" none_marker="0" default="0" />
+      <int name="effectID" none_marker="0" />
     </listInline>
   </elementDef>
 

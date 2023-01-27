@@ -145,7 +145,7 @@ PyResult ConfigService::Handle_GetMultiGraphicsEx(PyCallArgs &call) {
 }
 
 PyResult ConfigService::Handle_GetMap(PyCallArgs &call) {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -164,7 +164,7 @@ PyResult ConfigService::Handle_GetMapOffices(PyCallArgs &call) {
 22:38:58 [SvcCall]     Argument 'machoVersion':
 22:38:58 [SvcCall]         Integer field: 1
   */
-  Call_SingleIntegerArg args;
+  SingleIntegerArg args;
   if (!args.Decode(&call.tuple)) {
       codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
       return nullptr;
@@ -222,7 +222,7 @@ PyResult ConfigService::Handle_GetMapConnections(PyCallArgs &call) {
 PyResult ConfigService::Handle_GetStationSolarSystemsByOwner(PyCallArgs &call) {
   // solorSys = sm.RemoteSvc('config').GetStationSolarSystemsByOwner(itemID)
   // solarSys.solarSystemID
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -233,7 +233,7 @@ PyResult ConfigService::Handle_GetStationSolarSystemsByOwner(PyCallArgs &call) {
 }
 
 PyResult ConfigService::Handle_GetCelestialStatistic(PyCallArgs &call) {
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -243,7 +243,7 @@ PyResult ConfigService::Handle_GetCelestialStatistic(PyCallArgs &call) {
 }
 
 PyResult ConfigService::Handle_GetDynamicCelestials(PyCallArgs &call) {
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

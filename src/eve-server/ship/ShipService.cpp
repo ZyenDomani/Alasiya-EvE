@@ -263,7 +263,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call)
         return nullptr;
     }
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -700,7 +700,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 }
 
 PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception

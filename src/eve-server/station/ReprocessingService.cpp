@@ -142,7 +142,7 @@ PyResult ReprocessingServiceBound::Handle_GetReprocessingInfo(PyCallArgs &call) 
 }
 
 PyResult ReprocessingServiceBound::Handle_GetQuote(PyCallArgs &call) {
-    Call_SingleIntegerArg arg;    // itemID
+    SingleIntegerArg arg;    // itemID
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");

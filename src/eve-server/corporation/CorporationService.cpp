@@ -83,7 +83,7 @@ PyResult CorporationService::Handle_GetNPCDivisions(PyCallArgs &call)
 }
 
 PyResult CorporationService::Handle_GetEmploymentRecord(PyCallArgs &call) {
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -114,7 +114,7 @@ PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
 PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call)
 {
     //corpmktinfo = sm.RemoteSvc('corporationSvc').GetCorpInfo(itemID)
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -241,7 +241,7 @@ PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
     _log(CORP__CALL, "CorporationService::Handle_GetMedalsReceived()");
     call.Dump(CORP__CALL_DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -260,7 +260,7 @@ PyResult CorporationService::Handle_GetMedalDetails(PyCallArgs &call)
     _log(CORP__CALL, "CorporationService::Handle_GetMedalDetails()");
     call.Dump(CORP__CALL_DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -275,7 +275,7 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
     _log(CORP__CALL, "CorporationService::Handle_GetAllCorpMedals()");
     call.Dump(CORP__CALL_DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -296,7 +296,7 @@ PyResult CorporationService::Handle_GetRecipientsOfMedal(PyCallArgs &call)
     _log(CORP__CALL, "CorporationService::Handle_GetRecipientsOfMedal()");
     call.Dump(CORP__CALL_DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

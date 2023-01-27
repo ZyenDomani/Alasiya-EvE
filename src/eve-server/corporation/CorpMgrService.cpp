@@ -70,7 +70,7 @@ CorpMgrService::~CorpMgrService() {
 
 
 PyResult CorpMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -81,7 +81,7 @@ PyResult CorpMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 
 PyResult CorpMgrService::Handle_GetCorporations(PyCallArgs &call) {
     // called by non-member
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -91,7 +91,7 @@ PyResult CorpMgrService::Handle_GetCorporations(PyCallArgs &call) {
 }
 
 PyResult CorpMgrService::Handle_GetCorporationIDForCharacter(PyCallArgs &call) {
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

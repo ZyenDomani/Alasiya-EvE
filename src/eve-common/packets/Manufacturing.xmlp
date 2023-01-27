@@ -1,7 +1,7 @@
 
 <elements>
 
-  <elementDef name="Call_Reprocess">
+  <elementDef name="Call_Reprocess" encode="false">
     <tupleInline>
       <listInt name="items" />
       <int name="fromLocation" />
@@ -12,14 +12,14 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetQuotes">
+  <elementDef name="Call_GetQuotes" encode="false">
     <tupleInline>
       <listInt name="itemIDs" />
       <int name="activeShipID" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Rsp_GetBlueprintAttributes">
+  <elementDef name="Rsp_GetBlueprintAttributes" decode="false">
     <dictInline>
       <dictInlineEntry key="blueprintID">
         <int name="blueprintID" />
@@ -63,7 +63,7 @@
     </dictInline>
   </elementDef>
 
-  <elementDef name="Rsp_GetReprocessingInfo">
+  <elementDef name="Rsp_GetReprocessingInfo" decode="false">
     <dictInline>
       <dictInlineEntry key="wetake">
         <listInline name="wetake">
@@ -82,7 +82,7 @@
 
   <!-- this is ugly, but we dont really have a better way to deal with it right now. -->
   <!-- Don't change headerX ! -->
-  <elementDef name="Rsp_GetQuote">
+  <elementDef name="Rsp_GetQuote" decode="false">
     <objectInline>
       <stringInline value="util.Row" />
       <dictInline>
@@ -124,11 +124,11 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="Rsp_GetQuotes">
+  <elementDef name="Rsp_GetQuotes" decode="false">
     <dictInt name="quotes" />
   </elementDef>
 
-  <elementDef name="Rsp_GetQuote_Recoverables_Line">
+  <elementDef name="Rsp_GetQuote_Recoverables_Line" decode="false">
     <listInline>
       <int name="typeID" />
       <int name="unrecoverable" />
@@ -137,14 +137,14 @@
     </listInline>
   </elementDef>
 
-  <elementDef name="Call_GetJobs2">
+  <elementDef name="Call_GetJobs2" encode="false">
     <tupleInline>
       <int name="ownerID" />
       <bool name="completed" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_AssemblyLinesSelect">
+  <elementDef name="Call_AssemblyLinesSelect" encode="false">
     <tupleInline>
       <string name="filter" />
     </tupleInline>
@@ -241,7 +241,7 @@
     </listInline>
   </elementDef>
 
-  <elementDef name="Call_InstallJob">
+  <elementDef name="Call_InstallJob" encode="false">
     <tupleInline>
       <listInline>
       <!-- AssemblyLineData -->
@@ -295,7 +295,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Rsp_InstallJob">
+  <elementDef name="Rsp_InstallJob" decode="false">
     <objectInline>
       <stringInline value="util.KeyVal" />
         <dictInline>
@@ -345,7 +345,7 @@
     </objectInline>
   </elementDef>
 
-  <elementDef name="Call_CompleteJob">
+  <elementDef name="Call_CompleteJob" encode="false">
     <tupleInline>
       <listInline>
         <!-- installationLocationData -->

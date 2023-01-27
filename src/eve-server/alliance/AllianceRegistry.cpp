@@ -86,7 +86,7 @@ PyResult AllianceRegistry::Handle_GetAlliance(PyCallArgs &call) {
     _log(ALLY__CALL, "AllianceRegistry::Handle_GetAlliance() size=%li", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -99,7 +99,7 @@ PyResult AllianceRegistry::Handle_GetAllianceMembers(PyCallArgs &call) {
     _log(ALLY__CALL, "AllianceRegistry::Handle_GetAllianceMembers() size=%li", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
@@ -128,7 +128,7 @@ PyResult AllianceRegistry::Handle_GetEmploymentRecord(PyCallArgs &call) {
     _log(ALLY__CALL, "AllianceRegistry::Handle_GetEmploymentRecord() size=%li", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
-    Call_SingleIntegerArg arg;
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
