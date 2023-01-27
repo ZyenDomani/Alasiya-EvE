@@ -1,0 +1,67 @@
+
+p
+10:08:14 G   Alasiya's EvEMu: Server Profile:
+10:08:14 W     Current Stamp:  34704
+10:08:14 W     Server UpTime:  9h21m44s
+10:08:14 W       Connections:  1 Current Clients Online.
+10:08:14 W       Connections:  1 Clients Connected since startup.
+10:08:14 G    Server Profile:  Current Process Profile times for this run:
+                Loop Calls
+    EntityList   33k times.     Hi: 1459529.7500us      Lo: 65.0000us           Avg: 2066.8398us
+        Client   33k times.     Hi: 476716.0000us       Lo: 65.7500us           Avg: 105.6046us
+     SystemMgr   33k times.     Hi: 1296378.5000us      Lo: 976.2500us          Avg: 1748.1254us
+       Bubbles   33k times.     Hi: 55215.5000us        Lo: 16.5000us           Avg: 72.6403us
+       Destiny   165k times.    Hi: 232019.7500us       Lo: 14.0000us           Avg: 30.3083us
+           NPC   132k times.    Hi: 381581.0000us       Lo: 51.5000us           Avg: 72.7976us
+       Modules   33k times.     Hi: 8623.0000us         Lo: 339.0000us          Avg: 392.0997us
+          Ship   5527 times.    Hi: 8193.7500us         Lo: 140.5000us          Avg: 159.3309us
+    TargetProc   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+       Missile   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+        Damage   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+        Spawns   33k times.     Hi: 1841.2500us         Lo: 12.2500us           Avg: 14.3529us
+    Collisions   Disabled.
+        Drones   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+                Periodic Calls
+  Client Calls   641 times.     Hi: 12555270.0000us     Lo: 2861.0000us         Avg: 37086.5625us
+            DB   1693 times.    Hi: 22468.2500us        Lo: 355.2500us          Avg: 923.6375us
+ Parse Effects   2943 times.    Hi: 59246.0000us        Lo: 17.2500us           Avg: 324.8636us
+ Apply Effects   19 times.      Hi: 312538.7500us       Lo: 30.2500us           Avg: 18997.8281us
+  Item Loading   24 times.      Hi: 4873976.0000us      Lo: 1678.2500us         Avg: 319832.7812us
+          Loot   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+       Salvage   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+        Colony   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+       Concord   Disabled.
+ Profile Times Compiled in 1658009.0000us
+
+21:20:37 G   Alasiya's EvEMu: Server Profile:
+21:20:37 W     Current Stamp:  75047
+21:20:37 W     Server UpTime:  20h34m7s
+21:20:37 W       Connections:  0 Current Clients Online.
+21:20:37 W       Connections:  1 Clients Connected since startup.
+21:20:37 G    Server Profile:  Current Process Profile times for this run:
+                Loop Calls
+    EntityList   74k times.     Hi: 1459529.7500us      Lo: 65.0000us           Avg: 1442.9069us
+        Client   50k times.     Hi: 476716.0000us       Lo: 64.2500us           Avg: 99.5649us
+     SystemMgr   51k times.     Hi: 1296378.5000us      Lo: 578.7500us          Avg: 1691.2186us
+       Bubbles   74k times.     Hi: 55215.5000us        Lo: 16.5000us           Avg: 57.2713us
+       Destiny   255k times.    Hi: 232019.7500us       Lo: 14.0000us           Avg: 25.7973us
+           NPC   204k times.    Hi: 381581.0000us       Lo: 51.5000us           Avg: 71.4929us
+       Modules   50k times.     Hi: 8623.0000us         Lo: 339.0000us          Avg: 393.2054us
+          Ship   8480 times.    Hi: 8193.7500us         Lo: 138.0000us          Avg: 159.2555us
+    TargetProc   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+       Missile   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+        Damage   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+        Spawns   51k times.     Hi: 1841.2500us         Lo: 12.2500us           Avg: 14.3668us
+    Collisions   Disabled.
+        Drones   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+                Periodic Calls
+  Client Calls   937 times.     Hi: 12555270.0000us     Lo: 2860.0000us         Avg: 26488.0840us
+            DB   1918 times.    Hi: 22468.2500us        Lo: 355.2500us          Avg: 912.8193us
+ Parse Effects   2943 times.    Hi: 59246.0000us        Lo: 17.2500us           Avg: 324.8636us
+ Apply Effects   19 times.      Hi: 312538.7500us       Lo: 30.2500us           Avg: 18997.8281us
+  Item Loading   24 times.      Hi: 4873976.0000us      Lo: 1678.2500us         Avg: 319832.7812us
+          Loot   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+       Salvage   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+        Colony   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
+       Concord   Disabled.
+ Profile Times Compiled in 3207503.0000us

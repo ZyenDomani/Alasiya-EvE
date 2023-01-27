@@ -1,0 +1,446 @@
+
+21:11:21 [Service] machoNet::GetInitVals()
+21:11:21 [Service] bulkMgr::UpdateBulk()
+21:11:21 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:11:30 [Service] machoNet::GetTime()
+21:11:30 [Service] invbroker::GetItemDescriptor()
+21:11:30 [Service] machoNet::GetTime()
+21:11:30 [Service] devToolsProvider::GetLoader()
+21:11:31 [Service] machoNet::GetTime()
+21:11:31 [Service] machoNet::GetTime()
+21:11:31 [Service] authentication::GetPostAuthenticationMessage()
+21:11:31 [Service] machoNet::GetTime()
+21:11:32 [Service] charUnboundMgr::GetCharactersToSelect()
+21:11:32 [Service] charUnboundMgr::GetCharactersToSelect()
+21:11:32 [Service] userSvc::GetRedeemTokens()
+21:11:32 [Service] charUnboundMgr::GetCharacterToSelect()
+21:11:32 [Service] config::GetMultiCorpTickerNamesEx()
+21:11:32 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:11:36 [Service] config::GetMultiOwnersEx()
+21:11:36 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:16:32 [Service] machoNet::GetTime()
+21:16:32 [Service] machoNet::GetTime()
+21:16:32 [Service] machoNet::GetTime()
+21:16:32 [Service] machoNet::GetTime()
+21:16:32 [Service] machoNet::GetTime()
+21:21:32 [Service] machoNet::GetTime()
+21:21:32 [Service] machoNet::GetTime()
+21:21:32 [Service] machoNet::GetTime()
+21:21:32 [Service] machoNet::GetTime()
+21:21:32 [Service] machoNet::GetTime()
+21:26:32 [Service] machoNet::GetTime()
+21:26:32 [Service] machoNet::GetTime()
+21:26:32 [Service] machoNet::GetTime()
+21:26:32 [Service] machoNet::GetTime()
+21:26:32 [Service] machoNet::GetTime()
+21:31:32 [Service] machoNet::GetTime()
+21:31:32 [Service] machoNet::GetTime()
+21:31:32 [Service] machoNet::GetTime()
+21:31:32 [Service] machoNet::GetTime()
+21:31:32 [Service] machoNet::GetTime()
+21:32:54 [Service] config::GetMultiOwnersEx()
+21:32:54 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:32:58 [Service] charUnboundMgr::SelectCharacterID()
+21:32:59 W   Profile Manager: Long Profile Time on key ItemLoad, time 729.207ms.
+backtrace() returned 23 addresses
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN3EvE10traceStackEv+0x27) [0x116e680]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN8Profiler7AddTimeEhd+0x100) [0xadae48]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN9Inventory12LoadContentsEv+0x6c6) [0xd27b80]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN11StationItem5_LoadEv+0x1f) [0xeef08f]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13InventoryItem4LoadI11StationItemEE6RefPtrIT_Ej+0x62) [0xef2154]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN11StationItem4LoadEj+0x20) [0xeeed84]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN11ItemFactory8_GetItemI11StationItemEE6RefPtrIT_Ej+0xce) [0xd5765c]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN11ItemFactory13GetStationRefEj+0x29) [0xd539f1]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager17LoadSystemStaticsEv+0x164) [0xf7ace8]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager10BootSystemEv+0x9c) [0xf79ab4]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList16FindOrBootSystemEj+0xfc) [0xabe1ce]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client15SelectCharacterEi+0x15a) [0xa95332]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN21CharUnboundMgrService24Handle_SelectCharacterIDER10PyCallArgs+0x114) [0xbf0082]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN20PyCallableDispatcherI21CharUnboundMgrServiceE8DispatchERKSsR10PyCallArgs+0x122) [0xbf45a8]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10PyCallable4CallERKSsR10PyCallArgs+0x43) [0xae0f65]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN9PyService4CallERKSsR10PyCallArgs+0x168) [0xae3866]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client14Handle_CallReqEP8PyPacketR12PyCallStream+0x2b5) [0xaa2bc7]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN19EVEPacketDispatcher14DispatchPacketEP8PyPacket+0x197) [0xff6419]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client10ProcessNetEv+0x50) [0xa950da]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList7ProcessEv+0x57) [0xabda0d]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(main+0x5a74) [0xa82820]
+/lib64/libc.so.6(__libc_start_main+0xf0) [0x7ffff6463050]
+/srv/games/eve/Alasiya-EvE/bin/eve-server() [0xa7cc29]
+21:32:59 [ServerInit] SystemManager::LoadSystemStatics() - 15 Static System entities loaded for Ibaria (30000053)
+21:32:59 [CMgr Init] SpawnMgr Initialized for Ibaria(30000053)
+21:32:59 [CMgr Init] Roaming Belt Spawns are enabled
+21:32:59 [CMgr Init] Static Gate Spawns are disabled
+21:32:59 [CMgr Init] DungeonMgr Initialized for Ibaria(30000053)
+21:32:59 [ServerInit] SystemManager::LoadSystemDynamics - 0 Dynamic System entities loaded for Ibaria(30000053)
+21:32:59 [ServerInit] SystemManager::LoadPlayerDynamics() - 0 Dynamic Player entities loaded for Ibaria(30000053)
+21:32:59 [ServerInit] BootSystem() - Booted system 30000053
+21:32:59 [SkillQueue] Allan(90000000) calling SkillQueueLoop() - update false
+21:32:59 [SkillQueue] Allan(90000000):  UpdateSkillQueueEndTime() - Queue is empty.
+21:32:59 [SkillQueue] SkillQueueLoop() completed in 131.4680ms
+21:32:59 [PlayerTrace] Allan(90000000): Added to system manager for Ibaria(30000053) - 1 clients now in system. count true
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 853 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+21:32:59 W AttrMap - Get: Attribute 874 called.  not printing stacktrace.
+21:32:59 [FxUndefined] FxProc::ParseExpression() - Operand id:, key:LAUNCH - should be added as LaunchMissile()
+21:32:59 [FxDebug] ShipItem::ProcessEffects() - effects processed and applied in 17.632ms
+21:32:59 [AP Trace] MoveToLocation() - m_autoPilot = false
+21:32:59 [InvWarning] Inventory::RemoveItem(1) - Ibaria(30000053) contents does not contain Allan(90000000) in AutoFit.
+21:32:59 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Allan(90000000) in AutoFit.
+21:32:59 [AP_Trace] Client::SetDestiny():  shipSystemID: 30000053, SystemID: 30000053, update: false, updateShip: true, jump: false, cloak: false
+21:32:59 B Client::WarpIn(): Allan(90000000) called WarpIn().  Finish code here.
+21:33:00 [ClientTimer] Allan: Client Timer set from Idle to Login at 4000ms.  current state time: 1356069
+21:33:00 [ClientTimer] Allan: Invul Timer set at 18000ms.   current state time is 1356069ms
+21:33:00 W   Profile Manager: Long Profile Time on key Client Calls, time 1726.976ms.
+backtrace() returned 9 addresses
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN3EvE10traceStackEv+0x27) [0x116e680]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN8Profiler7AddTimeEhd+0x100) [0xadae48]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client14Handle_CallReqEP8PyPacketR12PyCallStream+0x38d) [0xaa2c9f]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN19EVEPacketDispatcher14DispatchPacketEP8PyPacket+0x197) [0xff6419]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client10ProcessNetEv+0x50) [0xa950da]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList7ProcessEv+0x57) [0xabda0d]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(main+0x5a74) [0xa82820]
+/lib64/libc.so.6(__libc_start_main+0xf0) [0x7ffff6463050]
+/srv/games/eve/Alasiya-EvE/bin/eve-server() [0xa7cc29]
+21:33:00 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:03 [Service] invbroker::MachoResolveObject()
+21:33:03 [SvcMsg] invbroker Service: MachoResolveObject requested, returning 888444
+21:33:03 [Service] warRegistry::MachoResolveObject()
+21:33:03 [SvcMsg] warRegistry Service: MachoResolveObject requested, returning 888444
+21:33:03 [ClientTimer] ProcessClient(): state timer hit.  current state time is 1364537ms
+21:33:03 [ClientTimer] ProcessClient()::CheckState():  case: Login
+21:33:03 [AP_Trace] Client::SetBallPark():  State: Login, SetState: false, Beyonce: false
+21:33:03 E CheckBallparkTimer(): BallPark Timer is disabled.
+21:33:03 [ClientTimer] CheckBallparkTimer():  State: Login, SetState: false, Beyonce: false, Login: false
+21:33:03 [ClientTimer] CheckBallparkTimer():  invul: true, cloak: false, bubblewait: true
+21:33:03 [ClientTimer] Allan: Ballpark Timer set at 1000ms.  current state time is 1364537ms
+21:33:03 [Service] invbroker::MachoBindObject()
+21:33:03 [SvcMsg] invbroker Service: Processing MachoBindObject
+21:33:03 [SvcMsg] Service Mgr Binding InvBrokerBound to node 888444:101 for Allan
+21:33:03 [SvcMsg] invbroker Service: MachoBindObject also contains call to GetInventoryFromId
+21:33:03 [Bound] InvBrokerBound::GetInventoryFromId()
+21:33:03 [SvcMsg] Service Mgr Binding InventoryBound to node 888444:102 for Allan
+21:33:03 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:06 [Service] warRegistry::MachoBindObject()
+21:33:06 [SvcMsg] warRegistry Service: Processing MachoBindObject
+21:33:06 [SvcMsg] Service Mgr Binding WarRegistryBound to node 888444:103 for Allan
+21:33:06 [SvcMsg] warRegistry Service: MachoBindObject also contains call to GetWars
+21:33:06 [Bound] WarRegistryBound::GetWars()
+21:33:06 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:10 [Bound] InvBrokerBound::GetInventoryFromId()
+21:33:10 [SvcMsg] Service Mgr Binding InventoryBound to node 888444:104 for Allan
+21:33:10 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:13 [Service] dogmaIM::MachoResolveObject()
+21:33:13 [SvcMsg] dogmaIM Service: MachoResolveObject requested, returning 888444
+21:33:13 [ClientTimer] Client::ProcessClient():  SetSessionChange to false for Allan(90000000)
+21:33:13 [ClientTimer] ProcessClient():  SetInvul to false for Allan(90000000)
+21:33:13 [ClientTimer] ProcessClient():  Ballpark Timer hit for Allan(90000000).
+21:33:13 [AP_Trace] Client::SetBallPark():  State: Idle, SetState: false, Beyonce: false
+21:33:13 E CheckBallparkTimer(): BallPark Timer is disabled.
+21:33:13 [ClientTimer] CheckBallparkTimer():  State: Idle, SetState: false, Beyonce: false, Login: false
+21:33:13 [ClientTimer] CheckBallparkTimer():  invul: false, cloak: false, bubblewait: true
+21:33:13 [ClientTimer] Allan: Ballpark Timer set at 1000ms.  current state time is 1374675ms
+21:33:13 [SpawnMsg] SpawnMgr::PrepSpawn() - faction: Angel Cartel, region 10000001. (config set false)
+21:33:13 [SpawnMsg] SpawnMgr::PrepSpawn() - m_factionGroups size is 21.
+21:33:13 [SpawnMsg] SpawnMgr::PrepSpawn() - spawnEntry - size: 5, class: Den(23).
+21:33:13 [SpawnMsg] SpawnMgr::PrepSpawn() - toSpawn size is 1.
+21:33:13 [SpawnMsg] SpawnMgr::MakeSpawn() - Creating spawn class Den for Angel Cartel in bubbleID 9 (anomaly = true).
+21:33:13 [SpawnTrace] MakeSpawn() adding SpawnEntry for Arch Gistii Ruffian with ID 1 to m_spawns. Class: Den, Group:Anomaly, Level: 1.
+21:33:13 [SpawnTrace] MakeSpawn() adding SpawnEntry for Arch Gistii Ruffian with ID 1 to m_spawns. Class: Den, Group:Anomaly, Level: 1.
+21:33:13 [SpawnTrace] MakeSpawn() adding SpawnEntry for Arch Gistii Ruffian with ID 1 to m_spawns. Class: Den, Group:Anomaly, Level: 1.
+21:33:13 [SpawnTrace] MakeSpawn() adding SpawnEntry for Arch Gistii Ruffian with ID 1 to m_spawns. Class: Den, Group:Anomaly, Level: 1.
+21:33:13 [SpawnTrace] MakeSpawn() completed in Ibaria(30000053) with 1 bubbles in m_bubbles and 4 entities in m_spawns.
+21:33:13 [Service] dogmaIM::MachoBindObject()
+21:33:13 [SvcMsg] dogmaIM Service: Processing MachoBindObject
+21:33:13 [SvcMsg] Service Mgr Binding DogmaIMBound to node 888444:105 for Allan
+21:33:13 [SvcMsg] dogmaIM Service: MachoBindObject also contains call to GetAllInfo
+21:33:13 [Bound] DogmaIMBound::GetAllInfo()
+21:33:13 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:16 [Service] dogma::GetOperandsForChar()
+21:33:16 [ClientTimer] ProcessClient():  Ballpark Timer hit for Allan(90000000).
+21:33:16 [AP_Trace] Client::SetBallPark():  State: Idle, SetState: false, Beyonce: false
+21:33:16 E CheckBallparkTimer(): BallPark Timer is disabled.
+21:33:16 [ClientTimer] CheckBallparkTimer():  State: Idle, SetState: false, Beyonce: false, Login: false
+21:33:16 [ClientTimer] CheckBallparkTimer():  invul: false, cloak: false, bubblewait: true
+21:33:16 [ClientTimer] Allan: Ballpark Timer set at 1000ms.  current state time is 1378058ms
+21:33:17 [Bound] InventoryBound::GetItem()
+21:33:17 [Service] standing2::GetMyKillRights()
+21:33:17 [Service] charMgr::GetSettingsInfo()
+21:33:17 [Service] corpBookmarkMgr::GetBookmarks()
+21:33:17 [Service] voiceMgr::VoiceEnabled()
+21:33:17 [Service] localizationServer::UpdateLocalizationQASettings()
+21:33:17 [Service] userSvc::GetCreateDate()
+21:33:17 [Service] corporationSvc::GetFactionInfo()
+21:33:17 [Bound] InventoryBound::List()
+21:33:17 [Service] config::GetDynamicCelestials()
+21:33:17 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:21 [Service] bookmark::GetBookmarks()
+21:33:21 [Service] LSC::JoinChannels()
+21:33:21 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:24 [Service] contractProxy::GetLoginInfo()
+21:33:24 [Service] tutorialSvc::GetCharacterTutorialState()
+21:33:24 [Service] stationSvc::GetSolarSystem()
+21:33:24 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:27 [Service] beyonce::MachoResolveObject()
+21:33:27 [SvcMsg] beyonce Service: MachoResolveObject requested, returning 888444
+21:33:27 [Bound] DogmaIMBound::GetTargets()
+21:33:27 [Service] standing2::GetNPCNPCStandings()
+21:33:27 [Service] corpRegistry::MachoResolveObject()
+21:33:27 [SvcMsg] corpRegistry Service: MachoResolveObject requested, returning 888444
+21:33:27 [Service] LSC::GetChannels()
+21:33:27 [Service] allianceRegistry::MachoResolveObject()
+21:33:27 [SvcMsg] allianceRegistry Service: MachoResolveObject requested, returning 888444
+21:33:27 [Service] charMgr::GetContactList()
+21:33:27 [Service] onlineStatus::GetInitialState()
+21:33:27 [Service] sovMgr::GetSystemSovereigntyInfo()
+21:33:27 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:31 [Service] beyonce::MachoBindObject()
+21:33:31 [SvcMsg] beyonce Service: Processing MachoBindObject
+21:33:31 [SvcMsg] Service Mgr Binding BeyonceBound to node 888444:106 for Allan
+21:33:31 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:34 [Bound] DogmaIMBound::GetTargeters()
+21:33:34 [Service] corpRegistry::MachoBindObject()
+21:33:34 [SvcMsg] corpRegistry Service: Processing MachoBindObject
+21:33:34 [SvcMsg] Service Mgr Binding CorpRegistryBound to node 888444:107 for Allan
+21:33:34 [SvcMsg] corpRegistry Service: MachoBindObject also contains call to GetEveOwners
+21:33:34 [Bound] CorpRegistryBound::GetEveOwners()
+21:33:34 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:37 [Service] standing2::GetCharStandings()
+21:33:37 [Service] standing2::GetCorpStandings()
+21:33:37 [Service] allianceRegistry::MachoBindObject()
+21:33:37 [SvcMsg] allianceRegistry Service: Processing MachoBindObject
+21:33:37 [SvcMsg] Service Mgr Binding AllianceBound to node 888444:108 for Allan
+21:33:37 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:41 [Service] facWarMgr::GetFWSystems()
+21:33:41 [Service] browserLockdownSvc::GetFlaggedSitesHash()
+21:33:41 [Service] beyonce::GetFormations()
+21:33:41 W CheckBallparkTimer(): BallPark Time remaining 154ms
+21:33:41 [ClientTimer] CheckBallparkTimer():  State: Idle, SetState: false, Beyonce: true, Login: false
+21:33:41 [ClientTimer] CheckBallparkTimer():  invul: false, cloak: false, bubblewait: true
+21:33:41 [Bound] CorpRegistryBound::GetCorporation()
+21:33:41 [Bound] CorpRegistryBound::GetOffices()
+21:33:41 [CorpCall] CorpRegistryBound::Handle_GetOffices() size=0
+21:33:41 [SvcMsg] Service Mgr Binding PyBoundObject to node 888444:109 for Allan
+21:33:41 [Bound] CorpRegistryBound::GetCorporateContacts()
+21:33:41 [Bound] AllianceBound::GetAllianceContacts()
+21:33:41 [AllyCall] AllianceBound::Handle_GetAllianceContacts() size=0
+21:33:41 [AllyCallDump]   Call Arguments:
+21:33:41 [AllyCallDump]      Tuple: Empty
+21:33:41 [AllyCallDump]  Named Arguments:
+21:33:41 [AllyCallDump]   machoVersion
+21:33:41 [AllyCallDump]        Integer: 1
+21:33:41 [Service] account::GetCashBalance()
+21:33:41 [ClientTimer] ProcessClient():  Ballpark Timer hit for Allan(90000000).
+21:33:41 [AP_Trace] Client::SetBallPark():  State: Idle, SetState: false, Beyonce: true
+21:33:41 [SpawnMsg] SpawnMgr::PrepSpawn() - faction: Angel Cartel, region 10000001. (config set false)
+21:33:41 [SpawnMsg] SpawnMgr::PrepSpawn() - m_factionGroups size is 21.
+21:33:41 [SpawnMsg] SpawnMgr::PrepSpawn() - spawnEntry - size: 5, class: Hideaway(20).
+21:33:41 [SpawnMsg] SpawnMgr::PrepSpawn() - toSpawn size is 1.
+21:33:41 [SpawnMsg] SpawnMgr::MakeSpawn() - Creating spawn class Hideaway for Angel Cartel in bubbleID 10 (anomaly = true).
+21:33:41 [SpawnTrace] MakeSpawn() adding SpawnEntry for Gistii_Defender_Frigate with ID 2 to m_spawns. Class: Hideaway, Group:Anomaly, Level: 1.
+21:33:41 [SpawnTrace] MakeSpawn() adding SpawnEntry for Gistii_Defender_Frigate with ID 2 to m_spawns. Class: Hideaway, Group:Anomaly, Level: 1.
+21:33:41 [SpawnTrace] MakeSpawn() completed in Ibaria(30000053) with 2 bubbles in m_bubbles and 6 entities in m_spawns.
+21:33:41 [Service] browserLockdownSvc::GetFlaggedSitesList()
+21:33:41 [Service] account::GetCashBalance()
+21:33:41 [Service] account::GetKeyMap()
+21:33:41 C       ImageServer:  GetImage() called. Cat: Character, id: 90000000, size:32
+21:33:41 [Service] billMgr::GetBillTypes()
+21:33:41 [Service] skillMgr::MachoResolveObject()
+21:33:41 [SvcMsg] skillMgr Service: MachoResolveObject requested, returning 888444
+21:33:41 [Service] skillMgr::MachoBindObject()
+21:33:41 [SvcMsg] skillMgr Service: Processing MachoBindObject
+21:33:41 [ClientMsg] SkillMgrService bind request for:
+21:33:41 [ClientMsg]      Tuple: 2 elements
+21:33:41 [ClientMsg]       [ 0]    Integer: 30000053
+21:33:41 [ClientMsg]       [ 1]    Integer: 5
+21:33:41 [SvcMsg] Service Mgr Binding SkillMgrBound to node 888444:110 for Allan
+21:33:41 [SvcMsg] skillMgr Service: MachoBindObject also contains call to GetSkillQueueAndFreePoints
+21:33:41 [Bound] SkillMgrBound::GetSkillQueueAndFreePoints()
+21:33:41 [RefPtrError] DecRef() - mDeleted = true.  Count is 0
+backtrace() returned 9 addresses
+EvE::traceStackLN()
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/utils/misc.cpp:355RefObject::DecRef() const
+/backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
+/backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
+/backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+??:0_start
+/home/iurt/rpmbuild/BUILD/glibc-2.20/csu/../sysdeps/x86_64/start.S:12521:33:45 [Bound] BeyonceBound::CmdStop()
+21:33:45 [AP Msg] Allan called Stop. AP: false, Invul: false
+21:33:45 [Service] charMgr::GetTopBounties()
+21:33:45 [Bound] BeyonceBound::CmdStop()
+21:33:45 [AP Msg] Allan called Stop. AP: false, Invul: false
+21:33:45 C       ImageServer:  GetImage() called. Cat: Character, id: 90000000, size:256
+21:33:46 [Service] infoGatheringMgr::GetStateAndConfig()
+21:33:46 [Service] clientStatsMgr::SubmitStats()
+

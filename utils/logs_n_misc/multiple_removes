@@ -1,0 +1,60 @@
+s
+20:48:57 [AP Trace] MoveToLocation() - m_autoPilot = false
+20:48:57 [InvWarning] Inventory::RemoveItem(1) - Ibaria(30000053) contents does not contain Allan(90000000) in AutoFit.
+20:48:57 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Allan(90000000) in AutoFit.
+backtrace() returned 17 addresses
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN3EvE10traceStackEv+0x27) [0x11856f6]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN9Inventory10RemoveItemE6RefPtrI13InventoryItemE+0x431) [0xd2b127]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13InventoryItem10RemoveItemE6RefPtrIS_E+0x48) [0xd44d4e]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13InventoryItem4MoveEj12EVEItemFlagsb+0x213) [0xd45f6b]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client14MoveToLocationEjRK6GPoint+0xeac) [0xa99c0a]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client15SelectCharacterEi+0x60a) [0xa9757a]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN21CharUnboundMgrService24Handle_SelectCharacterIDER10PyCallArgs+0x114) [0xbf2286]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN20PyCallableDispatcherI21CharUnboundMgrServiceE8DispatchERKSsR10PyCallArgs+0x122) [0xbf6736]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10PyCallable4CallERKSsR10PyCallArgs+0x43) [0xae2c91]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN9PyService4CallERKSsR10PyCallArgs+0x168) [0xae55d8]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client14Handle_CallReqEP8PyPacketR12PyCallStream+0x2b5) [0xaa4959]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN19EVEPacketDispatcher14DispatchPacketEP8PyPacket+0x197) [0xff9be3]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client10ProcessNetEv+0x50) [0xa96e72]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList7ProcessEv+0x4b) [0xabf721]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(main+0x5a74) [0xa85740]
+/lib64/libc.so.6(__libc_start_main+0xf0) [0x7ffff6463050]
+/srv/games/eve/Alasiya-EvE/bin/eve-server() [0xa7fb49]
+20:48:57 [AP_Trace] Client::SetDestiny():  shipSystemID: 30000053, SystemID: 30000053, update: false, updateShip: true, jump: false, cloak: false
+
+)
+20:52:49 B Client::WarpOut(): Client Destructor for Allan(90000000) called WarpOut().  Finish code here.
+20:52:49 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Rifter(140007395) in Ship Offline.
+backtrace() returned 15 addresses
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN3EvE10traceStackEv+0x27) [0x11856f6]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN9Inventory10RemoveItemE6RefPtrI13InventoryItemE+0x431) [0xd2b127]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13InventoryItem10RemoveItemE6RefPtrIS_E+0x48) [0xd44d4e]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN11SolarSystem23RemoveItemFromInventoryE6RefPtrI13InventoryItemE+0xbb) [0xf62885]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager23RemoveItemFromInventoryE6RefPtrI13InventoryItemE+0x1be) [0xf84984]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager12RemoveEntityEP12SystemEntity+0x5a) [0xf82934]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client13DestroyShipSEEv+0xde) [0xa9aee0]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6Client7WarpOutEv+0x143) [0xa98c8d]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6ClientD1Ev+0x81) [0xa96665]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6ClientD0Ev+0x18) [0xa96e14]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_Z10SafeDeleteI6ClientEvRPT_+0x35) [0xac43af]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList7ProcessEv+0xad) [0xabf783]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(main+0x5a74) [0xa85740]
+/lib64/libc.so.6(__libc_start_main+0xf0) [0x7ffff6463050]
+/srv/games/eve/Alasiya-EvE/bin/eve-server() [0xa7fb49]
+
+
+20:52:49 [SkillQueue] Allan(90000000):  Saving skill queue.
+20:52:49 [InvWarning] Inventory::RemoveItem(1) - Ibaria(30000053) contents does not contain Rifter(140007395) in Ship Offline.
+20:52:49 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Rifter(140007395) in Ship Offline.
+backtrace() returned 10 addresses
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN3EvE10traceStackEv+0x27) [0x11856f6]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN9Inventory10RemoveItemE6RefPtrI13InventoryItemE+0x431) [0xd2b127]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN8ShipItem6LogOutEv+0x180) [0xe73aa4]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6ClientD1Ev+0x357) [0xa9693b]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN6ClientD0Ev+0x18) [0xa96e14]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_Z10SafeDeleteI6ClientEvRPT_+0x35) [0xac43af]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList7ProcessEv+0xad) [0xabf783]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(main+0x5a74) [0xa85740]
+/lib64/libc.so.6(__libc_start_main+0xf0) [0x7ffff6463050]
+/srv/games/eve/Alasiya-EvE/bin/eve-server() [0xa7fb49]
+20:52:49 [PlayerTrace] Allan(90000000): Removed from system manager for Ibaria(30000053) - 0 clients still in system.

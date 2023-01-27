@@ -1,0 +1,39 @@
+0
+15:46:14 [MoveTrace] Destiny::SetSpeedFraction() - Rifter(140007395):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+15:46:14 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 441.25, accel: true, decel: false, delta: 1.000
+15:46:14 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 35.71, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+15:46:14 [WarpTrace] Destiny::WarpTo() toBubble:7 from:5, m_targetPoint: -413757220004.14,-61528591105.31,172505198525.99  distance: 0  m_targetDistance: 3597681231
+15:46:14 W   Profile Manager: Long Profile Time on key Client Calls, time 2019.287ms.
+backtrace() returned 9 addresses
+15:46:14 [DestinyError] Destiny::ProcessState() Error!  Ship Rifter(140007395) for Player Allan(90000000) - warp align/speed is incorrect, but time > shipTimeToWarp.
+15:46:14 [WarpTrace] Destiny::InitWarp(): Rifter(140007395) is initializing warp.
+15:46:14 [DestinyWarning] Warp Cap need for Rifter(140007395) is 0.0000
+15:46:14 M MM::ShipWarping(): Deactivating non-warpsafe modules.
+15:46:14 [WarpTrace] Destiny::InitWarp():Calculate - Rifter(140007395): Warp will accelerate for 6s, cruise for 0.000, then decelerate for 20s, with total time of 26.000s, and warp speed of 1199227077.0000 m/s.
+15:46:14 [WarpTrace] Destiny::InitWarp():Calculate - Rifter(140007395): Accel distance is 1199227077.0000. Cruise distance is 0.0000.  Decel distance is 2398454154.0000.  Direction is -0.771,-0.115,0.627.
+************  this is right.....
+15:46:14 [WarpTrace] Destiny::InitWarp():Calculate - Rifter(140007395): We will exit warp at -413757220004.14,-61528591105.31,172505198525.99 at a distance of 0.0000 AU (0m).
+************  this is wrong.....
+15:46:14 [WarpTrace] Destiny::InitWarp():Calculate - Rifter(140007395): calculated exit is -42966971360.94,-6390372645.99,-128941854930.65 and vector is -0.7708,-0.1146,0.6267.
+
+********  wtf happened here???
+15:46:14 [WarpTrace] Destiny::InitWarp():Calculate - target vs calculated is 481036337152.87m.
+
+
+15:46:14 [WarpTrace] Destiny::WarpAccel(): Rifter(140007395) - Warp Accelerating(0s): velocity 3.0000 m/s with 3597681230 m left to go. Current distance 1.0000 from origin.
+
+
+
+)
+16:17:43 [Bound] BeyonceBound::CmdWarpToStuff()
+16:17:43 [AP Msg] Allan called WarpToStuff. AP: false
+16:17:43 [WarpTrace] Destiny::WarpTo() toBubble:7 from:8, m_targetPoint: -413757218928.47,-61528589893.27,172505200305.21  exit distance: 0  m_targetDistance: 1099682604
+.
+16:17:50 [WarpTrace] Destiny::InitWarp(): Rifter(140007395) is initializing warp.
+16:17:50 [DestinyWarning] Warp Cap need for Rifter(140007395) for 0X0.00P+0U is 0.00000000
+16:17:50 M MM::ShipWarping(): Deactivating non-warpsafe modules.
+16:17:50 [WarpTrace] Destiny::InitWarp():Calculate - Rifter(140007395): Warp will accelerate for 6s, cruise for 0.000, then decelerate for 19s, with total time of 25.000s, and warp speed of 366560868.0000 m/s.
+16:17:50 [WarpTrace] Destiny::InitWarp():Calculate - Rifter(140007395): Accel distance is 366560868.0000. Cruise distance is 0.0000.  Decel distance is 733121736.0000.  Direction is -0.825,-0.176,0.536.
+16:17:50 [WarpTrace] Destiny::InitWarp():Calculate - Rifter(140007395): We will exit warp at -413757218928.47,-61528589893.27,172505200305.21 at a distance of 0.0000 AU (0m).
+16:17:50 [WarpTrace] Destiny::InitWarp():Calculate - Rifter(140007395): calculated exit is -30899609481.74,20158811056.44,-76312086656.75 and vector is -0.8254,-0.1761,0.5364.
+16:17:50 [WarpTrace] Destiny::InitWarp():Calculate - target vs calculated is 463856467968.59m.

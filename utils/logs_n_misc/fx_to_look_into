@@ -1,0 +1,8 @@
+ expressionID   operandID   arg1    arg2    expressionValue     description     expressionName  expressionTypeID    expressionGroupID   expressionAttributeID
+4032    22  0   0       Maximum "Thrust angle" for an object in Radians, 0 to pi (3.14).    newAgility  0   0   634
+4033    22  0   0       Maximum turn angle of a ship in Radians, 0 to pi (3.14).    turnAngle   0   0   635
+
+ expressionID   operandID   arg1    arg2    expressionValue     description     expressionName  expressionTypeID    expressionGroupID   expressionAttributeID
+6221    22  0   0       Attribute on ship to make advanced command affect only ships that we want.  advancedAgility     0   0   853
+6222    22  0   0           advancedAgility     0   0   853
+

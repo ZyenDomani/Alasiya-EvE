@@ -1,0 +1,400 @@
+5
+13:25:13 [SvcMsg] Service Mgr Binding ShipBound to node 888444:122 for Allan
+13:25:13 [SvcMsg] ship Service: MachoBindObject also contains call to Undock
+13:25:13 [Bound] ShipBound::Undock()
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Gunnery(140000000) - src(Self:280)=5.000 <PreMul> targ(Self:441) set targ from -2.000 to -10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Small Projectile Turret(140000001) - src(Self:280)=5.000 <PreMul> targ(Self:292) set targ from 5.000 to 25.000.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Spaceship Command(140000002) - src(Self:280)=5.000 <PreMul> targ(Self:151) set targ from -2.000 to -10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Frigate(140000003) - src(Self:280)=5.000 <PreMul> targ(Ship:1626) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Frigate(140000003) - src(Self:280)=5.000 <PreMul> targ(Ship:587) set targ from 7.500 to 37.500.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Frigate(140000003) - src(Self:280)=5.000 <PreMul> targ(Ship:460) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Leadership(140000004) - src(Self:280)=5.000 <PreMul> targ(Self:566) set targ from 2.000 to 10.000.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Skirmish Warfare(140000005) - src(Self:280)=2.000 <PreMul> targ(Self:151) set targ from -2.000 to -4.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Siege Warfare(140000006) - src(Self:280)=2.000 <PreMul> targ(Self:337) set targ from 2.000 to 4.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Social(140000007) - src(Self:280)=3.000 <PreMul> targ(Self:438) set targ from 5.000 to 15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Diplomacy(140000008) - src(Self:280)=3.000 <PreMul> targ(Self:414) set targ from 0.400 to 1.200.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Corporation Management(140000009) - src(Self:280)=4.000 <PreMul> targ(Self:191) set targ from 10.000 to 40.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Ethnic Relations(140000010) - src(Self:280)=3.000 <PreMul> targ(Self:418) set targ from 20.000 to 60.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Mining(140000011) - src(Self:280)=5.000 <PreMul> targ(Self:434) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Mechanics(140000012) - src(Self:280)=5.000 <PreMul> targ(Self:327) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Repair Systems(140000013) - src(Self:280)=3.000 <PreMul> targ(Self:312) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Hull Upgrades(140000014) - src(Self:280)=4.000 <PreMul> targ(Self:335) set targ from 5.000 to 20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Science(140000015) - src(Self:280)=5.000 <PreMul> targ(Self:452) set targ from -5.000 to -25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Engineering(140000016) - src(Self:280)=5.000 <PreMul> targ(Self:313) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Shield Operation(140000017) - src(Self:280)=5.000 <PreMul> targ(Self:338) set targ from -5.000 to -25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Electronics(140000018) - src(Self:280)=5.000 <PreMul> targ(Self:424) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Signature Analysis(140000019) - src(Self:280)=5.000 <PreMul> targ(Self:566) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Trade(140000020) - src(Self:280)=3.000 <PreMul> targ(Self:446) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Navigation(140000021) - src(Self:280)=5.000 <PreMul> targ(Self:315) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Afterburner(140000022) - src(Self:280)=3.000 <PreMul> targ(Self:66) set targ from 10.000 to 30.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Warp Drive Operation(140000023) - src(Self:280)=5.000 <PreMul> targ(Self:319) set targ from -10.000 to -50.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Armored Warfare(140000025) - src(Self:280)=3.000 <PreMul> targ(Self:335) set targ from 2.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Information Warfare(140000026) - src(Self:280)=3.000 <PreMul> targ(Self:309) set targ from 2.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Tactical Shield Manipulation(140003601) - src(Self:280)=5.000 <PreMul> targ(Self:336) set targ from 0.050 to 0.250.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Shield Upgrades(140006875) - src(Self:280)=3.000 <PreMul> targ(Self:323) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Drones(140007052) - src(Self:280)=5.000 <PreMul> targ(Self:353) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Scout Drone Operation(140007053) - src(Self:280)=5.000 <PreMul> targ(Self:459) set targ from 5000.000 to 25000.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Combat Drone Operation(140007056) - src(Self:280)=4.000 <PreMul> targ(Self:292) set targ from 5.000 to 20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Drone Durability(140007057) - src(Self:280)=2.000 <PreMul> targ(Self:337) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Drone Durability(140007057) - src(Self:280)=2.000 <PreMul> targ(Self:335) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Drone Durability(140007057) - src(Self:280)=2.000 <PreMul> targ(Self:327) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Drone Navigation(140007059) - src(Self:280)=2.000 <PreMul> targ(Self:591) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Drone Sharpshooting(140007060) - src(Self:280)=2.000 <PreMul> targ(Self:294) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Repair Drone Operation(140007062) - src(Self:280)=2.000 <PreMul> targ(Self:39) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Long Range Targeting(140007065) - src(Self:280)=5.000 <PreMul> targ(Self:309) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Targeting(140007066) - src(Self:280)=5.000 <PreMul> targ(Self:311) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Energy Management(140007067) - src(Self:280)=3.000 <PreMul> targ(Self:1079) set targ from 5.000 to 15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Energy Systems Operation(140007068) - src(Self:280)=3.000 <PreMul> targ(Self:314) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Shield Compensation(140007069) - src(Self:280)=3.000 <PreMul> targ(Self:851) set targ from -2.000 to -6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Shield Management(140007070) - src(Self:280)=4.000 <PreMul> targ(Self:337) set targ from 5.000 to 20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): EM Armor Compensation(140007071) - src(Self:280)=3.000 <PreMul> targ(Self:988) set targ from 3.000 to 9.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): EM Armor Compensation(140007071) - src(Self:280)=3.000 <PreMul> targ(Self:958) set targ from 5.000 to 15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Explosive Armor Compensation(140007072) - src(Self:280)=3.000 <PreMul> targ(Self:988) set targ from 3.000 to 9.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Explosive Armor Compensation(140007072) - src(Self:280)=3.000 <PreMul> targ(Self:958) set targ from 5.000 to 15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Kinetic Armor Compensation(140007073) - src(Self:280)=3.000 <PreMul> targ(Self:988) set targ from 3.000 to 9.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Kinetic Armor Compensation(140007073) - src(Self:280)=3.000 <PreMul> targ(Self:958) set targ from 5.000 to 15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Thermic Armor Compensation(140007074) - src(Self:280)=3.000 <PreMul> targ(Self:988) set targ from 3.000 to 9.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Thermic Armor Compensation(140007074) - src(Self:280)=3.000 <PreMul> targ(Self:958) set targ from 5.000 to 15.000.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Evasive Maneuvering(140007075) - src(Self:280)=3.000 <PreMul> targ(Self:151) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): High Speed Maneuvering(140007079) - src(Self:280)=2.000 <PreMul> targ(Self:216) set targ from -5.000 to -10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Assault Ships(140007082) - src(Self:280)=2.000 <PreMul> targ(Ship:675) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Assault Ships(140007082) - src(Self:280)=2.000 <PreMul> targ(Ship:673) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Weapon Upgrades(140007083) - src(Self:280)=5.000 <PreMul> targ(Self:50) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Weapon Upgrades(140007083) - src(Self:280)=5.000 <PreMul> targ(Self:310) set targ from -5.000 to -25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Motion Prediction(140007085) - src(Self:280)=3.000 <PreMul> targ(Self:767) set targ from 5.000 to 15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Small Autocannon Specialization(140007086) - src(Self:280)=2.000 <PreMul> targ(Self:292) set targ from 2.000 to 4.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Missile Launcher Operation(140007091) - src(Self:280)=4.000 <PreMul> targ(Self:293) set targ from -2.000 to -8.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Energy Grid Upgrades(140007106) - src(Self:280)=3.000 <PreMul> targ(Self:310) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Propulsion Jamming(140007123) - src(Self:280)=2.000 <PreMul> targ(Self:317) set targ from -5.000 to -10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Target Painting(140007126) - src(Self:280)=2.000 <PreMul> targ(Self:317) set targ from -5.000 to -10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Weapon Disruption(140007128) - src(Self:280)=1.000 <PreMul> targ(Self:317) set targ from -5.000 to -5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Standard Missiles(140007130) - src(Self:280)=2.000 <PreMul> targ(Self:292) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Rockets(140007150) - src(Self:280)=2.000 <PreMul> targ(Self:292) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Projectile Weapon Rigging(140007152) - src(Self:280)=2.000 <PreMul> targ(Self:1139) set targ from -10.000 to -20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Shield Rigging(140007156) - src(Self:280)=2.000 <PreMul> targ(Self:1139) set targ from -10.000 to -20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Electronics Upgrades(140007161) - src(Self:280)=3.000 <PreMul> targ(Self:310) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): EM Shield Compensation(140007172) - src(Self:280)=2.000 <PreMul> targ(Self:988) set targ from 3.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): EM Shield Compensation(140007172) - src(Self:280)=2.000 <PreMul> targ(Self:958) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Explosive Shield Compensation(140007173) - src(Self:280)=2.000 <PreMul> targ(Self:988) set targ from 3.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Explosive Shield Compensation(140007173) - src(Self:280)=2.000 <PreMul> targ(Self:958) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Kinetic Shield Compensation(140007174) - src(Self:280)=2.000 <PreMul> targ(Self:988) set targ from 3.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Kinetic Shield Compensation(140007174) - src(Self:280)=2.000 <PreMul> targ(Self:958) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Thermic Shield Compensation(140007175) - src(Self:280)=2.000 <PreMul> targ(Self:988) set targ from 3.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Thermic Shield Compensation(140007175) - src(Self:280)=2.000 <PreMul> targ(Self:958) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Survey(140007192) - src(Self:280)=3.000 <PreMul> targ(Self:308) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Salvaging(140007193) - src(Self:280)=4.000 <PreMul> targ(Self:1772) set targ from 1.000 to 4.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Astrogeology(140018753) - src(Self:280)=5.000 <PreMul> targ(Self:434) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Industry(140018754) - src(Self:280)=5.000 <PreMul> targ(Self:440) set targ from -4.000 to -20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Exhumers(140018755) - src(Self:280)=5.000 <PreMul> targ(Ship:925) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Exhumers(140018755) - src(Self:280)=5.000 <PreMul> targ(Ship:924) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Armor Rigging(140019092) - src(Self:280)=2.000 <PreMul> targ(Self:1139) set targ from -10.000 to -20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Cloaking(140019333) - src(Self:280)=2.000 <PreMul> targ(Self:619) set targ from -10.000 to -20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Industrial Command Ships(140020084) - src(Self:280)=5.000 <PreMul> targ(Ship:1358) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Industrial Command Ships(140020084) - src(Self:280)=5.000 <PreMul> targ(Ship:1356) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Mining Foreman(140020085) - src(Self:280)=5.000 <PreMul> targ(Self:434) set targ from 2.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Mining Drone Operation(140023107) - src(Self:280)=5.000 <PreMul> targ(Self:434) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Mining Upgrades(140023114) - src(Self:280)=3.000 <PreMul> targ(Self:927) set targ from -5.000 to -15.000.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Advanced Spaceship Command(140023117) - src(Self:280)=5.000 <PreMul> targ(Self:151) set targ from -5.000 to -25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Refining(140023136) - src(Self:280)=5.000 <PreMul> targ(Self:379) set targ from 2.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Sensor Linking(140023206) - src(Self:280)=2.000 <PreMul> targ(Self:317) set targ from -5.000 to -10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Archaeology(140023491) - src(Self:280)=3.000 <PreMul> targ(Self:1772) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Astrometric Acquisition(140023492) - src(Self:280)=3.000 <PreMul> targ(Self:66) set targ from -10.000 to -30.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Astrometric Pinpointing(140023493) - src(Self:280)=5.000 <PreMul> targ(Self:1156) set targ from -10.000 to -50.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Astrometric Rangefinding(140023494) - src(Self:280)=4.000 <PreMul> targ(Self:846) set targ from 10.000 to 40.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Jump Drive Operation(140023598) - src(Self:280)=5.000 <PreMul> targ(Self:899) set targ from -5.000 to -25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Cruiser(140023599) - src(Self:280)=5.000 <PreMul> targ(Ship:659) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Cruiser(140023599) - src(Self:280)=5.000 <PreMul> targ(Ship:489) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Battleship(140023600) - src(Self:280)=5.000 <PreMul> targ(Ship:518) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Battleship(140023600) - src(Self:280)=5.000 <PreMul> targ(Ship:490) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Dreadnought(140023601) - src(Self:280)=2.000 <PreMul> targ(Ship:1545) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Dreadnought(140023601) - src(Self:280)=2.000 <PreMul> targ(Ship:882) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Dreadnought(140023601) - src(Self:280)=2.000 <PreMul> targ(Ship:881) set targ from 1.000 to 2.000.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Capital Ships(140023602) - src(Self:280)=5.000 <PreMul> targ(Self:151) set targ from -5.000 to -25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Capital Industrial Ships(140023603) - src(Self:280)=2.000 <PreMul> targ(Ship:1244) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Capital Industrial Ships(140023603) - src(Self:280)=2.000 <PreMul> targ(Ship:1243) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Capital Industrial Ships(140023603) - src(Self:280)=2.000 <PreMul> targ(Ship:1240) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Capital Industrial Ships(140023603) - src(Self:280)=2.000 <PreMul> targ(Ship:1239) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Drone Interfacing(140023604) - src(Self:280)=5.000 <PreMul> targ(Self:434) set targ from 20.000 to 100.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Drone Interfacing(140023604) - src(Self:280)=5.000 <PreMul> targ(Self:292) set targ from 20.000 to 100.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Carrier(140023605) - src(Self:280)=3.000 <PreMul> targ(Ship:1072) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Carrier(140023605) - src(Self:280)=3.000 <PreMul> targ(Ship:1060) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Carrier(140023605) - src(Self:280)=3.000 <PreMul> targ(Ship:1059) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Carrier(140023605) - src(Self:280)=3.000 <PreMul> targ(Ship:1058) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Cynosural Field Theory(140023606) - src(Self:280)=2.000 <PreMul> targ(Self:1296) set targ from -10.000 to -20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Tactical Weapon Reconfiguration(140023610) - src(Self:280)=2.000 <PreMul> targ(Self:885) set targ from 25.000 to 50.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Advanced Weapon Upgrades(140023611) - src(Self:280)=5.000 <PreMul> targ(Self:323) set targ from -2.000 to -10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Logistics(140023612) - src(Self:280)=5.000 <PreMul> targ(Ship:679) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Logistics(140023612) - src(Self:280)=5.000 <PreMul> targ(Ship:678) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Tactical Logistics Reconfiguration(140023613) - src(Self:280)=2.000 <PreMul> targ(Self:885) set targ from 25.000 to 50.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Cloning Facility Operation(140023614) - src(Self:280)=1.000 <PreMul> targ(Self:1073) set targ from 15.000 to 15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Titan(140023616) - src(Self:280)=1.000 <PreMul> targ(Ship:1594) set targ from 1.000 to 1.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Titan(140023616) - src(Self:280)=1.000 <PreMul> targ(Ship:1067) set targ from 1.000 to 1.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Titan(140023616) - src(Self:280)=1.000 <PreMul> targ(Ship:1068) set targ from 1.000 to 1.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Titan(140023616) - src(Self:280)=1.000 <PreMul> targ(Ship:1043) set targ from 1.000 to 1.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Titan(140023616) - src(Self:280)=1.000 <PreMul> targ(Ship:1044) set targ from 1.000 to 1.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Electronic Warfare(140023622) - src(Self:280)=3.000 <PreMul> targ(Self:317) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Industrial Reconfiguration(140023640) - src(Self:280)=1.000 <PreMul> targ(Self:885) set targ from 50.000 to 50.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Minmatar Strategic Cruiser(140023650) - src(Self:280)=5.000 <PreMul> targ(Ship:1506) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Doomsday Operation(140023655) - src(Self:280)=2.000 <PreMul> targ(Self:292) set targ from 10.000 to 20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Energy Pulse Weapons(140023656) - src(Self:280)=5.000 <PreMul> targ(Self:66) set targ from -5.000 to -25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Large Projectile Turret(140023657) - src(Self:280)=5.000 <PreMul> targ(Self:292) set targ from 5.000 to 25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Capital Projectile Turret(140023658) - src(Self:280)=1.000 <PreMul> targ(Self:292) set targ from 5.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Medium Projectile Turret(140023659) - src(Self:280)=3.000 <PreMul> targ(Self:292) set targ from 5.000 to 15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Jump Portal Generation(140023660) - src(Self:280)=2.000 <PreMul> targ(Self:1775) set targ from -10.000 to -20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Battlecruisers(140023985) - src(Self:280)=3.000 <PreMul> targ(Ship:1793) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Battlecruisers(140023985) - src(Self:280)=3.000 <PreMul> targ(Ship:1792) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Battlecruisers(140023985) - src(Self:280)=3.000 <PreMul> targ(Ship:742) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Battlecruisers(140023985) - src(Self:280)=3.000 <PreMul> targ(Ship:741) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Frequency Modulation(140023986) - src(Self:280)=2.000 <PreMul> targ(Self:349) set targ from 10.000 to 20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Long Distance Jamming(140023987) - src(Self:280)=2.000 <PreMul> targ(Self:294) set targ from 10.000 to 20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Multitasking(140023988) - src(Self:280)=4.000 <PreMul> targ(Self:311) set targ from 1.000 to 4.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Energy Emission Systems(140023989) - src(Self:280)=2.000 <PreMul> targ(Self:317) set targ from -5.000 to -10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Shield Emission Systems(140023990) - src(Self:280)=2.000 <PreMul> targ(Self:317) set targ from -5.000 to -10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Controlled Bursts(140023991) - src(Self:280)=3.000 <PreMul> targ(Self:317) set targ from -5.000 to -15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Rapid Firing(140023992) - src(Self:280)=2.000 <PreMul> targ(Self:293) set targ from -4.000 to -8.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Sharpshooter(140023993) - src(Self:280)=2.000 <PreMul> targ(Self:294) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Small Energy Turret(140023994) - src(Self:280)=1.000 <PreMul> targ(Self:292) set targ from 5.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Small Hybrid Turret(140023995) - src(Self:280)=2.000 <PreMul> targ(Self:292) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Surgical Strike(140023996) - src(Self:280)=3.000 <PreMul> targ(Self:292) set targ from 3.000 to 9.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Trajectory Analysis(140023997) - src(Self:280)=3.000 <PreMul> targ(Self:349) set targ from 5.000 to 15.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Astronautics Rigging(140024001) - src(Self:280)=5.000 <PreMul> targ(Self:1139) set targ from -10.000 to -50.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Metallurgy(140024173) - src(Self:280)=4.000 <PreMul> targ(Self:468) set targ from -5.000 to -20.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Research(140024174) - src(Self:280)=5.000 <PreMul> targ(Self:453) set targ from -5.000 to -25.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Hacking(140024177) - src(Self:280)=2.000 <PreMul> targ(Self:1772) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Reverse Engineering(140024194) - src(Self:280)=0.000 <PreMul> targ(Self:474) set targ from 10.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Research Project Management(140024195) - src(Self:280)=2.000 <PreMul> targ(Self:407) set targ from 5.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Destroyers(140024328) - src(Self:280)=2.000 <PreMul> targ(Ship:758) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Destroyers(140024328) - src(Self:280)=2.000 <PreMul> targ(Ship:759) set targ from 1.000 to 2.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Diplomacy(140000008) - src(Self:414)=1.200 <ModAdd> targ(Char:356) set targ from 0.000 to 1.200.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Corporation Management(140000009) - src(Self:191)=40.000 <ModAdd> targ(Char:190) set targ from 0.000 to 40.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Ethnic Relations(140000010) - src(Self:418)=60.000 <ModAdd> targ(Char:417) set targ from 0.000 to 60.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Tactical Shield Manipulation(140003601) - src(Self:336)=0.250 <ModAdd> targ(Ship:484) set targ from 0.750 to 1.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Drones(140007052) - src(Self:353)=5.000 <ModAdd> targ(Char:352) set targ from 0.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Scout Drone Operation(140007053) - src(Self:459)=25000.000 <ModAdd> targ(Char:458) set targ from 20000.000 to 45000.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Targeting(140007066) - src(Self:311)=5.000 <ModAdd> targ(Char:192) set targ from 2.000 to 7.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Astrometrics(140023413) - src(Self:280)=5.000 <ModAdd> targ(Char:1122) set targ from 0.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Mass Production(140023641) - src(Self:280)=5.000 <ModAdd> targ(Char:196) set targ from 1.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Advanced Mass Production(140023642) - src(Self:280)=4.000 <ModAdd> targ(Char:196) set targ from 6.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Multitasking(140023988) - src(Self:311)=4.000 <ModAdd> targ(Char:192) set targ from 7.000 to 11.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Advanced Laboratory Operation(140024169) - src(Self:280)=2.000 <ModAdd> targ(Char:467) set targ from 1.000 to 3.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Infomorph Psychology(140024171) - src(Self:280)=1.000 <ModAdd> targ(Char:979) set targ from 0.000 to 1.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Laboratory Operation(140024172) - src(Self:280)=5.000 <ModAdd> targ(Char:467) set targ from 3.000 to 8.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Reverse Engineering(140024194) - src(Self:474)=0.000 <ModAdd> targ(Char:397) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): Research Project Management(140024195) - src(Self:407)=10.000 <ModAdd> targ(Char:384) set targ from 0.000 to 10.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Mining Barge(140018756) - src(Self:280)=5.000 <PostMul> targ(Ship:926) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Mining Barge(140018756) - src(Self:280)=5.000 <PostMul> targ(Ship:774) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): ORE Industrial(140019080) - src(Self:280)=5.000 <PostMul> targ(Ship:1670) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): ORE Industrial(140019080) - src(Self:280)=5.000 <PostMul> targ(Ship:1669) set targ from 1.000 to 5.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Gunnery(140000000) - src(Skill:441)=-10.000 <PostPercent> targ(Ship:51) set targ from 3750.000 to 3375.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Gunnery(140000000) - src(Skill:441)=-10.000 <PostPercent> targ(Ship:51) set targ from 3750.000 to 3375.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Gunnery(140000000) - src(Skill:441)=-10.000 <PostPercent> targ(Ship:51) set targ from 3750.000 to 3375.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Small Projectile Turret(140000001) - src(Skill:292)=25.000 <PostPercent> targ(Ship:64) set targ from 3.465 to 4.331.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Small Projectile Turret(140000001) - src(Skill:292)=25.000 <PostPercent> targ(Ship:64) set targ from 3.465 to 4.331.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Small Projectile Turret(140000001) - src(Skill:292)=25.000 <PostPercent> targ(Ship:64) set targ from 3.465 to 4.331.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Spaceship Command(140000002) - src(Self:151)=-10.000 <PostPercent> targ(Ship:70) set targ from 3.190 to 2.871.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Leadership(140000004) - src(Self:566)=10.000 <PostPercent> targ(Self:564) set targ from 0.000 to 0.000.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Skirmish Warfare(140000005) - src(Self:151)=-4.000 <PostPercent> targ(Self:70) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Siege Warfare(140000006) - src(Self:337)=4.000 <PostPercent> targ(Self:263) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Ethnic Relations(140000010) - src(Self:418)=60.000 <PostPercent> targ(Char:417) set targ from 60.000 to 96.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Mechanics(140000012) - src(Self:327)=25.000 <PostPercent> targ(Ship:9) set targ from 336.000 to 420.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Repair Systems(140000013) - src(Skill:312)=-15.000 <PostPercent> targ(Ship:73) set targ from 6000.000 to 5100.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Hull Upgrades(140000014) - src(Self:335)=20.000 <PostPercent> targ(Ship:265) set targ from 351.000 to 421.200.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Science(140000015) - src(Self:452)=-25.000 <PostPercent> targ(Char:387) set targ from 2.000 to 1.500.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Engineering(140000016) - src(Self:313)=25.000 <PostPercent> targ(Ship:11) set targ from 37.000 to 46.250.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Shield Operation(140000017) - src(Self:338)=-25.000 <PostPercent> targ(Ship:479) set targ from 625000.000 to 468750.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Electronics(140000018) - src(Self:424)=25.000 <PostPercent> targ(Ship:48) set targ from 125.000 to 156.250.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Signature Analysis(140000019) - src(Self:566)=25.000 <PostPercent> targ(Ship:564) set targ from 660.000 to 825.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Trade(140000020) - src(Self:446)=-15.000 <PostPercent> targ(Char:443) set targ from 1.000 to 0.850.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Navigation(140000021) - src(Self:315)=25.000 <PostPercent> targ(Ship:37) set targ from 353.000 to 441.250.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Afterburner(140000022) - src(Skill:66)=30.000 <PostPercent> targ(Ship:73) set targ from 10000.000 to 13000.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Warp Drive Operation(140000023) - src(Self:319)=-50.000 <PostPercent> targ(Ship:153) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Armored Warfare(140000025) - src(Self:335)=6.000 <PostPercent> targ(Self:265) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Information Warfare(140000026) - src(Self:309)=6.000 <PostPercent> targ(Self:76) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Long Range Targeting(140007065) - src(Self:309)=25.000 <PostPercent> targ(Ship:76) set targ from 22500.000 to 28125.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Energy Management(140007067) - src(Self:1079)=15.000 <PostPercent> targ(Ship:482) set targ from 250.000 to 287.500.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Energy Systems Operation(140007068) - src(Self:314)=-15.000 <PostPercent> targ(Ship:55) set targ from 187500.000 to 159375.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Shield Management(140007070) - src(Self:337)=20.000 <PostPercent> targ(Ship:263) set targ from 391.000 to 469.200.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): EM Armor Compensation(140007071) - src(Group:958)=15.000 <PostPercent> targ(Ship:984) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): EM Armor Compensation(140007071) - src(Group:958)=15.000 <PostPercent> targ(Ship:984) set targ from -8.000 to -9.200.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Explosive Armor Compensation(140007072) - src(Group:958)=15.000 <PostPercent> targ(Ship:985) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Explosive Armor Compensation(140007072) - src(Group:958)=15.000 <PostPercent> targ(Ship:985) set targ from -8.000 to -9.200.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Kinetic Armor Compensation(140007073) - src(Group:958)=15.000 <PostPercent> targ(Ship:986) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Kinetic Armor Compensation(140007073) - src(Group:958)=15.000 <PostPercent> targ(Ship:986) set targ from -8.000 to -9.200.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Thermic Armor Compensation(140007074) - src(Group:958)=15.000 <PostPercent> targ(Ship:987) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Thermic Armor Compensation(140007074) - src(Group:958)=15.000 <PostPercent> targ(Ship:987) set targ from -8.000 to -9.200.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Evasive Maneuvering(140007075) - src(Self:151)=-15.000 <PostPercent> targ(Ship:70) set targ from 2.871 to 2.440.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Weapon Upgrades(140007083) - src(Skill:310)=-25.000 <PostPercent> targ(Ship:50) set targ from 25.000 to 18.750.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Weapon Upgrades(140007083) - src(Skill:310)=-25.000 <PostPercent> targ(Ship:50) set targ from 8.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Weapon Upgrades(140007083) - src(Skill:310)=-25.000 <PostPercent> targ(Ship:50) set targ from 8.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Weapon Upgrades(140007083) - src(Skill:310)=-25.000 <PostPercent> targ(Ship:50) set targ from 8.000 to 6.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Motion Prediction(140007085) - src(Skill:767)=15.000 <PostPercent> targ(Ship:160) set targ from 0.315 to 0.362.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Motion Prediction(140007085) - src(Skill:767)=15.000 <PostPercent> targ(Ship:160) set targ from 0.315 to 0.362.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Motion Prediction(140007085) - src(Skill:767)=15.000 <PostPercent> targ(Ship:160) set targ from 0.315 to 0.362.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Missile Launcher Operation(140007091) - src(Skill:293)=-8.000 <PostPercent> targ(Ship:51) set targ from 15000.000 to 13800.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Propulsion Jamming(140007123) - src(Skill:317)=-10.000 <PostPercent> targ(Ship:6) set targ from 4.000 to 3.600.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Target Painting(140007126) - src(Skill:317)=-10.000 <PostPercent> targ(Ship:6) set targ from 17.000 to 15.300.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Projectile Weapon Rigging(140007152) - src(Skill:1139)=-20.000 <PostPercent> targ(Ship:1138) set targ from 10.000 to 8.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Survey(140007192) - src(Self:308)=-15.000 <PostPercent> targ(Ship:79) set targ from 1500.000 to 1275.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Industry(140018754) - src(Self:440)=-20.000 <PostPercent> targ(Char:219) set targ from 1.000 to 0.800.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Mining Foreman(140020085) - src(Skill:434)=10.000 <PostPercent> targ(Self:77) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Mining Drone Operation(140023107) - src(Self:434)=25.000 <PostPercent> targ(Ship:428) set targ from 0.000 to 0.000.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 W AttrMap - Get: Attribute 853 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Advanced Spaceship Command(140023117) - src(Self:151)=-25.000 <PostPercent> targ(Ship:853) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Refining(140023136) - src(Self:379)=10.000 <PostPercent> targ(Char:378) set targ from 0.750 to 0.825.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Jump Drive Operation(140023598) - src(Self:899)=-25.000 <PostPercent> targ(Ship:898) set targ from 0.000 to 0.000.
+13:25:13 W AttrMap - Get: Attribute 151 called.  not printing stacktrace.
+13:25:13 W AttrMap - Get: Attribute 874 called.  not printing stacktrace.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Capital Ships(140023602) - src(Self:151)=-25.000 <PostPercent> targ(Ship:874) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Drone Interfacing(140023604) - src(Self:434)=100.000 <PostPercent> targ(Ship:428) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Advanced Weapon Upgrades(140023611) - src(Skill:323)=-10.000 <PostPercent> targ(Ship:30) set targ from 4.000 to 3.600.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Advanced Weapon Upgrades(140023611) - src(Skill:323)=-10.000 <PostPercent> targ(Ship:30) set targ from 4.000 to 3.600.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Advanced Weapon Upgrades(140023611) - src(Skill:323)=-10.000 <PostPercent> targ(Ship:30) set targ from 4.000 to 3.600.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Advanced Weapon Upgrades(140023611) - src(Skill:323)=-10.000 <PostPercent> targ(Ship:30) set targ from 8.000 to 7.200.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Cloning Facility Operation(140023614) - src(Self:1073)=15.000 <PostPercent> targ(Ship:979) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Frequency Modulation(140023986) - src(Skill:349)=20.000 <PostPercent> targ(Ship:158) set targ from 57500.000 to 69000.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Long Distance Jamming(140023987) - src(Skill:294)=20.000 <PostPercent> targ(Ship:54) set targ from 28750.000 to 34500.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Controlled Bursts(140023991) - src(Skill:317)=-15.000 <PostPercent> targ(Ship:6) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Controlled Bursts(140023991) - src(Skill:317)=-15.000 <PostPercent> targ(Ship:6) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Controlled Bursts(140023991) - src(Skill:317)=-15.000 <PostPercent> targ(Ship:6) set targ from 0.000 to 0.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Rapid Firing(140023992) - src(Skill:293)=-8.000 <PostPercent> targ(Ship:51) set targ from 3375.000 to 3105.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Rapid Firing(140023992) - src(Skill:293)=-8.000 <PostPercent> targ(Ship:51) set targ from 3375.000 to 3105.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Rapid Firing(140023992) - src(Skill:293)=-8.000 <PostPercent> targ(Ship:51) set targ from 3375.000 to 3105.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Sharpshooter(140023993) - src(Skill:294)=10.000 <PostPercent> targ(Ship:54) set targ from 1200.000 to 1320.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Sharpshooter(140023993) - src(Skill:294)=10.000 <PostPercent> targ(Ship:54) set targ from 1200.000 to 1320.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Sharpshooter(140023993) - src(Skill:294)=10.000 <PostPercent> targ(Ship:54) set targ from 1200.000 to 1320.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Surgical Strike(140023996) - src(Group:292)=9.000 <PostPercent> targ(Ship:64) set targ from 4.331 to 4.721.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Surgical Strike(140023996) - src(Group:292)=9.000 <PostPercent> targ(Ship:64) set targ from 4.331 to 4.721.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Surgical Strike(140023996) - src(Group:292)=9.000 <PostPercent> targ(Ship:64) set targ from 4.331 to 4.721.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Trajectory Analysis(140023997) - src(Skill:349)=15.000 <PostPercent> targ(Ship:158) set targ from 4800.000 to 5520.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Trajectory Analysis(140023997) - src(Skill:349)=15.000 <PostPercent> targ(Ship:158) set targ from 4800.000 to 5520.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Trajectory Analysis(140023997) - src(Skill:349)=15.000 <PostPercent> targ(Ship:158) set targ from 4800.000 to 5520.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Metallurgy(140024173) - src(Self:468)=-20.000 <PostPercent> targ(Char:398) set targ from 1.000 to 0.800.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Research(140024174) - src(Self:453)=-25.000 <PostPercent> targ(Char:385) set targ from 1.000 to 0.750.
+13:25:13 M MM::UpdateModules(): testing
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Small Semiconductor Memory Cell I(140007413) - src(Self:1079)=15.000 <PostPercent> targ(Ship:482) set targ from 287.500 to 330.625.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Small Capacitor Control Circuit I(140007412) - src(Self:314)=-15.000 <PostPercent> targ(Ship:55) set targ from 159375.000 to 135468.750.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Small Projectile Collision Accelerator I(140007411) - src(Group:64)=1.100 <PostMul> targ(Ship:64) set targ from 4.721 to 5.193.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Small Projectile Collision Accelerator I(140007411) - src(Group:64)=1.100 <PostMul> targ(Ship:64) set targ from 4.721 to 5.193.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Small Projectile Collision Accelerator I(140007411) - src(Group:64)=1.100 <PostMul> targ(Ship:64) set targ from 4.721 to 5.193.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Small Projectile Collision Accelerator I(140007411) - src(Group:1138)=8.000 <PostPercent> targ(Ship:30) set targ from 3.600 to 3.888.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Small Projectile Collision Accelerator I(140007411) - src(Group:1138)=8.000 <PostPercent> targ(Ship:30) set targ from 3.600 to 3.888.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Small Projectile Collision Accelerator I(140007411) - src(Group:1138)=8.000 <PostPercent> targ(Ship:30) set targ from 3.600 to 3.888.
+13:25:13 [FxUndefined] FxProc::ParseExpression() - Operand id:, key:LAUNCH - should be added as LaunchMissile()
+13:25:13 [FxMsg] FxProc::ApplyEffects(0): 200mm Light 'Scout' Autocannon I(140007396) - src(Self:64)=5.193 <PreAssignment> targ(Self:326) set targ from 0.000 to 5.193.
+13:25:13 [FxMsg] FxProc::ApplyEffects(0): 200mm Light 'Scout' Autocannon I(140007396) - src(Self:158)=5520.000 <PreAssignment> targ(Self:328) set targ from 0.000 to 5520.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Carbonized Lead S(140024397) - src(Self:120)=1.600 <PreMul> targ(Other:54) set targ from 1320.000 to 2112.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Carbonized Lead S(140024397) - src(Self:779)=1.600 <PreMul> targ(Other:416) set targ from 1.000 to 1.600.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Carbonized Lead S(140024397) - src(Self:244)=1.050 <PostMul> targ(Other:160) set targ from 0.362 to 0.380.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): 200mm Light 'Scout' Autocannon I(140007396) - src(Self:324)=0.000 <PostPercent> targ(Self:326) set targ from 5.193 to 5.193.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): 200mm Light 'Scout' Autocannon I(140007396) - src(Self:325)=0.000 <PostPercent> targ(Self:328) set targ from 5520.000 to 5520.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(0): 200mm Light 'Scout' Autocannon I(140007131) - src(Self:64)=5.193 <PreAssignment> targ(Self:326) set targ from 0.000 to 5.193.
+13:25:13 [FxMsg] FxProc::ApplyEffects(0): 200mm Light 'Scout' Autocannon I(140007131) - src(Self:158)=5520.000 <PreAssignment> targ(Self:328) set targ from 0.000 to 5520.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Carbonized Lead S(140024391) - src(Self:120)=1.600 <PreMul> targ(Other:54) set targ from 1320.000 to 2112.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Carbonized Lead S(140024391) - src(Self:779)=1.600 <PreMul> targ(Other:416) set targ from 1.000 to 1.600.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Carbonized Lead S(140024391) - src(Self:244)=1.050 <PostMul> targ(Other:160) set targ from 0.362 to 0.380.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): 200mm Light 'Scout' Autocannon I(140007131) - src(Self:324)=0.000 <PostPercent> targ(Self:326) set targ from 5.193 to 5.193.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): 200mm Light 'Scout' Autocannon I(140007131) - src(Self:325)=0.000 <PostPercent> targ(Self:328) set targ from 5520.000 to 5520.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(0): 200mm Light 'Scout' Autocannon I(140007095) - src(Self:64)=5.193 <PreAssignment> targ(Self:326) set targ from 0.000 to 5.193.
+13:25:13 [FxMsg] FxProc::ApplyEffects(0): 200mm Light 'Scout' Autocannon I(140007095) - src(Self:158)=5520.000 <PreAssignment> targ(Self:328) set targ from 0.000 to 5520.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Carbonized Lead S(140024392) - src(Self:120)=1.600 <PreMul> targ(Other:54) set targ from 1320.000 to 2112.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): Carbonized Lead S(140024392) - src(Self:779)=1.600 <PreMul> targ(Other:416) set targ from 1.000 to 1.600.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Carbonized Lead S(140024392) - src(Self:244)=1.050 <PostMul> targ(Other:160) set targ from 0.362 to 0.380.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): 200mm Light 'Scout' Autocannon I(140007095) - src(Self:324)=0.000 <PostPercent> targ(Self:326) set targ from 5.193 to 5.193.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): 200mm Light 'Scout' Autocannon I(140007095) - src(Self:325)=0.000 <PostPercent> targ(Self:328) set targ from 5520.000 to 5520.000.
+13:25:13 [FxMsg] FxProc::ApplyEffects(1): 1MN Afterburner I(140007080) - src(Self:20)=112.500 <PreMul> targ(Self:576) set targ from 0.010 to 1.125.
+13:25:13 [FxMsg] FxProc::ApplyEffects(3): 1MN Afterburner I(140007080) - src(Self:576)=1.125 <ModAdd> targ(Self:578) set targ from 1.000 to 2.125.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): 1MN Afterburner I(140007080) - src(Self:147)=1.000 <PostMul> targ(Ship:482) set targ from 330.625 to 330.625.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Adaptive Nano Plating I(140007407) - src(Self:148)=1.000 <PostMul> targ(Ship:265) set targ from 421.200 to 421.200.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Adaptive Nano Plating I(140007407) - src(Self:984)=-9.200 <PostPercent> targ(Ship:267) set targ from 0.400 to 0.363.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Adaptive Nano Plating I(140007407) - src(Self:985)=-9.200 <PostPercent> targ(Ship:268) set targ from 0.900 to 0.817.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Adaptive Nano Plating I(140007407) - src(Self:986)=-9.200 <PostPercent> targ(Ship:269) set targ from 0.750 to 0.681.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Adaptive Nano Plating I(140007407) - src(Self:987)=-9.200 <PostPercent> targ(Ship:270) set targ from 0.650 to 0.590.
+13:25:13 [FxMsg] FxProc::ApplyEffects(5): Energized Basic Regenerative Plating(140007406) - src(Self:148)=1.100 <PostMul> targ(Ship:265) set targ from 421.200 to 463.320.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Energized Basic Regenerative Plating(140007406) - src(Self:984)=0.000 <PostPercent> targ(Ship:267) set targ from 0.363 to 0.363.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Energized Basic Regenerative Plating(140007406) - src(Self:985)=0.000 <PostPercent> targ(Ship:268) set targ from 0.817 to 0.817.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Energized Basic Regenerative Plating(140007406) - src(Self:986)=0.000 <PostPercent> targ(Ship:269) set targ from 0.681 to 0.681.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Energized Basic Regenerative Plating(140007406) - src(Self:987)=0.000 <PostPercent> targ(Ship:270) set targ from 0.590 to 0.590.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Rifter(140007395) - src(Skill:460)=25.000 <PostPercent> targ(Ship:64) set targ from 5.193 to 6.491.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Rifter(140007395) - src(Skill:460)=25.000 <PostPercent> targ(Ship:64) set targ from 5.193 to 6.491.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Rifter(140007395) - src(Skill:460)=25.000 <PostPercent> targ(Ship:64) set targ from 5.193 to 6.491.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Rifter(140007395) - src(Skill:587)=37.500 <PostPercent> targ(Ship:160) set targ from 0.380 to 0.523.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Rifter(140007395) - src(Skill:587)=37.500 <PostPercent> targ(Ship:160) set targ from 0.380 to 0.523.
+13:25:13 [FxMsg] FxProc::ApplyEffects(7): Rifter(140007395) - src(Skill:587)=37.500 <PostPercent> targ(Ship:160) set targ from 0.380 to 0.523.
+13:25:13 [FxDebug] ShipItem::ProcessEffects() - effects processed and applied in 25.097ms
+13:25:13 [FxDebug] ShipItem::ResetEffects() - Effects reset in 90.346ms
+13:25:13 [AP Trace] MoveToLocation() - m_autoPilot = false
+13:25:13 [AP_Trace] Client::SetDestiny():  shipSystemID: 30000053, SystemID: 30000053, update: false, updateShip: true, jump: false, cloak: false
+13:25:13 [ClientTimer] Allan: Invul Timer set at 20000ms.   current state time is 71050845ms
+13:25:13 [ClientTimer] Allan: Client Timer set from Idle to Undock at 2000ms.  current state time: 71050845
+13:25:13 [Service] invbroker::MachoBindObject()
+13:25:13 [SvcMsg] invbroker Service: Processing MachoBindObject
+13:25:13 [SvcMsg] Service Mgr Binding InvBrokerBound to node 888444:123 for Allan
+13:25:13 [SvcMsg] invbroker Service: MachoBindObject also contains call to GetInventoryFromId
+13:25:13 [Bound] InvBrokerBound::GetInventoryFromId()
+13:25:13 [SvcMsg] Service Mgr Binding InventoryBound to node 888444:124 for Allan
+13:25:13 [Bound] InvBrokerBound::GetInventoryFromId()
+13:25:13 [SvcMsg] Service Mgr Binding InventoryBound to node 888444:125 for Allan
+13:25:13 [Service] dogmaIM::MachoBindObject()
+13:25:13 [SvcMsg] dogmaIM Service: Processing MachoBindObject
+13:25:13 [SvcMsg] Service Mgr Binding DogmaIMBound to node 888444:126 for Allan
+13:25:13 [SvcMsg] dogmaIM Service: MachoBindObject also contains call to GetAllInfo
+13:25:13 [Bound] DogmaIMBound::GetAllInfo()
+13:25:13 [Service] aggressionMgr::MachoBindObject()
+13:25:13 [SvcMsg] aggressionMgr Service: Processing MachoBindObject
+13:25:13 [ClientMsg] AggressionMgrService bind request for:
+13:25:13 [ClientMsg]        Integer: 30000053
+13:25:13 [SvcMsg] Service Mgr Binding AggressionMgrBound to node 888444:127 for Allan
+13:25:13 [SvcMsg] aggressionMgr Service: MachoBindObject also contains call to GetCriminalTimeStamps
+13:25:13 [Bound] AggressionMgrBound::GetCriminalTimeStamps()
+13:25:13 [Bound] DogmaIMBound::GetTargets()
+13:25:13 [Service] beyonce::MachoBindObject()
+13:25:13 [SvcMsg] beyonce Service: Processing MachoBindObject
+13:25:13 [SvcMsg] Service Mgr Binding BeyonceBound to node 888444:128 for Allan
+13:25:13 [Bound] DogmaIMBound::GetTargeters()
+13:25:13 [Service] beyonce::GetFormations()
+13:25:13 E CheckBallparkTimer(): BallPark Timer is disabled.
+13:25:13 [ClientTimer] CheckBallparkTimer():  State: Undock, SetState: false, Beyonce: true, Login: false
+13:25:13 [ClientTimer] CheckBallparkTimer():  invul: true, cloak: false, bubblewait: false
+13:25:13 [Service] config::GetDynamicCelestials()
+13:25:15 [ClientTimer] ProcessClient(): state timer hit.  current state time is 71053001ms
+13:25:15 [ClientTimer] ProcessClient()::CheckState():  case: Undock
+13:25:15 [AP_Trace] Client::SetBallPark():  State: Undock, SetState: false, Beyonce: true
+13:25:15 [MoveTrace] Destiny::SetSpeedFraction() - Rifter(140007395):   prevSpeed:0.00, fraction: 1.00, start: false, stop: false, accel: false, decel: false
+13:25:15 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395): Speed Change - USF: 1.00, ASF: 1.10, TF: 1.00, PSF: 1.10, pSpeed: 485.38, mSpeed: 441.25, accel: false, decel: true, delta: 0.100
+13:25:15 [MoveTrace] Destiny::UpdateVelocity - Rifter(140007395):  USF != 0 and ship is Moving.   --Begin Decel  AccelTime: 1.98, USF: 1.00, ASF: 1.10, TF: 1.00, PSF: 1.10
+13:25:15 [MoveTrace] Destiny::MoveObject() - ChangeDelay - Rifter(140007395): stateStamp: 72053
+13:25:15 [Bound] InventoryBound::List()
+13:25:15 [Bound] BeyonceBound::CmdSetSpeedFraction()
+13:25:16 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 1674415616.000
+13:25:16 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) has decel'd from 485.38m/s to 485.38m/s in 1674415616.000s.
+13:25:16 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is at constant speed, going at 485.375 m/s (tf:1.0000 asf:1.0000 sec: 1674415616.000).
+13:25:17 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 1674415616.000
+13:25:17 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is at constant speed, going at 441.250 m/s (tf:1.0000 asf:1.0000 sec: 1674415616.000).
+13:25:18 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 1674415616.000
+13:25:18 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is at constant speed, going at 441.250 m/s (tf:1.0000 asf:1.0000 sec: 1674415616.000).
+13:25:19 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 1674415616.000
+13:25:19 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is at constant speed, going at 441.250 m/s (tf:1.0000 asf:1.0000 sec: 1674415616.000).
+13:25:20 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 1674415616.000
+13:25:20 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is at constant speed, going at 441.250 m/s (tf:1.0000 asf:1.0000 sec: 1674415616.000).
+13:25:21 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 1674415616.000
+13:25:21 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is at constant speed, going at 441.250 m/s (tf:1.0000 asf:1.0000 sec: 1674415616.000).
+13:25:22 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 1674415616.000
+13:25:22 [MoveTrace] Destiny::MoveObject() - Rifter(140007395) is at constant speed, going at 441.250 m/s (tf:1.0000 asf:1.0000 sec: 1674415616.000).
+13:25:22 [SvcMsg] Client Has Released These Objects:
+13:25:22 [SvcMsg] Service Mgr Clearing bound object InvBrokerBound at N=888444:119
+13:25:22 [SvcMsg] Service Mgr Clearing bound object CorpStationMgrIMBound at N=888444:118
+13:25:22 [SvcMsg] Service Mgr Clearing bound object DogmaIMBound at N=888444:117
+13:25:22 [SvcMsg] Service Mgr Clearing bound object InventoryBound at N=888444:120
+13:25:22 [SvcMsg] Service Mgr Clearing bound object AggressionMgrBound at N=888444:121
+13:25:22 [SvcMsg] Service Mgr Clearing bound object AggressionMgrBound at N=888444:127
+13:25:22 [SvcMsg] Service Mgr Clearing bound object ShipBound at N=888444:111
+13:25:23 [ClientTimer] Client::ProcessClient():  SetSessionChange to false for Allan(90000000)

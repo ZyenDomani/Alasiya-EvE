@@ -1,0 +1,21 @@
+31177      Small Polycarbon Engine Housing I
+
+packet data ....
+                      [PyInt 169]
+                      [PyFloat -9.1]
+
+typeID  effectID    isDefault
+31177   2663    1
+31177   2712    0
+31177   3726    0
+31177   3727    0
+
+
+SQL query: SELECT * FROM `dgmEffects` WHERE `effectID` in(SELECT `effectID` FROM `dgmTypeEffects` WHERE `typeID` = 31177) LIMIT 0, 25 ;
+Rows: 4
+effectID    effectName  effectCategory  preExpression   postExpression  description     descriptionID   guid    isOffensive     isAssistance    durationAttributeID     trackingSpeedAttributeID    dischargeAttributeID    rangeAttributeID    falloffAttributeID  disallowAutoRepeat  published   displayName     displayNameID   isWarpSafe  rangeChance     electronicChance    propulsionChance    distribution    sfxName     npcUsageChanceAttributeID   npcActivationChanceAttributeID  fittingUsageChanceAttributeID   iconID  dataID  modifierInfo
+2663    rigSlot     0   131     131     Must be installed into an available rig slot on a ship.     108049      0   0   NULL    NULL    NULL    NULL    NULL    0   1   Rig Slot    109565  0   0   0   0   0   None    0   0   0   3266    16545399
+2712    drawbackArmorHP     0   9748    9749    Automatically generated effect  0   None    0   0   NULL    NULL    NULL    NULL    NULL    0   0       0   0   0   0   0   0   None    0   0   0   0   903019
+3726    agilityMultiplierEffectPassive  0   3285    3286    Automatically generated effect  108718      0   0   NULL    NULL    NULL    NULL    NULL    0   1   AgilityMultiplierEffectPassive  109967  0   0   0   0   0       0   0   0   0   16545418
+3727    velocityBonusPassive    0   8917    8918    Automatically generated effect  108719      0   0   NULL    NULL    NULL    NULL    NULL    0   1   Max Velocity Bonus  109968  0   0   0   0   0       0   0   0   0   16545419
+

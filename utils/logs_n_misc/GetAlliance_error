@@ -1,0 +1,37 @@
+)
+13:03:57 [Bound] AllianceBound::GetAlliance()
+13:03:57 [AllyCall] AllianceBound::Handle_GetAlliance() size=0
+13:03:57 [AllyCallDump]   Call Arguments:
+13:03:57 [AllyCallDump]      Tuple: Empty
+13:03:57 [AllyCallDump]  Named Arguments:
+13:03:57 [AllyCallDump]   machoVersion
+13:03:57 [AllyCallDump]        Integer: 1
+13:03:57 [AllyDBWarning] GetAlliance(/backups/local/src/eve/Alasiya-EvE/src/eve-server/alliance/AllianceDB.cpp:78): Unable to find alliance's data (4294967295)
+13:03:57 [Service] alert::BeanCount()
+13:03:58 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #5 logged at  01/27/2023 13:03:57 Unhandled exception in <TaskletExt object at 3818eea0, abps=1001, ctxt="<NO CONTEXT>^<bound method InfoWindow.LoadData of form.infowindow object at (snip)a70, name=('infowindow', 133193198378599656L), destroyed=False>>">
+Caught at:
+/common/lib/bluepy.py(98) CallWrapper
+Thrown at:
+/common/lib/bluepy.py(86) CallWrapper
+/client/script/ui/services/infosvc.py(3231) LoadData
+/client/script/ui/services/infosvc.py(3296) _LoadInfoWindow
+/client/script/ui/services/infosvc.py(4189) GetNameAndDescription
+/client/script/ui/services/infosvc.py(4266) GetActionMenu
+/client/script/ui/services/menusvc.py(4376) GetMenuFormItemIDTypeID
+/client/script/ui/services/menusvc.py(1226) CharacterMenu
+/client/script/ui/services/menusvc.py(1244) _CharacterMenu
+/client/script/ui/services/alliances/all_cso.py(186) GetAlliance
+/client/script/ui/services/alliances/all_cso_alliance.py(63) GetAlliance
+/client/script/ui/services/alliances/all_cso_alliance.py(69) LoadAlliance
+        self = <allianceObject.AllianceO instance at 0x39FD0EE0>
+        alliance = None
+AttributeError: 'NoneType' object has no attribute '__header__'
+Thread Locals:  session was <Session: (sid:8880837976514260504, clientID:0, mutating:0, locationid:30000053, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:56073, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, allianceid:-1, warfactionid:-1, corpid:98000001, shipid:140007395, solarsystemid:30000053, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
+
+EXCEPTION END
+
+*******  it seems like "alliance = None" is new
+either way, look into this.
+called when "show info" on char is clicked.
+

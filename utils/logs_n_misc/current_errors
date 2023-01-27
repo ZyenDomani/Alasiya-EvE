@@ -1,0 +1,31 @@
+
+13:19:19 [Service] charMgr::GetPublicInfo()
+13:19:24 [Service] charMgr::GetPublicInfo()
+13:19:24 [Service] charUnboundMgr::GetCharCreationInfo()
+13:19:24 [ClientMsg] Sending char creation info reply
+13:19:24 [Service] charUnboundMgr::GetCharNewExtraCreationInfo()
+13:19:24 [ClientMsg] Sending char new extra creation info reply
+13:19:24 [Service] charMgr::GetCloneTypeID()
+13:19:24 [Service] charMgr::GetHomeStation()
+13:19:24 [Service] config::GetMultiOwnersEx()
+13:19:24 [Service] alert::BeanCount()
+13:19:24 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #8 logged at  01/27/2023 13:19:24 Unhandled exception in <TaskletExt object at 373de138, abps=1001, ctxt=None>
+Caught at:
+/common/lib/bluepy.py(98) CallWrapper
+Thrown at:
+/common/lib/bluepy.py(86) CallWrapper
+/client/script/ui/shared/neocom/charactersheet.py(978) ToggleGeneral
+/client/script/ui/shared/neocom/charactersheet.py(839) LoadGeneralInfo
+/../carbon/common/script/sys/cfg.py(1232) Get
+        self = <Instance of Recordset.EveOwners>
+                       Key column: ownerID, Cache entries: 11413
+                       Field names: ownerID, ownerName, typeID, gender, ownerNameID
+        key = -1
+        flush = 0
+KeyError: ('RecordNotFound', -1)
+Thread Locals:  session was <Session: (sid:8880837976514260504, clientID:0, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:56073, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, allianceid:-1, warfactionid:-1, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>  calltimer.key was objectCaching::GetCachableObject
+
+EXCEPTION END
+
+
