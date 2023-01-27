@@ -66,7 +66,7 @@ PyResult SparseBound::Handle_SelectByUniqueColumnValues(PyCallArgs &call)
         header->SetItemString(1, "folderID");
         header->SetItemString(2, "stationID");
     PyList* lines = new PyList();
-    for (auto cur : data) {
+    for (auto &cur : data) {
         PyTuple* line = new PyTuple(3);
             line->SetItem(0, new PyInt(cur.officeID));
             line->SetItem(1, new PyInt(cur.folderID));
@@ -90,7 +90,7 @@ PyResult SparseBound::Handle_SelectByUniqueColumnValues(PyCallArgs &call)
     /*  IndexError: list assignment index out of range
      *
     PyList* rsp = new PyList();
-    for (auto cur : data) {
+    for (auto &cur : data) {
         PyTuple* tuple = new PyTuple(3);
         tuple->SetItem(0, new PyInt(cur.officeID));
         tuple->SetItem(1, new PyInt(cur.folderID));
@@ -102,7 +102,7 @@ PyResult SparseBound::Handle_SelectByUniqueColumnValues(PyCallArgs &call)
     //*  original    -- TypeError: iteration over non-sequence
 
     PyList* rsp = new PyList();
-    for (auto cur : data) {
+    for (auto &cur : data) {
         PyDict* dict = new PyDict();
         dict->SetItemString("stationID",       new PyInt(cur.stationID));
         dict->SetItemString("officeFolderID",  new PyInt(cur.folderID));

@@ -122,7 +122,7 @@ PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &cal
     Rsp_GetOptionsForItemTypes      rsp;
     Rsp_GetOptionsForItemTypes_Arg  arg;
 
-    for (auto cur : args.typeIDs) {
+    for (auto &cur : args.typeIDs) {
         arg.isRecyclable = sDataMgr.IsRecyclable(cur.first);
         arg.isRefinable = sDataMgr.IsRefinable(cur.first);
         rsp.typeIDs[cur.first] = arg.Encode();
@@ -162,7 +162,7 @@ PyResult ReprocessingServiceBound::Handle_GetQuotes(PyCallArgs &call) {
      }
 
     Rsp_GetQuotes rsp;
-    for (auto cur : args.itemIDs) {
+    for (auto &cur : args.itemIDs) {
         PyRep* quote = GetQuote(cur, call.client);
         if (quote != nullptr)
             rsp.quotes[cur] = quote;
@@ -207,7 +207,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
 
     InventoryItemRef iRef(nullptr);
     double tax = CalcTax(GetStanding(call.client));
-    for (auto cur : args.items)  {
+    for (auto &cur : args.items)  {
         iRef = sItemFactory.GetItemRef(cur);
         if (iRef.get() == nullptr)
             continue;
@@ -331,7 +331,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     double tax = CalcTax( quote.playerStanding );
     double efficiency = CalcReprocessingEfficiency(pClient, iRef);
 
-    for (auto cur :recoverables) {
+    for (auto &cur :recoverables) {
         uint32 ratio = cur.amountPerBatch * quote.quantityToProcess / iRef->type().portionSize();
         Rsp_GetQuote_Recoverables_Line line;
             line.typeID		= cur.typeID;

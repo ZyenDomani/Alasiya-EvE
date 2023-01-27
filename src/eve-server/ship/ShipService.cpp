@@ -168,14 +168,14 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     if (pShipSE->DestinyMgr()->GetSpeed() > 20)
         throw CustomError("You cannot eject current ship while moving faster than 20m/s. Ref: ServerError 05139.");
 
-    SystemManager* pSystem = pClient->SystemMgr();
-    if (pSystem == nullptr) {
+    SystemManager* pSysMgr = pClient->SystemMgr();
+    if (pSysMgr == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return nullptr;
     }
 
     // this will segfault if newShipID is invalid or not in system inventory
-    pShipSE = pSystem->GetSE(args.newShipID)->GetShipSE();
+    pShipSE = pSysMgr->GetSE(args.newShipID)->GetShipSE();
 
     if (pShipSE == nullptr) {
         _log(SHIP__ERROR, "Handle_Board() - Failed to get new ship %u for %s.", args.newShipID, pClient->GetName());
@@ -183,7 +183,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     }
 
     if (pShipSE->GetTypeID() == itemTypeCapsule) {
-        codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSystem->GetID());
+        codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSysMgr->GetID());
         throw CustomError("You already have a pod.  These cannot be boarded manally.");
     }
 
@@ -396,8 +396,8 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
     bool dropped = false, shipDrop = false;
 
     Client* pClient(call.client);
-    SystemManager* pSystem = pClient->SystemMgr();
-    if (pSystem == nullptr) {
+    SystemManager* pSysMgr = pClient->SystemMgr();
+    if (pSysMgr == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return nullptr;
     }
@@ -517,8 +517,8 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 entity.position = iRef->position();
 
                 if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
-                    entity.planetID = pSystem->GetClosestPlanetID(location);
-                SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSystem, entity);
+                    entity.planetID = pSysMgr->GetClosestPlanetID(location);
+                SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, entity);
                 if (pSE == nullptr) {
                     //couldnt create entity.  move item back to orig location and continue
                     iRef->Donate(pClient->GetCharacterID(), pShip->itemID(), flagCargoHold);
@@ -531,7 +531,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 dropped = true;
                 shipDrop = true;
                 pSE->GetPOSSE()->Drop(pClient->GetShipSE()->SysBubble());
-                pSystem->AddEntity(pSE);
+                pSysMgr->AddEntity(pSE);
                 list->AddItem(new PyInt(entity.itemID));
             } break;
             case EVEDB::invCategories::Deployable: {
@@ -558,7 +558,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                     case EVEDB::invGroups::Sovereignty_Blockade_Units: {
                         // Make sure SBU is deployed in the same bubble as a gate
                         std::vector<uint16> gateBubbles;
-                        for (auto cur: pSystem->GetOperationalStatics()) {
+                        for (auto &cur: pSysMgr->GetOperationalStatics()) {
                             if (cur.second->IsGateSE())
                             {
                                 gateBubbles.push_back(cur.second->SysBubble()->GetID());
@@ -583,14 +583,14 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                         }
 
                         // Check if there is already an SBU on this stargate
-                        SystemEntity* pSE = pSystem->GetClosestGateSE(pClient->GetShipSE()->GetPosition());
+                        SystemEntity* pSE = pSysMgr->GetClosestGateSE(pClient->GetShipSE()->GetPosition());
                         if (pSE->GetGateSE()->HasSBU()) {
                             pClient->SendErrorMsg("There is already a Sovereignty Blockade Unit on this stargate.  Aborting Drop.");
                             return nullptr;
                         }
 
                         // Check if there is already an unanchored SBU in the current bubble
-                        for (auto cur: pSystem->GetOperationalStatics()) {
+                        for (auto &cur: pSysMgr->GetOperationalStatics()) {
                             if (cur.second->IsSBUSE())
                             {
                                 if (cur.second->SysBubble()->GetID() == pClient->GetShipSE()->SysBubble()->GetID())
@@ -605,7 +605,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                     // todo:  check Structure.h  - these can be dropped and anchored, but not onlined if >1 in system
                     case EVEDB::invGroups::Territorial_Claim_Units: {
                         // Only one can be launched in a system
-                        for (auto cur: pSystem->GetOperationalStatics()) {
+                        for (auto &cur: pSysMgr->GetOperationalStatics()) {
                             if (cur.second->IsTCUSE())
                             {
                                 pClient->SendErrorMsg("There is already a Territorial Claim Unit in this system.  Aborting Drop.");
@@ -621,7 +621,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                     } break;
                     case EVEDB::invGroups::Infrastructure_Hubs: {
                         // Only one can be launched in a system
-                        for (auto cur: pSystem->GetOperationalStatics()) {
+                        for (auto &cur: pSysMgr->GetOperationalStatics()) {
                             if (cur.second->IsIHubSE())
                             {
                                 pClient->SendErrorMsg("There is already an Infrastructure Hub this system.  Aborting Drop.");
@@ -655,7 +655,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
                 entity.position = iRef->position();
 
-                SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSystem, entity);
+                SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, entity);
                 if (pSE == nullptr) {
                     //couldnt create entity.  move item back to orig location and continue
                     iRef->Donate(pClient->GetCharacterID(), pShip->itemID(), flagCargoHold);
@@ -668,7 +668,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 dropped = true;
                 shipDrop = true;
                 pSE->GetPOSSE()->Drop(pClient->GetShipSE()->SysBubble());
-                pSystem->AddEntity(pSE);
+                pSysMgr->AddEntity(pSE);
                 list->AddItem(new PyInt(entity.itemID));
             } break;
             default: {
@@ -957,7 +957,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     }
 
     // container check complete, loop thru list for other items
-    for (auto cur : args.ints) {
+    for (auto &cur : args.ints) {
         iRef = sItemFactory.GetItemRef(cur);
         if (iRef.get() == nullptr)
             continue;
@@ -1105,7 +1105,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     }
 
     ShipItemRef ship(nullptr);
-    for (auto cur : itemIDList) {
+    for (auto &cur : itemIDList) {
         ship = sItemFactory.GetShipRef(cur);
 
         if (ship.get() == nullptr) {

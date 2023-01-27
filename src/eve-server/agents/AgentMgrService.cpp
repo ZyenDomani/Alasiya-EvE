@@ -139,7 +139,7 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
     PyList* missions = new PyList();
     std::vector<MissionOffer> data;
     sMissionDataMgr.LoadMissionOffers(call.client->GetCharacterID(), data);
-    for (auto cur : data) {
+    for (auto &cur : data) {
         PyTuple* mData = new PyTuple(9);
         mData->SetItem(0, new PyInt(cur.stateID)); //missionState  .. these may be wrong also.
         mData->SetItem(1, new PyInt(cur.important?1:0)); //importantMission  -- integer boolean

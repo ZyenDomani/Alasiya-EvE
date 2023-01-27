@@ -181,7 +181,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
     if (fraction > 1.0)
         fraction = 1;
     EvilNumber toRepair = EvilZero, curDamage = EvilZero;
-    for (auto cur : itemRefVec) {
+    for (auto &cur : itemRefVec) {
         if (cur->IsShipItem()) {
             if (fraction == 1) {
                 cur->SetAttribute(AttrDamage, EvilZero);
@@ -251,7 +251,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
         standing = pClient->GetChar()->GetStandingModified(sRef->ownerID(), pClient->GetCharacterID());
     }
 
-    for (auto cur : args.ints) {
+    for (auto &cur : args.ints) {
         RepairListRsp rlr;
             rlr.discount       = "0%";  // not sure....seen 0% and 100% in packets
             rlr.serviceCharge  = "0%";  // not sure....seen 0% in packets
@@ -281,7 +281,7 @@ void RepairService::GetDamageReports(uint32 itemID, Inventory* pInv, PyList* lis
         }
     }
 
-    for (auto cur : itemRefVec) {
+    for (auto &cur : itemRefVec) {
         RepairItemData rid;
         rid.itemID                     = cur->itemID();
         rid.typeID                     = cur->typeID();

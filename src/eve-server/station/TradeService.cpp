@@ -226,7 +226,7 @@ void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSe
     dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(pTSes->m_tradeSession.containerID));
 
     uint32 stationID = pTSes->m_tradeSession.stationID;
-    for (auto cur : pTSes->m_tradelist) {
+    for (auto &cur : pTSes->m_tradelist) {
         InventoryItemRef itemRef = sItemFactory.GetItemRef(cur.itemID);
         if (itemRef.get() == nullptr)  {
             _log(PLAYER__ERROR, "TradeBound::CancelTrade() - Failed to get ItemRef.");
@@ -432,7 +432,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     uint32 tradeContID = pTSes->m_tradeSession.containerID;
 
     std::vector<int32> list = args.ints;
-    for (auto cur : list) {
+    for (auto &cur : list) {
         InventoryItemRef itemRef = sItemFactory.GetItemRef(cur);
         if (itemRef.get() == nullptr)  {
             _log(PLAYER__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
@@ -509,7 +509,7 @@ PyResult TradeBound::Handle_List(PyCallArgs &call) {
     TradeSession* pTSes = call.client->GetTradeSession();
     PyList* list = new PyList();
 
-    for (auto cur : pTSes->m_tradelist) {
+    for (auto &cur : pTSes->m_tradelist) {
         PyPackedRow* row = new PyPackedRow( sDataMgr.CreateHeader() );
             row->SetFieldC("itemID",        new PyLong(cur.itemID));
             row->SetFieldC("typeID",        new PyInt(cur.typeID));
@@ -571,7 +571,7 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     //    dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(pTSes->m_tradeSession.containerID));
 
     uint32 stationID = pTSes->m_tradeSession.stationID;
-    for (auto cur : pTSes->m_tradelist) {
+    for (auto &cur : pTSes->m_tradelist) {
         InventoryItemRef itemRef = sItemFactory.GetItemRef(cur.itemID);
         if (!itemRef)  {
             _log(PLAYER__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
@@ -622,7 +622,7 @@ void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryIt
             contRef->GetMyInventory()->GetInventoryMap(InventoryMap);
     }
 
-    for (auto cur : InventoryMap)
+    for (auto &cur : InventoryMap)
         cur.second->ChangeOwner(newOwnerID, true);
 }
 

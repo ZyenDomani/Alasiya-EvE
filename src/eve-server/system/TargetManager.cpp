@@ -99,10 +99,10 @@ bool TargetManager::Process() {
 }
 
 void TargetManager::Unload() {
-    for (auto cur : m_targets)
+    for (auto &cur : m_targets)
         SafeDelete(cur.second);
     m_targets.clear();
-    for (auto cur : m_targetedBy)
+    for (auto &cur : m_targetedBy)
         SafeDelete(cur.second);
     m_targetedBy.clear();
 }
@@ -290,7 +290,7 @@ void TargetManager::ClearAllTargets(bool notify/*true*/) {
 void TargetManager::ClearTargets(bool notify/*true*/) {
     m_canAttack = false;
 
-    for (auto cur : m_targets) {
+    for (auto &cur : m_targets) {
         // failsafe   still chance this code is incomplete
         if (cur.first->TargetMgr() != nullptr)
             cur.first->TargetMgr()->TargetedByLost(mySE);
@@ -312,7 +312,7 @@ void TargetManager::ClearFromTargets() {
         return;
 
     std::vector<SystemEntity *> ToNotify;
-    for (auto cur : m_targetedBy) {
+    for (auto &cur : m_targetedBy) {
         SafeDelete(cur.second);
         //do not notify until we clear our target list! otherwise Bad Things happen. (invalidate iterator here)
         ToNotify.push_back(cur.first);
@@ -322,7 +322,7 @@ void TargetManager::ClearFromTargets() {
 
     m_targetedBy.clear();
 
-    for (auto cur : ToNotify)
+    for (auto &cur : ToNotify)
         if (cur->TargetMgr() != nullptr)
             cur->TargetMgr()->TargetLost(mySE);
 
@@ -632,7 +632,7 @@ void TargetManager::Depleted(InventoryItemRef iRef)
     m_modules.erase(iRef->itemID());
     // if there are miners activated on this rock, get first one and send to Depleted()
     //   to properly create mined ore and shut down modules
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second->IsMiningLaser())
             Depleted(cur.second->GetMiningModule());
 }
@@ -709,7 +709,7 @@ float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
 
 void TargetManager::QueueEvent( PyTuple** event ) const
 {
-    for (auto cur : m_targetedBy)
+    for (auto &cur : m_targetedBy)
         if (cur.first->HasPilot()) {
             PyIncRef(*event);
             cur.first->GetPilot()->QueueDestinyEvent(event);
@@ -718,7 +718,7 @@ void TargetManager::QueueEvent( PyTuple** event ) const
 
 void TargetManager::QueueUpdate( PyTuple** update ) const
 {
-    for (auto cur : m_targetedBy)
+    for (auto &cur : m_targetedBy)
         if (cur.first->HasPilot()) {
             PyIncRef(*update);
             cur.first->GetPilot()->QueueDestinyUpdate(update);
@@ -735,7 +735,7 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
     } else {
         str << "Targets: <br>";
         length += 11;
-        for (auto cur : m_targets) {
+        for (auto &cur : m_targets) {
             str << "  " << cur.first->GetName();
             str << " (" << cur.first->GetID() << ") <br>";
             length += 35;
@@ -749,7 +749,7 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
     } else {
         str << "Targeted by: <br>";
         length += 15;
-        for (auto cur : m_targetedBy) {
+        for (auto &cur : m_targetedBy) {
             str << "  " << cur.first->GetName();
             str << " (" << cur.first->GetID() << ") <br>";
             length += 35;
@@ -762,7 +762,7 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
         str << "   *NONE*";
         length += 10;
     } else {
-        for (auto cur : m_modules) {
+        for (auto &cur : m_modules) {
             str << "  " << cur.second->GetShipRef()->itemName();
             str << ":" << cur.second->GetSelf()->itemName() << "<br>";
             length += 55;
@@ -781,13 +781,13 @@ void TargetManager::Dump() const {
     if (m_targets.empty()) {
         _log(TARGET__DUMP, "    No Targets");
     } else {
-        for (auto cur : m_targets)
+        for (auto &cur : m_targets)
             cur.second->Dump(cur.first);
     }
     if (m_targetedBy.empty()) {
         _log(TARGET__DUMP, "    No Targeters");
     } else {
-        for (auto cur : m_targetedBy)
+        for (auto &cur : m_targetedBy)
             cur.second->Dump(cur.first);
     }
 
@@ -795,7 +795,7 @@ void TargetManager::Dump() const {
     if (m_modules.empty()) {
         _log(TARGET__DUMP, "      *NONE*");
     } else {
-        for (auto cur : m_modules)
+        for (auto &cur : m_modules)
             _log(TARGET__DUMP, "\t\t %s: %s(%u)", cur.second->GetShipRef()->name(), cur.second->GetSelf()->name(), cur.second->itemID());
     }
 }

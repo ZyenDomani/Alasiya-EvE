@@ -78,11 +78,11 @@ void ItemFactory::Close()
     sLog.Warning("      ItemFactory", "%lu Items, %lu Types still in list", \
                 m_items.size(), m_types.size());
     // types
-    for (auto cur : m_types)
+    for (auto &cur : m_types)
         SafeDelete(cur.second);
     m_types.clear();
     // items
-    //for (auto cur : m_items)
+    //for (auto &cur : m_items)
     //    delete(cur.second.get());
     m_items.clear();
     // Set Client pointer to NULL
@@ -96,7 +96,7 @@ void ItemFactory::SaveItems() {
     double startTime = GetTimeMSeconds();
     std::vector<Inv::SaveData> items;
     items.clear();
-    for (auto cur : m_items) {
+    for (auto &cur : m_items) {
         if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
             cur.second->SaveAttributes();
             Inv::SaveData data = Inv::SaveData();

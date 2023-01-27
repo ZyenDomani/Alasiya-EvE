@@ -421,7 +421,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     if (m_linkMaster) {
         std::vector<GenericModule*> modules;
         m_shipRef->GetLinkedWeaponMods(this, modules);
-        for (auto cur : modules) {
+        for (auto &cur : modules) {
             cur->GetActiveModule()->SetSlaveData(pShip);
             cur->GetActiveModule()->SetEffectID(effectID);
             cur->GetActiveModule()->ShowEffect(true, false);
@@ -694,7 +694,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     if (m_linkMaster) {
         std::vector<GenericModule*> modules;
         m_shipRef->GetLinkedWeaponMods(this, modules);
-        for (auto cur : modules)
+        for (auto &cur : modules)
             cur->GetActiveModule()->ShowEffect(false, abort);
     } else {
         ShowEffect(false, abort);
@@ -975,7 +975,7 @@ void ActiveModule::ConsumeCharge() {
         // remove charges from linked modules as applicable
         std::vector<GenericModule*> modules;
         m_shipRef->GetLinkedWeaponMods(this, modules);
-        for (auto cur : modules)
+        for (auto &cur : modules)
             if (cur->isOnline() and cur->IsLoaded())
                 cur->GetLoadedChargeRef()->AlterQuantity(-1, cur->IsLoaded());
     } else {

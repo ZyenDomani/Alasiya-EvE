@@ -64,7 +64,7 @@ int BubbleManager::Initialize() {
 }
 
 void BubbleManager::clear() {
-    for (auto cur : m_bubbles)
+    for (auto &cur : m_bubbles)
         SafeDelete(cur);
 
     sLog.Warning("        BubbleMgr", "Bubble Manager has been closed." );
@@ -73,7 +73,7 @@ void BubbleManager::clear() {
 void BubbleManager::Process() {
     double profileStartTime(GetTimeUSeconds());
 
-    for (auto cur : m_bubbles) {
+    for (auto &cur : m_bubbles) {
         // process each belt and gate bubble for spawns
         if (cur->IsBelt() or cur->IsGate())
             cur->Process();
@@ -96,7 +96,7 @@ void BubbleManager::Process() {
         }
 
         if (!m_wanderers.empty()) {
-            for (auto cur : m_wanderers) {
+            for (auto &cur : m_wanderers) {
                 // do we really want to check this?
                 if (cur->GetPosition().isNaN() or cur->GetPosition().isInf() or cur->GetPosition().isZero()) {
                     // position error.  this will screw things up.  if haspilot, send error.
@@ -330,7 +330,7 @@ uint32 BubbleManager::GetBubbleCount(uint32 systemID) {
 
 void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
     ContainerSE* cSE(nullptr);
-    for (auto cur : m_sysBubbleMap) {
+    for (auto &cur : m_sysBubbleMap) {
         cSE = cur.second->GetCenterMarker();
         if (cSE == nullptr)
             continue;
@@ -379,12 +379,12 @@ void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSi
 
 
 void BubbleManager::MarkCenters() {
-    for (auto cur : m_sysBubbleMap)
+    for (auto &cur : m_sysBubbleMap)
         cur.second->MarkCenter();
 }
 
 void BubbleManager::RemoveMarkers() {
-    for (auto cur : m_sysBubbleMap)
+    for (auto &cur : m_sysBubbleMap)
         cur.second->RemoveMarkers();
 }
 

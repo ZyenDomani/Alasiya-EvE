@@ -222,7 +222,7 @@ void StationItem::RentOffice(OfficeData& odata)
         oorc.officeID = odata.officeID;
         oorc.officeFolderID = odata.folderID;
     PyTuple* payload = oorc.Encode();
-    for (auto cur : m_guestList) {
+    for (auto &cur : m_guestList) {
         PyIncRef(payload);
         cur.second->SendNotification("OnOfficeRentalChanged", "stationid", &payload, false);
     }
@@ -250,7 +250,7 @@ void StationItem::AddGuest(Client* pClient)
 
 void StationItem::GetGuestList(std::vector< Client* >& cVec)
 {
-    for (auto cur : m_guestList)
+    for (auto &cur : m_guestList)
         cVec.push_back(cur.second);
 }
 
@@ -271,7 +271,7 @@ bool StationItem::HasShip(Client* pClient)
     std::vector< InventoryItemRef > items;
     pInventory->GetInvForOwner(pClient->GetCharacterID(), items);
 
-    for (auto cur : items)
+    for (auto &cur : items)
         if (cur->categoryID() == EVEDB::invCategories::Ship)
             if (cur->typeID() != EVEDB::invTypes::Capsule)
                 return true;

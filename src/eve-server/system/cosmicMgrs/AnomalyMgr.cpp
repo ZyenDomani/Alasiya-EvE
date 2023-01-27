@@ -194,14 +194,14 @@ void AnomalyMgr::GetSignatureList(std::vector<CosmicSignature>& sig)
 {
     // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
     // retrieval method for scan queries
-    for (auto cur : m_sigByItemID)
+    for (auto &cur : m_sigByItemID)
         sig.push_back(cur.second);
 }
 
 void AnomalyMgr::GetAnomalyList(std::vector<CosmicSignature>& sig) {
     // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
     // retrieval method for scan queries
-    for (auto cur : m_anomByItemID)
+    for (auto &cur : m_anomByItemID)
         sig.push_back(cur.second);
 }
 

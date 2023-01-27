@@ -63,7 +63,7 @@ PyResult CertificateMgrService::Handle_GetMyCertificates(PyCallArgs &call) {
         rs.header.push_back( "grantDate" );
         rs.header.push_back( "visibilityFlags" );
 
-    for (auto cur : crt) {
+    for (auto &cur : crt) {
         PyList* fieldData = new PyList();
             fieldData->AddItemInt( cur.first );
             fieldData->AddItemLong( cur.second.grantDate );
@@ -182,7 +182,7 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
         rs.header.push_back("certificateID");
         rs.header.push_back("visibilityFlags");
 
-    for (auto cur : crt) {
+    for (auto &cur : crt) {
         PyList* fieldData = new PyList();
             fieldData->AddItemLong( cur.second.grantDate );
             fieldData->AddItemInt( cur.second.certificateID );

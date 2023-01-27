@@ -38,7 +38,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     npc.clear();
     station.clear();
 
-    for (auto cur : entityIDs) {
+    for (auto &cur : entityIDs) {
         if (IsCorpID(cur)) {
             corp.push_back(cur);
         } else if (IsAllianceID(cur)) {
@@ -182,7 +182,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     dynamicItems.clear();
     asteroidItems.clear();
 
-    for (auto cur : entityIDs) {
+    for (auto &cur : entityIDs) {
         if (IsStaticItem(cur)) {
             staticItems.push_back(cur);
         } else if (IsAsteroidID(cur)) {

@@ -708,7 +708,7 @@ void MarketMgr::SetBasePrice()
         // reset basePrice
         itemItr->second.basePrice = 0.0;
         // sum mineral counts with current prices for this ship
-        for (auto cur2 : itemMatItr->second) {
+        for (auto &cur2 : itemMatItr->second) {
             materialItr = materialMap.find(cur2.materialTypeID);
             if (materialItr == materialMap.end()) {
                 sLog.Error("     SetBasePrice", "resource %u for %s(%u) not found in materialMap", \

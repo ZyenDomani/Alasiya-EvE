@@ -942,7 +942,7 @@ LSCChannel* LSCService::GetChannelByID(int32 channelID)
 
 LSCChannel* LSCService::GetChannelByName(std::string channelName)
 {
-    for (auto cur : m_channels)
+    for (auto &cur : m_channels)
         if (cur.second->GetDisplayName() == channelName)
             return cur.second;
     return nullptr;

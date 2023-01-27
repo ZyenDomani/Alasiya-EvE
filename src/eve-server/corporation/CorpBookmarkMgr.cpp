@@ -189,7 +189,7 @@ PyResult CorpBookmarkMgr::Handle_DeleteFolder(PyCallArgs& call)
     m_db.GetBookmarkByFolderID(folderID, bmIDs);
 
     PyList* list = new PyList();
-    for (auto cur : bmIDs) {
+    for (auto &cur : bmIDs) {
         PyDict* dict = new PyDict();
         dict->SetItemString("bookmarkID", new PyInt(cur));
         list->AddItem(new PyObject("util.KeyVal", dict));

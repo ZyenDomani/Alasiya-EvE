@@ -71,7 +71,7 @@ void BeltMgr::ClearBelt(uint16 bubbleID)
 
 void BeltMgr::ClearAll() {
     Save();
-    for (auto cur : m_asteroids) {
+    for (auto &cur : m_asteroids) {
         m_system->RemoveEntity(cur.second);
         //cur.second->Delete();
         SafeDelete(cur.second);
@@ -128,7 +128,7 @@ void BeltMgr::Process() {
         return;
 
     if (m_respawnTimer.Check()) {
-        for (auto cur : m_spawned)
+        for (auto &cur : m_spawned)
             if (!cur.second) {
                 std::unordered_multimap<float, uint16> roidTypes;
                 roidTypes.clear();
@@ -195,7 +195,7 @@ void BeltMgr::Save() {
     std::vector<AsteroidData> roids;
     roids.clear();
     uint16 save(0), skip(0);
-    for (auto cur : m_asteroids) {
+    for (auto &cur : m_asteroids) {
         // we are not saving anomaly belts (yet.  small belts in anomalies will become their own grav sites (wip))
         if (IsTempItem(cur.first)) {
             ++skip;

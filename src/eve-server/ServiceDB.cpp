@@ -542,7 +542,7 @@ PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
     DBQueryResult res;
     DBResultRow row;
     PyDict* dict = new PyDict();
-    for (auto cur : itemIDs) {
+    for (auto &cur : itemIDs) {
         if (IsCharacterID(cur)) {
             sDatabase.RunQuery(res, "SELECT characterID, characterName, typeID FROM chrCharacters WHERE characterID = %u", cur);
         } else if (IsPlayerCorp(cur)) {

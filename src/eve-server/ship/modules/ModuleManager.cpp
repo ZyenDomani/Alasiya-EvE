@@ -89,7 +89,7 @@ bool ModuleManager::Initialize() {
     // this will order by mod, charge, cargo
     pShipItem->GetMyInventory()->GetInventoryVec(itemVec);
     GenericModule* pMod(nullptr);
-    for (auto cur : itemVec) {
+    for (auto &cur : itemVec) {
         // this is a hack.  dont know why any ship item would have flagNone set, but have seen random errors where charges are set to flagNone
         if (cur->flag() == flagNone) {
             _log(MODULE__ERROR, "MM::Initialize() - %s(%u) has flagNone set in ship %s",\
@@ -203,11 +203,11 @@ bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
 }
 
 void ModuleManager::RemoveTarget(SystemEntity* pSE) {
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             cur.second->RemoveTarget(pSE);
         /*
-    for (auto cur : m_fittings)
+    for (auto &cur : m_fittings)
         if (cur.second != nullptr)
             cur.second->RemoveTarget(pSE);
         */
@@ -627,7 +627,7 @@ void ModuleManager::Offline(EVEItemFlags flag)
 
 void ModuleManager::AbortCycle()
 {
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             cur.second->AbortCycle();
 }
@@ -645,14 +645,14 @@ void ModuleManager::OnlineAll()
 
 void ModuleManager::OfflineAll()
 {
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             cur.second->Offline();
 }
 
 void ModuleManager::DeactivateAllModules()
 {
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             cur.second->Deactivate();
 }
@@ -816,7 +816,7 @@ void ModuleManager::RepairModule(GenericModule* pMod, EvilNumber amount)
 
 void ModuleManager::RepairModules()
 {
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             cur.second->Repair();
 }
@@ -1157,12 +1157,12 @@ void ModuleManager::UnloadWeapons()
 void ModuleManager::UnloadAllModules()
 {
     /** @todo look into this....is this right?  */
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             cur.second->UnloadCharge();
     // can this be called when docked?
     //bool docked = sDataMgr.IsStation(pShipItem->locationID());
-    for (auto cur : m_charges)
+    for (auto &cur : m_charges)
         UnloadModule(cur.second->flag());
 
     m_charges.clear();
@@ -1185,7 +1185,7 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
         std::vector< GenericModule* > modList;
         SortModulesBySlotDec(modVec, modList);
         /** @todo check this.  may have to rework */
-        for (auto cur : modList) {
+        for (auto &cur : modList) {
             cur->Update();
             cur->Online();
         }
@@ -1204,7 +1204,7 @@ void ModuleManager::UpdateModules(EVEItemFlags flag)
     std::vector< GenericModule* > modVec;
     // this returns only populated modules for this bank
     GetModulesInBank(flag, modVec);
-    for (auto cur : modVec)
+    for (auto &cur : modVec)
         cur->Online();
 }
 
@@ -1220,7 +1220,7 @@ void ModuleManager::CharacterBoardingShip()
     std::vector< GenericModule* > modList;
     SortModulesBySlotDec(modVec, modList);
     /** @todo check this.  may have to rework...do rigs and subsystems have online attrib set?  */
-    for (auto cur : modList)
+    for (auto &cur : modList)
         if (cur->GetAttribute(AttrOnline).get_bool())
             cur->Online();
 }
@@ -1251,7 +1251,7 @@ void ModuleManager::ShipWarping()
     if (is_log_enabled(MODULE__WARNING))
         sLog.Magenta("MM::ShipWarping()","Deactivating non-warpsafe modules.");
     // check modules for warpsafe-ness and Deactivate accordingly
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             if (!cur.second->isWarpSafe())
                 cur.second->AbortCycle();
@@ -1269,7 +1269,7 @@ void ModuleManager::ShipJumping()
 void ModuleManager::CargoFull() {
     // loop thru modules and deactivate anything that drops items in cargo
     //std::string effect = "CargoFull";
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             switch (cur.second->groupID()) {
                 case EVEDB::invGroups::Mining_Laser:
@@ -1294,7 +1294,7 @@ void ModuleManager::GetWeapons(std::list< GenericModule* >& weaponList)
 
 void ModuleManager::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec)
 {
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             modVec.push_back(cur.second->GetSelf());
 }
@@ -1362,17 +1362,17 @@ void ModuleManager::GetModuleListByReqSkill(uint16 skillID, std::vector< Invento
 {
     std::vector<InventoryItemRef> moduleList;
     GetModuleListOfRefsAsc(moduleList);
-    for (auto cur : moduleList)
+    for (auto &cur : moduleList)
         if (cur->HasReqSkill(skillID))
             modVec.push_back(cur);
 }
 
 void ModuleManager::SaveModules()
 {
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         if (cur.second != nullptr)
             cur.second->GetSelf()->SaveItem();
-    for (auto cur : m_charges)
+    for (auto &cur : m_charges)
         cur.second->SaveItem();
 }
 
@@ -1406,7 +1406,7 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
         return;
     GenericModule* pMod(nullptr);
     std::map<uint8, GenericModule*> tmpList;
-    for (auto cur : modVec) {
+    for (auto &cur : modVec) {
         pMod = GetModule(cur);
         if (pMod != nullptr)
             tmpList.insert(std::pair<uint8, GenericModule*>((uint8)pMod->flag(), pMod));
@@ -1434,7 +1434,7 @@ void ModuleManager::GetActiveModules(uint8 rack, std::vector< GenericModule* >& 
         } break;
     }
 
-    for (auto cur : modVecAll)
+    for (auto &cur : modVecAll)
         if (cur->IsActive())
             if (!cur->IsOverloaded())
                 modVec.push_back(cur);
@@ -1455,7 +1455,7 @@ void ModuleManager::GetActiveModulesHeat(uint8 rack, float& heat)
         } break;
     }
 
-    for (auto cur : modVecAll)
+    for (auto &cur : modVecAll)
         if (cur->IsActive()) {
             if (!cur->IsOverloaded())
                 heat += cur->GetAttribute(AttrHeatDamage).get_float() / 10;
@@ -1481,7 +1481,7 @@ uint8 ModuleManager::GetActiveModulesCount(uint8 rack)
         } break;
     }
 
-    for (auto cur : modVec)
+    for (auto &cur : modVec)
         if (cur->IsActive())
             if (!cur->IsOverloaded())
                 ++count;
@@ -1621,7 +1621,7 @@ bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
  */
 
 void ModuleManager::UpdateChargeQty() {
-    for (auto cur : m_charges) {
+    for (auto &cur : m_charges) {
         cur.second->AlterQuantity(1, false);
         cur.second->AlterQuantity(-1, false);
     }

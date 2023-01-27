@@ -71,7 +71,7 @@ void Scan::ProcessScan(bool useProbe/*false*/)
     uint16 ntime(0), duration = m_client->GetShip()->GetAttribute(AttrScanSpeed).get_uint32();
     if (duration < 1000)
         duration = 8000;    // 8s default probe scan time.
-    for (auto cur : m_activeProbeMap) {
+    for (auto &cur : m_activeProbeMap) {
         if (cur.second->IsMoving()) {
             idle = false;
             ntime = cur.second->GetMoveTime();
@@ -85,7 +85,7 @@ void Scan::ProcessScan(bool useProbe/*false*/)
     }
     if (idle) {
         m_probeScan = true;
-        for (auto cur : m_activeProbeMap) {
+        for (auto &cur : m_activeProbeMap) {
             cur.second->SendStateChange(Probe::State::Scanning);
             cur.second->StartStateTimer(duration);
         }
@@ -117,7 +117,7 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
     m_client->SystemMgr()->DScan(args.range, vertex, seVec);
     _log(SCAN__TRACE, "ConeScan() - query returned %u objects within range.  angle is %.3f", seVec.size(), angle);
     PyList* list = new PyList();
-    for (auto cur : seVec ) {
+    for (auto &cur : seVec ) {
         GVector VR(vertex, cur->GetPosition());
         VR.normalize();
         dot = U.dotProduct(VR);
@@ -193,7 +193,7 @@ void Scan::RequestScans(PyDict* dict) {
     }
 
     // loop thru probe maps to see if any are disabled, then set status as 'inactive' to omit from tracking
-    for (auto cur : m_probeMap) {
+    for (auto &cur : m_probeMap) {
         std::map<uint32, ProbeSE*>::iterator itr = m_activeProbeMap.find(cur.first);
         if (itr == m_activeProbeMap.end())
             cur.second->SetState(Probe::State::Inactive);
@@ -208,7 +208,7 @@ void Scan::SystemScanStarted(uint16 duration)
 
     GPoint pos(NULL_ORIGIN);
     PyDict* probeDict = new PyDict();
-    for (auto cur : m_activeProbeMap) {
+    for (auto &cur : m_activeProbeMap) {
         // probe data here...
         ScanProbesDict spd;
             spd.expiry = cur.second->GetExpiryTime();
@@ -379,7 +379,7 @@ void Scan::ProbeScanResult()
 
     GPoint pos(NULL_ORIGIN);
     PyDict* probeDict = new PyDict();
-    for (auto cur : m_activeProbeMap) {
+    for (auto &cur : m_activeProbeMap) {
         // probe data here...
         ScanProbesDict spd;
         spd.expiry = cur.second->GetExpiryTime();
@@ -448,7 +448,7 @@ struct CosmicSignature {
     float dist(0);
     std::vector<ProbeSE*> probeVec;
     // check probe scan ranges for signals; verify probe can scan signal
-    for (auto cur : m_activeProbeMap) {
+    for (auto &cur : m_activeProbeMap) {
         // reset ring/sphere checks
         cur.second->SetRing(false);
         cur.second->SetSphere(false);
@@ -518,7 +518,7 @@ struct CosmicSignature {
         PyList* list = new PyList();
         PyList* ring = new PyList();
         PyTuple* tuple = new PyTuple(probeVec.size());
-        for (auto cur : probeVec) {
+        for (auto &cur : probeVec) {
             tuple->SetItem(count++, new PyInt(cur->GetID()));
             pos = cur->GetPosition();
             ScanResultPos ssr_oed;
@@ -693,7 +693,7 @@ void Scan::CalcProbeAngles(GPoint& sigPos, std::vector<ProbeSE*>& probeVec, std:
             continue;
         GVector v1(p1->GetPosition(), sigPos);
         v1.normalize();
-        for (auto cur : probeVec) {
+        for (auto &cur : probeVec) {
             if ((cur == nullptr) or (p1 == cur))
                 continue;
             GVector v2(cur->GetPosition(), sigPos);

@@ -795,14 +795,14 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
         bounty /= members.size();
         // send bounty to members
         if (sConfig.server.BountyPayoutDelayed and sConfig.server.FleetShareDelayed) {
-            for (auto cur :members)
+            for (auto &cur :members)
                 m_system->AddBounty(cur, data);
         } else {
             reason += " (FleetShare) ";
             reason += " by ";
             reason += pClient->GetName();
             data.reason = reason;
-            for (auto cur :members)
+            for (auto &cur :members)
                 AccountService::TranserFunds(corpCONCORD, cur, bounty, reason.c_str(), Journal::EntryType::BountyPrize, -GetTypeID());
         }
     } else {

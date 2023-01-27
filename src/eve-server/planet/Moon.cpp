@@ -172,7 +172,7 @@ Moon materials have different rarity classes, starting with R4 being the most co
     std::map<uint16, uint8> data;
     sDataMgr.GetMoonResouces(data);
 
-    for (auto cur : data)
+    for (auto &cur : data)
         switch (cur.second) {
             case 1: {
                 m_resources.insert(std::pair<uint16, uint8>(cur.first, 6));

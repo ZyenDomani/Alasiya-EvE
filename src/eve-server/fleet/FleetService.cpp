@@ -627,7 +627,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
                 SetSquadBoostData(squadID, bData, sboost);
                 SquadData sData = SquadData();
                 GetSquadData(squadID, sData);
-                for (auto cur : sData.members)  // SC is a member
+                for (auto &cur : sData.members)  // SC is a member
                     if ((sboost) and (cur.second->GetSystemID() == sData.booster->GetSystemID()))
                         memberUpdateMap.emplace(cur.second->GetShipSE(), sData.boost);
             }
@@ -657,7 +657,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
                 SetSquadBoostData(squadID, bData, sboost);
                 SquadData sData = SquadData();
                 GetSquadData(squadID, sData);
-                for (auto cur : sData.members)
+                for (auto &cur : sData.members)
                     if ((sboost) and (cur.second->GetSystemID() == sData.booster->GetSystemID()))
                         memberUpdateMap.emplace(cur.second->GetShipSE(), sData.boost);
             }
@@ -681,7 +681,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
             SetWingBoostData(sData.wingID, bData);
             bool sboost(false);
             SetSquadBoostData(squadID, bData, sboost);
-            for (auto cur : sData.members)
+            for (auto &cur : sData.members)
                 if (sboost and (cur.second->GetSystemID() == sData.booster->GetSystemID()))
                     memberUpdateMap.emplace(cur.second->GetShipSE(), sData.boost);
         }
@@ -689,7 +689,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
 
     // update boost effects on these members' ships using updated boost levels
     // this is for fleet boost only, as modules will apply/remove their effects using the FxSystem
-    for (auto cur : memberUpdateMap)
+    for (auto &cur : memberUpdateMap)
         cur.first->ApplyBoost(cur.second);
 
     _log( FLEET__TRACE, "FleetService::UpdateBoost() - Updated %u members of fleetID: %u in %.2fus.  fleet: %s, wing: %s, squad: %s", \
@@ -950,7 +950,7 @@ PyRep* FleetService::GetFleetAdvert(uint32 fleetID)
 
     PyTuple* localTuple = new PyTuple(1);
     PyList* localList = new PyList();
-    for (auto cur1 : itr->second.local_allowedEntities) // corpID, allianceID, militiaID - if applicable
+    for (auto &cur1 : itr->second.local_allowedEntities) // corpID, allianceID, militiaID - if applicable
         localList->AddItemInt(cur1);
     localTuple->SetItem(0, localList);
     PyToken* token = new PyToken("__builtin__.set");
@@ -961,7 +961,7 @@ PyRep* FleetService::GetFleetAdvert(uint32 fleetID)
 
     PyTuple* publicTuple = new PyTuple(1);
     PyList* publicList = new PyList();
-    for (auto cur2 : itr->second.public_allowedEntities)    // searches creator's addy book and addes charIDs based on standings
+    for (auto &cur2 : itr->second.public_allowedEntities)    // searches creator's addy book and addes charIDs based on standings
         publicList->AddItemInt(cur2);
         publicTuple->SetItem(0, publicList);
     PyTuple* publicTuple2 = new PyTuple(2);
@@ -1022,7 +1022,7 @@ void FleetService::DeleteWing(uint32 wingID)
     std::vector<uint32> squads;
     GetSquadIDs(wingID, squads);
     std::map<uint32, SquadData>::iterator sItr;
-    for (auto cur : squads) {
+    for (auto &cur : squads) {
         sItr = m_squadDataMap.find(cur);
         if (sItr == m_squadDataMap.end())
             continue;
@@ -1266,7 +1266,7 @@ PyRep* FleetService::GetAvailableFleets() {
     Client* pClient(nullptr);
 
     PyDict* fleetDict = new PyDict();
-    for (auto cur : m_fleetAdvertMap) {
+    for (auto &cur : m_fleetAdvertMap) {
         pClient = cur.second.leader;
         if (pClient == nullptr)
             continue;
@@ -1282,7 +1282,7 @@ PyRep* FleetService::GetAvailableFleets() {
 
         PyTuple* localTuple = new PyTuple(1);
         PyList* localList = new PyList();
-        for (auto cur1 : cur.second.local_allowedEntities)
+        for (auto &cur1 : cur.second.local_allowedEntities)
             localList->AddItemInt(cur1);
         localTuple->SetItem(0, localList);
         PyToken* token = new PyToken("__builtin__.set");
@@ -1293,7 +1293,7 @@ PyRep* FleetService::GetAvailableFleets() {
 
         PyTuple* publicTuple = new PyTuple(1);
         PyList* publicList = new PyList();
-        for (auto cur2 : cur.second.public_allowedEntities)
+        for (auto &cur2 : cur.second.public_allowedEntities)
             publicList->AddItemInt(cur2);
         publicTuple->SetItem(0, publicList);
         PyTuple* publicTuple2 = new PyTuple(2);
@@ -1388,7 +1388,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
                     std::vector<uint32> squads;
                     GetSquadIDs(wingID, squads);
                     std::map<uint32, SquadData>::iterator itr;
-                    for (auto cur : squads) {
+                    for (auto &cur : squads) {
                         itr = m_squadDataMap.find(cur);
                         if (itr == m_squadDataMap.end())
                             continue;
@@ -1452,7 +1452,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         payload->SetItem(5, PyStatic.NewNone());
 
     uint8 count(0);
-    for (auto cur : members) {
+    for (auto &cur : members) {
         if (cur == nullptr)
             continue;
         PySafeIncRef(payload);
@@ -1492,7 +1492,7 @@ void FleetService::SendFleetUpdate(uint32 fleetID, const char* notifyType, PyTup
     for (auto fItr = range.first; fItr != range.second; ++fItr)
         members.push_back(fItr->second);
 
-    for (auto cur : members) {
+    for (auto &cur : members) {
         if (cur == nullptr)
             continue;
         PySafeIncRef(payload);
@@ -1508,7 +1508,7 @@ void FleetService::GetFleetMembersOnGrid(Client* pClient, std::vector< uint32 >&
     for (auto fItr = range.first; fItr != range.second; ++fItr)
         members.push_back(fItr->second);
 
-    for (auto cur : members) {
+    for (auto &cur : members) {
         if (cur == nullptr)
             continue;
         if (cur->GetShipSE()->SysBubble()->GetID() == scopeID)
@@ -1524,7 +1524,7 @@ void FleetService::GetFleetMembersInSystem(Client* pClient, std::vector< uint32 
     for (auto fItr = range.first; fItr != range.second; ++fItr)
         members.push_back(fItr->second);
 
-    for (auto cur : members) {
+    for (auto &cur : members) {
         if (cur == nullptr)
             continue;
         if (cur->GetShipSE()->SystemMgr()->GetID() == scopeID)
@@ -1540,7 +1540,7 @@ void FleetService::GetFleetClientsInSystem(Client* pClient, std::vector< Client*
     for (auto fItr = range.first; fItr != range.second; ++fItr)
         members.push_back(fItr->second);
 
-    for (auto cur : members) {
+    for (auto &cur : members) {
         if (cur == nullptr)     // should we do anything else here?
             continue;
         if (cur->GetShipSE()->SystemMgr()->GetID() == scopeID)

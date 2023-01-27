@@ -149,7 +149,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
     std::map<std::string, uint8> skills;
     SkillRef skillRef(nullptr);
     CharacterRef cRef(call.client->GetChar());
-    for (auto cur : args.skills)  {
+    for (auto &cur : args.skills)  {
         skillRef = sItemFactory.GetSkillRef(cur);
         if (skillRef.get() == nullptr) {
             _log( ITEM__ERROR, "%s: failed to load skill %u for injection.", call.client->GetName(), cur);
@@ -184,7 +184,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
         str.clear();
         str << "The Injection of %u skills for %s has resulted in the following outcome.<br><br>"; //40
 
-        for (auto cur : skills) {
+        for (auto &cur : skills) {
             switch (cur.second) {
                 //1=success, 2=prereqs, 3=already known, 4=split fail, 5=load fail
                 case 1: status = "<color=green>Success.</color>"; break;

@@ -459,7 +459,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
     m_self->GetMyInventory()->GetInventoryMap(deadShipInventory);
     if (!deadShipInventory.empty()) {
         uint32 s = 0, d = 0, x = 0;
-        for (auto cur : deadShipInventory) {
+        for (auto &cur : deadShipInventory) {
             d = 0;
             x = cur.second->quantity();
             s = (cur.second->isSingleton() ? 1 : 0);
@@ -562,6 +562,6 @@ void CustomsSE::Killed(Damage &fatal_blow) {
 
     DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
-    for (auto cur: survivedItems)
+    for (auto &cur: survivedItems)
         cur->Move(wreckItemRef->itemID(), flagNone); // populate wreck with items that survived
 }

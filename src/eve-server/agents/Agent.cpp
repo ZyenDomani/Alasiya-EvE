@@ -633,7 +633,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
         // shared mission standings are from agent to character only.
         std::vector<Client*> clientVec;
         sFltSvc.GetFleetClientsInSystem(pClient, clientVec);
-        for (auto cur : clientVec) {
+        for (auto &cur : clientVec) {
             sStandingMgr.UpdateStandings(m_agentID, cur->GetCharacterID(), eventID, fleetStanding, msg);
             PyTuple* agent = new PyTuple(5);
                 agent->SetItem(0, new PyInt(m_agentID));

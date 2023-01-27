@@ -292,7 +292,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     std::vector<Client*> cVec;
     cVec.clear();
     pStationItem->GetGuestList(cVec);
-    for (auto cur : cVec) {
+    for (auto &cur : cVec) {
         PyIncRef(payload);
         cur->SendNotification("OnObjectPublicAttributesUpdated", "stationid", &payload, false);
     }
@@ -331,7 +331,7 @@ PyResult CorpStationMgrIMBound::Handle_MoveCorpHQHere(PyCallArgs &call)
     Client* pClient(nullptr);
     std::vector<uint32> ids;
     CorporationDB::GetMemberIDs(corpID, ids, true);
-    for (auto cur : ids) {
+    for (auto &cur : ids) {
         pClient = sEntityList.FindClientByCharID(cur);
         if (pClient != nullptr)
             pClient->GetChar()->SetCorpHQ(m_stationID);
@@ -370,7 +370,7 @@ PyResult CorpStationMgrIMBound::Handle_GetPotentialHomeStations(PyCallArgs &call
     PyDict* dict = new PyDict();
     PyList* list = new PyList();
     StationData data = StationData();
-    for (auto cur : stVec) {
+    for (auto &cur : stVec) {
         stDataMgr.GetStationData(cur, data);
         dict->SetItemString("stationID", new PyInt(cur));
         dict->SetItemString("typeID", new PyInt(data.typeID));

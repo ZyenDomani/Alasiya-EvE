@@ -30,10 +30,10 @@ BulkDB::~BulkDB()
 
 void BulkDB::Close()
 {
-    for (auto cur : m_bulkData)
+    for (auto &cur : m_bulkData)
         PyDecRef(cur.second);
 
-    for (auto cur : m_bulkDataChunks)
+    for (auto &cur : m_bulkDataChunks)
         PyDecRef(cur.second);
 
     m_bulkData.clear();

@@ -588,7 +588,7 @@ void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& ro
     Inserts << "INSERT INTO sysAsteroids";
     Inserts << " (itemID,itemName,typeID,systemID,beltID,quantity,radius,x, y, z)";
     bool first = true;
-    for (auto cur : roids) {
+    for (auto &cur : roids) {
         if (first) {
             Inserts << " VALUES ";
             first = false;

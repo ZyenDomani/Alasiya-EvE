@@ -450,7 +450,7 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
     Inserts << " VALUES ";
     bool save(false);
     uint32 ccPinID = ccPin->ccPinID;
-    for (auto cur : ccPin->pins) {
+    for (auto &cur : ccPin->pins) {
         if (save) {
             Inserts << ", ";
         } else {
@@ -500,7 +500,7 @@ void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin)
             Inserts  << ", " << itr->second.lastRunTime << ", " << itr->second.receivedInputsLastCycle << ", " << itr->second.hasReceivedInputs << ")";
         }
     } else {
-        for (auto cur : ccPin->pins) {
+        for (auto &cur : ccPin->pins) {
             if (first) {
                 Inserts << " VALUES ";
                 first = false;
@@ -566,7 +566,7 @@ void PlanetDB::UpdatePinTimes(PI_CCPin* ccPin)
     Inserts << " (pinID, launchTime, installTime, lastRunTime) VALUES ";
 
     bool save(false);
-    for (auto cur : ccPin->pins) {
+    for (auto &cur : ccPin->pins) {
         if (save) {
             Inserts << ", ";
         } else {
@@ -595,7 +595,7 @@ void PlanetDB::SaveHeads(uint32 ccPinID, uint32 ownerID, uint32 ecuID, std::map<
         return;
 
     DBerror err;
-    for (auto cur : heads) {
+    for (auto &cur : heads) {
         // save the head data separately
         if (!sDatabase.RunQuery(err,
             "INSERT INTO piECUHeads (ccPinID, ownerID, ecuID, headID, typeID, latitude, longitude)"
@@ -629,7 +629,7 @@ void PlanetDB::SaveLinks(PI_CCPin* ccPin)
 
     bool save(false);
     uint32 ccPinID = ccPin->ccPinID;
-    for (auto cur : ccPin->links) {
+    for (auto &cur : ccPin->links) {
         if (save) {
             Inserts << ", ";
         } else {
@@ -694,7 +694,7 @@ void PlanetDB::SaveRoutes(PI_CCPin* ccPin)
     std::string path;
     std::list<uint32>::iterator itr;
     uint32 ccPinID = ccPin->ccPinID;
-    for (auto cur : ccPin->routes) {
+    for (auto &cur : ccPin->routes) {
         path.clear();
         if (save) {
             Inserts << ", ";
@@ -737,7 +737,7 @@ void PlanetDB::SaveContents(PI_CCPin* ccPin)
     bool save(false);
     uint32 ccPinID = ccPin->ccPinID;
     std::map<uint16, uint32>::iterator itr;
-    for (auto cur : ccPin->pins) {
+    for (auto &cur : ccPin->pins) {
         if (cur.second.isStorage) {
             for (itr = cur.second.contents.begin(); itr != cur.second.contents.end(); itr++) {
                 if (save) {

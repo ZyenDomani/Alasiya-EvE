@@ -38,7 +38,7 @@ CommandDispatcher::CommandDispatcher( PyServiceMgr& services )
 }
 
 CommandDispatcher::~CommandDispatcher() {
-    for (auto cur : m_commands)
+    for (auto &cur : m_commands)
         SafeDelete(cur.second);
     m_commands.clear();
 }
@@ -105,7 +105,7 @@ void CommandDispatcher::ListCommands() {
 }
 
 void CommandDispatcher::Close() {
-    for (auto cur : m_commands)
+    for (auto &cur : m_commands)
         SafeDelete(cur.second);
     m_commands.clear();
 }

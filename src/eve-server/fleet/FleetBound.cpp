@@ -172,13 +172,13 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
         rsp.name = fData.name;
 
     PyDict* muteDict = new PyDict();
-    for (auto cur : fData.isExcludedFromMuting)
+    for (auto &cur : fData.isExcludedFromMuting)
         muteDict->SetItem(new PyInt(cur.first), new PyInt(cur.second));
     PySafeDecRef(rsp.isExcludedFromMuting);
     rsp.isExcludedFromMuting = muteDict;
 
     PyDict* lMuteDict = new PyDict();
-    for (auto cur : fData.isMutedByLeader)
+    for (auto &cur : fData.isMutedByLeader)
         lMuteDict->SetItem(new PyInt(cur.first), new PyInt(cur.second));
     PySafeDecRef(rsp.isMutedByLeader);
     rsp.isMutedByLeader = lMuteDict;
@@ -216,7 +216,7 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
     std::vector<Client*> members;
     sFltSvc.GetMemeberVec(m_fleetID, members);
     PyDict* dict2 = new PyDict();
-    for (auto cur : members) {
+    for (auto &cur : members) {
         MemberRSP member;
             member.charID = cur->GetCharacterID();
             member.clientID = cur->GetClientID();
@@ -467,7 +467,7 @@ PyResult FleetBound::Handle_GetJoinRequests(PyCallArgs &call) {
     sFltSvc.GetJoinRequests(call.client->GetChar()->fleetID(), cVec);
 
     PyDict* rsp = new PyDict();
-    for (auto cur : cVec) {
+    for (auto &cur : cVec) {
         PyDict* dict = new PyDict();
         dict->SetItemString("charID", new PyInt(cur->GetCharacterID()));
         rsp->SetItem(new PyInt(cur->GetCharacterID()), new PyObject("util.KeyVal", dict));
@@ -506,7 +506,7 @@ PyResult FleetBound::Handle_GetFleetComposition(PyCallArgs &call) {
     PyList* list = new PyList();
     std::vector<Client*> members;
     sFltSvc.GetMemeberVec(m_fleetID, members);
-    for (auto cur : members) {
+    for (auto &cur : members) {
         pChar = cur->GetChar().get();
         if (pChar == nullptr)
             continue;

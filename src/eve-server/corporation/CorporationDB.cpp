@@ -357,7 +357,7 @@ void CorporationDB::SaveMedalData(int64 medalID, std::vector< Corp::MedalData >&
     query << "VALUES ";
 
     bool first = true;
-    for (auto cur : dataList) {
+    for (auto &cur : dataList) {
         if (first) {
             first = false;
         } else {
@@ -482,7 +482,7 @@ void CorporationDB::GiveMedalToCharacters(uint32 issuerID, uint32 corpID, int32 
     query << "VALUES ";
 
     bool first = true;
-    for (auto cur : charVec) {
+    for (auto &cur : charVec) {
         if (first) {
             first = false;
         } else {
@@ -1315,7 +1315,7 @@ void CorporationDB::AddRecruiters(uint16 adID, int32 corpID, std::vector< int32 
     str << "INSERT INTO crpRecruiters (adID, corpID, charID) VALUES ";
 
     bool first = true;
-    for (auto cur : charVec) {
+    for (auto &cur : charVec) {
         if (!IsCharacterID(cur))
             continue;
         if (first) {
@@ -2134,7 +2134,7 @@ void CorporationDB::AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCas
     str << "INSERT INTO crpVoteOptions (voteCaseID, optionID, optionText, parameter, parameter1, parameter2) VALUES ";
 
     bool set(false);
-    for (auto cur : data) {
+    for (auto &cur : data) {
         if (!set) {
             set = true;
         } else {

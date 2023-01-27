@@ -198,7 +198,7 @@ PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {
     }
 
     SystemEntity* pSE(nullptr);
-    for (auto cur : args.ints) {
+    for (auto &cur : args.ints) {
         pSE = m_client->SystemMgr()->GetSE(cur);
         if (pSE == nullptr)
             continue;

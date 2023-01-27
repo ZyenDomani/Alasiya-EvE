@@ -1206,7 +1206,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
     }
 
     // populate results
-    for (auto cur : result)
+    for (auto &cur : result)
         list->AddItem(new PyInt(cur));
 
     if (is_log_enabled(CORP__RSP_DUMP))
@@ -1366,7 +1366,7 @@ PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
         // pay each id and record xfer
         std::string reason = "Dividend Payment from ";
     reason += ""; //corp name here
-    for (auto cur : toIDs)
+    for (auto &cur : toIDs)
         AccountService::TranserFunds(m_corpID, cur, amount, reason.c_str(), Journal::EntryType::CorporationDividendPayment, call.client->GetCharacterID());
 
     return nullptr;

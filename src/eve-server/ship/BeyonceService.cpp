@@ -810,7 +810,7 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 	/** @todo  change ownerID to _system for all loot also!!  */
 	SystemEntity* pSE(nullptr);
 	SystemManager* pSysMgr = call.client->SystemMgr();
-	for (auto cur : arg.ints) {
+	for (auto &cur : arg.ints) {
         pSE = pSysMgr->GetSE(cur);
         if (pSE == nullptr)
             continue;

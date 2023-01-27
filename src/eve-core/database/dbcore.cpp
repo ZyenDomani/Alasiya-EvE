@@ -204,7 +204,7 @@ void DBcore::CallShutdown()
     _log(DATABASE__MESSAGE, "DBCore recovery failed.  Server restarting.");
     std::vector<Client*> list;
     sEntityList.GetClients(list);
-    for (auto cur : list)
+    for (auto &cur : list)
         cur->SendInfoModalMsg("DBCore lost connection and recovery failed.  Server restarting.");
     Sleep(4000);    // pause running thread to allow players (if any) to view msg
     sConsole.HaltServer(true);

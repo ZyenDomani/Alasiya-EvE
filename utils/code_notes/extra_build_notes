@@ -1,3 +1,7 @@
+coverity --
 /usr/local/cov-analysis/bin/cov-build --dir cov-int make -j8 install
 tar czvf Alasiya-EvE.tgz cov-int
+
+doxygen --
+/srv/web/doc/Alasiya-EvE/Doxyfile
 

@@ -271,7 +271,7 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
     Inserts << " (itemID, typeID, ownerID, locationID, flag, contraband, singleton, quantity, x, y, z, customInfo)";
     Inserts << " VALUES ";
     bool save(false);
-    for (auto cur : data) {
+    for (auto &cur : data) {
         if (cur.position.isNaN() or cur.position.isInf()) {
             _log(PHYSICS__WARNING, "ItemDB::SaveItems() - %u has invalid position", cur.itemID);
             continue;
@@ -323,7 +323,7 @@ void ItemDB::SaveAttributes(bool isChar, std::vector<Inv::AttrData>& data)
         Inserts << " (itemID, attributeID, valueInt, valueFloat)";
     }
     bool first(true);
-    for (auto cur : data) {
+    for (auto &cur : data) {
         if (first) {
             Inserts << " VALUES ";
             first = false;

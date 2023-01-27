@@ -396,7 +396,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 
     if (m_self->IsShipItem() and !moveStack) {
         std::vector<InventoryItemRef> itemVec;
-        for (auto cur : args.itemIDs)
+        for (auto &cur : args.itemIDs)
             itemVec.push_back(sItemFactory.GetItemRef(cur));
         args.itemIDs = CatSortItems(itemVec);
     }
@@ -700,7 +700,7 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
         }
     }
 
-    for (auto cur : itemVec)
+    for (auto &cur : itemVec)
         items.push_back(cur->itemID());
 
     if (sConfig.debug.IsTestServer and sConfig.debug.UseProfiling)

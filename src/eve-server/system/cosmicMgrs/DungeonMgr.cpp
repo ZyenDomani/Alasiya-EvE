@@ -127,7 +127,7 @@ void DungeonDataMgr::AddDungeon(Dungeon::ActiveData& dungeon)
 
 void DungeonDataMgr::GetDungeons(std::vector<Dungeon::ActiveData>& dunList)
 {
-    for (auto cur : activeDungeons)
+    for (auto &cur : activeDungeons)
         dunList.push_back(cur.second);
 }
 
@@ -174,7 +174,7 @@ DungeonMgr::~DungeonMgr()
     //for now we're deleting everything till i can write proper item handling code
 
     /*  this is not needed as all items are temp at this time.
-    for (auto cur : m_dungeonList)
+    for (auto &cur : m_dungeonList)
         for (auto item : cur.second)
             InventoryDB::DeleteItem(item);
      */
@@ -333,7 +333,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         if (chance < 0.01)
             chance = 0.01;
         std::unordered_multimap<float, uint16> roidTypes;
-        for (auto cur : m_anomalyItems)
+        for (auto &cur : m_anomalyItems)
             roidTypes.emplace(chance, cur.typeID);
 
         m_system->GetBeltMgr()->Create(sig, roidTypes);
@@ -783,7 +783,7 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
     uint8 origLevel = ceil(level / 10);
     if (origLevel < 1)
         origLevel = 1;
-    for (auto cur : groupVec) {
+    for (auto &cur : groupVec) {
         level = origLevel;
         count = sDunDataMgr.groups.count(cur);
         if (count < 1)

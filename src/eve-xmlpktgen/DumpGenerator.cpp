@@ -616,7 +616,7 @@ bool ClassDumpGenerator::ProcessDictRaw( const TiXmlElement* field )
         "    _log( l_type, \"%%s%s: Dictionary with %%lu entries\", pfx, %s.size() );\n"
         "\n"
         "    /* total crap casting here since we do not know the correct printf format */\n"
-        "    for (auto cur : %s)\n"
+        "    for (auto &cur : %s)\n"
         "        _log( l_type, \"%%s   Key: %%u -> Value: %%u\", pfx, uint32(cur.first), uint32(cur.second));\n"
         "\n",
         name, name, name
@@ -636,7 +636,7 @@ bool ClassDumpGenerator::ProcessDictInt( const TiXmlElement* field )
     fprintf( mOutputFile,
         "    _log( l_type, \"%%s%s: Dictionary with %%lu entries\", pfx, %s.size() );\n"
         "\n"
-        "    for (auto cur : %s) {\n"
+        "    for (auto &cur : %s) {\n"
         "        _log( l_type, \"%%s   Key: %%u\", pfx, cur.first );\n"
         "        std::string n( pfx );\n"
         "        n += \"        \";\n"
@@ -660,7 +660,7 @@ bool ClassDumpGenerator::ProcessDictStr( const TiXmlElement* field )
     fprintf( mOutputFile,
         "    _log( l_type, \"%%s%s: Dictionary with %%lu entries\", pfx, %s.size() );\n"
         "\n"
-        "    for (auto cur : %s) {\n"
+        "    for (auto &cur : %s) {\n"
         "        _log( l_type, \"%%s Key: %%s\", pfx, cur.first.c_str() );\n"
         "        std::string n( pfx );\n"
         "        n += \"      \";\n"

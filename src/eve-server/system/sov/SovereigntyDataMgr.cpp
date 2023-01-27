@@ -35,7 +35,7 @@ int SovereigntyDataMgr::Initialize()
 void SovereigntyDataMgr::Close()
 {
     /** @todo put a save method here which will save anything changed before shutdown */
-    //for (auto cur : m_sovPyData)
+    //for (auto &cur : m_sovPyData)
     //    PySafeDecRef(cur.second);
 
     sLog.Warning("       SovDataMgr", "Sovereignty Data Manager has been closed.");
@@ -43,7 +43,7 @@ void SovereigntyDataMgr::Close()
 
 void SovereigntyDataMgr::Clear()
 {
-    //for (auto cur : m_sovPyData)
+    //for (auto &cur : m_sovPyData)
     //    PySafeDecRef(cur.second);
     m_sovData.clear();
     //m_sovPyData.clear();

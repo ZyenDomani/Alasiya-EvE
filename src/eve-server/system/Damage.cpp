@@ -520,7 +520,7 @@ void ShipSE::Killed(Damage &damage) {
             blob << "<i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/>";
         } else {
             uint32 s = 0, d = 0, x = 0;
-            for (auto cur : deadShipInventory) {
+            for (auto &cur : deadShipInventory) {
                 d = 0;
                 x = cur.second->quantity();
                 s = (cur.second->isSingleton() ? 1 : 0);
@@ -615,7 +615,7 @@ void ShipSE::Killed(Damage &damage) {
             GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
         DropLoot(wreckItemRef, groupID, killerID);
-        for (auto cur: survivedItems)
+        for (auto &cur: survivedItems)
             cur->Move(wreckItemRef->itemID(), flagNone); // populate wreck with items that survived
 
         DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();

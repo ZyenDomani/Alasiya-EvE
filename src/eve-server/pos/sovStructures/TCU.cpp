@@ -66,7 +66,7 @@ void TCUSE::SetOnline()
     svDataMgr.AddSovClaim(sovData);
 
     //Send ProcessSovStatusChanged Notification
-    PyDict *args = new PyDict;
+    PyDict *args = new PyDict();
     _log(SOV__DEBUG, "Sending ProcessSovStatusChanged for %u:%u", sovData.solarSystemID, sovData.allianceID);
 
     args->SetItemString("contested", new PyInt(sovData.contested));
@@ -83,8 +83,8 @@ void TCUSE::SetOnline()
 
     std::vector<Client*> list;
     m_system->GetClientList(list);
-    for (auto cur : list)
-        if (cur != nullptr) {
+    for (auto &cur : list)
+        if ((cur != nullptr) and cur->IsInSpace()) {
             cur->SendNotification("ProcessSovStatusChanged", "clientID", &data);
             _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s (%u)", cur->GetName(), cur->GetCharID());
         }
@@ -104,8 +104,9 @@ void TCUSE::SetOffline()
 
     std::vector<Client*> list;
     m_system->GetClientList(list);
-    for (auto cur : list)
-        if (cur != nullptr) {
+    for (auto &cur : list)
+        if ((cur != nullptr) and cur->IsInSpace()) {
+            PyIncRef(data);
             cur->SendNotification("ProcessSovStatusChanged", "clientID", &data);
             _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s(%u)", cur->GetName(), cur->GetCharID());
         }

@@ -559,7 +559,7 @@ PyResult Command_killallnpcs(Client* pClient, CommandDB* db, PyServiceMgr* servi
 
     std::map< uint32, SystemEntity* > entityVec;
     pClient->GetShipSE()->SysBubble()->GetEntities(entityVec);
-    for (auto cur : entityVec) {
+    for (auto &cur : entityVec) {
         if (cur.second == nullptr)
             continue;
         if (cur.second->IsNPCSE()) {
@@ -651,7 +651,7 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, PyServiceMgr* services,
 
     std::map< uint32, SystemEntity* > entMap;
     pBubble->GetEntities(entMap);
-    for (auto cur : entMap) {
+    for (auto &cur : entMap) {
         if (is_group_match and match_id != cur.second->GetGroupID()) {
             codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u groupID %u",
                     is_group_match, is_category_match, match_id, cur.second->GetGroupID());

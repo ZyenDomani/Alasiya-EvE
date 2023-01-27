@@ -148,7 +148,7 @@ void CynoModule::SendOnJumpBeaconChange(bool active/*false*/) {
 
         std::vector<Client *> fleetClients;
         fleetClients = sFltSvc.GetFleetClients(pClient->GetFleetID());
-        for (auto cur : fleetClients)
+        for (auto &cur : fleetClients)
             if (cur != nullptr) {
                 cur->SendNotification("OnJumpBeaconChange", "clientID", &data);
                 _log(MODULE__DEBUG, "OnJumpBeaconChange sent to %s (%u)", cur->GetName(), cur->GetCharID());

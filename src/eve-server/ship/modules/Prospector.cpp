@@ -180,7 +180,7 @@ void Prospector::DropSalvage()
         InventoryItemRef iRef(nullptr);
         Inventory* sInv(m_shipRef->GetMyInventory());
         uint32 quantity = 0, minDrop = drop, maxDrop = (drop * sConfig.rates.DropSalvage);
-        for (auto cur : list) {
+        for (auto &cur : list) {
             // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
             if (IsEven(MakeRandomInt(0,10)))
                 continue;
@@ -222,7 +222,7 @@ void Prospector::DropSalvage()
 
         CargoContainerRef jetCanRef = sItemFactory.SpawnCargoContainer(p_idata);
         if (jetCanRef.get() != nullptr) {
-            for (auto cur : shipLoot)
+            for (auto &cur : shipLoot)
                 cur.second->Move(jetCanRef->itemID(),flagNone);
             FactionData data = FactionData();
                 data.allianceID = m_targetSE->GetAllianceID();

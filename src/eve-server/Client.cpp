@@ -140,7 +140,7 @@ Client::~Client() {
         WarpOut();      // need to make tests for this...it will segfault if m_char is invalid
 
     // LSC logout
-    for (auto cur : m_channels)
+    for (auto &cur : m_channels)
         cur->LeaveChannel(this);
 
     if (m_char.get() != nullptr) {   // we have valid character
@@ -182,7 +182,7 @@ Client::~Client() {
     // remove char from entitylist
     sEntityList.RemovePlayer(this);
 
-    for (auto cur : m_bindSet)
+    for (auto &cur : m_bindSet)
         m_services.ClearBoundObject(cur);
 
     m_system = nullptr; // DO NOT delete m_system here
@@ -1801,7 +1801,7 @@ void Client::CharNoLongerInStation() {
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.GetStationGuestList(m_stationData.stationID, clients);
-    for (auto cur : clients) {
+    for (auto &cur : clients) {
         PyIncRef(tmp);
         cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp); //consumed
     }
@@ -1822,7 +1822,7 @@ void Client::CharNowInStation() {
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.GetStationGuestList(m_locationID, clients);
-    for (auto cur : clients) {
+    for (auto &cur : clients) {
         PySafeIncRef(tmp);
         cur->SendNotification("OnCharNowInStation", "stationid", &tmp);
     }

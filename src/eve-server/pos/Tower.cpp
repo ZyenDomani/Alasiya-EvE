@@ -403,7 +403,7 @@ PyRep* TowerSE::GetUsageFlagList()
         header->SetItemString(2, "viewputtake");
         header->SetItemString(3, "use");
     PyList* lines = new PyList();
-    for (auto cur : m_structs) {
+    for (auto &cur : m_structs) {
         PyList* line = new PyList(4);
             line->SetItem(0, new PyInt(cur.first));
             line->SetItem(1, new PyInt(cur.second->CanView()));
@@ -460,7 +460,7 @@ PyRep* TowerSE::GetProcessInfo()
             */
 
     PyList* list = new PyList();
-    for (auto cur : m_structs) {
+    for (auto &cur : m_structs) {
         switch (cur.second->GetSelf()->groupID()) {
             case EVEDB::invGroups::Moon_Mining:
             case EVEDB::invGroups::Silo:

@@ -110,7 +110,7 @@ void ShipDB::SaveWeaponGroups(uint32 shipID, std::multimap< uint32, uint32 >& da
     Inserts << " (shipID, masterID, slaveID)";
     Inserts << " VALUES ";
     bool save(false);
-    for (auto cur : data) {
+    for (auto &cur : data) {
         if (save) {
             Inserts << ", ";
         } else {

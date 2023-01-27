@@ -215,7 +215,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
 
         list.clear();
         sEntityList.GetCorpClients(list, oamc.corpID);
-        for (auto cur : list)
+        for (auto &cur : list)
         {
             if (cur != nullptr)
             {
@@ -226,7 +226,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
 
         list.clear();
         sEntityList.GetCorpClients(list, executorID);
-        for (auto cur : list)
+        for (auto &cur : list)
         {
             if (cur != nullptr)
             {
@@ -275,7 +275,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
         //Send to everyone who needs to see it in the applying corp
         list.clear();
         sEntityList.GetCorpClients(list, args.corporationID);
-        for (auto cur : list)
+        for (auto &cur : list)
         {
             if (cur != nullptr)
             {
@@ -300,7 +300,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
 
     list.clear();
     sEntityList.GetCorpClients(list, oaac.corpID);
-    for (auto cur : list)
+    for (auto &cur : list)
     {
         if (cur != nullptr)
         {
@@ -311,7 +311,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
 
     list.clear();
     sEntityList.GetCorpClients(list, executorID);
-    for (auto cur : list)
+    for (auto &cur : list)
     {
         if (cur != nullptr)
         {

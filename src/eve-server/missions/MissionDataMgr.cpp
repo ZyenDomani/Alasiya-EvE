@@ -463,7 +463,7 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
             cData = cVec[MakeRandomInt(0, (cVec.size() - 1))];
             // verify mission race acceptable
             if ((cData.raceID) and ((cData.raceID & raceID) != raceID)) {
-                for (auto cur :cVec) {
+                for (auto &cur :cVec) {
                     if ((cur.raceID & raceID) == raceID)
                         cData = cur;
                 }

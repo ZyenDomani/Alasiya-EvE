@@ -309,7 +309,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
 
     // determine % of remaining ore for each module active on this rock
     float total = GetMiningVolume(), percent = 0.0f;
-    for (auto cur : mMap)
+    for (auto &cur : mMap)
         total += cur.first;
 
     /** @todo check for mining drones here!!!  */
@@ -320,7 +320,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
         _log(MINING__ERROR, "%s(%u) - Depleted() -  oreVolume is <0 for %s(%u)", m_modRef->name(), m_modRef->itemID(), roidRef->name(), m_targetSE->GetID() );
 
         // send error and deactivate all active modules here
-        for (auto cur : mMap) {
+        for (auto &cur : mMap) {
             cur.second->GetShipRef()->GetPilot()->SendNotifyMsg("Your %s deactivates because there was a processing error.  Ref: ServerError 03123.", \
                         cur.second->GetSelf()->name());
             cur.second->CancelOnError();
@@ -331,7 +331,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
     float roidQuantity(roidRef->GetAttribute(AttrQuantity).get_float());
     double oreAmount(0);
 
-    for (auto cur : mMap) {
+    for (auto &cur : mMap) {
         if ((cur.first < oreVolume) or (cur.first < 0.1)) {
             _log(MINING__ERROR, "%s(%u) - Depleted() -  Mining Laser could not extract ore from %s(%u)", \
                         cur.second->GetSelf()->name(), cur.second->GetSelf()->itemID(), roidRef->name(), m_targetSE->GetID() );

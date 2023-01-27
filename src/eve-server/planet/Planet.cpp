@@ -52,7 +52,7 @@ pCO(nullptr)
 
 PlanetSE::~PlanetSE()
 {
-    for (auto cur : m_colonies) {
+    for (auto &cur : m_colonies) {
         cur.second->Shutdown();
         SafeDelete(cur.second);
     }
@@ -130,7 +130,7 @@ bool PlanetSE::LoadExtras() {
 // called from SystemManager::Process() @ 1m
 void PlanetSE::Process()
 {
-    for (auto cur : m_colonies)
+    for (auto &cur : m_colonies)
         cur.second->Process();
 }
 

@@ -1117,7 +1117,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
         m_inTraining = skill;
 
         if (is_log_enabled(SKILL__INFO)) {
-            uint32 timeLeft = (qs.endTime - curTime) / EvE::Time::Second;
+            int64 timeLeft = (qs.endTime - curTime) / EvE::Time::Second;
             const char* formatedTime = EvE::FormatTime(timeLeft);
             _log(SKILL__INFO, "Training started.  %s to train %u sp for level %u", \
                     formatedTime, nextSP - skill->GetCurrentSP(this, qs.startTime), qs.level);

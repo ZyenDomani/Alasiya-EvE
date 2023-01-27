@@ -115,7 +115,7 @@ void Threading::RemoveThread(pthread_t thread) {
 }
 
 void Threading::ListThreads() {
-    for (auto cur : m_threads)
+    for (auto &cur : m_threads)
         sLog.Warning( "                 ", "ThreadID 0x%X", cur );
 }
 

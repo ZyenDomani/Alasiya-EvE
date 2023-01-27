@@ -567,7 +567,7 @@ void MarketDB::GetMineralPrices(std::map< uint16, Market::matlData >& data)
 void MarketDB::UpdateInvPrice(std::map< uint16, Inv::TypeData >& data)
 {
     DBerror err;
-    for (auto cur : data) {
+    for (auto &cur : data) {
         if (cur.second.basePrice < 0.01) {
             sLog.Error("     SetBasePrice", "Calculated price for %s(%u) is 0", \
                     cur.second.name.c_str(), cur.first);
@@ -580,7 +580,7 @@ void MarketDB::UpdateInvPrice(std::map< uint16, Inv::TypeData >& data)
 void MarketDB::UpdateMktPrice(std::map< uint16, Market::matlData >& data)
 {
     DBerror err;
-    for (auto cur : data)
+    for (auto &cur : data)
         sDatabase.RunQuery(err, "UPDATE invTypes SET basePrice=%f WHERE typeID= %u", cur.second.price, cur.first);
 }
 

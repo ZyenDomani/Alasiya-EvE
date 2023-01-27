@@ -116,7 +116,7 @@ bool ItemType::_Load()
     // load type attribs
     std::vector< Inv::DmgTypeAttribute > typeAttrVec;
     sDataMgr.GetDgmTypeAttrVec(m_type.id, typeAttrVec);
-    for (auto cur : typeAttrVec)
+    for (auto &cur : typeAttrVec)
         m_AttributeMap.insert(std::pair<uint16, EvilNumber>(cur.attributeID, cur.value));
 
     // load attributes found in invTypes
@@ -153,7 +153,7 @@ bool ItemType::_Load()
 const void ItemType::CopyAttributes(InventoryItem& itemRef) const
 {
     // set attributes in the item's own attrMap.
-    for (auto cur : m_AttributeMap)
+    for (auto &cur : m_AttributeMap)
         itemRef.SetAttribute(cur.first, cur.second, false);
 }
 
@@ -179,7 +179,7 @@ bool ItemType::HasReqSkill(const uint16 skillID) const
     if (itr != m_reqSkillMap.end())
         return true;
     /*  this part will get prequisites for required skills...this isnt right
-    for (auto cur : m_reqSkillMap)
+    for (auto &cur : m_reqSkillMap)
         if (sItemFactory.GetType(cur.first)->HasReqSkill(skillID))
             return true;
     */
@@ -192,7 +192,7 @@ void ItemType::LoadEffects()
     std::vector< TypeEffects > typeEffMap;
     sFxDataMgr.GetTypeEffect(m_type.id, typeEffMap);
 
-    for (auto cur : typeEffMap) {
+    for (auto &cur : typeEffMap) {
         Effect mEffect(sFxDataMgr.GetEffect(cur.effectID));
         m_stateFxMap.emplace(mEffect.effectState, mEffect);
         if (cur.isDefault) {

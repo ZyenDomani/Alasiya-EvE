@@ -71,7 +71,7 @@ PyCallArgs::PyCallArgs(Client *c, PyTuple* tup, PyDict* dict)
 
 PyCallArgs::~PyCallArgs() {
     PySafeDecRef( tuple );
-    for (auto cur : byname)
+    for (auto &cur : byname)
         PySafeDecRef( cur.second );
 }
 
@@ -83,7 +83,7 @@ void PyCallArgs::Dump(LogType type) const {
     tuple->Dump(type, "    ");
     if (!byname.empty()) {
         _log(type, " Named Arguments:");
-        for (auto cur : byname) {
+        for (auto &cur : byname) {
             _log(type, "  %s", cur.first.c_str());
             cur.second->Dump(type, "    ");
         }

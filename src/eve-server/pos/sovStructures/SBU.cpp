@@ -57,22 +57,16 @@ void SBUSE::SetOnline()
     StructureSE::SetOnline();
 
     // If more than 50 percent of gates have an SBU, the TCU should be vulnerable
-    if ((GetSBUs() / GetGates()) > 0.5)
-    {
+    if ((GetSBUs() / GetGates()) > 0.5)  {
         _log(SOV__DEBUG, "- STATE CHANGE - This system has %u SBUs installed in the total of %u stargates. The TCU is now vulnerable to attack.", (int)GetSBUs(), (int)GetGates());
         // Make the TCU vulnerable
-        for (auto cur : m_system->GetOperationalStatics())
-        {
+        for (auto &cur : m_system->GetOperationalStatics())
             if (cur.second->IsTCUSE())
-            {
                 cur.second->GetTCUSE()->SetVulnerable();
-            }
-        }
+
         // Mark the system as contested
         MarkContested(m_system->GetID(), true);
-    }
-    else
-    {
+    } else {
         _log(SOV__DEBUG, "This system has %u SBUs installed in the total of %u stargates. The TCU is invulnerable.", (int)GetSBUs(), (int)GetGates());
     }
 }
@@ -82,22 +76,16 @@ void SBUSE::SetOffline()
     // Ensure that the SBU is offline before we check ratio
     StructureSE::SetOffline();
 
-    if ((GetSBUs() / GetGates()) <= 0.5)
-    {
+    if ((GetSBUs() / GetGates()) <= 0.5)  {
         _log(SOV__DEBUG, "- STATE CHANGE - This system has %u SBUs installed in the total of %u stargates. The TCU is no longer vulnerable to attack.", (int)GetSBUs(), (int)GetGates());
         // Make the TCU invulnerable
-        for (auto cur : m_system->GetOperationalStatics())
-        {
+        for (auto &cur : m_system->GetOperationalStatics())
             if (cur.second->IsTCUSE())
-            {
                 cur.second->GetTCUSE()->SetOnline();
-            }
-        }
+
         // Unmark the system as contested
         MarkContested(m_system->GetID(), false);
-    }
-    else
-    {
+    } else {
         _log(SOV__DEBUG, "This system has %u SBUs installed in the total of %u stargates. The TCU is vulnerable.", (int)GetSBUs(), (int)GetGates());
     }
 }
@@ -110,7 +98,7 @@ void SBUSE::Process()
 void SBUSE::MarkContested(uint32 systemID, bool contested)
 {
     //Send ProcessSovStatusChanged Notification
-    PyDict *args = new PyDict;
+    PyDict *args = new PyDict();
     _log(SOV__DEBUG, "SBUSE::MarkContested(): Sending ProcessSovStatusChanged for %u", systemID);
 
     //Update datamgr records with new contested state
@@ -132,21 +120,19 @@ void SBUSE::MarkContested(uint32 systemID, bool contested)
     data->SetItem(1, new PyObject("util.KeyVal", args));
 
     std::vector<Client *> list;
-    sEntityList.GetClients(list);
-    for (auto cur : list)
-    {
-        if (cur->GetChar().get() != nullptr)
-        {
+    m_system->GetClientList(list);
+    for (auto &cur : list)
+        if ((cur != nullptr) and cur->IsInSpace()) {
             PyIncRef(data);
             cur->SendNotification("ProcessSovStatusChanged", "clientID", &data);
             _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s(%u)", cur->GetName(), cur->GetCharID());
         }
-    }
 
     // cleanup
     PyDecRef(data);
 }
 
+/** @todo these can both be done better.... */
 // Calculate number of gates in the system
 float SBUSE::GetGates()
 {
@@ -157,16 +143,12 @@ float SBUSE::GetGates()
 float SBUSE::GetSBUs()
 {
     int numberOfSBUs = 0;
-    for (auto cur : m_system->GetOperationalStatics())
-    {
-        if (cur.second->IsSBUSE())
-        {
+    for (auto &cur : m_system->GetOperationalStatics())
+        if (cur.second->IsSBUSE())  {
             //Only increment the number of SBUs if they are online
             if (cur.second->GetSBUSE()->GetState() == EVEPOS::StructureState::Online)
-            {
-                numberOfSBUs++;
-            }
+                ++numberOfSBUs;
         }
-    }
-    return (float)numberOfSBUs;
+
+    return numberOfSBUs;
 }

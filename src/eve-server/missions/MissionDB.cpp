@@ -128,7 +128,7 @@ void MissionDB::RemoveMissionItem(uint32 charID, uint16 typeID, uint32 qty)
     }
 
     DBerror err;
-    for (auto cur : map) {
+    for (auto &cur : map) {
         if (qty < 1)
             break;
         if (cur.second <= qty) {

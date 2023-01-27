@@ -343,7 +343,7 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
     std::map<uint16, InventoryItemRef> items;   // typeID, itemRef
     GetBOMItemsMap( bomLocation, items );
 
-    for (auto cur : reqItems) {
+    for (auto &cur : reqItems) {
         if (cur.isSkill) { // check skill (quantity is required level)
             if (pClient->GetChar()->GetSkillLevel(cur.typeID) < cur.quantity) {
                 throw UserError("RamNeedSkillForJob")
@@ -495,7 +495,7 @@ void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &
     PySafeDecRef( into.rawMaterials.lines );
     into.rawMaterials.lines = new PyList();
 
-    for (auto cur : reqItems) {
+    for (auto &cur : reqItems) {
         if (cur.isSkill) {
             into.skills[cur.typeID] = new PyInt(cur.quantity);
             continue;
@@ -539,7 +539,7 @@ void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> 
 
     //now do the check
     uint32 qtyReq(0);
-    for (auto cur : reqItems) {
+    for (auto &cur : reqItems) {
         qtyReq = cur.quantity;
         if (!cur.isSkill) {
             qtyReq = (uint32)ceil(qtyReq * materialMultiplier * runs);

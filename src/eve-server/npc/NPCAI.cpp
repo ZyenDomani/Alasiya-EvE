@@ -296,7 +296,7 @@ void NPCAIMgr::Process() {
                 clientVec.clear();
                 DestinyManager* pDestiny(nullptr);
                 m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?  yes...later
-                for (auto cur : clientVec) {
+                for (auto &cur : clientVec) {
                     if (cur->IsInvul())
                         continue;
                     if (cur->GetShipSE() == nullptr)

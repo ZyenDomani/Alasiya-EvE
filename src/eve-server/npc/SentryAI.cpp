@@ -97,7 +97,7 @@ void SentryAI::Process() {
                 clientVec.clear();
                 DestinyManager* pDestiny(nullptr);
                 m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?  yes...later
-                for (auto cur : clientVec) {
+                for (auto &cur : clientVec) {
                     /** @todo  this needs work
                     if (cur->IsLogin() or cur->IsInvul() or cur->InPod())
                         continue;

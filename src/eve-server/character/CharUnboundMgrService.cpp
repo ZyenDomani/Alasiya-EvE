@@ -312,7 +312,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     //spawn all the skills
     uint8 skillLevel = 0;
     uint32 skillPoints = 0;
-    for (auto cur : startingSkills) {
+    for (auto &cur : startingSkills) {
         ItemData skillItem( cur.first, charRef->itemID(), charRef->itemID(), flagSkill );
         SkillRef skill = sItemFactory.SpawnSkill( skillItem );
         if (skill.get() == nullptr) {

@@ -619,7 +619,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
     // return materials which weren't consumed
     std::vector<EvERam::RequiredItem> reqItems;
     sDataMgr.GetRamReturns(installedItem->typeID(), data.activity, reqItems);
-    for (auto cur : reqItems) {
+    for (auto &cur : reqItems) {
         // what about items where damage < 1.0?  (there are some...)
         uint32 quantity = (cur.quantity * data.jobRuns * (1 - cur.damagePerJob));
         if (quantity == 0)
