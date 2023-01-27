@@ -1154,6 +1154,8 @@ void Character::SkillQueueLoop(bool update/*true*/)
         m_pClient->QueueDestinyEvent(&tmp);
     }
 
+    //PySafeDecRef(list);
+
     _log(SKILL__QUEUE, "SkillQueueLoop() completed in %.4fms", (GetTimeMSeconds() - begin));
 }
 

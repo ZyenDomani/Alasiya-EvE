@@ -1476,6 +1476,8 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         _log(FLEET__BCAST_DUMP, "%s FleetBroadcast '%s' to %s members of fleet %u.", GetBCastScopeName(scope).c_str(), msg.c_str(), grp.str().c_str() , fleetID);
         payload->Dump(FLEET__BCAST_DUMP, "   ");
     }
+    
+    PySafeDecRef(payload);
 }
 
 void FleetService::SendFleetUpdate(uint32 fleetID, const char* notifyType, PyTuple* payload)

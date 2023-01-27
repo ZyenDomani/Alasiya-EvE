@@ -173,7 +173,7 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble)
     if (pBubble == nullptr)
         return;
     _log(SPAWN__TRACE, "WarpOutSpawn() called by %s(%u) from bubbleID %u to bubbleID %u", pNPC->GetName(), pNPC->GetID(), pNPC->SysBubble()->GetID(), pBubble->GetID() );
-    NPC* rNPC(nullptr);
+    NPC* pNPC(nullptr);
     auto range = m_spawns.equal_range(pNPC->SysBubble()->GetID());
     auto itr = range.first;
     while (itr != range.second) {
@@ -181,16 +181,15 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble)
             ++itr;
             continue;
         }
-        rNPC = m_system->GetNPCSE(itr->second.itemID);
-        if (rNPC == nullptr) {
+        pNPC = m_system->GetNPCSE(itr->second.itemID);
+        if (pNPC == nullptr) {
             ++itr;
             continue;
         }
-        rNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) *100);
-        rNPC->GetAIMgr()->DisableWarpOutTimer();
+        pNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) *100);
+        pNPC->GetAIMgr()->DisableWarpOutTimer();
         m_spawns.emplace(pBubble->GetID(), itr->second);
-        m_spawns.erase(itr);
-        ++itr;
+        itr = m_spawns.erase(itr);
     }
 
     pNPC->SysBubble()->SetSpawned(false);

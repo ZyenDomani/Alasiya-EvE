@@ -430,7 +430,6 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     uint32 charID = call.client->GetCharacterID();
     uint32 tradeContID = pTSes->m_tradeSession.containerID;
 
-    DBRowDescriptor* header = sDataMgr.CreateHeader();
     std::vector<int32> list = args.ints;
     for (auto cur : list) {
         InventoryItemRef itemRef = sItemFactory.GetItemRef(cur);
@@ -454,7 +453,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
         pTSes->m_tradelist.insert(pTSes->m_tradelist.end(), mTI);
         itemRef->Move(tradeContID, (EVEItemFlags)flag, true);
 
-        PyPackedRow* row = new PyPackedRow( header );
+        PyPackedRow* row = new PyPackedRow( sDataMgr.CreateHeader() );
             row->SetFieldC("itemID",        new PyLong(mTI.itemID));
             row->SetFieldC("typeID",        new PyInt(mTI.typeID));
             row->SetFieldC("ownerID",       new PyInt(mTI.ownerID));
@@ -567,8 +566,9 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     AccountService::TranserFunds(pClient->GetCharacterID(), pOther->GetCharacterID(), pTSes->m_tradeSession.myMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
     AccountService::TranserFunds(pOther->GetCharacterID(), pClient->GetCharacterID(), pTSes->m_tradeSession.herMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
 
-    PyDict* dict = new PyDict();
-        dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(pTSes->m_tradeSession.containerID));
+    /** @todo  where does this dict go??  */
+    //PyDict* dict = new PyDict();
+    //    dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(pTSes->m_tradeSession.containerID));
 
     uint32 stationID = pTSes->m_tradeSession.stationID;
     for (auto cur : pTSes->m_tradelist) {
@@ -597,6 +597,8 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     // now send it, bypassing the extra shit and wrong dest name added in Client::SendNotification
     pClient->SendNotification("OnTrade", "charid", &tuple);
     pOther->SendNotification("OnTrade", "charid", &tuple);
+
+    //PyDecRef(dict);
 }
 
 void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryItemRef itemRef, uint32 newOwnerID)
@@ -632,7 +634,7 @@ PyResult TradeService::Handle_InitiateTrade(PyCallArgs &call) {
         return nullptr;
     }
 
-    Call_SingleIntegerArg args;
+    SingleIntegerArg args;
     //    .arg is char to trade with
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());

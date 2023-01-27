@@ -757,8 +757,10 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/)
     }
 
     std::map<uint32, PI_Plant>::iterator itr = ccPin->plants.find(pinID);
-    if (itr == ccPin->plants.end())
+    if (itr == ccPin->plants.end()) {
         _log(COLONY__ERROR, "Colony::SetSchematic() - plantID %u not found in ccPin.plants map", pinID);
+        return;
+    }
 
     if (schematicID) {
         // install new schematic.  set lastRunTime to 0
