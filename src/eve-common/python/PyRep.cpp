@@ -870,8 +870,8 @@ PyObjectEx::~PyObjectEx()
 {
     //PySafeDecRef( mHeader );
 
-    //PyDecRef( mList );
-    //PyDecRef( mDict );
+    PyDecRef( mList );
+    PyDecRef( mDict );
 }
 
 PyRep* PyObjectEx::Clone() const

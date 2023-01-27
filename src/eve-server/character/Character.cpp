@@ -816,8 +816,8 @@ void Character::CancelSkillInTraining(bool update/*false*/)
         return;
 
     QueuedSkill qs = m_skillQueue.front();
-    uint8 nextLvl(m_inTraining->GetAttribute(AttrSkillLevel).get_uint32() + 1);
-    if (nextLvl > EvESkill::MAXSKILLLEVEL)
+    uint8 nextLvl(m_inTraining->GetAttribute(AttrSkillLevel).get_uint32());
+    if (++nextLvl > EvESkill::MAXSKILLLEVEL)
         nextLvl = EvESkill::MAXSKILLLEVEL;
 
     int64 curTime(GetFileTimeNow());
@@ -1117,7 +1117,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
         m_inTraining = skill;
 
         if (is_log_enabled(SKILL__INFO)) {
-            double timeLeft = (qs.endTime - curTime) / EvE::Time::Second;
+            uint32 timeLeft = (qs.endTime - curTime) / EvE::Time::Second;
             const char* formatedTime = EvE::FormatTime(timeLeft);
             _log(SKILL__INFO, "Training started.  %s to train %u sp for level %u", \
                     formatedTime, nextSP - skill->GetCurrentSP(this, qs.startTime), qs.level);

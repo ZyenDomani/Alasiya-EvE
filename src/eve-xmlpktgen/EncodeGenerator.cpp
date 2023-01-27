@@ -914,6 +914,15 @@ bool ClassEncodeGenerator::ProcessDictStr( const TiXmlElement* field )
     return true;
 }
 
+/** @todo  these are wrong....not sure how yet....
+ *
+    PyRep* ss_3;
+    ss_3 = new PySubStruct( ss_3 );
+    PyRep* ss_4;
+    ss_4 = new PySubStream( ss_4 );
+
+    */
+
 bool ClassEncodeGenerator::ProcessSubStreamInline( const TiXmlElement* field )
 {
     char varname[16];
@@ -921,7 +930,7 @@ bool ClassEncodeGenerator::ProcessSubStreamInline( const TiXmlElement* field )
 
     //encode the sub-element into a temp
     fprintf( mOutputFile,
-        "    PyRep* %s;\n",
+        "    PyRep* %s(nullptr);\n",
         varname
     );
 
@@ -946,7 +955,7 @@ bool ClassEncodeGenerator::ProcessSubStructInline( const TiXmlElement* field )
 
     //encode the sub-element into a temp
     fprintf( mOutputFile,
-        "    PyRep* %s;\n",
+        "    PyRep* %s(nullptr);\n",
         varname
     );
 

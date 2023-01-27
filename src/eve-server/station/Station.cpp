@@ -137,9 +137,10 @@ uint32 StationItem::GetOfficeID(uint32 corpID)
 {
     if (!IsPlayerCorp(corpID))
         return 0;
-    for (auto cur : m_officeMap)
-        if (cur.second.corporationID = corpID)
+    for (auto &cur : m_officeMap)
+        if (cur.second.corporationID == corpID)
             return cur.first;
+
     return 0;
 }
 

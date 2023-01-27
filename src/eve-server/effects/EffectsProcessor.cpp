@@ -280,7 +280,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
 
     using namespace FX;
     //uint8 action = Action::dgmActInvalid;
-    for (auto cur : pItem->m_modifiers) {  // k,v of assoc, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>
+    for (auto &cur : pItem->m_modifiers) {  // k,v of assoc, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>
         /*
         if (cur.second.action) {
             action = cur.second.action;
@@ -295,7 +295,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 // this is to apply modifiers to ship's modules of groupID defined in 'grpID'
                 std::vector<InventoryItemRef> moduleList;
                 pShip->GetModuleManager()->GetModuleListOfRefsAsc(moduleList);
-                for (auto mod : moduleList)
+                for (auto &mod : moduleList)
                     if (mod->groupID() == cur.second.grpID)
                         itemRefVec.push_back(mod);
             } break;
@@ -325,7 +325,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             // ....char skills that require skill in 'srcRef' or defined in 'typeID'
                             std::vector<InventoryItemRef> allSkills;
                             pChar->GetSkillsList(allSkills);
-                            for (auto curSkill : allSkills)
+                            for (auto &curSkill : allSkills)
                                 if (curSkill->HasReqSkill(cur.second.typeID))
                                     itemRefVec.push_back(curSkill);
                         } else {
@@ -342,7 +342,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         // will need more testing to verify this.
                         std::map<EVEItemFlags, InventoryItemRef> charges;
                         pShip->GetModuleManager()->GetLoadedCharges(charges);
-                        for (auto mod : charges)
+                        for (auto &mod : charges)
                             if (mod.second->HasReqSkill(cur.second.typeID))
                                 itemRefVec.push_back(mod.second);
                     } break;
@@ -478,7 +478,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
 
         // set target attr to modified value
         EvilNumber targValue(EvilZero), newValue(EvilZero);
-        for (auto item : itemRefVec) {
+        for (auto &item : itemRefVec) {
             if (item.get() == nullptr)  // still occasional nulls in the vector (segfaults)
                 continue;
             // get targAttr

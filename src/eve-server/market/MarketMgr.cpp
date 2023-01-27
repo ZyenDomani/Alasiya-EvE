@@ -376,9 +376,6 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
 
     uint32 qtySold(args.quantity);
     switch (qtyStatus) {
-        case Market::QtyStatus::Invalid: {
-            // this should never hit. make error here.
-        } break;
         case Market::QtyStatus::Under:  // order requires more items than seller is offering.  delete args.quantity and update order
         case Market::QtyStatus::Complete: { // order qty matches item qty.  delete args.quantity and delete order
             qtySold = args.quantity;
@@ -388,6 +385,9 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
             // more for sale than order requires.  update args.quantity and delete order
             qtySold = oInfo.quantity;
             args.quantity -= qtySold;
+        } break;
+        case Market::QtyStatus::Invalid: {
+            // this should never hit. make error here.
         } break;
     }
 

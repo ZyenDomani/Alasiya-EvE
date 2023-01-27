@@ -120,7 +120,7 @@ uint32 Skill::GetRemainingSP(Character* ch, int64 curTime/*0*/)
     // get full sp needed for next level
     uint32 remainingSP(GetSPForLevel(level) - GetAttribute(AttrSkillPoints).get_uint32());
 
-    float timeLeft((ch->GetEndOfTraining() - curTime) / EvE::Time::Second);
+    uint32 timeLeft((ch->GetEndOfTraining() - curTime) / EvE::Time::Second);
     // if remaining time > 1m, subtract spm from total to get remaining
     if (timeLeft > 60)
         remainingSP -= ((timeLeft / 60) * ch->GetSPPerMin(this));

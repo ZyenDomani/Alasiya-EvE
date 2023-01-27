@@ -175,6 +175,7 @@ PyResult TradeBound::Handle_OfferMoney(PyCallArgs &call) {
         list->SetItem(1, new PyFloat(0.0f)); //herMoney
         _log(CLIENT__ERROR, "TradeBound::Handle_OfferMoney() : %s(%u) - clients are neither mine nor hers.", \
                 call.client->GetName(), call.client->GetCharacterID());
+        PyDecRef(list);
         return PyStatic.NewNone();
     }
 
@@ -508,9 +509,8 @@ PyResult TradeBound::Handle_List(PyCallArgs &call) {
     TradeSession* pTSes = call.client->GetTradeSession();
     PyList* list = new PyList();
 
-    DBRowDescriptor* header = sDataMgr.CreateHeader();
     for (auto cur : pTSes->m_tradelist) {
-        PyPackedRow* row = new PyPackedRow( header );
+        PyPackedRow* row = new PyPackedRow( sDataMgr.CreateHeader() );
             row->SetFieldC("itemID",        new PyLong(cur.itemID));
             row->SetFieldC("typeID",        new PyInt(cur.typeID));
             row->SetFieldC("ownerID",       new PyInt(cur.ownerID));

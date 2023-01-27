@@ -82,15 +82,12 @@ void TCUSE::SetOnline()
         data->SetItem(1, new PyObject("util.KeyVal", args));
 
     std::vector<Client*> list;
-    sEntityList.GetClients(list);
+    m_system->GetClientList(list);
     for (auto cur : list)
-    {
-        if (cur != nullptr)
-        {
+        if (cur != nullptr) {
             cur->SendNotification("ProcessSovStatusChanged", "clientID", &data);
             _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s (%u)", cur->GetName(), cur->GetCharID());
         }
-    }
 }
 
 void TCUSE::SetOffline()
@@ -106,15 +103,12 @@ void TCUSE::SetOffline()
         data->SetItem(1, PyStatic.NewNone());
 
     std::vector<Client*> list;
-    sEntityList.GetClients(list);
+    m_system->GetClientList(list);
     for (auto cur : list)
-    {
-        if (cur != nullptr)
-        {
+        if (cur != nullptr) {
             cur->SendNotification("ProcessSovStatusChanged", "clientID", &data);
             _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s(%u)", cur->GetName(), cur->GetCharID());
         }
-    }
 
     StructureSE::SetOffline();
 }

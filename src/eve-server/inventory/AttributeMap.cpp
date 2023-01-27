@@ -308,8 +308,8 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify
 
 EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
 {
-    if ((attrID == AttrAgilityMultiplier)
-    or (attrID == AttrAgilityBonus)
+    if ((attrID == AttrInertiaMultiplier)
+    or (attrID == AttrInertiaBonus)
     or (attrID == AttrAgility)
     or (attrID == AttrTurnAngle)
     or (attrID == AttrAdvancedAgility)
@@ -348,10 +348,11 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
     if (attrID == AttrStartTime)
         return true;
 
-    if ((attrID == AttrAgilityMultiplier)
-    or (attrID == AttrAgilityBonus)
-    or (attrID == AttrAgility)
-    or (attrID == AttrTurnAngle)
+    if (
+    // (attrID == AttrInertiaMultiplier)
+    //or (attrID == AttrInertiaBonus)
+    //or (attrID == AttrAgility)
+     (attrID == AttrTurnAngle)
     or (attrID == AttrAdvancedAgility)
     or (attrID == AttrActivationTargetLoss)
     or (attrID == AttrAdvancedCapitalAgility)
@@ -415,10 +416,11 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
     if (attrID == AttrStartTime)
         return true;
 
-    if ((attrID == AttrAgilityMultiplier)
-    or (attrID == AttrAgilityBonus)
-    or (attrID == AttrAgility)
-    or (attrID == AttrTurnAngle)
+    if (
+    // (attrID == AttrInertiaMultiplier)
+    //or (attrID == AttrInertiaBonus)
+    //or (attrID == AttrAgility)
+     (attrID == AttrTurnAngle)
     or (attrID == AttrAdvancedAgility)
     or (attrID == AttrActivationTargetLoss)
     or (attrID == AttrAdvancedCapitalAgility)

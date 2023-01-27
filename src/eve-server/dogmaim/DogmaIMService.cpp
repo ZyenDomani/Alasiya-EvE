@@ -765,7 +765,7 @@ PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
     // slaveID = self.remoteDogmaLM.UnlinkModule(shipID, moduleID)
-    sLog.Warning("DogmaIMBound::Handle_UnlinkModule()", "size=%u", call.tuple->size());
+    sLog.Warning("DogmaIMBound::Handle_UnlinkModule()", "size=%lu", call.tuple->size());
     call.Dump(SHIP__MESSAGE);
 
     Call_TwoIntegerArgs args;
@@ -795,7 +795,7 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
     //info = self.remoteDogmaLM.MergeModuleGroups(shipID, masterID, slaveID)
-    sLog.Warning("DogmaIMBound::Handle_MergeModuleGroups()", "size=%u", call.tuple->size());
+    sLog.Warning("DogmaIMBound::Handle_MergeModuleGroups()", "size=%lu", call.tuple->size());
     call.Dump(SHIP__MESSAGE);
 
     Call_Dogma_LinkWeapons args;
@@ -830,7 +830,7 @@ PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
     //info = self.remoteDogmaLM.PeelAndLink(shipID, masterID, slaveID)
-    sLog.Warning("DogmaIMBound::Handle_PeelAndLink()", "size=%u", call.tuple->size());
+    sLog.Warning("DogmaIMBound::Handle_PeelAndLink()", "size=%lu", call.tuple->size());
     call.Dump(SHIP__MESSAGE);
 
     Call_Dogma_LinkWeapons args;
@@ -950,7 +950,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 {
     //  return self.statemanager.Deactivate(self.itemID, self.effectName)
     //  dogmaLM.Deactivate(itemID, const.effectOnlineForStructures)
-    sLog.Warning("DogmaIMBound::Handle_Deactivate()", "size=%u", call.tuple->size());
+    sLog.Warning("DogmaIMBound::Handle_Deactivate()", "size=%lu", call.tuple->size());
     call.Dump(SHIP__MESSAGE);
 
     Client* pClient(call.client);

@@ -673,9 +673,8 @@ bool ClassDecodeGenerator::ProcessObjectEx(const TiXmlElement* field)
         name,
         v,
         name, type, v,
-            name,
 
-            mName, name, v
+            mName, v, v
    );
 
     pop();

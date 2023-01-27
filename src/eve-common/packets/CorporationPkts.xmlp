@@ -439,11 +439,9 @@
           <stringInline value="rowDate" />
           <stringInline value="blockRoles" />
         </listInline>
-        <!-- Substruct containing a substream containing the bind stuff -->
+        <!-- Substruct containing a substream containing the binding stuff -->
         <!-- String, Dict, int field -->
-        <substructInline />
-          <substreamInline />
-            <raw name="boundObject" />
+        <raw name="boundObject" />
         <int name="realRowCount" default="0" />
       </tupleInline>
     </objectInline>

@@ -175,7 +175,7 @@ void Colony::Load()
 
     LoadPlants();
 
-    for (auto cur : ccPin->routes) {
+    for (auto &cur : ccPin->routes) {
         m_srcRoutes.emplace(cur.second.srcPinID, cur.second);
         m_destRoutes.emplace(cur.second.destPinID, cur.second);
     }
@@ -220,7 +220,7 @@ void Colony::Process()
         //  this is part of clever code to avoid db hits on every update.
         //  this method will check for updated contents and save to db as needed.
         std::map<uint32, PI_Pin>::iterator itr;
-        for (auto cur : ccPin->pins)
+        for (auto &cur : ccPin->pins)
             if (cur.second.update) {
                 m_db.RemoveContents(cur.first);
                 m_db.SavePinContents(m_colonyID, cur.first, cur.second.contents);
@@ -253,7 +253,7 @@ uint32 Colony::GetOwner()
 void Colony::LoadPlants()
 {
     bool update = false;
-    for (auto cur: ccPin->pins) {
+    for (auto &cur: ccPin->pins) {
         // set proc time on load
         if (cur.second.isCommandCenter) {
             m_procTime = cur.second.lastRunTime;
@@ -319,7 +319,7 @@ void Colony::UpdatePlantPins(uint32 pinID/*0*/)
             }
         }
     } else {
-        for (auto cur : ccPin->plants) {
+        for (auto &cur : ccPin->plants) {
             itr = ccPin->pins.find(cur.first);
             if (itr != ccPin->pins.end()) {
                 itr->second.state                   = cur.second.state;
@@ -339,12 +339,12 @@ void Colony::UpdatePlantPins(uint32 pinID/*0*/)
 void Colony::AbandonColony()
 {
     /** @todo  go thru entire pinMap and delete each itemRef to remove pin/link contents from db. */
-    for (auto cur : ccPin->pins) {
+    for (auto &cur : ccPin->pins) {
         m_db.RemovePin(cur.first);
         m_db.RemoveContents(cur.first);
         sItemFactory.RemoveItem(cur.first);
     }
-    for (auto cur : ccPin->links) {
+    for (auto &cur : ccPin->links) {
         m_db.RemovePin(cur.first);
         sItemFactory.RemoveItem(cur.first);
     }
@@ -518,7 +518,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
         std::list<uint32> list2;
         list2.clear();
         std::map<uint8, uint32>::iterator itr;
-        for (auto cur : list1) {
+        for (auto &cur : list1) {
             if (IsTempPinID(cur)) {
                 itr = tempPinIDs.find(cur);
                 if (itr != tempPinIDs.end())
@@ -823,7 +823,7 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, float headRadius, Plane
     itr->second.lastRunTime = GetFileTimeNow();
 
     PyList* list = new PyList();
-    for (auto cur : itr->second.heads)
+    for (auto &cur : itr->second.heads)
         list->AddItem(new PyInt(cur.second.ecuPinID));
     // set up extractor program data
     sPIDataMgr.GetProgramResultInfo(this, ecuID, typeID, list, headRadius);
@@ -885,8 +885,8 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
      * {'FullPath': u'UI/Messages', 'messageID': 256779, 'label': u'RouteFailedValidationExpeditedSourceLacksCommodityBody'}(u'You cannot perform this expedited transfer, as the facility from which you are sourcing your commodities appears to lack the {typeName} which you wish to transfer.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
      */
 
-    // capacities are checked in client.  procede with xfer
-    for (auto cur : items) {
+    // capacities are checked in client.  proceed with xfer
+    for (auto &cur : items) {
         std::map<uint16, uint32>::iterator srcItr = src->second.contents.find(cur.first), destItr = dest->second.contents.find(cur.first);
         if (srcItr != src->second.contents.end()) {
             if (srcItr->second > cur.second) {
@@ -973,7 +973,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
      */
     uint8 count = 0;
     double cost = 0;
-    for (auto cur : items) {
+    for (auto &cur : items) {
         std::map<uint16, uint32>::iterator cont = pin->second.contents.find(cur.first);
         if (cont != pin->second.contents.end()) {
             if (cont->second > cur.second) {
@@ -1071,7 +1071,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
     InventoryItemRef iRef(nullptr);
     std::map<uint16, uint32>::iterator itr;
     // import
-    for (auto cur : importItems) {
+    for (auto &cur : importItems) {
         // xfer real item to virtual
         iRef = sItemFactory.GetItemRef(cur.first);
         if (iRef.get() == nullptr) {
@@ -1122,7 +1122,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
     // reset cost for possible export taxes
     cost = 0;
     // export
-    for (auto cur : exportItems) {
+    for (auto &cur : exportItems) {
         std::map<uint16, uint32>::iterator cont = pin->second.contents.find(cur.first);
         if (cont != pin->second.contents.end()) {
             if (cont->second > cur.second) {
@@ -1208,7 +1208,7 @@ PyTuple* Colony::GetPins()
     uint8 index = 0;
     PyTuple* pins = new PyTuple(ccPin->pins.size());
 
-    for (auto cur : ccPin->pins) {
+    for (auto &cur : ccPin->pins) {
         PyDict* dict = new PyDict();
         dict->SetItem("id", new PyInt(cur.first));
         dict->SetItem("typeID", new PyInt(cur.second.typeID));
@@ -1222,7 +1222,7 @@ PyTuple* Colony::GetPins()
         PyDict* contents = new PyDict();
         contents->clear();
         if (cur.second.isStorage)
-            for (auto cur2 : cur.second.contents)
+            for (auto &cur2 : cur.second.contents)
                 contents->SetItem(new PyInt(cur2.first), new PyInt(cur2.second));
         dict->SetItem("contents", contents);
 
@@ -1259,7 +1259,7 @@ PyTuple* Colony::GetPins()
             }
             PyList* list = new PyList();
             list->clear();
-            for (auto head : cur.second.heads) {
+            for (auto &head : cur.second.heads) {
                 PyTuple* tuple = new PyTuple(3);
                     tuple->SetItem(0, new PyInt(head.first));
                     tuple->SetItem(1, new PyFloat(head.second.latitude));
@@ -1278,7 +1278,7 @@ PyTuple* Colony::GetLinks()
 {
     uint8 index = 0;
     PyTuple* links = new PyTuple(ccPin->links.size());
-    for (auto cur : ccPin->links) {
+    for (auto &cur : ccPin->links) {
         PyDict* dict = new PyDict();
             dict->SetItem("linkID", new PyInt(cur.first));                 // this is link itemID
             dict->SetItem("endpoint1", new PyInt(cur.second.endpoint1));
@@ -1295,14 +1295,14 @@ PyTuple* Colony::GetRoutes()
     uint8 index = 0;
     PyTuple* routes = new PyTuple(ccPin->routes.size());
 
-    for (auto cur : ccPin->routes) {
+    for (auto &cur : ccPin->routes) {
         PyDict* dict = new PyDict();
             dict->SetItem("routeID", new PyInt(cur.first));                 // this is routeID (low number - assigned by client)
             dict->SetItem("commodityTypeID", new PyInt(cur.second.commodityTypeID));
             dict->SetItem("commodityQuantity", new PyInt(cur.second.commodityQuantity));
 
         PyList* list = new PyList();
-        for (auto cur2 : cur.second.path)                               // path of pinIDs this route will follow
+        for (auto &cur2 : cur.second.path)                               // path of pinIDs this route will follow
             list->AddItem(new PyInt(cur2));
         dict->SetItem("path", list);                                    // list of paths on this route
         routes->SetItem(index++, new PyObject("util.KeyVal", dict));
@@ -1313,7 +1313,7 @@ PyTuple* Colony::GetRoutes()
 PyRep* Colony::GetColony()
 {
     if (m_newHead) {
-        for (auto cur : tempECUs) {
+        for (auto &cur : tempECUs) {
             std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(cur);
             if (itr != ccPin->pins.end()) {
                 m_db.SaveHeads(m_colonyID, m_client->GetCharacterID(), cur, itr->second.heads);
@@ -1389,7 +1389,7 @@ void Colony::ProcessECUs(bool& updateTimes)
     std::map<uint16, uint32>::iterator itemItr;
     std::map<uint32, PI_Pin>::iterator destPin;
     std::map<uint32, PI_Plant>::iterator plant;
-    for (auto ecu : ccPin->pins) {
+    for (auto &ecu : ccPin->pins) {
         if (!ecu.second.isECU)
             continue;
 
@@ -1729,7 +1729,7 @@ void Colony::ProcessPlants(bool& updateTimes)
                     continue;
                 }
                 uint16 tempCycles = cycles;
-                for (auto mats : plant->second.data.inputs) {
+                for (auto &mats : plant->second.data.inputs) {
                     // loop thru Schematic inputs to verify all required mats are present
                     itemItr = destPin->second.contents.find(mats.first);
                     if (itemItr == destPin->second.contents.end()) {
