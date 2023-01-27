@@ -342,7 +342,7 @@ bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
         }
         return true;
     } else {
-        codelog(MODULE__TRACE, "ModuleManager","%s tried to fit item %s(%u), which is not a rig", pShipItem->GetPilot()->GetName(), mRef->name(), mRef->itemID());
+        codelog(MODULE__TRACE, "ModuleManager - %s tried to fit item %s(%u), which is not a rig", pShipItem->GetPilot()->GetName(), mRef->name(), mRef->itemID());
     }
 
     return false;

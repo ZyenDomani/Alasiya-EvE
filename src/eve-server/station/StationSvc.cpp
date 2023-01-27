@@ -83,7 +83,7 @@ PyResult StationSvc::Handle_GetStation(PyCallArgs &call) {
 }
 
 PyResult StationSvc::Handle_GetAllianceSystems(PyCallArgs &call) {
-  sLog.White( "StationSvc::Handle_GetAllianceSystems()", "size= %u", call.tuple->size() );
+  sLog.White( "StationSvc::Handle_GetAllianceSystems()", "size= %lu", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     return nullptr;
 }

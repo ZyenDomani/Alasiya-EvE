@@ -556,7 +556,7 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargSE)
         return;
     double dist = m_npc->GetPosition().distance(pTargSE->GetPosition());
     if ((dist > m_sightRange) and (!m_npc->TargetMgr()->IsTargetedBy(pTargSE))) {
-        _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%.0fm).  Return to Idle.", \
+        _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%.1fm).  Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pTargSE->GetName(), pTargSE->GetID(), dist);
         if (m_state != NPCAI::State::Idle) {
             // target is no longer in npc's "sight range" and is NOT targeting this npc.  unlock target and return to idle.

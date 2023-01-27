@@ -373,7 +373,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         }
 
         if (iRef->typeID() != args.typeID) {
-            _log(MARKET__MESSAGE, "PlaceCharOrder - Denying Sell of typeID %u using typeID %i.", call.client->GetName(), iRef->itemID(), iRef->typeID(), args.typeID);
+            _log(MARKET__MESSAGE, "PlaceCharOrder - Denying Sell of typeID %u using typeID %i.", iRef->typeID(), args.typeID);
             call.client->SendErrorMsg("Invalid sell order item type.");
             return nullptr;
         }
@@ -571,7 +571,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
                         Account::KeyType::Cash, Account::KeyType::Escrow);
 
     if (!m_db.AlterOrderPrice(args.orderID, args.newPrice)) {
-        _log(MARKET__ERROR, "ModifyCharOrder - Failed to modify price for order #%i.", call.client->GetName(), args.orderID);
+        _log(MARKET__ERROR, "ModifyCharOrder - Failed to modify price for order #%i.", args.orderID);
         return nullptr;
     }
 

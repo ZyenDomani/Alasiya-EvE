@@ -168,7 +168,7 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
             _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
             return nullptr;
         }
-        _log(MARKET__DB_TRACE, "MarketMgr::GetNewPriceHistory() - Fetched %u buy orders for type %u in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
+        _log(MARKET__DB_TRACE, "MarketMgr::GetNewPriceHistory() - Fetched %lu buy orders for type %u in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
 
         result = DBResultToCRowset(res);
         if (result == nullptr) {
@@ -209,7 +209,7 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
             _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
             return nullptr;
         }
-        _log(MARKET__DB_TRACE, "MarketMgr::GetOldPriceHistory() - Fetched %u orders for type %u in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
+        _log(MARKET__DB_TRACE, "MarketMgr::GetOldPriceHistory() - Fetched %lu orders for type %u in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
 
         result = DBResultToCRowset(res);
         if (result == nullptr) {

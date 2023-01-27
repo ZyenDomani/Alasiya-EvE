@@ -178,7 +178,7 @@ void SentryAI::CheckDistance(SystemEntity* pTarget)
 {
     double dist = m_npc->GetPosition().distance(pTarget->GetPosition());
     if ((dist > m_sightRange) and (!m_npc->TargetMgr()->IsTargetedBy(pTarget))) {
-        _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
+        _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%.1fm).  Return to Idle.", \
                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID(), dist);
         if (m_state != State::Idle) {
             // target is no longer in npc's "sight range" and is NOT targeting this npc.  unlock target and return to idle.

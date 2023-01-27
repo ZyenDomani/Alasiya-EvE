@@ -39,7 +39,7 @@ bool ReprocessingDB::GetRecoverables(const uint32 typeID, std::vector<Recoverabl
                 "   OR"
                 "    (activityID = 1 AND productTypeID = %u))"
                 " GROUP BY requiredTypeID",
-                typeID, typeID, typeID))
+                typeID, typeID))
     {
         _log(DATABASE__ERROR, "Unable to get recoverables for type ID %u: '%s'", typeID, res.error.c_str());
         return false;

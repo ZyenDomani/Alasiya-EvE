@@ -168,30 +168,30 @@ void RamMethods::LinePermissionCheck(Client*const pClient, const Call_InstallJob
         int64 roles(pClient->GetCorpRole());
         // check slot rental permissions first
         if (args.activityID == EvERam::Activity::Manufacturing) {
-            if (roles & Corp::Role::CanRentFactorySlot != Corp::Role::CanRentFactorySlot)
+            if ((roles & Corp::Role::CanRentFactorySlot) != Corp::Role::CanRentFactorySlot)
                 throw UserError("RamCannotInstallWithoutRentFactorySlot");
         } else {
-            if (roles & Corp::Role::CanRentResearchSlot != Corp::Role::CanRentResearchSlot)
+            if ((roles & Corp::Role::CanRentResearchSlot) != Corp::Role::CanRentResearchSlot)
                 throw UserError("RamCannotInstallWithoutRentResearchSlot");
         }
-        if (roles & Corp::Role::FactoryManager != Corp::Role::FactoryManager)
+        if ((roles & Corp::Role::FactoryManager) != Corp::Role::FactoryManager)
             throw UserError("RamCannotInstallForCorpByRoleFactoryManager");
-        if (roles & Corp::Role::Director != Corp::Role::Director)
+        if ((roles & Corp::Role::Director) != Corp::Role::Director)
             throw UserError("RamCannotInstallForCorpByRole");
     }
 
     // check usage restriction
-    if (data.rMask & EvERam::RestrictionMask::ByAlliance == EvERam::RestrictionMask::ByAlliance) {
+    if ((data.rMask & EvERam::RestrictionMask::ByAlliance) == EvERam::RestrictionMask::ByAlliance) {
         if (data.ownerID != pClient->GetAllianceID())
             throw UserError("RamAccessDeniedWrongAlliance");
     }
-    if (data.rMask & EvERam::RestrictionMask::ByCorp == EvERam::RestrictionMask::ByCorp) {
+    if ((data.rMask & EvERam::RestrictionMask::ByCorp) == EvERam::RestrictionMask::ByCorp) {
         if (data.ownerID != pClient->GetCorporationID())
             throw UserError("RamAccessDeniedWrongCorp");
     }
 
     // check standing
-    if (data.rMask & EvERam::RestrictionMask::ByStanding == EvERam::RestrictionMask::ByStanding) {
+    if ((data.rMask & EvERam::RestrictionMask::ByStanding) == EvERam::RestrictionMask::ByStanding) {
         // get standings
         if (args.isCorpJob) {
             if (data.minStanding > StandingDB::GetStanding(data.ownerID, pClient->GetCorporationID()))
@@ -203,7 +203,7 @@ void RamMethods::LinePermissionCheck(Client*const pClient, const Call_InstallJob
     }
 
     // check security rating
-    if (data.rMask & EvERam::RestrictionMask::BySecurity == EvERam::RestrictionMask::BySecurity) {
+    if ((data.rMask & EvERam::RestrictionMask::BySecurity) == EvERam::RestrictionMask::BySecurity) {
         if (args.isCorpJob) {
             /** @todo  corp secStatus????  didnt know that was a thing.  */
             if (data.minCorpSec > pClient->GetChar()->corpSecRating())

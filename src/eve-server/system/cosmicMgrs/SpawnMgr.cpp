@@ -831,11 +831,11 @@ uint16 SpawnMgr::GetRandTypeID(uint8 sClass)
 
 bool SpawnMgr::IsChaining(uint16 bubbleID)
 {
-    bool rsp = false;
+    bool rsp(false);
     auto range = m_spawns.equal_range(bubbleID);
     auto itr = range.first;
     while (itr != range.second) {
-        if (itr->second.enabled);
+        if (itr->second.enabled)
             rsp = true;
         ++itr;
     }

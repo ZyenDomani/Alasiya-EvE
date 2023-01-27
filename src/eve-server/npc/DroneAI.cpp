@@ -176,7 +176,7 @@ void DroneAIMgr::CheckDistance(SystemEntity* pSE)
     //rewrote distance checks for correct logic this time
     double dist = m_pDrone->GetPosition().distance(pSE->GetPosition());
     if (dist > m_entityAttackRange) {
-        _log(DRONE__AI_TRACE, "Drone %s(%u): CheckDistance: %s(%u) is too far away (%u).  Return to Idle.",
+        _log(DRONE__AI_TRACE, "Drone %s(%u): CheckDistance: %s(%u) is too far away (%.1fm).  Return to Idle.",
              m_pDrone->GetName(), m_pDrone->GetID(), pSE->GetName(), pSE->GetID(), dist);
         if (m_state != DroneAI::State::Idle) {
             // target is no longer in npc's "sight range".  unlock target and return to idle.

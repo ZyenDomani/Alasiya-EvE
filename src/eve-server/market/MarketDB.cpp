@@ -124,7 +124,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint16 typeID )
         codelog( MARKET__DB_ERROR, "Error in query: %s", res.error.c_str() );
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %u sell orders for type %u", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu sell orders for type %u", res.GetRowCount(), typeID);
     tup->SetItem(0, DBResultToCRowset( res ) );
 
     //query buy orders
@@ -140,7 +140,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint16 typeID )
         PyDecRef( tup );
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %u buy orders for type %u", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu buy orders for type %u", res.GetRowCount(), typeID);
     tup->SetItem(1, DBResultToCRowset( res ) );
 
     if (is_log_enabled(MARKET__DUMP))
@@ -164,7 +164,7 @@ PyRep* MarketDB::GetOrdersForOwner(uint32 ownerID)
         return nullptr;
     }
 
-    _log(MARKET__DB_TRACE, "GetOrdersForOwner() - Fetched %u buy orders for %u", res.GetRowCount(), ownerID);
+    _log(MARKET__DB_TRACE, "GetOrdersForOwner() - Fetched %lu buy orders for %u", res.GetRowCount(), ownerID);
 
     return DBResultToRowset(res);
 }

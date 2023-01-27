@@ -1490,7 +1490,7 @@ void Colony::ProcessECUs(bool& updateTimes)
         updateTimes = true;
 
         if (is_log_enabled(COLONY__DEBUG))
-            _log(COLONY__DEBUG, "Colony::ProcessECUs() - Processing complete.  timeNow %li, expiryTime %li, lastRunTime %li", \
+            _log(COLONY__DEBUG, "Colony::ProcessECUs() - Processing complete.  timeNow %f, expiryTime %li, lastRunTime %li", \
                     GetFileTimeNow(), ecu.second.expiryTime, ecu.second.lastRunTime);
     }
 }
@@ -1791,7 +1791,7 @@ void Colony::ProcessPlants(bool& updateTimes)
                 updateTimes = true;
 
                 if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Received Inputs.  timeNow %li, lastRunTime %li", \
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Received Inputs.  timeNow %f, lastRunTime %li", \
                                 GetFileTimeNow(), plant->second.lastRunTime);
             } else {
                 cycles = 0;

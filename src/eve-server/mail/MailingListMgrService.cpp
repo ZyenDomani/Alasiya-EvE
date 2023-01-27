@@ -83,9 +83,9 @@ PyResult MailingListMgrService::Handle_Create(PyCallArgs& call)
 
     uint32 r = m_db.CreateMailingList(call.client->GetCharacterID(), args.name, args.defaultAccess,
                                    args.defaultMemberAccess, args.mailCost);
-    if (r >= 0) {
+    if (r > 0)
         return new PyInt(r);
-    }
+
     return nullptr;
 }
 

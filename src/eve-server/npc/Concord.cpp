@@ -483,7 +483,7 @@ void ConcordAI::CheckDistance(SystemEntity* pSE)
     //double dist = m_npc->GetPosition().distance(pSE->GetPosition());     // this throws occasional errors (segfault)
     double dist = usToThem.length();
     if (dist > m_entityAttackRange) {
-        _log(CONCORD__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
+        _log(CONCORD__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%.1fm).  Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);
         if (m_state != Idle) {
             // target is no longer in npc's "sight range".  unlock target and return to idle.

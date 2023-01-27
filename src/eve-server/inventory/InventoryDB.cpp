@@ -182,7 +182,7 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
         return false;
     }
 
-    _log(DATABASE__RESULTS, "GetItemContents: '%s' returned %u items", query.str().c_str(), res.GetRowCount());
+    _log(DATABASE__RESULTS, "GetItemContents: '%s' returned %lu items", query.str().c_str(), res.GetRowCount());
     DBResultRow row;
     while( res.GetRow( row ) )
         into.push_back( row.GetUInt( 0 ) );
@@ -207,7 +207,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<
         return false;
     }
 
-    _log(DATABASE__RESULTS, "GetItemContents for item %u returned %u items", itemID, res.GetRowCount());
+    _log(DATABASE__RESULTS, "GetItemContents for item %u returned %lu items", itemID, res.GetRowCount());
     DBResultRow row;
     while( res.GetRow( row ) )
         into.push_back( row.GetUInt( 0 ) );
@@ -233,7 +233,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
         return false;
     }
 
-    _log(DATABASE__RESULTS, "GetItemContents for item %u with flag %u returned %u items", itemID, flag, res.GetRowCount());
+    _log(DATABASE__RESULTS, "GetItemContents for item %u with flag %u returned %lu items", itemID, flag, res.GetRowCount());
     DBResultRow row;
     while( res.GetRow( row ) )
         into.push_back( row.GetUInt( 0 ) );

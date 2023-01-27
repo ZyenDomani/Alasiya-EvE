@@ -880,7 +880,7 @@ bool FleetService::IsWingActive(int32 wingID)
     for (auto itr = range.first; itr != range.second; itr++) {
         std::map<uint32, SquadData>::iterator sItr = m_squadDataMap.find(itr->second);
         if (sItr != m_squadDataMap.end())
-            if (sItr->second.members.size() > 0);
+            if (sItr->second.members.size() > 0)
                 return true;
     }
     return false;
