@@ -662,9 +662,11 @@ void TargetManager::Depleted(MiningLaser* pMod)
 }
 
 float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
+    /*  default to using lock times for all entities
     if ((tSE->IsAsteroidSE()) or (tSE->IsDeployableSE()) or (tSE->IsWreckSE())
         or  (tSE->IsContainerSE()) or (tSE->IsInanimateSE()))
         return 2.0f;
+    */
 
     //  fixed lock time  -allan 24Dec14  -updated 26May15   -revisited after new effects system implementation 25Mar17
     uint32 scanRes(sRef->GetAttribute(AttrScanResolution).get_uint32());

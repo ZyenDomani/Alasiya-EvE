@@ -915,9 +915,6 @@ int main( int argc, char* argv[] )
         Timer::SetCurrentTime();
         start = GetTickCount();
 
-        /* Freeze Detector Code */
-        //++m_worldLoopCounter;
-
         if ((tcpc = tcps.PopConnection()))
             sEntityList.Add(new Client(pyServMgr, &tcpc));
 
@@ -990,8 +987,8 @@ int main( int argc, char* argv[] )
     sThread.EndThreads();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
     /* close logfile */
-    log_close_logfile();
-    exit(EXIT_SUCCESS);
+    //log_close_logfile();
+    return EXIT_SUCCESS;
 }
 
 static void SetupSignals()
@@ -1098,28 +1095,3 @@ static void CleanUp() {
     /* close logfile */
     log_close_logfile();
 }
-
-/*      Freeze Detector Code taken from TrinityCore.  figure out how to implement here (based on seeing occasional freezes on main)  -allan 29Dec15
- * void FreezeDetectorHandler(const boost::system::error_code& error)
- * {
- *    if (!error)
- *    {
- *        uint32 curtime = getMSTime();
- *
- *        uint32 worldLoopCounter = World::m_worldLoopCounter;
- *        if (_worldLoopCounter != worldLoopCounter)
- *        {
- *            _lastChangeMsTime = curtime;
- *            _worldLoopCounter = worldLoopCounter;
- *        }
- *        // possible freeze
- *        else if (getMSTimeDiff(_lastChangeMsTime, curtime) > _maxCoreStuckTimeInMs)
- *        {
- *            TC_LOG_ERROR("server.worldserver", "World Thread hangs, kicking out server!");
- *            ASSERT(false);
- *        }
- *
- *        _freezeCheckTimer.expires_from_now(boost::posix_time::seconds(1));
- *        _freezeCheckTimer.async_wait(FreezeDetectorHandler);
- *    }
- * }  */

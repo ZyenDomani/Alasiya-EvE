@@ -363,9 +363,10 @@ float Character::balance(uint8 type)
         return m_charData.balance;
     } else if (type == Account::CreditType::AURUM) {
         return m_charData.aurBalance;
-    } else {
-        _log(ACCOUNT__ERROR, "Character::balance() - invalid type %u", type);
     }
+
+    _log(ACCOUNT__ERROR, "Character::balance() - invalid type %u", type);
+
     return 0.0f;
 }
 
@@ -1082,9 +1083,10 @@ void Character::SkillQueueLoop(bool update/*true*/)
                     }
                 }
                 m_pClient->QueueDestinyEvent(&tmp);
-            } else if (m_pClient->IsLogin())
+            } else if (m_pClient->IsLogin()) {
                 // for login, use OnMultipleSkillsTrained[]
                 list->AddItemInt(skill->itemID());
+            }
 
             if (m_pClient->IsInSpace() and update) {
                 switch (skill->groupID()) {

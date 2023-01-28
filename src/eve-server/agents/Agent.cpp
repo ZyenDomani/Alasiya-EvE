@@ -138,7 +138,7 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
             offer.destinationSystemID = m_agentData.solarSystemID;
         }
     }
-    
+
     MissionDB::CreateOfferID(offer);
 
     // keep local copy and also add to mission data mgr
@@ -778,6 +778,12 @@ bool Agent::CanUseAgent(Client* pClient)
     _log(AGENT__DEBUG, "%s(%u) CanUseAgent() - standings(fac:%u,crp:%u,chr:%u), bonus(%f, %f, %f) - m=%f", \
                 m_agentData.name.c_str(), m_agentID, facChr, corpChr, charChr, facBonus, corpBonus, charBonus, m);
 
+    /*
+     00:40:50 [Bound] AgentBound::DoAction()
+     00:40:50 [AgentDebug] Abbalvar Onabemur(3014016) CanUseAgent() - charSkills(con:0,dip:3,cri:0), stand(0.000000, 0.000000, 0.000000)
+     00:40:50 [AgentDebug] Abbalvar Onabemur(3014016) CanUseAgent() - standings(fac:0,crp:1,chr:0), bonus(0.000000, 0.000000, 0.000000) - m=0.000000
+    */
+    
     if ((EvE::max(facChr, corpChr, charChr) >= m ) and (EvE::min(facChr, corpChr, charChr) > -2.0f)) {
         if ((m_agentData.typeID == Agents::Type::Research) and (corpChr < m - 2.0f))
             return false;

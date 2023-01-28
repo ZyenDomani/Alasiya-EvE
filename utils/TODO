@@ -66,28 +66,20 @@ loading probes in station does not update count in hangar
 
 wtf???  11:45:54 [DestinyWarning] Warp Cap need for Rifter(140007395) is 0.0007
 
-verify skill attr 'in training' is being properly removed
-
 noob ships do not Init() correctly....  most attrs are 0
     -- check this.  may be fixed already
 
 npcs not getting destiny warpstate set (sometimes - this is cause of rats not warping into belts)
 
-salvager success crashes other salvagers and tractor
-
-after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
-01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
-
-prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
-    - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
-
- *****  modules not shutting down when deactivated ***
-this includes shoot roids - turrets do not deactivate
-when shooting roids, if there are miners activated, use 'roid depleted' to complete their cycle
+when shooting roids - turrets do not deactivate
+    also, if there are miners activated, use 'roid depleted' to complete their cycle
 
 when shooting wrecks, all loot should be destroyed
+shooting wrecks to destroy loot.
+    - this really is a thing on live.  implement it.
 
-invul timer set on undock after login
+
+invul timer set on undock after login  ....and??
 
 check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?  no...ins is queried when needed
@@ -119,6 +111,7 @@ error:
 char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.
     - they should at least have a starter profession cert
+    - this will take more thought and time
 
 
 *******************************************************
@@ -129,8 +122,6 @@ initial handshake packets may need work due to missing data.
 see file:///home/allan/Desktop/eve_packets/aknor/crucible/1.5.4/03272012-02-13-aknor_jaden_crucible-login_inspace_154.log
     and maybe others  (this one is missing some data due to sniffer hiccup)
 
-
-skill error on queue update   - see cruc/skills/skill_error_new
 
 look into benefits of changing skillQueue from vector to list (suggested for multiple/often add/delete ops)
 
@@ -146,13 +137,8 @@ as bubble code becomes more stable, consider updating/removing/recoding wander t
     - every 60s for every bubble object is a bit much.
     - check InBubble and IsOverlap code.
 
-InventoryItem -
-    when changing flags, will have to determine objects container, then
-    write method to update items' flag in Inventory.
-    -- this is cause of "pilot/ship not found in xxx" on login/logout/jump (ship and pilot flags change)
-      ****  no, this is due to multiple remove calls....trace and fix
+InventoryItem - multiple remove calls....trace and fix
 
-remove InventoryDB (m_db) and associated code from itemfactory
 remove character queries from InventoryDB
 remove station/static queries from InventoryDB
 remove *lsc_service and *cache_service from PyServiceMgr
@@ -170,11 +156,6 @@ closely examine target mgr and see what we can improve.
     - update targ/npcai to inform npc of yellowbox instead of locked
 rewrite completed, but reverted due to multiple errors and inconsistencies (m_targMgr->OnTarget())
 
-Targets other than ships, such as wrecks, asteroids, hackable containers etc usually have large signature radii (regardless of actual physical size)
-and can be locked on very quickly even at poor scan resolutions.
-  - currently, these are hard-coded to 2s lock time.  should this be updated to actually use items sigRad?  yeah, probably so
-
-
 client login screen...these all need code to show data    CharacterDB::GetCharSelectInfo
     upcomingEventCount:
     unreadMailCount:
@@ -182,7 +163,6 @@ client login screen...these all need code to show data    CharacterDB::GetCharSe
 also need to optimize query....can join instead of using (current) multiple queries and variables
 
 
-fleetData.h needs to be moved to common/EVE_Fleet.h and PODs put in fleet namespace
 FleetBound could use updates (client->getchar->name, etc)
 
 fleet boosts - apply directly to ship/modules when calculated  (maybe try to use fxproc to apply, as ccp designed it)
@@ -267,9 +247,6 @@ market history
     - change date on ccp history dump and put into mktHistory table
     - may be cheating, but we'd have 'real' data for market history
 
-
-EVEItemFlags - update code for the 89 flags defined in client
-
 player corps - finish wip code for RAM, market  -priority level: med-hi
 raceMask isnt implemented yet...will need more thought/coding
 still some corp shit not started/completed yet...need to finish it. may need to split file again.  -priority level: med-hi
@@ -323,7 +300,7 @@ implement remaining UIDs as noted in EVE_Defines.h
 F11 map - universe not showing region connecting (jump) lines (should be green for region jumps)
 	--Blue lines separate Systems, Red lines separate Constellations, and Purple lines separate Regions. (circa 2007)
 	on mine, red = system, blue = constallation, green = region
-	
+
 
 owner notes and owner labels incomplete
 
@@ -381,9 +358,6 @@ spawn system calls.....found this in logs)
 17:38:52 [SpawnTrace] MakeSpawn() completed in Ibaria(30000053) with 1 bubbles in m_bubbles and 2 entities in m_spawns.
 ***  why calling MakeSpawn() twice??
 
-see about removing code that isnt used  (common/utils/utils  and core/utils/*)
-
-remove /test from compilation (not needed for normal use)
 
 move skills to separate db table
 
@@ -569,28 +543,15 @@ can also run thru code and check for anything returning "-1".  most of these sho
 (bloat fix)
 look into using "encode=*true/false*" and "decode=*true/false*" for including/omitting the bloated encode/decode sections
   -  done.  was easy  (saved 150kb on corpPkts alone)
-  - will be good time to rework formatting for missing bracket on else calls ('if' part has bracket, 'else' does not because its' printed via conditional)
-    -- encode/decode - wip and almost done
   - multiple mem leaks (encode) and uninitialized pointers (c'tor) found from coverity scan.
-    -- working on encoding  - testing
-    -- uninitialized pointers are diff story....gonna take a while to find and figure out.  nope...done in ~5m
-    *** may very well be easier than i originally thought....use in-class member initializers!  (its a thing since c++/0x11)
-
-
-**CURRENT - working on DecodeGenerator atm**
-  - updating add DecRef() calls and update conditional layout/processing
-  - reworking code to fix bracket mismatch
-  - added notes about copy/move c'tor and assigns - these will need check/verify to assure proper decref (either here or calling function)
-  - added "decode=*true/false*" switch to (dis)allow generation of python decoding code in packet source files
-  - added "encode=*true/false*" switch to (dis)allow generation of python encoding code in packet source files
 
 
 remove "Notify*" from notify names....implement better naming convention (see above)
 
 
-  <elementDef name="GodmaError"><!-- more to this than template has here.  fix later  -->
+<elementDef name="GodmaError"><!-- more to this than template has here.  fix later  -->
 
-  client initial connect packets are wonky....maybe missing some and/or more than we are currently using (not the only one)
+client initial connect packets are wonky....maybe missing some and/or more than we are currently using (not the only one)
 
 
 *******************************************************
@@ -615,6 +576,17 @@ module/rack OL incomplete.  includes OL Heat (basic heat code done/working)  -pr
 activemodule c'tor - check/verify needsCharge code as some modules listed use scripts
 
 link/unlink need a bit more logic work (as per notes in code)
+
+salvager success crashes other salvagers and tractor
+
+after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
+01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
+
+prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
+    - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
+
+modules not shutting down when deactivated
+
 
 *******************************************************
 *******************************************************
@@ -734,11 +706,6 @@ currently, all bookmarks are donated to calling player when moved into cargo/han
 
 finish DestinyManager::SendCloakFx()
 
-PyRep --
-    do we need float and double to be separated?
-    currently both are sent as double, and some cases are using static_cast<float>
-    not sure if client expects a difference.  would be a bit less data on wire in some cases
-
 check client's locationID vs stationID.
     - multiple calls in client will test for these as separate values (tested separately)
     - verify our use of these is correct....
@@ -752,21 +719,6 @@ systemmgr - use kills object instead of db hit
     - use systemMgr to update/track kills/hour data and update db as needed (use 15m call above)
     - load kill times when system boots.  use 15m timer call (from EntityList) to update data
     ** tried this...didnt work correctly.  disabled code.  needs review
-
-dbcore - query retry enables runaway server when query causes server disconnection (error)
-    - should this be limited?
-    - note: it only happens for malformed queries (while testing) from what i've seen.
-    - may need null checks for mRow, mResult, mLengths (segfault on result returning NULL)
-    -   this happens very, very seldom (2-3 times that i can recall)
-    -   how much overhead will this add?
-    server startup and one client with null checks:   (subsequent runs)
-            DB   1505 times.    Hi: 16085.5000us        Lo: 167.5000us          Avg: 366.1477us
-            DB   1505 times.    Hi: 14954.2500us        Lo: 165.5000us          Avg: 305.4390us
-            DB   1508 times.    Hi: 11528.2500us        Lo: 163.2500us          Avg: 310.5827us
-
-    server startup and one client without null checks:  (initial run)
-            DB   1505 times.    Hi: 62847.0000us        Lo: 161.2500us          Avg: 364.7585us
-    - very odd....how are adding null checks faster??   db cache maybe?
 
 
 
@@ -807,9 +759,6 @@ petition system missing most calls
     - this system hasnt been started
     - couple calls as skeleton code
     - notes for ~20 system calls (may be complete)
-
-shooting wrecks to destroy loot.
-    - this really is a thing on live.  implement it.
 
 belt spawns - rework for better ship group selection   -priority level: med
 
@@ -1056,8 +1005,8 @@ speaking of charges, how about a freight charge when moving large amounts of stu
      would this be docking charge?  no, that's akin to a full service gas station.  fill 'er up, check oil, wash windows, etc.
      based on standings with station owner?  ofc!
 
-boosters damage/kill character (see description of 'Crash')
-others cause multiple other effects.  is this something we can implement/exploit?  most definately...but later.
+boosters will damage/kill character (see description of 'Crash')
+others cause multiple other effects.  is this something we can implement/exploit?  most definitely...but later.
 
 
 integrate jeremie's liveintel code?
