@@ -1178,7 +1178,7 @@ void FleetService::LeaveFleet(Client* pClient)
 
     CharFleetData fleet = CharFleetData();
     //call updates on fleet session data
-    pChar->SetFleetData(fleet);
+    pChar->SetFleetData(fleet, true);
 }
 
 void FleetService::RemoveMember(Client* pClient)
@@ -1476,7 +1476,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         _log(FLEET__BCAST_DUMP, "%s FleetBroadcast '%s' to %s members of fleet %u.", GetBCastScopeName(scope).c_str(), msg.c_str(), grp.str().c_str() , fleetID);
         payload->Dump(FLEET__BCAST_DUMP, "   ");
     }
-    
+
     PySafeDecRef(payload);
 }
 

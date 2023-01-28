@@ -1,5 +1,5 @@
 coverity --
-/usr/local/cov-analysis/bin/cov-build --dir cov-int make -j8 install
+/usr/local/cov-analysis/bin/cov-build --dir cov-int make -j8
 tar czvf Alasiya-EvE.tgz cov-int
 
 doxygen --

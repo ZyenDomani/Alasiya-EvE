@@ -300,6 +300,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         toFlag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
     if (toFlag == flagLocked) {
         // corp role 'equip config' can move locked items (per client)
+        sLog.Error("IB::Handle_Add()", "Error.  see below");
         _log(INV__ERROR, "IB::Handle_Add() - item %u from %lu sent flagLocked.  continuing but this needs to be fixed.", \
                 args.itemID, args.containerID);
         toFlag = flagCargoHold;

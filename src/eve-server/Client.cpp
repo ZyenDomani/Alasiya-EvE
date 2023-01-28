@@ -92,7 +92,8 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_destinyEventQueue(new PyList()),
   m_destinyUpdateQueue(new PyList()),
   m_nextNotifySequence(0),
-  m_scanProbe(false)
+  m_scanProbe(false),
+  pPacket(nullptr)
 {
     m_afk = false;
     m_login = true;
@@ -153,7 +154,7 @@ Client::~Client() {
          *      6)  remove client from sysmgr/destiny/server
          */
 
-        sLog.Green("  Client::Logout()","%s (Acct:%u) logging out.", m_char->name(), GetUserID());
+        sLog.Green("  Client::Logout()","%s (Acct:%i) logging out.", m_char->name(), GetUserID());
 
         if (!sConsole.IsDbError()) {
             ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
@@ -189,6 +190,7 @@ Client::~Client() {
 
     SafeDelete(m_TS);
     SafeDelete(m_scan);
+    SafeDelete(pPacket);
     SafeDelete(pShipSE);
     SafeDelete(pSession);
     PyDecRef(m_destinyEventQueue);
@@ -200,21 +202,26 @@ bool Client::ProcessNet()
     if (GetState() != TCPConnection::STATE_CONNECTED)
         return false;
 
-    PyPacket *p(nullptr);
-    while ((p = PopPacket())) {
+    /* trying this...pPacket is now created on client init
+     *  instead of creating new pointer/instance of PyPacket on every call
+     *  we're keeping it now and reusing
+     */
+
+    while ((pPacket = PopPacket()) != nullptr) {
         try {
-            if (!DispatchPacket(p))
-                sLog.Error("Client", "Failed to dispatch packet of type %s (%i).", MACHONETMSG_TYPE_NAMES[ p->type ], (int)p->type);
+            if (!DispatchPacket(pPacket))
+                sLog.Error("Client", "Failed to dispatch packet of type %s (%i).", \
+                        MACHONETMSG_TYPE_NAMES[ pPacket->type ], (int)pPacket->type);
         }
         catch(PyException& e) {
-            _SendException(p->dest, p->source.callID, p->type, WRAPPEDEXCEPTION, &e.ssException);
+            _SendException(pPacket->dest, pPacket->source.callID, pPacket->type, WRAPPEDEXCEPTION, &e.ssException);
         }
 
-        p = nullptr;
+        pPacket = nullptr;
     }
 
     // cleanup
-    SafeDelete(p);
+    pPacket = nullptr;
     // send update queue
     _SendQueuedUpdates();
 
@@ -224,7 +231,7 @@ bool Client::ProcessNet()
 bool Client::SelectCharacter(int32 charID/*0*/)
 {
     if (sEntityList.IsOnline(charID)) {
-        sLog.Error("Client::SelectCharacter()", "Char %u already online.", charID);
+        sLog.Error("Client::SelectCharacter()", "Char %i already online.", charID);
         SendErrorMsg("That Character is already online.  Selection Failed.");
         CloseClientConnection();
         return false;
@@ -232,7 +239,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     InitSession(charID);
     if (!m_validSession){
-        sLog.Error("Client::SelectCharacter()", "Failed to init session for char %u.", charID);
+        sLog.Error("Client::SelectCharacter()", "Failed to init session for char %i.", charID);
         SendErrorMsg("Unable to Initialize Character session.  Selection Failed.");
         CloseClientConnection();
         return false;
@@ -243,7 +250,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_system = sEntityList.FindOrBootSystem(m_systemData.systemID);
     if (m_system == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "Failed to boot system %u for char %u.", m_systemData.systemID, charID);
+        sLog.Error("Client::SelectCharacter()", "Failed to boot system %u for char %i.", m_systemData.systemID, charID);
         SendErrorMsg("SolarSystem %s(%u) - Boot Failure.", m_systemData.name.c_str(), m_systemData.systemID);
         CloseClientConnection();
         return false;
@@ -251,7 +258,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_char = sItemFactory.GetCharacterRef(charID);
     if (m_char.get() == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", charID);
+        sLog.Error("Client::SelectCharacter()", "GetChar for %i = nullptr", charID);
         SendErrorMsg("Unable to locate Character.  Selection Failed.");
         sItemFactory.UnsetUsingClient();
         CloseClientConnection();
@@ -273,11 +280,11 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_ship = sItemFactory.GetShipRef(m_shipId);
     if (m_ship.get() == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %u.  Selecting new ship...", m_shipId, charID);
+        sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %i.  Selecting new ship...", m_shipId, charID);
         PickAlternateShip();    // incase shipID wasnt set correctly in db (seen on 'bad' Damage::Killed())
         m_ship = sItemFactory.GetShipRef(m_shipId);
         if (m_ship.get() == nullptr) {
-            sLog.Error("Client::SelectCharacter()", "shipID %u for %u also invalid.  Loading Pod.", m_shipId, charID);
+            sLog.Error("Client::SelectCharacter()", "shipID %u for %i also invalid.  Loading Pod.", m_shipId, charID);
             m_ship = m_pod;
         }
         SetShip(m_ship);
@@ -1793,8 +1800,8 @@ void Client::CharNoLongerInStation() {
     OnCharNoLongerInStation ocnis;
         ocnis.charID = m_char->itemID();
         ocnis.corpID = GetCorporationID();
-        ocnis.allianceID = GetAllianceID();
-        ocnis.factionID = GetWarFactionID();
+        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? new PyInt(GetAllianceID()) : PyStatic.NewNone());
+        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : PyStatic.NewNone());
     PyTuple* tmp = ocnis.Encode();
     if (tmp == nullptr)
         return;
@@ -1816,8 +1823,8 @@ void Client::CharNowInStation() {
     OnCharNowInStation ocnis;
         ocnis.charID = m_char->itemID();
         ocnis.corpID = GetCorporationID();
-        ocnis.allianceID = GetAllianceID();
-        ocnis.warFactionID = GetWarFactionID();
+        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? new PyInt(GetAllianceID()) : PyStatic.NewNone());
+        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : PyStatic.NewNone());
     PyTuple* tmp = ocnis.Encode();
     std::vector<Client*> clients;
     clients.clear();
@@ -1871,8 +1878,16 @@ void Client::InitSession(int32 characterID)
     pSession->SetLong("rolesAtHQ",       characterDataMap["rolesAtHQ"]);
     pSession->SetLong("rolesAtOther",    characterDataMap["rolesAtOther"]);
 
-    pSession->SetInt("allianceid",      (characterDataMap["allianceID"] > 0 ? characterDataMap["allianceID"] : -1));
-    pSession->SetInt("warfactionid",    (characterDataMap["warFactionID"] > 0 ? characterDataMap["warFactionID"] : -1));
+    if (IsAllianceID(characterDataMap["allianceID"])) {
+        pSession->SetInt("allianceid",   characterDataMap["allianceID"]);
+    } else {
+        pSession->Clear("allianceid");
+    }
+    if (IsFactionID(characterDataMap["warFactionID"])) {
+        pSession->SetInt("warfactionid", characterDataMap["warFactionID"]);
+    } else {
+        pSession->Clear("warfactionid");
+    }
 
     /*  solarSystemID != 0  -character in space
      *   also used as current system in following menus:
@@ -1880,21 +1895,29 @@ void Client::InitSession(int32 characterID)
      */
     if (sDataMgr.IsStation(stationID)) {
         m_locationID = stationID;
-        pSession->Clear("solarsystemid");    //must be 0 in station
-        pSession->Clear("shipid");    //must be 0 in station
-        pSession->SetInt("stationid", stationID);
-        pSession->SetInt("stationid2", stationID);
-        pSession->SetInt("locationid", stationID);
-        pSession->SetInt("worldspaceid", stationID);
+        pSession->Clear("solarsystemid"); //must be 0 in station
+        pSession->Clear("shipid");        //must be 0 in station
+        pSession->SetInt("stationid",     stationID);
+        pSession->SetInt("stationid2",    stationID);
+        pSession->SetInt("locationid",    stationID);
+        pSession->SetInt("worldspaceid",  stationID);
     } else {
         m_locationID = solarSystemID;
-        pSession->Clear("stationid");   //must be 0 in space
-        pSession->Clear("stationid2");  //must be 0 in space
+        pSession->Clear("stationid");     //must be 0 in space
+        pSession->Clear("stationid2");    //must be 0 in space
         pSession->Clear("worldspaceid");  //must be 0 in space
-        pSession->SetInt("shipid", m_shipId);
         pSession->SetInt("solarsystemid", solarSystemID);
-        pSession->SetInt("locationid", solarSystemID);
+        pSession->SetInt("locationid",    solarSystemID);
+        pSession->SetInt("shipid",        m_shipId);
     }
+
+    // set initial fleet session data (PyNone)
+    pSession->Clear("fleetjob");
+    pSession->Clear("fleetrole");
+    pSession->Clear("fleetbooster");
+    pSession->Clear("fleetid");
+    pSession->Clear("wingid");
+    pSession->Clear("squadid");
 
     sDataMgr.GetSystemData(m_locationID, m_systemData);
     if ((sDataMgr.IsSolarSystem(m_systemData.systemID))
@@ -1914,11 +1937,9 @@ void Client::UpdateSession()
     if (sDataMgr.IsStation(stationID)) {
         pSession->Clear("solarsystemid");    //must be 0 in station
         pSession->Clear("shipid");    //must be 0 in station
-        //pSession->Clear("worldspaceid");    //not used here (yet)
-
         pSession->SetInt("stationid", stationID);
         pSession->SetInt("stationid2", stationID);   // client uses this for continer location checks
-        pSession->SetInt("worldspaceid", stationID);
+        pSession->SetInt("worldspaceid", 0);            // all zero in logs, but 200+ refs in code
         pSession->SetInt("locationid", stationID);
     } else {
         pSession->Clear("stationid");
@@ -1935,9 +1956,14 @@ void Client::UpdateSession()
     pSession->SetInt("regionid", m_char->regionID());
 }
 
-void Client::UpdateSessionInt(const char *id, int value)
+void Client::UpdateSessionInt(const char* varName, int value)
 {
-    pSession->SetInt(id, value);
+    pSession->SetInt(varName, value);
+}
+
+void Client::UpdateSessionLong(const char* varName, int64 value)
+{
+    pSession->SetLong(varName, value);
 }
 
 void Client::UpdateCorpSession(CorpData& data)
@@ -1946,8 +1972,6 @@ void Client::UpdateCorpSession(CorpData& data)
     pSession->SetInt("corpid", data.corporationID);
     pSession->SetInt("baseID", data.baseID);
     pSession->SetInt("hqID", data.corpHQ);
-    pSession->SetInt("allianceid", (data.allianceID > 0 ? data.allianceID : -1));
-    pSession->SetInt("warfactionid", (data.warFactionID > 0 ? data.warFactionID : -1));
 
     pSession->SetInt("corpAccountKey", data.corpAccountKey);
     pSession->SetLong("corprole", data.corpRole);
@@ -1955,64 +1979,45 @@ void Client::UpdateCorpSession(CorpData& data)
     pSession->SetLong("rolesAtBase", data.rolesAtBase);
     pSession->SetLong("rolesAtHQ", data.rolesAtHQ);
     pSession->SetLong("rolesAtOther", data.rolesAtOther);
+
+    if (IsAllianceID(data.allianceID)) {
+        pSession->SetInt("allianceid", data.allianceID);
+    } else {
+        pSession->Clear("allianceid");
+    }
+
+    if (IsFactionID(data.warFactionID)) {
+        pSession->SetInt("warfactionid", data.warFactionID);
+    } else {
+        pSession->Clear("warfactionid");
+    }
+
     SendSessionChange();
 }
 
-void Client::UpdateFleetSession(CharFleetData& fleet)
+void Client::UpdateFleetSession(CharFleetData& fleet, bool clear/*false*/)
 {
     m_fleet = fleet.fleetID;
     m_wing = fleet.wingID;
     m_squad = fleet.squadID;
 
-    pSession->SetInt("fleetjob", fleet.job);
-    pSession->SetInt("fleetrole", fleet.role);
-    pSession->SetInt("fleetbooster", fleet.booster);
-    pSession->SetInt("fleetid", m_fleet);
-    pSession->SetInt("wingid", m_wing);
-    pSession->SetInt("squadid", m_squad);
+    if (clear) {
+        pSession->Clear("fleetjob");
+        pSession->Clear("fleetrole");
+        pSession->Clear("fleetbooster");
+        pSession->Clear("fleetid");
+        pSession->Clear("wingid");
+        pSession->Clear("squadid");
+    } else {
+        pSession->SetInt("fleetjob", fleet.job);
+        pSession->SetInt("fleetrole", fleet.role);
+        pSession->SetInt("fleetbooster", fleet.booster);
+        pSession->SetInt("fleetid", m_fleet);
+        pSession->SetInt("wingid", m_wing);
+        pSession->SetInt("squadid", m_squad);
+    }
+
     SendSessionChange();
-}
-
-void Client::SendInitialSessionStatus ()
-{
-    SessionInitialState scn;
-    scn.initialstate = new PyDict();
-
-    pSession->EncodeInitialState (scn.initialstate);
-
-    if (is_log_enabled(CLIENT__SESSION)) {
-        _log(CLIENT__SESSION, "Session initialized.  Sending initial session state");
-        scn.initialstate->Dump(CLIENT__SESSION, "   Changes: ");
-    }
-
-    scn.sessionID = pSession->GetSessionID();
-
-    //build the packet:
-    PyPacket* packet = new PyPacket();
-    packet->type_string = "macho.SessionInitialStateNotification";
-    packet->type = SESSIONINITIALSTATENOTIFICATION;
-
-    packet->source.type = PyAddress::Node;
-    packet->source.objectID = m_services.GetNodeID();
-    packet->source.callID = 0;
-
-    packet->dest.type = PyAddress::Client;
-    packet->dest.objectID = GetClientID();
-    packet->dest.callID = 0;
-
-    packet->userid = GetUserID();
-
-    packet->payload = scn.Encode();
-    packet->named_payload = nullptr;
-
-    if (is_log_enabled(CLIENT__SESSION_DUMP)) {
-        _log(CLIENT__SESSION_DUMP, "Sending Session packet:");
-        PyLogDumpVisitor dumper(CLIENT__SESSION_DUMP, CLIENT__SESSION_DUMP);
-        packet->Dump(CLIENT__SESSION_DUMP, dumper);
-    }
-
-    QueuePacket(packet);
-    //SafeDelete(packet);
 }
 
 void Client::SendSessionChange()
@@ -2047,7 +2052,7 @@ void Client::SendSessionChange()
         scn.changes->Dump(CLIENT__SESSION, "   Changes: ");
     }
 
-    scn.sessionID = 0; //pSession->GetSessionID();
+    scn.sessionID = pSession->GetSessionID();
     scn.clueless = 0;
     scn.nodesOfInterest.push_back(-1);  /* this means 'all nodes' */
     scn.nodesOfInterest.push_back(m_services.GetNodeID());  /* add current node to list */
@@ -2081,10 +2086,6 @@ void Client::SendSessionChange()
     }
 
     QueuePacket(packet);
-    //SafeDelete(packet);
-
-    // clean up packet after being created by 'new'
-    //SafeDelete(packet);
 }
 
 void Client::QueueDestinyUpdates(std::vector< PyTuple* >& updates) {
@@ -2400,7 +2401,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     pSession->SetInt("userid", aData.id);
     pSession->SetLong("role", aData.role);
     pSession->SetLong("clientID", 1000000L * aData.clientID + 888444);  // kinda arbitrary
-    pSession->SetLong("sessionID", 0 /*pSession->GetSessionID()*/);
+    //pSession->SetLong("sessionID", 0 /*pSession->GetSessionID()*/);
 
     sLog.Green("  Client::Login()","Account %u (%s) logging in from %s", aData.id, aData.name.c_str(), EVEClientSession::GetAddress().c_str());
 
@@ -2430,14 +2431,14 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         ack.client_hash = PyStatic.NewNone();
         ack.user_clientid = GetClientID();  //241241000001103
         ack.live_updates = sLiveUpdateDB.GetUpdates();
-        ack.sessionID = 0; //pSession->GetSessionID();   //398773966249980114
+        ack.sessionID = pSession->GetSessionID();   //398773966249980114
     PyRep* res(ack.Encode());
     if (is_log_enabled(CLIENT__CALL_DUMP))
         res->Dump(CLIENT__CALL_DUMP, "    ");
     mNet->QueueRep(res, false);
 
-    // send out the initial session status
-    SendInitialSessionStatus();
+    // send out the session change
+    SendSessionChange();
 
     return true;
 }

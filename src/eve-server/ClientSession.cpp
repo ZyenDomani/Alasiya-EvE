@@ -29,36 +29,21 @@
 #include "EVEServerConfig.h"
 
 
-/**
- * Map of variables that should never be sent through the wire on the session data
- * These variables will be ignored. In reality we should have a whitelist
- *
- * TODO: COME UP WITH A REAL WHITELIST OF THINGS THAT HAVE TO BE SENT TO THE CLIENT
- *
- * @author Almamu
- */
-// not sure where he gets this list from....my packet logs show this being sent to client
-static std::map<std::string, bool> NONPERSISTVARS = {
-    {"clientID", true},
-    {"sessionID", true},
-    {"sid", true}
-};
-
-
 ClientSession::ClientSession()
 : mSession(new PyDict()),
 mDirty(false),
-m_sessionID(0)
+m_sessionID(15)
 {
+    //  session id is unique to each session and client
+    //random.getrandbits(63)
+    m_sessionID *= GetTimeUSeconds();
+    sEntityList.RegisterSID(m_sessionID);
+
     /* default session values */
     mSession->SetItemString("role", new_tuple(PyStatic.NewNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE), PyStatic.NewFalse()));
     mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero(), PyStatic.NewFalse()));
     mSession->SetItemString("address", new_tuple(PyStatic.NewNone(), new PyString("0.0.0.0"), PyStatic.NewFalse()));
-
-    //  session id is unique to each session and client
-    //random.getrandbits(63)
-    m_sessionID = GetTimeUSeconds() * 15;
-    sEntityList.RegisterSID(m_sessionID);
+    mSession->SetItemString("sessionID", new_tuple(PyStatic.NewNone(), new PyLong(m_sessionID), PyStatic.NewFalse()));
 }
 
 ClientSession::~ClientSession()
@@ -134,26 +119,14 @@ void ClientSession::EncodeChanges(PyDict* into)
     mDirty = false;
 }
 
-void ClientSession::EncodeInitialState (PyDict* into)
-{
-    for (auto &cur : *mSession) {
-        PyTuple* valueTuple(cur.second->AsTuple());
-        valueTuple->SetItem(2, PyStatic.NewFalse());
-        // add the value to the initial state only if required
-        if (NONPERSISTVARS.find(cur.first->AsString()->content()) == NONPERSISTVARS.end())
-            into->SetItem(cur.first, cur.second->AsTuple()->GetItem(1));
-    }
-
-    // mark the session as not dirty
-    mDirty = false;
-}
-
-
+// none of these should ever be null...  havent had any msgs because of this, but do i want to leave them here?
 PyTuple* ClientSession::_GetValueTuple(const char* name) const
 {
-    PyRep* value(mSession->GetItemString(name));
-    if (value == nullptr)
+    PyRep* value(mSession->GetItemString(name)); // copy c'tor
+    if (value == nullptr) {
+        _log(CLIENT__SESSION_NOTFOUND, "ClientSession::_GetValueTuple - value not found with name '%s'", name);
         return nullptr;
+    }
     return value->AsTuple();
 }
 

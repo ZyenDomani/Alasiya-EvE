@@ -101,7 +101,7 @@ public:
     /********************************************************************/
     bool IsValidSession()                               { return m_validSession; }
     ClientSession* GetSession()                         { return pSession; }
-    // these dont always work...still dont know why.  fixed.  was bad _comp method in PyDict
+
     std::string GetAddress() const                      { return pSession->GetCurrentString( "address" ); }
     std::string GetLanguageID() const                   { return pSession->GetCurrentString( "languageID" ); }
 
@@ -116,7 +116,7 @@ public:
 
     int64 GetAccountRole() const                        { return pSession->GetCurrentLong( "role" ); }
     int64 GetClientID() const                           { return pSession->GetCurrentLong( "clientID" ); }
-    //int64 GetSessionID() const                          { return pSession->GetCurrentLong( "sessionID" ); }
+    int64 GetSessionID() const                          { return pSession->GetCurrentLong( "sessionID" ); }
 
     double GetCorpTaxRate()                             { return (m_char.get() != nullptr ? m_char->corpTaxRate() : 0.0); }
     int32 GetCorporationID() const                      { return pSession->GetCurrentInt( "corpid" ); }
@@ -155,7 +155,7 @@ public:
 
     //  public functions to update client session when char's roles are changed
     void UpdateCorpSession(CorpData& data);
-    void UpdateFleetSession(CharFleetData& fleet);
+    void UpdateFleetSession(CharFleetData& fleet, bool clear=false);
 
     // character data used before session data is initialized
     uint32 GetLoyaltyPoints(uint32 corpID);
@@ -289,7 +289,8 @@ public:
     void SelfEveMail(const char *subject, const char *fmt, ...);
     void ChannelJoined(LSCChannel *chan);
     void ChannelLeft(LSCChannel *chan);
-    void UpdateSessionInt( const char *sessionType, int value );
+    void UpdateSessionInt( const char *varName, int value );
+    void UpdateSessionLong( const char *varName, int64 value );
 
     PyRep *GetAggressors() const;
     void QueueDestinyEvent(PyTuple** multiEvent);
@@ -377,7 +378,6 @@ protected:
 
     uint32 m_fleet;
     uint32 m_shipId;
-    //uint32 m_toGate;
     uint32 m_locationID;
     uint32 m_moveSystemID;  // holder for jumping to 'systemID'.    timer based.
     uint32 m_dockStationID; // holder for docking to 'stationID'.  timer based.
@@ -449,7 +449,6 @@ private:
     std::set<uint32> m_bindSet;
 
 protected:
-    void SendInitialSessionStatus ();
     void UpdateSession();
     void _SendPingRequest();
     void _SendException( const PyAddress& source, int64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
@@ -462,6 +461,7 @@ protected:
     bool Handle_PingRsp( PyPacket* packet )             { /* do nothing */ return true; }
 
 private:
+    PyPacket* pPacket;
     //queues for destiny updates:
     PyList* m_destinyEventQueue;    //we own these. These are events as used in OnMultiEvent
     PyList* m_destinyUpdateQueue;    //we own these. They are the `update` which go into DoDestinyAction

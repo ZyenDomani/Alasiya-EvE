@@ -44,21 +44,21 @@ public:
 
     // PyInt
     void SetInt( const char* name, int32 value );
-    int32 GetLastInt( const char* name ) const;
+    int32 GetLastInt( const char* name ) const;        // not used
     int32 GetCurrentInt( const char* name ) const;
     // PyLong
     void SetLong( const char* name, int64 value );
-    int64 GetLastLong( const char* name ) const;
+    int64 GetLastLong( const char* name ) const;        // not used
     int64 GetCurrentLong( const char* name ) const;
     // PyString
     void SetString( const char* name, const char* value );
-    std::string GetLastString( const char* name ) const;
+    std::string GetLastString( const char* name ) const;        // not used
     std::string GetCurrentString( const char* name ) const;
 
-    void Clear( const char* name );
+
+    void Clear( const char* name );                     // this will set the value of "name" to PyNone
     void EncodeChanges( PyDict* into );
-    void EncodeInitialState (PyDict* into);
-    
+
     int64 GetSessionID()  { return m_sessionID; }
 
 protected:

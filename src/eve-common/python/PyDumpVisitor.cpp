@@ -44,7 +44,7 @@ bool PyDumpVisitor::VisitInteger( const PyInt* rep )
 
 bool PyDumpVisitor::VisitLong( const PyLong* rep )
 {
-    _print( "%s      Long: %" PRIi64, _pfx(), rep->value() );
+    _print( "%s      Long: %li", _pfx(), rep->value() );
     return true;
 }
 

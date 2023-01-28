@@ -125,12 +125,10 @@ char creation - figure certs and set skills accordingly
 *******************************************************
 **********  coding errors/corrections/improvements ...med priority
 
--- these 3 all return by value.  can this return by ref instead?  (may not really matter)
-    StringContent(PyRep* pRep);
-    IntegerValue(PyRep* pRep);
-    IntegerValueU32(PyRep* pRep);
+initial handshake packets may need work due to missing data.
+see file:///home/allan/Desktop/eve_packets/aknor/crucible/1.5.4/03272012-02-13-aknor_jaden_crucible-login_inspace_154.log
+    and maybe others  (this one is missing some data due to sniffer hiccup)
 
-search for "GetOperationalStatics" and review this code system...
 
 skill error on queue update   - see cruc/skills/skill_error_new
 
@@ -292,6 +290,9 @@ contacts incomplete
 SparseBound will need work for RAM and lock votes (and more)
 	- official has some updates for sparcebound code.
 check items in corp hangar for proper locationID/flagID
+CorpOfficeSparseRowset is wrong.
+    - actually, anything using sparserowset is wrong
+    (xmlp encode wrong. maybe decode too...no, AuthenticationRsp& AuthenticationRsp::operator=() is right)
 
 expeditions.  not sure how to do this one.
 dungeonExplorationMgr::GetMyEscalatingPathDetails()
@@ -559,10 +560,8 @@ look into adding "...emplace(std::move(data))" to staticDataMgr shit  (or whatev
 *******************************************************
 *****************  xmlp shit
 
-character.xmlp - ally and faction should be *raw* instead of *int* to allow sending of PyNone()
-	- this *should* correct client checks of "IsNone()" for proper processing
--- NOTE:  i bet this is why when i send "PyNone" for some values, the client still gets "PyInt(0)"  !!!!
-****  check ALL client tests of "IsNone" and verify data type is set correctly  -- pita but would solve a LOT of problems.
+****  check ALL client tests of "IsNone" and verify data type is set correctly (pyrep instead of pyint)
+    -- pita but would potentially solve a LOT of problems.
 can also run thru code and check for anything returning "-1".  most of these should probably be "PyNone"
 
 (bloat fix)
@@ -572,7 +571,7 @@ look into using "encode=*true/false*" and "decode=*true/false*" for including/om
     -- encode/decode - wip and almost done
   - multiple mem leaks (encode) and uninitialized pointers (c'tor) found from coverity scan.
     -- working on encoding  - testing
-    -- unintialized pointers are diff story....gonna take a while to find and figure out.  nope...done in ~5m
+    -- uninitialized pointers are diff story....gonna take a while to find and figure out.  nope...done in ~5m
     *** may very well be easier than i originally thought....use in-class member initializers!  (its a thing since c++/0x11)
 
 
@@ -589,6 +588,7 @@ remove "Notify*" from notify names....implement better naming convention (see ab
 
   <elementDef name="GodmaError"><!-- more to this than template has here.  fix later  -->
 
+  client initial connect packets are wonky....maybe missing some and/or more than we are currently using (not the only one)
 
 
 *******************************************************
@@ -651,11 +651,10 @@ turn fx sending on and follow calls to verify proper OnSpecialFX data
 ********  improvements...low priority
 
 
-allianceid/warfactionid
-  in packet logs, this is either None or an int.
-  ours are int.  0 or -1 if none cause we still cant send PyNone in session (or elsewhere) yet.
-  not sure if these are right....
-also....check james' alliance code for proper functionality...not sure about some of those variables
+still need to host agent photos...
+
+
+check james' alliance code for proper functionality...not sure about some of those variables
 
 check into cosmic manager enabling checks/code....kinda dont make sense (may have done this already)
 *** this below is wrong.  look into it.  UD: why is this wrong?

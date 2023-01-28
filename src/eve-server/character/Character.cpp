@@ -453,13 +453,13 @@ uint32 Character::PickAlternateShip(uint32 locationID)
     return m_db.PickAlternateShip(m_itemID, locationID);
 }
 
-void Character::SetFleetData(CharFleetData& fleet)
+void Character::SetFleetData(CharFleetData& fleet, bool clear/*false*/)
 {
     m_fleetData = fleet;
     //if ((fleet.joinTime) and (m_fleetJoinTime != fleet.joinTime))
         //  m_fleetJoinTime = fleet.joinTime;
 
-    m_pClient->UpdateFleetSession(m_fleetData);
+    m_pClient->UpdateFleetSession(m_fleetData, clear);
 }
 
 void Character::FleetShareMissionRewards()
