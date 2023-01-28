@@ -476,7 +476,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     RatSpawnClassVec spawnEntry;
     if (sDataMgr.GetNPCClasses(sClass, spawnEntry)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %u, class: %s(%lu).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %lu, class: %s(%lu).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
     } else {
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %u (%s).  Cancelling spawn.", sClass, GetSpawnClassName(sClass).c_str());
         return false;

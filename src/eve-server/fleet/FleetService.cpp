@@ -620,7 +620,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
 
             squadIDs.clear();
             GetSquadIDs(wingID, squadIDs);
-            for (auto squadID : squadIDs) {
+            for (auto &squadID : squadIDs) {
                 if (!IsSquadID(squadID))
                     continue;
                 bool sboost(false);
@@ -650,7 +650,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
 
             squadIDs.clear();
             GetSquadIDs(wingID, squadIDs);
-            for (auto squadID : squadIDs) {
+            for (auto &squadID : squadIDs) {
                 if (!IsSquadID(squadID))
                     continue;
                 bool sboost(false);
@@ -665,7 +665,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
     } else if (!squad.empty()) {
         squad.sort();
         squad.unique();
-        for (auto squadID : squad) {
+        for (auto &squadID : squad) {
             if (!IsSquadID(squadID))       // if squadID is invalid, remove it from map!!
                 continue;
             bData = BoostData();
@@ -1004,7 +1004,7 @@ void FleetService::DeleteFleet(uint32 fleetID)
         m_wingDataMap.erase(wing);
         squads.clear();
         GetSquadIDs(wing, squads);
-        for (auto squad : squads)
+        for (auto &squad : squads)
             m_squadDataMap.erase(squad);
     }
     m_fleetDataMap.erase(fleetID);
@@ -1246,7 +1246,7 @@ PyRep* FleetService::GetWings(uint32 fleetID)
             wing.wingID = wingID;
         GetSquadIDs(wingID, squadIDs);
         PyDict* dict2 = new PyDict();
-        for (auto squadID : squadIDs) {
+        for (auto &squadID : squadIDs) {
             SquadData sData = SquadData();
             GetSquadData(squadID, sData);
             SquadRSP squad;
@@ -1834,7 +1834,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
 
         squadIDs.clear();
         GetSquadIDs(wingID, squadIDs);
-        for (auto squadID : squadIDs) {
+        for (auto &squadID : squadIDs) {
             if (!IsSquadID(squadID))
                 continue;
             bool sboost(false);

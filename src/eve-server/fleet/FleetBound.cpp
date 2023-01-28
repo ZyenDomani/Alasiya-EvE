@@ -198,7 +198,7 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
         sFltSvc.GetSquadIDs(wingID, squadIDs);
 
         PyDict* dict = new PyDict();
-        for (auto squadID : squadIDs) {
+        for (auto &squadID : squadIDs) {
             SquadData sData = SquadData();
             sFltSvc.GetSquadData(squadID, sData);
             SquadRSP squad;

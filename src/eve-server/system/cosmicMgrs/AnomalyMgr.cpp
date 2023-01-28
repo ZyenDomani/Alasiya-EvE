@@ -67,7 +67,7 @@ AnomalyMgr::~AnomalyMgr()
     // this shouldnt be needed...SysMgr should handle all objects in their systems
     /*
     InventoryItemRef iRef(nullptr);
-    for (auto sig : m_sigByItemID) {
+    for (auto &sig : m_sigByItemID) {
         iRef = sItemFactory.GetItemRef(sig.first);
         if (iRef.get() == nullptr)
             continue;
@@ -186,7 +186,7 @@ void AnomalyMgr::SaveAnomaly()
 {
     // same as above...not needed but used for testing for now.
     //will have to rewrite scan system to use data from here
-    for (auto sig : m_sigByItemID)
+    for (auto &sig : m_sigByItemID)
         m_mdb.SaveAnomaly(sig.second);
 }
 

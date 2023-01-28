@@ -115,7 +115,7 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
     const GPoint vertex(m_client->GetShipSE()->GetPosition());
     const GPoint U(args.x, args.y, args.z);
     m_client->SystemMgr()->DScan(args.range, vertex, seVec);
-    _log(SCAN__TRACE, "ConeScan() - query returned %u objects within range.  angle is %.3f", seVec.size(), angle);
+    _log(SCAN__TRACE, "ConeScan() - query returned %lu objects within range.  angle is %.3f", seVec.size(), angle);
     PyList* list = new PyList();
     for (auto &cur : seVec ) {
         GVector VR(vertex, cur->GetPosition());
@@ -258,7 +258,7 @@ void Scan::ShipScanResult() {
 
     PyList* resultList = new PyList();
     // NOTE. cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther
-    for (auto anoms : anom) {
+    for (auto &anoms : anom) {
         SystemScanResult ssr;
             ssr.typeID = anoms.sigTypeID;
             ssr.scanGroupID = anoms.scanGroupID;
@@ -302,7 +302,7 @@ void Scan::ProbeScanResult()
 
     // are anomalies shown in probe scan results?  config option?
     m_system->GetAnomMgr()->GetAnomalyList(anom);
-    for (auto anoms : anom) {
+    for (auto &anoms : anom) {
         SystemScanResult ssr;
             ssr.typeID = anoms.sigTypeID;
             ssr.scanGroupID = anoms.scanGroupID;
@@ -346,7 +346,7 @@ void Scan::ProbeScanResult()
     }
 
     m_system->GetAnomMgr()->GetSignatureList(sig);
-    for (auto sigs : sig) {
+    for (auto &sigs : sig) {
         SignalData data = SignalData();
             data.sig = sigs;
             data.probes = nullptr;
@@ -503,7 +503,7 @@ struct CosmicSignature {
         hit = false;
     }
 
-    _log(SCAN__TRACE, "Scan::GetProbeDataForSig()  probeVec size: %u for signal %s (%s)", \
+    _log(SCAN__TRACE, "Scan::GetProbeDataForSig()  probeVec size: %lu for signal %s (%s)", \
             probeVec.size(), data.sig.sigName.c_str(), m_system->GetAnomMgr()->GetScanGroupName(data.sig.scanGroupID));
 
     if (probeVec.empty())

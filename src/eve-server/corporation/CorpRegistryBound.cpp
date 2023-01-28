@@ -1187,7 +1187,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
                 return nullptr;
             }
         } else {
-            _log(CORP__ERROR, "CorpRegistryBound::Handle_GetMemberIDsByQuery() - Invalid data size: %u.  Expected 3 or 4.", list->size());
+            _log(CORP__ERROR, "CorpRegistryBound::Handle_GetMemberIDsByQuery() - Invalid data size: %lu.  Expected 3 or 4.", list->size());
             return nullptr;
         }
     }
