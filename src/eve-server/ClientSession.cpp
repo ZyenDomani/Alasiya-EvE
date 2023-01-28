@@ -39,11 +39,44 @@ m_sessionID(15)
     m_sessionID *= GetTimeUSeconds();
     sEntityList.RegisterSID(m_sessionID);
 
-    /* default session values */
+    // set default session values
     mSession->SetItemString("role", new_tuple(PyStatic.NewNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE), PyStatic.NewFalse()));
     mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero(), PyStatic.NewFalse()));
     mSession->SetItemString("address", new_tuple(PyStatic.NewNone(), new PyString("0.0.0.0"), PyStatic.NewFalse()));
     mSession->SetItemString("sessionID", new_tuple(PyStatic.NewNone(), new PyLong(m_sessionID), PyStatic.NewFalse()));
+
+    // init remaining session values
+    mSession->SetItemString("genderID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("bloodlineID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("raceID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("charid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("corpid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("cloneStationID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("solarsystemid2", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("constellationid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("regionid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("hqID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("baseID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("corpAccountKey", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("corprole", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("rolesAtAll", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("rolesAtBase", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("rolesAtHQ", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("rolesAtOther", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("allianceid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("warfactionid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("solarsystemid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("shipid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("stationid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("stationid2", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("locationid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("worldspaceid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("fleetjob", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("fleetrole", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("fleetbooster", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("fleetid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("wingid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("squadid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
 }
 
 ClientSession::~ClientSession()

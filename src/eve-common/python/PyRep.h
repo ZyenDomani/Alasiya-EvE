@@ -947,6 +947,7 @@ public:
     typedef dict_type::iterator             dict_iterator;
     typedef dict_type::const_iterator       const_dict_iterator;
 
+    // default c'tor
     PyObjectEx( bool is_type_2, PyRep* header );
     // copy c'tor
     PyObjectEx( const PyObjectEx& oth );

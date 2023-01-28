@@ -409,10 +409,13 @@ PyRep *MarketDB::GetMarketGroups() {
     _log(MARKET__DB_TRACE, "GetMarketGroups header has %u columns.", header->ColumnCount());
 
     CFilterRowSet *filterRowset = new CFilterRowSet(&header);
+
+    /*  i dont think this is used....
     PyDict *keywords = filterRowset->GetKeywords();
     keywords->SetItemString("allowDuplicateCompoundKeys", PyStatic.NewFalse());
     keywords->SetItemString("indexName", PyStatic.NewNone());
     keywords->SetItemString("columnName", new PyString("parentGroupID"));
+    */
 
     DBResultRow row;
     std::map< int, PyRep* > tt;
@@ -424,7 +427,7 @@ PyRep *MarketDB::GetMarketGroups() {
             pid = tt[parentGroupID];
             rowset = filterRowset->GetRowset(pid);
         } else {
-            pid = parentGroupID != -1 ? (PyRep*)new PyInt(parentGroupID) : PyStatic.NewNone();
+            pid = ((parentGroupID != -1) ? (PyRep*)new PyInt(parentGroupID) : PyStatic.NewNone());
             tt[parentGroupID] = pid;
             rowset = filterRowset->NewRowset(pid);
         }

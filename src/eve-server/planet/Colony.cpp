@@ -868,14 +868,14 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
         _log(COLONY__ERROR, "Colony::TransferCommodities() - srcPin %u not found in ccPin.pins map", srcID);
         if (m_client->CanThrow())
             throw CustomError("Source not found.");
-        return nullptr; // make error and exit.
+        return nullptr; // make error and return.
     }
     std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(destID);
     if (dest == ccPin->pins.end()) {
         _log(COLONY__ERROR, "Colony::TransferCommodities() - destPin %u not found in ccPin.pins map", destID);
         if (m_client->CanThrow())
             throw CustomError("Destination not found.");
-        return nullptr; // make error and exit.
+        return nullptr; // make error and return.
     }
     /*{'FullPath': u'UI/Messages', 'messageID': 256630, 'label': u'ExpeditedTransferNotEnoughSpaceBody'}(u'There is not enough space at the transfer destination for the selected commodities.', None, None)
      * {'FullPath': u'UI/Messages', 'messageID': 256775, 'label': u'CannotPutMissionItemInCargolinkBody'}(u'You cannot store the {typeName} in a planetary customs facility, as it an agent has issued a special embargo for this particular item.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})

@@ -41,7 +41,7 @@ work on buglist, integrate this list in there where i can (in order)
     - corp
     - mail/notifications
     - missions
-    - ram
+    - ram  (slot # are STILL "1" on all slots)
     - calendar
     - contracts
     - lp
@@ -322,6 +322,8 @@ implement remaining UIDs as noted in EVE_Defines.h
 
 F11 map - universe not showing region connecting (jump) lines (should be green for region jumps)
 	--Blue lines separate Systems, Red lines separate Constellations, and Purple lines separate Regions. (circa 2007)
+	on mine, red = system, blue = constallation, green = region
+	
 
 owner notes and owner labels incomplete
 

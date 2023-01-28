@@ -1126,7 +1126,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 
         if ( t3Ship ) {
             if (subSystemList == nullptr) {
-                // send error here, then exit
+                // send error here, then return
                 sLog.Error("AssembleShip", "subSystemList == nullptr for %s", call.client->GetName());
                 return nullptr;
             }

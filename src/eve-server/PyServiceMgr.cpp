@@ -185,10 +185,9 @@ void PyServiceMgr::Initalize(double startTime)
 
         //register it
         cache_service->GiveCache(str, (PyRep **)&dict);
-
-        PyDecRef(str);
     }
 
+    PyDecRef(str);
     sLog.Cyan("     PyServiceMgr", "%u services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
 }
 

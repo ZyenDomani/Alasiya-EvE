@@ -2440,7 +2440,7 @@ void ShipSE::Process() {
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 
-    // check to see if this is an empty ship, and exit if so.
+    // check to see if this is an empty ship, and return if so.
     //  we're not worried about recharge and modules for empty ships (segfaults)
     /** @todo m_self is NOT being populated for non-piloted ships...check later */
     if ((m_self.get() == nullptr) or (!m_self->HasPilot()))
