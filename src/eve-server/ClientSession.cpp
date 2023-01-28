@@ -55,11 +55,9 @@ m_sessionID(0)
     mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero(), PyStatic.NewFalse()));
     mSession->SetItemString("address", new_tuple(PyStatic.NewNone(), new PyString("0.0.0.0"), PyStatic.NewFalse()));
 
-    /*  session id is unique to each session.
-     * is not saved or shared between chars
-     */
+    //  session id is unique to each session and client
     //random.getrandbits(63)
-    m_sessionID = GetTimeUSeconds() *15;
+    m_sessionID = GetTimeUSeconds() * 15;
     sEntityList.RegisterSID(m_sessionID);
 }
 
