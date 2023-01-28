@@ -49,14 +49,14 @@
       <bool name="memberless" default="false" />
       <string name="password" none_marker="0" />
       <bool name="mailingList" default="false" />
-      <int name="cspa" default="0" />
+      <int name="cspa" />
       <bool name="temporary" default="false" />
       <bool name="languageRestriction" default="false" />
       <int name="groupMessageID" none_marker="0" />
       <int name="channelMessageID" none_marker="0" />
-      <int name="mode" default="0" />
+      <int name="mode" />
       <bool name="subscribed" default="false" />
-      <int name="estimatedMemberCount" default="0" />
+      <int name="estimatedMemberCount" />
     </listInline>
   </elementDef>
 
@@ -94,14 +94,14 @@
             <bool name="memberless" default="false" />
             <string name="password" none_marker="empty" />
             <bool name="mailingList" default="false" />
-            <int name="cspa" default="0" />
+            <int name="cspa" />
             <bool name="temporary" default="false" />
             <bool name="languageRestriction" default="false" />
             <int name="groupMessageID" none_marker="0" />
             <int name="channelMessageID" none_marker="0" />
-            <int name="mode" default="0" />
+            <int name="mode" />
             <bool name="subscribed" default="false" />
-            <int name="estimatedMemberCount" default="0" />
+            <int name="estimatedMemberCount" />
           </listInline>
         </dictInlineEntry>
       </dictInline>
@@ -254,7 +254,7 @@
   <elementDef name="OnLSC_SenderInfo">
     <tupleInline>
       <!-- 0: whoAllianceID -->
-      <int name="allianceID" default="0" none_marker="0" />
+      <int name="allianceID" none_marker="0" />
       <!-- 1: whoCorpID -->
       <int name="corpID" />
       <!-- 2: who (could be this list, or could be just an integer ID) -->
@@ -268,7 +268,7 @@
       <!-- 4: whoCorpRole -->
         <long name="corp_role" />
         <!-- 5: not sure its factionID -->
-        <int name="factionID" default="0" none_marker="0" />
+        <int name="factionID" none_marker="0" />
     </tupleInline>
   </elementDef>
 

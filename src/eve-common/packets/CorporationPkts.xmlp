@@ -409,7 +409,7 @@
         <!-- String, Dict, int field -->
         <raw name="boundObject" />
         <!-- Number of offices rented by corp -->
-        <int name="officeCount" default="0" />
+        <int name="officeCount" />
       </tupleInline>
     </objectInline>
   </elementDef>
@@ -442,7 +442,7 @@
         <!-- Substruct containing a substream containing the binding stuff -->
         <!-- String, Dict, int field -->
         <raw name="boundObject" />
-        <int name="realRowCount" default="0" />
+        <int name="realRowCount" />
       </tupleInline>
     </objectInline>
   </elementDef>
@@ -523,7 +523,7 @@
       <string name="bindID" />
       <dictInline>
         <dictInlineEntry key="realRowCount">
-          <int name="realRowCount" default="0" />   <!-- still not sure what this is for -->
+          <int name="realRowCount" />   <!-- still not sure what this is for -->
         </dictInlineEntry>
       </dictInline>
       <tupleInline>

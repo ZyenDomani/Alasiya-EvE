@@ -191,8 +191,8 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
     const char* v = top();
 
     fprintf(mOutputFile,
-        "   %s = new PyLong(%s);\n",
-            v, name
+        "    %s = new PyLong(%s);\n",
+             v, name
         );
 
     pop();

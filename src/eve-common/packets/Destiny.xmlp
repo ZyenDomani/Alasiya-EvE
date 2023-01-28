@@ -188,49 +188,6 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SlimItem" decode="false" >
-    <objectInline>
-        <stringInline value="foo.SlimItem" />
-        <dictInline>
-          <dictInlineEntry key="itemID">
-            <int name="itemID" />
-          </dictInlineEntry>
-            <dictInlineEntry key="typeID">
-              <int name="typeID" />
-            </dictInlineEntry>
-            <dictInlineEntry key="allianceID">
-              <int name="allianceID" default="0" />
-            </dictInlineEntry>
-            <dictInlineEntry key="corpID">
-              <int name="corpID" />
-            </dictInlineEntry>
-            <dictInlineEntry key="modules">
-              <listInt name="modules" />
-            </dictInlineEntry>
-            <dictInlineEntry key="warFactionID">
-              <real name="warFactionID" />
-            </dictInlineEntry>
-            <dictInlineEntry key="securityStatus">
-              <real name="securityStatus" />
-            </dictInlineEntry>
-            <dictInlineEntry key="bounty">
-              <real name="bounty" />
-            </dictInlineEntry>
-            <dictInlineEntry key="ownerID">
-              <int name="ownerID" />
-            </dictInlineEntry>
-            <dictInlineEntry key="groupID">
-              <int name="groupID" />
-            </dictInlineEntry>
-            <dictInlineEntry key="categoryID">
-              <int name="categoryID" />
-            </dictInlineEntry>
-            <dictInlineEntry key="charID">
-              <int name="charID" />
-            </dictInlineEntry>
-        </dictInline>
-    </objectInline>
-  </elementDef>
 <!--
     def AddBalls(self, chunk):
         state, slims, damageDict = chunk
@@ -304,8 +261,8 @@ DST_WARPEXIT = 11
 
   <elementDef name="DoDestinyDamageState3" decode="false" >
     <tupleInline>
-        <real name="shield" default="0" />
-        <real name="armor" default="0" />
+        <real name="shield" />
+        <real name="armor" />
         <real name="structure" default="1" />
     </tupleInline>
   </elementDef>
@@ -353,13 +310,13 @@ DST_WARPEXIT = 11
             <!-- 0: shipID -->
             <int name="entityID" />
             <!-- 1: moduleID -->
-            <int name="moduleID" default="0" none_marker="0" />
+            <int name="moduleID" none_marker="0" />
             <!-- 2: moduleTypeID -->
-            <int name="moduleTypeID" default="0" none_marker="0" />
+            <int name="moduleTypeID" none_marker="0" />
             <!-- 3: targetID -->
-            <int name="targetID" default="0" none_marker="0" />
+            <int name="targetID" none_marker="0" />
             <!-- 4: chargeTypeID -->
-            <int name="chargeTypeID" default="0" none_marker="0" />
+            <int name="chargeTypeID" none_marker="0" />
             <!-- 5: area, completely unknown contents, empty PyList in packets -->
             <list name="area" />
             <!-- 6: see scripts/parklife/fxSequencer.py -->
@@ -383,9 +340,9 @@ DST_WARPEXIT = 11
             <!-- 0: shipID -->
             <int name="entityID" />
             <!-- 1: moduleID (shipID for NPC) -->
-            <int name="moduleID" default="0" none_marker="0" />
+            <int name="moduleID" none_marker="0" />
             <!-- 2: moduleTypeID -->
-            <int name="moduleTypeID" default="0" none_marker="0" />
+            <int name="moduleTypeID" none_marker="0" />
             <!-- 3: targetID or None -->
             <raw name="targetID" />
             <!-- 4: chargeTypeID or None -->
@@ -403,9 +360,9 @@ DST_WARPEXIT = 11
             <!-- 10: duration in milliseconds (optional) -->
             <int name="duration" default="-1" none_marker="0" />
             <!-- 11: repeat (optional) (really defaults to None, but -1 seems to work too) -->
-            <int name="repeat" default="0" none_marker="0" />
+            <int name="repeat" none_marker="0" />
             <!-- 12: startTime (optional) -->
-            <long name="startTime" default="0" none_marker="0" />
+            <long name="startTime" none_marker="0" />
             <!-- 13: graphicInfo or None  - not sure what this is yet.  -->
             <raw name="graphicInfo" />
         </tupleInline>

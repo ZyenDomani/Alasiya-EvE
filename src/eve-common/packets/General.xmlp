@@ -78,7 +78,7 @@
     <objectEx name="root" type2="true">
       <tupleInline>
         <tupleInline>
-          <string name="type" default="dbutil.RowList" type1="true" />
+          <string name="type" none_marker="dbutil.RowList" type1="true" />
         </tupleInline>
         <dictInline>
           <dictInlineEntry key="header">
@@ -92,7 +92,7 @@
   <elementDef name="dbutil_RowList_header" encode="false" decode="false">
     <tupleInline>
      <tupleInline>
-       <string name="type" default="dbutil.RowList" type1="true" />
+       <string name="type" none_marker="dbutil.RowList" type1="true" />
      </tupleInline>
      <dictInline>
       <dictInlineEntry key="header">
@@ -108,7 +108,7 @@
   <elementDef name="dbutil_RowDict_header" encode="false" decode="false">
     <tupleInline>
      <tupleInline>
-       <string name="type" default="dbutil.RowDict" type1="true" />
+       <string name="type" none_marker="dbutil.RowDict" type1="true" />
      </tupleInline>
      <dictInline>
       <dictInlineEntry key="header">
@@ -322,25 +322,17 @@
 
   <elementDef name="SessionChangeNotification">
     <tupleInline>
-      <long name="sessionID" default="0" />
+      <long name="sessionID" none_marker="0" />
       <!-- 0 -->
       <tupleInline>
         <!-- 0 -->
-        <int name="clueless" default="0" />
+        <int name="clueless" none_marker="0" />
         <!-- 1 -->
         <dict name="changes" />
       </tupleInline>
       <!-- 1 -->
       <!-- this is actually optional... -->
       <listInt name="nodesOfInterest" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="SessionInitialState" decode="false">
-    <tupleInline>
-      <long name="sessionID" default="0" />
-      <long name="sessionType" default="5" />
-      <dict name="initialstate" />
     </tupleInline>
   </elementDef>
 

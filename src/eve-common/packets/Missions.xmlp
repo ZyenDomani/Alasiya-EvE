@@ -20,7 +20,7 @@
       </tupleInline>
       <dictInline>
         <dictInlineEntry key="loyaltyPoints">
-              <int name="loyaltyPoints" default="0" />
+              <int name="loyaltyPoints" />
           </dictInlineEntry>
       </dictInline>
     </tupleInline>

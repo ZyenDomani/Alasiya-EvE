@@ -40,7 +40,7 @@
       <int name="itemID" />
       <wstring name="effectName" />
       <!-- optional: -->
-      <int name="target" none_marker="0" default="0" />
+      <int name="target" none_marker="0" />
       <int name="repeat" />
     </tupleInline>
   </elementDef>

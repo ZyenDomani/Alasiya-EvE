@@ -81,6 +81,7 @@ bool EVEPacketDispatcher::DispatchPacket(PyPacket* packet)
             return Handle_ErrorResponse(packet, error);
         }
         case SESSIONCHANGENOTIFICATION: {
+            // is this really a thing?  nope.  its not.
             SessionChangeNotification sessionChange;
             if (!sessionChange.Decode(packet->payload)) {
                 sLog.Error("EVEPacketDispatcher","Failed to decode session change notification");

@@ -80,12 +80,12 @@
         <int name="herID" />
       </listInline>
       <listInline>
-        <bool name="myState" default="0" />
-        <bool name="herState" default="0" />
+        <bool name="myState" />
+        <bool name="herState" />
       </listInline>
       <listInline>
-        <real name="myMoney" default="0" />
-        <real name="herMoney" default="0" />
+        <real name="myMoney" />
+        <real name="herMoney" />
       </listInline>
       <objectEx name="list" type="PyObjectEx" />
     </listInline>

@@ -58,8 +58,7 @@ bool ClassCloneGenerator::ProcessElementDef( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    return *this;\n"
-        "}\n"
-        "\n"
+        "}\n\n"
     );
 
     return true;
@@ -79,8 +78,7 @@ bool ClassCloneGenerator::ProcessElement( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
+        "    %s = oth.%s;\n\n",
         name, name
     );
 
@@ -105,9 +103,9 @@ bool ClassCloneGenerator::ProcessElementPtr( const TiXmlElement* field )
         "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
-        "    } else\n"
+        "    } else {\n"
         "        %s = new %s(*oth.%s);\n"
-        "\n",
+        "    }\n\n",
         name,
         name,
             name,
@@ -131,9 +129,9 @@ bool ClassCloneGenerator::ProcessRaw( const TiXmlElement* field )
         "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
-        "    } else\n"
+        "    } else {\n"
         "       %s = oth.%s->Clone();\n"
-        "\n",
+        "    }\n\n",
         name,
         name,
             name,
@@ -153,8 +151,7 @@ bool ClassCloneGenerator::ProcessInt( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-             "    %s = oth.%s;\n"
-             "\n",
+             "    %s = oth.%s;\n\n",
              name, name
     );
 
@@ -170,8 +167,7 @@ bool ClassCloneGenerator::ProcessLong( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-             "    %s = oth.%s;\n"
-             "\n",
+             "    %s = oth.%s;\n\n",
              name, name
     );
 
@@ -187,8 +183,7 @@ bool ClassCloneGenerator::ProcessReal( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
+        "    %s = oth.%s;\n\n",
         name, name
     );
 
@@ -204,8 +199,7 @@ bool ClassCloneGenerator::ProcessBool( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
+        "    %s = oth.%s;\n\n",
         name, name
     );
 
@@ -230,9 +224,9 @@ bool ClassCloneGenerator::ProcessBuffer( const TiXmlElement* field )
         "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
-        "    } else\n"
+        "    } else {\n"
         "        %s = new PyBuffer(*oth.%s);\n"
-        "\n",
+        "    }\n\n",
         name,
         name,
             name,
@@ -252,8 +246,7 @@ bool ClassCloneGenerator::ProcessString( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
+        "    %s = oth.%s;\n\n",
         name, name
     );
 
@@ -274,8 +267,7 @@ bool ClassCloneGenerator::ProcessWString( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
+        "    %s = oth.%s;\n\n",
         name, name
     );
 
@@ -300,9 +292,9 @@ bool ClassCloneGenerator::ProcessToken( const TiXmlElement* field )
         "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
-        "    } else\n"
+        "    } else {\n"
         "       %s = oth.%s->Clone();\n"
-        "\n",
+        "    }\n\n",
         name,
         name,
             name,
@@ -331,9 +323,9 @@ bool ClassCloneGenerator::ProcessObject( const TiXmlElement* field )
         "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
-        "    } else\n"
+        "    } else {\n"
         "        %s = new PyObject(*oth.%s);\n"
-        "\n",
+        "    }\n\n",
         name,
         name,
             name,
@@ -367,8 +359,9 @@ bool ClassCloneGenerator::ProcessObjectEx( const TiXmlElement* field )
         "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
-        "    } else\n"
-        "        %s = new %s(*oth.%s);\n",
+        "    } else {\n"
+        "        %s = new %s(*oth.%s);\n"
+        "    }\n\n",
         name,
         name,
             name,
@@ -392,9 +385,9 @@ bool ClassCloneGenerator::ProcessTuple( const TiXmlElement* field )
         "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
-        "    } else\n"
+        "    } else {\n"
         "       %s = new PyTuple(*oth.%s);\n"
-        "\n",
+        "    }\n\n",
         name,
         name,
             name,
@@ -423,9 +416,9 @@ bool ClassCloneGenerator::ProcessList( const TiXmlElement* field )
         "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
-        "    } else\n"
+        "    } else {\n"
         "        %s = new PyList(*oth.%s);\n"
-        "\n",
+        "    }\n\n",
         name,
         name,
             name,
@@ -450,8 +443,7 @@ bool ClassCloneGenerator::ProcessListInt( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
+        "    %s = oth.%s;\n\n",
         name, name
     );
 
@@ -467,8 +459,7 @@ bool ClassCloneGenerator::ProcessListLong( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
+        "    %s = oth.%s;\n\n",
         name, name
     );
 
@@ -484,8 +475,7 @@ bool ClassCloneGenerator::ProcessListStr( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
+        "    %s = oth.%s;\n\n",
         name, name
     );
 
@@ -505,9 +495,9 @@ bool ClassCloneGenerator::ProcessDict( const TiXmlElement* field )
         "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
-        "    } else\n"
+        "    } else {\n"
         "        %s = new PyDict(*oth.%s);\n"
-        "\n",
+        "    }\n\n",
         name,
         name,
             name,
@@ -545,8 +535,7 @@ bool ClassCloneGenerator::ProcessDictRaw( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
+        "    %s = oth.%s;\n\n",
         name, name
     );
 
@@ -623,4 +612,3 @@ bool ClassCloneGenerator::ProcessSubStructInline( const TiXmlElement* field )
 {
     return ParseElementChildren( field, 1 );
 }
-

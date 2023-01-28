@@ -34,8 +34,8 @@
         <tupleInline>
             <int name="charID" />
             <int name="corpID" />
-            <int name="allianceID" default="0" none_marker="0" />
-            <int name="warFactionID" default="0" none_marker="0" />
+            <raw name="allianceID" none_marker="0" />
+            <raw name="factionID" none_marker="0" />
         </tupleInline>
     </tupleInline>
   </elementDef>
@@ -45,8 +45,8 @@
       <tupleInline>
         <int name="charID" />
         <int name="corpID" />
-        <int name="allianceID" default="0" none_marker="0" />
-        <int name="factionID" default="0" none_marker="0" />
+        <raw name="allianceID" none_marker="0" />
+        <raw name="factionID" none_marker="0" />
       </tupleInline>
     </tupleInline>
   </elementDef>

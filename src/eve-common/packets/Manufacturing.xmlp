@@ -339,7 +339,7 @@
           </objectInline>
         </dictInlineEntry>
         <dictInlineEntry key="installedItemID">
-          <int name="installedItemID" default="0" />
+          <int name="installedItemID" />
         </dictInlineEntry>
       </dictInline>
     </objectInline>
