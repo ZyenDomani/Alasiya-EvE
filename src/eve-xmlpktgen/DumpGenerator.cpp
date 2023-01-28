@@ -55,8 +55,7 @@ bool ClassDumpGenerator::ProcessElementDef( const TiXmlElement* field )
     fprintf( mOutputFile,
         "void %s::Dump( LogType l_type, const char* pfx ) const\n"
         "{\n"
-        "    _log( l_type, \"%%s%s\", pfx );\n"
-        "\n",
+        "    _log( l_type, \"%%s%s\", pfx );\n",
         name, name
     );
 
@@ -152,8 +151,7 @@ bool ClassDumpGenerator::ProcessInt( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s=%%u\", pfx, %s );\n"
-        "\n",
+        "    _log( l_type, \"%%s%s=%%u\", pfx, %s );\n",
         name, name
     );
 
@@ -169,8 +167,7 @@ bool ClassDumpGenerator::ProcessLong( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-             "    _log( l_type, \"%%s%s=%li\", pfx, %s );\n"
-             "\n",
+             "    _log( l_type, \"%%s%s=%%li\", pfx, %s );\n",
              name, name
     );
 
@@ -186,8 +183,7 @@ bool ClassDumpGenerator::ProcessReal( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s=%%.13f\", pfx, %s );\n"
-        "\n",
+        "    _log( l_type, \"%%s%s=%%.13f\", pfx, %s );\n",
         name, name
     );
 
@@ -203,8 +199,7 @@ bool ClassDumpGenerator::ProcessBool( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s=%%s\", pfx, %s ? \"true\" : \"false\" );\n"
-        "\n",
+        "    _log( l_type, \"%%s%s=%%s\", pfx, %s ? \"true\" : \"false\" );\n",
         name, name
     );
 
@@ -247,8 +242,7 @@ bool ClassDumpGenerator::ProcessString( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s='%%s'\", pfx, %s.c_str() );\n"
-        "\n",
+        "    _log( l_type, \"%%s%s='%%s'\", pfx, %s.c_str() );\n",
         name, name
     );
 
@@ -264,8 +258,7 @@ bool ClassDumpGenerator::ProcessStringInline( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%sString '%s'\", pfx );\n"
-        "\n",
+        "    _log( l_type, \"%%sString '%s'\", pfx );\n",
         value
     );
 
@@ -281,8 +274,7 @@ bool ClassDumpGenerator::ProcessWString( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s='%%s'\", pfx, %s.c_str() );\n"
-        "\n",
+        "    _log( l_type, \"%%s%s='%%s'\", pfx, %s.c_str() );\n",
         name, name
     );
 
@@ -298,8 +290,7 @@ bool ClassDumpGenerator::ProcessWStringInline( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%sWString '%s'\", pfx );\n"
-        "\n",
+        "    _log( l_type, \"%%sWString '%s'\", pfx );\n",
         value
     );
 
@@ -340,8 +331,7 @@ bool ClassDumpGenerator::ProcessTokenInline( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%sToken '%s'\", pfx );\n"
-        "\n",
+        "    _log( l_type, \"%%sToken '%s'\", pfx );\n",
         value
     );
 
@@ -377,7 +367,6 @@ bool ClassDumpGenerator::ProcessObjectInline( const TiXmlElement* field )
 {
     fprintf( mOutputFile,
         "    _log( l_type, \"%%sObject:\", pfx );\n"
-        "\n"
     );
 
     return ParseElementChildren( field, 2 );
@@ -486,9 +475,9 @@ bool ClassDumpGenerator::ProcessListInt( const TiXmlElement* field )
     fprintf( mOutputFile,
         "    _log( l_type, \"%%s%s: Integer list with %%lu entries\", pfx, %s.size() );\n"
         "\n"
-        "    std::vector<int32>::const_iterator cur = %s.begin();\n"
-        "    for (int index = 0; cur != %s.end(); cur++, ++index )\n"
-        "        _log( l_type, \"%%s   [%%02d] %%d\", pfx, index, (*cur) );\n"
+        "    std::vector<int32>::const_iterator cur = %s.begin(), end = %s.end();\n"
+        "    for (int index = 0; cur != end; cur++, ++index )\n"
+        "        _log( l_type, \"%%s   [%%02i] %%i\", pfx, index, (*cur) );\n"
         "\n",
         name, name, name, name
     );
@@ -507,9 +496,9 @@ bool ClassDumpGenerator::ProcessListLong( const TiXmlElement* field )
     fprintf( mOutputFile,
         "    _log( l_type, \"%%s%s: Integer list with %%lu entries\", pfx, %s.size() );\n"
         "\n"
-        "    std::vector<int64>::const_iterator cur = %s.begin();\n"
-        "    for (int index = 0; cur != %s.end(); cur++, ++index )\n"
-        "        _log( l_type, \"%%s   [%%02d] %%li\", pfx, index, (*cur) );\n"
+        "    std::vector<int64>::const_iterator cur = %s.begin(), end = %s.end();\n"
+        "    for (int index = 0; cur != end; cur++, ++index )\n"
+        "        _log( l_type, \"%%s   [%%02i] %%li\", pfx, index, (*cur) );\n"
         "\n",
         name, name, name, name
     );

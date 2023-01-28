@@ -421,7 +421,7 @@ PyBuffer::PyBuffer( const PyBuffer& buffer )
 
 PyBuffer::~PyBuffer()
 {
-    delete mValue;
+    //delete mValue;
 }
 
 PyRep* PyBuffer::Clone() const
@@ -870,8 +870,8 @@ PyObjectEx::~PyObjectEx()
 {
     //PySafeDecRef( mHeader );
 
-    PyDecRef( mList );
-    PyDecRef( mDict );
+    //PyDecRef( mList );
+    //PyDecRef( mDict );
 }
 
 PyRep* PyObjectEx::Clone() const
@@ -1096,8 +1096,8 @@ PyPackedRow::PyPackedRow(const PyPackedRow& oth )
 
 PyPackedRow::~PyPackedRow()
 {
-    PyDecRef( mHeader );
-    PyDecRef( mFields );
+    //PyDecRef( mHeader );
+    //PyDecRef( mFields );
 }
 
 PyRep* PyPackedRow::Clone() const
@@ -1151,7 +1151,7 @@ PySubStruct::PySubStruct( const PySubStruct& oth ) : PyRep( PyRep::PyTypeSubStru
 
 PySubStruct::~PySubStruct()
 {
-    PyDecRef( mSub );
+    //PyDecRef( mSub );
 }
 
 PyRep* PySubStruct::Clone() const
@@ -1180,8 +1180,8 @@ PySubStream::PySubStream(const PySubStream& oth )
 
 PySubStream::~PySubStream()
 {
-    PySafeDecRef( mData );
-    PySafeDecRef( mDecoded );
+    //PySafeDecRef( mData );
+    //PySafeDecRef( mDecoded );
 }
 
 PyRep* PySubStream::Clone() const
