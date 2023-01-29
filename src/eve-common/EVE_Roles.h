@@ -12,24 +12,6 @@
 
 namespace Acct {
 
-    namespace Type {
-        enum {
-            CCP                 = 13,
-            UK                  = 17,
-            PBC                 = 20,
-            ETC                 = 21,
-            Trial               = 23,   // most client tests are >22
-            Mammon              = 30,   // this is default player account type
-            Media               = 31,
-            CDKey               = 33,
-            IA                  = 34,
-            // not used here
-            DustPlayer          = 101,
-            DustCCP             = 102,
-            DustBattleServer    = 103
-        };
-    }
-
     namespace Role {
         enum:int64_t {
             DUST               = 1L,                      // 0x01                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001
@@ -110,6 +92,43 @@ namespace Acct {
             */
         };
     }
+}
+
+namespace UserType {
+    enum {
+        CCP                 = 13,
+        UK                  = 17,
+        PBC                 = 20,
+        ETC                 = 21,
+        Trial               = 23,   // most client tests are >22
+        Mammon              = 30,   // this is default player account type
+        Media               = 31,
+        CDKey               = 33,
+        IA                  = 34,
+        // not used here
+        DustPlayer          = 101,
+        DustCCP             = 102,
+        DustBattleServer    = 103
+    };
+}
+
+namespace SessionType {
+    enum {
+        Invalid = 0,
+        ExecuteContent,
+        Service,
+        Crest,
+        Esp,
+        Game
+        /*
+         *  SESSION_TYPE_INVALID = 0
+         *  SESSION_TYPE_EXECUTIONCONTEXT = 1
+         *  SESSION_TYPE_SERVICE = 2
+         *  SESSION_TYPE_CREST = 3
+         *  SESSION_TYPE_ESP = 4
+         *  SESSION_TYPE_GAME = 5
+         */
+    };
 }
 
 namespace Corp {

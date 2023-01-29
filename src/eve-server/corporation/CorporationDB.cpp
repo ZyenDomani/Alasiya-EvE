@@ -2280,6 +2280,8 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
             oldCorpID = pClient->GetCorporationID();
         }
     }
+
+    /** @todo this packet is wrong...client error.  may have to build here instead of xmlp */
     OnCharShareChange charUpdate;
     charUpdate.ownerID = args.toShareholderID;
     charUpdate.corpID = corpID;

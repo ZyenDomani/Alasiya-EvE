@@ -1038,6 +1038,8 @@ PyResult CorpRegistryBound::Handle_MoveCompanyShares(PyCallArgs &call) {
 
     /** @todo  test for moving shares between players.  can we do that? */
     m_db.MoveShares(m_corpID, corpID, args);
+
+    // returns nothing
     return nullptr;
 }
 

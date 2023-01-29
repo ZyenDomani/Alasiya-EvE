@@ -10,30 +10,37 @@
 
 namespace EvESkill {
     namespace Event {
-        /**  these are the only skill events that client will recognize....there are no messageIDs for others
-                 34: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillClonePenalty')
-                 36: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingStarted')
-                 37: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingComplete')
-                 38: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingCanceled')
-                 39: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/GMGiveSkill')
-                 53: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingComplete')
-                307: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillPointsApplied')
-        */
+        /**  these are the updated skill events that client will recognize....
+         *
+actions = {24: localization.GetByLabel('UI/RedeemWindow/RedeamMessages/GIFTFROMCCP'),
+         33: localization.GetByLabel('UI/PeopleAndPlaces/Creator'),
+         34: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillClonePenalty'),
+         35: localization.GetByLabel('UI/Common/Updated'),
+         36: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingStarted'),
+         37: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingComplete'),
+         38: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingCanceled'),
+         39: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/GMGiveSkill'),
+         53: localization.GetByLabel('UI/Generic/SkillTrainingComplete'),
+         56: localization.GetByLabel('UI/SkillQueue/InjectSkill'),
+         177: localization.GetByLabel('UI/PI/Common/Remove'),
+         260: localization.GetByLabel('UI/Inflight/Brackets/TargetLocked'),
+         307: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillPointsApplied')}
+    */
         enum {                                    // client msg in skill history
-            Gift                          = 24,   //Unknown
-            CharCreation                  = 33,   //Unknown
-            ClonePenalty                  = 34,   //Skill Clone Penalty
-            TaskMaster                    = 35,   //Unknown (used to denote training correction)
+            Gift                          = 24,   //Gift from CCP Games  (cause i cant change it to "Alasiya-EvE" yet)
+            CharCreation                  = 33,   //Creator
+            ClonePenalty                  = 34,   //Skill Clone Penalty (podded with inferior clone)
+            TaskMaster                    = 35,   //Updated (used to denote training correction)
             TrainingStarted               = 36,   //Skill Training Started
             TrainingComplete              = 37,   //Skill Training Complete
             TrainingCanceled              = 38,   //Skill Training Canceled
             GMGift                        = 39,   //GM Skill Gift
-            QueueTrainingCompleted        = 53,   //Skill Training Complete
-            SkillInjected                 = 56,   //Unknown
-            Removal                       = 177,  //Unknown
-            HaltedAccountLapsed           = 260,  //Unknown
+            QueueTrainingCompleted        = 53,   //Skill Training Complete  (generic 'Completed') *Not Used*
+            SkillInjected                 = 56,   //Inject Skill
+            Removal                       = 177,  //Remove (denotes skill removed by edit)
+            HaltedAccountLapsed           = 260,  //Locked (denotes account locked, training stopped)
             SkillPointsApplied            = 307,  //Apply Free Skill Points
-            GMReverseFreeSkillPointsUsed  = 309   //Unknown
+            GMReverseFreeSkillPointsUsed  = 309   //Unknown *Not Used*
         };
     }
 

@@ -100,8 +100,6 @@ protected:
      * @param[in] version Object to be filled with version information.
      */
     virtual void _GetVersion( VersionExchangeServer& version ) = 0;
-    /** @return Current count of connected users. */
-    //virtual uint32 GetUserCount() = 0;
     /** @return Current position in connection queue. */
     virtual uint32 _GetQueuePosition() = 0;
 

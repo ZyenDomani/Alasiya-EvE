@@ -632,7 +632,7 @@ void PyTuple::clear()
 
 PyTuple& PyTuple::operator=( const PyTuple& oth )
 {
-    //sLog.Yellow("PyTuple()", "Copy assignment.");
+    sLog.Yellow("PyTuple()", "Copy assignment.");
     clear();
     items.resize( oth.size() );
     iterator cur = items.begin(), end = items.end();
@@ -707,7 +707,7 @@ void PyList::clear()
 // copy assignment
 PyList& PyList::operator=( const PyList& oth )
 {
-    //sLog.Yellow("PyList()", "Copy assignment.");
+    sLog.Yellow("PyList()", "Copy assignment.");
     clear();
     items.resize( oth.size() );
     iterator cur = items.begin(), end = items.end();
@@ -809,7 +809,7 @@ void PyDict::SetItem( PyRep* key, PyRep* value )
 // copy assignment
 PyDict& PyDict::operator=( const PyDict& oth )
 {
-    //sLog.Yellow("PyDict()", "Copy assignment.");
+    sLog.Yellow("PyDict()", "Copy assignment.");
     clear();
     const_iterator cur = oth.begin(), end = oth.end();
     for (; cur != end; cur++) {

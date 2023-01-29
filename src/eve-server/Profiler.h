@@ -60,9 +60,8 @@ class Profiler
 : public Singleton<Profiler>
 {
 public:
-    Profiler();
-    ~Profiler();
-
+    // let compiler create c'tor/d'tor
+    
     int Initialize();
 
     void AddTime(uint8 key, double value);

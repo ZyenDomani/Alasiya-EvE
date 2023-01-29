@@ -937,7 +937,7 @@ void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
     // verify sp is below next level
     if (currentSP >= nextSP) {
         // it's not.  update client data and return.
-        SaveSkillHistory(EvESkill::Event::TaskMaster, curTime, m_itemID, typeID, level, currentSP);
+        SaveSkillHistory(EvESkill::Event::TaskMaster, curTime, m_itemID, typeID, level, nextSP);
         skill->SetFlag(flagSkill, true);
         skill->SaveItem();
 
@@ -979,7 +979,7 @@ void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
 
     float timeLeft = (qs.endTime - qs.startTime) / EvE::Time::Second;
     const char* formatedTime = EvE::FormatTime(timeLeft);
-    _log(SKILL__QUEUE, "Added %s Level %u to queue with %s(%.1f) to train %uSP.", \
+    _log(SKILL__QUEUE, "Added %s Level %u to queue with %s(%.1f) to train %u SP.", \
             skill->name(), level, formatedTime, timeLeft, nextSP - currentSP);
 }
 

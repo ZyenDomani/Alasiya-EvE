@@ -41,8 +41,8 @@ work on buglist, integrate this list in there where i can (in order)
     - corp
     - mail/notifications
     - missions
-    - ram  (slot # are STILL "1" on all slots)
-    - calendar
+    - ram  (slot # are STILL "1" on all slots)  cant find previous info on where this error was in client.  failure to increment iirc
+    - calendar - mostly working.  only goes back 12 months in client
     - contracts
     - lp
     - cosmic systems
@@ -245,7 +245,7 @@ market for corp use
 
 market history
     - change date on ccp history dump and put into mktHistory table
-    - may be cheating, but we'd have 'real' data for market history
+    - may be cheating, but we dont have 'real' data for market history (yet)
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
 raceMask isnt implemented yet...will need more thought/coding
@@ -262,8 +262,11 @@ corp jumpers? - decide/implement
 GetMemberIDsByQuery needs more work.  see notes in code.
 corp items not updating in db when moved (could be all items as we're not saving every item change)
 dividends incomplete
+OnCharShareChange packet sending wrong.  see /home/allan/Desktop/cruc/corp/OnShareChange_thread
+GetSanctionedActionsByCorporation incomplete
 decorations list doesnt include recipients.  also time is shown as elapsed
 contacts incomplete
+station office doesnt update after renting office
 SparseBound will need work for RAM and lock votes (and more)
 	- official has some updates for sparcebound code.
 check items in corp hangar for proper locationID/flagID

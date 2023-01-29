@@ -44,6 +44,9 @@ m_sessionID(15)
     mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero(), PyStatic.NewFalse()));
     mSession->SetItemString("address", new_tuple(PyStatic.NewNone(), new PyString("0.0.0.0"), PyStatic.NewFalse()));
     mSession->SetItemString("sessionID", new_tuple(PyStatic.NewNone(), new PyLong(m_sessionID), PyStatic.NewFalse()));
+    mSession->SetItemString("languageID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("userType", new_tuple(PyStatic.NewNone(), PyStatic.NewZero(), PyStatic.NewFalse()));
+    mSession->SetItemString("user_clientid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
 
     // init remaining session values
     mSession->SetItemString("genderID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
@@ -192,6 +195,9 @@ void ClientSession::_Set(const char* name, PyRep* value)
     if (tuple == nullptr) {
         tuple = new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse());
         mSession->SetItemString(name, tuple);
+    } else {
+        // delete old value before replacing
+        PyDecRef(tuple->GetItem(0));
     }
 
     PyRep* current(tuple->GetItem(1)); // copy c'tor

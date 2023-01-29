@@ -1,76 +1,5 @@
 
 
-19:09:00 [Bound] CorpRegistryBound::GetMember()
-19:09:00 [CorpCall] CorpRegistryBound::Handle_GetMember()
-19:09:10 [Service] machoNet::GetTime()
-19:09:10 [Service] machoNet::GetTime()
-19:09:10 [Service] machoNet::GetTime()
-19:09:10 [Service] machoNet::GetTime()
-19:09:10 [Service] machoNet::GetTime()
-19:09:29 [Bound] CorpRegistryBound::GetTitles()
-19:09:34 [Service] alert::BeanCount()
-19:09:34 [Service] alert::SendClientStackTraceAlert()
-EXCEPTION #7 logged at  01/27/2023 19:09:34
-Caught at:
-/common/lib/bluepy.py(86) CallWrapper
-/client/script/ui/control/tabgroup.py(416) OnClick
-/client/script/ui/control/tabgroup.py(500) Select
-Thrown at:
-/client/script/ui/control/tabgroup.py(498) Select
-/client/script/ui/shared/neocom/corporation/corp_dlg_edit_member.py(208) Load
-/client/script/ui/shared/neocom/corporation/corp_dlg_edit_member.py(262) OnTabGeneral
-        canEditBase = 1
-        data = {'OnChange': <bound method EditMemberDialog.OnComboChange of form.EditMemberDialog object at 0x397d7f70, name=EditMemberDialog, destroyed=False>>,
-                        '__guid__': 'listentry.Combo',
-                        'cfgName': 'baseID',
-                        'decoClass': <class 'listentry.Combo'>,
-                       ...
-        scrolllist = [Anonymous Bunch: {'setValue': '', 'GetHeightFunction': <function GetHeight at 0x0DC73870>, 'name': 'general_title', '__guid__': 'listentry.Edit', 'lines': 1, 'GetColumnWidthFunction': None, 'decoClass': <class 'listentry.Edit'>, 'label': u'Title', 'allowDynamicResize': False, 'charIndex': u'title', 'maxLength': 100, 'OnReturn': None, 'PreLoadFunction': None},
-                        Anonymous Bunch: {'setValue': 60014137, 'GetHeightFunction': <function GetHeight at 0x0DC73770>, 'name': 'baseID', '__guid__': 'listentry.Combo', 'GetColumnWidthFunction': None, 'decoClass': <class 'listentry.Combo'>, 'label': u'Base', 'allowDynamicResize': False, 'charIndex': u'base', 'cfgName': 'baseID', 'PreLoadFunction': None, 'OnChange': <bound method EditMemberDialog.OnComboChange of form.EditMemberDialog object at 0x397d7f70, name=EditMemberDialog, destroyed=False>>, 'options': [(u'No Base', None), (u'Zemalu IX - Moon 2 - Thukker Mix Factory', 60014140)]},
-                        Anonymous Bunch: {'GetHeightFunction': <function GetHeight at 0x0DC731B0>, '__guid__': 'l...
-        self = form.EditMemberDialog object at 0x397d7f70, name=EditMemberDialog, destroyed=False>
-AttributeError: 'blue.DBRow' object has no attribute 'characterID'
-Thread Locals:  session was <Session: (sid:4830666763746519340, clientID:0, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:57138, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, allianceid:0, warfactionid:-1, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
-
-EXCEPTION END
-
-
-
-
-
-
-
-
-
-
-00:35:27 [Service] corporationSvc::GetEmploymentRecord()
-00:35:27 [Service] config::GetMultiOwnersEx()
-00:35:27 [Service] alert::BeanCount()
-00:35:27 [Service] alert::SendClientStackTraceAlert()
-EXCEPTION #5 logged at  01/28/2023 0:35:27 Unhandled exception in <TaskletExt object at 374e1d98, abps=1001, ctxt=None>
-Caught at:
-/common/lib/bluepy.py(98) CallWrapper
-Thrown at:
-/common/lib/bluepy.py(86) CallWrapper
-/client/script/ui/control/entries.py(1781) OnClick
-/client/script/ui/control/scroll.py(387) SelectNode
-/client/script/ui/control/scroll.py(390) ReportSelectionChange
-/client/script/ui/shared/neocom/charactersheet.py(348) OnSelectEntry
-/client/script/ui/shared/neocom/charactersheet.py(565) Load
-/client/script/ui/shared/neocom/charactersheet.py(795) ShowEmploymentHistory
-/client/script/ui/services/infosvc.py(1973) GetEmploymentHistorySubContent
-/common/script/sys/cfg.py(824) Get
-        self = <Instance of Recordset.EveOwners>
-                       Key column: ownerID, Cache entries: 11413
-                       Field names: ownerID, ownerName, typeID, gender, ownerNameID
-        key = 1000183
-        flush = 0
-KeyError: ('RecordNotFound', 1000183)
-Thread Locals:  session was <Session: (sid:9032070754965222723, clientID:2888444, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:57910, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
-
-EXCEPTION END
-
-
 00:45:57 [Service] storeServer::GetAvailableOffers()
 00:45:57 [Service] alert::BeanCount()
 00:45:57 [Service] alert::SendClientStackTraceAlert()
@@ -121,6 +50,36 @@ Thrown at:
         row = <DBRow object [1, 5, 1, 0, 0L, 0L, 132580652672305154L]>
 AttributeError: 'blue.DBRow' object has no attribute 'parameter'
 Thread Locals:  session was <Session: (sid:3998267456358284483, clientID:2888444, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:60541, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, fleetid:950000000, fleetrole:1, fleetbooster:1, wingid:-1, squadid:-1, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
+
+EXCEPTION END
+
+
+16:41:42 [Bound] CorpRegistryBound::MoveCompanyShares()
+16:41:42 [CorpCall] CorpRegistryBound::Handle_MoveCompanyShares()
+16:41:42 E EntityList::Multicast 2: Corporation MulticastTarget called.
+backtrace() returned 14 addresses
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN3EvE10traceStackEv+0x27) [0x114c1ea]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList9MulticastEPKcS1_PP7PyTupleRK15MulticastTargetb+0x3fd) [0xab6473]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13CorporationDB10MoveSharesEjjR15Call_MoveShares+0x1a3) [0xc524c1]
+/srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN17CorpRegistryBound24Handle_MoveCompanySharesER10PyCallArgs+0x18b) [0xc62653]
+16:41:42 [Bound] CorpRegistryBound::GetSharesByShareholder()
+16:41:42 [Bound] CorpRegistryBound::GetShareholders()
+16:41:43 W   Profile Manager: Long Profile Time on key DB, time 969.242ms.
+16:41:43 W   Profile Manager: Long Profile Time on key Client Calls, time 994.386ms.
+16:41:43 [Service] alert::BeanCount()
+16:41:43 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #6 logged at  01/28/2023 16:41:42 Unhandled exception in <TaskletExt object at 26c73190, abps=1001, ctxt='<NO CONTEXT>^<bound method SharesO.OnShareChange_thread of <corpObject.SharesO instance at (snip)>>'>
+Caught at:
+/common/lib/bluepy.py(98) CallWrapper
+Thrown at:
+/common/lib/bluepy.py(86) CallWrapper
+/client/script/ui/services/corporation/bco_shares.py(62) OnShareChange_thread
+/common/script/sys/rowset.py(314) __setitem__
+        ind = 98000001
+        self = <util.IndexRowset instance at 0x26DFA468>
+        row = {'shares': (...)}
+AttributeError: 'dict' object has no attribute 'header'
+Thread Locals:  session was <Session: (sid:1917905916637375392, clientID:2888444, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:61379, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
 
 EXCEPTION END
 

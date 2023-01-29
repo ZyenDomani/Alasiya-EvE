@@ -89,6 +89,11 @@ private:
 
 #endif  // _EVE_SERVER_MARKET_MANAGER_H__
 
+/*{'FullPath': u'UI/Messages', 'messageID': 256343, 'label': u'MktOrderQueueTooLongTitle'}(u'Workers on strike!', None, None)
+{'FullPath': u'UI/Messages', 'messageID': 256344, 'label': u'MktOrderQueueTooLongBody'}(u'The underpaid workers in the market are not keeping up with the influx of new orders.\r\n<br><br>Please wait a while and try again.', None, None)
+
+*/
+
 /*
  *    def GetStationDistance(self, stationID, getFastestRoute = True):
  *        if session.stationid == stationID:

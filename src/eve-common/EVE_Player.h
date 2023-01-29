@@ -59,25 +59,4 @@ namespace Player {
 
 }
 
-namespace Session {
-    namespace Type {
-        enum {
-            Invalid = 0,
-            ExecuteContent,
-            Service,
-            Crest,
-            Esp,
-            Game
-        /*
-        SESSION_TYPE_INVALID = 0
-        SESSION_TYPE_EXECUTIONCONTEXT = 1
-        SESSION_TYPE_SERVICE = 2
-        SESSION_TYPE_CREST = 3
-        SESSION_TYPE_ESP = 4
-        SESSION_TYPE_GAME = 5
-        */
-        };
-    }
-}
-
 #endif  // EVE_PLAYER_H
