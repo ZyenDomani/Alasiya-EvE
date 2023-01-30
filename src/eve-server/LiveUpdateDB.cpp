@@ -27,7 +27,7 @@
 
 #include "LiveUpdateDB.h"
 
-PyList* LiveUpdateDB::GenerateUpdates()
+void LiveUpdateDB::Init()
 {
     const char* query = "SELECT"
             " updateID,"
@@ -46,7 +46,8 @@ PyList* LiveUpdateDB::GenerateUpdates()
 
     if (!sDatabase.RunQuery(res, query)) {
         codelog(DATABASE__ERROR, "Couldn't get live updates from database: %s", res.error.c_str());
-        return nullptr;
+        m_updateList = PyStatic.mtList();
+        return;
     }
 
     // setup the descriptor
@@ -61,7 +62,7 @@ PyList* LiveUpdateDB::GenerateUpdates()
     header->AddColumn("code", DBTYPE_STR);
 
     // we need to manually create PyPackedRows since we don't want everything from the query in them
-    PyList* list = new PyList(res.GetRowCount());
+    m_updateList = new PyList(res.GetRowCount());
     int listIndex(0);
     DBResultRow row;
     while (res.GetRow(row)) {
@@ -77,10 +78,8 @@ PyList* LiveUpdateDB::GenerateUpdates()
         inner.methodName = row.GetText(7);
         packedRow->SetField(7 /* code */, inner.Encode());
 
-        list->SetItem(listIndex++, packedRow);
+        m_updateList->SetItem(listIndex++, packedRow);
     }
 
-    list->Dump(NET__PRES_DEBUG, "    ");
-
-    return list;
+    m_updateList->Dump(NET__PRES_DEBUG, "    ");
 }

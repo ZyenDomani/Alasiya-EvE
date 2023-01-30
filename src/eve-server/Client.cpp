@@ -2086,6 +2086,7 @@ void Client::SendSessionChange()
     }
 
     QueuePacket(packet);
+    SafeDelete(packet);
 }
 
 void Client::QueueDestinyUpdates(std::vector< PyTuple* >& updates) {
@@ -2240,7 +2241,7 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
     }
 
     QueuePacket(packet);
-    //SafeDelete(packet);
+    SafeDelete(packet);
 }
 
 /************************************************************************/
@@ -2277,14 +2278,9 @@ void Client::_GetVersion(VersionExchangeServer& version)
     version.project_version = EVEProjectVersion;
 }
 
-uint32 Client::GetUserCount()
-{
-    return sEntityList.GetClientCount();
-}
-
 bool Client::_VerifyVersion(VersionExchangeClient& version)
 {
-    version.Dump(NET__PRES_REP, "    ");
+    //version.Dump(NET__PRES_REP, "    ");
     if (version.birthday != EVEBirthday)
         sLog.Error("Client","%s: Client's birthday does not match ours!", GetAddress().c_str());
     if (version.macho_version != MachoNetVersion)
@@ -2325,7 +2321,7 @@ bool Client::_VerifyCrypto(CryptoRequestPacket& cr)
 bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 {
     /* send passwordVersion required: 1=plain, 2=hashed */
-    // this doesnt work as i want it to.
+    // this doesnt work as i want it to.  it may be in the wrong place.  needs testing
     //  sending '2' will have client use hashed pass.
     //  sending '1' will have client send hashed pass first, then a second authentication packet using plain pass
     PyRep* res = new PyInt(2);
@@ -2376,7 +2372,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     server_shake.serverChallenge = "";
     server_shake.func_marshaled_code = new PyBuffer(marshaledNone, marshaledNone + sizeof(marshaledNone));
     server_shake.verification = new PyBool(false);
-    server_shake.cluster_usercount = sEntityList.GetClientCount(); //GetUserCount();
+    server_shake.cluster_usercount = sEntityList.GetClientCount();
     server_shake.proxy_nodeid = 0xFFAA; //888444
     server_shake.user_logonqueueposition = _GetQueuePosition();
     // binascii.crc_hqx of marshaled single-element tuple containing 64 zero-bytes string
@@ -2397,11 +2393,10 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     pSession->SetString("address", EVEClientSession::GetAddress().c_str());
     pSession->SetString("languageID", ccp.user_languageid.c_str());
 
-    pSession->SetInt("userType", Acct::Type::Mammon);     //aData.type  - incomplete (db fields done)
+    pSession->SetInt("userType", UserType::Mammon);     //aData.type  - incomplete (db fields done)
     pSession->SetInt("userid", aData.id);
     pSession->SetLong("role", aData.role);
-    pSession->SetLong("clientID", 1000000L * aData.clientID + 888444);  // kinda arbitrary
-    //pSession->SetLong("sessionID", 0 /*pSession->GetSessionID()*/);
+    pSession->SetLong("user_clientid", 1000000L * aData.clientID);  // kinda arbitrary
 
     sLog.Green("  Client::Login()","Account %u (%s) logging in from %s", aData.id, aData.name.c_str(), EVEClientSession::GetAddress().c_str());
 
@@ -2424,7 +2419,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         ack.jit = GetLanguageID();
         ack.userid = GetUserID();   //5654387 accountID?
         ack.maxSessionTime = PyStatic.NewNone();        // set this for an auto-logout time?
-        ack.userType = Acct::Type::Mammon;      //GetAccountType()  - not written yet
+        ack.userType = UserType::Mammon;      //GetAccountType()  - not written yet
         ack.role = Acct::Role::PLAYER | Acct::Role::NEWBIE | Acct::Role::LOGIN; /*  live returns these */
         ack.address = GetAddress();
         ack.inDetention = PyStatic.NewNone();   // dont know what this is or what it's for
@@ -2437,7 +2432,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         res->Dump(CLIENT__CALL_DUMP, "    ");
     mNet->QueueRep(res, false);
 
-    // send out the session change
+    // send out the session changeSkillQueueLoop
     SendSessionChange();
 
     return true;
@@ -2469,7 +2464,7 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyResult &rs
     }
 
     QueuePacket(packet);
-    //SafeDelete(packet);
+    SafeDelete(packet);
 }
 
 void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_TYPE msgType, MACHONETERR_TYPE errCode, PyRep** payload)
@@ -2495,7 +2490,7 @@ void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_T
 
     packet->payload = e.Encode();
     QueuePacket(packet);
-    //SafeDelete(packet);
+    SafeDelete(packet);
 }
 
 void Client::_SendPingRequest()
@@ -2520,7 +2515,7 @@ void Client::_SendPingRequest()
     packet->named_payload = new PyDict();
 
     QueuePacket(packet);
-    //SafeDelete(packet);
+    SafeDelete(packet);
 }
 
 /** @todo fix this to provide a somewhat accurate response */
@@ -2586,7 +2581,7 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
     packet->payload->SetItem(0, pingList);
 
     QueuePacket(packet);
-    //SafeDelete(packet);
+    SafeDelete(packet);
 }
 
 /************************************************************************/

@@ -137,6 +137,9 @@ void Profiler::AddTime(uint8 key, double value) {
         case 28:
             m_clientCall.push_back(value);
             break;
+        case 29:
+            m_civilians.push_back(value);
+            break;
         default:
             sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
             break;
@@ -173,6 +176,7 @@ void Profiler::ClearAll()
     m_damage.clear();
     m_effects1.clear();
     m_effects2.clear();
+    m_civilians.clear();
 }
 
 void Profiler::PrintProfile()
@@ -190,7 +194,7 @@ void Profiler::PrintProfile()
     std::printf("    EntityList   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_client, h, l, a);
     GetSize(m_client.size(), fSize);
-    std::printf("        Client   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("Client Network   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_system, h, l, a);
     GetSize(m_system.size(), fSize);
     std::printf("     SystemMgr   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
@@ -245,6 +249,9 @@ void Profiler::PrintProfile()
 
     //std::printf("\n");     // spacer
     std::printf("\t\tPeriodic Calls\n");
+    GetRunTimes(m_itemload, h, l, a);
+    GetSize(m_itemload.size(), fSize);
+    std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_clientCall, h, l, a);
     GetSize(m_clientCall.size(), fSize);
     std::printf("  Client Calls   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
@@ -257,9 +264,6 @@ void Profiler::PrintProfile()
     GetRunTimes(m_effects2, h, l, a);
     GetSize(m_effects2.size(), fSize);
     std::printf(" Apply Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_itemload, h, l, a);
-    GetSize(m_itemload.size(), fSize);
-    std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_loot, h, l, a);
     GetSize(m_loot.size(), fSize);
     std::printf("          Loot   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
@@ -278,6 +282,12 @@ void Profiler::PrintProfile()
         std::printf("       Concord   %s times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     } else {
         std::printf("       Concord   Disabled.\n");
+    }
+    if (sConfig.cosmic.CiviliansEnabled) {
+        GetRunTimes(m_civilians, h, l, a);GetSize(m_civilians.size(), fSize);
+        std::printf("Civilian Ships   %s times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    } else {
+        std::printf("Civilian Ships   Disabled.\n");
     }
 /*
     //std::printf("\n");     // spacer

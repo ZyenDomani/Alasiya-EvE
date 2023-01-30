@@ -115,7 +115,7 @@ public:
     int32 GetCloneStationID() const                     { return pSession->GetCurrentInt( "cloneStationID" ); }
 
     int64 GetAccountRole() const                        { return pSession->GetCurrentLong( "role" ); }
-    int64 GetClientID() const                           { return pSession->GetCurrentLong( "clientID" ); }
+    int64 GetClientID() const                           { return pSession->GetCurrentLong( "user_clientid" ); }
     int64 GetSessionID() const                          { return pSession->GetCurrentLong( "sessionID" ); }
 
     double GetCorpTaxRate()                             { return (m_char.get() != nullptr ? m_char->corpTaxRate() : 0.0); }
@@ -411,7 +411,6 @@ protected:
     /* EVEClientSession interface                                       */
     /********************************************************************/
     void _GetVersion( VersionExchangeServer& version );
-    uint32 GetUserCount();
     uint32 _GetQueuePosition()                          { /* hack */ return 1; }
 
     /********************************************************************/

@@ -83,7 +83,7 @@ PyPacket* EVEClientSession::PopPacket() {
         return nullptr;
 
     if (is_log_enabled(NET__PRES_REP)) {
-        _log(NET__PRES_REP, "%s: Raw Rep Dump:", GetAddress().c_str());
+        _log(NET__PRES_REP, "%s: PopPacket() Raw Rep Dump:", GetAddress().c_str());
         rep->Dump(NET__PRES_REP, "    ");
     }
 
@@ -100,9 +100,6 @@ PyPacket* EVEClientSession::_HandleVersion( PyRep* rep ) {
         mPacketHandler = &EVEClientSession::_HandleCommand;
     }
 
-    // cleanup
-    //PySafeDecRef(rep);
-    // recurse
     return PopPacket();
 }
 
@@ -143,9 +140,6 @@ PyPacket* EVEClientSession::_HandleCommand( PyRep* rep ) {
         }
     }
 
-    // cleanup
-    //PySafeDecRef(rep);
-    // recurse
     return PopPacket();
 }
 
@@ -157,9 +151,6 @@ PyPacket* EVEClientSession::_HandleCrypto( PyRep* rep ) {
         mPacketHandler = &EVEClientSession::_HandleAuthentication;
     }
 
-    // cleanup
-    //PySafeDecRef(rep);
-    // recurse
     return PopPacket();
 }
 
@@ -172,8 +163,6 @@ PyPacket* EVEClientSession::_HandleAuthentication( PyRep* rep ) {
         mPacketHandler = &EVEClientSession::_HandleFuncResult;
     }
 
-    // cleanup
-    //PySafeDecRef(rep);
     return PopPacket();
 }
 
@@ -185,8 +174,6 @@ PyPacket* EVEClientSession::_HandleFuncResult( PyRep* rep ) {
         mPacketHandler = &EVEClientSession::_HandlePacket;
     }
 
-    // cleanup
-    //PySafeDecRef(rep);
     return PopPacket();
 }
 
@@ -200,7 +187,5 @@ PyPacket* EVEClientSession::_HandlePacket( PyRep* rep ) {
         return PopPacket();
     }
 
-    // cleanup
-    //PySafeDecRef(rep);
     return p;
 }

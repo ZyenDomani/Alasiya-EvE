@@ -35,12 +35,12 @@ actions = {24: localization.GetByLabel('UI/RedeemWindow/RedeamMessages/GIFTFROMC
             TrainingComplete              = 37,   //Skill Training Complete
             TrainingCanceled              = 38,   //Skill Training Canceled
             GMGift                        = 39,   //GM Skill Gift
-            QueueTrainingCompleted        = 53,   //Skill Training Complete  (generic 'Completed') *Not Used*
+            QueueTrainingCompleted        = 53,   //*Skill Training Complete  (generic 'Completed') *Not Used*
             SkillInjected                 = 56,   //Inject Skill
             Removal                       = 177,  //Remove (denotes skill removed by edit)
             HaltedAccountLapsed           = 260,  //Locked (denotes account locked, training stopped)
             SkillPointsApplied            = 307,  //Apply Free Skill Points
-            GMReverseFreeSkillPointsUsed  = 309   //Unknown *Not Used*
+            GMReverseFreeSkillPointsUsed  = 309   //*Unknown *Not Used*
         };
     }
 

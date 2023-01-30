@@ -28,20 +28,18 @@
 
 #include "utils/Singleton.h"
 
-class PyRep;
+#include "../eve-common/python/PyRep.h"
 
 class LiveUpdateDB : public Singleton<LiveUpdateDB>
 {
 private:
 
-    PyList* GenerateUpdates();
+    PyList* m_updateList = nullptr;
 
 public:
+    void Init();
 
-    PyList* GetUpdates()
-    {
-        return GenerateUpdates();
-    }
+    PyList* GetUpdates()                                { PyIncRef(m_updateList); return m_updateList; }
 };
 
 #define sLiveUpdateDB \

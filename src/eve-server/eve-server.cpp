@@ -32,6 +32,7 @@
 
 #include "EVEServerConfig.h"
 #include "NetService.h"
+#include "LiveUpdateDB.h"
 // data managers
 #include "StaticDataMgr.h"
 #include "StatisticMgr.h"
@@ -837,6 +838,8 @@ int main( int argc, char* argv[] )
     sPIDataMgr.Initialize();
     std::printf("\n");     // spacer
     stDataMgr.Initialize();
+    std::printf("\n");     // spacer
+    sLiveUpdateDB.Init();
     std::printf("\n");     // spacer
 
     // clear dynamic system data (player counts, etc) on server start

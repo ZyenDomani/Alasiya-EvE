@@ -293,6 +293,7 @@ cruisers
 arbitrator, osprey, scythe, vexor
 
 some items dont have complete description in db (data is truncated)
+    -- need more info on this.
 
 go thru classes and rename per class type...
     -  *Item  for items
@@ -361,8 +362,6 @@ spawn system calls.....found this in logs)
 17:38:52 [SpawnTrace] MakeSpawn() completed in Ibaria(30000053) with 1 bubbles in m_bubbles and 2 entities in m_spawns.
 ***  why calling MakeSpawn() twice??
 
-
-move skills to separate db table
 
 dont remember why i put this log in, but it got hit while testing earlier....
 19:54:01 [Service] config::GetMultiLocationsEx()
@@ -647,9 +646,10 @@ EVEDB::invGroups::Spawn_Container needs it own class
 
 AuditLogSecureContainer types not coded (data coded in EvE_Inventory.h)
 
-client python (liveupdate) hack client to provide missing skill event msgs
 skill training...
     2x training bonus for new chars (<30d)
+move skills to separate db table
+
 
 journal msgs need to be implemented (wip)
 

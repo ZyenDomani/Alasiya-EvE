@@ -52,7 +52,8 @@ namespace Profile {
         parseFX     = 25,   //*
         applyFX     = 26,   //*
         onTarg      = 27,   //
-        clientCall  = 28    //*
+        clientCall  = 28,   //*
+        civilians   = 29    //
     };
 }
 
@@ -61,7 +62,7 @@ class Profiler
 {
 public:
     // let compiler create c'tor/d'tor
-    
+
     int Initialize();
 
     void AddTime(uint8 key, double value);
@@ -105,6 +106,7 @@ private:
     std::vector<double> m_damage;
     std::vector<double> m_effects1;
     std::vector<double> m_effects2;
+    std::vector<double> m_civilians;
 };
 
 #define sProfiler \
