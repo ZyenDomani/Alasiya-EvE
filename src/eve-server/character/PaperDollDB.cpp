@@ -38,10 +38,11 @@ PyRep* PaperDollDB::GetPaperDollAvatar(uint32 charID) const {
         return nullptr;
     }
 
-	DBResultRow row;
-	res.GetRow(row);
+    DBResultRow row;
+    if (res.GetRow(row))
+        return DBRowToRow(row, "util.Row");
 
-	return DBRowToRow(row, "util.Row");
+    return PyStatic.NewNone();
 }
 
 PyRep* PaperDollDB::GetPaperDollAvatarColors(uint32 charID) const {
@@ -50,7 +51,7 @@ PyRep* PaperDollDB::GetPaperDollAvatarColors(uint32 charID) const {
 		"SELECT colorID, colorNameA, colorNameBC, weight, gloss  FROM avatar_colors WHERE charID=%u", charID))
     {
         _log(DATABASE__ERROR, "Error in GetMyPaperDollData query: %s", res.error.c_str());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     return DBResultToCRowset(res);
@@ -62,7 +63,7 @@ PyRep* PaperDollDB::GetPaperDollAvatarModifiers(uint32 charID) const {
 		"SELECT modifierLocationID, paperdollResourceID, paperdollResourceVariation FROM avatar_modifiers WHERE charID=%u", charID))
     {
         _log(DATABASE__ERROR, "Error in GetMyPaperDollData query: %s", res.error.c_str());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     return DBResultToCRowset(res);
@@ -74,7 +75,7 @@ PyRep* PaperDollDB::GetPaperDollAvatarSculpts(uint32 charID) const {
 		"SELECT sculptLocationID, weightUpDown, weightLeftRight, weightForwardBack FROM avatar_sculpts WHERE charID=%u", charID))
     {
         _log(DATABASE__ERROR, "Error in GetMyPaperDollData query: %s", res.error.c_str());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     return DBResultToCRowset(res);
@@ -85,7 +86,7 @@ PyRep* PaperDollDB::GetPaperDollPortraitData(uint32 charID) const
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT * FROM chrPortraitData WHERE charID = %u", charID)) {
         _log(DATABASE__ERROR, "Error in GetMyPaperDollData query: %s", res.error.c_str());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     return DBResultToCRowset(res);

@@ -56,7 +56,7 @@ PyResult Search::Handle_Query( PyCallArgs& call ) {
     Replace(str);
 
     // this hits db directly, so test for possible sql injection code
-    for (const auto cur : badCharsSearch)
+    for (const auto &cur : badCharsSearch)
         if (EvE::icontains(args.str, cur))
             throw CustomError("Search String contains invalid characters");
 
@@ -85,7 +85,7 @@ PyResult Search::Handle_QuickQuery( PyCallArgs& call )  {
         onlyAltName = (PyRep::IntegerValue(call.byname.find("onlyAltName")->second) != 0);
 
     // this hits db directly, so test for possible sql injection code
-    for (const auto cur : badCharsSearch)
+    for (const auto &cur : badCharsSearch)
         if (EvE::icontains(args.str, cur))
             throw CustomError("Search String contains invalid characters");
 

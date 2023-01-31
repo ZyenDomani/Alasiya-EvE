@@ -413,8 +413,7 @@ PyRep* UnmarshalStream::LoadDict()
     const uint32 count = ReadSizeEx();
     PyDict* dict = new PyDict();
 
-    for ( uint32 i(0); i < count; i++ )
-    {
+    for ( uint32 i(0); i < count; i++ ) {
         PyRep* value = LoadRep();
         if (value == nullptr) {
             PyDecRef(dict);
@@ -440,10 +439,8 @@ PyRep* UnmarshalStream::LoadObject()
     if (type == nullptr)
         return nullptr;
 
-    if ( !type->IsString() )
-    {
+    if ( !type->IsString()) {
         sLog.Error( "Unmarshal", "Object: Expected 'String' as type, got '%s'.", type->TypeString() );
-
         PyDecRef( type );
         return nullptr;
     }

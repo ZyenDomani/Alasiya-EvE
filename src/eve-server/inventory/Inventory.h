@@ -76,7 +76,7 @@ public:
     /* Inventory-by-Flag methods */
     /** @todo update to use m_usedVolumeByFlag container? */
     bool IsEmptyByFlag(EVEItemFlags flag) const;
-    bool GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef &iRef) const;
+    bool GetShipPilot(EVEItemFlags flag, InventoryItemRef &iRef) const;
     bool GetTypesByFlag(EVEItemFlags flag, std::map<uint16, InventoryItemRef> &items);
     // for characters, ALL skills are flagSkill. we are not keeping flagSkillInTraining separate here
     uint32 GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;

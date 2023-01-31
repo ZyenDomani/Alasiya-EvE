@@ -82,7 +82,7 @@ PyResult AllianceBound::Handle_GetAlliance(PyCallArgs &call)
 {
     // Works
     //   self.members = self.GetMoniker().GetAlliance()
-    _log(ALLY__CALL, "AllianceBound::Handle_GetAlliance() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_GetAlliance() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     /*
@@ -102,7 +102,7 @@ PyResult AllianceBound::Handle_GetMembers(PyCallArgs &call)
 {
     // Works
     //   self.members = self.GetMoniker().GetMembers()
-    _log(ALLY__CALL, "AllianceBound::Handle_GetMembers() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_GetMembers() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     return m_db.GetMembers(m_allyID);
@@ -111,7 +111,7 @@ PyResult AllianceBound::Handle_GetMembers(PyCallArgs &call)
 PyResult AllianceBound::Handle_DeclareExecutorSupport(PyCallArgs &call)
 {
     //   self.GetMoniker().DeclareExecutorSupport(corpID)
-    _log(ALLY__CALL, "AllianceBound::Handle_DeclareExecutorSupport() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_DeclareExecutorSupport() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     SingleIntegerArg args;
@@ -129,7 +129,7 @@ PyResult AllianceBound::Handle_DeclareExecutorSupport(PyCallArgs &call)
 PyResult AllianceBound::Handle_DeleteMember(PyCallArgs &call)
 {
     //  self.GetMoniker().DeleteMember(corpID)
-    _log(ALLY__CALL, "AllianceBound::Handle_DeleteMember() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_DeleteMember() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     SingleIntegerArg args;
@@ -148,7 +148,7 @@ PyResult AllianceBound::Handle_GetApplications(PyCallArgs &call)
 {
     //   self.applications = self.GetMoniker().GetApplications()
     // Get all applications to our alliance
-    _log(ALLY__CALL, "AllianceBound::Handle_GetApplications() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_GetApplications() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     return m_db.GetApplications(m_allyID);
@@ -157,7 +157,7 @@ PyResult AllianceBound::Handle_GetApplications(PyCallArgs &call)
 PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
 {
     //    return self.GetMoniker().UpdateApplication(corpID, applicationText, state)
-    _log(ALLY__CALL, "AllianceBound::Handle_UpdateApplication() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_UpdateApplication() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     Call_UpdateAllianceApplication args;
@@ -373,7 +373,7 @@ void AllianceBound::FillOAMemberChange(OnAllianceMemberChange &oamc, const Allia
 PyResult AllianceBound::Handle_AddToVoiceChat(PyCallArgs &call)
 {
     //    success = moniker.GetAlliance().AddToVoiceChat(vivoxChannelName)
-    _log(ALLY__CALL, "AllianceBound::Handle_AddToVoiceChat() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_AddToVoiceChat() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
     return nullptr;
 }
@@ -381,7 +381,7 @@ PyResult AllianceBound::Handle_AddToVoiceChat(PyCallArgs &call)
 PyResult AllianceBound::Handle_PayBill(PyCallArgs &call)
 {
     //   return self.GetMoniker().PayBill(billID, fromAccountKey)
-    _log(ALLY__CALL, "AllianceBound::Handle_PayBill() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_PayBill() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
@@ -390,7 +390,7 @@ PyResult AllianceBound::Handle_PayBill(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetBillBalance(PyCallArgs &call)
 {
     //   return self.GetMoniker().GetBillBalance(billID)
-    _log(ALLY__CALL, "AllianceBound::Handle_GetBillBalance() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_GetBillBalance() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
@@ -399,7 +399,7 @@ PyResult AllianceBound::Handle_GetBillBalance(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetBills(PyCallArgs &call)
 {
     //   return self.GetMoniker().GetBills()
-    _log(ALLY__CALL, "AllianceBound::Handle_GetBills() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_GetBills() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
@@ -408,7 +408,7 @@ PyResult AllianceBound::Handle_GetBills(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetBillsReceivable(PyCallArgs &call)
 {
     //   return self.GetMoniker().GetBillsReceivable()
-    _log(ALLY__CALL, "AllianceBound::Handle_GetBillsReceivable() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_GetBillsReceivable() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
@@ -418,7 +418,7 @@ PyResult AllianceBound::Handle_AddBulletin(PyCallArgs &call)
 {
     //   sm.GetService('alliance').GetMoniker().AddBulletin(title, body)
     //  sm.GetService('alliance').GetMoniker().AddBulletin(title, body, bulletinID=bulletinID, editDateTime=editDateTime)  <-- this is to update bulletin
-    _log(ALLY__CALL, "AllianceBound::Handle_AddBulletin() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_AddBulletin() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     Call_AddBulletin args;
@@ -436,7 +436,7 @@ PyResult AllianceBound::Handle_AddBulletin(PyCallArgs &call)
 PyResult AllianceBound::Handle_DeleteBulletin(PyCallArgs &call)
 {
     //   sm.GetService('alliance').GetMoniker().DeleteBulletin(id)
-    _log(ALLY__CALL, "AllianceBound::Handle_DeleteBulletin() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_DeleteBulletin() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     SingleIntegerArg args;
@@ -453,7 +453,7 @@ PyResult AllianceBound::Handle_DeleteBulletin(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetBulletins(PyCallArgs &call)
 {
     //   self.bulletins = self.GetMoniker().GetBulletins()
-    _log(ALLY__CALL, "AllianceBound::Handle_GetBulletins() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_GetBulletins() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
     return m_db.GetBulletins(m_allyID);
 }
@@ -461,7 +461,7 @@ PyResult AllianceBound::Handle_GetBulletins(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetAllianceContacts(PyCallArgs &call)
 {
     //    return self.GetMoniker().GetAllianceContacts()
-    _log(ALLY__CALL, "AllianceBound::Handle_GetAllianceContacts() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_GetAllianceContacts() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     return m_db.GetContacts(m_allyID);
@@ -470,7 +470,7 @@ PyResult AllianceBound::Handle_GetAllianceContacts(PyCallArgs &call)
 PyResult AllianceBound::Handle_AddAllianceContact(PyCallArgs &call)
 {
     //   self.GetMoniker().AddAllianceContact(contactID, relationshipID)
-    _log(ALLY__CALL, "AllianceBound::Handle_AddAllianceContact() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_AddAllianceContact() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     Call_CorporateContactData args;
@@ -488,7 +488,7 @@ PyResult AllianceBound::Handle_AddAllianceContact(PyCallArgs &call)
 PyResult AllianceBound::Handle_EditAllianceContact(PyCallArgs &call)
 {
     //   self.GetMoniker().EditAllianceContact(contactID, relationshipID)
-    _log(ALLY__CALL, "AllianceBound::Handle_EditAllianceContact() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_EditAllianceContact() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     Call_CorporateContactData args;
@@ -506,7 +506,7 @@ PyResult AllianceBound::Handle_EditAllianceContact(PyCallArgs &call)
 PyResult AllianceBound::Handle_RemoveAllianceContacts(PyCallArgs &call)
 {
     //   self.GetMoniker().RemoveAllianceContacts(contactIDs)
-    _log(ALLY__CALL, "AllianceBound::Handle_RemoveAllianceContacts() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_RemoveAllianceContacts() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     Call_RemoveCorporateContacts args;
@@ -527,7 +527,7 @@ PyResult AllianceBound::Handle_RemoveAllianceContacts(PyCallArgs &call)
 PyResult AllianceBound::Handle_EditContactsRelationshipID(PyCallArgs &call)
 {
     //    self.GetMoniker().EditContactsRelationshipID(contactIDs, relationshipID)
-    _log(ALLY__CALL, "AllianceBound::Handle_EditContactsRelationshipID() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_EditContactsRelationshipID() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     Call_EditCorporateContacts args;
@@ -548,7 +548,7 @@ PyResult AllianceBound::Handle_EditContactsRelationshipID(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetLabels(PyCallArgs &call)
 {
     //   return self.GetMoniker().GetLabels()
-    _log(ALLY__CALL, "AllianceBound::Handle_GetLabels() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_GetLabels() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
     return nullptr;
 }
@@ -556,7 +556,7 @@ PyResult AllianceBound::Handle_GetLabels(PyCallArgs &call)
 PyResult AllianceBound::Handle_CreateLabel(PyCallArgs &call)
 {
     //   return self.GetMoniker().CreateLabel(name, color)
-    _log(ALLY__CALL, "AllianceBound::Handle_CreateLabel() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_CreateLabel() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
     return nullptr;
 }
@@ -564,7 +564,7 @@ PyResult AllianceBound::Handle_CreateLabel(PyCallArgs &call)
 PyResult AllianceBound::Handle_DeleteLabel(PyCallArgs &call)
 {
     //   self.GetMoniker().DeleteLabel(labelID)
-    _log(ALLY__CALL, "AllianceBound::Handle_DeleteLabel() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_DeleteLabel() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
     return nullptr;
 }
@@ -572,7 +572,7 @@ PyResult AllianceBound::Handle_DeleteLabel(PyCallArgs &call)
 PyResult AllianceBound::Handle_EditLabel(PyCallArgs &call)
 {
     //   self.GetMoniker().EditLabel(labelID, name, color)
-    _log(ALLY__CALL, "AllianceBound::Handle_EditLabel() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_EditLabel() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
     return nullptr;
 }
@@ -580,7 +580,7 @@ PyResult AllianceBound::Handle_EditLabel(PyCallArgs &call)
 PyResult AllianceBound::Handle_AssignLabels(PyCallArgs &call)
 {
     //   self.GetMoniker().AssignLabels(contactIDs, labelMask)
-    _log(ALLY__CALL, "AllianceBound::Handle_AssignLabels() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_AssignLabels() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
     return nullptr;
 }
@@ -588,7 +588,7 @@ PyResult AllianceBound::Handle_AssignLabels(PyCallArgs &call)
 PyResult AllianceBound::Handle_RemoveLabels(PyCallArgs &call)
 {
     //   self.GetMoniker().RemoveLabels(contactIDs, labelMask)
-    _log(ALLY__CALL, "AllianceBound::Handle_RemoveLabels() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_RemoveLabels() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
     return nullptr;
 }
@@ -596,7 +596,7 @@ PyResult AllianceBound::Handle_RemoveLabels(PyCallArgs &call)
 PyResult AllianceBound::Handle_UpdateAlliance(PyCallArgs &call)
 {
     //    return self.GetMoniker().UpdateAlliance(description, url)
-    _log(ALLY__CALL, "AllianceBound::Handle_UpdateAlliance() size=%li", call.tuple->size());
+    _log(ALLY__CALL, "AllianceBound::Handle_UpdateAlliance() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
 
     Call_UpdateAlliance args;

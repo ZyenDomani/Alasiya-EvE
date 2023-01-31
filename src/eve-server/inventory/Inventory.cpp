@@ -488,7 +488,7 @@ InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
     return InventoryItemRef(nullptr);
 }
 
-bool Inventory::GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef& iRef) const {
+bool Inventory::GetShipPilot(EVEItemFlags flag, InventoryItemRef& iRef) const {
     auto range = m_contentsByFlag.equal_range(flag);
     for ( auto itr = range.first; itr != range.second; itr++ ) {
         iRef = itr->second;

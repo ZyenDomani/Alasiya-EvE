@@ -111,7 +111,7 @@ m_secValue(1.1f)
 
 SystemManager::~SystemManager() {
     if (m_players or !m_clients.empty()) {
-        _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %u clients in mmaps", m_data.systemID, m_players, m_clients.size());
+        _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %lu clients in mmaps", m_data.systemID, m_players, m_clients.size());
         for (auto &cur : m_clients)
             sEntityList.Remove(cur.second);
     }
@@ -961,7 +961,7 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
     if (pClient == nullptr)
         return;
     m_clients.erase(pClient->GetCharacterID());
-    _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %u clients still in system.", \
+    _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %lu clients still in system.", \
             pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
 
     if (count) {
@@ -1255,7 +1255,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
         if (m_spawnMgr->DoSpawnForBubble(pBubble)) {
             m_ratBubbles.emplace(pBubble->GetID(), pBubble);
             if (is_log_enabled(SPAWN__TRACE))
-                _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for %s(%u) in bubble %u.  %u items in m_ratBubbles", \
+                _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for %s(%u) in bubble %u.  %lu items in m_ratBubbles", \
                         m_data.name.c_str(), m_data.systemID, pBubble->GetID(), m_ratBubbles.size());
         } else {
             if (is_log_enabled(SPAWN__TRACE))

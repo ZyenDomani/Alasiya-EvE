@@ -58,7 +58,7 @@ bool ServiceDB::ValidateAccountName(CryptoChallengePacket& ccp, std::string& fai
         return false;
     }
 
-    for (const auto cur : badChars)
+    for (const auto &cur : badChars)
         if (EvE::icontains(ccp.user_name, cur)) {
             failMsg = "Account Name contains invalid characters.";
             return false;

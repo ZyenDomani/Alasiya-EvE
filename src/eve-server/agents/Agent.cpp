@@ -622,10 +622,10 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
             msg += "failure ";
             newStanding *= sConfig.standings.MissionFailure;
         } break;
-
-        msg += "from ";
-        msg += m_agentData.name;
     }
+
+    msg += "from ";
+    msg += m_agentData.name;
 
     if (pClient->InFleet() and (newStanding > 0)) {
         float fleetStanding = newStanding * sConfig.standings.FleetMissionMultiplier;
@@ -639,7 +639,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
                 agent->SetItem(0, new PyInt(m_agentID));
                 agent->SetItem(1, new PyInt(cur->GetCharacterID()));
                 agent->SetItem(2, new PyFloat(fleetStanding));
-                agent->SetItem(3, new PyInt(-1));
+                agent->SetItem(3, PyStatic.NewNegOne());
                 agent->SetItem(4, PyStatic.NewOne());
             PyList* list = new PyList();
                 list->AddItem(agent);
@@ -783,7 +783,7 @@ bool Agent::CanUseAgent(Client* pClient)
      00:40:50 [AgentDebug] Abbalvar Onabemur(3014016) CanUseAgent() - charSkills(con:0,dip:3,cri:0), stand(0.000000, 0.000000, 0.000000)
      00:40:50 [AgentDebug] Abbalvar Onabemur(3014016) CanUseAgent() - standings(fac:0,crp:1,chr:0), bonus(0.000000, 0.000000, 0.000000) - m=0.000000
     */
-    
+
     if ((EvE::max(facChr, corpChr, charChr) >= m ) and (EvE::min(facChr, corpChr, charChr) > -2.0f)) {
         if ((m_agentData.typeID == Agents::Type::Research) and (corpChr < m - 2.0f))
             return false;

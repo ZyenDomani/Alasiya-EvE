@@ -260,11 +260,11 @@ PyRep* CharacterDB::ValidateCharNameRep(std::string name)
     if (!sDatabase.IsSafeString(name.c_str()))
         return new PyInt(-5);
 
-    for (const auto cur : badWords)
+    for (const auto &cur : badWords)
         if (EvE::icontains(name, cur))
             return new PyInt(-5);
 
-    for (const auto cur : badChars)
+    for (const auto &cur : badChars)
         if (EvE::icontains(name, cur))
             return new PyInt(-5);
 
@@ -345,10 +345,10 @@ void CharacterDB::ValidateCharName(std::string name)
     //    throw UserError ("CharNameInvalidFirstChar");
 
     // check for banned words in char name
-    for (const auto cur : badWords)
+    for (const auto &cur : badWords)
         if (EvE::icontains(name, cur))
             throw UserError ("CharNameInvalidBannedWord");
-    for (const auto cur : badChars)
+    for (const auto &cur : badChars)
         if (EvE::icontains(name, cur))
             throw UserError ("CharNameInvalidSomeChar");
 

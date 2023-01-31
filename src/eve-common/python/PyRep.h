@@ -226,7 +226,7 @@ public:
     virtual ~PyRep();
 
 protected:
-    const PyType mType;
+    const PyType		mType;
 };
 
 /**
@@ -261,14 +261,14 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    int32 value() const { return mValue; }
+    int32 value() const					{ return mValue; }
 
     int32 hash() const;
 
-    virtual ~PyInt()    { /* do we need to do anything here? */ }
+    virtual ~PyInt()					{ /* do nothing here */ }
 
 protected:
-    const int32 mValue;
+    const int32			mValue;
 };
 
 /**
@@ -303,14 +303,14 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    int64 value() const { return mValue; }
+    int64 value() const					{ return mValue; }
 
     int32 hash() const;
 
-    virtual ~PyLong()    { /* do we need to do anything here? */ }
+    virtual ~PyLong()					{ /* do nothing here */ }
 
 protected:
-    const int64 mValue;
+    const int64			mValue;
 };
 
 /**
@@ -346,14 +346,14 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    double value() const { return mValue; }
+    double value() const				{ return mValue; }
 
     int32 hash() const;
 
-    virtual ~PyFloat()    { /* do we need to do anything here? */ }
+    virtual ~PyFloat()					{ /* do nothing here */ }
 
 protected:
-    const double mValue;
+    const double		mValue;
 };
 
 /**
@@ -390,12 +390,12 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    bool value() const { return mValue; }
+    bool value() const					{ return mValue; }
 
-    virtual ~PyBool()    { /* do we need to do anything here? */ }
+    virtual ~PyBool()					{ /* do nothing here */ }
 
 protected:
-    const bool mValue;
+    const bool			mValue;
 };
 
 /**
@@ -434,7 +434,7 @@ public:
 
     int32 hash() const;
 
-    virtual ~PyNone()    { /* do we need to do anything here? */ }
+    virtual ~PyNone()					{ /* do nothing here */ }
 };
 
 /**
@@ -469,7 +469,7 @@ public:
      *
      * @return const PyBuffer content
      */
-    const Buffer& content() const { return *mValue; }
+    const Buffer& content() const			{ return *mValue; }
 
     int32 hash() const;
 
@@ -483,8 +483,11 @@ public:
     virtual ~PyBuffer();
 
 protected:
-    const Buffer* const mValue;
-    mutable int32 mHashCache;
+    const Buffer* const		mValue;
+    mutable int32		mHashCache;
+
+private:
+	bool			cleanup=false;
 };
 
 /**
@@ -520,16 +523,16 @@ public:
      *
      * @return the std::string reference.
      */
-    const std::string& content() const { return mValue; }
+    const std::string& content() const			{ return mValue; }
 
     // updated to use std::hash for strings.  better checks without collision (so far)
     int32 hash() const;
 
-    virtual ~PyString()   { /* do we need to do anything here? */ }
+    virtual ~PyString()					{ /* do nothing here */ }
 
 protected:
-    const std::string mValue;
-    mutable int32 mHashCache;
+    const std::string		mValue;
+    mutable int32		mHashCache;
 };
 
 /**
@@ -562,7 +565,7 @@ public:
      *
      * @return the std::string reference.
      */
-    const std::string& content() const { return mValue; }
+    const std::string& content() const			{ return mValue; }
 
     /**
      * @brief Obtains length of string.
@@ -574,11 +577,11 @@ public:
     // updated to use std::hash for strings.  better checks without collision (so far)
     int32 hash() const;
 
-    virtual ~PyWString()    { /* do we need to do anything here? */ }
+    virtual ~PyWString()				{ /* do nothing here */ }
 
 protected:
-    const std::string mValue;
-    mutable int32 mHashCache;
+    const std::string		mValue;
+    mutable int32		mHashCache;
 };
 
 /**
@@ -630,12 +633,12 @@ public:
      *
      * @return Token.
      */
-    const std::string& content() const { return mValue; }
+    const std::string& content() const			{ return mValue; }
 
-    virtual ~PyToken()    { /* do we need to do anything here? */ }
+    virtual ~PyToken()					{ /* do nothing here */ }
 
 protected:
-    const std::string mValue;
+    const std::string		mValue;
 };
 
 /**
@@ -646,9 +649,8 @@ protected:
 class PyTuple : public PyRep
 {
 public:
-    typedef std::vector<PyRep*>             storage_type;
-    typedef storage_type::iterator          iterator;
-    typedef storage_type::const_iterator    const_iterator;
+    typedef std::vector<PyRep*>::iterator          iterator;
+    typedef std::vector<PyRep*>::const_iterator    const_iterator;
 
     PyTuple( size_t item_count=0 );
     // copy c'tor
@@ -664,11 +666,11 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    const_iterator begin() const { return items.begin(); }
-    const_iterator end() const { return items.end(); }
+    const_iterator begin() const			{ return items.begin(); }
+    const_iterator end() const				{ return items.end(); }
 
-    size_t size() const { return items.size(); }
-    bool empty() const { return items.empty(); }
+    size_t size() const					{ return items.size(); }
+    bool empty() const					{ return items.empty(); }
     void clear();
 
     /**
@@ -678,7 +680,7 @@ public:
      *
      * @return Python object.
      */
-    PyRep* GetItem( size_t index ) const { return items.at( index ); }
+    PyRep* GetItem( size_t index ) const		{ return items.at( index ); }
 
     /**
      * @brief Stores Python object.
@@ -699,15 +701,15 @@ public:
         PyIncRef( *rep );
     }
 
-    void SetItemInt( size_t index, int32 val ) { SetItem( index, new PyInt( val ) ); }
+    void SetItemInt( size_t index, int32 val )		{ SetItem( index, new PyInt( val ) ); }
     void SetItemString( size_t index, const char* str ) { SetItem( index, new PyString( str ) ); }
 
     int32 hash() const;
 
     // This needs to be public for now.
-    storage_type items;
+    std::vector<PyRep*>		items;
 
-    virtual ~PyTuple()   { /* Clear(); */ }
+    virtual ~PyTuple()					{ /* do nothing here */ }
 };
 
 /**
@@ -718,9 +720,8 @@ public:
 class PyList : public PyRep
 {
 public:
-    typedef std::vector<PyRep*>             storage_type;
-    typedef storage_type::iterator          iterator;
-    typedef storage_type::const_iterator    const_iterator;
+    typedef std::vector<PyRep*>::iterator          iterator;
+    typedef std::vector<PyRep*>::const_iterator    const_iterator;
 
     PyList( size_t item_count=0);
     // copy c'tor
@@ -736,11 +737,11 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    const_iterator begin() const { return items.begin(); }
-    const_iterator end() const { return items.end(); }
+    const_iterator begin() const			{ return items.begin(); }
+    const_iterator end() const				{ return items.end(); }
 
-    size_t size() const { return items.size(); }
-    bool empty() const { return items.empty(); }
+    size_t size() const					{ return items.size(); }
+    bool empty() const					{ return items.empty(); }
     void clear();
 
     /**
@@ -778,16 +779,16 @@ public:
      */
     void SetItemString( size_t index, const char* str ) { SetItem( index, new PyString( str ) ); }
 
-    void AddItem( PyRep* i ) { items.push_back( i ); }
-    void AddItemInt( int32 intval ) { AddItem( new PyInt( intval ) ); }
-    void AddItemLong( int64 intval ) { AddItem( new PyLong( intval ) ); }
-    void AddItemReal( double realval ) { AddItem( new PyFloat( realval ) ); }
-    void AddItemString( const char* str ) { AddItem( new PyString( str ) ); }
+    void AddItem( PyRep* i )				{ items.push_back( i ); }
+    void AddItemInt( int32 intval )			{ AddItem( new PyInt( intval ) ); }
+    void AddItemLong( int64 intval )			{ AddItem( new PyLong( intval ) ); }
+    void AddItemReal( double realval )			{ AddItem( new PyFloat( realval ) ); }
+    void AddItemString( const char* str )	        { AddItem( new PyString( str ) ); }
 
     // This needs to be public:
-    storage_type items;
+    std::vector<PyRep*>		items;
 
-    virtual ~PyList();
+    virtual ~PyList()				        { /* do nothing here */ }
 };
 
 /**
@@ -842,11 +843,11 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    const_iterator begin() const { return items.begin(); }
-    const_iterator end() const { return items.end(); }
+    const_iterator begin() const                        { return items.begin(); }
+    const_iterator end() const                          { return items.end(); }
 
-    size_t size() const { return items.size(); }
-    bool empty() const { return items.empty(); }
+    size_t size() const                                 { return items.size(); }
+    bool empty() const                                  { return items.empty(); }
     void clear();
 
     /**
@@ -890,7 +891,7 @@ public:
      */
     void SetItemString( const char* key, PyRep* value ) { SetItem( new PyString( key ), value ); }
 
-    storage_type items;
+    storage_type		items;
 
     virtual ~PyDict()                                   { clear(); }
 };
@@ -919,14 +920,17 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    PyString* type() const { return mType; }
-    PyRep* arguments() const { return mArguments; }
+    PyString* type() const				{ return mType; }
+    PyRep* arguments() const				{ return mArguments; }
 
     virtual ~PyObject();
 
 protected:
-    PyString* mType;
-    PyRep* const mArguments;
+    PyString*			mType;
+    PyRep* const		mArguments;
+
+private:
+	bool			cleanup=false;
 };
 
 /**
@@ -939,13 +943,11 @@ protected:
 class PyObjectEx : public PyRep
 {
 public:
-    typedef PyList                          list_type;
-    typedef list_type::iterator             list_iterator;
-    typedef list_type::const_iterator       const_list_iterator;
+    typedef PyList::iterator        list_iterator;
+    typedef PyList::const_iterator  const_list_iterator;
 
-    typedef PyDict                          dict_type;
-    typedef dict_type::iterator             dict_iterator;
-    typedef dict_type::const_iterator       const_dict_iterator;
+    typedef PyDict::iterator        dict_iterator;
+    typedef PyDict::const_iterator  const_dict_iterator;
 
     // default c'tor
     PyObjectEx( bool is_type_2, PyRep* header );
@@ -965,20 +967,23 @@ public:
     PyRep* header() const                               { return mHeader; }
     bool isType2() const                                { return mIsType2; }
 
-    list_type& list()                                   { return *mList; }
-    const list_type& list() const                       { return *mList; }
+    PyList& list()					{ return *mList; }
+    const PyList& list() const				{ return *mList; }
 
-    dict_type& dict()                                   { return *mDict; }
-    const dict_type& dict() const                       { return *mDict; }
+    PyDict& dict()					{ return *mDict; }
+    const PyDict& dict() const				{ return *mDict; }
 
     virtual ~PyObjectEx();
 
 protected:
-    PyRep* const mHeader;
-    const bool mIsType2;
+    PyRep* const		mHeader;
+    const bool			mIsType2;
 
-    list_type* const mList;
-    dict_type* const mDict;
+    PyList* const		mList;
+    PyDict* const		mDict;
+
+private:
+	bool			cleanup=false;
 };
 
 /**
@@ -1000,7 +1005,7 @@ public:
 
     PyRep* FindKeyword( const char* keyword ) const;
 
-    virtual ~PyObjectEx_Type1()    { /* do we need to do anything here? */ }
+    virtual ~PyObjectEx_Type1()				{ /* do nothing here */ }
 
 protected:
     static PyTuple* _CreateHeader( PyToken* type, PyTuple* args, bool enclosed=false );
@@ -1025,7 +1030,7 @@ public:
 
     PyRep* FindKeyword( const char* keyword ) const;
 
-    virtual ~PyObjectEx_Type2()    { /* do we need to do anything here? */ }
+    virtual ~PyObjectEx_Type2()				{ /* do nothing here */ }
 
 protected:
     static PyTuple* _CreateHeader( PyTuple* args, PyDict* keywords, bool enclosed=false );
@@ -1041,9 +1046,8 @@ protected:
 class PyPackedRow : public PyRep
 {
 public:
-    typedef PyList                          storage_type;
-    typedef storage_type::iterator          iterator;
-    typedef storage_type::const_iterator    const_iterator;
+    typedef PyList::iterator          iterator;
+    typedef PyList::const_iterator    const_iterator;
 
     PyPackedRow( DBRowDescriptor* header );
     // copy c'tor
@@ -1060,14 +1064,14 @@ public:
     bool visit( PyVisitor& v ) const;
 
     // Header:
-    DBRowDescriptor* header() const { return mHeader; }
+    DBRowDescriptor* header() const			{ return mHeader; }
 
     // Fields:
-    const_iterator begin() const { return mFields->begin(); }
-    const_iterator end() const { return mFields->end(); }
-    void clear() { mFields->clear(); }
+    const_iterator begin() const			{ return mFields->begin(); }
+    const_iterator end() const				{ return mFields->end(); }
+    void clear()					{ mFields->clear(); }
 
-    PyRep* GetField( size_t index ) const { return mFields->GetItem( index ); }
+    PyRep* GetField( size_t index ) const		{ return mFields->GetItem( index ); }
 
     bool SetField( uint32 index, PyRep* value );
     bool SetFieldC( const char* colName, PyRep* value );
@@ -1077,8 +1081,11 @@ public:
     virtual ~PyPackedRow();
 
 protected:
-    DBRowDescriptor* const mHeader;
-    storage_type* const mFields;
+    DBRowDescriptor* const	mHeader;
+    PyList* const		mFields;
+
+private:
+	bool			cleanup=false;
 };
 
 class PySubStruct : public PyRep
@@ -1098,9 +1105,9 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    PyRep* sub() const { return mSub; }
+    PyRep* sub() const					{ return mSub; }
 
-    virtual ~PySubStruct();
+    virtual ~PySubStruct()				{ /* do nothing here */ }
 
 protected:
     PyRep* const mSub;
@@ -1124,8 +1131,8 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    PyBuffer* data() const { return mData; }
-    PyRep* decoded() const { return mDecoded; }
+    PyBuffer* data() const				{ return mData; }
+    PyRep* decoded() const				{ return mDecoded; }
 
     //call to ensure that `data` represents `decoded` IF DATA IS NULL
     void EncodeData() const;
@@ -1133,12 +1140,12 @@ public:
     //call to ensure that `decoded` represents `data` IF DECODED IS NULL
     void DecodeData() const;
 
-    virtual ~PySubStream();
+    virtual ~PySubStream()                              { /* do nothing here */ }
 
 protected:
     //if both are non-NULL, they are considered to be equivalent
-    mutable PyBuffer* mData;
-    mutable PyRep* mDecoded;
+    mutable PyBuffer*	        mData;
+    mutable PyRep*		mDecoded;
 };
 
 class PyChecksumedStream : public PyRep
@@ -1158,14 +1165,14 @@ public:
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
-    PyRep* stream() const { return mStream; }
-    uint32 checksum() const { return mChecksum; }
+    PyRep* stream() const				{ return mStream; }
+    uint32 checksum() const				{ return mChecksum; }
 
     virtual ~PyChecksumedStream();
 
 protected:
-    PyRep* const mStream;
-    const uint32 mChecksum;
+    PyRep* const		mStream;
+    const uint32		mChecksum;
 };
 
 
@@ -1174,7 +1181,7 @@ protected:
  * all together.
  */
 template<typename Iter>
-inline PyBuffer::PyBuffer( Iter first, Iter last ) : PyRep( PyRep::PyTypeBuffer ), mValue( new Buffer( first, last ) ), mHashCache( -1 ) {}
+inline PyBuffer::PyBuffer( Iter first, Iter last ) : PyRep( PyRep::PyTypeBuffer ), mValue( new Buffer( first, last ) ), mHashCache( -1 ), cleanup(true) {}
 template<typename Iter>
 inline PyString::PyString( Iter first, Iter last ) : PyRep( PyRep::PyTypeString ), mValue( first, last ), mHashCache( -1 ) {}
 template<typename Iter>
@@ -1205,7 +1212,7 @@ class BuiltinSet : public PyObjectEx_Type1
 public:
     BuiltinSet() : PyObjectEx_Type1( new PyToken("collections.defaultdict"), new_tuple(new PyToken("__builtin__.set")) ) {}
 
-    virtual ~BuiltinSet()    { /* do we need to do anything here? */ }
+    virtual ~BuiltinSet()                               { /* do we need to do anything here? */ }
 };
 
 class CacheOK : public PyObjectEx_Type1
@@ -1213,7 +1220,7 @@ class CacheOK : public PyObjectEx_Type1
 public:
     CacheOK() : PyObjectEx_Type1( new PyToken("objectCaching.CacheOK"), new_tuple("CacheOK") ) {}
 
-    virtual ~CacheOK()    { /* do we need to do anything here? */ }
+    virtual ~CacheOK()                                  { /* do we need to do anything here? */ }
 };
 
 

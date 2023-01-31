@@ -112,7 +112,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         } else {
             // tr <me> to <locationName>?
             // this hits db directly, so test for possible sql injection code
-            for (const auto cur : badCharsSearch)
+            for (const auto &cur : badCharsSearch)
                 if (EvE::icontains(args.arg(1), cur))
                     throw CustomError("Location contains invalid characters");
             locationID = db->GetSolarSystem(args.arg(1).c_str());
@@ -205,7 +205,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             if (me) {
                 // tr me to <locationName>?
                 // this hits db directly, so test for possible sql injection code
-                for (const auto cur : badCharsSearch)
+                for (const auto &cur : badCharsSearch)
                     if (EvE::icontains(args.arg(1), cur))
                         throw CustomError("Location contains invalid characters");
                 locationID = db->GetSolarSystem(args.arg(1).c_str());
@@ -419,7 +419,7 @@ static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr 
         typeID = atoi(args.arg(1).c_str());
     } else {
         // this hits db directly, so test for possible sql injection code
-        for (const auto cur : badCharsSearch)
+        for (const auto &cur : badCharsSearch)
             if (EvE::icontains(args.arg(1), cur))
                 throw CustomError("Name contains invalid characters");
         std::map<uint32_t, std::string> matches;

@@ -829,8 +829,9 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
 
     // test for active module(s) before moving
     GenericModule* pMod(GetModule(slot1));
-    if (pMod->IsActive())
-        throw CustomError ("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name());
+    if (pMod != nullptr)
+        if (pMod->IsActive())
+            throw CustomError ("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name());
 
     pMod = GetModule(slot2);
     if (pMod != nullptr)
@@ -2206,7 +2207,7 @@ PyDict* ShipItem::GetShipState() {
     result->SetItem(new PyInt(itemID()), GetItemStatusRow());
     // Check for and Create entry for pilot:
     InventoryItemRef iRefPilot(nullptr);
-    if (pInventory->GetSingleItemByFlag(flagPilot, iRefPilot))
+    if (pInventory->GetShipPilot(flagPilot, iRefPilot))
         result->SetItem(new PyInt(iRefPilot->itemID()), iRefPilot->GetItemStatusRow());
 
     // Create entries for ALL modules, rigs, and subsystems present on ship:

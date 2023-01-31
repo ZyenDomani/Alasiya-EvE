@@ -188,7 +188,7 @@ void PyServiceMgr::Initalize(double startTime)
     }
 
     PyDecRef(str);
-    sLog.Cyan("     PyServiceMgr", "%u services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
+    sLog.Cyan("     PyServiceMgr", "%lu services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
 }
 
 void PyServiceMgr::Process() {

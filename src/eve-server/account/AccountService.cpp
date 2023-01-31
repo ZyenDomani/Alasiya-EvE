@@ -218,7 +218,7 @@ PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
         reason += "No Reason Given";
     } else {
         // this hits db directly, so test for possible sql injection code
-        for (const auto cur : badChars)
+        for (const auto &cur : badChars)
             if (EvE::icontains(args.reason, cur))
                 throw CustomError("Description contains invalid characters");
         reason += args.reason;
@@ -247,7 +247,7 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
     std::string reason= "DESC: ";
     if (call.byname.find("reason") != call.byname.end()) {
         // this hits db directly, so test for possible sql injection code
-        for (const auto cur : badChars)
+        for (const auto &cur : badChars)
             if (EvE::icontains(PyRep::StringContent(call.byname.find("reason")->second), cur))
                 throw CustomError("Reason contains invalid characters");
 

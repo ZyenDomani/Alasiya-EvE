@@ -60,11 +60,12 @@ const char* const s_mTypeString[] =
     "Invalid Type"      //19
 };
 
-/** @todo  this entire class should be better thought-out for class d'tors and object lifetime
+/** @todo  this entire class should be better thought-out for class d'tors and object lifetime (UD: it was incomplete)
  *         however, i dont fully understand it enough to implement better memMgmt at this time
  *              -allan 10Jan19
  *
- *      -- possibly rewrite to use shared_ptr/unique_ptr, then we can remove the RefObject inheritance here.
+ *	UD:  gaining more understanding of how this class works. updated code and added more memMgmt
+ *		-allan 30Jan23
  */
 
 /************************************************************************/
@@ -404,28 +405,29 @@ int32 PyNone::hash() const
 /* PyRep Buffer Class                                                   */
 /************************************************************************/
 PyBuffer::PyBuffer( size_t len, const uint8& value ) : PyRep( PyRep::PyTypeBuffer ),
- mValue( new Buffer( len, value ) ), mHashCache( -1 ) {}
+ mValue( new Buffer( len, value ) ), mHashCache( -1 ), cleanup(true) {}
 PyBuffer::PyBuffer( const Buffer& buffer ) : PyRep( PyRep::PyTypeBuffer ),
-mValue( new Buffer( buffer ) ), mHashCache( -1 ) {}
+mValue( new Buffer( buffer ) ), mHashCache( -1 ), cleanup(true) {}
 PyBuffer::PyBuffer( Buffer** buffer ) : PyRep( PyRep::PyTypeBuffer ),
-mValue( *buffer ), mHashCache( -1 )
+mValue( *buffer ), mHashCache( -1 ), cleanup(false)
 {
     *buffer = nullptr;
 }
-PyBuffer::PyBuffer( const PyString& str ) : PyRep( PyRep::PyTypeBuffer ),
-mValue( new Buffer( str.content().begin(), str.content().end() ) ), mHashCache( -1 )
+PyBuffer::PyBuffer(const PyString& str) : PyRep(PyRep::PyTypeBuffer),
+mValue(new Buffer(str.content().begin(), str.content().end())), mHashCache(-1)
 {
     //sLog.Cyan("PyBuffer(string)", "Copy C'tor.");
 }
-PyBuffer::PyBuffer( const PyBuffer& buffer ) : PyRep( PyRep::PyTypeBuffer ),
-mValue( new Buffer( buffer.content() ) ), mHashCache( buffer.mHashCache )
+PyBuffer::PyBuffer(const PyBuffer& buffer) : PyRep(PyRep::PyTypeBuffer),
+mValue(new Buffer(buffer.content())), mHashCache(buffer.mHashCache)
 {
     //sLog.Cyan("PyBuffer(buffer)", "Copy C'tor.");
 }
 
 PyBuffer::~PyBuffer()
 {
-    //delete mValue;
+    //if (cleanup)
+    //    SafeDelete(mValue);
 }
 
 PyRep* PyBuffer::Clone() const
@@ -678,12 +680,6 @@ PyList::PyList(const PyList& oth) : PyRep(PyRep::PyTypeList), items(oth.items)
     //sLog.Cyan("PyList()", "Copy C'tor.");
 }
 
-PyList::~PyList()
-{
-    //for (auto &cur : items)
-    //    PySafeDecRef(cur);
-}
-
 PyRep* PyList::Clone() const
 {
     //sLog.Magenta("PyList()", "Clone.");
@@ -826,17 +822,17 @@ PyDict& PyDict::operator=( const PyDict& oth )
 /************************************************************************/
 /* PyRep Object Class                                                   */
 /************************************************************************/
-PyObject::PyObject( PyString* type, PyRep* args ) : PyRep(PyRep::PyTypeObject), mType(type), mArguments(args) { }
-PyObject::PyObject(const char* type, PyRep* args ) : PyRep(PyRep::PyTypeObject), mType(new PyString(type)), mArguments(args) { }
-PyObject::PyObject(const PyObject& oth) : PyRep(PyRep::PyTypeObject), mType(oth.mType), mArguments(oth.arguments())
+PyObject::PyObject( PyString* type, PyRep* args ) : PyRep(PyRep::PyTypeObject), mType(type), mArguments(args), cleanup(false) { }
+PyObject::PyObject(const char* type, PyRep* args ) : PyRep(PyRep::PyTypeObject), mType(new PyString(type)), mArguments(args), cleanup(true) { }
+PyObject::PyObject(const PyObject& oth) : PyRep(PyRep::PyTypeObject), mType(oth.mType), mArguments(oth.arguments()), cleanup(false)
 {
     //sLog.Cyan("PyObject()", "Copy C'tor.");
 }
 
 PyObject::~PyObject()
 {
-    //PyDecRef( mType );
-    //PyDecRef( mArguments );
+    if (cleanup)
+        PySafeDecRef( mType );
 }
 
 PyRep* PyObject::Clone() const
@@ -854,19 +850,19 @@ bool PyObject::visit( PyVisitor& v ) const
 /* PyObjectEx                                                           */
 /************************************************************************/
 PyObjectEx::PyObjectEx(bool is_type_2, PyRep* header) : PyRep(PyRep::PyTypeObjectEx),
- mHeader(header),  mIsType2(is_type_2),  mList(new PyList()),  mDict(new PyDict())  { }
+ mHeader(header),  mIsType2(is_type_2),  mList(new PyList()),  mDict(new PyDict()), cleanup(true)  { }
 PyObjectEx::PyObjectEx( const PyObjectEx& oth ) : PyRep( PyRep::PyTypeObjectEx ),
-mHeader(oth.header()->Clone()), mIsType2(oth.isType2()), mList(oth.mList), mDict(oth.mDict)
+mHeader(oth.header()->Clone()), mIsType2(oth.isType2()), mList(oth.mList), mDict(oth.mDict), cleanup(false)
 {
     //sLog.Cyan("PyObjectEx()", "Copy C'tor.");
 }
 
 PyObjectEx::~PyObjectEx()
 {
-    //PySafeDecRef( mHeader );
-
-    //PyDecRef( mList );
-    //PyDecRef( mDict );
+    if (cleanup) {
+        PySafeDecRef( mList );
+        PySafeDecRef( mDict );
+    }
 }
 
 PyRep* PyObjectEx::Clone() const
@@ -1082,17 +1078,17 @@ PyTuple* PyObjectEx_Type2::_CreateHeader( PyToken* args, PyDict* keywords, bool 
 /* PyPackedRow                                                          */
 /************************************************************************/
 PyPackedRow::PyPackedRow(DBRowDescriptor* header)
-: PyRep(PyRep::PyTypePackedRow), mHeader(header), mFields(new PyList(header->ColumnCount()) ) { }
+: PyRep(PyRep::PyTypePackedRow), mHeader(header), mFields(new PyList(header->ColumnCount()) ), cleanup(true) { }
 PyPackedRow::PyPackedRow(const PyPackedRow& oth )
-: PyRep(PyRep::PyTypePackedRow), mHeader(oth.header()), mFields(oth.mFields)
+: PyRep(PyRep::PyTypePackedRow), mHeader(oth.header()), mFields(oth.mFields), cleanup(false)
 {
     //sLog.Cyan("PyPackedRow()", "Copy C'tor.");
 }
 
 PyPackedRow::~PyPackedRow()
 {
-    //PyDecRef( mHeader );
-    //PyDecRef( mFields );
+    if (cleanup)
+        PySafeDecRef( mFields );
 }
 
 PyRep* PyPackedRow::Clone() const
@@ -1144,11 +1140,6 @@ PySubStruct::PySubStruct( const PySubStruct& oth ) : PyRep( PyRep::PyTypeSubStru
     //sLog.Cyan("PySubStruct()", "Copy C'tor.");
 }
 
-PySubStruct::~PySubStruct()
-{
-    //PyDecRef( mSub );
-}
-
 PyRep* PySubStruct::Clone() const
 {
     //sLog.Magenta("PySubStruct()", "Clone.");
@@ -1167,16 +1158,10 @@ PySubStream::PySubStream(PyRep* rep ) : PyRep( PyRep::PyTypeSubStream ), mData( 
 PySubStream::PySubStream(PyBuffer* buffer ): PyRep(PyRep::PyTypeSubStream), mData(  buffer ), mDecoded( nullptr ) {}
 PySubStream::PySubStream(const PySubStream& oth )
 : PyRep(PyRep::PyTypeSubStream),
-  mData( oth.data() == nullptr ? nullptr : new PyBuffer( *oth.data() ) ),
+  mData( oth.data() == nullptr ? nullptr : new PyBuffer( *oth.data())),
   mDecoded( oth.decoded() == nullptr ? nullptr : oth.decoded()->Clone() )
 {
     //sLog.Cyan("PySubStream()", "Copy C'tor.");
-}
-
-PySubStream::~PySubStream()
-{
-    //PySafeDecRef( mData );
-    //PySafeDecRef( mDecoded );
 }
 
 PyRep* PySubStream::Clone() const
@@ -1227,6 +1212,7 @@ PyChecksumedStream::PyChecksumedStream(const PyChecksumedStream& oth )
 
 PyChecksumedStream::~PyChecksumedStream()
 {
+	// is this right?  havent had any "multiple deletion" msgs yet...
     PyDecRef( mStream );
 }
 

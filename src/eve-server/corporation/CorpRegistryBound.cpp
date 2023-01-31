@@ -563,18 +563,18 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     }
 
     // verify they're not using bad words in their corp name
-    for (const auto cur : badWords)
+    for (const auto &cur : badWords)
         if (EvE::icontains(args.corpName, cur))
             throw CustomError("Corp Name contains banned words");
 
     // this hits db directly, so test for possible sql injection code
-    for (const auto cur : badCharsSearch)
+    for (const auto &cur : badCharsSearch)
         if (EvE::icontains(args.corpName, cur))
             throw CustomError("Corp Name contains invalid characters");
 
 
     // this hits db directly, so test for possible sql injection code
-    for (const auto cur : badCharsSearch)
+    for (const auto &cur : badCharsSearch)
         if (EvE::icontains(args.corpTicker, cur))
             throw CustomError("Corp Ticker contains invalid characters");
 

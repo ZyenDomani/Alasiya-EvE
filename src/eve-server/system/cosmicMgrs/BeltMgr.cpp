@@ -146,7 +146,7 @@ bool BeltMgr::Load(uint16 bubbleID) {
     if (!m_db.LoadSystemRoids(m_systemID, beltID, entities))
         return false;
 
-    for (auto entity : entities) {
+    for (auto &entity : entities) {
         AsteroidItemRef itemRef = sItemFactory.GetAsteroidRef(entity.itemID);
         if (itemRef.get() == nullptr) {
             _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID);

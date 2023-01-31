@@ -114,7 +114,7 @@ void DungeonDataMgr::Populate()
     //sLog.Cyan("   DungeonDataMgr", "%u rooms in %u buckets and %u groups in %u buckets for %u dungeon templates loaded in %.3fms.",\
               rooms.size(), rooms.bucket_count(), groups.size(), groups.bucket_count(), templates.size(), (GetTimeMSeconds() - start));
 
-    sLog.Cyan("   DungeonDataMgr", "%u entrys, %u rooms and %u groups for %u dungeon templates loaded in %.3fms.",\
+    sLog.Cyan("   DungeonDataMgr", "%lu entrys, %lu rooms and %lu groups for %lu dungeon templates loaded in %.3fms.",\
               entrys.size(), rooms.size(), groups.size(), templates.size(), (GetTimeMSeconds() - start));
 }
 
@@ -175,7 +175,7 @@ DungeonMgr::~DungeonMgr()
 
     /*  this is not needed as all items are temp at this time.
     for (auto &cur : m_dungeonList)
-        for (auto item : cur.second)
+        for (auto &item : cur.second)
             InventoryDB::DeleteItem(item);
      */
 }

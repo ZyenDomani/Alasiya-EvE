@@ -586,7 +586,7 @@ void StaticDataMgr::Populate()
         spawnClass.cbs = row.GetInt(15);
         m_npcClasses.emplace((uint8)row.GetInt(0), spawnClass);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Rat Groups, %u Rat Classes, and %u Rat Types for %u regions loaded in %.3fms.",\
+    sLog.Cyan("    StaticDataMgr", "%lu Rat Groups, %lu Rat Classes, and %u Rat Types for %lu regions loaded in %.3fms.",\
               m_npcGroups.size(), m_npcClasses.size(), typeCount, m_ratRegions.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();

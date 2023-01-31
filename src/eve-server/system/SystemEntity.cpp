@@ -317,7 +317,8 @@ void StaticSystemEntity::EncodeDestiny( Buffer& into ) {
 }
 
 BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: StaticSystemEntity(self, services, system)
+: StaticSystemEntity(self, services, system),
+m_beltMgr(nullptr)
 {
 }
 

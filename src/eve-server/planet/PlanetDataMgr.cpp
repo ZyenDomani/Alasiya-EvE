@@ -54,7 +54,7 @@ void PlanetDataMgr::_Populate()
 
     //cleanup
     SafeDelete(res);
-    sLog.Cyan("    PlanetDataMgr", "%u planet data groups in %u buckets loaded in %.3fms.",\
+    sLog.Cyan("    PlanetDataMgr", "%lu planet data groups in %lu buckets loaded in %.3fms.",\
             m_planetData.size(), m_planetData.bucket_count(), (GetTimeMSeconds() - start));
 }
 
@@ -225,7 +225,7 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     uint32 qtyPerCycle = GetProgramOutput(iRef, iCycleTime);
     //qtyPerCycle *= heads->size();
 
-    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() - cycleTime:%.2f, iCycleTime:%li, length:%.2f, numCycles:%u, qtyPerCycle:%u, heads: %u, headRadius:%.4f", \
+    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() - cycleTime:%.2f, iCycleTime:%li, length:%.2f, numCycles:%u, qtyPerCycle:%u, heads: %lu, headRadius:%.4f", \
                 cycleTime, iCycleTime, length, numCycles, qtyPerCycle, heads->size(), headRadius);
 
     PyTuple* res = new PyTuple(3);

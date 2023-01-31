@@ -1237,7 +1237,7 @@ PyRep* FleetService::GetWings(uint32 fleetID)
     wingIDs.clear();
     GetWingIDs(fleetID, wingIDs);
     PyDict* dict = new PyDict();
-    for (auto wingID : wingIDs) {
+    for (auto &wingID : wingIDs) {
         squadIDs.clear();
         WingData wData = WingData();
         GetWingData(wingID, wData);
@@ -1392,7 +1392,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
                         itr = m_squadDataMap.find(cur);
                         if (itr == m_squadDataMap.end())
                             continue;
-                        for (auto member : itr->second.members)
+                        for (auto &member : itr->second.members)
                             if (scope == Fleet::BCast::Scope::Universe) {
                                 members.push_back(member.second);
                             } else if (scope == Fleet::BCast::Scope::System) {
@@ -1407,7 +1407,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
                     std::map<uint32, SquadData>::iterator itr = m_squadDataMap.find(squadID);
                     if (itr == m_squadDataMap.end())
                         break;
-                    for (auto member : itr->second.members)
+                    for (auto &member : itr->second.members)
                         if (scope == Fleet::BCast::Scope::Universe) {
                             members.push_back(member.second);
                         } else if (scope == Fleet::BCast::Scope::System) {
@@ -1728,7 +1728,7 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
     }
 
     if ((fData.booster != nullptr) and (fData.booster->IsInSpace()) and (pChar = fData.booster->GetChar().get()) != nullptr) {
-        if (fData.leader->GetSystemID() == fData.booster->GetSystemID()) {
+        if ((fData.leader != nullptr) and (fData.leader->IsInSpace()) and (fData.leader->GetSystemID() == fData.booster->GetSystemID())) {
             if (pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1)
                 or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
                 or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1)) {
@@ -1795,8 +1795,9 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
             length += wData.name.size();
             length += 35;
         }
+
         if ((wData.booster != nullptr) and (wData.booster->IsInSpace()) and (pChar = wData.booster->GetChar().get()) != nullptr) {
-            if (wData.leader->GetSystemID() == wData.booster->GetSystemID()) {
+            if ((wData.leader != nullptr) and (wData.leader->IsInSpace()) and (wData.leader->GetSystemID() == wData.booster->GetSystemID())) {
                 if (pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1)
                     or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
                     or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1)) {
@@ -1863,8 +1864,9 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 length += sData.name.size();
                 length += 37;
             }
+
             if ((sData.booster != nullptr) and (sData.booster->IsInSpace()) and (pChar = sData.booster->GetChar().get()) != nullptr) {
-                if (sData.leader->GetSystemID() == sData.booster->GetSystemID()) {
+                if ((sData.leader != nullptr) and (sData.leader->IsInSpace()) and (sData.leader->GetSystemID() == sData.booster->GetSystemID())) {
                     if (pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1)
                         or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
                         or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1)) {
@@ -1899,11 +1901,13 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 length += 43;
                 sboost = false;
             }
+
             if (sboost) {
                 str << "    <color=green>";
             } else {
                 str << "    <color=red>";
             }
+
             str << "Members: " << std::to_string(sData.members.size()) << "  Effective: ";
             length += 40;
             std::string bdata;

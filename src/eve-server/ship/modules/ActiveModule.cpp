@@ -463,7 +463,8 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
     // check for one-hit kills and stop module after cycle completes
     if (m_needsTarget)
-        if (m_targetSE->IsDead())
+        if ((m_targetSE != nullptr)
+        and (m_targetSE->IsDead()))
             m_Stop = true;
 }
 
@@ -872,11 +873,12 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     if (!pClient->IsLogin()) {
         // process new charge's effects (load timer will determine if fx are applied based on existing charge)
         // GM::Online proc fx when client logs in...this is to avoid dupe calls
-        for (auto it : chargeRef->type().m_stateFxMap) {
+        /** @todo this isnt right...multimap */
+        for (auto &cur : chargeRef->type().m_stateFxMap) {
             fxData data = fxData();
             data.action = FX::Action::Invalid;
             data.srcRef = chargeRef;
-            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(cur.second.preExpression), data, this);
         }
         if (pClient->IsInSpace()) {
             /*  **** this sets "reload blink" status on weapon button
@@ -931,11 +933,11 @@ void ActiveModule::UnloadCharge()
         }
 
         m_modRef->ClearModifiers();
-        for (auto it : m_chargeRef->type().m_stateFxMap) {
+        for (auto &cur : m_chargeRef->type().m_stateFxMap) {
             fxData data = fxData();
             data.action = FX::Action::Invalid;
             data.srcRef = m_chargeRef;
-            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(cur.second.postExpression), data, this);
         }
 
         // apply to containing module to properly remove effects  -this doesnt work right for scripts.
@@ -1025,12 +1027,12 @@ void ActiveModule::ReprocessCharge()
     if (m_chargeRef.get() == nullptr)
         return;
     /*  may not need to reset this...
-    m_chargeRef->ClearModifiers();
-    for (auto it : m_chargeRef->type().m_stateFxMap) {
+     m _chargeRef->ClearModifiers();                        *
+     for (auto &cur : m_chargeRef->type().m_stateFxMap) {
         fxData data = fxData();
         data.action = FX::Action::dgmActInvalid;
         data.srcRef = m_chargeRef;
-        sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+        sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(cur.second.preExpression), data, this);
     } */
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
     m_chargeRef->ClearModifiers();

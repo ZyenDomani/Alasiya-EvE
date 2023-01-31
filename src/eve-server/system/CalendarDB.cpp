@@ -148,12 +148,16 @@ uint32 CalendarDB::SaveSystemEvent(uint32 ownerID, uint32 creatorID, int64 start
 
     uint32 eventID(0);
     DBerror err;
-    sDatabase.RunQueryLID(err, eventID,
+    if (!sDatabase.RunQueryLID(err, eventID,
         "INSERT INTO sysCalendarEvents(ownerID, creatorID, eventDateTime, autoEventType,"
         " eventTitle, eventText, flag, month, year, importance)"
         " VALUES (%u, %u, %li, %u, '%s', '%s', %u, %u, %u, %u)",
         ownerID, creatorID, startDateTime, autoEventType, title.c_str(), description.c_str(),
-        Calendar::Flag::Automated, data.month, data.year, important?1:0);
+        Calendar::Flag::Automated, data.month, data.year, important?1:0))
+    {
+        codelog(DATABASE__ERROR, "Error in SaveSystemEvent query");
+        return eventID;
+    }
 
     return eventID;
 }

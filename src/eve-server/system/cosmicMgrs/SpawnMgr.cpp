@@ -179,7 +179,7 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble)
     pNPC->SysBubble()->SetSpawned(false);
 
     NPC* rNPC(nullptr);
-    auto range = m_spawns.equal_range(rNPC->SysBubble()->GetID());
+    auto range = m_spawns.equal_range(pNPC->SysBubble()->GetID());
     auto itr = range.first;
     while (itr != range.second) {
         if (itr->second.enabled) {
@@ -633,7 +633,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
 
     if (m_toSpawn.size() > 0) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - toSpawn size is %u.", m_toSpawn.size());    //variable
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - toSpawn size is %lu.", m_toSpawn.size());    //variable
         MakeSpawn(pBubble, factionID, sClass, level, anomaly);
         return true;
     } else {

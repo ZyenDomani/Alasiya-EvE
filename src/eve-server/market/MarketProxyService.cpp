@@ -590,7 +590,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
 
     Market::OrderInfo oInfo = Market::OrderInfo();
     if (!m_db.GetOrderInfo(args.orderID, oInfo)) {
-        _log(MARKET__ERROR, "CancelCharOrder - Failed to get info about order #%i.", call.client->GetName(), args.orderID);
+        _log(MARKET__ERROR, "CancelCharOrder - Failed to get info about order #%i.", args.orderID);
         return nullptr;
     }
 

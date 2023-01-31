@@ -134,11 +134,11 @@ void GenericModule::Online()
                     itemID(), m_modRef->name());
         } else {
             _log(MODULE__MESSAGE, "GenericModule::Online() - module %u(%s) loading charge fx for %s.", itemID(), m_modRef->name(), m_chargeRef->name());
-            for (auto it : m_chargeRef->type().m_stateFxMap) {
+            for (auto &cur : m_chargeRef->type().m_stateFxMap) {
                 fxData data = fxData();
                 data.action = FX::Action::Invalid;
                 data.srcRef = m_chargeRef;
-                sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+                sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(cur.second.preExpression), data, this);
             }
         }
     }
@@ -200,11 +200,11 @@ void GenericModule::Offline()
             _log(MODULE__ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
                     itemID(), m_modRef->name());
         } else {
-            for (auto it : m_chargeRef->type().m_stateFxMap) {
+            for (auto &cur : m_chargeRef->type().m_stateFxMap) {
                 fxData data = fxData();
                 data.action = FX::Action::Invalid;
                 data.srcRef = m_chargeRef;
-                sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+                sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(cur.second.postExpression), data, this);
             }
         }
     }
@@ -238,8 +238,8 @@ void GenericModule::ProcessEffects(int8 state, bool active/*false*/)
     m_modRef->type().GetEffectMap(state, effectMap);
     _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %u, state: %s, online: %s", \
             m_modRef->name(), effectMap.size(), sFxProc.GetStateName(state), (active ? "true" : "false"));
-    for (auto it : effectMap) {
-        if (it.first == 16)    // skip the online effect.  this is done internally elsewhere
+    for (auto &cur : effectMap) {
+        if (cur.first == 16)    // skip the online effect.  this is done internally elsewhere
             continue;
         fxData data = fxData();
         data.action = FX::Action::Invalid;
@@ -248,9 +248,9 @@ void GenericModule::ProcessEffects(int8 state, bool active/*false*/)
          * active/overload/gang/other effects will be applied and removed when called.
          */
         if (active) {
-            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(cur.second.preExpression), data, this);
         } else {
-            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(cur.second.postExpression), data, this);
         }
     }
 }
@@ -264,7 +264,7 @@ void GenericModule::Repair(EvilNumber amount)
             newAmount = EvilZero;
         SetAttribute(AttrDamage, newAmount);
     }
-    _log(MODULE__DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u", m_modRef->name(), amount.get_int(), GetAttribute(AttrDamage).get_int());
+    _log(MODULE__DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u", m_modRef->name(), amount.get_uint32(), GetAttribute(AttrDamage).get_uint32());
 }
 
 const char* GenericModule::GetModuleStateName(int8 state)

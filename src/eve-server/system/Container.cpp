@@ -42,7 +42,8 @@
  */
 CargoContainer::CargoContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data)
 : InventoryItem(_containerID, _containerType, _data),
-m_isAnchored(false)
+m_isAnchored(false),
+mySE(nullptr)
 {
     pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created CargoContainer object for item %s (%u).", name(), m_itemID);
@@ -339,7 +340,7 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         troll.effectStamp = sEntityList.GetStamp();
     into.Append( troll );
 
-    _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
@@ -379,7 +380,8 @@ PyDict *ContainerSE::MakeSlimItem() {
  */
 WreckContainer::WreckContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data)
 : InventoryItem(_containerID, _containerType, _data),
-m_delete(false)
+m_delete(false),
+mySE(nullptr)
 {
     pInventory = new Inventory(InventoryItemRef(this));
     m_salvaged = false;
@@ -579,7 +581,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
         troll.formationID = 0xFF;
         troll.effectStamp = sEntityList.GetStamp();
     into.Append( troll );
-    _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *WreckSE::MakeSlimItem() {

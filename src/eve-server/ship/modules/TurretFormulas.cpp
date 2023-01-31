@@ -30,7 +30,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
     uint32 falloff = pMod->GetAttribute(AttrFalloff).get_uint32();
     uint32 range = pMod->GetAttribute(AttrMaxRange).get_uint32();
     float distance = shipRef->position().distance(pTarget->DestinyMgr()->GetPosition());
-    _log(DAMAGE__TRACE, "Turret::GetToHit - distance:%.2f, range:%.2f, falloff:%u", distance, range, falloff);
+    _log(DAMAGE__TRACE, "Turret::GetToHit - distance:%.2f, range:%u, falloff:%u", distance, range, falloff);
 
     // calculate transversal from other data
     /* i have had problems finding exact data for transversal velocity
