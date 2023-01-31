@@ -25,6 +25,7 @@ other updates?
 -- even with heading identical (client and server) there is still some deviation after turning...i dont understand where its from
 NEW--- movement tracking (and code) stops execution after ~24s
 	- used to show "ship stopped after xx seconds"...not now and i dont know why
+	-- was using IsMoving() which checks moveTimer < 0.01f (or around 25s in rifter) to direct move check switch.  dumbass.
 
 ships  ---  attrAgility will need to be recalc'd and reset anytime inertia or mass changes.
     -- there are also modules that modify all of these variables.  these need verification
@@ -122,12 +123,22 @@ initial handshake packets may need work due to missing data.
 see file:///home/allan/Desktop/eve_packets/aknor/crucible/1.5.4/03272012-02-13-aknor_jaden_crucible-login_inspace_154.log
     and maybe others  (this one is missing some data due to sniffer hiccup)
 
+Coverity found more
+ImageServer::GetImage - fclose(fp)
+character skill queue loop - //PySafeDecRef(list); leaks
+temp object going out of scope - return (uptime.str().c_str());
+
 
 look into benefits of changing skillQueue from vector to list (suggested for multiple/often add/delete ops)
 
 go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
 while you're at it, verify member initalization is correct.  i know destiny isnt (and it's member list is huge)
 	- im sure its not the only one...but some (or most) of my 'newer' classes should be right.
+
+speaking of destiny, this is wrong.....
+:2183  double velocity = m_maxShipSpeed * ((double)(distance / m_followDistance) + 0.065);
+(double)(distance / m_followDistance)   ---  double should be removed here (explict case to double negates integer division.  remainder dropped)
+
 
 remove GPoint/GVector code and replace with evemoo's Vec3 code (after thorough review)
     - float/double not needed and math on those are expensive.  replace with int64
@@ -161,7 +172,6 @@ client login screen...these all need code to show data    CharacterDB::GetCharSe
     unreadMailCount:
     unprocessedNotifications:
 also need to optimize query....can join instead of using (current) multiple queries and variables
-
 
 FleetBound could use updates (client->getchar->name, etc)
 
@@ -317,6 +327,7 @@ trader joe (market bot)
     - items in haulers for sale at docked station (random)  remove item from hauler when order placed.
     - add data/info to getmultiownersex call
 
+
 low on the list.....
 contraband.
 however, there are skills related to it, once implemented  (but not published)
@@ -431,7 +442,7 @@ may have to rearrange things to properly implement jump clones.
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
-static items not being removed from itemfactory map upon system unload (station removal fixed)
+static items still not being removed from itemfactory map upon system unload (station removal fixed)
 
 began putting specific throw msgs in appropriate common/EVE_*.h files if available,
 else src/*/*.h files
@@ -722,8 +733,11 @@ systemmgr - use kills object instead of db hit
     - use systemMgr to update/track kills/hour data and update db as needed (use 15m call above)
     - load kill times when system boots.  use 15m timer call (from EntityList) to update data
     ** tried this...didnt work correctly.  disabled code.  needs review
+sysmgr - SetDockCount  --  uint <= 0 is never true
 
+civilianMgr code?  i thought it was empty
 
+InvBrokerService needs a good lookover
 
 InvBrokerBound::Handle_GetInventory
     - incomplete
@@ -752,7 +766,13 @@ pi working.  currently rewriting process code  -priority level: lo
     - rename/refactor comet0's original code?  i still dont like the names he used. :/ (semantics shit)
     - check/rewrite planet xml code as needed (minor improvement)
     - check if xml is needed or if structs are ok for all uses (improve code bloat)
+	-- uunc command and uunc command list can probably be done in code
     - code checks for route levels and mat'l volume xfer'd (limit volume xfer)
+    - implement pin attr checks (volume, capy, et al) as noted in code
+      -- if not, create attrs as needed on item creation (check this before beginning PI testing again)
+    - found few errors in my previous code update.  needs testing.
+    - run thru some PI installations of various complexity for proc times
+    - Notify* events
 
 dungeons - complete current wip code   -priority level: med-hi
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)   -priority level: low-med
@@ -767,7 +787,7 @@ belt spawns - rework for better ship group selection   -priority level: med
 
 belt manager 'active' status on timer?
 
---UD  Altahir completed this on evemu ~2021/2022
+--UD:  Altahir completed this on evemu ~2021/2022
 contracts - start this system. current status unknown. this system is barely skeleton code at this time.  -priority level: low-med
 contractProxy::GetMyExpiredContractList()
 /client/script/ui/shared/neocom/journal.py(1429) DoShowContracts
@@ -782,6 +802,7 @@ contractProxy::GetMyExpiredContractList()
 AttributeError: 'NoneType' object has no attribute 'contracts'
 
 missions/agents - agents working. courier missions working. currently ~50 missions, all levels.
+Agent.cpp:626  move 'msg' out of switch (unreachable)
 next up is security missions.  will need dungeon work for these.   -priority level: hi
 
 anomaly system - working. may need revisit after other systems mature.   -priority level: med
@@ -822,7 +843,7 @@ ShipService incomplete
 LookupService needs update
 serviceDB needs update
     - maybe remove "Lookup*" shit to its own db file
-StationOffice::ValidateAddItem incomplete (but unused)
+StationOffice::ValidateAddItem incomplete (but unused - Coverity complains about unchecked return of inv::hasspace)
     - need tic to determine rent time on office.  implement lockdown when rent unpaid (grace period?  -nope)
 
 KeeperService will need work (accel gates) (james updated official with some of this)
