@@ -123,15 +123,10 @@ char creation - figure certs and set skills accordingly
 *******************************************************
 **********  coding errors/corrections/improvements ...med priority
 
-after delaring an stl container (std::vector<int> x; ), x.clear() is redundant
+entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
 
-really, entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
-Inv::GetItems pass by ref
 Inv::AddItem(...)   need to find and remove skill in training flag here for proper skill search
   - test this.  what about skill training incomplete on char login/load??
-Inventory::GetShipPilot() should be removed from inventory code...way too much overhead for simple check
-  - this should be shipItem query (mPilot?) as its' set when ship is boarded
-Inventory::GetInventoryMap   are there existing objects in map before this call.  find caller and check
 
 InventoryItemRef -> c'tor....copy?  move?  default?  wtf?
 
@@ -141,14 +136,11 @@ Coverity found more shit
 ImageServer::GetImage - fclose(fp)
 character skill queue loop - //PySafeDecRef(list); leaks
 temp object going out of scope - return (uptime.str().c_str());
-Scan()  code needs a quick lookover   invalid %u, operator spacing, more
-TradeService.h  - let gcc create c'tor/d'tor (remove decs)
 AnomalyMgr - init remaining members in c'tor
 ImageServerConnection() - init members _size, _id
 AgentBound:836  dropoffLocation leaks
 CorpRegistryBound.cpp:761   updates leaks
 CorpStationMgr.cpp:381  dict leaks
-sysmgr - SetDockCount  --  uint <= 0 is never true
 
 initial handshake packets may need work due to missing data.
 see file:///home/allan/Desktop/eve_packets/aknor/crucible/1.5.4/03272012-02-13-aknor_jaden_crucible-login_inspace_154.log
@@ -229,7 +221,7 @@ RAM code - implement invention, re    -priority level: low
     - data interface dont show on install job tab (dunno why)
     - bpc may be a bit off (not sure why yet)
     - (RamMethods) all bit comparison are incorrect (order of ops - compare before bitwise)
-      -- this may be the case on ALL bit comparison methods { if (mask & flag == flag)   will always return true because (flag == flag) } 
+      -- this may be the case on ALL bit comparison methods { if (mask & flag == flag)   will always return true because (flag == flag) }
 
 blueprints - look over data and verify
     - LPRR = -11??
@@ -671,7 +663,9 @@ turn fx sending on and follow calls to verify proper OnSpecialFX data
 
 still need to host agent photos...
 
-
+.inventory command
+  - 10000000001 (office) - has no name
+  
 check james' alliance code for proper functionality...not sure about some of those variables
 
 check into cosmic manager enabling checks/code....kinda dont make sense (may have done this already)

@@ -284,7 +284,8 @@ void Inventory::DeleteContents()
 
 CRowSet* Inventory::List(EVEItemFlags flag, uint32 ownerID/*0*/) const
 {
-    CRowSet* rowset = new CRowSet(&sDataMgr.CreateHeader());
+    DBRowDescriptor* header = sDataMgr.CreateHeader();
+    CRowSet* rowset = new CRowSet(&header);
     List(rowset, flag, ownerID);
 
     if (is_log_enabled(INV__LIST))

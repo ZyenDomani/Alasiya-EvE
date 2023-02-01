@@ -30,6 +30,7 @@
 
 #include "ConsoleCommands.h"
 #include "../eve-common/EVEVersion.h"
+#include "LiveUpdateDB.h"
 #include "StatisticMgr.h"
 #include "effects/EffectsProcessor.h"
 #include "inventory/ItemDB.h"
@@ -49,13 +50,13 @@ ConsoleCommand::ConsoleCommand()
  m_haltServer(false),
  m_dbError(false)
 {
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
 }
 
 void ConsoleCommand::Initialize(CommandDispatcher* cd)
 {
     pCommand = cd;
-    tv.tv_sec = 0;
-    tv.tv_usec = 0;
     UpdateStatus();	//initial status setting
     sLog.Blue( "   ConsoleCommand", "Console Commands Initialized." );
     sLog.Yellow( "   ConsoleCommand", "Enter 'h' for current list of supported commands." );
@@ -106,6 +107,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("    reload (l)ogs", " Reloads log.ini to change values without restarting server.");
                 sLog.Warning("(q)uery stat data", " Prints current statistic data.");
                 sLog.Warning("       hea(r) all", " Echo all chat msgs to console. *Not Implemented*");
+                sLog.Warning(" reload (u)pdates", " Reload LiveUpdates from db.");
             } else if (strncmp(buf, "e", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Hello:");
                 sLog.Magenta("      Server Says", " Hello World!" );
@@ -303,6 +305,9 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "q", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Statistic Data:");
                 sStatMgr.PrintInfo();
+            } else if (strncmp(buf, "u", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "Reloading LiveUpdates:");
+                sLiveUpdateDB.Reload();
             } else {
                 sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
             }
