@@ -76,7 +76,6 @@ public:
     /* Inventory-by-Flag methods */
     /** @todo update to use m_usedVolumeByFlag container? */
     bool IsEmptyByFlag(EVEItemFlags flag) const;
-    bool GetShipPilot(EVEItemFlags flag, InventoryItemRef &iRef) const;
     bool GetTypesByFlag(EVEItemFlags flag, std::map<uint16, InventoryItemRef> &items);
     // for characters, ALL skills are flagSkill. we are not keeping flagSkillInTraining separate here
     uint32 GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
@@ -98,7 +97,7 @@ public:
     void GetCargoList(std::multimap<uint8, InventoryItemRef> &cargoMap);     // returns map of cargoFlag:iRef from mContents
 
 protected:
-    bool GetItems(OwnerData od, std::vector< uint32 >& into);
+    bool GetItems(OwnerData &od, std::vector< uint32 >& into);
     void List(CRowSet* into, EVEItemFlags flag, uint32 ownerID=0) const;
 
     InventoryDB m_db;

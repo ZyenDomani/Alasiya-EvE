@@ -209,7 +209,6 @@ void Prospector::DropSalvage()
         m_targetSE->GetWreckSE()->Salvaged();
 
         std::map<uint32, InventoryItemRef> shipLoot;
-        shipLoot.clear();
         m_targetSE->GetSelf()->GetMyInventory()->GetInventoryMap(shipLoot);
 
         // create new container

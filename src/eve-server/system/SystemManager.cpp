@@ -81,28 +81,12 @@ m_activityTime(0),
 m_activeRatSpawns(0),
 m_activeGateSpawns(0),
 m_activeRoidSpawns(0),
-m_secValue(1.1f)
+m_secValue(1.1f),
+m_minutes(0),
+// zero-init our data containers
+m_data(SystemData()),
+m_killData(SystemKillData())
 {
-    m_minutes = 0;
-
-    m_npcs.clear();
-    m_clients.clear();
-    m_jumpMap.clear();
-    m_moonMap.clear();
-    m_entities.clear();
-    m_planetMap.clear();
-    m_gateMap.clear();
-    m_ratBubbles.clear();
-    m_beltVector.clear();
-    m_roidBubbles.clear();
-    m_ticEntities.clear();
-    m_staticEntities.clear();
-    m_opStaticEntities.clear();
-
-    // zero-init our data containers
-    m_data = SystemData();
-    m_killData = SystemKillData();
-
     sDataMgr.GetSystemData(systemID, m_data);   // system data is now an internal memory (cached) object.  db is hit once at system boot.
     m_secValue -= m_data.securityRating;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
 
@@ -995,10 +979,6 @@ void SystemManager::SetDockCount(Client* pClient, bool docked/*false*/)
         ++m_docked;
     } else {
         --m_docked;
-        if (m_docked < 0) {
-            m_docked = 0;
-            _log(PLAYER__ERROR, "docked count for %s(%u) is <0.  Setting to 0.", m_data.name.c_str(), m_data.systemID);
-        }
     }
 
     if (m_players > sEntityList.GetPlayerCount())

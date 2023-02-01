@@ -14,14 +14,9 @@
 
 
 FxDataMgr::FxDataMgr()
+: m_loaded(false)
 {
-    m_loaded = false;
 
-    m_fxMap.clear();
-    m_opMap.clear();
-    m_expMap.clear();
-    m_effectMap.clear();
-    m_typeFxMap.clear();
 }
 
 int FxDataMgr::Initialize()

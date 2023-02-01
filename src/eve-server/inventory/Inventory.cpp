@@ -46,10 +46,10 @@
  * Inventory
  */
 Inventory::Inventory(InventoryItemRef iRef)
+: m_self(iRef),
+  m_myID(iRef->itemID()),
+  mContentsLoaded(false)
 {
-    mContentsLoaded = false;
-    m_self = iRef;
-    m_myID = iRef->itemID();
 }
 
 void Inventory::Reset()
@@ -64,48 +64,48 @@ void Inventory::Unload()
         return;
 
     //  save contents on the off-chance they have changed, but not on shutdown. (saved in ItemFactory::Close())
+    if (sConsole.IsShutdown()) {
+        mContents.clear();
+        m_contentsByFlag.clear();
+        mContentsLoaded = false;
+	}
+
     Inventory* inv(nullptr);
-    if (!sConsole.IsShutdown()) {
-        std::vector<Inv::SaveData> items;
-        items.clear();
-        std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
-        while (itr != mContents.end()) {
-            // test for item contents and unload as required
-            inv = itr->second->GetMyInventory();
-            if (inv != nullptr)
-                inv->Unload();
-            if (IsPlayerItem(itr->first)) {   // only save player items (except skills - saved in Character::SaveAll())
-                if (itr->second->flag() == flagSkill) {
-                    sItemFactory.RemoveItem(itr->first);
-                    itr = mContents.erase(itr);
-                    continue;
-                }
-
-                Inv::SaveData data = Inv::SaveData();
-                    data.itemID = itr->first;
-                    data.contraband = itr->second->contraband();
-                    data.flag = itr->second->flag();
-                    data.locationID = itr->second->locationID();
-                    data.ownerID = itr->second->ownerID();
-                    data.position = itr->second->position();
-                    data.quantity = itr->second->quantity();
-                    data.singleton = itr->second->isSingleton();
-                    data.typeID = itr->second->typeID();
-                    data.customInfo = itr->second->customInfo();
-                items.push_back(data);
+    std::vector<Inv::SaveData> items;
+    std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
+    while (itr != mContents.end()) {
+        // test for item contents and unload as required
+        inv = itr->second->GetMyInventory();
+        if (inv != nullptr)
+            inv->Unload();
+        if (IsPlayerItem(itr->first)) {   // only save player items (except skills - saved in Character::SaveAll())
+            if (itr->second->flag() == flagSkill) {
+                sItemFactory.RemoveItem(itr->first);
+                itr = mContents.erase(itr);
+                continue;
             }
-            sItemFactory.RemoveItem(itr->first);
-            itr = mContents.erase(itr);
-        }
 
-        ItemDB::SaveItems(items);
+            Inv::SaveData data = Inv::SaveData();
+                data.itemID = itr->first;
+                data.contraband = itr->second->contraband();
+                data.flag = itr->second->flag();
+                data.locationID = itr->second->locationID();
+                data.ownerID = itr->second->ownerID();
+                data.position = itr->second->position();
+                data.quantity = itr->second->quantity();
+                data.singleton = itr->second->isSingleton();
+                data.typeID = itr->second->typeID();
+                data.customInfo = itr->second->customInfo();
+            items.push_back(data);
+        }
+        sItemFactory.RemoveItem(itr->first);
+        itr = mContents.erase(itr);
     }
-    mContents.clear();
-    m_contentsByFlag.clear();
-    mContentsLoaded = false;
+
+    ItemDB::SaveItems(items);
 }
 
-bool Inventory::GetItems(OwnerData od, std::vector< uint32 >& into ) {
+bool Inventory::GetItems(OwnerData &od, std::vector< uint32 >& into ) {
     return m_db.GetItemContents(od, into);
 }
 
@@ -139,6 +139,7 @@ bool Inventory::LoadContents() {
         od.locID = m_myID;
 
     std::vector<uint32> items;
+	// get owner data
     if (pClient != nullptr) {
         if (pClient->IsValidSession())
             od.corpID = pClient->GetCorporationID();
@@ -163,6 +164,7 @@ bool Inventory::LoadContents() {
                 _log(INV__WARNING, "Inventory::LoadContents() - inventory of officeID %u using corpID %u. Continuing...", m_myID, od.corpID);
             }
         }
+		// test for char creation  (data set incomplete in char creation)
         if (pClient->IsValidSession()) {
             od.ownerID = pClient->GetCharacterID();
         } else {
@@ -178,10 +180,12 @@ bool Inventory::LoadContents() {
         return false;
     }
 
+    // test this...dont create new ref on every loop.  additem *should* call copy c'tor, but i dont know yet...
+	InventoryItemRef iRef;
     for (auto &cur : items) {
         if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_myID))
             continue;
-        InventoryItemRef iRef = sItemFactory.GetItemRef(cur);
+        iRef = sItemFactory.GetItemRef(cur);
         if (iRef.get() == nullptr) {
             _log(INV__WARNING, "Inventory::LoadContents() - Failed to load item %u contained in %u. Skipping.", cur, m_myID);
             continue;
@@ -219,6 +223,7 @@ void Inventory::AddItem(InventoryItemRef iRef) {
     // need to find and remove skill in training flag here for proper skill search
     if (IsCharacterID(m_myID)) {
         if (iRef->categoryID() == EVEDB::invCategories::Skill) {
+			// what if this skill training isnt complete?  woulndt this screw things up?
             m_contentsByFlag.emplace(flagSkill, iRef);
         } else {
             m_contentsByFlag.emplace(iRef->flag(), iRef);
@@ -279,8 +284,7 @@ void Inventory::DeleteContents()
 
 CRowSet* Inventory::List(EVEItemFlags flag, uint32 ownerID/*0*/) const
 {
-    DBRowDescriptor* header = sDataMgr.CreateHeader();
-    CRowSet* rowset = new CRowSet(&header);
+    CRowSet* rowset = new CRowSet(&sDataMgr.CreateHeader());
     List(rowset, flag, ownerID);
 
     if (is_log_enabled(INV__LIST))
@@ -310,7 +314,7 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
         }
     } else {
         for (auto &cur : mContents) {
-            if (((ownerID == 0)        or (cur.second->ownerID() == ownerID))
+            if (((ownerID == 0) or (cur.second->ownerID() == ownerID))
             and ((flag == flagNone) or (cur.second->flag() == flag))) {
                 row = into->NewRow();
                 cur.second->GetItemRow(row);
@@ -319,6 +323,7 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
     }
 }
 
+// is this right?  should i change this to use flagMap?
 void Inventory::GetCargoList(std::multimap< uint8, InventoryItemRef >& cargoMap) {
     for (auto &cur : mContents)
         cargoMap.emplace(cur.second->flag(), cur.second);
@@ -334,7 +339,6 @@ float Inventory::GetCorpHangerCapyUsed() const {
 
 void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
     std::vector<InventoryItemRef> itemVecTmp;
-    itemVecTmp.clear();
     for (auto &cur : mContents)
         itemVecTmp.push_back(cur.second);
     /* sorting method to put modules first, charges second, and cargo last
@@ -346,7 +350,7 @@ void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
 std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef> &itemVec)
 {
     // my sort
-    //15:53:09 [ItemTrace] Inventory::SortVector: 41 items sorted in 0.177us with 480 loops.  <<-- dunno when/where this was run
+    //15:53:09 [ItemTrace] Inventory::SortVector: 41 items sorted in 0.177ms with 480 loops.
     //15:40:20 [ItemTrace] Inventory::SortVector() - 30 items sorted in 28.250us with 87 loops.i
     //22:09:28 [InvTrace] Inventory::SortVector() - 47 items sorted in 129.250us with 644 loops.
 
@@ -396,7 +400,7 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     }
 
     if (sConfig.debug.IsTestServer)
-        _log(INV__TRACE, "Inventory::SortVector() - %u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
+        _log(INV__TRACE, "Inventory::SortVector() - %lu items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
 
     return itemVec;  //returns sorted list
 }
@@ -413,7 +417,7 @@ void Inventory::UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const
 {
     //  incomplete...wont compile
     // this method is for changing flags for existing items in our inventory
-    /*
+    /*   is this really needed?   currently we remove() then add()
     auto range = m_contentsByFlag.equal_range(iRef->flag());
     for ( auto itr = range.first; itr != range.second; itr++ )
         if (itr->second == iRef)
@@ -430,11 +434,13 @@ void Inventory::GetInvForOwner(uint32 ownerID, std::vector< InventoryItemRef >& 
         _log(INV__ERROR, "GetInvForOwner called on non-station item %s(%u)", m_self->name(), m_myID);
         EvE::traceStack();
     }
+	// could this use flagMap?
     for (auto &cur : mContents)
         if (cur.second->ownerID() == ownerID)
             items.push_back(cur.second);
 }
 
+	// could this use flagMap?
 InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
     for (auto &cur : mContents)
         if (cur.second->flag() == flag)
@@ -453,8 +459,8 @@ InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) cons
 }
 
 void Inventory::GetInventoryMap( std::map< uint32, InventoryItemRef >& invMap ) {
-    for (auto &cur : mContents)
-        invMap.emplace(cur.first, cur.second);
+    //  call copy assign.  should be faster than my previous code
+    invMap = mContents;
 }
 
 uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
@@ -470,9 +476,7 @@ bool Inventory::GetTypesByFlag(EVEItemFlags flag, std::map< uint16, InventoryIte
     for ( auto itr = range.first; itr != range.second; itr++ )
         items.emplace(itr->second->typeID(), itr->second);
 
-    if (items.size() > 0)
-        return true;
-    return false;
+    return (items.size() > 0);
 }
 
 InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
@@ -486,15 +490,6 @@ InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
             return cur;
 
     return InventoryItemRef(nullptr);
-}
-
-bool Inventory::GetShipPilot(EVEItemFlags flag, InventoryItemRef& iRef) const {
-    auto range = m_contentsByFlag.equal_range(flag);
-    for ( auto itr = range.first; itr != range.second; itr++ ) {
-        iRef = itr->second;
-        return true;
-    }
-    return false;
 }
 
 bool Inventory::IsEmptyByFlag(EVEItemFlags flag) const {
@@ -581,7 +576,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
     auto range = m_contentsByFlag.equal_range(locFlag);
     for (auto itr = range.first; itr != range.second; itr++) {
         iRef = itr->second;
-        // check to avoid removing modules (and their charges) from ship
+        // check to avoid removing modules (and their charges) from ship (crazy error)
         if (IsModuleSlot(iRef->flag()))
             continue;
         // singletons dont stack
@@ -630,11 +625,7 @@ bool Inventory::HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) cons
                 m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), \
                 volume, iRef->GetAttribute(AttrVolume).get_float());
 
-    // check capy for all units
-    if (volume > capacity)
-        return false;
-
-    return true;
+    return (volume < capacity);
 }
 
 float Inventory::GetCapacity(EVEItemFlags flag) const {

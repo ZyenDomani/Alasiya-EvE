@@ -61,8 +61,6 @@ int ItemFactory::Initialize()
     if (sConfig.debug.DeleteTrackingCans)
         InventoryDB::DeleteTrackingCans();
 
-    m_items.clear();
-
     // Initialize ID Authority variables:
     m_nextTempID = TEMP_ENTITY_ID;
     m_nextNPCID = NPC_ID;
@@ -80,11 +78,9 @@ void ItemFactory::Close()
     // types
     for (auto &cur : m_types)
         SafeDelete(cur.second);
-    m_types.clear();
     // items
     //for (auto &cur : m_items)
     //    delete(cur.second.get());
-    m_items.clear();
     // Set Client pointer to NULL
     m_pClient = nullptr;
 }
@@ -95,7 +91,6 @@ void ItemFactory::SaveItems() {
     uint32 count(0);
     double startTime = GetTimeMSeconds();
     std::vector<Inv::SaveData> items;
-    items.clear();
     for (auto &cur : m_items) {
         if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
             cur.second->SaveAttributes();

@@ -12,7 +12,7 @@
 
 
 int Profiler::Initialize() {
-    ClearAll();
+    //ClearAll();
     sLog.Blue("  Profile Manager", "Profiling initialized.");
     return 1;
 }

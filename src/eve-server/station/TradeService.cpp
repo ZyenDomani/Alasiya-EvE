@@ -97,11 +97,11 @@ protected:
 
 TradeService::TradeService(PyServiceMgr *mgr)
 : PyService(mgr, "trademgr"),
-  m_dispatch(new Dispatcher(this))
+m_dispatch(new Dispatcher(this)),
+m_SvcMgr(mgr),
+m_SessionID(minTradeCont)
 {
-    m_SvcMgr = mgr;
     _SetCallDispatcher(m_dispatch);
-    m_SessionID = minTradeCont;
 
     PyCallable_REG_CALL(TradeService, InitiateTrade);
 }
@@ -604,7 +604,6 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
 void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryItemRef itemRef, uint32 newOwnerID)
 {
     std::map<uint32, InventoryItemRef> InventoryMap;
-    InventoryMap.clear();
 
     if (itemRef->categoryID() == EVEDB::invCategories::Ship) {
         //  if we change this to use shipItem, this will need rework

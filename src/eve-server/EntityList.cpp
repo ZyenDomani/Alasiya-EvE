@@ -60,6 +60,7 @@ m_minutes(0),
 m_connections(0),
 m_clientSeedID(0)
 {
+    /*  this isnt needed
     m_agents.clear();
     m_probes.clear();
     m_clients.clear();
@@ -68,6 +69,7 @@ m_clientSeedID(0)
     m_stations.clear();
     m_targMgrs.clear();
     m_corpMembers.clear();
+    */
 
     m_shipTracking = sConfig.debug.UseShipTracking;
 }
@@ -101,8 +103,6 @@ void EntityList::Shutdown() {
      */
     for (auto &cur : m_clients)
         SafeDelete(cur);
-
-    m_clients.clear();
 }
 
 void EntityList::Close()
@@ -645,7 +645,6 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
     in_payload = nullptr;
 
     std::vector<Client*> cVec;
-    cVec.clear();
     switch( target ) {
         case NOTIF_DEST__LOCATION: {
             if (sDataMgr.IsStation(targID)) {
@@ -699,7 +698,6 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
     if (!mcset.locations.empty()) {
         SystemManager* pSysMgr(nullptr);
         std::vector<Client*> cVec;
-        cVec.clear();
         for (auto &cur : mcset.locations) {
             if (sDataMgr.IsStation(cur)) {
                 GetStationGuestList(cur, cVec);

@@ -616,7 +616,6 @@ void MarketMgr::SetBasePrice()
     //  get mineral prices and put into data map
     // typeID/data{typeID, price, name}
     std::map<uint16, Market::matlData> mineralMap;
-    mineralMap.clear();
     sDataMgr.GetMineralData(mineralMap);        // 8
 
     // this will have to use db to get current data.
@@ -627,7 +626,6 @@ void MarketMgr::SetBasePrice()
     // get 'building blocks' used for cap ships and put into data map
     //block typeID/vector<data{materialTypeID, qty}>
     std::map<uint16, Market::matlData> materialMap;
-    materialMap.clear();
     sDataMgr.GetComponentData(materialMap);         // 125
 
     // get compounds from ice and put into data map
@@ -663,7 +661,6 @@ void MarketMgr::SetBasePrice()
 
     // item typeID/data{inventory data}
     std::map<uint16, Inv::TypeData> itemMap;
-    itemMap.clear();
     // this gets only ships
     //MarketDB::GetShipIDs(itemMap);
     // this gets all items made from minerals either directly or indirectly
@@ -671,7 +668,6 @@ void MarketMgr::SetBasePrice()
 
     //item typeID/vector<data{materialTypeID, qty}>
     std::map<uint16, std::vector<EvERam::RamMaterials>> itemMatMap;
-    itemMatMap.clear();
     std::map<uint16, Inv::TypeData>::iterator itemItr = itemMap.begin();
     for (; itemItr != itemMap.end(); ++itemItr) {
         // pull data for this item  -need r/w iterator to work
@@ -679,7 +675,6 @@ void MarketMgr::SetBasePrice()
 
         // get materials required for this item
         std::vector<EvERam::RamMaterials> matVec;
-        matVec.clear();
         sDataMgr.GetRamMaterials(itemItr->first, matVec);
         itemMatMap[itemItr->first] = matVec;
     }
@@ -693,7 +688,6 @@ void MarketMgr::SetBasePrice()
     EvERam::bpTypeData bpData = EvERam::bpTypeData();
     // item typeID/data{inventory data}
     std::map<uint16, Inv::TypeData> missingItemMap;
-    missingItemMap.clear();
     std::map<uint16, Market::matlData>::iterator materialItr = materialMap.begin();
     std::map<uint16, std::vector<EvERam::RamMaterials>>::iterator itemMatItr = itemMatMap.end();
     for (itemItr = itemMap.begin(); itemItr != itemMap.end(); ++itemItr) {
@@ -886,7 +880,6 @@ void MarketMgr::UpdateMineralPrice()
     //  get mineral prices and put into data map
     // typeID/data{typeID, price, name}
     std::map<uint16, Market::matlData> mineralMap;
-    mineralMap.clear();
     sDataMgr.GetMineralData(mineralMap);        // 8
 
     //  update mineral price
@@ -897,7 +890,6 @@ void MarketMgr::GetCruPrices()
 {
     /*
     std::map<uint16, Market::matlData> materialMap;
-    materialMap.clear();
     // dont update minerals...they are set.
     //sDataMgr.GetMineralData(materialMap);       // 8
     sDataMgr.GetSalvageData(materialMap);       // 53

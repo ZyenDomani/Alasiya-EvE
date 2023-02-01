@@ -74,8 +74,6 @@ StationItem::~StationItem()
         pInventory->Unload();
     SafeDelete(pInventory);
 
-    m_officeMap.clear();
-    m_guestList.clear();
     PySafeDecRef(m_officePyData);
 }
 

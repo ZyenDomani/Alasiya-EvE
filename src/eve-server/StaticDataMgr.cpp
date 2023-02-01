@@ -40,6 +40,7 @@ m_entryTypes(nullptr),
 m_factionInfo(nullptr),
 m_npcDivisions(nullptr)
 {
+    /*
     m_ramReq.clear();
     m_moonGoo.clear();
     m_ramMatl.clear();
@@ -63,6 +64,7 @@ m_npcDivisions(nullptr)
     m_oreBySecClass.clear();
     m_LootGroupTypeMap.clear();
     m_WrecksToTypesMap.clear();
+    */
 }
 
 StaticDataMgr::~StaticDataMgr()
@@ -941,7 +943,6 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
     float randChance(0.0f);
     uint8 metaLevel(0);
     std::vector<LootGroupType> lootGrpVec;
-    lootGrpVec.clear();
 
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
@@ -1392,7 +1393,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     if (catID == EVEDB::invCategories::Blueprint) {
         // ramMaterials is only for manufacturing the bp product
         std::vector<EvERam::RamMaterials> ramMatls;
-        ramMatls.clear();
         GetRamMaterials(prodID, ramMatls);
         for (auto &cur : ramMatls) {
             PyPackedRow* row = new PyPackedRow(header);
@@ -1408,7 +1408,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     //  get R.A.M. skills and materials for both bp typeID and product typeID
     // the ramRequirements table holds ALL skill/item data for all aspects of RAM per BlueprintTypeID.
     std::vector<EvERam::RamRequirements> ramReqs;
-    ramReqs.clear();
     GetRamRequirements(typeID, ramReqs);
     //GetRamRequirements(prodID, ramReqs);
     PyPackedRow* row = new PyPackedRow(header);

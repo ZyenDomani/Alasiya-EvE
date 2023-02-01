@@ -31,12 +31,14 @@
 PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     // separate list of ids into respective groups
     std::vector<int32> player, corp, ally, owner, npc, station;
+    /*
     player.clear();
     corp.clear();
     ally.clear();
     owner.clear();
     npc.clear();
     station.clear();
+    */
 
     for (auto &cur : entityIDs) {
         if (IsCorpID(cur)) {
@@ -178,9 +180,11 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     // this is locations only....region, const, system, station, ship
     // wtf are asteroids seen in this call???
     std::vector<int32> staticItems, dynamicItems, asteroidItems;
+    /*
     staticItems.clear();
     dynamicItems.clear();
     asteroidItems.clear();
+    */
 
     for (auto &cur : entityIDs) {
         if (IsStaticItem(cur)) {

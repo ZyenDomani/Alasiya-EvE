@@ -33,23 +33,16 @@ FLEET__BIND_DUMP
 
 FleetService::FleetService()
 : m_services(nullptr),
-m_initalized(false)
+m_initalized(false),
+m_fleetID(0),
+m_wingID(0),
+m_squadID(0)
 {
 }
 
 void FleetService::Initialize(PyServiceMgr* svc)
 {
     m_services = svc;
-
-    m_joinReq.clear();
-    m_inviteData.clear();
-    m_fleetWings.clear();
-    m_wingSquads.clear();
-    m_wingDataMap.clear();
-    m_fleetMembers.clear();
-    m_fleetDataMap.clear();
-    m_squadDataMap.clear();
-    m_fleetAdvertMap.clear();
 
     //  these will have to be incremented individually, then stored according to fleet
     m_fleetID = FLEET_ID;  //950000000
@@ -171,8 +164,6 @@ PyRep* FleetService::CreateWing(uint32 fleetID)
         m_services->lsc_service->CreateSystemChannel(m_wingID);
 
     std::list<int32> wing, squad;
-    wing.clear();
-    squad.clear();
     wing.emplace(wing.end(), m_wingID);
     UpdateBoost(fleetID, true, wing, squad);
 
@@ -198,7 +189,6 @@ void FleetService::CreateSquad(uint32 fleetID, uint32 wingID)
         sData.fleetID = fleetID;
         sData.booster = nullptr;
         sData.leader = nullptr;
-        sData.members.clear();
     m_squadDataMap.emplace(m_squadID, sData);
     m_wingSquads.emplace(wingID, m_squadID);
 
@@ -213,9 +203,7 @@ void FleetService::CreateSquad(uint32 fleetID, uint32 wingID)
         m_services->lsc_service->CreateSystemChannel(m_squadID);
 
     std::list<int32> wing, squad;
-    wing.clear();
     wing.emplace(wing.end(), wingID);
-    squad.clear();
     squad.emplace(squad.end(), m_squadID);
     UpdateBoost(fleetID, true, wing, squad);
 
@@ -295,8 +283,6 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
     pClient->SendNotification("OnFleetActive", "clientID", count, true);
 
     std::list<int32> wing, squad;
-    wing.clear();
-    squad.clear();
 
     if (IsWingID(wingID)) {
         std::map<uint32, WingData>::iterator itr = m_wingDataMap.find(wingID);
@@ -379,8 +365,6 @@ bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, 
 {
     bool fleet(false);
     std::list<int32> wing, squad;
-    wing.clear();
-    squad.clear();
     int8 oldRole(0), oldJob(0), oldBooster(0);
     int32 oldWingID(0), oldSquadID(0);
     // verify member data
@@ -603,7 +587,6 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
     // check squad boost updates....sb overwriting higher boosts
     if (fleet) {
         // update all fleet members due to fleet booster update
-        wingIDs.clear();
         GetWingIDs(fleetID, wingIDs);
         for (auto wingID : wingIDs) {
             if (!IsWingID(wingID))        // if WingID is invalid, remove it from map!!
@@ -617,8 +600,6 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
                 bData.skirmish  = fData.skirmish;
             }
             SetWingBoostData(wingID, bData);
-
-            squadIDs.clear();
             GetSquadIDs(wingID, squadIDs);
             for (auto &squadID : squadIDs) {
                 if (!IsSquadID(squadID))
@@ -647,8 +628,6 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
                 bData.skirmish  = fData.skirmish;
             }
             SetWingBoostData(wingID, bData);
-
-            squadIDs.clear();
             GetSquadIDs(wingID, squadIDs);
             for (auto &squadID : squadIDs) {
                 if (!IsSquadID(squadID))
@@ -1002,7 +981,6 @@ void FleetService::DeleteFleet(uint32 fleetID)
     GetWingIDs(fleetID, wings);
     for (auto wing : wings) {
         m_wingDataMap.erase(wing);
-        squads.clear();
         GetSquadIDs(wing, squads);
         for (auto &squad : squads)
             m_squadDataMap.erase(squad);
@@ -1234,7 +1212,6 @@ void FleetService::RemoveMember(Client* pClient)
 PyRep* FleetService::GetWings(uint32 fleetID)
 {
     std::vector< uint32 > wingIDs, squadIDs;
-    wingIDs.clear();
     GetWingIDs(fleetID, wingIDs);
     PyDict* dict = new PyDict();
     for (auto &wingID : wingIDs) {
@@ -1696,7 +1673,6 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
     /** @todo  add system checks in here */
     Character* pChar(nullptr);
     std::ostringstream str;
-    str.clear();
 
     bool fboost(false);
     FleetData fData = FleetData();
@@ -1763,13 +1739,13 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
         fboost = false;
     }
 
+    bool wboost(false);
     std::vector< uint32 > wingIDs, squadIDs;
-    wingIDs.clear();
     GetWingIDs(fleetID, wingIDs);
     for (auto wingID : wingIDs) {
         if (!IsWingID(wingID))
             continue;
-        bool wboost(false);
+        wboost = false;
         WingData wData = WingData();
         GetWingData(wingID, wData);
         if ((wData.leader != nullptr) and (wData.leader->IsInSpace()) and (pChar = wData.leader->GetChar().get()) != nullptr) {
@@ -1799,22 +1775,23 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
         if ((wData.booster != nullptr) and (wData.booster->IsInSpace()) and (pChar = wData.booster->GetChar().get()) != nullptr) {
             if ((wData.leader != nullptr) and (wData.leader->IsInSpace()) and (wData.leader->GetSystemID() == wData.booster->GetSystemID())) {
                 if (pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1)
-                    or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
-                    or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1)) {
+                or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
+                or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1)) {
                     if (wboost) {
                         str << "<color=green>";
                     } else {
                         str << "<color=yellow>";
                     }
+                } else {
+                    if (wboost) {
+                        str << "<color=yellow>";
                     } else {
-                        if (wboost) {
-                            str << "<color=yellow>";
-                        } else {
-                            str << "<color=red>";
-                        }
-                        wboost = false;
+                        str << "<color=red>";
                     }
-                    length += 14;
+                    wboost = false;
+                }
+
+                length += 14;
             } else {
                 str << "<color=red> (Not In System)";
                 wboost = false;
@@ -1833,7 +1810,6 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
             wboost = false;
         }
 
-        squadIDs.clear();
         GetSquadIDs(wingID, squadIDs);
         for (auto &squadID : squadIDs) {
             if (!IsSquadID(squadID))
@@ -1868,22 +1844,23 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
             if ((sData.booster != nullptr) and (sData.booster->IsInSpace()) and (pChar = sData.booster->GetChar().get()) != nullptr) {
                 if ((sData.leader != nullptr) and (sData.leader->IsInSpace()) and (sData.leader->GetSystemID() == sData.booster->GetSystemID())) {
                     if (pChar->HasSkillTrainedToLevel(EvESkill::ArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::InformationWarfare, 1)
-                        or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
-                        or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1)) {
+                    or pChar->HasSkillTrainedToLevel(EvESkill::SiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(EvESkill::SkirmishWarfare, 1)
+                    or pChar->HasSkillTrainedToLevel(EvESkill::MiningForeman, 1)) {
                         if (sboost) {
                             str << "<color=green>";
                         } else {
                             str << "<color=yellow>";
                         }
+                    } else {
+                        if (sboost) {
+                            str << "<color=yellow>";
                         } else {
-                            if (sboost) {
-                                str << "<color=yellow>";
-                            } else {
-                                str << "<color=red>";
-                            }
-                            sboost = false;
+                            str << "<color=red>";
                         }
-                        length += 14;
+                    sboost = false;
+                    }
+
+                    length += 14;
                 } else {
                     str << "<color=red> (Not In System)";
                     sboost = false;

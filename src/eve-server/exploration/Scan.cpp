@@ -36,11 +36,9 @@
 
 Scan::Scan(Client* pClient)
 : m_client(pClient),
-  m_system(pClient->SystemMgr())
+  m_system(pClient->SystemMgr()),
+  m_probeScan(false)
 {
-    m_probeScan = false;
-    m_probeMap.clear();
-    m_activeProbeMap.clear();
 }
 
 void Scan::AddProbe(ProbeSE* pProbe)
@@ -91,7 +89,7 @@ void Scan::ProcessScan(bool useProbe/*false*/)
         }
         SystemScanStarted(duration);
     }
-    _log(SCAN__TRACE, "ProcessScan() - probes - active:%u, total:%u, duration: %u, idle: %s", \
+    _log(SCAN__TRACE, "ProcessScan() - probes - active:%lu, total:%u, duration: %lu, idle: %s", \
                 m_activeProbeMap.size(), m_probeMap.size(), duration, idle?"true":"false");
     m_client->SetScanTimer(duration, true);
 }
@@ -153,7 +151,7 @@ void Scan::RequestScans(PyDict* dict) {
         return;
     }
 
-    _log(SCAN__MESSAGE, "Scan::RequestScans() called by %s in %s using %u probes.",\
+    _log(SCAN__MESSAGE, "Scan::RequestScans() called by %s in %s using %lu probes.",\
             m_client->GetName(), m_client->GetSystemName().c_str(), dict->size());
 
     uint32 probeID(0);
@@ -463,8 +461,8 @@ struct CosmicSignature {
                         probeVec.push_back(cur.second);
                     }
                     _log(SCAN__DEBUG, "Scan::GetProbeDataForSig()  scan range for probe %u: %.2fAU, distance to signal '%s' -> %.2fAU - %s",\
-                            cur.first, cur.second->GetScanRange() /ONE_AU_IN_METERS, data.sig.sigName.c_str(), \
-                            dist /ONE_AU_IN_METERS, hit?"hit":"miss");
+                            cur.first, cur.second->GetScanRange() / ONE_AU_IN_METERS, data.sig.sigName.c_str(), \
+                            dist / ONE_AU_IN_METERS, hit?"hit":"miss");
                 } else {
                     _log(SCAN__TRACE, "Scan::GetProbeDataForSig()  probe %u cannot scan signal %s", cur.first, data.sig.sigName.c_str());
                 }
@@ -496,8 +494,8 @@ struct CosmicSignature {
                     probeVec.push_back(cur.second);
                 }
                 _log(SCAN__DEBUG, "Scan::GetProbeDataForSig()  scan range for probe %u: %.2fAU, distance to signal '%s' -> %.2fAU - %s",\
-                        cur.first, cur.second->GetScanRange() /ONE_AU_IN_METERS, data.sig.sigName.c_str(), \
-                        dist /ONE_AU_IN_METERS, hit?"hit":"miss");
+                        cur.first, cur.second->GetScanRange() / ONE_AU_IN_METERS, data.sig.sigName.c_str(), \
+                        dist / ONE_AU_IN_METERS, hit?"hit":"miss");
             } break;
         }
         hit = false;

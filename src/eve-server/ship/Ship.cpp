@@ -32,7 +32,6 @@ m_isPopped(false),
 m_isDocking(false),
 m_isUndocking(false)
 {
-    m_onlineModuleVec.clear();
     pInventory = new Inventory(InventoryItemRef(this));
 
     _log(ITEM__TRACE, "Created ShipItem for %s(%u).", name(), itemID());
@@ -1730,7 +1729,6 @@ void ShipItem::OfflineGroup(GenericModule* pMod)
 void ShipItem::SaveWeaponGroups()
 {
     std::multimap< uint32, uint32 > data;
-    data.clear();
     if (!m_linkedWeapons.empty())
         for (auto &cur : m_linkedWeapons)
             for (auto &slave : cur.second)
@@ -2206,9 +2204,8 @@ PyDict* ShipItem::GetShipState() {
     // Create entry for ShipItem itself:
     result->SetItem(new PyInt(itemID()), GetItemStatusRow());
     // Check for and Create entry for pilot:
-    InventoryItemRef iRefPilot(nullptr);
-    if (pInventory->GetShipPilot(flagPilot, iRefPilot))
-        result->SetItem(new PyInt(iRefPilot->itemID()), iRefPilot->GetItemStatusRow());
+    if (m_pilot != nullptr)
+        result->SetItem(new PyInt(m_pilot->GetCharID()), m_pilot->GetChar()->GetItemStatusRow());
 
     // Create entries for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;

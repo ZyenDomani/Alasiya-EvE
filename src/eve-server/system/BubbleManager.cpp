@@ -45,10 +45,6 @@ BubbleManager::BubbleManager()
 m_emptyTimer(0),
 m_bubbleID(0)
 {
-    m_bubbles.clear();
-    m_wanderers.clear();
-    m_bubbleIDMap.clear();
-    m_sysBubbleMap.clear();
 }
 
 BubbleManager::~BubbleManager() {
@@ -83,7 +79,6 @@ void BubbleManager::Process() {
     }
 
     if (m_wanderTimer.Check()) {    //60s
-        m_wanderers.clear();
         std::list<SystemBubble*>::iterator itr = m_bubbles.begin();
         while (itr != m_bubbles.end()) {
             if (*itr == nullptr) {

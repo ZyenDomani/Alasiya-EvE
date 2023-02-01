@@ -449,7 +449,6 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
      */
 
     std::map<uint32, InventoryItemRef> invMap;
-    invMap.clear();
 
     InventoryItem* item(nullptr);
     Inventory* inv(nullptr);
@@ -516,7 +515,6 @@ PyResult Command_shipinventory(Client* pClient, CommandDB* db, PyServiceMgr* ser
      */
 
     std::map<uint32, InventoryItemRef> invMap;
-    invMap.clear();
     uint32 inventoryID = pClient->GetShipID();
     ShipItemRef ship = sItemFactory.GetShipRef(inventoryID);
     Inventory* inv = ship->GetMyInventory();

@@ -23,9 +23,6 @@ MapData::MapData()
 : m_stationExtraInfo(nullptr),
 m_pseudoSecurities(nullptr)
 {
-    m_regionJumps.clear();
-    m_constJumps.clear();
-    m_systemJumps.clear();
 }
 
 void MapData::Close()
@@ -243,21 +240,18 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
 void MapData::GetPlanets(uint32 systemID) {
     uint8 total = 0;
     std::vector<DBGPointEntity> planetIDs;
-    planetIDs.clear();
     MapDB::GetPlanets(systemID, planetIDs, total);
 }
 
 void MapData::GetMoons(uint32 systemID) {
     uint8 total = 0;
     std::vector<DBGPointEntity> moonIDs;
-    moonIDs.clear();
     MapDB::GetMoons(systemID, moonIDs, total);
 }
 
 const GPoint MapData::GetRandPointOnPlanet(uint32 systemID) {
     uint8 total = 0;
     std::vector<DBGPointEntity> planetIDs;
-    planetIDs.clear();
     MapDB::GetPlanets(systemID, planetIDs, total);
 
     if (planetIDs.empty())
@@ -270,7 +264,6 @@ const GPoint MapData::GetRandPointOnPlanet(uint32 systemID) {
 const GPoint MapData::GetRandPointOnMoon(uint32 systemID) {
     uint8 total = 0;
     std::vector<DBGPointEntity> moonIDs;
-    moonIDs.clear();
     MapDB::GetMoons(systemID, moonIDs, total);
 
     if (moonIDs.empty())
@@ -283,7 +276,6 @@ const GPoint MapData::GetRandPointOnMoon(uint32 systemID) {
 uint32 MapData::GetRandPlanet(uint32 systemID) {
     uint8 total = 0;
     std::vector<DBGPointEntity> planetIDs;
-    planetIDs.clear();
     MapDB::GetPlanets(systemID, planetIDs, total);
 
     if (planetIDs.empty())
@@ -296,7 +288,6 @@ uint32 MapData::GetRandPlanet(uint32 systemID) {
 const GPoint MapData::Get2RandPlanets(uint32 systemID) {
     uint8 total = 0;
     std::vector<DBGPointEntity> planetIDs;
-    planetIDs.clear();
     MapDB::GetPlanets(systemID, planetIDs, total);
     /** @todo finish this */
     return NULL_ORIGIN;
@@ -305,7 +296,6 @@ const GPoint MapData::Get2RandPlanets(uint32 systemID) {
 const GPoint MapData::Get3RandPlanets(uint32 systemID) {
     uint8 total = 0;
     std::vector<DBGPointEntity> planetIDs;
-    planetIDs.clear();
     MapDB::GetPlanets(systemID, planetIDs, total);
     /** @todo finish this */
 
@@ -315,7 +305,6 @@ const GPoint MapData::Get3RandPlanets(uint32 systemID) {
 uint32 MapData::GetRandMoon(uint32 systemID) {
     uint8 total = 0;
     std::vector<DBGPointEntity> moonIDs;
-    moonIDs.clear();
     MapDB::GetMoons(systemID, moonIDs, total);
 
     if (moonIDs.empty())
@@ -335,7 +324,6 @@ const GPoint MapData::GetAnomalyPoint(SystemManager* pSys)
 {
     uint8 total = 0;
     std::vector<DBGPointEntity> planetIDs;
-    planetIDs.clear();
     MapDB::GetPlanets(pSys->GetID(), planetIDs, total);
 
     SystemEntity* pSE(pSys->GetSE(planetIDs[MakeRandomInt(0, total)].itemID));
@@ -349,7 +337,6 @@ const GPoint MapData::GetAnomalyPoint(uint32 systemID)
 {
     uint8 total = 0;
     std::vector<DBGPointEntity> planetIDs;
-    planetIDs.clear();
     MapDB::GetPlanets(systemID, planetIDs, total);
     GPoint pos(planetIDs[MakeRandomInt(0, total)].position);
     pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS / 3, ONE_AU_IN_METERS * 4);

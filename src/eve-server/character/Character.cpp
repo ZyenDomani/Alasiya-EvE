@@ -291,7 +291,6 @@ bool Character::_Load() {
     m_loaded = InventoryItem::_Load();
 
     if (m_loaded) {
-        m_certificates.clear();
         if (!m_cdb.LoadCertificates(m_itemID, m_certificates)) {
             sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", m_itemID);
             return (m_loaded = false);
@@ -1195,7 +1194,6 @@ PyDict *Character::GetCharInfo() {
 
     //now encode skills...
     std::vector<InventoryItemRef> skills;
-    skills.clear();
     //find all the skills contained within ourself.
     pInventory->GetItemsByFlag(flagSkill, skills);
     pInventory->GetItemsByFlag(flagSkillInTraining, skills);

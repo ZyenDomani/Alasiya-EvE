@@ -123,9 +123,11 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_skillTimer = 0;
     m_dockStationID = 0;
 
+    /*
     m_lpMap.clear();
     m_channels.clear();
     m_hangarLoaded.clear();
+    */
 
     // Start handshake
     Reset();
@@ -677,8 +679,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             m_fleetTimer.Disable();
             if (IsFleetBooster()) {
                 std::list<int32> wing, squad;
-                wing.clear();
-                squad.clear();
                 if (IsSquadID(m_squad)) {
                     squad.emplace(squad.end(), m_squad);
                 } else if (IsWingID(m_wing)) {
@@ -714,8 +714,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             m_fleetTimer.Start(Player::Timer::Fleet);
             if (IsFleetBooster()) {
                 std::list<int32> wing, squad;
-                wing.clear();
-                squad.clear();
                 if (IsSquadID(m_squad)) {
                     squad.emplace(squad.end(), m_squad);
                 } else if (IsWingID(m_wing)) {
@@ -1806,7 +1804,6 @@ void Client::CharNoLongerInStation() {
     if (tmp == nullptr)
         return;
     std::vector<Client*> clients;
-    clients.clear();
     sEntityList.GetStationGuestList(m_stationData.stationID, clients);
     for (auto &cur : clients) {
         PyIncRef(tmp);
@@ -1827,7 +1824,6 @@ void Client::CharNowInStation() {
         ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : PyStatic.NewNone());
     PyTuple* tmp = ocnis.Encode();
     std::vector<Client*> clients;
-    clients.clear();
     sEntityList.GetStationGuestList(m_locationID, clients);
     for (auto &cur : clients) {
         PySafeIncRef(tmp);

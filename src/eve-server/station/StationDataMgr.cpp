@@ -12,19 +12,6 @@
 #include "database/EVEDBUtils.h"
 
 
-StationDataMgr::StationDataMgr()
-{
-    m_serviceMask.clear();
-    m_stationData.clear();
-    m_stationPyData.clear();
-    m_stationOfficeData.clear();
-}
-
-StationDataMgr::~StationDataMgr()
-{
-    //Clear();
-}
-
 int StationDataMgr::Initialize()
 {
     Populate();

@@ -19,14 +19,11 @@
 #include "inventory/ItemFactory.h"
 
 MissionDataMgr::MissionDataMgr()
+ : m_procCount(0),
+ KillPNG(nullptr),
+ MiningPNG(nullptr),
+ CourierPNG(nullptr)
 {
-    m_procCount = 0;
-    m_names.clear();
-    m_offers.clear();
-    m_mining.clear();
-    m_courier.clear();
-    m_xoffers.clear();
-    m_missions.clear();
 }
 
 MissionDataMgr::~MissionDataMgr()

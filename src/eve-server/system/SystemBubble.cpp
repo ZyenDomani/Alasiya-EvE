@@ -51,26 +51,19 @@ m_sbuSE(nullptr),
 m_ihubSE(nullptr),
 m_towerSE(nullptr),
 m_centerSE(nullptr),
-m_spawnTimer(0)
+m_spawnTimer(0),
+m_ice(false),
+m_belt(false),
+m_gate(false),
+m_anomaly(false),
+m_mission(false),
+m_spawned(false),
+m_incursion(false),
+m_hasBubble(false),
+m_hasMarkers(false),
+m_systemID(pSystem->GetID()),
+m_bubbleID(sBubbleMgr.GetBubbleID())
 {
-    m_ice = false;
-    m_belt = false;
-    m_gate = false;
-    m_anomaly = false;
-    m_mission = false;
-    m_spawned = false;
-    m_incursion = false;
-    m_hasBubble = false;
-    m_hasMarkers = false;
-
-    m_markers.clear();
-    m_players.clear();
-    m_entities.clear();
-    m_dynamicEntities.clear();
-
-    m_systemID = pSystem->GetID();
-    m_bubbleID = sBubbleMgr.GetBubbleID();
-
     _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f)[%.1f].",\
 	     m_bubbleID, this, m_center.x, m_center.y, m_center.z, m_radius);
 }

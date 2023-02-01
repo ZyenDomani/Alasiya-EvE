@@ -58,17 +58,16 @@ PyResult StationService::Handle_GetSolarSystem(PyCallArgs &call) {
 
 PyResult StationService::Handle_GetGuests(PyCallArgs &call) {
     std::vector<Client*> clients;
-    clients.clear();
     sEntityList.GetStationGuestList(call.client->GetStationID(), clients);
     PyList* res = new PyList();
     for (auto &cur : clients) {
         PyTuple* t = new PyTuple(4);
-			t->items[0] = new PyInt(cur->GetCharacterID());
-			t->items[1] = new PyInt(cur->GetCorporationID());
-			t->items[2] = new PyInt(cur->GetAllianceID());
-			t->items[3] = new PyInt(cur->GetWarFactionID());
+            t->items[0] = new PyInt(cur->GetCharacterID());
+            t->items[1] = new PyInt(cur->GetCorporationID());
+            t->items[2] = new PyInt(cur->GetAllianceID());
+            t->items[3] = new PyInt(cur->GetWarFactionID());
         res->AddItem(t);
     }
 
-	return res;
+    return res;
 }

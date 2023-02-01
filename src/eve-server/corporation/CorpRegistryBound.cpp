@@ -366,7 +366,6 @@ PyResult CorpRegistryBound::Handle_GetSuggestedTickerNames(PyCallArgs &call)
 
     PyList* result = new PyList();
     SuggestedTickerName sTN;
-    sTN.tName.clear();
     uint32 cnLen = args.arg.length();
     // Easiest ticker-generation method: get the capital letters.
     for (uint32 i=0; i < cnLen; ++i)
@@ -386,7 +385,6 @@ PyResult CorpRegistryBound::Handle_GetSuggestedAllianceShortNames(PyCallArgs &ca
     }
     PyList* result = new PyList();
     SuggestedShortName sSN;
-    sSN.sName.clear();
     uint32 cnLen = args.arg.length();
     // Easiest ticker-generation method: get the capital letters.
     for (uint32 i=0; i < cnLen; ++i)
@@ -934,7 +932,6 @@ PyResult CorpRegistryBound::Handle_CreateRecruitmentAd(PyCallArgs &call) {
     int32 adID = m_db.CreateAdvert(call.client, m_corpID, args.typeMask, args.days, m_db.GetCorpMemberCount(m_corpID), args.description, args.channelID, args.title);
 
     std::vector<int32> recruiters;
-    recruiters.clear();
     for (PyList::const_iterator itr = args.recruiters->begin(); itr != args.recruiters->end(); itr++)
         recruiters.push_back(PyRep::IntegerValue(*itr));
     //recruiters.push_back((*itr)->AsInt()->value());
@@ -999,7 +996,6 @@ PyResult CorpRegistryBound::Handle_UpdateRecruitmentAd(PyCallArgs &call) {
     m_db.UpdateAdvert(args.adID, m_corpID, args.typeMask, days, m_db.GetCorpMemberCount(m_corpID), args.description, args.channelID, args.title);
 
     std::vector<int32> recruiters;
-    recruiters.clear();
     for (PyList::const_iterator itr = args.recruiters->begin(); itr != args.recruiters->end(); itr++)
         recruiters.push_back(PyRep::IntegerValue(*itr));
 

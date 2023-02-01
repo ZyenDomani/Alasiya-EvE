@@ -22,8 +22,6 @@ class StationDataMgr
 : public Singleton< StationDataMgr >
 {
 public:
-    StationDataMgr();
-    ~StationDataMgr();
 
     int                 Initialize();
 
