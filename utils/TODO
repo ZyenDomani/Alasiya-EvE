@@ -20,6 +20,10 @@ other updates?
 *******************************************************
 **********  errors and other found shit...high priority
 
+TEST THIS!!!
+remove 'new' from Py* objects  { PyDict dict = PyDict(); }   will this work?
+
+check default init on struct objects.  coverity is showing 'uninitialized member x' but could be false positive
 
 !! destiny (all space movement)
 -- even with heading identical (client and server) there is still some deviation after turning...i dont understand where its from
@@ -119,15 +123,36 @@ char creation - figure certs and set skills accordingly
 *******************************************************
 **********  coding errors/corrections/improvements ...med priority
 
-initial handshake packets may need work due to missing data.
-see file:///home/allan/Desktop/eve_packets/aknor/crucible/1.5.4/03272012-02-13-aknor_jaden_crucible-login_inspace_154.log
-    and maybe others  (this one is missing some data due to sniffer hiccup)
+after delaring an stl container (std::vector<int> x; ), x.clear() is redundant
 
-Coverity found more
+really, entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
+Inv::GetItems pass by ref
+Inv::AddItem(...)   need to find and remove skill in training flag here for proper skill search
+  - test this.  what about skill training incomplete on char login/load??
+Inventory::GetShipPilot() should be removed from inventory code...way too much overhead for simple check
+  - this should be shipItem query (mPilot?) as its' set when ship is boarded
+Inventory::GetInventoryMap   are there existing objects in map before this call.  find caller and check
+
+InventoryItemRef -> c'tor....copy?  move?  default?  wtf?
+
+InventoryItem - multiple remove calls....trace and fix
+
+Coverity found more shit
 ImageServer::GetImage - fclose(fp)
 character skill queue loop - //PySafeDecRef(list); leaks
 temp object going out of scope - return (uptime.str().c_str());
+Scan()  code needs a quick lookover   invalid %u, operator spacing, more
+TradeService.h  - let gcc create c'tor/d'tor (remove decs)
+AnomalyMgr - init remaining members in c'tor
+ImageServerConnection() - init members _size, _id
+AgentBound:836  dropoffLocation leaks
+CorpRegistryBound.cpp:761   updates leaks
+CorpStationMgr.cpp:381  dict leaks
+sysmgr - SetDockCount  --  uint <= 0 is never true
 
+initial handshake packets may need work due to missing data.
+see file:///home/allan/Desktop/eve_packets/aknor/crucible/1.5.4/03272012-02-13-aknor_jaden_crucible-login_inspace_154.log
+    and maybe others  (this one is missing some data due to sniffer hiccup)
 
 look into benefits of changing skillQueue from vector to list (suggested for multiple/often add/delete ops)
 
@@ -147,8 +172,6 @@ remove GPoint/GVector code and replace with evemoo's Vec3 code (after thorough r
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
     - every 60s for every bubble object is a bit much.
     - check InBubble and IsOverlap code.
-
-InventoryItem - multiple remove calls....trace and fix
 
 remove character queries from InventoryDB
 remove station/static queries from InventoryDB
@@ -205,6 +228,8 @@ RAM code - implement invention, re    -priority level: low
     - invention and re will need lots of work
     - data interface dont show on install job tab (dunno why)
     - bpc may be a bit off (not sure why yet)
+    - (RamMethods) all bit comparison are incorrect (order of ops - compare before bitwise)
+      -- this may be the case on ALL bit comparison methods { if (mask & flag == flag)   will always return true because (flag == flag) } 
 
 blueprints - look over data and verify
     - LPRR = -11??
@@ -539,19 +564,25 @@ PyDatabase (et al.) may need d'tors coded
 
  review all classes to add rule of 5 or =delete as required
     - PyRep Classes done but still testing
-      --  ...i dont think move semantics are implemented or working for these....copy is (compiler generated - it complained)
+      --  ...i dont think move semantics are implemented or working for these....copy is compiler generated (it complained on =delete)
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?
 
-look into adding "...emplace(std::move(data))" to staticDataMgr shit  (or whatever the push_back, insert, et al command is)
 
 *******************************************************
 *******************************************************
 *****************  xmlp shit
 
-****  check ALL client tests of "IsNone" and verify data type is set correctly (pyrep instead of pyint)
-    -- pita but would potentially solve a LOT of problems.
-can also run thru code and check for anything returning "-1".  most of these should probably be "PyNone"
+add move semantics to c'tor and clone gen files
+  - enable/disable=*true/false* like encode/decode
+  - will need check to properly declare in header (head gen check)
+^^^ this wont work as expected, if i understand it correctly.
+code in question (coverity) is packets/bookmarks.cpp:590 - object = new PyObjectEx(*oth.object);
+this calls copy c'tor, creates new temp, assigns object = temp, temp goes out of scope, d'tor doesnt release, temp leaks
+   -- i guess i dont completely understand c'tor operation yet.   would this move if available?
+   -- figure a way to create/test move semantics for packet shit.
+
+check ALL client tests of "IsNone" and verify data type is set correctly (pyrep instead of pyint)
 
 (bloat fix)
 look into using "encode=*true/false*" and "decode=*true/false*" for including/omitting the bloated encode/decode sections
@@ -733,7 +764,6 @@ systemmgr - use kills object instead of db hit
     - use systemMgr to update/track kills/hour data and update db as needed (use 15m call above)
     - load kill times when system boots.  use 15m timer call (from EntityList) to update data
     ** tried this...didnt work correctly.  disabled code.  needs review
-sysmgr - SetDockCount  --  uint <= 0 is never true
 
 civilianMgr code?  i thought it was empty
 
