@@ -62,8 +62,8 @@ public:
     static bool IsProducableBy(const uint32 assemblyLineID, const ItemType *pType);
     static bool GetMultipliers(const uint32 assemblyLineID, const ItemType *pType, Rsp_InstallJob &into);
 
-    static uint32 CountManufacturingJobs(const uint32 installerID);
-    static uint32 CountResearchJobs(const uint32 installerID);
+    static uint8 CountManufacturingJobs(const uint32 installerID);
+    static uint8 CountResearchJobs(const uint32 installerID);
     static uint32 GetTech2Blueprint(const uint32 blueprintTypeID);
 
     static int64 GetNextFreeTime(const uint32 assemblyLineID);

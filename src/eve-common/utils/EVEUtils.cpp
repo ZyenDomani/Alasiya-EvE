@@ -42,18 +42,19 @@ bool IsPrintable( const PyWString* str )
 
 bool DBTYPE_IsCompatible( DBTYPE type, const PyRep* rep )
 {
-// Helper macro, checks type and range
-#define CheckTypeRangeUnsigned( type, lower_bound, upper_bound ) \
-    ( rep->Is##type() && (int64)rep->As##type()->value() >= lower_bound && (int64)rep->As##type()->value() <= upper_bound )
-#define CheckTypeRange( type, lower_bound, upper_bound ) \
-    ( rep->Is##type() && rep->As##type()->value() >= lower_bound && rep->As##type()->value() <= upper_bound )
-
     if ( rep->IsNone() )
         // represents NULL
         return true;
 
     // why is this hacked here?  is this really needed?
     return true;
+}
+/*
+// Helper macro, checks type and range
+#define CheckTypeRangeUnsigned( type, lower_bound, upper_bound ) \
+    ( rep->Is##type() && (int64)rep->As##type()->value() >= lower_bound && (int64)rep->As##type()->value() <= upper_bound )
+#define CheckTypeRange( type, lower_bound, upper_bound ) \
+    ( rep->Is##type() && rep->As##type()->value() >= lower_bound && rep->As##type()->value() <= upper_bound )
 
     switch( type )
     {
@@ -126,4 +127,4 @@ bool DBTYPE_IsCompatible( DBTYPE type, const PyRep* rep )
 
 #undef CheckTypeRange
 #undef CheckTypeRangeUnsigned
-}
+    */

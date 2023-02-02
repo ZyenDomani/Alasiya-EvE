@@ -77,7 +77,7 @@ public:
         mDeleted = true;
     }
 
-    int16 GetCount()            { return mRefCount; }
+    uint16 GetCount()           { return mRefCount; }
     bool IsDeleted()            { return mDeleted; }
 
 protected:
@@ -102,13 +102,12 @@ protected:
     void DecRef() const
     {
         if (mDeleted) {
-            _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %i", mRefCount);
+            _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %u", mRefCount);
             EvE::traceStackLN();        // this is painfully slow
             return;
         }
 
         assert( mDeleted == false );
-        assert( mRefCount > 0 );
         --mRefCount;
 
         if (mRefCount < 1)
@@ -116,7 +115,7 @@ protected:
     }
 
     /// Reference count of instance.
-    mutable int16 mRefCount;
+    mutable uint16 mRefCount;
     mutable bool mDeleted;
 };
 

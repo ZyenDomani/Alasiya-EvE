@@ -551,7 +551,7 @@ uint32 FactoryDB::InstallJob(const uint32 ownerID, const uint32 installerID, Cal
     return jobID;
 }
 
-uint32 FactoryDB::CountManufacturingJobs(const uint32 installerID) {
+uint8 FactoryDB::CountManufacturingJobs(const uint32 installerID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
@@ -576,7 +576,7 @@ uint32 FactoryDB::CountManufacturingJobs(const uint32 installerID) {
 
     return row.GetUInt(0);
 }
-uint32 FactoryDB::CountResearchJobs(const uint32 installerID) {
+uint8 FactoryDB::CountResearchJobs(const uint32 installerID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
@@ -594,10 +594,10 @@ uint32 FactoryDB::CountResearchJobs(const uint32 installerID) {
     }
 
     DBResultRow row;
-    if (!res.GetRow(row))
-        return 0;
+    if (res.GetRow(row))
+        return row.GetUInt(0);
 
-    return row.GetUInt(0);
+    return 0;
 }
 
 bool FactoryDB::GetJobProperties(const uint32 jobID, EvERam::JobProperties &data) {
@@ -653,10 +653,10 @@ uint32 FactoryDB::GetTech2Blueprint(const uint32 blueprintTypeID) {
     }
 
     DBResultRow row;
-    if (!res.GetRow(row))
-        return 0;
+    if (res.GetRow(row))
+        return row.GetUInt(0);
 
-    return row.GetUInt(0);
+    return 0;
 }
 
 int64 FactoryDB::GetNextFreeTime(const uint32 assemblyLineID) {

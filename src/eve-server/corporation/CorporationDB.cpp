@@ -59,7 +59,7 @@ bool CorporationDB::GetCorporationBySchool(uint32 schoolID, uint32 &corporationI
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res, "SELECT corporationID FROM chrSchools WHERE schoolID = %u", schoolID)) {
-        codelog(DATABASE__ERROR, "Error in query: %S", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 

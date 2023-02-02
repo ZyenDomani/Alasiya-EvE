@@ -50,7 +50,7 @@ void RamMethods::ActivityCheck(Client* const pClient, const Call_InstallJob& arg
     switch(args.activityID) {
         case EvERam::Activity::Manufacturing: {
             if (!bpRef->infinite()
-            and ((bpRef->runs() - args.runs) < 0))
+            and ((bpRef->runs() - args.runs) < 1))
                     throw UserError("RamTooManyProductionRuns");
 
             pType = &bpRef->productType();
@@ -100,8 +100,8 @@ void RamMethods::JobsCheck(Character* pChar, const Call_InstallJob& args)
 {
     if (args.activityID == EvERam::Activity::Manufacturing) {
         /** @todo i dont think this is entirely accurate.... */
-        uint32 jobCount = FactoryDB::CountManufacturingJobs(pChar->itemID());
-        uint charMaxJobs = pChar->GetAttribute(AttrManufactureSlotLimit).get_int()
+        uint8 jobCount = FactoryDB::CountManufacturingJobs(pChar->itemID());
+        uint8 charMaxJobs = pChar->GetAttribute(AttrManufactureSlotLimit).get_uint32()
                             + pChar->GetSkillLevel(EvESkill::MassProduction)
                             + pChar->GetSkillLevel(EvESkill::AdvancedMassProduction);
 
@@ -110,11 +110,11 @@ void RamMethods::JobsCheck(Character* pChar, const Call_InstallJob& args)
                     .AddAmount("current", jobCount)
                     .AddAmount("max", charMaxJobs);
     } else {
-        uint charMaxJobs = pChar->GetAttribute(AttrMaxLaborotorySlots).get_int()
+        uint8 charMaxJobs = pChar->GetAttribute(AttrMaxLaborotorySlots).get_uint32()
                             + pChar->GetSkillLevel(EvESkill::LaboratoryOperation)
                             + pChar->GetSkillLevel(EvESkill::AdvancedLaboratoryOperation);
 
-        uint32 jobCount = FactoryDB::CountResearchJobs(pChar->itemID());
+        uint8 jobCount = FactoryDB::CountResearchJobs(pChar->itemID());
         if (charMaxJobs <= jobCount)
             throw UserError("MaxResearchFacilitySlotUsageReached")
                     .AddAmount("current", jobCount)
@@ -292,34 +292,33 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
 
 void RamMethods::HangarRolesCheck(Client* const pClient, int16 flagID)
 {
-    int64 roles(pClient->GetCorpRole());
     switch (flagID) {
         case flagHangar: {
-            if ((roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1)
+            if ((pClient->GetCorpRole() & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1)
                 throw UserError("RamAccessDeniedToBOMHangar");
         } break;
         case flagCorpHangar2: {
-            if ((roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2)
+            if ((pClient->GetCorpRole() & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2)
                 throw UserError("RamAccessDeniedToBOMHangar");
         } break;
         case flagCorpHangar3: {
-            if ((roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3)
+            if ((pClient->GetCorpRole() & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3)
                 throw UserError("RamAccessDeniedToBOMHangar");
         } break;
         case flagCorpHangar4: {
-            if ((roles & Corp::Role::HangarCanTake4) != Corp::Role::HangarCanTake4)
+            if ((pClient->GetCorpRole() & Corp::Role::HangarCanTake4) != Corp::Role::HangarCanTake4)
                 throw UserError("RamAccessDeniedToBOMHangar");
         } break;
         case flagCorpHangar5: {
-            if ((roles & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5)
+            if ((pClient->GetCorpRole() & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5)
                 throw UserError("RamAccessDeniedToBOMHangar");
         } break;
         case flagCorpHangar6: {
-            if ((roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
+            if ((pClient->GetCorpRole() & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
                 throw UserError("RamAccessDeniedToBOMHangar");
         } break;
         case flagCorpHangar7: {
-            if ((roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7)
+            if ((pClient->GetCorpRole() & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7)
                 throw UserError("RamAccessDeniedToBOMHangar");
         } break;
     }
@@ -391,8 +390,9 @@ void RamMethods::VerifyCompleteJob(const Call_CompleteJob &args, EvERam::JobProp
         if (data.ownerID == pClient->GetCorporationID()) {
             if ((pClient->GetCorpRole() & Corp::Role::FactoryManager) != Corp::Role::FactoryManager)
                 throw UserError("RamCompletionAccessDeniedByCorpRole");
-        } else  // alliances not implemented
+        } else {  // alliances not implemented
             throw UserError("RamCompletionAccessDenied");
+        }
     }
 
     if (data.status != EvERam::Status::InProgress)

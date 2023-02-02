@@ -1,0 +1,1454 @@
+9
+20:23:38 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: -0.8442767, radians:2.57601, degrees:147.595
+20:23:38 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.8970963,-0.0278336,0.4409576.  m_targetHeading: -0.5210556,0.0849113,-0.8492886
+20:23:38 [TurnTrace] Destiny::Turn(1) - Hulk(140018752): diff:-1.41815,0.11274,-1.29025, pct:0.143, delta:-0.2025931,0.0161064,-0.1843209
+20:23:38 [TurnTrace] Destiny::Turn(1) - Hulk(140018752): minTurnSpeedFraction:0.279(24.416), alignTime:7.215, ASF:0.914
+20:23:38 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752): Speed Change - USF: 0.28, ASF: 0.91, TF: 0.84, PSF: 1.00, pSpeed: 79.93, mSpeed: 87.50, accel: false, decel: true, delta: 0.634
+20:23:38 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752):  USF != 0 and ship is Moving.   --Begin Decel  AccelTime: 53.80, USF: 0.28, ASF: 0.91, TF: 0.84, PSF: 1.00
+20:23:38 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.00000, timeStamp: 0.000
+20:23:38 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating for turn at 87.500 m/s (tf:0.0000 asf:1.0000 ps:79.93 psf:1.0000, sec: 0.000).
+20:23:39 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: -0.8442767, radians:2.57601, degrees:147.595
+20:23:39 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.8970963,-0.0278336,0.4409576.  m_targetHeading: -0.5210556,0.0849113,-0.8492886
+20:23:39 [TurnTrace] Destiny::Turn() - Turn decel ongoing.
+20:23:39 [TurnTrace] Destiny::Turn(2) - tf:0.000, turnStamp:2.000, degRemain:147.595, newShipHeading:0.6945031,-0.0117272,0.2566367
+20:23:39 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.07065, timeStamp: 1.000
+20:23:39 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating for turn at 83.043 m/s (tf:0.0707 asf:0.9491 ps:79.93 psf:1.0000, sec: 1.000).
+20:23:40 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: -0.5808086, radians:2.19052, degrees:125.507
+20:23:40 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.6945031,-0.0117272,0.2566367.  m_targetHeading: -0.5210556,0.0849113,-0.8492886
+20:23:40 [TurnTrace] Destiny::Turn() - Turn decel ongoing.
+20:23:40 [TurnTrace] Destiny::Turn(2) - tf:0.071, turnStamp:3.000, degRemain:125.507, newShipHeading:0.4919100,0.0043792,0.0723158
+20:23:40 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.13633, timeStamp: 2.000
+20:23:40 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating for turn at 78.900 m/s (tf:0.1363 asf:0.9017 ps:79.93 psf:1.0000, sec: 2.000).
+20:23:41 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: -0.3173405, radians:1.89372, degrees:108.502
+20:23:41 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.4919100,0.0043792,0.0723158.  m_targetHeading: -0.5210556,0.0849113,-0.8492886
+20:23:41 [TurnTrace] Destiny::Turn() - Turn decel ongoing.
+20:23:41 [TurnTrace] Destiny::Turn(2) - tf:0.136, turnStamp:4.000, degRemain:108.502, newShipHeading:0.2893169,0.0204856,-0.1120051
+20:23:41 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.19736, timeStamp: 3.000
+20:23:41 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating for turn at 75.050 m/s (tf:0.1974 asf:0.8577 ps:79.93 psf:1.0000, sec: 3.000).
+20:23:42 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: -0.0538724, radians:1.62469, degrees:93.088
+20:23:42 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.2893169,0.0204856,-0.1120051.  m_targetHeading: -0.5210556,0.0849113,-0.8492886
+20:23:42 [TurnTrace] Destiny::Turn() - Turn decel ongoing.
+20:23:42 [TurnTrace] Destiny::Turn(2) - tf:0.197, turnStamp:5.000, degRemain:93.088, newShipHeading:0.0867238,0.0365920,-0.2963260
+20:23:42 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.25407, timeStamp: 4.000
+20:23:42 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating for turn at 71.472 m/s (tf:0.2541 asf:0.8168 ps:79.93 psf:1.0000, sec: 4.000).
+20:23:43 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.2095957, radians:1.35963, degrees:77.901
+20:23:43 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.0867238,0.0365920,-0.2963260.  m_targetHeading: -0.5210556,0.0849113,-0.8492886
+20:23:43 [TurnTrace] Destiny::Turn() - Turn decel ongoing.
+20:23:43 [TurnTrace] Destiny::Turn(2) - tf:0.254, turnStamp:6.000, degRemain:77.901, newShipHeading:-0.1158694,0.0526985,-0.4806469
+20:23:43 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.30678, timeStamp: 5.000
+20:23:43 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating for turn at 68.147 m/s (tf:0.3068 asf:0.7788 ps:79.93 psf:1.0000, sec: 5.000).
+20:23:44 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.4730638, radians:1.07803, degrees:61.767
+20:23:44 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.1158694,0.0526985,-0.4806469.  m_targetHeading: -0.5210556,0.0849113,-0.8492886
+20:23:44 [TurnTrace] Destiny::Turn() - Turn decel ongoing.
+20:23:44 [TurnTrace] Destiny::Turn(2) - tf:0.307, turnStamp:7.000, degRemain:61.767, newShipHeading:-0.3184625,0.0688049,-0.6649677
+20:23:44 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.35577, timeStamp: 6.000
+20:23:44 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating for turn at 65.057 m/s (tf:0.3558 asf:0.7435 ps:79.93 psf:1.0000, sec: 6.000).
+20:23:45 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.7365319, radians:0.74287, degrees:42.563
+20:23:45 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.3184625,0.0688049,-0.6649677.  m_targetHeading: -0.5210556,0.0849113,-0.8492886
+20:23:45 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 8.00s.  ShipHeading:-0.5210556,0.0849113,-0.8492886
+6
+20:23:45 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 8.00s.  ShipHeading:-0.5210556,0.0849113,-0.8492886
+20:23:45 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.40129, timeStamp: 7.000
+20:23:45 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating for turn at 62.185 m/s (tf:0.4013 asf:0.7107 ps:79.93 psf:1.0000, sec: 7.000).
+20:23:46 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.44359, timeStamp: 8.000
+20:23:46 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:46 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.4436 asf:0.7107 sec: 8.000).
+20:23:47 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.48291, timeStamp: 9.000
+20:23:47 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:47 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.4829 asf:0.7107 sec: 9.000).
+20:23:48 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.51944, timeStamp: 10.000
+20:23:48 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:48 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.5194 asf:0.7107 sec: 10.000).
+20:23:49 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.55340, timeStamp: 11.000
+20:23:49 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:49 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.5534 asf:0.7107 sec: 11.000).
+20:23:50 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.58496, timeStamp: 12.000
+20:23:50 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:50 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.5850 asf:0.7107 sec: 12.000).
+20:23:51 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.61429, timeStamp: 13.000
+20:23:51 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:51 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.6143 asf:0.7107 sec: 13.000).
+20:23:52 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.64154, timeStamp: 14.000
+20:23:52 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:52 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.6415 asf:0.7107 sec: 14.000).
+20:23:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.66687, timeStamp: 15.000
+20:23:53 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:53 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.6669 asf:0.7107 sec: 15.000).
+20:23:54 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.69041, timeStamp: 16.000
+20:23:54 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:54 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.6904 asf:0.7107 sec: 16.000).
+20:23:55 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.71229, timeStamp: 17.000
+20:23:55 W Destiny::MoveObject(): decel = true, but psf = 0.
+20:23:55 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 62.185 m/s (tf:0.7123 asf:0.7107 sec: 17.000).
+.
+20:24:16 [DestinyError] Destiny::ProcessState() Error!  Ship Hulk(140018752) for Player Allan(90000000) - warp align/speed is incorrect, but time > shipTimeToWarp.
+20:24:16 [DestinyWarning] Warp Cap need for Hulk(140018752) for 0AU is 0.0000000000
+20:24:16 M MM::ShipWarping(): Deactivating non-warpsafe modules.
+20:24:32 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:24:32 [SpawnMsg] SpawnMgr::PrepSpawn() - faction: Angel Cartel, region 10000001. (config set false)
+20:24:32 [SpawnMsg] SpawnMgr::PrepSpawn() - m_factionGroups size is 21.
+20:24:32 [SpawnMsg] SpawnMgr::PrepSpawn() - spawnEntry - size: 7, class: Average(3).
+20:24:32 [SpawnMsg] SpawnMgr::PrepSpawn() - toSpawn size is 2.
+20:24:32 [SpawnMsg] SpawnMgr::MakeSpawn() - Creating spawn class Average for Angel Cartel in bubbleID 4 (anomaly = false).
+20:24:32 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000007):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+20:24:32 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 225.00, accel: true, decel: false, delta: 1.000
+20:24:32 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 10.22, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+20:24:32 [NPC Msg] Destiny::WarpTo() NPC Arch Angel Raider(750000007) to:4 from:13, m_targetPoint: -413718652289.73,-61530808604.18,172484323912.85  distance: 0  m_targetDistance: 1302158
+20:24:32 [SpawnTrace] MakeSpawn() adding SpawnEntry for Arch Angel Raider with ID 3 to m_spawns. Class: Average, Group:Roaming, Level: 3.
+20:24:32 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000008):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+20:24:32 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 225.00, accel: true, decel: false, delta: 1.000
+20:24:32 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 10.22, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+20:24:32 [NPC Msg] Destiny::WarpTo() NPC Arch Angel Raider(750000008) to:4 from:13, m_targetPoint: -413718650581.76,-61530800587.21,172484317502.94  distance: 8000  m_targetDistance: 1291924
+20:24:32 [SpawnTrace] MakeSpawn() adding SpawnEntry for Arch Angel Raider with ID 3 to m_spawns. Class: Average, Group:Roaming, Level: 3.
+20:24:32 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000009):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+20:24:32 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 225.00, accel: true, decel: false, delta: 1.000
+20:24:32 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 10.22, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+20:24:32 [NPC Msg] Destiny::WarpTo() NPC Arch Angel Raider(750000009) to:4 from:13, m_targetPoint: -413718650567.55,-61530802670.52,172484317601.44  distance: 4000  m_targetDistance: 1293430
+20:24:32 [SpawnTrace] MakeSpawn() adding SpawnEntry for Arch Angel Raider with ID 3 to m_spawns. Class: Average, Group:Roaming, Level: 3.
+20:24:32 [MoveTrace] Destiny::SetSpeedFraction() - Angel Defeater(750000010):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+20:24:32 [MoveTrace] Destiny::UpdateVelocity - Angel Defeater(750000010): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 225.00, accel: true, decel: false, delta: 1.000
+20:24:32 [MoveTrace] Destiny::UpdateVelocity - Angel Defeater(750000010):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 67.74, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+20:24:32 [NPC Msg] Destiny::WarpTo() NPC Angel Defeater(750000010) to:4 from:13, m_targetPoint: -413718650121.79,-61530805440.42,172484321644.87  distance: 0  m_targetDistance: 1298245
+20:24:32 [SpawnTrace] MakeSpawn() adding SpawnEntry for Angel Defeater with ID 3 to m_spawns. Class: Average, Group:Roaming, Level: 3.
+20:24:32 [SpawnTrace] MakeSpawn() completed in Ibaria(30000053) with 3 bubbles in m_bubbles and 10 entities in m_spawns.
+20:24:32 [SpawnTrace] SystemManager::DoSpawnForBubble() completed for Ibaria(30000053) in bubble 4.  1 items in m_ratBubbles
+20:24:33 [DestinyError] Destiny::ProcessState() Error!  NPC Arch Angel Raider(750000007) - warp align/speed is incorrect, but time > shipTimeToWarp.
+20:24:33 [DestinyError] Destiny::ProcessState() Error!  NPC Arch Angel Raider(750000008) - warp align/speed is incorrect, but time > shipTimeToWarp.
+20:24:33 [DestinyError] Destiny::ProcessState() Error!  NPC Arch Angel Raider(750000009) - warp align/speed is incorrect, but time > shipTimeToWarp.
+20:24:33 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.08746, timeStamp: 0.998
+20:24:33 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is accelerating at 19.679 m/s (tf:0.0875 asf:0.0875 sec: 0.998).
+20:24:33 [Service] machoNet::GetTime()
+20:24:33 [Service] machoNet::GetTime()
+20:24:33 [Service] machoNet::GetTime()
+20:24:33 [Service] machoNet::GetTime()
+20:24:33 [Service] machoNet::GetTime()
+20:24:34 [AP Msg] Destiny::WarpStop(): Hulk(140018752) - Warp complete.
+20:24:34 [MoveTrace] Destiny::SetSpeedFraction() - Hulk(140018752):   prevSpeed:26.53, fraction: 0.00, start: false, stop: false, accel: true, decel: false
+20:24:34 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752):  ship dropped out of warp.      --Begin Decel  AccelTime: 18.92, USF: 0.00, ASF: 0.47, TF: 0.40, PSF: 0.75
+20:24:34 [TurnTrace] Destiny::IsTurn() - Angel Defeater(750000010): dot: 0.0000000, radians:1.57080, degrees:90.000
+20:24:34 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.0000000,0.0000000,0.0000000.  m_targetHeading: 0.0000000,0.0000000,0.0000000
+20:24:34 [DestinyError] Destiny::Turn(0) - Angel Defeater(750000010): TargHeading is Zero/NULL/Inf.  Stopping ship.
+20:24:34 [MoveTrace] Destiny::SetSpeedFraction() - Angel Defeater(750000010):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: false, decel: false
+20:24:34 [MoveTrace] Destiny::UpdateVelocity - Angel Defeater(750000010):  USF == 0 and ship is Moving.   --Decel for Stop  AccelTime: 5.92, USF: 0.00, ASF: 0.09, TF: 0.09, PSF: 0.09
+20:24:34 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.00001, timeStamp: 0.000
+20:24:34 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 19.679 m/s (tf:0.0000 asf:0.0875 ps:19.68 psf:0.0875, sec: 0.000).
+20:24:35 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.86212, timeStamp: 27.037
+20:24:35 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 9.048 m/s (tf:0.8621 asf:0.1034 ps:65.62 psf:0.7500, sec: 27.037).
+20:24:35 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.08766, timeStamp: 1.000
+20:24:35 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 17.954 m/s (tf:0.0877 asf:0.0798 ps:19.68 psf:0.0875, sec: 1.000).
+20:24:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.87186, timeStamp: 28.037
+20:24:36 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 8.409 m/s (tf:0.8719 asf:0.0961 ps:65.62 psf:0.7500, sec: 28.037).
+20:24:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.16764, timeStamp: 2.000
+20:24:36 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 16.380 m/s (tf:0.1676 asf:0.0728 ps:19.68 psf:0.0875, sec: 2.000).
+20:24:37 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.88092, timeStamp: 29.037
+20:24:37 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 7.815 m/s (tf:0.8809 asf:0.0893 ps:65.62 psf:0.7500, sec: 29.037).
+20:24:37 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.24061, timeStamp: 3.000
+20:24:37 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 14.944 m/s (tf:0.2406 asf:0.0664 ps:19.68 psf:0.0875, sec: 3.000).
+20:24:38 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.88933, timeStamp: 30.037
+20:24:38 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 7.263 m/s (tf:0.8893 asf:0.0830 ps:65.62 psf:0.7500, sec: 30.037).
+20:24:38 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.30717, timeStamp: 4.000
+20:24:38 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 13.634 m/s (tf:0.3072 asf:0.0606 ps:19.68 psf:0.0875, sec: 4.000).
+20:24:39 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.89715, timeStamp: 31.037
+20:24:39 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 6.749 m/s (tf:0.8972 asf:0.0771 ps:65.62 psf:0.7500, sec: 31.037).
+20:24:39 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.36792, timeStamp: 5.000
+20:24:39 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 12.439 m/s (tf:0.3679 asf:0.0553 ps:19.68 psf:0.0875, sec: 5.000).
+20:24:40 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.90442, timeStamp: 32.037
+20:24:40 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 6.272 m/s (tf:0.9044 asf:0.0717 ps:65.62 psf:0.7500, sec: 32.037).
+20:24:40 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.42331, timeStamp: 6.000
+20:24:40 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 11.349 m/s (tf:0.4233 asf:0.0504 ps:19.68 psf:0.0875, sec: 6.000).
+20:24:41 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91117, timeStamp: 33.037
+20:24:41 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 5.829 m/s (tf:0.9112 asf:0.0666 ps:65.62 psf:0.7500, sec: 33.037).
+20:24:41 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.47387, timeStamp: 7.000
+20:24:41 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 10.354 m/s (tf:0.4739 asf:0.0460 ps:19.68 psf:0.0875, sec: 7.000).
+20:24:42 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91745, timeStamp: 34.037
+20:24:42 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 5.417 m/s (tf:0.9175 asf:0.0619 ps:65.62 psf:0.7500, sec: 34.037).
+20:24:42 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.51999, timeStamp: 8.000
+20:24:42 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 9.446 m/s (tf:0.5200 asf:0.0420 ps:19.68 psf:0.0875, sec: 8.000).
+20:24:42 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:24:42 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:24:42 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:24:43 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.92328, timeStamp: 35.037
+20:24:43 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 5.034 m/s (tf:0.9233 asf:0.0575 ps:65.62 psf:0.7500, sec: 35.037).
+20:24:43 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.56207, timeStamp: 9.000
+20:24:43 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 8.618 m/s (tf:0.5621 asf:0.0383 ps:19.68 psf:0.0875, sec: 9.000).
+20:24:44 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.92871, timeStamp: 36.037
+20:24:44 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 4.679 m/s (tf:0.9287 asf:0.0535 ps:65.62 psf:0.7500, sec: 36.037).
+20:24:44 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000007):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: true, decel: false
+20:24:44 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007):  ship dropped out of warp.      --Begin Decel  AccelTime: 2.28, USF: 0.00, ASF: 0.00, TF: 0.00, PSF: 0.75
+20:24:44 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000008):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: true, decel: false
+20:24:44 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008):  ship dropped out of warp.      --Begin Decel  AccelTime: 2.28, USF: 0.00, ASF: 0.00, TF: 0.00, PSF: 0.75
+20:24:44 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000009):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: true, decel: false
+20:24:44 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009):  ship dropped out of warp.      --Begin Decel  AccelTime: 2.28, USF: 0.00, ASF: 0.00, TF: 0.00, PSF: 0.75
+20:24:44 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.60047, timeStamp: 10.000
+20:24:44 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 7.862 m/s (tf:0.6005 asf:0.0349 ps:19.68 psf:0.0875, sec: 10.000).
+20:24:45 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93375, timeStamp: 37.038
+20:24:45 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 4.348 m/s (tf:0.9337 asf:0.0497 ps:65.62 psf:0.7500, sec: 37.038).
+20:24:45 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99963, timeStamp: 13.000
+20:24:45 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) has decel'd from 168.75m/s to 0.00m/s in 13.000s.
+20:24:45 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at full stop after 13.000 seconds.
+20:24:45 [MoveTrace] Destiny::Halt() - Arch Angel Raider(750000007) Halted - m_shipHeading: -0.043,-0.689,0.723
+20:24:45 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99963, timeStamp: 13.000
+20:24:45 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) has decel'd from 168.75m/s to 0.00m/s in 13.000s.
+20:24:45 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at full stop after 13.000 seconds.
+20:24:45 [MoveTrace] Destiny::Halt() - Arch Angel Raider(750000008) Halted - m_shipHeading: -0.042,-0.689,0.724
+20:24:45 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99963, timeStamp: 12.999
+20:24:45 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) has decel'd from 168.75m/s to 0.00m/s in 12.999s.
+20:24:45 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at full stop after 12.999 seconds.
+20:24:45 [MoveTrace] Destiny::Halt() - Arch Angel Raider(750000009) Halted - m_shipHeading: -0.042,-0.689,0.723
+20:24:45 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.63551, timeStamp: 11.001
+20:24:45 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 7.173 m/s (tf:0.6355 asf:0.0319 ps:19.68 psf:0.0875, sec: 11.001).
+20:24:46 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93843, timeStamp: 38.037
+20:24:46 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 4.041 m/s (tf:0.9384 asf:0.0462 ps:65.62 psf:0.7500, sec: 38.037).
+20:24:46 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.66743, timeStamp: 12.000
+20:24:46 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 6.545 m/s (tf:0.6674 asf:0.0291 ps:19.68 psf:0.0875, sec: 12.000).
+20:24:47 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.94278, timeStamp: 39.037
+20:24:47 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 3.755 m/s (tf:0.9428 asf:0.0429 ps:65.62 psf:0.7500, sec: 39.037).
+20:24:47 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000007):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+20:24:47 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 450.00, accel: true, decel: false, delta: 1.000
+20:24:47 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 10.22, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+20:24:47 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000008):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+20:24:47 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 1800.00, accel: true, decel: false, delta: 1.000
+20:24:47 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 10.22, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+20:24:47 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000009):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+20:24:47 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 1800.00, accel: true, decel: false, delta: 1.000
+20:24:47 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 10.22, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+20:24:47 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.69660, timeStamp: 13.001
+20:24:47 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 5.971 m/s (tf:0.6966 asf:0.0265 ps:19.68 psf:0.0875, sec: 13.001).
+20:24:47 [Bound] DogmaIMBound::AddTarget()
+20:24:47 [Bound] DogmaIMBound::AddTarget()
+20:24:47 [Bound] DogmaIMBound::AddTarget()
+20:24:48 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.94682, timeStamp: 40.037
+20:24:48 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 3.490 m/s (tf:0.9468 asf:0.0399 ps:65.62 psf:0.7500, sec: 40.037).
+20:24:48 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000007):   prevSpeed:0.00, fraction: 0.20, start: false, stop: false, accel: true, decel: false
+20:24:48 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007): Speed Change - USF: 0.20, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 90.00, accel: true, decel: false, delta: 1.000
+20:24:48 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 2.04, USF: 0.20, ASF: 0.00, TF: 0.00, PSF: 0.00
+20:24:48 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45554, timeStamp: 1.000
+20:24:48 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is accelerating at 40.999 m/s (tf:0.4555 asf:0.0911 sec: 1.000).
+20:24:48 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45555, timeStamp: 1.000
+20:24:48 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is accelerating at 819.994 m/s (tf:0.4556 asf:0.4556 sec: 1.000).
+20:24:48 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45557, timeStamp: 1.000
+20:24:48 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is accelerating at 820.031 m/s (tf:0.4556 asf:0.4556 sec: 1.000).
+20:24:48 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.72321, timeStamp: 14.001
+20:24:48 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 5.447 m/s (tf:0.7232 asf:0.0242 ps:19.68 psf:0.0875, sec: 14.001).
+20:24:49 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95058, timeStamp: 41.037
+20:24:49 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 3.243 m/s (tf:0.9506 asf:0.0371 ps:65.62 psf:0.7500, sec: 41.037).
+20:24:49 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70352, timeStamp: 2.000
+20:24:49 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is accelerating at 63.317 m/s (tf:0.7035 asf:0.1407 sec: 2.000).
+20:24:49 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70353, timeStamp: 2.000
+20:24:49 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is accelerating at 1266.359 m/s (tf:0.7035 asf:0.7035 sec: 2.000).
+20:24:49 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70354, timeStamp: 2.000
+20:24:49 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is accelerating at 1266.367 m/s (tf:0.7035 asf:0.7035 sec: 2.000).
+20:24:49 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.74747, timeStamp: 15.001
+20:24:49 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 4.970 m/s (tf:0.7475 asf:0.0221 ps:19.68 psf:0.0875, sec: 15.001).
+20:24:50 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95407, timeStamp: 42.037
+20:24:50 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 3.014 m/s (tf:0.9541 asf:0.0344 ps:65.62 psf:0.7500, sec: 42.037).
+20:24:50 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83857, timeStamp: 3.000
+20:24:50 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is accelerating at 75.471 m/s (tf:0.8386 asf:0.1677 sec: 3.000).
+20:24:50 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83858, timeStamp: 3.000
+20:24:50 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is accelerating at 1509.452 m/s (tf:0.8386 asf:0.8386 sec: 3.000).
+20:24:50 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83860, timeStamp: 3.000
+20:24:50 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is accelerating at 1509.479 m/s (tf:0.8386 asf:0.8386 sec: 3.000).
+20:24:50 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000009):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: true, decel: false
+20:24:50 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009): Speed Change - USF: 1.00, ASF: 0.84, TF: 0.84, PSF: 0.84, pSpeed: 377.37, mSpeed: 1800.00, accel: true, decel: false, delta: 0.161
+20:24:50 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009):  USF != 0 and ship is Moving.   --Begin Accel  AccelTime: 1.65, USF: 1.00, ASF: 0.84, TF: 0.84, PSF: 0.84
+20:24:50 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.76962, timeStamp: 16.001
+20:24:50 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 4.534 m/s (tf:0.7696 asf:0.0202 ps:19.68 psf:0.0875, sec: 16.001).
+20:24:51 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95732, timeStamp: 43.037
+20:24:51 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.801 m/s (tf:0.9573 asf:0.0320 ps:65.62 psf:0.7500, sec: 43.037).
+20:24:51 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91210, timeStamp: 4.000
+20:24:51 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is accelerating at 82.089 m/s (tf:0.9121 asf:0.1824 sec: 4.000).
+20:24:51 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91211, timeStamp: 4.000
+20:24:51 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is accelerating at 1641.791 m/s (tf:0.9121 asf:0.9121 sec: 4.000).
+20:24:51 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000008):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: true, decel: false
+20:24:51 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008): Speed Change - USF: 1.00, ASF: 0.91, TF: 0.91, PSF: 0.91, pSpeed: 410.45, mSpeed: 1800.00, accel: true, decel: false, delta: 0.088
+20:24:51 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008):  USF != 0 and ship is Moving.   --Begin Accel  AccelTime: 0.90, USF: 1.00, ASF: 0.91, TF: 0.91, PSF: 0.91
+20:24:51 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000009):   prevSpeed:377.37, fraction: 0.20, start: false, stop: false, accel: true, decel: false
+20:24:51 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009): Speed Change - USF: 0.20, ASF: 0.84, TF: 0.84, PSF: 0.84, pSpeed: 377.37, mSpeed: 1800.00, accel: false, decel: true, delta: 0.639
+20:24:51 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009):  USF != 0 and ship is Moving.   --Begin Decel  AccelTime: 6.53, USF: 0.20, ASF: 0.84, TF: 0.84, PSF: 0.84
+20:24:51 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45548, timeStamp: 1.000
+20:24:51 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 246.477 m/s (tf:0.4555 asf:0.5477 ps:377.37 psf:0.8386, sec: 1.000).
+20:24:51 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.78981, timeStamp: 17.001
+20:24:51 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 4.136 m/s (tf:0.7898 asf:0.0184 ps:19.68 psf:0.0875, sec: 17.001).
+20:24:52 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96033, timeStamp: 44.037
+20:24:52 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.603 m/s (tf:0.9603 asf:0.0298 ps:65.62 psf:0.7500, sec: 44.037).
+20:24:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97822, timeStamp: 6.295
+20:24:53 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is accelerating at 88.040 m/s (tf:0.9782 asf:0.1956 sec: 6.295).
+20:24:53 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000008):   prevSpeed:410.45, fraction: 0.20, start: false, stop: false, accel: true, decel: false
+20:24:53 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008): Speed Change - USF: 0.20, ASF: 0.91, TF: 0.91, PSF: 0.91, pSpeed: 410.45, mSpeed: 1800.00, accel: false, decel: true, delta: 0.712
+20:24:53 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008):  USF != 0 and ship is Moving.   --Begin Decel  AccelTime: 7.28, USF: 0.20, ASF: 0.91, TF: 0.91, PSF: 0.91
+20:24:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.75226, timeStamp: 2.295
+20:24:53 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 169.386 m/s (tf:0.7523 asf:0.3764 ps:410.45 psf:0.9121, sec: 2.295).
+20:24:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.86509, timeStamp: 3.295
+20:24:53 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 128.769 m/s (tf:0.8651 asf:0.2862 ps:377.37 psf:0.8386, sec: 3.295).
+20:24:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.82972, timeStamp: 19.296
+20:24:53 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 3.351 m/s (tf:0.8297 asf:0.0149 ps:19.68 psf:0.0875, sec: 19.296).
+20:24:53 [Bound] DogmaIMBound::Activate()
+20:24:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96393, timeStamp: 45.335
+20:24:53 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.367 m/s (tf:0.9639 asf:0.0271 ps:65.62 psf:0.7500, sec: 45.335).
+20:24:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97826, timeStamp: 6.298
+20:24:53 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is accelerating at 88.043 m/s (tf:0.9783 asf:0.1957 sec: 6.298).
+20:24:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.75258, timeStamp: 2.298
+20:24:53 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 169.284 m/s (tf:0.7526 asf:0.3762 ps:410.45 psf:0.9121, sec: 2.298).
+20:24:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.86527, timeStamp: 3.297
+20:24:53 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 128.718 m/s (tf:0.8653 asf:0.2860 ps:377.37 psf:0.8386, sec: 3.297).
+20:24:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.82975, timeStamp: 19.299
+20:24:53 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 3.350 m/s (tf:0.8298 asf:0.0149 ps:19.68 psf:0.0875, sec: 19.299).
+20:24:54 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96574, timeStamp: 46.038
+20:24:54 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.248 m/s (tf:0.9657 asf:0.0257 ps:65.62 psf:0.7500, sec: 46.038).
+20:24:54 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98582, timeStamp: 7.001
+20:24:54 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is accelerating at 88.724 m/s (tf:0.9858 asf:0.1972 sec: 7.001).
+20:24:54 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83862, timeStamp: 3.000
+20:24:54 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 141.715 m/s (tf:0.8386 asf:0.3149 ps:410.45 psf:0.9121, sec: 3.000).
+20:24:54 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91212, timeStamp: 4.000
+20:24:54 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 115.255 m/s (tf:0.9121 asf:0.2561 ps:377.37 psf:0.8386, sec: 4.000).
+20:24:54 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.84039, timeStamp: 20.002
+20:24:54 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 3.141 m/s (tf:0.8404 asf:0.0140 ps:19.68 psf:0.0875, sec: 20.002).
+20:24:55 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96816, timeStamp: 47.037
+20:24:55 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.089 m/s (tf:0.9682 asf:0.0239 ps:65.62 psf:0.7500, sec: 47.037).
+20:24:55 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99228, timeStamp: 8.000
+20:24:55 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is accelerating at 89.305 m/s (tf:0.9923 asf:0.1985 sec: 8.000).
+20:24:55 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91211, timeStamp: 4.000
+20:24:55 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 118.166 m/s (tf:0.9121 asf:0.2626 ps:410.45 psf:0.9121, sec: 4.000).
+20:24:55 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95214, timeStamp: 5.000
+20:24:55 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 103.754 m/s (tf:0.9521 asf:0.2306 ps:377.37 psf:0.8386, sec: 5.000).
+20:24:55 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.85437, timeStamp: 21.001
+20:24:55 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 2.866 m/s (tf:0.8544 asf:0.0127 ps:19.68 psf:0.0875, sec: 21.001).
+20:24:56 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97041, timeStamp: 48.037
+20:24:56 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.942 m/s (tf:0.9704 asf:0.0222 ps:65.62 psf:0.7500, sec: 48.037).
+20:24:56 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99579, timeStamp: 9.000
+20:24:56 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is accelerating at 89.621 m/s (tf:0.9958 asf:0.1992 sec: 9.000).
+20:24:56 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95214, timeStamp: 5.000
+20:24:56 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 105.338 m/s (tf:0.9521 asf:0.2341 ps:410.45 psf:0.9121, sec: 5.000).
+20:24:56 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97394, timeStamp: 6.000
+20:24:56 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 97.489 m/s (tf:0.9739 asf:0.2166 ps:377.37 psf:0.8386, sec: 6.000).
+20:24:56 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.86714, timeStamp: 22.001
+20:24:56 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 2.615 m/s (tf:0.8671 asf:0.0116 ps:19.68 psf:0.0875, sec: 22.001).
+20:24:57 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97250, timeStamp: 49.037
+20:24:57 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.805 m/s (tf:0.9725 asf:0.0206 ps:65.62 psf:0.7500, sec: 49.037).
+20:24:57 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99815, timeStamp: 10.353
+20:24:57 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) has accel'd from 0.00m/s to 89.62m/s in 10.353s.
+20:24:57 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 89.621 m/s (tf:0.9982 asf:0.2000 sec: 10.353).
+20:24:57 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97897, timeStamp: 6.353
+20:24:57 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 96.739 m/s (tf:0.9790 asf:0.2150 ps:410.45 psf:0.9121, sec: 6.353).
+20:24:57 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98855, timeStamp: 7.352
+20:24:57 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 93.291 m/s (tf:0.9885 asf:0.2073 ps:377.37 psf:0.8386, sec: 7.352).
+20:24:57 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.88264, timeStamp: 23.354
+20:24:57 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 2.309 m/s (tf:0.8826 asf:0.0103 ps:19.68 psf:0.0875, sec: 23.354).
+20:24:58 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97444, timeStamp: 50.037
+20:24:58 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.677 m/s (tf:0.9744 asf:0.0192 ps:65.62 psf:0.7500, sec: 50.037).
+20:24:58 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99875, timeStamp: 11.000
+20:24:58 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 90.000 m/s (tf:0.9988 asf:0.2000 sec: 11.000).
+20:24:58 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000007):   prevSpeed:0.00, fraction: 0.20, start: true, stop: false, accel: false, decel: false
+20:24:58 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007): Speed Change - USF: 0.20, ASF: 0.20, TF: 1.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 90.00, accel: false, decel: false, delta: 1.000
+20:24:58 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007):  ASF == USF                     --No Change  AccelTime: 2.04, USF: 0.20, ASF: 0.20, TF: 1.00, PSF: 0.00
+20:24:58 W AttrMap - Get: Attribute 559 called.  not printing stacktrace.
+20:24:58 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98581, timeStamp: 7.000
+20:24:58 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 94.547 m/s (tf:0.9858 asf:0.2101 ps:410.45 psf:0.9121, sec: 7.000).
+20:24:58 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99227, timeStamp: 8.000
+20:24:58 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 92.221 m/s (tf:0.9923 asf:0.2049 ps:377.37 psf:0.8386, sec: 8.000).
+20:24:58 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.88941, timeStamp: 24.001
+20:24:58 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 2.176 m/s (tf:0.8894 asf:0.0097 ps:19.68 psf:0.0875, sec: 24.001).
+20:24:59 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97625, timeStamp: 51.037
+20:24:59 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.559 m/s (tf:0.9763 asf:0.0178 ps:65.62 psf:0.7500, sec: 51.037).
+20:24:59 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45543, timeStamp: 1.000
+20:24:59 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:1.000, Tractored:False, TractorPause:False
+20:24:59 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 45.000 m/s (tf:0.4554 asf:0.2000 sec: 1.000).
+20:24:59 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99227, timeStamp: 8.000
+20:24:59 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 92.476 m/s (tf:0.9923 asf:0.2055 ps:410.45 psf:0.9121, sec: 8.000).
+20:24:59 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99579, timeStamp: 9.000
+20:24:59 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 91.209 m/s (tf:0.9958 asf:0.2027 ps:377.37 psf:0.8386, sec: 9.000).
+20:24:59 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.89910, timeStamp: 25.001
+20:24:59 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 1.986 m/s (tf:0.8991 asf:0.0088 ps:19.68 psf:0.0875, sec: 25.001).
+20:25:00 [Service] config::GetMultiLocationsEx()
+20:25:00 W GetMultiLocationsEx: Asteroid Items (450000581) requested.
+20:25:00 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97793, timeStamp: 52.038
+20:25:00 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.448 m/s (tf:0.9779 asf:0.0166 ps:65.62 psf:0.7500, sec: 52.038).
+20:25:00 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000007): dot: 0.9919969, radians:0.12660, degrees:7.254
+20:25:00 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.5012839,0.0295507,-0.8647781.  m_targetHeading: 0.5012839,0.0295507,-0.8647781
+20:25:00 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 2.00s.  ShipHeading:0.5012839,0.0295507,-0.8647781
+20:25:00 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70365, timeStamp: 2.001
+20:25:00 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:2.001, Tractored:False, TractorPause:False
+20:25:00 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 45.000 m/s (tf:0.7037 asf:0.2000 sec: 2.001).
+20:25:00 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99579, timeStamp: 9.000
+20:25:00 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 91.348 m/s (tf:0.9958 asf:0.2030 ps:410.45 psf:0.9121, sec: 9.000).
+20:25:00 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99771, timeStamp: 10.000
+20:25:00 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 90.658 m/s (tf:0.9977 asf:0.2015 ps:377.37 psf:0.8386, sec: 10.000).
+20:25:00 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.90795, timeStamp: 26.001
+20:25:00 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 1.811 m/s (tf:0.9080 asf:0.0081 ps:19.68 psf:0.0875, sec: 26.001).
+20:25:01 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97949, timeStamp: 53.037
+20:25:01 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.346 m/s (tf:0.9795 asf:0.0154 ps:65.62 psf:0.7500, sec: 53.037).
+20:25:01 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000007): dot: 0.9917135, radians:0.12883, degrees:7.381
+20:25:01 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.5012839,0.0295507,-0.8647781.  m_targetHeading: 0.5012839,0.0295507,-0.8647781
+20:25:01 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 3.00s.  ShipHeading:0.5012839,0.0295507,-0.8647781
+20:25:01 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83857, timeStamp: 3.000
+20:25:01 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:3.000, Tractored:False, TractorPause:False
+20:25:01 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 45.000 m/s (tf:0.8386 asf:0.2000 sec: 3.000).
+20:25:01 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99771, timeStamp: 10.000
+20:25:01 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 90.734 m/s (tf:0.9977 asf:0.2016 ps:410.45 psf:0.9121, sec: 10.000).
+20:25:01 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99875, timeStamp: 11.000
+20:25:01 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) has decel'd from 377.37m/s to 90.66m/s in 11.000s.
+20:25:01 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 90.658 m/s (tf:0.9988 asf:0.2000 sec: 11.000).
+20:25:01 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91602, timeStamp: 27.001
+20:25:01 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 1.653 m/s (tf:0.9160 asf:0.0073 ps:19.68 psf:0.0875, sec: 27.001).
+20:25:02 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98094, timeStamp: 54.037
+20:25:02 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.251 m/s (tf:0.9809 asf:0.0143 ps:65.62 psf:0.7500, sec: 54.037).
+20:25:02 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000007): dot: 0.9914149, radians:0.13113, degrees:7.513
+20:25:02 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.5012839,0.0295507,-0.8647781.  m_targetHeading: 0.5012839,0.0295507,-0.8647781
+20:25:02 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 4.00s.  ShipHeading:0.5012839,0.0295507,-0.8647781
+20:25:02 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91210, timeStamp: 4.000
+20:25:02 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:4.000, Tractored:False, TractorPause:False
+20:25:02 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 45.000 m/s (tf:0.9121 asf:0.2000 sec: 4.000).
+20:25:02 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99875, timeStamp: 11.000
+20:25:02 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) has decel'd from 410.45m/s to 90.73m/s in 11.000s.
+20:25:02 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 90.734 m/s (tf:0.9988 asf:0.2000 sec: 11.000).
+20:25:02 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99932, timeStamp: 12.000
+20:25:02 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 90.000 m/s (tf:0.9993 asf:0.2000 sec: 12.000).
+20:25:02 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.92338, timeStamp: 28.001
+20:25:02 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 1.508 m/s (tf:0.9234 asf:0.0067 ps:19.68 psf:0.0875, sec: 28.001).
+20:25:03 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98228, timeStamp: 55.037
+20:25:03 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.163 m/s (tf:0.9823 asf:0.0133 ps:65.62 psf:0.7500, sec: 55.037).
+20:25:03 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95214, timeStamp: 5.000
+20:25:03 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:5.000, Tractored:False, TractorPause:False
+20:25:03 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  in orbit at 2.925 m/s (tf:0.9521 asf:0.2000 sec: 5.000).
+20:25:03 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000007):   prevSpeed:0.00, fraction: 0.20, start: true, stop: false, accel: false, decel: false
+20:25:03 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007): Speed Change - USF: 0.20, ASF: 0.20, TF: 0.95, PSF: 0.00, pSpeed: 0.00, mSpeed: 90.00, accel: false, decel: false, delta: 1.000
+20:25:03 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007):  ASF == USF                     --No Change  AccelTime: 2.04, USF: 0.20, ASF: 0.20, TF: 0.95, PSF: 0.00
+20:25:03 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99932, timeStamp: 12.000
+20:25:03 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 90.000 m/s (tf:0.9993 asf:0.2000 sec: 12.000).
+20:25:03 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99963, timeStamp: 13.000
+20:25:03 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 90.000 m/s (tf:0.9996 asf:0.2000 sec: 13.000).
+20:25:03 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000009):   prevSpeed:0.00, fraction: 0.20, start: true, stop: false, accel: false, decel: false
+20:25:03 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009): Speed Change - USF: 0.20, ASF: 0.20, TF: 1.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 1800.00, accel: false, decel: false, delta: 1.000
+20:25:03 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009):  ASF == USF                     --No Change  AccelTime: 6.53, USF: 0.20, ASF: 0.20, TF: 1.00, PSF: 0.00
+20:25:03 W AttrMap - Get: Attribute 559 called.  not printing stacktrace.
+20:25:03 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93010, timeStamp: 29.001
+20:25:03 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 1.376 m/s (tf:0.9301 asf:0.0061 ps:19.68 psf:0.0875, sec: 29.001).
+20:25:03 [Bound] BeyonceBound::CmdFollowBall()
+20:25:03 [AP Msg] Allan called Follow. AP: false
+20:25:03 [MoveTrace] Destiny::SetSpeedFraction() - Hulk(140018752):   prevSpeed:65.62, fraction: 0.75, start: true, stop: false, accel: false, decel: true
+20:25:03 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752): Speed Change - USF: 0.75, ASF: 0.01, TF: 0.98, PSF: 0.01, pSpeed: 1.16, mSpeed: 65.62, accel: true, decel: false, delta: 0.737
+20:25:03 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752):  USF != 0 and ship is Moving.   --Begin Accel  AccelTime: 62.47, USF: 0.75, ASF: 0.01, TF: 0.98, PSF: 0.01
+20:25:04 [MoveTrace] Destiny::SetSpeedFraction() - Hulk(140018752):   prevSpeed:1.16, fraction: 1.00, start: false, stop: false, accel: true, decel: false
+20:25:04 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752): Speed Change - USF: 1.00, ASF: 0.01, TF: 0.98, PSF: 0.01, pSpeed: 1.16, mSpeed: 65.62, accel: true, decel: false, delta: 0.987
+20:25:04 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752):  USF != 0 and ship is Moving.   --Begin Accel  AccelTime: 83.68, USF: 1.00, ASF: 0.01, TF: 0.98, PSF: 0.01
+20:25:04 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: -0.1700936, radians:1.74172, degrees:99.793
+20:25:04 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.8784455,-0.0504298,-0.4751740.  m_targetHeading: 0.3003193,-0.1945003,0.9337976
+20:25:04 [TurnTrace] Destiny::Turn(1) - Hulk(140018752): diff:-0.57813,-0.14407,1.40897, pct:0.143, delta:-0.0825895,-0.0205815,0.2012817
+20:25:04 [TurnTrace] Destiny::Turn(1) - Hulk(140018752): minTurnSpeedFraction:0.644(56.365), alignTime:7.215, ASF:0.013
+20:25:04 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.06828, timeStamp: 0.965
+20:25:04 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 7.058 m/s (tf:0.0683 asf:0.0807 ps:1.16 psf:0.0133, sec: 0.965).
+20:25:04 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000007): dot: 0.0597952, radians:1.51097, degrees:86.572
+20:25:04 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.0881418,-0.0845532,0.9925129.  m_targetHeading: -0.7840789,-0.6158141,0.0774159
+20:25:04 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 1.00s.  ShipHeading:-0.7840789,-0.6158141,0.0774159
+20:25:04 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45582, timeStamp: 1.001
+20:25:04 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:1.001, Tractored:False, TractorPause:False
+20:25:04 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.4558 asf:0.2000 sec: 1.001).
+20:25:04 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99963, timeStamp: 13.001
+20:25:04 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 90.000 m/s (tf:0.9996 asf:0.2000 sec: 13.001).
+20:25:04 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45574, timeStamp: 1.001
+20:25:04 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:1.001, Tractored:False, TractorPause:False
+20:25:04 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 45.000 m/s (tf:0.4557 asf:0.2000 sec: 1.001).
+20:25:04 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93623, timeStamp: 30.002
+20:25:04 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 1.255 m/s (tf:0.9362 asf:0.0056 ps:19.68 psf:0.0875, sec: 30.002).
+20:25:05 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: -0.1705421, radians:1.74218, degrees:99.819
+20:25:05 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.8784455,-0.0504298,-0.4751740.  m_targetHeading: 0.3003193,-0.1945003,0.9337976
+20:25:05 [TurnTrace] Destiny::Turn(2) - tf:0.068, turnStamp:2.000, degRemain:99.819, newShipHeading:0.7958560,-0.0710113,-0.2738923
+20:25:05 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.13406, timeStamp: 1.964
+20:25:05 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 12.737 m/s (tf:0.1341 asf:0.1456 ps:1.16 psf:0.0133, sec: 1.964).
+20:25:05 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70350, timeStamp: 2.000
+20:25:05 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:2.000, Tractored:False, TractorPause:False
+20:25:05 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.7035 asf:0.2000 sec: 2.000).
+20:25:05 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99980, timeStamp: 14.000
+20:25:05 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 90.000 m/s (tf:0.9998 asf:0.2000 sec: 14.000).
+20:25:05 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000009): dot: 0.5289932, radians:1.01338, degrees:58.063
+20:25:05 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0422722,-0.8331241,0.5514683.  m_targetHeading: -0.0422722,-0.8331241,0.5514683
+20:25:05 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 2.00s.  ShipHeading:-0.0422722,-0.8331241,0.5514683
+20:25:05 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70358, timeStamp: 2.000
+20:25:05 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:2.000, Tractored:False, TractorPause:False
+20:25:05 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 45.000 m/s (tf:0.7036 asf:0.2000 sec: 2.000).
+20:25:05 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.94182, timeStamp: 31.002
+20:25:05 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 1.145 m/s (tf:0.9418 asf:0.0051 ps:19.68 psf:0.0875, sec: 31.002).
+20:25:06 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: -0.0039166, radians:1.57471, degrees:90.224
+20:25:06 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.7958560,-0.0710113,-0.2738923.  m_targetHeading: 0.3003193,-0.1945003,0.9337976
+20:25:06 [TurnTrace] Destiny::Turn(2) - tf:0.134, turnStamp:3.000, degRemain:90.224, newShipHeading:0.7132666,-0.0915928,-0.0726107
+20:25:06 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.19525, timeStamp: 2.964
+20:25:06 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 18.020 m/s (tf:0.1952 asf:0.2059 ps:1.16 psf:0.0133, sec: 2.964).
+20:25:06 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83855, timeStamp: 3.000
+20:25:06 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:3.000, Tractored:False, TractorPause:False
+20:25:06 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.8386 asf:0.2000 sec: 3.000).
+20:25:06 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99989, timeStamp: 15.000
+20:25:06 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 90.000 m/s (tf:0.9999 asf:0.2000 sec: 15.000).
+20:25:06 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000009): dot: 0.5101296, radians:1.03546, degrees:59.328
+20:25:06 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0422722,-0.8331241,0.5514683.  m_targetHeading: -0.0422722,-0.8331241,0.5514683
+20:25:06 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 3.00s.  ShipHeading:-0.0422722,-0.8331241,0.5514683
+20:25:06 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83856, timeStamp: 3.000
+20:25:06 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:3.000, Tractored:False, TractorPause:False
+20:25:06 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 45.000 m/s (tf:0.8386 asf:0.2000 sec: 3.000).
+20:25:06 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.94692, timeStamp: 32.001
+20:25:06 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 1.045 m/s (tf:0.9469 asf:0.0046 ps:19.68 psf:0.0875, sec: 32.001).
+20:25:07 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.1628180, radians:1.40725, degrees:80.630
+20:25:07 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.7132666,-0.0915928,-0.0726107.  m_targetHeading: 0.3003193,-0.1945003,0.9337976
+20:25:07 [TurnTrace] Destiny::Turn(2) - tf:0.195, turnStamp:4.000, degRemain:80.630, newShipHeading:0.6306771,-0.1121743,0.1286710
+20:25:07 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.25212, timeStamp: 3.964
+20:25:07 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 22.930 m/s (tf:0.2521 asf:0.2621 ps:1.16 psf:0.0133, sec: 3.964).
+20:25:07 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91210, timeStamp: 4.000
+20:25:07 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:4.000, Tractored:False, TractorPause:False
+20:25:07 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.9121 asf:0.2000 sec: 4.000).
+20:25:07 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99994, timeStamp: 16.000
+20:25:07 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 90.000 m/s (tf:0.9999 asf:0.2000 sec: 16.000).
+20:25:07 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000008):   prevSpeed:0.00, fraction: 0.20, start: true, stop: false, accel: false, decel: false
+20:25:07 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008): Speed Change - USF: 0.20, ASF: 0.20, TF: 1.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 1800.00, accel: false, decel: false, delta: 1.000
+20:25:07 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008):  ASF == USF                     --No Change  AccelTime: 7.28, USF: 0.20, ASF: 0.20, TF: 1.00, PSF: 0.00
+20:25:07 W AttrMap - Get: Attribute 559 called.  not printing stacktrace.
+20:25:07 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000009): dot: 0.4904999, radians:1.05813, degrees:60.627
+20:25:07 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0422722,-0.8331241,0.5514683.  m_targetHeading: -0.0422722,-0.8331241,0.5514683
+20:25:07 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 4.00s.  ShipHeading:-0.0422722,-0.8331241,0.5514683
+20:25:07 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91212, timeStamp: 4.000
+20:25:07 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:4.000, Tractored:False, TractorPause:False
+20:25:07 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 45.000 m/s (tf:0.9121 asf:0.2000 sec: 4.000).
+20:25:07 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95157, timeStamp: 33.002
+20:25:07 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.953 m/s (tf:0.9516 asf:0.0042 ps:19.68 psf:0.0875, sec: 33.002).
+20:25:08 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.3297766, radians:1.23473, degrees:70.745
+20:25:08 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.6306771,-0.1121743,0.1286710.  m_targetHeading: 0.3003193,-0.1945003,0.9337976
+20:25:08 [TurnTrace] Destiny::Turn(2) - tf:0.252, turnStamp:5.000, degRemain:70.745, newShipHeading:0.5480877,-0.1327558,0.3299527
+20:25:08 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.30497, timeStamp: 4.964
+20:25:08 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 27.493 m/s (tf:0.3050 asf:0.3142 ps:1.16 psf:0.0133, sec: 4.964).
+20:25:08 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95214, timeStamp: 5.000
+20:25:08 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:5.000, Tractored:False, TractorPause:False
+20:25:08 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.9521 asf:0.2000 sec: 5.000).
+20:25:08 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45969, timeStamp: 1.013
+20:25:08 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:1.013, Tractored:False, TractorPause:False
+20:25:08 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 45.000 m/s (tf:0.4597 asf:0.2000 sec: 1.013).
+20:25:08 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000009): dot: 0.4700943, radians:1.08140, degrees:61.960
+20:25:08 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0422722,-0.8331241,0.5514683.  m_targetHeading: -0.0422722,-0.8331241,0.5514683
+20:25:08 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 5.00s.  ShipHeading:-0.0422722,-0.8331241,0.5514683
+20:25:08 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95252, timeStamp: 5.013
+20:25:08 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:5.013, Tractored:False, TractorPause:False
+20:25:08 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 45.000 m/s (tf:0.9525 asf:0.2000 sec: 5.013).
+20:25:08 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95587, timeStamp: 34.015
+20:25:08 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.868 m/s (tf:0.9559 asf:0.0039 ps:19.68 psf:0.0875, sec: 34.015).
+20:25:09 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.4970077, radians:1.05065, degrees:60.198
+20:25:09 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.5480877,-0.1327558,0.3299527.  m_targetHeading: 0.3003193,-0.1945003,0.9337976
+20:25:09 [TurnTrace] Destiny::Turn(2) - tf:0.305, turnStamp:6.000, degRemain:60.198, newShipHeading:0.4654982,-0.1533373,0.5312343
+20:25:09 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.35417, timeStamp: 5.966
+20:25:09 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 31.741 m/s (tf:0.3542 asf:0.3628 ps:1.16 psf:0.0133, sec: 5.966).
+20:25:09 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97397, timeStamp: 6.002
+20:25:09 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:6.002, Tractored:False, TractorPause:False
+20:25:09 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.9740 asf:0.2000 sec: 6.002).
+20:25:09 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000008): dot: 0.4217936, radians:1.13537, degrees:65.052
+20:25:09 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0307967,-0.8940564,0.4468945.  m_targetHeading: -0.0307967,-0.8940564,0.4468945
+20:25:09 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 2.00s.  ShipHeading:-0.0307967,-0.8940564,0.4468945
+20:25:09 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70384, timeStamp: 2.002
+20:25:09 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:2.002, Tractored:False, TractorPause:False
+20:25:09 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 45.000 m/s (tf:0.7038 asf:0.2000 sec: 2.002).
+20:25:09 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97397, timeStamp: 6.002
+20:25:09 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:6.002, Tractored:False, TractorPause:False
+20:25:09 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  in orbit at 2.925 m/s (tf:0.9740 asf:0.2000 sec: 6.002).
+20:25:09 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000009):   prevSpeed:0.00, fraction: 0.20, start: true, stop: false, accel: false, decel: false
+20:25:09 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009): Speed Change - USF: 0.20, ASF: 0.20, TF: 0.97, PSF: 0.00, pSpeed: 0.00, mSpeed: 1800.00, accel: false, decel: false, delta: 1.000
+20:25:09 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009):  ASF == USF                     --No Change  AccelTime: 6.53, USF: 0.20, ASF: 0.20, TF: 0.97, PSF: 0.00
+20:25:09 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95970, timeStamp: 35.003
+20:25:09 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.793 m/s (tf:0.9597 asf:0.0035 ps:19.68 psf:0.0875, sec: 35.003).
+20:25:10 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.6645015, radians:0.84397, degrees:48.356
+20:25:10 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.4654982,-0.1533373,0.5312343.  m_targetHeading: 0.3003193,-0.1945003,0.9337976
+20:25:10 [TurnTrace] Destiny::Turn(2) - tf:0.354, turnStamp:7.000, degRemain:48.356, newShipHeading:0.3829088,-0.1739188,0.7325160
+20:25:10 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.39972, timeStamp: 6.964
+20:25:10 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 35.673 m/s (tf:0.3997 asf:0.4077 ps:1.16 psf:0.0133, sec: 6.964).
+20:25:10 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98581, timeStamp: 7.000
+20:25:10 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:7.000, Tractored:False, TractorPause:False
+20:25:10 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.9858 asf:0.2000 sec: 7.000).
+20:25:10 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000008): dot: 0.3973786, radians:1.16214, degrees:66.586
+20:25:10 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0307967,-0.8940564,0.4468945.  m_targetHeading: -0.0307967,-0.8940564,0.4468945
+20:25:10 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 3.00s.  ShipHeading:-0.0307967,-0.8940564,0.4468945
+20:25:10 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83851, timeStamp: 2.999
+20:25:10 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:2.999, Tractored:False, TractorPause:False
+20:25:10 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 45.000 m/s (tf:0.8385 asf:0.2000 sec: 2.999).
+20:25:10 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000009): dot: 0.0690627, radians:1.50168, degrees:86.040
+20:25:10 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.1075493,-0.0997471,0.9891833.  m_targetHeading: -0.7830352,-0.6149945,0.0929390
+20:25:10 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 1.00s.  ShipHeading:-0.7830352,-0.6149945,0.0929390
+20:25:10 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45460, timeStamp: 0.997
+20:25:10 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:0.997, Tractored:False, TractorPause:False
+20:25:10 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.4546 asf:0.2000 sec: 0.997).
+20:25:10 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96322, timeStamp: 36.001
+20:25:10 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.724 m/s (tf:0.9632 asf:0.0032 ps:19.68 psf:0.0875, sec: 36.001).
+20:25:11 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.8321975, radians:0.58774, degrees:33.675
+20:25:11 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.3829088,-0.1739188,0.7325160.  m_targetHeading: 0.3003193,-0.1945003,0.9337976
+20:25:11 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 8.00s.  ShipHeading:0.3003193,-0.1945003,0.9337976
+20:25:11 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.44214, timeStamp: 7.964
+20:25:11 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 39.336 m/s (tf:0.4421 asf:0.4495 ps:1.16 psf:0.0133, sec: 7.964).
+20:25:11 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99227, timeStamp: 8.000
+20:25:11 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:8.000, Tractored:False, TractorPause:False
+20:25:11 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.9923 asf:0.2000 sec: 8.000).
+20:25:11 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000008): dot: 0.3720897, radians:1.18954, degrees:68.155
+20:25:11 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0307967,-0.8940564,0.4468945.  m_targetHeading: -0.0307967,-0.8940564,0.4468945
+20:25:11 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 4.00s.  ShipHeading:-0.0307967,-0.8940564,0.4468945
+20:25:11 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91208, timeStamp: 4.000
+20:25:11 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:4.000, Tractored:False, TractorPause:False
+20:25:11 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 45.000 m/s (tf:0.9121 asf:0.2000 sec: 4.000).
+20:25:11 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70309, timeStamp: 1.998
+20:25:11 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:1.998, Tractored:False, TractorPause:False
+20:25:11 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.7031 asf:0.2000 sec: 1.998).
+20:25:11 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96645, timeStamp: 37.001
+20:25:11 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.660 m/s (tf:0.9664 asf:0.0029 ps:19.68 psf:0.0875, sec: 37.001).
+20:25:12 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.48155, timeStamp: 8.964
+20:25:12 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 42.739 m/s (tf:0.4816 asf:0.4884 ps:1.16 psf:0.0133, sec: 8.964).
+20:25:12 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99579, timeStamp: 9.000
+20:25:12 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:9.000, Tractored:False, TractorPause:False
+20:25:12 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.9958 asf:0.2000 sec: 9.000).
+20:25:12 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000008): dot: 0.3459443, radians:1.21755, degrees:69.761
+20:25:12 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0307967,-0.8940564,0.4468945.  m_targetHeading: -0.0307967,-0.8940564,0.4468945
+20:25:12 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 5.00s.  ShipHeading:-0.0307967,-0.8940564,0.4468945
+20:25:12 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95213, timeStamp: 5.000
+20:25:12 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:5.000, Tractored:False, TractorPause:False
+20:25:12 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 45.000 m/s (tf:0.9521 asf:0.2000 sec: 5.000).
+20:25:12 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83835, timeStamp: 2.998
+20:25:12 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:2.998, Tractored:False, TractorPause:False
+20:25:12 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.8384 asf:0.2000 sec: 2.998).
+20:25:12 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96939, timeStamp: 38.001
+20:25:12 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.602 m/s (tf:0.9694 asf:0.0027 ps:19.68 psf:0.0875, sec: 38.001).
+20:25:13 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.51819, timeStamp: 9.964
+20:25:13 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 45.901 m/s (tf:0.5182 asf:0.5246 ps:1.16 psf:0.0133, sec: 9.964).
+20:25:13 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99771, timeStamp: 10.000
+20:25:13 E Destiny::MoveObject(): Arch Angel Raider(750000007) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:10.000, Tractored:False, TractorPause:False
+20:25:13 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is  at 360.000 m/s (tf:0.9977 asf:0.2000 sec: 10.000).
+20:25:13 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000008): dot: 0.3189676, radians:1.24616, degrees:71.399
+20:25:13 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0307967,-0.8940564,0.4468945.  m_targetHeading: -0.0307967,-0.8940564,0.4468945
+20:25:13 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 6.00s.  ShipHeading:-0.0307967,-0.8940564,0.4468945
+20:25:13 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97397, timeStamp: 6.002
+20:25:13 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:6.002, Tractored:False, TractorPause:False
+20:25:13 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 45.000 m/s (tf:0.9740 asf:0.2000 sec: 6.002).
+20:25:13 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91213, timeStamp: 4.000
+20:25:13 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:4.000, Tractored:False, TractorPause:False
+20:25:13 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.9121 asf:0.2000 sec: 4.000).
+20:25:13 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97208, timeStamp: 39.005
+20:25:13 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.549 m/s (tf:0.9721 asf:0.0024 ps:19.68 psf:0.0875, sec: 39.005).
+20:25:14 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.55223, timeStamp: 10.964
+20:25:14 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 48.841 m/s (tf:0.5522 asf:0.5582 ps:1.16 psf:0.0133, sec: 10.964).
+20:25:14 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99875, timeStamp: 11.000
+20:25:14 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:0.9988 asf:0.2000 sec: 11.000).
+20:25:14 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000008): dot: 0.2911928, radians:1.27532, degrees:73.071
+20:25:14 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0307967,-0.8940564,0.4468945.  m_targetHeading: -0.0307967,-0.8940564,0.4468945
+20:25:14 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 7.00s.  ShipHeading:-0.0307967,-0.8940564,0.4468945
+20:25:14 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98581, timeStamp: 7.000
+20:25:14 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:7.000, Tractored:False, TractorPause:False
+20:25:14 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 45.000 m/s (tf:0.9858 asf:0.2000 sec: 7.000).
+20:25:14 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95207, timeStamp: 4.998
+20:25:14 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:4.998, Tractored:False, TractorPause:False
+20:25:14 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.9521 asf:0.2000 sec: 4.998).
+20:25:14 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97452, timeStamp: 40.001
+20:25:14 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.501 m/s (tf:0.9745 asf:0.0022 ps:19.68 psf:0.0875, sec: 40.001).
+20:25:15 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.58387, timeStamp: 11.964
+20:25:15 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 51.573 m/s (tf:0.5839 asf:0.5894 ps:1.16 psf:0.0133, sec: 11.964).
+20:25:15 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99932, timeStamp: 12.000
+20:25:15 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:0.9993 asf:0.2000 sec: 12.000).
+20:25:15 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000008): dot: 0.2626619, radians:1.30502, degrees:74.772
+20:25:15 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0307967,-0.8940564,0.4468945.  m_targetHeading: -0.0307967,-0.8940564,0.4468945
+20:25:15 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 8.00s.  ShipHeading:-0.0307967,-0.8940564,0.4468945
+20:25:15 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99227, timeStamp: 8.000
+20:25:15 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:8.000, Tractored:False, TractorPause:False
+20:25:15 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 45.000 m/s (tf:0.9923 asf:0.2000 sec: 8.000).
+20:25:15 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97390, timeStamp: 5.998
+20:25:15 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:5.998, Tractored:False, TractorPause:False
+20:25:15 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.9739 asf:0.2000 sec: 5.998).
+20:25:15 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97675, timeStamp: 41.001
+20:25:15 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.457 m/s (tf:0.9768 asf:0.0020 ps:19.68 psf:0.0875, sec: 41.001).
+20:25:16 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.61328, timeStamp: 12.964
+20:25:16 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 54.111 m/s (tf:0.6133 asf:0.6184 ps:1.16 psf:0.0133, sec: 12.964).
+20:25:16 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99963, timeStamp: 13.000
+20:25:16 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:0.9996 asf:0.2000 sec: 13.000).
+20:25:16 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000008): dot: 0.2334250, radians:1.33520, degrees:76.501
+20:25:16 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.0307967,-0.8940564,0.4468945.  m_targetHeading: -0.0307967,-0.8940564,0.4468945
+20:25:16 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 9.00s.  ShipHeading:-0.0307967,-0.8940564,0.4468945
+20:25:16 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99579, timeStamp: 8.999
+20:25:16 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:8.999, Tractored:False, TractorPause:False
+20:25:16 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 45.000 m/s (tf:0.9958 asf:0.2000 sec: 8.999).
+20:25:16 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98579, timeStamp: 6.997
+20:25:16 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:6.997, Tractored:False, TractorPause:False
+20:25:16 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.9858 asf:0.2000 sec: 6.997).
+20:25:16 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97879, timeStamp: 42.001
+20:25:16 [MoveTrace] Destiny::MoveObject() - Angel Defeater(750000010) is decelerating at 0.417 m/s (tf:0.9788 asf:0.0019 ps:19.68 psf:0.0875, sec: 42.001).
+20:25:17 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.64061, timeStamp: 13.964
+20:25:17 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 56.471 m/s (tf:0.6406 asf:0.6454 ps:1.16 psf:0.0133, sec: 13.964).
+20:25:17 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99980, timeStamp: 14.000
+20:25:17 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:0.9998 asf:0.2000 sec: 14.000).
+20:25:17 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99771, timeStamp: 9.999
+20:25:17 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:9.999, Tractored:False, TractorPause:False
+20:25:17 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  in orbit at 2.925 m/s (tf:0.9977 asf:0.2000 sec: 9.999).
+20:25:17 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000008):   prevSpeed:0.00, fraction: 0.20, start: true, stop: false, accel: false, decel: false
+20:25:17 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008): Speed Change - USF: 0.20, ASF: 0.20, TF: 1.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 1800.00, accel: false, decel: false, delta: 1.000
+20:25:17 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008):  ASF == USF                     --No Change  AccelTime: 7.28, USF: 0.20, ASF: 0.20, TF: 1.00, PSF: 0.00
+20:25:17 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99226, timeStamp: 7.997
+20:25:17 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:7.997, Tractored:False, TractorPause:False
+20:25:17 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.9923 asf:0.2000 sec: 7.997).
+20:25:18 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.66600, timeStamp: 14.964
+20:25:18 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 58.663 m/s (tf:0.6660 asf:0.6704 ps:1.16 psf:0.0133, sec: 14.964).
+20:25:18 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99989, timeStamp: 15.000
+20:25:18 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:0.9999 asf:0.2000 sec: 15.000).
+20:25:18 [TurnTrace] Destiny::IsTurn() - Arch Angel Raider(750000008): dot: 0.1047848, radians:1.46582, degrees:83.985
+20:25:18 [TurnTrace] Destiny::IsTurn() m_shipHeading: 0.1835267,-0.1591071,0.9700530.  m_targetHeading: -0.7769438,-0.6102102,0.1549255
+20:25:18 [TurnTrace] Destiny::Turn() - turnTic > alignTime.  turn completed in 1.00s.  ShipHeading:-0.7769438,-0.6102102,0.1549255
+20:25:18 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45545, timeStamp: 1.000
+20:25:18 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:1.000, Tractored:False, TractorPause:False
+20:25:18 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.4554 asf:0.2000 sec: 1.000).
+20:25:18 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99579, timeStamp: 8.997
+20:25:18 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:8.997, Tractored:False, TractorPause:False
+20:25:18 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.9958 asf:0.2000 sec: 8.997).
+20:25:19 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.68960, timeStamp: 15.964
+20:25:19 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 60.701 m/s (tf:0.6896 asf:0.6937 ps:1.16 psf:0.0133, sec: 15.964).
+20:25:19 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99994, timeStamp: 16.000
+20:25:19 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:0.9999 asf:0.2000 sec: 16.000).
+20:25:19 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70348, timeStamp: 2.000
+20:25:19 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:2.000, Tractored:False, TractorPause:False
+20:25:19 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.7035 asf:0.2000 sec: 2.000).
+20:25:19 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99771, timeStamp: 9.997
+20:25:19 E Destiny::MoveObject(): Arch Angel Raider(750000009) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:9.997, Tractored:False, TractorPause:False
+20:25:19 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is  at 360.000 m/s (tf:0.9977 asf:0.2000 sec: 9.997).
+20:25:20 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.71154, timeStamp: 16.964
+20:25:20 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 62.595 m/s (tf:0.7115 asf:0.7154 ps:1.16 psf:0.0133, sec: 16.964).
+20:25:20 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99997, timeStamp: 17.000
+20:25:20 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 17.000).
+20:25:20 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83856, timeStamp: 3.000
+20:25:20 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:3.000, Tractored:False, TractorPause:False
+20:25:20 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.8386 asf:0.2000 sec: 3.000).
+20:25:20 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99875, timeStamp: 10.997
+20:25:20 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:0.9988 asf:0.2000 sec: 10.997).
+20:25:21 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.73192, timeStamp: 17.964
+20:25:21 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 64.355 m/s (tf:0.7319 asf:0.7355 ps:1.16 psf:0.0133, sec: 17.964).
+20:25:21 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99998, timeStamp: 18.012
+20:25:21 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 18.012).
+20:25:21 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91273, timeStamp: 4.012
+20:25:21 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:4.012, Tractored:False, TractorPause:False
+20:25:21 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.9127 asf:0.2000 sec: 4.012).
+20:25:21 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99932, timeStamp: 12.009
+20:25:21 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:0.9993 asf:0.2000 sec: 12.009).
+20:25:22 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.75086, timeStamp: 18.964
+20:25:22 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 65.990 m/s (tf:0.7509 asf:0.7542 ps:1.16 psf:0.0133, sec: 18.964).
+20:25:22 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99999, timeStamp: 19.000
+20:25:22 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 19.000).
+20:25:22 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95213, timeStamp: 5.000
+20:25:22 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:5.000, Tractored:False, TractorPause:False
+20:25:22 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.9521 asf:0.2000 sec: 5.000).
+20:25:22 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99963, timeStamp: 12.997
+20:25:22 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:0.9996 asf:0.2000 sec: 12.997).
+20:25:23 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.76847, timeStamp: 19.964
+20:25:23 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 67.510 m/s (tf:0.7685 asf:0.7715 ps:1.16 psf:0.0133, sec: 19.964).
+20:25:23 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99999, timeStamp: 20.000
+20:25:23 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 20.000).
+20:25:23 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97394, timeStamp: 6.000
+20:25:23 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:6.000, Tractored:False, TractorPause:False
+20:25:23 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.9739 asf:0.2000 sec: 6.000).
+20:25:23 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99980, timeStamp: 13.997
+20:25:23 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:0.9998 asf:0.2000 sec: 13.997).
+20:25:24 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.78483, timeStamp: 20.964
+20:25:24 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 68.923 m/s (tf:0.7848 asf:0.7877 ps:1.16 psf:0.0133, sec: 20.964).
+20:25:24 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 21.000
+20:25:24 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 21.000).
+20:25:24 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98581, timeStamp: 7.000
+20:25:24 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:7.000, Tractored:False, TractorPause:False
+20:25:24 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.9858 asf:0.2000 sec: 7.000).
+20:25:24 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99989, timeStamp: 14.997
+20:25:24 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:0.9999 asf:0.2000 sec: 14.997).
+20:25:25 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.80003, timeStamp: 21.964
+20:25:25 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 70.235 m/s (tf:0.8000 asf:0.8027 ps:1.16 psf:0.0133, sec: 21.964).
+20:25:25 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 22.000
+20:25:25 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 22.000).
+20:25:25 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99227, timeStamp: 8.000
+20:25:25 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:8.000, Tractored:False, TractorPause:False
+20:25:25 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.9923 asf:0.2000 sec: 8.000).
+20:25:25 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99994, timeStamp: 15.997
+20:25:25 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:0.9999 asf:0.2000 sec: 15.997).
+20:25:26 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.81416, timeStamp: 22.964
+20:25:26 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 71.455 m/s (tf:0.8142 asf:0.8166 ps:1.16 psf:0.0133, sec: 22.964).
+20:25:26 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 23.000
+20:25:26 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 23.000).
+20:25:26 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99579, timeStamp: 9.000
+20:25:26 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:9.000, Tractored:False, TractorPause:False
+20:25:26 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.9958 asf:0.2000 sec: 9.000).
+20:25:26 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99997, timeStamp: 17.025
+20:25:26 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 17.025).
+20:25:27 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.82730, timeStamp: 23.964
+20:25:27 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 72.589 m/s (tf:0.8273 asf:0.8296 ps:1.16 psf:0.0133, sec: 23.964).
+20:25:27 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 24.000
+20:25:27 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 24.000).
+20:25:27 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99771, timeStamp: 10.000
+20:25:27 E Destiny::MoveObject(): Arch Angel Raider(750000008) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:10.000, Tractored:False, TractorPause:False
+20:25:27 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is  at 360.000 m/s (tf:0.9977 asf:0.2000 sec: 10.000).
+20:25:27 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99998, timeStamp: 17.997
+20:25:27 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 17.997).
+20:25:28 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83950, timeStamp: 24.964
+20:25:28 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 73.643 m/s (tf:0.8395 asf:0.8416 ps:1.16 psf:0.0133, sec: 24.964).
+20:25:28 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 24.999
+20:25:28 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 24.999).
+20:25:28 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99875, timeStamp: 11.000
+20:25:28 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:0.9988 asf:0.2000 sec: 11.000).
+20:25:28 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99999, timeStamp: 18.997
+20:25:28 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 18.997).
+20:25:29 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.85084, timeStamp: 25.964
+20:25:29 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 74.622 m/s (tf:0.8508 asf:0.8528 ps:1.16 psf:0.0133, sec: 25.964).
+20:25:29 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 26.000
+20:25:29 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 26.000).
+20:25:29 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99932, timeStamp: 12.000
+20:25:29 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:0.9993 asf:0.2000 sec: 12.000).
+20:25:29 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99999, timeStamp: 19.997
+20:25:29 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 19.997).
+20:25:30 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.86138, timeStamp: 26.964
+20:25:30 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 75.532 m/s (tf:0.8614 asf:0.8632 ps:1.16 psf:0.0133, sec: 26.964).
+20:25:30 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 27.000
+20:25:30 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 27.000).
+20:25:30 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99963, timeStamp: 13.000
+20:25:30 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:0.9996 asf:0.2000 sec: 13.000).
+20:25:30 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 20.997
+20:25:30 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 20.997).
+20:25:31 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.87118, timeStamp: 27.964
+20:25:31 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 76.378 m/s (tf:0.8712 asf:0.8729 ps:1.16 psf:0.0133, sec: 27.964).
+20:25:31 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 28.000
+20:25:31 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 28.000).
+20:25:31 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99980, timeStamp: 14.000
+20:25:31 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:0.9998 asf:0.2000 sec: 14.000).
+20:25:31 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 21.997
+20:25:31 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 21.997).
+20:25:32 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.88028, timeStamp: 28.964
+20:25:32 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 77.164 m/s (tf:0.8803 asf:0.8819 ps:1.16 psf:0.0133, sec: 28.964).
+20:25:32 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 29.000
+20:25:32 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 29.000).
+20:25:32 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99989, timeStamp: 15.000
+20:25:32 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:0.9999 asf:0.2000 sec: 15.000).
+20:25:32 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 22.997
+20:25:32 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 22.997).
+20:25:33 [Service] config::GetMultiLocationsEx()
+20:25:33 W GetMultiLocationsEx: Asteroid Items (450000582) requested.
+20:25:33 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.88874, timeStamp: 29.964
+20:25:33 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 77.894 m/s (tf:0.8887 asf:0.8902 ps:1.16 psf:0.0133, sec: 29.964).
+20:25:33 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 30.000
+20:25:33 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 30.000).
+20:25:33 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99994, timeStamp: 16.000
+20:25:33 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:0.9999 asf:0.2000 sec: 16.000).
+20:25:33 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 23.997
+20:25:33 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 23.997).
+20:25:34 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.89660, timeStamp: 30.964
+20:25:34 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 78.573 m/s (tf:0.8966 asf:0.8980 ps:1.16 psf:0.0133, sec: 30.964).
+20:25:34 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 31.000
+20:25:34 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 31.000).
+20:25:34 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99997, timeStamp: 17.000
+20:25:34 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 17.000).
+20:25:34 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 24.997
+20:25:34 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 24.997).
+20:25:34 [Service] config::GetMultiLocationsEx()
+20:25:34 W GetMultiLocationsEx: Asteroid Items (450000584) requested.
+20:25:35 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.90391, timeStamp: 31.964
+20:25:35 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 79.204 m/s (tf:0.9039 asf:0.9052 ps:1.16 psf:0.0133, sec: 31.964).
+20:25:35 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 32.000
+20:25:35 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 32.000).
+20:25:35 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99998, timeStamp: 18.000
+20:25:35 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 18.000).
+20:25:35 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 25.997
+20:25:35 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 25.997).
+20:25:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91070, timeStamp: 32.964
+20:25:36 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 79.790 m/s (tf:0.9107 asf:0.9119 ps:1.16 psf:0.0133, sec: 32.964).
+20:25:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 33.000
+20:25:36 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 33.000).
+20:25:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99999, timeStamp: 19.000
+20:25:36 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 19.000).
+20:25:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 26.997
+20:25:36 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 26.997).
+20:25:36 [Service] config::GetMultiLocationsEx()
+20:25:36 W GetMultiLocationsEx: Asteroid Items (450000586) requested.
+20:25:37 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91701, timeStamp: 33.964
+20:25:37 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 80.335 m/s (tf:0.9170 asf:0.9181 ps:1.16 psf:0.0133, sec: 33.964).
+20:25:37 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 34.000
+20:25:37 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 34.000).
+20:25:37 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99999, timeStamp: 20.000
+20:25:37 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 20.000).
+20:25:37 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 27.997
+20:25:37 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 27.997).
+20:25:37 [DestinyWarning] SystemBubble::ProcessWander() - entity 750000007(sys:30000053) not in bubble 4 for systemID 30000053.
+20:25:37 [DestinyWarning] SystemBubble::ProcessWander() - entity 750000008(sys:30000053) not in bubble 4 for systemID 30000053.
+20:25:37 [DestinyWarning] SystemBubble::ProcessWander() - entity 750000009(sys:30000053) not in bubble 4 for systemID 30000053.
+20:25:37 [DestinyWarning] BubbleManager::Process() - Wanderer Arch Angel Raider(750000007) in system Ibaria(30000053) is being added to a bubble.
+20:25:37 [DestinyWarning] BubbleManager::Process() - Wanderer Arch Angel Raider(750000008) in system Ibaria(30000053) is being added to a bubble.
+20:25:37 [DestinyWarning] BubbleManager::Process() - Wanderer Arch Angel Raider(750000009) in system Ibaria(30000053) is being added to a bubble.
+20:25:38 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.92287, timeStamp: 34.964
+20:25:38 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 80.841 m/s (tf:0.9229 asf:0.9239 ps:1.16 psf:0.0133, sec: 34.964).
+20:25:38 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 35.000
+20:25:38 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 35.000).
+20:25:38 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000007):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: false, decel: false
+20:25:38 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000007):  USF == 0 and ship is Moving.   --Decel for Stop  AccelTime: 2.04, USF: 0.00, ASF: 0.20, TF: 1.00, PSF: 0.20
+20:25:38 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 21.000
+20:25:38 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 21.000).
+20:25:38 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000008):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: false, decel: false
+20:25:38 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000008):  USF == 0 and ship is Moving.   --Decel for Stop  AccelTime: 2.04, USF: 0.00, ASF: 0.20, TF: 1.00, PSF: 0.20
+20:25:38 [MoveTrace] Destiny::MoveObject() - timeFraction: 1.00000, timeStamp: 28.997
+20:25:38 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is at constant speed, going at 360.000 m/s (tf:1.0000 asf:0.2000 sec: 28.997).
+20:25:38 [MoveTrace] Destiny::SetSpeedFraction() - Arch Angel Raider(750000009):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: false, decel: false
+20:25:38 [MoveTrace] Destiny::UpdateVelocity - Arch Angel Raider(750000009):  USF == 0 and ship is Moving.   --Decel for Stop  AccelTime: 2.04, USF: 0.00, ASF: 0.20, TF: 1.00, PSF: 0.20
+20:25:39 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.92832, timeStamp: 35.964
+20:25:39 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 81.312 m/s (tf:0.9283 asf:0.9293 ps:1.16 psf:0.0133, sec: 35.964).
+20:25:39 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45547, timeStamp: 1.000
+20:25:39 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is decelerating at 24.504 m/s (tf:0.4555 asf:0.1089 ps:360.00 psf:0.2000, sec: 1.000).
+20:25:39 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45545, timeStamp: 1.000
+20:25:39 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 24.505 m/s (tf:0.4555 asf:0.1089 ps:360.00 psf:0.2000, sec: 1.000).
+20:25:39 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45542, timeStamp: 1.000
+20:25:39 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 24.506 m/s (tf:0.4554 asf:0.1089 ps:360.00 psf:0.2000, sec: 1.000).
+20:25:39 [Service] config::GetMultiLocationsEx()
+20:25:39 W GetMultiLocationsEx: Asteroid Items (450000578) requested.
+20:25:40 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93339, timeStamp: 36.964
+20:25:40 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 81.749 m/s (tf:0.9334 asf:0.9343 ps:1.16 psf:0.0133, sec: 36.964).
+20:25:40 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70349, timeStamp: 2.000
+20:25:40 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is decelerating at 13.343 m/s (tf:0.7035 asf:0.0593 ps:360.00 psf:0.2000, sec: 2.000).
+20:25:40 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70348, timeStamp: 2.000
+20:25:40 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 13.344 m/s (tf:0.7035 asf:0.0593 ps:360.00 psf:0.2000, sec: 2.000).
+20:25:40 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.70346, timeStamp: 2.000
+20:25:40 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 13.344 m/s (tf:0.7035 asf:0.0593 ps:360.00 psf:0.2000, sec: 2.000).
+20:25:41 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93809, timeStamp: 37.964
+20:25:41 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 82.155 m/s (tf:0.9381 asf:0.9389 ps:1.16 psf:0.0133, sec: 37.964).
+20:25:41 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83856, timeStamp: 3.000
+20:25:41 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is decelerating at 7.265 m/s (tf:0.8386 asf:0.0323 ps:360.00 psf:0.2000, sec: 3.000).
+20:25:41 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83855, timeStamp: 3.000
+20:25:41 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 7.265 m/s (tf:0.8385 asf:0.0323 ps:360.00 psf:0.2000, sec: 3.000).
+20:25:41 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83853, timeStamp: 3.000
+20:25:41 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 7.266 m/s (tf:0.8385 asf:0.0323 ps:360.00 psf:0.2000, sec: 3.000).
+20:25:41 [Service] config::GetMultiLocationsEx()
+20:25:41 W GetMultiLocationsEx: Asteroid Items (450000580) requested.
+20:25:42 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.94247, timeStamp: 38.964
+20:25:42 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 82.533 m/s (tf:0.9425 asf:0.9432 ps:1.16 psf:0.0133, sec: 38.964).
+20:25:42 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91210, timeStamp: 4.000
+20:25:42 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is decelerating at 3.956 m/s (tf:0.9121 asf:0.0176 ps:360.00 psf:0.2000, sec: 4.000).
+20:25:42 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91210, timeStamp: 4.000
+20:25:42 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 3.955 m/s (tf:0.9121 asf:0.0176 ps:360.00 psf:0.2000, sec: 4.000).
+20:25:42 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91209, timeStamp: 4.000
+20:25:42 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 3.956 m/s (tf:0.9121 asf:0.0176 ps:360.00 psf:0.2000, sec: 4.000).
+20:25:43 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.94653, timeStamp: 39.964
+20:25:43 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 82.884 m/s (tf:0.9465 asf:0.9472 ps:1.16 psf:0.0133, sec: 39.964).
+20:25:43 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95214, timeStamp: 5.000
+20:25:43 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000007) is decelerating at 2.154 m/s (tf:0.9521 asf:0.0096 ps:360.00 psf:0.2000, sec: 5.000).
+20:25:43 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95213, timeStamp: 5.000
+20:25:43 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000008) is decelerating at 2.154 m/s (tf:0.9521 asf:0.0096 ps:360.00 psf:0.2000, sec: 5.000).
+20:25:43 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95213, timeStamp: 4.999
+20:25:43 [MoveTrace] Destiny::MoveObject() - Arch Angel Raider(750000009) is decelerating at 2.154 m/s (tf:0.9521 asf:0.0096 ps:360.00 psf:0.2000, sec: 4.999).
+20:25:43 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:25:43 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:25:43 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:25:44 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95031, timeStamp: 40.964
+.
+20:25:43 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:25:43 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:25:43 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:25:44 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95031, timeStamp: 40.964
+.
+20:26:26 [FxUndefined] FxProc::ParseExpression() - Operand id:E key:SURVEYSCAN - should be added as SurveyScan()
+.
+20:26:44 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:26:44 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:26:44 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:26:45 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98526, timeStamp: 57.550
+..
+20:27:23 [Service] config::GetMultiLocationsEx()
+20:27:23 W GetMultiLocationsEx: Asteroid Items (450000583) requested.
+
+20:27:45 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:27:45 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:27:45 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:27:46 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.92230, timeStamp: 34.864
+.
+20:28:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99801, timeStamp: 84.864
+20:28:36 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) has decel'd from 87.49m/s to 0.19m/s in 84.864s.
+20:28:36 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is at full stop after 84.864 seconds.
+20:28:36 [MoveTrace] Destiny::Halt() - Hulk(140018752) Halted - m_shipHeading: 0.515,-0.071,0.851
+)
+20:28:46 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:28:46 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:28:46 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:29:33 [Service] machoNet::GetTime()
+20:29:33 [Service] machoNet::GetTime()
+20:29:33 [Service] machoNet::GetTime()
+20:29:33 [Service] machoNet::GetTime()
+20:29:33 [Service] machoNet::GetTime()
+20:29:47 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:29:47 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:29:47 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:30:48 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:30:48 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:30:48 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:30:49 [ItemWarning] II::Spawn creating generic item for type 1228, cat 25.
+20:30:49 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:30:49 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:31:05 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:31:05 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:31:26 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:31:26 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:31:26 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:31:49 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:31:49 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:31:49 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:32:50 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:32:50 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:32:50 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:33:49 [ItemWarning] II::Spawn creating generic item for type 1228, cat 25.
+20:33:49 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:33:49 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:33:51 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:33:51 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:33:51 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:34:05 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:34:05 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:34:05 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:34:20 [Bound] CorpRegistryBound::GetLockedItemLocations()
+20:34:20 [CorpCall] CorpRegistryBound::Handle_GetLockedItemLocations()
+20:34:20 [Bound] InventoryBound::Add()
+20:34:26 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:34:26 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:34:33 [Service] machoNet::GetTime()
+20:34:33 [Service] machoNet::GetTime()
+20:34:33 [Service] machoNet::GetTime()
+20:34:33 [Service] machoNet::GetTime()
+20:34:33 [Service] machoNet::GetTime()
+20:34:52 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:34:52 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:34:52 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+
+
+20:36:17 [SvcMsg] Service Mgr Binding ShipBound to node 888444:111 for Allan
+20:36:17 [SvcMsg] ship Service: MachoBindObject also contains call to Drop
+20:36:17 [Bound] ShipBound::Drop()
+20:36:17 M ShipSE::LaunchDrone(): Allan: Launching drone 140024261
+20:36:17 [DroneTrace] Created Drone object for Mining Drone I (140024261)
+20:36:20 [Bound] DogmaIMBound::ChangeDroneSettings()
+20:36:20 [Bound] ShipBound::Drop()
+20:36:20 M ShipSE::LaunchDrone(): Allan: Launching drone 140024262
+20:36:20 [DroneTrace] Created Drone object for Mining Drone I (140024262)
+20:36:28 [Service] config::GetMultiLocationsEx()
+20:36:28 W GetMultiLocationsEx: Asteroid Items (450000579) requested.
+20:36:30 [Bound] DogmaIMBound::AddTarget()
+20:36:30 [TargetWarn] AddTarget() - TargMgr.StartTargeting() failed.
+20:36:49 [ItemWarning] II::Spawn creating generic item for type 1228, cat 25.
+20:36:49 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:36:49 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:36:54 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:36:54 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:36:54 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+
+.
+20:40:26 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:40:26 [TargetInfo] Removing the Modulated Strip Miner II on Hulk from Scordite's activeModule list.
+20:40:26 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:40:26 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:40:26 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:40:26 [TargetInfo] Removing the Modulated Strip Miner II on Hulk from Veldspar's activeModule list.
+20:40:26 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:40:26 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:40:26 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:40:26 [TargetInfo] Removing the Modulated Strip Miner II on Hulk from Veldspar's activeModule list.
+20:40:26 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:40:26 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:40:26 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:40:58 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:40:58 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:40:58 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:41:59 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:41:59 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:41:59 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:43:00 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:43:00 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:43:00 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:44:01 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:44:01 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:44:01 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:44:34 [Service] machoNet::GetTime()
+20:44:34 [Service] machoNet::GetTime()
+20:44:34 [Service] machoNet::GetTime()
+20:44:34 [Service] machoNet::GetTime()
+20:44:34 [Service] machoNet::GetTime()
+20:45:02 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:45:02 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:45:02 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:46:03 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:46:03 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:46:03 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:47:04 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:47:04 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:47:04 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:47:51 [Bound] InventoryBound::MultiMerge()
+20:47:51 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:47:57 [Bound] DogmaIMBound::Activate()
+20:47:57 [TargetInfo] Adding Hulk:Modulated Strip Miner II to Veldspar's activeModule list.
+20:47:57 [FxUndefined] FxProc::ParseExpression() - Operand id:J key:VERIFYTARGETGROUP - should be added as VerifyTargetGroup()
+20:47:57 [FxUndefined] FxProc::ParseExpression() - Operand id:H key:TOOLTARGETSKILLS - should be added as CheckToolTargetSkills
+20:48:02 [Bound] DogmaIMBound::Activate()
+20:48:02 [TargetInfo] Adding Hulk:Modulated Strip Miner II to Veldspar's activeModule list.
+20:48:02 [FxUndefined] FxProc::ParseExpression() - Operand id:J key:VERIFYTARGETGROUP - should be added as VerifyTargetGroup()
+20:48:02 [FxUndefined] FxProc::ParseExpression() - Operand id:H key:TOOLTARGETSKILLS - should be added as CheckToolTargetSkills
+20:48:05 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:48:05 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:48:05 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:48:08 [Bound] DogmaIMBound::Activate()
+20:48:08 [TargetInfo] Adding Hulk:Modulated Strip Miner II to Scordite's activeModule list.
+20:48:08 [FxUndefined] FxProc::ParseExpression() - Operand id:J key:VERIFYTARGETGROUP - should be added as VerifyTargetGroup()
+20:48:08 [FxUndefined] FxProc::ParseExpression() - Operand id:H key:TOOLTARGETSKILLS - should be added as CheckToolTargetSkills
+20:48:14 [Service] entity::MachoResolveObject()
+20:48:14 [SvcMsg] entity Service: MachoResolveObject requested, returning 888444
+20:48:14 [Service] entity::MachoBindObject()
+20:48:14 [SvcMsg] entity Service: Processing MachoBindObject
+20:48:14 [DroneDump] EntityService bind request
+20:48:14 [DroneDump]        Integer: 30000053
+20:48:14 [SvcMsg] Service Mgr Binding EntityBound to node 888444:112 for Allan
+20:48:14 [SvcMsg] entity Service: MachoBindObject also contains call to CmdMineRepeatedly
+20:48:14 [Bound] EntityBound::CmdMineRepeatedly()
+20:48:14 [DroneTrace] EntityBound::Handle_CmdMineRepeatedly()
+20:48:14 [DroneDump]   Call Arguments:
+20:48:14 [DroneDump]      Tuple: 2 elements
+20:48:14 [DroneDump]       [ 0]   List: 1 elements
+20:48:14 [DroneDump]       [ 0]   [ 0]    Integer: 140024261
+20:48:14 [DroneDump]       [ 1]    Integer: 450000583
+20:48:18 [Bound] BeyonceBound::CmdFollowBall()
+20:48:18 [AP Msg] Allan called Follow. AP: false
+20:48:18 [MoveTrace] Destiny::SetSpeedFraction() - Hulk(140018752):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+20:48:18 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 87.50, accel: true, decel: false, delta: 1.000
+20:48:18 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 84.80, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+20:48:19 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.02846, timeStamp: 0.394
+20:48:19 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 2.490 m/s (tf:0.0285 asf:0.0285 sec: 0.394).
+20:48:20 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.09711, timeStamp: 1.394
+20:48:20 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 8.497 m/s (tf:0.0971 asf:0.0971 sec: 1.394).
+20:48:21 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.16091, timeStamp: 2.394
+20:48:21 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 14.080 m/s (tf:0.1609 asf:0.1609 sec: 2.394).
+20:48:22 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.22021, timeStamp: 3.394
+20:48:22 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 19.268 m/s (tf:0.2202 asf:0.2202 sec: 3.394).
+20:48:23 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.27531, timeStamp: 4.394
+20:48:23 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating at 24.090 m/s (tf:0.2753 asf:0.2753 sec: 4.394).
+20:48:24 [Bound] BeyonceBound::CmdStop()
+20:48:24 [AP Msg] Allan called Stop. AP: false, Invul: false
+20:48:24 [MoveTrace] Destiny::SetSpeedFraction() - Hulk(140018752):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: false, decel: false
+20:48:24 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752):  USF == 0 and ship is Moving.   --Decel for Stop  AccelTime: 23.35, USF: 0.00, ASF: 0.28, TF: 0.28, PSF: 0.28
+20:48:24 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.02249, timeStamp: 0.310
+20:48:24 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 23.548 m/s (tf:0.0225 asf:0.2691 ps:24.09 psf:0.2753, sec: 0.310).
+20:48:25 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.09157, timeStamp: 1.310
+20:48:25 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 21.884 m/s (tf:0.0916 asf:0.2501 ps:24.09 psf:0.2753, sec: 1.310).
+20:48:26 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.15576, timeStamp: 2.310
+20:48:26 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 20.338 m/s (tf:0.1558 asf:0.2324 ps:24.09 psf:0.2753, sec: 2.310).
+20:48:27 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.21541, timeStamp: 3.310
+20:48:27 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 18.900 m/s (tf:0.2154 asf:0.2160 ps:24.09 psf:0.2753, sec: 3.310).
+20:48:28 [Service] entity::MachoBindObject()
+20:48:28 [SvcMsg] entity Service: Processing MachoBindObject
+20:48:28 [DroneDump] EntityService bind request
+20:48:28 [DroneDump]        Integer: 30000053
+20:48:28 [SvcMsg] Service Mgr Binding EntityBound to node 888444:113 for Allan
+20:48:28 [SvcMsg] entity Service: MachoBindObject also contains call to CmdReturnHome
+20:48:28 [Bound] EntityBound::CmdReturnHome()
+20:48:28 [DroneDump]   Call Arguments:
+20:48:28 [DroneDump]      Tuple: 1 elements
+20:48:28 [DroneDump]       [ 0]   List: 1 elements
+20:48:28 [DroneDump]       [ 0]   [ 0]    Integer: 140024262
+20:48:28 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.27086, timeStamp: 4.310
+20:48:28 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 17.565 m/s (tf:0.2709 asf:0.2007 ps:24.09 psf:0.2753, sec: 4.310).
+20:48:29 [SvcMsg] Client Has Released These Objects:
+20:48:29 [SvcMsg] Service Mgr Clearing bound object EntityBound at N=888444:113
+20:48:29 [SvcMsg] Service Mgr Clearing bound object EntityBound at N=888444:112
+20:48:29 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.32238, timeStamp: 5.310
+20:48:29 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 16.324 m/s (tf:0.3224 asf:0.1866 ps:24.09 psf:0.2753, sec: 5.310).
+20:48:30 [Service] entity::MachoBindObject()
+20:48:30 [SvcMsg] entity Service: Processing MachoBindObject
+20:48:30 [DroneDump] EntityService bind request
+20:48:30 [DroneDump]        Integer: 30000053
+20:48:30 [SvcMsg] Service Mgr Binding EntityBound to node 888444:114 for Allan
+20:48:30 [SvcMsg] entity Service: MachoBindObject also contains call to CmdReturnBay
+20:48:30 [Bound] EntityBound::CmdReturnBay()
+20:48:30 [DroneTrace] EntityBound::Handle_CmdReturnBay()
+20:48:30 [DroneDump]   Call Arguments:
+20:48:30 [DroneDump]      Tuple: 1 elements
+20:48:30 [DroneDump]       [ 0]   List: 1 elements
+20:48:30 [DroneDump]       [ 0]   [ 0]    Integer: 140024262
+20:48:30 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.37027, timeStamp: 6.310
+20:48:32 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 15.170 m/s (tf:0.3703 asf:0.1734 ps:24.09 psf:0.2753, sec: 6.310).
+20:48:32 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.44852, timeStamp: 8.121
+20:48:32 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 13.285 m/s (tf:0.4485 asf:0.1518 ps:24.09 psf:0.2753, sec: 8.121).
+20:48:32 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.45612, timeStamp: 8.310
+20:48:32 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 13.102 m/s (tf:0.4561 asf:0.1497 ps:24.09 psf:0.2753, sec: 8.310).
+20:48:33 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.49455, timeStamp: 9.310
+20:48:33 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 12.176 m/s (tf:0.4946 asf:0.1392 ps:24.09 psf:0.2753, sec: 9.310).
+20:48:34 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.53027, timeStamp: 10.310
+20:48:34 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 11.316 m/s (tf:0.5303 asf:0.1293 ps:24.09 psf:0.2753, sec: 10.310).
+20:48:35 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.56346, timeStamp: 11.310
+20:48:35 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 10.516 m/s (tf:0.5635 asf:0.1202 ps:24.09 psf:0.2753, sec: 11.310).
+20:48:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.59431, timeStamp: 12.310
+20:48:36 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 9.773 m/s (tf:0.5943 asf:0.1117 ps:24.09 psf:0.2753, sec: 12.310).
+20:48:37 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.62297, timeStamp: 13.310
+20:48:37 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 9.082 m/s (tf:0.6230 asf:0.1038 ps:24.09 psf:0.2753, sec: 13.310).
+20:48:38 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.64962, timeStamp: 14.310
+20:48:38 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 8.441 m/s (tf:0.6496 asf:0.0965 ps:24.09 psf:0.2753, sec: 14.310).
+20:48:39 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.67438, timeStamp: 15.310
+20:48:39 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 7.844 m/s (tf:0.6744 asf:0.0896 ps:24.09 psf:0.2753, sec: 15.310).
+20:48:40 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.69739, timeStamp: 16.310
+20:48:40 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 7.290 m/s (tf:0.6974 asf:0.0833 ps:24.09 psf:0.2753, sec: 16.310).
+20:48:41 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.71877, timeStamp: 17.310
+20:48:41 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 6.775 m/s (tf:0.7188 asf:0.0774 ps:24.09 psf:0.2753, sec: 17.310).
+20:48:42 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.73864, timeStamp: 18.310
+20:48:42 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 6.296 m/s (tf:0.7386 asf:0.0720 ps:24.09 psf:0.2753, sec: 18.310).
+20:48:43 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.75711, timeStamp: 19.310
+20:48:43 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 5.851 m/s (tf:0.7571 asf:0.0669 ps:24.09 psf:0.2753, sec: 19.310).
+20:48:44 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.77427, timeStamp: 20.310
+20:48:44 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 5.438 m/s (tf:0.7743 asf:0.0621 ps:24.09 psf:0.2753, sec: 20.310).
+20:48:45 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.79022, timeStamp: 21.310
+20:48:45 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 5.053 m/s (tf:0.7902 asf:0.0578 ps:24.09 psf:0.2753, sec: 21.310).
+20:48:46 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.80505, timeStamp: 22.310
+20:48:46 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 4.696 m/s (tf:0.8050 asf:0.0537 ps:24.09 psf:0.2753, sec: 22.310).
+20:48:47 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.81883, timeStamp: 23.311
+20:48:47 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 4.364 m/s (tf:0.8188 asf:0.0499 ps:24.09 psf:0.2753, sec: 23.311).
+20:48:48 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.83164, timeStamp: 24.311
+20:48:48 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 4.056 m/s (tf:0.8316 asf:0.0464 ps:24.09 psf:0.2753, sec: 24.311).
+20:48:49 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.84352, timeStamp: 25.310
+20:48:49 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 3.769 m/s (tf:0.8435 asf:0.0431 ps:24.09 psf:0.2753, sec: 25.310).
+20:48:50 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.85458, timeStamp: 26.310
+20:48:50 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 3.503 m/s (tf:0.8546 asf:0.0400 ps:24.09 psf:0.2753, sec: 26.310).
+20:48:51 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.86486, timeStamp: 27.310
+20:48:51 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 3.256 m/s (tf:0.8649 asf:0.0372 ps:24.09 psf:0.2753, sec: 27.310).
+20:48:52 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.87441, timeStamp: 28.310
+20:48:52 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 3.026 m/s (tf:0.8744 asf:0.0346 ps:24.09 psf:0.2753, sec: 28.310).
+20:48:53 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.88328, timeStamp: 29.310
+20:48:53 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.812 m/s (tf:0.8833 asf:0.0321 ps:24.09 psf:0.2753, sec: 29.310).
+20:48:54 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.89153, timeStamp: 30.310
+20:48:54 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.613 m/s (tf:0.8915 asf:0.0299 ps:24.09 psf:0.2753, sec: 30.310).
+20:48:55 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.89919, timeStamp: 31.310
+20:48:55 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.428 m/s (tf:0.8992 asf:0.0278 ps:24.09 psf:0.2753, sec: 31.310).
+20:48:56 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.90632, timeStamp: 32.310
+20:48:56 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.257 m/s (tf:0.9063 asf:0.0258 ps:24.09 psf:0.2753, sec: 32.310).
+20:48:57 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91294, timeStamp: 33.310
+20:48:57 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 2.097 m/s (tf:0.9129 asf:0.0240 ps:24.09 psf:0.2753, sec: 33.310).
+20:48:58 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.91909, timeStamp: 34.310
+20:48:58 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.949 m/s (tf:0.9191 asf:0.0223 ps:24.09 psf:0.2753, sec: 34.310).
+20:48:59 [SvcMsg] Client Has Released These Objects:
+20:48:59 [SvcMsg] Service Mgr Clearing bound object EntityBound at N=888444:114
+20:48:59 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.92481, timeStamp: 35.310
+20:48:59 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.811 m/s (tf:0.9248 asf:0.0207 ps:24.09 psf:0.2753, sec: 35.310).
+20:49:00 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93012, timeStamp: 36.310
+20:49:00 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.683 m/s (tf:0.9301 asf:0.0192 ps:24.09 psf:0.2753, sec: 36.310).
+20:49:01 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93506, timeStamp: 37.311
+20:49:01 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.564 m/s (tf:0.9351 asf:0.0179 ps:24.09 psf:0.2753, sec: 37.311).
+20:49:02 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93965, timeStamp: 38.310
+20:49:02 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.454 m/s (tf:0.9396 asf:0.0166 ps:24.09 psf:0.2753, sec: 38.310).
+20:49:03 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.94391, timeStamp: 39.311
+20:49:03 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.351 m/s (tf:0.9439 asf:0.0154 ps:24.09 psf:0.2753, sec: 39.311).
+20:49:04 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.94787, timeStamp: 40.310
+20:49:04 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.256 m/s (tf:0.9479 asf:0.0144 ps:24.09 psf:0.2753, sec: 40.310).
+20:49:05 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95156, timeStamp: 41.311
+20:49:05 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.167 m/s (tf:0.9516 asf:0.0133 ps:24.09 psf:0.2753, sec: 41.311).
+20:49:06 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95498, timeStamp: 42.310
+20:49:06 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.084 m/s (tf:0.9550 asf:0.0124 ps:24.09 psf:0.2753, sec: 42.310).
+20:49:06 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:49:06 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:49:06 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:49:07 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.95816, timeStamp: 43.311
+20:49:07 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 1.008 m/s (tf:0.9582 asf:0.0115 ps:24.09 psf:0.2753, sec: 43.311).
+20:49:08 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96112, timeStamp: 44.310
+20:49:08 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.937 m/s (tf:0.9611 asf:0.0107 ps:24.09 psf:0.2753, sec: 44.310).
+20:49:09 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96387, timeStamp: 45.310
+20:49:09 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.870 m/s (tf:0.9639 asf:0.0099 ps:24.09 psf:0.2753, sec: 45.310).
+20:49:10 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96642, timeStamp: 46.310
+20:49:10 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.809 m/s (tf:0.9664 asf:0.0092 ps:24.09 psf:0.2753, sec: 46.310).
+20:49:11 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.96879, timeStamp: 47.310
+20:49:11 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.752 m/s (tf:0.9688 asf:0.0086 ps:24.09 psf:0.2753, sec: 47.310).
+20:49:12 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97100, timeStamp: 48.311
+20:49:12 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.699 m/s (tf:0.9710 asf:0.0080 ps:24.09 psf:0.2753, sec: 48.311).
+20:49:13 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97305, timeStamp: 49.310
+20:49:13 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.649 m/s (tf:0.9730 asf:0.0074 ps:24.09 psf:0.2753, sec: 49.310).
+20:49:14 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97495, timeStamp: 50.310
+20:49:14 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.603 m/s (tf:0.9750 asf:0.0069 ps:24.09 psf:0.2753, sec: 50.310).
+20:49:15 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97672, timeStamp: 51.310
+20:49:15 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.561 m/s (tf:0.9767 asf:0.0064 ps:24.09 psf:0.2753, sec: 51.310).
+20:49:16 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97837, timeStamp: 52.310
+20:49:16 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.521 m/s (tf:0.9784 asf:0.0060 ps:24.09 psf:0.2753, sec: 52.310).
+20:49:17 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.97990, timeStamp: 53.310
+20:49:17 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.484 m/s (tf:0.9799 asf:0.0055 ps:24.09 psf:0.2753, sec: 53.310).
+20:49:18 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98132, timeStamp: 54.310
+20:49:18 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.450 m/s (tf:0.9813 asf:0.0051 ps:24.09 psf:0.2753, sec: 54.310).
+20:49:19 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98264, timeStamp: 55.310
+20:49:19 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.418 m/s (tf:0.9826 asf:0.0048 ps:24.09 psf:0.2753, sec: 55.310).
+20:49:20 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98386, timeStamp: 56.311
+20:49:20 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.389 m/s (tf:0.9839 asf:0.0044 ps:24.09 psf:0.2753, sec: 56.311).
+20:49:21 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98500, timeStamp: 57.311
+20:49:21 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.361 m/s (tf:0.9850 asf:0.0041 ps:24.09 psf:0.2753, sec: 57.311).
+20:49:22 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98606, timeStamp: 58.310
+20:49:22 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.336 m/s (tf:0.9861 asf:0.0038 ps:24.09 psf:0.2753, sec: 58.310).
+20:49:23 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98705, timeStamp: 59.310
+20:49:23 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.312 m/s (tf:0.9870 asf:0.0036 ps:24.09 psf:0.2753, sec: 59.310).
+20:49:24 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98796, timeStamp: 60.310
+20:49:24 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.290 m/s (tf:0.9880 asf:0.0033 ps:24.09 psf:0.2753, sec: 60.310).
+20:49:25 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98881, timeStamp: 61.310
+20:49:25 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.269 m/s (tf:0.9888 asf:0.0031 ps:24.09 psf:0.2753, sec: 61.310).
+20:49:26 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.98960, timeStamp: 62.310
+20:49:26 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.250 m/s (tf:0.9896 asf:0.0029 ps:24.09 psf:0.2753, sec: 62.310).
+20:49:27 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99034, timeStamp: 63.310
+20:49:27 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.233 m/s (tf:0.9903 asf:0.0027 ps:24.09 psf:0.2753, sec: 63.310).
+20:49:28 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99102, timeStamp: 64.310
+20:49:28 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.216 m/s (tf:0.9910 asf:0.0025 ps:24.09 psf:0.2753, sec: 64.310).
+20:49:29 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99166, timeStamp: 65.311
+20:49:29 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.201 m/s (tf:0.9917 asf:0.0023 ps:24.09 psf:0.2753, sec: 65.311).
+20:49:30 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99225, timeStamp: 66.311
+20:49:30 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.187 m/s (tf:0.9922 asf:0.0021 ps:24.09 psf:0.2753, sec: 66.311).
+20:49:31 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99279, timeStamp: 67.310
+20:49:31 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 0.174 m/s (tf:0.9928 asf:0.0020 ps:24.09 psf:0.2753, sec: 67.310).
+20:49:34 [Service] machoNet::GetTime()
+20:49:34 [Service] machoNet::GetTime()
+20:49:34 [Service] machoNet::GetTime()
+20:49:34 [Service] machoNet::GetTime()
+20:49:34 [Service] machoNet::GetTime()
+20:49:55 [Service] entity::MachoBindObject()
+20:49:55 [SvcMsg] entity Service: Processing MachoBindObject
+20:49:55 [DroneDump] EntityService bind request
+20:49:55 [DroneDump]        Integer: 30000053
+20:49:55 [SvcMsg] Service Mgr Binding EntityBound to node 888444:115 for Allan
+20:49:55 [SvcMsg] entity Service: MachoBindObject also contains call to CmdReturnBay
+20:49:55 [Bound] EntityBound::CmdReturnBay()
+20:49:55 [DroneTrace] EntityBound::Handle_CmdReturnBay()
+20:49:55 [DroneDump]   Call Arguments:
+20:49:55 [DroneDump]      Tuple: 1 elements
+20:49:55 [DroneDump]       [ 0]   List: 1 elements
+20:49:55 [DroneDump]       [ 0]   [ 0]    Integer: 140024262
+20:49:59 [SvcMsg] Client Has Released These Objects:
+20:49:59 [SvcMsg] Service Mgr Clearing bound object EntityBound at N=888444:115
+20:50:03 [Bound] ShipBound::ScoopDrone()
+20:50:03 [InvWarning] Inventory::RemoveItem(1) - Ibaria(30000053) contents does not contain Mining Drone I(140024261) in Drone Bay.
+20:50:03 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Mining Drone I(140024261) in Drone Bay.
+20:50:03 [TargetDump] Target Dump for Mining Drone I(140024261):
+20:50:03 [TargetDump]     No Targets
+20:50:03 [TargetDump]     No Targeters
+20:50:03 [TargetDump]     Active Modules: (ship:module(moduleID))
+20:50:03 [TargetDump]       *NONE*
+20:50:03 [TargetTrace] ClearAllTargets:  Mining Drone I(140024261) has cleared all targeting information.
+20:50:07 [Bound] ShipBound::ScoopDrone()
+20:50:07 [InvWarning] Inventory::RemoveItem(1) - Ibaria(30000053) contents does not contain Mining Drone I(140024262) in Drone Bay.
+20:50:07 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Mining Drone I(140024262) in Drone Bay.
+20:50:07 [TargetDump] Target Dump for Mining Drone I(140024262):
+20:50:07 [TargetDump]     No Targets
+20:50:07 [TargetDump]     No Targeters
+20:50:07 [TargetDump]     Active Modules: (ship:module(moduleID))
+20:50:07 [TargetDump]       *NONE*
+20:50:07 [TargetTrace] ClearAllTargets:  Mining Drone I(140024262) has cleared all targeting information.
+20:50:07 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:50:07 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:50:07 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+d
+20:50:43 B    Active Threads: There are 1 active threads running in the server.
+20:50:43 W                  : ThreadID 0xEFFFF700
+20:50:58 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:50:58 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:51:02 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:51:02 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:51:02 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:51:08 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:51:08 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:51:08 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:51:09 [ItemWarning] II::Spawn creating generic item for type 1228, cat 25.
+20:51:09 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:51:09 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:52:09 [SpawnMsg] Spawn called for bubble 4(40003342) in Ibaria(30000053)[0.7310], region 10000001.
+20:52:09 [SpawnTrace] SpawnMgr::FindSpawnForBubble() returned true for bubble 4.
+20:52:09 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+
+
+20:53:10 [SpawnTrace] SystemManager::DoSpawnForBubble() returned false for bubble 4.
+20:53:12 [Bound] DogmaIMBound::Deactivate()
+20:53:12 W DogmaIMBound::Handle_Deactivate(): size=2
+20:53:12 [ItemWarning] II::Spawn creating generic item for type 1228, cat 25.
+20:53:12 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:53:12 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:53:12 [TargetInfo] Removing the Modulated Strip Miner II on Hulk from Scordite's activeModule list.
+20:53:13 [Bound] DogmaIMBound::Deactivate()
+20:53:13 W DogmaIMBound::Handle_Deactivate(): size=2
+20:53:13 [FxUndefined] FxProc::ParseExpression() - Operand id:2 key:MINE - should be added as Mine
+20:53:13 [TargetInfo] Removing the Modulated Strip Miner II on Hulk from Veldspar's activeModule list.
+20:53:13 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:53:13 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:53:13 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+20:53:13 [FxUndefined] FxProc::ParseExpression() - Operand id:2 key:MINE - should be added as Mine
+20:53:13 [TargetInfo] Removing the Modulated Strip Miner II on Hulk from Veldspar's activeModule list.
+20:53:13 [ItemWarning] II::Spawn creating generic item for type 1230, cat 25.
+20:53:14 [Bound] DogmaIMBound::Activate()
+20:53:14 [TargetInfo] Adding Hulk:Modulated Strip Miner II to Scordite's activeModule list.
+20:53:14 [MiningWarning] Activate() - Cargo full.  Denying Activate() on Scordite
+20:53:14 [TargetInfo] Removing the Modulated Strip Miner II on Hulk from Scordite's activeModule list.
+
+.
+20:58:32 [Bound] BeyonceBound::CmdWarpToStuff()
+20:58:32 [AP Msg] Allan called WarpToStuff. AP: false
+20:58:32 [MoveTrace] Destiny::SetSpeedFraction() - Hulk(140018752):   prevSpeed:24.09, fraction: 0.28, start: true, stop: false, accel: false, decel: true
+20:58:32 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752): Speed Change - USF: 0.28, ASF: 0.00, TF: 0.99, PSF: 0.00, pSpeed: 24.09, mSpeed: 24.09, accel: true, decel: false, delta: 1.000
+20:58:32 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 23.35, USF: 0.28, ASF: 0.00, TF: 0.99, PSF: 0.00
+20:58:33 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.0102005, radians:1.56060, degrees:89.416
+20:58:33 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.1126022,0.0744098,-0.1945416.  m_targetHeading: -0.1126022,0.9744097,-0.1945416
+20:58:33 [TurnTrace] Destiny::Turn(1) - Hulk(140018752): diff:0.00000,0.90000,0.00000, pct:0.143, delta:0.0000000,0.1285714,0.0000000
+20:58:33 [TurnTrace] Destiny::Turn(1) - Hulk(140018752): minTurnSpeedFraction:0.711(62.187), alignTime:7.215, ASF:0.002
+20:58:33 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.06621, timeStamp: 0.935
+20:58:33 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 1.595 m/s (tf:0.0662 asf:0.0182 sec: 0.935).
+20:58:34 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.0102005, radians:1.56060, degrees:89.416
+20:58:34 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.1126022,0.0744098,-0.1945416.  m_targetHeading: -0.1126022,0.9744097,-0.1945416
+20:58:34 [TurnTrace] Destiny::Turn(2) - tf:0.066, turnStamp:2.000, degRemain:89.416, newShipHeading:-0.1126022,0.2029812,-0.1945416
+20:58:34 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.13219, timeStamp: 1.935
+20:58:34 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 3.184 m/s (tf:0.1322 asf:0.0364 sec: 1.935).
+20:58:35 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.0166861, radians:1.55411, degrees:89.044
+20:58:35 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.1126022,0.2029812,-0.1945416.  m_targetHeading: -0.1126022,0.9744097,-0.1945416
+20:58:35 [TurnTrace] Destiny::Turn(2) - tf:0.132, turnStamp:3.000, degRemain:89.044, newShipHeading:-0.1126022,0.3315526,-0.1945416
+20:58:35 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.19351, timeStamp: 2.935
+20:58:35 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 4.662 m/s (tf:0.1935 asf:0.0533 sec: 2.935).
+20:58:36 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.0231716, radians:1.54762, degrees:88.672
+20:58:36 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.1126022,0.3315526,-0.1945416.  m_targetHeading: -0.1126022,0.9744097,-0.1945416
+20:58:36 [TurnTrace] Destiny::Turn(2) - tf:0.194, turnStamp:4.000, degRemain:88.672, newShipHeading:-0.1126022,0.4601240,-0.1945416
+20:58:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.25050, timeStamp: 3.935
+20:58:36 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 6.034 m/s (tf:0.2505 asf:0.0690 sec: 3.935).
+20:58:37 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.0296572, radians:1.54113, degrees:88.301
+20:58:37 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.1126022,0.4601240,-0.1945416.  m_targetHeading: -0.1126022,0.9744097,-0.1945416
+20:58:37 [TurnTrace] Destiny::Turn(2) - tf:0.250, turnStamp:5.000, degRemain:88.301, newShipHeading:-0.1126022,0.5886955,-0.1945416
+20:58:37 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.30346, timeStamp: 4.935
+20:58:37 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 7.310 m/s (tf:0.3035 asf:0.0835 sec: 4.935).
+20:58:38 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.0361427, radians:1.53465, degrees:87.929
+20:58:38 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.1126022,0.5886955,-0.1945416.  m_targetHeading: -0.1126022,0.9744097,-0.1945416
+20:58:38 [TurnTrace] Destiny::Turn(2) - tf:0.303, turnStamp:6.000, degRemain:87.929, newShipHeading:-0.1126022,0.7172669,-0.1945416
+20:58:38 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.35268, timeStamp: 5.935
+20:58:38 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 8.496 m/s (tf:0.3527 asf:0.0971 sec: 5.935).
+20:58:39 [TurnTrace] Destiny::IsTurn() - Hulk(140018752): dot: 0.0426281, radians:1.52816, degrees:87.557
+20:58:39 [TurnTrace] Destiny::IsTurn() m_shipHeading: -0.1126022,0.7172669,-0.1945416.  m_targetHeading: -0.1126022,0.9744097,-0.1945416
+20:58:39 [TurnTrace] Destiny::Turn(2) - tf:0.353, turnStamp:7.000, degRemain:87.557, newShipHeading:-0.1126022,0.8458383,-0.1945416
+20:58:39 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.39842, timeStamp: 6.935
+20:58:39 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is accelerating in turn at 9.598 m/s (tf:0.3984 asf:0.1097 sec: 6.935).
+20:58:40 [DestinyError] Destiny::ProcessState() Error!  Ship Hulk(140018752) for Player Allan(90000000) - warp align/speed is incorrect, but time > shipTimeToWarp.
+20:58:40 [DestinyWarning] Warp Cap need for Hulk(140018752) for 0AU is 0.0000000000
+20:58:40 M MM::ShipWarping(): Deactivating non-warpsafe modules.
+20:58:40 [TargetTrace] Veldspar(450000580) is no longer locked by Hulk(140018752)
+20:58:40 [TargetTrace] Veldspar(450000580) - Hulk(140018752) has lost target lock on me.
+20:58:40 [TargetTrace] ClearTargets() - Hulk(140018752) has cleared target Veldspar(450000580).
+20:58:40 [TargetTrace] Veldspar(450000582) is no longer locked by Hulk(140018752)
+20:58:40 [TargetTrace] Veldspar(450000582) - Hulk(140018752) has lost target lock on me.
+20:58:40 [TargetTrace] ClearTargets() - Hulk(140018752) has cleared target Veldspar(450000582).
+20:58:40 [TargetTrace] Scordite(450000583) is no longer locked by Hulk(140018752)
+20:58:40 [TargetTrace] Scordite(450000583) - Hulk(140018752) has lost target lock on me.
+20:58:40 [TargetTrace] ClearTargets() - Hulk(140018752) has cleared target Scordite(450000583).
+20:58:40 [TargetTrace] Arch Angel Raider(750000007) is no longer locked by Hulk(140018752)
+20:58:40 [TargetTrace] Arch Angel Raider(750000007) - Hulk(140018752) has lost target lock on me.
+20:58:40 [TargetTrace] ClearTargets() - Hulk(140018752) has cleared target Arch Angel Raider(750000007).
+20:58:40 [TargetTrace] Arch Angel Raider(750000008) is no longer locked by Hulk(140018752)
+20:58:40 [TargetTrace] Arch Angel Raider(750000008) - Hulk(140018752) has lost target lock on me.
+20:58:40 [TargetTrace] ClearTargets() - Hulk(140018752) has cleared target Arch Angel Raider(750000008).
+20:58:40 [TargetTrace] Arch Angel Raider(750000009) is no longer locked by Hulk(140018752)
+20:58:40 [TargetTrace] Arch Angel Raider(750000009) - Hulk(140018752) has lost target lock on me.
+20:58:40 [TargetTrace] ClearTargets() - Hulk(140018752) has cleared target Arch Angel Raider(750000009).
+20:58:40 [TargetDump] Target Dump for Hulk(140018752):
+20:58:40 [TargetDump]     No Targets
+20:58:40 [TargetDump]     No Targeters
+20:58:40 [TargetDump]     Active Modules: (ship:module(moduleID))
+20:58:40 [TargetDump]       *NONE*
+20:58:40 [TargetTrace] Hulk(140018752) - i am clearing all target data.
+20:58:40 [TargetTrace] ClearAllTargets:  Hulk(140018752) has cleared all targeting information.
+20:58:58 [AP Msg] Destiny::WarpStop(): Hulk(140018752) - Warp complete.
+20:58:58 [MoveTrace] Destiny::SetSpeedFraction() - Hulk(140018752):   prevSpeed:24.09, fraction: 0.00, start: false, stop: false, accel: true, decel: false
+20:58:58 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752):  ship dropped out of warp.      --Begin Decel  AccelTime: 18.92, USF: 0.00, ASF: 0.11, TF: 0.40, PSF: 0.75
+20:58:59 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.86109, timeStamp: 26.935
+20:58:59 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 9.116 m/s (tf:0.8611 asf:0.1042 ps:65.62 psf:0.7500, sec: 26.935).
+20:59:00 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.87090, timeStamp: 27.934
+20:59:00 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 8.472 m/s (tf:0.8709 asf:0.0968 ps:65.62 psf:0.7500, sec: 27.934).
+20:59:01 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.88002, timeStamp: 28.934
+20:59:01 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is decelerating at 7.874 m/s (tf:0.8800 asf:0.0900 ps:65.62 psf:0.7500, sec: 28.934).
+20:59:02 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.88850, timeStamp: 29.934
+
+20:59:57 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.99802, timeStamp: 84.935
+20:59:57 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) has decel'd from 65.62m/s to 0.14m/s in 84.935s.
+20:59:57 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is at full stop after 84.935 seconds.
+
+21:08:38 [ThreadError] RemoveThread() - Called on unregistered threadID 0xF7FC9740

@@ -23,13 +23,12 @@ other updates?
 TEST THIS!!!
 remove 'new' from Py* objects  { PyDict dict = PyDict(); }   will this work?
 
-check default init on struct objects.  coverity is showing 'uninitialized member x' but could be false positive
+target count is off (not sure why yet)
 
 !! destiny (all space movement)
+ship heading 0 for all movement....
 -- even with heading identical (client and server) there is still some deviation after turning...i dont understand where its from
-NEW--- movement tracking (and code) stops execution after ~24s
-	- used to show "ship stopped after xx seconds"...not now and i dont know why
-	-- was using IsMoving() which checks moveTimer < 0.01f (or around 25s in rifter) to direct move check switch.  dumbass.
+
 
 ships  ---  attrAgility will need to be recalc'd and reset anytime inertia or mass changes.
     -- there are also modules that modify all of these variables.  these need verification
@@ -70,6 +69,16 @@ request for smartbombs
 loading probes in station does not update count in hangar
 
 wtf???  11:45:54 [DestinyWarning] Warp Cap need for Rifter(140007395) is 0.0007
+
+warping is wonky....see log for details.  condensed following
+  - call:  ok
+  - response:  too soon   (targets drop before align)
+  - align:   ok
+  - accel:  didnt see it
+  - warp:  didnt see it
+  - drop:  maybe...wasnt sure
+  - decel: ok
+
 
 noob ships do not Init() correctly....  most attrs are 0
     -- check this.  may be fixed already
@@ -211,6 +220,7 @@ ShipSE::LaunchDrone() needs bit of work.  drones are online and set to orbit aft
 drone ai needs:
   - assigned ship killed, need code to reset
   - all states except idle
+  - does drone bound calls make new bound object?  seems like it does, but why?  keep same object for each drone.
 mining methods will need updates to test for drones vs pilots
 move mining item depleted call to targmgr
 
@@ -485,7 +495,7 @@ implement this for RAM shit (they are all 4, but whatever)  -priority level: low
 better checks and reverts when creating corps fail
 - updated to not check for failure when adding data to evestaticowners, walletdivisions and corpshares
 
-implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligable.
+implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligible.
     update for ~20+ or so points to make a difference with our attributes
     implant map in character.h  -currently unused/unimplemented
 
@@ -622,7 +632,9 @@ prop mod destiny call - update ship speed to AccelTime math isnt right...see cru
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
 
 modules not shutting down when deactivated
-
+     strip miners shut down immediately.  (not wait for cycle to complete)
+    invlu field completes cycle when deactivated
+    roid scanner does also (but cycle circle is off a bit)
 
 *******************************************************
 *******************************************************
@@ -665,7 +677,7 @@ still need to host agent photos...
 
 .inventory command
   - 10000000001 (office) - has no name
-  
+
 check james' alliance code for proper functionality...not sure about some of those variables
 
 check into cosmic manager enabling checks/code....kinda dont make sense (may have done this already)

@@ -49,9 +49,11 @@ static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow chec
 static const double Gc = 0.000000000066725985;     //per client (changed from original 6.673e-11)
 static const float SMALL_NUMBER = 0.000000000000001;
 
+// constant for destiny movement check
+static const float ASF_CHECK = 0.002f;
 
 // verify that NO ONE tries to use "ccp" in their name
-// also check for mysql commands
+// also check for mysql commands among other dumb shit
 static const std::array<std::string, 28> badWords {
     {"ccp",
     "admin",

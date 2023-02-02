@@ -1,0 +1,101 @@
+
+20:39:33 G   Alasiya's EvEMu: Current Console Commands and Descriptions:
+20:39:33 W
+20:39:33 W            (h)elp:  Displays this dialog.
+20:39:33 W           h(e)llo:  Displays the 'Hello World' message.
+20:39:33 W            e(x)it:  Exits the server, saving all loaded items and loging out all connected clients.
+20:39:33 W         (c)lients:  Displays connected clients, showing account, character, and ip.
+20:39:33 W          (s)tatus:  Displays Server's System Status, showing threads, memory, and cpu time.
+20:39:33 W         (v)ersion:  Displays server version.
+20:39:33 W     (i)nformation:  Displays server information: version, memory, uptime, clients, items, systems, bubbles.
+20:39:33 W            s(a)ve:  Immediatly saves all loaded items.  *Broken*
+20:39:33 W       (b)roadcast:  Broadcasts a message to all clients thru the LocalChat window.  *Not Implemented*
+20:39:33 W            (n)ote:  Broadcasts a message to all clients thru a notification window.
+20:39:33 W         (m)essage:  Broadcasts a message to all clients thru a message window.
+20:39:33 W         (p)rofile:  Prints a profile of current server runtimes.  *Incomplete*
+20:39:33 W           r(o)les:  Prints a list of common roles and their values.
+20:39:33 W        c(o)mmands:  Prints a list of currently loaded Commands and their required role. (long list)
+20:39:33 W            (t)est:  Prints the current test object *varies*
+20:39:33 W         e(f)fects:  Compiles and prints all item effects.
+20:39:33 W         threa(d)s:  Prints a list of current threads.
+20:39:33 W     reload (l)ogs:  Reloads log.ini to change values without restarting server.
+20:39:33 W (q)uery stat data:  Prints current statistic data.
+20:39:33 W        hea(r) all:  Echo all chat msgs to console. *Not Implemented*
+20:39:33 W  reload (u)pdates:  Reload LiveUpdates from db.
+
+
+o
+21:17:42 G   Alasiya's EvEMu: Currently Loaded 72 Commands:
+21:17:42 M     Call and Role: addball - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: addball2 - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: attrlist - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: autostop - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: ban - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: beltlist - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: bindList - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: bubblelist - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: bubbletrack - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: bubblewarp - 0x20000000000000 (9007199254740992)
+21:17:42 M     Call and Role: cargo - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: cloak - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: commandlist - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: create - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: createitem - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: destinyvars - 0x20000000000000 (9007199254740992)
+21:17:42 M     Call and Role: dogma - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: dropLoot - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: fit - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: fleetboost - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: fleetinvite - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: getattr - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: getpositiondata - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: giveallskills - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: giveisk - 0x20000000000000 (9007199254740992)
+21:17:42 M     Call and Role: giveskill - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: giveskills - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: goto - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: halt - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: heal - 0x400000 (4194304)
+21:17:42 M     Call and Role: healtarget - 0x400000 (4194304)
+21:17:42 M     Call and Role: hop - 0x80000000000000 (36028797018963968)
+21:17:42 M     Call and Role: inventory - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: kick - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: kill - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: killallnpcs - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: list - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: location - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: online - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: players - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: pop - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: pos - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: repairmodules - 0x400000 (4194304)
+21:17:42 M     Call and Role: runtest - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: search - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: secstatus - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: sendstate - 0x80000000000000 (36028797018963968)
+21:17:42 M     Call and Role: setattr - 0x80000000000000 (36028797018963968)
+21:17:42 M     Call and Role: setbpattr - 0x80000000000000 (36028797018963968)
+21:17:42 M     Call and Role: shipdna - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: shipinventory - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: shipvars - 0x20000000000000 (9007199254740992)
+21:17:42 M     Call and Role: showall - 0x20000000000000 (9007199254740992)
+21:17:42 M     Call and Role: showsession - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: shutdown - 0x20000000000000 (9007199254740992)
+21:17:42 M     Call and Role: siglist - 0x80000000000000 (36028797018963968)
+21:17:42 M     Call and Role: skilllist - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: sov - 0x80000000000000 (36028797018963968)
+21:17:42 M     Call and Role: spawn - 0x200000000 (8589934592)
+21:17:42 M     Call and Role: spawnn - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: status - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: syncloc - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: syncpos - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: targlist - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: tr - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: track - 0x8000000000000 (2251799813685248)
+21:17:42 M     Call and Role: translocate - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: unban - 0x100000000000000 (72057594037927936)
+21:17:42 M     Call and Role: unload - 0x6200000080400000 (7061644217868615680)
+21:17:42 M     Call and Role: unspawn - 0x200000000 (8589934592)
+21:17:42 M     Call and Role: update - 0x2000000000000000 (2305843009213693952)
+21:17:42 M     Call and Role: warpto - 0x20000000000000 (9007199254740992)
+
