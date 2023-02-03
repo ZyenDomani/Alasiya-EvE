@@ -112,7 +112,7 @@ void SpawnMgr::Process() {
                         ++itr;
                         continue;
                     }
-                    _log(SPAWN__TRACE, "Process() calling Respawn for SpawnEntryID %u (0x%P)", \
+                    _log(SPAWN__TRACE, "Process() calling Respawn for SpawnEntryID %u (0x%X)", \
                             itr->second.spawnID, &itr->second);
                     // this means check SpawnEntry for 'missing' SpawnGroup members and respawn as needed.
                     ReSpawn(sBubbleMgr.FindBubbleByID(itr->first), itr->second);
@@ -771,7 +771,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
     GPoint startPos(pBubble->GetCenter());
     GPoint warpToPoint(startPos);
     startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from bubble center
-    _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%P is type:%u, corp:%u, faction:%u, #:%u of %u", \
+    _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
             spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
             spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
     /* ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",

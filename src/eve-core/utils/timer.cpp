@@ -138,10 +138,11 @@ uint32 Timer::GetCurrentTime() {
 const void Timer::SetCurrentTime()
 {
     int64 tickCount = GetSteadyTime();
-    if (lastTime == 0)
+    if (lastTime == 0) {
         currentTime = 0;
-    else
+    } else {
         currentTime += (tickCount - lastTime);
+    }
     lastTime = tickCount;
     //currentSeconds = (tickCount / 1000);
 }

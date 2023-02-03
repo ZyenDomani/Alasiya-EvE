@@ -176,6 +176,8 @@ remove GPoint/GVector code and replace with evemoo's Vec3 code (after thorough r
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
     - every 60s for every bubble object is a bit much.
     - check InBubble and IsOverlap code.
+    - anomaly spawn in bubble w/o npc is considered "empty" and deleted from system.
+       while this will cut down on bubble proc, is it really necessary?  shouldnt these bubbles remain active?
 
 CommandDispatcher c'tor shouldnt call .clear()
   - ListCommands()  add desc to list
@@ -476,11 +478,6 @@ see also (gamepc)inventory call while in station....showed "ship module" flags f
 prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
 
-
-woot!  this works as intended
-20:53:14 [Bound] DogmaIMBound::Activate()
-20:53:14 [MiningWarning] Activate() - Cargo full.  Denying Activate() on Scordite
-
 *******************************************************
 *******************************************************
 *****************   module/ship gFx
@@ -508,6 +505,8 @@ turn fx sending on and follow calls to verify proper OnSpecialFX data
     - remove xmlp data for specialFX and build packet in code?
     - remove specialFX10.  easier if specialFX is built in code, else send None...still not sure on what we can NOT send
 
+mining gfx/deactivate is almost immediate.  this is supposed to have a 5s timer to simulate module shutdown
+  looks immediate.  timer shows 5s.  needs more review
 
 
 *******************************************************
@@ -725,6 +724,7 @@ CharMgrService  needs love
 notificationMgr  needs love
 reproc  needs love
 certificateMgr needs looking at
+  claimed new certs today...got elite cruiser adv arty.  missing many prereqs for that cert.  :/
 paperDollServer incomplete
 factionWarMgr incomplete
 ShipService incomplete

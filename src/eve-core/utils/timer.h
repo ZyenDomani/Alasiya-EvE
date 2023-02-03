@@ -58,7 +58,7 @@ public:
 
 private:
     bool    m_enabled;
-    /* useAcurateTiming resets timer (on check()) to start_time += timer_time to eliminate discrepencies in calling time */
+    /* useAcurateTiming resets timer (on check()) to start_time += timer_time to eliminate discrepancies in calling time */
     bool    m_useAcurateTiming;
 
     uint32	m_duration;
