@@ -54,9 +54,6 @@ TargetManager::TargetManager(SystemEntity *self)
 : mySE(self),
 m_canAttack(false)
 {
-    m_modules.clear();
-    m_targets.clear();
-    m_targetedBy.clear();
 }
 
 bool TargetManager::Process() {
@@ -108,47 +105,23 @@ void TargetManager::Unload() {
 }
 
 bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
-{       // NOTE this is for players and CAN throw (client calls this inside try/catch block)
+{   // NOTE this is for players and CAN throw (client calls this inside try/catch block)
     if (!mySE->HasPilot()) {
         codelog(TARGET__ERROR, "StartTargeting() called by pilot-less ship %s(%u) to target %s(%u)", \
-        mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return false;
     }
 
     //first make sure they are not already in the list
     if (m_targets.find(tSE) != m_targets.end()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
-        mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
-        return false;
-    }
-    // get lower of ship and char target skills, with minimum of 1
-    uint8 maxLockedTargets = 1;
-    uint8 maxCharTargets = mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Targeting);
-    maxCharTargets += mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Multitasking);
-    if (maxCharTargets > 0)
-        if (maxLockedTargets < maxCharTargets)
-            maxLockedTargets = maxCharTargets;
-
-    uint8 maxShipTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_uint32();
-    if (maxShipTargets > 0)
-        if (maxLockedTargets > maxShipTargets)
-            maxLockedTargets = maxShipTargets;
-
-    if (m_targets.size() >= maxLockedTargets) {
-        mySE->GetPilot()->SendNotifyMsg("Your ship and skills combination can only handle %u targets at a time.", maxLockedTargets);
-        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets of %u.  Ignoring request.", \
-                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), maxLockedTargets);
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return false;
     }
 
     // Check if target is an invulnerable structure
     if (tSE->IsTCUSE()) {
         if (tSE->GetTCUSE()->GetState() == EVEPOS::StructureState::Online) {
-            mySE->GetPilot()->SendNotifyMsg("You cannot target an invulnerable structure.");
-            return false;
-        }
-    } else if (tSE->IsTowerSE()) {
-        if ((tSE->GetTowerSE()->GetState() == EVEPOS::StructureState::Reinforced) || (tSE->GetTowerSE()->GetState() == EVEPOS::StructureState::ArmorReinforced) || (tSE->GetTowerSE()->GetState() == EVEPOS::StructureState::SheildReinforced)) {
             mySE->GetPilot()->SendNotifyMsg("You cannot target an invulnerable structure.");
             return false;
         }
@@ -161,6 +134,25 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
             // For now, don't allow targeting outposts. This will need to be changed later.
             mySE->GetPilot()->SendNotifyMsg("You cannot target an invulnerable structure.");
             return false;
+    }
+
+    // get lower of ship and char target skills, with minimum of 1
+    uint8 maxLockedTargets = 1;
+    uint8 maxCharTargets = mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Targeting);
+    maxCharTargets += mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Multitasking);
+    if (maxCharTargets > 1)
+        maxLockedTargets = maxCharTargets;
+
+    uint8 maxShipTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_uint32();
+    if (maxShipTargets > 0)
+        if (maxLockedTargets > maxShipTargets)
+            maxLockedTargets = maxShipTargets;
+
+    if (m_targets.size() >= maxLockedTargets) {
+        mySE->GetPilot()->SendNotifyMsg("Your ship and skills combination can only handle %u targets at a time.", maxLockedTargets);
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets of %u.  Ignoring request.", \
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), maxLockedTargets);
+        return false;
     }
 
     // Check against max target range
@@ -280,6 +272,7 @@ void TargetManager::ClearModules() {
 }
 
 void TargetManager::ClearAllTargets(bool notify/*true*/) {
+    _log(TARGET__TRACE, "%s(%u) - i am clearing all target data.", mySE->GetName(), mySE->GetID());
     ClearTargets(notify);
     ClearFromTargets();
     if (notify)
@@ -473,7 +466,6 @@ void TargetManager::TargetedLost(SystemEntity *tSE) {
 }
 
 void TargetManager::TargetsCleared() {
-    _log(TARGET__TRACE, "%s(%u) - i am clearing all target data.", mySE->GetName(), mySE->GetID());
     if (!mySE->HasPilot())
         return;
     Notify_OnTarget te;

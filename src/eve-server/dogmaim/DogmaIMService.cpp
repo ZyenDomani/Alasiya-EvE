@@ -384,10 +384,13 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        throw CustomError ("Cannot find target.");
     }
     // calling client tests
     Client* pClient(call.client);
+    if (pClient->IsDocked())
+        throw CustomError ("You can't do this while docked");
+
     if (pClient->IsJump())
         throw UserError("CantTargetWhileJumping");
 
@@ -398,13 +401,6 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (pClient->IsUncloak())
         throw UserError("DeniedTargetAfterCloak");
 
-    if (pClient->IsDocked()) {
-        pClient->SendNotifyMsg("You can't do this while docked");
-        Rsp_Dogma_AddTarget rsp;
-        rsp.flag = false;
-        rsp.targetList.push_back(args.arg);
-        return rsp.Encode();
-    }
     // caller ship tests
     ShipSE* mySE = pClient->GetShipSE();
     if ( mySE->TargetMgr() == nullptr)
@@ -426,8 +422,8 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (mySE->SysBubble()->HasTower()) {
         TowerSE* ptSE = mySE->SysBubble()->GetTowerSE();
         if (ptSE->HasForceField() && mySE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI())
-                throw UserError ("DeniedTargetingInsideField")
-                        .AddFormatValue ("target", new PyInt (args.arg));
+            throw UserError ("DeniedTargetingInsideField")
+                    .AddFormatValue ("target", new PyInt (args.arg));
     }
 
     // caller destiny tests
@@ -441,7 +437,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         throw UserError ("CantTargetWhileCloaked");
        // throw UserError ("DeniedTargetingCloaked");
 
-    // verify caller sysMgr
+    // caller sysMgr tests
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
         _log(PLAYER__WARNING, "Unable to find system manager for '%s'", pClient->GetName());
@@ -502,10 +498,6 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         throw UserError ("DeniedTargetingAttemptFailed")
                 .AddFormatValue ("target", new PyInt (args.arg));
     }
-    if (tSE->IsPOSSE())
-        if (tSE->GetPOSSE()->IsReinforced())
-            throw UserError ("DeniedTargetReinforcedStructure")
-                    .AddFormatValue ("target", new PyInt (args.arg));
     if (tSE->SysBubble()->HasTower()) {
         TowerSE* ptSE = tSE->SysBubble()->GetTowerSE();
         if (ptSE->HasForceField() && tSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI())
@@ -514,6 +506,11 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
                         .AddFormatValue ("range", new PyInt (ptSE->GetSOI ()))
                         .AddFormatValue ("item", new PyInt (ptSE->GetID ()));
     }
+    if (tSE->IsPOSSE())
+        if (tSE->GetPOSSE()->IsReinforced())
+            throw UserError ("DeniedTargetReinforcedStructure")
+                    .AddFormatValue ("target", new PyInt (args.arg));
+
 
     if (!mySE->TargetMgr()->StartTargeting( tSE, pClient->GetShip())) {
         _log(TARGET__WARNING, "AddTarget() - TargMgr.StartTargeting() failed.");
