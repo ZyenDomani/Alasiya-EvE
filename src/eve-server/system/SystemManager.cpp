@@ -321,11 +321,12 @@ void SystemManager::UnloadSystem() {
                 pSE->GetStationSE()->UnloadStation();
                 sEntityList.RemoveStation(itr->first);
             }
-            m_staticEntities.erase(m_staticEntities.find(itr->first));
+            m_staticEntities.erase(itr->first);
         } else if (pSE->IsShipSE()) {
             pSE->GetShipSE()->GetShipItemRef()->LogOut();
         } else if (pSE->IsNPCSE()) {
             sEntityList.RemoveNPC();    // this is for loaded npc count.
+            m_npcs.erase(pSE->GetID());
             pSE->GetSelf()->Delete();
         } else if (pSE->IsProbeSE()) {
             sEntityList.RemoveProbe(itr->first);
@@ -336,6 +337,7 @@ void SystemManager::UnloadSystem() {
         }
 
         sItemFactory.RemoveItem(itr->first);
+        m_ticEntities.erase(itr->first);
         itr = m_entities.erase(itr);
         sBubbleMgr.Remove(pSE);
         SafeDelete(pSE);
@@ -346,15 +348,11 @@ void SystemManager::UnloadSystem() {
     _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %lu npcs, %lu entities, %lu statics.", \
                 m_npcs.size(), m_entities.size(), m_staticEntities.size());
 
-    // this is dupe container. contents unloaded in another call *** note call here ***
+    // at this point, these lists should be clear
     m_npcs.clear();
-    // at this point, system entity list should be clear...but just in case, hit it again
     m_entities.clear();
-    // this is dupe container. contents unloaded in another call *** note call here ***
     m_ticEntities.clear();
-    // at this point, system static entity list should be clear...but just in case, hit it again
     m_staticEntities.clear();
-    // clear operational static entity list too
     m_opStaticEntities.clear();
 
     // this still needs some work... seems ok to me.  26Dec18

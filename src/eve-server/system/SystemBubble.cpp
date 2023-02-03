@@ -418,33 +418,11 @@ uint32 SystemBubble::CountNPCs() {
 
 bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const
 {
-    if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
-        float distance = m_center.distance(pt);
-        bool check = false;
-        if (distance < m_radius + 5000)  // 5k is the grey area between bubbles
-            check = true;
-
-        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::InBubble(%u) - center: %.1f,%.1f,%.1f - distance: %.1f, check: %s", \
-                m_bubbleID, m_center.x, m_center.y, m_center.z, distance, check?"true":"false");
-        return check;
-    }
-
     return (m_center.distance(pt) < m_radius);
 }
 
 bool SystemBubble::IsOverlap( const GPoint& pt ) const
 {
-    if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
-        float distance = m_center.distance(pt);
-        bool check = false;
-        if (distance < m_radius * 2 + 10)
-            check = true;
-
-        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::IsOverlap(%u) - center: %.1f,%.1f,%.1f - distance: %.1f, check: %s", \
-                m_bubbleID, m_center.x, m_center.y, m_center.z, distance, check?"true":"false");
-        return check;
-    }
-
     return (m_center.distance(pt) < (m_radius * 2));
 }
 
