@@ -384,8 +384,6 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
             Clear();
             throw CustomError ("Attacking Customs Offices isn't implemented at this time.");
         }
-        if (m_targetSE->TargetMgr() != nullptr)
-            m_targetSE->TargetMgr()->AddTargetModule(this);
     }
 
     m_repeat = repeat;
@@ -413,6 +411,11 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         Clear();
         return;
     }
+
+    // we have gotten this far, so activation is valid.  add to targMgr
+    if (m_targetSE != nullptr)
+        if (m_targetSE->TargetMgr() != nullptr)
+            m_targetSE->TargetMgr()->AddTargetModule(this);
 
     ApplyEffect(FX::State::Active, true);
     if (IsValidTarget(targetID))

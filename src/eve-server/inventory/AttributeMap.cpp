@@ -308,6 +308,7 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify
 
 EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
 {
+    /*
     if ((attrID == AttrInertiaMultiplier)
     or (attrID == AttrInertiaBonus)
     or (attrID == AttrAgility)
@@ -318,7 +319,7 @@ EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
     or (attrID == AttrNewAgility)) {
         sLog.Warning("AttrMap - Get", "Attribute %u called.  not printing stacktrace.", attrID);
         //EvE::traceStack();
-    }
+    }*/
 
     AttrMapConstItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end())
@@ -347,7 +348,7 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
     // check for internal skill time data
     if (attrID == AttrStartTime)
         return true;
-
+/*
     if (
     // (attrID == AttrInertiaMultiplier)
     //or (attrID == AttrInertiaBonus)
@@ -359,7 +360,7 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
     or (attrID == AttrNewAgility)) {
         sLog.Warning("AttrMap - Change", "Attribute %u called.  not printing stacktrace.", attrID);
         //EvE::traceStack();
-    }
+    }*/
     // check for changes
     if (old_val == new_val)
         return true;

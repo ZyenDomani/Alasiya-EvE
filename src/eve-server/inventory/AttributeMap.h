@@ -48,6 +48,7 @@ public:
     // used by Missiles and Modules
     void MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify=false);
 
+    // returns 0 if attrID doesnt exist
     EvilNumber GetAttribute(const uint16 attrID) const;
 
     bool HasAttribute(const uint16 attrID) const;

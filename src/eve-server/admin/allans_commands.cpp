@@ -373,7 +373,7 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              "WarpDropSpeed: %.2f<br>" //27
              "Radius: %.2f<br>" //27
              "CapNeed: %.8f<br>" //27
-             "Agility: %.3f<br>" //27
+             "Agility: %.5f<br>" //27
              "InertiaMod: %.3f<br>" //27
              "Heading: %.3f,%.3f,%.3f<br>", //21
              pClient->GetShipSE()->GetName(), pClient->GetShipID(),
