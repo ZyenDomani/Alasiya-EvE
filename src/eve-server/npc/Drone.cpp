@@ -39,11 +39,13 @@
 
 DroneSE::DroneSE(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
 : DynamicSystemEntity(drone, services, pSystem),
-  m_AI(new DroneAIMgr(this)),
-  m_system(pSystem)
-  {
-      assert (m_AI != nullptr);
-      assert (m_system != nullptr);
+m_pClient(nullptr),
+m_AI(new DroneAIMgr(this)),
+m_pShipSE(nullptr),
+m_system(pSystem)
+{
+    assert (m_AI != nullptr);
+    assert (m_system != nullptr);
 
     m_online = false;
 

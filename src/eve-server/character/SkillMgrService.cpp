@@ -227,7 +227,7 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
     std::vector<PyRep*>::const_iterator cur = args.queue->begin(), end = args.queue->end();
     for (; cur != end; cur++) {
         if (!el.Decode(*cur))         {
-            _log(SERVICE__ERROR, "%s: Failed to decode element of SkillQueue (%u). Skipping.", call.client->GetName(), *cur);
+            _log(SERVICE__ERROR, "%s: Failed to decode element of SkillQueue. Skipping.", call.client->GetName());
             continue;
         }
         cRef->AddToSkillQueue( el.typeID, el.level );

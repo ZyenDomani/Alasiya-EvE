@@ -90,8 +90,6 @@ public:
 
 protected:
     Dispatcher *const m_dispatch;
-    Scan* m_scan;
-    ScanningDB* m_db;
     Client* m_client;
 };
 

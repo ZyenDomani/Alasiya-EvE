@@ -34,7 +34,6 @@ public:
     void Process();
 
 private:
-    ServiceDB* m_db;
     PyServiceMgr* m_services;
 
     bool m_initalized;

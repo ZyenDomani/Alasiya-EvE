@@ -122,7 +122,7 @@ void StationDataMgr::Populate()
 
     LoadStationPyData();
 
-    sLog.Cyan("   StationDataMgr", "%u Station data sets loaded in %.3fms.", \
+    sLog.Cyan("   StationDataMgr", "%lu Station data sets loaded in %.3fms.", \
                 (m_stationData.size() + m_serviceMask.size() + m_stationPyData.size() + m_stationOfficeData.size()), (GetTimeMSeconds() - start));
 
     //cleanup

@@ -39,23 +39,17 @@
 /** @todo this class needs a bit more tweaking to work as designed...may/may not spawn all types correctly at this time.  */
 SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_system(mgr),
-  m_services(svc),
-  m_ratTimer(0),
-  m_ratGroupTimer(0),
-  m_missionTimer(0),
-  m_incursionTimer(0),
-  m_deadspaceTimer(0)
+m_services(svc),
+m_dungMgr(nullptr),
+m_ratTimer(0),
+m_ratGroupTimer(0),
+m_missionTimer(0),
+m_incursionTimer(0),
+m_deadspaceTimer(0),
+m_initalized(false),
+m_groupTimerSetTime(0),
+m_spawnID(1)    // gotta start somewhere
 {
-    m_spawnID = 1;
-
-    m_initalized = false;
-
-    m_spawns.clear();
-    m_bubbles.clear();
-    m_toSpawn.clear();
-    m_ratSpawns.clear();
-    m_ratSpawnClass.clear();        // not used
-    m_factionGroups.clear();
 }
 
 bool SpawnMgr::Init()
@@ -118,7 +112,7 @@ void SpawnMgr::Process() {
                         ++itr;
                         continue;
                     }
-                    _log(SPAWN__TRACE, "Process() calling Respawn for SpawnEntryID %u (0x%X)", \
+                    _log(SPAWN__TRACE, "Process() calling Respawn for SpawnEntryID %u (0x%P)", \
                             itr->second.spawnID, &itr->second);
                     // this means check SpawnEntry for 'missing' SpawnGroup members and respawn as needed.
                     ReSpawn(sBubbleMgr.FindBubbleByID(itr->first), itr->second);
@@ -251,7 +245,7 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
             ++itr;
         }
         if (killed) {
-            _log(SPAWN__DEPOP, "SpawnMgr::SpawnKilled - Belt Spawn has been destoyed.  Resetting spawn checks for bubble %u.", pBubble->GetID());
+            _log(SPAWN__DEPOP, "SpawnMgr::SpawnKilled - Belt Spawn has been destroyed.  Resetting spawn checks for bubble %u.", pBubble->GetID());
             // spawn destroyed.  delete from list and reset bubble checks.
             m_spawns.erase(pBubble->GetID()); // just in case....may/may not be in here.
             m_bubbles.erase(std::find(m_bubbles.begin(), m_bubbles.end(), pBubble));
@@ -476,7 +470,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     RatSpawnClassVec spawnEntry;
     if (sDataMgr.GetNPCClasses(sClass, spawnEntry)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %lu, class: %s(%lu).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %lu, class: %s(%u).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
     } else {
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %u (%s).  Cancelling spawn.", sClass, GetSpawnClassName(sClass).c_str());
         return false;
@@ -765,7 +759,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     m_toSpawn.clear();
     m_ratSpawns.clear();
 
-    _log(SPAWN__TRACE, "MakeSpawn() completed in %s(%u) with %u bubbles in m_bubbles and %u entities in m_spawns.", \
+    _log(SPAWN__TRACE, "MakeSpawn() completed in %s(%u) with %lu bubbles in m_bubbles and %lu entities in m_spawns.", \
                 m_system->GetName(), m_system->GetID(), m_bubbles.size(), m_spawns.size());
 }
 
@@ -777,7 +771,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
     GPoint startPos(pBubble->GetCenter());
     GPoint warpToPoint(startPos);
     startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from bubble center
-    _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
+    _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%P is type:%u, corp:%u, faction:%u, #:%u of %u", \
             spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
             spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
     /* ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
@@ -860,7 +854,7 @@ void SpawnMgr::RemoveSpawn(uint16 bubbleID, uint32 itemID)
         ++itr;
     }
 
-    _log(SPAWN__TRACE, "RemoveSpawn() did not find item %u in bubble %u, out of %u total spawns in the map.", itemID, bubbleID, m_spawns.size());
+    _log(SPAWN__TRACE, "RemoveSpawn() did not find item %u in bubble %u, out of %lu total spawns in the map.", itemID, bubbleID, m_spawns.size());
     return;
 }
 

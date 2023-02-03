@@ -51,8 +51,8 @@ class SearchDB
 : public ServiceDB {
 public:
 
-    PyRep* Query(std::string string, std::vector<int> *searchID, uint32 charID);
-    PyRep* QuickQuery(std::string string, std::vector<int> *searchID, uint32 charID, bool hideNPC = false, bool onlyAltName = false);
+    static PyRep* Query(std::string string, std::vector<int> *searchID, uint32 charID);
+    static PyRep* QuickQuery(std::string string, std::vector<int> *searchID, uint32 charID, bool hideNPC = false, bool onlyAltName = false);
 
 };
 

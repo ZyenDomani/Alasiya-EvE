@@ -40,8 +40,8 @@ public:
     void CreateExit(SystemManager* pFromSys, SystemManager* pToSys);
 
 private:
-    ManagerDB* m_mdb;
-    ServiceDB* m_sdb;
+    //ManagerDB* m_mdb;
+    //ServiceDB* m_sdb;
     PyServiceMgr* m_services;
 
     Timer m_updateTimer;

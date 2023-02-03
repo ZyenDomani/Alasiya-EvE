@@ -35,9 +35,9 @@
  */
 
 WormholeMgr::WormholeMgr()
-:  m_updateTimer(0),
-    m_services(nullptr),
-    m_initalized(false)
+: m_services(nullptr),
+m_updateTimer(0),
+m_initalized(false)
 {
 }
 

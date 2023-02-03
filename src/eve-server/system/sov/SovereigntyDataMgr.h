@@ -24,9 +24,6 @@ class SovereigntyDataMgr
     : public Singleton<SovereigntyDataMgr>
 {
 public:
-    SovereigntyDataMgr();
-    ~SovereigntyDataMgr();
-
     int Initialize();
 
     void Clear();

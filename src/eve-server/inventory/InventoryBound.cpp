@@ -285,7 +285,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     }
 
     if (call.tuple->items.size() != 2) {
-        _log(INV__ERROR, "IB::Handle_Add()  Unexpected number of elements in tuple: %u (should be 2).", call.tuple->items.size() );
+        _log(INV__ERROR, "IB::Handle_Add()  Unexpected number of elements in tuple: %lu (should be 2).", call.tuple->items.size() );
         return nullptr;
     }
 
@@ -301,7 +301,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     if (toFlag == flagLocked) {
         // corp role 'equip config' can move locked items (per client)
         sLog.Error("IB::Handle_Add()", "Error.  see below");
-        _log(INV__ERROR, "IB::Handle_Add() - item %u from %lu sent flagLocked.  continuing but this needs to be fixed.", \
+        _log(INV__ERROR, "IB::Handle_Add() - item %i from %i sent flagLocked.  continuing but this needs to be fixed.", \
                 args.itemID, args.containerID);
         toFlag = flagCargoHold;
     }

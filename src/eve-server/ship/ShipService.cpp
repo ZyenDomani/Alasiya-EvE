@@ -733,7 +733,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
 
     InventoryItemRef iRef = pSE->GetSelf();
     if (iRef.get() == nullptr) {
-        codelog(CLIENT__ERROR, "ItemRef for %s not found.", arg.arg);
+        codelog(CLIENT__ERROR, "ItemRef for %i not found.", arg.arg);
         return PyStatic.mtDict();
     }
 

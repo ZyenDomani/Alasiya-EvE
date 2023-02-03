@@ -392,7 +392,7 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
         PyTuple* tuple0 = call.tuple->AsTuple();
 
         if (tuple0->size() != 2) {
-            _log(LSC__ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong size: expected 2, but got %u", tuple0->size());
+            _log(LSC__ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong size: expected 2, but got %lu", tuple0->size());
             return PyStatic.NewNone();
         }
 

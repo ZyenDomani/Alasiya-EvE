@@ -16,29 +16,26 @@
 /* this class is for all salvage and data mining types */
 
 Prospector::Prospector(ModuleItemRef mRef, ShipItemRef sRef)
-: ActiveModule(mRef, sRef)
+: ActiveModule(mRef, sRef),
+m_success(false),
+m_firstRun(true),
+m_salvager(false),
+m_dataMiner(false),
+m_accessChance(0),
+m_holdFlag(flagCargoHold),
+pChar(m_shipRef->GetPilot()->GetChar().get())
 {
-    m_success = false;
-    m_firstRun = true;
-    m_salvager = false;
-    m_dataMiner = false;
-
     if (m_modRef->groupID() == EVEDB::invGroups::Salvager) {
         m_salvager = true;
     } else if (m_modRef->groupID() == EVEDB::invGroups::Data_Miner) {
         m_dataMiner = true;
     }
 
-    m_accessChance = 0;
-
-    m_holdFlag = flagCargoHold;
     if (m_shipRef->HasAttribute(AttrSalvageHoldCapacity))
         m_holdFlag = flagSalvageHold;
 
     if (!m_shipRef->HasPilot())
         return;
-
-    pChar = m_shipRef->GetPilot()->GetChar().get();
 
     // increase scan speed by level of survey skill
     float cycleTime = GetAttribute(AttrDuration).get_float();

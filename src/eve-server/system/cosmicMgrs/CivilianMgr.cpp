@@ -34,9 +34,9 @@
 
 
 CivilianMgr::CivilianMgr()
-: m_services(nullptr)
+: m_services(nullptr),
+m_initalized(false)
 {
-    m_initalized = false;
 }
 
 void CivilianMgr::Initialize(PyServiceMgr* svc) {
@@ -47,7 +47,8 @@ void CivilianMgr::Initialize(PyServiceMgr* svc) {
 }
 
 void CivilianMgr::Process() {
-    if (!m_initalized) return;
+    if (!m_initalized)
+        return;
 
     /* do something useful here */
 }

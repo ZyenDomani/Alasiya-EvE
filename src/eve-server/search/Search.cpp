@@ -60,7 +60,7 @@ PyResult Search::Handle_Query( PyCallArgs& call ) {
         if (EvE::icontains(args.str, cur))
             throw CustomError("Search String contains invalid characters");
 
-    return m_db->Query( str, &args.ids, call.client->GetCharacterID() );
+    return SearchDB::Query( str, &args.ids, call.client->GetCharacterID() );
 }
 
 
@@ -75,7 +75,7 @@ PyResult Search::Handle_QuickQuery( PyCallArgs& call )  {
     }
 
     std::string str = args.str;
-	Replace(str);
+    Replace(str);
 
     bool hideNPC = true, onlyAltName = false;
     if (call.byname.find("hideNPC") != call.byname.end())
@@ -89,7 +89,7 @@ PyResult Search::Handle_QuickQuery( PyCallArgs& call )  {
         if (EvE::icontains(args.str, cur))
             throw CustomError("Search String contains invalid characters");
 
-    return m_db->QuickQuery( str, &args.ids, call.client->GetCharacterID(), hideNPC, onlyAltName);
+    return SearchDB::QuickQuery( str, &args.ids, call.client->GetCharacterID(), hideNPC, onlyAltName);
 }
 
 void Search::Replace(std::string &str) {

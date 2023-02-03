@@ -1,10 +1,10 @@
 
 /**
   * @name SovereigntyDataMgr.cpp
-  *   memory object caching system for managing and saving ingame static and dynamic station data
+  *   memory object caching system for managing and saving ingame sovereignty data
   *
-  * @Author:         James
-  * @date:           21Apr13
+  * @Author:         James  (copied from StationDataMgr)
+  * @date:           21Apr13 (ymd)
   *
   */
 
@@ -15,15 +15,6 @@
 #include "StaticDataMgr.h"
 #include "Client.h"
 
-SovereigntyDataMgr::SovereigntyDataMgr()
-{
-    m_sovData.clear();
-}
-
-SovereigntyDataMgr::~SovereigntyDataMgr()
-{
-    //Clear();
-}
 
 int SovereigntyDataMgr::Initialize()
 {
@@ -101,8 +92,8 @@ uint32 SovereigntyDataMgr::GetSystemAllianceID(uint32 systemID)
 {
     auto it = m_sovData.get<SovDataBySolarSystem>().find(systemID);
     if (it != m_sovData.get<SovDataBySolarSystem>().end())  {
-        SovereigntyData sData = *it;
-        return sData.allianceID;
+        //SovereigntyData sData = *it;
+        return (*it).allianceID;
     }
     return 0;
 }
@@ -111,11 +102,11 @@ SovereigntyData SovereigntyDataMgr::GetSovereigntyData(uint32 systemID)
 {
     auto it = m_sovData.get<SovDataBySolarSystem>().find(systemID);
     if (it != m_sovData.get<SovDataBySolarSystem>().end()) {
-        SovereigntyData sData = *it;
-        return sData;
+        //SovereigntyData sData = *it;
+        return *it;
     } else {
         //Return empty object in case we don't find anything
-        SovereigntyData sData;
+        SovereigntyData sData = SovereigntyData();
         return sData;
     }
 }

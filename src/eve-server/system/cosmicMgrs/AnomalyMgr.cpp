@@ -48,18 +48,26 @@
  * COSMIC_MGR__TRACE
  */
 AnomalyMgr::AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc)
-:m_services(svc),
-m_system(mgr),
-m_beltMgr(nullptr),
+: m_beltMgr(nullptr),
 m_dungMgr(nullptr),
 m_spawnMgr(nullptr),
+m_system(mgr),
+m_services(svc),
 m_spawnTimer(0),
-m_procTimer(0)
+m_procTimer(0),
+m_initalized(false),
+m_maxSigs(2),   //base default
+m_Sigs(0),
+m_WH(0),
+// these use config option to (en/dis)able individual types
+m_Grav(sConfig.exploring.Gravametric),
+m_Mag(sConfig.exploring.Magnetometric),
+m_Ladar(sConfig.exploring.Ladar),
+m_Radar(sConfig.exploring.Radar),
+m_Unrated(sConfig.exploring.Unrated),
+m_Complex(sConfig.exploring.Complex),
+m_Anoms(0)
 {
-    m_initalized = false;
-
-    m_sigBySigID.clear();
-    m_sigByItemID.clear();
 }
 
 AnomalyMgr::~AnomalyMgr()
@@ -120,7 +128,6 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     // range is 0.1 for 1.0 system to 2.0 for -0.9 system
     float security = m_system->GetSecValue();
     if (sConfig.debug.IsTestServer) {
-        m_maxSigs = 2;
         m_procTimer.Start(10000);  // 10s
     } else {
              if (security == 2.0)  { m_maxSigs = 25; }
@@ -133,17 +140,6 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 
         m_procTimer.Start(120000);  // 2m
     }
-
-    m_WH = 0;
-    m_Sigs = 0;
-    m_Anoms = 0;
-    // these use config option to (en/dis)able individual types
-    m_Grav = sConfig.exploring.Gravametric;
-    m_Mag = sConfig.exploring.Magnetometric;
-    m_Ladar = sConfig.exploring.Ladar;
-    m_Radar = sConfig.exploring.Radar;
-    m_Unrated = sConfig.exploring.Unrated;
-    m_Complex = sConfig.exploring.Complex;
 
     /* load current data?, start timers, process current data, and create new items, if needed */
     /** @todo all anomalies are currently temp items.  if/when we start saving them, create new table and itemIDs*/

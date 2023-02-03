@@ -1392,7 +1392,7 @@ void Colony::Update(bool updateTimes/*false*/)
 	 * adv		20 - 40
 	 * max		  40+
 	 */
-    _log(COLONY__INFO, "Colony::Update() - Update completed in %.3fus with %u links, %u pins, %u plants, and %u routes (s:%u, d:%u) ", \
+    _log(COLONY__INFO, "Colony::Update() - Update completed in %.3fus with %lu links, %lu pins, %lu plants, and %lu routes (s:%lu, d:%lu) ", \
                     GetTimeUSeconds() - profileStartTime, ccPin->links.size(), ccPin->pins.size(), ccPin->plants.size(), ccPin->routes.size(), \
                     m_srcRoutes.size(), m_destRoutes.size());
 }
@@ -1443,7 +1443,7 @@ void Colony::ProcessECUs(bool& updateTimes)
 
         // first - see if this ecu has a route and move contents per route.  this will simulate aquisition of raw matls from heads to storage
         if (is_log_enabled(COLONY__DEBUG))
-            _log(COLONY__DEBUG, "Colony::ProcessECUs() - ECU pin %u - begin processing with %u cycles (%0.2f / %0.2f)", \
+            _log(COLONY__DEBUG, "Colony::ProcessECUs() - ECU pin %u - begin processing with %u cycles (%0.2f / %lu)", \
                     ecu.first, cycles, delta, (ecu.second.cycleTime / EvE::Time::Hour));
         auto destRouteItr = m_destRoutes.equal_range(ecu.first);	// this ecu is route origin
         for (auto it = destRouteItr.first; it != destRouteItr.second; it++) {

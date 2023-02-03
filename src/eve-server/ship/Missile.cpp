@@ -38,13 +38,16 @@
 
 Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SystemEntity* tSE, SystemEntity* pSE, GenericModule* pMod)
 : DynamicSystemEntity(self, services, pSystem),
-  m_modRef(modRef),
   m_targetSE(tSE),
   m_fromSE(pSE),
+  m_modRef(modRef),
   m_hitTimer(0),
   m_lifeTimer(0),
+  m_alive(true),
+  m_orbitingID(0),
   m_damageMod(1),
-  m_alive(true)
+  m_speed(0),
+  m_hullHP(self->GetAttribute(AttrHP).get_int())
 {
     if (pSE->HasPilot()) {
         m_ownerID = pSE->GetPilot()->GetChar()->itemID();
@@ -55,8 +58,6 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
     m_warID = pSE->GetWarFactionID();
     m_allyID = pSE->GetAllianceID();
     m_corpID = pSE->GetCorporationID();
-
-    m_hullHP = self->GetAttribute(AttrHP).get_int();
 
     double flightTime = self->GetAttribute(AttrExplosionDelay).get_float();
 

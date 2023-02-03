@@ -14,7 +14,8 @@
 #include "ship/modules/ModuleItem.h"
 
 ModuleItem::ModuleItem(uint32 _modID, const ItemType& _type, const ItemData& _data)
-: InventoryItem(_modID, _type, _data)
+: InventoryItem(_modID, _type, _data),
+m_Module(nullptr)
 {
     _log(ITEM__TRACE, "Created ModuleItem for %s(%u).", name(), itemID());
 }

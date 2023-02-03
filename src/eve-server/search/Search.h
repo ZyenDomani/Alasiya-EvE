@@ -35,7 +35,7 @@ class Search
 : public PyService {
   public:
     Search(PyServiceMgr* mgr);
-    virtual ~Search();
+    ~Search();
 
   protected:
     class Dispatcher;
@@ -45,11 +45,8 @@ class Search
     PyCallable_DECL_CALL(QuickQuery);
 
   private:
-    SearchDB* m_db;
-
     // this is specific to Search class.  replaces EvE wildcard (*) with MYSQL wildcard (%)
-	void Replace(std::string &s);
-
+    void Replace(std::string &s);
 };
 
 #endif      // EVEMU_SYSTEM_SEARCH_H_

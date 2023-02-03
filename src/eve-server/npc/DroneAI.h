@@ -79,9 +79,9 @@ private:
     double m_entityChaseRange;
     double m_entityAttackRange;
 
+    //uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)
     uint32 m_chaseSpeed;
     uint32 m_cruiseSpeed;
-    uint32 m_targetRange;
     uint32 m_armorRepairDuration;
     uint32 m_shieldBoosterDuration;
 

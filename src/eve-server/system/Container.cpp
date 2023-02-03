@@ -230,15 +230,14 @@ void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
 ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data)
 : ItemSystemEntity(self, services, system),
  m_contRef(self),
- m_deleteTimer(0)
+ m_deleteTimer(0),
+ m_global(false)
 {
     m_targMgr = new TargetManager(this);
     m_destiny = new DestinyManager(this);
 
     assert(m_targMgr != nullptr);
     assert(m_destiny != nullptr);
-
-    m_global = false;
 
     m_warID = data.factionID;
     m_allyID = data.allianceID;
@@ -511,9 +510,10 @@ void WreckContainer::MakeSlimItemChange()
 //      {forum post here, once available}
 WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system, const FactionData &data)
 : DynamicSystemEntity(self, services, system),
+m_contRef(self),
 m_deleteTimer(sConfig.rates.WorldDecay *60 *1000),
-m_abandoned(false),
-m_contRef(self)
+m_launchedByID(0),
+m_abandoned(false)
 {
     assert(m_targMgr != nullptr);
     assert(m_destiny != nullptr);

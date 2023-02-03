@@ -60,6 +60,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
   m_damageMultiplier(0),
   m_shieldBoosterTimer(0),
   m_armorRepairTimer(0),
+  m_armorRepairDuration(0),
   m_beginFindTarget(0),
   m_warpScramblerTimer(0),
   m_webifierTimer(0),

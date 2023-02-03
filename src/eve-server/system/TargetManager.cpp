@@ -563,7 +563,7 @@ void TargetManager::RemoveTargetModule(ActiveModule* pMod)
 // only called by SystemEntity::Killed()
 void TargetManager::Destroyed()
 {
-    _log(TARGET__INFO, "%s(%u) has been destroyed. %u modules, %u targets, and %u targeters in maps.", \
+    _log(TARGET__INFO, "%s(%u) has been destroyed. %lu modules, %lu targets, and %lu targeters in maps.", \
             mySE->GetName(), mySE->GetID(), m_modules.size(), m_targets.size(), m_targetedBy.size());
 
     std::string effect = "TargetDestroyed";

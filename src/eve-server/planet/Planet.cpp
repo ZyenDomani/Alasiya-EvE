@@ -180,7 +180,7 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
     uint16 size = (uint16)pow(dict.newBand, 2) *4;
     std::string data = itr->second.substr(0, size);
     // adjust data for system security.  not sure how to make it 'less' yet
-    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %u, proximity: %u, newBand: %u, oldBand: %u, bufferSize: %u", \
+    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %lu, proximity: %u, newBand: %u, oldBand: %u, bufferSize: %u", \
                 sPIDataMgr.GetProductName(dict.resourceTypeID), dict.resourceTypeID, dict.remoteSensing, dict.planetology, dict.advancedPlanetology, \
                 dict.updateTime, dict.proximity, dict.newBand, dict.oldBand, size);
     PyDict* args = new PyDict();

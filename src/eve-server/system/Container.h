@@ -172,9 +172,11 @@ protected:
 
     bool m_global;      // for making bubble centers global
 
+    /*  these arent used.  should they be?
     double m_shieldCharge;
     double m_armorDamage;
     double m_hullDamage;
+    */
 };
 
 /**

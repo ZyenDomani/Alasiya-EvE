@@ -510,7 +510,7 @@ bool SystemManager::LoadPlayerDynamics() {
             //pSE->SetPosition(sMapData.GetRandPointOnPlanet(m_data.systemID));
         AddEntity(pSE);
     }
-    _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %u Dynamic Player entities loaded for %s(%u)", \
+    _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %lu Dynamic Player entities loaded for %s(%u)", \
                 entities.size(), m_data.name.c_str(),m_data.systemID);
 
     return true;

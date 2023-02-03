@@ -61,15 +61,14 @@ public:
 
     PlanetMgrBound(PyServiceMgr *mgr, Client* pClient, PlanetSE* pPlanet)
     : PyBoundObject(mgr),
-    m_dispatch(new Dispatcher(this)),
-    m_planet(pPlanet)
+    m_colony(pPlanet->GetColony(pClient)),
+    m_planet(pPlanet),
+    m_planetMgr(nullptr),
+    m_dispatch(new Dispatcher(this))
     {
         _SetCallDispatcher(m_dispatch);
 
-        m_colony = pPlanet->GetColony(pClient);
-
         m_colony->Init();
-
         m_planetMgr = new PlanetMgr(mgr, pClient, pPlanet, m_colony);
 
         m_strBoundObjectName = "PlanetMgrBound";
@@ -132,7 +131,6 @@ public:
 
 protected:
     Colony* m_colony;
-    PlanetDB* m_db;
     PlanetSE* m_planet;
     PlanetMgr* m_planetMgr;
     Dispatcher* const m_dispatch;
@@ -181,11 +179,11 @@ PyBoundObject* PlanetMgrService::CreateBoundObject(Client *pClient, const PyRep 
 }
 
 PyResult PlanetMgrService::Handle_GetPlanetsForChar(PyCallArgs &call) {
-  return m_db->GetPlanetsForChar(call.client->GetCharacterID());
+    return PlanetDB::GetPlanetsForChar(call.client->GetCharacterID());
 }
 
 PyResult PlanetMgrService::Handle_GetMyLaunchesDetails(PyCallArgs &call) {
-    return m_db->GetMyLaunchesDetails(call.client->GetCharacterID());
+    return PlanetDB::GetMyLaunchesDetails(call.client->GetCharacterID());
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetResourceInfo(PyCallArgs &call) {

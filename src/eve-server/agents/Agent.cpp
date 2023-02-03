@@ -775,7 +775,7 @@ bool Agent::CanUseAgent(Client* pClient)
 
     _log(AGENT__DEBUG, "%s(%u) CanUseAgent() - charSkills(con:%u,dip:%u,cri:%u), stand(%f, %f, %f)",\
                 m_agentData.name.c_str(), m_agentID, sConn, sDiplo, sCrim, charStanding, bonus, standing);
-    _log(AGENT__DEBUG, "%s(%u) CanUseAgent() - standings(fac:%u,crp:%u,chr:%u), bonus(%f, %f, %f) - m=%f", \
+    _log(AGENT__DEBUG, "%s(%u) CanUseAgent() - standings(fac:%.2f,crp:%.2f,chr:%.2f), bonus(%f, %f, %f) - m=%f", \
                 m_agentData.name.c_str(), m_agentID, facChr, corpChr, charChr, facBonus, corpBonus, charBonus, m);
 
     /*

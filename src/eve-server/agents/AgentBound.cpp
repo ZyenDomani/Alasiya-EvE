@@ -834,6 +834,8 @@ PyTuple* AgentBound::GetMissionObjectives(Client* pClient, MissionOffer& offer)
         } break;
     }
 
+    PySafeDecRef(dropoffLocation);
+
     return objectives;
 
     /*  objectives data...

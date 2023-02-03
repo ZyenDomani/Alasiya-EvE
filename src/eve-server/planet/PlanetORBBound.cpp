@@ -67,7 +67,6 @@ public:
 
 protected:
     Dispatcher* const m_dispatch;
-    PlanetDB* m_db;
 
 private:
     uint32 m_systemID;

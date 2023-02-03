@@ -64,7 +64,6 @@ class FleetBound
   protected:
      class Dispatcher;
      Dispatcher *const m_dispatch;
-     Client* m_client;
 
   private:
     uint32 m_fleetID;

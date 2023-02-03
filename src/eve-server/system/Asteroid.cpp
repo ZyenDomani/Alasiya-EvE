@@ -74,9 +74,11 @@ AsteroidItemRef AsteroidItem::SpawnTemp(ItemData& idata, AsteroidData& adata) {
 
 AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
 : ObjectSystemEntity(self, services, system),
-m_growTimer(sConfig.cosmic.BeltGrowth *60 *60 *1000)  // hours->ms
+m_beltMgr(nullptr),
+m_growTimer(0),
+//m_growTimer(sConfig.cosmic.BeltGrowth *60 *60 *1000),  // hours->ms
+m_beltID(0)
 {
-    m_growTimer.Disable();
 }
 
 void AsteroidSE::Process() {

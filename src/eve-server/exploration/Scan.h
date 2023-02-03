@@ -60,7 +60,6 @@ protected:
     void SurveyScan();
 
 private:
-    ManagerDB* m_db;
     Client* m_client;
     SystemManager* m_system;
 

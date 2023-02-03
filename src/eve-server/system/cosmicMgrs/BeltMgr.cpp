@@ -30,7 +30,9 @@ BeltMgr::BeltMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_respawnTimer(0),
 m_system(mgr),
 m_services(svc),
-m_initialized(false)
+m_initialized(false),
+m_systemID(0),
+m_regionID(0)
 {
 }
 
@@ -40,10 +42,6 @@ void BeltMgr::Init(uint32 regionID)
         _log(COSMIC_MGR__MESSAGE, "BeltMgr System Disabled.  Not Initializing Belt Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return;
     }
-
-    m_belts.clear();
-    m_active.clear();
-    m_spawned.clear();
 
     assert(m_system != nullptr);
 
@@ -143,7 +141,7 @@ bool BeltMgr::Load(uint16 bubbleID) {
     uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     if (beltID == 0)
         return false;
-    if (!m_db.LoadSystemRoids(m_systemID, beltID, entities))
+    if (!ManagerDB::LoadSystemRoids(m_systemID, beltID, entities))
         return false;
 
     for (auto &entity : entities) {
@@ -214,7 +212,7 @@ void BeltMgr::Save() {
         ++save;
     }
 
-    m_db.SaveSystemRoids(m_systemID, roids);
+    ManagerDB::SaveSystemRoids(m_systemID, roids);
     _log(COSMIC_MGR__TRACE, "BeltMgr::Save - Saving %u Asteroids for %s(%u) took %.3fus.  Skipped %u temp anomaly asteroids.", \
             save, m_system->GetName(), m_systemID, (GetTimeUSeconds() - start), skip);
 }
@@ -424,7 +422,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
 
 void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
 {
-    m_db.RemoveAsteroid(pASE->GetID());
+    ManagerDB::RemoveAsteroid(pASE->GetID());
     // this doesnt work right.  not sure why yet.
     auto range = m_asteroids.equal_range(beltID);
     for (auto itr = range.first; itr != range.second; itr++) {

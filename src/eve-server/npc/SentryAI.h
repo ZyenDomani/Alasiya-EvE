@@ -71,7 +71,7 @@ private:
     uint16 m_preferedSigRadius;
     //these attributes are cached to reduce access times. (much faster but uses more memory)
     uint16 m_attackSpeed;
-    uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)
+    //uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)
     uint16 m_optimalRange;
     uint16 m_damageMultiplier;
 
