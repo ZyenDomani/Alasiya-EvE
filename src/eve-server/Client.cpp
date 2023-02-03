@@ -134,9 +134,6 @@ Client::~Client() {
 
     m_loaded = false;
 
-    if (pShipSE != nullptr)
-        WarpOut();      // need to make tests for this...it will segfault if m_char is invalid
-
     // LSC logout
     for (auto &cur : m_channels)
         cur->LeaveChannel(this);
@@ -169,6 +166,10 @@ Client::~Client() {
                 sEntityList.GetStationByID(m_locationID)->RemoveItem(m_char);
             }
         }
+
+        if (pShipSE != nullptr)
+            WarpOut();
+
         // remove fleet data, remove char from ItemFactory cache, save SP and set logout time
         m_char->LogOut();
     }
@@ -560,7 +561,7 @@ void Client::WarpIn() {
 }
 
 void Client::WarpOut() {
-    sLog.Blue("Client::WarpOut()", "Client Destructor for %s(%u) called WarpOut().  Finish code here.", GetName(), m_char->itemID());
+    sLog.Blue("Client::WarpOut()", "%s(%u) called WarpOut().  Finish code here.", GetName(), m_char->itemID());
     char ci[45];
     snprintf(ci, sizeof(ci), "Logout: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);

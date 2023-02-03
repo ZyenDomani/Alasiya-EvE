@@ -304,31 +304,32 @@ Civilian Ships   0 times.       Hi: 0.0000      Lo: 0.0000us    Avg: 0.0000us
  ***********************************************
  item load updates
  undock and turn
-09:25:40 G   Alasiya's EvEMu: Server Profile:
-09:25:40 W     Current Stamp:  1712
-09:25:40 W     Server UpTime:  11m52s
-09:25:40 W       Connections:  1 Current Clients Online.
-09:25:40 W       Connections:  1 Clients Connected since startup.
-09:25:40 G    Server Profile:  Current Process Profile times for this run:
+
+11:34:16 G   Alasiya's EvEMu: Server Profile:
+11:34:16 W     Current Stamp:  9428
+11:34:16 W     Server UpTime:  2h20m28s
+11:34:16 W       Connections:  1 Current Clients Online.
+11:34:16 W       Connections:  1 Clients Connected since startup.
+11:34:16 G    Server Profile:  Current Process Profile times for this run:
                 Loop Calls
-    EntityList   712 times.     Hi: 32123.7500us        Lo: 1.7500us    Avg: 547.1984us
-Client Network   659 times.     Hi: 7769.0000us         Lo: 4.0000us    Avg: 21.7462us
-     SystemMgr   659 times.     Hi: 32096.7500us        Lo: 25.2500us           Avg: 548.0918us
-       Bubbles   712 times.     Hi: 71.5000us           Lo: 0.5000us    Avg: 6.1506us
-       Destiny   3251 times.    Hi: 32031.0000us        Lo: 0.2500us    Avg: 93.4130us
-           NPC   2592 times.    Hi: 169.7500us          Lo: 0.5000us    Avg: 1.8097us
-       Modules   659 times.     Hi: 34.5000us           Lo: 8.2500us    Avg: 19.1112us
-          Ship   109 times.     Hi: 12.7500us           Lo: 5.5000us    Avg: 8.0321us
+    EntityList   8428 times.    Hi: 32123.7500us        Lo: 1.7500us    Avg: 162.7389us
+Client Network   8375 times.    Hi: 7769.0000us         Lo: 3.2500us    Avg: 12.3673us
+     SystemMgr   8375 times.    Hi: 32096.7500us        Lo: 25.2500us           Avg: 126.9447us
+       Bubbles   8428 times.    Hi: 100.5000us          Lo: 0.5000us    Avg: 7.1301us
+       Destiny   41k times.     Hi: 32031.0000us        Lo: 0.2500us    Avg: 7.9862us
+           NPC   33k times.     Hi: 2359.5000us         Lo: 0.5000us    Avg: 1.9123us
+       Modules   8375 times.    Hi: 120.0000us          Lo: 7.2500us    Avg: 21.3558us
+          Ship   1396 times.    Hi: 63.7500us           Lo: 5.5000us    Avg: 8.9884us
     TargetProc   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
        Missile   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
         Damage   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
-        Spawns   659 times.     Hi: 1.0000us    Lo: 0.2500us    Avg: 0.4211us
+        Spawns   8375 times.    Hi: 2.0000us    Lo: 0.2500us    Avg: 0.4311us
     Collisions   Disabled.
         Drones   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
                 Periodic Calls
   Item Loading   24 times.      Hi: 384612.0000us       Lo: 329.0000us          Avg: 29051.4688us
-  Client Calls   89 times.      Hi: 620091.2500us       Lo: 92.2500us           Avg: 9300.8936us
-            DB   1515 times.    Hi: 11651.5000us        Lo: 78.2500us           Avg: 323.6305us
+  Client Calls   254 times.     Hi: 798546.7500us       Lo: 87.5000us           Avg: 7754.2432us
+            DB   1606 times.    Hi: 15340.2500us        Lo: 78.2500us           Avg: 368.5693us
  Parse Effects   2911 times.    Hi: 189.0000us          Lo: 0.2500us    Avg: 4.4830us
  Apply Effects   19 times.      Hi: 3764.2500us         Lo: 0.7500us    Avg: 233.3158us
           Loot   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
@@ -336,4 +337,5 @@ Client Network   659 times.     Hi: 7769.0000us         Lo: 4.0000us    Avg: 21.
         Colony   0 times.       Hi: 0.0000us    Lo: 0.0000us    Avg: 0.0000us
        Concord   Disabled.
 Civilian Ships   0 times.       Hi: 0.0000      Lo: 0.0000us    Avg: 0.0000us
- Profile Times Compiled in 1957.0000us
+ Profile Times Compiled in 13221.7500us
+

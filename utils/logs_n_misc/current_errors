@@ -84,3 +84,12 @@ Thread Locals:  session was <Session: (sid:1917905916637375392, clientID:2888444
 EXCEPTION END
 
 
+multiple RemoveItem() calls....
+11:34:56 G   Client::Logout(): Allan (Acct:1) logging out.
+11:34:56 B Client::WarpOut(): Allan(90000000) called WarpOut().  Finish code here.
+11:34:56 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Hulk(140018752) in Ship Offline.
+11:34:56 [SkillTrace] Skill::GetCurrentSP() for EM Shield Compensation is 11019 - delta: 8190, elapsed time: 5486s
+11:34:56 [SkillQueue] Allan(90000000):  Saving skill queue.
+11:34:56 [InvWarning] Inventory::RemoveItem(1) - Ibaria(30000053) contents does not contain Hulk(140018752) in Ship Offline.
+11:34:56 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Hulk(140018752) in Ship Offline.
+11:34:56 [PlayerTrace] Allan(90000000): Removed from system manager for Ibaria(30000053) - 0 clients still in system.

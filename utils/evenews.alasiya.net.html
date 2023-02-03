@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0027)http://evenews.alasiya.net/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <meta name="Generator" content="Kate">
+  <meta name="Author" content="Allan - Alasiya EvE">
+  <meta name="Keywords" content="Alasiya EvE News">
+  <meta name="Description" content="Alasiya EvE News Page">
+  <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
+</head>
+<body>
+This is our news and updates page.<br>
+I will eventually make this a little more aesthetically pleasing<br><br>
+CURRENT TEST POINTS<br>
+ - Ship Movement (except orbit)
+ - Modules<br>
+ - Effects<br>
+ - Probe Scanning (some locations wrong)<br>
+ - Combat<br>
+ - Mining<br>
+ - Market<br>
+<br>
+03Feb22 - Update Main Server with all fixes since 28Feb21
+		- Major Destiny movement update
+		- This update corrects multiple aspects of ship tracking that were previously "close enough"
+		- Ship turn tracking is now much closer than it has ever been.  still WIP.
+02Feb22 - More MemMgmt cleanup additions
+		- Updated Targeting Logic from testing
+		- Begin NPC error tracking (some items fixed)
+01Feb22 - Finally found and fixed some elusive role errors in multiple files
+		- Minor code cleanup and update on multiple files
+29Jan22 - Refactored some enums for account and player types
+		- Corrected some previously-missed event log types
+28Jan22 - Fixed cases of multiple deletes on Py* objects
+		- Updated d'tor cleanup for multipel Py* objects (MemMgmt improvements)
+27Jan22 - More fixes and updates from CodeFactor and Coverity Scans
+		- Client Session updates for better packet sending
+		- Multiple code improvements for faster runtime
+24Jan22 - Major XMLP update
+		- Added code for enabling Encode() and Decode() sections
+		- Added better MemMgmt for xmlp objects
+		- Found and Fixed elusive error with StaticDataMgr not populating BP material types properly
+20Jan22 - Fixes from CodeFactor and Coverity Scans
+		- Found and fixed a few elusive errors with MarketGroups not being populated properly
+		- Begin Update to use item attributes instead of hard-coded variables
+13Jan22 - Added fast method to compare float/double
+		- Updated EntityList loop for faster iteration
+		- Begin basic movement updates for better client tracking
+02Jan22 - More Bracket updates
+		- Begin MemMgmt work on XMLP code
+30Dec22 - Resume work on Alasiya-EvE code
+		- Major Code update and refactor
+28Feb21 - Updated correct database for MarketOrders this time. (#148)<br>
+          Begin work on sorting and updating all items for Crucible-era prices.<br><br>
+25Feb21 - Updated MarketOrders table to match code updates previously overlooked. (#148)<br><br>
+23Feb21 - Minor update to logic behind station loading<br>
+          Updates to item Delete() logic<br>
+          Finished solSystem and item unloading. (#150)  All char items in station hangars (including corp hangars) will unload when station unloads (solSystem unload).  Character, skills, and ship (with contents) will unload upon char logout.<br><br>
+21Feb21 - After careful review while stepping thru code, found inconsistencies with my bracket use.  This is now fixed, and the code is cleaner and more predictable for it<br>
+          Fixed elusive error when changing charges<br>
+          (valgrind) Fix for pointer access-after-release<br>
+          (valgrind) Fix for uninitialized data members in tracking cans<br>
+          (valgrind) Fix for error when returning pointer from function<br>
+          Removed stupid loop in GetModule() call<br><br>
+20Feb21 - Added notes for Player Drone code (still incomplete)<br>
+          Corrected error with Scoop and ScoopDrone calls<br>
+          Fixed error with stackall (would stack all cargo into main cargo hold)<br>
+          Corrected segfault with solSystem SetState call<br>
+          Corrected JetCan trying to put each jettison item in separate cans (#88)<br>
+          FINALLY Corrected item movement bugs in container inventory code (#28,#30,#37,#57,#68,#122,#139)<br><br>
+18Feb21 - Added some previously-unseen corp calls (skeleton colde only)<br><br>
+17Feb21 - Fixed cargo capacity checks (#58, #37)<br><br>
+16Feb21 - Update/verify throw status in client calls<br>
+          Added checks for renting offices<br>
+          Updated bound object creation<br>
+          Begin work on item capacity checks<br><br>
+15Feb21 - Client Session Updates<br>
+          Multiple code updates/improvements<br><br>
+13Feb21 - Marshal code updates<br>
+          Packet code updates<br>
+          Corp updates (mostly semantics and notes for later)<br>
+          RAM updates for smoother code<br><br>
+15Nov20 - Corp rclick menu updates (rclick items in corp hangar now working)<br>
+14Nov20 - (Internal) variable updates for cleaner code<br>
+        Begin solSystem Unloading Rewrite<br>
+        InventoryItem Header updates<br><br>
+13Nov20 - RAM Updates<br><br>
+08Nov20  - Fix capacitor error when default effect is null (#xx)<br>
+        Fix display error (#xx)<br><br>
+07Nov20  - Copying, PE, ME updates (RAM update)<br>
+        Basic corp RAM usage implemented (not POS)<br>
+        Added feature - RAM completion as calendar event<br><br>
+04Nov20  - Manufacturing update (RAM rewrite)<br>
+        updated existing and added missing checks for personal and corp RAM<br><br>
+03Nov20  - Many variable updates/improvements<br><br>
+02Nov20  - Moved type, group, and cat to static data<br>
+        Fix for elusive character attribute oob error<br><br>
+31Oct20 - Calendar Implemented (edit event not working)<br><br>
+30Oct20 - Warp checks and times rewrite<br>
+        Session variable update<br><br>
+28Oct20 - Mining fix for cargo overflow<br>
+        Corrected fuel isotopes not being allowed in fuel bay<br><br>
+26Oct20 - Major Market Rewrite<br>
+        Corp market currently disabled<br>
+        Taxes and Broker Fees implemented<br>
+        Journal Entries Updated and missing entries added<br>
+        Market Transaction Entries updated<br><br>
+19Oct20 - Major Skill Rewrite - skill training finally fixed<br>
+        Added Skill Injection Report<br>
+        Added methods to add cargo mass to ship mass for more realistic gameplay<br>
+        Removed some unused variables, calls, database hits and other bloat<br>
+        Updated some class names to follow my naming convention (semantics)<br><br>
+17Oct20 - Added 4 Missing Calls for Skill Training<br>
+        Cleaned and Optimized misc code segments<br><br>
+27Aug20 - Module Creation Update(fix)<br><br>
+26Aug20 - Fix segfault when removing probes<br><br>
+21Aug20 - Major scan probe update (~90% complete)<br>
+        Update belt rat spawn locations<br><br>
+20Aug20 - Error fix in GetMuliOwner() and GetMultiLocation() responses<br>
+        Found and coded client call for setting charges properly when in space<br>
+        Update some questionable Process() checks<br><br>
+19Aug20 - Fix for blank speedometer. (#40)<br><br>
+14Aug20 - Found and coded update for client to flush current scan data when jumping<br>
+        Changed probe tic to 250ms (like targetMgr)<br>
+        Coded assembly for T3 ships (other methods incomplete and may throw errors)<br><br>
+12Aug20 - Completed dscan code to use client input for direction and distance (#111)<br>
+        Re-enabled asteroid save/load code with proper itemIDs<br>
+        Few code improvements<br><br>
+10Aug20 - Update to better calculate fx when changing ships while docked<br><br>
+05Aug20 - Removed missiles from anomaly map<br>
+        Fixed client update when loading from large stacks<br><br>
+30Jul20 - Update item factory code for better checks and searches<br><br>
+28Jul20 - Finally found and fixed error when checking for active probe launcher<br><br>
+19Jul20 - Segfault fix when destroying active probes (#110)<br><br>
+14Jul20 - Segfault fix for DSE w/o DestinyMgr<br>
+        Major mistake fix in bubble checks<br><br>
+08Jul20 - Fixed Salvage cargo checks (#120)<br>
+        Fixed remaining cargo checks<br><br>
+01Jul20 - Fixed blackscreen bug on login and jump (#127, #135)<br><br>
+29Jun20 - Addressed few things from TODO list<br><br>
+28Jun20 - Added many missing nullptr checks (stability update)<br><br>
+27Jun20 - Updated some fleet calls and code<br><br>
+13Apr20 - Added calls to update ship repair data when targeted (#136)<br><br>
+30Mar20 - Added MOTD<br>
+        More work on Weapon Grouping (#121)<br><br>
+26Mar20 - Updated skill training checks<br><br>
+24Mar20 - Fixed bleedthru damage calc (#106)<br><br>
+23Mar20 - Corrected visibility of cloaked ships in bubbles (#127)<br>
+        Reworked repair item display (#119)<br>
+        Added checks and code to avoid bubble overlap<br>
+        Added nullptr checks in module code<br><br>
+22Mar20 - Corrected fx apply error when undocking (#118)<br>
+        Added more item rename checks and msgs (#124)<br>
+        Corrected some malformed variable initialization calls<br><br>
+19Mar20 - More data updates<br>
+        Fixed error with destiny state sending (#80)<br>
+        Finally found and fixed charge and module location rsp errors<br><br>
+16Mar20 - Fixed error on ship positioning when stargate jump (#125)<br>
+        Multiple minor updates and improvements<br><br>
+14Mar20 - Updated check for multiple tractors on same target (#123)<br>
+        Reworked module logic when target destroyed (#101)<br>
+        Updated data for salvage hold om some ships<br>
+        Updated data for ore hold on some ships<br>
+        Fixed stack code for mining and salvage<br><br>
+09Mar20 - Updated prop mod code.  (working better, but still incomplete)<br>
+        Fixed Cloaking on stargate jump (#127)<br>
+        Fixed crash when targeting gates and stations (#130)<br>
+        Ship damage is no longer reset when docking (#107)<br>
+        Fixed some message errors when targeting fails<br><br>
+08Mar20 - Fixed charge load/unload/deplete/delete<br>
+        Updated effects data<br><br>
+03Mar20 - Fixed errors with unfitting modules while active<br>
+        Fixed targeting errors (#108)<br>
+        Fixed some random and elusive ship Init() errors<br><br>
+19Feb20 - Fixed segfault in mail<br>
+        Fixed segfault in moving modules between slots (#83)<br>
+        Fixed another error in fx data (#12, #13, #81)<br>
+        Fixed error in npc warping in/out of bubbles<br>
+        Fixed error in mining activation test (#85)<br><br>
+18Feb20 - Fixed ANOTHER error with Character Creation<br>
+        Fixed error in updated fx data (#35, #36)<br>
+        Fixed error in NPCAI<br><br>
+17Feb20 - Character Creation fixed<br>
+        Major module and effects update<br><br>
+        <br><br>
+Thank you for your help during our Pre-Alpha test phase.<br>
+Allan and the Alasiya EvE Team.<br><br>
+
+
+</body></html>
