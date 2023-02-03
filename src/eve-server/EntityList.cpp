@@ -49,28 +49,19 @@
 #include "corporation/CorporationDB.h"
 
 EntityList::EntityList()
-: m_services( nullptr ),
+: m_services(nullptr),
+m_procClient(nullptr),
 m_targTimer(0, true),
 m_stampTimer(0, true),
 m_minuteTimer(0, true),
 m_startTime(0),
+m_profileTime(0),
 m_npcs(0),
 m_stamp(1000),   /* arbitrary.  start at 1k.  in seconds.  used for destiny and client counters */
 m_minutes(0),
 m_connections(0),
 m_clientSeedID(0)
 {
-    /*  this isnt needed
-    m_agents.clear();
-    m_probes.clear();
-    m_clients.clear();
-    m_players.clear();
-    m_systems.clear();
-    m_stations.clear();
-    m_targMgrs.clear();
-    m_corpMembers.clear();
-    */
-
     m_shipTracking = sConfig.debug.UseShipTracking;
 }
 
@@ -186,15 +177,15 @@ void EntityList::RemovePlayer(Client* pClient)
 
 
 void EntityList::Process() {
-    Client* pClient(nullptr);
+    //m_profileTime = GetTimeUSeconds();
     std::vector<Client*>::iterator citr = m_clients.begin();
     while (citr != m_clients.end()) {
         if ((*citr)->ProcessNet()) {
             ++citr;
         } else {
-            pClient = *citr;
+            m_procClient = *citr;
             citr = m_clients.erase(citr);
-            SafeDelete(pClient);
+            SafeDelete(m_procClient);
         }
     }
 
@@ -217,10 +208,12 @@ void EntityList::Process() {
             }
         }
     }
+    //if (sConfig.debug.UseProfiling)
+    //    sProfiler.AddTime(Profile::entityP, GetTimeUSeconds() - m_profileTime);
 
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
-        double profileStartTime(GetTimeUSeconds());
+        m_profileTime = GetTimeUSeconds();
 
         ++m_stamp;
 
@@ -274,7 +267,7 @@ void EntityList::Process() {
         }
 
         if (sConfig.debug.UseProfiling)
-            sProfiler.AddTime(Profile::entityS, GetTimeUSeconds() - profileStartTime);
+            sProfiler.AddTime(Profile::entityS, GetTimeUSeconds() - m_profileTime);
     }
 }
 

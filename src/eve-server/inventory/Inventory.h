@@ -30,7 +30,7 @@
 
 #include "inventory/InventoryDB.h"
 
-
+class Client;
 class CRowSet;
 
 /* this class is content management for items that can contain other items */
@@ -104,9 +104,11 @@ protected:
     InventoryItemRef m_self;
 
 private:
+    Client* m_loadClient;               // this is to speed up item loading (avoid creating instance on every iteration)
     bool mContentsLoaded;
 
     uint32 m_myID;
+    double m_profileStartTime;
 
     std::map<EVEItemFlags, double> m_itemsByFlag;
 

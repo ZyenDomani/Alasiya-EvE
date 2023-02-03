@@ -140,6 +140,9 @@ void Profiler::AddTime(uint8 key, double value) {
         case 29:
             m_civilians.push_back(value);
             break;
+        case 30:
+            m_entityP.push_back(value);
+            break;
         default:
             sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
             break;
@@ -165,6 +168,7 @@ void Profiler::ClearAll()
     m_missile.clear();
     m_system.clear();
     m_entityS.clear();
+    m_entityP.clear();
     m_loot.clear();
     m_salvage.clear();
     m_spawn.clear();
@@ -189,9 +193,12 @@ void Profiler::PrintProfile()
     sLog.Green("   Server Profile", " Current Process Profile times for this run:");
     //std::printf("\n");     // spacer
     std::printf("\t\tLoop Calls\n");
+    //GetRunTimes(m_entityP, h, l, a);
+    //GetSize(m_entityP.size(), fSize);
+    //std::printf("  EntList Proc   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_entityS, h, l, a);
     GetSize(m_entityS.size(), fSize);
-    std::printf("    EntityList   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("   EntList Tic   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_client, h, l, a);
     GetSize(m_client.size(), fSize);
     std::printf("Client Network   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );

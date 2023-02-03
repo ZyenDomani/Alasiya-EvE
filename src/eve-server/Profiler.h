@@ -53,7 +53,8 @@ namespace Profile {
         applyFX     = 26,   //*
         onTarg      = 27,   //
         clientCall  = 28,   //*
-        civilians   = 29    //
+        civilians   = 29,    //
+        entityP     = 30   //*
     };
 }
 
@@ -87,6 +88,7 @@ private:
     std::vector<double> m_destiny;
     std::vector<double> m_system;
     std::vector<double> m_entityS;
+    std::vector<double> m_entityP;
     std::vector<double> m_npc;
     std::vector<double> m_drone;
     std::vector<double> m_bubbles;

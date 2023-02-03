@@ -47,8 +47,10 @@
  */
 Inventory::Inventory(InventoryItemRef iRef)
 : m_self(iRef),
-  m_myID(iRef->itemID()),
-  mContentsLoaded(false)
+m_loadClient(nullptr),
+mContentsLoaded(false),
+m_myID(iRef->itemID()),
+m_profileStartTime(0)
 {
 }
 
@@ -112,18 +114,18 @@ bool Inventory::GetItems(OwnerData &od, std::vector< uint32 >& into ) {
 bool Inventory::LoadContents() {
     if (IsAgent(m_myID))
         return true;
-    double profileStartTime(GetTimeUSeconds());
+    m_profileStartTime = GetTimeUSeconds();
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
-    Client* pClient(sItemFactory.GetUsingClient());
+    m_loadClient = sItemFactory.GetUsingClient();
 
     // test for character creation (which throws errors) and station loading
-    if (pClient != nullptr) {
-        if (pClient->IsCharCreation())
+    if (m_loadClient != nullptr) {
+        if (m_loadClient->IsCharCreation())
             return true;
         if (sDataMgr.IsStation(m_myID)) {
-            if (pClient->IsHangarLoaded(m_myID))
+            if (m_loadClient->IsHangarLoaded(m_myID))
                 return true;
-            pClient->AddStationHangar(m_myID);
+            m_loadClient->AddStationHangar(m_myID);
             mContentsLoaded = false;
         }
     }
@@ -140,9 +142,9 @@ bool Inventory::LoadContents() {
 
     std::vector<uint32> items;
 	// get owner data
-    if (pClient != nullptr) {
-        if (pClient->IsValidSession())
-            od.corpID = pClient->GetCorporationID();
+    if (m_loadClient != nullptr) {
+        if (m_loadClient->IsValidSession())
+            od.corpID = m_loadClient->GetCorporationID();
         if (sDataMgr.IsStation(m_myID)) {
             if (!StationItemRef::StaticCast(m_self)->IsLoaded())
                 StationDB::LoadOffices(od, items);
@@ -157,45 +159,41 @@ bool Inventory::LoadContents() {
                 /* this will load corp hangars' inventory for this station */
                 od.ownerID = od.corpID;
                 _log(INV__TRACE, "Inventory::LoadContents() - Loading office inventory %u(%p) for corp %u in station %s",\
-                            m_myID, this , od.ownerID, (pClient->IsValidSession() ? itoa(pClient->GetStationID()) : "(invalid)"));
+                            m_myID, this , od.ownerID, (m_loadClient->IsValidSession() ? itoa(m_loadClient->GetStationID()) : "(invalid)"));
                 GetItems(od, items);
             } else {
                 // make error for loading office and NOT a PC corp
                 _log(INV__WARNING, "Inventory::LoadContents() - inventory of officeID %u using corpID %u. Continuing...", m_myID, od.corpID);
             }
         }
-		// test for char creation  (data set incomplete in char creation)
-        if (pClient->IsValidSession()) {
-            od.ownerID = pClient->GetCharacterID();
+        // test for char creation  (data set incomplete in char creation)
+        if (m_loadClient->IsValidSession()) {
+            od.ownerID = m_loadClient->GetCharacterID();
         } else {
-            od.ownerID = pClient->GetCharID();
+            od.ownerID = m_loadClient->GetCharID();
         }
     }
 
-    _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory of %s(%u) with owner %u", m_self->name(), m_myID, od.ownerID);
+    _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory of %s(%u) with owner %u", \
+            m_self->name(), m_myID, od.ownerID);
     if (!GetItems(od, items)) {
-        _log(INV__ERROR, "Inventory::LoadContents() - Failed to get inventory items for %s(%u)", m_self->name(), m_myID);
-        if ((pClient != nullptr) and sDataMgr.IsStation(m_myID))
-            pClient->RemoveStationHangar(m_myID);
+        _log(INV__ERROR, "Inventory::LoadContents() - Failed to get inventory items for %s(%u)", \
+                m_self->name(), m_myID);
+        if ((m_loadClient != nullptr) and sDataMgr.IsStation(m_myID))
+            m_loadClient->RemoveStationHangar(m_myID);
         return false;
     }
 
-    // test this...dont create new ref on every loop.  additem *should* call copy c'tor, but i dont know yet...
-	InventoryItemRef iRef;
+    _log(INV__TRACE, "Inventory::LoadContents() - Adding %lu items to inventory of %s(%u) with owner %u", \
+            items.size(), m_self->name(), m_myID, od.ownerID);
     for (auto &cur : items) {
         if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_myID))
             continue;
-        iRef = sItemFactory.GetItemRef(cur);
-        if (iRef.get() == nullptr) {
-            _log(INV__WARNING, "Inventory::LoadContents() - Failed to load item %u contained in %u. Skipping.", cur, m_myID);
-            continue;
-        } else {
-            AddItem(iRef);
-        }
+        AddItem(sItemFactory.GetItemRef(cur));
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::itemload, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::itemload, GetTimeUSeconds() - m_profileStartTime);
 
     mContentsLoaded = true;
 
@@ -208,29 +206,27 @@ void Inventory::AddItem(InventoryItemRef iRef) {
         return;
 
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
-    std::pair <std::_Rb_tree_iterator <std::pair <const uint32, InventoryItemRef > >, bool > test;
+    //std::pair <std::_Rb_tree_iterator <std::pair <const uint32, InventoryItemRef > >, bool > test;
     if (itr == mContents.end())
-        test = mContents.emplace(iRef->itemID(), iRef);
-
-    if (test.second) {
-        _log(INV__TRACE, "Inventory::AddItem() - Updated %s(%u) to contain (%u) %s(%u) in %s.", \
+        /*test =*/ mContents.emplace(iRef->itemID(), iRef);
+/*
+    if (is_log_enabled(INV__TRACE)) {
+        if (test.second) {
+            _log(INV__TRACE, "Inventory::AddItem() - Updated %s(%u) to contain (%u) %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->quantity(), iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
-    } else {
-        _log(INV__TRACE, "Inventory::AddItem() - %s(%u) already contains %s(%u) in %s.", \
-                m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
-    }
-
-    // need to find and remove skill in training flag here for proper skill search
-    if (IsCharacterID(m_myID)) {
-        if (iRef->categoryID() == EVEDB::invCategories::Skill) {
-			// what if this skill training isnt complete?  woulndt this screw things up?
-            m_contentsByFlag.emplace(flagSkill, iRef);
         } else {
-            m_contentsByFlag.emplace(iRef->flag(), iRef);
+            _log(INV__TRACE, "Inventory::AddItem() - %s(%u) already contains %s(%u) in %s.", \
+                m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
         }
-    } else {
-        m_contentsByFlag.emplace(iRef->flag(), iRef);
     }
+*/
+    if (IsCharacterID(m_myID))
+        if (iRef->categoryID() == EVEDB::invCategories::Skill) {
+            m_contentsByFlag.emplace(flagSkill, iRef);
+            return;
+        }
+
+    m_contentsByFlag.emplace(iRef->flag(), iRef);
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
@@ -724,8 +720,8 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
 
     // check capy for single unit
     if (capacity < volume) { // smallest volume is 0.0025
-        Client* pClient = sItemFactory.GetUsingClient();
-        if (pClient != nullptr) {
+        //m_loadClient = sItemFactory.GetUsingClient();
+        //if (m_loadClient != nullptr) {
             std::map<std::string, PyRep *> args;
             args["volume"] = new PyFloat(volume);
             sItemFactory.UnsetUsingClient();
@@ -768,7 +764,7 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
                 .AddAmount ("maximum", GetCapacity (flag))
                 .AddAmount ("used", GetStoredVolume (flag));
             }
-        }
+        //}
         return false;
     }
 

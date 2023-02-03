@@ -467,6 +467,7 @@ private:
     void _SendQueuedUpdates();
 
     uint32 m_nextNotifySequence;
+    double m_profileStartTime;
 
     std::map<uint32, uint32>    m_lpMap;    // corpID/points
 

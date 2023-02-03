@@ -93,7 +93,8 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_destinyUpdateQueue(new PyList()),
   m_nextNotifySequence(0),
   m_scanProbe(false),
-  pPacket(nullptr)
+  pPacket(nullptr),
+  m_profileStartTime(0)
 {
     m_afk = false;
     m_login = true;
@@ -122,12 +123,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_moveSystemID = 0;
     m_skillTimer = 0;
     m_dockStationID = 0;
-
-    /*
-    m_lpMap.clear();
-    m_channels.clear();
-    m_hangarLoaded.clear();
-    */
 
     // Start handshake
     Reset();
@@ -206,7 +201,7 @@ bool Client::ProcessNet()
 
     /* trying this...pPacket is now created on client init
      *  instead of creating new pointer/instance of PyPacket on every call
-     *  we're keeping it now and reusing
+     *  we're keeping it now and reusing...much faster
      */
 
     while ((pPacket = PopPacket()) != nullptr) {
@@ -350,7 +345,7 @@ void Client::ProcessClient() {
     if (m_charCreation)
         return;
 
-    double profileStartTime(GetTimeUSeconds());
+    m_profileStartTime = GetTimeUSeconds();
 
     // wtf is this for?
     if (m_pingTimer.Check()) {
@@ -398,7 +393,7 @@ void Client::ProcessClient() {
                 _log(AUTOPILOT__TRACE, "ProcessClient()::IsDocked() - m_clientState set to Idle");
             }
         if (sConfig.debug.UseProfiling)
-            sProfiler.AddTime(Profile::client, GetTimeUSeconds() - profileStartTime);
+            sProfiler.AddTime(Profile::client, GetTimeUSeconds() - m_profileStartTime);
         return;
     }
 
@@ -542,7 +537,7 @@ void Client::ProcessClient() {
         }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::client, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::client, GetTimeUSeconds() - m_profileStartTime);
 }
 
 void Client::WarpIn() {
@@ -2138,6 +2133,8 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         m_packaged = true;
         m_destinyUpdateQueue->AddItem(act.Encode());
     }
+    // do i need to clean up *update here?
+    //PySafeDecRef(*update);
 }
 
 void Client::_SendQueuedUpdates() {

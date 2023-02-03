@@ -169,6 +169,7 @@ protected:
     //Mutex mMutex;
 
 private:
+    Client* m_procClient;
     Timer m_stampTimer;
     Timer m_minuteTimer;
     Timer m_targTimer;
@@ -203,6 +204,7 @@ private:
     uint16 m_clientSeedID;
 
     int64 m_startTime;
+    int64 m_profileTime;
 };
 
 //Singleton
