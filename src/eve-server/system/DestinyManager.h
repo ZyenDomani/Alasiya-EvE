@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur, Aknor Jaden
-    Updates:        Allan
+    Rewrite:        Allan
 */
 
 #ifndef __DESTINYMANAGER_H_INCL__
@@ -45,12 +45,12 @@ namespace Destiny {
         };
         namespace Orbit {
             enum {
-                None = 0,
-                Orbiting = 1,
-                Close = 2,
-                Far = 3,
-                TooClose = 4,
-                TooFar = 5
+                None            = 0,
+                Orbiting        = 1,
+                Close           = 2,
+                Far             = 3,
+                TooClose        = 4,
+                TooFar          = 5
             };
         }
     }
@@ -66,12 +66,12 @@ class SystemBubble;
 class SystemEntity;
 class SystemManager;
 
-// common variables to denote accpetable alignment deviations
-static const float TURN_ALIGNMENT = 4.0f;
-static const float WARP_ALIGNMENT = 6.0f;
+// common variables to denote acceptable alignment deviations
+static const float TURN_ALIGNMENT = 4.0f;       //0.0698132 rad
+static const float WARP_ALIGNMENT = 6.0f;       //0.105 rad
 
 // for testing only.  this isnt right.
-static const uint16 BUMP_DISTANCE = 50;     //in meters.  < this = hit.
+static const uint16 BUMP_DISTANCE = 50;     //in meters.  <= this = hit.
 
 /*
 namespace Destiny {
@@ -102,15 +102,18 @@ public:
 
     void Process();
 
+    // this will consume *ev
     void SendSingleDestinyEvent(PyTuple** ev, bool self_only=false) const;
+    // this will not consume *up
     void SendSingleDestinyUpdate(PyTuple** up, bool self_only=false) const;
+    // this will consume all updates in vector
     void SendDestinyUpdates(std::vector<PyTuple*> &updates, bool self_only=false) const;
 
     /* Informational query functions: */
     const GPoint &GetPosition() const                   { return m_position; }
     const GVector &GetVelocity() const                  { return m_velocity; }
-    float GetSpeedFraction()                            { return m_timeFraction; }
-    float GetSpeed()                                    { return (m_maxShipSpeed * m_timeFraction); }
+    float GetSpeedFraction()                            { return m_activeSpeedFraction; }
+    float GetSpeed()                                    { return (m_maxShipSpeed * m_activeSpeedFraction); }
 
     // this is only used by my bubble debug command
     uint8 GetState()                                    { return m_ballMode; }
@@ -126,7 +129,7 @@ public:
 
     /* Global Actions */
     void Stop();
-    void Halt();     // puts entity at 0 velocity
+    void Halt(bool commanded=false);     // puts entity at 0 velocity
     void Eject();   // avoid numerous other redirect calls
     void SetCloak(bool set=false)                       { m_cloaked = set; }
 
@@ -146,7 +149,7 @@ public:
     void WarpTo(const GPoint& where, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
 
     /* Ship State Query functions */
-    bool IsMoving()                                     { return (m_timeFraction > 0.0f); }
+    bool IsMoving()                                     { return (m_activeSpeedFraction > ASF_CHECK); }
 
     /* Movement checks */
     bool IsAligned(GPoint &targetPoint);
@@ -188,30 +191,25 @@ public:
     void SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID, uint32 chargeTypeID, std::string guid, bool isOffensive, bool start, bool isActive, int32 duration, uint32 repeat, int32 graphicInfo = 0) const;
 
     //  functions to return protected variables for SystemBubble exclusive WarpTo updates and other methods that need Destiny Variables
-    int32 GetDistance()                                 { return m_stopDistance; }
+    //int32 GetDistance()                                 { return m_stopDistance; }
     int32 GetWarpSpeed()                                { return static_cast<int32>(m_shipWarpSpeed * 10); }
     uint32 GetTargetID()                                { return m_targetEntity.first; }
     SystemEntity* GetTargetEntity()                     { return m_targetEntity.second; }
     GPoint GetTargetPoint()                             { return m_targetPoint; }
     double GetMaxVelocity()                             { return m_maxShipSpeed; }
     double GetFollowDistance()                          { return m_targetDistance; }
-    double GetMass()                                    { return m_mass; }
-    double GetAgility()                                 { return m_shipAgility; }
-    double GetInertia()                                 { return m_shipInertia; }
     uint32 GetStateStamp()                              { return m_stateStamp; }
     GVector GetHeading()                                { return m_shipHeading; }
 
-    float GetAlignTime()                                { return m_alignTime; }
     float GetAccelTime()                                { return m_shipMaxAccelTime; }
-    float GetWarpTime()                                 { return m_timeToEnterWarp; }
+    // this is only used by my GetShipVars command
+    float GetAlignTime()                                { return m_turnAlignTime; }
+    float GetWarpTime()                                 { return m_warpAlignTime; }
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
     double GetRadius()                                  { return m_radius; }
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
 
     float GetRadTic()                                   { return m_orbitRadTic; }
-
-    void SetCallTime(double set=0)                      { m_callTime = set; }
-    double GetCallTime()                                { return m_callTime; }
 
     // set all movement vars for missile and add to system
     //  this is used by all entities (pc, npc, drone, sentry, pos, etc)
@@ -219,6 +217,10 @@ public:
 
     bool IsFrozen()                                     { return m_frozen; }
     void SetFrozen(bool set=false)                      { m_frozen = set; }
+
+    // called only by Beyonce from CmdSetSpeedFraction()
+    void SetMoveTimeNow()                               { m_moveTime = GetTimeMSeconds(); }
+    void UpdateSpeedFraction(float speedPct=0);
 
 protected:
     void ProcessState();
@@ -231,30 +233,22 @@ protected:
     bool m_hasSentShipUpdates;
 
     //things dictated by our entity's configuration:
+    //float m_massMKg;                    //in mg     - Millions of kg (MKg)
     uint8 m_warpAccelTime;              //in s      - calculated internally for warp stages
     uint8 m_warpDecelTime;              //in s      - calculated internally for warp stages
 
-    float m_mass;                       //in kg
-    float m_massMKg;                    //in mg     - Millionths of kg (mg)
-    float m_alignTime;                  //in s      - align and enter warp are same (for our purposes)
+    float m_turnAlignTime;              //in s      - time to complete turn
+    float m_warpAlignTime;              //in s      - time to align and enter warp
     float m_prevSpeed;                  //in m/s    - used to calculate speed during decel
     float m_maxShipSpeed;               //in m/s
     float m_shipWarpSpeed;              //in au/s
-    float m_timeToEnterWarp;            //in s
     float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxShipSpeed
 
     double m_radius;                    //in m
-    double m_capNeeded;                 //in GJ     - variable to drain cap during warp init
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
-    // ship motion factors for complicated maths
-    double m_shipAgility;               //in s/Mkg  - time-constant of movement for objects in eve physics (and 't' in Dr. SS's calculations)
-                                        //          - characteristic of time that governs the rate of change in motion of an object
-    double m_shipInertia;               //in s/Mkg  - reciprocal of drag constant in EvE
-                                        //          - the drag coefficient is 1/I and in Mkg/s
 
     //derived from above params:
-    float m_maxSpeed;                   //in m/s
-    float m_degPerTic;                  //in deg/s  - used to determine rate of direction change
+    float m_maxSpeed;                   //in m/s    - derived from m_maxShipSpeed * m_userSpeedFraction
     float m_shipAccelTime;              //in s      - used to check time for speed change
     float m_shipMaxAccelTime;           //in s      - used to determine accel rate, and total accel time
 
@@ -274,9 +268,6 @@ protected:
 
     uint8 m_ballMode;                   //current state of ball
 
-    int32 m_stopDistance;               //from destination, in m
-
-    uint8 m_turnTic;                    //time into turn
     int8 m_orbiting;                    // 0=no orbit, >0=in orbit, 1=at distance, 2=too close , 3=too far, 4=way too close, 5=way too far
     //Destiny::Ball::stateStamp m_stateStamp; //state and count of current state since beginning, in seconds
     //Destiny::Ball::timeStamp m_timeStamp; //mode and timestamp of when current mode began
@@ -294,7 +285,8 @@ protected:
     uint32 m_followDistance;            //in m
     uint32 m_targetDistance;            //in m
     double m_moveTime;                  //in ms       - time when speed change started.  used to calculate m_timeFraction
-    double m_callTime;                  //in ms       - time client call was processed.  this is to coordinate tic calculations
+    double m_turnTime;                  //in ms       - time turn started.  this must be accurate and separate from m_moveTime
+    double m_agility;                   //unitless?   - not sent to client
 
     GPoint m_targetPoint;               //vector      - point in space used as current destination
     GVector m_shipHeading;              //direction ship is facing
@@ -312,11 +304,6 @@ private:
     bool m_frozen;                      // hack to keep ship from moving when using modules that prevent movement
     bool m_changeDelay;                 // this is to try to sync destiny with client, as client has a delay when changing destiny states.
 
-    // check to align destiny movement to tic
-    bool m_ticAlign;
-    void SendMovementPacket();
-    PyTuple *mvPacket;
-
     // Internal Collision Methods   -allan Nov 2015
     bool m_bump;
     void CheckBump();                              //iterate thru objects in current bubble to check for collisions
@@ -327,17 +314,16 @@ private:
     bool IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement
     void Turn();                       //apply velocity and heading updates as needed for turning.  called by MoveObject()
     void ClearTurn();
-    // bezier turn data (wip)      -allan  Jan 2023
-    float m_curvePercent;               // (0,1) for curve duration
-    GPoint m_curveStart;
-    GPoint m_curveApex;
-    GPoint m_curveEnd;
-    // get point for bezier curve (wip)
-    int64 getPt( int64 from, int64 to, float perc ) {
-        int64 diff(from - to);
-        return from + ( diff * perc );
-    }
     void MarkPoint(const GPoint& position, std::string& name, std::string& desc);
+    bool m_posHack;                    //force position update after turn
+
+    // new turn data (wip)      -allan  Jan 2023
+    GVector m_curveHeadDelta;   // heading change per tic to (eventually) allow "from" to match "to" smoothly
+    // return percent change between from and to  (wip)
+    float getPct(float from, float to, float pct) {
+        return from + ((to - from) * pct);
+    }
+
 
     // Internal Orbit shit
     GPoint ComputePosition(double curRad);   // currently testing...wip
@@ -397,6 +383,29 @@ private:
 };
 
 #endif
+
+/*  class          inertiaMod                   ~agility
+ * Capsule          .06
+ * Shuttle          1.6
+ * Rookie           5
+ * Frigates         3 - 6 (adv. 3 - 4)
+ * Destroyers       4 - 5
+ * Cruisers         4 - 8
+ * T3 Cruiser       2.4 - 2.8
+ * HAC              5 - 7
+ * Battlecruisers   6 - 9
+ * Battleships      8 - 14
+ * Industrials      8 - 12
+ * Marauder         ~12
+ * Orca             40
+ * Freighters       ~60
+ * Supercarrier     ~60
+ * Command          ~9
+ * Transport        5 or 19
+ * Barges           10 - 18
+ * Dreadnought      ~55
+ * Zephyr           5
+ */
 
 /*#Embedded file name: c:/depot/games/branches/release/EVE-TRANQUILITY/eve/client/script/environment/effects/Repository.py
  * import effects

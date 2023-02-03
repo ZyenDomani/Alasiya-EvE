@@ -54,28 +54,26 @@ m_maxSpeed(1.0f),
 m_shipAccelTime(0.0f),
 m_shipMaxAccelTime(0.0f),
 m_ballMode(Destiny::Ball::Mode::STOP),
+m_agility(0.0),
+//m_massMKg(0.0f),
 m_warpTimer(0),
 m_moveTime(0.0),
+m_turnTime(0.0),
+m_posHack(sConfig.debug.PositionHack),
 m_targetDistance(0),
 m_followDistance(0),
-m_stopDistance(0),
-m_mass(1.0f),
-m_turnTic(1),
-m_massMKg(1.0f),
-m_alignTime(1.0f),
-m_timeToEnterWarp(10.0f),
+m_speedToLeaveWarp(0),
+m_turnAlignTime(5.0f),      // arbitrary default
+m_warpAlignTime(10.0f),      // arbitrary default
 m_shipWarpSpeed(1.0f),
 m_maxShipSpeed(100.0f),
-m_shipAgility(1.0),
-m_shipInertia(1.0),
 m_warpAccelTime(1),
 m_warpDecelTime(1),
 m_warpState(nullptr),
 m_targBubble(nullptr),
 m_warpCapacitorNeed(0.00001),
 m_frozen(false),
-m_ticAlign(false),
-mvPacket(nullptr)
+m_stateStamp(0)
 {
     m_bump = false;
     m_stop = false;
@@ -89,9 +87,7 @@ mvPacket(nullptr)
     m_tractorPause = false;
     m_hasSentShipUpdates = false;
 
-    m_capNeeded = 0.0;
     m_prevSpeed = 0.0f;
-    m_degPerTic = 0.0f;
     m_orbitTime = 0.0f;
     m_orbitRadTic = 0.0f;
     m_timeFraction = 0.0f;
@@ -107,22 +103,16 @@ mvPacket(nullptr)
     m_shipHeading = GVector( NULL_ORIGIN );
     m_targetHeading = GVector( NULL_ORIGIN );
 
-    m_curvePercent = 0.0f;
-    m_curveStart = GPoint( NULL_ORIGIN );
-    m_curveApex = GPoint( NULL_ORIGIN );
-    m_curveEnd = GPoint( NULL_ORIGIN );
-
     m_radius = mySE->GetRadius();
     m_position = mySE->GetPosition();
 
-    m_turnTic = 0;
     m_turning = false;
-    m_turnFraction = 0;
+    m_radians = 0.0;
+    m_turnFraction = 0.0f;
+    m_curveHeadDelta = GVector( NULL_ORIGIN );
 
-    m_inclination = 0;
-    m_longAscNode = 0;
-
-    m_stateStamp = 0;
+    m_inclination = 0.0;
+    m_longAscNode = 0.0;
 }
 
 DestinyManager::~DestinyManager() {
@@ -134,18 +124,6 @@ DestinyManager::~DestinyManager() {
 void DestinyManager::Process() {
     double profileStartTime(GetTimeUSeconds());
 
-    if (mySE->IsFrozen()) {
-        Halt();
-        return;
-    }
-
-    //check for and process Destiny::Ball::State changes.
-    if (m_ticAlign) {
-        m_ticAlign = false;
-        // send movement packet this tic and begin movement
-        //SendMovementPacket();
-    }
-
     ProcessState();
 
     if (sConfig.debug.UseProfiling)
@@ -153,6 +131,11 @@ void DestinyManager::Process() {
 }
 
 void DestinyManager::ProcessState() {
+    if (mySE->IsFrozen()) {
+        Halt();
+        return;
+    }
+
     using namespace Destiny;
     switch(m_ballMode) {
         case Ball::Mode::STOP: {
@@ -228,14 +211,11 @@ void DestinyManager::ProcessState() {
             float dot = toVec.dotProduct(m_shipHeading);
             float degrees = EvE::Trig::Rad2Deg(std::acos(dot));
 
-            if ((degrees < WARP_ALIGNMENT) and (m_timeFraction > 0.749)) {
+            if ((degrees < WARP_ALIGNMENT) and (m_activeSpeedFraction > 0.749)) {
                 m_shipHeading = toVec;
                 InitWarp();
                 return;
-            } else if (m_timeFraction < 0.749) {
-                if (m_userSpeedFraction < 0.7499)
-                    SetSpeedFraction(1.0f, true);
-            } else if ((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp + 0.3) {
+            } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > m_turnAlignTime) {
                 // catchall for turn checks messed up, and m_moveTime > ship align time
                 if (mySE->HasPilot()) {
                     _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > shipTimeToWarp.",  \
@@ -281,7 +261,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
     }
 
     if (is_log_enabled(DESTINY__MOVE_TRACE))
-        _log(DESTINY__MOVE_TRACE, "Destiny::SetSpeedFraction() - %s(%u):   prevSpeed:%.2f, fraction: %.2f, start: %s, stop: %s,accel: %s, decel: %s",
+        _log(DESTINY__MOVE_TRACE, "Destiny::SetSpeedFraction() - %s(%u):   prevSpeed:%.2f, fraction: %.2f, start: %s, stop: %s, accel: %s, decel: %s",
              mySE->GetName(), mySE->GetID(), m_prevSpeed, fraction, startMovement ? "true" : "false", m_stop ? "true" : "false", \
              m_accel ? "true" : "false", m_decel ? "true": "false");
 
@@ -332,10 +312,13 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
      *   -> sets velocity (indirectly)
      *  m_maxOrbitSpeedFraction (OSF) is ship's max speed based on orbit data
      *   -> may not be used after update
-     *  m_moveTime is timestamp when move change started
+     *  m_stateStamp is server tic when move event began
+     *   -> measured in seconds
+     *   -> data type is uint16
+     *   -> set/reset in BeginMovement() for any/all speed/direction changes
+     *   -> used to calculate TF
+     *  m_moveTime is (exact) timestamp when move change started
      *   -> data type is (double) FileTime
-     *   -> set in BeginMovement()
-     *   -> reset on every speed change
      *   -> used to calculate TF
      *  m_targetPoint holds current target coords.
      *   -> set by goto, warp, align, follow, orbit
@@ -356,7 +339,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
 
     m_prevSpeedFraction = 0.0f;
 
-    if (m_activeSpeedFraction > 0.01f) {
+    if (m_activeSpeedFraction > ASF_CHECK) {
         m_userSpeedFraction = fraction;
         m_prevSpeedFraction = m_activeSpeedFraction;
         UpdateVelocity(true);
@@ -372,8 +355,8 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
     }
 
     std::vector<PyTuple*> updates;
-    updates.clear();
-    if (fraction) {
+    // only sent if usf changed
+    if ((fraction > ASF_CHECK) and (m_decel or m_stop)) {
          CmdSetSpeedFraction du;
             du.entityID = mySE->GetID();
             du.fraction = fraction;
@@ -381,7 +364,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
     }
     if (((mySE->IsNPCSE() or mySE->IsDroneSE()) and !m_hasSentShipUpdates)
     or mySE->IsMissileSE() or mySE->IsContainerSE() or mySE->IsWreckSE()) {
-        SetBallSpeed ms;   //NPCs and Missiles only.
+        SetBallSpeed ms;   //NPCs, Missiles, containers, wrecks
             ms.entityID = mySE->GetID();
             ms.speed = m_maxSpeed;
         updates.push_back(ms.Encode());
@@ -389,7 +372,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
     }
 
     if (!updates.empty())
-        SendDestinyUpdates(updates);
+        SendDestinyUpdates(updates); //consumed
 }
 
 void DestinyManager::UpdateVelocity(bool isMoving) {
@@ -406,17 +389,17 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
         m_prevSpeed = m_speedToLeaveWarp;
         m_velocity = m_shipHeading * m_maxSpeed;
         m_prevSpeedFraction = m_maxSpeed / m_maxShipSpeed;
-        m_shipAccelTime = m_shipAgility * -log(1-(m_prevSpeedFraction));
-    } else if (m_userSpeedFraction) {
+        //m_shipAccelTime = mySE->GetSelf()->GetAttribute(AttrAgility).get_float() * -log(1-(m_prevSpeedFraction));
+        m_shipAccelTime = m_agility * -log(1-(m_prevSpeedFraction));
+    } else if (m_userSpeedFraction > 0.01f) {
         // commanded speed fraction > 0 and ...
         float delta(1.0f);
-        if (isMoving) {
+        if ((m_activeSpeedFraction == m_userSpeedFraction) and (!m_prevSpeed)) {
+            // ... nothing has changed.
+            logType = 7;
+            m_prevSpeedFraction = 0.0f;
+        } else if (isMoving) {
             //  ... ship is moving and ...
-            if ((m_activeSpeedFraction == m_userSpeedFraction) and (!m_prevSpeed)) {
-                // ... nothing has changed.
-                return;
-            }
-
             if (m_activeSpeedFraction > m_userSpeedFraction) {
                 // ... request is lower than current speed - begin decel
                 logType = 4;
@@ -446,7 +429,7 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
             _log(DESTINY__MOVE_TRACE, "Destiny::UpdateVelocity - %s(%u): Speed Change - USF: %.2f, ASF: %.2f, TF: %.2f, PSF: %.2f, pSpeed: %.2f, mSpeed: %.2f, accel: %s, decel: %s, delta: %.3f", \
             mySE->GetName(), mySE->GetID(), m_userSpeedFraction, m_activeSpeedFraction, m_timeFraction, m_prevSpeedFraction, m_prevSpeed, m_maxSpeed, \
                  m_accel ? "true" : "false", m_decel ? "true": "false", delta);
-    } else if (m_activeSpeedFraction) {
+    } else if (m_activeSpeedFraction > ASF_CHECK) {
         //  commanded to stop while ship is moving.  begin decelerating
         logType = 5;
         m_accel = false;
@@ -460,10 +443,6 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
         Halt();
     }
 
-    // reset moveTime to now
-    // this is time call came from client, NOT on destiny tic.
-    m_moveTime = GetTimeMSeconds();
-
     if (m_shipAccelTime < 0)
         sLog.Error("Destiny::UpdateVelocity()", "Accel Time is negative: %.2f", m_shipAccelTime);
 
@@ -476,6 +455,7 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
             case 4: { msg = "USF != 0 and ship is Moving.   --Begin Decel"; }       break;
             case 5: { msg = "USF == 0 and ship is Moving.   --Decel for Stop"; }    break;
             case 6: { msg = "USF == 0 and ship is Stopped.  --Halt"; }              break;
+            case 7: { msg = "ASF == USF                     --No Change"; }         break;
         }
         _log(DESTINY__MOVE_TRACE, "Destiny::UpdateVelocity - %s(%u):  %s  AccelTime: %.2f, USF: %.2f, ASF: %.2f, TF: %.2f, PSF: %.2f", \
                 mySE->GetName(), mySE->GetID(), msg.c_str(), m_shipAccelTime, m_userSpeedFraction, \
@@ -498,7 +478,7 @@ void DestinyManager::Stop() {
         // set m_stop and return.
         m_stop = true;
         return;
-    } else if  ((m_ballMode == Destiny::Ball::Mode::WARP) and (!IsWarping()))  {
+    } else if ((m_ballMode == Destiny::Ball::Mode::WARP) and (!IsWarping()))  {
         //warp aborted before initialized.  standard Stop() applies.
         m_ballMode = Destiny::Ball::Mode::STOP;
     } else if (IsMoving()) {
@@ -508,6 +488,7 @@ void DestinyManager::Stop() {
 
     m_accel = false;
     m_decel = false;
+    m_posHack = false;
     m_prevSpeed = 0.0f;
     m_prevSpeedFraction = 0.0f;
 
@@ -515,9 +496,13 @@ void DestinyManager::Stop() {
     ClearOrbit();
 
     m_stateStamp = sEntityList.GetStamp();
+    m_moveTime = GetTimeMSeconds();
+    m_turnTime = 0.0;
 
     SetSpeedFraction(0.0f);
     m_stop = true;
+
+    m_targBubble = nullptr;
 
     CmdStop du;
         du.entityID = mySE->GetID();
@@ -526,7 +511,7 @@ void DestinyManager::Stop() {
     PyDecRef(up);
 }
 
-void DestinyManager::Halt() {
+void DestinyManager::Halt(bool commanded/*false*/) {
     SafeDelete(m_warpState);
 
     //  reset ALL movement variables and states.  calling this will set object to a COMPLETE and IMMEDIATE stop.
@@ -536,27 +521,36 @@ void DestinyManager::Halt() {
     m_decel = false;
     m_turning = false;
     m_maxSpeed = 0.0f;
-    m_velocity = GVector(NULL_ORIGIN);
     m_moveTime = 0.0;
+    m_turnTime = 0.0;
     m_prevSpeed = 0.0f;
     m_stateStamp = 0;
-    m_targetPoint = GPoint(NULL_ORIGIN);
-    m_stopDistance = 0;
+    m_timeFraction = 0.0f;
     m_targetDistance = 0;
     m_followDistance = 0;
     m_prevSpeedFraction = 0.0f;
     m_userSpeedFraction = 0.0f;
     m_activeSpeedFraction = 0.0f;
-    m_timeFraction = 0.0f;
     m_maxOrbitSpeedFraction = 1.0f;
 
+    m_velocity = GVector(NULL_ORIGIN);
+    m_targetPoint = GPoint(NULL_ORIGIN);
+    m_targetHeading = GVector( NULL_ORIGIN );
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
 
     ClearTurn();
 
+    if (commanded) {
+        // immediate halt via command.  send packet to stop ship.
+        CmdStop du;
+            du.entityID = mySE->GetID();
+        PyTuple *up = du.Encode();
+        SendSingleDestinyUpdate(&up);
+        PyDecRef(up);
+    }
     if (is_log_enabled(DESTINY__MOVE_TRACE))
-        _log(DESTINY__MOVE_TRACE, "Destiny::Halt() - %s(%u): m_shipHeading: %.3f,%.3f,%.3f", \
+        _log(DESTINY__MOVE_TRACE, "Destiny::Halt() - %s(%u) Halted - m_shipHeading: %.3f,%.3f,%.3f", \
                 mySE->GetName(), mySE->GetID(), m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 }
 
@@ -589,7 +583,7 @@ void DestinyManager::CheckBump()
     Client* pClient = mySE->GetPilot();
     GPoint pos(GetPosition());
     float distance = 0.0f;
-    for (auto cur : vPlayers) {
+    for (auto &cur : vPlayers) {
         if (cur == pClient)
             continue;
         distance = pos.distance(cur->GetShipSE()->GetPosition());
@@ -674,7 +668,7 @@ void DestinyManager::Bounce(GVector direction, float speed)
         du.y = m_shipHeading.y;
         du.z = m_shipHeading.z;
     updates.push_back(du.Encode());
-    SendDestinyUpdates(updates);
+    SendDestinyUpdates(updates); //consumed
     Stop();
 }
 
@@ -692,24 +686,29 @@ void DestinyManager::MoveObject() {
 
     if (m_changeDelay) {
         m_changeDelay = false;
-        m_moveTime = GetTimeMSeconds(); // reset m_moveTime to now
+        m_stateStamp = sEntityList.GetStamp(); // reset m_moveTime to now and skip this tic
         _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - ChangeDelay - %s(%u): stateStamp: %u", \
                     mySE->GetName(), mySE->GetID(), m_stateStamp);
         return;
     }
 
+    // check for moving ship changing heading
+    if (m_userSpeedFraction > 0.01f)
+        if (!m_orbiting or (m_orbiting > Destiny::Ball::Orbit::Far))
+            Turn();
+
     /* acceleration and deceleration are both logarithmic and the server needs to keep up with client position.
      * formula for time taken to accelerate from v to V, from https://wiki.eveonline.com/en/wiki/Acceleration
      *
      *   t=IM(10^-6) * -ln(1-(v/V))
-     *   m_shipAccelTime = m_shipAgility * -ln(1-(v/V))
+     *   m_shipAccelTime = agility * -ln(1-(v/V))
      *
      * as this uses the natural log, the higher the speed, the slower the acceleration, to the limits of ln(0)
      * since lim ln(x) = -INFINITY where x->0+. and ln(0) is undefined, we will use
      *
-     *   m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
+     *   m_shipMaxAccelTime = (-ln(0.0005) * agility);
      *
-     * to define the time it will take a given ship to reach 99.9999% of m_maxShipSpeed, at which point,
+     * to define the time it will take a given ship to reach 99.9995% of m_maxShipSpeed, at which point,
      * the server will set m_velocity = (m_maxShipSpeed * direction) (or 100% ship speed).
      *
      * to define speed at X time, we will use the following equation.
@@ -725,29 +724,27 @@ void DestinyManager::MoveObject() {
      *  e = base of natural logarithms
      */
 
-    /* **UPDATE**  this now uses time AND (m_timeFraction > 0.9999f) for min/max speeds.  -allan 6Aug14
+    /* **UPDATE**  this now uses time AND (m_timeFraction > 0.999f) for min/max speeds.  -allan 6Aug14
      * **UPDATE**  this is now tracking ALL speed changes correctly.  -allan 21Nov15
      * **UPDATE**  initial orbit implementation.  -allan 13July16
      * **UPDATE**  removed speed fraction checks for min/max speeds.  -allan 02Jul17
      * **UPDATE**  reworked entire basic movement checks and formulas -allan 17Oct21
+     * **UPDATE**  tweak movement to align with client                -allan 04Jan23
      */
-
-    float timeStamp(0);
-    // check for moving ship changing heading
-    if (m_userSpeedFraction) {
-        if (!m_orbiting or (m_orbiting > Destiny::Ball::Orbit::Far))
-            Turn();
-    }
 
     float speed(0.0f);
     std::string move = "";
-
     // keep timer in seconds.
-    timeStamp = (GetTimeMSeconds() - m_moveTime) * 0.001f;
+    float timeStamp((GetTimeMSeconds() - m_moveTime) * 0.001f);
+    //timeStamp = sEntityList.GetStamp() - m_stateStamp;
+    // update tf for this tic
+    m_timeFraction = (1 - exp(-timeStamp / m_agility)); //mySE->GetSelf()->GetAttribute(AttrAgility).get_float()));
 
-    if ((timeStamp > m_shipAccelTime) and (m_timeFraction > 0.9998f)) {
-        m_activeSpeedFraction = m_userSpeedFraction;
+    _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - timeFraction: %.5f, timeStamp: %.3f", m_timeFraction, timeStamp);
+
+    if ((timeStamp > m_shipAccelTime) and (m_timeFraction > (1 - ASF_CHECK))) {
         speed = m_maxShipSpeed * m_activeSpeedFraction;
+        m_activeSpeedFraction = m_userSpeedFraction;
 
         if (m_decel) {
             if (is_log_enabled(DESTINY__MOVE_TRACE))
@@ -777,13 +774,13 @@ void DestinyManager::MoveObject() {
         }
     } else {
         // changed speed and asf != usf
-        m_timeFraction = (1 - exp(-timeStamp / m_shipAgility));
-
         if (m_accel) {
             // object still accelerating.
-            move = "accelerating";
-            if (m_turning)
+            if (m_turning) {
                 move = "accelerating in turn";
+            } else {
+                move = "accelerating";
+            }
 
             if (m_prevSpeedFraction) {
                 /* accel from previous non-full speed
@@ -798,39 +795,40 @@ void DestinyManager::MoveObject() {
             }
         } else if (m_decel) {
             // object still decelerating.
-            move = "decelerating";
             if (m_turning) {
                 // decel for turn
                 move = "decelerating for turn";
+            } else {
+                move = "decelerating";
             }
             if (m_prevSpeedFraction) {
                 // asf = psf - (psf - usf) * tf
                 m_activeSpeedFraction = m_prevSpeedFraction - (m_prevSpeedFraction - m_userSpeedFraction) * m_timeFraction;
             } else {
-                // this should never hit....should not have decel w/o previous speed
+                // this should never hit....should not have decel w/o psf
                 sLog.Warning("Destiny::MoveObject()", "decel = true, but psf = 0.");
             }
         } else if (m_tractored or m_tractorPause) {
             ;   // do nothing here.  this is to remove error reporting from next line.
         } else {
-            sLog.Error("Destiny::MoveObject()", "%s(%u) - move checks are not set right. Acc:%s, Dec:%s, Turn:%s, Tic:%u, Tractored:%s, TractorPause:%s", \
+            sLog.Error("Destiny::MoveObject()", "%s(%u) - move checks are not set right. Acc:%s, Dec:%s, Turn:%s, timeStamp:%.3f, Tractored:%s, TractorPause:%s", \
                     mySE->GetName(), mySE->GetID(), (m_accel ? "True" : "False"), (m_decel ? "True" : "False"), (m_turning ? "True" : "False"), \
-                    m_turnTic, (m_tractored ? "True" : "False"), (m_tractorPause ? "True" : "False"));
+                    timeStamp, (m_tractored ? "True" : "False"), (m_tractorPause ? "True" : "False"));
         }
 
         speed = (m_maxShipSpeed * m_activeSpeedFraction);
     }
 
     // ships tend to "level out" when stopping.  try to mimic that here (wip)
-    // this will also need *something* with ship agility
+    // this will also need *something* with ship agility/inertia
     // using rifter to check/set base numbers
-    if (m_stop and (m_activeSpeedFraction < 0.7f)) {
-        if (m_shipHeading.y < -0.3f) {
-            m_shipHeading.y += 0.15f;
-        } else if (m_shipHeading.y > 0.3f) {
-            m_shipHeading.y -= 0.15f;
-        }
-    }
+    if (m_stop)
+        if (m_activeSpeedFraction < 0.6f)
+            if (m_shipHeading.y < -0.1f) {
+                m_shipHeading.y += 0.03f;
+            } else if (m_shipHeading.y > 0.1f) {
+                m_shipHeading.y -= 0.03f;
+            }
 
     if (m_orbiting)
         if (m_orbiting < Destiny::Ball::Orbit::TooClose) {
@@ -841,17 +839,23 @@ void DestinyManager::MoveObject() {
 
     if (is_log_enabled(DESTINY__MOVE_TRACE)) {
         if (m_prevSpeedFraction) {
-            _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.3f m/s (tf:%.4f asf:%.4f ps:%.2f psf:%.4f, sec: %.5f).", \
+            _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.3f m/s (tf:%.4f asf:%.4f ps:%.2f psf:%.4f, sec: %.3f).", \
                 mySE->GetName(), mySE->GetID(), move.c_str(), speed, m_timeFraction, m_activeSpeedFraction, m_prevSpeed, m_prevSpeedFraction, timeStamp);
         } else {
-            _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.3f m/s (tf:%.4f asf:%.4f sec: %.5f).", \
+            _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.3f m/s (tf:%.4f asf:%.4f sec: %.3f).", \
                 mySE->GetName(), mySE->GetID(), move.c_str(), speed, m_timeFraction, m_activeSpeedFraction, timeStamp);
         }
     }
 
     //set velocity and position for this tic
     m_velocity = m_shipHeading * speed;
-    SetPosition(m_position + m_velocity, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
+    // will need to hack position setting after turn cause it's still wrong.
+    if (sConfig.debug.PositionHack or m_posHack) {
+        SetPosition(m_position + m_velocity, true);   // force position update to client
+        m_posHack = false;
+    } else {
+        SetPosition(m_position + m_velocity);
+    }
 
     if (is_log_enabled(DESTINY__MOVE_DEBUG))
         _log(DESTINY__MOVE_DEBUG, "Destiny::MoveObject() - %s(%u) Pos:%.2f,%.2f,%.2f  Vel:%.3f,%.3f,%.3f  Head:%.3f,%.3f,%.3f", \
@@ -862,8 +866,13 @@ void DestinyManager::MoveObject() {
         // only create can when ship is moving significant amount
         if (m_activeSpeedFraction > sConfig.debug.ShipTrackingTime) {
             // create jetcan to visualize movement
-            std::string str = mySE->GetName();
-            str += "  ";
+            std::string str;
+            if (m_decel)
+                str += "Decel ";
+            if (m_accel)
+                str += "Accel ";
+            if (m_turning)
+                str += "Turn ";
             str += itoa(timeStamp);
             ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, str.c_str(), m_position, "Position Test");
             CargoContainerRef iRef = CargoContainer::SpawnTemp(idata);
@@ -871,10 +880,10 @@ void DestinyManager::MoveObject() {
                 // create new container
                 FactionData data = FactionData();
                 ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
-                if (cSE == nullptr)
-                    return;
-                iRef->SetMySE(cSE);
-                mySE->SystemMgr()->AddMarker(cSE);
+                if (cSE != nullptr) {
+                    iRef->SetMySE(cSE);
+                    mySE->SystemMgr()->AddMarker(cSE);
+                }
             }
         }
     }
@@ -884,7 +893,8 @@ void DestinyManager::MoveObject() {
             CheckBump();
 }
 
-bool DestinyManager::IsTurn() {    //this is working.  dont change
+bool DestinyManager::IsTurn() {    //this is working.  dont change...yeah, but i did.
+    // whats chances of target being zero?
     if (m_targetPoint.isZero()) {
         _log(DESTINY__ERROR, "Destiny::IsTurn() - %s(%u): TargetPoint is null.", mySE->GetName(), mySE->GetID());
         if (mySE->HasPilot())
@@ -893,50 +903,42 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
         Halt();
         return false;
     }
-    // if ship is stopped, there is no turn.  immediately begin movement in desired direction
-    if ((m_timeFraction < 0.1) and (m_activeSpeedFraction < 0.1)) {
-        GVector toVec(m_position, m_targetPoint);
-        toVec.normalize();
-        m_shipHeading = toVec;
+    // if ship is (reasonably) stopped, there is no turn.  immediately begin movement in desired direction
+    if (!m_turning and (m_timeFraction < 0.05) and (m_activeSpeedFraction < 0.05)) {
+        m_shipHeading = m_targetHeading;
         return false;
     }
-
+/*
+    if  (EvE::AlmostEquals(m_shipHeading.x, m_targetPoint.x, 5)
+    and  EvE::AlmostEquals(m_shipHeading.y, m_targetPoint.y, 5)
+    and  EvE::AlmostEquals(m_shipHeading.z, m_targetPoint.z, 5)) {
+        m_shipHeading = m_targetHeading;
+        return false;
+    }
+*/
     // check for turning angle.  returns true if angle is enough to change movement variables
     // create isosceles triangle where legs are current direction and destination, then find angle between legs
-    //  it will set m_radians in the range of [-pi,pi].
-    /** @todo revisit this to verify angle calcs */
     GVector toVec(m_position, m_targetPoint);
     toVec.normalize();
     float dot(toVec.dotProduct(m_shipHeading));
-    if ((dot > 1.0f) or (dot < -1.0f)) {
-        sLog.Error("Destiny::IsTurn()", "%s(%u) - shipHeading has screwed up.  dot is %.5f", mySE->GetName(), mySE->GetID(), dot);
-        _log(DESTINY__ERROR, "Destiny::IsTurn() m_shipHeading: %.3f,%.3f,%.3f.  m_targetHeading: %.3f,%.3f,%.3f, toVec:%.3f,%.3f,%.3f", \
-                m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z, toVec.x, toVec.y, toVec.z);
-        // try to correct for bad heading vector and retest...
-             if (m_shipHeading.x > 1.0f)  { m_shipHeading.x -= 1; }
-        else if (m_shipHeading.x < 1.0f)  { m_shipHeading.x += 1; }
-             if (m_shipHeading.y > 1.0f)  { m_shipHeading.y -= 1; }
-        else if (m_shipHeading.y < 1.0f)  { m_shipHeading.y += 1; }
-             if (m_shipHeading.z > 1.0f)  { m_shipHeading.z -= 1; }
-        else if (m_shipHeading.z < 1.0f)  { m_shipHeading.z += 1; }
-        dot = toVec.dotProduct(m_shipHeading);
-        if ((dot > 1.0f) or (dot < -1.0f)) {
-            sLog.Error("Destiny::IsTurn()", "%s(%u) - shipHeading has screwed up AGAIN.  dot is %.5f", mySE->GetName(), mySE->GetID(), dot);
-            return false;
-        }
-    }
+    // this only happens when heading and target are almost exact (or wrong)
+    while (dot > 1.0f)
+        dot -= 1;
+    while (dot < -1.0f)
+        dot += 1;
 
-    m_radians = std::acos(dot);
-    float degrees(EvE::Trig::Rad2Deg(m_radians));
-    if (degrees < TURN_ALIGNMENT) {
-        m_shipHeading = toVec;
+    //  this will set m_radians in the range of [0,pi].
+    m_radians = acos(dot);
+    if (m_radians < 0.0698132) {		//  TURN_ALIGNMENT = 4* = 0.0698132 rad
+        m_shipHeading = m_targetHeading;
         return false;
     }
 
     if (is_log_enabled(DESTINY__TURN_TRACE)) {
-        _log(DESTINY__TURN_TRACE, "Destiny::IsTurn() - %s(%u): dot: %.5f, radians:%.5f, degrees:%.3f",\
+		float degrees(EvE::Trig::Rad2Deg(m_radians));
+        _log(DESTINY__TURN_TRACE, "Destiny::IsTurn() - %s(%u): dot: %.7f, radians:%.5f, degrees:%.3f",\
             mySE->GetName(), mySE->GetID(), dot, m_radians, degrees);
-        _log(DESTINY__TURN_TRACE, "Destiny::IsTurn() m_shipHeading: %.3f,%.3f,%.3f.  m_targetHeading: %.3f,%.3f,%.3f", \
+        _log(DESTINY__TURN_TRACE, "Destiny::IsTurn() m_shipHeading: %.7f,%.7f,%.7f.  m_targetHeading: %.7f,%.7f,%.7f", \
             m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z);
     }
 
@@ -944,8 +946,9 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
 }
 
 //from new source at eve/client/script/ui/services\flightControls.py
-//  self.curve = trinity.Tr2QuaternionLerpCurve()
-void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for BS.  05Jun17
+//  self.curve = trinity.Tr2QuaternionLerpCurve()  - tried multiple iterations of this....never got close.
+// tracking within 900m for Frigates, 1k4m for BS.  05Jun17
+void DestinyManager::Turn() {
     if (mySE->HasPilot())
         if (mySE->GetPilot()->IsUndock())
             return;
@@ -956,103 +959,131 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
         return;
     }
 
-
     /*when changing directions....
-     *  m_moveTime will have to be reset - handled in UpdateVelocity()
+     *  m_turnTime and m_moveTime will have to be reset - handled in BeginMovement()
      *  m_shipHeading will have to be reset - reset here and used in MoveObject() (our calling function)
-     *  check for decel, then call UpdateVelocity() to set variables as needed.  Move() will handle the rest.
+     *  check for decel, then call UpdateVelocity() to set variables as needed.  MoveObject() will handle the rest.
      *
-     * this below isnt right, hack is almost close
-     *   m_degPerTic = 60.0f / m_massMKg * m_shipInertia;  ([this file]:2317, reset for ab/mwd [this file]:2154)
      */
 
-    // this is off for rookie ship (maybe others)
-    float turnTime(m_shipAgility / m_shipInertia);
+    // keep timer in seconds.
+    float turnStamp((GetTimeMSeconds() - m_turnTime) * 0.001f);
+    turnStamp = round(turnStamp);
+
+    if (turnStamp > m_turnAlignTime) {
+        m_shipHeading = m_targetHeading;
+        if (is_log_enabled(DESTINY__TURN_TRACE))
+            _log(DESTINY__TURN_TRACE, "Destiny::Turn() - turnTic > alignTime.  turn completed in %.2fs.  ShipHeading:%.7f,%.7f,%.7f", \
+                turnStamp, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+
+        ClearTurn();
+        return;
+    }
+
+    //m_radians = rad left in turn.   set in IsTurn() on every tic
     if (!m_turning) {
+        // i dont want to leave this here....just for testing
+        if (m_targetHeading.isNaN()
+        or  m_targetHeading.isZero()  //targHead is zero on login, and MAY be zero on occasion
+        or  m_targetHeading.isInf()) {
+            // well, something fucked up.  stop object and throw error.   player can reset if they want to.
+            if (mySE->HasPilot())
+                mySE->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 35522");
+            _log(DESTINY__ERROR, "Destiny::Turn(0) - %s(%u): TargHeading is Zero/NULL/Inf.  Stopping ship.", mySE->GetName(), mySE->GetID());
+            Stop();
+            return;
+        }
+        // beginning turn
         m_turning = true;
-        //m_radians is set in IsTurn() on every tic
-        m_turnFraction = std::sqrt((std::cos(m_radians) + 1) / 2);
-        //this isnt used yet...used as comparison for testing time calc's
-        m_alignTime = (EvE::Trig::Rad2Deg(m_radians) / m_degPerTic);
+        // get dir change
+        GVector diff(m_shipHeading, m_targetHeading);
+        float pct = 1 / floor(m_turnAlignTime);
+        // this should divide full curve into "floor(alignTime)" parts
+        // allowing heading + delta on each tic to provide a smooth transition
+        m_curveHeadDelta = diff * pct;
 
-        if (is_log_enabled(DESTINY__TURN_TRACE)) {
-            _log(DESTINY__TURN_TRACE, "Destiny::Turn() - %s(%u): Agility:%.3f, Inertia:%.3f, alignTime:%.3f, turnFraction:%.3f, m_degPerTic:%.3f", \
-                    mySE->GetName(), mySE->GetID(), m_shipAgility, m_shipInertia, m_alignTime, m_turnFraction, m_degPerTic);
+        if (is_log_enabled(DESTINY__TURN_TRACE))
+            _log(DESTINY__TURN_TRACE, "Destiny::Turn(1) - %s(%u): diff:%.5f,%.5f,%.5f, pct:%.3f, delta:%.7f,%.7f,%.7f", \
+            mySE->GetName(), mySE->GetID(), diff.x, diff.y, diff.z, pct, \
+            m_curveHeadDelta.x, m_curveHeadDelta.y, m_curveHeadDelta.z);
+
+        //  calc min speed for this turn as absolute percent
+        float minTurnSpeedFraction = (std::sqrt((cos(m_radians) + 1) / 2));
+
+        if (is_log_enabled(DESTINY__TURN_TRACE))
+            _log(DESTINY__TURN_TRACE, "Destiny::Turn(1) - %s(%u): minTurnSpeedFraction:%.3f(%.3f), alignTime:%.3f, ASF:%.3f", \
+            mySE->GetName(), mySE->GetID(), minTurnSpeedFraction, (m_maxShipSpeed * minTurnSpeedFraction), m_turnAlignTime, m_activeSpeedFraction);
+
+        // method to determine turn speed based on above calc for any usf
+        // note:  this does funny shit when decel from deactivated speed boost.   needs more thought
+        if (minTurnSpeedFraction < m_activeSpeedFraction) {
+            /** @todo need to check for SpeedBoost-changed vars here */
+            // min turn speed is lower than current speed
+            m_prevSpeedFraction = m_userSpeedFraction;
+            m_userSpeedFraction = minTurnSpeedFraction;
+            UpdateVelocity(true);
+            m_moveTime = GetTimeMSeconds();
         }
+
+        // turn data set.  begin turn next tic
+        return;
     }
 
-    ++m_turnTic;
 
-    // logic to determine speed changes for turning
-    if (m_turnTic == 1)
-        if (m_turnFraction < m_timeFraction)
+/** @note:  potential problems...
+ *  this check uses m_decel/decelTimer to check for ship velocity changes for turns
+ *  p1 - the problem i see (before testing) is what if speed is changed during turn?
+ *  that will reset all move vars, negating this check and sending us into UB.
+ *  p2 - heading change before decel is complete will negate previous calcs and leave ship with current "turn speed" as USF
+ *  p3 - SpeedBoost() calls will negate previous calcs and do weird shit with speed fractions
+ *    potential solutions...
+ *  p1 - delay speed change until this decel/turn is complete.  check for commanded speed change in ?? and reset/cancel current turn.
+ *       let code work out needed changes (may be mature enough to deduce that)
+ *       may not be....will have to reset m_decel, usf/psf, turn, maybe more.  need testing
+ *  p2 - check for ongoing turn in BeginMovement().  cancel current turn, set USF = PSF then continue - wip
+ *      addt'l problem - SpeedBoost() does not call BeginMovement(), so that check is void in this case
+ *  p3 - unknown at this time.
+ */
+    // check for decel
+    if (m_decel) {
+        /** @todo need to check for SpeedBoost-changed vars here */
+        float moveStamp((GetTimeMSeconds() - m_turnTime) * 0.001f);
+        if (moveStamp > m_shipAccelTime) {
+            // decel complete.  reapply original commanded speed
+            m_userSpeedFraction = m_prevSpeedFraction;
+            if (is_log_enabled(DESTINY__TURN_TRACE)) {
+                float degrees(EvE::Trig::Rad2Deg(m_radians));       // this is only for reference
+                _log(DESTINY__TURN_TRACE, "Destiny::Turn() - Turn decel complete.  resume accel. degRemain:%.3f, ShipHeading:%.7f,%.7f,%.7f", \
+                    degrees, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+            }
             UpdateVelocity(true);
-
-    // need to check turnFraction vs m_timeFraction to hold speed when turning.
-
-    /*  class          agility
-     * Capsule          .06
-     * Shuttle          1.6
-     * Rookie           5
-     * Frigates         3 - 6 (adv. 3 - 4)  (2s) 1s         < 0.15 not enough.
-     * Destroyers       4 - 5
-     * Cruisers         4 - 8
-     * T3 Cruiser       2.4 - 2.8
-     * HAC              5 - 7
-     * Battlecruisers   6 - 9
-     * Battleships      8 - 14      (12s) 4s        0.15 works well  0.2 is very well.   > 0.25 is too much.
-     * Industrials      8 - 12
-     * Marauder         ~12
-     * Orca             40          (40s) 18s   0.05 turnPercent seems to work very well.  > 0.1 is wrong.
-     * Freighters       ~60
-     * Supercarrier     ~60
-     * Command          ~9
-     * Transport        5 or 19
-     * Barges           10 - 18
-     * Dreadnought      ~55
-     * Zephyr           5
-     */
-
-    // set ship turn amount based on position in turn, current speed and ship agility
-    GVector deltaHeading(m_shipHeading, m_targetHeading);
-    float turnPercent(0.1f);
-    float degrees(EvE::Trig::Rad2Deg(m_radians));
-    if (degrees > 90) {
-        if (m_decel and (m_turnTic > turnTime)) {
-            // turn half of remaining turn (simulate greatest turn angle when (turn > 90*) and (speed < time)
-            turnPercent = 0.3f;
+            m_posHack = true;
         } else {
-            turnPercent = m_degPerTic / (degrees - 90);
+            // do ships begin turn during decel?  depends on angle?
+            // yes, on major heading change, ships will turn slightly on decel
+            _log(DESTINY__TURN_TRACE, "Destiny::Turn() - Turn decel ongoing.");
         }
-    } else if (degrees > m_degPerTic) {
-        turnPercent = m_degPerTic / (degrees * 0.5);
-    } else {
-        // degrees < m_degPerTic, so complete turn and continue accel
-        if (m_decel)
-            UpdateVelocity(true);
     }
 
-    if (turnPercent > 0.9f) {
-        _log(DESTINY__ERROR, "Destiny::Turn() - turnTic:%u, degRemain:%.3f, turnPercent:%.2f", m_turnTic, degrees, turnPercent);
-        turnPercent = 0.9;
-    }
-    deltaHeading *= turnPercent;
-    m_shipHeading += deltaHeading;
+    m_shipHeading += m_curveHeadDelta;
+
     if (is_log_enabled(DESTINY__TURN_TRACE))
-        _log(DESTINY__TURN_TRACE, "Destiny::Turn() - tf:%.3f, turnTic:%u, degRemain:%.3f  (deltaHeading:%.5f, %.5f, %.5f * turnPercent:%.2f) = shipHeading:%.3f, %.3f, %.3f", \
-            m_timeFraction, m_turnTic, degrees, deltaHeading.x, deltaHeading.y, deltaHeading.z, turnPercent, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+        _log(DESTINY__TURN_TRACE, "Destiny::Turn(2) - tf:%.3f, turnStamp:%.3f, degRemain:%.3f, newShipHeading:%.7f,%.7f,%.7f", \
+        m_timeFraction, turnStamp, (EvE::Trig::Rad2Deg(m_radians)), m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 }
 
 void DestinyManager::ClearTurn() {
     SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
-    m_turnTic = 0;
     m_turning = false;
     m_radians = 0.0f;
-    m_turnFraction = 0.0f;
-    m_alignTime = m_timeToEnterWarp;
-    m_curveApex = GPoint( NULL_ORIGIN );
-    m_curveEnd = GPoint( NULL_ORIGIN );
-    m_curveStart = GPoint( NULL_ORIGIN );
+    // this may not be right if other movement has changed
+    if (m_decel)
+        if (m_prevSpeedFraction > 0.0f) {
+            m_userSpeedFraction = m_prevSpeedFraction;
+            m_prevSpeedFraction = 0.0f;
+        }
+
+    m_turnTime = 0.0;
 }
 
 void DestinyManager::MarkPoint(const GPoint& position, std::string& name, std::string& desc)
@@ -1065,7 +1096,7 @@ void DestinyManager::MarkPoint(const GPoint& position, std::string& name, std::s
         FactionData data = FactionData();
         ContainerSE* cSE = new ContainerSE(cRef, mySE->GetServices(), mySE->SystemMgr(), data);
         if (cSE == nullptr) {
-            _log(DESTINY__WARNING, "MarkCurve() could not create SE for %s (%s)", name.c_str(), desc.c_str());
+            _log(DESTINY__WARNING, "MarkPoint() could not create SE for %s (%s)", name.c_str(), desc.c_str());
             return;
         }
         cRef->SetMySE(cSE);
@@ -1073,14 +1104,18 @@ void DestinyManager::MarkPoint(const GPoint& position, std::string& name, std::s
         mySE->SystemMgr()->AddMarker(cSE);
         return;
     }
-    _log(DESTINY__WARNING, "MarkCurve() could not create Item for %s (%s)", name.c_str(), desc.c_str());
+    _log(DESTINY__WARNING, "MarkPoint() could not create Item for %s (%s)", name.c_str(), desc.c_str());
 }
 
 void DestinyManager::Follow() {
     //  Follow is also used by client as AlignTo.
     const GPoint& target_point = m_targetEntity.second->GetPosition();
     GVector heading(m_position, target_point);
-    m_targetDistance = (uint32)(heading.length() - m_radius);
+    m_targetDistance = (uint32)(heading.length() - m_radius - m_targetEntity.second->GetRadius());
+
+    // update target point
+    heading.normalize();
+    m_targetPoint = target_point + (heading * m_targetDistance);
 
     if (m_targetDistance < m_followDistance) {
         if (mySE->HasPilot())
@@ -1099,7 +1134,7 @@ void DestinyManager::Follow() {
                     ssf.entityID = mySE->GetID();
                     ssf.fraction = 0;
                 updates.push_back(ssf.Encode());
-                SendDestinyUpdates(updates);
+                SendDestinyUpdates(updates); //consumed
             }
             m_velocity = NULL_ORIGIN_V;
             m_tractorPause = true;
@@ -1123,7 +1158,7 @@ void DestinyManager::Follow() {
                     ssf.entityID = mySE->GetID();
                     ssf.fraction = 1;
                 updates.push_back(ssf.Encode());
-                SendDestinyUpdates(updates);
+                SendDestinyUpdates(updates); //consumed
             }
             m_tractorPause = false;
             m_velocity = m_shipHeading * m_maxSpeed;
@@ -1136,9 +1171,6 @@ void DestinyManager::Follow() {
             SetSpeedFraction(1.0f);
         }
     }
-
-    heading.normalize();
-    m_targetPoint = target_point + (heading * m_targetDistance);
 
     MoveObject();
 }
@@ -1188,7 +1220,8 @@ void DestinyManager::Orbit() {
 
     /** @todo  will have to set/reset orbit time once actual orbit is started for proper radian setting */
     // get current times
-    uint32 timeStamp = sEntityList.GetStamp() - m_stateStamp;
+    //uint32 timeStamp = sEntityList.GetStamp() - m_stateStamp;
+    float timeStamp((GetTimeMSeconds() - m_moveTime) * 0.001f);
     float Tr = m_targetEntity.second->GetRadius();
     //float Tm = m_targetEntity.second->GetSelf()->GetAttribute(AttrMass).get_float();
     GPoint Tp(m_targetEntity.second->GetPosition());
@@ -1197,7 +1230,7 @@ void DestinyManager::Orbit() {
     double centers(m_position.distance(Tp));
     double edges(centers - m_radius - Tr);
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "1 - %s(%u): time:%u, centers:%.2f, edges:%.2f, target:%u, follow:%u", \
+        _log(DESTINY__ORBIT_TRACE, "1 - %s(%u): timeStamp:%.3f, centers:%.2f, edges:%.2f, target:%u, follow:%u", \
             mySE->GetName(), mySE->GetID(), timeStamp, centers, edges, m_targetDistance, m_followDistance);
 
     // distances checks for orbit calculations
@@ -1274,6 +1307,7 @@ void DestinyManager::Orbit() {
 
     #define LogMacro(v) _log(DESTINY__ORBIT_TRACE, "m - " #v ": (%.3f, %.3f, %.3f)   len=%.3f", v.x, v.y, v.z, v.length())
 
+/** @todo  also look into https://friendly-splash.space/autoorbit-mechanics/ which defines orbit as solution to quadratic equation */
     // new orbit code
     float radius = m_followDistance + mPosAdj;// fudge a bit as using targetDistance is a hair too close
     // angle around y axis (from +x) - horizontal movement  - ccw from +x using ships orbit in rad/tic
@@ -1327,7 +1361,7 @@ void DestinyManager::Orbit() {
 
     double curSpeed(m_maxSpeed * m_activeSpeedFraction * m_maxOrbitSpeedFraction);
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "5(%u) - orbiting at %.2f. timestamp:%u, speed:%.2f", \
+        _log(DESTINY__ORBIT_TRACE, "5(%u) - orbiting at %.2f. timestamp:%.3f, speed:%.2f", \
             m_orbiting, m_position.distance(Tp), timeStamp, curSpeed);
 
     MoveObject();
@@ -1367,6 +1401,7 @@ GPoint DestinyManager::ComputePosition(double curRad) {
      *
      */
 
+    float timeStamp((GetTimeMSeconds() - m_moveTime) * 0.001f);
     GPoint Tp(m_targetEntity.second->GetPosition());
     //i = inclination to the positive ecliptic (plane of our orbit) at node line
     double adj = sqrt(pow(m_position.x - Tp.x, 2) * pow(m_position.z - Tp.z, 2));
@@ -1388,14 +1423,14 @@ GPoint DestinyManager::ComputePosition(double curRad) {
     // fig 8 on nw of targ sphere
     float radius = m_targetDistance + (m_radius *2); // fudge a bit as using targetDistance is a hair too close
     // angle around y axis (from +x) - horizontal movement  - cw from +x using ships orbit in rad/tic
-    float theta = m_orbitRadTic * 0/*timeStamp*/;
+    float theta = m_orbitRadTic * timeStamp;
     // angle around xz axis (from 0) - vertical movement
     GVector target(m_position, Tp);
     LogMacro(target);
     float hyp = sqrt(pow(target.z, 2) + pow(target.x, 2));
     float inclination = 45; //atan(hyp / target.y);
     // fractional value of orbit period (0 < x < 1)
-    float period = fmod(0/*timeStamp*/, m_orbitTime) /m_orbitTime;
+    float period = fmod(timeStamp, m_orbitTime) / m_orbitTime;
     // calculate a pendulum value here to adjust elevation (+/-y) where +x is 1, 0x is 0, -x is -1
     float c = cos(EvE::Trig::Deg2Rad(360 * period));
     // get elevation modifier based on orbit period
@@ -1452,27 +1487,71 @@ void DestinyManager::InitWarp() {
      *     http://www.eve-search.com/thread/478431-0/page/1
      */
 
-    /* this is my version of how warp should be timed and followed by the server.
-     * checks here for distance < warp speed and distance < 2AU, (with all distances in meters)
-     *  and adjusts accel/decel times accordingly
-     *
-     *   accel/decel are logarithmic per ccp (see above).
-     *
-     * times are as follows, per this table.  http://cdn1.eveonline.com/www/newssystem/media/65418/1/numbers_table.png
-     *
-     * all warps are in same time groups for all ships, except freighters and caps.
-     * distance checks are separated into 4 time groups, with subgroups for freighters and caps.
-     *
-     * the client seems to accept and agree with the math here.
-     */
-    // reset turn variables for warping
-    if (m_turning)
-        ClearTurn();
+    // reset sub-warp move variables for warping
+    ClearOrbit();
+
+    m_accel = false;
+    m_decel = false;
+    m_posHack = false;
+    m_turning = false;
+    m_radians = 0.0;
+    m_turnTime = 0.0;
+    m_prevSpeed = 0.0f;
+    m_prevSpeedFraction = 0.0f;
+
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp(): %s(%u) has initialized warp.", mySE->GetName(), mySE->GetID());
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp(): %s(%u) is initializing warp.", mySE->GetName(), mySE->GetID());
 
-    double warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
+    // check for enough cap to warp....this moved here from WarpTo() call...makes more sense here
+    if (mySE->HasPilot()) {
+        Client *pClient = mySE->GetPilot();
+
+        /*  capacitor for warp formulas from https://oldforums.eveonline.com/?a=topic&threadID=332116
+         *  Energy to warp = warpCapacitorNeed * mass * au * (1 - warp_drive_operation_skill_level * 0.10)
+         ** @note:  warpCapacitorNeed is double...max ive seen is shuttles @ 0.00000134771  and indys @ 0.000000108911
+         */
+
+        float currentShipCap = pClient->GetShip()->GetAttribute(AttrCapacitorCharge).get_float();
+        double capNeeded = mySE->GetSelf()->GetAttribute(AttrMass).get_float() * m_warpCapacitorNeed * (m_targetDistance / ONE_AU_IN_METERS);
+        capNeeded *= (1.0f - (0.1f * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
+
+        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %luAU is %.10f", \
+                mySE->GetName(), mySE->GetID(), (m_targetDistance / ONE_AU_IN_METERS), capNeeded);
+
+        // set min cap need to 1.0
+        if (capNeeded < 1.0f)
+            capNeeded = 1.0;
+
+        //  check if ship has enough capacitor to warp full distance
+        if (capNeeded > currentShipCap) {
+            // not enough cap.  reset everything based on available cap
+            capNeeded = currentShipCap / (mySE->GetSelf()->GetAttribute(AttrMass).get_float() * m_warpCapacitorNeed);
+            if (capNeeded > 1.0f) {
+                m_targetDistance = (uint32)capNeeded * ONE_AU_IN_METERS;
+                GVector warp_direction(m_position, m_targetPoint);
+                // make heading
+                warp_direction.normalize();
+                GPoint newTarget(m_position + (warp_direction * m_targetDistance));
+                m_targetPoint = newTarget;
+                m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), newTarget);
+            } else {
+                // if not enough cap to do min warp, cancel and return
+                pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
+                _log(DESTINY__WARNING, "Destiny::InitWarp() - %s(%u): Capacitor needed vs current  %.3f / %.3f",
+                        mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
+
+                Stop();
+                return;
+            }
+        } else {
+            capNeeded = currentShipCap - capNeeded;
+        }
+
+        //drain cap
+        mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, capNeeded);
+        mySE->GetShipSE()->Warp();  //turn off non warp-safe modules
+    }
 
     /*  this is from http://community.eveonline.com/news/dev-blogs/warp-drive-active/
      * x = e^(k*t)
@@ -1484,12 +1563,19 @@ void DestinyManager::InitWarp() {
      * k = 3 for accel, 1 for decel
      *
      * this gives distances as functions of time.
-     *  the client seems to agree with this reasoning, and follows the same idea.
+     */
+
+
+    /* this is my version of how warp should be timed and followed by the server.
+     * checks here for distance < warp speed and adjusts accel/decel times accordingly
+     *
+     *   accel/decel are logarithmic per ccp (see above).
      */
 
     bool cruise(true);
     float cruiseTime(0.0f);
     double accelDistance(0.0), decelDistance(0.0), cruiseDistance(0.0);
+    double warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
     // fudge this a bit for accel/decel distances
     if (m_targetDistance < warpSpeedInMeters) {
         //  short warp....no cruise
@@ -1522,8 +1608,8 @@ void DestinyManager::InitWarp() {
             mySE->GetName(), mySE->GetID(), m_warpAccelTime, cruiseTime, m_warpDecelTime, warpTime, warpSpeedInMeters);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Accel distance is %.4f. Cruise distance is %.4f.  Decel distance is %.4f.  Direction is %.3f,%.3f,%.3f.", \
             mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, warp_vector.x, warp_vector.y, warp_vector.z);
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %.4f AU (%um).", \
-            mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance/ONE_AU_IN_METERS, m_targetDistance);
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %lu AU (%um).", \
+            mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
         GPoint destination = m_position + (warp_vector * m_targetDistance);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): calculated exit is %.2f,%.2f,%.2f and vector is %.4f,%.4f,%.4f.", \
             mySE->GetName(), mySE->GetID(), destination.x, destination.y, destination.z, warp_vector.x, warp_vector.y, warp_vector.z);
@@ -1548,16 +1634,12 @@ void DestinyManager::InitWarp() {
                         false,
                         warp_vector );
 
-    //drain cap
-    if (mySE->HasPilot()) {
-        mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_capNeeded);
-        mySE->GetShipSE()->Warp();
-        m_capNeeded = 0;
-    }
-
     //clear targets
     mySE->TargetMgr()->ClearAllTargets();
     //mySE->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::WarpingOut);
+
+    m_targetEntity.first = 0;
+    m_targetEntity.second = nullptr;
 
     WarpAccel(0);
 }
@@ -1683,11 +1765,16 @@ void DestinyManager::EntityRemoved(SystemEntity *pSE) {
         m_targetEntity.second = nullptr;
 
         switch(m_ballMode) {
-            case Destiny::Ball::Mode::FOLLOW:
-            case Destiny::Ball::Mode::ORBIT: {
+            case Destiny::Ball::Mode::FOLLOW: {
                 _log(DESTINY__DEBUG, "%u: Our target entity has gone away. Stopping.", mySE->GetID());
                 Stop();
             } break;
+            case Destiny::Ball::Mode::ORBIT: {
+				// we were orbiting this target, reset movement to void orbit
+                _log(DESTINY__DEBUG, "%u: Our target entity has gone away. Continue on current tangent of orbit.", mySE->GetID());
+                GotoDirection(m_shipHeading);
+            } break;
+			// no default
         }
     }
 }
@@ -1717,15 +1804,27 @@ bool DestinyManager::IsTargetInvalid()
     return false;
 }
 
+void DestinyManager::UpdateSpeedFraction(float speedPct/*0*/) {
+    //this is called from Beyonce.CmdSetSpeedFraction() but only while turning
+	if (m_turning) {
+            // some yahoo decided to change speed while turning....gee, thanks.
+            // ok, so, do shit here to keep move vars sane
+            m_userSpeedFraction = speedPct;
+            // have UpdateVelocity() reset move vars and continue.
+            UpdateVelocity(IsMoving());
+	}
+}
+
 // Basic Movement Calls:
 void DestinyManager::BeginMovement() {
     // common movement for all types
     if (!m_hasSentShipUpdates) {
         // error fix for setting ship movement variables before ship is in bubble (cannot BubbleCast)
         std::vector<PyTuple*> updates;
+        // i dont think this is used in crucible
         SetBallAgility sbagility;
             sbagility.entityID =  mySE->GetID();
-            sbagility.agility = m_shipInertia;
+            sbagility.agility = mySE->GetSelf()->GetAttribute(AttrInertiaMod).get_double();
         updates.push_back(sbagility.Encode());
         SetBallMassive sbmassive;
             sbmassive.entityID = mySE->GetID();
@@ -1733,20 +1832,22 @@ void DestinyManager::BeginMovement() {
         updates.push_back(sbmassive.Encode());
         SetBallMass sbmass;
             sbmass.entityID = mySE->GetID();
-            sbmass.mass = m_mass;
+            sbmass.mass = mySE->GetSelf()->GetAttribute(AttrMass).get_double();
         updates.push_back(sbmass.Encode());
         SendDestinyUpdates(updates); //consumed
         m_hasSentShipUpdates = true;
     }
 
-    // reset turn and movement checks for possible velocity change.
-    m_turnTic = 0;
-    m_stop = m_accel = m_decel = m_turning = false;
+    // reset turn for possible heading change.
+    ClearTurn();
+    m_stop = false;
 
-    if (!mySE->IsNPCSE() or (mySE->IsNPCSE() and mySE->GetNPCSE()->GetAIMgr()->IsIdle()))
-        m_stateStamp = sEntityList.GetStamp();
+    // reset all move stamps
+    m_stateStamp = sEntityList.GetStamp();
+    m_moveTime = GetTimeMSeconds();
+    m_turnTime = GetTimeMSeconds();     // only used if IsTurn() == true
 
-    // do any of these next 3 need to be on every movement check??
+    // verify sane position data
     if (m_position.isNaN()) {
         _log(DESTINY__ERROR, "%s position is NaN.", mySE->GetName());
     }
@@ -1757,22 +1858,14 @@ void DestinyManager::BeginMovement() {
         _log(DESTINY__ERROR, "%s position is inf.", mySE->GetName());
     }
 
-    if (m_targetPoint.isNotZero()) {
-        GVector targHeading(m_position, m_targetPoint);
-        targHeading.normalize();
-        m_targetHeading = targHeading;
-        if (m_shipHeading.isZero())
-            m_shipHeading = targHeading;
-    }
-
-    if (m_shipHeading.isZero() and m_targetHeading.isZero()) {
+    if (m_shipHeading.isZero()
+    or  m_shipHeading.isNaN()
+    or  m_shipHeading.isInf()) {
         GVector point(m_position);
         point.normalize();
-        m_targetPoint =  (point * 1.0e16);
-        GVector targHeading(m_position, m_targetPoint);
-        targHeading.normalize();
-        m_shipHeading = targHeading;
-        m_targetHeading = targHeading;
+        GVector shipHeading(m_position, m_targetPoint);
+        shipHeading.normalize();
+        m_shipHeading = shipHeading;
     }
 
     if (m_orbiting == Destiny::Ball::Orbit::None) {
@@ -1780,21 +1873,29 @@ void DestinyManager::BeginMovement() {
         GVector shipVector(m_position, m_targetPoint);
         m_targetDistance = (uint32)shipVector.length();
         m_orbitRadTic = 0.0f;
-        m_maxOrbitSpeedFraction = 1;
+        m_maxOrbitSpeedFraction = 1.0f;
     }
 
     // this will have to be adjusted for cloak mod.
     if (IsCloaked())
         UnCloak();
 
+    // is this needed??  shouldnt be once i get tracking working properly
+    SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
+
     // if ship is not moving, set initial movement variables
-    if ((m_userSpeedFraction < 0.02f) and (m_timeFraction < 0.02f)) {
+    if (m_activeSpeedFraction < ASF_CHECK) {
         SetSpeedFraction(1.0f, true);
-    } else {
-        SetSpeedFraction(m_userSpeedFraction, true);
+        return;
     }
 
-    SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
+    /* calling SetSpeedFraction(true) does weird shit with current move vars...
+     * namely, calling GotoDir() hits here, which puts asf into psf and recomputes.
+     * then, once turn completes, ClearTurn() sets usf = psf and updates
+     * if ship wasnt at full speed, this will set usf to whatever asf was at when GotoDir was called.
+     * ...at least it updates client correctly, so 'new' (fuckedup) usf is shown on speedo
+     */
+    SetSpeedFraction(m_userSpeedFraction);
 }
 
 void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
@@ -1817,10 +1918,13 @@ void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
     if (pSE->IsStationSE())
         m_targetPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
 
+    GVector targHeading(m_position, m_targetPoint);
+    targHeading.normalize();
+    m_targetHeading = targHeading;
+
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
     m_followDistance = distance;
-    m_ticAlign = true;
     BeginMovement();
 
     CmdFollowBall du;
@@ -1828,30 +1932,36 @@ void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
         du.targetID = pSE->GetID();
         du.range = (int32)distance;
     PyTuple *up = du.Encode();
-        //mvPacket = du.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
-void DestinyManager::AlignTo(SystemEntity* ent) {
-    Follow(ent, 0);
+void DestinyManager::AlignTo(SystemEntity* pSE) {
+    // should this Stop() once alignment has been achieved?  i'd say yes.  config option?
+    // i originally set it like this, but aknor didnt like it, so it was removed
+    // m_alignTo = true;
+    Follow(pSE, 0);
 }
 
 void DestinyManager::GotoDirection(const GPoint& direction) {
     //reset orbit vars in case we were orbiting before
+    // this is also called when an orbited object is destroyed
     if (m_orbiting)
         ClearOrbit();
 
     m_ballMode = Destiny::Ball::Mode::GOTO;
+    m_targetHeading = direction;
     m_targetPoint = direction * 1.0e16;
     BeginMovement();
 
     CmdGotoDirection du;
         du.entityID = mySE->GetID();
-        du.x = direction.x;
-        du.y = direction.y;
-        du.z = direction.z;
+        du.x = m_targetHeading.x;
+        du.y = m_targetHeading.y;
+        du.z = m_targetHeading.z;
     PyTuple* up = du.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DestinyManager::GotoPoint(const GPoint& point) {
@@ -1861,6 +1971,9 @@ void DestinyManager::GotoPoint(const GPoint& point) {
 
     m_ballMode = Destiny::Ball::Mode::GOTO;
     m_targetPoint = point;
+    GVector head(m_position, point);
+    head.normalize();
+    m_targetHeading = head;
     BeginMovement();
 
     CmdGotoPoint gtpoint;
@@ -1869,7 +1982,8 @@ void DestinyManager::GotoPoint(const GPoint& point) {
         gtpoint.y = m_targetPoint.y;
         gtpoint.z = m_targetPoint.z;
     PyTuple* up = gtpoint.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoPilot/*false*/, SystemEntity* pSE/*nullptr*/) {
@@ -1878,60 +1992,74 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
      *      -> enter warp -> warp -> decel -> leave warp -> coast -> stop
      */
     SafeDelete(m_warpState);
-
-    // check for autopilot.  it has 'special' checks in client for auto-disable by destiny update
-    if (autoPilot) {
-        Follow(pSE, distance);
-    } else {
-        GotoPoint(where);
-    }
-
-    m_targetEntity.first = 0;
-    m_targetEntity.second = nullptr;
-
-    m_stopDistance = distance;
     // get warp target point
+    m_targetPoint = where;
     GVector warp_distance(m_position, where);
     m_targetDistance = warp_distance.length();
-    m_targetDistance -= m_stopDistance;
-    // change to heading
-    warp_distance.normalize();
-    // adjust for stop distance from our travel direction
-    warp_distance *= m_stopDistance;
-    // adjust target point by calculated stopping point
-    m_targetPoint -= warp_distance;
+    if (distance != 0) {
+        m_targetDistance -= distance;
+        // change to heading
+        warp_distance.normalize();
+        // adjust for stop distance from our travel direction
+        warp_distance *= distance;
+        // adjust target point by calculated stopping point
+        m_targetPoint -= warp_distance;
+    }
 
+    if (mySE->HasPilot())
+        if (m_targetDistance < minWarpDistance) {
+            // warp distance too close.  cancel warp and return
+            mySE->GetPilot()->SendErrorMsg("That is too close for your Warp Drive.");
+            // send pos update
+            if (sConfig.debug.PositionHack)
+                SetPosition(mySE->GetPosition(), true);
+            Stop();
+            return;
+        }
+
+    //You will always exit warp at a random point, 2,500 meters from your actual exit point - per EveUni
+    //m_targetPoint.MakeRandomPointOnSphereLayer(-2500, 2500);   disabled for testing
+
+
+    // verify USF is > 0.75  (this is a hack to avoid multiple calls to SSF() )
+    /** @todo  is there any case where we want to warp with USF < 1.0 ??  */
+    if (m_userSpeedFraction < 0.7499)
+        m_userSpeedFraction = 1.0f;
+
+    // check for autopilot.  it has 'special' checks in client for auto-disable by destiny update (anything other than 'Follow')
+    if (autoPilot and (pSE != nullptr)) {
+        Follow(pSE, distance);
+    } else {
+        BeginMovement();
+    }
+
+    // this will create bubble if needed
     m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), m_targetPoint);
-    if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__TRACE, "Destiny::WarpTo() - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %u",
-            mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), m_stopDistance, m_targetDistance);
+    // reset ball mode after calling BeginMovement (which calls GotoDirection)
+    m_ballMode = Destiny::Ball::Mode::WARP;
 
     // npcs have no warp restrictions (yet)
     if (mySE->IsNPCSE() or mySE->IsDroneSE()) {
-        // do drones warp??
-        m_ballMode = Destiny::Ball::Mode::WARP;
+        // do drones warp??   they can, yes...with limitations
+        if (mySE->IsDroneSE()) {
+            // put drone limit checks here
+        }
 
-        std::vector<PyTuple*> updates;
         CmdWarpTo wt;
             wt.entityID = mySE->GetID();
             wt.dest_x = m_targetPoint.x;
             wt.dest_y = m_targetPoint.y;
             wt.dest_z = m_targetPoint.z;
-            wt.distance = m_stopDistance;
+            wt.distance = distance;
             wt.warpSpeed = GetWarpSpeed();
-        updates.push_back(wt.Encode());
-        OnSpecialFX10 sfx;
-            sfx.guid = "effects.Warping";
-            sfx.entityID = mySE->GetID();
-            sfx.isOffensive = false;
-            sfx.start = true;
-            sfx.active = true;
-        updates.push_back(sfx.Encode());
-        SendDestinyUpdates(updates);
+        PyTuple *up = wt.Encode();
+        SendSingleDestinyUpdate(&up);
+        PyDecRef(up);
+
         if (is_log_enabled(NPC__MESSAGE))
-            _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %u",\
+            _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  distance: %i  m_targetDistance: %u",\
                     mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), mySE->SysBubble()->GetID(), \
-                    m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
+                    m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
         return;
     }
 
@@ -1946,86 +2074,44 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
      * AttrWarpAccuracyMaxRangePercentage = 1026,
      */
 
-    if (mySE->HasPilot()) {
-        if (m_targetDistance < minWarpDistance) {
-            mySE->GetPilot()->SendErrorMsg("That is too close for your Warp Drive.");
-            // warp distance too close.  cancel warp and return
-            // we may need to send pos update
-            if (sConfig.debug.PositionHack)
-                SetPosition(mySE->GetPosition(), true);
-            m_ballMode = Destiny::Ball::Mode::STOP;
-            SafeDelete(m_warpState);
-            return;
-        }
-
-        Client *pClient = mySE->GetPilot();
-
-        /*  capacitor for warp formulas from https://oldforums.eveonline.com/?a=topic&threadID=332116
-         *  Energy to warp = warpCapacitorNeed * mass * au * (1 - warp_drive_operation_skill_level * 0.10)
-         */
-        float currentShipCap = pClient->GetShip()->GetAttribute(AttrCapacitorCharge).get_float();
-        float capNeeded = m_mass * m_warpCapacitorNeed * (m_targetDistance / ONE_AU_IN_METERS);
-        capNeeded *= (1.0f - (0.1f *pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
-
-        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) is %.4f", mySE->GetName(), mySE->GetID(), capNeeded);
-
-        //  check if ship has enough capacitor to warp full distance
-        if (capNeeded > currentShipCap) {
-            // not enough cap.  reset everything based on available cap
-            capNeeded = (currentShipCap /m_warpCapacitorNeed) /m_mass;
-            if (capNeeded > 1) {
-                m_targetDistance = (uint32)capNeeded * ONE_AU_IN_METERS;
-                GVector warp_direction(m_position, where);
-                GPoint newTarget(m_position + (warp_direction *m_targetDistance));
-
-                m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), newTarget);
-                if (is_log_enabled(DESTINY__WARP_TRACE))
-                    _log(DESTINY__TRACE, "Destiny::WarpTo():Update - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %u",
-                        mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), m_stopDistance, m_targetDistance);
-            } else {
-                // if not enough cap to do min warp, cancel and return
-                pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
-                _log(DESTINY__WARNING, "Destiny::WarpTo() - %s(%u): Capacitor needed vs current  %.3f / %.3f",
-                        mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
-
-                m_ballMode = Destiny::Ball::Mode::STOP;
-                m_targBubble = nullptr;
-                SafeDelete(m_warpState);
-                return;
-            }
-        } else {
-            capNeeded = currentShipCap - capNeeded;
-        }
-
-        m_capNeeded = capNeeded;
-    }
 
     /*  TODO PUT CHECK HERE FOR WARP BUBBLES
      *     and other things that affect warp-in point.....when we get to there.
      * AttrWarpBubbleImmune = 1538,
      * AttrWarpBubbleImmuneModifier = 1539,
-     *   NOTE:  warp bubble in path (or within 100km of m_targetPoint) will change m_targetDistance and m_targetPoint
+     *
+     *   NOTE:  warp bubble in path (or within 150km of m_targetPoint) will change m_targetDistance and m_targetPoint
      *   however, this does NOT affect original calculations for energy needed, etc...
      */
-    if (m_targBubble->HasWarpBubble()) {
-        if (!mySE->GetSelf()->HasAttribute(AttrWarpBubbleImmune))
-            ;   // not immune to bubble
-    }
+     /** @todo  does this apply for ANY bubble along warp route or just end? */
+    if (m_targBubble->HasWarpBubble())
+        if (!mySE->GetSelf()->HasAttribute(AttrWarpBubbleImmune)) {
+            /*  there is a bubble here and ship isnt immune.
+             * at this point, determine where the bubble is
+             * then set ship targPoint to random point 2500m(?) from center of bubble
+             */
+        }
 
-    m_ballMode = Destiny::Ball::Mode::WARP;
+    //set massive for warp.   self-only per client logs
+    SetBallMassive bm;
+        bm.entityID = mySE->GetID();
+        bm.is_massive = false;       // disable client-side bump checks
+    PyTuple *up = bm.Encode();
+    SendSingleDestinyUpdate(&up, true);
+    PyDecRef(up);
+    // NOTE:  sending ball mass isnt required if is_massive=false
 
-    // send client updates
     std::vector<PyTuple*> updates;
-    // acknowledge client's warpto request
+    // send warp update
     CmdWarpTo wt;
         wt.entityID = mySE->GetID();
         wt.dest_x = m_targetPoint.x;
         wt.dest_y = m_targetPoint.y;
         wt.dest_z = m_targetPoint.z;
-        wt.distance = m_stopDistance;
+        wt.distance = distance;
         wt.warpSpeed = GetWarpSpeed();      // warp speed x10
     updates.push_back(wt.Encode());
-    //send a warp effect...
+    //send warp effect
     OnSpecialFX10 sfx;
         sfx.guid = "effects.Warping";
         sfx.entityID = mySE->GetID();
@@ -2033,18 +2119,11 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
         sfx.start = true;
         sfx.active = true;
     updates.push_back(sfx.Encode());
-    SendDestinyUpdates(updates);
-    updates.clear();
-    //set massive for warp, per client, but self-only
-     SetBallMassive bm;
-        bm.entityID = mySE->GetID();
-        bm.is_massive = false;       // disable client-side bump checks
-    PyTuple *up = bm.Encode();
-    SendSingleDestinyUpdate(&up, true);   // consumed
+    SendDestinyUpdates(updates); //consumed
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %u",
-             m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  exit distance: %i  m_targetDistance: %u",
+             m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
 }
 
 void DestinyManager::Orbit(SystemEntity *pSE, uint32 distance/*0*/) {
@@ -2078,13 +2157,15 @@ void DestinyManager::Orbit(SystemEntity *pSE, uint32 distance/*0*/) {
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
         _log(DESTINY__ORBIT_TRACE, "%s(%u) - Ship Data - agility:%.3f, inertia:%.3f, massMkg:%.3f, maxSpeed:%.2f, radius:%.2f", \
-            mySE->GetName(), mySE->GetID(), m_shipAgility, m_shipInertia, m_massMKg, m_maxShipSpeed, m_radius);
+        mySE->GetName(), mySE->GetID(), m_agility, //mySE->GetSelf()->GetAttribute(AttrAgility).get_float(),
+            mySE->GetSelf()->GetAttribute(AttrInertiaMod).get_float(),
+             mySE->GetSelf()->GetAttribute(AttrMass).get_float() * 0.0000001, m_maxShipSpeed, m_radius);
     //EvE::traceStack();
 
     // Target (orbited object)
     double Tr = pSE->GetRadius();
-    double Tm = pSE->GetSelf()->GetAttribute(AttrMass).get_float();
-    if (Tm != 0.0)
+    double Tm = pSE->GetSelf()->GetAttribute(AttrMass).get_double();
+    if (Tm == 0.0)
         Tm = pSE->GetSelf()->type().mass();
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
@@ -2092,10 +2173,11 @@ void DestinyManager::Orbit(SystemEntity *pSE, uint32 distance/*0*/) {
             mySE->GetName(), mySE->GetID(), Tm, (pSE->DestinyMgr() ? pSE->DestinyMgr()->GetSpeed() : 0 ), Tr);
 
     // fudge distance to work 'close enough' with all targets...this was trial-n-error
-    double Rc  = ((distance + 150 + m_radius - (pSE->GetRadius() /12)) * 1.2);
+    double Rc  = ((distance + 150 + m_radius - (pSE->GetRadius() / 12)) * 1.2);
     double Rc2 = std::pow(Rc,2);
     double Vm2 = std::pow(m_maxShipSpeed,2);
-    double t2  = std::pow(m_shipAgility,2);
+    //double t2  = std::pow(mySE->GetSelf()->GetAttribute(AttrAgility).get_double(),2);
+    double t2  = std::pow(m_agility,2);
 
     // the following equation is from "Ship Motion in Eve Online" by Scheulagh Santorine, Ph.D
     // radius needs target mass and grav const factored in....somehow.
@@ -2105,13 +2187,13 @@ void DestinyManager::Orbit(SystemEntity *pSE, uint32 distance/*0*/) {
      */
     double one = (108 * t2 * Vm2 * Rc2);
     double two = (12 * t2 * Vm2 *  std::pow(Rc,10));
-    double three = (12 * std::sqrt(81 *  std::pow(m_shipAgility,4) *  std::pow(m_maxShipSpeed,4) + two));
+    double three = (12 * std::sqrt(81 *  std::pow(mySE->GetSelf()->GetAttribute(AttrAgility).get_double(),4) *  std::pow(m_maxShipSpeed,4) + two));
     double four = (6 *  std::cbrt(one + 8 *  std::pow(Rc,6) + three));
     double five =  std::cbrt( std::sqrt(three *  std::pow(Rc,8) + two));
     double six = (one + (8 * Rc2) + (12 * five));
     m_followDistance = std::sqrt(four + (24 *  std::pow(Rc, 4) / six) + 12 * Rc2) / 6;
 
-    double velocity = m_maxShipSpeed * ((distance / m_followDistance) + 0.065); // dunno where i got this from but seems to work very well.
+    int64 velocity = m_maxShipSpeed * ((distance / m_followDistance) + 0.065); // dunno where i got this from but seems to work very well.
     m_maxOrbitSpeedFraction = velocity / m_maxShipSpeed;
 
     m_orbitTime = (EvE::Trig::Pi2 * m_followDistance) / velocity;
@@ -2157,7 +2239,8 @@ void DestinyManager::Orbit(SystemEntity *pSE, uint32 distance/*0*/) {
         du.orbitEntityID = pSE->GetID();
         du.distance = (int32)m_targetDistance;
     PyTuple *up = du.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 bool DestinyManager::IsAligned(GPoint& targetPoint)
@@ -2187,19 +2270,18 @@ void DestinyManager::Undock(GPoint dir) {
 
 void DestinyManager::SetUndockSpeed() {
     //start ship movement @ max velocity for undocking.
-    // this simulates being forcefully "ejected" from station (and is currently ~500m off)
+    // this simulates being forcefully "ejected" from station (and is currently  off)
     m_stop = false;
     m_orbiting = 0;
     m_stateStamp = sEntityList.GetStamp();
     m_changeDelay = true;   // skip a single tic before making change
     m_shipAccelTime = 0.5f;
     m_prevSpeedFraction = 0.0f;
-    m_userSpeedFraction = 1.1f;
+    m_userSpeedFraction = 1.0f;
     m_maxSpeed = m_maxShipSpeed;
     m_velocity = m_shipHeading * m_maxSpeed;
-    // may need to tweak these for larger ships...
-    m_activeSpeedFraction = 1.1f;
-    m_timeFraction = 1.1f;
+    m_activeSpeedFraction = 1.0f;
+    m_timeFraction = 1.0f;
 
     if (m_ballMode == Destiny::Ball::Mode::MISSILE)
         return;
@@ -2218,7 +2300,7 @@ void DestinyManager::SetUndockSpeed() {
         du.y = m_shipHeading.y;
         du.z = m_shipHeading.z;
     updates.push_back(du.Encode());
-    SendDestinyUpdates(updates);
+    SendDestinyUpdates(updates); //consumed
 }
 
 PyResult DestinyManager::AttemptDockOperation() {
@@ -2300,7 +2382,8 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
             du.y = m_position.y;
             du.z = m_position.z;
         PyTuple* up = du.Encode();
-        SendSingleDestinyUpdate(&up);   // consumed
+        SendSingleDestinyUpdate(&up);
+        PyDecRef(up);
     }
 }
 
@@ -2335,36 +2418,56 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     // after UpdateVelocity() rewrite, only thing to do here is reset ship's speed data.
     //  UpdateVelocity will handle the rest.
 
+    /** @todo need to check for turn and any changed vars from decel here */
     m_prevSpeed = m_maxSpeed * m_activeSpeedFraction;  //get current ship speed
+    m_prevSpeedFraction = m_activeSpeedFraction;
+
+    InventoryItemRef sRef = mySE->GetSelf();
 
     // prop mod state changed.  reset ship movement variables and update current movement, if applicable
-    m_mass = mySE->GetSelf()->GetAttribute(AttrMass).get_float();
-    m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
-    m_shipAgility = m_massMKg * m_shipInertia;
-    m_alignTime = (-log(0.25) * m_shipAgility);
-    m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
-    m_degPerTic = 60.0f / m_massMKg * m_shipInertia;;  // this isnt right....
-    m_maxShipSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
+    double inertiaMod(sRef->GetAttribute(AttrInertiaMod).get_double());
+    if (!sRef->HasAttribute(AttrInertiaMod))
+        sLog.Error("DM::SpeedBoost", "%s (%u) does not have an InertiaMod", mySE->GetName(), mySE->GetID());
+
+    double mass = sRef->GetAttribute(AttrMass).get_double();
+    m_agility = mass * inertiaMod / 1000000;
+    sRef->SetAttribute(AttrAgility, m_agility, false); // this will update client later
+
+    //TimeToWarp = ((ln(2) * m_inertiaMod * m_mass) / 500000);     //18.922
+    m_warpAlignTime = (0.693147 * mass * inertiaMod) / 500000;
+    m_turnAlignTime = m_warpAlignTime - 2;
+    m_shipMaxAccelTime = (-log(ASF_CHECK) * m_agility);
+
+    // verify hull overspeed
+    m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
+    if (m_maxShipSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
+        m_maxShipSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
+
     // reset ship max speed using updated m_maxShipSpeed
     m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;
     // set asf as fraction of current speed over new max speed.
     m_activeSpeedFraction = m_prevSpeed / m_maxShipSpeed;     // this may give >1.0
 
+    // update timer.  this will allow speed changes to be timed properly
+    m_moveTime = GetTimeMSeconds();
+    // not sure if this is really used here...
+    //m_stateStamp = sEntityList.GetStamp();
+
     // send out updated ship data
     std::vector<PyTuple*> updates;
     SetBallAgility sbagility;
         sbagility.entityID =  mySE->GetID();
-        sbagility.agility = m_shipInertia;
-        updates.push_back(sbagility.Encode());
+        sbagility.agility = inertiaMod;
+    updates.push_back(sbagility.Encode());
     SetBallMass sbmass;
         sbmass.entityID = mySE->GetID();
-        sbmass.mass = m_mass;
-        updates.push_back(sbmass.Encode());
+        sbmass.mass = sRef->GetAttribute(AttrMass).get_double();
+    updates.push_back(sbmass.Encode());
     SetBallSpeed sbms;
         sbms.entityID = mySE->GetID();
         sbms.speed = m_maxShipSpeed;
-        updates.push_back(sbms.Encode());
-    SendDestinyUpdates(updates);
+    updates.push_back(sbms.Encode());
+    SendDestinyUpdates(updates); //consumed
     m_hasSentShipUpdates = true;    // just in case, as this is re-sent in BeginMovement()
 
     // this is just for debug logging
@@ -2374,9 +2477,12 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
             // ... deactivating prop mod
             _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::Deactivate");
         } else if (m_activeSpeedFraction < m_userSpeedFraction) {
+            // ....moving and accelerating
+            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(psf!=0&asf<usf) - accelerating.");
+        } else if (m_activeSpeedFraction > m_userSpeedFraction) {
             // ....moving and decelerating
-            // - this hits when prop mod activated while ship is decel
-            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(psf!=0&tf>usf) - decelerating.");
+            // - this also hits when prop mod activated while ship is decel
+            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(psf!=0&asf>usf) - decelerating.");
         } else if (m_activeSpeedFraction) {
             // ....moving and not decelerating (this includes turning)
             _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(0<asf<=usf)");
@@ -2390,39 +2496,130 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         }
 
         _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost() - nMass: %.5f, nAg: %.5f, tf: %.2f, usf: %.2f, asf: %.3f", \
-                m_mass, m_shipAgility, m_timeFraction, m_userSpeedFraction, m_activeSpeedFraction);
+        mySE->GetSelf()->GetAttribute(AttrMass).get_float(), m_agility, m_timeFraction, m_userSpeedFraction, m_activeSpeedFraction);
         _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost() - pSpeed:%.2f, maxSpeed:%.2f, maxShipSpeed:%.2f", \
                 m_prevSpeed, m_maxSpeed, m_maxShipSpeed);
     }
 
     // update ship speed variables based on new data
-    SetSpeedFraction(m_userSpeedFraction, true);
+    //  replaced SetSpeedFraction with UpdateVelocity
+    // may need to resend CmdSetSpeedFraction here...maybe not, usf hasnt changed
+    UpdateVelocity(IsMoving());
 }
 
 void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
 {
+    // update mss for web apply/remove
     if (apply) {
         m_maxShipSpeed *= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100.0f));
     } else {
         m_maxShipSpeed /= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100.0f));
     }
-    m_activeSpeedFraction = m_activeSpeedFraction * 0.999f;
+
+    //get current ship speed
+    m_prevSpeed = m_maxSpeed * m_activeSpeedFraction;
+
+    // reset ship max speed using updated m_maxShipSpeed
+    m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;
+
+    // set asf as fraction of current speed over new max speed.   it will apply on next tic (immediate)
+    // this may give >1.0 when web removed.
+    m_activeSpeedFraction = m_prevSpeed / m_maxShipSpeed;
+
+    // speed changes are immediate.  do not update timer as that will force accel/decel calcs
+    //m_moveTime = GetTimeMSeconds();
+
+    // if orbiting, call Orbit() and let code reset the variables
+    if (m_orbiting != 0)
+        Orbit(m_targetEntity.second, m_targetDistance);
+
     std::vector<PyTuple*> updates;
     SetBallSpeed sbms;
         sbms.entityID = mySE->GetID();
         sbms.speed = m_maxShipSpeed;
         updates.push_back(sbms.Encode());
-    SendDestinyUpdates(updates);
+    SendDestinyUpdates(updates); //consumed
     m_hasSentShipUpdates = true;    // just in case, as this is re-sent in BeginMovement()
 
-    SetSpeedFraction(m_userSpeedFraction, true);
+    // dont update usf/psf as that will force accel/decel checks
+    //SetSpeedFraction(m_userSpeedFraction, true);
 }
 
-//  called from Client::CreateShipSE(), Client::ResetAfterPodded(), NPC::NPC(), Concord::Concord(), Drone::Drone(), DestinyManager::UpdateNewShip()
+void DestinyManager::UpdateOldShip(ShipSE* pShipSE)
+{
+    if (pShipSE->IsDead())
+        return;
+    PyDict* slimPod = new PyDict();
+    slimPod->SetItemString("itemID",                new PyInt(pShipSE->GetID()));
+    slimPod->SetItemString("typeID",                new PyInt(pShipSE->GetTypeID()));
+    slimPod->SetItemString("categoryID",            new PyInt(pShipSE->GetCategoryID()));
+    slimPod->SetItemString("ownerID",               new PyInt(pShipSE->GetOwnerID()));
+    slimPod->SetItemString("charID",                PyStatic.NewNone());
+    slimPod->SetItemString("corpID",                new PyInt(pShipSE->GetCorporationID()));
+    slimPod->SetItemString("allianceID",            new PyInt(pShipSE->GetAllianceID()));
+    slimPod->SetItemString("warFactionID",          new PyInt(pShipSE->GetWarFactionID()));
+    slimPod->SetItemString("bounty",                PyStatic.NewNone());
+    slimPod->SetItemString("securityStatus",        PyStatic.NewNone());
+    PyTuple* shipData = new PyTuple(2);
+    shipData->SetItem(0, new PyLong(pShipSE->GetID()));
+    shipData->SetItem(1, new PyObject( "foo.SlimItem", slimPod));
+    PyTuple* shipItem = new PyTuple(2);
+    shipItem->SetItem(0, new PyString("OnSlimItemChange"));
+    shipItem->SetItem(1, shipData);
+    SendSingleDestinyUpdate(&shipItem);
+    PyDecRef(shipItem);
+
+    SendBallInteractive(pShipSE->GetShipItemRef(), false);
+    m_hasSentShipUpdates = false;
+}
+
+void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
+    if (m_hasSentShipUpdates)
+        return;
+
+    Client* pClient = mySE->GetPilot();
+    if (pClient == nullptr)
+        return;
+    // exactly why do we need this here??
+    PyDict* slim = new PyDict();
+    slim->SetItemString("name",                     new PyString(newShipRef->itemName()));
+    slim->SetItemString("itemID",                   new PyInt(newShipRef->itemID()));
+    slim->SetItemString("typeID",                   new PyInt(newShipRef->typeID()));
+    slim->SetItemString("ownerID",                  new PyInt(mySE->GetOwnerID()));
+    slim->SetItemString("charID",                   new PyInt(pClient->GetCharacterID()));
+    slim->SetItemString("corpID",                   IsCorpID(mySE->GetCorporationID()) ? new PyInt(mySE->GetCorporationID()) : PyStatic.NewNone());
+    slim->SetItemString("allianceID",               IsAllianceID(mySE->GetAllianceID()) ? new PyInt(mySE->GetAllianceID()) : PyStatic.NewNone());
+    slim->SetItemString("warFactionID",             IsFactionID(mySE->GetWarFactionID()) ? new PyInt(mySE->GetWarFactionID()) : PyStatic.NewNone());
+    slim->SetItemString("bounty",                   new PyFloat(pClient->GetBounty()));
+    slim->SetItemString("securityStatus",           new PyFloat(pClient->GetSecurityRating()));
+    if (newShipRef->typeID() == itemTypeCapsule) {
+        slim->SetItemString("launcherID",               new PyInt(mySE->GetShipSE()->GetLauncherID()));
+        slim->SetItemString("modules",                  new PyList());
+    } else {
+        slim->SetItemString("categoryID",               new PyInt(newShipRef->categoryID()));
+        slim->SetItemString("groupID",                  new PyInt(newShipRef->groupID()));
+        slim->SetItemString("modules",                  newShipRef->ShipGetModuleList());
+    }
+
+    std::vector<PyTuple*> updates;
+    PyTuple* shipData = new PyTuple(2);
+    shipData->SetItem(0, new PyLong(newShipRef->itemID()));
+    shipData->SetItem(1, new PyObject( "foo.SlimItem", slim));
+    PyTuple* shipItem = new PyTuple(2);
+    shipItem->SetItem(0, new PyString("OnSlimItemChange"));
+    shipItem->SetItem(1, shipData);
+    updates.push_back(shipItem);
+    SendDestinyUpdates(updates);        // consumed
+
+    UpdateShipVariables();
+    SendBallInteractive(newShipRef, true);
+}
+
+//  called from Client::ResetAfterPodded(), NPC::NPC(), Concord::Concord(), Drone::Drone(), DestinyManager::UpdateNewShip()
 void DestinyManager::UpdateShipVariables()
 {
     /*
-Frigates (incl. CovOps, Inty, AF) have an agility of 3.1
+Frigates (incl. CovOps, Inty, AF) have an InertiaMod of 3.1
 Destroyers 3.5
 Industrials 1.0
 Cruisers 0.55 (Elite/Faction 0.65)
@@ -2435,45 +2632,50 @@ Battleships 0.155
      */
     /** @todo check for movement when fleet boosts are applied and this is called */
     InventoryItemRef sRef = mySE->GetSelf();
-    m_mass = sRef->GetAttribute(AttrMass).get_float();
-    m_massMKg = m_mass / 1000000; //changes mass from Kg to milliKg (10^-6)
+
+    /* The product of Mass and InertiaMod gives the item's Agility
+     *  Agility = Mass x InertiaMod / 1000000
+     *  Agility is an internal server variable.
+     */
+    if (!sRef->HasAttribute(AttrInertiaMod))    // this should never hit
+        sLog.Error("DM::UpdateShipVariables", "%s (%u) does not have an InertiaMod", mySE->GetName(), mySE->GetID());
+
+    double mass = sRef->GetAttribute(AttrMass).get_double();
+    double inertiaMod = sRef->GetAttribute(AttrInertiaMod).get_double();
+    m_agility = mass * inertiaMod / 1000000;
+    mySE->GetSelf()->SetAttribute(AttrAgility, m_agility, false);
 
     // this will catch speeds/needs for all ships (player and npc), and is easier to do here.
     if (sRef->HasAttribute(AttrWarpSpeedMultiplier))
         m_shipWarpSpeed = sRef->GetAttribute(AttrWarpSpeedMultiplier).get_float();
-    if (sRef->HasAttribute(AttrInetia))
-        m_shipInertia = sRef->GetAttribute(AttrInetia).get_float();
     if (sRef->HasAttribute(AttrMaxVelocity))
         m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
     if (sRef->HasAttribute(AttrWarpCapacitorNeed))
-        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_float() *2;
+        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_float() * 2; //modified
 
+    // i dont think this is right....
     if (mySE->IsNPCSE() or mySE->IsDroneSE())
         m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
 
+    // verify hull overspeed
+    if (m_maxShipSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
+        m_maxShipSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
+
     /*  per https://forums.eveonline.com/default.aspx?g=posts&m=3912843   post#103
      *
-     * Ships will exit warp mode when their warping speed drops below
+     * Ships will exit warp mode when their current warp speed drops below
      * 75% of sub-warp max speed, or 100m/s, whichever is the lower.
      */
     m_speedToLeaveWarp = m_maxShipSpeed * 0.75f;
     if ((m_speedToLeaveWarp < 100) and (m_maxShipSpeed > 135))      // 75% of 135 is 101.25
         m_speedToLeaveWarp = 100;
 
-    /* The product of Mass and the Inertia Modifier gives the ship's agility
-     * Agility = Mass x Inertia Modifier
-     *  agility is an internal-use variable.
-     */
-    m_shipAgility = m_massMKg * m_shipInertia;
-    m_degPerTic = 60.0f / m_massMKg * m_shipInertia;
     // set a maximum acceleration time (based on ship variables)
-    m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
+    m_shipMaxAccelTime = (-log(ASF_CHECK) * m_agility);
 
-    //  both of these formulas have identical products
-    //TimeToWarp = -ln(0.25) x Mass Mkg x Inertia Mod
-    //float alignTime = ((log(2) * m_shipInertia * m_mass) / 500000);
-    m_alignTime = (-log(0.25) * m_shipAgility);
-    m_timeToEnterWarp = m_alignTime;
+    //TimeToWarp = ((ln(2) * m_inertiaMod * m_mass) / 500000);     //18.922
+    m_warpAlignTime = (0.693147 * mass * inertiaMod) / 500000;
+    m_turnAlignTime = m_warpAlignTime - 2;
 
     m_hasSentShipUpdates = true;
 
@@ -2483,7 +2685,7 @@ Battleships 0.155
         std::vector<PyTuple*> updates;
         SetBallAgility sbagility;
             sbagility.entityID =  mySE->GetID();
-            sbagility.agility = m_shipInertia;
+            sbagility.agility = inertiaMod;
         updates.push_back(sbagility.Encode());
         SetBallMassive sbmassive;
             sbmassive.entityID = mySE->GetID();
@@ -2491,7 +2693,7 @@ Battleships 0.155
         updates.push_back(sbmassive.Encode());
         SetBallMass sbmass;
             sbmass.entityID = mySE->GetID();
-            sbmass.mass = m_mass;
+            sbmass.mass = sRef->GetAttribute(AttrMass).get_double();
         updates.push_back(sbmass.Encode());
         SetBallSpeed sbspeed;
             sbspeed.entityID = mySE->GetID();
@@ -2504,10 +2706,10 @@ Battleships 0.155
 void DestinyManager::MakeMissile(Missile* pMissile) {
     SetMaxVelocity(pMissile->GetSpeed());
     SetPosition(pMissile->GetSelf()->position());
-    m_mass = pMissile->GetSelf()->type().mass();
-    m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
-    m_shipInertia = pMissile->GetSelf()->GetAttribute(AttrInetia).get_float();
-    m_shipAgility = m_massMKg * m_shipInertia;
+    m_agility = (pMissile->GetSelf()->type().mass() / 1000000) *
+                    pMissile->GetSelf()->GetAttribute(AttrInertiaMod).get_float();
+    // not sure if this will be used here.  attr 559
+    pMissile->GetSelf()->SetAttribute(AttrAgility, m_agility, false);
 
     m_stop = false;
     m_ballMode = Destiny::Ball::Mode::MISSILE;
@@ -2535,79 +2737,10 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
         miss.shipID = pMissile->GetLauncherID();
         miss.targetID = pTarget->GetID();
         miss.missileID = pMissile->GetID();
-        miss.unk1 = 1;
+        miss.unk1 = 1;  // this and next are "1" in packets.
         miss.unk2 = 1;
     updates.push_back(miss.Encode());
     SendDestinyUpdates(updates); //consumed
-}
-
-void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
-    if (m_hasSentShipUpdates)
-        return;
-
-    Client* pClient = mySE->GetPilot();
-    if (pClient == nullptr)
-        return;
-    // exactly why do we need this here??
-    PyDict* slim = new PyDict();
-        slim->SetItemString("name",                     new PyString(newShipRef->itemName()));
-        slim->SetItemString("itemID",                   new PyInt(newShipRef->itemID()));
-        slim->SetItemString("typeID",                   new PyInt(newShipRef->typeID()));
-        slim->SetItemString("ownerID",                  new PyInt(mySE->GetOwnerID()));
-        slim->SetItemString("charID",                   new PyInt(pClient->GetCharacterID()));
-        slim->SetItemString("corpID",                   IsCorpID(mySE->GetCorporationID()) ? new PyInt(mySE->GetCorporationID()) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",               IsAllianceID(mySE->GetAllianceID()) ? new PyInt(mySE->GetAllianceID()) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",             IsFactionID(mySE->GetWarFactionID()) ? new PyInt(mySE->GetWarFactionID()) : PyStatic.NewNone());
-        slim->SetItemString("bounty",                   new PyFloat(pClient->GetBounty()));
-        slim->SetItemString("securityStatus",           new PyFloat(pClient->GetSecurityRating()));
-    if (newShipRef->typeID() == itemTypeCapsule) {
-        slim->SetItemString("launcherID",               new PyInt(mySE->GetShipSE()->GetLauncherID()));
-        slim->SetItemString("modules",                  new PyList());
-    } else {
-        slim->SetItemString("categoryID",               new PyInt(newShipRef->categoryID()));
-        slim->SetItemString("groupID",                  new PyInt(newShipRef->groupID()));
-        slim->SetItemString("modules",                  newShipRef->ShipGetModuleList());
-    }
-
-    std::vector<PyTuple*> updates;
-    PyTuple* shipData = new PyTuple(2);
-        shipData->SetItem(0, new PyLong(newShipRef->itemID()));
-        shipData->SetItem(1, new PyObject( "foo.SlimItem", slim));
-    PyTuple* shipItem = new PyTuple(2);
-        shipItem->SetItem(0, new PyString("OnSlimItemChange"));
-        shipItem->SetItem(1, shipData);
-    updates.push_back(shipItem);
-    SendDestinyUpdates(updates);
-
-    UpdateShipVariables();
-    SendBallInteractive(newShipRef, true);
-}
-
-void DestinyManager::UpdateOldShip(ShipSE* pShipSE)
-{
-    if (pShipSE->IsDead())
-        return;
-    PyDict* slimPod = new PyDict();
-        slimPod->SetItemString("itemID",                new PyInt(pShipSE->GetID()));
-        slimPod->SetItemString("typeID",                new PyInt(pShipSE->GetTypeID()));
-        slimPod->SetItemString("categoryID",            new PyInt(pShipSE->GetCategoryID()));
-        slimPod->SetItemString("ownerID",               new PyInt(pShipSE->GetOwnerID()));
-        slimPod->SetItemString("charID",                PyStatic.NewNone());
-        slimPod->SetItemString("corpID",                new PyInt(pShipSE->GetCorporationID()));
-        slimPod->SetItemString("allianceID",            new PyInt(pShipSE->GetAllianceID()));
-        slimPod->SetItemString("warFactionID",          new PyInt(pShipSE->GetWarFactionID()));
-        slimPod->SetItemString("bounty",                PyStatic.NewNone());
-        slimPod->SetItemString("securityStatus",        PyStatic.NewNone());
-    PyTuple* shipData = new PyTuple(2);
-        shipData->SetItem(0, new PyLong(pShipSE->GetID()));
-        shipData->SetItem(1, new PyObject( "foo.SlimItem", slimPod));
-    PyTuple* shipItem = new PyTuple(2);
-        shipItem->SetItem(0, new PyString("OnSlimItemChange"));
-        shipItem->SetItem(1, shipData);
-    SendSingleDestinyUpdate(&shipItem);   // consumed
-
-    SendBallInteractive(pShipSE->GetShipItemRef(), false);
-    m_hasSentShipUpdates = false;
 }
 
 void DestinyManager::Jump(bool showCloak)
@@ -2648,7 +2781,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)
     m_decel = false;
     m_turning = false;
     m_tractored = true;
-    m_moveTime = GetTimeMSeconds();
+    //m_moveTime = GetTimeMSeconds();
     m_stateStamp = sEntityList.GetStamp();
 
     m_targetPoint = pShipSE->GetPosition();
@@ -2691,7 +2824,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)
         fb.targetID = pShipSE->GetID();
         fb.range = m_followDistance;
     updates.push_back(fb.Encode());
-    SendDestinyUpdates(updates);
+    SendDestinyUpdates(updates); //consumed
 }
 
 void DestinyManager::TractorBeamStop()
@@ -2709,9 +2842,9 @@ void DestinyManager::TractorBeamStop()
     updates.push_back(bf.Encode());
     SetBallMass sbmass;
         sbmass.entityID = mySE->GetID();
-        sbmass.mass = m_mass;
+        sbmass.mass = mySE->GetSelf()->GetAttribute(AttrMass).get_float();
     updates.push_back(sbmass.Encode());
-    SendDestinyUpdates(updates);
+    SendDestinyUpdates(updates); //consumed
 }
 
 /*
@@ -2739,7 +2872,8 @@ void DestinyManager::SendJettisonPacket() const {
         effect.start = 1;
         effect.active = 0;
     PyTuple* up = effect.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 /*
  *                  [PyTuple 2 items]
@@ -2773,7 +2907,8 @@ void DestinyManager::SendAnchorDrop() const {
         effect.active = 1;
         effect.startTime = GetFileTimeNow();
     PyTuple* up = effect.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DestinyManager::SendAnchorLift() const {
@@ -2786,7 +2921,8 @@ void DestinyManager::SendAnchorLift() const {
         effect.start = 1;
         effect.startTime = GetFileTimeNow();
     PyTuple* up = effect.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 /*
@@ -2855,7 +2991,8 @@ void DestinyManager::SendCloakFx(bool apply/*false*/, bool module/*false*/) cons
         effect.active = 0;
         up = effect.Encode();
     }
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 // def OnSpecialFX(shipID, moduleID, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration = -1, repeat = None, startTime = None, graphicInfo = None):
@@ -2871,7 +3008,8 @@ void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::
         effect.start = start;
         effect.active = isActive;
     PyTuple *up = effect.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 // def OnSpecialFX(shipID, moduleID, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration = -1, repeat = None, startTime = None, graphicInfo = None):
@@ -2895,7 +3033,8 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.startTime = GetFileTimeNow();
         effect.graphicInfo = (graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo));
     PyTuple *up = effect.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 /*
                   [PyTuple 2 items]
@@ -2928,7 +3067,8 @@ void DestinyManager::SendJumpOut(uint32 gateID) const {
         effect.start = 1;
         effect.active = 0;
     PyTuple *up = effect.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DestinyManager::SendJumpOutWormhole(uint32 wormholeID) const {
@@ -2940,7 +3080,8 @@ void DestinyManager::SendJumpOutWormhole(uint32 wormholeID) const {
         effect.start = 1;
         effect.active = 0;
     PyTuple *up = effect.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DestinyManager::SendGateActivity(uint32 gateID) const {
@@ -2951,7 +3092,8 @@ void DestinyManager::SendGateActivity(uint32 gateID) const {
         du.start = 1;
         du.active = 0;
     PyTuple* up = du.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DestinyManager::SendWormholeActivity(uint32 wormholeID) const {
@@ -2962,7 +3104,8 @@ void DestinyManager::SendWormholeActivity(uint32 wormholeID) const {
         du.start = 1;
         du.active = 0;
     PyTuple* up = du.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DestinyManager::SendBallInteractive(const ShipItemRef shipRef, bool set/*false*/) const {
@@ -2971,7 +3114,8 @@ void DestinyManager::SendBallInteractive(const ShipItemRef shipRef, bool set/*fa
         sbi.entityID = shipRef->itemID();
         sbi.interactive = set;
     PyTuple* up = sbi.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DestinyManager::SendJumpOutEffect(std::string JumpEffect, uint32 shipID) const {
@@ -2990,7 +3134,7 @@ void DestinyManager::SendJumpOutEffect(std::string JumpEffect, uint32 shipID) co
         effect.repeat = 0;
         effect.startTime = GetFileTimeNow();
     updates.push_back(effect.Encode());
-    SendDestinyUpdates(updates);
+    SendDestinyUpdates(updates); //consumed
 }
 
 void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
@@ -3016,7 +3160,7 @@ void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
         sbv.y = 0.0;
         sbv.z = 0.0;
     updates.push_back(sbv.Encode());
-    SendDestinyUpdates(updates);
+    SendDestinyUpdates(updates); //consumed
 }
 
 void DestinyManager::SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool isGlobal/*false*/) const {
@@ -3037,7 +3181,8 @@ void DestinyManager::SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool 
         du.bubbleID = bubbleID;
         du.ballIsGlobal = isGlobal;
     PyTuple* up = du.Encode();
-    SendSingleDestinyUpdate(&up);   // consumed
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 }
 
 void DestinyManager::SendSetState() const {
@@ -3045,7 +3190,7 @@ void DestinyManager::SendSetState() const {
         return;
 
     if (is_log_enabled(DESTINY__MESSAGE))
-        _log(DESTINY__MESSAGE, "Destiny::SendSetState() Called for Ship:%s(%u) Pilot:%s(%u)", \
+        _log(DESTINY__MESSAGE, "DM::SendSetState() Called for Ship:%s(%u) Pilot:%s(%u)", \
                         mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
     SetState ss;
@@ -3055,24 +3200,17 @@ void DestinyManager::SendSetState() const {
     mySE->SystemMgr()->MakeSetState(mySE->SysBubble(), ss);
     PyTuple* tmp(ss.Encode());
     //setstate should be alone and immediate.  send directly
-    mySE->GetPilot()->QueueDestinyUpdate(&tmp, true, true);   // consumed
+    mySE->GetPilot()->QueueDestinyUpdate(&tmp, true, true);   // consumed?
     mySE->GetPilot()->SetStateSent(true);
-}
-
-void DestinyManager::SendMovementPacket() {
-    SendSingleDestinyUpdate(&mvPacket);
-    PySafeDecRef(mvPacket);
-}
-
-void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false*/) const {
-    std::vector<PyTuple*> updates(1, *up);   // create vector of size "1" and insert "*up" into it
-    SendDestinyUpdates(updates, self_only);
 }
 
 void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool self_only/*false*/) const {
     // this check shouldnt be needed...
-    if (!mySE->SystemMgr()->IsLoaded())
+    if (!mySE->SystemMgr()->IsLoaded()) {
+        for (auto &cur : updates)
+            PySafeDecRef(cur);
         return;
+    }
     if (self_only) {
         if (!mySE->HasPilot()) {
             // this entity is NOT a player ship...change to BubbleCast (or silently fail)
@@ -3081,11 +3219,14 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
                     _log( DESTINY__UPDATES, "[%u] BubbleCasting %lu DestinyUpdates to bubbleID %u from %s(%u)", \
                             sEntityList.GetStamp(), updates.size(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
                 mySE->SysBubble()->BubblecastDestinyUpdate(updates, "DestinyUpdates");
+            } else {
+                for (auto &cur : updates)
+                    PySafeDecRef(cur);
             }
             return;
         }
         if (is_log_enabled(PLAYER__MESSAGE))
-            _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdates() called as 'self_only' for %s(%i)", \
+            _log(PLAYER__MESSAGE, "[%u] DM::SendDestinyUpdates() called as 'self_only' for %s(%i)", \
                     sEntityList.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); itr++) {
@@ -3095,9 +3236,10 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
     } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all bubbles in a system
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting Structure DestinyUpdates in %s from %s(%u)", \
-                    sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName()), mySE->GetID();
+                    sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
 
         //Get all clients in our system
+            // should this be bubblecast?  which would be faster?
         std::vector<Client*> cv;
         mySE->SystemMgr()->GetClientList(cv);
         for (auto const& player : cv)
@@ -3113,6 +3255,8 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
     } else {
         _log(DESTINY__WARNING, "[%u] Cannot BubbleCast %lu DestinyUpdates; entity (%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
                 sEntityList.GetStamp(), updates.size(), mySE->GetID() );
+        for (auto &cur : updates)
+            PySafeDecRef(cur);
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();
     }
@@ -3121,6 +3265,7 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
 void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*/) const {
     // this check shouldnt be needed...
     if (!mySE->SystemMgr()->IsLoaded())
+        PySafeDecRef(*ev);
         return;
     if (self_only) {
         if (!mySE->HasPilot()) {
@@ -3130,24 +3275,28 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
                     _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny event to bubbleID %u from %s(%u)", \
                     sEntityList.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
                 mySE->SysBubble()->BubblecastDestinyEvent(ev, "DestinyEvent");
+            } else {
+                PySafeDecRef(*ev);
             }
             return;
         }
         if (is_log_enabled(PLAYER__MESSAGE))
-            _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdates() DestinyEvent called as 'self_only' for %s(%i)", \
+            _log(PLAYER__MESSAGE, "[%u] DM::SendSingleDestinyEvent() DestinyEvent called as 'self_only' for %s(%i)", \
                 sEntityList.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         mySE->GetPilot()->QueueDestinyEvent(ev);
     } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all players in a system
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting Structure DestinyEvent in %s from %s(%u)", \
-            sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName()), mySE->GetID();
+            sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
 
         //Get all clients in our system
         std::vector<Client*> cv;
         for (auto const& player : cv)
-            if (player->IsInSpace())
+            if (player->IsInSpace()) {
+                PyIncRef(*ev);
                 player->QueueDestinyEvent(ev);
+            }
     } else if (mySE->SysBubble() != nullptr) {
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting DestinyEvent to bubbleID %u from %s(%u)", \
@@ -3158,6 +3307,54 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
     } else {
         _log(DESTINY__WARNING, "[%u] Cannot BubbleCast DestinyEvent; entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
                 sEntityList.GetStamp(), mySE->GetName(), mySE->GetID() );
+        PySafeDecRef(*ev);
+        if (sConfig.debug.IsTestServer)
+            EvE::traceStack();
+    }
+}
+
+void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false*/) const {
+    // this check shouldnt be needed...
+    if (!mySE->SystemMgr()->IsLoaded())
+        return;
+    if (self_only) {
+        if (!mySE->HasPilot()) {
+            // this entity is NOT a player ship...change to BubbleCast (or silently fail)
+            if (mySE->SysBubble() != nullptr) {
+                if (is_log_enabled(DESTINY__UPDATES))
+                    _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update to bubbleID %u from %s(%u)", \
+                    sEntityList.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                mySE->SysBubble()->BubblecastDestinyUpdate(up, "DestinyUpdate");
+            }
+            return;
+        }
+        if (is_log_enabled(PLAYER__MESSAGE))
+            _log(PLAYER__MESSAGE, "[%u] DM::SendSingleDestinyUpdate() DestinyUpdate called as 'self_only' for %s(%i)", \
+            sEntityList.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+
+        mySE->GetPilot()->QueueDestinyUpdate(up);
+    } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all players in a system
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] BubbleCasting Structure DestinyUpdate in %s from %s(%u)", \
+            sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
+
+        //Get all clients in our system
+        std::vector<Client*> cv;
+        for (auto const& player : cv)
+            if (player->IsInSpace()) {
+                PyIncRef(*up);
+                player->QueueDestinyUpdate(up);
+            }
+    } else if (mySE->SysBubble() != nullptr) {
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] BubbleCasting DestinyUpdate to bubbleID %u from %s(%u)", \
+            sEntityList.GetStamp(), mySE->SysBubble()->GetID(),   \
+            (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
+            (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
+        mySE->SysBubble()->BubblecastDestinyUpdate(up, "DestinyUpdate" );
+    } else {
+        _log(DESTINY__WARNING, "[%u] Cannot BubbleCast DestinyUpdate; entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
+        sEntityList.GetStamp(), mySE->GetName(), mySE->GetID() );
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();
     }
