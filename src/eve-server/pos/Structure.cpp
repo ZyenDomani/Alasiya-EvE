@@ -902,7 +902,7 @@ void StructureSE::Online()
 
 void StructureSE::SetOperating()
 {
-    // this state is persistant until out of resources or changed
+    // this state is persistent until out of resources or changed
     m_procState = EVEPOS::ProcState::Operating;
     m_data.state = EVEPOS::StructureState::Operating;
     m_data.timestamp = GetFileTimeNow();
@@ -935,6 +935,16 @@ void StructureSE::SetUsageFlags(int8 view /*0*/, int8 take /*0*/, int8 use /*0*/
     m_db.UpdateBaseData(m_data);
 }
 
+bool StructureSE::IsReinforced()
+{
+    if ((m_data.state == EVEPOS::StructureState::Reinforced)
+        or (m_data.state == EVEPOS::StructureState::ArmorReinforced)
+        or (m_data.state == EVEPOS::StructureState::SheildReinforced))
+        return true;
+
+    return false;
+}
+
 void StructureSE::SendSlimUpdate()
 {
     PyDict *slim = new PyDict();
@@ -955,7 +965,8 @@ void StructureSE::SendSlimUpdate()
     PyTuple *sItem = new PyTuple(2);
     sItem->SetItem(0, new PyString("OnSlimItemChange"));
     sItem->SetItem(1, shipData);
-    m_destiny->SendSingleDestinyUpdate(&sItem); // consumed
+    m_destiny->SendSingleDestinyUpdate(&sItem);
+    PyDecRef(sItem);
 }
 
 void StructureSE::SendEffectUpdate(int16 effectID, bool active)
@@ -1330,7 +1341,7 @@ void StructureSE::Killed(Damage &damage)
         wreckItemRef->Delete();
         return;
     }
-    
+
     m_destiny->SendJettisonPacket();
 }
 

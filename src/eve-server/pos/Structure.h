@@ -192,7 +192,7 @@ public:
     void                        UpdateUsageFlags()      { m_db.UpdateUsageFlags(m_data.itemID, m_data); }
 
     // for targetMgr
-    bool                        IsReinforced()          { return (m_data.state == EVEPOS::StructureState::Reinforced); }
+    bool                        IsReinforced();
 
     void                        SendSlimUpdate();
 
