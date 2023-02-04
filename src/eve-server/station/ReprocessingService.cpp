@@ -115,7 +115,7 @@ PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &cal
     Call_GetOptionsForItemTypes args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
+        call.client->SendErrorMsg("Internal Server Error.");
         return nullptr;
     }
 
@@ -145,7 +145,7 @@ PyResult ReprocessingServiceBound::Handle_GetQuote(PyCallArgs &call) {
     SingleIntegerArg arg;    // itemID
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
+        call.client->SendErrorMsg("Internal Server Error.");
         return nullptr;
     }
 
@@ -157,7 +157,7 @@ PyResult ReprocessingServiceBound::Handle_GetQuotes(PyCallArgs &call) {
      Call_GetQuotes args;
      if (!args.Decode(&call.tuple)) {
          codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-         call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
+         call.client->SendErrorMsg("Internal Server Error.");
          return nullptr;
      }
 
@@ -183,7 +183,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
     Call_Reprocess args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
+        call.client->SendErrorMsg("Internal Server Error.");
         return nullptr;
     }
 

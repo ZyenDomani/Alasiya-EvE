@@ -47,7 +47,7 @@ PyResult CommandDispatcher::Execute( Client* from, const char* msg )
      /** @todo  fix this shit...
     if (from->IsInSpace()) {
         if (!from->DestinyMgr())
-            from->SendErrorMsg( "Internal Server Error.  Ref: ServerError 31110 " );
+            from->SendErrorMsg( "Internal Server Error." );
         if (from->DestinyMgr()->IsWarping() && ((from->GetAccountRole() & Acct::Role::GML) != Acct::Role::GML)) {
             sLog.Error( "CommandDispatcher", " Command Requested by %s while warping. --Access denied.", from->GetName() );
             from->SendErrorMsg( "ServerError 31113 - Cannot Request Commands While Warping." );

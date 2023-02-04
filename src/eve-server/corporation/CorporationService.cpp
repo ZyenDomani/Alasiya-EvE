@@ -204,7 +204,7 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
     uint16 medalID = m_db.CreateMedal(call.client->GetCorporationID(), call.client->GetCharacterID(), args.title, args.description);
     if (medalID == 0) {
         // error on save.
-        call.client->SendErrorMsg("Error when saving Medal Data.  Ref: ServerError xxxxx");
+        call.client->SendErrorMsg("Error when saving Medal Data.");
         return nullptr;
     }
 

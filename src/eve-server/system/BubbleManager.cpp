@@ -96,7 +96,7 @@ void BubbleManager::Process() {
                 if (cur->GetPosition().isNaN() or cur->GetPosition().isInf() or cur->GetPosition().isZero()) {
                     // position error.  this will screw things up.  if haspilot, send error.
                     if (cur->HasPilot())
-                        cur->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 35148<br>Please either dock or relog.");
+                        cur->GetPilot()->SendErrorMsg("Internal Server Error.<br>Please either dock or relog.");
                     continue;
                 }
                 _log(DESTINY__WARNING, "BubbleManager::Process() - Wanderer %s(%u) in system %s(%u) is being added to a bubble.", \

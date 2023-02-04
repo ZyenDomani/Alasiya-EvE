@@ -1742,7 +1742,7 @@ void ShipItem::LoadWeaponGroups()
     // NOTE:  there probably isnt a pilot at this point, so no sending of errors on load.
     if (m_ModuleManager == nullptr) {
         if (m_pilot != nullptr)
-            m_pilot->SendErrorMsg("There was an error loading your weapon groups.  Ref: ServerError 06071");
+            m_pilot->SendErrorMsg("There was an error loading your weapon groups.");
         return;
     }
     DBQueryResult* res = new DBQueryResult();
@@ -1779,7 +1779,7 @@ void ShipItem::LoadWeaponGroups()
     if (error) {
         UnlinkAllWeapons();
         if (m_pilot != nullptr)
-            m_pilot->SendErrorMsg("There was an error loading a weapon group master.  Ref: ServerError 06123");
+            m_pilot->SendErrorMsg("There was an error loading a weapon group master.");
     }
 
     SafeDelete(res);
@@ -2108,7 +2108,7 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
 
             if (IsModuleSlot(flag)) {
                 if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
-                    throw CustomError ("You do not have the required skills to fit this %s.  Ref: ServerError 25163.", iRef->name());
+                    throw CustomError ("You do not have the required skills to fit this %s.", iRef->name());
                 }
                 if (!ValidateItemSpecifics(iRef)) {
                     throw CustomError ("Your ship cannot equip the %s.<br>The group '%s' is not allowed on your %s.", \
@@ -2134,13 +2134,13 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
                             }
                         // NOTE: Module Manager will check for actual room to load charges and make stack splits, or reject loading altogether
                     } else {
-                        throw CustomError ("There is no module in %s.  Ref: ServerError 25162.", sDataMgr.GetFlagName(flag));
+                        throw CustomError ("There is no module in %s.", sDataMgr.GetFlagName(flag));
                     }
                 }
             } else {
                 sLog.Error("ShipItem::VerifyHoldType", "testing %s to add %u %s of cat %s has reached the end.",
                         sDataMgr.GetFlagName(flag), iRef->quantity(), iRef->name(), sDataMgr.GetCategoryName(iRef->categoryID()));
-                throw CustomError ("Internal Server Error.  Ref: ServerError 25162.");
+                throw CustomError ("Internal Server Error.");
             }
         }
     }

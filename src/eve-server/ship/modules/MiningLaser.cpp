@@ -80,7 +80,7 @@ bool MiningLaser::CanActivate()
     if (m_targetSE == nullptr){
         _log(MINING__WARNING, "Activate() - Invalid target: m_targetSE == nullptr");
         if (m_shipRef->HasPilot())
-            m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: Invalid target - Ref: ServerError 15628");
+            m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: Invalid target");
         return false;
     }
 
@@ -121,7 +121,7 @@ bool MiningLaser::CanActivate()
         if (m_shipRef->GetRemainingVolumeByFlag(m_holdFlag) < GetMiningVolume()) {
             _log(MINING__WARNING, "Activate() - Cargo full.  Denying Activate() on %s", m_targetSE->GetName());
             if (m_shipRef->HasPilot())
-                m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: Your Cargo is full. - Ref: ServerError 65125");
+                m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: Your Cargo is full.");
 
             return false;
         }
@@ -143,7 +143,7 @@ bool MiningLaser::CanActivate()
     } else {
         _log(MINING__WARNING, "Activate() - Invalid target: %s", m_targetSE->GetName());
         if (m_shipRef->HasPilot())
-            m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: %s is an invalid target - Ref: ServerError 15628", m_targetSE->GetName());
+            m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: %s is an invalid target", m_targetSE->GetName());
     }
 
     return false;
@@ -190,7 +190,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
 
     if ((cycleVol < oreVolume) or (cycleVol <= 0) or (oreVolume <= 0)) {
         _log(MINING__ERROR, "%s(%u) - Mining Laser could not extract ore from %s(%u)", m_modRef->name(), m_modRef->itemID(), roidRef->name(), m_targetSE->GetID() );
-        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because there was an error in it's processing.  Ref: ServerError 06428.", m_modRef->name());
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because there was an error in it's processing.", m_modRef->name());
         ActiveModule::DeactivateCycle(true);
         return;
     }
@@ -321,7 +321,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
 
         // send error and deactivate all active modules here
         for (auto &cur : mMap) {
-            cur.second->GetShipRef()->GetPilot()->SendNotifyMsg("Your %s deactivates because there was a processing error.  Ref: ServerError 03123.", \
+            cur.second->GetShipRef()->GetPilot()->SendNotifyMsg("Your %s deactivates because there was a processing error.", \
                         cur.second->GetSelf()->name());
             cur.second->CancelOnError();
         }
@@ -335,7 +335,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
         if ((cur.first < oreVolume) or (cur.first < 0.1)) {
             _log(MINING__ERROR, "%s(%u) - Depleted() -  Mining Laser could not extract ore from %s(%u)", \
                         cur.second->GetSelf()->name(), cur.second->GetSelf()->itemID(), roidRef->name(), m_targetSE->GetID() );
-            cur.second->GetShipRef()->GetPilot()->SendNotifyMsg("Your %s deactivates because there was an error in it's processing.  Ref: ServerError 06428.",\
+            cur.second->GetShipRef()->GetPilot()->SendNotifyMsg("Your %s deactivates because there was an error in it's processing.",\
                         cur.second->GetSelf()->name());
             cur.second->CancelOnError();
             continue;

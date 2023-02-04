@@ -672,7 +672,7 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
     }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
-        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
+        call.client->SendErrorMsg("Your ship was not found.");
         return nullptr;
     }
     sRef->LinkWeapon(args.masterID, args.slaveID);
@@ -698,7 +698,7 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
     }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
-        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
+        call.client->SendErrorMsg("Your ship was not found.");
         return nullptr;
     }
     // locate and link all weapons on ship, if possible.
@@ -726,7 +726,7 @@ PyResult DogmaIMBound::Handle_DestroyWeaponBank(PyCallArgs& call) {
     }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
-        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
+        call.client->SendErrorMsg("Your ship was not found.");
         return nullptr;
     }
     sRef->UnlinkGroup(args.arg2);
@@ -753,7 +753,7 @@ PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
     }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
-        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
+        call.client->SendErrorMsg("Your ship was not found.");
         return nullptr;
     }
     sRef->UnlinkAllWeapons();
@@ -783,7 +783,7 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
     }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
-        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
+        call.client->SendErrorMsg("Your ship was not found.");
         return PyStatic.NewZero();
     }
 
@@ -815,7 +815,7 @@ PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
     }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
-        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
+        call.client->SendErrorMsg("Your ship was not found.");
         return nullptr;
     }
 
@@ -850,7 +850,7 @@ PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
     }
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
-        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
+        call.client->SendErrorMsg("Your ship was not found.");
         return nullptr;
     }
 

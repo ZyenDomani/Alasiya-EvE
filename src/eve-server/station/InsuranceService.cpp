@@ -189,10 +189,10 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     }
 
     if (fraction < 0.05f) {
-        call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");
+        call.client->SendErrorMsg("There was a problem with your insurance premium calculation.");
         throw UserError("InsureShipFailed");
     } else if (fraction == 0.1f) {
-        call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 75521.");
+        call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.");
     }
 
     if (m_db->IsShipInsured(args.shipID)) {     //this hits db...can you insure unloaded ship? (if no, make this a ship memobj)

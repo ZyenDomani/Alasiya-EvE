@@ -547,7 +547,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         } else if (IsModuleSlot(fromFlag)) {
             // can we remove modules from an inactive ship?  not yet...
             if (pShip == nullptr)
-                throw CustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", iRef->name());
+                throw CustomError("Ship not found. The %s wasnt moved.", iRef->name());
 
             //if (IsSolarSystem(pShip->locationID()))
             //    throw CustomError("You cannot remove modules in space.");

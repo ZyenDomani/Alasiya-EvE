@@ -498,7 +498,7 @@ void Client::ProcessClient() {
                 } break;
                 default: {
                     sLog.Error("ProcessClient()","%s: State timer expired with invalid state: %s.", m_char->name(), GetStateName(m_clientState).c_str());
-                    //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
+                    //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.");
                 } break;
             }
         }
@@ -976,7 +976,7 @@ void Client::CheckShipRef(ShipItemRef newShipRef)
 {
     if (newShipRef.get() == nullptr) {
         _log(PLAYER__ERROR, "CheckShipRef() - %s: newShipRef == NULL.", m_char->name());
-        throw CustomError ("Could not find ship's ItemRef.  Cannot Board.   Ref: ServerError 12321.");
+        throw CustomError ("Could not find ship's ItemRef.  Cannot Board Ship.");
     } else if (!newShipRef->isSingleton()) {
         _log(PLAYER__MESSAGE, "%s tried to board ship %u, which is not assembled.", m_char->name(), newShipRef->itemID());
         throw CustomError ("You cannot board a ship which is not assembled!");
@@ -1064,7 +1064,7 @@ void Client::Eject()
     if (m_pod.get() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Failed to get podItem for %s.", GetName());
         if (m_canThrow) {
-            throw CustomError ("Something bad happened as you prepared to eject.  Ref: ServerError 25107.");
+            throw CustomError ("Something bad happened as you prepared to eject.");
         } else {
             return;
         }
@@ -1073,7 +1073,7 @@ void Client::Eject()
     if (pShipSE->SysBubble() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Bubble is null for %s.", GetName());
         if (m_canThrow) {
-            throw CustomError ("Something bad happened as you prepared to eject.  Ref: ServerError 25107+1.");
+            throw CustomError ("Something bad happened as you prepared to eject.");
         } else {
             return;
         }
@@ -1118,7 +1118,7 @@ void Client::Eject()
         _log(PLAYER__ERROR, "%s Eject() - pShipSE = NULL for shipID %u.", m_char->name(), m_pod->itemID());
         // we should probably send char to their clone station if this happens....
         MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
-        throw CustomError ("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107.");
+        throw CustomError ("There was a problem creating your pod in space.<br>You have been transfered to your home station.");
     }
 
     newShipSE->SetLauncherID(pShipSE->GetID());
@@ -1153,7 +1153,7 @@ void Client::ResetAfterPopped(GPoint& position)
         // we should probably send char to their clone station if this happens....
         MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
         SpawnNewRookieShip(m_locationID);
-        throw CustomError ("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107.");
+        throw CustomError ("There was a problem creating your pod in space.<br>You have been transfered to your home station.");
     }
 
     newShipSE->SetLauncherID(pShipSE->GetID());

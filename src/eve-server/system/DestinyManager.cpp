@@ -196,7 +196,7 @@ void DestinyManager::ProcessState() {
                     if (mySE->HasPilot()) {
                         _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) Has WarpState but checks are false.",  \
                                     mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
-                        mySE->GetPilot()->SendErrorMsg("Internal Server Error. Ref: ServerError 35928.   Please Dock or Relog to reset your ship.");
+                        mySE->GetPilot()->SendErrorMsg("Internal Server Error.<br> Please Dock or Relog to reset your ship.");
                     } else {
                         _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  NPC %s(%u) Has WarpState but checks are false.",  \
                                     mySE->GetName(), mySE->GetID());
@@ -895,7 +895,7 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change...yeah, but i
     if (m_targetPoint.isZero()) {
         _log(DESTINY__ERROR, "Destiny::IsTurn() - %s(%u): TargetPoint is null.", mySE->GetName(), mySE->GetID());
         if (mySE->HasPilot())
-            mySE->GetPilot()->SendNotifyMsg("There was an error in your ship's navigation computer.  Ref: ServerError 35221");
+            mySE->GetPilot()->SendNotifyMsg("There was an error in your ship's navigation computer.");
         ClearTurn();
         Halt();
         return false;
@@ -986,7 +986,7 @@ void DestinyManager::Turn() {
         or  m_targetHeading.isInf()) {
             // well, something fucked up.  stop object and throw error.   player can reset if they want to.
             if (mySE->HasPilot())
-                mySE->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 35522");
+                mySE->GetPilot()->SendErrorMsg("Internal Server Error.");
             _log(DESTINY__ERROR, "Destiny::Turn(0) - %s(%u): TargHeading is Zero/NULL/Inf.  Stopping ship.", mySE->GetName(), mySE->GetID());
             Stop();
             return;
@@ -1183,7 +1183,7 @@ void DestinyManager::Orbit() {
     if ((m_targetDistance > BUBBLE_RADIUS_METERS) or (m_followDistance > BUBBLE_RADIUS_METERS)) {
         // well, something fucked up.  stop object and throw error.   player can reset if they want to.
         if (mySE->HasPilot())
-            mySE->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 35412");
+            mySE->GetPilot()->SendErrorMsg("Internal Server Error.");
         sLog.Error("Destiny::Orbit()", "%s(%u) - Distance check OOB. ", mySE->GetName(), mySE->GetID());
         Stop();
         return;

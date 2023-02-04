@@ -45,7 +45,7 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
         if (!uunc.Decode(uuncl.commandList->GetItem(i)->AsTuple())) {
             _log(SERVICE__ERROR, "Failed to decode args for UUNCommand");
             uuncl.commandList->Dump(PLANET__WARNING, "      ");
-            m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04508.");
+            m_client->SendErrorMsg("Internal Server Error.");
             return nullptr;
         }
         _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork() - loop: %u, command: %s(%i)", i, sPlanetDataMgr.GetCommandName(uunc.command), uunc.command);
@@ -139,7 +139,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
             if (!uunccc.Decode(nc.command_data)) {
                 _log(SERVICE__ERROR, "Failed to decode args for UUNCCommandCenter");
                 nc.command_data->Dump(PLANET__WARNING, "      ");
-                m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04508.");
+                m_client->SendErrorMsg("Internal Server Error.");
                 return true;
             }
             m_colony->CreateCommandPin(uunccc.pinID, uunccc.typeID, uunccc.latitude, uunccc.longitude);
@@ -151,7 +151,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
         case Capsuleer_Bases:{
             // Not Supported yet
             _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::CreatePin() Planet Bases (type/group %u/%u) not supported.", typeID, groupID);
-            m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04109.");
+            m_client->SendErrorMsg("Internal Server Error.");
             return true;
         } break;
     }
@@ -213,7 +213,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
 
     if (cost < 1) {
         // error here....
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 02001.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return true;
     }
 
@@ -221,7 +221,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     if (!uuncsp.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04588.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return true;
     }
 
@@ -256,7 +256,7 @@ void PlanetMgr::CreateLink(UUNCommand& nc)
             if (!uuncle.Decode(nc.command_data)) {
                 _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkExist");
                 nc.command_data->Dump(PLANET__WARNING, "      ");
-                m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04588.");
+                m_client->SendErrorMsg("Internal Server Error.");
                 return;
             }
             src = uuncle.src;
@@ -267,7 +267,7 @@ void PlanetMgr::CreateLink(UUNCommand& nc)
             if (!uunclc.Decode(nc.command_data)) {
                 _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkCommand");
                 nc.command_data->Dump(PLANET__WARNING, "      ");
-                m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04588.");
+                m_client->SendErrorMsg("Internal Server Error.");
                 return;
             }
             src = uunclc.src;
@@ -279,7 +279,7 @@ void PlanetMgr::CreateLink(UUNCommand& nc)
         if (!uuncls.Decode(nc.command_data)) {
             _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkStandard");
             nc.command_data->Dump(PLANET__WARNING, "      ");
-            m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04588.");
+            m_client->SendErrorMsg("Internal Server Error.");
             return;
         }
         src = uuncls.src2;
@@ -288,7 +288,7 @@ void PlanetMgr::CreateLink(UUNCommand& nc)
     } else {
         //Invalid...
         _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::CreateLink() command_data type unrecognized: %s", nc.command_data->GetItem(0)->TypeString());
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04508.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return;
     }
     m_colony->CreateLink(src, dest, level);
@@ -300,7 +300,7 @@ void PlanetMgr::CreateRoute(UUNCommand& nc)
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_CreateRoute");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04588.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return;
     }
 
@@ -319,7 +319,7 @@ void PlanetMgr::RemovePin(UUNCommand& nc)
         //Invalid...
         _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::RemovePin() command_data type unrecognized: %s", nc.command_data->GetItem(0)->TypeString());
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04508.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return;
     }
     m_colony->RemovePin(pinID);
@@ -344,7 +344,7 @@ void PlanetMgr::RemoveRoute(UUNCommand& nc)
         //Invalid...
         _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::RemoveRoute() command_data type unrecognized: %s", nc.command_data->GetItem(0)->TypeString());
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04508.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return;
     }
     m_colony->RemoveRoute(routeID);
@@ -374,7 +374,7 @@ void PlanetMgr::AddExtractorHead(UUNCommand& nc)
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_AddMoveExtractorHead");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04588.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return;
     }
 
@@ -387,7 +387,7 @@ void PlanetMgr::MoveExtractorHead(UUNCommand& nc)
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_AddMoveExtractorHead");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04588.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return;
     }
 
@@ -400,7 +400,7 @@ void PlanetMgr::InstallProgram(UUNCommand& nc)
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_InstallProgram");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04588.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return;
     }
 
@@ -421,7 +421,7 @@ void PlanetMgr::PrioritizeRoute(UUNCommand& nc)
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_PrioritizeRoute");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.  Ref: ServerError 04588.");
+        m_client->SendErrorMsg("Internal Server Error.");
         return;
     }
 

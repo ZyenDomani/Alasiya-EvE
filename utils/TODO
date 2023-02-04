@@ -22,9 +22,9 @@ other updates?
 
 
 !! destiny (all space movement)
-ship heading 0 for all movement....
+ship heading 0 for all movement...
 -- even with heading identical (client and server) there is still some deviation after turning...i dont understand where its from
-  - reset move bool when activate warp
+
 
 ships  ---  attrAgility will need to be recalc'd and reset anytime inertia or mass changes.
   - does this include adding/dropping ore, items, loot, drones?  what about the large PI items?

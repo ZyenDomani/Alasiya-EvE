@@ -1060,7 +1060,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
     if (pin == ccPin->pins.end()) {
         _log(COLONY__ERROR, "Colony::PlanetXfer() - pinID %u not found in ccPin.pins map", spaceportID);
         if (m_client->CanThrow())
-            throw CustomError("Your SpacePort on %s was not found.  Ref: ServerError xxxxx.", m_pSE->GetName());
+            throw CustomError("Your SpacePort on %s was not found.", m_pSE->GetName());
 
         return;
     }

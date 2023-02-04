@@ -64,7 +64,7 @@ PyBoundObject* AllianceRegistry::CreateBoundObject( Client* pClient, const PyRep
 {
     if (!bind_args->IsTuple()){
         sLog.Error( "AllianceRegistry::CreateBoundObject", "%s: bind_args is not tuple: '%s'. ", pClient->GetName(), bind_args->TypeString() );
-        pClient->SendErrorMsg("Could not bind object for Ally Registry.  Ref: ServerError 02808.");
+        pClient->SendErrorMsg("Could not bind object for Ally Registry.");
         return nullptr;
     }
 

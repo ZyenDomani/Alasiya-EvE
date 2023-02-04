@@ -142,7 +142,7 @@ PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call)
 
     if (!IsCharacterID(arg.charID)) {
         sLog.Error("Client::SelectCharacter()", "CharacterID %u invalid.", arg.charID);
-        call.client->SendErrorMsg("Character ID %u invalid.  Ref: ServerError 00522", arg.charID);
+        call.client->SendErrorMsg("Character ID %u invalid.", arg.charID);
         return nullptr;
     }
 

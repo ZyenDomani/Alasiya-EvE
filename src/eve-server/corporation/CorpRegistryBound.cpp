@@ -1143,7 +1143,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
             if (GetSearchValues(args3.searchOp, args3.valueRaw, query)) {
                 set = true;
             } else {
-                call.client->SendErrorMsg("Search data invalid. Ref: ServerError xxxxx");
+                call.client->SendErrorMsg("Search data invalid.");
                 return nullptr;
             }
         } else if (list->size() == 4) {
@@ -1181,7 +1181,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
             if (GetSearchValues(args4.searchOp, args4.valueRaw, query)) {
                 set = true;
             } else {
-                call.client->SendErrorMsg("Search data invalid. Ref: ServerError xxxxx");
+                call.client->SendErrorMsg("Search data invalid.");
                 return nullptr;
             }
         } else {

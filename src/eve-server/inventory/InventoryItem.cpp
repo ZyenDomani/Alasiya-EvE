@@ -891,7 +891,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
         if (IsCharacterID(m_data.ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
             if (pClient != nullptr)
-                pClient->SendErrorMsg("Internal Server Error.  Ref: ServerError 63138");
+                pClient->SendErrorMsg("Failure to alter quantity.");
         }
         return false;
     }
@@ -901,7 +901,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
         if (IsCharacterID(m_data.ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
             if (pClient != nullptr)
-                pClient->SendErrorMsg("Internal Server Error.  Ref: ServerError 63238");
+                pClient->SendErrorMsg("Failure to alter quantity.");
         }
         return false;
     }

@@ -157,7 +157,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     ShipSE* pShipSE(pClient->GetShipSE());
     if (pShipSE == nullptr)
-        throw CustomError("Invalid Ship.  Ref: ServerError xxxxx");
+        throw CustomError("Invalid Ship.");
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
     if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
         /* find proper error msg for this...im sure there is one  */
@@ -166,7 +166,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     //  do we need this? yes....this needs more work in destiny to implement correctly
     if (pShipSE->DestinyMgr()->GetSpeed() > 20)
-        throw CustomError("You cannot eject current ship while moving faster than 20m/s. Ref: ServerError 05139.");
+        throw CustomError("You cannot eject current ship while moving faster than 20m/s.");
 
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
@@ -179,7 +179,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     if (pShipSE == nullptr) {
         _log(SHIP__ERROR, "Handle_Board() - Failed to get new ship %u for %s.", args.newShipID, pClient->GetName());
-        throw CustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 25107.");
+        throw CustomError("Something bad happened as you prepared to board the ship.");
     }
 
     if (pShipSE->GetTypeID() == itemTypeCapsule) {
@@ -191,7 +191,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     //  do we need this? yes....this needs more work in destiny to implement correctly
     if (pShipSE->DestinyMgr()->GetSpeed() > 20)
-        throw CustomError("You cannot board the ship while it's moving faster than 20m/s. Ref: ServerError 05139.");
+        throw CustomError("You cannot board the ship while it's moving faster than 20m/s.");
 
     // should we eject player here and deny boarding new ship, or just leave char in current ship and return?
     if (!pShipSE->GetShipItemRef()->ValidateBoardShip(pClient->GetChar()))
@@ -233,7 +233,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 
     SystemEntity* pShipSE = pClient->GetShipSE();
     if (pShipSE == nullptr)
-        throw CustomError("Invalid Ship.  Ref: ServerError xxxxx");
+        throw CustomError("Invalid Ship.");
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
     if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
         /* find proper error msg for this...im sure there is one  */
@@ -242,7 +242,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 
     //  do we need this? yes....this needs more work in destiny to implement correctly
     if (pShipSE->DestinyMgr()->GetSpeed() > 20)
-        throw CustomError("You cannot eject current ship while moving faster than 20m/s. Ref: ServerError 05139.");
+        throw CustomError("You cannot eject current ship while moving faster than 20m/s.");
 
     pClient->Eject();
 
@@ -305,7 +305,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     ShipItemRef newShipRef = sItemFactory.GetShipRef(args.newShipID);
     if (newShipRef.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
-        throw CustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173+1");
+        throw CustomError("Something bad happened as you prepared to board the ship.");
     }
     //ShipMustBeInPersonalHangar
 
@@ -335,15 +335,15 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     Call_IntBoolArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        throw CustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173");
+        throw CustomError("Something bad happened as you prepared to board the ship.");
     }
 
     Client* pClient(call.client);
     ShipItemRef pShip = pClient->GetShip();
     if (pShip.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get ship item.", pClient->GetName());
-        throw CustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173");
-        call.client->SendNotifyMsg("Internal Server Error - Ref: ServerError xxxxx   -undock failed.");
+        throw CustomError("Something bad happened as you prepared to board the ship.");
+        call.client->SendNotifyMsg("Internal Server Error - undock failed.");
         return nullptr;
     }
 

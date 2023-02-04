@@ -704,7 +704,7 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
 
     if (!pMod->isOnline()) {
         // client wont allow activating an offline module.  this is catchall. (but should never hit)
-        pShipItem->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
+        pShipItem->GetPilot()->SendErrorMsg("You cannot activate an offline module.");
         return;
     } else if (pDestiny->IsWarping()) {
         if (pMod->HasAttribute(AttrDisallowActivateOnWarp) or !sFxDataMgr.isWarpSafe(effectID))
