@@ -79,6 +79,7 @@ m_stateStamp(0)
     m_stop = false;
     m_accel = false;
     m_decel = false;
+    m_alignTo = false;
     m_cloaked = false;
     m_turning = false;
     m_orbiting = 0;
@@ -469,12 +470,12 @@ void DestinyManager::Stop() {
     if (m_stop)
         return;
 
-    // AP not implemented yet in this version  -allan 4Mar15
-    //Clear autopilot
-    if (mySE->HasPilot())
-        mySE->GetPilot()->SetAutoPilot(false);
-
-    if ((m_ballMode == Destiny::Ball::Mode::WARP) and (!IsWarping()))  {
+    if (m_userSpeedFraction == 0.0f) {
+        //state is already at stop. but m_stop wasnt set.
+        // set m_stop and return.
+        m_stop = true;
+        return;
+    } else if ((m_ballMode == Destiny::Ball::Mode::WARP) and (!IsWarping()))  {
         //warp aborted before initialized.  standard Stop() applies.
         m_ballMode = Destiny::Ball::Mode::STOP;
     } else if (IsMoving()) {
@@ -484,10 +485,10 @@ void DestinyManager::Stop() {
 
     m_accel = false;
     m_decel = false;
+    m_alignTo = false;
     m_posHack = false;
     m_prevSpeed = 0.0f;
     m_prevSpeedFraction = 0.0f;
-    m_activeSpeedFraction = 0.0f;
 
     ClearTurn();
     ClearOrbit();
@@ -496,6 +497,7 @@ void DestinyManager::Stop() {
     m_moveTime = GetTimeMSeconds();
     m_turnTime = 0.0;
 
+    // need to check this after rewrite
     SetSpeedFraction(0.0f);
     m_stop = true;
 
@@ -513,13 +515,16 @@ void DestinyManager::Halt(bool commanded/*false*/) {
 
     //  reset ALL movement variables and states.  calling this will set object to a COMPLETE and IMMEDIATE stop.
     m_ballMode = Destiny::Ball::Mode::STOP;
+    ClearTurn();
+    ClearOrbit();
+
     m_stop = true;
     m_accel = false;
     m_decel = false;
+    m_alignTo = false;
     m_turning = false;
     m_maxSpeed = 0.0f;
     m_moveTime = 0.0;
-    m_turnTime = 0.0;
     m_prevSpeed = 0.0f;
     m_stateStamp = 0;
     m_timeFraction = 0.0f;
@@ -535,8 +540,6 @@ void DestinyManager::Halt(bool commanded/*false*/) {
     m_targetHeading = GVector( NULL_ORIGIN );
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
-
-    ClearTurn();
 
     if (commanded) {
         // immediate halt via command.  send packet to stop ship.
@@ -673,26 +676,22 @@ void DestinyManager::Bounce(GVector direction, float speed)
 void DestinyManager::MoveObject() {
     if (mySE->SysBubble() == nullptr)
         mySE->SystemMgr()->AddEntity(mySE);
-
+/*
     if (m_stateStamp > sEntityList.GetStamp()) {
         if (is_log_enabled(DESTINY__MOVE_TRACE))
             _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u): stateStamp (%u) > GetStamp (%u).", \
             mySE->GetName(), mySE->GetID(), m_stateStamp, sEntityList.GetStamp());
         return;
     }
-
+*/
     if (m_changeDelay) {
         m_changeDelay = false;
+        m_moveTime = GetTimeMSeconds() - (EvE::Time::Second * 2);
         m_stateStamp = sEntityList.GetStamp(); // reset m_moveTime to now and skip this tic
         _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - ChangeDelay - %s(%u): stateStamp: %u", \
                     mySE->GetName(), mySE->GetID(), m_stateStamp);
         return;
     }
-
-    // check for moving ship changing heading
-    if (m_userSpeedFraction > 0.01f)
-        if (!m_orbiting or (m_orbiting > Destiny::Ball::Orbit::Far))
-            Turn();
 
     /* acceleration and deceleration are both logarithmic and the server needs to keep up with client position.
      * formula for time taken to accelerate from v to V, from https://wiki.eveonline.com/en/wiki/Acceleration
@@ -727,7 +726,12 @@ void DestinyManager::MoveObject() {
      * **UPDATE**  removed speed fraction checks for min/max speeds.  -allan 02Jul17
      * **UPDATE**  reworked entire basic movement checks and formulas -allan 17Oct21
      * **UPDATE**  tweak movement to align with client                -allan 04Jan23
+     * **UPDATE**  rewrite turning logic                              -allan 04Feb23
      */
+
+    // check for moving ship changing heading
+    if (m_turning)
+        Turn();
 
     float speed(0.0f);
     std::string move = "";
@@ -891,18 +895,9 @@ void DestinyManager::MoveObject() {
 }
 
 bool DestinyManager::IsTurn() {    //this is working.  dont change...yeah, but i did.
-    // whats chances of target being zero?
-    if (m_targetPoint.isZero()) {
-        _log(DESTINY__ERROR, "Destiny::IsTurn() - %s(%u): TargetPoint is null.", mySE->GetName(), mySE->GetID());
-        if (mySE->HasPilot())
-            mySE->GetPilot()->SendNotifyMsg("There was an error in your ship's navigation computer.");
-        ClearTurn();
-        Halt();
-        return false;
-    }
     // if ship is (reasonably) stopped, there is no turn.  immediately begin movement in desired direction
     //NOTE:  TF and ASF are ~0.08 within first second or so of beginning movement, so this check is valid
-    if (!m_turning and (m_timeFraction < 0.1) and (m_activeSpeedFraction < 0.1)) {
+    if ((m_timeFraction < 0.1) and (m_activeSpeedFraction < 0.1)) {
         m_shipHeading = m_targetHeading;
         return false;
     }
@@ -943,20 +938,58 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change...yeah, but i
     return true;
 }
 
+void DestinyManager::InitTurn()
+{
+    // i dont want to leave this here....just for testing
+    if (m_targetHeading.isNaN()
+    or  m_targetHeading.isZero()  //targHead is zero on login, and MAY be zero on occasion
+    or  m_targetHeading.isInf()) {
+        // well, something fucked up.  stop object and throw error.   player can reset if they want to.
+        if (mySE->HasPilot())
+            mySE->GetPilot()->SendErrorMsg("Internal Server Error.");
+        _log(DESTINY__ERROR, "Destiny::Turn(0) - %s(%u): TargHeading is Zero/NULL/Inf.  Stopping ship.", mySE->GetName(), mySE->GetID());
+        Stop();
+        return;
+    }
+
+    // beginning turn
+    m_turning = true;
+    // get dir change
+    GVector diff(m_shipHeading, m_targetHeading);
+    float pct = 1 / floor(m_turnAlignTime);
+    // this should divide full curve into "floor(alignTime)" parts
+    // allowing heading + delta on each tic to provide a smooth transition
+    m_curveHeadDelta = diff * pct;
+
+    if (is_log_enabled(DESTINY__TURN_TRACE))
+        _log(DESTINY__TURN_TRACE, "Destiny::Turn(1) - %s(%u): diff:%.5f,%.5f,%.5f, pct:%.3f, delta:%.7f,%.7f,%.7f", \
+            mySE->GetName(), mySE->GetID(), diff.x, diff.y, diff.z, pct, \
+            m_curveHeadDelta.x, m_curveHeadDelta.y, m_curveHeadDelta.z);
+
+    //  calc min speed for this turn as absolute percent
+    float minTurnSpeedFraction = (std::sqrt((cos(m_radians) + 1) / 2));
+
+    if (is_log_enabled(DESTINY__TURN_TRACE))
+        _log(DESTINY__TURN_TRACE, "Destiny::Turn(1) - %s(%u): minTurnSpeedFraction:%.3f(%.3f), alignTime:%.3f, ASF:%.3f", \
+            mySE->GetName(), mySE->GetID(), minTurnSpeedFraction, (m_maxShipSpeed * minTurnSpeedFraction), m_turnAlignTime, m_activeSpeedFraction);
+
+    // method to determine turn speed based on above calc for any usf
+    // note:  this does funny shit when decel from deactivated speed boost.   needs more thought
+    if (minTurnSpeedFraction < m_activeSpeedFraction) {
+        /** @todo need to check for SpeedBoost-changed vars here */
+        // min turn speed is lower than current speed
+        m_prevSpeedFraction = m_userSpeedFraction;
+        m_userSpeedFraction = minTurnSpeedFraction;
+        UpdateVelocity(true);
+        m_moveTime = GetTimeMSeconds();
+    }
+}
+
+
 //from new source at eve/client/script/ui/services\flightControls.py
 //  self.curve = trinity.Tr2QuaternionLerpCurve()  - tried multiple iterations of this....never got close.
 // tracking within 900m for Frigates, 1k4m for BS.  05Jun17
 void DestinyManager::Turn() {
-    if (mySE->HasPilot())
-        if (mySE->GetPilot()->IsUndock())
-            return;
-
-    if (!IsTurn()) {
-        if (m_turning)
-            ClearTurn();
-        return;
-    }
-
     /*when changing directions....
      *  m_turnTime and m_moveTime will have to be reset - handled in BeginMovement()
      *  m_shipHeading will have to be reset - reset here and used in MoveObject() (our calling function)
@@ -969,61 +1002,17 @@ void DestinyManager::Turn() {
     turnStamp = round(turnStamp);
 
     if (turnStamp > m_turnAlignTime) {
+        // turn is complete.  clear and continue
         m_shipHeading = m_targetHeading;
         if (is_log_enabled(DESTINY__TURN_TRACE))
             _log(DESTINY__TURN_TRACE, "Destiny::Turn() - turnTic > alignTime.  turn completed in %.2fs.  ShipHeading:%.7f,%.7f,%.7f", \
                 turnStamp, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 
         ClearTurn();
-        return;
-    }
 
-    //m_radians = rad left in turn.   set in IsTurn() on every tic
-    if (!m_turning) {
-        // i dont want to leave this here....just for testing
-        if (m_targetHeading.isNaN()
-        or  m_targetHeading.isZero()  //targHead is zero on login, and MAY be zero on occasion
-        or  m_targetHeading.isInf()) {
-            // well, something fucked up.  stop object and throw error.   player can reset if they want to.
-            if (mySE->HasPilot())
-                mySE->GetPilot()->SendErrorMsg("Internal Server Error.");
-            _log(DESTINY__ERROR, "Destiny::Turn(0) - %s(%u): TargHeading is Zero/NULL/Inf.  Stopping ship.", mySE->GetName(), mySE->GetID());
+        if (m_alignTo)
             Stop();
-            return;
-        }
-        // beginning turn
-        m_turning = true;
-        // get dir change
-        GVector diff(m_shipHeading, m_targetHeading);
-        float pct = 1 / floor(m_turnAlignTime);
-        // this should divide full curve into "floor(alignTime)" parts
-        // allowing heading + delta on each tic to provide a smooth transition
-        m_curveHeadDelta = diff * pct;
 
-        if (is_log_enabled(DESTINY__TURN_TRACE))
-            _log(DESTINY__TURN_TRACE, "Destiny::Turn(1) - %s(%u): diff:%.5f,%.5f,%.5f, pct:%.3f, delta:%.7f,%.7f,%.7f", \
-            mySE->GetName(), mySE->GetID(), diff.x, diff.y, diff.z, pct, \
-            m_curveHeadDelta.x, m_curveHeadDelta.y, m_curveHeadDelta.z);
-
-        //  calc min speed for this turn as absolute percent
-        float minTurnSpeedFraction = (std::sqrt((cos(m_radians) + 1) / 2));
-
-        if (is_log_enabled(DESTINY__TURN_TRACE))
-            _log(DESTINY__TURN_TRACE, "Destiny::Turn(1) - %s(%u): minTurnSpeedFraction:%.3f(%.3f), alignTime:%.3f, ASF:%.3f", \
-            mySE->GetName(), mySE->GetID(), minTurnSpeedFraction, (m_maxShipSpeed * minTurnSpeedFraction), m_turnAlignTime, m_activeSpeedFraction);
-
-        // method to determine turn speed based on above calc for any usf
-        // note:  this does funny shit when decel from deactivated speed boost.   needs more thought
-        if (minTurnSpeedFraction < m_activeSpeedFraction) {
-            /** @todo need to check for SpeedBoost-changed vars here */
-            // min turn speed is lower than current speed
-            m_prevSpeedFraction = m_userSpeedFraction;
-            m_userSpeedFraction = minTurnSpeedFraction;
-            UpdateVelocity(true);
-            m_moveTime = GetTimeMSeconds();
-        }
-
-        // turn data set.  begin turn next tic
         return;
     }
 
@@ -1071,7 +1060,7 @@ void DestinyManager::Turn() {
 }
 
 void DestinyManager::ClearTurn() {
-    SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
+    //SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
     m_turning = false;
     m_radians = 0.0f;
     // this may not be right if other movement has changed
@@ -1470,7 +1459,18 @@ void DestinyManager::ClearOrbit() {
 }
 
 void DestinyManager::InitWarp() {
-    //init warp:
+    // reset sub-warp move variables for warping
+    ClearTurn();
+    ClearOrbit();
+
+    m_accel = false;
+    m_decel = false;
+    m_posHack = false;
+    m_turnTime = 0.0;
+    m_prevSpeed = 0.0f;
+    m_prevSpeedFraction = 0.0f;
+    // im guessing since we're going into warp, asf is not needed.
+    m_activeSpeedFraction = 0.0f;
 
     // warp time and distance math
     //   allan 1Nov14 - 14Nov14
@@ -1485,18 +1485,7 @@ void DestinyManager::InitWarp() {
      *     http://www.eve-search.com/thread/478431-0/page/1
      */
 
-    // reset sub-warp move variables for warping
-    m_accel = false;
-    m_decel = false;
-    m_posHack = false;
-    m_turning = false;
-    m_radians = 0.0;
-    m_turnTime = 0.0;
-    m_prevSpeed = 0.0f;
-    m_prevSpeedFraction = 0.0f;
-    // im guessing since we're going into warp, asf is not needed.
-    m_activeSpeedFraction = 0.0f;
-
+    //init warp:
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp(): %s(%u) is initializing warp.", mySE->GetName(), mySE->GetID());
 
@@ -1803,13 +1792,13 @@ bool DestinyManager::IsTargetInvalid()
 
 void DestinyManager::UpdateSpeedFraction(float speedPct/*0*/) {
     //this is called from Beyonce.CmdSetSpeedFraction() but only while turning
-	if (m_turning) {
-            // some yahoo decided to change speed while turning....gee, thanks.
-            // ok, so, do shit here to keep move vars sane
-            m_userSpeedFraction = speedPct;
-            // have UpdateVelocity() reset move vars and continue.
-            UpdateVelocity(IsMoving());
-	}
+    if (m_turning) {
+        // some yahoo decided to change speed while turning....gee, thanks.
+        // ok, so, do shit here to keep move vars sane
+        m_userSpeedFraction = speedPct;
+        // have UpdateVelocity() reset move vars and continue.
+        UpdateVelocity(IsMoving());
+    }
 }
 
 // Basic Movement Calls:
@@ -1835,63 +1824,22 @@ void DestinyManager::BeginMovement() {
         m_hasSentShipUpdates = true;
     }
 
-    // verify sane position data
-    // NOTE:  none of these have hit since inception
-    if (m_position.isNaN()) {
-        _log(DESTINY__ERROR, "%s position is NaN.", mySE->GetName());
-    }
-    if (m_position.isZero()) {
-        _log(DESTINY__ERROR, "%s position is zero.", mySE->GetName());
-    }
-    if (m_position.isInf()) {
-        _log(DESTINY__ERROR, "%s position is inf.", mySE->GetName());
-    }
-
-    // NOTE:  this hasnt hit since inception
-    if (m_shipHeading.isZero()
-    or  m_shipHeading.isNaN()
-    or  m_shipHeading.isInf()) {
-        GVector point(m_position);
-        point.normalize();
-        GVector shipHeading(m_position, m_targetPoint);
-        shipHeading.normalize();
-        m_shipHeading = shipHeading;
-    }
-
-    if (m_orbiting == Destiny::Ball::Orbit::None) {
-        // reset target distance just in case it changed.
-        GVector shipVector(m_position, m_targetPoint);
-        m_targetDistance = (uint32)shipVector.length();
-        m_orbitRadTic = 0.0f;
-        m_maxOrbitSpeedFraction = 1.0f;
-    }
-
     // this will have to be adjusted for cloak mod.
     if (IsCloaked())
         UnCloak();
 
-    // reset turn for possible heading change.
-    ClearTurn();         // this also calls SetPosition()
     m_stop = false;
 
-    // if ship is not moving, set initial movement variables
-    if (m_activeSpeedFraction < ASF_CHECK) {
-        // reset all move stamps
-        m_stateStamp = sEntityList.GetStamp();
-        m_moveTime = GetTimeMSeconds();
-        m_turnTime = GetTimeMSeconds();     // only used if IsTurn() == true
+    // reset all move stamps
+    m_stateStamp = sEntityList.GetStamp();
+    m_moveTime = GetTimeMSeconds();
+    m_turnTime = GetTimeMSeconds();     // only used if IsTurn() == true
 
-        SetSpeedFraction(1.0f, true);
-        return;
-    }
+    // if ship is not moving, set usf for movement
+    if (m_userSpeedFraction < 0.1)
+        m_userSpeedFraction = 1.0f;
 
-    /* calling SetSpeedFraction(true) does weird shit with current move vars...
-     * namely, calling GotoDir() hits here, which puts asf into psf and recomputes.
-     * then, once turn completes, ClearTurn() sets usf = psf and updates
-     * if ship wasnt at full speed, this will set usf to whatever asf was at when GotoDir was called.
-     * ...at least it updates client correctly, so 'new' (fuckedup) usf is shown on speedo
-     */
-    SetSpeedFraction(m_userSpeedFraction);
+    SetSpeedFraction(m_userSpeedFraction, true);
 }
 
 void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
@@ -1906,6 +1854,9 @@ void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
     //reset orbit vars in case we were orbiting before
     if (m_orbiting)
         ClearOrbit();
+    // reset turn vars
+    if (m_turning)
+        ClearTurn();
 
     m_ballMode = Destiny::Ball::Mode::FOLLOW;
     m_targetPoint = pSE->GetPosition();
@@ -1921,6 +1872,10 @@ void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
     m_followDistance = distance;
+
+    if (IsTurn())
+        InitTurn();
+
     BeginMovement();
 
     CmdFollowBall du;
@@ -1935,7 +1890,7 @@ void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
 void DestinyManager::AlignTo(SystemEntity* pSE) {
     // should this Stop() once alignment has been achieved?  i'd say yes.  config option?
     // i originally set it like this, but aknor didnt like it, so it was removed
-    // m_alignTo = true;
+    m_alignTo = true;
     Follow(pSE, 0);
 }
 
@@ -1944,10 +1899,17 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
     // this is also called when an orbited object is destroyed
     if (m_orbiting)
         ClearOrbit();
+    // reset turn vars as this is most likely a dir change
+    if (m_turning)
+        ClearTurn();
 
     m_ballMode = Destiny::Ball::Mode::GOTO;
     m_targetHeading = direction;
     m_targetPoint = direction * 1.0e16;
+
+    if (IsTurn())
+        InitTurn();
+
     BeginMovement();
 
     CmdGotoDirection du;
@@ -1964,12 +1926,19 @@ void DestinyManager::GotoPoint(const GPoint& point) {
     //reset orbit vars in case we were orbiting before
     if (m_orbiting)
         ClearOrbit();
+    // reset turn vars as this is most likely a dir change
+    if (m_turning)
+        ClearTurn();
 
     m_ballMode = Destiny::Ball::Mode::GOTO;
     m_targetPoint = point;
     GVector head(m_position, point);
     head.normalize();
     m_targetHeading = head;
+
+    if (IsTurn())
+        InitTurn();
+
     BeginMovement();
 
     CmdGotoPoint gtpoint;
@@ -2039,6 +2008,9 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         if (mySE->IsDroneSE()) {
             // put drone limit checks here
         }
+
+        if (IsTurn())
+            InitTurn();
 
         BeginMovement();
 
@@ -2113,6 +2085,9 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         Follow(pSE, distance);
     } else {
         // everything else will use code from GotoDir and BeginMovement
+        if (IsTurn())
+            InitTurn();
+
         BeginMovement();
     }
 
@@ -2288,7 +2263,7 @@ bool DestinyManager::IsAligned(GPoint& targetPoint)
 
 void DestinyManager::Undock(GPoint dir) {
     //set movement direction
-    m_targetPoint = dir *1.0e16;
+    m_targetPoint = dir * 1.0e16;
     m_shipHeading = GVector(dir);
     SetUndockSpeed();
     if (mySE->IsShipSE())
@@ -2297,18 +2272,18 @@ void DestinyManager::Undock(GPoint dir) {
 
 void DestinyManager::SetUndockSpeed() {
     //start ship movement @ max velocity for undocking.
-    // this simulates being forcefully "ejected" from station (and is currently  off)
+    // this simulates being forcefully "ejected" from station (and is currently off)
     m_stop = false;
+    m_accel = true;
     m_orbiting = 0;
     m_stateStamp = sEntityList.GetStamp();
     m_changeDelay = true;   // skip a single tic before making change
-    m_shipAccelTime = 0.5f;
+    m_shipAccelTime = 0.8f;
     m_prevSpeedFraction = 0.0f;
     m_userSpeedFraction = 1.0f;
     m_maxSpeed = m_maxShipSpeed;
     m_velocity = m_shipHeading * m_maxSpeed;
     m_activeSpeedFraction = 1.0f;
-    m_timeFraction = 1.0f;
 
     if (m_ballMode == Destiny::Ball::Mode::MISSILE)
         return;
@@ -2550,11 +2525,9 @@ void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
     m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;
 
     // set asf as fraction of current speed over new max speed.   it will apply on next tic (immediate)
-    // this may give >1.0 when web removed.
+    // this may give >1.0 when web applied.
     m_activeSpeedFraction = m_prevSpeed / m_maxShipSpeed;
 
-    // speed changes are immediate.  do not update timer as that will force accel/decel calcs
-    //m_moveTime = GetTimeMSeconds();
 
     // if orbiting, call Orbit() and let code reset the variables
     if (m_orbiting != 0)
@@ -2568,7 +2541,8 @@ void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
     SendDestinyUpdates(updates); //consumed
     m_hasSentShipUpdates = true;    // just in case, as this is re-sent in BeginMovement()
 
-    // dont update usf/psf as that will force accel/decel checks
+    // speed changes are immediate.  do not update timer/usf/psf as that will force accel/decel calcs
+    //m_moveTime = GetTimeMSeconds();
     //SetSpeedFraction(m_userSpeedFraction, true);
 }
 

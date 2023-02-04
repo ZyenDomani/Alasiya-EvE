@@ -301,6 +301,7 @@ protected:
     void UpdateVelocity(bool isMoving=false);
 
 private:
+    bool m_alignTo;                     // once aligned, ship will stop
     bool m_frozen;                      // hack to keep ship from moving when using modules that prevent movement
     bool m_changeDelay;                 // this is to try to sync destiny with client, as client has a delay when changing destiny states.
 
@@ -312,6 +313,7 @@ private:
 
     // Internal Turn Methods    -allan  Aug - Oct, 2015
     bool IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement
+    void InitTurn();                   //set turn variables
     void Turn();                       //apply velocity and heading updates as needed for turning.  called by MoveObject()
     void ClearTurn();
     void MarkPoint(const GPoint& position, std::string& name, std::string& desc);
