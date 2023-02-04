@@ -275,6 +275,7 @@ protected:
 
     float m_orbitTime;                  //in s - time to complete one orbit using current variables
     float m_orbitRadTic;                //in rad/sec  - radians around orbit per tic
+
     float m_timeFraction;               //fuzzy logic - holds current euler value for time
     float m_turnFraction;               //fuzzy logic - used for turn accel/decel checks
     float m_prevSpeedFraction;          //fuzzy logic - previous percent of full speed.  used for speed changes

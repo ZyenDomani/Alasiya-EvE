@@ -49,9 +49,9 @@ static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow chec
 static const double Gc = 0.000000000066725985;     //per client (changed from original 6.673e-11)
 static const float SMALL_NUMBER = 0.000000000000001;
 
-// constant for destiny movement check
+// constants for destiny movement checks
 static const float ASF_CHECK = 0.002f;
-static const uint8 TURN_TIME_OFFSET = 2;
+static const uint8 TURN_TIME_OFFSET = 3;
 
 // verify that NO ONE tries to use "ccp" in their name
 // also check for mysql commands among other dumb shit
