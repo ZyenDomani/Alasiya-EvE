@@ -64,7 +64,7 @@ m_hasMarkers(false),
 m_systemID(pSystem->GetID()),
 m_bubbleID(sBubbleMgr.GetBubbleID())
 {
-    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f)[%.1f].",\
+    _log(BUBBLE__TRACE, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f)[%.1f].",\
 	     m_bubbleID, this, m_center.x, m_center.y, m_center.z, m_radius);
 }
 
@@ -107,7 +107,7 @@ void SystemBubble::Process()
      *    missions for ??
      *    incursions for ??
      */
-    if (m_belt and (m_system->GetSystemSecurityRating() > 0.90)) // make config option here to spawn rats in secure empire space?   nope.
+    if (m_belt and (m_system->GetSystemSecurityRating() > 0.9f)) // make config option here to spawn rats in secure empire space?   nope.
         return;
     if (m_spawned) {
         m_spawnTimer.Disable();
@@ -127,7 +127,7 @@ void SystemBubble::Process()
     }
 }
 
-//called every 30s from the bubble manager.
+//called every 60s from the bubble manager.
 //verifies that each entity is still in this bubble.
 //if any entity is no longer in the bubble, they are removed
 //from the bubble and stuck into the vector for re-classification.
@@ -180,7 +180,7 @@ void SystemBubble::Add(SystemEntity* pSE)
 {
     //if they are already in this bubble, do not continue.
     if (m_entities.find(pSE->GetID()) != m_entities.end()) {
-        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Tried to add Static Entity %u to bubble %u, but it is already in here.",\
+        _log(BUBBLE__TRACE, "SystemBubble::Add() - Tried to add Static Entity %u to bubble %u, but it is already in here.",\
              pSE->GetID(), m_bubbleID);
         return;
     }
@@ -188,7 +188,7 @@ void SystemBubble::Add(SystemEntity* pSE)
     pSE->m_bubble = this;
     // global entities also in SystemMgr's static list.  this is used for SystemBubble->IsEmpty() deletion check
     if (pSE->IsStaticEntity() or pSE->isGlobal()) {
-        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is static or global or both.", pSE->GetName(), pSE->GetID() );
+        _log(BUBBLE__TRACE, "SystemBubble::Add() - Entity %s(%u) is static or global or both.", pSE->GetName(), pSE->GetID() );
         // all static and global entities (stations, gates, asteroid fields, cyno fields, etc) are put into bubble's staticEntity map
         m_entities[pSE->GetID()] = pSE;
         return;
@@ -196,20 +196,20 @@ void SystemBubble::Add(SystemEntity* pSE)
 
     //if they are already in this bubble, do not continue.
     if (m_dynamicEntities.find(pSE->GetID()) != m_dynamicEntities.end()) {
-        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
+        _log(BUBBLE__TRACE, "SystemBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
                 pSE->GetID(), m_bubbleID);
         return;
     }
 
-    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u.  Dist to center: %.2f", \
+    _log(BUBBLE__TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u.  Dist to center: %.2f", \
             pSE->GetID(), m_bubbleID, m_center.distance(pSE->GetPosition()));
 
-    if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
+    if (is_log_enabled(BUBBLE__DEBUG)) {
         GPoint startPoint( pSE->GetPosition() );
         GVector direction(startPoint, NULL_ORIGIN);
         double rangeToStar = direction.length();
         rangeToStar /= ONE_AU_IN_METERS;
-        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
+        _log(BUBBLE__DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
                 rangeToStar, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
         //if (sConfig.debug.StackTrace)
         //    EvE::traceStack();
@@ -253,7 +253,7 @@ void SystemBubble::Remove(SystemEntity *pSE) {
 		return;
     }
 
-    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Remove() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
+    _log(BUBBLE__TRACE, "SystemBubble::Remove() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
 
     m_entities.erase(pSE->GetID());
     m_dynamicEntities.erase(pSE->GetID());
@@ -270,7 +270,7 @@ void SystemBubble::Remove(SystemEntity *pSE) {
     if (pSE->IsDroneSE())
         m_drones.erase(pSE->GetID());
 
-    if (is_log_enabled(DESTINY__BUBBLE_DEBUG))
+    if (is_log_enabled(BUBBLE__DEBUG))
         sLog.Warning("SystemBubble::Remove()", "Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
 
     pSE->m_bubble = nullptr;
@@ -280,7 +280,7 @@ void SystemBubble::RemoveExclusive(SystemEntity *pSE) {
     if (pSE->m_bubble == nullptr)
         return;
 
-    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::RemoveExclusive() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
+    _log(BUBBLE__TRACE, "SystemBubble::RemoveExclusive() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
     RemoveBallExclusive(pSE);
 }
 
@@ -502,7 +502,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     Client* pClient = to_who->GetPilot();
     if (pClient == nullptr)
         return;
-    if (is_log_enabled(DESTINY__BUBBLE_DEBUG))
+    if (is_log_enabled(BUBBLE__DEBUG))
         PrintEntityList();
 
     Buffer* destinyBuffer = new Buffer();
@@ -552,7 +552,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     Client* pClient = to_who->GetPilot();
     if (pClient == nullptr)
         return;
-    if (is_log_enabled(DESTINY__BUBBLE_TRACE))
+    if (is_log_enabled(BUBBLE__TRACE))
         PrintEntityList();
 
     Buffer* destinyBuffer = new Buffer();
@@ -627,7 +627,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* pSE ) {
     addballs.slims = new PyList();
     addballs.slims->AddItem( new PyObject( "foo.SlimItem", pSE->MakeSlimItem() ) );
 
-    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::AddBallExclusive() - Adding entity %u to bubble %u", pSE->GetID(), m_bubbleID);
+    _log(BUBBLE__TRACE, "SystemBubble::AddBallExclusive() - Adding entity %u to bubble %u", pSE->GetID(), m_bubbleID);
     if (is_log_enabled(DESTINY__BALL_DUMP))
         addballs.Dump( DESTINY__BALL_DUMP, "    " );
     _log( DESTINY__BALL_DECODE, "    Ball Decoded:" );
@@ -906,10 +906,10 @@ void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const 
 
 void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc ) const
 {
-    if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
-        (*payload)->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
+    if (is_log_enabled(BUBBLE__CAST_DUMP))
+        (*payload)->Dump(BUBBLE__CAST_DUMP, "    ");
     for (auto &cur : m_players) {
-        _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
+        _log( BUBBLE__CAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
         cur.second->QueueDestinyUpdate(payload);
     }
@@ -921,7 +921,7 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
         // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
         if (cur.second->GetShipSE() != pSE) {
-            _log( DESTINY__BUBBLECAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
+            _log( BUBBLE__CAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
             PyIncRef(*payload);
             cur.second->QueueDestinyUpdate(payload);
         }
@@ -930,10 +930,10 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
 
 void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc ) const
 {
-    if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
-        (*payload)->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
+    if (is_log_enabled(BUBBLE__CAST_DUMP))
+        (*payload)->Dump(BUBBLE__CAST_DUMP, "    ");
     for (auto &cur : m_players) {
-        _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first );
+        _log( BUBBLE__CAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
         cur.second->QueueDestinyEvent(payload);
     }
@@ -942,7 +942,7 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 void SystemBubble::BubblecastSendNotification(const char* notifyType, const char* idType, PyTuple** payload, bool seq)
 {
     for (auto &cur : m_players) {
-        _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first );
+        _log( BUBBLE__CAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
         cur.second->SendNotification( notifyType, idType, payload, seq );
     }

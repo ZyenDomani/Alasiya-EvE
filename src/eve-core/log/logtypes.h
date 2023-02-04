@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 10.5
+ Log Version: 10.6
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -110,6 +110,14 @@ LOG_TYPE( BOOKMARK, INFO, DISABLED, "BM Info" )
 LOG_TYPE( BOOKMARK, TRACE, DISABLED, "BM Trace" )
 LOG_TYPE( BOOKMARK, CALL_DUMP, DISABLED, "BM CallDump" )
 LOG_TYPE( BOOKMARK, RSP_DUMP, DISABLED, "BM RspDump" )
+
+LOG_CATEGORY( BUBBLE )
+LOG_TYPE( BUBBLE, ERROR,   ENABLED, "BubbleError" )
+LOG_TYPE( BUBBLE, WARNING, DISABLED, "BubbleWarning" )
+LOG_TYPE( BUBBLE, DEBUG, DISABLED, "BubbleDebug" )
+LOG_TYPE( BUBBLE, TRACE, DISABLED, "BubbleTrace" )
+LOG_TYPE( BUBBLE, CAST, DISABLED, "BubbleCast" )
+LOG_TYPE( BUBBLE, CAST_DUMP, DISABLED, "BubbleCastDump" )
 
 LOG_CATEGORY( BULKDATA )
 LOG_TYPE( BULKDATA, ERROR,   ENABLED, "BulkError" )
@@ -256,10 +264,6 @@ LOG_TYPE( DESTINY, BALL_DECODE, DISABLED, "BallDecode" )
 LOG_TYPE( DESTINY, SETSTATE, DISABLED, "SetStateDump" )
 LOG_TYPE( DESTINY, SETSTATE_DECODE, DISABLED, "SetStateDecode" )
 LOG_TYPE( DESTINY, UPDATES, DISABLED, "DestinyUpdate" )
-LOG_TYPE( DESTINY, BUBBLE_DEBUG, DISABLED, "BubbleDebug" )
-LOG_TYPE( DESTINY, BUBBLE_TRACE, DISABLED, "BubbleTrace" )
-LOG_TYPE( DESTINY, BUBBLECAST, DISABLED, "BubbleCast" )
-LOG_TYPE( DESTINY, BUBBLECAST_DUMP, DISABLED, "BubbleCastDump" )
 LOG_TYPE( DESTINY, MOVE_TRACE, DISABLED, "MoveTrace" )
 LOG_TYPE( DESTINY, MOVE_DEBUG, DISABLED, "MoveDebug" )
 LOG_TYPE( DESTINY, TURN_TRACE, DISABLED, "TurnTrace" )

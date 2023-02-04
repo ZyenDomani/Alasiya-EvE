@@ -48,7 +48,7 @@ class BubbleManager
 {
 public:
     BubbleManager();
-    ~BubbleManager();
+    ~BubbleManager()                                    { /* do nothing here */ }
 
     int Initialize();
     void Process();
@@ -100,10 +100,10 @@ protected:
     SystemBubble* MakeBubble(SystemManager* sysMgr, GPoint pos);
 
 private:
-    Timer m_emptyTimer;
     Timer m_wanderTimer;
 
     uint32 m_bubbleID;
+    int64 m_profileStartTime;
 
     /* map of bubbleID, spawnID */
     std::map<uint16, uint32> m_spawnIDs;

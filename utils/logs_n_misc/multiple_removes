@@ -1,4 +1,53 @@
-s
+
+multiple RemoveItem() calls....
+#0 Inventory::RemoveItem() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/Inventory.cpp:243
+#1 InventoryItem::RemoveItem() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryItem.cpp:575
+#2 InventoryItem::Move() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryItem.cpp:762
+#3 Client::MoveToLocation() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:671
+#4 Client::SelectCharacter() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:297
+#5 CharUnboundMgrService::Handle_SelectCharacterID() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/character/CharUnboundMgrService.cpp:149
+#6 PyCallableDispatcher<CharUnboundMgrService>::Dispatch() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/PyServiceCD.h:68
+#7 PyCallable::Call() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/PyCallable.cpp:39
+#8 PyService::Call() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/PyService.cpp:53
+#9 Client::Handle_CallReq() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:2622
+#10 EVEPacketDispatcher::DispatchPacket() at /backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64
+#11 Client::ProcessNet() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:210
+#12 EntityList::Process() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:183
+#13 main() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:924
+
+
+#0 Inventory::RemoveItem() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/Inventory.cpp:259
+#1 InventoryItem::RemoveItem() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryItem.cpp:575
+#2 InventoryItem::Move() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryItem.cpp:762
+#3 Client::MoveToLocation() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:671
+#4 Client::SelectCharacter() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:297
+#5 CharUnboundMgrService::Handle_SelectCharacterID() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/character/CharUnboundMgrService.cpp:149
+#6 PyCallableDispatcher<CharUnboundMgrService>::Dispatch() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/PyServiceCD.h:68
+#7 PyCallable::Call() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/PyCallable.cpp:39
+#8 PyService::Call() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/PyService.cpp:53
+#9 Client::Handle_CallReq() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:2622
+#10 EVEPacketDispatcher::DispatchPacket() at /backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64
+#11 Client::ProcessNet() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:210
+#12 EntityList::Process() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:183
+#13 main() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:924
+
+
+#0 Inventory::RemoveItem() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/Inventory.cpp:259
+#1 InventoryItem::RemoveItem() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryItem.cpp:575
+#2 InventoryItem::Move() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryItem.cpp:762
+#3 Client::MoveToLocation() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:671
+#4 Client::SelectCharacter() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:297
+#5 CharUnboundMgrService::Handle_SelectCharacterID() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/character/CharUnboundMgrService.cpp:149
+#6 PyCallableDispatcher<CharUnboundMgrService>::Dispatch() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/PyServiceCD.h:68
+#7 PyCallable::Call() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/PyCallable.cpp:39
+#8 PyService::Call() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/PyService.cpp:53
+#9 Client::Handle_CallReq() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:2622
+#10 EVEPacketDispatcher::DispatchPacket() at /backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64
+#11 Client::ProcessNet() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:210
+#12 EntityList::Process() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:183
+#13 main() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:924
+
+
 20:48:57 [AP Trace] MoveToLocation() - m_autoPilot = false
 20:48:57 [InvWarning] Inventory::RemoveItem(1) - Ibaria(30000053) contents does not contain Allan(90000000) in AutoFit.
 20:48:57 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Allan(90000000) in AutoFit.
@@ -58,3 +107,32 @@ backtrace() returned 10 addresses
 /lib64/libc.so.6(__libc_start_main+0xf0) [0x7ffff6463050]
 /srv/games/eve/Alasiya-EvE/bin/eve-server() [0xa7fb49]
 20:52:49 [PlayerTrace] Allan(90000000): Removed from system manager for Ibaria(30000053) - 0 clients still in system.
+
+
+
+
+
+11:34:56 G   Client::Logout(): Allan (Acct:1) logging out.
+11:34:56 B Client::WarpOut(): Allan(90000000) called WarpOut().  Finish code here.
+11:34:56 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Hulk(140018752) in Ship Offline.
+11:34:56 [SkillTrace] Skill::GetCurrentSP() for EM Shield Compensation is 11019 - delta: 8190, elapsed time: 5486s
+11:34:56 [SkillQueue] Allan(90000000):  Saving skill queue.
+11:34:56 [InvWarning] Inventory::RemoveItem(1) - Ibaria(30000053) contents does not contain Hulk(140018752) in Ship Offline.
+#0 Inventory::RemoveItem() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/Inventory.cpp:243
+#1 ShipItem::LogOut() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/ship/Ship.cpp:103
+#2 Client::~Client() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:178
+#3 Client::~Client() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:196
+#4 SafeDelete<Client>() at /backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/SafeMem.h:85
+#5 EntityList::Close() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:110
+#6 main() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:972
+
+11:34:56 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Hulk(140018752) in Ship Offline.
+#0 Inventory::RemoveItem() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/inventory/Inventory.cpp:259
+#1 ShipItem::LogOut() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/ship/Ship.cpp:103
+#2 Client::~Client() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:178
+#3 Client::~Client() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:196
+#4 SafeDelete<Client>() at /backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/SafeMem.h:85
+#5 EntityList::Close() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:110
+#6 main() at /backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:972
+
+11:34:56 [PlayerTrace] Allan(90000000): Removed from system manager for Ibaria(30000053) - 0 clients still in system.

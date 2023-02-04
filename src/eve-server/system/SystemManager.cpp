@@ -83,6 +83,7 @@ m_activeGateSpawns(0),
 m_activeRoidSpawns(0),
 m_secValue(1.1f),
 m_minutes(0),
+mLast(0),
 // zero-init our data containers
 m_data(SystemData()),
 m_killData(SystemKillData())
@@ -216,7 +217,6 @@ bool SystemManager::ProcessTic() {
      * note:  this will get expensive for many items (like ship tracking)
      */
     std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin();
-    uint32 mLast(0);
     while (itr != m_ticEntities.end()) {
         mLast = itr->first;
 

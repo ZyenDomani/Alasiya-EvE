@@ -1,34 +1,5 @@
 
 
-00:45:57 [Service] storeServer::GetAvailableOffers()
-00:45:57 [Service] alert::BeanCount()
-00:45:57 [Service] alert::SendClientStackTraceAlert()
-EXCEPTION #6 logged at  01/28/2023 0:45:57 Unhandled exception in <TaskletExt object at 374e1ef8, abps=1001, ctxt='<NO CONTEXT>^<bound method Lobby.OnSvcBtnClick of form.Lobby object at (snip)f1990, name=lobby, destroyed=False>>'>
-Caught at:
-/common/lib/bluepy.py(98) CallWrapper
-Thrown at:
-/common/lib/bluepy.py(86) CallWrapper
-/client/script/ui/station/lobby.py(387) OnSvcBtnClick
-/client/script/ui/station/base.py(431) LoadSvc
-/client/script/ui/station/base.py(452) ExecuteCommand
-/client/script/ui/evecommands.py(1285) OpenStore
-/client/script/ui/control/evewindow.py(809) ToggleOpenClose
-/client/script/ui/control/window.py(2296) Open
-/client/script/ui/control/window.py(56) __init__
-/client/script/ui/primitives/base.py(111) __init__
-/client/script/ui/station/virtualgoodsstore.py(126) ApplyAttributes
-/client/script/ui/station/virtualgoodsstore.py(136) PopulateOfferScroll
-/client/script/ui/services/storesvc.py(81) GetPreparedOffers
-        reloadOffers = 1
-        availableOffers = []
-        self = <svc.storeSvc instance at 0x3D407328>
-AttributeError: 'list' object has no attribute 'iteritems'
-Thread Locals:  session was <Session: (sid:9032070754965222723, clientID:2888444, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:57910, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
-
-EXCEPTION END
-
-
-
 12:21:43 [Bound] CorpRegistryBound::GetSanctionedActionsByCorporation()
 12:21:43 [CorpCall] CorpRegistryBound::Handle_GetSanctionedActionsByCorporation()
 12:21:43 [Service] alert::BeanCount()
@@ -83,13 +54,22 @@ Thread Locals:  session was <Session: (sid:1917905916637375392, clientID:2888444
 
 EXCEPTION END
 
+)
+22:47:50 [Service] charMgr::GetTopBounties()
+22:47:50 [ClientTimer] ProcessClient(): state timer hit.  current state time is 656001ms
+22:47:50 [ClientTimer] ProcessClient()::CheckState():  case: Undock
+22:47:50 [AP_Trace] Client::SetBallPark():  State: Undock, SetState: false, Beyonce: true
+22:47:50 [MoveTrace] Destiny::MoveObject() - ChangeDelay - Hulk(140018752): stateStamp: 1656
+22:47:51 [Service] clientStatsMgr::SubmitStats()
+22:47:51 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.19747, timeStamp: 3.000
+22:47:51 E Destiny::MoveObject(): Hulk(140018752) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:3.000, Tractored:False, TractorPause:False
+22:47:51 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is  at 87.500 m/s (tf:0.1975 asf:1.0000 sec: 3.000).
+22:47:51 [DestinyTrace] Destiny::SetPosition() called by Hulk(140018752)
+22:47:51 [Bound] DogmaIMBound::ChangeDroneSettings()
+22:47:52 [DestinyTrace] Destiny::SetPosition() called by Hulk(140018752)
+22:47:52 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.25427, timeStamp: 4.001
+22:47:52 E Destiny::MoveObject(): Hulk(140018752) - move checks are not set right. Acc:False, Dec:False, Turn:False, timeStamp:4.001, Tractored:False, TractorPause:False
+22:47:52 [MoveTrace] Destiny::MoveObject() - Hulk(140018752) is  at 87.500 m/s (tf:0.2543 asf:1.0000 sec: 4.001).
+22:47:52 [DestinyTrace] Destiny::SetPosition() called by Hulk(140018752)
+22:47:52 [Bound] BeyonceBound::CmdSetSpeedFraction()
 
-multiple RemoveItem() calls....
-11:34:56 G   Client::Logout(): Allan (Acct:1) logging out.
-11:34:56 B Client::WarpOut(): Allan(90000000) called WarpOut().  Finish code here.
-11:34:56 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Hulk(140018752) in Ship Offline.
-11:34:56 [SkillTrace] Skill::GetCurrentSP() for EM Shield Compensation is 11019 - delta: 8190, elapsed time: 5486s
-11:34:56 [SkillQueue] Allan(90000000):  Saving skill queue.
-11:34:56 [InvWarning] Inventory::RemoveItem(1) - Ibaria(30000053) contents does not contain Hulk(140018752) in Ship Offline.
-11:34:56 [InvWarning] Inventory::RemoveItem(2) - Ibaria(30000053) flagMap does not contain Hulk(140018752) in Ship Offline.
-11:34:56 [PlayerTrace] Allan(90000000): Removed from system manager for Ibaria(30000053) - 0 clients still in system.

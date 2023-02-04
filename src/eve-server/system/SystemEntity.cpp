@@ -338,7 +338,7 @@ bool BeltSE::LoadExtras() {
         sBubbleMgr.Add(this);
 
     m_bubble->SetBelt(m_self);
-    _log(DESTINY__BUBBLE_DEBUG, "BeltSE::LoadExtras() - IsBelt set to true for bubble %u.", m_bubble->GetID() );
+    _log(BUBBLE__DEBUG, "BeltSE::LoadExtras() - IsBelt set to true for bubble %u.", m_bubble->GetID() );
     return true;
 }
 
@@ -366,7 +366,7 @@ bool StargateSE::LoadExtras() {
         sBubbleMgr.Add(this);
 
     m_bubble->SetGate(true);
-    _log(DESTINY__BUBBLE_DEBUG, "StargateSE::LoadExtras() - IsGate set to true for bubble %u.", m_bubble->GetID() );
+    _log(BUBBLE__DEBUG, "StargateSE::LoadExtras() - IsGate set to true for bubble %u.", m_bubble->GetID() );
     m_jumps = SystemDB::ListJumps(m_self->itemID());
     if (m_jumps != nullptr)
         return true;

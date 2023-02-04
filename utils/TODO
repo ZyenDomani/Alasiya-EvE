@@ -148,10 +148,11 @@ remove GPoint/GVector code and replace with evemoo's Vec3 code (after thorough r
     - note:  client logs show all position data is pyfloat (some float.7, some double.15)  but i see no point of needing decimeter precision.
 
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
-    - every 60s for every bubble object is a bit much.
+    - every 60s for every bubble object is a bit much.  (actually hits on 1hz)
     - check InBubble and IsOverlap code.
     - anomaly spawn in bubble w/o npc is considered "empty" and deleted from system.
-       while this will cut down on bubble proc, is it really necessary?  shouldnt these bubbles remain active?
+        this is wrong.  IsEmpty() should check m_entities list first.  verify anoms are added correctly
+        while this will cut down on bubble proc, is it really necessary?  shouldnt these bubbles remain active?
 
 remove character queries from InventoryDB
 remove station/static queries from InventoryDB
@@ -989,6 +990,10 @@ make EACS and E-UNI corps as tribute (static)?
 *******************************************************
 *******************************************************
 *****************  ideas for later
+
+colorize SendServerMOTD
+
+finish player command "srvoptions" to show current server settings in client notification
 
 rename EntityList to EntityManager/EntityMgr
 
