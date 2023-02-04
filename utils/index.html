@@ -18,7 +18,7 @@ CURRENT TEST POINTS<br>
  - Combat (some errors due to invalid ship tracking)<br>
  - Mining (seems to be complete)<br>
  - Market (still some bugs after rewrite)<br>
-<br><br>
+<br>
 NOTES:<br>
 I have begun working on Destiny Movement code again.  With recent updates, Ship positioning is closer to client than any previous incarnation, but still isnt quite right.<br>
 This will be main focus but will fix any major gameplay-affecting errors i find while testing.<br>
@@ -26,88 +26,88 @@ Current plan is to get all straight-line movement following client with as littl
 Next will be turn code, which will take some time, as i dont know the formulas live used<br>
 I will sporadically work on other bugs and errors, and will update main server often.<br>
 MemMgmt and ProcTiming work is constantly in progress.<br><br>
-UPDATES AND CHANGELOG:  (note: only major/significant updates are listed)<br>
+UPDATES AND CHANGELOG:  (note: only major/significant updates are listed)<br><br>
 04Feb23 - Rewrote how destiny calls internal methods.  previous logic was funky and tedious (WIP)<br>
-		- Process() calls updated for faster runtimes<br>
-		- More updates from Coverity Scan<br>
-		- Updated Bubble code for faster runtimes and better tracking<br><br>
+		Process() calls updated for faster runtimes<br>
+		More updates from Coverity Scan<br>
+		Updated Bubble code for faster runtimes and better tracking<br><br>
 03Feb23 - Update Main Server with all fixes since 28Feb21<br>
-		- Major Destiny movement update<br>
-		- This update corrects multiple aspects of ship tracking that were previously "close enough"<br>
-		- Ship turn tracking is now much closer than it has ever been.  still WIP.<br>
-		- More updates from Coverity Scan<br><br>
+		Major Destiny movement update<br>
+		This update corrects multiple aspects of ship tracking that were previously "close enough"<br>
+		Ship turn tracking is now much closer than it has ever been.  still WIP.<br>
+		More updates from Coverity Scan<br><br>
 02Feb23 - More MemMgmt cleanup additions<br>
-		- Updated Targeting Logic from testing<br>
-		- Begin NPC error tracking (some items fixed)<br><br>
+		Updated Targeting Logic from testing<br>
+		Begin NPC error tracking (some items fixed)<br><br>
 01Feb23 - Finally found and fixed some elusive role errors in multiple files<br>
-		- Minor code cleanup and update on multiple files<br><br>
+		Minor code cleanup and update on multiple files<br><br>
 29Jan23 - Refactored some enums for account and player types<br>
-		- Corrected some previously-missed event log types<br>
-		- Added missing event log types in client<br><br>
+		Corrected some previously-missed event log types<br>
+		Added missing event log types in client<br><br>
 28Jan23 - Fixed cases of multiple deletes on Py* objects<br>
-		- Updated d'tor cleanup for multipel Py* objects (MemMgmt improvements)<br><br>
+		Updated d'tor cleanup for multipel Py* objects (MemMgmt improvements)<br><br>
 27Jan23 - More fixes and updates from CodeFactor and Coverity Scans<br>
-		- Client Session updates for better packet sending<br>
-		- Multiple code improvements for faster runtime<br>
-		- Fixed elusive error with PI simulation<br><br>
+		Client Session updates for better packet sending<br>
+		Multiple code improvements for faster runtime<br>
+		Fixed elusive error with PI simulation<br><br>
 24Jan23 - Major XMLP update<br>
-		- Added code for enabling Encode() and Decode() sections<br>
-		- Added better MemMgmt for xmlp objects<br>
-		- Found and Fixed elusive error with StaticDataMgr not populating BP material types properly<br><br>
+		Added code for enabling Encode() and Decode() sections<br>
+		Added better MemMgmt for xmlp objects<br>
+		Found and Fixed elusive error with StaticDataMgr not populating BP material types properly<br><br>
 20Jan23 - Fixes from CodeFactor and Coverity Scans<br>
-		- Found and fixed a few elusive errors with MarketGroups not being populated properly<br>
-		- Begin Update to use item attributes instead of hard-coded variables<br><br>
+		Found and fixed a few elusive errors with MarketGroups not being populated properly<br>
+		Begin Update to use item attributes instead of hard-coded variables<br><br>
 13Jan23 - Added fast method to compare float/double<br>
-		- Updated EntityList loop for faster iteration<br>
-		- Begin basic movement updates for better client tracking<br><br>
+		Updated EntityList loop for faster iteration<br>
+		Begin basic movement updates for better client tracking<br><br>
 02Jan23 - More Bracket updates<br>
-		- Begin MemMgmt work on XMLP code<br><br>
+		Begin MemMgmt work on XMLP code<br><br>
 30Dec22 - Resume work on Alasiya-EvE code<br>
-		- Major Code update and refactor<br><br>
+		Major Code update and refactor<br><br>
 28Feb21 - Updated correct database for MarketOrders this time. (#148)<br>
-          Begin work on sorting and updating all items for Crucible-era prices.<br><br>
+        Begin work on sorting and updating all items for Crucible-era prices.<br><br>
 25Feb21 - Updated MarketOrders table to match code updates previously overlooked. (#148)<br><br>
 23Feb21 - Minor update to logic behind station loading<br>
-          Updates to item Delete() logic<br>
-          Finished solSystem and item unloading. (#150)  All char items in station hangars (including corp hangars) will unload when station unloads (solSystem unload).  Character, skills, and ship (with contents) will unload upon char logout.<br><br>
+        Updates to item Delete() logic<br>
+        Finished solSystem and item unloading. (#150)  All char items in station hangars (including corp hangars) will unload when station unloads (solSystem unload).  Character, skills, and ship (with contents) will unload upon char logout.<br><br>
 21Feb21 - After careful review while stepping thru code, found inconsistencies with my bracket use.  This is now fixed, and the code is cleaner and more predictable for it<br>
-          Fixed elusive error when changing charges<br>
-          (valgrind) Fix for pointer access-after-release<br>
-          (valgrind) Fix for uninitialized data members in tracking cans<br>
-          (valgrind) Fix for error when returning pointer from function<br>
-          Removed stupid loop in GetModule() call<br><br>
+        Fixed elusive error when changing charges<br>
+        (valgrind) Fix for pointer access-after-release<br>
+        (valgrind) Fix for uninitialized data members in tracking cans<br>
+        (valgrind) Fix for error when returning pointer from function<br>
+        Removed stupid loop in GetModule() call<br><br>
 20Feb21 - Added notes for Player Drone code (still incomplete)<br>
-          Corrected error with Scoop and ScoopDrone calls<br>
-          Fixed error with stackall (would stack all cargo into main cargo hold)<br>
-          Corrected segfault with solSystem SetState call<br>
-          Corrected JetCan trying to put each jettison item in separate cans (#88)<br>
-          FINALLY Corrected item movement bugs in container inventory code (#28,#30,#37,#57,#68,#122,#139)<br><br>
+        Corrected error with Scoop and ScoopDrone calls<br>
+        Fixed error with stackall (would stack all cargo into main cargo hold)<br>
+        Corrected segfault with solSystem SetState call<br>
+        Corrected JetCan trying to put each jettison item in separate cans (#88)<br>
+        FINALLY Corrected item movement bugs in container inventory code (#28,#30,#37,#57,#68,#122,#139)<br><br>
 18Feb21 - Added some previously-unseen corp calls (skeleton colde only)<br><br>
 17Feb21 - Fixed cargo capacity checks (#58, #37)<br><br>
 16Feb21 - Update/verify throw status in client calls<br>
-          Added checks for renting offices<br>
-          Updated bound object creation<br>
-          Begin work on item capacity checks<br><br>
+        Added checks for renting offices<br>
+        Updated bound object creation<br>
+        Begin work on item capacity checks<br><br>
 15Feb21 - Client Session Updates<br>
-          Multiple code updates/improvements<br><br>
+        Multiple code updates/improvements<br><br>
 13Feb21 - Marshal code updates<br>
-          Packet code updates<br>
-          Corp updates (mostly semantics and notes for later)<br>
-          RAM updates for smoother code<br><br>
+        Packet code updates<br>
+        Corp updates (mostly semantics and notes for later)<br>
+        RAM updates for smoother code<br><br>
 15Nov20 - Corp rclick menu updates (rclick items in corp hangar now working)<br>
 14Nov20 - (Internal) variable updates for cleaner code<br>
         Begin solSystem Unloading Rewrite<br>
         InventoryItem Header updates<br><br>
 13Nov20 - RAM Updates<br><br>
-08Nov20  - Fix capacitor error when default effect is null (#xx)<br>
+08Nov20 - Fix capacitor error when default effect is null (#xx)<br>
         Fix display error (#xx)<br><br>
-07Nov20  - Copying, PE, ME updates (RAM update)<br>
+07Nov20 - Copying, PE, ME updates (RAM update)<br>
         Basic corp RAM usage implemented (not POS)<br>
         Added feature - RAM completion as calendar event<br><br>
-04Nov20  - Manufacturing update (RAM rewrite)<br>
+04Nov20 - Manufacturing update (RAM rewrite)<br>
         updated existing and added missing checks for personal and corp RAM<br><br>
-03Nov20  - Many variable updates/improvements<br><br>
-02Nov20  - Moved type, group, and cat to static data<br>
+03Nov20 - Many variable updates/improvements<br><br>
+02Nov20 - Moved type, group, and cat to static data<br>
         Fix for elusive character attribute oob error<br><br>
 31Oct20 - Calendar Implemented (edit event not working)<br><br>
 30Oct20 - Warp checks and times rewrite<br>
