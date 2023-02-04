@@ -223,7 +223,8 @@ TuplesetReader::iterator::iterator()
 }
 
 TuplesetReader::iterator::iterator( TuplesetReader* parent, size_t rowIndex )
-: mParent( parent )
+: mParent( parent ),
+mRow(nullptr)
 {
     _SetRow( rowIndex );
 }

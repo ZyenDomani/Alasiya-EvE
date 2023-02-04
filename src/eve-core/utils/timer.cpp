@@ -34,16 +34,15 @@ static uint32 currentTime = 0;
 //static float currentSeconds = 0;
 static int64 lastTime = 0;
 
-Timer::Timer(uint32 time/*0*/, bool useAcurateTiming /*false*/) {
-    m_duration = time;
-    m_startTime = currentTime;
-    m_setAtTrigger = time;
-    m_useAcurateTiming = useAcurateTiming;
-
+Timer::Timer(uint32 time/*0*/, bool useAcurateTiming /*false*/)
+: m_enabled(false),
+m_useAcurateTiming(useAcurateTiming),
+m_duration(time),
+m_startTime(currentTime),
+m_setAtTrigger(time)
+{
     if (time)
         m_enabled = true;
-    else
-        m_enabled = false;
 }
 
 Timer::Timer(uint32 startAt, uint32 time, bool useAcurateTiming /*false*/) {
@@ -52,10 +51,11 @@ Timer::Timer(uint32 startAt, uint32 time, bool useAcurateTiming /*false*/) {
     m_setAtTrigger = time;
     m_useAcurateTiming = useAcurateTiming;
 
-    if (time)
+    if (time) {
         m_enabled = true;
-    else
+    } else {
         m_enabled = false;
+    }
 }
 
 /* This function checks if the timer triggered */
@@ -64,13 +64,15 @@ bool Timer::Check(bool reset /*true*/)
     if (m_enabled)
         if ((currentTime - m_startTime) > m_duration) {
             if (reset) {
-                if (m_useAcurateTiming)
+                if (m_useAcurateTiming) {
                     m_startTime += m_duration; /* set start time to end of last timer */
-                else
+                } else {
                     m_startTime = currentTime; /* set start time to now */
+                }
                 m_duration = m_setAtTrigger;
-            } else
+            } else {
                 m_enabled = false;
+            }
             return true;
         }
 

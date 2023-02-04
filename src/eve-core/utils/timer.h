@@ -55,7 +55,6 @@ public:
     uint32 GetRemainingTime() const;
     uint32 GetCurrentTime();
 
-
 private:
     bool    m_enabled;
     /* useAcurateTiming resets timer (on check()) to start_time += timer_time to eliminate discrepancies in calling time */
@@ -64,7 +63,6 @@ private:
     uint32	m_duration;
     uint32	m_startTime;
     uint32	m_setAtTrigger;
-
 };
 
 #endif

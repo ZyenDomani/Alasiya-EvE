@@ -241,7 +241,8 @@ Character::Character(
   m_inTraining(nullptr),
   m_loaded(false),
   m_fleetData(CharFleetData()),
-  m_freePoints(0)
+  m_freePoints(0),
+  m_loginTime(0)
 {
     // enforce characters to be singletons
     assert(isSingleton());
@@ -1155,8 +1156,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
         m_pClient->QueueDestinyEvent(&tmp);
     }
 
-    //PySafeDecRef(list);
-
+    PySafeDecRef(list);
     _log(SKILL__QUEUE, "SkillQueueLoop() completed in %.4fms", (GetTimeMSeconds() - begin));
 }
 

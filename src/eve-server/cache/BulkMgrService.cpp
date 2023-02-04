@@ -277,6 +277,9 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
         response->SetItem(3, new PyInt(setID));    //chunkSetID
     } else {
         _log(BULKDATA__ERROR, "BulkMgrService::Handle_GetFullFiles(): args.toGet->TypeString() is %s", args.toGet->TypeString());
+        PyDecRef(response);
+        PyDecRef(toBeChanged);
+        PyDecRef(bulksEndingInChunk);
         return PyStatic.NewNone();
     }
 
@@ -294,6 +297,7 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
     if (is_log_enabled(BULKDATA__TRACE))
         response->Dump(BULKDATA__TRACE, "  ");
 
+    PyDecRef(bulksEndingInChunk);
     return response;
 }
 

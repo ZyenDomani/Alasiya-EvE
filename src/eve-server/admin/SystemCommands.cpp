@@ -859,7 +859,7 @@ PyResult Command_hop(Client* pClient, CommandDB* db, PyServiceMgr* services, con
 
 //13:54:11 W GMCommands: Command_sov(): This command passes args.argCount() = 3.
 PyResult Command_sov(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    sLog.Warning("GMCommands: Command_sov()", "This command passes args.argCount() = %u.", args.argCount());
+    sLog.Warning("GMCommands: Command_sov()", "This command passes args.argCount() = %lu.", args.argCount());
     /*
      *  ' /sov complete ' + str(itemID)
      */

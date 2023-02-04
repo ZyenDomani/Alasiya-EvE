@@ -370,7 +370,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     if (dTemplate.dunSpawnClass > 0)
         m_spawnMgr->DoSpawnForAnomaly(sBubbleMgr.FindBubble(m_system->GetID(), sig.position), dTemplate.dunSpawnClass);
 
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created for %s with %u items.", \
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created for %s with %lu items.", \
               sig.sigItemID, sig.sigName.c_str(), m_anomalyItems.size());
 
     m_anomalyItems.clear();
