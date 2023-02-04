@@ -18,14 +18,14 @@ typedef EVEDB::invTypes::invTypes EVEItemTypes;
 
 //List of eve item types which have special purposes in the game.
 typedef enum {
-    itemTypeCapsule = 670,
-    itemTypeTrit    = 34,
-    itemTypeCredits = 29,
-    itemTypeJetCan  = 23,
-    itemCivilianMiner = 3651,
-    AllianceTypeID  = 16159,
-    itemTypeBillboard = 11136,
-    itemCloneAlpha  = 164
+    itemTypeJetCan      = 23,
+    itemTypeCredits     = 29,
+    itemTypeTrit        = 34,
+    itemCloneAlpha      = 164,
+    itemTypeCapsule     = 670,
+    itemCivilianMiner   = 3651,
+    itemTypeBillboard   = 11136,
+    AllianceTypeID      = 16159
 } EVEItemTypeID;
 
 
@@ -81,22 +81,21 @@ typedef enum {
 
 typedef enum {
 //locationHiddenSpace = 9000001
-
-    locAbstract    = 0,
-    locSystem      = 1,
-    locBank        = 2,
-    locTemp        = 5,
-    locTrading     = 7,
-    locGraveyard   = 8,
-    locUniverse    = 9,
-    locJunkyard    = 10,
-    locCorp        = 13,
-    locSingletonJunkyard = 25,
-    locTradeJunkyard = 1008,
-    locCharGraveyard = 1501,
-    locCorpGraveyard = 1502,
-    locRAMItems    = 2003,
-    locAlliance    = 3007
+    locAbstract                 = 0,
+    locSystem                   = 1,
+    locBank                     = 2,
+    locTemp                     = 5,
+    locTrading                  = 7,
+    locGraveyard                = 8,
+    locUniverse                 = 9,
+    locJunkyard                 = 10,
+    locCorp                     = 13,
+    locSingletonJunkyard        = 25,
+    locTradeJunkyard            = 1008,
+    locCharGraveyard            = 1501,
+    locCorpGraveyard            = 1502,
+    locRAMItems                 = 2003,
+    locAlliance                 = 3007
 } locations;
 
 typedef enum {

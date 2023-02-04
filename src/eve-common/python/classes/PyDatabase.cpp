@@ -131,7 +131,6 @@ CRowSet::CRowSet( DBRowDescriptor** rowDesc )
 
 PyPackedRow* CRowSet::NewRow()
 {
-    //DBRowDescriptor* rowDesc = _GetRowDesc();
     PyPackedRow* row = new PyPackedRow( _GetRowDesc() );
 
     list().AddItem( row );
@@ -145,15 +144,6 @@ DBRowDescriptor* CRowSet::_GetRowDesc() const
         return (DBRowDescriptor*)r->AsObjectEx();
     return nullptr;
 }
-
-/*PyList* CRowSet::_GetColumnList() const
-{
-    PyRep* r = FindKeyword( "columns" );
-    assert( r );
-
-    return r->AsList();
-}
-*/
 
 PyTuple* CRowSet::_CreateArgs()
 {
@@ -190,7 +180,6 @@ CIndexedRowSet::CIndexedRowSet( DBRowDescriptor** rowDesc )
 
 PyPackedRow* CIndexedRowSet::NewRow( PyRep* key )
 {
-    //DBRowDescriptor* rowDesc = _GetRowDesc();
     PyPackedRow* row = new PyPackedRow( _GetRowDesc() );
 
     dict().SetItem( key , row );

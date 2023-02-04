@@ -99,7 +99,7 @@ void CommandDispatcher::ListCommands() {
     std::map<std::string, CommandDispatcher::CommandRecord*>::iterator itr = m_commands.begin();
     for (; itr != m_commands.end(); ++itr) {
         sLog.Magenta("    Call and Role", "%s - %p (%s)",
-                     itr->first.c_str(), itr->second->required_role, itr->second->desc);
+                     itr->first.c_str(), itr->second->required_role, itr->second->description.c_str());
     }
 }
 

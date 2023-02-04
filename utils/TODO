@@ -26,12 +26,6 @@ ship heading 0 for all movement....
 -- even with heading identical (client and server) there is still some deviation after turning...i dont understand where its from
   - reset move bool when activate warp
 
-when mining, create and add ore to ship hold throw item warnings....do we really need them?
-i know what it's doing, cause i did it like that on purpose, but then hits the check and throws warn
-20:36:49 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
-20:36:49 [ItemWarning] II::Move()::Add() - 10 is invalid location.
-
-
 ships  ---  attrAgility will need to be recalc'd and reset anytime inertia or mass changes.
   - does this include adding/dropping ore, items, loot, drones?  what about the large PI items?
     -- there are also modules that modify all of these variables.  these need verification
@@ -75,17 +69,6 @@ wtf???
 11:45:54 [DestinyWarning] Warp Cap need for Rifter(140007395) is 0.0007
 new wtf???
 20:58:40 [DestinyWarning] Warp Cap need for Hulk(140018752) for 0AU is 0.0000000000
-
-
-warping is wonky....see log for details.  condensed following
-  - call:  ok
-  - response:  too soon   (targets drop before align)
-  - align:   ok
-  - accel:  didnt see it
-  - warp:  didnt see it
-  - drop:  maybe...wasnt sure
-  - decel: ok
-
 
 noob ships do not Init() correctly....  most attrs are 0
     -- check this.  may be fixed already
@@ -147,23 +130,14 @@ spawn system calls.....found this in logs)
 
 
 entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
-
-Inv::AddItem(...)   need to find and remove skill in training flag here for proper skill search
-  - test this.  what about skill training incomplete on char login/load??
-
-InventoryItemRef -> c'tor....copy?  move?  default?  wtf?
+  updated as much as i know how right now
 
 InventoryItem - multiple remove calls....trace and fix
 
 Coverity found more shit
 ImageServer::GetImage - fclose(fp)
-character skill queue loop - //PySafeDecRef(list); leaks
 temp object going out of scope - return (uptime.str().c_str());
-AnomalyMgr - init remaining members in c'tor
 ImageServerConnection() - init members _size, _id
-AgentBound:836  dropoffLocation leaks
-CorpRegistryBound.cpp:761   updates leaks
-CorpStationMgr.cpp:381  dict leaks
 
 go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
 while you're at it, verify member initalization is correct.  i know destiny isnt (and it's member list is huge)
@@ -178,10 +152,6 @@ as bubble code becomes more stable, consider updating/removing/recoding wander t
     - check InBubble and IsOverlap code.
     - anomaly spawn in bubble w/o npc is considered "empty" and deleted from system.
        while this will cut down on bubble proc, is it really necessary?  shouldnt these bubbles remain active?
-
-CommandDispatcher c'tor shouldnt call .clear()
-  - ListCommands()  add desc to list
-    -- is there an easy way to spit out role names?
 
 remove character queries from InventoryDB
 remove station/static queries from InventoryDB
@@ -239,18 +209,12 @@ RAM code - implement invention, re    -priority level: low
     - invention and re will need lots of work
     - data interface dont show on install job tab (dunno why)
     - bpc may be a bit off (not sure why yet)
-    - (RamMethods) all bit comparison are incorrect (order of ops - compare before bitwise)
-      -- this may be the case on ALL bit comparison methods { if (mask & flag == flag)   will always return true because (flag == flag) }
-      -- "int64 roles(pClient->GetCorpRole());"   this really isnt needed in switch()
     - stations have a reprocessingHangarFlag.  they are all 4, but whatever
 	-- could this be changed by player?
-    - (VerifyCompleteJob) - missing braces
     - (EncodeBillOfMaterials) - incomplete
-    - (VerifyCompleteJob) - incomplete
     - (LocationRolesCheck) - incomplete
     - (ItemLocationCheck)  unfinished for POS/Outpost
     - (InstallationCheck)  - incomplete
-    - (JobsCheck)  inaccurate? nope.  dude removed attrib check in favor of hard-coded +1
     - add Almanu's cal'c fix from official
 
 blueprints - look over data and verify
@@ -315,7 +279,7 @@ do all corps share officeFolderID?  (stationID + Offset)
 GetMemberTrackingInfo() incomplete
 CorpStationMgrIMBound incomplete
 CorpRegistryService incomplete
-corp jumpers? - decide/implement
+corp jumpers? - decide/implement - config option?
 GetMemberIDsByQuery needs more work.  see notes in code.
 corp items not updating in db when moved (could be all items as we're not saving every item change)
 dividends incomplete
@@ -348,6 +312,14 @@ is DataClasses.h used?  will it be?
 active thread count is wrong
 20:50:43 B    Active Threads: There are 1 active threads running in the server.
 20:50:43 W                  : ThreadID 0xEFFFF700
+
+
+when mining, create and add ore to ship hold throw item warnings....do we really need them?
+i know what it's doing, cause i did it like that on purpose, but then hits the check and throws warn
+20:36:49 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
+20:36:49 [ItemWarning] II::Move()::Add() - 10 is invalid location.
+need to find a better way to verify locations enum (locTemp, locJunkyard, et Al.)
+
 
 *******************************************************
 *******************************************************
@@ -387,7 +359,6 @@ RefObjects -
 Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
   - this could be error in valgrind.  most strings have some form of new(long) due to string length arg
 
-PyDatabase (et al.) may need d'tors coded
 
 90% of valgrind "Definitely Lost" errors are from "x = new Py*()" calls.
     - most of these are Encode() calls that dont delete(x) on item destruction
