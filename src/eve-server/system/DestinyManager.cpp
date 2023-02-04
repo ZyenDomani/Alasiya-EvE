@@ -215,8 +215,8 @@ void DestinyManager::ProcessState() {
                 m_shipHeading = toVec;
                 InitWarp();
                 return;
-            } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > m_turnAlignTime) {
-                // catchall for turn checks messed up, and m_moveTime > ship align time
+            } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > m_warpAlignTime) {
+                // catchall for turn checks messed up, and m_moveTime > ship's warp align time
                 if (mySE->HasPilot()) {
                     _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > shipTimeToWarp.",  \
                                 mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
@@ -362,6 +362,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
             du.fraction = fraction;
         updates.push_back(du.Encode());
     }
+
     if (((mySE->IsNPCSE() or mySE->IsDroneSE()) and !m_hasSentShipUpdates)
     or mySE->IsMissileSE() or mySE->IsContainerSE() or mySE->IsWreckSE()) {
         SetBallSpeed ms;   //NPCs, Missiles, containers, wrecks
@@ -473,12 +474,7 @@ void DestinyManager::Stop() {
     if (mySE->HasPilot())
         mySE->GetPilot()->SetAutoPilot(false);
 
-    if (m_userSpeedFraction == 0.0f) {
-        //state is already at stop. but m_stop wasnt set.
-        // set m_stop and return.
-        m_stop = true;
-        return;
-    } else if ((m_ballMode == Destiny::Ball::Mode::WARP) and (!IsWarping()))  {
+    if ((m_ballMode == Destiny::Ball::Mode::WARP) and (!IsWarping()))  {
         //warp aborted before initialized.  standard Stop() applies.
         m_ballMode = Destiny::Ball::Mode::STOP;
     } else if (IsMoving()) {
@@ -491,6 +487,7 @@ void DestinyManager::Stop() {
     m_posHack = false;
     m_prevSpeed = 0.0f;
     m_prevSpeedFraction = 0.0f;
+    m_activeSpeedFraction = 0.0f;
 
     ClearTurn();
     ClearOrbit();
@@ -904,7 +901,8 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change...yeah, but i
         return false;
     }
     // if ship is (reasonably) stopped, there is no turn.  immediately begin movement in desired direction
-    if (!m_turning and (m_timeFraction < 0.05) and (m_activeSpeedFraction < 0.05)) {
+    //NOTE:  TF and ASF are ~0.08 within first second or so of beginning movement, so this check is valid
+    if (!m_turning and (m_timeFraction < 0.1) and (m_activeSpeedFraction < 0.1)) {
         m_shipHeading = m_targetHeading;
         return false;
     }
@@ -1488,8 +1486,6 @@ void DestinyManager::InitWarp() {
      */
 
     // reset sub-warp move variables for warping
-    ClearOrbit();
-
     m_accel = false;
     m_decel = false;
     m_posHack = false;
@@ -1498,7 +1494,8 @@ void DestinyManager::InitWarp() {
     m_turnTime = 0.0;
     m_prevSpeed = 0.0f;
     m_prevSpeedFraction = 0.0f;
-
+    // im guessing since we're going into warp, asf is not needed.
+    m_activeSpeedFraction = 0.0f;
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp(): %s(%u) is initializing warp.", mySE->GetName(), mySE->GetID());
@@ -1535,6 +1532,7 @@ void DestinyManager::InitWarp() {
                 GPoint newTarget(m_position + (warp_direction * m_targetDistance));
                 m_targetPoint = newTarget;
                 m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), newTarget);
+                //WarpingWithAvailablePowerBody
             } else {
                 // if not enough cap to do min warp, cancel and return
                 pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
@@ -1564,7 +1562,6 @@ void DestinyManager::InitWarp() {
      *
      * this gives distances as functions of time.
      */
-
 
     /* this is my version of how warp should be timed and followed by the server.
      * checks here for distance < warp speed and adjusts accel/decel times accordingly
@@ -1838,16 +1835,8 @@ void DestinyManager::BeginMovement() {
         m_hasSentShipUpdates = true;
     }
 
-    // reset turn for possible heading change.
-    ClearTurn();
-    m_stop = false;
-
-    // reset all move stamps
-    m_stateStamp = sEntityList.GetStamp();
-    m_moveTime = GetTimeMSeconds();
-    m_turnTime = GetTimeMSeconds();     // only used if IsTurn() == true
-
     // verify sane position data
+    // NOTE:  none of these have hit since inception
     if (m_position.isNaN()) {
         _log(DESTINY__ERROR, "%s position is NaN.", mySE->GetName());
     }
@@ -1858,6 +1847,7 @@ void DestinyManager::BeginMovement() {
         _log(DESTINY__ERROR, "%s position is inf.", mySE->GetName());
     }
 
+    // NOTE:  this hasnt hit since inception
     if (m_shipHeading.isZero()
     or  m_shipHeading.isNaN()
     or  m_shipHeading.isInf()) {
@@ -1880,11 +1870,17 @@ void DestinyManager::BeginMovement() {
     if (IsCloaked())
         UnCloak();
 
-    // is this needed??  shouldnt be once i get tracking working properly
-    SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
+    // reset turn for possible heading change.
+    ClearTurn();         // this also calls SetPosition()
+    m_stop = false;
 
     // if ship is not moving, set initial movement variables
     if (m_activeSpeedFraction < ASF_CHECK) {
+        // reset all move stamps
+        m_stateStamp = sEntityList.GetStamp();
+        m_moveTime = GetTimeMSeconds();
+        m_turnTime = GetTimeMSeconds();     // only used if IsTurn() == true
+
         SetSpeedFraction(1.0f, true);
         return;
     }
@@ -1986,25 +1982,33 @@ void DestinyManager::GotoPoint(const GPoint& point) {
     PyDecRef(up);
 }
 
-void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoPilot/*false*/, SystemEntity* pSE/*nullptr*/) {
+void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool autoPilot/*false*/, SystemEntity* pSE/*nullptr*/) {
     /* warp order..
      * pick destination -> align/accel -> aura "warp drive active" -> cap drain -> accel
      *      -> enter warp -> warp -> decel -> leave warp -> coast -> stop
      */
     SafeDelete(m_warpState);
-    // get warp target point
-    m_targetPoint = where;
-    GVector warp_distance(m_position, where);
-    m_targetDistance = warp_distance.length();
-    if (distance != 0) {
-        m_targetDistance -= distance;
-        // change to heading
-        warp_distance.normalize();
-        // adjust for stop distance from our travel direction
-        warp_distance *= distance;
-        // adjust target point by calculated stopping point
-        m_targetPoint -= warp_distance;
+
+    // get target point
+    if (destPoint.isZero()) {
+        if (pSE != nullptr) {
+            destPoint = pSE->GetPosition();
+        } else {
+            sLog.Error("Destiny::WarpTo()", "DestPoint is zero and pSE is null.");
+            throw UserError("WarpDestinationGone");
+        }
     }
+
+    m_targetPoint = destPoint;
+    GVector warp_distance(m_position, destPoint);
+    m_targetDistance = warp_distance.length();
+    m_targetDistance -= distance;
+    // change to heading
+    warp_distance.normalize();
+    // adjust for stop distance from our travel direction
+    warp_distance *= distance;
+    // adjust target point by calculated stopping point
+    m_targetPoint -= warp_distance;
 
     if (mySE->HasPilot())
         if (m_targetDistance < minWarpDistance) {
@@ -2020,23 +2024,13 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     //You will always exit warp at a random point, 2,500 meters from your actual exit point - per EveUni
     //m_targetPoint.MakeRandomPointOnSphereLayer(-2500, 2500);   disabled for testing
 
+    // this will create bubble if needed
+    m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), m_targetPoint);
 
     // verify USF is > 0.75  (this is a hack to avoid multiple calls to SSF() )
     /** @todo  is there any case where we want to warp with USF < 1.0 ??  */
     if (m_userSpeedFraction < 0.7499)
         m_userSpeedFraction = 1.0f;
-
-    // check for autopilot.  it has 'special' checks in client for auto-disable by destiny update (anything other than 'Follow')
-    if (autoPilot and (pSE != nullptr)) {
-        Follow(pSE, distance);
-    } else {
-        BeginMovement();
-    }
-
-    // this will create bubble if needed
-    m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), m_targetPoint);
-    // reset ball mode after calling BeginMovement (which calls GotoDirection)
-    m_ballMode = Destiny::Ball::Mode::WARP;
 
     // npcs have no warp restrictions (yet)
     if (mySE->IsNPCSE() or mySE->IsDroneSE()) {
@@ -2045,17 +2039,33 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
             // put drone limit checks here
         }
 
-        CmdWarpTo wt;
-            wt.entityID = mySE->GetID();
-            wt.dest_x = m_targetPoint.x;
-            wt.dest_y = m_targetPoint.y;
-            wt.dest_z = m_targetPoint.z;
-            wt.distance = distance;
-            wt.warpSpeed = GetWarpSpeed();
-        PyTuple *up = wt.Encode();
-        SendSingleDestinyUpdate(&up);
-        PyDecRef(up);
+        BeginMovement();
 
+        if (!m_targBubble->HasPlayers()) {
+            std::vector<PyTuple*> updates;
+            CmdSetSpeedFraction du;
+                du.entityID = mySE->GetID();
+                du.fraction = m_userSpeedFraction;
+            updates.push_back(du.Encode());
+            // send warp update
+            CmdWarpTo wt;
+                wt.entityID = mySE->GetID();
+                wt.dest_x = m_targetPoint.x;
+                wt.dest_y = m_targetPoint.y;
+                wt.dest_z = m_targetPoint.z;
+                wt.distance = distance;
+                wt.warpSpeed = GetWarpSpeed();      // warp speed x10
+            updates.push_back(wt.Encode());
+            //send warp effect
+            OnSpecialFX10 sfx;
+                sfx.guid = "effects.Warping";
+                sfx.entityID = mySE->GetID();
+                sfx.isOffensive = false;
+                sfx.start = true;
+                sfx.active = true;
+            updates.push_back(sfx.Encode());
+            SendDestinyUpdates(updates); //consumed
+        }
         if (is_log_enabled(NPC__MESSAGE))
             _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  distance: %i  m_targetDistance: %u",\
                     mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), mySE->SysBubble()->GetID(), \
@@ -2092,6 +2102,22 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
              */
         }
 
+    // found few warp error msgs in client and noted in BeyonceSvs.h
+    //  test for and implement here
+
+    // verify this is right to begin warp
+    // check for autopilot.  it has 'special' checks in client for auto-disable by destiny update (anything other than 'Follow')
+    if (autoPilot) {
+        // AP will use code from Follow()
+        Follow(pSE, distance);
+    } else {
+        // everything else will use code from GotoDir and BeginMovement
+        BeginMovement();
+    }
+
+    // set ball mode for warping
+    m_ballMode = Destiny::Ball::Mode::WARP;
+
     //set massive for warp.   self-only per client logs
     SetBallMassive bm;
         bm.entityID = mySE->GetID();
@@ -2122,7 +2148,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     SendDestinyUpdates(updates); //consumed
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  exit distance: %i  m_targetDistance: %u",
+        _log(DESTINY__WARP_TRACE, "Destiny::Warp() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  exit distance: %i  m_targetDistance: %u",
              m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
 }
 
@@ -2200,7 +2226,7 @@ void DestinyManager::Orbit(SystemEntity *pSE, uint32 distance/*0*/) {
     m_orbitRadTic = EvE::Trig::Pi2 / m_orbitTime;
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "%s(%u) - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%u, followDistance:%u, orbitTime:%.1f, radTic:%.5f", \
+        _log(DESTINY__ORBIT_TRACE, "%s(%u) - Orbit Data - Rc:%.3f, velocity:%li, osf:%.2f, targetDistance:%u, followDistance:%u, orbitTime:%.1f, radTic:%.5f", \
                 mySE->GetName(), mySE->GetID(), Rc, velocity, m_maxOrbitSpeedFraction, \
                 m_targetDistance, m_followDistance, m_orbitTime, m_orbitRadTic);
 /*  dont really need this here yet.....maybe not at all.
@@ -2435,7 +2461,7 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
 
     //TimeToWarp = ((ln(2) * m_inertiaMod * m_mass) / 500000);     //18.922
     m_warpAlignTime = (0.693147 * mass * inertiaMod) / 500000;
-    m_turnAlignTime = m_warpAlignTime - 2;
+    m_turnAlignTime = m_warpAlignTime - TURN_TIME_OFFSET;
     m_shipMaxAccelTime = (-log(ASF_CHECK) * m_agility);
 
     // verify hull overspeed
@@ -2675,7 +2701,7 @@ Battleships 0.155
 
     //TimeToWarp = ((ln(2) * m_inertiaMod * m_mass) / 500000);     //18.922
     m_warpAlignTime = (0.693147 * mass * inertiaMod) / 500000;
-    m_turnAlignTime = m_warpAlignTime - 2;
+    m_turnAlignTime = m_warpAlignTime - TURN_TIME_OFFSET;
 
     m_hasSentShipUpdates = true;
 
@@ -3264,9 +3290,10 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
 
 void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*/) const {
     // this check shouldnt be needed...
-    if (!mySE->SystemMgr()->IsLoaded())
+    if (!mySE->SystemMgr()->IsLoaded()) {
         PySafeDecRef(*ev);
         return;
+    }
     if (self_only) {
         if (!mySE->HasPilot()) {
             // this entity is NOT a player ship...change to BubbleCast (or silently fail)

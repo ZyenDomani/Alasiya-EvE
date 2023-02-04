@@ -51,3 +51,28 @@ protected:
 
 
 #endif
+
+/*
+ * {'FullPath': u'UI/Messages', 'messageID': 260057, 'label': u'CantWarpAfterShipBody'}(u'Your ship does not have the equipment to warp after another ship.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 260058, 'label': u'CantWarpWhileCloakedBody'}(u'You cannot warp while you are cloaked.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 260080, 'label': u'CantWarpAfterThatBody'}(u'You are unable to align or warp to the selected object because your warp drive is unable to lock onto it.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 278168, 'label': u'CantWarpAwayGlobalCriminalFlagTitle'}(u'Cannot Warp', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 278169, 'label': u'CantWarpAwayGlobalCriminalFlagBody'}(u'Your warp engines have been disabled due to your recent criminal activity. The criminal timer will run out in {time}.', None, {u'{time}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'time'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 256672, 'label': u'WarpTooShortBody'}(u'Something is affecting your warp, causing your warp distance to be too short.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 256744, 'label': u'WarpPathDisruptedBody'}(u'You cannot enter warp because {object} is intersecting your warp path. ', None, {u'{object}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'object'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 258023, 'label': u'WarpScrambledByWarpDisruptionFieldGeneratorBody'}(u'You are within a warp disruption zone. Get {range} meters from {[character]pilot.nameWithPossessive} {[item]ship.name} to warp.', None, {u'{[item]ship.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'ship'}, u'{range}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'range'}, u'{[character]pilot.nameWithPossessive}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'nameWithPossessive', 'args': 0, 'kwargs': {}, 'variableName': 'pilot'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 258771, 'label': u'WarpDestinationGoneBody'}(u'Problems with locking onto warp destination. It might have vanished.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258783, 'label': u'WarpScrambledBody'}(u'External factors are preventing your warp drive from responding to this command.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258796, 'label': u'WarpingWithAvailablePowerBody'}(u'There is insufficient power to warp all the way to the target, proceeding to warp as far as power permits.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258797, 'label': u'WarpingWithinGlobalDisruptorsBody'}(u'You cannot warp there because natural phenomena are disrupting the warp.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258915, 'label': u'WarpToStargateWhileFlaggedBody'}(u'You are warping to a stargate owned by {owner} whom you have recently engaged in combat. Customs police are operating on a low tolerance policy and will attack you if they are present.<br><br>Do you wish to proceed with this dangerous action?', None, {u'{owner}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'owner'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 258928, 'label': u'WarpDisruptedBody'}(u'You are within a warp disruption zone. Get {range} meters from {object} to warp.', None, {u'{object}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'object'}, u'{range}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'range'}})
+ *
+ * {'FullPath': u'UI/Messages', 'messageID': 258929, 'label': u'WarpScrambledSuccessBody'}(u'You have started trying to warp scramble {scrambled}.', None, {u'{scrambled}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'scrambled'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 258933, 'label': u'WarpScrambledOtherByBody'}(u'{scrambler} has started trying to warp scramble "{scrambled}"', None, {u'{scrambled}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'scrambled'}, u'{scrambler}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'scrambler'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 258954, 'label': u'WarpScrambledByBody'}(u'{scrambler} has started trying to warp scramble you!', None, {u'{scrambler}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'scrambler'}})
+ *
+ * {'FullPath': u'UI/Agents', 'messageID': 235586, 'label': u'TooCloseToWarp'}(u'Too close to warp', None, None)
+ * 
+ */
+

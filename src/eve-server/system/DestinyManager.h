@@ -146,7 +146,7 @@ public:
     void SetSpeedFraction(float fraction=1.0f, bool startMovement=false);
 
     /* Larger movement */
-    void WarpTo(const GPoint& where, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
+    void WarpTo(const GPoint& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
 
     /* Ship State Query functions */
     bool IsMoving()                                     { return (m_activeSpeedFraction > ASF_CHECK); }

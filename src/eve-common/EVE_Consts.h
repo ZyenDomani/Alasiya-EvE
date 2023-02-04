@@ -51,6 +51,7 @@ static const float SMALL_NUMBER = 0.000000000000001;
 
 // constant for destiny movement check
 static const float ASF_CHECK = 0.002f;
+static const uint8 TURN_TIME_OFFSET = 2;
 
 // verify that NO ONE tries to use "ccp" in their name
 // also check for mysql commands among other dumb shit

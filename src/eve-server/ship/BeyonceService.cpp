@@ -620,6 +620,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint -= stopPoint;
         }
     }
+
     if (warpToPoint.isZero()) {
         // point is zero ....make error and return
         codelog(CLIENT__ERROR, "%s: warpToPoint.isZero() = true.  Cannot find location %u for '%s'", call.client->GetName(), toID, type.c_str());
@@ -629,12 +630,14 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
     call.client->SetInvul(false);
     call.client->SetUndock(false);
+    call.client->SetAutoPilot(false);
 
     pDestiny->WarpTo(warpToPoint, distance);
 
     return PyStatic.NewNone();
 }
 
+/** @todo THIS is how we know client is using AP...it needs to be updated   */
 PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuffAutopilot. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
@@ -645,22 +648,24 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
         call.client->SendNotifyMsg( "You can't do this while warping");
         return PyStatic.NewNone();
     }
+
     SystemManager* pSystem = call.client->SystemMgr();
     if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return PyStatic.NewNone();
     }
 
-  //  sends targeted celestial itemID as arg.destID
+    //  sends targeted celestial itemID as arg.destID
+    // this is usually a gate or station.  no need for special checks here
     CallWarpToStuffAutopilot arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
-	}
+    }
 
     SystemEntity* pSE = pSystem->GetSE(arg.destID);
     if (pSE == nullptr) {
-	  codelog(CLIENT__ERROR, "%s: unable to find destination Entity for ID %u", call.client->GetName(), arg.destID);
+        codelog(CLIENT__ERROR, "%s: unable to find destination Entity for ID %u", call.client->GetName(), arg.destID);
         return PyStatic.NewNone();
     }
 
@@ -674,7 +679,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 
     uint16 distance = sConfig.world.apWarptoDistance;    //10km default
     //Adding in ship and target object radius'
-    //distance += call.client->GetShipSE()->GetRadius() + pSE->GetRadius();
+    distance += call.client->GetShipSE()->GetRadius() + pSE->GetRadius();
     pDestiny->WarpTo(pSE->GetPosition(), distance, true, pSE);
 
     return PyStatic.NewNone();
