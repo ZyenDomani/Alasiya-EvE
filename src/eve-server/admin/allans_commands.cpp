@@ -1219,6 +1219,15 @@ PyResult Command_dropLoot(Client* pClient, CommandDB* db, PyServiceMgr* services
     return nullptr;
 }
 
+PyResult Command_removecans(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    pClient->SystemMgr();
+    
+    return nullptr;
+}
+
+
+
 /* groove's new command.....
  *    /fit [me|itemID] [typeID] [flag=slot]
  * then sends ScatterEvent OnRefreshModuleBanks after successful call.

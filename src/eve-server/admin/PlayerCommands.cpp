@@ -1,8 +1,12 @@
 
-    /* Custom config file options
-     * current settings displayed on console at start-up
-     *   -allan 7June2015
-     */
+
+#include <stdio.h>
+#include "eve-server.h"
+
+
+PyResult Command_srvoptions(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    // Custom config file options displayed on client notification
+
     sLog.Blue("     ServerConfig", "World Switches");
     if (sConfig.world.saveOnMove) {
         sLog.Green("     Save on Move","Enabled.");
@@ -308,4 +312,7 @@
         sLog.Warning("    Position Hack","Disabled.");
     }
     std::printf("\n");     // spacer
-    
+
+    pClient->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}

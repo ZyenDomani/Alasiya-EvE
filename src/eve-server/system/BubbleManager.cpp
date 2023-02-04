@@ -74,7 +74,7 @@ void BubbleManager::Process() {
     }
 
     if (m_wanderTimer.Check()) {    //60s
-        _log(BUBBLE__WARNING, "Wander Timer - %u", sEntityList.GetStamp());
+        _log(BUBBLE__INFO, "Wander Timer - %u", sEntityList.GetStamp());
         std::list<SystemBubble*>::iterator itr = m_bubbles.begin();
         while (itr != m_bubbles.end()) {
             if (*itr == nullptr) {

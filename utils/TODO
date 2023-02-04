@@ -128,6 +128,7 @@ spawn system calls.....found this in logs)
 17:38:52 [SpawnTrace] MakeSpawn() completed in Ibaria(30000053) with 1 bubbles in m_bubbles and 2 entities in m_spawns.
 ***  why calling MakeSpawn() twice??
 
+SendServerMOTD needs to check account roles to send >player data (i.e. showall)
 
 entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
   updated as much as i know how right now
@@ -148,7 +149,7 @@ remove GPoint/GVector code and replace with evemoo's Vec3 code (after thorough r
     - note:  client logs show all position data is pyfloat (some float.7, some double.15)  but i see no point of needing decimeter precision.
 
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
-    - every 60s for every bubble object is a bit much.  (actually hits on 1hz)
+    - every 60s for every bubble object is a bit much.
     - check InBubble and IsOverlap code.
     - anomaly spawn in bubble w/o npc is considered "empty" and deleted from system.
         this is wrong.  IsEmpty() should check m_entities list first.  verify anoms are added correctly
@@ -991,7 +992,7 @@ make EACS and E-UNI corps as tribute (static)?
 *******************************************************
 *****************  ideas for later
 
-colorize SendServerMOTD
+colorize SendServerMOTD  (currently 'system' red)
 
 finish player command "srvoptions" to show current server settings in client notification
 

@@ -1079,9 +1079,6 @@ void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/, bool ad
         return;
 
     m_entities[pSE->GetID()] = pSE;
-    // Add Entity's Item Ref to Solar System Dynamic Inventory:
-    //m_solarSystemRef->AddItemToInventory(pSE->GetSelf());
-
     sBubbleMgr.Add(pSE);
     if (addSignal)
         m_anomMgr->AddSignal(pSE);

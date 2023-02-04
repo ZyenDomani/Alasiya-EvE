@@ -8,47 +8,59 @@
   <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
 </head>
 <body>
-This is our news and updates page.<br>
+This is the updates page for Alasiya-EvE.<br>
 I will eventually make this a little more aesthetically pleasing<br><br>
 CURRENT TEST POINTS<br>
  - Ship Movement (except orbit)<br>
- - Modules<br>
- - Effects<br>
+ - Modules (most are working correctly.  gang modules not coded)<br>
+ - Effects (most working correctly)<br>
  - Probe Scanning (some locations wrong)<br>
- - Combat<br>
- - Mining<br>
- - Market<br>
-<br>
-03Feb22 - Update Main Server with all fixes since 28Feb21<br>
+ - Combat (some errors due to invalid ship tracking)<br>
+ - Mining (seems to be complete)<br>
+ - Market (still some bugs after rewrite)<br>
+<br><br>
+NOTES:<br>
+I have begun working on Destiny Movement code again.  With recent updates, Ship positioning is closer to client than any previous incarnation, but still isnt quite right.<br>
+This will be main focus but will fix any major gameplay-affecting errors i find while testing.<br>
+Current plan is to get all straight-line movement following client with as little error as possible.<br>
+Next will be turn code, which will take some time, as i dont know the formulas live used<br>
+I will sporadically work on other bugs and errors, and will update main server often.<br>
+MemMgmt and ProcTiming work is constantly in progress.<br><br>
+UPDATES AND CHANGELOG:  (note: only major/significant updates are listed)<br>
+04Feb23 - Rewrote how destiny calls internal methods.  previous logic was funky and tedious (WIP)<br>
+		- Process() calls updated for faster runtimes<br>
+		- More updates from Coverity Scan<br>
+		- Updated Bubble code for faster runtimes and better tracking<br><br>
+03Feb23 - Update Main Server with all fixes since 28Feb21<br>
 		- Major Destiny movement update<br>
 		- This update corrects multiple aspects of ship tracking that were previously "close enough"<br>
 		- Ship turn tracking is now much closer than it has ever been.  still WIP.<br>
 		- More updates from Coverity Scan<br><br>
-02Feb22 - More MemMgmt cleanup additions<br>
+02Feb23 - More MemMgmt cleanup additions<br>
 		- Updated Targeting Logic from testing<br>
 		- Begin NPC error tracking (some items fixed)<br><br>
-01Feb22 - Finally found and fixed some elusive role errors in multiple files<br>
+01Feb23 - Finally found and fixed some elusive role errors in multiple files<br>
 		- Minor code cleanup and update on multiple files<br><br>
-29Jan22 - Refactored some enums for account and player types<br>
+29Jan23 - Refactored some enums for account and player types<br>
 		- Corrected some previously-missed event log types<br>
 		- Added missing event log types in client<br><br>
-28Jan22 - Fixed cases of multiple deletes on Py* objects<br>
+28Jan23 - Fixed cases of multiple deletes on Py* objects<br>
 		- Updated d'tor cleanup for multipel Py* objects (MemMgmt improvements)<br><br>
-27Jan22 - More fixes and updates from CodeFactor and Coverity Scans<br>
+27Jan23 - More fixes and updates from CodeFactor and Coverity Scans<br>
 		- Client Session updates for better packet sending<br>
 		- Multiple code improvements for faster runtime<br>
 		- Fixed elusive error with PI simulation<br><br>
-24Jan22 - Major XMLP update<br>
+24Jan23 - Major XMLP update<br>
 		- Added code for enabling Encode() and Decode() sections<br>
 		- Added better MemMgmt for xmlp objects<br>
 		- Found and Fixed elusive error with StaticDataMgr not populating BP material types properly<br><br>
-20Jan22 - Fixes from CodeFactor and Coverity Scans<br>
+20Jan23 - Fixes from CodeFactor and Coverity Scans<br>
 		- Found and fixed a few elusive errors with MarketGroups not being populated properly<br>
 		- Begin Update to use item attributes instead of hard-coded variables<br><br>
-13Jan22 - Added fast method to compare float/double<br>
+13Jan23 - Added fast method to compare float/double<br>
 		- Updated EntityList loop for faster iteration<br>
 		- Begin basic movement updates for better client tracking<br><br>
-02Jan22 - More Bracket updates<br>
+02Jan23 - More Bracket updates<br>
 		- Begin MemMgmt work on XMLP code<br><br>
 30Dec22 - Resume work on Alasiya-EvE code<br>
 		- Major Code update and refactor<br><br>

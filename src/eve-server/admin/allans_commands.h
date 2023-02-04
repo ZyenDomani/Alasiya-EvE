@@ -66,3 +66,5 @@
           " - list of current bound objects (with clients)." )
  COMMAND( dropLoot, Acct::Role::PROGRAMMER,
           " - commands all npcs in bubble to jettison loot." )
+ COMMAND( removecans, Acct::Role::PLAYER,
+          " - removes all ship position tracking cans in current system.")

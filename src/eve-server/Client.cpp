@@ -354,9 +354,8 @@ void Client::ProcessClient() {
         m_char->SetLogonMinutes();
     }
 
-    if (m_skillTimer > 0)
-        if (m_skillTimer < GetFileTimeNow())
-            m_char->SkillQueueLoop();
+    if ((m_skillTimer > 0) and (m_skillTimer < GetFileTimeNow()))
+        m_char->SkillQueueLoop();
 
     if (m_sessionTimer.Check(false)) {
         _log(CLIENT__TIMER, "Client::ProcessClient():  SetSessionChange to false for %s(%u)", m_char->name(), m_char->itemID());

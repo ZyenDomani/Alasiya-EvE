@@ -124,9 +124,9 @@ public:
     void RemoveClient(Client* pClient, bool count=false, bool jump=false);
     void SetDockCount(Client* pClient, bool docked=false);
 
+    void DoSpawnForBubble(SystemBubble* pBubble);
     void AddItemToInventory(InventoryItemRef item);
     void RemoveItemFromInventory(InventoryItemRef item);
-    void DoSpawnForBubble(SystemBubble* pBubble);
 
     /* this is to send new global ball added to system AFTER SetState has been sent */
     void SendStaticBall(SystemEntity* pSE);
