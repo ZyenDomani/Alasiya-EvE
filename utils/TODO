@@ -22,7 +22,6 @@ other updates?
 
 
 !! destiny (all space movement)
-ship heading 0 for all movement...
 -- even with heading identical (client and server) there is still some deviation after turning...i dont understand where its from
 
 
@@ -30,8 +29,7 @@ ships  ---  attrAgility will need to be recalc'd and reset anytime inertia or ma
   - does this include adding/dropping ore, items, loot, drones?  what about the large PI items?
     -- there are also modules that modify all of these variables.  these need verification
     -  this needs to be complete and correct before i can finish destiny movement
-    - after looking into this more, the fx system isnt set up to calculate some effects properly,
-        namely, anything dealing with skilllevels
+    - after looking into this more, the fx system isnt set up to calculate effects dealing with skilllevels
 
 
 work on buglist, integrate this list in there where i can (in order)

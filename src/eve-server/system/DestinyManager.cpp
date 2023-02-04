@@ -356,8 +356,8 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
     }
 
     std::vector<PyTuple*> updates;
-    // only sent if usf changed
-    if ((fraction > ASF_CHECK) and (m_decel or m_stop)) {
+    // send on usf change but not for turn or orbit
+    if (!m_turning and !m_orbiting) {
          CmdSetSpeedFraction du;
             du.entityID = mySE->GetID();
             du.fraction = fraction;
@@ -1156,7 +1156,7 @@ void DestinyManager::Follow() {
             m_prevSpeedFraction = 0.0f;
             // there is no accel/decel for tractor'd items
             m_activeSpeedFraction = m_userSpeedFraction = m_timeFraction = 1;
-        } else if (m_userSpeedFraction != 0.0f) {
+        } else if (m_userSpeedFraction < 0.1f) {
             SetSpeedFraction(1.0f);
         }
     }
@@ -1164,7 +1164,7 @@ void DestinyManager::Follow() {
     MoveObject();
 }
 
-/*eve/client/script/ui/services\flightPredictionSvc.py
+/* eve/client/script/ui/services\flightPredictionSvc.py
 """
 Prediction service for in-space flight
 """
