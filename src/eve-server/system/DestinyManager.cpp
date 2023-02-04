@@ -1992,15 +1992,16 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     // get target point
     if (destPoint.isZero()) {
         if (pSE != nullptr) {
-            destPoint = pSE->GetPosition();
+            m_targetPoint = pSE->GetPosition();
         } else {
             sLog.Error("Destiny::WarpTo()", "DestPoint is zero and pSE is null.");
             throw UserError("WarpDestinationGone");
         }
+    } else {
+        m_targetPoint = destPoint;
     }
 
-    m_targetPoint = destPoint;
-    GVector warp_distance(m_position, destPoint);
+    GVector warp_distance(m_position, m_targetPoint);
     m_targetDistance = warp_distance.length();
     m_targetDistance -= distance;
     // change to heading
