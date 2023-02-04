@@ -38,7 +38,6 @@ LPStore::LPStore(PyServiceMgr *mgr)
 
     PyCallable_REG_CALL(LPStore, AcceptOffer);
     PyCallable_REG_CALL(LPStore, GetAvailableOffers);
-
 }
 
 LPStore::~LPStore()
@@ -59,12 +58,17 @@ PyResult LPStore::Handle_AcceptOffer( PyCallArgs& call ) {
 
 PyResult LPStore::Handle_GetAvailableOffers( PyCallArgs& call ) {
   /**
+        try:
             availableOffers = sm.RemoteSvc('storeServer').GetAvailableOffers()
+        except UserError as e:
+            if e.msg == 'VG_STORE_CLOSED':
+                self.storeClosed = blue.os.GetWallclockTime()
+                self.CloseStoreWindow()
+            raise
             */
     //no args
-  sLog.White( "LPStore::Handle_GetLPsForCharacter()", "size= %lu", call.tuple->size() );
 
-  call.Dump(SERVICE__CALL_DUMP);
+    throw UserError("VG_STORE_CLOSED");
   return PyStatic.mtList();
 }
 

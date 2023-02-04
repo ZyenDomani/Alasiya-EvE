@@ -2201,9 +2201,7 @@ PyRep* CorporationDB::GetSanctionedItems(uint32 corpID, uint8 status/*0*/)
         return nullptr;
     }
 
-    //return DBResultToPackedRowDict(res, "voteCaseID");
-    //return DBResultToCIndexedRowset(res, "voteCaseID");
-    //return DBResultToIndexRowset(res, "voteCaseID");
+    // AttributeError: 'blue.DBRow' object has no attribute 'parameter'
     return DBResultToCRowset(res);
 }
 
@@ -2307,9 +2305,10 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     charUpdate.newOwnerID = args.toShareholderID;
     charUpdate.newOwnerNewCorpID = (isCorp ? 0 : oldCorpID);
 
+    //AttributeError: 'dict' object has no attribute 'header'
     if (pClient != nullptr)
         pClient->SendNotification("OnShareChange", "charid", charUpdate.Encode());
-
+    
     // add to new owner
     sDatabase.RunQuery(err,
         "INSERT INTO crpShares (corporationID, shareholderID, shares, shareholderCorporationID)"
