@@ -149,7 +149,7 @@ public:
     void WarpTo(const GPoint& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
 
     /* Ship State Query functions */
-    bool IsMoving()                                     { return (m_activeSpeedFraction > ASF_CHECK); }
+    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.001); }
 
     /* Movement checks */
     bool IsAligned(GPoint &targetPoint);
@@ -252,7 +252,7 @@ protected:
     float m_shipAccelTime;              //in s      - used to check time for speed change
     float m_shipMaxAccelTime;           //in s      - used to determine accel rate, and total accel time
 
-    double m_radians;                   //in rad    - radians left in an ongoing turn
+    double m_radians;                   //in rad    - radians of an ongoing turn
 
     GPoint m_position;                  //in m
     GVector m_velocity;                 //in m/s
@@ -273,6 +273,7 @@ protected:
     //Destiny::Ball::timeStamp m_timeStamp; //mode and timestamp of when current mode began
     uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
+    float m_degPerTic;                  //ship turn variable
     float m_orbitTime;                  //in s - time to complete one orbit using current variables
     float m_orbitRadTic;                //in rad/sec  - radians around orbit per tic
 
@@ -305,6 +306,7 @@ private:
     bool m_alignTo;                     // once aligned, ship will stop
     bool m_frozen;                      // hack to keep ship from moving when using modules that prevent movement
     bool m_changeDelay;                 // this is to try to sync destiny with client, as client has a delay when changing destiny states.
+    bool m_moveDelay;                   // same as above, for less of a delay when changing direction or speed
 
     // Internal Collision Methods   -allan Nov 2015
     bool m_bump;
