@@ -47,11 +47,11 @@ static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow chec
 
 // gravitational constant (used for orbit math)
 static const double Gc = 0.000000000066725985;     //per client (changed from original 6.673e-11)
-static const float SMALL_NUMBER = 0.000000000000001;
+static const double SMALL_NUMBER = 0.000000000000001;
 
 // constants for destiny movement checks
 static const float ASF_CHECK = 0.002f;
-static const uint8 TURN_TIME_OFFSET = 3;
+static const uint8 TURN_TIME_OFFSET = 1;
 
 // verify that NO ONE tries to use "ccp" in their name
 // also check for mysql commands among other dumb shit

@@ -68,3 +68,5 @@
           " - commands all npcs in bubble to jettison loot." )
  COMMAND( removecans, Acct::Role::PLAYER,
           " - removes all ship position tracking cans in current system.")
+ COMMAND( distance, Acct::Role::PLAYER,
+          " - returns actual distance between centers of your ship and active target.")

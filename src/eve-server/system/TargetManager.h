@@ -154,6 +154,8 @@ public:
     void                Dump() const;
     // called by .targlist (player command)
     std::string         TargetList(uint16 &length, uint16 &count);
+    // for querying targ count outside targMgr
+    uint8               GetTargetCount()                { return m_targets.size(); }
 
 
 protected:

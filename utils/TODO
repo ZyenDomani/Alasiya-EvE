@@ -909,6 +909,7 @@ look into changing our code to conform.  most objects are built in-code and use 
 figure out how to colorize _log() msgs to console   -priority level: low
 
 CmdStargateJump has multiple client-side msgs that would be fun to implement (system shut down due to traffik, closed from congestion, etc)
+  these are found in Handle_CmdStargateJump
 
 holoscreenMgr is mostly empty (skeleton code)
 ideas for holoscreen in CQ:
@@ -979,6 +980,7 @@ set up universe monitor for watching jumps
     - what file / where would this be coded?
     - how would it run?
 when jumps > xx send "system closed" and "system congested" msgs to pilots trying to jump in.
+  note: these msgs are in Handle_CmdStargateJump
 ...other things?
 
 
@@ -991,6 +993,8 @@ make EACS and E-UNI corps as tribute (static)?
 *****************  ideas for later
 
 colorize SendServerMOTD  (currently 'system' red)
+
+add chat for system commands?  have commands send to cmd window instead of notification window
 
 finish player command "srvoptions" to show current server settings in client notification
 

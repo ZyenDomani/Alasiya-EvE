@@ -57,17 +57,17 @@ public:
 
         m_strBoundObjectName = "BeyonceBound";
 
+        PyCallable_REG_CALL(BeyonceBound, UpdateStateRequest);
+        PyCallable_REG_CALL(BeyonceBound, CmdStop);
+        PyCallable_REG_CALL(BeyonceBound, CmdSetSpeedFraction);
+        PyCallable_REG_CALL(BeyonceBound, CmdDock);
         PyCallable_REG_CALL(BeyonceBound, CmdFollowBall);   //*
         PyCallable_REG_CALL(BeyonceBound, CmdOrbit);   //*
         PyCallable_REG_CALL(BeyonceBound, CmdAlignTo);
         PyCallable_REG_CALL(BeyonceBound, CmdGotoDirection);   //*
         PyCallable_REG_CALL(BeyonceBound, CmdGotoBookmark);
-        PyCallable_REG_CALL(BeyonceBound, CmdSetSpeedFraction);
-        PyCallable_REG_CALL(BeyonceBound, CmdStop);
         PyCallable_REG_CALL(BeyonceBound, CmdWarpToStuff);
-        PyCallable_REG_CALL(BeyonceBound, CmdDock);
         PyCallable_REG_CALL(BeyonceBound, CmdStargateJump);
-        PyCallable_REG_CALL(BeyonceBound, UpdateStateRequest);
         PyCallable_REG_CALL(BeyonceBound, CmdWarpToStuffAutopilot); //*
         PyCallable_REG_CALL(BeyonceBound, CmdAbandonLoot);
 
@@ -95,17 +95,17 @@ public:
         delete this;
     }
 
+    PyCallable_DECL_CALL(UpdateStateRequest);
+    PyCallable_DECL_CALL(CmdStop);
+    PyCallable_DECL_CALL(CmdSetSpeedFraction);
+    PyCallable_DECL_CALL(CmdDock);
+    PyCallable_DECL_CALL(CmdStargateJump);
     PyCallable_DECL_CALL(CmdFollowBall);
     PyCallable_DECL_CALL(CmdOrbit);
     PyCallable_DECL_CALL(CmdAlignTo);
     PyCallable_DECL_CALL(CmdGotoDirection);
     PyCallable_DECL_CALL(CmdGotoBookmark);
-    PyCallable_DECL_CALL(CmdSetSpeedFraction);
-    PyCallable_DECL_CALL(CmdStop);
     PyCallable_DECL_CALL(CmdWarpToStuff);
-    PyCallable_DECL_CALL(CmdDock);
-    PyCallable_DECL_CALL(CmdStargateJump);
-    PyCallable_DECL_CALL(UpdateStateRequest);
     PyCallable_DECL_CALL(CmdWarpToStuffAutopilot);
     PyCallable_DECL_CALL(CmdAbandonLoot);
 
@@ -169,6 +169,244 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
     return res;
 }
 
+PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
+    codelog(CLIENT__ERROR, "%s: Client sent UpdateStateRequest. Previous call generated a bad return.  Check Logs.", call.client->GetName());
+
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+    if (pDestiny->IsWarping()) {
+        call.client->SendNotifyMsg( "You can't do this while warping");
+        return PyStatic.NewNone();
+    }
+
+    call.client->SetStateSent(false);
+    pDestiny->SendSetState();
+
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
+    _log(AUTOPILOT__MESSAGE, "%s called Stop. AP: %s, Invul: %s", call.client->GetName(), \
+    (call.client->IsAutoPilot() ? "true" : "false"), call.client->IsInvul()?"true":"false");
+
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+    if (!pDestiny->IsMoving())
+        return PyStatic.NewNone();
+    if (pDestiny->IsWarping()) {
+        call.client->SendNotifyMsg( "You can't do this while warping");
+        // send client error about 'systems fail to function' or w/e it is
+        return PyStatic.NewNone();
+    }
+
+    call.client->SetUndock(false);
+    call.client->SetAutoPilot(false);
+
+    pDestiny->Stop();
+
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
+    _log(AUTOPILOT__MESSAGE, "%s called GotoDirection. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
+    //call.client->SetAutoPilot(false);
+
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
+        return PyStatic.NewNone();
+    } else if (pDestiny->IsWarping()) {
+        call.client->SendNotifyMsg( "You can't do this while warping");
+        return PyStatic.NewNone();
+    }
+
+    PointArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
+    //sLog.Cyan("GotoDirection", "%.4f, %.4f, %.4f", arg.x, arg.y, arg.z);
+    call.client->SetInvul(false);
+    call.client->SetUndock(false);
+
+    const GPoint dir(arg.x, arg.y, arg.z);
+    pDestiny->GotoDirection(dir);
+
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
+        return PyStatic.NewNone();
+    } else if (pDestiny->IsWarping()) {
+        //{'FullPath': u'UI/Inflight', 'messageID': 237387, 'label': u'CanNotChangeSpeedWhileWarping'}(u'You cannot change speed while warping', None, None)
+
+        call.client->SendNotifyMsg( "You can't do this while warping");
+        return PyStatic.NewNone();
+    }
+
+    Call_SingleRealArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
+    // client should not legally send anything < 0.1 (except on rare occasion a 0.0 instead of Stop.)
+    if ((arg.arg != 0.0) and (arg.arg < 0.01))
+        return PyStatic.NewNone();
+
+    if (!call.client->IsUndock()) {
+        // need to update move time first
+        pDestiny->SetMoveTimeNow();
+        if (pDestiny->IsTurning()) {
+            // do not reset turnTime here
+            pDestiny->UpdateSpeedFraction(arg.arg);
+        } else {
+            pDestiny->SetSpeedFraction(arg.arg, (!pDestiny->IsMoving()));
+        }
+    } else {
+        // player undocked and wants to reset speed
+        pDestiny->SetSpeedFraction(arg.arg);
+    }
+
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
+    _log(AUTOPILOT__MESSAGE, "%s called Align. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
+        return PyStatic.NewNone();
+    } else if (pDestiny->IsWarping()) {
+        call.client->SendNotifyMsg( "You can't do this while warping");
+        return PyStatic.NewNone();
+    }
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+
+    CallAlignTo arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
+    SystemEntity* pSE = pSystem->GetSE(arg.entityID);
+    if (pSE == nullptr) {
+        _log(CLIENT__ERROR, "%s: Unable to find entity %u to AlignTo.", call.client->GetName(), arg.entityID);
+        return PyStatic.NewNone();
+    }
+
+    call.client->SetInvul(false);
+    call.client->SetUndock(false);
+
+    pDestiny->AlignTo(pSE);
+
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
+    /*  jump system messages....
+     * (67187, `{[location]system.name} Traffic Control: your jump-in clearance has expired.`)
+     * (67191, `{[location]system.name} Traffic Control: you have been cleared for jump-in within {[timeinterval]expiration.writtenForm, from=second, to=second}.`)
+     * (67210, `{[location]system.name} Traffic Control: you are at position {[numeric]pos} in queue for jump-in.`)
+     * (258673, `{system} is currently loading. Bizzarre, seeing that you're there already... Please try again in a minute or two.`)
+     * (258674, `The stargates in {system} are currently experiencing minor technical difficulties. Please try again in a moment.`)
+     * (258675, `Jump Prohibited`)
+     * (258676, `Officials have closed the stargates in {system} due to heavy congestion. Travelers are advised to enjoy the local scenery.`)
+     * (258677, `{system} Traffic Control is currently experiencing heavy load and is unable to process your request. Please try again in a moment.`)
+     * (258678, `{system} Traffic Control is currently offline and unable to process your jump request. Please try again in a moment.`)
+     * (258679, `{system} Traffic Control is currently experiencing heavy load and is unable to process your request. You are #{[numeric]position} in queue for jump-in.`)
+     * (258680, `Jump Prohibited`)
+     * (258681, `Officials have closed the stargates in {system} due to heavy congestion. Travelers are advised to seek alternate routes.`)
+     * (258683, `Your character is located within {system}, which is currently loading. Please try again in a moment.`)
+     * (258685, `Your character is located within {system}, which is currently experiencing heavy load. Please try again in a moment.`)
+     * (258687, `Your character is located within {system}, which has reached maximum capacity. You are #{[numeric]position} in queue for entrance. Please try again in a moment.`)
+     * (258689, `Your character is located within {system}, which is currently stuck. Please select a different character or try later.`)
+     * (258691, `The character is located within {system}, which is currently loading. Please try again in a moment.`)
+     * (258693, `The character is located within {system}, which is currently experiencing heavy load. Please try again in a moment.`)
+     * (258695, `The character is located within {system}, which is currently stuck. Please try again later.`)
+     * (258699, `The item <b>{example}</b> was not found in the station <b>{[location]station.name}</b>. Please make sure all items are in the correct hangar before finalizing this contract.`)
+     * (258701, `{system} Traffic Control is currently experiencing heavy load and was unable to process your request. Please try again in a moment.`)
+     * (258704, `You cannot leave {system} yet because of instability in the space-time continuum. Please try again in a moment.`)
+     */
+
+    _log(AUTOPILOT__MESSAGE, "%s called Jump. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
+    if (call.client->IsSessionChange()) {
+        call.client->SendNotifyMsg("Session Change currently active.");
+        return PyStatic.NewNone();
+    }
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
+        return PyStatic.NewNone();
+    } else if (pDestiny->IsWarping()) {
+        call.client->SendNotifyMsg( "You can't do this while warping");
+        return PyStatic.NewNone();
+    }
+
+    Call_StargateJump args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
+    /** @todo  check distance from ship to gate */
+    call.client->StargateJump(args.fromStargateID, args.toStargateID);
+
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
+    // returns nodeID and timestamp
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    return tuple;
+}
+
+PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
+    /*  remotePark.CmdAbandonLoot(wrecks)  <- this is pylist from 'abandonAllWrecks'
+     *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID in list
+     */
+    sLog.White( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %lu", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    Call_SingleIntList arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
+    /** @todo  change ownerID to _system for all loot also!!  */
+    SystemEntity* pSE(nullptr);
+    SystemManager* pSysMgr = call.client->SystemMgr();
+    for (auto &cur : arg.ints) {
+        pSE = pSysMgr->GetSE(cur);
+        if (pSE == nullptr)
+            continue;
+        pSE->Abandon();
+        PyTuple* slimData = new PyTuple(2);
+        slimData->SetItem(0, new PyLong(pSE->GetID()));
+        slimData->SetItem(1, new PyObject( "foo.SlimItem", pSE->MakeSlimItem()));
+        PyTuple* itemData = new PyTuple(2);
+        itemData->SetItem(0, new PyString("OnSlimItemChange"));
+        itemData->SetItem(1, slimData);
+        pSE->SysBubble()->BubblecastDestinyUpdate(&itemData, "OnSlimItemChange" );
+    }
+
+    return PyStatic.NewNone();
+}
+
 PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called Follow. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
@@ -202,108 +440,6 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     call.client->SetUndock(false);
 
     pDestiny->Follow(pSE, PyRep::IntegerValue(args.distance));
-
-    return PyStatic.NewNone();
-}
-
-PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    } else if (pDestiny->IsWarping()) {
-        //{'FullPath': u'UI/Inflight', 'messageID': 237387, 'label': u'CanNotChangeSpeedWhileWarping'}(u'You cannot change speed while warping', None, None)
-
-        call.client->SendNotifyMsg( "You can't do this while warping");
-        return PyStatic.NewNone();
-    }
-
-    Call_SingleRealArg arg;
-    if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
-    }
-
-    // client should not legally send anything < 0.1 (except on rare occasion a 0.0 instead of Stop.)
-    if ((arg.arg != 0.0) && (arg.arg < 0.01))
-        return PyStatic.NewNone();
-
-    //sLog.Warning( "BeyonceBound", "Handle_CmdSetSpeedFraction %.2f", arg.arg );
-    if (!call.client->IsUndock()) {
-        // need to update move time first
-        pDestiny->SetMoveTimeNow();
-        if (pDestiny->IsTurning()) {
-            // do not reset turnTime here
-            pDestiny->UpdateSpeedFraction(arg.arg);
-        } else {
-            pDestiny->SetSpeedFraction(arg.arg, (!pDestiny->IsMoving()));
-        }
-    }
-
-    return PyStatic.NewNone();
-}
-
-PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
-    _log(AUTOPILOT__MESSAGE, "%s called Align. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    } else if (pDestiny->IsWarping()) {
-        call.client->SendNotifyMsg( "You can't do this while warping");
-        return PyStatic.NewNone();
-    }
-    SystemManager* pSystem = call.client->SystemMgr();
-    if (pSystem == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    }
-
-    CallAlignTo arg;
-    if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
-    }
-
-    SystemEntity* pEntity = pSystem->GetSE(arg.entityID);
-    if (pEntity == nullptr) {
-        _log(CLIENT__ERROR, "%s: Unable to find entity %u to AlignTo.", call.client->GetName(), arg.entityID);
-        return PyStatic.NewNone();
-    }
-
-    call.client->SetInvul(false);
-    call.client->SetUndock(false);
-
-    pDestiny->AlignTo( pEntity );
-
-    return PyStatic.NewNone();
-}
-
-PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
-    _log(AUTOPILOT__MESSAGE, "%s called GotoDirection. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    //call.client->SetAutoPilot(false);
-
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    } else if (pDestiny->IsWarping()) {
-        call.client->SendNotifyMsg( "You can't do this while warping");
-        return PyStatic.NewNone();
-    }
-
-    PointArg arg;
-    if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
-    }
-
-    //sLog.Cyan("GotoDirection", "%.4f, %.4f, %.4f", arg.x, arg.y, arg.z);
-    call.client->SetInvul(false);
-    call.client->SetUndock(false);
-
-    const GPoint dir(arg.x, arg.y, arg.z);
-    pDestiny->GotoDirection(dir);
 
     return PyStatic.NewNone();
 }
@@ -685,30 +821,6 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     return PyStatic.NewNone();
 }
 
-PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
-    _log(AUTOPILOT__MESSAGE, "%s called Stop. AP: %s, Invul: %s", call.client->GetName(), \
-            (call.client->IsAutoPilot() ? "true" : "false"), call.client->IsInvul()?"true":"false");
-
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    }
-    if (!pDestiny->IsMoving())
-        return PyStatic.NewNone();
-    if (pDestiny->IsWarping()) {
-        call.client->SendNotifyMsg( "You can't do this while warping");
-        return PyStatic.NewNone();
-    }
-
-    call.client->SetUndock(false);
-    call.client->SetAutoPilot(false);
-
-    pDestiny->Stop();
-
-    return PyStatic.NewNone();
-}
-
 // CmdTurboDock (in client code)
 PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called Dock. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
@@ -740,115 +852,6 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     return pDestiny->AttemptDockOperation();
-}
-
-PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
-    /*  jump system messages....
-(67187, `{[location]system.name} Traffic Control: your jump-in clearance has expired.`)
-(67191, `{[location]system.name} Traffic Control: you have been cleared for jump-in within {[timeinterval]expiration.writtenForm, from=second, to=second}.`)
-(67210, `{[location]system.name} Traffic Control: you are at position {[numeric]pos} in queue for jump-in.`)
-(258673, `{system} is currently loading. Bizzarre, seeing that you're there already... Please try again in a minute or two.`)
-(258674, `The stargates in {system} are currently experiencing minor technical difficulties. Please try again in a moment.`)
-(258675, `Jump Prohibited`)
-(258676, `Officials have closed the stargates in {system} due to heavy congestion. Travelers are advised to enjoy the local scenery.`)
-(258677, `{system} Traffic Control is currently experiencing heavy load and is unable to process your request. Please try again in a moment.`)
-(258678, `{system} Traffic Control is currently offline and unable to process your jump request. Please try again in a moment.`)
-(258679, `{system} Traffic Control is currently experiencing heavy load and is unable to process your request. You are #{[numeric]position} in queue for jump-in.`)
-(258680, `Jump Prohibited`)
-(258681, `Officials have closed the stargates in {system} due to heavy congestion. Travelers are advised to seek alternate routes.`)
-(258683, `Your character is located within {system}, which is currently loading. Please try again in a moment.`)
-(258685, `Your character is located within {system}, which is currently experiencing heavy load. Please try again in a moment.`)
-(258687, `Your character is located within {system}, which has reached maximum capacity. You are #{[numeric]position} in queue for entrance. Please try again in a moment.`)
-(258689, `Your character is located within {system}, which is currently stuck. Please select a different character or try later.`)
-(258691, `The character is located within {system}, which is currently loading. Please try again in a moment.`)
-(258693, `The character is located within {system}, which is currently experiencing heavy load. Please try again in a moment.`)
-(258695, `The character is located within {system}, which is currently stuck. Please try again later.`)
-(258699, `The item <b>{example}</b> was not found in the station <b>{[location]station.name}</b>. Please make sure all items are in the correct hangar before finalizing this contract.`)
-(258701, `{system} Traffic Control is currently experiencing heavy load and was unable to process your request. Please try again in a moment.`)
-(258704, `You cannot leave {system} yet because of instability in the space-time continuum. Please try again in a moment.`)
-*/
-
-    _log(AUTOPILOT__MESSAGE, "%s called Jump. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    if (call.client->IsSessionChange()) {
-        call.client->SendNotifyMsg("Session Change currently active.");
-        return PyStatic.NewNone();
-    }
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    } else if (pDestiny->IsWarping()) {
-        call.client->SendNotifyMsg( "You can't do this while warping");
-        return PyStatic.NewNone();
-    }
-
-    Call_StargateJump args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
-    }
-
-    /** @todo  check distance from ship to gate */
-    call.client->StargateJump(args.fromStargateID, args.toStargateID);
-
-    /* return error msg from this call, if applicable, else nodeid and timestamp */
-    // returns nodeID and timestamp
-    PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
-    return tuple;
-}
-
-PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
-	/*  remotePark.CmdAbandonLoot(wrecks)  <- this is pylist from 'abandonAllWrecks'
-	 *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID in list
-	 */
-  sLog.White( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %lu", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-	Call_SingleIntList arg;
-	if (!arg.Decode(&call.tuple)) {
-		codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-		return PyStatic.NewNone();
-	}
-
-	/** @todo  change ownerID to _system for all loot also!!  */
-	SystemEntity* pSE(nullptr);
-	SystemManager* pSysMgr = call.client->SystemMgr();
-	for (auto &cur : arg.ints) {
-        pSE = pSysMgr->GetSE(cur);
-        if (pSE == nullptr)
-            continue;
-        pSE->Abandon();
-        PyTuple* slimData = new PyTuple(2);
-            slimData->SetItem(0, new PyLong(pSE->GetID()));
-            slimData->SetItem(1, new PyObject( "foo.SlimItem", pSE->MakeSlimItem()));
-        PyTuple* itemData = new PyTuple(2);
-            itemData->SetItem(0, new PyString("OnSlimItemChange"));
-            itemData->SetItem(1, slimData);
-        pSE->SysBubble()->BubblecastDestinyUpdate(&itemData, "OnSlimItemChange" );
-    }
-
-    return PyStatic.NewNone();
-}
-
-PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
-    codelog(CLIENT__ERROR, "%s: Client sent UpdateStateRequest. Previous call generated a bad return.  Check Logs.", call.client->GetName());
-
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    }
-    if (pDestiny->IsWarping()) {
-        call.client->SendNotifyMsg( "You can't do this while warping");
-        return PyStatic.NewNone();
-    }
-
-    call.client->SetStateSent(false);
-    pDestiny->SendSetState();
-
-    return PyStatic.NewNone();
 }
 
 /**     ***********************************************************************

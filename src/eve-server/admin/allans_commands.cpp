@@ -40,7 +40,6 @@ PyResult Command_siglist(Client* pClient, CommandDB* db, PyServiceMgr* services,
 
     int count = sig.size();
     std::ostringstream str;
-    str.clear();
     str << "There are currently %u active signals in %s(%u)<br>"; //80
     str << "aID iID bubbleID type 'Name'<br>"; //30
 
@@ -153,7 +152,6 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     std::map<uint32, SystemEntity*> into = pSys->GetEntities();
 
     std::ostringstream str;
-    str.clear();
     str << "System: %s(%u)<br>"; //42
     str << "Belts: %u<br>"; //20
     str << "Bubbles: %u<br>"; //25
@@ -230,7 +228,6 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
     b->GetEntities(into);
 
     std::ostringstream str;
-    str.clear();
     str << "Bubble: %u<br>"; //22
     str << "Dynamics: %u<br>"; //19
     str << "NPCs: %u<br>"; //18
@@ -427,7 +424,6 @@ PyResult Command_beltlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     belt->GetList(beltID, invMap);
 
     std::ostringstream str;
-    str.clear();
     str << "BeltID %u has %u roids in it.<br><br>"; //40
 
     for (auto &cur : invMap)
@@ -477,7 +473,6 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     }
 
     std::ostringstream str;
-    str.clear();
     str << "%s<br>";
     str << "InventoryID %u(%p) (Item %p) has %u items.<br><br>"; //70
 
@@ -521,7 +516,6 @@ PyResult Command_shipinventory(Client* pClient, CommandDB* db, PyServiceMgr* ser
     inv->GetInventoryMap(invMap);
 
     std::ostringstream str;
-    str.clear();
     str << "%s<br>"; //40
     str << "InventoryID %u(%p) (Ship %p) has %u items.<br><br>"; //50
 
@@ -551,7 +545,6 @@ PyResult Command_skilllist(Client* pClient, CommandDB* db, PyServiceMgr* service
     inv->GetInventoryMap(invMap);
 
     std::ostringstream str;
-    str.clear();
     str << "InventoryID %u(%p) of %s has %u skills.<br><br>"; //80
 
     for (auto &cur : invMap) {
@@ -604,7 +597,6 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     iRef->GetAttributeMap()->CopyAttributes(attrMap);
 
     std::ostringstream str;
-    str.clear();
     str << "%s (%u) has %u attributes.<br><br>"; //70
 
     for (auto &cur : attrMap) {
@@ -629,7 +621,6 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
 
 PyResult Command_showsession(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     std::ostringstream str;
-    str.clear();
     str << "Current Session Values.<br><br>"; //32
 
     str << "charid: %i <br>"; //14+10
@@ -703,7 +694,6 @@ PyResult Command_targlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     std::string into = pClient->GetShipSE()->TargetMgr()->TargetList(length, count);
 
     std::ostringstream str;
-    str.clear();
     str << "Target List for %s in shipID %u<br>"; //30+30
     str << "    %u entries in list<br>";   //30
     str << "%s"; //length
@@ -862,7 +852,6 @@ PyResult Command_fleetboost(Client* pClient, CommandDB* db, PyServiceMgr* servic
     std::string into = sFltSvc.GetBoosterData(fleetID, length);
 
     std::ostringstream str;
-    str.clear();
     str << "<color=aqua>FleetID %u Command and Boost Data Window.</color><br><br>";   //77
     str << "%s"; //length
 
@@ -914,7 +903,6 @@ PyResult Command_getpositiondata(Client* pClient, CommandDB* db, PyServiceMgr* s
     float elevation = std::atan2(vec.y, std::sqrt(std::pow(vec.x,2) + std::pow(vec.z,2)));
 
     std::ostringstream str;
-    str.clear();
     str << "Angle for current position is " << angle << "<br>";
     str << "Az: " << azimuth << " Ele: " << elevation;
     int size = 70;
@@ -930,7 +918,6 @@ PyResult Command_players(Client* pClient, CommandDB* db, PyServiceMgr* services,
     std::vector<Client*> cVec;
     sEntityList.GetClients(cVec);
     std::ostringstream str;
-    str.clear();
     str << "Active Player List:<br>" << cVec.size() << " Online Players.<br>";
 
     for (auto &cur : cVec) {
@@ -1025,7 +1012,6 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     inv->GetCargoList(cargoMap);
 
     std::ostringstream str;
-    str.clear();
     str << "Reported Cargo in %s (%u)  [LineCount:%u]<br>"; //60
     str << "Hold Name    Volume in m3. Stored/Total<br>"; //40
     str << "    Qty  ItemName  (volume each)  stack volume<br>"; //50
@@ -1175,7 +1161,6 @@ PyResult Command_runtest(Client* pClient, CommandDB* db, PyServiceMgr* services,
 PyResult Command_bindList(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     std::ostringstream str;
-    str.clear();
     str << "Current Bound Object Listing (%u)<br><br>"; //45
 
     std::vector<PyServiceMgr::BoundObj> vec;
@@ -1222,7 +1207,28 @@ PyResult Command_dropLoot(Client* pClient, CommandDB* db, PyServiceMgr* services
 PyResult Command_removecans(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     pClient->SystemMgr();
-    
+
+    return nullptr;
+}
+
+PyResult Command_distance(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!pClient->IsInSpace()) {
+        pClient->SendInfoModalMsg("You are not in Space.");
+        return nullptr;
+    }
+
+    uint8 count = pClient->GetShipSE()->TargetMgr()->GetTargetCount();
+
+    if (count > 1) {
+        pClient->SendInfoModalMsg("This currently only works with one target.  You have %u targets locked.", count);
+        return nullptr;
+    }
+
+    SystemEntity* pSE = pClient->GetShipSE()->TargetMgr()->GetFirstTarget();
+    uint32 distance = pClient->GetShipSE()->GetPosition().distance(pSE->GetPosition());
+
+    pClient->SendInfoModalMsg("Distance between you and %s is %um", pSE->GetName(), distance);
     return nullptr;
 }
 
