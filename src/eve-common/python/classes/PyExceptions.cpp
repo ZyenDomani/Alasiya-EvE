@@ -38,7 +38,7 @@ PyException& PyException::operator=( const PyException& oth )
 {
     PySafeDecRef( ssException );
     ssException = oth.ssException;
-    PySafeIncRef( ssException );
+    //PySafeIncRef( ssException );
 
     return *this;
 }

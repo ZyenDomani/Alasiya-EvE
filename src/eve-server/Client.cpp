@@ -2082,7 +2082,7 @@ void Client::SendSessionChange()
 
 void Client::QueueDestinyUpdates(std::vector< PyTuple* >& updates) {
     for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); itr++) {
-        PyIncRef(*itr);
+        //PyIncRef(*itr);
         QueueDestinyUpdate(&(*itr));
     }
 }

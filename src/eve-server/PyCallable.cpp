@@ -112,11 +112,11 @@ PyResult& PyResult::operator=( const PyResult& oth )
     } else {
         ssResult = PyStatic.NewNone();
     }
-    PySafeIncRef( ssResult );
+    //PySafeIncRef( ssResult );
 
     PySafeDecRef( ssNamedResult );
     ssNamedResult = oth.ssNamedResult;
-    PySafeIncRef( ssNamedResult );
+    //PySafeIncRef( ssNamedResult );
 
     return *this;
 }
