@@ -770,8 +770,10 @@ void DestinyManager::MoveObject() {
      */
 
     // check for moving ship changing heading
-    if (m_turning)
+    if (m_turning) {
         Turn();
+        return;
+    }
 
     float speed(0.0f);
     std::string move = "";
@@ -1014,6 +1016,7 @@ void DestinyManager::InitTurn()
 
     // calc control points
     // doubt these are right.  just a wag while at work
+    // they actually close.  see notes
     m_curveStart = GetPosition();
     m_curveApex = m_curveStart + (m_shipHeading * (m_maxShipSpeed * m_activeSpeedFraction));
     m_curveEnd = m_curveApex + (m_targetHeading * (m_maxShipSpeed * m_activeSpeedFraction));
@@ -1055,11 +1058,15 @@ void DestinyManager::InitTurn()
     int64 ax=0,ay=0,az=0,bx=0,by=0,bz=0;
     // clear map from previous use
     m_curveMap.clear();
-    GPoint point = NULL_ORIGIN;
+    //GPoint point = NULL_ORIGIN;
     // divide curve into alignTime steps  (3 for [base]shuttle, 12 for [base]hurricane, 72 for [base]fenrir)
     uint8 steps = m_turnAlignTime;
     // get % of turn per step
     float pct = 1 / steps;
+    if (is_log_enabled(DESTINY__TURN_TRACE))
+        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): degrees:%.5f, steps:%u @ pct:%.3f, alignTime:%u, minSF:%.3f", \
+        mySE->GetName(), mySE->GetID(), EvE::Trig::Rad2Deg(radians), steps, pct, m_turnAlignTime, minTurnSpeedFraction);
+
     //calculate and save curveMap
     while (steps > 0) {
         --steps;
@@ -1071,10 +1078,11 @@ void DestinyManager::InitTurn()
         by = getPct(m_curveApex.y, m_curveEnd.y, pct * steps);
         bz = getPct(m_curveApex.z, m_curveEnd.z, pct * steps);
         // The Black Dot
-        point.x = getPct(ax, bx, pct * steps);
-        point.y = getPct(ay, by, pct * steps);
-        point.z = getPct(az, bz, pct * steps);
+        //point.x = getPct(ax, bx, pct * steps);
+        //point.y = getPct(ay, by, pct * steps);
+        //point.z = getPct(az, bz, pct * steps);
         // copy current point to map
+        GPoint point(getPct(ax, bx, pct * steps), getPct(ay, by, pct * steps), getPct(az, bz, pct * steps));
         m_curveMap[steps] = point;
         // plot course if ship tracking enabled
         if (sEntityList.GetTracking()) {
@@ -1086,11 +1094,6 @@ void DestinyManager::InitTurn()
     }
 
     // whats the ship speed at end of turn?
-
-    if (is_log_enabled(DESTINY__TURN_TRACE))
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): degrees:%.5f, steps:%u @ pct:%.3f, alignTime:%u, minSF:%.3f", \
-        mySE->GetName(), mySE->GetID(), EvE::Trig::Rad2Deg(radians), steps, pct, m_turnAlignTime, minTurnSpeedFraction);
-
 }
 
 //NOTE:  new Turn() code
