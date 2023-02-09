@@ -537,7 +537,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    pDestiny->Orbit(pEntity, PyRep::IntegerValueU32(args.range));
+    pDestiny->InitOrbit(pEntity, PyRep::IntegerValueU32(args.range));
 
     return PyStatic.NewNone();
 }

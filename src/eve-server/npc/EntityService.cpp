@@ -283,7 +283,7 @@ PyResult EntityBound::Handle_CmdReturnHome(PyCallArgs &call) {
     call.Dump(DRONE__DUMP);
 
     //Drone* pDrone = m_sysMgr->GetSE()->GetDroneSE();
-    //pDrone->DestinyMgr()->Orbit(pShipSE, 800);
+    //pDrone->DestinyMgr()->InitOrbit(pShipSE, 800);
 
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");

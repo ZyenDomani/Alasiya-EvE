@@ -123,6 +123,7 @@ public:
     /* Configuration methods */
     void WebbedMe(InventoryItemRef modRef, bool apply=false);
     void SpeedBoost(bool deactivate=false);             // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
+    // SetPosition is only used when point may be zero or we are forcing client update
     void SetPosition(const GPoint& pt, bool update=false);
     void SetMaxVelocity(float maxVelocity);
     void UpdateShipVariables();
@@ -138,7 +139,7 @@ public:
     void TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed);
 
     /* Local Movement */
-    void Orbit(SystemEntity* pSE, uint32 distance=0);
+    void InitOrbit(SystemEntity* pSE, uint32 distance=0);
     void Follow( SystemEntity* pSE, uint32 distance );
     void AlignTo(SystemEntity* pSE);
     void GotoPoint(const GPoint &point);
@@ -203,7 +204,7 @@ public:
 
     float GetAccelTime()                                { return m_shipMaxAccelTime; }
     // this is only used by my GetShipVars command
-    float GetAlignTime()                                { return m_turnAlignTime; }
+    uint8 GetAlignTime()                                { return m_turnAlignTime; }
     float GetWarpTime()                                 { return m_warpAlignTime; }
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
     double GetRadius()                                  { return m_radius; }
@@ -236,8 +237,7 @@ protected:
     //float m_massMKg;                    //in mg     - Millions of kg (MKg)
     uint8 m_warpAccelTime;              //in s      - calculated internally for warp stages
     uint8 m_warpDecelTime;              //in s      - calculated internally for warp stages
-
-    float m_turnAlignTime;              //in s      - time to complete turn
+    uint8 m_turnAlignTime;              //in s      - time to complete turn
     float m_warpAlignTime;              //in s      - time to align and enter warp
     float m_prevSpeed;                  //in m/s    - used to calculate speed during decel
     float m_maxShipSpeed;               //in m/s
@@ -287,7 +287,7 @@ protected:
     uint32 m_followDistance;            //in m
     uint32 m_targetDistance;            //in m
     double m_moveTime;                  //in ms       - time when speed change started.  used to calculate m_timeFraction
-    double m_turnTime;                  //in ms       - time turn started.  this must be accurate and separate from m_moveTime
+    uint16 m_turnTime;                  //in s        - time turn started.  now uses EntityList.Stamp()
     double m_agility;                   //unitless?   - not sent to client
 
     GPoint m_targetPoint;               //vector      - point in space used as current destination
@@ -322,10 +322,13 @@ private:
     void MarkPoint(const GPoint& position, std::string& name, std::string& desc);
     bool m_posHack;                    //force position update after turn
 
-    // new turn data (wip)      -allan  Jan 2023
-    GVector m_curveHeadDelta;   // heading change per tic to (eventually) allow "from" to match "to" smoothly
-    // return percent change between from and to  (wip)
-    float getPct(float from, float to, float pct) {
+    // bezier turn data (wip)      -allan  Feb 2023
+    GPoint m_curveStart;
+    GPoint m_curveApex;
+    GPoint m_curveEnd;
+    std::map<uint8, GPoint> m_curveMap;
+    // return percent change between from and to
+    int64 getPct(int64 from, int64 to, float pct) {
         return from + ((to - from) * pct);
     }
 

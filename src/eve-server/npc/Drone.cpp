@@ -181,7 +181,7 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
     // set speed and begin orbit
     m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
-    m_destiny->Orbit(pShipSE, m_orbitRange);
+    m_destiny->InitOrbit(pShipSE, m_orbitRange);
 }
 
 void DroneSE::Abandon() {

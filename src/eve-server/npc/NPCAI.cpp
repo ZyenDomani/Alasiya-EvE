@@ -435,7 +435,7 @@ void NPCAIMgr::SetWander()
         }
         m_destiny->SetMaxVelocity(m_orbitSpeed);
         uint16 orbitDistance = MakeRandomInt(10000, 20000);
-        m_destiny->Orbit(pTargSE, orbitDistance);
+        m_destiny->InitOrbit(pTargSE, orbitDistance);
         _log(NPC__AI_TRACE, "%s(%u):  Just for shits-n-giggles, I\'m gonna orbit %s(%u) at %um.", \
                 m_npc->GetName(), m_npc->GetID(), pTargSE->GetName(), pTargSE->GetID(), orbitDistance);
     } else {
@@ -513,7 +513,7 @@ void NPCAIMgr::SetEngaged(SystemEntity* pTargSE) {
          m_npc->GetName(), m_npc->GetID(), pTargSE->GetName(), pTargSE->GetID());
     // actively fighting
     m_destiny->SetMaxVelocity(m_orbitSpeed);
-    m_destiny->Orbit(pTargSE, m_optimalRange);  //try to get inside orbit range
+    m_destiny->InitOrbit(pTargSE, m_optimalRange);  //try to get inside orbit range
     m_state = NPCAI::State::Engaged;
     m_warpOutTimer.Disable();
 }
@@ -546,7 +546,7 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargSE) {
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
     //  this state is only usable by higher-class npcs.
     m_destiny->SetMaxVelocity(m_orbitSpeed * 2);
-    m_destiny->Orbit(pTargSE, m_falloff);  //try to get outside orbit range
+    m_destiny->InitOrbit(pTargSE, m_falloff);  //try to get outside orbit range
     m_state = NPCAI::State::Signaling;
     m_warpOutTimer.Disable();
 }

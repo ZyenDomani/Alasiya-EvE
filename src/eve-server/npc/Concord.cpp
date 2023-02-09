@@ -449,7 +449,7 @@ void ConcordAI::SetEngaged(SystemEntity* pTarget) {
     //   this sets orbit speed between cruise speed and quarter of max speed (whether mwb or ab)
     //   this will also enable this npc to have a variable speed, instead of fixed upon creation.
     m_npc->DestinyMgr()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /4)));
-    m_npc->DestinyMgr()->Orbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->InitOrbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Engaged;
 }
 
@@ -472,7 +472,7 @@ void ConcordAI::SetSignaling(SystemEntity* pTarget) {
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
     //  this state is only usable by higher-class npcs.
     m_npc->DestinyMgr()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /2)));
-    m_npc->DestinyMgr()->Orbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->InitOrbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Signaling;
 }
 
