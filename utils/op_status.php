@@ -23,13 +23,17 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a rough draft of their specific code, just a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but will not generate an error and will very seldom crash the server.</font><BR><BR><BR>
-<font color="orange">Last Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>14 February 2021</font><BR>
+<font color="orange">Last Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>4 February 2023</font><BR>
 <font color="orange">Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=red>Outdated</font> - <font color="yellow">Being Updated</font><BR>
 <font color="orange">Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=pink>All data currently under review.  Found discrepancies in pre-rewrite tests (before mid-2016)</font><BR><BR>
-  <a href="https://scan.coverity.com/projects/zhyrohaad-alasiyaeve">
+<a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
   <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/23808/badge.svg"/>
+       src="https://scan.coverity.com/projects/27332/badge.svg"/>
+</a>&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://www.codefactor.io/repository/github/zyendomani/alasiya-eve">
+  <img src="https://www.codefactor.io/repository/github/zyendomani/alasiya-eve/badge?s=633e0a6e1d656f3e4783924a400a34261abe49f4" alt="CodeFactor" />
 </a>
+
   </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals (<font color=green>Current</font>)</span></h2>
@@ -46,21 +50,21 @@ There will be some response, like opening windows, but will not generate an erro
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;"><tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td><td style="width: 26%;">Comments</td></tr>
-<tr><td> - Stable, Efficient Server Code</td><td class="working">65%
+<tr><td> - Stable, Efficient Server Code</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 65%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress - eliminating duplicated code and headers, tracking/fixing segfaults, updating code to C++/0x11<BR>14Feb21</td></tr>
+<td>In Progress - monitoring & adjusting code for faster runtime, most segfaults eliminated<BR>4Feb23</td></tr>
 <tr><td> - Memory Management</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress<BR>While greatly improved over official branch,<BR><font color="red">still horrible</font><BR>14Feb21</td></tr>
+<td>In Progress<BR>While greatly improved over official branch,<BR><font color="red">still horrible</font><BR>4Feb23</td></tr>
 <tr><td> - Efficient, Accurate Packet Deciphering</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress - Most packets understood and correctly processed<BR>27July15</td></tr>
+<td>In Progress - Most packets understood and correctly processed<BR>4Feb23</td></tr>
 <tr><td> - Mutexes</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1817,11 +1821,11 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27July15</td></tr>
-<tr><td> - Orbit Object</td><td class="working">90%
+<tr><td> - Orbit Object</td><td class="working">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Hacked</font><BR>15Jul16</td></tr>
+<td><font color=orange>Hacked - Horrible</font><BR>15Jul16</td></tr>
 <tr><td> - Follow Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1909,7 +1913,7 @@ There will be some response, like opening windows, but will not generate an erro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - Can Orbit target</td><td class="working">90%
+<tr><td> - Can Orbit target</td><td class="working">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>

@@ -1,0 +1,126 @@
+    
+    stopDist = agility * speed
+    agility = mass * inertiaMod * 10^-6
+    m_warpAlignTime = (0.693147 * mass * inertiaMod) / 500000;  //(ln(2) * mass * inertiaMod) / 500000;
+    m_warpAlignTime = (1.386294 * agility);			//ln(0.25) * agility;
+    m_shipMaxAccelTime = (-ln(0.02) * m_agility);
+
+
+shuttle (base)
+1,600,000	1	500
+agility 1.6
+align 2.218
+accel 6.259
+stop dist 800
+
+jaguar
+1229400		1.806   507.3
+agility 2.2203
+align 3.078
+accel 8.685
+stop dist 1126.36
+
+drake
+10700000	0.3971    264
+agility 4.249
+align 5.8903
+accel 16.622
+stop dist 1121.74
+
+hurricane (base)
+12800000       0.67        180
+agility 8.576
+align 11.889
+accel 33.514
+stop dist 1543.68
+
+typhoon (base)
+100600000      0.11      130
+agility 11.66
+align 15.34
+accel 45.614
+stop dist 1515.8
+
+orca  (base)
+150000000	0.26	60
+agility 39.0
+align 54.065
+accel 152.568
+stop dist 2340
+
+fenrir (base)
+820000000    0.0625       80
+agility 51.25
+align 71.047
+accel 200.5
+stop dist 4100
+
+
+
+formula for webbed ship decel....
+t = Time in seconds (variable)
+Vo = Initial velocity
+Vt = Velocity at t Vmax = Ship's maximum velocity in m/s
+I = Ship's inertia modifier, in s/kg
+M = Ship's mass in kg
+e = Base of natural logarithms
+
+For Vmax>Vo:
+Vt=Vo+(-(Vo+Vmax)*(e^(-t/M*I)-1)
+
+For Vmax<Vo:
+Vt=Vo-(-(Vo-Vmax)*(e^(-t/M*I)-1)
+
+As you can see, when Vo is 0 it disappears entirely, which was why my attempts to fiddle with the formula without it didn't work.
+
+
+
+
+warp distance formulas
+ta = ln(Vm/ka) / ka
+td = ln(Vm/kd) / kd
+
+Vm = ((1/ka)+(1/kd)) * d
+Where Vm is highest attained speed, ta, td, ka and kd are the time and k constants for acceleration and deceleration, and d is the distance to travel.
+
+
+
+
+
+orbit approximatations....this does not use targ mass or Gc
+orbit radius in km
+rActual = imod*massMkg*velActual^2*10^-3 / velMax^2 - velActual^2
+
+orbit velocity in m/s
+one = SQRT(4*imod^2*(massMkg)^2*(rActual*10^3)^2*velMax^2+(rActual*10^3)^4)
+two = (2*imod^2*(massMkg)^2)
+three = ((rActual*10^3)^2)
+velActual = SQRT((one / two)- three / two)
+
+
+
+
+arc length for 3pt bezier (java)
+  v.x = 2*(b.x - a.x);
+    v.y = 2*(b.y - a.y);
+    w.x = c.x - 2*b.x + a.x;
+    w.y = c.y - 2*b.y + a.y;
+
+    uu = 4*(w.x*w.x + w.y*w.y);
+
+    if(uu < 0.00001)
+    {
+        return (float) Math.sqrt((c.x - a.x)*(c.x - a.x) + (c.y - a.y)*(c.y - a.y));
+    }
+
+    vv = 4*(v.x*w.x + v.y*w.y);
+    ww = v.x*v.x + v.y*v.y;
+
+    t1 = (float) (2*Math.sqrt(uu*(uu + vv + ww)));
+    t2 = 2*uu+vv;
+    t3 = vv*vv - 4*uu*ww;
+    t4 = (float) (2*Math.sqrt(uu*ww));
+
+    return (float) ((t1*t2 - t3*Math.log(t2+t1) -(vv*t4 - t3*Math.log(vv+t4))) / (8*Math.pow(uu, 1.5)));
+
+

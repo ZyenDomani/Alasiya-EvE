@@ -992,6 +992,10 @@ make EACS and E-UNI corps as tribute (static)?
 *******************************************************
 *****************  ideas for later
 
+Creating a new bomb type that when it is carried in cargo and the ship is destroyed it triggers a bomb explosion.
+In high sec, the Tengu should have a chance of spontaneous self destruction when undocking.
+All ships bigger than a battlecruiser get a special bay for a frigate that you get ejected inside of (rather than pod) when the big ship dies.
+
 colorize SendServerMOTD  (currently 'system' red)
 
 add chat for system commands?  have commands send to cmd window instead of notification window

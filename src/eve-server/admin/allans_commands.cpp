@@ -361,14 +361,14 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
     snprintf(reply, 350,
              "Destiny Variable List for %s<br><br>" //60
              "ShipID: %u<br>" //28
-             "Mass: %.2f<br>" //28
-             "AlignTime: %.3f<br>" //27
-             "AccelTime: %.2f<br>"
-             "MaxSpeed: %.2f<br>" //27
-             "WarpSpeed: %.2f<br>" //27
-             "WarpTime: %.3f<br>" //27
-             "WarpDropSpeed: %.2f<br>" //27
-             "Radius: %.2f<br>" //27
+             "Mass: %.2fkg<br>" //28
+             "AlignTime: %us<br>" //27
+             "AccelTime: %.2fs<br>"
+             "MaxSpeed: %.2fm/s<br>" //27
+             "WarpSpeed: %.2fau/s<br>" //27
+             "WarpTime: %.3fs<br>" //27
+             "WarpDropSpeed: %.2fm/s<br>" //27
+             "Radius: %.2fm<br>" //27
              "CapNeed: %.8f<br>" //27
              "Agility: %.5f<br>" //27
              "InertiaMod: %.3f<br>" //27
