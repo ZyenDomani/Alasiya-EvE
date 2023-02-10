@@ -262,7 +262,7 @@ protected:
     bool m_accel;                       //used to execute code for increasing ship speed
     bool m_decel;                       //used to execute code for decreasing ship speed
     bool m_cloaked;
-    bool m_turning;                     //used to execute code for ship turning
+    uint8 m_turning;                     //used to execute code for ship turning
     bool m_tractored;
     bool m_tractorPause;
 
@@ -278,7 +278,7 @@ protected:
     float m_orbitRadTic;                //in rad/sec  - radians around orbit per tic
 
     float m_timeFraction;               //fuzzy logic - holds current euler value for time
-    float m_turnFraction;               //fuzzy logic - used for turn accel/decel checks
+    //float m_turnFraction;               //fuzzy logic - used for turn accel/decel checks
     float m_prevSpeedFraction;          //fuzzy logic - previous percent of full speed.  used for speed changes
     float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
     float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
@@ -331,6 +331,14 @@ private:
     int64 getPct(int64 from, int64 to, float pct) {
         return from + ((to - from) * pct);
     }
+    float getPctf(float from, float to, float pct) {
+        return from + ((to - from) * pct);
+    }
+
+    struct CurveData { //gpoint pos, float asf
+        GPoint pos;
+        float asf;
+    };
 
 
     // Internal Orbit shit

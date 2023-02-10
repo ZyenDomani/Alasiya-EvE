@@ -38,18 +38,17 @@ outline:
 turn init will
  - determine degree of change
  - determine target asf for turn
-  if (asf>tsf) then pass to speedfractionchange
-    set time to hit target asf
  - set turn vars
- - calculate entire turn and save in map
+ - calculate entire turn and asf and save in map
  - return to caller (MoveObject())
-    turn to begin on next tic
+    turn to begin on next tic?
 turn() will
- - set ship position from turn map according to tic
+ - set ship position and asf from turn map according to tic
  - set heading to next position (in case of vector change)
 
+TODO:
+ - determine whats needed to change on speedboost
 
-will need *some* way of determining ship speed while turning....
 
 
 apex->end should be parallel with start->dir  (parallel vectors should be equal when normalized)
@@ -60,9 +59,9 @@ apex->end should be parallel with start->dir  (parallel vectors should be equal 
 
 
 
-rifter lines up with accel 4 after turn < 90*
+rifter lines up with accel 4 after turn of 48*
 
-.
+
 20:40:04 [Bound] BeyonceBound::CmdGotoDirection()
 20:40:04 [AP Msg] Allan called GotoDirection. AP: false
 20:40:04 [MoveTrace] Destiny::SetSpeedFraction() - kitty(140020259):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
@@ -85,11 +84,6 @@ rifter lines up with accel 4 after turn < 90*
 20:40:11 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 317.945 m/s (tf:0.7788 asf:0.7788).
 20:40:12 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.82169, timeStamp: 7.999
 20:40:12 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 335.456 m/s (tf:0.8217 asf:0.8217).
-20:40:12 [Service] machoNet::GetTime()
-20:40:12 [Service] machoNet::GetTime()
-20:40:13 [Service] machoNet::GetTime()
-20:40:13 [Service] machoNet::GetTime()
-20:40:13 [Service] machoNet::GetTime()
 20:40:13 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.85627, timeStamp: 8.999
 20:40:13 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 349.571 m/s (tf:0.8563 asf:0.8563).
 20:40:13 [Bound] BeyonceBound::CmdGotoDirection()
@@ -141,23 +135,12 @@ rifter lines up with accel 4 after turn < 90*
 20:40:30 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 74.527 m/s (tf:0.8126 asf:0.1826 ps:397.79 psf:0.9744).
 20:40:31 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.84897, timeStamp: 8.770
 20:40:31 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 60.076 m/s (tf:0.8490 asf:0.1472 ps:397.79 psf:0.9744).
-20:40:32 [Bound] DogmaIMBound::AddTarget()
-20:40:32 [TargetTrace] TurnEnd - kitty(110000103) - kitty(140020259) has started target lock on me.
-20:40:32 [TargetInfo] Pilot Allan in kitty(140020259) started targeting TurnEnd - kitty(110000103) at 2815.2m with 2.68s lock time.
-20:40:32 [TargetDump] Target Dump for kitty(140020259):
-20:40:32 [TargetDump]     Targeting TurnEnd - kitty(110000103): Locking - Timer Running with 2680ms remaining.
-20:40:32 [TargetDump]     No Targeters
-20:40:32 [TargetDump]     Active Modules: (ship:module(moduleID))
-20:40:32 [TargetDump]       *NONE*
 20:40:32 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.87826, timeStamp: 9.770
 20:40:32 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 48.428 m/s (tf:0.8783 asf:0.1186 ps:397.79 psf:0.9744).
 20:40:33 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.90188, timeStamp: 10.770
 20:40:33 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 39.031 m/s (tf:0.9019 asf:0.0956 ps:397.79 psf:0.9744).
 20:40:34 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.92089, timeStamp: 11.770
 20:40:34 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 31.468 m/s (tf:0.9209 asf:0.0771 ps:397.79 psf:0.9744).
-20:40:35 [TargetTrace] kitty(140020259) has finished locking TurnEnd - kitty(110000103)
-20:40:35 [TargetTrace] kitty(140020259) - adding locked target TurnEnd - kitty(110000103).
-20:40:35 [TargetTrace] TurnEnd - kitty(110000103) has been locked by kitty(140020259)
 20:40:35 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.93623, timeStamp: 12.770
 20:40:35 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 25.366 m/s (tf:0.9362 asf:0.0621 ps:397.79 psf:0.9744).
 20:40:36 [MoveTrace] Destiny::MoveObject() - timeFraction: 0.94860, timeStamp: 13.770

@@ -1,4 +1,26 @@
+20:40:13 [TurnTrace] Destiny::InitTurn() - kitty(140020259): degrees:114.12381, steps:0 @ pct:0.000, alignTime:6, minSF:0.544
+20:40:13 [MoveTrace] Destiny::SetSpeedFraction() - kitty(140020259):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: true, decel: false
+20:40:13 [MoveTrace] Destiny::UpdateVelocity - kitty(140020259): Speed Change - USF: 1.00, ASF: 0.86, TF: 0.86, PSF: 0.86, pSpeed: 349.57, mSpeed: 408.25, accel: true, decel: false, delta: 0.144
+20:40:13 [MoveTrace] Destiny::UpdateVelocity - kitty(140020259):  USF != 0 and ship is Moving.   --Begin Accel  AccelTime: 4.14, USF: 1.00, ASF: 0.86, TF: 0.86, PSF: 0.86
+20:40:14 [MoveTrace] Destiny::MoveObject() - MoveDelay - kitty(140020259): stateStamp: 9752
+
+
+
+minSF:0.544
+ASF: 0.86
+PSF: 0.86
+
+from + (to - from * pct)
+				asf = getPct(psf, mtsf, pct * idx);
+.781 = .86 + ( .544 - .86) * .25
+.559 = .86 + ( .544 - .86) * .95
+				asf = getPct(mtsf, psf, pct * (idx - halfTurn));
+.623 = .544 + (.86 - .544) * .25
+.844 = .544 + (.86 - .544) * .95
+
     
+
+
     stopDist = agility * speed
     agility = mass * inertiaMod * 10^-6
     m_warpAlignTime = (0.693147 * mass * inertiaMod) / 500000;  //(ln(2) * mass * inertiaMod) / 500000;
