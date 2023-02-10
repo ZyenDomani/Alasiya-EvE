@@ -156,7 +156,7 @@ public:
     void WarpTo(const GPoint& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
 
     /* Ship State Query functions */
-    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.001); }
+    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.0005); }
 
     /* Movement checks */
     bool IsAligned(GPoint &targetPoint);
@@ -210,8 +210,7 @@ public:
 
     float GetAccelTime()                                { return m_shipMaxAccelTime; }
     // this is only used by my GetShipVars command
-    uint8 GetAlignTime()                                { return m_turnAlignTime; }
-    float GetWarpTime()                                 { return m_warpAlignTime; }
+    uint8 GetAlignTime()                                { return m_alignTime; }
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
     double GetRadius()                                  { return m_radius; }
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
@@ -243,8 +242,8 @@ protected:
     //float m_massMKg;                    //in mg     - Millions of kg (MKg)
     uint8 m_warpAccelTime;              //in s      - calculated internally for warp stages
     uint8 m_warpDecelTime;              //in s      - calculated internally for warp stages
-    uint8 m_turnAlignTime;              //in s      - time to complete turn
-    float m_warpAlignTime;              //in s      - time to align and enter warp
+    uint8 m_alignTime;                  //in s      - time to change directions or enter warp
+    //float m_warpAlignTime;              //in s      - time to align and enter warp
     float m_prevSpeed;                  //in m/s    - used to calculate speed during decel
     float m_maxShipSpeed;               //in m/s
     float m_shipWarpSpeed;              //in au/s
@@ -268,7 +267,7 @@ protected:
     bool m_accel;                       //used to execute code for increasing ship speed
     bool m_decel;                       //used to execute code for decreasing ship speed
     bool m_cloaked;
-    uint8 m_turning;                     //used to execute code for ship turning
+    bool m_turning;                     //used to execute code for ship turning
     bool m_tractored;
     bool m_tractorPause;
 
@@ -334,7 +333,7 @@ private:
     GPoint m_curveEnd;
     std::map<uint8, Destiny::CurveData> m_curveMap;     // idx, data {GPoint, asf}
     // return percent change between from and to
-    int64 getPct(int64 from, int64 to, float pct) {
+    double getPct(double from, double to, float pct) {
         return from + ((to - from) * pct);
     }
     float getPctf(float from, float to, float pct) {

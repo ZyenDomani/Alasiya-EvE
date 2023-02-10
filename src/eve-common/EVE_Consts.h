@@ -50,8 +50,7 @@ static const double Gc = 0.000000000066725985;     //per client (changed from or
 static const double SMALL_NUMBER = 0.000000000000001;
 
 // constants for destiny movement checks
-static const float ASF_CHECK = 0.002f;
-static const uint8 TURN_TIME_OFFSET = 1;
+static const float ASF_CHECK = 0.001f;
 
 // verify that NO ONE tries to use "ccp" in their name
 // also check for mysql commands among other dumb shit

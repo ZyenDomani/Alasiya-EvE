@@ -366,7 +366,6 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              "AccelTime: %.2fs<br>"
              "MaxSpeed: %.2fm/s<br>" //27
              "WarpSpeed: %.2fau/s<br>" //27
-             "WarpTime: %.3fs<br>" //27
              "WarpDropSpeed: %.2fm/s<br>" //27
              "Radius: %.2fm<br>" //27
              "CapNeed: %.8f<br>" //27
@@ -375,7 +374,7 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              "Heading: %.3f,%.3f,%.3f<br>", //21
              pClient->GetShipSE()->GetName(), pClient->GetShipID(),
              sRef->GetAttribute(AttrMass).get_float(), dm->GetAlignTime(),
-             dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10), dm->GetWarpTime(),
+             dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10),
              dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(),
              sRef->GetAttribute(AttrAgility).get_double(),
              sRef->GetAttribute(AttrInertiaMod).get_double(),
