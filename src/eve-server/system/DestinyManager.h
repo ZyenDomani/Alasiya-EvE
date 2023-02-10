@@ -34,6 +34,12 @@
 
 //0=no orbit, >0=in orbit, 1=at distance 2=too close , 3=too far, 4=way too close, 5=way too far
 namespace Destiny {
+
+    struct CurveData { //gpoint pos, float asf
+        GPoint pos;
+        float asf;
+    };
+
     namespace Ball {
         struct stateStamp {
             uint8 state;
@@ -326,7 +332,7 @@ private:
     GPoint m_curveStart;
     GPoint m_curveApex;
     GPoint m_curveEnd;
-    std::map<uint8, GPoint> m_curveMap;
+    std::map<uint8, Destiny::CurveData> m_curveMap;     // idx, data {GPoint, asf}
     // return percent change between from and to
     int64 getPct(int64 from, int64 to, float pct) {
         return from + ((to - from) * pct);
@@ -334,11 +340,6 @@ private:
     float getPctf(float from, float to, float pct) {
         return from + ((to - from) * pct);
     }
-
-    struct CurveData { //gpoint pos, float asf
-        GPoint pos;
-        float asf;
-    };
 
 
     // Internal Orbit shit

@@ -578,7 +578,7 @@ void DestinyManager::Halt(bool commanded/*false*/) {
     }
     if (is_log_enabled(DESTINY__MOVE_TRACE))
         _log(DESTINY__MOVE_TRACE, "Destiny::Halt(%s) - %s(%u) Halted - m_shipHeading: %.3f,%.3f,%.3f", \
-                mySE->GetName(), mySE->GetID(), (commanded ? "true" : "false"), m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+                (commanded ? "true" : "false"), mySE->GetName(), mySE->GetID(), m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 }
 
 void DestinyManager::Eject()
@@ -1005,7 +1005,7 @@ void DestinyManager::InitTurn()
         m_decel = true;
     }
     // divide curve into [alignTime] steps  (3 for [base]shuttle, 12 for [base]hurricane, 72 for [base]fenrir)
-    uint8 steps = m_turnAlignTime;
+    float steps(m_turnAlignTime);
     float halfTurn = steps * 0.5f;
     // calc control points
     m_curveStart = GetPosition();
@@ -1051,16 +1051,14 @@ void DestinyManager::InitTurn()
     }
 
     // setup variables for curveMap
-    std::string str = "Curve ";
-    std::string desc = "CurveMarker";
     int64 ax=0,ay=0,az=0,bx=0,by=0,bz=0;
     GPoint point = NULL_ORIGIN;
     float timeStamp(0), asf(0);
     // get % of turn per step
-    float pct = 1 / steps;
+    float pct(1 / steps);
     //calculate and save curveMap
-    CurveData data = CurveData();	//gpoint pos, float asf
-    for (uint8 idx=0; i < steps; ++i) {
+    Destiny::CurveData data = Destiny::CurveData();	//gpoint pos, float asf
+    for (uint8 idx=0; idx < steps; ++idx) {
         // The Green Line (reference points)
         ax = getPct(m_curveStart.x, m_curveApex.x, pct * idx);
         ay = getPct(m_curveStart.y, m_curveApex.y, pct * idx);
@@ -1094,7 +1092,7 @@ void DestinyManager::InitTurn()
                 asf = getPctf(minTurnSpeedFraction, m_prevSpeedFraction, pct *  ((idx - halfTurn) * 2));
             } else {
                 // there was no decel in this turn.  continue to accel normally until mtsf is hit or turn is complete
-                timeStamp((GetTimeMSeconds() - m_moveTime) * 0.001f);
+                timeStamp = ((GetTimeMSeconds() - m_moveTime) * 0.001f);
                 // update tf for this tic, as this is not updated in move while turning
                 m_timeFraction = (1 - exp(-timeStamp / agility));
                 asf = m_userSpeedFraction * m_timeFraction;
@@ -1106,6 +1104,10 @@ void DestinyManager::InitTurn()
             }
         }
 
+        if (is_log_enabled(DESTINY__TURN_TRACE))
+            _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - Stamp:%u, asf:%.2f, Position:%.1f,%.1f,%.1f", \
+                idx, asf, m_position.x, m_position.y, m_position.z);
+
         // should we verify asf here?
         data.asf = asf;
         // copy data to map
@@ -1116,8 +1118,8 @@ void DestinyManager::InitTurn()
 	// assuming whichever is lower of psf and m_speedToLeaveWarp (but only if decel?)
 
     if (is_log_enabled(DESTINY__TURN_TRACE))
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): degrees:%.5f, steps:%u @ pct:%.3f, alignTime:%u, minSF:%.3f", \
-        mySE->GetName(), mySE->GetID(), EvE::Trig::Rad2Deg(radians), steps, pct, m_turnAlignTime, minTurnSpeedFraction);
+        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): degrees:%.5f, steps:%u @ pct:%.3f, minSF:%.3f", \
+                mySE->GetName(), mySE->GetID(), EvE::Trig::Rad2Deg(radians), steps, pct, minTurnSpeedFraction);
 }
 
 //NOTE:  new Turn() code
@@ -1137,6 +1139,7 @@ void DestinyManager::Turn() {
 
     // plot course if ship tracking enabled
     if (sEntityList.GetTracking()) {
+        std::string desc = "CurveMarker";
         std::string str = "Curve ";
         str += itoa(m_turning);
         MarkPoint(m_position,str,desc);
@@ -1152,7 +1155,7 @@ void DestinyManager::Turn() {
             ClearTurn();
             m_moveTime = GetTimeMSeconds();
             // this should recalc move vars after turn and set speed and accel accordingly
-            UpdateVelocity(usf, true);
+            UpdateVelocity(true);
         }
         if (is_log_enabled(DESTINY__TURN_TRACE))
             _log(DESTINY__TURN_TRACE, "Destiny::Turn(complete) - %s(%u):  turn completed in %.2fs.  ShipHeading:%.7f,%.7f,%.7f", \
@@ -1162,7 +1165,7 @@ void DestinyManager::Turn() {
     }
 
     // this isnt needed unless velocity change is commanded, but since we have the data, we're setting it to avoid bullshit later
-    GVector head(m_position, m_curveMap.at(m_turning));
+    GVector head(m_position, m_curveMap.at(m_turning).pos);
     head.normalize();
     m_shipHeading = head;
 
@@ -2291,10 +2294,10 @@ rActual = imod*massMkg*velActual^2*10^-3 / velMax^2 - velActual^2
 */
     if (m_followDistance < 1) {
         _log(DESTINY__ERROR, "%s(%u) - FollowDistance is <1.", mySE->GetName(), mySE->GetID());
-		throw CustomError("Distance Calculation Error.  Orbit Cancelled.");
+        throw CustomError("Distance Calculation Error.  Orbit Cancelled.");
     }
 
-    int64 velocity = m_maxShipSpeed * ((distance / m_followDistance) + 0.065); // dunno where i got this from but seems to work very well.
+    int64 velocity = m_maxShipSpeed * (distance / m_followDistance); // dunno where i got this from but seems to work very well.
     m_maxOrbitSpeedFraction = velocity / m_maxShipSpeed;
 
     m_orbitTime = (EvE::Trig::Pi2 * m_followDistance) / velocity;
@@ -2552,7 +2555,7 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         m_moveTime = GetTimeMSeconds();
     } else {
         // if turning when propmod (de)activated,  do we have to update turnmap?
-        if (m_turning < (m_aligntime * 0.5) {
+        if (m_turning < (m_turnAlignTime * 0.5)) {
             // ship is still in decel.
         }
     }
@@ -2877,8 +2880,8 @@ void DestinyManager::UnCloak() {
 
 void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)
 {
-	clearorbit
-	clearturn
+    ClearTurn();
+    ClearOrbit();
 
     /** @todo  need to update this */
     m_ballMode = Destiny::Ball::Mode::FOLLOW;

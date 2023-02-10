@@ -69,6 +69,5 @@ PyResult LPStore::Handle_GetAvailableOffers( PyCallArgs& call ) {
     //no args
 
     throw UserError("VG_STORE_CLOSED");
-  return PyStatic.mtList();
 }
 

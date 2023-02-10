@@ -1206,7 +1206,7 @@ PyResult Command_dropLoot(Client* pClient, CommandDB* db, PyServiceMgr* services
 
 PyResult Command_removecans(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    pClient->SystemMgr();
+    //pClient->SystemMgr();
 
     return nullptr;
 }
