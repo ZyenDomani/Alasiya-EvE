@@ -1327,9 +1327,9 @@ void InventoryItem::SetCustomInfo(const char *ci) {
 
 void InventoryItem::SetPosition(const GPoint& pos)
 {
+    /*
     if (m_data.position == pos)
         return;
-    /*
     if (pos.isZero() and IsSolarSystem(m_data.locationID)) {
         _log(DESTINY__TRACE, "II::SetPosition() - %s(%u) point is zero", m_data.name.c_str(), m_itemID);
         EvE::traceStack();

@@ -368,6 +368,8 @@ Py* objects that have long int as key need 'delete' called on key when destroyed
  review all classes to add rule of 5 or =delete as required
     - PyRep Classes done but still testing
       --  ...i dont think move semantics are implemented or working for these....copy is compiler generated (it complained on =delete)
+      -- move sementics are not implemented.  copy is, and xmlp Encode() uses it often.
+      i need to figure out how to implement move semantics for Py* objects (and a few other things)
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?
 
@@ -1071,9 +1073,9 @@ update ValidateAddItem() to return >0 on error and use enums to determine/displa
 
 make log/config option for (en/dis)able client massive check.
 
-validate ship pilot skills to assemble/repack ship?
-    - is this a 'service' by station personnel?  yeah, probably so.
-    - charge for assemble/repack service?
+validate ship pilot skills to assemble/repack ship..nope
+    - this is a service by station personnel.
+    - charge for assemble/repack service? yes!!  cost based on ship size/type?  ?% of total value
 
 speaking of charges, how about a freight charge when moving large amounts of stuff?
      would this be docking charge?  no, that's akin to a full service gas station.  fill 'er up, check oil, wash windows, etc.

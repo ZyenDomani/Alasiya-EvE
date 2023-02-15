@@ -138,7 +138,7 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
     info.lines = new PyList();
 
     uint32 regionID = call.client->GetRegionID(), constID = call.client->GetConstellationID(), systemID = call.client->GetSystemID();
-    uint32 corpID = call.client->GetCorporationID();
+    uint32 corpID = call.client->GetCorporationID(), charID = call.client->GetCharacterID();
 
     std::map<int32, LSCChannel*>::iterator cur = m_channels.begin();
     for (; cur != m_channels.end(); cur++) {
@@ -147,6 +147,7 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
                 if (cur->first != corpID)
                     continue;
             } break;
+            // why are we not encoding these?  i dont remember...
             case LSC::Type::region:
             case LSC::Type::constellation:
             case LSC::Type::solarsystem:
@@ -161,7 +162,7 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
             } break;
         }
 
-        info.lines->AddItem(cur->second->EncodeStaticChannel(call.client->GetCharacterID()));
+        info.lines->AddItem(cur->second->EncodeStaticChannel(charID));
     }
 
     if (is_log_enabled(LSC__RSP_DUMP))
