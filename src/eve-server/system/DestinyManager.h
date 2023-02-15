@@ -130,7 +130,7 @@ public:
     void WebbedMe(InventoryItemRef modRef, bool apply=false);
     void SpeedBoost(bool deactivate=false);             // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
     // SetPosition is only used when point may be zero or we are forcing client update
-    void SetPosition(const GPoint& pt, bool update=false);
+    void SetPosition(const GPoint& pt, bool update=false);      // use mySE->SetPosition() for item tracking
     void SetMaxVelocity(float maxVelocity);
     void UpdateShipVariables();
 
@@ -283,7 +283,7 @@ protected:
     float m_orbitRadTic;                //in rad/sec  - radians around orbit per tic
 
     float m_timeFraction;               //fuzzy logic - holds current euler value for time
-    //float m_turnFraction;               //fuzzy logic - used for turn accel/decel checks
+    float m_turnMinFraction;            //fuzzy logic - used for turn accel/decel checks
     float m_prevSpeedFraction;          //fuzzy logic - previous percent of full speed.  used for speed changes
     float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
     float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
@@ -322,12 +322,16 @@ private:
     // Internal Turn Methods    -allan  Aug - Oct, 2015
     bool IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement
     void InitTurn();                   //set turn variables
-    void Turn();                       //apply velocity and heading updates as needed for turning.  called by MoveObject()
+    void Turn(float &speed, std::string &move);   //apply velocity and heading updates as needed for turning.  called by MoveObject()
     void ClearTurn();
     void MarkPoint(const GPoint& position, std::string& name, std::string& desc);
     bool m_posHack;                    //force position update after turn
 
     // bezier turn data (wip)      -allan  Feb 2023
+    bool m_turnDecel;
+    bool m_turnAccel;
+    float m_turnPct;
+    GVector m_origHeading;
     GPoint m_curveStart;
     GPoint m_curveApex;
     GPoint m_curveEnd;

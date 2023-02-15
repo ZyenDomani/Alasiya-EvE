@@ -63,6 +63,7 @@ m_degPerTic(0.0f),
 m_posHack(sConfig.debug.PositionHack),
 m_targetDistance(0),
 m_followDistance(0),
+m_turnMinFraction(0),
 m_speedToLeaveWarp(0),
 m_alignTime(5),          // arbitrary default
 m_shipWarpSpeed(1.0f),
@@ -73,7 +74,10 @@ m_warpState(nullptr),
 m_targBubble(nullptr),
 m_warpCapacitorNeed(0.00001),
 m_frozen(false),
-m_stateStamp(0)
+m_stateStamp(0),
+m_turnPct(0.0f),
+m_turnDecel(false),
+m_turnAccel(false)
 {
     m_bump = false;
     m_stop = false;
@@ -99,19 +103,20 @@ m_stateStamp(0)
 
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
-    m_velocity = GVector( NULL_ORIGIN );
-    m_targetPoint = GPoint( NULL_ORIGIN );
-    m_shipHeading = GVector( NULL_ORIGIN );
-    m_targetHeading = GVector( NULL_ORIGIN );
+    m_velocity = NULL_ORIGIN_V;
+    m_targetPoint = NULL_ORIGIN;
+    m_shipHeading = NULL_ORIGIN_V;
+    m_origHeading = NULL_ORIGIN_V;
+    m_targetHeading = NULL_ORIGIN_V;
 
-    m_radius = mySE->GetRadius();
-    m_position = mySE->GetPosition();
+    m_radius = self->GetRadius();
+    m_position = self->GetPosition();
 
     m_turning = false;
     m_radians = 0.0;
-    m_curveStart = GVector( NULL_ORIGIN );
-    m_curveApex = GVector( NULL_ORIGIN );
-    m_curveEnd = GVector( NULL_ORIGIN );
+    m_curveStart = NULL_ORIGIN;
+    m_curveApex = NULL_ORIGIN;
+    m_curveEnd = NULL_ORIGIN;
 
     m_inclination = 0.0;
     m_longAscNode = 0.0;
@@ -148,11 +153,7 @@ void DestinyManager::ProcessState() {
             Stop();
         } break;
         case Ball::Mode::GOTO: {
-            if (m_turning) {
-                Turn();
-            } else {
-                MoveObject();
-            }
+            MoveObject();
         } break;
         case Ball::Mode::MISSILE: {
             // if target was removed, continue movement and wait for Missile::EndOfLife() call to do cleanup
@@ -164,7 +165,7 @@ void DestinyManager::ProcessState() {
             m_shipHeading = moveVector;
             m_velocity = (moveVector * m_maxSpeed);
             m_position += m_velocity;
-            //SetPosition(m_position + m_velocity);
+            SetPosition(m_position);
         } break;
         case Ball::Mode::ORBIT: {
             if (IsTargetInvalid())
@@ -237,11 +238,7 @@ void DestinyManager::ProcessState() {
                 return;
             }
 
-            if (m_turning) {
-                Turn();
-            } else {
-                MoveObject();
-            }
+            MoveObject();
         } break;
         case Ball::Mode::MUSHROOM:      // aoe?
         case Ball::Mode::BOID:          // this will turn RIGID after a set time
@@ -450,7 +447,7 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
         logType = 5;
         m_accel = false;
         m_decel = true;
-        m_maxSpeed = 0;
+        //m_maxSpeed = 0.0f;
         m_prevSpeed = m_maxShipSpeed * m_activeSpeedFraction;
         // this isnt accurate...hulk decel @81.35s but asf:0.0020 @ sec: 84.372
         m_shipAccelTime = m_shipMaxAccelTime * m_activeSpeedFraction;
@@ -502,11 +499,13 @@ void DestinyManager::Stop() {
 
     // set marker for calc'd stop distance (testing)
     if (sEntityList.GetTracking()) {
-        uint16 dist = m_maxSpeed * m_activeSpeedFraction * m_agility;
+        uint16 dist = m_maxShipSpeed * m_activeSpeedFraction * m_agility;
         GVector offset(m_position * dist);
         GPoint marker(m_position + offset);
         std::string str = "Stop Point - ";
         str += mySE->GetName();
+        MarkPoint(marker, str, str);
+        /*
         ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, str.c_str(), m_position, "Position Test");
         CargoContainerRef iRef = CargoContainer::SpawnTemp(idata);
         if (iRef.get() != nullptr) {
@@ -517,7 +516,7 @@ void DestinyManager::Stop() {
                 iRef->SetMySE(cSE);
                 mySE->SystemMgr()->AddMarker(cSE);
             }
-        }
+        } */
     }
 
     m_accel = false;
@@ -711,10 +710,7 @@ void DestinyManager::Bounce(GVector direction, float speed)
 void DestinyManager::MoveObject() {
     if (mySE->SysBubble() == nullptr)
         mySE->SystemMgr()->AddEntity(mySE);
-    if (m_turning) {
-        sLog.Error("MoveObject()", "%s is turning.  should not be here.", mySE->GetName());
-        return;
-    }
+
     if (m_changeDelay) {
         // reset m_moveTime to now-2s and skip this tic
         m_changeDelay = false;
@@ -781,21 +777,21 @@ void DestinyManager::MoveObject() {
     // update tf for this tic
     m_timeFraction = (1 - exp(-timeStamp / m_agility)); //mySE->GetSelf()->GetAttribute(AttrAgility).get_float()));
 
-    _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - timeFraction: %.5f, timeStamp: %.3f", m_timeFraction, timeStamp);
+    //_log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - timeFraction: %.5f, timeStamp: %.3f", m_timeFraction, timeStamp);
 
     if ((timeStamp > m_shipAccelTime) and (m_timeFraction > (1 - ASF_CHECK))) {
         if (m_decel) {
             if (is_log_enabled(DESTINY__MOVE_TRACE))
                 _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) has decel'd from %.2fm/s to %.2fm/s in %.3fs.", \
-                    mySE->GetName(), mySE->GetID(), m_prevSpeed, m_maxShipSpeed * m_activeSpeedFraction, timeStamp);
+                mySE->GetName(), mySE->GetID(), m_prevSpeed, m_maxSpeed * m_activeSpeedFraction, timeStamp);
         } else if (m_accel) {
             if (is_log_enabled(DESTINY__MOVE_TRACE))
                 _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) has accel'd from %.2fm/s to %.2fm/s in %.3fs.", \
-                mySE->GetName(), mySE->GetID(), m_prevSpeed, m_maxShipSpeed * m_activeSpeedFraction, timeStamp);
+                mySE->GetName(), mySE->GetID(), m_prevSpeed, m_maxSpeed * m_activeSpeedFraction, timeStamp);
         }
 
         m_activeSpeedFraction = m_userSpeedFraction;
-        speed = m_maxShipSpeed * m_activeSpeedFraction;
+        speed = m_maxSpeed * m_activeSpeedFraction;
         m_accel = false;
         m_decel = false;
         m_prevSpeed = 0.0f;
@@ -810,6 +806,7 @@ void DestinyManager::MoveObject() {
                 _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is at full stop after %.3f seconds.", \
                     mySE->GetName(), mySE->GetID(), timeStamp);
             Halt();
+            SetPosition(m_position, true);
             return;
         }
     } else {
@@ -846,26 +843,36 @@ void DestinyManager::MoveObject() {
                     timeStamp, (m_tractored ? "True" : "False"), (m_tractorPause ? "True" : "False"));
         }
 
-        speed = (m_maxShipSpeed * m_activeSpeedFraction);
+        speed = (m_maxSpeed * m_activeSpeedFraction);
     }
 
+    if (m_stop) {
     // ships tend to "level out" when stopping.  try to mimic that here (wip)
     // this will also need *something* with ship agility/inertia
     // using rifter to check/set base numbers
-    if (m_stop)
         if (m_activeSpeedFraction < 0.6f)
             if (m_shipHeading.y < -0.1f) {
                 m_shipHeading.y += 0.03f;
             } else if (m_shipHeading.y > 0.1f) {
                 m_shipHeading.y -= 0.03f;
             }
+    }
 
-    if (m_orbiting)
+    //set velocity and position for this tic
+    if (m_turning) {
+        Turn(speed, move);
+    } else if (m_orbiting) {
+        // this will need updating...
         if (m_orbiting < Destiny::Ball::Orbit::TooClose) {
             // object is orbiting...set orbit speed correctly.
             speed *= m_maxOrbitSpeedFraction;
             move += " in orbit";
         }
+    } else {
+        m_velocity = m_shipHeading * speed;
+        m_position += m_velocity;
+        mySE->SetPosition(m_position);
+    }
 
     if (is_log_enabled(DESTINY__MOVE_TRACE)) {
         if (m_prevSpeedFraction) {
@@ -877,9 +884,6 @@ void DestinyManager::MoveObject() {
         }
     }
 
-    //set velocity and position for this tic
-    m_velocity = m_shipHeading * speed;
-    m_position += m_velocity;
     // will need to hack position setting after turn cause it's still wrong.
     if (sConfig.debug.PositionHack or m_posHack) {
         SetPosition(m_position, true);   // force position update to client
@@ -896,6 +900,8 @@ void DestinyManager::MoveObject() {
         if (m_activeSpeedFraction > sConfig.debug.ShipTrackingTime) {
             // create jetcan to visualize movement
             std::string str = mySE->GetName();
+            if (m_turning)
+                str += " Turn ";
             if (m_decel)
                 str += " Decel ";
             if (m_accel)
@@ -903,6 +909,8 @@ void DestinyManager::MoveObject() {
             if (!m_turning and !m_accel and !m_decel)
                 str += " Steady ";
             str += itoa(timeStamp);
+            MarkPoint(m_position, str, str);
+            /*
             ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, str.c_str(), m_position, "Position Test");
             CargoContainerRef iRef = CargoContainer::SpawnTemp(idata);
             if (iRef.get() != nullptr) {
@@ -913,7 +921,7 @@ void DestinyManager::MoveObject() {
                     iRef->SetMySE(cSE);
                     mySE->SystemMgr()->AddMarker(cSE);
                 }
-            }
+            } */
         }
     }
 
@@ -965,229 +973,184 @@ void DestinyManager::InitTurn()
      *   ship will slow down to [min speed] for turn depending on heading change
      *   while decel, ship will turn a slight amount until that [min speed] is hit
      * this follows a simple quadratic Bezier Curve (conic arc)
-     *
-     *  NOTE:  while ship is moving in turn, position is fixed per m_curveMap and NOT calculated in MoveObject()
+     *  turn is calculated on the fly to deal with changing ship speeds
      */
 
     // set turning.
     m_turning = true;
     m_turnTime = 1;
+    m_curveStart = GetPosition();
+    m_origHeading = m_shipHeading;
+    // reset move stamps
+    m_stateStamp = sEntityList.GetStamp();
 
     // determine actual angle of turn for subsequent calc's
     GVector toVec(m_position, m_targetPoint);
     toVec.normalize();
-    float radians = acos(toVec.dotProduct(m_shipHeading));
     //  calc min speed for this turn as absolute percent of shipMaxSpeed
-    float minTurnSpeedFraction = sqrt((cos(radians) + 1) / 2);
+    float minTurnSpeedFraction = sqrt((cos(acos(toVec.dotProduct(m_shipHeading))) + 1) / 2);
     // check speed for changes and set vars accordingly
     if (m_activeSpeedFraction > minTurnSpeedFraction) {
-        // updateVel uses usf to control speed changes.  we do not want to change usf for turn
-        //  instead, set decel and psf here
+        m_turnDecel = true;
         m_prevSpeedFraction = m_activeSpeedFraction;
-        m_decel = true;
+        m_turnMinFraction = minTurnSpeedFraction;
+    } else {
+        m_moveTime = GetTimeMSeconds();
+        UpdateVelocity(true);
     }
-    // divide curve into [alignTime] steps  (3 for [base]shuttle, 12 for [base]hurricane, 72 for [base]fenrir)
-    uint8 steps(m_alignTime);
-    // get % of turn per step
-    float pct = 1.0f / steps;
+
     if (is_log_enabled(DESTINY__TURN_TRACE))
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): degrees:%.5f, steps:%u @ pct:%.3f, minSF:%.3f", \
-        mySE->GetName(), mySE->GetID(), EvE::Trig::Rad2Deg(radians), steps, pct, minTurnSpeedFraction);
-
-    float halfTurn = steps * 0.5f;
-    // calc control points
-    m_curveStart = GetPosition();
-    // apex is current ship position + direction * (speed * 1/2 turn time)
-    m_curveApex = m_curveStart + (m_shipHeading * (m_maxShipSpeed * m_activeSpeedFraction * halfTurn));
-    // apex->end will be parallel with start->targ
-    m_curveEnd = m_curveApex + (toVec * (m_maxShipSpeed * m_activeSpeedFraction * halfTurn));
-
-    if (is_log_enabled(DESTINY__TURN_DEBUG)) {
-        // verify start->targ and apex->end are parallel  (parallel vectors should be equal when normalized)
-        GVector test1(m_curveStart, m_targetPoint);
-        test1.normalize();
-        GVector test2(m_curveApex, m_curveEnd);
-        test2.normalize();
-
-        // as doubles have 10e-15 precision, x==y wont work.
-        // we only need 10e-4 for close enough
-        if  (EvE::AlmostEquals(test1.x, test2.x, 4)
-        and  EvE::AlmostEquals(test1.y, test2.y, 4)
-        and  EvE::AlmostEquals(test1.z, test2.z, 4)) {
-            sLog.Green("Destiny::InitTurn()", "Control vectors are parallel.");
-            sLog.Green("Destiny::InitTurn(parallel)", "%s(%u): ship:%.7f,%.7f,%.7f  apex:%.7f,%.7f,%.7f", \
-                    mySE->GetName(), mySE->GetID(), test1.x, test1.y, test1.z, test2.x, test2.y, test2.z);
-        } else {
-            // not parallel
-            sLog.Yellow("Destiny::InitTurn()", "Control vectors are not parallel.");
-            sLog.Yellow("Destiny::InitTurn(not parallel)", "%s(%u): ship:%.7f,%.7f,%.7f  apex:%.7f,%.7f,%.7f", \
-                    mySE->GetName(), mySE->GetID(), test1.x, test1.y, test1.z, test2.x, test2.y, test2.z);
-        }
-
-        // log positions of markers
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - Start:%.1f,%.1f,%.1f", m_curveStart.x, m_curveStart.y, m_curveStart.z);
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - Apex:%.1f,%.1f,%.1f", m_curveApex.x, m_curveApex.y, m_curveApex.z);
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - End:%.1f,%.1f,%.1f", m_curveEnd.x, m_curveEnd.y, m_curveEnd.z);
-    }
-
-    // is ship tracking and turn tracing enabled?
-    if (sEntityList.GetTracking() and is_log_enabled(DESTINY__TURN_TRACE)) {
-        // yes, then mark control points for visual reference
-        std::string desc = "TurnMarker";
-        std::string str = "TurnStart - ";
-        str += mySE->GetName();
-        MarkPoint(m_curveStart,str,desc);
-        str.clear();
-        str = "TurnApex - ";
-        str += mySE->GetName();
-        MarkPoint(m_curveApex,str,desc);
-        str.clear();
-        str = "TurnEnd - ";
-        str += mySE->GetName();
-        MarkPoint(m_curveEnd,str,desc);
-    }
-
-    // setup variables for curveMap
-    GPoint point(NULL_ORIGIN);
-    Destiny::CurveData data = Destiny::CurveData();     //gpoint pos, float asf
-    double ax(0),ay(0),az(0),bx(0),by(0),bz(0),x(0),y(0),z(0);
-    float timeStamp(0.0f), asf(0.0f), change(0.0f);
-    //calculate and save curveMap
-    //calc's are performed on 1Hz tic
-    for (uint8 idx(0); idx < steps; ++idx) {
-        // NOTE:  index 0 is position at beginning of turn (previous MoveTic).  not sure how to take it out yet
-        change = pct * idx;
-        // The Green Line (reference points)
-        ax = getPct(m_curveStart.x, m_curveApex.x, change);
-        ay = getPct(m_curveStart.y, m_curveApex.y, change);
-        az = getPct(m_curveStart.z, m_curveApex.z, change);
-        bx = getPct(m_curveApex.x, m_curveEnd.x, change);
-        by = getPct(m_curveApex.y, m_curveEnd.y, change);
-        bz = getPct(m_curveApex.z, m_curveEnd.z, change);
-        // The Black Dot (our position at this tic)
-        point.x = getPct(ax, bx, change);
-        point.y = getPct(ay, by, change);
-        point.z = getPct(az, bz, change);
-        // control points...
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn(%u)  Points - A:%.1f,%.1f,%.1f  B:%.1f,%.1f,%.1f  F:%.1f,%.1f,%.1f", \
-                idx, ax, ay, az, bx, by, bz, point.x, point.y, point.z);
-        // set pos and heading data for this tic
-        data.pos = point;
-
-        // calculate and save asf for this tic
-        if (m_decel) {
-            if (idx < halfTurn) {
-                // we are still slowing this tic
-                asf = getPctf(m_prevSpeedFraction, minTurnSpeedFraction, change);
-            } else {
-                // decel complete, resume accel  ... this will only hit once
-                m_decel = false;
-                m_accel = true;
-                // have to double % here to get [0-1] on [1/steps /2]  (instead of [0,.5])
-                asf = getPctf(minTurnSpeedFraction, m_prevSpeedFraction, pct * ((idx - halfTurn) * 2));
-            }
-        } else {
-            // decel is complete or asf < mtsf.
-            if (m_prevSpeedFraction > 0.0f)	{
-                // accel from previous decel for turn
-                asf = getPctf(minTurnSpeedFraction, m_prevSpeedFraction, pct *  ((idx - halfTurn) * 2));
-            } else {
-                // there was no decel in this turn.  continue to accel normally until mtsf is hit or turn is complete
-                timeStamp = ((GetTimeMSeconds() - m_moveTime) * 0.001f) + idx;
-                // update tf for this tic, as this is not updated in move while turning
-                m_timeFraction = (1 - exp(-timeStamp / m_agility));
-                asf = m_userSpeedFraction * m_timeFraction;
-                // this is the only place asf can exceed mtsf
-                if (asf > minTurnSpeedFraction) {
-                    // here we need to check timestamp/somethingelse to hold tf/timestamp for subsquent loops
-                    asf = minTurnSpeedFraction;
-                }
-            }
-        }
-
-
-        // should we verify asf here?
-        data.asf = asf;
-
-        if (is_log_enabled(DESTINY__TURN_TRACE))
-            _log(DESTINY__TURN_TRACE, "Destiny::InitTurn(%u) - asf:%.2f, change:%.3f, Position:%.1f,%.1f,%.1f", \
-                    idx, data.asf, change, data.pos.x, data.pos.y, data.pos.z);
-
-        // copy data to map
-        m_curveMap[idx] = data;
-    }
-
-    // insert next set for heading and speed after turn is complete
-    timeStamp = ((GetTimeMSeconds() - m_moveTime) * 0.001f) + steps;
-    // update tf for this tic, as this is not updated in move while turning
-    m_timeFraction = (1 - exp(-timeStamp / m_agility));
-    if (m_timeFraction > 1.0f)
-        m_timeFraction = 1.0f;
-    data.asf = m_userSpeedFraction * m_timeFraction;
-    data.pos = GPoint(m_curveEnd + (m_targetHeading * data.asf * m_maxShipSpeed));
-    m_curveMap[steps] = data;
-    if (is_log_enabled(DESTINY__TURN_TRACE))
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn(end) - Stamp:%u, asf:%.2f, change:%.3f, Position:%.1f,%.1f,%.1f", \
-                steps, data.asf, steps * pct, data.pos.x, data.pos.y, data.pos.z);
+        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): pct:%.2f, steps:%u, mtsf:%.3f, decel: %s", \
+                mySE->GetName(), mySE->GetID(), m_turnPct, m_alignTime, minTurnSpeedFraction, \
+            m_turnDecel ? "true" : "false");
 }
 
 //NOTE:  new Turn() code
 // much better than old system
-void DestinyManager::Turn() {
-    // turns are calc'd and mapped out in InitTurn()
-    // here, we just set ship position to prefigured positions and speeds then return
-    // MoveObject() is no longer used to control turns
+void DestinyManager::Turn(float &speed, std::string &move) {
+    double timer = GetTimeUSeconds();
 
-    // update ship position to this point in curve
-    // NOTE:  index 0 is position at beginning of turn (previous MoveTic).  not sure how to take it out yet
-    m_position = m_curveMap.at(m_turnTime).pos;
+    float change(m_turnPct * m_turnTime);
 
-    // plot course if ship tracking enabled
-    if (sEntityList.GetTracking()) {
-        std::string desc = "CurveMarker";
-        std::string str = "Curve ";
-        str += itoa(m_turnTime);
-        MarkPoint(m_position,str,desc);
+    // accel/decel in turn act different. ignore MoveObject() speed and set per turn change here (5us)
+    if (m_turnDecel) {
+        // our speed is above min for this turn.
+        if (m_turnTime > (m_alignTime * 0.5f)) {
+            m_turnDecel = false;
+            m_turnAccel = true;
+            // we are now resuming accel after 1/2 turn
+            m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_turnMinFraction, change * 2);
+            speed = m_maxShipSpeed * m_activeSpeedFraction;
+            move = "continue accel in turn";
+        } else {
+            m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_turnMinFraction, change * 2);
+            speed = m_maxShipSpeed * m_activeSpeedFraction;
+            move = "decel in turn";
+        }
+        // at this point, asf < mtsf @ InitTurn().
+        // however, we need to make sure asf < mtsf during first half of turn
+        if (m_turnTime < (m_alignTime * 0.5f))
+            if (m_activeSpeedFraction > m_turnMinFraction)
+                sLog.Warning("Turn()", "asf > mtsf during first half.");
+            // have to figure out how to keep this down and everything sane at same time.
+    } else if (m_turnAccel) {
+        // we are now resuming accel after 1/2 turn
+        m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_turnMinFraction, 1.0f - (change * 2));
+        speed = m_maxShipSpeed * m_activeSpeedFraction;
+        move = "accel in turn";
+    } else {
+        move += " in turn";
     }
 
-    // keep data aligned for subsequent MoveObject() call once turn is complete or change is commanded
-    m_activeSpeedFraction = m_curveMap.at(m_turnTime).asf;
+    // apex is current ship position + direction * (speed * 1/2 turn time)
+    m_curveApex = m_curveStart + (m_origHeading * (speed * (m_alignTime * 0.5f)));
+    // apex->end will be parallel with start->targ
+    m_curveEnd = m_curveApex + (m_targetHeading * (speed * (m_alignTime * 0.5f)));
+    /*
+    std::string str = "TurnApex - ";
+    str += itoa(m_turnTime);
+    MarkPoint(m_curveApex,str,str);
+    str.clear();
+    str = "TurnEnd - ";
+    str += itoa(m_turnTime);
+    MarkPoint(m_curveEnd,str,str);
+    */
+
+    // The Green Line (reference points)
+    double ax = getPct(m_curveStart.x, m_curveApex.x, change);
+    double ay = getPct(m_curveStart.y, m_curveApex.y, change);
+    double az = getPct(m_curveStart.z, m_curveApex.z, change);
+    double bx = getPct(m_curveApex.x, m_curveEnd.x, change);
+    double by = getPct(m_curveApex.y, m_curveEnd.y, change);
+    double bz = getPct(m_curveApex.z, m_curveEnd.z, change);
+    // The Black Dot (our position at this tic)
+    m_position.x = getPct(ax, bx, change);
+    m_position.y = getPct(ay, by, change);
+    m_position.z = getPct(az, bz, change);
+    mySE->SetPosition(m_position);
 
     if (m_turnTime == m_alignTime) {
-        // turn is complete.  clear data and return control to MoveObject()
-        m_shipHeading = m_targetHeading;
+        // turn is complete.  clear data and return
+        GPoint pos(m_position + (m_shipHeading * 1.0e16));
+        GVector head(m_position, pos);
+        head.normalize();
+        m_shipHeading = head;
         if (is_log_enabled(DESTINY__TURN_TRACE))
             _log(DESTINY__TURN_TRACE, "Destiny::Turn(complete) - %s(%u):  turn completed in %us.  Heading:%.7f,%.7f,%.7f", \
                     mySE->GetName(), mySE->GetID(), m_turnTime,  m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 
+        /* try updating client to get same heading
+        CmdGotoDirection du;
+        du.entityID = mySE->GetID();
+        du.x = m_shipHeading.x;
+        du.y = m_shipHeading.y;
+        du.z = m_shipHeading.z;
+        PyTuple* up = du.Encode();
+        SendSingleDestinyUpdate(&up);
+        PyDecRef(up);
+        */
+
         if (m_alignTo) {
             Stop();
         } else {
+            if (m_turnAccel) {
+                // we've totally changed asf and all that shit.  reset and continue
+                m_prevSpeedFraction = m_activeSpeedFraction;
+                m_moveTime = GetTimeMSeconds();
+                UpdateVelocity(true);
+            }
             ClearTurn();
-            // this should recalc move vars after turn and set speed and accel accordingly
-            UpdateVelocity(true);
         }
     } else {
-        GVector head(m_curveApex, m_curveMap.at(++m_turnTime).pos);
+        float change2(m_turnPct + change);
+        double ax = getPct(m_curveStart.x, m_curveApex.x, change2 );
+        double ay = getPct(m_curveStart.y, m_curveApex.y, change2 );
+        double az = getPct(m_curveStart.z, m_curveApex.z, change2 );
+        double bx = getPct(m_curveApex.x, m_curveEnd.x, change2 );
+        double by = getPct(m_curveApex.y, m_curveEnd.y, change2 );
+        double bz = getPct(m_curveApex.z, m_curveEnd.z, change2 );
+        // The Black Dot (our position at this tic)
+        GPoint next(getPct(ax, bx, change2 ),
+                    getPct(ay, by, change2 ),
+                    getPct(az, bz, change2 ));
+
+        GVector head(m_position, next);
         head.normalize();
         m_shipHeading = head;
 
+        sLog.Warning("turn", "calc'd in %.3fus", GetTimeUSeconds() - timer);
+        /*  this is pretty fuckin fast
+         * 17:10:09 W turn: calc'd in 5.500us
+         * 17:10:10 W turn: calc'd in 4.750us
+         * 17:10:11 W turn: calc'd in 8.000us
+         */
         if (is_log_enabled(DESTINY__TURN_TRACE))
-            _log(DESTINY__TURN_TRACE, "Destiny::Turn() - turnStamp:%u, Position:%.1f,%.1f,%.1f, Heading:%.7f,%.7f,%.7f", \
-                m_turnTime - 1, m_position.x, m_position.y, m_position.z, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+            _log(DESTINY__TURN_TRACE, "Destiny::Turn() - turnStamp:%u, change:%.2f, Position:%.1f,%.1f,%.1f, Heading:%.7f,%.7f,%.7f  state: %s", \
+                m_turnTime++, change, m_position.x, m_position.y, m_position.z, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, \
+            m_decel ? "decel" : m_accel ? "accel" : "steady");
     }
-
 }
 
 void DestinyManager::ClearTurn() {
-    m_turning = false;
     m_radians = 0.0f;
     m_turnTime = 0;
+    m_turning = false;
+    m_turnAccel = false;
+    m_turnDecel = false;
+    m_turnMinFraction = 0;
+    if (m_prevSpeedFraction) {
+        m_userSpeedFraction = m_prevSpeedFraction;
+        m_prevSpeedFraction = 0;
+        // chances of ship being stopped when this is called is slim...
+        UpdateVelocity(true);
+    }
+
     // clear map from previous use
     m_curveMap.clear();
     m_curveEnd = NULL_ORIGIN;
     m_curveApex = NULL_ORIGIN;
     m_curveStart = NULL_ORIGIN;
+    m_origHeading = NULL_ORIGIN_V;
 }
 
 //  Follow is also used by client as AlignTo.
@@ -1414,6 +1377,7 @@ void DestinyManager::Orbit() {
     mPos += Tp;
     // set position for this tic
     m_position = mPos;
+    mySE->SetPosition(m_position);
 
     // set heading for this tic
     GPoint mPosNext(NULL_ORIGIN);
@@ -1809,10 +1773,11 @@ void DestinyManager::WarpUpdate(double currentShipSpeed) {
                     _log(DESTINY__WARP_TRACE, "Destiny::WarpUpdate()  %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() for bubble %u.", \
                             mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_targBubble->GetID());
                 m_targBubble->Add(mySE);
-                SetPosition(m_position, true);
+                m_posHack = true;
             }
         }
     }
+    mySE->SetPosition(m_position);
 }
 
 void DestinyManager::WarpStop(double currentShipSpeed) {
@@ -1962,7 +1927,6 @@ void DestinyManager::Follow(SystemEntity* pSE, uint32 distance) {
 
     if (IsTurn()) {
         InitTurn();
-        Turn();
     } else {
         BeginMovement();
     }
@@ -1997,7 +1961,6 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
 
     if (IsTurn()) {
         InitTurn();
-        Turn();
     } else {
         BeginMovement();
     }
@@ -2028,7 +1991,6 @@ void DestinyManager::GotoPoint(const GPoint& point) {
 
     if (IsTurn()) {
         InitTurn();
-        Turn();
     } else {
         BeginMovement();
     }
@@ -2110,7 +2072,6 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
 
         if (IsTurn()) {
             InitTurn();
-            Turn();
         } else {
             BeginMovement();
         }
@@ -2188,7 +2149,6 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         // everything else will use code from GotoDir and BeginMovement
         if (IsTurn()) {
             InitTurn();
-            Turn();
         } else {
             BeginMovement();
         }
@@ -2532,7 +2492,6 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
 {
     // only thing to do here is reset ship's speed/agility data
     //  UpdateVelocity will handle the rest,
-    //    ...except when turning, in which case it will fuck up everything....
 
     // set up initial variables
     InventoryItemRef sRef = mySE->GetSelf();
@@ -2544,9 +2503,8 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     m_agility = mass * inertiaMod / 1000000;
     mySE->GetSelf()->SetAttribute(AttrAgility, m_agility, false);
 
-    //TimeToWarp = ((ln(2) * m_inertiaMod * m_mass) / 500000);     //18.922
-    //m_alignTime = (0.693147 * mass * inertiaMod) / 500000;
-    m_alignTime = (1.386294 * m_agility);       // faster
+    m_alignTime = (1.386294 * m_agility);
+    m_turnPct = 1.0f / m_alignTime;
     m_shipMaxAccelTime = (-log(ASF_CHECK) * m_agility);
 
     //get current ship speed
@@ -2555,10 +2513,10 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     // verify hull overspeed isnt reached
     m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
     if (m_maxShipSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
-    m_maxShipSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
-    // reset ship max speed using updated m_maxShipSpeed
-    m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;
+        m_maxShipSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
 
+    // reset ship max commanded speed using updated m_maxShipSpeed
+    m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;
 
     // check for turn and change vars as needed.
     // this will need a lot of testing after Turn() is working
@@ -2569,9 +2527,8 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         }
     } else {
         // oh thank God we're not turning....
-        m_prevSpeedFraction = m_activeSpeedFraction;
-        // set asf as fraction of current speed over new max speed.
-        m_activeSpeedFraction = m_prevSpeed / m_maxShipSpeed;     // this may give >1.0
+        // set psf to current speed over new max speed.
+        m_prevSpeedFraction = m_prevSpeed / m_maxShipSpeed;     // this may give >1.0
         // update timer.  this will allow speed changes to be timed properly
         m_moveTime = GetTimeMSeconds();
     }
@@ -2601,11 +2558,11 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
             _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::Deactivate");
         } else if (m_activeSpeedFraction < m_userSpeedFraction) {
             // ....moving and accelerating
-            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(psf!=0&asf<usf) - accelerating.");
+            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(psf!=0 & asf<usf) - accelerating.");
         } else if (m_activeSpeedFraction > m_userSpeedFraction) {
             // ....moving and decelerating
             // - this also hits when prop mod activated while ship is decel
-            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(psf!=0&asf>usf) - decelerating.");
+            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(psf!=0 & asf>usf) - decelerating.");
         } else if (m_activeSpeedFraction) {
             // ....moving and not decelerating (this includes turning)
             _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(0<asf<=usf)");
@@ -2623,10 +2580,6 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost() - pSpeed:%.2f, maxSpeed:%.2f, maxShipSpeed:%.2f, turn:%u", \
                 m_prevSpeed, m_maxSpeed, m_maxShipSpeed, m_turnTime);
     }
-
-    // if we are in a turn then do not call UpdateVelocity()
-    if (m_turning)
-        return;
 
     // call UpdateVelocity() to reset movement settings
     UpdateVelocity(IsMoving());
@@ -2650,7 +2603,6 @@ void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
     // set asf as fraction of current speed over new max speed.   it will apply on next tic (immediate)
     // this may give >1.0 when web applied.
     m_activeSpeedFraction = m_prevSpeed / m_maxShipSpeed;
-
 
     // if orbiting, call Orbit() and let code reset the variables
     if (m_orbiting != 0)
@@ -2798,6 +2750,7 @@ Battleships                             0.155
     //TimeToWarp = (ln(0.25) * m_agility);						//18.922
     //m_alignTime = (0.693147 * mass * inertiaMod) / 500000;
     m_alignTime = (1.386294 * m_agility);	// faster
+    m_turnPct = 1.0f / m_alignTime;
     m_shipMaxAccelTime = (-log(ASF_CHECK) * m_agility);
 
     m_hasSentShipUpdates = true;
