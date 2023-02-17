@@ -46,7 +46,6 @@ protected:
 
 private:
     bool m_loaded;
-    float m_time;
 
     // data maps
     effectMapType m_fxMap;   // k,v of effID, data   -to search by effect
