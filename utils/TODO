@@ -366,10 +366,7 @@ Py* objects that have long int as key need 'delete' called on key when destroyed
 
 
  review all classes to add rule of 5 or =delete as required
-    - PyRep Classes done but still testing
-      --  ...i dont think move semantics are implemented or working for these....copy is compiler generated (it complained on =delete)
-      -- move sementics are not implemented.  copy is, and xmlp Encode() uses it often.
-      i need to figure out how to implement move semantics for Py* objects (and a few other things)
+    - PyRep Classes - add move semantics - done but still testing
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?
 

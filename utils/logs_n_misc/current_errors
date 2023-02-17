@@ -1,5 +1,8 @@
 
 
+17:50:49 [ThreadError] RemoveThread() - Called on unregistered threadID 0xF7FC9740
+
+
 12:21:43 [Bound] CorpRegistryBound::GetSanctionedActionsByCorporation()
 12:21:43 [CorpCall] CorpRegistryBound::Handle_GetSanctionedActionsByCorporation()
 12:21:43 [Service] alert::BeanCount()

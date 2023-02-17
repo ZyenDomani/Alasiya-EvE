@@ -5,3 +5,15 @@ tar czvf Alasiya-EvE.tgz cov-int
 doxygen --
 /srv/web/doc/Alasiya-EvE/Doxyfile
 
+valgrind -- (full logging)
+  valgrind -v --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes --log-file="../logs/valgrind.log" ./eve-server
+
+  0.72.52-16feb23
+==16109== LEAK SUMMARY:
+==16109==    definitely lost: 4,138,352 bytes in 116,809 blocks
+==16109==    indirectly lost: 46,268,136 bytes in 1,296,189 blocks
+==16109==      possibly lost: 7,668 bytes in 213 blocks
+==16109==    still reachable: 3,280 bytes in 77 blocks
+==16109==         suppressed: 0 bytes in 0 blocks
+==16109==
+==16109== ERROR SUMMARY: 119 errors from 119 contexts (suppressed: 0 from 0)
