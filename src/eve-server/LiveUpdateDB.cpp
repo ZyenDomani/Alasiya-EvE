@@ -84,6 +84,12 @@ void LiveUpdateDB::Init()
     m_updateList->Dump(NET__PRES_DEBUG, "    ");
 }
 
+void LiveUpdateDB::Close() {    
+    PyDecRef(m_updateList);
+    m_updateList = nullptr;
+    sLog.Yellow("  Alasiya's EvEMu", "LiveUpdateDB Closed." );
+}
+
 void LiveUpdateDB::Reload()
 {
     PyDecRef(m_updateList);
