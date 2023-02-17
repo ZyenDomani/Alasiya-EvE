@@ -157,17 +157,20 @@ void StatisticMgr::CompileData()
             data.probesLaunched += row.GetInt(9);
         }
 
-        if (data.pcShots == 0)
-            if (data.pcMissiles == 0)
-                if (data.iskMarket == 0)
-                    if (data.oreMined == 0)
-                        if (data.shipsSalvaged == 0)
-                            if (data.ramJobs == 0)
-                                if (data.pcBounties == 0)
-                                    if (data.npcBounties == 0)
-                                        if (data.probesLaunched == 0)
-                                            if (data.sitesScanned == 0)
-                                                return;
+        // there's gotta be a better way to do this...
+        if ((data.pcShots == 0)
+        and (data.pcMissiles == 0)
+        and (data.iskMarket == 0)
+        and (data.oreMined == 0)
+        and (data.shipsSalvaged == 0)
+        and (data.ramJobs == 0)
+        and (data.pcBounties == 0)
+        and (data.npcBounties == 0)
+        and (data.probesLaunched == 0)
+        and (data.sitesScanned == 0)) {
+            SafeDelete(res);
+            return;
+        }
 
         // data has been compiled for this running session.  save to history.
         ManagerDB::UpdateStatisticHistory(data);
