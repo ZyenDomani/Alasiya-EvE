@@ -51,9 +51,8 @@ static LogTypeStatus real_log_type_info[NUMBER_OF_LOG_TYPES+1] ={
 const LogTypeStatus *log_type_info = real_log_type_info;
 
 void log_hex(LogType type, const void *data, unsigned long length, unsigned char padding) {
-    char buffer[80];
-    uint32 offset;
-    for(offset=0;offset<length;offset+=16) {
+    char buffer[length];
+    for(uint32 offset=0; offset < length; offset += 16) {
         build_hex_line((const uint8 *)data,length,offset,buffer,padding);
         log_message(type, "%s", buffer);    //%s is to prevent % escapes in the ascii
     }
@@ -63,8 +62,8 @@ void log_phex(LogType type, const void *data, unsigned long length, unsigned cha
     if (length <= 1024) {
         log_hex(type, data, length, padding);
     } else {
-        char buffer[80];
-        log_hex(type, data, 1024-32, padding);
+        char buffer[length];
+        log_hex(type, data, length, padding);
         log_message(type, " ... truncated ...");
         build_hex_line((const uint8 *)data,length,length-16,buffer,padding);
         log_message(type, "%s", buffer);
