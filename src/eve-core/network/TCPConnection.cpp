@@ -326,12 +326,7 @@ bool TCPConnection::RecvData( char* errbuf )
             mRecvBuf->Resize<uint8>(status);
             if (!ProcessReceivedData(errbuf))
                 return false;
-        } else {
-            if (errbuf)
-                snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "recv() returned unknown status");
-            _log(TCP_CLIENT__ERROR, "TCPConnection::RecvData(): Error: recv() returned unknown status");
-            return false;
-        }
+        } 
     }
     return true;
 }

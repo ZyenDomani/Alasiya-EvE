@@ -335,16 +335,14 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     Call_IntBoolArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        throw CustomError("Something bad happened as you prepared to board the ship.");
+        throw CustomError("Something bad happened as you prepared to undock the ship.");
     }
 
     Client* pClient(call.client);
     ShipItemRef pShip = pClient->GetShip();
     if (pShip.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get ship item.", pClient->GetName());
-        throw CustomError("Something bad happened as you prepared to board the ship.");
-        call.client->SendNotifyMsg("Internal Server Error - undock failed.");
-        return nullptr;
+        throw CustomError("Something bad happened as you prepared to undock the ship.");
     }
 
     // nowhere near implementing this one yet....

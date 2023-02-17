@@ -624,8 +624,7 @@ PyRep* UnmarshalStream::LoadPackedRow()
             case DBTYPE_WSTR:
             {
                 PyRep* el = LoadRep();
-                if (el )
-                {
+                if (el == nullptr) {
                     PyDecRef( row );
                     return nullptr;
                 }

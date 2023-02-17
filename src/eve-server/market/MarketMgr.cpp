@@ -386,7 +386,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
             qtySold = oInfo.quantity;
             args.quantity -= qtySold;
         } break;
-        case Market::QtyStatus::Invalid: {
+        default: {
             // this should never hit. make error here.
         } break;
     }

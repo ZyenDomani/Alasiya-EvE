@@ -664,9 +664,9 @@ void InventoryItem::Rename(std::string name)
 
     /** @todo  if renaming a POS or other space object, we'll need to BubblecastSendNotification instead of CorpNotify  */
 
-    //cleanu
-    //PySafeDecRef(list);
-    //PySafeDecRef(tuple);
+    //cleanup
+    PySafeDecRef(list);
+    PySafeDecRef(tuple);
 }
 
 void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*true*/)

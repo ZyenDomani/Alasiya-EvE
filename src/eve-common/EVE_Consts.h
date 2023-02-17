@@ -27,8 +27,6 @@ static const uint16 SHIP_PROCESS_TICK_MS = 5000;    // 5s
 static const GPoint NULL_ORIGIN(0,0,0);  // common place for a zero-value gpoint
 static const GVector NULL_ORIGIN_V(0,0,0);
 
-const int32 ITEM_DB_SAVE_TIMER_EXPIRY(10);
-
 static const float TIC_DURATION_IN_SECONDS(1000);       // not used yet
 
 static const uint32 minWarpDistance(130000);    // 130km here, client and live defined as 150km
@@ -39,7 +37,7 @@ static const float onlineModInSpace(0.75);     // onling modules while NOT docke
 static const int64 ONE_LIGHTYEAR = 9460000000000000;  // in meters
 static const int64 ONE_AU_IN_METERS = 149597870700;     // 1 astronomical unit in meters, per EVElopedia: http://wiki.eveonline.com/en/wiki/Astronomical_Unit
 static const int64 STATION_HANGAR_MAX_CAPACITY = 9000000000000000;  //per client
-static const double MAX_MARKET_PRICE = 9223372036854;  //max int64/1000000  (9223372036854775807/1000000)
+static const int64 MAX_MARKET_PRICE = 9223372036854;  //max int64/1000000  (9223372036854775807/1000000)
 static const int32 INCAPACITATION_DISTANCE = 250000;    // drone to ship max distance.  after this, drone goes Offline and is considered 'lost'
 
 // Cosmic Managers constants here  *not used yet*
@@ -139,28 +137,4 @@ static const std::array<std::string, 16> badCharsSearch {
  * mars    =  3.711 m/s^2
  * earth   =  9.807 m/s^2
  * jupiter = 24.790 m/s^2
- */
-
-/* ship agility by class
- * class          agility
- * Capsule          .06
- * Shuttle          1.6
- * Rookie           5
- * Frigates         3 - 6 (adv. 3 - 4)
- * Destroyers       4 - 5
- * Cruisers         4 - 8
- * T3 Cruiser       2.4 - 2.8
- * HAC              5 - 7
- * Battlecruisers   6 - 9
- * Battleships      8 - 14
- * Industrials      8 - 12
- * Marauder         ~12
- * Orca             40
- * Freighters       ~60
- * Supercarrier     ~60
- * Command          ~9
- * Transport        5 or 19
- * Barges           10 - 18
- * Dreadnought      ~55
- * Zephyr           5
  */

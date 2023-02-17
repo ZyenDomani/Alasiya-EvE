@@ -313,9 +313,10 @@ bool MailDB::CreateLabel(int characterID, Call_CreateLabel& args, uint32& newID)
     if (res.GetRowCount() > 0)
     {
         DBResultRow row;
-        res.GetRow(row);
-        // we want the next one, not the current one, so +1
-        bit = row.GetInt(0) + 1;
+        if (res.GetRow(row)) {
+            // we want the next one, not the current one, so +1
+            bit = row.GetInt(0) + 1;
+        }
     }
 
     DBerror error;
@@ -715,12 +716,14 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
                             "  WHERE id = %u" , listID))
     {
         codelog(DATABASE__ERROR, " Failed to get mailing list settings" );
+        PyDecRef(ret);
         return nullptr;
     }
     DBResultRow row;
 
     if (!res.GetRow(row)) {
         codelog(DATABASE__ERROR, " mailList didn't give us a row" );
+        PyDecRef(ret);
         return nullptr;
     }
 
@@ -735,6 +738,7 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
                             " WHERE listID = %u" , listID))
     {
         codelog(DATABASE__ERROR, " Failed to get mailing list settings" );
+        PyDecRef(ret);
         return nullptr;
     }
 

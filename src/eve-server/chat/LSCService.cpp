@@ -240,6 +240,8 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
         } else {
             // make error here for !join and !create  (should never hit)
         }
+        if (is_log_enabled(LSC__RSP_DUMP))
+            reply.Dump(LSC__RSP_DUMP);
         return reply.Encode();
     }
 
@@ -259,15 +261,17 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
         if (!temporary)
             m_db->UpdateSubscription(channel->GetChannelID(), pClient);
 
+        if (is_log_enabled(LSC__RSP_DUMP))
+            reply.Dump(LSC__RSP_DUMP);
         return reply.Encode();
     } else {
         _log(LSC__ERROR, "%s: Already joined Channel %i \"%s\".", pClient->GetName(), channel->GetChannelID(), channel->GetDisplayName().c_str());
         reply.ChannelInfo = new PyInt(LSC::Error::errUnspecified);
+        if (is_log_enabled(LSC__RSP_DUMP))
+            reply.Dump(LSC__RSP_DUMP);
         return reply.Encode();
     }
 
-    if (is_log_enabled(LSC__RSP_DUMP))
-        reply.Dump(LSC__RSP_DUMP);
 
     /*
      *            ret = sm.RemoteSvc('LSC').CreateChannel(displayName, joinExisting=False, memberless=0, create=True)
