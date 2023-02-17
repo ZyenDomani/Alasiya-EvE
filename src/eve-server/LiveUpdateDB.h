@@ -38,6 +38,7 @@ private:
 
 public:
     void Init();
+    void Close();
     void Reload();
 
     PyList* GetUpdates()                                { PyIncRef(m_updateList); return m_updateList; }
