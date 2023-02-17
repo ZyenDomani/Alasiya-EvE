@@ -953,6 +953,8 @@ int main( int argc, char* argv[] )
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
     /* Close the MarketMgr */
     sMktMgr.Close();
+    /* Close the LiveUpdateDB service */
+    sLiveUpdateDB.Close();
     /* Close the bulk data manager */
     sBulkDB.Close();
     /* Close the station data manager */
