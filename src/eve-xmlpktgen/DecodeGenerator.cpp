@@ -179,14 +179,14 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
             "    if (%s->IsNone()) {\n"
             "        %s = %s;\n"
             "    } else {\n"
-            "        %s = (int32)PyRep::IntegerValue(%s);\n"
+            "        %s = PyRep::IntegerValueI32(%s);\n"
             "    }\n",
             v,
             name, none_marker,
             name, v
         );
     } else {
-        fprintf(mOutputFile, "    %s = (int32)PyRep::IntegerValue(%s);\n", name, v);
+        fprintf(mOutputFile, "    %s = PyRep::IntegerValueI32(%s);\n", name, v);
     }
 
     pop();

@@ -124,64 +124,86 @@ bool PyRep::visit(PyVisitor& v) const
 
 std::string PyRep::StringContent(PyRep* pRep)
 {
-	if (pRep->IsString()) {
-        return pRep->AsString()->content();
-    }
-	if (pRep->IsWString()) {
-        return pRep->AsWString()->content();
-    }
     if (pRep == nullptr) {
         return "";
     }
-	if (pRep->IsNone()) {
+    if (pRep->IsString()) {
+        return pRep->AsString()->content();
+    }
+    if (pRep->IsWString()) {
+        return pRep->AsWString()->content();
+    }
+    if (pRep->IsNone()) {
         return "";
     }
 
-    sLog.Error("PyRep::StringContent()", "Expected PyString or PyWString but got %s.", pRep->TypeString());
+    //sLog.Error("PyRep::StringContent()", "Expected PyString or PyWString but got %s.", pRep->TypeString());
     return "";
 }
 
 int64 PyRep::IntegerValue(PyRep* pRep) {
-    if (pRep->IsLong()) {
-        return pRep->AsLong()->value();
-    }
-	if (pRep->IsInt()) {
-        return pRep->AsInt()->value();
-    }
-    if (pRep->IsFloat()) {
-        return pRep->AsFloat()->value();
-    }
     if (pRep == nullptr) {
         return 0;
     }
+    if (pRep->IsLong()) {
+        return pRep->AsLong()->value();
+    }
+    if (pRep->IsInt()) {
+        return (int64)pRep->AsInt()->value();
+    }
+    if (pRep->IsFloat()) {
+        return (int64)pRep->AsFloat()->value();
+    }
     if (pRep->IsBool()) {
-        return pRep->AsBool()->value();
+        return (int64)pRep->AsBool()->value();
     }
 
-    sLog.Error("PyRep::IntegerValue()", "Expected integer type but got %s.", pRep->TypeString());
-	EvE::traceStack();
+    //sLog.Error("PyRep::IntegerValue()", "Expected integer type but got %s.", pRep->TypeString());
+    //EvE::traceStack();
     return 0;
 }
 
 uint32 PyRep::IntegerValueU32(PyRep* pRep) {
-	if (pRep->IsInt()) {
-        return pRep->AsInt()->value();
-    }
-    if (pRep->IsLong()) {
-        return pRep->AsLong()->value();
-    }
-    if (pRep->IsFloat()) {
-        return pRep->AsFloat()->value();
-    }
     if (pRep == nullptr) {
         return 0;
     }
+    if (pRep->IsInt()) {
+        return (uint32)pRep->AsInt()->value();
+    }
+    if (pRep->IsLong()) {
+        return (uint32)pRep->AsLong()->value();
+    }
+    if (pRep->IsFloat()) {
+        return (uint32)pRep->AsFloat()->value();
+    }
     if (pRep->IsBool()) {
-        return pRep->AsBool()->value();
+        return (uint32)pRep->AsBool()->value();
     }
 
-    sLog.Error("PyRep::IntegerValueU32()", "Expected integer type but got %s.", pRep->TypeString());
-	EvE::traceStack();
+    //sLog.Error("PyRep::IntegerValueU32()", "Expected integer type but got %s.", pRep->TypeString());
+    //EvE::traceStack();
+    return 0;
+}
+
+int32 PyRep::IntegerValueI32 ( PyRep* pRep ) {
+    if (pRep == nullptr) {
+        return 0;
+    }
+    if (pRep->IsInt()) {
+        return pRep->AsInt()->value();
+    }
+    if (pRep->IsLong()) {
+        return (int32)pRep->AsLong()->value();
+    }
+    if (pRep->IsFloat()) {
+        return (int32)pRep->AsFloat()->value();
+    }
+    if (pRep->IsBool()) {
+        return (int32)pRep->AsBool()->value();
+    }
+
+    //sLog.Error("PyRep::IntegerValueI32()", "Expected integer type but got %s.", pRep->TypeString());
+    //EvE::traceStack();
     return 0;
 }
 
@@ -195,7 +217,7 @@ PyInt::PyInt(const PyInt& oth) : PyRep(PyRep::PyTypeInt), mValue(oth.value())
 {
     //sLog.Cyan("PyInt()", "Copy C'tor.");
 }
-PyInt::PyInt (PyInt&& oth) : PyRep(PyRep::PyTypeInt), mValue(0) {
+PyInt::PyInt(PyInt&& oth) : PyRep(PyRep::PyTypeInt), mValue(0) {
     std::swap(*this, oth);
 }
 
@@ -229,7 +251,7 @@ PyLong::PyLong(const PyLong& oth) : PyRep(PyRep::PyTypeLong), mValue(oth.value()
 {
     //sLog.Cyan("PyLong()", "Copy C'tor.");
 }
-PyLong::PyLong (PyLong&& oth) : PyRep(PyRep::PyTypeLong), mValue(0) {
+PyLong::PyLong(PyLong&& oth) : PyRep(PyRep::PyTypeLong), mValue(0) {
     std::swap(*this, oth);
 }
 
@@ -292,7 +314,7 @@ PyFloat::PyFloat(const PyFloat& oth) : PyRep(PyRep::PyTypeFloat), mValue(oth.val
 {
     //sLog.Cyan("PyFloat()", "Copy C'tor.");
 }
-PyFloat::PyFloat (PyFloat&& oth) : PyRep(PyRep::PyTypeFloat), mValue(0.0) {
+PyFloat::PyFloat(PyFloat&& oth) : PyRep(PyRep::PyTypeFloat), mValue(0.0) {
     std::swap(*this, oth);
 }
 
@@ -382,7 +404,7 @@ PyBool::PyBool(const PyBool& oth) : PyRep(PyRep::PyTypeBool), mValue(oth.value()
 {
     //sLog.Cyan("PyBool()", "Copy C'tor.");
 }
-PyBool::PyBool (PyBool&& oth) : PyRep(PyRep::PyTypeBool), mValue(0) {
+PyBool::PyBool(PyBool&& oth) : PyRep(PyRep::PyTypeBool), mValue(0) {
     std::swap(*this, oth);
 }
 
@@ -405,7 +427,7 @@ PyNone::PyNone(const PyNone& oth) : PyRep(PyRep::PyTypeNone)
 {
     //sLog.Cyan("PyNone()", "Copy C'tor.");
 }
-PyNone::PyNone (PyNone&& oth) : PyRep(PyRep::PyTypeNone) {
+PyNone::PyNone(PyNone&& oth) : PyRep(PyRep::PyTypeNone) {
     std::swap(*this, oth);
 }
 
@@ -668,17 +690,19 @@ PyTuple& PyTuple::operator=(const PyTuple& oth)
 {
     sLog.Yellow("PyTuple()", "Copy assignment.");
     clear();
-    items.resize(oth.size());
-    iterator cur = items.begin(), end = items.end();
-    const_iterator cur_oth = oth.begin(), oth_end = oth.end();
-    for (; cur != end && cur_oth != oth_end; cur++, cur_oth++) {
-        if (*cur_oth == nullptr) {
-            *cur = nullptr;
-        } else {
-            *cur = (*cur_oth)->Clone();
-        }
+    // new and improved!!  ....ya
+    const_iterator citr = oth.begin(), end = oth.end();
+    for (; citr != end; ++citr) {
+        if (*citr != nullptr)
+            items.push_back((*citr));  // this is using copy c'tor to copy into items...dont need Clone() here
     }
 
+    return *this;
+}
+
+PyTuple& PyTuple::operator=(PyTuple&& oth)  {
+    sLog.Yellow("PyTuple()", "Move assignment.");
+    std::swap(*this, oth);
     return *this;
 }
 
@@ -748,17 +772,20 @@ PyList& PyList::operator=(const PyList& oth)
 {
     sLog.Yellow("PyList()", "Copy assignment.");
     clear();
-    items.resize(oth.size());
-    iterator cur = items.begin(), end = items.end();
-    const_iterator cur_oth = oth.begin(), oth_end = oth.end();
-    for (; cur != end && cur_oth != oth_end; cur++, cur_oth++) {
-        if (*cur_oth == nullptr) {
-            *cur = nullptr;
-        } else {
-            *cur = (*cur_oth)->Clone();
-        }
+
+    // new and improved!!  ....ya
+    const_iterator citr = oth.begin(), end = oth.end();
+    for (; citr != end; ++citr) {
+        if (*citr != nullptr)
+            items.push_back((*citr));  // this is using copy c'tor to copy into items...dont need Clone() here
     }
 
+    return *this;
+}
+
+PyList& PyList::operator= ( PyList&& oth ) {
+    sLog.Yellow("PyList()", "Move assignment.");
+    std::swap(*this, oth);
     return *this;
 }
 
@@ -789,8 +816,8 @@ bool PyDict::visit(PyVisitor& v) const
 
 void PyDict::clear()
 {
-    iterator cur = items.begin();
-    for (; cur != items.end(); cur++) {
+    iterator cur = items.begin(), end = items.end();
+    for (; cur != end; cur++) {
         PyDecRef(cur->first);
         PySafeDecRef(cur->second);
     }
@@ -836,7 +863,7 @@ void PyDict::SetItem(PyRep* key, PyRep* value)
     if (itr == items.end()) {
         // Keep both key & value  (make_pair makes copy of args passed)
         items.insert(std::make_pair(key, value));
-		// should we decRef key,value here?
+        // should we decRef key,value here?
     } else {
         // We found 'key' in current dict, so use itr->first and decRef sent 'key'.
         PyDecRef(key);
@@ -855,12 +882,13 @@ PyDict& PyDict::operator=(const PyDict& oth)
 {
     sLog.Yellow("PyDict()", "Copy assignment.");
     clear();
-    const_iterator cur = oth.begin(), end = oth.end();
-    for (; cur != end; cur++) {
-        if (cur->second == nullptr) {
-            SetItem(cur->first->Clone(), nullptr);
+    const_iterator citr = oth.begin(), end = oth.end();
+    for (; citr != end; ++citr) {
+        // not sure if Clone() is right here....may be unneeded copy
+        if ( citr->second == nullptr) {
+            SetItem( citr->first->Clone(), nullptr);
         } else {
-            SetItem(cur->first->Clone(), cur->second->Clone());
+            SetItem( citr->first->Clone(), citr->second->Clone());
         }
     }
 
@@ -894,6 +922,19 @@ bool PyObject::visit(PyVisitor& v) const
     return v.VisitObject(this);
 }
 
+PyObject& PyObject::operator= ( const PyObject& oth ) {
+    sLog.Yellow("PyObject()", "Copy assignment.");
+    PySafeDecRef(mType);
+    PySafeDecRef(mArguments);
+
+    mType = std::move(oth.mType->Clone());
+    cleanup = oth.cleanup;
+    mArguments = std::move(oth.arguments()->Clone());
+
+    return *this;
+}
+
+
 /************************************************************************/
 /* PyObjectEx                                                           */
 /************************************************************************/
@@ -908,6 +949,7 @@ mHeader(oth.header()->Clone()), mIsType2(oth.isType2()), mList(oth.mList), mDict
 PyObjectEx::~PyObjectEx()
 {
     if (cleanup) {
+        PySafeDecRef(mHeader);
         PySafeDecRef(mList);
         PySafeDecRef(mDict);
     }
@@ -926,8 +968,17 @@ bool PyObjectEx::visit(PyVisitor& v) const
 
 PyObjectEx& PyObjectEx::operator= (const PyObjectEx& oth)
 {
-    list() = oth.list();
-    dict() = oth.dict();
+    sLog.Yellow("PyObjectEx()", "Copy assignment.");
+
+    PySafeDecRef(mHeader);
+    PySafeDecRef(mList);
+    PySafeDecRef(mDict);
+
+    cleanup = oth.cleanup;
+    mIsType2 = oth.mIsType2;
+    mHeader = std::move(oth.header()->Clone());
+    mList = std::move(oth.list().Clone());
+    mDict = std::move(oth.dict().Clone());
 
     return *this;
 }
@@ -1172,7 +1223,15 @@ int32 PyPackedRow::hash() const
 
 PyPackedRow& PyPackedRow::operator=(const PyPackedRow& oth)
 {
-    *mFields = *oth.mFields;
+    sLog.Yellow("PyPackedRow()", "Copy assignment.");
+
+    clear();
+    PySafeDecRef(mHeader);
+    PySafeDecRef(mFields);
+
+    cleanup = oth.cleanup;
+    mHeader = oth.header();
+    mFields = std::move(oth.mFields->Clone());
 
     return *this;
 }

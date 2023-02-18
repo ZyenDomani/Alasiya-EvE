@@ -147,14 +147,14 @@ bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field )
         "        EvE::traceStack();\n"
         "        %s = PyStatic.NewNone();\n"
         "    } else {\n"
-        "        %s = %s;\n"
         "        PyIncRef(%s);\n"
+        "        %s = %s;\n"
         "    }\n\n",
         name,
         mName, name,
 		v,
-        v, name,
-        name
+        name,
+        v, name
     );
 
     pop();
@@ -172,7 +172,7 @@ bool ClassEncodeGenerator::ProcessInt( const TiXmlElement* field )
     const char* v = top();
 
     fprintf(mOutputFile,
-        "    %s = new PyInt(%s);\n",
+        "    %s = std::move(new PyInt(%s));\n",
              v, name
     );
 
@@ -191,7 +191,7 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
     const char* v = top();
 
     fprintf(mOutputFile,
-        "    %s = new PyLong(%s);\n",
+        "    %s = std::move(new PyLong(%s));\n",
              v, name
         );
 
@@ -210,7 +210,7 @@ bool ClassEncodeGenerator::ProcessReal( const TiXmlElement* field )
     const char* v = top();
 
     fprintf(mOutputFile,
-        "    %s = new PyFloat(%s);\n",
+            "    %s = std::move(new PyFloat(%s));\n",
         v, name
     );
 
@@ -227,7 +227,7 @@ bool ClassEncodeGenerator::ProcessBool( const TiXmlElement* field )
     }
 
     fprintf(mOutputFile,
-        "    %s = new PyBool(%s);\n",
+            "    %s = std::move(new PyBool(%s));\n",
         top(), name
     );
 
@@ -257,8 +257,8 @@ bool ClassEncodeGenerator::ProcessBuffer( const TiXmlElement* field )
     const char* v = top();
     fprintf( mOutputFile,
         "    if (%s != nullptr) {\n"
-        "        %s = %s;\n"
         "        PyIncRef(%s);\n"
+        "        %s = %s;\n"
         "    } else {\n"
         "        // this should NEVER be null.  hack something.\n"
         "	 sLog.Error(\"EncodeObject()\",\"%s.%s is null.  hacking some weird shit here, so be aware.\");\n"
@@ -266,8 +266,8 @@ bool ClassEncodeGenerator::ProcessBuffer( const TiXmlElement* field )
         "        %s = new PyBuffer( 0 );\n"
         "    }\n\n",
         name,
-            v, name,
             name,
+            v, name,
             mName, name,
             v
     );
@@ -366,14 +366,14 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
         "        EvE::traceStack();\n"
         "        %s = new PyToken(\"\");\n"
         "    } else {\n"
-        "        %s = %s;\n"
         "        PyIncRef(%s);\n"
+        "        %s = %s;\n"
         "    }\n\n",
         name,
         mName, name,
         v,
-        v, name,
-        name
+        name,
+        v, name
     );
 
     pop();
@@ -415,14 +415,14 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
         "        EvE::traceStack();\n"
         "        %s = new PyObject(\"unknown\", PyStatic.NewNone());\n"
         "    } else {\n"
-        "        %s = %s;\n"
         "        PyIncRef(%s);\n"
+        "        %s = %s;\n"
         "    }\n",
         name,
         mName, name,
             v,
-            v, name,
-            name
+            name,
+            v, name
     );
 
     pop();
@@ -452,10 +452,9 @@ bool ClassEncodeGenerator::ProcessObjectInline( const TiXmlElement* field )
     if (!ParseElementChildren( field, 2 ) )
         return false;
 
-    const char* v = top();
     fprintf( mOutputFile,
-        "    %s = new PyObject(%s, %s);\n",
-        v, tname, aname
+             "    %s = std::move(new PyObject(%s, %s));\n",
+             top(), tname, aname
     );
 
     pop();
@@ -478,10 +477,10 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
     const char *v = top();
 
     fprintf( mOutputFile,
-        "    %s = %s;\n"
-        "    PyIncRef(%s);\n",
-        v, name,
-        name
+        "    PyIncRef(%s);\n"
+        "    %s = %s;\n",
+        name,
+        v, name
     );
 
 
@@ -531,7 +530,7 @@ bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field )
 
     //now we can generate the tuple decl
     fprintf( mOutputFile,
-        "    PyTuple* %s = new PyTuple( %u );\n",
+             "    PyTuple* %s = std::move(new PyTuple( %u ));\n",
         iname, count
     );
 
@@ -547,7 +546,7 @@ bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    %s = %s;\n",
+        "    %s = std::move(%s);\n",
         top(), iname
     );
 
@@ -587,10 +586,9 @@ bool ClassEncodeGenerator::ProcessListInline( const TiXmlElement* field )
     const TiXmlNode* i = nullptr;
 
     uint32 count = 0;
-    while( ( i = field->IterateChildren( i ) ) )
-    {
+    while( ( i = field->IterateChildren( i ) ) ) {
         if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
-            count++;
+            ++count;
     }
 
     char iname[16];
@@ -598,7 +596,7 @@ bool ClassEncodeGenerator::ProcessListInline( const TiXmlElement* field )
 
     //now we can generate the list decl
     fprintf( mOutputFile,
-        "    PyList* %s = new PyList( %u );\n",
+             "    PyList* %s = std::move(new PyList( %u ));\n",
         iname, count
     );
 
@@ -614,7 +612,7 @@ bool ClassEncodeGenerator::ProcessListInline( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    %s = %s;\n\n",
+             "    %s = std::move(%s);\n\n",
         top(), iname
     );
 
@@ -634,7 +632,7 @@ bool ClassEncodeGenerator::ProcessListInt( const TiXmlElement* field )
     snprintf( rname, sizeof( rname ), "list%u", mItemNumber++ );
 
     fprintf( mOutputFile,
-        "    PyList* %s = new PyList();\n"
+             "    PyList* %s = std::move(new PyList());\n"
         "    for (auto &cur : %s)\n"
         "        %s->AddItemInt(cur);\n"
         "    %s = %s;\n\n",
@@ -658,7 +656,7 @@ bool ClassEncodeGenerator::ProcessListLong( const TiXmlElement* field )
     snprintf( rname, sizeof( rname ), "list%u", mItemNumber++ );
 
     fprintf( mOutputFile,
-        "    PyList *%s = new PyList();\n"
+             "    PyList *%s = std::move(new PyList());\n"
         "    for (auto &cur : %s)\n"
         "        %s->AddItemLong(cur);\n"
         "    %s = %s;\n\n",
@@ -684,7 +682,7 @@ bool ClassEncodeGenerator::ProcessListStr( const TiXmlElement* field )
     snprintf( rname, sizeof( rname ), "list%u", mItemNumber++ );
 
     fprintf( mOutputFile,
-        "    PyList *%s = new PyList();\n"
+             "    PyList *%s = std::move(new PyList());\n"
         "    for (auto &cur : %s)\n"
         "        %s->AddItemString(cur.c_str());\n"
         "    %s = %s;\n\n",
@@ -730,7 +728,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
     snprintf( iname, sizeof( iname ), "dict%u", mItemNumber++ );
 
     fprintf( mOutputFile,
-        "    PyDict* %s = new PyDict();\n",
+             "    PyDict* %s = std::move(new PyDict());\n",
         iname
     );
 
@@ -802,7 +800,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = %s;\n\n",
+             "    %s = std::move(%s);\n\n",
         top(), iname
     );
 
@@ -845,7 +843,7 @@ bool ClassEncodeGenerator::ProcessDictRaw( const TiXmlElement* field )
         "    PyDict* %s = new PyDict();\n"
         "    for (auto &cur : %s) \n"
         "        %s->SetItem(new Py%s(cur.first), new Py%s(cur.second));\n"
-        "    %s = %s;\n\n",
+        "    %s = std::move(%s);\n\n",
         rname,
         name,
             rname, pykey, pyvalue,
@@ -873,7 +871,7 @@ bool ClassEncodeGenerator::ProcessDictInt( const TiXmlElement* field )
         "        %s->SetItem(new PyInt(cur.first ), cur.second);\n"
         "        PyIncRef(cur.second);\n"
         "    }\n\n"
-        "    %s = %s;\n",
+        "    %s = std::move(%s);\n",
         iname,
         name,
             iname,
@@ -902,7 +900,7 @@ bool ClassEncodeGenerator::ProcessDictStr( const TiXmlElement* field )
         "        %s->SetItemString(cur.first.c_str(), cur.second);\n"
         "        PyIncRef(cur.second);\n"
         "    }\n\n"
-        "    %s = %s;\n",
+        "    %s = std::move(%s);\n",
         iname,
         name,
             iname,

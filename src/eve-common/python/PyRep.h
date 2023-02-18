@@ -205,6 +205,8 @@ public:
     static int64 IntegerValue(PyRep* pRep);// None returns 0, Float is converted to int64
     // this is used when PyRep can be Int, Long, Float or None
     static uint32 IntegerValueU32(PyRep* pRep);// None returns 0. Returned as unsigned 32b int
+    // this is used when PyRep can be Int, Long, Float or None
+    static int32 IntegerValueI32(PyRep* pRep);// None returns 0. Returned as signed 32b int
 
     // no default c'tor
     // base c'tor
@@ -221,7 +223,8 @@ public:
         // this is just noise until proven otherwise
         //if (this == &oth)
         //	return *this;  // don't do anything if self-assigning
-        return *this = std::move(PyRep(oth));          // this uses the move assignment operator
+        *this = std::move(PyRep(oth));         // copy then move
+        return *this;
     }
     // move assignment
     PyRep& operator= (PyRep&& oth) {
@@ -253,7 +256,8 @@ public:
     PyInt(PyInt&& oth);
     // copy assignment
     /*PyInt& operator=(PyInt& oth) {
-        return *this = std::move(PyInt(oth));          // this uses the move assignment operator
+     * this = std::move(PyInt(oth));          // copy then move
+        return *this;
     } */
     // move assignment
     PyInt& operator= (PyInt&& oth) {
@@ -294,7 +298,8 @@ public:
     PyLong(PyLong&& oth);
     // copy assignment
     /*PyLong& operator=(PyLong oth) {
-        return *this = std::move(PyLong(oth));          // this uses the move assignment operator
+     * this = std::move(PyLong(oth));          // copy then move
+        return *this;
     }*/
     // move assignment
     PyLong& operator= (PyLong&& oth) {
@@ -335,7 +340,8 @@ public:
     PyFloat(PyFloat&& oth);
     // copy assignment
     /*PyFloat& operator=(PyFloat oth) {
-        return *this = std::move(PyFloat(oth));          // this uses the move assignment operator
+     * this = std::move(PyFloat(oth));          // copy then move
+        return *this;
     }*/
     // move assignment
     PyFloat& operator= (PyFloat&& oth) {
@@ -376,7 +382,8 @@ public:
     PyBool(PyBool&& oth);
     // copy assignment
     /*PyBool& operator=(PyBool oth) {
-        return *this = std::move(PyBool(oth));          // this uses the move assignment operator
+     * this = std::move(PyBool(oth));          // copy then move
+        return *this;
     }*/
     // move assignment
     PyBool& operator= (PyBool&& oth) {
@@ -413,7 +420,8 @@ public:
     PyNone(PyNone&& oth);
     // copy assignment
     /*PyNone& operator=(PyNone oth) {
-        return *this = std::move(PyNone(oth));          // this uses the move assignment operator
+     * this = std::move(PyNone(oth));          // copy then move
+        return *this;
     }*/
     // move assignment
     PyNone& operator= (PyNone&& oth) {
@@ -479,7 +487,7 @@ protected:
     mutable int32		mHashCache;
 
 private:
-	bool			cleanup=false;
+    bool			cleanup=false;
 };
 
 /**
@@ -634,15 +642,7 @@ public:
     // copy assignment
     PyTuple& operator= (const PyTuple& oth);
     // move assignment
-    PyTuple& operator= (PyTuple&& oth) {
-    /*
-        std::swap(mType, oth.mType);
-        std::swap(items, oth.items);
-        std::swap(cleanup, oth.cleanup);
-    */
-        std::swap(*this, oth);
-        return *this;
-    }
+    PyTuple& operator= (PyTuple&& oth);
 
     virtual ~PyTuple();
 
@@ -702,10 +702,7 @@ public:
     // copy assignment
     PyList& operator= (const PyList& oth);
     // move assignment
-    PyList& operator= (PyList&& oth) {
-        std::swap(*this, oth);
-        return *this;
-    }
+    PyList& operator= (PyList&& oth);
 
     virtual ~PyList();
 
@@ -913,9 +910,7 @@ public:
 
 protected:
     PyString*			mType;
-    PyRep* const		mArguments;
-
-private:
+    PyRep*      		mArguments;
     bool			cleanup=false;
 };
 
@@ -962,14 +957,12 @@ public:
     virtual ~PyObjectEx();
 
 protected:
-    PyRep* const		mHeader;
-    const bool			mIsType2;
+    PyRep*      		mHeader;
+    bool			mIsType2;
+    bool                        cleanup=false;
 
-    PyList* const		mList;
-    PyDict* const		mDict;
-
-private:
-	bool			cleanup=false;
+    PyList* 	        	mList;
+    PyDict*     		mDict;
 };
 
 /**
@@ -1057,7 +1050,7 @@ public:
     const_iterator end() const				{ return mFields->end(); }
     void clear()					{ mFields->clear(); }
 
-    PyRep* GetField(size_t index) const		{ return mFields->GetItem(index); }
+    PyRep* GetField(size_t index) const		        { return mFields->GetItem(index); }
 
     bool SetField(uint32 index, PyRep* value);
     bool SetFieldC(const char* colName, PyRep* value);
@@ -1067,10 +1060,8 @@ public:
     virtual ~PyPackedRow();
 
 protected:
-    DBRowDescriptor* const	mHeader;
-    PyList* const		mFields;
-
-private:
+    DBRowDescriptor*    	mHeader;
+    PyList*     		mFields;
     bool			cleanup=false;
 };
 

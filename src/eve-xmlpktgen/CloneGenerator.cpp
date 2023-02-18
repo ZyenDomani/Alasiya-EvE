@@ -23,6 +23,9 @@
     Author:        Zhur
 */
 
+/** @todo  does this need move semantics?  */
+
+
 #include "eve-xmlpktgen.h"
 #include "CloneGenerator.h"
 
@@ -554,13 +557,13 @@ bool ClassCloneGenerator::ProcessDictInt( const TiXmlElement* field )
     fprintf( mOutputFile,
             "    std::map<int32, PyRep*>::const_iterator %s_cur = %s.begin();\n"
             "    //free any existing elements first\n"
-            "    for (; %s_cur != %s.end(); %s_cur++)\n"
+            "    for (; %s_cur != %s.end(); ++%s_cur)\n"
             "        PyDecRef( %s_cur->second );\n"
             "    %s.clear();\n"
             "\n"
             "    //now we can copy in the new ones...\n"
-            "    for (%s_cur = oth.%s.begin(); %s_cur != oth.%s.end(); %s_cur++)\n"
-            "        %s[ %s_cur->first ] = %s_cur->second->Clone();\n"
+            "    for (%s_cur = oth.%s.begin(); %s_cur != oth.%s.end(); ++%s_cur)\n"
+            "        %s[ %s_cur->first ] = std::move(%s_cur->second->Clone());\n"
             "\n",
             name, name,
             name, name, name,
@@ -584,13 +587,13 @@ bool ClassCloneGenerator::ProcessDictStr( const TiXmlElement* field )
     fprintf( mOutputFile,
             "    std::map<std::string, PyRep*>::const_iterator %s_cur = %s.begin();\n"
             "    //free any existing elements first\n"
-            "    for (; %s_cur != %s.end(); %s_cur++)\n"
+            "    for (; %s_cur != %s.end(); ++%s_cur)\n"
             "        PyDecRef( %s_cur->second );\n"
             "    %s.clear();\n"
             "\n"
             "    //now we can copy in the new ones...\n"
-            "    for (%s_cur = oth.%s.begin(); %s_cur != oth.%s.end(); %s_cur++)\n"
-            "        %s[ %s_cur->first ] = %s_cur->second->Clone();\n"
+            "    for (%s_cur = oth.%s.begin(); %s_cur != oth.%s.end(); ++%s_cur)\n"
+            "        %s[ %s_cur->first ] = std::move(%s_cur->second->Clone());\n"
             "\n",
             name, name,
             name, name, name,

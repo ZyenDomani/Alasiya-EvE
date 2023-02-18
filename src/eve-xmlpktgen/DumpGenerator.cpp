@@ -151,7 +151,7 @@ bool ClassDumpGenerator::ProcessInt( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s=%%u\", pfx, %s );\n",
+        "    _log( l_type, \"%%s%s=%%i\", pfx, %s );\n",
         name, name
     );
 
@@ -183,7 +183,7 @@ bool ClassDumpGenerator::ProcessReal( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s=%%.13f\", pfx, %s );\n",
+        "    _log( l_type, \"%%s%s=%%f\", pfx, %s );\n",
         name, name
     );
 
@@ -473,7 +473,7 @@ bool ClassDumpGenerator::ProcessListInt( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s: Integer list with %%lu entries\", pfx, %s.size() );\n"
+        "    _log( l_type, \"%%s%s: Integer list with %%li entries\", pfx, %s.size() );\n"
         "\n"
         "    std::vector<int32>::const_iterator cur = %s.begin(), end = %s.end();\n"
         "    for (int index = 0; cur != end; cur++, ++index )\n"
@@ -494,7 +494,7 @@ bool ClassDumpGenerator::ProcessListLong( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s: Integer list with %%lu entries\", pfx, %s.size() );\n"
+        "    _log( l_type, \"%%s%s: Integer list with %%li entries\", pfx, %s.size() );\n"
         "\n"
         "    std::vector<int64>::const_iterator cur = %s.begin(), end = %s.end();\n"
         "    for (int index = 0; cur != end; cur++, ++index )\n"
@@ -517,7 +517,7 @@ bool ClassDumpGenerator::ProcessListStr( const TiXmlElement* field )
     fprintf( mOutputFile,
         "    std::vector<std::string>::const_iterator %s_cur = %s.begin(), %s_end = %s.end();\n"
         "    for (int index = 0; %s_cur != %s_end; ++%s_cur, ++index )\n"
-        "        _log( l_type, \"%%s   [%%02d] %%s\", pfx, index, ( *%s_cur ).c_str() );\n"
+        "        _log( l_type, \"%%s   [%%02i] %%s\", pfx, index, ( *%s_cur ).c_str() );\n"
         "\n",
         name, name, name, name,
         name, name, name, name
@@ -602,11 +602,11 @@ bool ClassDumpGenerator::ProcessDictRaw( const TiXmlElement* field )
     //could make PyRep's out of them and use ->Dump, but thats annoying
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s: Dictionary with %%lu entries\", pfx, %s.size() );\n"
+        "    _log( l_type, \"%%s%s: Dictionary with %%li entries\", pfx, %s.size() );\n"
         "\n"
         "    /* total crap casting here since we do not know the correct printf format */\n"
         "    for (auto &cur : %s)\n"
-        "        _log( l_type, \"%%s   Key: %%u -> Value: %%u\", pfx, uint32(cur.first), uint32(cur.second));\n"
+        "        _log( l_type, \"%%s   Key: %%i -> Value: %%i\", pfx, int32(cur.first), int32(cur.second));\n"
         "\n",
         name, name, name
     );
@@ -623,10 +623,10 @@ bool ClassDumpGenerator::ProcessDictInt( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s: Dictionary with %%lu entries\", pfx, %s.size() );\n"
+        "    _log( l_type, \"%%s%s: Dictionary with %%li entries\", pfx, %s.size() );\n"
         "\n"
         "    for (auto &cur : %s) {\n"
-        "        _log( l_type, \"%%s   Key: %%u\", pfx, cur.first );\n"
+        "        _log( l_type, \"%%s   Key: %%i\", pfx, cur.first );\n"
         "        std::string n( pfx );\n"
         "        n += \"        \";\n"
         "        cur.second->Dump( l_type, n.c_str() );\n"
@@ -647,7 +647,7 @@ bool ClassDumpGenerator::ProcessDictStr( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s: Dictionary with %%lu entries\", pfx, %s.size() );\n"
+        "    _log( l_type, \"%%s%s: Dictionary with %%li entries\", pfx, %s.size() );\n"
         "\n"
         "    for (auto &cur : %s) {\n"
         "        _log( l_type, \"%%s Key: %%s\", pfx, cur.first.c_str() );\n"
