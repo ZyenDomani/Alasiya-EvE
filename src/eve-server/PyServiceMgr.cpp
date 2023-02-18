@@ -69,7 +69,7 @@ void PyServiceMgr::Close() {
 
 void PyServiceMgr::Initalize(double startTime)
 {
-    PyString* str(new PyString( "machoNet.serviceInfo"));
+    PyString* str(new PyString("machoNet.serviceInfo"));
 
     //  look into this.  what's it for?  are we using it right?  missing anything?
     // client calls this, then loads cached data upon return.  not sure how this is used yet

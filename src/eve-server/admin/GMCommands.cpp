@@ -689,10 +689,9 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
     } else if (character->HasSkill(skillID)) {
         // has skill injected, so update level
         skillRef = character->GetCharSkillRef(skillID);
-        if (skillRef.get() == nullptr){
+        if (skillRef.get() == nullptr)
             throw CustomError("Unable to get item for skillID %u.", skillID);
-            return new PyString ("Skill Gifting Failure - Unable to get item for skillID %u.", skillID);
-        }
+
         newPoints = skillRef->GetSPForLevel(level);
         skillRef->SetAttribute(AttrSkillLevel, level);
         skillRef->SetAttribute(AttrSkillPoints, newPoints);

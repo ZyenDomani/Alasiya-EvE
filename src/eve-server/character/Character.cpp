@@ -978,9 +978,8 @@ void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
     skill->SaveItem();
 
     float timeLeft = (qs.endTime - qs.startTime) / EvE::Time::Second;
-    const char* formatedTime = EvE::FormatTime(timeLeft);
     _log(SKILL__QUEUE, "Added %s Level %u to queue with %s(%.1f) to train %u SP.", \
-            skill->name(), level, formatedTime, timeLeft, nextSP - currentSP);
+    skill->name(), level, EvE::FormatTime(timeLeft).c_str(), timeLeft, nextSP - currentSP);
 }
 
 void Character::UpdateSkillQueue() {
@@ -1007,8 +1006,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
     int64 curTime(GetFileTimeNow());
     if (m_skillQueue.front().endTime > curTime) {
         float timeLeft = (m_skillQueue.front().endTime - curTime) / EvE::Time::Second;
-        const char* formatedTime = EvE::FormatTime(timeLeft);
-        _log(SKILL__INFO, "%s still training.  %s remaining.", m_inTraining->name(), formatedTime);
+        _log(SKILL__INFO, "%s still training.  %s remaining.", m_inTraining->name(), EvE::FormatTime(timeLeft).c_str());
         UpdateSkillQueueEndTime();
         return;
     }
@@ -1120,9 +1118,8 @@ void Character::SkillQueueLoop(bool update/*true*/)
 
         if (is_log_enabled(SKILL__INFO)) {
             int64 timeLeft = (qs.endTime - curTime) / EvE::Time::Second;
-            const char* formatedTime = EvE::FormatTime(timeLeft);
             _log(SKILL__INFO, "Training started.  %s to train %u sp for level %u", \
-                    formatedTime, nextSP - skill->GetCurrentSP(this, qs.startTime), qs.level);
+                    EvE::FormatTime(timeLeft).c_str(), nextSP - skill->GetCurrentSP(this, qs.startTime), qs.level);
         }
 
         if (!multiple) {

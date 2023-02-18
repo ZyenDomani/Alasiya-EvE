@@ -88,7 +88,9 @@ int64 filesize( const char* filename )
     if( fd == NULL )
         return 0;
 
-    return filesize( fd );
+    int64 size = filesize( fd );
+    fclose(fd);
+    return size;
 }
 
 int64 filesize( FILE* fd )
@@ -210,7 +212,7 @@ bool EvE::icontains(std::string data, std::string toSearch, size_t pos/*0*/)
     return (data.find(toSearch, pos) != std::string::npos);
 }
 
-const char* EvE::FormatTime(int64 time/*-1*/) {
+std::string EvE::FormatTime(int64 time/*-1*/) {
     if (time < 0)
         return "Invalid Time";
     if (time < 1)
@@ -244,10 +246,10 @@ const char* EvE::FormatTime(int64 time/*-1*/) {
         uptime << s << "s";
     }
 
-    return (uptime.str().c_str());
+    return uptime.str();
 }
 
-const char* EvE::FormatTime(double time/*-1*/) {
+std::string EvE::FormatTime(double time/*-1*/) {
     if (time < 0)
         return "Invalid Time";
     if (time < 1)
@@ -281,7 +283,7 @@ const char* EvE::FormatTime(double time/*-1*/) {
         uptime << s << "s";
     }
 
-    return (uptime.str().c_str());
+    return uptime.str();
 }
 
 double EvE::trunicate2(double dig)

@@ -35,7 +35,6 @@ public:
 
     void GetTypeEffect(uint16 typeID, std::vector< TypeEffects >& typeEffMap);
 
-    float GetFxTime()                                   { return m_time; }
     uint16 GetFxSize()                                  { return m_fxMap.size(); }
 
 protected:

@@ -525,8 +525,8 @@ PyResult Command_kill(Client* pClient, CommandDB* db, PyServiceMgr* services, co
 
         SystemEntity* shipEntity = pClient->SystemMgr()->GetSE(entity);
         if (shipEntity == nullptr) {
-            throw CustomError("/kill cannot process this object");
             sLog.Error("GMCommands - Command_kill()", "Cannot process this object, aborting kill: %s [%u]", itemRef->name(), itemRef->itemID());
+            throw CustomError("/kill cannot process this object");
         } else {
             pClient->SystemMgr()->RemoveEntity(shipEntity);
             if (shipEntity->IsNPCSE()) {
