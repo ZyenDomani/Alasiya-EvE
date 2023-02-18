@@ -165,11 +165,11 @@ void DestinyManager::ProcessState() {
             } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > m_alignTime) {
                 // catchall for turn checks messed up, and m_moveTime > ship's align time
                 if (mySE->HasPilot()) {
-                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > shipTimeToWarp.",  \
-                                mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
+                                mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), m_alignTime, m_activeSpeedFraction);
                 } else {
-                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  NPC %s(%u) - warp align/speed is incorrect, but time > shipTimeToWarp.",  \
-                            mySE->GetName(), mySE->GetID());
+                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  NPC %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
+                            mySE->GetName(), mySE->GetID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), m_alignTime, m_activeSpeedFraction);
                 }
                 m_shipHeading = m_targetHeading;
                 InitWarp();
@@ -341,7 +341,6 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
         m_prevSpeed = m_speedToLeaveWarp;
         m_velocity = m_shipHeading * m_maxSpeed;
         m_prevSpeedFraction = m_maxSpeed / m_maxShipSpeed;
-        //m_shipAccelTime = mySE->GetSelf()->GetAttribute(AttrAgility).get_float() * -log(1-(m_prevSpeedFraction));
         m_shipAccelTime = m_agility * -log(1-(m_prevSpeedFraction));
     } else if (m_userSpeedFraction > 0.01f) {
         // commanded speed fraction > 0 and ...
@@ -1082,7 +1081,7 @@ void DestinyManager::ClearTurn() {
         m_userSpeedFraction = m_prevSpeedFraction;
         m_prevSpeedFraction = 0;
         // chances of ship being stopped when this is called is slim...
-        UpdateVelocity(true);
+        UpdateVelocity(IsMoving());
     }
 
     m_curveEnd = NULL_ORIGIN;
@@ -1208,7 +1207,7 @@ void DestinyManager::Orbit() {
     double centers(m_position.distance(Tp));
     double edges(centers - m_radius - Tr);
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "1 - %s(%u): timeStamp:%.3f, centers:%.2f, edges:%.2f, target:%u, follow:%u", \
+        _log(DESTINY__ORBIT_TRACE, "1 - %s(%u): timeStamp:%.3f, centers:%.2f, edges:%.2f, target:%li, follow:%u", \
             mySE->GetName(), mySE->GetID(), timeStamp, centers, edges, m_targetDistance, m_followDistance);
 
     // distances checks for orbit calculations
@@ -1445,7 +1444,8 @@ void DestinyManager::ClearOrbit() {
     m_orbiting = Destiny::Ball::Orbit::None;
     m_orbitTime = 0.0f;
     m_orbitRadTic = 0.0f;
-    m_targetDistance = 0;
+    // this negates WarpTo() checks and effectively fucks up InitWarp() calcs
+    //m_targetDistance = 0;
     m_followDistance = 0;
     m_maxOrbitSpeedFraction = 1.0f;
 }
@@ -1458,18 +1458,14 @@ void DestinyManager::InitWarp() {
     m_accel = false;
     m_decel = false;
     m_posHack = false;
-    m_prevSpeed = 0.0f;
-    m_prevSpeedFraction = 0.0f;
-    // im guessing since we're going into warp, asf is not needed.
-    m_activeSpeedFraction = 0.0f;
 
     // warp time and distance math
     //   allan 1Nov14 - 14Nov14
     //  rewrite 3jan15  to use distance instead of time for warping.  more accurate now, and covers ALL distances.
     //  calculation and implementation update   9Jan15      accuracy is within 1000m
+    //  major destiny movement update/rewrite - allan Feb23  (wip)
 
-	// every ship covers exactly 1 AU (149.6e+9 meters)while accelerating to its maximum warp speed.  per eveuni circa 2019
-	//  ^^^ bullshit.  that would mean ships take 3AU to decel, putting min warp at 4au.
+    // ONE_AU_IN_METERS = 149.6e9
 
     /*  my research into warp formulas, i have used these sites, with a few excerpts and ideas from each...
      *     https://wiki.eveonline.com/en/wiki/Acceleration
@@ -1496,19 +1492,19 @@ void DestinyManager::InitWarp() {
         double capNeeded = mySE->GetSelf()->GetAttribute(AttrMass).get_float() * m_warpCapacitorNeed * (m_targetDistance / ONE_AU_IN_METERS);
         capNeeded *= (1.0f - (0.1f * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
 
+        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %lim (%liAU) is %f", \
+                mySE->GetName(), mySE->GetID(), m_targetDistance, (m_targetDistance / ONE_AU_IN_METERS), capNeeded);
+
         // set min cap need to 1.0
         if (capNeeded < 1.0f)
             capNeeded = 1.0;
-
-        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %luAU is %.10f", \
-                mySE->GetName(), mySE->GetID(), (m_targetDistance / ONE_AU_IN_METERS), capNeeded);
 
         //  check if ship has enough capacitor to warp full distance
         if (capNeeded > currentShipCap) {
             // not enough cap.  reset everything based on available cap
             capNeeded = currentShipCap / (mySE->GetSelf()->GetAttribute(AttrMass).get_float() * m_warpCapacitorNeed);
             if (capNeeded > 1.0f) {
-                m_targetDistance = (uint32)capNeeded * ONE_AU_IN_METERS;
+                m_targetDistance = capNeeded * ONE_AU_IN_METERS;
                 GVector warp_direction(m_position, m_targetPoint);
                 // make heading
                 warp_direction.normalize();
@@ -1516,10 +1512,11 @@ void DestinyManager::InitWarp() {
                 m_targetPoint = newTarget;
                 m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), newTarget);
                 //WarpingWithAvailablePowerBody
+				/** @todo  update all move vars here for new target... */
             } else {
-                // if not enough cap to do min warp, cancel and return
+                // if not enough cap to do min warp. cancel and return
                 pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
-                _log(DESTINY__WARNING, "Destiny::InitWarp() - %s(%u): Capacitor needed vs current  %.3f / %.3f",
+                _log(DESTINY__WARNING, "Destiny::InitWarp() - %s(%u): Capacitor needed vs current  %f / %.5f",
                         mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
 
                 Stop();
@@ -1531,8 +1528,14 @@ void DestinyManager::InitWarp() {
 
         //drain cap
         mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, capNeeded);
-        mySE->GetShipSE()->Warp();  //turn off non warp-safe modules
+		//turn off non warp-safe modules
+        mySE->GetShipSE()->Warp();
     }
+
+	// we're good to warp.  zero asf/psf.
+    m_prevSpeed = 0.0f;
+    m_prevSpeedFraction = 0.0f;
+    m_activeSpeedFraction = 0.0f;
 
     /*  this is from http://community.eveonline.com/news/dev-blogs/warp-drive-active/
 	  NOTE:  while this may be accurate now, it was not in crucible
@@ -1556,11 +1559,11 @@ void DestinyManager::InitWarp() {
 /*** this is all fucked up....revisit and correct  !!!!  */
 //  150km - 11s, 1mkm - 23s, 1au - 29s
     bool cruise(true);
-    int8 accelTime(7), decelTime(21);
+    uint8 accelTime(7), decelTime(21);
     float cruiseTime(0.0f);
-    int64 accelDistance(0), decelDistance(0), cruiseDistance(0);
+    int64 accelDistance(0), cruiseDistance(0), decelDistance(0);
     int64 warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
-    // fudge this a bit for accel/decel distances
+    // set times and distances based on target
     if (m_targetDistance < warpSpeedInMeters) {
         //  short warp....no cruise
         // this isnt very accurate....times and distances are a bit off....
@@ -1572,7 +1575,6 @@ void DestinyManager::InitWarp() {
         decelTime = log(decelDistance / 3);
         accelTime = log(accelDistance / 3) / 3;
     } else {
-        // all ships base time is 29s for distances <= ship warp speed
         decelDistance = exp(decelTime);   // ship warp speed in meters * 1.7
         accelDistance = exp(3 * accelTime);       // ship warp speed in meters
         cruiseDistance = (m_targetDistance - accelDistance - decelDistance);
@@ -1588,9 +1590,9 @@ void DestinyManager::InitWarp() {
     warp_vector.normalize();
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Warp will accelerate for %us, cruise for %.3f, then decelerate for %us, with total time of %.3fs, and warp speed of %li m/s.", \
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Warp will accelerate for %us, cruise for %.3f, then decelerate for %us, with total time of %.1fs, and warp speed of %li m/s.", \
             mySE->GetName(), mySE->GetID(), accelTime, cruiseTime, decelTime, warpTime, warpSpeedInMeters);
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Accel distance is %li. Cruise distance is %li.  Decel distance is %li.  Direction is %.3f,%.3f,%.3f.", \
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Accel distance is %lim. Cruise distance is %lim.  Decel distance is %lim.  Direction is %.4f,%.4f,%.4f.", \
             mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, warp_vector.x, warp_vector.y, warp_vector.z);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %lu AU (%lum).", \
             mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
@@ -2051,7 +2053,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
             SendDestinyUpdates(updates); //consumed
         }
         if (is_log_enabled(NPC__MESSAGE))
-            _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  distance: %i  m_targetDistance: %u",\
+            _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %i  m_targetDistance: %li",\
                     mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), mySE->SysBubble()->GetID(), \
                     m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
         return;
@@ -2086,7 +2088,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
              */
         }
 
-    // found few warp error msgs in client and noted in BeyonceSvs.h
+    // found few warp error msgs in client and noted in BeyonceSvc.h
     //  test for and implement here
 
     // verify this is right to begin warp
@@ -2136,7 +2138,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     SendDestinyUpdates(updates); //consumed
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::Warp() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  exit distance: %i  m_targetDistance: %u",
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %i  m_targetDistance: %li",
              m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
 }
 
@@ -2193,8 +2195,8 @@ void DestinyManager::InitOrbit(SystemEntity *pSE, uint32 distance/*0*/) {
     //double Rc  = ((distance + 150 + m_radius - (pSE->GetRadius() / 12)) * 1.2);
     double Rc  = (distance + m_radius);
     double Rc2 = pow(Rc,2);
-    double Vm2 = pow(m_maxShipSpeed,2);
-    double t2  = pow(m_agility,2);  //mySE->GetSelf()->GetAttribute(AttrAgility).get_double()
+    double Vm2 = pow(m_maxShipSpeed, 2);
+    double t2  = pow(m_agility, 2);  //mySE->GetSelf()->GetAttribute(AttrAgility).get_double()
 
     // the following equation is from "Ship Motion in Eve Online" by Scheulagh Santorine, Ph.D
 	// Dr. Santorine's work was from Dominion, Dec'09 to Mar'10.  He claims it is still accurate as of late '15
@@ -2204,8 +2206,8 @@ void DestinyManager::InitOrbit(SystemEntity *pSE, uint32 distance/*0*/) {
      * + (24Rc^4 / (108t^2 * Vm^2 * Rc^2 + 8Rc^2 + 12sqrt(81t^4 * Vm^4 * Rc^8 + 12t^2 * Vm^2 * Rc^10)^1/3)) + 12Rc^2) ^0.5
      */
     double one = (108 * t2 * Vm2 * Rc2);
-    double two = (12 * t2 * Vm2 * pow(Rc,10));
-    double three = (12 * sqrt(81 * pow(m_agility,4) * pow(m_maxShipSpeed,4) + two));
+    double two = (12 * t2 * Vm2 * pow(Rc, 10));
+    double three = (12 * sqrt(81 * pow(m_agility, 4) * pow(m_maxShipSpeed, 4) + two));
     double four = (6 * cbrt(one + 8 * pow(Rc,6) + three));
     double five =  cbrt( sqrt(three * pow(Rc,8) + two));
     double six = (one + (8 * Rc2) + (12 * five));
@@ -2228,7 +2230,7 @@ rActual = imod*massMkg*velActual^2*10^-3 / velMax^2 - velActual^2
     m_orbitRadTic = EvE::Trig::Pi2 / m_orbitTime;
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "%s(%u) - Orbit Data - Rc:%.3f, velocity:%li, osf:%.2f, targetDistance:%u, followDistance:%u, orbitTime:%.1f, radTic:%.5f", \
+        _log(DESTINY__ORBIT_TRACE, "%s(%u) - Orbit Data - Rc:%.3f, velocity:%li, osf:%.2f, targetDistance:%li, followDistance:%u, orbitTime:%.1f, radTic:%.5f", \
                 mySE->GetName(), mySE->GetID(), Rc, velocity, m_maxOrbitSpeedFraction, \
                 m_targetDistance, m_followDistance, m_orbitTime, m_orbitRadTic);
 /*  dont really need this here yet.....maybe not at all.
@@ -2452,7 +2454,7 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     m_agility = mass * inertiaMod / 1000000;
     mySE->GetSelf()->SetAttribute(AttrAgility, m_agility, false);
 
-    m_alignTime = (1.386294 * m_agility);
+    m_alignTime = ceil(1.386294 * m_agility);
     m_turnPct = 1.0f / m_alignTime;
     m_shipMaxAccelTime = (-log(ASF_CHECK) * m_agility);
 
@@ -2698,7 +2700,7 @@ Battleships                             0.155
     //TimeToWarp = ((ln(2) * m_inertiaMod * m_mass) / 500000);  //18.922
     //TimeToWarp = (ln(0.25) * m_agility);						//18.922
     //m_alignTime = (0.693147 * mass * inertiaMod) / 500000;
-    m_alignTime = (1.386294 * m_agility);	// faster
+    m_alignTime = ceil(1.386294 * m_agility);	// faster than above
     m_turnPct = 1.0f / m_alignTime;
     m_shipMaxAccelTime = (-log(ASF_CHECK) * m_agility);
 
