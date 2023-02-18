@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    10.5
+    Version:    10.6
 */
 
 
@@ -53,9 +53,9 @@ EVEServerConfig::EVEServerConfig()
     server.DisableIGB = true;
     server.MaxThreadReport = 20;
     server.ModuleAutoOff = false;
-    server.ModuleDamageChance = 0.35;
+    server.ModuleDamageChance = 0.35f;
     server.UnloadOnLinkAll = false;
-    server.processTic = 1.0;
+    server.processTic = 1.0f;
     server.AllowNonPublished = false;
     server.FleetShareDelayed = false;
     server.BountyPayoutDelayed = false; // this system isnt working yet.  disable by default
@@ -84,14 +84,14 @@ EVEServerConfig::EVEServerConfig()
     world.shipBoardDistance = 300;
 
     // rates
-    rates.npcBountyMultiply = 1.0;
-    rates.secRate = 1.0;
-    rates.damageRate = 1.0;
-    rates.missileDamage = 1.0;
-    rates.missileTime = 1.0;
-    rates.missileRoF = 1.0;
-    rates.turretDamage = 1.0;
-    rates.turretRoF = 1.0;
+    rates.npcBountyMultiply = 1.0f;
+    rates.secRate = 1.0f;
+    rates.damageRate = 1.0f;
+    rates.missileDamage = 1.0f;
+    rates.missileTime = 1.0f;
+    rates.missileRoF = 1.0f;
+    rates.turretDamage = 1.0f;
+    rates.turretRoF = 1.0f;
     rates.corpCost = 1599800;
     rates.medalAwardCost = 5000000;
     rates.medalCreateCost = 5000000;
@@ -100,17 +100,19 @@ EVEServerConfig::EVEServerConfig()
     rates.DropItem = 1;//N
     rates.DropMoney = 1.0;//N
     rates.DropSalvage = 1;//P
-    rates.RepairCost = 1.0;
+    rates.RepairCost = 1.0f;
     rates.ShipRepairModifier = 0.0000075;
-    rates.ModuleRepairModifier = 0.00125;
+    rates.ModuleRepairModifier = 0.00125f;
     rates.WebUpdate = 15 /*m*/;
     rates.TaxAmount = 5000;
     rates.TaxedAmount = 75000;
-    rates.PlayerCritChance = 0.02;
-    rates.NpcCritChance = 0.15;
-    rates.SentryCritChance = 0.02;
-    rates.DroneCritChance = 0.03;
-    rates.ConcordCritChance = 0.05;
+    rates.PlayerCritChance = 0.02f;
+    rates.NpcCritChance = 0.15f;
+    rates.SentryCritChance = 0.02f;
+    rates.DroneCritChance = 0.03f;
+    rates.ConcordCritChance = 0.05f;
+    rates.StationServiceFee = 0.01f;
+    rates.CSPA = 2950;
 
     //market
     market.FindBuyOrder = 10;
@@ -126,22 +128,22 @@ EVEServerConfig::EVEServerConfig()
 
     // ram
     ram.AutoEvent = false;
-    ram.ResME = 1.0;
-    ram.ResPE = 1.0;
-    ram.MatMod = 1.0;
-    ram.WasteMod = 1.0;
-    ram.ReTime = 1.0;
-    ram.ProdTime = 1.0;
-    ram.CopyTime = 1.0;
-    ram.InventTime = 1.0;
+    ram.ResME = 1.0f;
+    ram.ResPE = 1.0f;
+    ram.MatMod = 1.0f;
+    ram.WasteMod = 1.0f;
+    ram.ReTime = 1.0f;
+    ram.ProdTime = 1.0f;
+    ram.CopyTime = 1.0f;
+    ram.InventTime = 1.0f;
 
     // account
     account.autoAccountRole = Acct::Role::STD;
     account.loginMessage = "";
 
     // character
-    character.startBalance = 6666000000.0f;
-    character.startAurBalance = 60000.0f;
+    character.startBalance = 6666000000.0;
+    character.startAurBalance = 60000.0;
     character.startStation = 0;
     character.startSecRating = 0.0;
     character.startCorporation = 0;
@@ -152,8 +154,8 @@ EVEServerConfig::EVEServerConfig()
     // npc
     npc.IdleWander = false;
     npc.WarpOut = 600 /*s*/;
-    npc.WarpFollowChance = 0.15;
-    npc.ThreatRadius = 1.0;//N
+    npc.WarpFollowChance = 0.15f;
+    npc.ThreatRadius = 1.0f;//N
     npc.RoamingSpawns = false;
     npc.StaticSpawns = false;
     npc.RoamingTimer = 900 /*s*/;
@@ -163,8 +165,8 @@ EVEServerConfig::EVEServerConfig()
     npc.TargetPodSec = 0;
     npc.TargetPod = false;
     npc.UseDamageMultiplier = true;
-    npc.DefenderMissileChance = 0.0;
-    npc.LootDropChance = 0.75;
+    npc.DefenderMissileChance = 0.0f;
+    npc.LootDropChance = 0.75f;
 
     // cosmic
     cosmic.PIEnabled = false;
@@ -188,21 +190,21 @@ EVEServerConfig::EVEServerConfig()
 
     // standings
     //  - mission
-    standings.MissionBonus = 1.0;
-    standings.MissionFailure = -0.5;
-    standings.MissionDeclined = -0.2;
-    standings.MissionCompleted = 1.0;
-    standings.MissionOfferExpired = -0.1;
-    standings.MissionFailedRollback = -0.5;
-    standings.ImportantMissionBonus = 3.0;
-    standings.BaseMissionMultiplier = 1.0;
-    standings.FleetMissionMultiplier = 0.5;
-    standings.Agent2CharMissionMultiplier = 1.0;
-    standings.ACorp2CharMissionMultiplier = 0.25;
-    standings.Agent2PCorpMissionMultiplier = 0.1;
-    standings.ACorp2PCorpMissionMultiplier = 0.025;
-    standings.AFaction2CharMissionMultiplier = 0.125;
-    standings.AFaction2PCorpMissionMultiplier = 0.0125;
+    standings.MissionBonus = 1.0f;
+    standings.MissionFailure = -0.5f;
+    standings.MissionDeclined = -0.2f;
+    standings.MissionCompleted = 1.0f;
+    standings.MissionOfferExpired = -0.1f;
+    standings.MissionFailedRollback = -0.5f;
+    standings.ImportantMissionBonus = 3.0f;
+    standings.BaseMissionMultiplier = 1.0f;
+    standings.FleetMissionMultiplier = 0.5f;
+    standings.Agent2CharMissionMultiplier = 1.0f;
+    standings.ACorp2CharMissionMultiplier = 0.25f;
+    standings.Agent2PCorpMissionMultiplier = 0.1f;
+    standings.ACorp2PCorpMissionMultiplier = 0.025f;
+    standings.AFaction2CharMissionMultiplier = 0.125f;
+    standings.AFaction2PCorpMissionMultiplier = 0.0125f;
     //  - PVP
     //  - ratting/exploring
 
@@ -237,7 +239,7 @@ EVEServerConfig::EVEServerConfig()
     debug.SpawnTest = false;
     debug.AnomalyFaction = 0;
     debug.ProfileTraceTime = 150/*ms*/;
-    debug.ShipTrackingTime = 0.05;/*ASF min speed*/
+    debug.ShipTrackingTime = 0.05f;/*ASF min speed*/
 
     // database
     database.host = "localhost";
@@ -413,6 +415,7 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
 {
+    AddValueParser( "CSPA",                 rates.CSPA );
     AddValueParser( "secRate",              rates.secRate );
     AddValueParser( "npcBountyMultiply",    rates.npcBountyMultiply );
     AddValueParser( "damageRate",           rates.damageRate );
@@ -440,9 +443,11 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "SentryCritChance",     rates.SentryCritChance );
     AddValueParser( "DroneCritChance",      rates.DroneCritChance );
     AddValueParser( "ConcordCritChance",    rates.ConcordCritChance );
+    AddValueParser( "StationServiceFee",    rates.StationServiceFee );
 
     const bool result = ParseElementChildren( ele );
 
+    RemoveParser( "CSPA" );
     RemoveParser( "secRate" );
     RemoveParser( "npcBountyMultiply" );
     RemoveParser( "damageRate" );
@@ -470,6 +475,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "SentryCritChance" );
     RemoveParser( "DroneCritChance" );
     RemoveParser( "ConcordCritChance" );
+    RemoveParser( "StationServiceFee" );
 
     return result;
 }

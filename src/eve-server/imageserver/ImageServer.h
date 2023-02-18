@@ -48,7 +48,7 @@ class ImageServerListener;
 class ImageServer : public Singleton<ImageServer>
 {
 public:
-    ImageServer();
+    void Init();
     void Run();
     void Stop();
 

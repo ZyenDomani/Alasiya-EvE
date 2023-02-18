@@ -39,8 +39,7 @@ const char *const ImageServer::Categories[] = {
 
 const uint32 ImageServer::CategoryCount = 5;
 
-ImageServer::ImageServer()
-{
+void ImageServer::Init() {
     std::stringstream urlBuilder;
     urlBuilder << "http://" << sConfig.net.imageServer << ":" << sConfig.net.imageServerPort << "/";
     _url = urlBuilder.str();
@@ -102,7 +101,7 @@ void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID
     //stream.flush();
     //stream.close();
 
-    /** @todo  we will need to make size 64 and size 40 images, and possibably 128/256 of char portaits */
+    /** @todo  we will need to make size 64 and size 40 images, and possibly 128/256 of char portaits */
     // github.com/nothings/stb/blob/master/stb_image_resize.h
     // github.com/nothings/stb/blob/master/stb_image.h
 
@@ -145,6 +144,7 @@ std::shared_ptr<std::vector<char> > ImageServer::GetImage(std::string& category,
     //stream.read(&((*ret)[0]), length);
     fread(&((*ret)[0]), 1, length, fp);
 
+    fclose(fp);
     return ret;
 }
 
@@ -207,7 +207,7 @@ void ImageServer::RunInternal()
 }
 
 ImageServer::Lock::Lock(boost::asio::detail::mutex& mutex)
-    : _mutex(mutex)
+: _mutex(mutex)
 {
     _mutex.lock();
 }

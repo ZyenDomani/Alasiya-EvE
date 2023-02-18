@@ -641,6 +641,7 @@ int main( int argc, char* argv[] )
 
     // start up the image server
     sLog.Green("       ServerInit", "Starting Image Server");
+    sImageServer.Init();
     sImageServer.Run();
     //  this gives the imageserver's server time to load so the dynamic database msgs are in order
     Sleep(250);

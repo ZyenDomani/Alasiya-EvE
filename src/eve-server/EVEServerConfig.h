@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    10.5
+    Version:    10.6
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -119,7 +119,7 @@ public:
         float DropMoney;
         uint8 DropSalvage;
         float RepairCost;
-        float ShipRepairModifier;
+        double ShipRepairModifier;
         float ModuleRepairModifier;
         /// Modifier for security rating changes. Changes how fast it goes up/down based on actions
         double secRate;
@@ -133,6 +133,9 @@ public:
         float SentryCritChance;
         float DroneCritChance;
         float ConcordCritChance;
+        // Misc fees
+        float StationServiceFee;
+        uint16 CSPA;
     } rates;
 
     // from <market>
@@ -166,7 +169,7 @@ public:
     struct {
         /// Role to assign to auto created account; set to 0 to disable auto account creation.
         int64 autoAccountRole;
-        /// A message shown to every client on login (if enabled in <World><LoginMsg>).
+        /// A message shown to every client on login (if enabled in <world::LoginMsg>).
         std::string loginMessage;
     } account;
 
