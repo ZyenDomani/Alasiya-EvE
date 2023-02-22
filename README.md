@@ -23,7 +23,7 @@
 </p>
 
 # Status
-- ~65% functional.  see http://evemu.alasiya.net/?p=op_status for more info
+- ~65% functional.  see http://eve.alasiya.net/?p=op_status for more info
 - Assets working
 - Undocking and Docking working
 - Skill Training is working (including resume/pause AND Training History)
