@@ -154,6 +154,7 @@ protected:
     EVETCPConnection* const mNet;
 
 private:
+    PyRep* mRep;
     void SendVersion();
     // State machine facility:
     PyPacket* ( EVEClientSession::*mPacketHandler )( PyRep* rep );

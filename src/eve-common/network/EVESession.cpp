@@ -37,6 +37,7 @@
 
 EVEClientSession::EVEClientSession( EVETCPConnection** n )
 : mNet( *n ),
+mRep(nullptr),
 mPacketHandler( nullptr )
 {
     *n = nullptr;
@@ -45,9 +46,11 @@ mPacketHandler( nullptr )
 EVEClientSession::~EVEClientSession() {
     // Destroy connection we used
     delete mNet;
+    PySafeDecRef(mRep);
 }
 
 void EVEClientSession::Reset() {
+    PySafeDecRef(mRep);
     mPacketHandler = nullptr;
 
     // Connection has been lost, there's no point in reset
@@ -63,28 +66,28 @@ void EVEClientSession::QueuePacket( PyPacket* packet ) {
     if (packet == nullptr)
         return;
 
-    PyRep* res(packet->Encode());
+    mRep = packet->Encode();
 
-    if (res == nullptr) {
+    if (mRep == nullptr) {
         sLog.Error("QueuePacket", "%s: Failed to encode a packet.", GetAddress().c_str());
         return;
     }
 
-    mNet->QueueRep( res );
+    mNet->QueueRep( mRep );
 }
 
 PyPacket* EVEClientSession::PopPacket() {
-    PyRep* rep(mNet->PopRep());
-    if (rep == nullptr)
+    mRep = mNet->PopRep();
+    if (mRep == nullptr)
         return nullptr;
 
     if (is_log_enabled(NET__PRES_REP)) {
         _log(NET__PRES_REP, "%s: PopPacket() Raw Rep Dump:", GetAddress().c_str());
-        rep->Dump(NET__PRES_REP, "    ");
+        mRep->Dump(NET__PRES_REP, "    ");
     }
 
     assert( mPacketHandler );
-    return ( this->*mPacketHandler )( rep );
+    return ( this->*mPacketHandler )( mRep );
 }
 
 PyPacket* EVEClientSession::_HandleVersion( PyRep* rep ) {
@@ -112,8 +115,8 @@ PyPacket* EVEClientSession::_HandleCommand( PyRep* rep ) {
             sLog.Debug("_HandleCommand", "%s: Got Queue Check command.", GetAddress().c_str());
 
             //they return position in queue
-            PyRep* rsp = new PyInt( _GetQueuePosition() );
-            mNet->QueueRep( rsp );
+            mRep = new PyInt( _GetQueuePosition() );
+            mNet->QueueRep( mRep );
 
             //now reset connection
             Reset();
@@ -175,25 +178,25 @@ PyPacket* EVEClientSession::_HandleFuncResult( PyRep* rep ) {
 
 PyPacket* EVEClientSession::_HandlePacket( PyRep* rep ) {
     //take the PyRep and turn it into a PyPacket
-    PyPacket* p = new PyPacket();
-    if ( !p->Decode( &rep ) ) { //rep is consumed here
+    PyPacket* pPacket = new PyPacket();
+    if ( !pPacket->Decode( &rep ) ) { //rep is consumed here
         sLog.Error("_HandlePacket", "%s: Failed to decode packet rep", GetAddress().c_str());
-        SafeDelete( p );
+        SafeDelete( pPacket );
         PySafeDecRef(rep);
         return PopPacket();
     }
 
-    return p;
+    return pPacket;
 }
 
 void EVEClientSession::SendVersion() {
     PyTuple* tup = new PyTuple( 7 );
-    tup->items[ 0 ] = new PyInt(EVEBirthday);
-    tup->items[ 1 ] = new PyInt(MachoNetVersion);
-    tup->items[ 2 ] = new PyInt(GetClientCount());
-    tup->items[ 3 ] = new PyFloat(EVEVersionNumber);
-    tup->items[ 4 ] = new PyInt(EVEBuildVersion);
-    tup->items[ 5 ] = new PyString(EVEProjectVersion);
-    tup->items[ 6 ] = PyStatic.NewNone();
+    tup->SetItemInt(0, EVEBirthday);
+    tup->SetItemInt(1, MachoNetVersion);
+    tup->SetItemInt(2, GetClientCount());
+    tup->SetItem(3, new PyFloat(EVEVersionNumber), true);
+    tup->SetItemInt(4, EVEBuildVersion);
+    tup->SetItem(5, new PyString(EVEProjectVersion), true);
+    tup->SetItem(6, PyStatic.NewNone(), true);
     mNet->QueueRep( tup );
 }

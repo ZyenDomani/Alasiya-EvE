@@ -114,7 +114,7 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
 
 bool PyPacket::Decode(PyRep **in_packet)
 {
-    PyRep *packet = *in_packet; //assign
+    PyRep *pRep = *in_packet; //assign
     *in_packet = nullptr;       //consume
 
     PySafeDecRef(payload);
@@ -122,41 +122,41 @@ bool PyPacket::Decode(PyRep **in_packet)
     payload = nullptr;
     named_payload = nullptr;
 
-    if (packet == nullptr) {
+    if ( pRep == nullptr) {
         codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet is null.");
         return false;
     }
 
-    if (packet->IsChecksumedStream()) {
+    if ( pRep->IsChecksumedStream()) {
         //TODO: check cs->checksum
-        packet = packet->AsChecksumedStream()->stream();
+        pRep = pRep->AsChecksumedStream()->stream();
     }
     //Dragon nuance... it gets wrapped again
-    if (packet->IsSubStream()) {
-        PySubStream* ss = packet->AsSubStream();
+    if ( pRep->IsSubStream()) {
+        PySubStream* ss = pRep->AsSubStream();
         ss->DecodeData();
         if (ss->decoded() == nullptr) {
             codelog(NET__PACKET_ERROR, "PyPacket::Decode() - unable to decode initial packet substream.");
-            PyDecRef(packet);
+            PyDecRef( pRep );
             return false;
         }
 
-        packet = ss->decoded();
+        pRep = ss->decoded();
     }
 
-    if (!packet->IsObject()) {
-        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body is not PyObject: %s", packet->TypeString());
-        PyDecRef(packet);
+    if (!pRep->IsObject()) {
+        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body is not PyObject: %s", pRep->TypeString());
+        PyDecRef( pRep );
         return false;
     }
 
-    type_string = packet->AsObject()->type()->content();
-    if (!packet->AsObject()->arguments()->IsTuple()) {
+    type_string = pRep->AsObject()->type()->content();
+    if (!pRep->AsObject()->arguments()->IsTuple()) {
         codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body does not contain a tuple");
         return false;
     }
 
-    PyTuple *tuple = packet->AsObject()->arguments()->AsTuple();
+    PyTuple *tuple = pRep->AsObject()->arguments()->AsTuple();
     if (tuple == nullptr) {
         codelog(NET__PACKET_ERROR, "PyPacket::Decode() - tuple is null.");
         return false;
@@ -164,13 +164,13 @@ bool PyPacket::Decode(PyRep **in_packet)
 
     if (tuple->items.size() != 7) {
         codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body does not contain a tuple of length 7 (is %lu)", tuple->items.size());
-        PyDecRef(packet);
+        PyDecRef( pRep );
         return false;
     }
 
     if (!tuple->items[0]->IsInt()) {
         codelog(NET__PACKET_ERROR, "PyPacket::Decode() - First main tuple element is not an integer");
-        PyDecRef(packet);
+        PyDecRef( pRep );
         return false;
     }
 
@@ -194,7 +194,7 @@ bool PyPacket::Decode(PyRep **in_packet)
         } break;
         default: {
             codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Unknown message type %li", PyRep::IntegerValue(tuple->items[0]));
-            PyDecRef(packet);
+            PyDecRef( pRep );
             return false;
         } break;
     }
@@ -202,13 +202,13 @@ bool PyPacket::Decode(PyRep **in_packet)
     //source address
     if (!source.Decode(tuple->items[1]))  {
         //error printed in decoder
-        PyDecRef(packet);
+        PyDecRef( pRep );
         return false;
     }
     //dest address
     if (!dest.Decode(tuple->items[2])) {
         //error printed in decoder
-        PyDecRef(packet);
+        PyDecRef( pRep );
         return false;
     }
 
@@ -217,7 +217,7 @@ bool PyPacket::Decode(PyRep **in_packet)
     //payload
     if (!tuple->items[4]->IsTuple()) {
         codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Fifth main tuple element is not a tuple");
-        PyDecRef(packet);
+        PyDecRef( pRep );
         return false;
     }
     payload = tuple->items[4]->AsTuple();
@@ -229,11 +229,11 @@ bool PyPacket::Decode(PyRep **in_packet)
         named_payload = tuple->items[5]->AsDict();
     } else {
         codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Sixth main tuple element is neither dict or none.");
-        PyDecRef(packet);
+        PyDecRef( pRep );
         return false;
     }
 
-    PyDecRef(packet);
+    PyDecRef( pRep );
     return true;
 }
 
@@ -326,21 +326,21 @@ void PyAddress::operator=(const PyAddress &right) {
 }
 
 bool PyAddress::Decode(PyRep *&in_object) {
-    PyRep *base = in_object;
+    PyRep *pRep = in_object;
     in_object = nullptr;
 
-    if (base == nullptr) {
+    if ( pRep == nullptr) {
         codelog(NET__PACKET_ERROR, "PyAddress::Decode() - base is null.");
         return false;
     }
 
-    if (!base->IsObject()) {
-        codelog(NET__PACKET_ERROR, "Invalid element type, expected object but got %s", base->TypeString());
-        PyDecRef(base);
+    if (!pRep->IsObject()) {
+        codelog(NET__PACKET_ERROR, "Invalid element type, expected object but got %s", pRep->TypeString());
+        PyDecRef( pRep );
         return false;
     }
 
-    PyTuple *tuple = base->AsObject()->arguments()->AsTuple();
+    PyTuple *tuple = pRep->AsObject()->arguments()->AsTuple();
     if (tuple == nullptr) {
         codelog(NET__PACKET_ERROR, "PyAddress::Decode() - tuple is null.");
         return false;
@@ -349,7 +349,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
     if (tuple->items.size() < 3) {
         codelog(NET__PACKET_ERROR, "Not enough elements in address tuple: %lu", tuple->items.size());
         tuple->Dump(NET__PACKET_ERROR, "  ");
-        PyDecRef(base);
+        PyDecRef( pRep );
         PyDecRef(tuple);
         return false;
     }
@@ -358,7 +358,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
     if (!tuple->items[0]->IsInt()) {
         codelog(NET__PACKET_ERROR, "Wrong type on address element (0)");
         tuple->items[0]->Dump(NET__PACKET_ERROR, "  ");
-        PyDecRef(base);
+        PyDecRef( pRep );
         PySafeDecRef(tuple);
         return false;
     }
@@ -367,7 +367,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
         case Any: {
             if (tuple->items.size() != 3) {
                 codelog(NET__PACKET_ERROR, "Invalid number of elements in Any address tuple: %lu", tuple->items.size());
-                PyDecRef(base);
+                PyDecRef( pRep );
                 PySafeDecRef(tuple);
                 return false;
             }
@@ -375,7 +375,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
 
             if (!_DecodeService(tuple->items[1])
             or !_DecodeCallID(tuple->items[2])) {
-                PyDecRef(base);
+                PyDecRef( pRep );
                 PySafeDecRef(tuple);
                 return false;
             }
@@ -383,7 +383,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
         case Node: {
             if (tuple->items.size() != 4) {
                 codelog(NET__PACKET_ERROR, "Invalid number of elements in Node address tuple: %lu", tuple->items.size());
-                PyDecRef(base);
+                PyDecRef( pRep );
                 PySafeDecRef(tuple);
                 return false;
             }
@@ -392,7 +392,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
             if (!_DecodeObjectID(tuple->items[1])
             or !_DecodeService(tuple->items[2])
             or !_DecodeCallID(tuple->items[3])) {
-                PyDecRef(base);
+                PyDecRef( pRep );
                 PySafeDecRef(tuple);
                 return false;
             }
@@ -400,7 +400,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
         case Client: {
             if (tuple->items.size() != 4) {
                 codelog(NET__PACKET_ERROR, "Invalid number of elements in Client address tuple: %lu", tuple->items.size());
-                PyDecRef(base);
+                PyDecRef( pRep );
                 PySafeDecRef(tuple);
                 return false;
             }
@@ -409,7 +409,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
             if (!_DecodeObjectID(tuple->items[1])
             or !_DecodeCallID(tuple->items[2])
             or !_DecodeService(tuple->items[3])) {
-                PyDecRef(base);
+                PyDecRef( pRep );
                 PySafeDecRef(tuple);
                 return false;
             }
@@ -417,7 +417,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
         case Broadcast: {
             if (tuple->items.size() != 4) {
                 codelog(NET__PACKET_ERROR, "Invalid number of elements in Broadcast address tuple: %lu", tuple->items.size());
-                PyDecRef(base);
+                PyDecRef( pRep );
                 PySafeDecRef(tuple);
                 return false;
             }
@@ -425,13 +425,13 @@ bool PyAddress::Decode(PyRep *&in_object) {
 
             if (!tuple->items[1]->IsString()) {
                 codelog(NET__PACKET_ERROR, "Invalid type %s for brodcastID", tuple->items[1]->TypeString());
-                PyDecRef(base);
+                PyDecRef( pRep );
                 PySafeDecRef(tuple);
                 return false;
             }
             if (!tuple->items[3]->IsString()) {
                 codelog(NET__PACKET_ERROR, "Invalid type %s for idtype", tuple->items[3]->TypeString());
-                PyDecRef(base);
+                PyDecRef( pRep );
                 PySafeDecRef(tuple);
                 return false;
             }
@@ -449,13 +449,13 @@ bool PyAddress::Decode(PyRep *&in_object) {
         }   break;
         default: {
             codelog(NET__PACKET_ERROR, "Unknown address type: %li", PyRep::IntegerValue(tuple->items[0]));
-            PyDecRef(base);
+            PyDecRef( pRep );
             PySafeDecRef(tuple);
             return false;
         }
     }
 
-    PyDecRef(base);
+    PyDecRef( pRep );
     PySafeDecRef(tuple);
     return true;
 }
