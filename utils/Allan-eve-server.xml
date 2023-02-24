@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-Version: 10.2 -->
+Version: 10.6 -->
 
 <!--
 unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -37,7 +37,6 @@ boolean can use either 0/1 OR true/false.
     </account>
 
     <server>
-        <StackTrace>true</StackTrace><!-- bool  -(en/dis)ables sending StackTrace on client errors -->
         <NoobShipCheck>true</NoobShipCheck><!-- bool  -check for ship in hangar when docking in a pod -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
         <maxPlayers>2500</maxPlayers>
@@ -58,6 +57,8 @@ boolean can use either 0/1 OR true/false.
         <LoadOldMissions>false</LoadOldMissions><!-- bool - allow display of expired/completed missions in journal -->
         <AsteroidsOnDScan>true</AsteroidsOnDScan><!-- bool - show asteroids on directional scanner -->
         <CargoMassAdditive>true</CargoMassAdditive><!-- bool - add mass of cargo to ship's mass (will effect mobility) -->
+        <LoadStaticRecyclable>false</LoadStaticRecyclable><!-- bool - load recyclable status of item into static data. -- adds 5s to startup time -->
+        <LoadStaticRefinable>false</LoadStaticRefinable><!-- bool - load refinable status of item into static data. -- adds 3s to startup time -->
     </server>
 
     <world>
@@ -70,6 +71,9 @@ boolean can use either 0/1 OR true/false.
         <globalChat>true</globalChat><!-- bool -->
         <loginInfo>true</loginInfo><!-- bool -->
         <loginMsg>true</loginMsg><!-- bool -->
+        <shootRoids>false</shootRoids><!-- bool -->
+        <shootWrecks>false</shootWrecks><!-- bool -->
+        <highSecCyno>false</highSecCyno><!-- bool -->
         <mailDelay>5</mailDelay>
         <apWarptoDistance>10000</apWarptoDistance><!-- in meters - sets autopilot warp stop distance from object (15km default)-->
         <saveOnMove>true</saveOnMove><!-- bool - save items when Move()'d -->
@@ -112,6 +116,8 @@ boolean can use either 0/1 OR true/false.
         <SentryCritChance>0.02</SentryCritChance><!-- default: 2% -->
         <DroneCritChance>0.03</DroneCritChance><!-- default: 3% -->
         <ConcordCritChance>0.05</ConcordCritChance><!-- default: 5% -->
+        <StationServiceFee>0.01</StationServiceFee><!-- default:1%   - this is charge for station services.  load/unload/build/repack/etc   -->
+        <CSPA>2950</CSPA><!-- default: 2950 -->
     </rates>
 
     <market>
@@ -120,10 +126,10 @@ boolean can use either 0/1 OR true/false.
         <RegionOrderLimit>10</RegionOrderLimit><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
         <OldPriceLimit>15</OldPriceLimit><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
         <NewPriceLimit>15</NewPriceLimit><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
-        <HistoryUpdateTime>8</HistoryUpdateTime><!-- integer  - time in hours to update market price histories  default:6 -->
+        <HistoryUpdateTime>12</HistoryUpdateTime><!-- integer  - time in hours to update market price histories  default:6 -->
         <UseOrderRange>true</UseOrderRange><!-- bool  - default: true  -->
         <DeleteOldTransactions>false</DeleteOldTransactions><!-- bool  - delete transactions from db older than 3 days  default: false  -->
-        <!-- not used atm -->
+        <!-- not used atm - currently hard-coded to return only 1 -->
         <FindBuyOrder>15</FindBuyOrder><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
         <FindSellOrder>15</FindSellOrder><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
     </market>
@@ -223,6 +229,15 @@ boolean can use either 0/1 OR true/false.
         <Complex>4</Complex><!-- integer  -1 to disable.  max 128.  default 4 -->
     </exploring>
 
+    <crime><!-- not implemented yet -->
+        <Enabled>false</Enabled><!-- bool -->
+        <CrimFlagTime>900</CrimFlagTime> <!-- seconds  (15m default) -->
+        <AggFlagTime>900</AggFlagTime> <!-- seconds (15m default) -->
+        <WeaponFlagTime>60</WeaponFlagTime> <!-- seconds (60s default) -->
+        <CWSessionTime>60</CWSessionTime> <!-- seconds (60s default) -->
+        <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
+    </crime>
+
     <testing><!-- switches for various incomplete/testing code sections -->
         <ShipHeat>true</ShipHeat><!-- bool -->
         <EnableDrones>true</EnableDrones><!-- bool -->
@@ -235,21 +250,13 @@ boolean can use either 0/1 OR true/false.
         <SpawnTest>true</SpawnTest><!-- bool - enables 5s respawn timer -->
         <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
         <UseProfiling>true</UseProfiling><!-- bool  - use internal memobj code profiling system -->
-        <ProfileTraceTime>5000</ProfileTraceTime><!-- msec  profile time above this will print StackTrace  default: 500 -->
-        <UseShipTracking>false</UseShipTracking><!-- bool -->
+        <ProfileTraceTime>0</ProfileTraceTime><!-- msec  -profile time above this will print StackTrace  default: 250  disable:0-->
+        <UseShipTracking>true</UseShipTracking><!-- bool -->
+        <ShipTrackingTime>0.002</ShipTrackingTime><!-- float  -max time to show tracking cans -->
         <PositionHack>false</PositionHack><!-- bool -->
         <DeleteTrackingCans>false</DeleteTrackingCans><!-- bool - no longer used -->
         <AnomalyFaction>0</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
     </debug>
-
-    <crime><!-- not implemented yet -->
-        <Enabled>false</Enabled><!-- bool -->
-        <CrimFlagTime>900</CrimFlagTime> <!-- seconds  (15m default) -->
-        <AggFlagTime>900</AggFlagTime> <!-- seconds (15m default) -->
-        <WeaponFlagTime>60</WeaponFlagTime> <!-- seconds (60s default) -->
-        <CWSessionTime>60</CWSessionTime> <!-- seconds (60s default) -->
-        <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
-    </crime>
 
     <threads><!-- not implemented yet -->
         <NetworkThreads>1</NetworkThreads>
@@ -283,7 +290,7 @@ boolean can use either 0/1 OR true/false.
     <net>
         <!--  for internal network only-->
         <port>26000</port>
-        <imageServer>192.168.1.14</imageServer>
+        <imageServer>192.168.1.3</imageServer>
         <imageServerPort>26001</imageServerPort>
 
         <!-- to allow external access to internal dev server (network server config'd to port-forward this one)
