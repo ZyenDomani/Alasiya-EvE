@@ -919,7 +919,8 @@ int main( int argc, char* argv[] )
         Timer::SetCurrentTime();
         start = GetTickCount();
 
-        if ((tcpc = tcps.PopConnection()))
+        tcpc = tcps.PopConnection();
+        if (tcpc != nullptr)
             sEntityList.Add(new Client(pyServMgr, &tcpc));
 
         sEntityList.Process();

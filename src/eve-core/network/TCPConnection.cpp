@@ -322,11 +322,11 @@ bool TCPConnection::RecvData( char* errbuf )
             if (errbuf)
                 snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "No Data Received.");
             return false;
-        } else if (status) {
+        } else {
             mRecvBuf->Resize<uint8>(status);
             if (!ProcessReceivedData(errbuf))
                 return false;
-        } 
+        }
     }
     return true;
 }

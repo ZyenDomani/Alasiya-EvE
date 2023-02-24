@@ -113,7 +113,7 @@ PyObject *CachedObjectMgr::CacheRecord::EncodeHint() const
 {
     objectCaching_CachedObject_spec spec;
 
-    spec.objectID = objectID->Clone();
+    spec.objectID = objectID; //->Clone();
     spec.nodeID = HackCacheNodeID;
     spec.timestamp = timestamp;
     spec.version = version;
@@ -159,7 +159,7 @@ bool CachedObjectMgr::HaveCached(const std::string &objectID) const
 
 bool CachedObjectMgr::HaveCached(const PyRep *objectID) const
 {
-    PyIncRef(objectID);
+    //PyIncRef(objectID);
     const std::string str = OIDToString(objectID);
 
     return (m_cachedObjects.find(str) != m_cachedObjects.end());
@@ -167,7 +167,7 @@ bool CachedObjectMgr::HaveCached(const PyRep *objectID) const
 
 void CachedObjectMgr::InvalidateCache(const PyRep *objectID)
 {
-    PyIncRef(objectID);
+    //PyIncRef(objectID);
     const std::string str = OIDToString(objectID);
     CachedObjMapItr res = m_cachedObjects.find(str);
 

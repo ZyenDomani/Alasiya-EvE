@@ -182,8 +182,7 @@ void UnmarshalStream::CreateObjectStore( size_t streamLength, uint32 saveCount )
 {
     DestroyObjectStore();
 
-    if ( 0 < saveCount )
-    {
+    if (saveCount) {
         mStoreIndexItr = ( ( mInItr + streamLength ).As<uint32>() - saveCount );
         mStoredObjects = new PyList( saveCount );
     }
@@ -197,17 +196,17 @@ void UnmarshalStream::DestroyObjectStore()
 
 PyRep* UnmarshalStream::GetStoredObject( uint32 index )
 {
-    if ( 0 < index )
+    if ( index )
         return mStoredObjects->GetItem( --index );
     return nullptr;
 }
 
 void UnmarshalStream::StoreObject( uint32 index, PyRep* object )
 {
-    if ( 0 < index )
+    if ( index )
     {
         PyIncRef( object );
-        mStoredObjects->SetItem( index--, object );
+        mStoredObjects->SetItem( --index, object );
     }
 }
 

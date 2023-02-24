@@ -261,8 +261,6 @@ public:
     } */
     // move assignment
     PyInt& operator= (PyInt&& oth) {
-        //std::swap(mType, oth.mType);
-        //std::swap(mValue, oth.mValue);
         std::swap(*this, oth);
         return *this;
     }
@@ -303,8 +301,6 @@ public:
     }*/
     // move assignment
     PyLong& operator= (PyLong&& oth) {
-        //std::swap(mType, oth.mType);
-        //std::swap(mValue, oth.mValue);
         std::swap(*this, oth);
         return *this;
     }
@@ -345,8 +341,6 @@ public:
     }*/
     // move assignment
     PyFloat& operator= (PyFloat&& oth) {
-        //std::swap(mType, oth.mType);
-        //std::swap(mValue, oth.mValue);
         std::swap(*this, oth);
         return *this;
     }
@@ -387,8 +381,6 @@ public:
     }*/
     // move assignment
     PyBool& operator= (PyBool&& oth) {
-        //std::swap(mType, oth.mType);
-        //std::swap(mValue, oth.mValue);
         std::swap(*this, oth);
         return *this;
     }
