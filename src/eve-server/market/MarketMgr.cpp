@@ -145,7 +145,7 @@ void MarketMgr::UpdatePriceHistory()
      */
 
 // there is a 1 day difference (from 0000UTC) between "Old" and "New" prices
-PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
+PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, int32 typeID) {
     PyRep* result(nullptr);
     std::string method_name ("GetNewHistory_");
     method_name += std::to_string(regionID);
@@ -161,14 +161,14 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
         if (!sDatabase.RunQuery(res,
             "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
             " FROM mktHistory "
-            " WHERE regionID=%u AND typeID=%u"
+            " WHERE regionID=%u AND typeID=%i"
             " AND historyDate > %li  LIMIT %u",
             regionID, typeID, (m_timeStamp - EvE::Time::Day), sConfig.market.NewPriceLimit))
         {
             _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
             return nullptr;
         }
-        _log(MARKET__DB_TRACE, "MarketMgr::GetNewPriceHistory() - Fetched %lu buy orders for type %u in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
+        _log(MARKET__DB_TRACE, "MarketMgr::GetNewPriceHistory() - Fetched %lu buy orders for type %i in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
 
         result = DBResultToCRowset(res);
         if (result == nullptr) {
@@ -187,7 +187,7 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
     return result;
 }
 
-PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
+PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, int32 typeID) {
     PyRep* result(nullptr);
     std::string method_name ("GetOldHistory_");
     method_name += std::to_string(regionID);
@@ -202,14 +202,14 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
         /** @todo  this doesnt belong here...  */
         if (!sDatabase.RunQuery(res,
             "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
-            " FROM mktHistory WHERE regionID=%u AND typeID=%u"
+            " FROM mktHistory WHERE regionID=%u AND typeID=%i"
             " AND historyDate > %li AND historyDate < %li LIMIT %u",
             regionID, typeID, (m_timeStamp - (EvE::Time::Day *3)), (m_timeStamp - EvE::Time::Day), sConfig.market.OldPriceLimit))
         {
             _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
             return nullptr;
         }
-        _log(MARKET__DB_TRACE, "MarketMgr::GetOldPriceHistory() - Fetched %lu orders for type %u in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
+        _log(MARKET__DB_TRACE, "MarketMgr::GetOldPriceHistory() - Fetched %lu orders for type %i in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
 
         result = DBResultToCRowset(res);
         if (result == nullptr) {
@@ -261,7 +261,7 @@ void MarketMgr::SendOnOwnOrderChanged(Client* pClient, uint32 orderID, uint8 act
 }
 
 
-void MarketMgr::InvalidateOrdersCache(uint32 regionID, uint32 typeID)
+void MarketMgr::InvalidateOrdersCache(uint32 regionID, int32 typeID)
 {
     std::string method_name ("GetOrders_");
     method_name += std::to_string(regionID);

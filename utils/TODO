@@ -250,7 +250,7 @@ item contraband.....this needs implementing
     - could this be a dataset in static data mgr for market items to avoid loading?
 
 market code
-    - determine and code methods for using arum as credit type
+    - determine and code methods for using arum as credit type?
     - still needs more review for update/rewrite/improvements
     - fix price shit....db uses double, code uses double, both should be long
     - client has prices to 2 places (xxx.xx).  this is x100 to store/modify as integer.  ALL price data should be updated to use this
@@ -258,6 +258,8 @@ market code
     - run thru mgr code to remove direct db calls (put in marketDB file)
     - find 'safe' way to run history updates (in case of no transactions)
     - need to run thru file to check for proper coding
+    - orders need to update timestamp/duration to be displayed in market details page (out of date wont show in client)
+       maybe make method to update all times on set schedule?  change duration to year/years?
 
 market for corp use
     - add checks for hangar location when placing sell orders

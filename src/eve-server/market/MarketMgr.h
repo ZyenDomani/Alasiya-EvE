@@ -46,15 +46,15 @@ public:
     //forces a refresh of market data.
     void SendOnOwnOrderChanged(Client* pClient, uint32 orderID, uint8 action, bool isCorp = false, PyRep* order = nullptr);
 
-    void InvalidateOrdersCache(uint32 regionID, uint32 typeID);
+    void InvalidateOrdersCache(uint32 regionID, int32 typeID);
 
     bool NeedsUpdate()                                  { return m_timeStamp > GetFileTimeNow()?false:true; }
 
     PyRep* GetMarketGroups()                            { PyIncRef(m_marketGroups); return m_marketGroups; }
     // cached
-    PyRep* GetNewPriceHistory(uint32 regionID, uint32 typeID);
+    PyRep* GetNewPriceHistory(uint32 regionID, int32 typeID);
     // cached
-    PyRep* GetOldPriceHistory(uint32 regionID, uint32 typeID);
+    PyRep* GetOldPriceHistory( uint32 regionID, int32 typeID );
 
 
     // base price update method

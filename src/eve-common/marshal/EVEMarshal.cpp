@@ -378,25 +378,25 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* pyPackedRow )
             case DBTYPE_I8:
             case DBTYPE_UI8:
             case DBTYPE_FILETIME:
-                rowData.Append<int64>(value->IsNone() ? 0 : value->AsLong()->value() );
+                rowData.Append<int64>(PyRep::IntegerValue(value));
                 break;
             case DBTYPE_I4:
-                rowData.Append<int32>(value->IsNone() ? 0 : value->AsInt()->value() );
+                rowData.Append<int32>(PyRep::IntegerValueI32(value));
                 break;
             case DBTYPE_UI4:
-                rowData.Append<uint32>(value->IsNone() ? 0 : value->AsInt()->value() );
+                rowData.Append<uint32>(PyRep::IntegerValueU32(value));
                 break;
             case DBTYPE_I2:
-                rowData.Append<int16>(value->IsNone() ? 0 : value->AsInt()->value() );
+                rowData.Append<int16>(PyRep::IntegerValueI32(value));
                 break;
             case DBTYPE_UI2:
-                rowData.Append<uint16>(value->IsNone() ? 0 : value->AsInt()->value() );
+                rowData.Append<uint16>(PyRep::IntegerValueU32(value));
                 break;
             case DBTYPE_I1:
-                rowData.Append<int8>(value->IsNone() ? 0 : value->AsInt()->value() );
+                rowData.Append<int8>(PyRep::IntegerValueI32(value));
                 break;
             case DBTYPE_UI1:
-                rowData.Append<uint8>(value->IsNone() ? 0 : value->AsInt()->value() );
+                rowData.Append<uint8>(PyRep::IntegerValueU32(value));
                 break;
             case DBTYPE_R8:
                 rowData.Append<double>(value->IsNone() ? 0.0 : value->AsFloat()->value() );

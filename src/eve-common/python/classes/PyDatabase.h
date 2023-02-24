@@ -99,8 +99,8 @@ public:
      */
     void AddColumn( const char* name, DBTYPE type );
 
-protected:
     virtual ~DBRowDescriptor()    { /* do we need to do anything here? */ }
+protected:
     // Helper functions:
     PyTuple* _GetColumnList() const;
     PyTuple* _GetColumn(size_t index) const;
@@ -147,8 +147,8 @@ public:
      */
     PyPackedRow* NewRow();
 
-protected:
     virtual ~CRowSet()    { /* do we need to do anything here? */ }
+protected:
     DBRowDescriptor* _GetRowDesc() const;
     //PyList* _GetColumnList() const;
 
@@ -195,8 +195,8 @@ public:
      */
     PyPackedRow* NewRow( PyRep* key );
 
-protected:
     virtual ~CIndexedRowSet()    { /* do we need to do anything here? */ }
+protected:
     DBRowDescriptor* _GetRowDesc() const;
     //PyList* _GetColumnList() const;
 
@@ -242,8 +242,8 @@ public:
      */
     CRowSet* NewRowset( PyRep* key );
 
-protected:
     virtual ~CFilterRowSet()    { /* do we need to do anything here? */ }
+protected:
     DBRowDescriptor* _GetRowDesc() const;
     //PyList* _GetColumnList() const;
 

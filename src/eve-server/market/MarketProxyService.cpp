@@ -436,7 +436,8 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         if (args.duration == 0) {
             // immediate - loop to search and fill buy orders at or above asking price until qty depleted or no orders found
             bool search(true);
-            uint32 orderID(0), origQty(args.quantity);
+            uint32 orderID(0);
+            int32 origQty(args.quantity);
             while (args.quantity and search) {
                 orderID = m_db.FindBuyOrder(args);
                 if (orderID) {
@@ -461,7 +462,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
                 // partially filled
                 _log(MARKET__TRACE, "PlaceCharOrder - Failed to find buy orders for remaining %i of type %i at %.2f ISK.", \
                         args.quantity, args.typeID, args.price);
-                call.client->SendErrorMsg("There were only buyers for %u of the %i items you wanted to sell.", args.quantity, origQty);
+                call.client->SendErrorMsg("There were only buyers for %i of the %i items you wanted to sell.", args.quantity, origQty);
                 return nullptr;
             }
 

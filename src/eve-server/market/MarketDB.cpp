@@ -40,15 +40,14 @@
  * MARKET__DB_TRACE
  */
 
-PyRep *MarketDB::GetStationAsks(uint32 stationID) {
+PyRep *MarketDB::GetStationAsks(int32 stationID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "    typeID, MIN(price) AS price, volRemaining, stationID "
         " FROM mktOrders "
-        " WHERE stationID=%u"
+        " WHERE stationID=%i"
         " GROUP BY typeID",
-        //" LIMIT %u", sConfig.market.StationOrderLimit
         stationID))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -70,7 +69,6 @@ PyRep *MarketDB::GetSystemAsks(uint32 solarSystemID) {
         " FROM mktOrders "
         " WHERE solarSystemID=%u"
         " GROUP BY typeID",
-        //" LIMIT %u",sConfig.market.SystemOrderLimit
         solarSystemID))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -92,7 +90,6 @@ PyRep *MarketDB::GetRegionBest(uint32 regionID) {
         " FROM mktOrders "
         " WHERE regionID=%u AND bid=%u"
         " GROUP BY typeID",
-        //" LIMIT %u",sConfig.market.RegionOrderLimit
         regionID, Market::Type::Sell))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -106,7 +103,7 @@ PyRep *MarketDB::GetRegionBest(uint32 regionID) {
     return DBResultToIndexRowset(res, "typeID");
 }
 
-PyRep *MarketDB::GetOrders( uint32 regionID, uint16 typeID )
+PyRep *MarketDB::GetOrders( uint32 regionID, int32 typeID )
 {
     // returns a tuple (sell, buy) of PyObjectEx with data in PyPackedRows
 
@@ -119,13 +116,13 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint16 typeID )
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders "
-        " WHERE regionID=%u AND typeID=%u AND bid=%u", regionID, typeID, Market::Type::Sell))
+        " WHERE regionID=%u AND typeID=%i AND bid=%u", regionID, typeID, Market::Type::Sell))
     {
         codelog( MARKET__DB_ERROR, "Error in query: %s", res.error.c_str() );
         PyDecRef(tup);
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu sell orders for type %u", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu sell orders for type %i", res.GetRowCount(), typeID);
     tup->SetItem(0, DBResultToCRowset( res ) );
 
     //query buy orders
@@ -135,13 +132,13 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint16 typeID )
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders "
-        " WHERE regionID=%u AND typeID=%u AND bid=%u", regionID, typeID, Market::Type::Buy))
+        " WHERE regionID=%u AND typeID=%i AND bid=%u", regionID, typeID, Market::Type::Buy))
     {
         codelog( MARKET__DB_ERROR, "Error in query: %s", res.error.c_str() );
         PyDecRef(tup);
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu buy orders for type %u", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu buy orders for type %i", res.GetRowCount(), typeID);
     tup->SetItem(1, DBResultToCRowset( res ) );
 
     if (is_log_enabled(MARKET__DUMP))
@@ -149,7 +146,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint16 typeID )
     return tup;
 }
 
-PyRep* MarketDB::GetOrdersForOwner(uint32 ownerID)
+PyRep* MarketDB::GetOrdersForOwner(int32 ownerID)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -159,18 +156,18 @@ PyRep* MarketDB::GetOrdersForOwner(uint32 ownerID)
         "   issued as issueDate, minVolume, contraband,"
         "   duration, isCorp, solarSystemID, escrow"
         " FROM mktOrders"
-        " WHERE ownerID=%u", ownerID))
+        " WHERE ownerID=%i", ownerID))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
 
-    _log(MARKET__DB_TRACE, "GetOrdersForOwner() - Fetched %lu buy orders for %u", res.GetRowCount(), ownerID);
+    _log(MARKET__DB_TRACE, "GetOrdersForOwner() - Fetched %lu buy orders for %i", res.GetRowCount(), ownerID);
 
     return DBResultToRowset(res);
 }
 
-PyRep *MarketDB::GetOrderRow(uint32 orderID) {
+PyRep *MarketDB::GetOrderRow(int32 orderID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
@@ -178,7 +175,7 @@ PyRep *MarketDB::GetOrderRow(uint32 orderID) {
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders"
-        " WHERE orderID=%u", orderID))
+        " WHERE orderID=%i", orderID))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -186,7 +183,7 @@ PyRep *MarketDB::GetOrderRow(uint32 orderID) {
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(MARKET__ERROR, "Order %u not found.", orderID);
+        codelog(MARKET__ERROR, "Order %i not found.", orderID);
         return nullptr;
     }
 
@@ -200,16 +197,16 @@ uint32 MarketDB::FindBuyOrder(Call_PlaceCharOrder &call) {
         "SELECT orderID"
         " FROM mktOrders"
         " WHERE bid=1"
-        "  AND typeID=%u"
-        "  AND stationID=%u"
-        "  AND volRemaining >= %u"
-        "  AND price > %.2f"
+        "  AND typeID=%i"
+        "  AND stationID=%i"
+        "  AND volRemaining >= %i"
+        "  AND price > %.0f"
         " ORDER BY price DESC"
         " LIMIT 1;",
         call.typeID,
         call.stationID,
         call.quantity,
-        call.price - 0.01/*, sConfig.market.FindBuyOrder*/))
+        call.price - 1/*, sConfig.market.FindBuyOrder*/))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return 0;
@@ -229,16 +226,16 @@ uint32 MarketDB::FindSellOrder(Call_PlaceCharOrder &call)
         "SELECT orderID"
         " FROM mktOrders"
         " WHERE bid=0"
-        "  AND typeID=%u"
-        "  AND stationID=%u"
-        "  AND volRemaining >= %u"
-        "  AND price < %.2f"
+        "  AND typeID=%i"
+        "  AND stationID=%i"
+        "  AND volRemaining >= %i"
+        "  AND price < %.0f"
         " ORDER BY price ASC"
         " LIMIT 1;",
         call.typeID,
         call.stationID,
         call.quantity,
-        call.price + 0.01/*, sConfig.market.FindSellOrder*/))
+        call.price + 1/*, sConfig.market.FindSellOrder*/))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return 0;
@@ -301,9 +298,9 @@ bool MarketDB::AlterOrderQuantity(uint32 orderID, uint32 new_qty) {
     return true;
 }
 
-bool MarketDB::AlterOrderPrice(uint32 orderID, double new_price) {
+bool MarketDB::AlterOrderPrice(int32 orderID, double new_price) {
     DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE mktOrders SET price = %.2f WHERE orderID = %u", new_price, orderID)) {
+    if (!sDatabase.RunQuery(err, "UPDATE mktOrders SET price = %.2f WHERE orderID = %i", new_price, orderID)) {
         _log(MARKET__DB_ERROR, "Error in query: %s.", err.c_str());
         return false;
     }
@@ -533,7 +530,7 @@ void MarketDB::GetMaterialPrices(std::map< uint16, Market::matlData >& data)
     DBQueryResult res;
     DBResultRow row;
     std::map< uint16, Market::matlData >::iterator itr;
-    for (itr = data.begin(); itr != data.end(); itr++) {
+    for (itr = data.begin(); itr != data.end(); ++itr) {
         sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
             itr->second.price = (row.GetFloat(0) * 1.05);
@@ -545,7 +542,7 @@ void MarketDB::GetMineralPrices(std::map< uint16, Market::matlData >& data)
     DBQueryResult res;
     DBResultRow row;
     std::map< uint16, Market::matlData >::iterator itr;
-    for (itr = data.begin(); itr != data.end(); itr++) {
+    for (itr = data.begin(); itr != data.end(); ++itr) {
         sDatabase.RunQuery(res, "SELECT basePrice FROM invTypes WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
             itr->second.price = (row.GetFloat(0) * 1.15);
@@ -592,7 +589,7 @@ void MarketDB::GetCruPriceAvg(std::map< uint16, Inv::TypeData >& data)
     DBQueryResult res;
     DBResultRow row;
     std::map< uint16, Inv::TypeData>::iterator itr;
-    for (itr = data.begin(); itr != data.end(); itr++) {
+    for (itr = data.begin(); itr != data.end(); ++itr) {
         sDatabase.RunQuery(res, "SELECT AVG(avgPrice) FROM CruciblePriceHistory WHERE typeID = %u", itr->first);
         if (res.GetRow(row))
             itr->second.basePrice = (row.IsNull(0) ? 0 : row.GetFloat(0));

@@ -40,18 +40,18 @@ class MarketDB
 {
 public:
     PyRep* GetMarketGroups();
-    PyRep* GetOrders(uint32 regionID, uint16 typeID);
-    PyRep* GetOrderRow(uint32 orderID);
+    PyRep* GetOrders( uint32 regionID, int32 typeID );
+    PyRep* GetOrderRow(int32 orderID);
     PyRep* GetRegionBest(uint32 regionID);
     PyRep* GetSystemAsks(uint32 solarSystemID);
-    PyRep* GetStationAsks(uint32 stationID);
-    PyRep* GetOrdersForOwner(uint32 ownerID);
+    PyRep* GetStationAsks(int32 stationID);
+    PyRep* GetOrdersForOwner( int32 ownerID );
 
     PyRep* GetTransactions(uint32 ownerID, Market::TxData &data);
 
     bool DeleteOrder(uint32 orderID);
     bool GetOrderInfo(uint32 orderID, Market::OrderInfo &oInfo);
-    bool AlterOrderPrice(uint32 orderID, double new_price);
+    bool AlterOrderPrice(int32 orderID, double new_price);
     bool RecordTransaction(Market::TxData &data);
     bool AlterOrderQuantity(uint32 orderID, uint32 new_qty);
 
