@@ -789,6 +789,33 @@ PyList& PyList::operator= ( PyList&& oth ) {
     return *this;
 }
 
+/*
+void PyList::AddItem(PyRep* rep, bool cleanup/*false/) {
+    items.push_back( rep );
+    if (cleanup)
+        cleanupVec.push_back( rep );
+}
+
+void PyList::SetItem(size_t index, PyRep* object ) {
+    PyRep** rep = &items.at(index);
+
+    PySafeDecRef(*rep);
+    if (object == nullptr) {
+        *rep = PyStatic.NewNone();
+    } else {
+        *rep = object;
+        cleanupVec.push_back(object);
+    }
+    PyIncRef(*rep);
+}
+
+void PyList::SetItemString(size_t index, const char* str ) {
+    PyString* string = new PyString( str );
+    SetItem(index, string);
+    cleanupVec.push_back(string);
+    PyDecRef(string);
+}
+*/
 /************************************************************************/
 /* PyRep Dict Class                                                     */
 /************************************************************************/

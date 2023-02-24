@@ -309,7 +309,8 @@ look over CallDispatcher to see if we can improve/update anything   -started.
 is DataClasses.h used?  will it be?
   - its refd in pos code, but not used yet
 
-active thread count is wrong
+active thread count is wrong....no...
+this is based on my thread class.  does not include classes using boost
 20:50:43 B    Active Threads: There are 1 active threads running in the server.
 20:50:43 W                  : ThreadID 0xEFFFF700
 
@@ -366,7 +367,7 @@ Py* objects that have long int as key need 'delete' called on key when destroyed
 
 
  review all classes to add rule of 5 or =delete as required
-    - PyRep Classes - add move semantics - done but still testing
+    - PyRep Classes - add move semantics - done but still testing  so far no hits on move or copy assign
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?
 
@@ -405,6 +406,8 @@ see file:///home/allan/Desktop/eve_packets/aknor/crucible/1.5.4/03272012-02-13-a
 
 there is a lot more to machonet than we currently have coded/working....
     - narrowcast is for notification types of "broadcast" using "bcast_idtype"
+
+look into removing xmlp encode() for things we can build in code
 
 
 *******************************************************

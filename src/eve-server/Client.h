@@ -77,7 +77,7 @@ public:
     // move assignment
     Client& operator= (Client&& oth) =delete;
 
-    ~Client();
+    virtual ~Client();
 
     // called from main() loop
     bool                    ProcessNet();
@@ -410,7 +410,7 @@ protected:
     /********************************************************************/
     /* EVEClientSession interface                                       */
     /********************************************************************/
-    void _GetVersion( VersionExchangeServer& version );
+    int16 GetClientCount();
     uint32 _GetQueuePosition()                          { /* hack */ return 1; }
 
     /********************************************************************/

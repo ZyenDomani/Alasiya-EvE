@@ -94,12 +94,13 @@ public:
 
 
 protected:
+    virtual int16 GetClientCount() =0;
     /**
      * @brief Obtains version.
      *
      * @param[in] version Object to be filled with version information.
      */
-    virtual void _GetVersion( VersionExchangeServer& version ) = 0;
+    //virtual void _GetVersion( VersionExchangeServer& version ) = 0;
     /** @return Current position in connection queue. */
     virtual uint32 _GetQueuePosition() = 0;
 
@@ -153,6 +154,7 @@ protected:
     EVETCPConnection* const mNet;
 
 private:
+    void SendVersion();
     // State machine facility:
     PyPacket* ( EVEClientSession::*mPacketHandler )( PyRep* rep );
 

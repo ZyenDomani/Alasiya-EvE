@@ -2261,14 +2261,8 @@ void Client::BanClient()
 /************************************************************************/
 /* EVEClientSession interface                                           */
 /************************************************************************/
-void Client::_GetVersion(VersionExchangeServer& version)
-{
-    version.birthday = EVEBirthday;
-    version.macho_version = MachoNetVersion;
-    version.user_count = sEntityList.GetClientCount();
-    version.version_number = EVEVersionNumber;
-    version.build_version = EVEBuildVersion;
-    version.project_version = EVEProjectVersion;
+int16 Client::GetClientCount() {
+    return sEntityList.GetClientCount();
 }
 
 bool Client::_VerifyVersion(VersionExchangeClient& version)
@@ -2295,7 +2289,8 @@ bool Client::_VerifyCrypto(CryptoRequestPacket& cr)
         if (!car.Decode(cr.keyParams)) {
             sLog.Error("Client","%s: Received invalid CryptoAPI request!", GetAddress().c_str());
         } else {
-            sLog.Error("Client","%s: Unhandled CryptoAPI request: hashmethod=%s sessionkeylength=%d provider=%s sessionkeymethod=%s", GetAddress().c_str(), car.hashmethod.c_str(), car.sessionkeylength, car.provider.c_str(), car.sessionkeymethod.c_str());
+            sLog.Error("Client","%s: Unhandled CryptoAPI request: hashmethod=%s sessionkeylength=%i provider=%s sessionkeymethod=%s", \
+                    GetAddress().c_str(), car.hashmethod.c_str(), car.sessionkeylength, car.provider.c_str(), car.sessionkeymethod.c_str());
             SendErrorMsg("Invalid CryptoAPI request - You must change your client to use Placebo crypto in common.ini to talk to this server.");
         }
 

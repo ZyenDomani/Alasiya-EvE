@@ -757,6 +757,8 @@ PyResult CorpRegistryBound::Handle_UpdateTitles(PyCallArgs &call) {
                 mct.corporations.insert(m_corpID);
             sEntityList.Multicast("OnTitleChanged", "corpid", &notif, mct);
         }
+
+        PySafeDecRef(updates);
     }
 
     return nullptr;

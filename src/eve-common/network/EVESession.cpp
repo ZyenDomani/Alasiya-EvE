@@ -54,11 +54,7 @@ void EVEClientSession::Reset() {
     if ( GetState() != TCPConnection::STATE_CONNECTED )
         return;
 
-    VersionExchangeServer version;
-    _GetVersion( version );
-
-    PyRep* res(version.Encode());
-    mNet->QueueRep(res);
+    SendVersion();
 
     mPacketHandler = &EVEClientSession::_HandleVersion;
 }
@@ -188,4 +184,16 @@ PyPacket* EVEClientSession::_HandlePacket( PyRep* rep ) {
     }
 
     return p;
+}
+
+void EVEClientSession::SendVersion() {
+    PyTuple* tup = new PyTuple( 7 );
+    tup->items[ 0 ] = new PyInt(EVEBirthday);
+    tup->items[ 1 ] = new PyInt(MachoNetVersion);
+    tup->items[ 2 ] = new PyInt(GetClientCount());
+    tup->items[ 3 ] = new PyFloat(EVEVersionNumber);
+    tup->items[ 4 ] = new PyInt(EVEBuildVersion);
+    tup->items[ 5 ] = new PyString(EVEProjectVersion);
+    tup->items[ 6 ] = PyStatic.NewNone();
+    mNet->QueueRep( tup );
 }

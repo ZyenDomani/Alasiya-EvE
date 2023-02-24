@@ -5,7 +5,7 @@
 
   <include file="python/classes/PyUtils.h" />
 
-  <elementDef name="VersionExchangeServer">
+  <elementDef name="VersionExchangeServer" encode="false">
     <tupleInline>
         <int name="birthday" />
         <int name="macho_version" />
@@ -19,7 +19,7 @@
   </elementDef>
 
   <!-- doesn't have the update_info -->
-   <elementDef name="VersionExchangeClient">
+   <elementDef name="VersionExchangeClient" encode="false">
     <tupleInline>
         <int name="birthday" />
         <int name="macho_version" />
