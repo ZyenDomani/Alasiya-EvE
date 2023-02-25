@@ -422,7 +422,7 @@ PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
     call.Dump(PLANET__DUMP);
 
     // returns empty dict if none
-    return PyStatic.mtDict();
+    return new PyDict();
 }
 
 PyResult PlanetMgrBound::Handle_GetFullNetworkForOwner(PyCallArgs &call) {
@@ -432,7 +432,7 @@ PyResult PlanetMgrBound::Handle_GetFullNetworkForOwner(PyCallArgs &call) {
     call.Dump(PLANET__DUMP);
 
     // returns empty dict if none
-    return PyStatic.mtDict();
+    return new PyDict();
 }
 
 PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {

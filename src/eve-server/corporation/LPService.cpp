@@ -57,7 +57,7 @@ PyResult LPService::Handle_TakeOffer( PyCallArgs& call )
   sLog.White( "LPService::Handle_TakeOffer()", "size= %lu", call.tuple->size() );
 
   call.Dump(SERVICE__CALL_DUMP);
-   return PyStatic.mtList();
+   return new PyList();
 }
 
 PyResult LPService::Handle_ExchangeConcordLP( PyCallArgs& call )
@@ -67,7 +67,7 @@ PyResult LPService::Handle_ExchangeConcordLP( PyCallArgs& call )
   sLog.White( "LPService::Handle_ExchangeConcordLP()", "size= %lu", call.tuple->size() );
 
   call.Dump(SERVICE__CALL_DUMP);
-  return PyStatic.mtList();
+  return new PyList();
 }
 
 //17:09:54 L LPService::Handle_GetLPExchangeRates(): size= 0
@@ -82,7 +82,7 @@ PyResult LPService::Handle_GetLPExchangeRates( PyCallArgs& call )
 05:42:04 [SvcCall]     Argument 'machoVersion':
 05:42:04 [SvcCall]         Integer field: 1
 */
-return  PyStatic.mtList();
+return  new PyList();
 }
 
 //18:46:38 L CharMgrService::Handle_GetLPForCharacterCorp(): size= 1, 0=Integer(1000049)
@@ -100,7 +100,7 @@ PyResult LPService::Handle_GetLPForCharacterCorp( PyCallArgs& call )
 04:39:44 [SvcCall]     Argument 'machoVersion':
 04:39:44 [SvcCall]         Integer field: 1
 */
-return PyStatic.NewZero();
+return new PyInt(0);
 }
 
 // //06:01:19 LPService::Handle_GetLPsForCharacter(): size= 0
@@ -110,7 +110,7 @@ PyResult LPService::Handle_GetLPsForCharacter( PyCallArgs& call )
   sLog.White( "LPService::Handle_GetLPsForCharacter()", "size= %lu", call.tuple->size() );
 
   //call.Dump(SERVICE__CALL_DUMP);
-  return PyStatic.mtList();
+  return new PyList();
 }
 
 //18:55:57 L CharMgrService::Handle_GetAvailableOffersFromCorp(): size=2, 0=Integer(), 1=Boolean()
@@ -164,7 +164,7 @@ PyResult LPService::Handle_GetAvailableOffersFromCorp( PyCallArgs& call )
               [PyString "lpCost"]
               [PyInt 1600]
               */
-return PyStatic.mtList();
+return new PyList();
 }
 
 

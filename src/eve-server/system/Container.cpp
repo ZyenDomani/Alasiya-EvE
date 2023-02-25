@@ -275,6 +275,7 @@ void ContainerSE::Process() {
         m_deleteTimer.Disable();
         sLog.Magenta( "ContainerSE::Process()", "Garbage Collection is removing Cargo Container %u.", m_contRef->itemID() );
         m_contRef->Delete();
+        // this doesnt call virtuals as expected.  may need to update
         delete this;
     }
 }
@@ -360,9 +361,9 @@ PyDict *ContainerSE::MakeSlimItem() {
         slim->SetItemString("ownerID",          new PyInt(m_ownerID));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
         slim->SetItemString("nameID",           new PyNone());
-        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
+        slim->SetItemString("corpID",           (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+        slim->SetItemString("allianceID",       (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+        slim->SetItemString("warFactionID",     (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
         if (m_contRef->IsAnchored())        // not sure if this is right...testing
             slim->SetItemString("structureState",       new PyInt(EVEPOS::StructureState::Anchored));
 
@@ -540,6 +541,7 @@ void WreckSE::Process() {
         m_deleteTimer.Disable();
         sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", m_contRef->itemID() );
         Delete();
+        // this doesnt call virtuals as expected.  may need to update
         delete this;
     }
 }
@@ -600,14 +602,14 @@ PyDict *WreckSE::MakeSlimItem() {
         if (m_abandoned or IsFleetID(m_fleetID)) { // this is ONLY for abandoned wrecks or wrecks from fleet ops
             PyTuple* loot = new PyTuple(4);
                 loot->SetItem(0,                new PyInt(m_ownerID));
-                loot->SetItem(1,                IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-                loot->SetItem(2,                IsFleetID(m_fleetID) ? new PyInt(m_fleetID) : new PyNone());
+                loot->SetItem(1,                (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+                loot->SetItem(2,                (IsFleetID(m_fleetID) ? (PyRep*)new PyInt(m_fleetID) : new PyNone()));
                 loot->SetItem(3,                new PyBool(false)); // what is this??
             slim->SetItemString("lootRights",   loot );
         }
-        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
+        slim->SetItemString("corpID",           (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+        slim->SetItemString("allianceID",       (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+        slim->SetItemString("warFactionID",     (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
         slim->SetItemString("isEmpty",          new PyBool(m_contRef->IsEmpty()));
         slim->SetItemString("launcherID",       new PyLong(m_launchedByID));
         slim->SetItemString("securityStatus",   new PyInt(0));  //FIXME TODO

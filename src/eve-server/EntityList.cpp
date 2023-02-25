@@ -350,8 +350,8 @@ bool EntityList::IsOnline(uint32 charID)
 PyRep* EntityList::PyIsOnline(uint32 charID)
 {
     if (m_players.find(charID) == m_players.end())
-        return PyStatic.NewFalse();
-    return PyStatic.NewTrue();
+        return new PyBool(false);
+    return new PyBool(true);;
 }
 
 Client* EntityList::FindClientByCharID(uint32 charID) const

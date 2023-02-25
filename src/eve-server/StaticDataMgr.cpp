@@ -728,12 +728,12 @@ const char* StaticDataMgr::GetAttrName(uint16 attrID)
 
 PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID)
 {
-    std::map<uint32, uint32>::iterator itr = m_agentSystem.find(agentID);
+    std::map<int32, uint32>::iterator itr = m_agentSystem.find(agentID);
     if (itr != m_agentSystem.end())
         return new PyInt(itr->second);
 
-    _log(DATA__WARNING, "Failed to query system info for agent %u: Agent not found.", agentID);
-    return PyStatic.NewZero()->AsInt();
+    _log(DATA__WARNING, "Failed to query system info for agent %i: Agent not found.", agentID);
+    return new PyInt(0);
 }
 
 void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {

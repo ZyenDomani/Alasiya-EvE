@@ -2504,7 +2504,7 @@ PyResult CorpRegistryBound::Handle_CanLeaveCurrentCorporation(PyCallArgs &call) 
     // error:  CrpCantQuitNotInStasis  and canLeave=false for member that has roles
 
     PyTuple* tuple = new PyTuple(3);
-        tuple->SetItem(0, new PyBool(true););  //canLeave - set this to timer or w/e to deter corp jumpers
+        tuple->SetItem(0, new PyBool(true));  //canLeave - set this to timer or w/e to deter corp jumpers
         tuple->SetItem(1, new PyNone());
         tuple->SetItem(2, new PyNone());
 

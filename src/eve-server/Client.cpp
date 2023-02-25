@@ -1794,8 +1794,8 @@ void Client::CharNoLongerInStation() {
     OnCharNoLongerInStation ocnis;
         ocnis.charID = m_char->itemID();
         ocnis.corpID = GetCorporationID();
-        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? new PyInt(GetAllianceID()) : new PyNone());
-        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : new PyNone());
+        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? (PyRep*)new PyInt(GetAllianceID()) : new PyNone());
+        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? (PyRep*)new PyInt(GetWarFactionID()) : new PyNone());
     PyTuple* tmp = ocnis.Encode();
     if (tmp == nullptr)
         return;
@@ -1816,8 +1816,8 @@ void Client::CharNowInStation() {
     OnCharNowInStation ocnis;
         ocnis.charID = m_char->itemID();
         ocnis.corpID = GetCorporationID();
-        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? new PyInt(GetAllianceID()) : new PyNone());
-        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : new PyNone());
+        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? (PyRep*)new PyInt(GetAllianceID()) : new PyNone());
+        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? (PyRep*)new PyInt(GetWarFactionID()) : new PyNone());
     PyTuple* tmp = ocnis.Encode();
     std::vector<Client*> clients;
     sEntityList.GetStationGuestList(m_locationID, clients);

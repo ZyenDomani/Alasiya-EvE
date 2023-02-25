@@ -91,22 +91,22 @@ PyDict* JumpBridgeSE::MakeSlimItem()
 
     PyDict *slim = new PyDict();
     // General module slim entries
-    slim->SetItemString("name", new PyString(m_self->itemName()));
-    slim->SetItemString("itemID", new PyLong(m_data.itemID));
-    slim->SetItemString("typeID", new PyInt(m_self->typeID()));
-    slim->SetItemString("posState", new PyInt(m_data.state));
-    slim->SetItemString("ownerID", new PyInt(m_ownerID));
-    slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-    slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-    slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
-    slim->SetItemString("posTimestamp", new PyLong(m_data.timestamp));
-    slim->SetItemString("incapacitated", new PyInt(m_data.state == EVEPOS::StructureState::Incapacitated));
-    slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
-    slim->SetItemString("controlTowerID", new PyLong(m_data.towerID));
+    slim->SetItemString("name",                 new PyString(m_self->itemName()));
+    slim->SetItemString("itemID",               new PyLong(m_data.itemID));
+    slim->SetItemString("typeID",               new PyInt(m_self->typeID()));
+    slim->SetItemString("posState",             new PyInt(m_data.state));
+    slim->SetItemString("ownerID",              new PyInt(m_ownerID));
+    slim->SetItemString("corpID",               (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+    slim->SetItemString("allianceID",           (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+    slim->SetItemString("warFactionID",         (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
+    slim->SetItemString("posTimestamp",         new PyLong(m_data.timestamp));
+    slim->SetItemString("incapacitated",        new PyInt(m_data.state == EVEPOS::StructureState::Incapacitated));
+    slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
+    slim->SetItemString("controlTowerID",       new PyLong(m_data.towerID));
 
     // Jump Bridge specific entries
-    slim->SetItemString("remoteStructureID", new PyInt(m_bridgeData.toItemID));
-    slim->SetItemString("remoteSystemID", new PyInt(m_bridgeData.toSystemID));
+    slim->SetItemString("remoteStructureID",    new PyInt(m_bridgeData.toItemID));
+    slim->SetItemString("remoteSystemID",       new PyInt(m_bridgeData.toSystemID));
 
     if (is_log_enabled(POS__SLIMITEM))
     {
@@ -119,25 +119,25 @@ PyDict* JumpBridgeSE::MakeSlimItem()
 void JumpBridgeSE::SendSlimUpdate()
 {
     PyDict *slim = new PyDict();
-        slim->SetItemString("name", new PyString(m_self->itemName()));
-        slim->SetItemString("itemID", new PyLong(m_data.itemID));
-        slim->SetItemString("typeID", new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID", new PyInt(m_ownerID));
-        slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-        slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-        slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
-        slim->SetItemString("posTimestamp", new PyLong(m_data.timestamp));
-        slim->SetItemString("posState", new PyInt(m_data.state));
-        slim->SetItemString("incapacitated", new PyInt(0));
-        slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
+        slim->SetItemString("name",             new PyString(m_self->itemName()));
+        slim->SetItemString("itemID",           new PyLong(m_data.itemID));
+        slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
+        slim->SetItemString("ownerID",          new PyInt(m_ownerID));
+        slim->SetItemString("corpID",           (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+        slim->SetItemString("allianceID",       (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+        slim->SetItemString("warFactionID",     (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
+        slim->SetItemString("posTimestamp",     new PyLong(m_data.timestamp));
+        slim->SetItemString("posState",         new PyInt(m_data.state));
+        slim->SetItemString("incapacitated",    new PyInt(0));
+        slim->SetItemString("posDelayTime",     new PyInt(m_delayTime));
         slim->SetItemString("remoteStructureID", new PyInt(m_bridgeData.toItemID));
-        slim->SetItemString("remoteSystemID", new PyInt(m_bridgeData.toSystemID));
-    PyTuple *shipData = new PyTuple(2);
-        shipData->SetItem(0, new PyLong(m_data.itemID));
-        shipData->SetItem(1, new PyObject("foo.SlimItem", slim));
-    PyTuple *sItem = new PyTuple(2);
-        sItem->SetItem(0, new PyString("OnSlimItemChange"));
-        sItem->SetItem(1, shipData);
+        slim->SetItemString("remoteSystemID",   new PyInt(m_bridgeData.toSystemID));
+    PyTuple *shipData =                         new PyTuple(2);
+        shipData->SetItem(0,                    new PyLong(m_data.itemID));
+        shipData->SetItem(1,                    new PyObject("foo.SlimItem", slim));
+    PyTuple *sItem =                            new PyTuple(2);
+        sItem->SetItem(0,                       new PyString("OnSlimItemChange"));
+        sItem->SetItem(1,                       shipData);
     m_destiny->SendSingleDestinyUpdate(&sItem);
     PyDecRef(sItem);
 }

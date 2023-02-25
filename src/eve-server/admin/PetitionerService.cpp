@@ -113,19 +113,19 @@ PyResult PetitionerService::Handle_GetCategories( PyCallArgs& call )
 {
     sLog.White( "PetitionerService::Handle_GetCategories()", "size=%lu ", call.tuple->size() );
 
-    return PyStatic.mtList();
+    return new PyList();
 }
 
 PyResult PetitionerService::Handle_GetCategoryHierarchicalInfo( PyCallArgs& call )
 {
     sLog.White( "PetitionerService::Handle_GetCategoryHierarchicalInfo()", "size=%lu ", call.tuple->size() );
 
-    return PyStatic.mtList();
+    return new PyList();
 }
 
 //00:28:58 L PetitionerService::Handle_GetUnreadMessages(): size=0
 PyResult PetitionerService::Handle_GetUnreadMessages( PyCallArgs& call )
 {
     //unknown...
-    return PyStatic.mtList();
+    return new PyList();
 }

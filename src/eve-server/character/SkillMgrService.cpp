@@ -302,10 +302,10 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
     PyList* list = new PyList();
     // for each implant, make tuple and put into list
     PyTuple* tuple = new PyTuple(4);
-        tuple->SetItem(0, PyStatic.NewZero());   //implantID
-        tuple->SetItem(1, PyStatic.NewZero());   //implantTypeID
-        tuple->SetItem(2, PyStatic.NewZero());   //operation
-        tuple->SetItem(3, PyStatic.NewZero());   //value
+        tuple->SetItem(0, new PyInt(0));   //implantID
+        tuple->SetItem(1, new PyInt(0));   //implantTypeID
+        tuple->SetItem(2, new PyInt(0));   //operation
+        tuple->SetItem(3, new PyInt(0));   //value
         list->AddItem(tuple);
 
     return list;

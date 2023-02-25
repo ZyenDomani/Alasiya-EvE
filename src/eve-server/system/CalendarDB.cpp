@@ -188,8 +188,8 @@ PyRep* CalendarDB::GetEventList(uint32 ownerID, uint32 month, uint32 year)
             dict->SetItemString("eventID",              new PyInt(row.GetInt(0)));
             dict->SetItemString("ownerID",              new PyInt(row.GetInt(1)));
             dict->SetItemString("eventDateTime",        new PyLong(row.GetInt64(2)));
-            dict->SetItemString("dateModified",         row.IsNull(3) ? new PyNone() : new PyLong(row.GetInt64(3)));
-            dict->SetItemString("eventDuration",        row.IsNull(4) ? new PyNone() : new PyInt(row.GetInt(4)));
+            dict->SetItemString("dateModified",         (row.IsNull(3) ? new PyNone() : (PyRep*)new PyLong(row.GetInt64(3))));
+            dict->SetItemString("eventDuration",        (row.IsNull(4) ? new PyNone() : (PyRep*)new PyInt(row.GetInt(4))));
             dict->SetItemString("importance",           new PyBool(row.GetBool(5)));
             dict->SetItemString("eventTitle",           new PyString(row.GetText(6)));
             dict->SetItemString("flag",                 new PyInt(row.GetInt(7)));

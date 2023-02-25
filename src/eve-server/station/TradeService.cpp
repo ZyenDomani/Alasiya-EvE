@@ -482,7 +482,7 @@ PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
     PyPackedRow* row = new PyPackedRow( sDataMgr.CreateHeader() );
         row->SetFieldC("itemID",        new PyLong(pTSes->m_tradeSession.containerID));
         row->SetFieldC("typeID",        new PyInt(53));     // type Trade Window
-        row->SetFieldC("ownerID",       new PyInt(1););      // EvE_System
+        row->SetFieldC("ownerID",       new PyInt(1));      // EvE_System
         row->SetFieldC("locationID",    new PyInt(pTSes->m_tradeSession.stationID));
         row->SetFieldC("flagID",        new PyNone());
         row->SetFieldC("quantity",      new PyInt(-1));     // singleton

@@ -69,7 +69,7 @@ PyResult AggressionMgrBound::Handle_GetCriminalTimeStamps(PyCallArgs &call)
         return nullptr;
     }
 
-    return PyStatic.mtDict();
+    return new PyDict();
 }
 
 PyResult AggressionMgrBound::Handle_CheckLootRightExceptions(PyCallArgs &call)
@@ -82,7 +82,7 @@ PyResult AggressionMgrBound::Handle_CheckLootRightExceptions(PyCallArgs &call)
     }
 
     // return true to allow looting
-    return PyStatic.NewTrue();
+    return new PyBool(true);;
 }
 
 AggressionMgrService::AggressionMgrService(PyServiceMgr *mgr)

@@ -693,7 +693,7 @@ bool ClassDecodeGenerator::ProcessTuple(const TiXmlElement* field)
 
     fprintf(mOutputFile,
         "    if (%s->IsNone()) {\n"
-        "        %s = PyStatic.mtTuple();\n"
+        "        %s = new PyTuple(0);\n"
         "    } else if (%s->IsTuple()) {\n"
         "        %s = %s->AsTuple();\n"
         "    } else {\n"
@@ -775,7 +775,7 @@ bool ClassDecodeGenerator::ProcessList(const TiXmlElement* field)
 
     fprintf(mOutputFile,
         "    if (%s->IsNone()) {\n"
-        "        %s = PyStatic.mtList();\n"
+        "        %s = new PyList();\n"
         "    } else if (%s->IsList()) {\n"
         "        %s = %s->AsList();\n"
         "    } else {\n"
@@ -1009,7 +1009,7 @@ bool ClassDecodeGenerator::ProcessDict(const TiXmlElement* field)
 
     fprintf(mOutputFile,
         "    if (%s->IsNone()) {\n"
-        "        %s = PyStatic.mtDict();\n"
+        "        %s = new PyDict();\n"
         "    } else if (%s->IsDict()) {\n"
         "        %s = %s->AsDict();\n"
         "    } else {\n"

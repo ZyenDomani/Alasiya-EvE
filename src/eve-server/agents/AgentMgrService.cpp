@@ -283,7 +283,7 @@ PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
     //no args
   _log(AGENT__INFO, "AgentMgrBound::Handle_GetMyEpicJournalDetails() - size= %lu", call.tuple->size() );
 
-  return PyStatic.mtList();
+  return new PyList();
 }
 
 PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
@@ -291,7 +291,7 @@ PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
   _log(AGENT__INFO, "AgentMgrBound::Handle_GetCareerAgents() - size= %lu", call.tuple->size() );
     call.Dump(AGENT__DUMP);
 
-    return PyStatic.NewZero();
+    return new PyInt(0);
 }
 
 
@@ -318,6 +318,6 @@ PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &cal
     call.Dump(AGENT__DUMP);
 
     // return boolean
-    return PyStatic.NewFalse();
+    return new PyBool(false);
 
 }

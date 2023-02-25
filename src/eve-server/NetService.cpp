@@ -88,6 +88,6 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
 
     PyTuple* result = new PyTuple( 2 );
         result->SetItem( 0, serverinfo );
-        result->SetItem( 1, PyStatic.mtDict() );
+        result->SetItem( 1, new PyDict() );
     return result;
 }

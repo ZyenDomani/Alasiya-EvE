@@ -1012,8 +1012,8 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 
 PyTuple *EVENotificationStream::Encode() {
     PyTuple *t4 = new PyTuple(2);
-        t4->SetItem(0, new PyInt(1););
-        t4->SetItem(1, args);       // set actual rep in item, and it will be cleaned up by d'tor later
+        t4->SetItem(0, new PyInt(1));
+        t4->SetItem(1, args);
     PyTuple *t3 = new PyTuple(2);
         t3->SetItem(0, new PyInt(0));
         t3->SetItem(1, t4);

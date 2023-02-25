@@ -46,7 +46,7 @@ void LiveUpdateDB::Init()
 
     if (!sDatabase.RunQuery(res, query)) {
         codelog(DATABASE__ERROR, "Couldn't get live updates from database: %s", res.error.c_str());
-        m_updateList = PyStatic.mtList();
+        m_updateList = new PyList();
         return;
     }
 

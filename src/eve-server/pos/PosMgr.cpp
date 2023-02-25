@@ -154,9 +154,9 @@ PyResult PosMgr::Handle_GetControlTowerFuelRequirements(PyCallArgs &call) {
         dict->SetItemString("resourceTypeID",       new PyInt(row.GetInt(1)));
         dict->SetItemString("purpose",              new PyInt(row.GetInt(2)));
         dict->SetItemString("quantity",             new PyInt(row.GetInt(3)));
-        dict->SetItemString("minSecurityLevel",     (row.IsNull(4) ? new PyNone() : new PyFloat(row.GetDouble(4))));
-        dict->SetItemString("factionID",            (row.IsNull(5) ? new PyNone() : new PyInt(row.GetInt(5))));
-        dict->SetItemString("wormholeClassID",      (row.IsNull(6) ? new PyNone() : new PyInt(row.GetInt(6))));
+        dict->SetItemString("minSecurityLevel",     (row.IsNull(4) ? new PyNone() : (PyRep*)new PyFloat(row.GetDouble(4))));
+        dict->SetItemString("factionID",            (row.IsNull(5) ? new PyNone() : (PyRep*)new PyInt(row.GetInt(5))));
+        dict->SetItemString("wormholeClassID",      (row.IsNull(6) ? new PyNone() : (PyRep*)new PyInt(row.GetInt(6))));
         list->AddItem(new PyObject("util.KeyVal", dict));
     }
 

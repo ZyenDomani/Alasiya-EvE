@@ -106,8 +106,8 @@ m_scanShips(false)
         m_scanShips = self->GetAttribute(AttrProbeCanScanShips).get_bool();
 
     // set probe lifetime of 5h
-    m_expiry = GetFileTimeNow() + (EvE::Time::Hour *5);  // 5h abandoned lifespan
-    m_lifeTimer.Start(5*60*60*1000);        // 5h to ms
+    m_expiry = GetFileTimeNow() + (EvE::Time::Hour * 5);  // 5h abandoned lifespan
+    m_lifeTimer.Start(5 * 60 * 60 * 1000);        // 5h to ms
 
     _log(SCAN__INFO, "Created Abandoned ProbeSE for %u. expiry: %li", m_self->itemID(), m_expiry);
 }
@@ -143,10 +143,10 @@ m_scanShips(false)
         m_scanShips = self->GetAttribute(AttrProbeCanScanShips).get_bool();
 
     // set probe lifetime
-    m_expiry = GetFileTimeNow() + (self->GetAttribute(AttrExplosionDelay).get_float() *10000); // ms to filetime
+    m_expiry = GetFileTimeNow() + (self->GetAttribute(AttrExplosionDelay).get_float() * 10000); // ms to filetime
     if (m_expiry < GetFileTimeNow()) {
-        m_expiry = GetFileTimeNow() + (EvE::Time::Minute *30);  // 30m default lifespan
-        m_lifeTimer.Start(30*60*1000);        // 30m to ms
+        m_expiry = GetFileTimeNow() + (EvE::Time::Minute * 30);  // 30m default lifespan
+        m_lifeTimer.Start(30 * 60 * 1000);        // 30m to ms
     } else {
         m_lifeTimer.Start(self->GetAttribute(AttrExplosionDelay).get_uint32());
     }
@@ -269,6 +269,7 @@ bool ProbeSE::ProcessTic()
             // this will update qty in cargo and delete itemRef of returned probe
             m_self->MergeTypesInCargo(m_shipRef.get(), flagCargoHold);
             // delete this SE
+            // this doesnt call virtuals as expected.  may need to update
             delete this;
             // delete from entity map
             return false;
@@ -313,7 +314,7 @@ void ProbeSE::UpdateProbe(ProbeData& data)
     if (dist < 100) {
         time = 0.5f;
     } else if (dist > BUBBLE_RADIUS_METERS){
-        float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS /4);
+        float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS / 4);
         time = EvE::max(dist / wsm, 1);
         SendStateChange(Probe::State::Warping);
         SendWarpStart(time);
@@ -335,7 +336,7 @@ void ProbeSE::RecoverProbe(PyList* list)
     m_destination = m_shipRef->position() + 250;
     float time(1), dist = GetPosition().distance(m_destination);
     if (dist > BUBBLE_RADIUS_METERS){
-        float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS /4);
+        float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS / 4);
         time = EvE::max(dist / wsm, 1);
         SendWarpStart(time);
     } else {
@@ -470,18 +471,18 @@ const char* ProbeSE::GetStateName(uint8 state)
 float ProbeSE::GetDeviation()
 {
     // % of current range based on bonuses
-    return m_scanRange *m_scanDeviation;
+    return m_scanRange * m_scanDeviation;
 }
 
 float ProbeSE::GetScanStrength()
 {
     // factor of range
-    return m_scanStrength /pow(2, (m_rangeStep -1));
+    return m_scanStrength / pow(2, (m_rangeStep -1));
 }
 
 float ProbeSE::GetRangeModifier(float dist) {
     // e^-((targ rang / max range)^2)
-    float tmp = pow(dist/(m_baseScanRange *m_rangeStep), m_rangeFactor);
+    float tmp = pow(dist / (m_baseScanRange *m_rangeStep), m_rangeFactor);
     return log(tmp);
 }
 
@@ -500,11 +501,11 @@ PyDict* ProbeSE::MakeSlimItem()
     slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
     slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
     slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-    slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-    slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-    slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
-    slim->SetItemString("numLaunchers",             new PyInt(1););
-    slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()): new PyNone());
+    slim->SetItemString("corpID",                   (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+    slim->SetItemString("allianceID",               (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+    slim->SetItemString("warFactionID",             (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
+    slim->SetItemString("numLaunchers",             new PyInt(1));
+    slim->SetItemString("sourceModuleID",           ((m_moduleRef.get() != nullptr) ? (PyRep*)new PyInt(m_moduleRef->itemID()): new PyNone()));
     slim->SetItemString("securityStatus",           new PyFloat(m_secStatus));
     return slim;
 }
@@ -524,13 +525,13 @@ void ProbeSE::SendSlimChange()
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("categoryID",               new PyInt(m_self->categoryID()));
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
-        slim->SetItemString("numLaunchers",             new PyInt(1););
-        slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()):new PyNone());
+        slim->SetItemString("corpID",                   (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+        slim->SetItemString("allianceID",               (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+        slim->SetItemString("warFactionID",             (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
+        slim->SetItemString("numLaunchers",             new PyInt(1));
+        slim->SetItemString("sourceModuleID",           ((m_moduleRef.get() != nullptr) ? (PyRep*)new PyInt(m_moduleRef->itemID()): new PyNone()));
         slim->SetItemString("securityStatus",           new PyFloat(m_secStatus));
-        slim->SetItemString("warpingAway",              m_state == Probe::State::Returning ? new PyBool(false) : new PyBool(true););    // this is sent when probe warps
+        slim->SetItemString("warpingAway",              ((m_state == Probe::State::Returning) ? new PyBool(false) : new PyBool(true)));    // this is sent when probe warps
     PyTuple* probeData = new PyTuple(2);
         probeData->SetItem(0, new PyLong(m_self->itemID()));
         probeData->SetItem(1, new PyObject("foo.SlimItem", slim));

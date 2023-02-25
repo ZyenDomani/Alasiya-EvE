@@ -1329,10 +1329,10 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     PyPackedRow* row = new PyPackedRow(sDataMgr.CreateHeader());
         row->SetFieldC("itemID",        new PyLong(m_data.systemID));
         row->SetFieldC("typeID",        new PyInt(5));
-        row->SetFieldC("ownerID",       PyStatic.NewOne());  // should this be owning factionID?  yes
+        row->SetFieldC("ownerID",       new PyInt(1));  // should this be owning factionID?  yes
         row->SetFieldC("locationID",    new PyInt(m_data.constellationID));
-        row->SetFieldC("flagID",        PyStatic.NewZero());
-        row->SetFieldC("quantity",      PyStatic.NewNegOne());
+        row->SetFieldC("flagID",        new PyInt(0));
+        row->SetFieldC("quantity",      new PyInt(-1));
         row->SetFieldC("groupID",       new PyInt(5));
         row->SetFieldC("categoryID",    new PyInt(2));
         row->SetFieldC("customInfo",    new PyString(""));

@@ -174,7 +174,7 @@ PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
      *
      */
 
-    return PyStatic.mtList();
+    return new PyList();
 }
 
 PyResult UserService::Handle_ReverseRedeem( PyCallArgs& call )

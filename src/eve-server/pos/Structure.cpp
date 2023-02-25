@@ -949,23 +949,23 @@ bool StructureSE::IsReinforced()
 void StructureSE::SendSlimUpdate()
 {
     PyDict *slim = new PyDict();
-    slim->SetItemString("name", new PyString(m_self->itemName()));
-    slim->SetItemString("itemID", new PyLong(m_data.itemID));
-    slim->SetItemString("typeID", new PyInt(m_self->typeID()));
-    slim->SetItemString("ownerID", new PyInt(m_ownerID));
-    slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-    slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-    slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
-    slim->SetItemString("posTimestamp", new PyLong(m_data.timestamp));
-    slim->SetItemString("posState", new PyInt(m_data.state));
-    slim->SetItemString("incapacitated", new PyInt(0));
-    slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
-    PyTuple *shipData = new PyTuple(2);
-    shipData->SetItem(0, new PyLong(m_data.itemID));
-    shipData->SetItem(1, new PyObject("foo.SlimItem", slim));
-    PyTuple *sItem = new PyTuple(2);
-    sItem->SetItem(0, new PyString("OnSlimItemChange"));
-    sItem->SetItem(1, shipData);
+    slim->SetItemString("name",                 new PyString(m_self->itemName()));
+    slim->SetItemString("itemID",               new PyLong(m_data.itemID));
+    slim->SetItemString("typeID",               new PyInt(m_self->typeID()));
+    slim->SetItemString("ownerID",              new PyInt(m_ownerID));
+    slim->SetItemString("corpID",               (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+    slim->SetItemString("allianceID",           (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+    slim->SetItemString("warFactionID",         (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
+    slim->SetItemString("posTimestamp",         new PyLong(m_data.timestamp));
+    slim->SetItemString("posState",             new PyInt(m_data.state));
+    slim->SetItemString("incapacitated",        new PyInt(0));
+    slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
+    PyTuple *shipData =                         new PyTuple(2);
+        shipData->SetItem(0,                    new PyLong(m_data.itemID));
+        shipData->SetItem(1,                    new PyObject("foo.SlimItem", slim));
+    PyTuple *sItem =                            new PyTuple(2);
+        sItem->SetItem(0,                       new PyString("OnSlimItemChange"));
+        sItem->SetItem(1,                       shipData);
     m_destiny->SendSingleDestinyUpdate(&sItem);
     PyDecRef(sItem);
 }
@@ -1090,30 +1090,30 @@ PyDict *StructureSE::MakeSlimItem()
     _log(POS__SLIMITEM, "MakeSlimItem for StructureSE %u", m_data.itemID);
     /** @todo (Allan) *Timestamp will need to be set to time current state is started. */
     PyDict *slim = new PyDict();
-    slim->SetItemString("name", new PyString(m_self->itemName()));
-    slim->SetItemString("itemID", new PyLong(m_data.itemID));
-    slim->SetItemString("typeID", new PyInt(m_self->typeID()));
-    slim->SetItemString("posState", new PyInt(m_data.state));
+    slim->SetItemString("name",                 new PyString(m_self->itemName()));
+    slim->SetItemString("itemID",               new PyLong(m_data.itemID));
+    slim->SetItemString("typeID",               new PyInt(m_self->typeID()));
+    slim->SetItemString("posState",             new PyInt(m_data.state));
 
-    slim->SetItemString("ownerID", new PyInt(m_ownerID));
-    slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-    slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-    slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
+    slim->SetItemString("ownerID",              new PyInt(m_ownerID));
+    slim->SetItemString("corpID",               (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+    slim->SetItemString("allianceID",           (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+    slim->SetItemString("warFactionID",         (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
 
     if (m_module or m_tower) { // for control towers and structures
-        slim->SetItemString("posTimestamp", new PyLong(m_data.timestamp));
-        slim->SetItemString("incapacitated", new PyInt(m_data.state == EVEPOS::StructureState::Incapacitated));
-        slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
+        slim->SetItemString("posTimestamp",     new PyLong(m_data.timestamp));
+        slim->SetItemString("incapacitated",    new PyInt(m_data.state == EVEPOS::StructureState::Incapacitated));
+        slim->SetItemString("posDelayTime",     new PyInt(m_delayTime));
     } else if (m_tcu) {
-        slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
-        slim->SetItemString("posTimestamp", new PyNone());
+        slim->SetItemString("posDelayTime",     new PyInt(m_delayTime));
+        slim->SetItemString("posTimestamp",     new PyNone());
     } else if (m_miner) {
-        PyTuple *tuple = new PyTuple(3);
-        tuple->SetItem(0, new PyFloat(m_rotation.x));
-        tuple->SetItem(1, new PyFloat(m_rotation.y));
-        tuple->SetItem(2, new PyFloat(m_rotation.z));
-        slim->SetItemString("dunRotation", tuple); // direction to moon
-        slim->SetItemString("controlTowerID", new PyLong(m_data.towerID));
+        PyTuple *tuple =                        new PyTuple(3);
+        tuple->SetItem(0,                       new PyFloat(m_rotation.x));
+        tuple->SetItem(1,                       new PyFloat(m_rotation.y));
+        tuple->SetItem(2,                       new PyFloat(m_rotation.z));
+        slim->SetItemString("dunRotation",      tuple); // direction to moon
+        slim->SetItemString("controlTowerID",   new PyLong(m_data.towerID));
     }
 
     if (m_module)
@@ -1183,8 +1183,8 @@ void StructureSE::GetEffectState(PyList &into)
     }
 
     fxState->SetItem(7, new PyBool(false));         // isOffensive
-    fxState->SetItem(8, new PyInt(1););      // start
-    fxState->SetItem(9, new PyInt(1););      // active
+    fxState->SetItem(8, new PyInt(1));      // start
+    fxState->SetItem(9, new PyInt(1));      // active
     fxState->SetItem(10, new PyInt(-1));      // duration
     fxState->SetItem(11, new PyInt(0));      // repeat
     fxState->SetItem(12, new PyLong(m_data.timestamp));      // startTime

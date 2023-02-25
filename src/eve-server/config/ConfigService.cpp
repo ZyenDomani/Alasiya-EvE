@@ -256,7 +256,7 @@ PyResult ConfigService::Handle_GetDynamicCelestials(PyCallArgs &call) {
         sLog.Error("GetDynamicCelesitals", "!IsSolarSystem %u", arg.arg);
     }
 
-    return PyStatic.NewZero();
+    return new PyInt(0);
 }
 
 PyResult ConfigService::Handle_SetMapLandmarks(PyCallArgs &call) {

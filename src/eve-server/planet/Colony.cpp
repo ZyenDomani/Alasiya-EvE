@@ -1222,7 +1222,7 @@ PyTuple* Colony::GetPins()
         dict->SetItem("ownerID", new PyInt(cur.second.ownerID));
         dict->SetItem("latitude", new PyFloat(cur.second.latitude));
         dict->SetItem("longitude", new PyFloat(cur.second.longitude));
-        dict->SetItem("lastRunTime", (cur.second.lastRunTime > 0 ? new PyLong(cur.second.lastRunTime) : new PyNone()));
+        dict->SetItem("lastRunTime", (cur.second.lastRunTime > 0 ? (PyRep*)new PyLong(cur.second.lastRunTime) : new PyNone()));
         dict->SetItem("state", new PyInt(cur.second.state));
         dict->SetItem("level", new PyInt(cur.second.level));
 
@@ -1234,7 +1234,7 @@ PyTuple* Colony::GetPins()
         dict->SetItem("contents", contents);
 
         if (cur.second.isLaunchable)
-            dict->SetItem("lastLaunchTime", (cur.second.lastLaunchTime > 0 ? new PyLong(cur.second.lastLaunchTime) : new PyNone()));
+            dict->SetItem("lastLaunchTime", (cur.second.lastLaunchTime > 0 ? (PyRep*)new PyLong(cur.second.lastLaunchTime) : new PyNone()));
 
         if (cur.second.isProcess)
             if (cur.second.schematicID) {

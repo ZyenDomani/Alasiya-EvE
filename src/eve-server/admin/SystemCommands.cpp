@@ -621,7 +621,7 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, PyServiceMgr* services,
         pClient->SystemMgr()->RemoveEntity(sys_entity);
         iRef->Delete();
         codelog(COMMAND__MESSAGE, "/unspawn called with single target successful");
-        return PyStatic.NewTrue();
+        return new PyBool(true);;
     }
 
     if (only_str.size() == 0) {
@@ -671,7 +671,7 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, PyServiceMgr* services,
 
 #undef DEFAULT_RANGE
 
-    return PyStatic.NewTrue();
+    return new PyBool(true);;
 }
 
 PyResult Command_location(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)

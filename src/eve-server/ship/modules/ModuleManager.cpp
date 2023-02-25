@@ -870,13 +870,13 @@ PyRep* ModuleManager::ModuleRepair(uint32 modID)
     GenericModule* pMod = GetModule(modID);
     if (pMod == nullptr) {
         _log(MODULE__ERROR, "MM::ModuleRepair() - module %u not found.", modID);
-        return PyStatic.NewFalse();
+        return new PyBool(false);
     }
 
 
 
-    //return PyStatic.NewTrue();  // can repair
-    return PyStatic.NewFalse(); // cannot repair (for whatever reason)  do they/we send msgs based on why here?
+    //return new PyBool(true);;  // can repair
+    return new PyBool(false); // cannot repair (for whatever reason)  do they/we send msgs based on why here?
 }
 
 void ModuleManager::StopModuleRepair(uint32 modID)

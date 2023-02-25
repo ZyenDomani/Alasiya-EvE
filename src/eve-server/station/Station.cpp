@@ -343,15 +343,15 @@ PyDict *StationSE::MakeSlimItem() {
     PyDict *slim = new PyDict();
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
+        slim->SetItemString("corpID",           (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+        slim->SetItemString("allianceID",       (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+        slim->SetItemString("warFactionID",     (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",          new PyInt(m_ownerID));
         slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("incapacitated",    new PyInt(0));
-        slim->SetItemString("online",           new PyInt(1););
+        slim->SetItemString("online",           new PyInt(1));
     return slim;
 }
 

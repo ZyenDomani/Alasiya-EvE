@@ -240,7 +240,7 @@ PyResult FactionWarMgrService::Handle_IsEnemyFaction(PyCallArgs &call) {
     call.Dump(FACWAR__CALL_DUMP);
 
     // return boolean
-    return PyStatic.NewFalse();
+    return new PyBool(false);
 }
 
 PyResult FactionWarMgrService::Handle_IsEnemyCorporation(PyCallArgs &call) {
@@ -249,7 +249,7 @@ PyResult FactionWarMgrService::Handle_IsEnemyCorporation(PyCallArgs &call) {
     call.Dump(FACWAR__CALL_DUMP);
 
     // return boolean
-    return PyStatic.NewFalse();
+    return new PyBool(false);
 }
 
 /**     ***********************************************************************

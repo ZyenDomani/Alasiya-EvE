@@ -63,7 +63,7 @@ PyRep* BookmarkDB::GetBookmarksInFolder(uint32 folderID)
     while (res.GetRow(row)) {
         PyDict* dict = new PyDict();
         dict->SetItemString("bookmarkID", new PyInt(row.GetInt(0)));
-        dict->SetItemString("folderID", ((folderID == 0) ? new PyNone() : new PyInt(folderID)));
+        dict->SetItemString("folderID", ((folderID == 0) ? new PyNone() : (PyRep*)new PyInt(folderID)));
         list->AddItem(new PyObject("util.KeyVal", dict));
     }
 

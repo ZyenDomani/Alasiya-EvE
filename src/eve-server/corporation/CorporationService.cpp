@@ -227,7 +227,7 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
     // this will either save data or it wont...
     m_db.SaveMedalData(medalID, dataList);
 
-    return PyStatic.NewFalse();
+    return new PyBool(false);
 }
 
 PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {

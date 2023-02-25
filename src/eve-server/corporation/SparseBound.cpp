@@ -114,7 +114,7 @@ PyResult SparseBound::Handle_SelectByUniqueColumnValues(PyCallArgs &call)
    //if (is_log_enabled(CORP__RSP_DUMP))
     //    rsp->Dump(CORP__RSP_DUMP, "");
 
-    return PyStatic.mtList();
+    return new PyList();
 }
 
 

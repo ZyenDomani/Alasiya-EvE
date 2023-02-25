@@ -138,6 +138,7 @@ void DroneSE::SaveDrone() {
 void DroneSE::RemoveDrone() {
     // this seems to work properly
     m_self->Delete();
+    // this doesnt call virtuals as expected.  may need to update
     delete this;
 }
 
@@ -259,9 +260,9 @@ PyDict* DroneSE::MakeSlimItem() {
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
         slim->SetItemString("ownerID",          new PyInt(m_ownerID));
-        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
-        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
-        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
+        slim->SetItemString("corpID",           (IsCorpID(m_corpID) ? (PyRep*)new PyInt(m_corpID) : new PyNone()));
+        slim->SetItemString("allianceID",       (IsAllianceID(m_allyID) ? (PyRep*)new PyInt(m_allyID) : new PyNone()));
+        slim->SetItemString("warFactionID",     (IsFactionID(m_warID) ? (PyRep*)new PyInt(m_warID) : new PyNone()));
         slim->SetItemString("bounty",           new PyFloat(GetBounty()));
         slim->SetItemString("securityStatus",   new PyFloat(GetSecurityRating()));
     return slim;

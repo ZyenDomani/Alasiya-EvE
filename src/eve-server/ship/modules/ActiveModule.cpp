@@ -1243,8 +1243,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.selfID = m_modRef->itemID();         //ENV_IDX_SELF = 0
         ge.charID = m_shipRef->ownerID();       //ENV_IDX_CHAR = 1
         ge.shipID = m_shipRef->itemID();        //ENV_IDX_SHIP = 2
-        ge.target = IsValidTarget(m_targetID) ? new PyInt(m_targetID) : new PyNone();     //ENV_IDX_TARGET = 3
-        ge.area = new PyList();                 //ENV_IDX_AREA = 5 still dont know what this is.
+        ge.target = (IsValidTarget(m_targetID) ? (PyRep*)new PyInt(m_targetID) : new PyNone());     //ENV_IDX_TARGET = 3
+        ge.area = new PyList();                 //ENV_IDX_AREA = 5        ...still dont know what this is.
         ge.effectID = m_effectID;               //ENV_IDX_EFFECT = 6
 
     if (chgTypeID > 0) {

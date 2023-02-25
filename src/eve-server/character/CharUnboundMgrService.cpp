@@ -104,8 +104,8 @@ PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call
      * returning false will allow creating a 3ed character.
      */
     if (sConfig.character.allow3edChar)
-        return PyStatic.NewFalse();
-    return PyStatic.NewTrue();
+        return new PyBool(false);
+    return new PyBool(true);;
 }
 
 //  called from petitioner (but only when session.characterID is None)
@@ -155,7 +155,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     CallCreateCharacterWithDoll arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewZero();
+        return new PyInt(0);
     }
 
     // check name and throw on failure before we get too far in this
@@ -173,7 +173,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     // obtain character type
     const CharacterType *char_type = sItemFactory.GetCharacterTypeByBloodline(arg.bloodlineID);
     if (char_type == nullptr)
-        return PyStatic.NewZero();
+        return new PyInt(0);
 
     // we need to fill these to successfully create character item
     CharacterData cdata = CharacterData();
@@ -260,7 +260,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         //a return to the client of 0 seems to be the only means of marking failure
         _log(CLIENT__ERROR, "Failed to create character '%s'", cdata.name.c_str());
         sItemFactory.UnsetUsingClient();
-        return PyStatic.NewZero();
+        return new PyInt(0);
     }
     charRef->SetClient(pClient);      // set client in char
 
@@ -278,7 +278,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     if (!CharacterDB::GetAttributesFromAncestry(cdata.ancestryID, intelligence, charisma, perception, memory, willpower)) {
         _log(CLIENT__ERROR, "Failed to load char create details. Bloodline %u, ancestry %u.", char_type->bloodlineID(), cdata.ancestryID);
         sItemFactory.UnsetUsingClient();
-        return PyStatic.NewZero();
+        return new PyInt(0);
     }
     // triple attributes and save
     uint8 multiplier = sConfig.character.statMultiplier;

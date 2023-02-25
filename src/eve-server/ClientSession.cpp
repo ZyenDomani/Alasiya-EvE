@@ -204,7 +204,7 @@ void ClientSession::_Set(const char* name, PyRep* value)
     if (value->hash() != current->hash()) {
         tuple->SetItem(0, current); /* didn't the session need to store the old value too? */
         tuple->SetItem(1, value);
-        tuple->SetItem(2, new PyBool(true););
+        tuple->SetItem(2, new PyBool(true));
         mDirty = true;
     } else {
         PyDecRef(value);

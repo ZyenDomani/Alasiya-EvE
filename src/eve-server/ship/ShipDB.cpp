@@ -40,7 +40,7 @@ PyRep *ShipDB::GetInsuranceByShipID(uint32 shipID) {
     if (res.GetRow(row))
         return DBRowToRow(row);
 
-    return PyStatic.NewZero();
+    return new PyInt(0);
 }
 
 PyRep *ShipDB::GetInsuranceByOwnerID(uint32 ownerID) {
