@@ -656,12 +656,14 @@ public:
         PySafeDecRef(*rep);
         if (object == nullptr) {
             *rep = new PyNone();
-            cleanupVec.push_back(index);
+            cleanup = true;
         } else {
             *rep = object;
-            if (cleanup)
-                cleanupVec.push_back(index);
         }
+
+        if (cleanup)
+            cleanupVec.push_back(index);
+
         PyIncRef(*rep);
     }
 

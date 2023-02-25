@@ -196,11 +196,11 @@ uint32 MarketDB::FindBuyOrder(Call_PlaceCharOrder &call) {
     if (!sDatabase.RunQuery(res,
         "SELECT orderID"
         " FROM mktOrders"
-        " WHERE bid=1"
-        "  AND typeID=%i"
+        " WHERE typeID=%i"
         "  AND stationID=%i"
+        "  AND bid=1"
         "  AND volRemaining >= %i"
-        "  AND price > %.0f"
+        "  AND price > %.1f"
         " ORDER BY price DESC"
         " LIMIT 1;",
         call.typeID,
@@ -225,11 +225,11 @@ uint32 MarketDB::FindSellOrder(Call_PlaceCharOrder &call)
     if (!sDatabase.RunQuery(res,
         "SELECT orderID"
         " FROM mktOrders"
-        " WHERE bid=0"
-        "  AND typeID=%i"
+        " WHERE typeID=%i"
         "  AND stationID=%i"
+        "  AND bid=0"
         "  AND volRemaining >= %i"
-        "  AND price < %.0f"
+        "  AND price < %.1f"
         " ORDER BY price ASC"
         " LIMIT 1;",
         call.typeID,

@@ -730,10 +730,9 @@ uint8 Character::InjectSkillIntoBrain(SkillRef skill) {
 
     skill->ChangeSingleton(true);
     skill->Move(m_itemID, flagSkill, true);
-    skill->SetAttribute(AttrSkillPoints, EvilZero.get_uint32());
-    skill->SetAttribute(AttrSkillLevel, EvilZero.get_uint32(), false);
+    skill->SetAttribute(AttrSkillPoints, EvilZero);
+    skill->SetAttribute(AttrSkillLevel, EvilZero);
 
-    // 'EvESkill::Event::SkillInjected' shows as "Unknown" in PD>Skill>History
     SaveSkillHistory(EvESkill::Event::SkillInjected, GetFileTimeNow(), m_itemID, skill->typeID(), 0, 0);
     _log(SKILL__MESSAGE, "%s(%u) has injected %s(%u)", name(), m_itemID, skill->name(), skill->itemID());
 
@@ -1134,7 +1133,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
     }
 
     UpdateSkillQueueEndTime();
-    SaveCharacter();
+    GetTotalSP();
 
     if (m_pClient->IsLogin()) {
         PyTuple* tmp(nullptr);
@@ -1260,6 +1259,7 @@ void Character::SaveFullCharacter() {
     _log(CHARACTER__INFO, "Saving full character info for %u.", m_itemID);
     //GetTotalSP();
     SaveCharacter();
+    // is this needed on every logout?
     m_db.SaveCorpData(m_itemID, m_corpData);
     SaveAttributes();
 
