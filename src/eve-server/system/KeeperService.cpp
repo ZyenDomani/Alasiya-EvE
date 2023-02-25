@@ -69,10 +69,6 @@ public:
 
     }
     virtual ~KeeperBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(EditDungeon);
     PyCallable_DECL_CALL(PlayDungeon);
@@ -138,7 +134,7 @@ PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
     _log(DUNG__CALL,  "KeeperService::Handle_CanWarpToPathPlex  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
 
-	return nullptr;
+    return nullptr;
 }
 
 /**  Hard-coded to random location....just to play with right now.
@@ -164,7 +160,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     deltaPosition.x = MakeRandomFloat(-1.0, 1.0) * distance;
     deltaPosition.y = MakeRandomFloat(-1.0, 1.0) * distance;
     deltaPosition.z = MakeRandomFloat(-2.0, 2.0) * ONE_AU_IN_METERS;
-    GPoint warpToPoint(currentPosition+deltaPosition);              // Make a warp-in point variable
+    GPoint warpToPoint(currentPosition + deltaPosition);              // Make a warp-in point variable
     GVector vectorToDestination(currentPosition, warpToPoint);
     double distanceToDestination = vectorToDestination.length();
     pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, distanceToDestination);

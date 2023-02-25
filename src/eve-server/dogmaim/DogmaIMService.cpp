@@ -87,10 +87,6 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, PeelAndLink);
     }
     virtual ~DogmaIMBound() {delete m_dispatch;}
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(ChangeDroneSettings);
     PyCallable_DECL_CALL(LinkWeapons);

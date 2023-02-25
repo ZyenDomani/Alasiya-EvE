@@ -53,21 +53,14 @@ public:
 
     virtual ~VoucherBound();
 
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
     PyCallable_DECL_CALL(GetDescription);
 
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
-
 private:
     InventoryItemRef m_itemRef;
-
 };
 
 #endif  // EVEMU_INVENTORY_VOUCHER_H_

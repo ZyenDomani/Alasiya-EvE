@@ -36,11 +36,6 @@ public:
     InventoryBound(PyServiceMgr *mgr, InventoryItemRef item, EVEItemFlags flag, uint32 ownerID,  bool passive);
     virtual ~InventoryBound();
 
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
     PyCallable_DECL_CALL(List);
     PyCallable_DECL_CALL(Add);
     PyCallable_DECL_CALL(MultiAdd);

@@ -78,10 +78,6 @@ public:
     }
 
     virtual ~ShipBound() {delete m_dispatch;}
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(Board);
     PyCallable_DECL_CALL(Eject);

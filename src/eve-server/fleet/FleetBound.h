@@ -25,11 +25,6 @@ class FleetBound
 
      virtual ~FleetBound();
 
-     virtual void Release() {
-         //I hate this statement
-         delete this;
-     }
-
      PyCallable_DECL_CALL(Init);
      PyCallable_DECL_CALL(GetInitState);
      PyCallable_DECL_CALL(GetFleetID);

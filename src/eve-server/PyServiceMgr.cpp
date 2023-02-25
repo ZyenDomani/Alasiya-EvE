@@ -61,7 +61,7 @@ void PyServiceMgr::Close() {
         if (is_log_enabled(SERVICE__MESSAGE))
             _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
                     bo->GetName(), bo->m_nodeID, bo->m_bindID);
-        SafeDelete(bo);
+        SafeDelete(cur.second.object);
     }
 
     sLog.Warning("     PyServiceMgr", "Services Manager has been closed." );
@@ -277,7 +277,7 @@ void PyServiceMgr::ClearBoundObject(uint32 bindID)
     _log(SERVICE__MESSAGE, "Service Mgr Clearing bound object %s at %s", bo->GetName(), bo->GetBindStr().c_str());
 
     m_boundObjects.erase(itr);
-    bo->Release();
+    SafeDelete(bo);
 }
 
 void PyServiceMgr::BoundObjectVec(std::vector< BoundObj >& vec)

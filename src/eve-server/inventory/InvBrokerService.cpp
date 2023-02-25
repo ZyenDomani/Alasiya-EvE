@@ -66,15 +66,7 @@ public:
         PyCallable_REG_CALL(InvBrokerBound, DeliverToCorpHangar);
         PyCallable_REG_CALL(InvBrokerBound, DeliverToCorpMember);
     }
-    virtual ~InvBrokerBound()
-    {
-        delete m_dispatch;
-    }
-
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
+    virtual ~InvBrokerBound()     { delete m_dispatch; }
 
     PyCallable_DECL_CALL(GetContainerContents);
     PyCallable_DECL_CALL(GetInventoryFromId);

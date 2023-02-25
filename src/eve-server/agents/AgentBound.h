@@ -28,10 +28,6 @@ public:
     AgentBound(PyServiceMgr *mgr, Agent *agt);
 
     virtual ~AgentBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(DoAction);
     PyCallable_DECL_CALL(GetMyJournalDetails);

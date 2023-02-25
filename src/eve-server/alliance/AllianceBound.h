@@ -28,10 +28,6 @@ public:
 
     AllianceBound(PyServiceMgr *mgr, AllianceDB& db, uint32 allyID);
     virtual ~AllianceBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(CreateLabel);
     PyCallable_DECL_CALL(GetLabels);

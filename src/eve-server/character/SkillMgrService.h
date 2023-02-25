@@ -52,8 +52,6 @@ public:
     SkillMgrBound(PyServiceMgr *mgr, CharacterDB &db);
     virtual ~SkillMgrBound();
 
-    virtual void Release();
-
     PyCallable_DECL_CALL(InjectSkillIntoBrain);
 
     PyCallable_DECL_CALL(CharStartTrainingSkill);

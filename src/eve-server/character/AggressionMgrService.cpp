@@ -53,12 +53,6 @@ public:
         delete m_dispatch;
     }
 
-    virtual void Release()
-    {
-        // this is not recommended
-        delete this;
-    }
-
 protected:
     PyCallable_DECL_CALL(GetCriminalTimeStamps);
     PyCallable_DECL_CALL(CheckLootRightExceptions);
