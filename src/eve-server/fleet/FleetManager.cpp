@@ -86,7 +86,7 @@ PyResult FleetManager::Handle_GetActiveStatus(PyCallArgs &call) {
 
     int32 fleetID = call.client->GetChar()->fleetID();
     if (fleetID == 0)
-        return PyStatic.NewNone();
+        return new PyNone();
 
     ActiveStatusRSP rsp;
     rsp.fleetCount = (255 - sFltSvc.GetFleetMemberCount(fleetID));     // this is slots left from max (256)

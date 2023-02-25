@@ -108,7 +108,7 @@ PyResult ScanMgrService::Handle_GetSystemScanMgr( PyCallArgs& call ) {
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     ScanBound* pSB = new ScanBound(m_manager, call.client);
@@ -126,16 +126,16 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     DestinyManager* pDestiny = m_client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", m_client->GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     } else if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't scan while warping");
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     if (m_client->GetShipSE()->SysBubble() == nullptr)
@@ -156,10 +156,10 @@ PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
     DestinyManager* pDestiny = m_client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     } else if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't scan while warping");
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     if (m_client->GetShipSE()->SysBubble() == nullptr)
@@ -175,7 +175,7 @@ PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
     m_client->scan()->RequestScans(dict);
 
     // this call returns a PyNone
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {

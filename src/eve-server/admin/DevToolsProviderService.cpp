@@ -58,7 +58,7 @@ PyResult DevToolsProviderService::Handle_GetLoader(PyCallArgs& call)
 	fclose(pFile);
 	return new PyString(buf, size);
     }
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult DevToolsProviderService::Handle_ExceptionFluentExample (PyCallArgs& call)

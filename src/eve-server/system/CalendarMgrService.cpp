@@ -92,7 +92,7 @@ PyResult CalendarMgrService::Handle_SendEventResponse( PyCallArgs& call )
     Call_SendEventResponse args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     CalendarDB::SaveEventResponse(call.client->GetCharacterID(), args);
@@ -112,7 +112,7 @@ PyResult CalendarMgrService::Handle_CreatePersonalEvent( PyCallArgs& call )
     Call_CreateEventWithInvites args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     // returns eventID
@@ -124,7 +124,7 @@ PyResult CalendarMgrService::Handle_CreateCorporationEvent( PyCallArgs& call )
     Call_CreateEvent args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     // returns eventID
@@ -136,7 +136,7 @@ PyResult CalendarMgrService::Handle_CreateAllianceEvent( PyCallArgs& call )
     Call_CreateEvent args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     // returns eventID
@@ -153,7 +153,7 @@ PyResult CalendarMgrService::Handle_EditPersonalEvent( PyCallArgs& call )
     Call_EditEvent args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     return nullptr;
@@ -169,7 +169,7 @@ PyResult CalendarMgrService::Handle_EditCorporationEvent( PyCallArgs& call )
     Call_EditEvent args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     return nullptr;
@@ -185,7 +185,7 @@ PyResult CalendarMgrService::Handle_EditAllianceEvent( PyCallArgs& call )
     Call_EditEvent args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     return nullptr;
@@ -201,7 +201,7 @@ PyResult CalendarMgrService::Handle_UpdateEventParticipants( PyCallArgs& call )
     Call_UpdateEventParticipants args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     CalendarDB::UpdateEventParticipants(args);

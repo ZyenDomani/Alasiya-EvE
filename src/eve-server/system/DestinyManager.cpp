@@ -2337,7 +2337,7 @@ PyResult DestinyManager::AttemptDockOperation() {
     if (station == nullptr) {
         codelog(CLIENT__ERROR, "%s: Station %u not found.", pClient->GetName(), stationID);
         pClient->SendErrorMsg("Station Not Found, Docking Aborted.");
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     //get the station Docking Perimiter
@@ -2581,12 +2581,12 @@ void DestinyManager::UpdateOldShip(ShipSE* pShipSE)
     slimPod->SetItemString("typeID",                new PyInt(pShipSE->GetTypeID()));
     slimPod->SetItemString("categoryID",            new PyInt(pShipSE->GetCategoryID()));
     slimPod->SetItemString("ownerID",               new PyInt(pShipSE->GetOwnerID()));
-    slimPod->SetItemString("charID",                PyStatic.NewNone());
+    slimPod->SetItemString("charID",                new PyNone());
     slimPod->SetItemString("corpID",                new PyInt(pShipSE->GetCorporationID()));
     slimPod->SetItemString("allianceID",            new PyInt(pShipSE->GetAllianceID()));
     slimPod->SetItemString("warFactionID",          new PyInt(pShipSE->GetWarFactionID()));
-    slimPod->SetItemString("bounty",                PyStatic.NewNone());
-    slimPod->SetItemString("securityStatus",        PyStatic.NewNone());
+    slimPod->SetItemString("bounty",                new PyNone());
+    slimPod->SetItemString("securityStatus",        new PyNone());
     PyTuple* shipData = new PyTuple(2);
     shipData->SetItem(0, new PyLong(pShipSE->GetID()));
     shipData->SetItem(1, new PyObject( "foo.SlimItem", slimPod));
@@ -2614,9 +2614,9 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     slim->SetItemString("typeID",                   new PyInt(newShipRef->typeID()));
     slim->SetItemString("ownerID",                  new PyInt(mySE->GetOwnerID()));
     slim->SetItemString("charID",                   new PyInt(pClient->GetCharacterID()));
-    slim->SetItemString("corpID",                   IsCorpID(mySE->GetCorporationID()) ? new PyInt(mySE->GetCorporationID()) : PyStatic.NewNone());
-    slim->SetItemString("allianceID",               IsAllianceID(mySE->GetAllianceID()) ? new PyInt(mySE->GetAllianceID()) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID",             IsFactionID(mySE->GetWarFactionID()) ? new PyInt(mySE->GetWarFactionID()) : PyStatic.NewNone());
+    slim->SetItemString("corpID",                   IsCorpID(mySE->GetCorporationID()) ? new PyInt(mySE->GetCorporationID()) : new PyNone());
+    slim->SetItemString("allianceID",               IsAllianceID(mySE->GetAllianceID()) ? new PyInt(mySE->GetAllianceID()) : new PyNone());
+    slim->SetItemString("warFactionID",             IsFactionID(mySE->GetWarFactionID()) ? new PyInt(mySE->GetWarFactionID()) : new PyNone());
     slim->SetItemString("bounty",                   new PyFloat(pClient->GetBounty()));
     slim->SetItemString("securityStatus",           new PyFloat(pClient->GetSecurityRating()));
     if (newShipRef->typeID() == itemTypeCapsule) {
@@ -3051,8 +3051,8 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.entityID = entityID;
         effect.moduleID = moduleID;
         effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's/drones
-        effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
-        effect.chargeTypeID = (chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID));
+        effect.targetID = (targetID == 0 ? new PyNone() : new PyInt(targetID));
+        effect.chargeTypeID = (chargeTypeID == 0 ? new PyNone() : new PyInt(chargeTypeID));
         effect.guid = guid;
         effect.isOffensive = isOffensive;                  // bool
         effect.start = start;                   // bool
@@ -3060,7 +3060,7 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.duration = duration;
         effect.repeat = repeat;
         effect.startTime = GetFileTimeNow();
-        effect.graphicInfo = (graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo));
+        effect.graphicInfo = (graphicInfo == 0 ? new PyNone() : new PyInt(graphicInfo));
     PyTuple *up = effect.Encode();
     SendSingleDestinyUpdate(&up);
     PyDecRef(up);

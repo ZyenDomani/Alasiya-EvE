@@ -76,8 +76,8 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
         ge.selfID = m_itemID;
         ge.charID = ownerID();
         ge.shipID = pClient->GetShipID();
-        ge.target = PyStatic.NewNone();
-        ge.subLoc = PyStatic.NewNone();
+        ge.target = new PyNone();
+        ge.subLoc = new PyNone();
         ge.area = new PyList();
         ge.effectID = 16;
     Notify_OnGodmaShipEffect shipEff;
@@ -97,7 +97,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
     }
 
         shipEff.repeat = (online ? 1 : 0);
-        shipEff.error = PyStatic.NewNone();
+        shipEff.error = new PyNone();
     PyList* events = new PyList();
         events->AddItem(shipEff.Encode());
     Notify_OnMultiEvent multi;

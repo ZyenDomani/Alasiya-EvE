@@ -63,7 +63,7 @@ PyRep* BookmarkDB::GetBookmarksInFolder(uint32 folderID)
     while (res.GetRow(row)) {
         PyDict* dict = new PyDict();
         dict->SetItemString("bookmarkID", new PyInt(row.GetInt(0)));
-        dict->SetItemString("folderID", ((folderID == 0) ? PyStatic.NewNone() : new PyInt(folderID)));
+        dict->SetItemString("folderID", ((folderID == 0) ? new PyNone() : new PyInt(folderID)));
         list->AddItem(new PyObject("util.KeyVal", dict));
     }
 
@@ -125,7 +125,7 @@ PyRep *BookmarkDB::GetBookmarks(uint32 ownerID) {
             dict->SetItemString("note", new PyString(row.GetText(10)));
             dict->SetItemString("creatorID", new PyInt(row.GetInt(11)));
             if (row.IsNull(12) or (row.GetInt(12) == 0)) {
-                dict->SetItemString("folderID", PyStatic.NewNone());
+                dict->SetItemString("folderID", new PyNone());
             } else {
                 dict->SetItemString("folderID", new PyInt(row.GetInt(12)));
             }
@@ -150,7 +150,7 @@ PyRep *BookmarkDB::GetBookmarks(uint32 ownerID) {
         dict->SetItemString("note", new PyString(row.GetText(10)));
         dict->SetItemString("creatorID", new PyInt(row.GetInt(11)));
         if (row.IsNull(12) or (row.GetInt(12) == 0)) {
-            dict->SetItemString("folderID", PyStatic.NewNone());
+            dict->SetItemString("folderID", new PyNone());
         } else {
             dict->SetItemString("folderID", new PyInt(row.GetInt(12)));
         }
@@ -221,8 +221,8 @@ PyTuple* BookmarkDB::GetBookmarkDescription(uint32 bookmarkID)
         tuple->SetItem(1, new PyString(row.GetText(1)));
     } else {
         // this should be empty string, not none
-        tuple->SetItem(0, PyStatic.NewNone());
-        tuple->SetItem(1, PyStatic.NewNone());
+        tuple->SetItem(0, new PyNone());
+        tuple->SetItem(1, new PyNone());
     }
 
     return tuple;

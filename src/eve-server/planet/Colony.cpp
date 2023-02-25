@@ -1222,7 +1222,7 @@ PyTuple* Colony::GetPins()
         dict->SetItem("ownerID", new PyInt(cur.second.ownerID));
         dict->SetItem("latitude", new PyFloat(cur.second.latitude));
         dict->SetItem("longitude", new PyFloat(cur.second.longitude));
-        dict->SetItem("lastRunTime", (cur.second.lastRunTime > 0 ? new PyLong(cur.second.lastRunTime) : PyStatic.NewNone()));
+        dict->SetItem("lastRunTime", (cur.second.lastRunTime > 0 ? new PyLong(cur.second.lastRunTime) : new PyNone()));
         dict->SetItem("state", new PyInt(cur.second.state));
         dict->SetItem("level", new PyInt(cur.second.level));
 
@@ -1234,7 +1234,7 @@ PyTuple* Colony::GetPins()
         dict->SetItem("contents", contents);
 
         if (cur.second.isLaunchable)
-            dict->SetItem("lastLaunchTime", (cur.second.lastLaunchTime > 0 ? new PyLong(cur.second.lastLaunchTime) : PyStatic.NewNone()));
+            dict->SetItem("lastLaunchTime", (cur.second.lastLaunchTime > 0 ? new PyLong(cur.second.lastLaunchTime) : new PyNone()));
 
         if (cur.second.isProcess)
             if (cur.second.schematicID) {
@@ -1245,14 +1245,14 @@ PyTuple* Colony::GetPins()
                     dict->SetItem("hasReceivedInputs", new PyBool(plantPin->second.hasReceivedInputs));
                     dict->SetItem("receivedInputsLastCycle", new PyBool(plantPin->second.receivedInputsLastCycle));
                 } else {
-                    dict->SetItem("cycleTime", PyStatic.NewZero());
-                    dict->SetItem("hasReceivedInputs", PyStatic.NewFalse());
-                    dict->SetItem("receivedInputsLastCycle", PyStatic.NewFalse());
+                    dict->SetItem("cycleTime", new PyInt(0));
+                    dict->SetItem("hasReceivedInputs", new PyBool(false));
+                    dict->SetItem("receivedInputsLastCycle", new PyBool(false));
                 }
             } else {
-                dict->SetItem("cycleTime", PyStatic.NewZero());
-                dict->SetItem("hasReceivedInputs", PyStatic.NewFalse());
-                dict->SetItem("receivedInputsLastCycle", PyStatic.NewFalse());
+                dict->SetItem("cycleTime", new PyInt(0));
+                dict->SetItem("hasReceivedInputs", new PyBool(false));
+                dict->SetItem("receivedInputsLastCycle", new PyBool(false));
             }
 
         if (cur.second.isECU) {

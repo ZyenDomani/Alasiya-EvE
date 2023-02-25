@@ -332,7 +332,7 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
         itr->second.members.emplace(pChar->itemID(), pClient);
         PyTuple* count = new PyTuple(2);
             count->SetItem(0, new PyInt(squadID));
-            count->SetItem(1, PyStatic.NewOne());
+            count->SetItem(1, new PyInt(1););
         pClient->SendNotification("OnSquadActive", "clientID", count, true);
 
         squad.emplace(squad.end(), squadID);
@@ -803,7 +803,7 @@ PyRep* FleetService::GetMOTD(uint32 fleetID)
     if (itr != m_fleetDataMap.end()) {
         tuple->SetItem(0, new PyString(itr->second.motd));
     } else {
-        tuple->SetItem(0, PyStatic.NewNone());
+        tuple->SetItem(0, new PyNone());
     }
     return tuple;
 }
@@ -1426,7 +1426,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         payload->SetItem(3, new PyInt(pFrom->GetSystemID()));
         payload->SetItem(4, new PyInt(itemID));
         // if BCastName(label) then add next item properly
-        payload->SetItem(5, PyStatic.NewNone());
+        payload->SetItem(5, new PyNone());
 
     uint8 count(0);
     for (auto &cur : members) {

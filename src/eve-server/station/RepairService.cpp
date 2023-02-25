@@ -104,7 +104,7 @@ PyResult RepairSvcBound::Handle_DamageModules(PyCallArgs &call) {
         return nullptr;
     }
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
@@ -218,7 +218,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
         }
     }
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
@@ -383,5 +383,5 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
 
     // MultipleItemsFailedToRepackage
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }

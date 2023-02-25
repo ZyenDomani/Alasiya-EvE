@@ -500,11 +500,11 @@ PyDict* ProbeSE::MakeSlimItem()
     slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
     slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
     slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-    slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-    slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
-    slim->SetItemString("numLaunchers",             PyStatic.NewOne());
-    slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()): PyStatic.NewNone());
+    slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+    slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+    slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
+    slim->SetItemString("numLaunchers",             new PyInt(1););
+    slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()): new PyNone());
     slim->SetItemString("securityStatus",           new PyFloat(m_secStatus));
     return slim;
 }
@@ -524,13 +524,13 @@ void ProbeSE::SendSlimChange()
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("categoryID",               new PyInt(m_self->categoryID()));
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
-        slim->SetItemString("numLaunchers",             PyStatic.NewOne());
-        slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()):PyStatic.NewNone());
+        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
+        slim->SetItemString("numLaunchers",             new PyInt(1););
+        slim->SetItemString("sourceModuleID",           m_moduleRef.get() != nullptr? new PyInt(m_moduleRef->itemID()):new PyNone());
         slim->SetItemString("securityStatus",           new PyFloat(m_secStatus));
-        slim->SetItemString("warpingAway",              m_state == Probe::State::Returning ? PyStatic.NewFalse() : PyStatic.NewTrue());    // this is sent when probe warps
+        slim->SetItemString("warpingAway",              m_state == Probe::State::Returning ? new PyBool(false) : new PyBool(true););    // this is sent when probe warps
     PyTuple* probeData = new PyTuple(2);
         probeData->SetItem(0, new PyLong(m_self->itemID()));
         probeData->SetItem(1, new PyObject("foo.SlimItem", slim));

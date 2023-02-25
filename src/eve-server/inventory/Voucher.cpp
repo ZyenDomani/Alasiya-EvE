@@ -54,17 +54,17 @@ PyResult VoucherService::Handle_GetObject( PyCallArgs& call ) {
 
     //call.Dump(BOOKMARK__CALL_DUMP);
     // return none for now, to allow client to use default name of 'bookmark'
-    //return PyStatic.NewNone();
+    //return new PyNone();
 
     SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
     InventoryItemRef iRef = sItemFactory.GetItemRef(arg.arg);
     if (iRef.get() == nullptr) {
         codelog(ITEM__ERROR, "%s: Failed to retrieve bookmark voucher for bmID %u", call.client->GetName(), arg.arg);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     // this is how i return objects for method chaining

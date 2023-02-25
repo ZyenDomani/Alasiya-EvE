@@ -171,7 +171,7 @@ PyResult TradeBound::Handle_OfferMoney(PyCallArgs &call) {
         _log(CLIENT__ERROR, "TradeBound::Handle_OfferMoney() : %s(%u) - clients are neither mine nor hers.", \
                 call.client->GetName(), call.client->GetCharacterID());
         PyDecRef(list);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     //  reset states after offer changes..
@@ -187,7 +187,7 @@ PyResult TradeBound::Handle_OfferMoney(PyCallArgs &call) {
     pClient->SendNotification("OnTrade", "charid", &tuple);
     pOther->SendNotification("OnTrade", "charid", &tuple);
     // returns none
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult TradeBound::Handle_Abort(PyCallArgs &call) {
@@ -210,7 +210,7 @@ PyResult TradeBound::Handle_Abort(PyCallArgs &call) {
     pClient->ClearTradeSession();
     pOther->ClearTradeSession();
     // returns none
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSes)
@@ -255,7 +255,7 @@ PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
     } else {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_ToggleAccept() : %s(%u) - clients are neither mine nor hers.", \
                     call.client->GetName(), call.client->GetCharacterID());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     bool forceTrade = false;
@@ -292,7 +292,7 @@ PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
     }
 
     // returns none
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult TradeBound::Handle_GetItemID(PyCallArgs &call) {
@@ -300,7 +300,7 @@ PyResult TradeBound::Handle_GetItemID(PyCallArgs &call) {
     call.Dump(CLIENT__CALL_DUMP);
     // still not sure what this does...only returns PyNone in packet logs.
     // returns none
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 /** @todo  refresh other window when item added */
@@ -321,7 +321,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
         //  should i abort trade, or just return null here?  single add, so not a big deal.
         //     return null, let them try again if they want.  maybe later add config option?
         //Handle_Abort(call);   << this will cancel and nullify the trade session
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     TradeSession* pTSes = call.client->GetTradeSession();
@@ -335,7 +335,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
     } else {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_Add() : %s(%u) & %s(%u) - clients are neither mine nor hers.", \
                 pClient->GetName(), pClient->GetCharacterID(), pOther->GetName(), pOther->GetCharacterID());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     uint32 flag(0);
@@ -387,7 +387,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
     pTSes->m_tradeSession.myState  = false;
     pTSes->m_tradeSession.herState = false;
     // return none
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
@@ -420,7 +420,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_MultiAdd() : %s(%u) & %s(%u) - clients are neither mine nor hers.", \
                 pClient->GetName(), pClient->GetCharacterID(), pOther->GetName(), pOther->GetCharacterID());
         PyDecRef(dict);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     uint32 charID = call.client->GetCharacterID();
@@ -474,7 +474,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
 
     PyDecRef(dict);
     // return none
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
@@ -482,13 +482,13 @@ PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
     PyPackedRow* row = new PyPackedRow( sDataMgr.CreateHeader() );
         row->SetFieldC("itemID",        new PyLong(pTSes->m_tradeSession.containerID));
         row->SetFieldC("typeID",        new PyInt(53));     // type Trade Window
-        row->SetFieldC("ownerID",       PyStatic.NewOne());      // EvE_System
+        row->SetFieldC("ownerID",       new PyInt(1););      // EvE_System
         row->SetFieldC("locationID",    new PyInt(pTSes->m_tradeSession.stationID));
-        row->SetFieldC("flagID",        PyStatic.NewNone());
-        row->SetFieldC("quantity",      PyStatic.NewNegOne());     // singleton
+        row->SetFieldC("flagID",        new PyNone());
+        row->SetFieldC("quantity",      new PyInt(-1));     // singleton
         row->SetFieldC("groupID",       new PyInt(EVEDB::invGroups::Trade_Session ) );
         row->SetFieldC("categoryID",    new PyInt(EVEDB::invCategories::Trading));
-        row->SetFieldC("customInfo",    PyStatic.NewNone());
+        row->SetFieldC("customInfo",    new PyNone());
     return row;
 }
 
@@ -497,7 +497,7 @@ PyResult TradeBound::Handle_IsCEOTrade(PyCallArgs &call) {
     call.Dump(CLIENT__CALL_DUMP);
 
     //TODO will have to work on this later.  need corps working correctly first.
-    return PyStatic.NewFalse();
+    return new PyBool(false);
 }
 
 PyResult TradeBound::Handle_List(PyCallArgs &call) {

@@ -480,9 +480,6 @@ public:
 protected:
     const Buffer* const		mValue;
     mutable int32		mHashCache;
-
-private:
-    bool			cleanup=false;
 };
 
 /**
@@ -633,7 +630,7 @@ public:
     // copy c'tor
     PyTuple(const PyTuple& oth);
     // move c'tor
-    PyTuple(PyTuple&& oth) : PyRep(PyRep::PyTypeTuple), items(std::move(oth.items)), cleanupVec(std::move(oth.cleanupVec)) {}
+    PyTuple(PyTuple&& oth) : PyRep(PyRep::PyTypeTuple), items(std::move(oth.items)) {}
     // copy assignment
     PyTuple& operator= (const PyTuple& oth);
     // move assignment
@@ -653,31 +650,25 @@ public:
 
     PyRep* GetItem(size_t index) const		        { return items.at(index); }
 
-    void SetItem(size_t index, PyRep* object, bool cleanup=false) {
+    void SetItem(size_t index, PyRep* object) {
         PyRep** rep = &items.at(index);
 
-        PySafeDecRef(*rep);
+        delete (*rep);
         if (object == nullptr) {
             *rep = new PyNone();
-            cleanup = true;
         } else {
             *rep = object;
         }
 
-        if (cleanup)
-            cleanupVec.push_back(index);
-
         PyIncRef(*rep);
     }
 
-    void SetItemInt(size_t index, int32 val)		    { SetItem(index, new PyInt(val), true); }
-    void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str), true); }
+    void SetItemInt(size_t index, int32 val)	        { SetItem(index, new PyInt(val)); }
+    void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str)); }
 
     int32 hash() const;
 
     std::vector<PyRep*>	items;
-    // use vector with indexes of items to cleanup
-    std::vector<int16>  cleanupVec;
 };
 
 /**
@@ -732,10 +723,9 @@ public:
     {
         PyRep** rep = &items.at(index);
 
-        PySafeDecRef(*rep);
+        delete (*rep);
         if (object == nullptr) {
             *rep = new PyNone();
-            cleanup.push_back(index);
         } else {
             *rep = object;
         }
@@ -747,7 +737,7 @@ public:
      * @param[in] index Index at which the object should be stored.
      * @param[in] str   String to be stored.
      */
-    void SetItemString(size_t index, const char* str) { SetItem(index, new PyString(str)); cleanup.push_back(index); }
+    void SetItemString(size_t index, const char* str) { SetItem(index, new PyString(str)); }
 
     void AddItem(PyRep* i)				{ items.push_back(i); }
     void AddItemInt(int32 intval)			{ AddItem(new PyInt(intval)); }
@@ -757,13 +747,6 @@ public:
 
     // This needs to be public:
     std::vector<PyRep*>		items;
-
-protected:
-	// use vector with indexes of items to cleanup
-//NOTE: there isnt a 'good' way to get the index here, as we're using push_back.
-//  if needed later (which i might) i'll use emplace which returns an iterator to inserted item.  from there, i'll get index
-//  and add to cleanup vector.
-    std::vector<int>  cleanup;
 };
 
 /**
@@ -908,7 +891,6 @@ public:
 protected:
     PyString*			mType;
     PyRep*      		mArguments;
-    bool			cleanup=false;
 };
 
 /**
@@ -956,7 +938,6 @@ public:
 protected:
     PyRep*      		mHeader;
     bool			mIsType2;
-    bool                        cleanup=false;
 
     PyList* 	        	mList;
     PyDict*     		mDict;
@@ -1045,7 +1026,7 @@ public:
     // Fields:
     const_iterator begin() const			{ return mFields->begin(); }
     const_iterator end() const				{ return mFields->end(); }
-    void clear()					{ mFields->clear(); }
+    void clear()					{ /*delete mHeader;*/ delete mFields; }
 
     PyRep* GetField(size_t index) const		        { return mFields->GetItem(index); }
 
@@ -1059,7 +1040,6 @@ public:
 protected:
     DBRowDescriptor*    	mHeader;
     PyList*     		mFields;
-    bool			cleanup=false;
 };
 
 class PySubStruct : public PyRep
@@ -1120,9 +1100,6 @@ protected:
     //if both are non-NULL, they are considered to be equivalent
     mutable PyBuffer*	        mData;
     mutable PyRep*		mDecoded;
-
-private:
-    bool			cleanup=false;
 };
 
 class PyChecksumedStream : public PyRep
@@ -1158,7 +1135,7 @@ protected:
  * all together.
  */
 template<typename Iter>
-inline PyBuffer::PyBuffer(Iter first, Iter last) : PyRep(PyRep::PyTypeBuffer), mValue(new Buffer(first, last)), mHashCache(-1), cleanup(true) {}
+inline PyBuffer::PyBuffer(Iter first, Iter last) : PyRep(PyRep::PyTypeBuffer), mValue(new Buffer(first, last)), mHashCache(-1) {}
 template<typename Iter>
 inline PyString::PyString(Iter first, Iter last) : PyRep(PyRep::PyTypeString), mValue(first, last), mHashCache(-1) {}
 template<typename Iter>
@@ -1200,75 +1177,5 @@ public:
     virtual ~CacheOK()                                  { /* do we need to do anything here? */ }
 };
 
-
-/**
- * @name PyStatic.h
- *   static memory object caching/tracking system for oft-used Python objects
- *
- * @Author:         Allan
- * @date:          13 December 17
- * @update:     15 February 21 (added mt objects)
- *
- */
-
-#include "../../eve-core/utils/Singleton.h"
-
-class pyStatic
-: public Singleton< pyStatic >
-{
-public:
-    pyStatic()
-    {
-        m_none = new PyNone();
-        m_zero = new PyInt(0);
-        m_one = new PyInt(1);
-        m_negone = new PyInt(-1);
-        m_true = new PyBool(true);
-        m_false = new PyBool(false);
-        m_dict = new PyDict();
-        m_list = new PyList();
-        m_tuple = new PyTuple(0);
-    }
-
-   ~pyStatic()
-   {
-       delete m_none;
-       delete m_zero;
-       delete m_one;
-       delete m_negone;
-       delete m_true;
-       delete m_false;
-       delete m_dict;
-       delete m_list;
-       delete m_tuple;
-    }
-
-    PyRep* NewNone()            { PyIncRef(m_none); return m_none; }
-    PyRep* NewZero()            { PyIncRef(m_zero); return m_zero; }
-    PyRep* NewOne()             { PyIncRef(m_one); return m_one; }
-    PyRep* NewNegOne()          { PyIncRef(m_negone); return m_negone; }
-    PyRep* NewTrue()            { PyIncRef(m_true); return m_true; }
-    PyRep* NewFalse()           { PyIncRef(m_false); return m_false; }
-
-    PyDict* mtDict()            { PyIncRef(m_dict); return m_dict; }
-    PyList* mtList()            { PyIncRef(m_list); return m_list; }
-    PyTuple* mtTuple()          { PyIncRef(m_tuple); return m_tuple; }
-
-private:
-    PyRep* m_none;
-    PyRep* m_zero;
-    PyRep* m_one;
-    PyRep* m_negone;
-    PyRep* m_true;
-    PyRep* m_false;
-
-    PyDict* m_dict;
-    PyList* m_list;
-    PyTuple* m_tuple;
-};
-
-//Singleton
-#define PyStatic \
-    (pyStatic::get())
 
 #endif//EVE_PY_REP_H

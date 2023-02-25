@@ -457,7 +457,7 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
         modChange.attributeID = attrID;
         modChange.time = GetFileTimeNow();
         modChange.newValue = num.GetPyObject();
-        modChange.oldValue = PyStatic.NewNone();
+        modChange.oldValue = new PyNone();
     return SendChanges(modChange.Encode());
 }
 

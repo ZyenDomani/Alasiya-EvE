@@ -581,8 +581,8 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, Client* pClie
     return true;
 }
 
-#define _NI(a, b) if (row.IsNull(b)) { cc.a = PyStatic.NewNone(); } else { cc.a = new PyInt(row.GetUInt(b)); }
-#define _NS(a, b) if (row.IsNull(b)) { cc.a = PyStatic.NewNone(); } else { cc.a = new PyString(row.GetText(b)); }
+#define _NI(a, b) if (row.IsNull(b)) { cc.a = new PyNone(); } else { cc.a = new PyInt(row.GetUInt(b)); }
+#define _NS(a, b) if (row.IsNull(b)) { cc.a = new PyNone(); } else { cc.a = new PyString(row.GetText(b)); }
 
 bool CorporationDB::CreateCorporationChangePacket(OnCorporationChanged & cc, uint32 oldCorpID, uint32 newCorpID) {
     std::string table = "crpWalletDivisons";
@@ -797,49 +797,49 @@ bool CorporationDB::CreateCorporationCreatePacket(OnCorporationChanged & cc, uin
     cc.isRecruitingNew = row.GetUInt(42);
 
     /** @todo these need to be updated */
-    cc.allianceIDOld = PyStatic.NewNone();
-    cc.warFactionIDOld = PyStatic.NewNone();
-    cc.allowedMemberRaceIDsOld = PyStatic.NewNone();
-    cc.ceoIDOld = PyStatic.NewNone();
-    cc.color1Old = PyStatic.NewNone();
-    cc.color2Old = PyStatic.NewNone();
-    cc.color3Old = PyStatic.NewNone();
-    cc.corporationIDOld = PyStatic.NewNone();
-    cc.corporationNameOld = PyStatic.NewNone();
-    cc.corporationTypeOld = PyStatic.NewNone();
-    cc.creatorIDOld = PyStatic.NewNone();
-    cc.deletedOld = PyStatic.NewNone();
-    cc.descriptionOld = PyStatic.NewNone();
-    cc.division1Old = PyStatic.NewNone();
-    cc.division2Old = PyStatic.NewNone();
-    cc.division3Old = PyStatic.NewNone();
-    cc.division4Old = PyStatic.NewNone();
-    cc.division5Old = PyStatic.NewNone();
-    cc.division6Old = PyStatic.NewNone();
-    cc.division7Old = PyStatic.NewNone();
-    cc.walletDivision1Old = PyStatic.NewNone();
-    cc.walletDivision2Old = PyStatic.NewNone();
-    cc.walletDivision3Old = PyStatic.NewNone();
-    cc.walletDivision4Old = PyStatic.NewNone();
-    cc.walletDivision5Old = PyStatic.NewNone();
-    cc.walletDivision6Old = PyStatic.NewNone();
-    cc.walletDivision7Old = PyStatic.NewNone();
-    cc.hasPlayerPersonnelManagerOld = PyStatic.NewNone();
-    cc.memberCountOld = PyStatic.NewNone();
-    cc.memberLimitOld = PyStatic.NewNone();
-    cc.minimumJoinStandingOld = PyStatic.NewNone();
-    cc.raceIDOld = PyStatic.NewNone();
-    cc.sendCharTerminationMessageOld = PyStatic.NewNone();
-    cc.shape1Old = PyStatic.NewNone();
-    cc.shape2Old = PyStatic.NewNone();
-    cc.shape3Old = PyStatic.NewNone();
-    cc.sharesOld = PyStatic.NewNone();
-    cc.stationIDOld = PyStatic.NewNone();
-    cc.taxRateOld = PyStatic.NewNone();
-    cc.tickerNameOld = PyStatic.NewNone();
-    cc.typefaceOld = PyStatic.NewNone();
-    cc.urlOld = PyStatic.NewNone();
-    cc.isRecruitingOld = PyStatic.NewNone();
+    cc.allianceIDOld = new PyNone();
+    cc.warFactionIDOld = new PyNone();
+    cc.allowedMemberRaceIDsOld = new PyNone();
+    cc.ceoIDOld = new PyNone();
+    cc.color1Old = new PyNone();
+    cc.color2Old = new PyNone();
+    cc.color3Old = new PyNone();
+    cc.corporationIDOld = new PyNone();
+    cc.corporationNameOld = new PyNone();
+    cc.corporationTypeOld = new PyNone();
+    cc.creatorIDOld = new PyNone();
+    cc.deletedOld = new PyNone();
+    cc.descriptionOld = new PyNone();
+    cc.division1Old = new PyNone();
+    cc.division2Old = new PyNone();
+    cc.division3Old = new PyNone();
+    cc.division4Old = new PyNone();
+    cc.division5Old = new PyNone();
+    cc.division6Old = new PyNone();
+    cc.division7Old = new PyNone();
+    cc.walletDivision1Old = new PyNone();
+    cc.walletDivision2Old = new PyNone();
+    cc.walletDivision3Old = new PyNone();
+    cc.walletDivision4Old = new PyNone();
+    cc.walletDivision5Old = new PyNone();
+    cc.walletDivision6Old = new PyNone();
+    cc.walletDivision7Old = new PyNone();
+    cc.hasPlayerPersonnelManagerOld = new PyNone();
+    cc.memberCountOld = new PyNone();
+    cc.memberLimitOld = new PyNone();
+    cc.minimumJoinStandingOld = new PyNone();
+    cc.raceIDOld = new PyNone();
+    cc.sendCharTerminationMessageOld = new PyNone();
+    cc.shape1Old = new PyNone();
+    cc.shape2Old = new PyNone();
+    cc.shape3Old = new PyNone();
+    cc.sharesOld = new PyNone();
+    cc.stationIDOld = new PyNone();
+    cc.taxRateOld = new PyNone();
+    cc.tickerNameOld = new PyNone();
+    cc.typefaceOld = new PyNone();
+    cc.urlOld = new PyNone();
+    cc.isRecruitingOld = new PyNone();
 
     return true;
 }
@@ -1698,7 +1698,7 @@ bool CorporationDB::CreateMemberAttributeUpdate(uint32 newCorpID, uint32 charID,
     }
 
     // this could be stored in the db
-#define PRN PyStatic.NewNone()
+#define PRN new PyNone()
 #define PRI(i) new PyInt(i)
 #define PRL(i) new PyLong(i)
 #define PRS(s) new PyString(s)
@@ -2379,13 +2379,13 @@ PyRep* CorporationDB::PyHasShares(uint32 charID, uint32 corpID)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT shares FROM crpShares WHERE shareholderID = %u AND corporationID = %u", charID, corpID))  {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
-        return PyStatic.NewFalse();
+        return new PyBool(false);
     }
 
     if (res.GetRowCount())
-        return PyStatic.NewTrue();
+        return new PyBool(true);;
 
-    return PyStatic.NewFalse();
+    return new PyBool(false);
 }
 
 PyRep* CorporationDB::GetAssetInventory(uint32 corpID, EVEItemFlags locFlag, const char* flags)
@@ -2410,7 +2410,7 @@ PyRep* CorporationDB::GetAssetInventory(uint32 corpID, EVEItemFlags locFlag, con
                 " AND e.locationID >= %u AND e.locationID <= %u", corpID, flags, minOffice, maxOffice))
             {
                 codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
-                return (PyRep*)PyStatic.NewNone();    // cannot return nullptr cause we may deref it on the return.
+                return (PyRep*)new PyNone();    // cannot return nullptr cause we may deref it on the return.
             }
         } break;
         case flagProperty: {  // in space...this will show items in containers, ships, POS, CO, etc.
@@ -2419,7 +2419,7 @@ PyRep* CorporationDB::GetAssetInventory(uint32 corpID, EVEItemFlags locFlag, con
                 " AND locationID >= %u AND locationID <= %u", corpID, flags, minPlayerItem, maxPlayerItem))
             {
                 codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
-                return (PyRep*)PyStatic.NewNone();    // cannot return nullptr cause we may deref it on the return.
+                return (PyRep*)new PyNone();    // cannot return nullptr cause we may deref it on the return.
             }
 
             // current thought is this option will need more work, to avoid showing corp hangars in ships in stations
@@ -2427,7 +2427,7 @@ PyRep* CorporationDB::GetAssetInventory(uint32 corpID, EVEItemFlags locFlag, con
         } break;
         default: {
             _log(CORP__DB_WARNING, "CorporationDB::GetAssetInventory(): unhandled locFlag sent: %u", locFlag);
-            return (PyRep*)PyStatic.NewNone();    // cannot return nullptr cause we may deref it on the return.
+            return (PyRep*)new PyNone();    // cannot return nullptr cause we may deref it on the return.
         } break;
     }
 

@@ -1243,7 +1243,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.selfID = m_modRef->itemID();         //ENV_IDX_SELF = 0
         ge.charID = m_shipRef->ownerID();       //ENV_IDX_CHAR = 1
         ge.shipID = m_shipRef->itemID();        //ENV_IDX_SHIP = 2
-        ge.target = IsValidTarget(m_targetID) ? new PyInt(m_targetID) : PyStatic.NewNone();     //ENV_IDX_TARGET = 3
+        ge.target = IsValidTarget(m_targetID) ? new PyInt(m_targetID) : new PyNone();     //ENV_IDX_TARGET = 3
         ge.area = new PyList();                 //ENV_IDX_AREA = 5 still dont know what this is.
         ge.effectID = m_effectID;               //ENV_IDX_EFFECT = 6
 
@@ -1254,7 +1254,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             gsl.typeID = chgTypeID;
         ge.subLoc = gsl.Encode();         //ENV_IDX_OTHER = 4
     } else {
-        ge.subLoc = PyStatic.NewNone();  //ENV_IDX_OTHER = 4
+        ge.subLoc = new PyNone();  //ENV_IDX_OTHER = 4
     }
 
     timeLeft /= 1000;
@@ -1305,12 +1305,12 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             PyTuple* tuple = new PyTuple(2);
                 tuple->SetItem(0, new PyString("TargetNoLongerPresentGeneric"));
                 tuple->SetItem(1, dict);
-            shipEff.error = PyStatic.NewNone();
+            shipEff.error = new PyNone();
             m_shipRef->GetPilot()->SendNotification("TargetNoLongerPresentGeneric", "charid", &tuple);
             */
             m_targetID = 0;
             // this is wrong....need to find error msg and insert here, but client throws error on above msgs
-            shipEff.error = PyStatic.NewNone();
+            shipEff.error = new PyNone();
         /*
          * {'messageKey': 'TargetNoLongerPresent', 'dataID': 17881666, 'suppressable': False, 'bodyID': 258855, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1626}
          * u'TargetNoLongerPresentBody'}(u'{[item]moduleID.name} deactivates as the {[item]targetID.name} it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}, u'{[item]targetID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'targetID'}})
@@ -1319,7 +1319,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
          *
          */
         } else {
-            shipEff.error = PyStatic.NewNone();
+            shipEff.error = new PyNone();
         }
 
     PyTuple* tuple = shipEff.Encode();

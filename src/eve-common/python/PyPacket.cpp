@@ -247,7 +247,7 @@ PyRep *PyPacket::Encode() {
     arg_tuple->items[2] = dest.Encode();
     //userid
     if (userid == 0) {
-        arg_tuple->items[3] = PyStatic.NewZero();
+        arg_tuple->items[3] = new PyInt(0);
     } else {
         arg_tuple->items[3] = new PyInt(userid);
     }
@@ -257,13 +257,13 @@ PyRep *PyPacket::Encode() {
 
     //named arguments (OID+ or sn)
     if (named_payload == nullptr) {
-        arg_tuple->items[5] = PyStatic.NewNone();
+        arg_tuple->items[5] = new PyNone();
     } else {
         arg_tuple->items[5] = named_payload;    // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
     }
 
     //TODO: Not sure what this is, On packets so far they always have as PyNone
-    arg_tuple->items[6] = PyStatic.NewNone();
+    arg_tuple->items[6] = new PyNone();
 
     return new PyObject( type_string.c_str(), arg_tuple );
 }
@@ -468,13 +468,13 @@ PyRep *PyAddress::Encode() {
             t->items[0] = new PyInt((int)type);
 
             if (service.empty()) {
-                t->items[1] = PyStatic.NewNone();
+                t->items[1] = new PyNone();
             } else {
                 t->items[1] = new PyString(service.c_str());
             }
 
             if (objectID == 0) {
-                t->items[2] = PyStatic.NewNone();
+                t->items[2] = new PyNone();
             } else {
                 t->items[2] = new PyLong(objectID);
             }
@@ -485,13 +485,13 @@ PyRep *PyAddress::Encode() {
             t->items[1] = new PyLong(objectID);
 
             if (service.empty()) {
-                t->items[2] = PyStatic.NewNone();
+                t->items[2] = new PyNone();
             } else {
                 t->items[2] = new PyString(service.c_str());
             }
 
             if (callID == 0) {
-                t->items[3] = PyStatic.NewNone();
+                t->items[3] = new PyNone();
             } else {
                 t->items[3] = new PyLong(callID);
             }
@@ -502,13 +502,13 @@ PyRep *PyAddress::Encode() {
             t->items[1] = new PyLong(objectID);
 
             if (callID == 0) {
-                t->items[2] = PyStatic.NewNone();
+                t->items[2] = new PyNone();
             } else {
                 t->items[2] = new PyLong(callID);
             }
 
             if (service.empty()) {
-                t->items[3] = PyStatic.NewNone();
+                t->items[3] = new PyNone();
             } else {
                 t->items[3] = new PyString(service.c_str());
             }
@@ -518,7 +518,7 @@ PyRep *PyAddress::Encode() {
             t->items[0] = new PyInt((int)type);
             //broadcastID
             if (service.empty()) {
-                t->items[1] = PyStatic.NewNone();
+                t->items[1] = new PyNone();
             } else {
                 t->items[1] = new PyString(service.c_str());
             }
@@ -530,7 +530,7 @@ PyRep *PyAddress::Encode() {
         case Invalid:
         default: {
             //this still needs to be something which will not crash us.
-            t = new_tuple(PyStatic.NewNone());
+            t = new_tuple(new PyNone());
         } break;
     }
 
@@ -784,7 +784,7 @@ PyTuple *PyCallStream::Encode() {
 
     //options
     if (arg_dict == nullptr) {
-        res_tuple->items[3] = PyStatic.NewNone();
+        res_tuple->items[3] = new PyNone();
     } else {
         // set actual rep in item, and it will be cleaned up by d'tor later
         res_tuple->items[3] = arg_dict;
@@ -797,7 +797,7 @@ PyTuple *PyCallStream::Encode() {
     PyTuple *it1 = new PyTuple(2);
         it1->items[0] = it2;
         //this is the "channel" dict if populated.  obviously incomplete
-        it1->items[1] = PyStatic.NewNone();
+        it1->items[1] = new PyNone();
     return it1;
 }
 
@@ -1012,13 +1012,13 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 
 PyTuple *EVENotificationStream::Encode() {
     PyTuple *t4 = new PyTuple(2);
-        t4->SetItem(0, PyStatic.NewOne());
+        t4->SetItem(0, new PyInt(1););
         t4->SetItem(1, args);       // set actual rep in item, and it will be cleaned up by d'tor later
     PyTuple *t3 = new PyTuple(2);
-        t3->SetItem(0, PyStatic.NewZero());
+        t3->SetItem(0, new PyInt(0));
         t3->SetItem(1, t4);
     PyTuple *t2 = new PyTuple(2);
-        t2->SetItem(0, PyStatic.NewZero());
+        t2->SetItem(0, new PyInt(0));
         t2->SetItem(1, new PySubStream(t3));
     PyTuple *t1 = new PyTuple(1);
         t1->SetItem(0, t2);

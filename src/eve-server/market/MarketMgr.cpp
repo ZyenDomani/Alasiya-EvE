@@ -173,7 +173,7 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, int32 typeID) {
         result = DBResultToCRowset(res);
         if (result == nullptr) {
             _log(MARKET__DB_ERROR, "Failed to load cache, generating empty contents.");
-            result = PyStatic.NewNone();
+            result = new PyNone();
         }
         m_manager->cache_service->GiveCache(method_id, &result);
     }
@@ -214,7 +214,7 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, int32 typeID) {
         result = DBResultToCRowset(res);
         if (result == nullptr) {
             _log(MARKET__DB_ERROR, "Failed to load cache, generating empty contents.");
-            result = PyStatic.NewNone();
+            result = new PyNone();
         }
         m_manager->cache_service->GiveCache(method_id, &result);
     }

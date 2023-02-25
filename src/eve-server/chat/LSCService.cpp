@@ -177,7 +177,7 @@ PyResult LSCService::Handle_GetRookieHelpChannel(PyCallArgs &call) {
         call.Dump(LSC__CALL_DUMP);
     }
 
-    return PyStatic.NewOne();
+    return new PyInt(1);;
 }
 
 PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
@@ -392,13 +392,13 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
         // Decode All User-created chat channel messages here:
         if (!call.tuple->IsTuple()) {
             _log(LSC__ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong type: %s", call.tuple->TypeString());
-            return PyStatic.NewNone();
+            return new PyNone();
         }
         PyTuple* tuple0 = call.tuple->AsTuple();
 
         if (tuple0->size() != 2) {
             _log(LSC__ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong size: expected 2, but got %lu", tuple0->size());
-            return PyStatic.NewNone();
+            return new PyNone();
         }
 
         channel_id = call.tuple->AsTuple()->items[0]->AsInt()->value();
@@ -408,7 +408,7 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
         Call_SendMessage args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-            return PyStatic.NewNone();
+            return new PyNone();
         }
         channel_id = args.channel.id;
         message = args.message;
@@ -418,7 +418,7 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
     std::map<int32, LSCChannel*>::iterator itr = m_channels.find(channel_id);
     if (itr == m_channels.end()) {
         _log(LSC__ERROR, "%s: Couldn't find channel %u", call.client->GetName(), channel_id);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     if (message.at(0) == '.') {
@@ -429,7 +429,7 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
         itr->second->SendMessage(call.client, message.c_str());
     }
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult LSCService::Handle_AccessControl(PyCallArgs& call)
@@ -481,7 +481,7 @@ PyResult LSCService::Handle_AccessControl(PyCallArgs& call)
 
     //channel->UpdateConfig();
 
-    return PyStatic.NewOne();
+    return new PyInt(1);;
 }
 
 PyResult LSCService::Handle_Invite(PyCallArgs &call)
@@ -570,7 +570,7 @@ PyResult LSCService::Handle_Invite(PyCallArgs &call)
         return nullptr;
     }
 
-    return PyStatic.NewOne();
+    return new PyInt(1);;
 }
 
 PyResult LSCService::Handle_Configure(PyCallArgs& call)
@@ -698,7 +698,7 @@ PyResult LSCService::Handle_Configure(PyCallArgs& call)
 
     channel->UpdateConfig();
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 
@@ -711,7 +711,7 @@ PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
     CallLeaveChannel arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     uint32 toLeave = 0;
@@ -728,17 +728,17 @@ PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
 
             if (prt->items.size() != 2 or !prt->GetItem(1)->IsInt()) {
                 _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-                return PyStatic.NewNone();
+                return new PyNone();
             }
 
             toLeave = prt->GetItem(1)->AsInt()->value();
         } else {
             _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-            return PyStatic.NewNone();
+            return new PyNone();
         }
     } else {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     if (arg.unsubscribe)
@@ -754,7 +754,7 @@ PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
         }
     }
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 
@@ -768,7 +768,7 @@ PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
 
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     std::set<uint32> toLeave;
@@ -824,7 +824,7 @@ PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
         }
     }
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult LSCService::Handle_DestroyChannel(PyCallArgs& call)
@@ -837,13 +837,13 @@ PyResult LSCService::Handle_DestroyChannel(PyCallArgs& call)
     SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     std::map<int32, LSCChannel*>::iterator itr = m_channels.find(arg.arg);
     if (itr == m_channels.end()) {
         _log(LSC__ERROR, "%s: Couldn't find channel %u", call.client->GetName(), arg.arg);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     // ********** TODO **********
@@ -860,7 +860,7 @@ PyResult LSCService::Handle_DestroyChannel(PyCallArgs& call)
     SafeDelete(itr->second);
     m_channels.erase(itr);
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 

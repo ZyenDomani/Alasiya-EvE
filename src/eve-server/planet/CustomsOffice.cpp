@@ -247,8 +247,8 @@ void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
         ge.selfID = m_cData.itemID;
         ge.charID = m_ownerID;
         ge.shipID = m_cData.itemID;
-        ge.target = PyStatic.NewNone();
-        ge.subLoc = PyStatic.NewNone();
+        ge.target = new PyNone();
+        ge.subLoc = new PyNone();
         ge.area = new PyList();
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
@@ -261,7 +261,7 @@ void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
         shipEff.startTime = shipEff.timeNow;    // do we need to adjust this?
         shipEff.duration = (active ? 0 : -1);
         shipEff.repeat = (active ? 1 : 0);
-        shipEff.error = PyStatic.NewNone();
+        shipEff.error = new PyNone();
     PyList* events = new PyList();
         events->AddItem(shipEff.Encode());
     PyTuple* event = new PyTuple(1);
@@ -276,13 +276,13 @@ void CustomsSE::SendSlimUpdate()
         slim->SetItemString("itemID",                   new PyLong(m_cData.itemID));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
         slim->SetItemString("posTimestamp",             new PyLong(m_cData.timestamp));
         slim->SetItemString("posState",                 new PyInt(m_cData.state));
-        slim->SetItemString("incapacitated",            PyStatic.NewZero());
-        slim->SetItemString("posDelayTime",             PyStatic.NewZero()); // fix this
+        slim->SetItemString("incapacitated",            new PyInt(0));
+        slim->SetItemString("posDelayTime",             new PyInt(0)); // fix this
     PyTuple* shipData = new PyTuple(2);
         shipData->SetItem(0,                            new PyLong(m_cData.itemID));
         shipData->SetItem(1,                            new PyObject("foo.SlimItem", slim));
@@ -403,13 +403,13 @@ PyDict *CustomsSE::MakeSlimItem() {
     /** @todo (Allan) *Timestamp will need to be set to time current state is started. */
     PyDict *slim = new PyDict();
     slim->SetItemString("name",                 new PyString(m_self->itemName()));
-    slim->SetItemString("nameID",               PyStatic.NewNone());
+    slim->SetItemString("nameID",               new PyNone());
     slim->SetItemString("itemID",               new PyLong(m_cData.itemID));
     slim->SetItemString("typeID",               new PyInt(m_self->typeID()));
     slim->SetItemString("ownerID",              new PyInt(m_ownerID));  //1000148 for interbus customs office (to be done on creation)
-    slim->SetItemString("corpID",               IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-    slim->SetItemString("allianceID",           IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID",         IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+    slim->SetItemString("corpID",               IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+    slim->SetItemString("allianceID",           IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+    slim->SetItemString("warFactionID",         IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
     slim->SetItemString("level",                new PyInt(m_oData.level));
     slim->SetItemString("orbitalTimestamp",     new PyLong(m_cData.timestamp));
     slim->SetItemString("planetID",             new PyInt(m_oData.planetID));  // planetID for this orbital
@@ -420,8 +420,8 @@ PyDict *CustomsSE::MakeSlimItem() {
         tuple->SetItem(2,                       new PyFloat(m_oData.rotation.z)); //MakeRandomFloat(-180, 180)
     slim->SetItemString("dunRotation", tuple);  // direction to planet
     //  dunno what these are...
-    slim->SetItemString("orbitalHackerProgress",  m_oData.orbitalHackerProgress > 0 ? new PyFloat(m_oData.orbitalHackerProgress) : PyStatic.NewNone());  // packets show this as none if not value
-    slim->SetItemString("orbitalHackerID",     m_oData.orbitalHackerID > 0 ? new PyInt(m_oData.orbitalHackerID) : PyStatic.NewNone());   // packets show this as none if not value
+    slim->SetItemString("orbitalHackerProgress",  m_oData.orbitalHackerProgress > 0 ? new PyFloat(m_oData.orbitalHackerProgress) : new PyNone());  // packets show this as none if not value
+    slim->SetItemString("orbitalHackerID",     m_oData.orbitalHackerID > 0 ? new PyInt(m_oData.orbitalHackerID) : new PyNone());   // packets show this as none if not value
 
     if (is_log_enabled(POS__SLIMITEM)) {
         _log( POS__SLIMITEM, "CustomsSE::MakeSlimItem() - %s(%u)", GetName(), m_cData.itemID);

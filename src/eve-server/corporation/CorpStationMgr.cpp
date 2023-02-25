@@ -204,7 +204,7 @@ PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
     //update type of clone
     CharacterDB c_db;
     c_db.ChangeCloneType(call.client->GetCharacterID(), arg.CloneTypeID);
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
@@ -270,10 +270,10 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     // This has to be sent to everyone in the station
     //  are corp members notified?
     OfficeAttributeUpdate change;
-        change.oldOfficeFolderID = PyStatic.NewNone();
-        change.oldOfficeID = PyStatic.NewNone();
-        change.oldStationID = PyStatic.NewNone();
-        change.oldTypeID = PyStatic.NewNone();
+        change.oldOfficeFolderID = new PyNone();
+        change.oldOfficeID = new PyNone();
+        change.oldStationID = new PyNone();
+        change.oldTypeID = new PyNone();
         change.newOfficeFolderID = odata.folderID;
         change.newOfficeID = odata.officeID;
         change.newStationID = odata.stationID;
@@ -396,7 +396,7 @@ PyResult CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation(PyCallAr
     // query station for (officeID:flagimpounded)
 
     // returns boolean
-    return PyStatic.NewFalse();
+    return new PyBool(false);
 }
 
 PyResult CorpStationMgrIMBound::Handle_SetHomeStation(PyCallArgs &call) {
@@ -452,7 +452,7 @@ PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallAr
     call.Dump(CORP__CALL_DUMP);
 
     // returns None
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CorpStationMgrIMBound::Handle_CancelRentOfOffice(PyCallArgs &call)

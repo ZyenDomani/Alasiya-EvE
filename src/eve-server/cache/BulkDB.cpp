@@ -272,23 +272,23 @@ PyRep* BulkDB::GetDogmaEffects()
 
         // these can be null
         if (row.IsNull(12))
-            dict->SetItemString("durationAttributeID",          PyStatic.NewNone());
+            dict->SetItemString("durationAttributeID",          new PyNone());
         else
             dict->SetItemString("durationAttributeID",          new PyInt(row.GetInt(12)));
         if (row.IsNull(13))
-            dict->SetItemString("trackingSpeedAttributeID",     PyStatic.NewNone());
+            dict->SetItemString("trackingSpeedAttributeID",     new PyNone());
         else
             dict->SetItemString("trackingSpeedAttributeID",     new PyInt(row.GetInt(13)));
         if (row.IsNull(14))
-            dict->SetItemString("dischargeAttributeID",         PyStatic.NewNone());
+            dict->SetItemString("dischargeAttributeID",         new PyNone());
         else
             dict->SetItemString("dischargeAttributeID",         new PyInt(row.GetInt(14)));
         if (row.IsNull(15))
-            dict->SetItemString("rangeAttributeID",             PyStatic.NewNone());
+            dict->SetItemString("rangeAttributeID",             new PyNone());
         else
             dict->SetItemString("rangeAttributeID",             new PyInt(row.GetInt(15)));
         if (row.IsNull(16))
-            dict->SetItemString("falloffAttributeID",           PyStatic.NewNone());
+            dict->SetItemString("falloffAttributeID",           new PyNone());
         else
             dict->SetItemString("falloffAttributeID",           new PyInt(row.GetInt(16)));
 

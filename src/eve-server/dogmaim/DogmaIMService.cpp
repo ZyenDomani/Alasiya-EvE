@@ -199,13 +199,13 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     InventoryItemRef itemRef = sItemFactory.GetItemRef(args.arg);
     if (itemRef.get() == nullptr ) {
         _log(INV__ERROR, "Unable to load item %u", args.arg);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     PyObject* obj = itemRef->ItemGetInfo();
@@ -221,11 +221,11 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return PyStatic.NewNone();
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             /** @todo  warpsafe modules can be activated while warping.  fix this */
             pClient->SendNotifyMsg("You can't do this while warping");
-            return PyStatic.NewNone();
+            return new PyNone();
         }
     }
 
@@ -233,7 +233,7 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 
 	if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
 	pClient->GetShip()->Online(args.arg2);
@@ -252,18 +252,18 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return PyStatic.NewNone();
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             /** @todo  warpsafe modules can be deactivated while warping.  fix this */
             pClient->SendNotifyMsg("You can't do this while warping");
-            return PyStatic.NewNone();
+            return new PyNone();
         }
     }
 
 	Call_TwoIntegerArgs args; //locationID, moduleID
 	if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
 	pClient->GetShip()->Offline(args.arg2);
@@ -563,7 +563,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     Call_TwoBoolArgs args; // arg1: getCharInfo, arg2: getShipInfo
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     // Create the response dictionary
@@ -580,12 +580,12 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     if (args.arg2) {
         rsp->SetItemString("locationInfo", new PyDict());
     } else {
-        rsp->SetItemString("locationInfo", PyStatic.NewNone());
+        rsp->SetItemString("locationInfo", new PyNone());
     }
 
     // Set "shipModifiedCharAttribs" in the Dictionary
     /** @todo  havent found a populated item in packet logs */
-    rsp->SetItemString("shipModifiedCharAttribs", PyStatic.NewNone());
+    rsp->SetItemString("shipModifiedCharAttribs", new PyNone());
 
     // Set "charInfo" in the Dictionary  -fixed 24Mar16
     sItemFactory.SetUsingClient(pClient);
@@ -595,7 +595,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
             _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
             sItemFactory.UnsetUsingClient();
             PyDecRef(rsp);
-            return PyStatic.NewNone();
+            return new PyNone();
         }
         rsp->SetItemString("charInfo", charResult);
     } else {
@@ -609,7 +609,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
             _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
             sItemFactory.UnsetUsingClient();
             PyDecRef(rsp);
-            return PyStatic.NewNone();
+            return new PyNone();
         }
         rsp->SetItemString("shipInfo", shipResult);
     } else {
@@ -620,7 +620,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     if (pClient->GetShip().get() == nullptr) {
         _log(SERVICE__ERROR, "Unable to build shipState for %u", pClient->GetShipID());
         PyDecRef(rsp);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
     PyTuple* rspShipState = new PyTuple(3);
         rspShipState->items[0] = pClient->GetShip()->GetShipState();        // fitted module list
@@ -764,11 +764,11 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewZero();
+        return new PyInt(0);
     }
 
     if (!IsPlayerItem(args.arg1) or !IsPlayerItem(args.arg2))
-        return PyStatic.NewZero();
+        return new PyInt(0);
 
     SystemManager* pSysMgr(call.client->SystemMgr());
     ShipItemRef sRef(nullptr);
@@ -780,7 +780,7 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
     if (sRef.get() == nullptr) {
         _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
         call.client->SendErrorMsg("Your ship was not found.");
-        return PyStatic.NewZero();
+        return new PyInt(0);
     }
 
     return new PyInt(sRef->UnlinkWeapon(args.arg2));
@@ -866,7 +866,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
 
     if (!pClient->IsInSpace()) {
         pClient->SendNotifyMsg("You can't do this while docked.");
-        return PyStatic.NewZero();
+        return new PyInt(0);
     }
     /*
     * {'FullPath': u'UI/Messages', 'messageID': 260384, 'label': u'AnchorLocationUnsuitableBody'}(u'You cannot safely anchor {[item]typeID.nameWithArticle} within {[numeric]distance.distance} of large objects in space.', None, {u'{[numeric]distance.distance}': {'conditionalValues': [], 'variableType': 9, 'propertyName': 'distance', 'args': 256, 'kwargs': {}, 'variableName': 'distance'}, u'{[item]typeID.nameWithArticle}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'nameWithArticle', 'args': 0, 'kwargs': {}, 'variableName': 'typeID'}})
@@ -881,7 +881,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-            return PyStatic.NewZero();
+            return new PyInt(0);
         }
         /*      this is deactivate call....
             22:06:59 W DogmaIMBound::Handle_Activate(): size=2
@@ -902,7 +902,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
         if (pSE == nullptr) {
             sLog.Error("DogmaIMBound::Handle_Activate()", "%u is not a valid EntityID in this system.", args.arg1);
-            return PyStatic.NewZero();
+            return new PyInt(0);
         }
         // determine if this pSE is pos or cont.
         //call (de)activate on pSE, pass effectID, send effect to clients (bubblecast) then set timers.
@@ -927,7 +927,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         Call_Dogma_Activate args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-            return PyStatic.NewZero();
+            return new PyInt(0);
         }
 
         pClient->GetShip()->Activate(args.itemID, args.effectName, args.target, args.repeat);
@@ -935,7 +935,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
     // are there any other cases to test for here?
 
     // returns 1 on success (throw error otherwise)
-    return PyStatic.NewOne();
+    return new PyInt(1);;
 }
 
 
@@ -950,7 +950,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 
     if (!pClient->IsInSpace()) {
         pClient->SendNotifyMsg("You can't do this while docked");
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     if (call.tuple->items.at(1)->IsInt()) {
@@ -959,12 +959,12 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-            return PyStatic.NewNone();
+            return new PyNone();
         }
         SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
         if (pSE == nullptr) {
             sLog.Error("DogmaIMBound::Handle_Deactivate()", "%u is not a valid EntityID in this system.", args.arg1);
-             return PyStatic.NewNone();
+             return new PyNone();
         }
         /*
          * 22:24:28 W DogmaIMBound::Handle_Deactivate(): size=2
@@ -987,7 +987,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         Call_Dogma_Deactivate args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-            return PyStatic.NewNone();
+            return new PyNone();
         }
 
         pClient->GetShip()->Deactivate(args.itemID, args.effectName);
@@ -995,7 +995,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
     // are there any other cases to test for?
 
     // returns None()
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
@@ -1028,14 +1028,14 @@ PyResult DogmaIMBound::Handle_StopOverload(PyCallArgs& call)
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     //  cancel overload then deactivate module
     pClient->GetShip()->CancelOverloading(args.arg1);
     pClient->GetShip()->Deactivate(args.arg1, sFxDataMgr.GetEffectName(args.arg2));
     // returns none
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
@@ -1060,7 +1060,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.mtList();
+        return new PyList();
     }
 
     // not supported yet
@@ -1076,7 +1076,7 @@ PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.mtList();
+        return new PyList();
     }
 
     // not supported yet
@@ -1092,7 +1092,7 @@ PyResult DogmaIMBound::Handle_InitiateModuleRepair(PyCallArgs& call) {
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewFalse();
+        return new PyBool(false);
     }
 
     return call.client->GetShip()->ModuleRepair(args.arg);

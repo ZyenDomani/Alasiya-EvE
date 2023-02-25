@@ -103,7 +103,7 @@ PyResult AccountService::Handle_GetDefaultContactCost(PyCallArgs &call)
     //return m_db.GetDefaultContactCost(call.client->GetCorporationID());
 
     // returning "none" will block all contact attempts
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult AccountService::Handle_SetContactCost(PyCallArgs &call)

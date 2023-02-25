@@ -214,12 +214,12 @@ PyDict* Missile::MakeSlimItem() {
         slim->SetItemString("categoryID",               new PyInt(m_self->categoryID()));
         slim->SetItemString("name",                     new PyString(m_self->itemName()));
         slim->SetItemString("sourceModuleID",           new PyInt(m_modRef->itemID()));
-        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+        slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+        slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
         slim->SetItemString("securityStatus",           new PyFloat(0/*pChar->GetSecurityRating()*/)); /** @todo (allan) fix this */
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID)); // this is corp ID??
-        slim->SetItemString("numLaunchers",             PyStatic.NewOne());  /** @todo (allan) fix this */
+        slim->SetItemString("numLaunchers",             new PyInt(1););  /** @todo (allan) fix this */
         slim->SetItemString("nameID",                   new PyInt(0));  /** @todo (allan) fix this */
     return(slim);
 }

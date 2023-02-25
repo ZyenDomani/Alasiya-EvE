@@ -30,7 +30,7 @@
 
 
 /* PyException */
-PyException::PyException( PyRep* except ) : ssException( except != nullptr ? except : PyStatic.NewNone()) {}
+PyException::PyException( PyRep* except ) : ssException( except != nullptr ? except : new PyNone()) {}
 PyException::PyException( const PyException& oth ) : ssException( nullptr ) { *this = oth; }
 PyException::~PyException() { PySafeDecRef( ssException ); }
 

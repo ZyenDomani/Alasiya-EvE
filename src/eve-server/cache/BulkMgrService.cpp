@@ -148,7 +148,7 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
     Call_UpdateBulk args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     PyDict* res = new PyDict();
@@ -174,7 +174,7 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
     }
 
     res->SetItemString("version", new PyInt(bulkDataChangeID));
-    res->SetItemString("allowUnsubmitted", PyStatic.NewFalse());
+    res->SetItemString("allowUnsubmitted", new PyBool(false));
 
     /*
     res->SetItemString("data", new PyList(0));
@@ -216,7 +216,7 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
     Call_GetFullFiles args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     PyTuple* response = new PyTuple(5);
@@ -238,7 +238,7 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
         bulksEndingInChunk->AddItem(new PyInt(800005));
         // will have to determine what files are needed using hash, and then how to arrange and send this data correctly
         response->SetItem(2, new PyInt(sBulkDB.GetNumChunks()));    //numberOfChunks
-        response->SetItem(3, PyStatic.NewZero());                   //chunkSetID
+        response->SetItem(3, new PyInt(0));                   //chunkSetID
     } else if (args.toGet->IsList()) {
         PyList::const_iterator itr = args.toGet->AsList()->begin(), end = args.toGet->AsList()->end();
         uint8 setID(1);
@@ -280,7 +280,7 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
         PyDecRef(response);
         PyDecRef(toBeChanged);
         PyDecRef(bulksEndingInChunk);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     response->SetItem(0, toBeChanged);
@@ -289,10 +289,10 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
     if (bulksEndingInChunk->size() > 0) {
         response->SetItem(1, bulksEndingInChunk);
     } else {
-        response->SetItem(1, PyStatic.NewNone());
+        response->SetItem(1, new PyNone());
     }
 
-    response->SetItem(4, PyStatic.NewFalse());     //allowUnsubmitted isnt supported (yet)
+    response->SetItem(4, new PyBool(false));     //allowUnsubmitted isnt supported (yet)
 
     if (is_log_enabled(BULKDATA__TRACE))
         response->Dump(BULKDATA__TRACE, "  ");
@@ -312,7 +312,7 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
     Call_GetFullFilesChunk args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     PyTuple* response = new PyTuple(2);
@@ -323,7 +323,7 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
         // make and send client error also.  may be able to throw here.
         PySafeDecRef(response);
         PySafeDecRef(toBeChanged);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     _log(BULKDATA__INFO, "BulkMgrService::Handle_GetFullFilesChunk(): bulkFileID: %i, chunkSetID: %u, chunkNumber: %u", bulkFileID, args.chunkSetID, args.chunkNumber);
@@ -344,7 +344,7 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
             bulksEndingInChunk->AddItem(new PyInt(bulkFileID));
             response->SetItem(1, bulksEndingInChunk);
         } else {
-            response->SetItem(1, PyStatic.NewNone());
+            response->SetItem(1, new PyNone());
         }
     } else if (args.chunkSetID == 1) {
         // nothing to do here
@@ -405,13 +405,13 @@ PyResult BulkMgrService::Handle_GetChunk(PyCallArgs &call)
     Call_GetChunk args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
     /*
      *    args.changeID;
      *    args.chunkNumber;
      */
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
@@ -425,11 +425,11 @@ PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
     Call_GetUnsubmittedChunk args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
     //args.chunkNumber;
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult BulkMgrService::Handle_GetUnsubmittedChanges(PyCallArgs &call)
@@ -442,5 +442,5 @@ PyResult BulkMgrService::Handle_GetUnsubmittedChanges(PyCallArgs &call)
           this one is complicated.  will need work if we're allowing unsubmitted (whatever that means)
     need more info to properly implement this
      */
-    return PyStatic.NewNone();
+    return new PyNone();
 }

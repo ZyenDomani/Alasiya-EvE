@@ -310,7 +310,7 @@ PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
                 .AddISK("balance", call.client->GetBalance());
     }
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CharMgrService::Handle_GetCloneTypeID( PyCallArgs& call )
@@ -331,7 +331,7 @@ PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 	uint32 stationID = 0;
     if (!CharacterDB::GetCharHomeStation(call.client->GetCharacterID(), stationID) ) {
 		sLog.Error( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
-		return PyStatic.NewNone();
+		return new PyNone();
 	}
     return new PyInt(stationID);
 }
@@ -559,7 +559,7 @@ PyResult CharMgrService::Handle_SetNote(PyCallArgs &call)
 
     m_db.SetNote(call.client->GetCharacterID(), args.itemID, args.note.c_str());
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CharMgrService::Handle_AddOwnerNote( PyCallArgs& call ) {

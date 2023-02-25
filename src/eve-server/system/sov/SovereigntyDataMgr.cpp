@@ -120,11 +120,11 @@ PyRep *SovereigntyDataMgr::GetSystemSovereignty(uint32 systemID)
     sDataMgr.GetSystemData(systemID, sysData);
 
     if (sysData.factionID) { //If we have a factionID, we can set the system's sov data to it
-        args->SetItemString("contested", PyStatic.NewZero());
-        args->SetItemString("corporationID", PyStatic.NewZero());
+        args->SetItemString("contested", new PyInt(0));
+        args->SetItemString("corporationID", new PyInt(0));
         args->SetItemString("claimTime", new PyLong(0));
-        args->SetItemString("claimStructureID", PyStatic.NewZero());
-        args->SetItemString("hubID", PyStatic.NewZero());
+        args->SetItemString("claimStructureID", new PyInt(0));
+        args->SetItemString("hubID", new PyInt(0));
         args->SetItemString("allianceID", new PyInt(sysData.factionID));
         args->SetItemString("solarSystemID", new PyInt(systemID));
         _log(SOV__INFO, "SovereigntyDataMgr::GetSystemSovereignty(): Faction system %u found, assigning factionID as allianceID.", systemID);
@@ -150,12 +150,12 @@ PyRep *SovereigntyDataMgr::GetSystemSovereignty(uint32 systemID)
             args->SetItemString("solarSystemID", new PyInt(sData.solarSystemID));
         } else {
             _log(SOV__INFO, "SovereigntyDataMgr::GetSystemSovereignty(): No data for solarSystemID %u. Sending blank SovereigntyData object.", systemID);
-            args->SetItemString("contested", PyStatic.NewNone());
-            args->SetItemString("corporationID", PyStatic.NewNone());
-            args->SetItemString("claimTime", PyStatic.NewNone());
-            args->SetItemString("claimStructureID", PyStatic.NewNone());
-            args->SetItemString("hubID", PyStatic.NewNone());
-            args->SetItemString("allianceID", PyStatic.NewNone());
+            args->SetItemString("contested", new PyNone());
+            args->SetItemString("corporationID", new PyNone());
+            args->SetItemString("claimTime", new PyNone());
+            args->SetItemString("claimStructureID", new PyNone());
+            args->SetItemString("hubID", new PyNone());
+            args->SetItemString("allianceID", new PyNone());
             args->SetItemString("solarSystemID", new PyInt(systemID));
         }
     }

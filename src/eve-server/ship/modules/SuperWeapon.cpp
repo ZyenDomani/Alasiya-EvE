@@ -107,8 +107,8 @@ void SuperWeapon::StopCycle(bool abort)
         ge.selfID = m_modRef->itemID();
         ge.charID = m_shipRef->ownerID();
         ge.shipID = m_shipRef->itemID();
-        ge.target = PyStatic.NewNone();
-        ge.subLoc = PyStatic.NewNone();
+        ge.target = new PyNone();
+        ge.subLoc = new PyNone();
         ge.area = new PyList;
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
@@ -121,7 +121,7 @@ void SuperWeapon::StopCycle(bool abort)
         shipEff.startTime = (shipEff.timeNow + (timeLeft * EvE::Time::Second));
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
-        shipEff.error = PyStatic.NewNone();
+        shipEff.error = new PyNone();
 
     PyTuple* tuple = shipEff.Encode();
 

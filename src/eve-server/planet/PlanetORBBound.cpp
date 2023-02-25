@@ -112,7 +112,7 @@ PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
     /** @todo  there's more to this...check for standings, alliance  */
     if (IsPlayerCorp(pCOSE->GetOwnerID()))
         if (call.client->GetCorporationID() != pCOSE->GetOwnerID())
-            return PyStatic.NewNone();
+            return new PyNone();
 
     return new PyFloat(pCOSE->GetTaxRate(call.client));
 }
@@ -184,7 +184,7 @@ PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )
     _log(PLANET__DEBUG, "PlanetORBBound::Handle_GMChangeSpaceObjectOwner - size %lu", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 

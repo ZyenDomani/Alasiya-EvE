@@ -93,11 +93,11 @@ void PyCallArgs::Dump(LogType type) const {
 /* PyResult */
 PyResult::PyResult() : ssResult( nullptr ), ssNamedResult( nullptr ) {}
 PyResult::PyResult(PyRep* result)
-: ssResult(result != nullptr ? result : PyStatic.NewNone()),
+: ssResult(result != nullptr ? result : new PyNone()),
 ssNamedResult( nullptr )
 {}
 PyResult::PyResult(PyRep* result, PyDict* namedResult)
-: ssResult(result != nullptr ? result : PyStatic.NewNone()),
+: ssResult(result != nullptr ? result : new PyNone()),
 ssNamedResult(namedResult)
 {}
 
@@ -110,7 +110,7 @@ PyResult& PyResult::operator=( const PyResult& oth )
     if (oth.ssResult != nullptr ) {
         ssResult = oth.ssResult;
     } else {
-        ssResult = PyStatic.NewNone();
+        ssResult = new PyNone();
     }
     //PySafeIncRef( ssResult );
 

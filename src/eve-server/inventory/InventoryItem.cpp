@@ -1247,7 +1247,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             tuple->SetItem(1, new PyInt(m_data.flag));
             tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
-        result.invItem = PyStatic.NewNone();
+        result.invItem = new PyNone();
         for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; itr++)
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         return true;
@@ -1271,8 +1271,8 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             es.env_charID = m_data.ownerID;
             es.env_shipID = m_data.locationID;
             es.env_target = m_data.locationID;
-            es.env_other = PyStatic.NewNone();
-            es.env_area = PyStatic.NewNone();
+            es.env_other = new PyNone();
+            es.env_area = new PyNone();
             es.env_effectID = 16;
             /** @todo fix this once we start tracking effects */
             // on login, this is current time
@@ -1283,7 +1283,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             }
             es.duration = -1;
             es.repeat = 0;
-            es.randomSeed = PyStatic.NewNone();
+            es.randomSeed = new PyNone();
         result.activeEffects[es.env_effectID] = es.Encode();
     }
 

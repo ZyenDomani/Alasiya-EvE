@@ -96,9 +96,9 @@ PyDict* JumpBridgeSE::MakeSlimItem()
     slim->SetItemString("typeID", new PyInt(m_self->typeID()));
     slim->SetItemString("posState", new PyInt(m_data.state));
     slim->SetItemString("ownerID", new PyInt(m_ownerID));
-    slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-    slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+    slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+    slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+    slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
     slim->SetItemString("posTimestamp", new PyLong(m_data.timestamp));
     slim->SetItemString("incapacitated", new PyInt(m_data.state == EVEPOS::StructureState::Incapacitated));
     slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
@@ -123,9 +123,9 @@ void JumpBridgeSE::SendSlimUpdate()
         slim->SetItemString("itemID", new PyLong(m_data.itemID));
         slim->SetItemString("typeID", new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID", new PyInt(m_ownerID));
-        slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+        slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+        slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
         slim->SetItemString("posTimestamp", new PyLong(m_data.timestamp));
         slim->SetItemString("posState", new PyInt(m_data.state));
         slim->SetItemString("incapacitated", new PyInt(0));

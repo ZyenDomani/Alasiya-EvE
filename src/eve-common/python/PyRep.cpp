@@ -362,7 +362,7 @@ int32 PyFloat::hash() const
             if (plong == nullptr)
                 return -1;
             x = plong->hash();
-            PyDecRef(plong);
+            SafeDelete(plong);
             return x;
         }
         /* Fits in a C long == a Python int, so is its own hash. */
@@ -453,11 +453,11 @@ int32 PyNone::hash() const
 /* PyRep Buffer Class                                                   */
 /************************************************************************/
 PyBuffer::PyBuffer(size_t len, const uint8& value) : PyRep(PyRep::PyTypeBuffer),
- mValue(new Buffer(len, value)), mHashCache(-1), cleanup(true) {}
+ mValue(new Buffer(len, value)), mHashCache(-1) {}
 PyBuffer::PyBuffer(const Buffer& buffer) : PyRep(PyRep::PyTypeBuffer),
-mValue(new Buffer(buffer)), mHashCache(-1), cleanup(true) {}
+mValue(new Buffer(buffer)), mHashCache(-1) {}
 PyBuffer::PyBuffer(Buffer** buffer) : PyRep(PyRep::PyTypeBuffer),
-mValue(*buffer), mHashCache(-1), cleanup(false)
+mValue(*buffer), mHashCache(-1)
 {
     *buffer = nullptr;
 }
@@ -474,8 +474,7 @@ mValue(new Buffer(buffer.content())), mHashCache(buffer.mHashCache)
 
 PyBuffer::~PyBuffer()
 {
-    //if (cleanup)
-    //    SafeDelete(mValue);
+    delete mValue;
 }
 
 PyBuffer* PyBuffer::Clone() const
@@ -736,7 +735,7 @@ PyList::PyList(const PyList& oth) : PyRep(PyRep::PyTypeList), items(oth.items)
     //sLog.Cyan("PyList()", "Copy C'tor.");
 }
 // this may not work right...
-PyList::PyList(PyList&& oth) : PyRep(PyRep::PyTypeList), items(std::move(oth.items)), cleanup(std::move(oth.cleanup))
+PyList::PyList(PyList&& oth) : PyRep(PyRep::PyTypeList), items(std::move(oth.items))
 {
     sLog.Cyan("PyList()", "Move C'tor.");
 }
@@ -790,21 +789,18 @@ PyList& PyList::operator= ( PyList&& oth ) {
 }
 
 /*
-void PyList::AddItem(PyRep* rep, bool cleanup/*false/) {
+void PyList::AddItem(PyRep* rep) {
     items.push_back( rep );
-    if (cleanup)
-        cleanupVec.push_back( rep );
 }
 
 void PyList::SetItem(size_t index, PyRep* object ) {
     PyRep** rep = &items.at(index);
 
-    PySafeDecRef(*rep);
+    SafeDelete(*rep);
     if (object == nullptr) {
-        *rep = PyStatic.NewNone();
+        *rep = new PyNone();
     } else {
         *rep = object;
-        cleanupVec.push_back(object);
     }
     PyIncRef(*rep);
 }
@@ -812,8 +808,7 @@ void PyList::SetItem(size_t index, PyRep* object ) {
 void PyList::SetItemString(size_t index, const char* str ) {
     PyString* string = new PyString( str );
     SetItem(index, string);
-    cleanupVec.push_back(string);
-    PyDecRef(string);
+    SafeDelete(string);
 }
 */
 /************************************************************************/
@@ -869,7 +864,7 @@ PyRep* PyDict::GetItemString(const char* key) const
 
     PyString* str = new PyString(key);
     PyRep* res = GetItem(str);
-    PyDecRef(str);
+    SafeDelete(str);
 
     return res;
 }
@@ -893,11 +888,11 @@ void PyDict::SetItem(PyRep* key, PyRep* value)
         // should we decRef key,value here?
     } else {
         // We found 'key' in current dict, so use itr->first and decRef sent 'key'.
-        PyDecRef(key);
+        SafeDelete(key);
         // decRef existing value and Replace with new value.
-        PySafeDecRef(itr->second);
+        SafeDelete(itr->second);
         if (value == nullptr) {
-            itr->second = PyStatic.NewNone();
+            itr->second = new PyNone();
         } else {
             itr->second = value;
         }
@@ -925,17 +920,16 @@ PyDict& PyDict::operator=(const PyDict& oth)
 /************************************************************************/
 /* PyRep Object Class                                                   */
 /************************************************************************/
-PyObject::PyObject(PyString* type, PyRep* args) : PyRep(PyRep::PyTypeObject), mType(type), mArguments(args), cleanup(false) { }
-PyObject::PyObject(const char* type, PyRep* args) : PyRep(PyRep::PyTypeObject), mType(new PyString(type)), mArguments(args), cleanup(true) { }
-PyObject::PyObject(const PyObject& oth) : PyRep(PyRep::PyTypeObject), mType(oth.mType), mArguments(oth.arguments()), cleanup(false)
+PyObject::PyObject(PyString* type, PyRep* args) : PyRep(PyRep::PyTypeObject), mType(type), mArguments(args) { }
+PyObject::PyObject(const char* type, PyRep* args) : PyRep(PyRep::PyTypeObject), mType(new PyString(type)), mArguments(args) { }
+PyObject::PyObject(const PyObject& oth) : PyRep(PyRep::PyTypeObject), mType(oth.mType), mArguments(oth.arguments())
 {
     //sLog.Cyan("PyObject()", "Copy C'tor.");
 }
 
 PyObject::~PyObject()
 {
-    //if (cleanup)
-        SafeDelete(mType);
+    SafeDelete(mType);
 }
 
 PyObject* PyObject::Clone() const
@@ -951,11 +945,10 @@ bool PyObject::visit(PyVisitor& v) const
 
 PyObject& PyObject::operator= ( const PyObject& oth ) {
     sLog.Yellow("PyObject()", "Copy assignment.");
-    PySafeDecRef(mType);
-    PySafeDecRef(mArguments);
+    SafeDelete(mType);
+    SafeDelete(mArguments);
 
     mType = std::move(oth.mType->Clone());
-    cleanup = oth.cleanup;
     mArguments = std::move(oth.arguments()->Clone());
 
     return *this;
@@ -966,20 +959,18 @@ PyObject& PyObject::operator= ( const PyObject& oth ) {
 /* PyObjectEx                                                           */
 /************************************************************************/
 PyObjectEx::PyObjectEx(bool is_type_2, PyRep* header) : PyRep(PyRep::PyTypeObjectEx),
- mHeader(header),  mIsType2(is_type_2),  mList(new PyList()),  mDict(new PyDict()), cleanup(true)  { }
+ mHeader(header),  mIsType2(is_type_2),  mList(new PyList()),  mDict(new PyDict()) { }
 PyObjectEx::PyObjectEx(const PyObjectEx& oth) : PyRep(PyRep::PyTypeObjectEx),
-mHeader(oth.header()->Clone()), mIsType2(oth.isType2()), mList(oth.mList), mDict(oth.mDict), cleanup(false)
+mHeader(oth.header()->Clone()), mIsType2(oth.isType2()), mList(oth.mList), mDict(oth.mDict)
 {
     //sLog.Cyan("PyObjectEx()", "Copy C'tor.");
 }
 
 PyObjectEx::~PyObjectEx()
 {
-    //if (cleanup) {
     SafeDelete(mHeader);
     SafeDelete(mList);
     SafeDelete(mDict);
-    //}
 }
 
 PyObjectEx* PyObjectEx::Clone() const
@@ -997,11 +988,10 @@ PyObjectEx& PyObjectEx::operator= (const PyObjectEx& oth)
 {
     sLog.Yellow("PyObjectEx()", "Copy assignment.");
 
-    PySafeDecRef(mHeader);
-    PySafeDecRef(mList);
-    PySafeDecRef(mDict);
+    SafeDelete(mHeader);
+    SafeDelete(mList);
+    SafeDelete(mDict);
 
-    cleanup = oth.cleanup;
     mIsType2 = oth.mIsType2;
     mHeader = std::move(oth.header()->Clone());
     mList = std::move(oth.list().Clone());
@@ -1202,17 +1192,16 @@ PyTuple* PyObjectEx_Type2::_CreateHeader(PyToken* args, PyDict* keywords, bool e
 /* PyPackedRow                                                          */
 /************************************************************************/
 PyPackedRow::PyPackedRow(DBRowDescriptor* header)
-: PyRep(PyRep::PyTypePackedRow), mHeader(header), mFields(new PyList(header->ColumnCount())), cleanup(true) { }
+: PyRep(PyRep::PyTypePackedRow), mHeader(header), mFields(new PyList(header->ColumnCount())) { }
 PyPackedRow::PyPackedRow(const PyPackedRow& oth)
-: PyRep(PyRep::PyTypePackedRow), mHeader(oth.header()), mFields(oth.mFields), cleanup(false)
+: PyRep(PyRep::PyTypePackedRow), mHeader(oth.header()), mFields(oth.mFields)
 {
     //sLog.Cyan("PyPackedRow()", "Copy C'tor.");
 }
 
 PyPackedRow::~PyPackedRow()
 {
-    if (cleanup)
-        PySafeDecRef(mFields);
+    SafeDelete(mFields);
 }
 
 PyPackedRow* PyPackedRow::Clone() const
@@ -1229,7 +1218,7 @@ bool PyPackedRow::visit(PyVisitor& v) const
 bool PyPackedRow::SetField(uint32 index, PyRep* value)
 {
     if (!mHeader->VerifyValue(index, value))  {
-        PyDecRef(value);
+        SafeDelete(value);
         return false;
     }
 
@@ -1253,10 +1242,9 @@ PyPackedRow& PyPackedRow::operator=(const PyPackedRow& oth)
     sLog.Yellow("PyPackedRow()", "Copy assignment.");
 
     clear();
-    PySafeDecRef(mHeader);
-    PySafeDecRef(mFields);
+    SafeDelete(mHeader);
+    SafeDelete(mFields);
 
-    cleanup = oth.cleanup;
     mHeader = oth.header();
     mFields = std::move(oth.mFields->Clone());
 
@@ -1286,25 +1274,21 @@ bool PySubStruct::visit(PyVisitor& v) const
 /************************************************************************/
 /* PyRep SubStream Class                                                */
 /************************************************************************/
-PySubStream::PySubStream(PyRep* rep) : PyRep(PyRep::PyTypeSubStream), mData(nullptr), mDecoded(rep), cleanup(false) {}
-PySubStream::PySubStream(PyBuffer* buffer) : PyRep(PyRep::PyTypeSubStream), mData(buffer), mDecoded(nullptr), cleanup(false) {}
+PySubStream::PySubStream(PyRep* rep) : PyRep(PyRep::PyTypeSubStream), mData(nullptr), mDecoded(rep) {}
+PySubStream::PySubStream(PyBuffer* buffer) : PyRep(PyRep::PyTypeSubStream), mData(buffer), mDecoded(nullptr) {}
 PySubStream::PySubStream(const PySubStream& oth)
 : PyRep(PyRep::PyTypeSubStream),
   mData(nullptr),
-  mDecoded(oth.decoded() == nullptr ? nullptr : oth.decoded()->Clone()),
-  cleanup(false)
+  mDecoded(oth.decoded() == nullptr ? nullptr : oth.decoded()->Clone())
 {
     //sLog.Cyan("PySubStream()", "Copy C'tor.");
-    if (oth.data() != nullptr) {
-        cleanup = true;
+    if (oth.data() != nullptr)
         mData = new PyBuffer(*oth.data());
-    }
 }
 
 PySubStream::~PySubStream()
 {
-    if (cleanup)
-        PySafeDecRef(mData);
+    SafeDelete(mData);
 }
 
 PySubStream* PySubStream::Clone() const
@@ -1355,8 +1339,7 @@ PyChecksumedStream::PyChecksumedStream(const PyChecksumedStream& oth)
 
 PyChecksumedStream::~PyChecksumedStream()
 {
-    // is this right?  havent had any "multiple deletion" msgs yet...
-    PyDecRef(mStream);
+    delete mStream;
 }
 
 PyChecksumedStream* PyChecksumedStream::Clone() const
@@ -1371,23 +1354,21 @@ bool PyChecksumedStream::visit(PyVisitor& v) const
 }
 
 
-// NOTE:  all of these new_tuple() creators will need to go thru code and verify cleanup after returning new()
-
 /************************************************************************/
 /* tuple large integer helper functions                                 */
 /************************************************************************/
 PyTuple* new_tuple(int64 arg1)
 {
     PyTuple* res = new PyTuple(1);
-        res->SetItem(0, new PyLong(arg1), true);
+        res->SetItem(0, new PyLong(arg1));
     return res;
 }
 
 PyTuple* new_tuple(int64 arg1, int64 arg2)
 {
     PyTuple* res = new PyTuple(2);
-        res->SetItem(0, new PyLong(arg1), true);
-        res->SetItem(1, new PyLong(arg2), true);
+        res->SetItem(0, new PyLong(arg1));
+        res->SetItem(1, new PyLong(arg2));
     return res;
 }
 
@@ -1397,24 +1378,24 @@ PyTuple* new_tuple(int64 arg1, int64 arg2)
 PyTuple* new_tuple(const char* arg1)
 {
     PyTuple* res = new PyTuple(1);
-        res->SetItem(0, new PyString(arg1), true);
+        res->SetItemString(0, arg1);
     return res;
 }
 
 PyTuple* new_tuple(const char* arg1, const char* arg2)
 {
     PyTuple* res = new PyTuple(2);
-        res->SetItem(0, new PyString(arg1), true);
-        res->SetItem(1, new PyString(arg2), true);
+        res->SetItemString(0, arg1);
+        res->SetItemString(1, arg2);
     return res;
 }
 
 PyTuple* new_tuple(const char* arg1, const char* arg2, const char* arg3)
 {
     PyTuple* res = new PyTuple(3);
-        res->SetItem(0, new PyString(arg1), true);
-        res->SetItem(1, new PyString(arg2), true);
-        res->SetItem(2, new PyString(arg3), true);
+        res->SetItemString(0, arg1);
+        res->SetItemString(1, arg2);
+        res->SetItemString(2, arg3);
     return res;
 }
 
@@ -1424,8 +1405,8 @@ PyTuple* new_tuple(const char* arg1, const char* arg2, const char* arg3)
 PyTuple* new_tuple(const char* arg1, const char* arg2, PyTuple* arg3)
 {
     PyTuple* res = new PyTuple(3);
-        res->SetItem(0, new PyString(arg1), true);
-        res->SetItem(1, new PyString(arg2), true);
+        res->SetItemString(0, arg1);
+        res->SetItemString(1, arg2);
         res->SetItem(2, arg3);
     return res;
 }
@@ -1433,7 +1414,7 @@ PyTuple* new_tuple(const char* arg1, const char* arg2, PyTuple* arg3)
 PyTuple* new_tuple(const char* arg1, PyRep* arg2, PyRep* arg3)
 {
     PyTuple* res = new PyTuple(3);
-        res->SetItem(0, new PyString(arg1), true);
+        res->SetItemString(0, arg1);
         res->SetItem(1, arg2);
         res->SetItem(2, arg3);
     return res;

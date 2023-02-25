@@ -192,8 +192,8 @@ Client::~Client() {
     SafeDelete(pPacket);
     SafeDelete(pShipSE);
     SafeDelete(pSession);
-    PyDecRef(m_destinyEventQueue);
-    PyDecRef(m_destinyUpdateQueue);
+    SafeDelete(m_destinyEventQueue);
+    SafeDelete(m_destinyUpdateQueue);
 }
 
 bool Client::ProcessNet()
@@ -1794,8 +1794,8 @@ void Client::CharNoLongerInStation() {
     OnCharNoLongerInStation ocnis;
         ocnis.charID = m_char->itemID();
         ocnis.corpID = GetCorporationID();
-        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? new PyInt(GetAllianceID()) : PyStatic.NewNone());
-        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : PyStatic.NewNone());
+        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? new PyInt(GetAllianceID()) : new PyNone());
+        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : new PyNone());
     PyTuple* tmp = ocnis.Encode();
     if (tmp == nullptr)
         return;
@@ -1816,8 +1816,8 @@ void Client::CharNowInStation() {
     OnCharNowInStation ocnis;
         ocnis.charID = m_char->itemID();
         ocnis.corpID = GetCorporationID();
-        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? new PyInt(GetAllianceID()) : PyStatic.NewNone());
-        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : PyStatic.NewNone());
+        ocnis.allianceID = (IsAllianceID(GetAllianceID()) ? new PyInt(GetAllianceID()) : new PyNone());
+        ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : new PyNone());
     PyTuple* tmp = ocnis.Encode();
     std::vector<Client*> clients;
     sEntityList.GetStationGuestList(m_locationID, clients);
@@ -2407,12 +2407,12 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     CryptoHandshakeAck ack;
         ack.jit = GetLanguageID();
         ack.userid = GetUserID();   //5654387 accountID?
-        ack.maxSessionTime = PyStatic.NewNone();        // set this for an auto-logout time?
+        ack.maxSessionTime = new PyNone();        // set this for an auto-logout time?
         ack.userType = UserType::Mammon;      //GetAccountType()  - not written yet
         ack.role = Acct::Role::PLAYER | Acct::Role::NEWBIE | Acct::Role::LOGIN; /*  live returns these */
         ack.address = GetAddress();
-        ack.inDetention = PyStatic.NewNone();   // dont know what this is or what it's for
-        ack.client_hash = PyStatic.NewNone();
+        ack.inDetention = new PyNone();   // dont know what this is or what it's for
+        ack.client_hash = new PyNone();
         ack.user_clientid = GetClientID();  //241241000001103
         ack.live_updates = sLiveUpdateDB.GetUpdates();
         ack.sessionID = pSession->GetSessionID();   //398773966249980114

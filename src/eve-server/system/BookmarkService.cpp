@@ -103,14 +103,14 @@ PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
     Call_UpdateFolder args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewFalse();
+        return new PyBool(false);
     }
 
     /** @todo sanitize name */
     if (!m_db.UpdateFolder(args.folderID, PyRep::StringContent(args.folderName)))
-        return PyStatic.NewFalse();
+        return new PyBool(false);
 
-    return PyStatic.NewTrue();
+    return new PyBool(true);;
 }
 
 PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
@@ -250,11 +250,11 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
     Call_DeleteBookmarks args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     if (args.object->IsNone())
-        return PyStatic.NewNone();
+        return new PyNone();
 
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
     //std::vector<int32> bmIDs;
@@ -265,7 +265,7 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
     // player is deleting this bm from their pnp window.  there may be copies, so dont remove from db
     //  instead, to keep this in db and avoid appearance in players pnp window, just change owner to system
     // m_db.DeleteBookmarks(&bmIDs);
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 
@@ -280,7 +280,7 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
     //args.Dump(BOOKMARK__CALL_DUMP, "    ");
 
     if (args.object->IsNone())
-        return PyStatic.NewNone();
+        return new PyNone();
 
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
 
@@ -341,7 +341,7 @@ PyResult BookmarkService::Handle_AddBookmarkFromVoucher(PyCallArgs &call) {
     dict->SetItemString("ownerID", new PyInt(data.ownerID));
     dict->SetItemString("itemID", new PyInt(data.itemID));
     dict->SetItemString("typeID", new PyInt(data.typeID));
-    dict->SetItemString("flag", PyStatic.NewNone());
+    dict->SetItemString("flag", new PyNone());
     dict->SetItemString("memo", new PyString(data.memo));
     dict->SetItemString("created", new PyLong(data.created));
     dict->SetItemString("x", new PyFloat(data.point.x));
@@ -353,7 +353,7 @@ PyResult BookmarkService::Handle_AddBookmarkFromVoucher(PyCallArgs &call) {
     if (data.folderID > 0) {
         dict->SetItemString("folderID", new PyInt(data.folderID));
     } else {
-        dict->SetItemString("folderID", PyStatic.NewNone());
+        dict->SetItemString("folderID", new PyNone());
     }
 
     return new PyObject("util.KeyVal", dict);
@@ -371,12 +371,12 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
     Call_CopyBookmarks args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return new_tuple(PyStatic.NewNone(), PyStatic.NewNone());
+        return new_tuple(new PyNone(), new PyNone());
     }
     //args.Dump(BOOKMARK__CALL_DUMP, "    ");
 
     if (args.object->IsNone())
-        return new_tuple(PyStatic.NewNone(), PyStatic.NewNone());
+        return new_tuple(new PyNone(), new PyNone());
 
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
 
@@ -406,7 +406,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
         dict->SetItemString("ownerID", new PyInt(data.ownerID));
         dict->SetItemString("itemID", new PyInt(data.itemID));
         dict->SetItemString("typeID", new PyInt(data.typeID));
-        dict->SetItemString("flag", PyStatic.NewNone());
+        dict->SetItemString("flag", new PyNone());
         dict->SetItemString("memo", new PyString(data.memo));
         dict->SetItemString("created", new PyLong(data.created));
         dict->SetItemString("x", new PyFloat(data.point.x));
@@ -418,7 +418,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
         if (data.folderID > 0) {
             dict->SetItemString("folderID", new PyInt(data.folderID));
         } else {
-            dict->SetItemString("folderID", PyStatic.NewNone());
+            dict->SetItemString("folderID", new PyNone());
         }
 
         list->AddItem(new PyObject("util.KeyVal", dict));
@@ -426,6 +426,6 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
 
     PyTuple* tuple = new PyTuple(2);
     tuple->SetItem(0, list);
-    tuple->SetItem(1, PyStatic.NewNone());
+    tuple->SetItem(1, new PyNone());
     return tuple;
 }

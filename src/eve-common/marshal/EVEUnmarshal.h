@@ -142,12 +142,12 @@ protected:
 
 private:
     /** Loads none from stream. */
-    PyRep* LoadNone() { return PyStatic.NewNone(); }
+    PyRep* LoadNone() { return new PyNone(); }
 
     /** Loads true boolean from stream. */
-    PyRep* LoadBoolTrue() { return PyStatic.NewTrue(); }
+    PyRep* LoadBoolTrue() { return new PyBool(true);; }
     /** Loads false boolean from stream. */
-    PyRep* LoadBoolFalse() { return PyStatic.NewFalse(); }
+    PyRep* LoadBoolFalse() { return new PyBool(false); }
 
     /** Loads long long integer from stream. */
     PyRep* LoadIntegerLongLong() { return new PyLong( Read<int64>() ); }
@@ -160,11 +160,11 @@ private:
     /** Loads variable length integer from stream. */
     PyRep* LoadIntegerVar();
     /** Loads minus one integer from stream. */
-    PyRep* LoadIntegerMinusOne() { return PyStatic.NewNegOne(); }
+    PyRep* LoadIntegerMinusOne() { return new PyInt(-1); }
     /** Loads zero integer from stream. */
-    PyRep* LoadIntegerZero() { return PyStatic.NewZero(); }
+    PyRep* LoadIntegerZero() { return new PyInt(0); }
     /** Loads one integer from stream. */
-    PyRep* LoadIntegerOne() { return PyStatic.NewOne(); }
+    PyRep* LoadIntegerOne() { return new PyInt(1);; }
 
     /** Loads real from stream. */
     PyRep* LoadReal() { return new PyFloat( Read<double>() ); }
@@ -198,7 +198,7 @@ private:
     PyRep* LoadBuffer();
 
     /** Loads empty tuple from stream. */
-    PyRep* LoadTupleEmpty() { return PyStatic.mtTuple(); }
+    PyRep* LoadTupleEmpty() { return new PyTuple(0); }
     /** Loads tuple from stream. */
     PyRep* LoadTuple();
     /** Loads one-element tuple from stream. */
@@ -207,7 +207,7 @@ private:
     PyRep* LoadTupleTwo();
 
     /** Loads empty list from stream. */
-    PyRep* LoadListEmpty() { return PyStatic.mtList(); }
+    PyRep* LoadListEmpty() { return new PyList(); }
     /** Loads list from stream. */
     PyRep* LoadList();
     /** Loads one-element list from stream. */

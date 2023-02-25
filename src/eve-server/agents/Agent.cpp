@@ -342,7 +342,7 @@ PyObject* Agent::GetInfoServiceDetails()
         research->SetItemString("researchSummary", patentList);
         research->SetItemString("researchData", researchData);
     } else {
-        research->SetItemString("agentServiceType", PyStatic.NewNone());
+        research->SetItemString("agentServiceType", new PyNone());
     }
 
     /* for location agents....
@@ -379,7 +379,7 @@ PyObject* Agent::GetInfoServiceDetails()
             sameSystem->SetItem(1, new PyInt(10));
             sameSystem->SetItem(2, new PyInt(20000));
         PyTuple* sameConst = new PyTuple(3);
-            sameConst->SetItem(0, PyStatic.NewOne());
+            sameConst->SetItem(0, new PyInt(1););
             sameConst->SetItem(1, new PyInt(30));
             sameConst->SetItem(2, new PyInt(200000));
         PyTuple* sameRegion = new PyTuple(3);
@@ -402,7 +402,7 @@ PyObject* Agent::GetInfoServiceDetails()
         locate->SetItemString("callbackID", new PyInt(2));
         locate->SetItemString("lastUsed", new PyInt(0));
     } else {
-        locate->SetItemString("agentServiceType", PyStatic.NewNone());
+        locate->SetItemString("agentServiceType", new PyNone());
     }
 
     // for mission agents....
@@ -639,8 +639,8 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
                 agent->SetItem(0, new PyInt(m_agentID));
                 agent->SetItem(1, new PyInt(cur->GetCharacterID()));
                 agent->SetItem(2, new PyFloat(fleetStanding));
-                agent->SetItem(3, PyStatic.NewNegOne());
-                agent->SetItem(4, PyStatic.NewOne());
+                agent->SetItem(3, new PyInt(-1));
+                agent->SetItem(4, new PyInt(1););
             PyList* list = new PyList();
                 list->AddItem(agent);
             PyTuple* payload = new PyTuple(1);
@@ -665,19 +665,19 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
         agent->SetItem(1, new PyInt(charID));
         agent->SetItem(2, new PyFloat(newStanding));
         agent->SetItem(3, new PyInt(-1));
-        agent->SetItem(4, PyStatic.NewOne());
+        agent->SetItem(4, new PyInt(1););
     PyTuple* corp = new PyTuple(5);
         corp->SetItem(0, new PyInt(m_agentData.corporationID));
         corp->SetItem(1, new PyInt(charID));
         corp->SetItem(2, new PyFloat(newStanding /4));
         corp->SetItem(3, new PyInt(-1));
-        corp->SetItem(4, PyStatic.NewOne());
+        corp->SetItem(4, new PyInt(1););
     PyTuple* faction = new PyTuple(5);
         faction->SetItem(0, new PyInt(m_agentData.factionID));
         faction->SetItem(1, new PyInt(charID));
         faction->SetItem(2, new PyFloat(newStanding /8));
         faction->SetItem(3, new PyInt(-1));
-        faction->SetItem(4, PyStatic.NewOne());
+        faction->SetItem(4, new PyInt(1););
     PyList* list = new PyList();
         list->AddItem(agent);
         list->AddItem(corp);
@@ -720,7 +720,7 @@ void Agent::SendMissionUpdate(Client* pClient, std::string action)
     PyTuple* payload = new PyTuple(3);
         payload->SetItem(0, new PyString(action));
         payload->SetItem(1, new PyInt(m_agentID));
-        payload->SetItem(2, PyStatic.NewNone());    // NOTE if we ever get tutorials working, this will need to be fixed.
+        payload->SetItem(2, new PyNone());    // NOTE if we ever get tutorials working, this will need to be fixed.
     pClient->SendNotification("OnAgentMissionChange", "charid", payload, false);    // i *think* this is unsequenced
 }
     //specific to the calling action

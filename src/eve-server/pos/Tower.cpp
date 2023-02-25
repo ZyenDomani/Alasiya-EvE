@@ -468,7 +468,7 @@ PyRep* TowerSE::GetProcessInfo()
                 PyTuple* tuple = new PyTuple(6);
                 tuple->SetItem(0, new PyInt(cur.first));
                 tuple->SetItem(1, new PyBool(false));
-                tuple->SetItem(2, PyStatic.NewNone());
+                tuple->SetItem(2, new PyNone());
                 tuple->SetItem(3, new PyList());
                 tuple->SetItem(4, new PyList());
                 tuple->SetItem(5, new PyList());
@@ -516,9 +516,9 @@ PyDict* TowerSE::MakeSlimItem()
     slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
     slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
     slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-    slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-    slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+    slim->SetItemString("corpID",                   IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+    slim->SetItemString("allianceID",               IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+    slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
     slim->SetItemString("posTimestamp",             new PyLong(m_data.timestamp));
     slim->SetItemString("posState",                 new PyInt(m_data.state));
     slim->SetItemString("incapacitated",            new PyInt((m_data.state == EVEPOS::StructureState::Incapacitated) ? 1 : 0));

@@ -513,19 +513,19 @@ bool AllianceDB::CreateAllianceChangePacket(OnAllianceChanged &ac, uint32 oldAll
 {
     // New Alliance \/
     if (newAllyID == 0) {
-        ac.allianceIDNew = PyStatic.NewNone();
-        ac.allianceNameNew = PyStatic.NewNone();
-        ac.descriptionNew = PyStatic.NewNone();
-        ac.typeIDNew = PyStatic.NewNone();
-        ac.shortNameNew = PyStatic.NewNone();
-        ac.executorCorpIDNew = PyStatic.NewNone();
-        ac.creatorCorpIDNew = PyStatic.NewNone();
-        ac.creatorCharIDNew = PyStatic.NewNone();
-        ac.startDateNew = PyStatic.NewNone();
-        ac.memberCountNew = PyStatic.NewNone();
-        ac.urlNew = PyStatic.NewNone();
-        ac.deletedNew = PyStatic.NewNone();
-        ac.dictatorialNew = PyStatic.NewNone();
+        ac.allianceIDNew = new PyNone();
+        ac.allianceNameNew = new PyNone();
+        ac.descriptionNew = new PyNone();
+        ac.typeIDNew = new PyNone();
+        ac.shortNameNew = new PyNone();
+        ac.executorCorpIDNew = new PyNone();
+        ac.creatorCorpIDNew = new PyNone();
+        ac.creatorCharIDNew = new PyNone();
+        ac.startDateNew = new PyNone();
+        ac.memberCountNew = new PyNone();
+        ac.urlNew = new PyNone();
+        ac.deletedNew = new PyNone();
+        ac.dictatorialNew = new PyNone();
     } else {
         DBQueryResult res;
         if (!sDatabase.RunQuery(res,
@@ -563,19 +563,19 @@ bool AllianceDB::CreateAllianceChangePacket(OnAllianceChanged &ac, uint32 oldAll
 
     // Old Alliance \/
     if (oldAllyID == 0) {
-        ac.allianceIDOld = PyStatic.NewNone();
-        ac.allianceNameOld = PyStatic.NewNone();
-        ac.descriptionOld = PyStatic.NewNone();
-        ac.typeIDOld = PyStatic.NewNone();
-        ac.shortNameOld = PyStatic.NewNone();
-        ac.executorCorpIDOld = PyStatic.NewNone();
-        ac.creatorCorpIDOld = PyStatic.NewNone();
-        ac.creatorCharIDOld = PyStatic.NewNone();
-        ac.startDateOld = PyStatic.NewNone();
-        ac.memberCountOld = PyStatic.NewNone();
-        ac.urlOld = PyStatic.NewNone();
-        ac.deletedOld = PyStatic.NewNone();
-        ac.dictatorialOld = PyStatic.NewNone();
+        ac.allianceIDOld = new PyNone();
+        ac.allianceNameOld = new PyNone();
+        ac.descriptionOld = new PyNone();
+        ac.typeIDOld = new PyNone();
+        ac.shortNameOld = new PyNone();
+        ac.executorCorpIDOld = new PyNone();
+        ac.creatorCorpIDOld = new PyNone();
+        ac.creatorCharIDOld = new PyNone();
+        ac.startDateOld = new PyNone();
+        ac.memberCountOld = new PyNone();
+        ac.urlOld = new PyNone();
+        ac.deletedOld = new PyNone();
+        ac.dictatorialOld = new PyNone();
     } else {
         DBQueryResult res;
         if (!sDatabase.RunQuery(res,

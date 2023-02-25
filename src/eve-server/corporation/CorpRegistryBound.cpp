@@ -453,7 +453,7 @@ PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call)
     Call_UpdateDivisionNames args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     Notify_IntRaw notif;
@@ -463,7 +463,7 @@ PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call)
     if (!m_db.UpdateDivisionNames(notif.key, args, notif.data)) {
         codelog(SERVICE__ERROR, "%s: Failed to update division names for corp %u", call.client->GetName(), notif.key);
         PyDecRef( notif.data );
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     // Only send notification if it is needed...
@@ -781,7 +781,7 @@ PyResult CorpRegistryBound::Handle_UpdateCorporation(PyCallArgs &call) {
     if (!m_db.UpdateCorporation(notif.key, args, notif.data)) {
         codelog(SERVICE__ERROR, "%s: Failed to update corporation data for corp %u", call.client->GetName(), notif.key);
         PyDecRef( notif.data );
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     // Only send notification if it is needed...
@@ -794,7 +794,7 @@ PyResult CorpRegistryBound::Handle_UpdateCorporation(PyCallArgs &call) {
         call.client->SendNotification("OnCorporationChanged", "clientID", &answer);
     }
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call)
@@ -1679,7 +1679,7 @@ PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call)
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewFalse();
+        return new PyBool(false);
     }
 
     OnCorporationApplicationChanged ocac;
@@ -1693,23 +1693,23 @@ PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call)
         oldInfo.charID = args.arg2;
     if (!m_db.GetCurrentApplicationInfo(oldInfo)) {
         codelog(SERVICE__ERROR, "%s: Failed to query application info for char %u corp %u", call.client->GetName(), ocac.charID, ocac.corpID);
-        return PyStatic.NewFalse();
+        return new PyBool(false);
     }
 
     FillOCApplicationChange(ocac, oldInfo, newInfo);
     if (!m_db.DeleteApplication(oldInfo)) {
         codelog(SERVICE__ERROR, "%s: Failed to delete application info for char %u corp %u", call.client->GetName(), ocac.charID, ocac.corpID);
-        return PyStatic.NewFalse();
+        return new PyBool(false);
     }
 
     sEntityList.CorpNotify(m_corpID, Notify::Types::CorpAppNew, "OnCorporationApplicationChanged", "*corpid&corprole", ocac.Encode());
 
-    return PyStatic.NewTrue();
+    return new PyBool(true);;
 }
 
 void CorpRegistryBound::FillOCApplicationChange(OnCorporationApplicationChanged& OCAC, const Corp::ApplicationInfo& Old, const Corp::ApplicationInfo& New)
 {
-    //  ? (PyRep*)new PyInt(x) : PyStatic.NewNone();
+    //  ? (PyRep*)new PyInt(x) : new PyNone();
     if (Old.valid) {
         OCAC.applicationIDOld = new PyInt(Old.appID);
         //OCAC.applicationDateTimeOld = new PyLong(Old.appTime);
@@ -1721,21 +1721,21 @@ void CorpRegistryBound::FillOCApplicationChange(OnCorporationApplicationChanged&
         if (Old.lastCID) {
             OCAC.lastCorpUpdaterIDOld = new PyInt(Old.lastCID);
         } else {
-            OCAC.lastCorpUpdaterIDOld = PyStatic.NewNone();
+            OCAC.lastCorpUpdaterIDOld = new PyNone();
         }
         //OCAC.rolesOld = new PyLong(Old.role);
         OCAC.statusOld = new PyInt(Old.status);
     } else {
-        OCAC.applicationIDOld = PyStatic.NewNone();
-        //OCAC.applicationDateTimeOld = PyStatic.NewNone();
-        OCAC.applicationTextOld = PyStatic.NewNone();
-        OCAC.characterIDOld = PyStatic.NewNone();
-        OCAC.corporationIDOld = PyStatic.NewNone();
-        //OCAC.deletedOld = PyStatic.NewNone();
-        //OCAC.grantableRolesOld = PyStatic.NewNone();
-        OCAC.lastCorpUpdaterIDOld = PyStatic.NewNone();
-        //OCAC.rolesOld = PyStatic.NewNone();
-        OCAC.statusOld = PyStatic.NewNone();
+        OCAC.applicationIDOld = new PyNone();
+        //OCAC.applicationDateTimeOld = new PyNone();
+        OCAC.applicationTextOld = new PyNone();
+        OCAC.characterIDOld = new PyNone();
+        OCAC.corporationIDOld = new PyNone();
+        //OCAC.deletedOld = new PyNone();
+        //OCAC.grantableRolesOld = new PyNone();
+        OCAC.lastCorpUpdaterIDOld = new PyNone();
+        //OCAC.rolesOld = new PyNone();
+        OCAC.statusOld = new PyNone();
     }
 
     if (New.valid) {
@@ -1749,21 +1749,21 @@ void CorpRegistryBound::FillOCApplicationChange(OnCorporationApplicationChanged&
         if (New.lastCID) {
             OCAC.lastCorpUpdaterIDNew = new PyInt(New.lastCID);
         } else {
-            OCAC.lastCorpUpdaterIDNew = PyStatic.NewNone();
+            OCAC.lastCorpUpdaterIDNew = new PyNone();
         }
         //OCAC.rolesNew = new PyLong(New.role);
         OCAC.statusNew = new PyInt(New.status);
     } else {
-        OCAC.applicationIDNew = PyStatic.NewNone();
-        //OCAC.applicationDateTimeNew = PyStatic.NewNone();
-        OCAC.applicationTextNew = PyStatic.NewNone();
-        OCAC.characterIDNew = PyStatic.NewNone();
-        OCAC.corporationIDNew = PyStatic.NewNone();
-        //OCAC.deletedNew = PyStatic.NewNone();
-        //OCAC.grantableRolesNew = PyStatic.NewNone();
-        OCAC.lastCorpUpdaterIDNew = PyStatic.NewNone();
-        //OCAC.rolesNew = PyStatic.NewNone();
-        OCAC.statusNew = PyStatic.NewNone();
+        OCAC.applicationIDNew = new PyNone();
+        //OCAC.applicationDateTimeNew = new PyNone();
+        OCAC.applicationTextNew = new PyNone();
+        OCAC.characterIDNew = new PyNone();
+        OCAC.corporationIDNew = new PyNone();
+        //OCAC.deletedNew = new PyNone();
+        //OCAC.grantableRolesNew = new PyNone();
+        OCAC.lastCorpUpdaterIDNew = new PyNone();
+        //OCAC.rolesNew = new PyNone();
+        OCAC.statusNew = new PyNone();
     }
 }
 
@@ -2260,7 +2260,7 @@ PyResult CorpRegistryBound::Handle_CanVote(PyCallArgs &call) {
     _log(CORP__CALL, "CorpRegistryBound::Handle_CanVote() size=%lu", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
-    return PyStatic.NewFalse();
+    return new PyBool(false);
 }
 
 
@@ -2272,14 +2272,14 @@ PyResult CorpRegistryBound::Handle_InsertVote(PyCallArgs &call) {
     Call_InsertVote args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     // can you change your vote?  will we have to check for votes already cast and update them?
     m_db.CastVote(args.corpID, call.client->GetCharacterID(), args.voteCaseID, args.voteValue);
 
     // returns none
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 /**     ***********************************************************************
@@ -2300,7 +2300,7 @@ PyResult CorpRegistryBound::Handle_GetLockedItemLocations( PyCallArgs& call )
 
     //this returns an empty list for me on live.
     //  ...because there are no locked items for your corp. :/
-    return PyStatic.mtList();
+    return new PyList();
 }
 
 PyResult CorpRegistryBound::Handle_AddCorporateContact(PyCallArgs &call) {
@@ -2504,9 +2504,9 @@ PyResult CorpRegistryBound::Handle_CanLeaveCurrentCorporation(PyCallArgs &call) 
     // error:  CrpCantQuitNotInStasis  and canLeave=false for member that has roles
 
     PyTuple* tuple = new PyTuple(3);
-        tuple->SetItem(0, PyStatic.NewTrue());  //canLeave - set this to timer or w/e to deter corp jumpers
-        tuple->SetItem(1, PyStatic.NewNone());
-        tuple->SetItem(2, PyStatic.NewNone());
+        tuple->SetItem(0, new PyBool(true););  //canLeave - set this to timer or w/e to deter corp jumpers
+        tuple->SetItem(1, new PyNone());
+        tuple->SetItem(2, new PyNone());
 
     return tuple;
 }

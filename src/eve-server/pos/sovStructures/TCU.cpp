@@ -102,7 +102,7 @@ void TCUSE::SetOffline()
 
     PyTuple* data = new PyTuple(2);
         data->SetItem(0, new PyInt(m_system->GetID()));
-        data->SetItem(1, PyStatic.NewNone());
+        data->SetItem(1, new PyNone());
 
     std::vector<Client*> list;
     m_system->GetClientList(list);

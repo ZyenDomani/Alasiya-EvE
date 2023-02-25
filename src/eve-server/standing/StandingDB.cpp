@@ -169,7 +169,7 @@ void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventTyp
 PyRep* StandingDB::GetStandingCompositions(uint32 fromID, uint32 toID) {
     // ownerID, standing ...
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyRep* StandingDB::GetSystemSovInfo(uint32 systemID) {
@@ -245,5 +245,5 @@ if (!res.GetRow(row)) {
 
 return new PyObject("util.KeyVal", args);
 */
-    return PyStatic.NewNone();
+    return new PyNone();
 }

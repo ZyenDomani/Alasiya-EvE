@@ -187,7 +187,7 @@ PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
         result = m_db.GetOrders(call.client->GetRegionID(), args.arg);
         if (result == nullptr) {
             _log(MARKET__DB_ERROR, "Failed to load cache, generating empty contents.");
-            result = PyStatic.NewNone();
+            result = new PyNone();
         }
         m_manager->cache_service->GiveCache(method_id, &result);
     }

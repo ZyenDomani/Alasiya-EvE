@@ -98,7 +98,7 @@ PyResult InsuranceService::Handle_GetContractForShip( PyCallArgs& call ) {
 
 PyResult InsuranceBound::Handle_UnInsureShip( PyCallArgs& call ) {
     m_db->DeleteInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value());
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called in space */
@@ -106,7 +106,7 @@ PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
     if (type != nullptr)
         return new PyFloat(type->basePrice());
 
-    return PyStatic.NewZero();
+    return new PyInt(0);
 }
 
 PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
@@ -115,7 +115,7 @@ PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
     if (type != nullptr)
         return new PyFloat(type->basePrice());
 
-    return PyStatic.NewZero();
+    return new PyInt(0);
 }
 
 PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
@@ -146,7 +146,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     if (shipRef->groupID() == EVEDB::invGroups::Rookieship) {
         call.client->SendInfoModalMsg("You cannot insure Rookie ships.");
-        return PyStatic.NewNone();
+        return new PyNone();
     } // end rookie ship check
 
     /* INSURANCE FRACTION TABLE:
@@ -166,7 +166,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
             // catchall for fuckedup prices.
         call.client->SendErrorMsg("Your payment of %.2f is below the minimum payment of %.2f required for coverage.", \
                     args.amount, (shipRef->type().basePrice() * 0.05f));
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     float fraction(0.1f);  // with no insurance, SCC pays 40% on live.  we pay 10%

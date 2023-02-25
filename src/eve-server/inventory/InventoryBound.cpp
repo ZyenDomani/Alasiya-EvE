@@ -185,7 +185,7 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
     Call_RemoveCharge args;
     if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     /** @todo determine if this is needed, and implement if so */
@@ -196,14 +196,14 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
     // this call is used to remove sublocation (charge) items, which is virtual to real.
     //  since our code does this, we will return "None" here to avoid client subsequently calling MultiAdd() or MultiMerge()
     call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID);
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
     Call_RemoveCharge args;
     if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     /** @todo determine if this is needed, and implement if so */
@@ -214,7 +214,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
     // this call is used to remove sublocation (charge) items, which is virtual to real.
     //  since our code does this, we will return "None" here to avoid client subsequently calling MultiAdd() or MultiMerge()
     call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID);
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
@@ -716,7 +716,7 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
 
 PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     if (pInventory == nullptr)
-        return PyStatic.NewNone();
+        return new PyNone();
 
     _log(INV__DUMP, "IB::List() dump.");
     call.Dump(INV__DUMP);

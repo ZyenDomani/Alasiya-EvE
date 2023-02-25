@@ -288,7 +288,7 @@ PyRep* CharacterDB::ValidateCharNameRep(std::string name)
         return new PyInt(-101);
 
     /* if we got here the name is "new" */
-    return PyStatic.NewOne();
+    return new PyInt(1);;
 }
 
 /** @todo this should throw on error */
@@ -407,7 +407,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
         /** @todo  need to make proper error here. */
         // this causes blanks on char sel screen if there is no ship, or shipID is wrong.
         if (!res.GetRow(row))
-            return PyStatic.NewNone();
+            return new PyNone();
 
         sDatabase.DoEscapeString(shipName, row.GetText(0));
         shipTypeID = row.GetUInt(1);

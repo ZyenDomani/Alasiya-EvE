@@ -120,7 +120,7 @@ PyRep* EvilNumber::GetPyObject()
         sLog.Error("EvilNumber::GetPyObject()", "EvilNumber is neither integer nor float.  Returning None");
         EvE::traceStack();
         assert(false);
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 }
 

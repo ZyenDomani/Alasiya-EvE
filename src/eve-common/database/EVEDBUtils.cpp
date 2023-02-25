@@ -37,7 +37,7 @@ PyRep* DBColumnToPyRep(const DBResultRow& row, uint32 index)
 {
     /* check for valid column */
     if (row.IsNull(index))
-        return PyStatic.NewNone();
+        return new PyNone();
 
     switch(row.ColumnType(index)) {
         case DBTYPE_I1:
@@ -79,7 +79,7 @@ PyRep* DBColumnToPyRep(const DBResultRow& row, uint32 index)
 
         default: {
             sLog.Error("DBColumnToPyRep", "invalid column type: %u", row.ColumnType(index));
-            return PyStatic.NewNone();
+            return new PyNone();
         }
     }
 }
@@ -122,7 +122,7 @@ PyObject *DBResultToRowset(DBQueryResult &result)
 PyTuple *DBResultToTupleSet(DBQueryResult &result) {
     uint32 cc = result.ColumnCount();
     if (cc == 0)
-        return PyStatic.mtTuple();
+        return new PyTuple(0);
 
     PyTuple *res = new PyTuple(2);
 
@@ -168,7 +168,7 @@ PyObject *DBResultToIndexRowset(DBQueryResult &result, uint32 key_index) {
     uint32 cc = result.ColumnCount();
 
     if (cc == 0 || cc < key_index)
-        return new PyObject("util.IndexRowset", PyStatic.mtDict());
+        return new PyObject("util.IndexRowset", new PyDict());
 
     //start building the IndexRowset
     PyDict *args = new PyDict();
@@ -237,7 +237,7 @@ PyObject *DBRowToRow(DBResultRow &row, const char *type)
 PyTuple *DBResultToRowList(DBQueryResult &result, const char *type) {
     uint32 cc = result.ColumnCount();
     if (cc == 0)
-        return PyStatic.mtTuple();
+        return new PyTuple(0);
 
     PyList *cols = new PyList(cc);
     //list off the column names:
@@ -289,7 +289,7 @@ PyDict *DBResultToIntIntDict(DBQueryResult &result) {
         if (k == 0)
             continue;   //likely a non-integer key
         if (row.IsNull(1)) {
-            res->SetItem(new PyInt(k), PyStatic.NewNone());
+            res->SetItem(new PyInt(k), new PyNone());
         } else {
             res->SetItem(new PyInt(k), new PyInt(row.GetInt(1)));
         }

@@ -56,7 +56,7 @@ PyResult AuthService::Handle_Ping(PyCallArgs &call) {
 PyResult AuthService::Handle_GetPostAuthenticationMessage(PyCallArgs &call)
 {
     if (sConfig.account.loginMessage.empty())
-        return PyStatic.NewNone();
+        return new PyNone();
 
     PyDict* args = new PyDict;
         args->SetItemString( "message", new PyString( sConfig.account.loginMessage ) );
@@ -70,7 +70,7 @@ PyResult AuthService::Handle_AmUnderage(PyCallArgs &call)
     call.Dump(SERVICE__CALL_DUMP);
 
     // return boolean
-    return PyStatic.NewFalse();
+    return new PyBool(false);
 }
 
 PyResult AuthService::Handle_AccruedTime(PyCallArgs &call)

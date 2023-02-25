@@ -95,7 +95,7 @@ PyResult CorpBookmarkMgr::Handle_UpdateBookmark(PyCallArgs& call) {
 
     m_db.UpdateBookmark(args);
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CorpBookmarkMgr::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
@@ -108,7 +108,7 @@ PyResult CorpBookmarkMgr::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
 
     m_db.UpdateBookmark(args);
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CorpBookmarkMgr::Handle_MoveBookmarksToFolder(PyCallArgs& call)
@@ -123,7 +123,7 @@ PyResult CorpBookmarkMgr::Handle_MoveBookmarksToFolder(PyCallArgs& call)
     //args.Dump(BOOKMARK__CALL_DUMP, "    ");
 
     if (args.object->IsNone())
-        return PyStatic.NewNone();
+        return new PyNone();
 
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
 
@@ -143,14 +143,14 @@ PyResult CorpBookmarkMgr::Handle_UpdateFolder(PyCallArgs& call)
     Call_UpdateFolder args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewFalse();
+        return new PyBool(false);
     }
 
     /** @todo sanitize name */
     if (!m_db.UpdateFolder(args.folderID, PyRep::StringContent(args.folderName)))
-        return PyStatic.NewFalse();
+        return new PyBool(false);
 
-    return PyStatic.NewTrue();
+    return new PyBool(true);;
 }
 
 PyResult CorpBookmarkMgr::Handle_CreateFolder(PyCallArgs& call)
@@ -174,7 +174,7 @@ PyResult CorpBookmarkMgr::Handle_CreateFolder(PyCallArgs& call)
 PyResult CorpBookmarkMgr::Handle_CopyBookmarks(PyCallArgs& call)
 {
     call.Dump(BOOKMARK__CALL_DUMP);
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CorpBookmarkMgr::Handle_DeleteFolder(PyCallArgs& call)
@@ -204,7 +204,7 @@ PyResult CorpBookmarkMgr::Handle_MoveFoldersToDB(PyCallArgs& call)
 {
     //rows, folders = self.corpBookmarkMgr.MoveFoldersToDB(info)
     call.Dump(BOOKMARK__CALL_DUMP);
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CorpBookmarkMgr::Handle_DeleteBookmarks(PyCallArgs& call)
@@ -215,11 +215,11 @@ PyResult CorpBookmarkMgr::Handle_DeleteBookmarks(PyCallArgs& call)
 
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     if (args.object->IsNone())
-        return PyStatic.NewNone();
+        return new PyNone();
 
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
 

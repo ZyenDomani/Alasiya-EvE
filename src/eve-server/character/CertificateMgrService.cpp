@@ -116,29 +116,29 @@ PyResult CertificateMgrService::Handle_GrantCertificate(PyCallArgs &call) {
     SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     call.client->GetChar()->GrantCertificate(arg.arg);
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CertificateMgrService::Handle_UpdateCertificateFlags(PyCallArgs &call) {
     Call_TwoIntegerArgs arg;
     if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     call.client->GetChar()->UpdateCertificate( arg.arg1, arg.arg2 );
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     PyList* res = new PyList();
@@ -155,14 +155,14 @@ PyResult CertificateMgrService::Handle_BatchCertificateUpdate(PyCallArgs &call) 
     Call_BatchCertificateUpdate args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     CharacterRef ch = call.client->GetChar();
     std::map<uint32, uint32>::iterator itr = args.update.begin();
     for (; itr != args.update.end(); ++itr)
         ch->UpdateCertificate( itr->first, itr->second );
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& call )
@@ -170,7 +170,7 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
     SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return new PyNone();
     }
 
     CertMap crt;

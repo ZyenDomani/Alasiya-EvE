@@ -81,7 +81,7 @@ PyResult CalendarProxy::Handle_GetEventList( PyCallArgs& call )
     }
 
     if (list->empty())
-        list->AddItem(PyStatic.NewNone());
+        list->AddItem(new PyNone());
 
     return list;
 }

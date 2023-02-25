@@ -40,46 +40,46 @@ m_sessionID(15)
     sEntityList.RegisterSID(m_sessionID);
 
     // set default session values
-    mSession->SetItemString("role", new_tuple(PyStatic.NewNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE), PyStatic.NewFalse()));
-    mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero(), PyStatic.NewFalse()));
-    mSession->SetItemString("address", new_tuple(PyStatic.NewNone(), new PyString("0.0.0.0"), PyStatic.NewFalse()));
-    mSession->SetItemString("sessionID", new_tuple(PyStatic.NewNone(), new PyLong(m_sessionID), PyStatic.NewFalse()));
-    mSession->SetItemString("languageID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("userType", new_tuple(PyStatic.NewNone(), PyStatic.NewZero(), PyStatic.NewFalse()));
-    mSession->SetItemString("user_clientid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("role", new_tuple(new PyNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE), new PyBool(false)));
+    mSession->SetItemString("userid", new_tuple(new PyNone(), new PyInt(0), new PyBool(false)));
+    mSession->SetItemString("address", new_tuple(new PyNone(), new PyString("0.0.0.0"), new PyBool(false)));
+    mSession->SetItemString("sessionID", new_tuple(new PyNone(), new PyLong(m_sessionID), new PyBool(false)));
+    mSession->SetItemString("languageID", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("userType", new_tuple(new PyNone(), new PyInt(0), new PyBool(false)));
+    mSession->SetItemString("user_clientid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
 
     // init remaining session values
-    mSession->SetItemString("genderID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("bloodlineID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("raceID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("charid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("corpid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("cloneStationID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("solarsystemid2", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("constellationid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("regionid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("hqID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("baseID", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("corpAccountKey", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("corprole", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("rolesAtAll", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("rolesAtBase", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("rolesAtHQ", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("rolesAtOther", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("allianceid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("warfactionid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("solarsystemid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("shipid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("stationid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("stationid2", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("locationid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("worldspaceid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("fleetjob", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("fleetrole", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("fleetbooster", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("fleetid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("wingid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
-    mSession->SetItemString("squadid", new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse()));
+    mSession->SetItemString("genderID", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("bloodlineID", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("raceID", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("charid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("corpid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("cloneStationID", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("solarsystemid2", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("constellationid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("regionid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("hqID", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("baseID", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("corpAccountKey", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("corprole", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("rolesAtAll", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("rolesAtBase", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("rolesAtHQ", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("rolesAtOther", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("allianceid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("warfactionid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("solarsystemid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("shipid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("stationid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("stationid2", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("locationid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("worldspaceid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("fleetjob", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("fleetrole", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("fleetbooster", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("fleetid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("wingid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
+    mSession->SetItemString("squadid", new_tuple(new PyNone(), new PyNone(), new PyBool(false)));
 }
 
 ClientSession::~ClientSession()
@@ -92,7 +92,7 @@ ClientSession::~ClientSession()
 // note:  cannot destroy these Py* objects here.
 void ClientSession::Clear(const char* name)
 {
-    _Set(name, PyStatic.NewNone());
+    _Set(name, new PyNone());
 }
 
 void ClientSession::SetInt(const char* name, int32 value)
@@ -148,7 +148,7 @@ void ClientSession::EncodeChanges(PyDict* into)
     PyDict::const_iterator cur = mSession->begin(), end = mSession->end();
     for (; cur != end; cur++)
         if (cur->second->AsTuple()->GetItem(2)->AsBool()->value()) {    // if this value hasnt changed, dont send it.
-            _GetValueTuple(PyRep::StringContent(cur->first).c_str())->SetItem(2, PyStatic.NewFalse());
+            _GetValueTuple(PyRep::StringContent(cur->first).c_str())->SetItem(2, new PyBool(false));
             into->SetItem(cur->first->AsString(), new_tuple(cur->second->AsTuple()->GetItem(0), cur->second->AsTuple()->GetItem(1)));
         }
 
@@ -193,7 +193,7 @@ void ClientSession::_Set(const char* name, PyRep* value)
 {
     PyTuple* tuple(_GetValueTuple(name)); // copy c'tor
     if (tuple == nullptr) {
-        tuple = new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse());
+        tuple = new_tuple(new PyNone(), new PyNone(), new PyBool(false));
         mSession->SetItemString(name, tuple);
     } else {
         // delete old value before replacing
@@ -204,7 +204,7 @@ void ClientSession::_Set(const char* name, PyRep* value)
     if (value->hash() != current->hash()) {
         tuple->SetItem(0, current); /* didn't the session need to store the old value too? */
         tuple->SetItem(1, value);
-        tuple->SetItem(2, PyStatic.NewTrue());
+        tuple->SetItem(2, new PyBool(true););
         mDirty = true;
     } else {
         PyDecRef(value);

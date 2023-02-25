@@ -821,7 +821,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
     // there is more to this.  also could be not needed, as it checks for 'none'
     // result.message.msg = "event";
     // result.message.args = ??
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult RamProxyService::Handle_UpdateAssemblyLineConfigurations(PyCallArgs &call) {

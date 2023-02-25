@@ -268,7 +268,7 @@ void Scan::ShipScanResult() {
             ssr.degraded = false;  /* dunno what this does.  have only seen 'false' in packets */
             ssr.probeID = new PyInt(m_client->GetShipID());
             ssr.certainty = anoms.sigStrength;
-            ssr.pos = PyStatic.NewNone();
+            ssr.pos = new PyNone();
         ScanResultPos ssr_oed;
             ssr_oed.x = anoms.position.x;
             ssr_oed.y = anoms.position.y;
@@ -312,7 +312,7 @@ void Scan::ProbeScanResult()
             ssr.degraded = false;
             ssr.probeID = new PyInt(m_client->GetShipID());
             ssr.certainty = anoms.sigStrength;
-            ssr.pos = new PyToken("foo.Vector3"); //PyStatic.NewNone();
+            ssr.pos = new PyToken("foo.Vector3"); //new PyNone();
             /*  this is ship position first, then anomaly position
              *    [PyString "data"]
              *    [PyObjectEx Type2]

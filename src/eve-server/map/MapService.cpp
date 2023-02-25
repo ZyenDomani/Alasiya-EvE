@@ -381,7 +381,7 @@ PyResult MapService::Handle_GetIncursionGlobalReport(PyCallArgs &call) {
     sLog.Warning( "MapService::Handle_GetIncursionGlobalReport()", "size= %lu", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 //   factional warfare shit
@@ -392,7 +392,7 @@ PyResult MapService::Handle_GetVictoryPoints(PyCallArgs &call)
     sLog.Warning( "MapService::Handle_GetVictoryPoints()", "size= %lu", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 

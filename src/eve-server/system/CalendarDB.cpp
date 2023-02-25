@@ -53,7 +53,7 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
             args.description.c_str(), Calendar::Flag::Personal, data.month, data.year))
         {
             codelog(DATABASE__ERROR, "Error in SaveNewEvent query: %s", err.c_str());
-            return PyStatic.NewZero();
+            return new PyInt(0);
         }
     } else {
         if (!sDatabase.RunQueryLID(err, eventID,
@@ -64,7 +64,7 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
             args.description.c_str(), Calendar::Flag::Personal, data.month, data.year))
         {
             codelog(DATABASE__ERROR, "Error in SaveNewEvent query: %s", err.c_str());
-            return PyStatic.NewZero();
+            return new PyInt(0);
         }
     }
 
@@ -121,7 +121,7 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, uint32 creatorID, Call_CreateEve
             args.title.c_str(), args.description.c_str(), flag, data.month, data.year))
         {
             codelog(DATABASE__ERROR, "Error in SaveNewEvent query: %s", err.c_str());
-            return PyStatic.NewZero();
+            return new PyInt(0);
         }
     } else {
         if (!sDatabase.RunQueryLID(err, eventID,
@@ -132,7 +132,7 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, uint32 creatorID, Call_CreateEve
             args.title.c_str(), args.description.c_str(), flag, data.month, data.year))
         {
             codelog(DATABASE__ERROR, "Error in SaveNewEvent query: %s", err.c_str());
-            return PyStatic.NewZero();
+            return new PyInt(0);
         }
     }
 
@@ -188,8 +188,8 @@ PyRep* CalendarDB::GetEventList(uint32 ownerID, uint32 month, uint32 year)
             dict->SetItemString("eventID",              new PyInt(row.GetInt(0)));
             dict->SetItemString("ownerID",              new PyInt(row.GetInt(1)));
             dict->SetItemString("eventDateTime",        new PyLong(row.GetInt64(2)));
-            dict->SetItemString("dateModified",         row.IsNull(3) ? PyStatic.NewNone() : new PyLong(row.GetInt64(3)));
-            dict->SetItemString("eventDuration",        row.IsNull(4) ? PyStatic.NewNone() : new PyInt(row.GetInt(4)));
+            dict->SetItemString("dateModified",         row.IsNull(3) ? new PyNone() : new PyLong(row.GetInt64(3)));
+            dict->SetItemString("eventDuration",        row.IsNull(4) ? new PyNone() : new PyInt(row.GetInt(4)));
             dict->SetItemString("importance",           new PyBool(row.GetBool(5)));
             dict->SetItemString("eventTitle",           new PyString(row.GetText(6)));
             dict->SetItemString("flag",                 new PyInt(row.GetInt(7)));

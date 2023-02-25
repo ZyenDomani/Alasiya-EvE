@@ -337,7 +337,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                     dict->SetItemString("target", new PyInt(GetID()));
                 /*
                 PyTuple* tuple = new PyTuple(2);
-                    tuple->AddItem(0, PyStatic.NewNone());  // i dont know what this is
+                    tuple->AddItem(0, new PyNone());  // i dont know what this is
                     tuple->AddItem(1, new PyInt(d.srcSE->GetDroneSE()->GetOwner()->GetCharID())):
                 */
                     //dict->SetItemString("owner", tuple));

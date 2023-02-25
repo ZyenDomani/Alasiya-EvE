@@ -244,7 +244,7 @@ PyResult TutorialService::Handle_GetTutorialAgents(PyCallArgs &call) {
     sLog.White( "TutorialService::Handle_GetTutorialAgents()", "size= %lu", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return PyStatic.NewZero();
+    return new PyInt(0);
 }
 
 PyResult TutorialService::Handle_GetCriterias(PyCallArgs &call) {
@@ -1126,7 +1126,7 @@ PyResult TutorialService::Handle_GetContextHelp( PyCallArgs& call )
 PyResult TutorialService::Handle_GetCharacterTutorialState( PyCallArgs& call ) {
   /*  Empty Call  */
 
-  return PyStatic.NewZero();
+  return new PyInt(0);
 }
 
 PyResult TutorialService::Handle_GetTutorialsAndConnections( PyCallArgs& call ) {
@@ -1146,7 +1146,7 @@ PyResult TutorialService::Handle_GetTutorialsAndConnections( PyCallArgs& call ) 
     uint8 raceID = call.client->GetChar()->race();
     return (m_db.GetTutorialsAndConnections(raceID));
     */
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult TutorialService::Handle_GetCareerAgents( PyCallArgs& call ) {
@@ -1166,7 +1166,7 @@ PyResult TutorialService::Handle_GetCareerAgents( PyCallArgs& call ) {
                 self.careerAgents[careerType]['station'][agent.agentID] = sm.GetService('map').GetStation(agent.stationID)
 */
 
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 

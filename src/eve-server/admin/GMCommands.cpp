@@ -543,7 +543,7 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
         //return new PyBool(true);
     }
     //return new PyBool(false);
-    return PyStatic.NewOne();
+    return new PyInt(1);;
     */
 }
 
@@ -595,7 +595,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
         for (; cur != skillList.end(); ++cur) {
             skillID = *cur;
             if (character->HasSkillTrainedToLevel(skillID, level)) {
-                return PyStatic.NewNone();
+                return new PyNone();
             } else if (character->HasSkill(skillID)) {
                 skillRef = character->GetCharSkillRef(skillID);
                 //oldLevel = skill->GetAttribute(AttrSkillLevel).get_uint32();
@@ -685,7 +685,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
     SkillRef skillRef;
     if (character->HasSkillTrainedToLevel(skillID, level)) {
         // already trained to requested level
-        return PyStatic.NewNone();
+        return new PyNone();
     } else if (character->HasSkill(skillID)) {
         // has skill injected, so update level
         skillRef = character->GetCharSkillRef(skillID);
@@ -726,7 +726,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
     pTarget->QueueDestinyEvent(&tmp);
 
     _log(SKILL__MESSAGE, "GiveSkill - skill %u set to level %u with %u SP.", skillID, level, newPoints);
-    return PyStatic.NewNone();
+    return new PyNone();
 }
 
 PyResult Command_online(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {

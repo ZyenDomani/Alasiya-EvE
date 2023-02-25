@@ -221,12 +221,12 @@ void DroneSE::StateChange() {
     } else {
         PyList* list = new PyList();
             list->AddItemInt(m_self->itemID());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
+            list->AddItem(new PyNone());
+            list->AddItem(new PyNone());
+            list->AddItem(new PyNone());
+            list->AddItem(new PyNone());
+            list->AddItem(new PyNone());
+            list->AddItem(new PyNone());
         PyTuple* tuple = new PyTuple(2);
             tuple->SetItem(0, new PyString("OnDroneStateChange"));
             tuple->SetItem(1, list);
@@ -259,9 +259,9 @@ PyDict* DroneSE::MakeSlimItem() {
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
         slim->SetItemString("ownerID",          new PyInt(m_ownerID));
-        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
         slim->SetItemString("bounty",           new PyFloat(GetBounty()));
         slim->SetItemString("securityStatus",   new PyFloat(GetSecurityRating()));
     return slim;

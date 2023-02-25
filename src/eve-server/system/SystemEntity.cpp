@@ -294,8 +294,8 @@ PyDict* StaticSystemEntity::MakeSlimItem() {
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("nameID",       PyStatic.NewNone());
-        slim->SetItemString("ownerID",      PyStatic.NewOne());
+        slim->SetItemString("nameID",       new PyNone());
+        slim->SetItemString("ownerID",      new PyInt(1););
     return slim;
 }
 
@@ -386,10 +386,10 @@ PyDict* StargateSE::MakeSlimItem() {
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
         /** @todo (allan) make function to lookup controlling faction id for this */
         //  NOTE:  maybe not...logs show this is "1" for all items.
-        slim->SetItemString("ownerID",      PyStatic.NewOne());
+        slim->SetItemString("ownerID",      new PyInt(1););
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("nameID",       PyStatic.NewNone());
+        slim->SetItemString("nameID",       new PyNone());
     if (m_jumps != nullptr)
         slim->SetItemString("jumps", m_jumps->Clone());
     return slim;
@@ -411,8 +411,8 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
         slim->SetItemString("ownerID",      new PyInt(m_ownerID));
         if (m_self->groupID() == EVEDB::invGroups::Warp_Gate) {
             // this is incomplete........
-            slim->SetItemString("dunSkillLevel", PyStatic.NewNone());   //?
-            slim->SetItemString("dunSkillTypeID", PyStatic.NewNone());   //?
+            slim->SetItemString("dunSkillLevel", new PyNone());   //?
+            slim->SetItemString("dunSkillTypeID", new PyNone());   //?
             slim->SetItemString("dunObjectID", new PyInt(160449));  //?   902139
             slim->SetItemString("dunToGateID", new PyInt(160484));  //?   902140
             slim->SetItemString("dunCloaked", new PyBool(0));   //?
@@ -430,11 +430,11 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
             PyList* dirList = new PyList();
                 dirList->AddItem(new PyInt(5));     //234
                 dirList->AddItem(new PyInt(-1));
-                dirList->AddItem(PyStatic.NewZero());
+                dirList->AddItem(new PyInt(0));
             slim->SetItemString("dunDirection", dirList);
-            slim->SetItemString("dunKeyLock", PyStatic.NewNone());   //?
+            slim->SetItemString("dunKeyLock", new PyNone());   //?
             slim->SetItemString("dunWipeNPC", new PyBool(0));   //?
-            slim->SetItemString("dunKeyQuantity", PyStatic.NewOne());   //?
+            slim->SetItemString("dunKeyQuantity", new PyInt(1););   //?
             slim->SetItemString("dunKeyTypeID", new PyInt(m_keyType));   //Training Complex Passkey   group Acceleration_Gate_Keys
             slim->SetItemString("dunOpenUntil", new PyLong(Win32TimeNow()+EvE::Time::Hour));   //?
             slim->SetItemString("dunRoomName", new PyString("Lobby"));   //?
@@ -596,9 +596,9 @@ PyDict* ObjectSystemEntity::MakeSlimItem() {
         slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
     return slim;
 }
 
@@ -698,9 +698,9 @@ PyDict *DynamicSystemEntity::MakeSlimItem() {
         //slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
         //slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+        slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+        slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
     return (slim);
 }
 

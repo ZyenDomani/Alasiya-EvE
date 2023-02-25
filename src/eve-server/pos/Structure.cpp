@@ -953,9 +953,9 @@ void StructureSE::SendSlimUpdate()
     slim->SetItemString("itemID", new PyLong(m_data.itemID));
     slim->SetItemString("typeID", new PyInt(m_self->typeID()));
     slim->SetItemString("ownerID", new PyInt(m_ownerID));
-    slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-    slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+    slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+    slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+    slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
     slim->SetItemString("posTimestamp", new PyLong(m_data.timestamp));
     slim->SetItemString("posState", new PyInt(m_data.state));
     slim->SetItemString("incapacitated", new PyInt(0));
@@ -976,8 +976,8 @@ void StructureSE::SendEffectUpdate(int16 effectID, bool active)
     ge.selfID = m_data.itemID;
     ge.charID = m_ownerID;
     ge.shipID = m_data.itemID;
-    ge.target = PyStatic.NewNone();
-    ge.subLoc = PyStatic.NewNone();
+    ge.target = new PyNone();
+    ge.subLoc = new PyNone();
     ge.area = new PyList();
     ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
@@ -990,7 +990,7 @@ void StructureSE::SendEffectUpdate(int16 effectID, bool active)
     shipEff.startTime = shipEff.timeNow; // do we need to adjust this?
     shipEff.duration = (active ? 0 : -1);
     shipEff.repeat = (active ? 1 : 0);
-    shipEff.error = PyStatic.NewNone();
+    shipEff.error = new PyNone();
     PyList *events = new PyList();
     events->AddItem(shipEff.Encode());
     PyTuple *event = new PyTuple(1);
@@ -1096,9 +1096,9 @@ PyDict *StructureSE::MakeSlimItem()
     slim->SetItemString("posState", new PyInt(m_data.state));
 
     slim->SetItemString("ownerID", new PyInt(m_ownerID));
-    slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-    slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
-    slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+    slim->SetItemString("corpID", IsCorpID(m_corpID) ? new PyInt(m_corpID) : new PyNone());
+    slim->SetItemString("allianceID", IsAllianceID(m_allyID) ? new PyInt(m_allyID) : new PyNone());
+    slim->SetItemString("warFactionID", IsFactionID(m_warID) ? new PyInt(m_warID) : new PyNone());
 
     if (m_module or m_tower) { // for control towers and structures
         slim->SetItemString("posTimestamp", new PyLong(m_data.timestamp));
@@ -1106,7 +1106,7 @@ PyDict *StructureSE::MakeSlimItem()
         slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
     } else if (m_tcu) {
         slim->SetItemString("posDelayTime", new PyInt(m_delayTime));
-        slim->SetItemString("posTimestamp", PyStatic.NewNone());
+        slim->SetItemString("posTimestamp", new PyNone());
     } else if (m_miner) {
         PyTuple *tuple = new PyTuple(3);
         tuple->SetItem(0, new PyFloat(m_rotation.x));
@@ -1157,8 +1157,8 @@ void StructureSE::GetEffectState(PyList &into)
 
     fxState->SetItemInt(1, m_data.itemID);      // moduleID
     fxState->SetItemInt(2, m_self->typeID());      // moduleTypeID
-    fxState->SetItem(3, PyStatic.NewNone());         // targetID
-    fxState->SetItem(4, PyStatic.NewNone());         // chargeTypeID
+    fxState->SetItem(3, new PyNone());         // targetID
+    fxState->SetItem(4, new PyNone());         // chargeTypeID
     fxState->SetItem(5, new PyList());         // area
 
     // set guid here depending on tower state
@@ -1182,13 +1182,13 @@ void StructureSE::GetEffectState(PyList &into)
         }
     }
 
-    fxState->SetItem(7, PyStatic.NewFalse());         // isOffensive
-    fxState->SetItem(8, PyStatic.NewOne());      // start
-    fxState->SetItem(9, PyStatic.NewOne());      // active
-    fxState->SetItem(10, PyStatic.NewNegOne());      // duration
-    fxState->SetItem(11, PyStatic.NewZero());      // repeat
+    fxState->SetItem(7, new PyBool(false));         // isOffensive
+    fxState->SetItem(8, new PyInt(1););      // start
+    fxState->SetItem(9, new PyInt(1););      // active
+    fxState->SetItem(10, new PyInt(-1));      // duration
+    fxState->SetItem(11, new PyInt(0));      // repeat
     fxState->SetItem(12, new PyLong(m_data.timestamp));      // startTime
-    fxState->SetItem(13, PyStatic.NewNone());         // graphicInfo
+    fxState->SetItem(13, new PyNone());         // graphicInfo
 
     // add tuple directly to list.
     into.AddItem(fxState);
