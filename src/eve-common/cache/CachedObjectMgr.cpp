@@ -105,8 +105,8 @@ CachedObjectMgr::~CachedObjectMgr()
 CachedObjectMgr::CacheRecord::CacheRecord() : objectID(nullptr), timestamp(0), version(0), cache(nullptr) {}
 CachedObjectMgr::CacheRecord::~CacheRecord()
 {
-    PyDecRef( objectID );
-    PyDecRef( cache );
+    SafeDelete( objectID );
+    SafeDelete( cache );
 }
 
 PyObject *CachedObjectMgr::CacheRecord::EncodeHint() const
@@ -153,13 +153,12 @@ bool CachedObjectMgr::HaveCached(const std::string &objectID) const
     //this is very sub-optimal, but it keeps things more consistent (in case StringCollapseVisitor ever gets more complicated)
     PyString *str = new PyString( objectID );
     bool ret = HaveCached(str);
-    PyDecRef(str);
+    SafeDelete(str);
     return ret;
 }
 
 bool CachedObjectMgr::HaveCached(const PyRep *objectID) const
 {
-    //PyIncRef(objectID);
     const std::string str = OIDToString(objectID);
 
     return (m_cachedObjects.find(str) != m_cachedObjects.end());
@@ -167,7 +166,6 @@ bool CachedObjectMgr::HaveCached(const PyRep *objectID) const
 
 void CachedObjectMgr::InvalidateCache(const PyRep *objectID)
 {
-    //PyIncRef(objectID);
     const std::string str = OIDToString(objectID);
     CachedObjMapItr res = m_cachedObjects.find(str);
 

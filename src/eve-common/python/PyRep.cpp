@@ -70,13 +70,13 @@ const char* const s_mTypeString[] =
 /************************************************************************/
 /* PyRep base Class                                                     */
 /************************************************************************/
-PyRep::PyRep(PyType t) : RefObject(1), mType(t) { }
-PyRep::PyRep(PyType t, size_t count) : RefObject(count), mType(t) { }
-PyRep::PyRep(const PyRep& oth) : RefObject(1), mType(oth.mType)
+PyRep::PyRep(PyType t) : mType(t) { }
+PyRep::PyRep(PyType t, size_t count) : mType(t) { }
+PyRep::PyRep(const PyRep& oth) : mType(oth.mType)
 {
     //sLog.Cyan("PyRep()", "Copy C'tor.");
 }
-PyRep::PyRep(PyRep&& oth) : RefObject(1), mType(PyRep::PyTypeNone) {
+PyRep::PyRep(PyRep&& oth) : mType(PyRep::PyTypeNone) {
     std::swap(*this, oth);
 }
 
@@ -662,8 +662,8 @@ PyTuple::PyTuple(const PyTuple& oth) : PyRep(PyRep::PyTypeTuple), items(oth.item
 
 PyTuple::~PyTuple()
 {
-    for (auto &cur : cleanupVec)
-        PySafeDecRef(items[cur]);
+    for (auto &cur : items)
+        SafeDelete(cur);
 }
 
 PyTuple* PyTuple::Clone() const
@@ -681,7 +681,7 @@ void PyTuple::clear()
 {
     iterator cur = items.begin(), end = items.end();
     for (; cur != end; cur++)
-        PySafeDecRef(*cur);
+        SafeDelete(*cur);
 
     items.clear();
 }
@@ -736,15 +736,15 @@ PyList::PyList(const PyList& oth) : PyRep(PyRep::PyTypeList), items(oth.items)
     //sLog.Cyan("PyList()", "Copy C'tor.");
 }
 // this may not work right...
-PyList::PyList(PyList&& oth) : PyRep(PyRep::PyTypeList, oth.GetCount()), items(std::move(oth.items)), cleanup(std::move(oth.cleanup))
+PyList::PyList(PyList&& oth) : PyRep(PyRep::PyTypeList), items(std::move(oth.items)), cleanup(std::move(oth.cleanup))
 {
     sLog.Cyan("PyList()", "Move C'tor.");
 }
 
 PyList::~PyList()
 {
-    for (auto &cur : cleanup)
-        PySafeDecRef(items[cur]);
+    for (auto &cur : items)
+        SafeDelete(cur);
 }
 
 PyList* PyList::Clone() const
@@ -762,7 +762,7 @@ void PyList::clear()
 {
     iterator cur = items.begin(), end = items.end();
     for (; cur != end; cur++)
-        PySafeDecRef(*cur);
+        SafeDelete(*cur);
 
     items.clear();
 }
@@ -825,7 +825,7 @@ PyDict::PyDict(const PyDict& oth) : PyRep(PyRep::PyTypeDict), items(oth.items)
     //sLog.Cyan("PyDict()", "Copy C'tor.");
 }
 // this may not work right...
-PyDict::PyDict(PyDict&& oth) : PyRep(PyRep::PyTypeDict, oth.GetCount()), items(std::move(oth.items))
+PyDict::PyDict(PyDict&& oth) : PyRep(PyRep::PyTypeDict), items(std::move(oth.items))
 {
     sLog.Cyan("PyDict()", "Move C'tor.");
 }
@@ -845,8 +845,8 @@ void PyDict::clear()
 {
     iterator cur = items.begin(), end = items.end();
     for (; cur != end; cur++) {
-        PyDecRef(cur->first);
-        PySafeDecRef(cur->second);
+        delete cur->first;
+        SafeDelete(cur->second);
     }
 
     items.clear();
@@ -934,8 +934,8 @@ PyObject::PyObject(const PyObject& oth) : PyRep(PyRep::PyTypeObject), mType(oth.
 
 PyObject::~PyObject()
 {
-    if (cleanup)
-        PySafeDecRef(mType);
+    //if (cleanup)
+        SafeDelete(mType);
 }
 
 PyObject* PyObject::Clone() const
@@ -975,11 +975,11 @@ mHeader(oth.header()->Clone()), mIsType2(oth.isType2()), mList(oth.mList), mDict
 
 PyObjectEx::~PyObjectEx()
 {
-    if (cleanup) {
-        PySafeDecRef(mHeader);
-        PySafeDecRef(mList);
-        PySafeDecRef(mDict);
-    }
+    //if (cleanup) {
+    SafeDelete(mHeader);
+    SafeDelete(mList);
+    SafeDelete(mDict);
+    //}
 }
 
 PyObjectEx* PyObjectEx::Clone() const

@@ -64,7 +64,7 @@ class DBRowDescriptor;
 /**
  * @brief Base Python wire object
  */
-class PyRep : public RefObject
+class PyRep //: public RefObject
 {
 public:
     /**
@@ -157,8 +157,8 @@ public:
     PyPackedRow* AsPackedRow()                           { assert(IsPackedRow()); return (PyPackedRow*)this; }
     const PyPackedRow* AsPackedRow() const               { assert(IsPackedRow()); return (const PyPackedRow*)this; }
 
-    using RefObject::IncRef;
-    using RefObject::DecRef;
+    //using RefObject::IncRef;
+    //using RefObject::DecRef;
 
     /**
      * @brief Dumps object to file.
@@ -233,6 +233,9 @@ public:
     }
 
     virtual ~PyRep();
+
+    virtual void IncRef() const {}
+    virtual void DecRef() const {}
 
 protected:
     const PyType		mType;
@@ -1229,15 +1232,15 @@ public:
 
    ~pyStatic()
    {
-       PyDecRef(m_none);
-       PyDecRef(m_zero);
-       PyDecRef(m_one);
-       PyDecRef(m_negone);
-       PyDecRef(m_true);
-       PyDecRef(m_false);
-       PyDecRef(m_dict);
-       PyDecRef(m_list);
-       PyDecRef(m_tuple);
+       delete m_none;
+       delete m_zero;
+       delete m_one;
+       delete m_negone;
+       delete m_true;
+       delete m_false;
+       delete m_dict;
+       delete m_list;
+       delete m_tuple;
     }
 
     PyRep* NewNone()            { PyIncRef(m_none); return m_none; }
