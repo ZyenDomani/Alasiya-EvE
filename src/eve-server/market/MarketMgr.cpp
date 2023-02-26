@@ -155,26 +155,7 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, int32 typeID) {
     //check to see if this method is in the cache already.
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
         //this method is not in cache yet, load up the contents and cache it
-        DBQueryResult res;
-
-        /** @todo  this doesnt belong here...  */
-        if (!sDatabase.RunQuery(res,
-            "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
-            " FROM mktHistory "
-            " WHERE regionID=%u AND typeID=%i"
-            " AND historyDate > %li  LIMIT %u",
-            regionID, typeID, (m_timeStamp - EvE::Time::Day), sConfig.market.NewPriceLimit))
-        {
-            _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-            return nullptr;
-        }
-        _log(MARKET__DB_TRACE, "MarketMgr::GetNewPriceHistory() - Fetched %lu buy orders for type %i in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
-
-        result = DBResultToCRowset(res);
-        if (result == nullptr) {
-            _log(MARKET__DB_ERROR, "Failed to load cache, generating empty contents.");
-            result = PyStatic.NewNone();
-        }
+        result = MarketDB::GetNewPriceHistory(regionID, typeID, m_timeStamp);
         m_manager->cache_service->GiveCache(method_id, &result);
     }
 
@@ -194,37 +175,72 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, int32 typeID) {
     method_name += "_";
     method_name += std::to_string(typeID);
     ObjectCachedMethodID method_id("marketProxy", method_name.c_str());
-    //check to see if this method is in the cache already.
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it
-        DBQueryResult res;
-
-        /** @todo  this doesnt belong here...  */
-        if (!sDatabase.RunQuery(res,
-            "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
-            " FROM mktHistory WHERE regionID=%u AND typeID=%i"
-            " AND historyDate > %li AND historyDate < %li LIMIT %u",
-            regionID, typeID, (m_timeStamp - (EvE::Time::Day *3)), (m_timeStamp - EvE::Time::Day), sConfig.market.OldPriceLimit))
-        {
-            _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-            return nullptr;
-        }
-        _log(MARKET__DB_TRACE, "MarketMgr::GetOldPriceHistory() - Fetched %lu orders for type %i in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
-
-        result = DBResultToCRowset(res);
-        if (result == nullptr) {
-            _log(MARKET__DB_ERROR, "Failed to load cache, generating empty contents.");
-            result = PyStatic.NewNone();
-        }
+        result = MarketDB::GetOldPriceHistory(regionID, typeID, m_timeStamp);
         m_manager->cache_service->GiveCache(method_id, &result);
     }
 
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
     result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
 
     if (is_log_enabled(MARKET__DB_TRACE))
         result->Dump(MARKET__DB_TRACE, "    ");
+    return result;
+}
+
+PyRep* MarketMgr::GetOrdersForOwner(int32 ownerID) {
+    PyRep* result(nullptr);
+    std::string method_name ("GetOwnerOrders_");
+    method_name += std::to_string(ownerID);
+    ObjectCachedMethodID method_id("marketProxy", method_name.c_str());
+    if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
+        result = m_db.GetOrdersForOwner(ownerID);
+        m_manager->cache_service->GiveCache(method_id, &result);
+    }
+
+    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+    return result;
+}
+
+// station, system, region based on selection in market window
+PyRep* MarketMgr::GetStationAsks(int32 stationID) {
+    PyRep* result(nullptr);
+    std::string method_name ("GetStationOrders_");
+    method_name += std::to_string(stationID);
+    ObjectCachedMethodID method_id("marketProxy", method_name.c_str());
+    if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
+        result = m_db.GetStationAsks(stationID);
+        m_manager->cache_service->GiveCache(method_id, &result);
+    }
+
+    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+    return result;
+}
+
+PyRep* MarketMgr::GetSystemAsks(uint32 systemID) {
+    PyRep* result(nullptr);
+    std::string method_name ("GetSystemOrders_");
+    method_name += std::to_string(systemID);
+    ObjectCachedMethodID method_id("marketProxy", method_name.c_str());
+    if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
+        result = m_db.GetSystemAsks(systemID);
+        m_manager->cache_service->GiveCache(method_id, &result);
+    }
+
+    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+    return result;
+}
+
+PyRep* MarketMgr::GetRegionBest(uint32 regionID) {
+    PyRep* result(nullptr);
+    std::string method_name ("GetRegionOrders_");
+    method_name += std::to_string(regionID);
+    ObjectCachedMethodID method_id("marketProxy", method_name.c_str());
+    if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
+        result = m_db.GetRegionBest(regionID);
+        m_manager->cache_service->GiveCache(method_id, &result);
+    }
+
+    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
     return result;
 }
 

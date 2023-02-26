@@ -60,6 +60,10 @@ public:
     uint32 StoreOrder(Market::SaveData& data);
 
 
+    static PyRep* GetNewPriceHistory(uint32 regionID, uint16 typeID, int64 m_timeStamp);
+    static PyRep* GetOldPriceHistory(uint32 regionID, uint16 typeID, int64 m_timeStamp);
+    
+
     /* for base price estimator */
     static void GetShipIDs(std::map<uint16, Inv::TypeData>& data);
     static void GetMineralPrices(std::map< uint16, Market::matlData >& data);   // +15% markup

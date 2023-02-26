@@ -83,6 +83,7 @@ PyRep *MarketDB::GetSystemAsks(uint32 solarSystemID) {
 }
 
 PyRep *MarketDB::GetRegionBest(uint32 regionID) {
+    // is this ONLY sell orders??
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
@@ -491,6 +492,50 @@ void MarketDB::UpdateHistory()
                    " FROM mktData");
 }
 
+PyRep* MarketDB::GetNewPriceHistory(uint32 regionID, uint16 typeID, int64 m_timeStamp) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
+        " FROM mktHistory "
+        " WHERE regionID=%u AND typeID=%i"
+        " AND historyDate > %li  LIMIT %u",
+        regionID, typeID, (m_timeStamp - EvE::Time::Day), sConfig.market.NewPriceLimit))
+    {
+        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+    _log(MARKET__DB_TRACE, "MarketDB::GetNewPriceHistory() - Fetched %lu buy orders for type %i in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
+
+    PyRep* result = DBResultToCRowset(res);
+    if (result == nullptr) {
+        _log(MARKET__DB_ERROR, "Failed to load cache, generating empty contents.");
+        result = PyStatic.NewNone();
+    }
+    return result;
+}
+
+PyRep* MarketDB::GetOldPriceHistory(uint32 regionID, uint16 typeID, int64 m_timeStamp) {
+
+    DBQueryResult res;
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
+        " FROM mktHistory WHERE regionID=%u AND typeID=%i"
+        " AND historyDate > %li AND historyDate < %li LIMIT %u",
+        regionID, typeID, (m_timeStamp - (EvE::Time::Day *3)), (m_timeStamp - EvE::Time::Day), sConfig.market.OldPriceLimit))
+    {
+        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+    _log(MARKET__DB_TRACE, "MarketDB::GetOldPriceHistory() - Fetched %lu orders for type %i in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
+
+    PyRep* result = DBResultToCRowset(res);
+    if (result == nullptr) {
+        _log(MARKET__DB_ERROR, "Failed to load cache, generating empty contents.");
+        result = PyStatic.NewNone();
+    }
+    return result;
+}
 
 /*  data retrieval for updating base pricing */
 

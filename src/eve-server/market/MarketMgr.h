@@ -62,6 +62,11 @@ public:
     void UpdateMineralPrice();
     void GetCruPrices();
 
+    // cached market orders.  havent checked cache code nor set a time for these yet.
+    PyRep* GetOrdersForOwner(int32 ownerID);
+    PyRep* GetStationAsks(int32 stationID);
+    PyRep* GetSystemAsks(uint32 systemID);
+    PyRep* GetRegionBest(uint32 regionID);
 
 protected:
     void Populate();

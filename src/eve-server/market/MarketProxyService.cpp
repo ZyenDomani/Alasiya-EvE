@@ -75,39 +75,12 @@ MarketProxyService::~MarketProxyService() {
     delete m_dispatch;
 }
 
-PyResult MarketProxyService::Handle_GetMarketGroups(PyCallArgs &call) {
-    return sMktMgr.GetMarketGroups();
-}
-
 PyResult MarketProxyService::Handle_StartupCheck(PyCallArgs &call) {
     //if (sMktMgr.NeedsUpdate())
     //    sMktMgr.UpdatePriceHistory();
     return nullptr;
 }
 
-PyResult MarketProxyService::Handle_GetCharOrders(PyCallArgs &call) {
-    return m_db.GetOrdersForOwner(call.client->GetCharacterID());
-}
-
-PyResult MarketProxyService::Handle_GetCorporationOrders(PyCallArgs &call) {
-    return m_db.GetOrdersForOwner(call.client->GetCorporationID());
-}
-
-/** @todo update these to use market manager and cache instead of hitting db? */
-// station, system, region based on selection in market window
-PyResult MarketProxyService::Handle_GetStationAsks(PyCallArgs &call) {
-    return m_db.GetStationAsks(call.client->GetStationID());
-}
-
-PyResult MarketProxyService::Handle_GetSystemAsks(PyCallArgs &call) {
-    return m_db.GetSystemAsks(call.client->GetSystemID());
-}
-
-PyResult MarketProxyService::Handle_GetRegionBest(PyCallArgs &call) {
-    return m_db.GetRegionBest(call.client->GetRegionID());
-}
-
-// this is called 3x on every market transaction
 PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -165,6 +138,32 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
         data.accountKey = args.accountKey;
         data.memberID = args.memberID;
     return m_db.GetTransactions(call.client->GetCorporationID(), data);
+}
+
+// this is static data, loaded on server startup
+PyResult MarketProxyService::Handle_GetMarketGroups(PyCallArgs &call) {
+    return sMktMgr.GetMarketGroups();
+}
+
+PyResult MarketProxyService::Handle_GetCharOrders(PyCallArgs &call) {
+    return sMktMgr.GetOrdersForOwner(call.client->GetCharacterID());
+}
+
+PyResult MarketProxyService::Handle_GetCorporationOrders(PyCallArgs &call) {
+    return sMktMgr.GetOrdersForOwner(call.client->GetCorporationID());
+}
+
+// station, system, region based on selection in market window
+PyResult MarketProxyService::Handle_GetStationAsks(PyCallArgs &call) {
+    return sMktMgr.GetStationAsks(call.client->GetStationID());
+}
+
+PyResult MarketProxyService::Handle_GetSystemAsks(PyCallArgs &call) {
+    return sMktMgr.GetSystemAsks(call.client->GetSystemID());
+}
+
+PyResult MarketProxyService::Handle_GetRegionBest(PyCallArgs &call) {
+    return sMktMgr.GetRegionBest(call.client->GetRegionID());
 }
 
 PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {

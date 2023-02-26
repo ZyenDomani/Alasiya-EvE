@@ -159,15 +159,12 @@ bool CachedObjectMgr::HaveCached(const std::string &objectID) const
 
 bool CachedObjectMgr::HaveCached(const PyRep *objectID) const
 {
-    //PyIncRef(objectID);
     const std::string str = OIDToString(objectID);
-
     return (m_cachedObjects.find(str) != m_cachedObjects.end());
 }
 
 void CachedObjectMgr::InvalidateCache(const PyRep *objectID)
 {
-    //PyIncRef(objectID);
     const std::string str = OIDToString(objectID);
     CachedObjMapItr res = m_cachedObjects.find(str);
 
@@ -190,8 +187,7 @@ void CachedObjectMgr::UpdateCacheFromSS(const std::string &objectID, PySubStream
     PyString* str = new PyString( objectID );
     PyBuffer* buf = cache.cache->data();
     _UpdateCache(str, &buf);
-
-    PyDecRef( str );
+    PyDecRef(str);
 }
 
 void CachedObjectMgr::UpdateCache(const std::string &objectID, PyRep **in_cached_data)
