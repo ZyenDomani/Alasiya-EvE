@@ -25,6 +25,9 @@ other updates?
 -- even with heading identical (client and server) there is still some deviation after turning...i dont understand where its from
 
 
+market --  some queries dont work...sending price data returns null
+
+
 ships  ---  attrAgility will need to be recalc'd and reset anytime inertia or mass changes.
   - does this include adding/dropping ore, items, loot, drones?  what about the large PI items?
     -- there are also modules that modify all of these variables.  these need verification
