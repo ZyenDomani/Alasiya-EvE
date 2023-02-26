@@ -47,10 +47,12 @@ EVEClientSession::~EVEClientSession() {
     // Destroy connection we used
     delete mNet;
     PySafeDecRef(mRep);
+    mPacketHandler = nullptr;
 }
 
 void EVEClientSession::Reset() {
-    PySafeDecRef(mRep);
+    // this is deleted already at this point...
+    //PySafeDecRef(mRep);
     mPacketHandler = nullptr;
 
     // Connection has been lost, there's no point in reset
