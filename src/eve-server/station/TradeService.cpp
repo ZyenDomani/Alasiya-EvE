@@ -71,11 +71,6 @@ public:
         delete m_dispatch;
     }
 
-    virtual void Release() {
-        //this needs to die
-        delete this;
-    }
-
     void ExchangeItems(Client* pClient, Client* pOther, TradeSession* pTSes);
     void CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSes);
 

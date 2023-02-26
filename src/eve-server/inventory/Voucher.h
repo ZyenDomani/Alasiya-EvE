@@ -53,11 +53,6 @@ public:
 
     virtual ~VoucherBound();
 
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
     PyCallable_DECL_CALL(GetDescription);
 
 protected:

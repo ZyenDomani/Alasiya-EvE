@@ -57,10 +57,6 @@ public:
     virtual ~RepairSvcBound() {
         delete m_dispatch;
     }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(GetDamageReports);
     PyCallable_DECL_CALL(RepairItems);

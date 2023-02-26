@@ -90,11 +90,6 @@ public:
         delete m_dispatch;
     }
 
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
     PyCallable_DECL_CALL(UpdateStateRequest);
     PyCallable_DECL_CALL(CmdStop);
     PyCallable_DECL_CALL(CmdSetSpeedFraction);

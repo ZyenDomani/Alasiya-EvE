@@ -68,10 +68,6 @@ public:
             m_locGroupID = EVEDB::invGroups::Solar_System;
     }
     virtual ~JumpCloneBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(GetCloneState);
     PyCallable_DECL_CALL(GetShipCloneState);

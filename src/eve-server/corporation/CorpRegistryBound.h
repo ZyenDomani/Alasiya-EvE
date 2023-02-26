@@ -19,10 +19,6 @@ public:
 
     CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint32 corpID);
     virtual ~CorpRegistryBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(GetEveOwners);
     PyCallable_DECL_CALL(GetCorporation);
@@ -118,7 +114,7 @@ public:
     PyCallable_DECL_CALL(GetNumberOfPotentialCEOs);
 
     PyCallable_DECL_CALL(CanLeaveCurrentCorporation);
-    
+
 
 protected:
     static void FillOCApplicationChange(OnCorporationApplicationChanged& OCAC, const Corp::ApplicationInfo& Old, const Corp::ApplicationInfo& New);

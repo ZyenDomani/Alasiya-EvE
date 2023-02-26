@@ -80,12 +80,6 @@ SkillMgrBound::~SkillMgrBound()
     delete m_dispatch;
 }
 
-/** @todo redesign this so this is not needed */
-void SkillMgrBound::Release()
-{
-    delete this;
-}
-
 PyResult SkillMgrBound::Handle_GetRespecInfo( PyCallArgs& call ) {
     return m_db.GetRespecInfo(call.client->GetCharacterID());
 }

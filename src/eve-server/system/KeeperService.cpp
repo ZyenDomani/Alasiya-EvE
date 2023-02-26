@@ -69,10 +69,6 @@ public:
 
     }
     virtual ~KeeperBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(EditDungeon);
     PyCallable_DECL_CALL(PlayDungeon);

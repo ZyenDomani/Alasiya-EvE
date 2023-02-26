@@ -46,10 +46,6 @@ public:
         PyCallable_REG_CALL(MissionMgrBound, )
     }
     virtual ~MissionMgrBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL()
     PyCallable_DECL_CALL()

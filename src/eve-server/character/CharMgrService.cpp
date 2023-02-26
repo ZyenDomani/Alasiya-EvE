@@ -58,11 +58,6 @@ public:
 
     virtual ~CharMgrBound() {delete m_dispatch;}
 
-	virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
     PyCallable_DECL_CALL(List);
     PyCallable_DECL_CALL(ListStations);
     PyCallable_DECL_CALL(ListStationItems);

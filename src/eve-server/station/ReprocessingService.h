@@ -59,8 +59,6 @@ public:
     PyCallable_DECL_CALL(GetQuotes);
     PyCallable_DECL_CALL(Reprocess);
 
-    virtual void Release();
-
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;

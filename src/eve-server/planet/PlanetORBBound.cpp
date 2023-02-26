@@ -55,10 +55,6 @@ public:
         m_systemID = systemID;
     }
     virtual ~PlanetORBBound() { delete m_dispatch; }
-    virtual void Release() {
-        //He hates this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(GetTaxRate);
     PyCallable_DECL_CALL(UpdateSettings);

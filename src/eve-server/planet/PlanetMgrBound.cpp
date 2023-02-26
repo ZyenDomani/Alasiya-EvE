@@ -98,10 +98,6 @@ public:
         SafeDelete(m_planetMgr);
     }
 
-    virtual void Release() {
-        delete this;
-    }
-
     PyCallable_DECL_CALL(GetPlanetInfo);
     PyCallable_DECL_CALL(GetPlanetResourceInfo);
     PyCallable_DECL_CALL(GetCommandPinsForPlanet);

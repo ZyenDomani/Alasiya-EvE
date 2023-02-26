@@ -60,10 +60,6 @@ public:
     }
 
     virtual ~InsuranceBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(InsureShip);
     PyCallable_DECL_CALL(UnInsureShip);

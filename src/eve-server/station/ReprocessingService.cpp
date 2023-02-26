@@ -103,11 +103,6 @@ ReprocessingServiceBound::~ReprocessingServiceBound() {
     delete m_dispatch;
 }
 
-void ReprocessingServiceBound::Release() {
-    //I hate this statement
-    delete this;
-}
-
 PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &call) {
     _log(MANUF__INFO, "%s: Calling GetOptionsForItemTypes().", call.client->GetName());
     call.Dump(MANUF__DUMP);

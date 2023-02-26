@@ -39,10 +39,6 @@ public:
 
     EntityBound(PyServiceMgr* mgr, SystemManager* systemMgr, uint32 systemID);
     virtual ~EntityBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     PyCallable_DECL_CALL(CmdEngage);
     PyCallable_DECL_CALL(CmdRelinquishControl);

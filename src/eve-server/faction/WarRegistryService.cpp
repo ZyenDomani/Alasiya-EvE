@@ -63,14 +63,9 @@ public:
      return self.GetMoniker().GetCostOfWarAgainst(ownerID)
      */
     }
-    ~WarRegistryBound()
+    virtual ~WarRegistryBound()
     {
         delete m_dispatch;
-    }
-
-    void Release() {
-        //I hate this statement
-        delete this;
     }
 
     PyCallable_DECL_CALL(GetWars);

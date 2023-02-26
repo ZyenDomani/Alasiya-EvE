@@ -34,8 +34,6 @@ public:
     PyBoundObject(PyServiceMgr *mgr);
     virtual ~PyBoundObject();
 
-    virtual void Release() = 0;
-
     uint32 nodeID() const                               { return m_nodeID; }
     uint32 bindID() const                               { return m_bindID; }
 

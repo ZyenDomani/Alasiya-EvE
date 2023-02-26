@@ -277,7 +277,7 @@ void PyServiceMgr::ClearBoundObject(uint32 bindID)
     _log(SERVICE__MESSAGE, "Service Mgr Clearing bound object %s at %s", bo->GetName(), bo->GetBindStr().c_str());
 
     m_boundObjects.erase(itr);
-    bo->Release();
+    SafeDelete(bo);
 }
 
 void PyServiceMgr::BoundObjectVec(std::vector< BoundObj >& vec)

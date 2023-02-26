@@ -87,10 +87,6 @@ public:
         pStationItem = sEntityList.GetStationByID(station_id).get();
     }
     virtual ~CorpStationMgrIMBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
 
     //PyCallable_DECL_CALL(GetEveOwners);
     PyCallable_DECL_CALL(GetCorporateStationInfo);

@@ -71,11 +71,6 @@ public:
         delete m_dispatch;
     }
 
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
     PyCallable_DECL_CALL(GetContainerContents);
     PyCallable_DECL_CALL(GetInventoryFromId);
     PyCallable_DECL_CALL(GetInventory);

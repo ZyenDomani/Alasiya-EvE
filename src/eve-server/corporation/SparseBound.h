@@ -16,9 +16,6 @@ public:
     SparseBound(PyServiceMgr *mgr, CorporationDB& db, uint32 corpID);
 
     virtual ~SparseBound() {delete m_dispatch;}
-    virtual void Release() {
-        delete this;
-    }
 
     PyCallable_DECL_CALL(Fetch);
     PyCallable_DECL_CALL(SelectByUniqueColumnValues);

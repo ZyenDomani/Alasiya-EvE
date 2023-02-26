@@ -77,9 +77,6 @@ public:
     }
 
     virtual ~PosMgrBound() {delete m_dispatch;}
-    virtual void Release() {
-        delete this;
-    }
 
     PyCallable_DECL_CALL(SetTowerPassword);
     PyCallable_DECL_CALL(SetShipPassword);
