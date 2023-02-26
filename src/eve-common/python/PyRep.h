@@ -1026,7 +1026,6 @@ public:
     // Fields:
     const_iterator begin() const			{ return mFields->begin(); }
     const_iterator end() const				{ return mFields->end(); }
-    void clear()					{ /*delete mHeader;*/ delete mFields; }
 
     PyRep* GetField(size_t index) const		        { return mFields->GetItem(index); }
 

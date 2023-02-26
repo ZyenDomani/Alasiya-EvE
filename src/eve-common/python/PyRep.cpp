@@ -930,6 +930,7 @@ PyObject::PyObject(const PyObject& oth) : PyRep(PyRep::PyTypeObject), mType(oth.
 PyObject::~PyObject()
 {
     SafeDelete(mType);
+    SafeDelete(mArguments);
 }
 
 PyObject* PyObject::Clone() const
@@ -1201,6 +1202,7 @@ PyPackedRow::PyPackedRow(const PyPackedRow& oth)
 
 PyPackedRow::~PyPackedRow()
 {
+    SafeDelete(mHeader);
     SafeDelete(mFields);
 }
 
@@ -1241,7 +1243,6 @@ PyPackedRow& PyPackedRow::operator=(const PyPackedRow& oth)
 {
     sLog.Yellow("PyPackedRow()", "Copy assignment.");
 
-    clear();
     SafeDelete(mHeader);
     SafeDelete(mFields);
 

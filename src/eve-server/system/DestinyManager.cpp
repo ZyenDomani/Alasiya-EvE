@@ -2614,9 +2614,9 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     slim->SetItemString("typeID",                   new PyInt(newShipRef->typeID()));
     slim->SetItemString("ownerID",                  new PyInt(mySE->GetOwnerID()));
     slim->SetItemString("charID",                   new PyInt(pClient->GetCharacterID()));
-    slim->SetItemString("corpID",                   IsCorpID(mySE->GetCorporationID()) ? new PyInt(mySE->GetCorporationID()) : new PyNone());
-    slim->SetItemString("allianceID",               IsAllianceID(mySE->GetAllianceID()) ? new PyInt(mySE->GetAllianceID()) : new PyNone());
-    slim->SetItemString("warFactionID",             IsFactionID(mySE->GetWarFactionID()) ? new PyInt(mySE->GetWarFactionID()) : new PyNone());
+    slim->SetItemString("corpID",                   (IsCorpID(mySE->GetCorporationID()) ? (PyRep*)new PyInt(mySE->GetCorporationID()) : new PyNone()));
+    slim->SetItemString("allianceID",               (IsAllianceID(mySE->GetAllianceID()) ? (PyRep*)new PyInt(mySE->GetAllianceID()) : new PyNone()));
+    slim->SetItemString("warFactionID",             (IsFactionID(mySE->GetWarFactionID()) ? (PyRep*)new PyInt(mySE->GetWarFactionID()) : new PyNone()));
     slim->SetItemString("bounty",                   new PyFloat(pClient->GetBounty()));
     slim->SetItemString("securityStatus",           new PyFloat(pClient->GetSecurityRating()));
     if (newShipRef->typeID() == itemTypeCapsule) {
@@ -3051,8 +3051,8 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.entityID = entityID;
         effect.moduleID = moduleID;
         effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's/drones
-        effect.targetID = (targetID == 0 ? new PyNone() : new PyInt(targetID));
-        effect.chargeTypeID = (chargeTypeID == 0 ? new PyNone() : new PyInt(chargeTypeID));
+        effect.targetID = ((targetID == 0) ? new PyNone() : (PyRep*)new PyInt(targetID));
+        effect.chargeTypeID = ((chargeTypeID == 0) ? new PyNone() : (PyRep*)new PyInt(chargeTypeID));
         effect.guid = guid;
         effect.isOffensive = isOffensive;                  // bool
         effect.start = start;                   // bool
@@ -3060,7 +3060,7 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.duration = duration;
         effect.repeat = repeat;
         effect.startTime = GetFileTimeNow();
-        effect.graphicInfo = (graphicInfo == 0 ? new PyNone() : new PyInt(graphicInfo));
+        effect.graphicInfo = ((graphicInfo == 0) ? new PyNone() : (PyRep*)new PyInt(graphicInfo));
     PyTuple *up = effect.Encode();
     SendSingleDestinyUpdate(&up);
     PyDecRef(up);

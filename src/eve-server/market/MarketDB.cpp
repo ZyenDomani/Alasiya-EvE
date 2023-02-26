@@ -407,8 +407,6 @@ PyRep *MarketDB::GetMarketGroups() {
 
     CFilterRowSet *filterRowset = new CFilterRowSet(&header);
 
-    SafeDelete(header);
-
     /*  i dont think this is used....
     PyDict *keywords = filterRowset->GetKeywords();
     keywords->SetItemString("allowDuplicateCompoundKeys", new PyBool(false));

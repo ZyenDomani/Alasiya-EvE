@@ -95,7 +95,7 @@ bool ClassDestructGenerator::ProcessRaw( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    PySafeDecRef( %s );\n",
+             "    //SafeDelete( %s );\n",
         name
     );
 
@@ -325,12 +325,8 @@ bool ClassDestructGenerator::ProcessDictInt( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-             "    std::map<int32, PyRep*>::const_iterator %s_cur = %s.begin();\n"
-            "    for (; %s_cur != %s.end(); %s_cur++)\n"
-            "        PyDecRef( %s_cur->second );\n"
-            "\n",
-             name, name,
-             name, name, name,
+             "    for (auto &cur : %s)\n"
+             "        SafeDelete(cur.second);\n\n",
              name
     );
 
@@ -346,12 +342,8 @@ bool ClassDestructGenerator::ProcessDictStr( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-            "    std::map<std::string, PyRep*>::const_iterator %s_cur = %s.begin();\n"
-            "    for (; %s_cur != %s.end(); %s_cur++)\n"
-            "        PyDecRef( %s_cur->second );\n"
-            "\n",
-             name, name,
-             name, name, name,
+             "    for (auto &cur : %s)\n"
+             "        SafeDelete(cur.second);\n\n",
              name
     );
 
