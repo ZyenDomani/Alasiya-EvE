@@ -1,8 +1,10 @@
 
-/*
+/**
  *  EVE_Missions.h
  *   mission-specific data
  *
+ *  @author:    Allan
+ *  @date:      July 2018
  */
 
 #ifndef EVE_MISSIONS_H

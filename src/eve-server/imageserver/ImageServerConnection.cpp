@@ -134,11 +134,11 @@ void ImageServerConnection::Redirect()
 
 void ImageServerConnection::RedirectLocation()
 {
-    sLog.Error("     Image Server"," RedirectLocation() called.");
     std::string extension = _category == "Character" ? "jpg" : "png";
     std::stringstream url;
     url << ImageServer::FallbackURL << _category << "/" << _id << "_" << _size << "." << extension;
     _redirectUrl = url.str();
+    sLog.Warning("     Image Server"," RedirectLocation() called for %s.", _redirectUrl.c_str());
     boost::asio::async_write(_socket, boost::asio::buffer(_redirectUrl), boost::asio::transfer_all(), std::bind(&ImageServerConnection::RedirectFinalize, shared_from_this()));
 }
 

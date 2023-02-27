@@ -34,6 +34,10 @@
 
 #include "utils/misc.h"
 
+/** @note:  update...this is only used for InventoryItemRef types
+ * totally removed from Py* objects as 'delete this' did not call d'tors properly
+ */
+
 /**
  * @brief A reference-counted object.
  *
@@ -70,10 +74,6 @@ public:
      */
     virtual ~RefObject()
     {
-        if (mDeleted) {
-            _log(REFPTR__ERROR, "~RefObject() - mDeleted: true");
-            EvE::traceStack();
-        }
         mDeleted = true;
     }
 
@@ -86,11 +86,6 @@ protected:
      */
     void IncRef() const
     {
-        if (mDeleted) {
-            _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %u", mRefCount);
-            EvE::traceStack();
-            return;
-        }
         assert( mDeleted == false );
         ++mRefCount;
     }
@@ -98,16 +93,10 @@ protected:
      * @brief Decrements reference count of object by one.
      *
      * If reference count of object reaches zero, object is deleted.
+     * ....or so it was thought...'delete this' does not call derived d'tors properly (verified thru testing)
      */
     void DecRef() const
     {
-        if (mDeleted) {
-            _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %u", mRefCount);
-            //EvE::traceStackLN();        // this is painfully slow
-            EvE::traceStack();
-            return;
-        }
-
         assert( mDeleted == false );
         --mRefCount;
 

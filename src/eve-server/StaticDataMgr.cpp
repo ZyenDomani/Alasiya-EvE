@@ -40,31 +40,6 @@ m_entryTypes(nullptr),
 m_factionInfo(nullptr),
 m_npcDivisions(nullptr)
 {
-    /*
-    m_ramReq.clear();
-    m_moonGoo.clear();
-    m_ramMatl.clear();
-    m_regions.clear();
-    m_attrTypeData.clear();
-    m_minerals.clear();
-    m_compounds.clear();
-    m_bpMatlData.clear();
-    m_systemData.clear();
-    m_solSysData.clear();
-    m_staticData.clear();
-    m_salvageMap.clear();
-    m_agentSystem.clear();
-    m_corpFaction.clear();
-    m_typeAttrMap.clear();
-    m_LootGroupMap.clear();
-    m_stationCount.clear();
-    m_stationConst.clear();
-    m_stationRegion.clear();
-    m_stationSystem.clear();
-    m_oreBySecClass.clear();
-    m_LootGroupTypeMap.clear();
-    m_WrecksToTypesMap.clear();
-    */
 }
 
 StaticDataMgr::~StaticDataMgr()

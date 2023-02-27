@@ -70,19 +70,23 @@ const char* const s_mTypeString[] =
 /************************************************************************/
 /* PyRep base Class                                                     */
 /************************************************************************/
-PyRep::PyRep(PyType t) : RefObject(1), mType(t) { }
-PyRep::PyRep(PyType t, size_t count) : RefObject(count), mType(t) { }
-PyRep::PyRep(const PyRep& oth) : RefObject(1), mType(oth.mType)
+PyRep::PyRep(PyType t) : mType(t), mRefCount(1), mDeleted(false) { }
+PyRep::PyRep(PyType t, size_t count) : mType(t), mRefCount(count), mDeleted(false) { }
+PyRep::PyRep(const PyRep& oth) : mType(oth.mType), mRefCount(oth.mRefCount), mDeleted(false)
 {
     //sLog.Cyan("PyRep()", "Copy C'tor.");
 }
-PyRep::PyRep(PyRep&& oth) : RefObject(1), mType(PyRep::PyTypeNone) {
+PyRep::PyRep(PyRep&& oth) : mType(PyRep::PyTypeNone), mRefCount(1), mDeleted(false) {
     std::swap(*this, oth);
 }
 
 PyRep::~PyRep()
 {
-    //sLog.Error("PyRep()", "D'tor. count: %u", GetCount());
+    if (mDeleted) {
+        _log(REFPTR__ERROR, "~PyRep() - mDeleted: true");
+        EvE::traceStack();
+    }
+    mDeleted = true;
 }
 
 const char* PyRep::TypeString() const
@@ -205,6 +209,34 @@ int32 PyRep::IntegerValueI32 ( PyRep* pRep ) {
     //sLog.Error("PyRep::IntegerValueI32()", "Expected integer type but got %s.", pRep->TypeString());
     //EvE::traceStack();
     return 0;
+}
+
+void PyRep::IncRef() const
+{
+    if (mDeleted) {
+        _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %u.  incrementing to %u", mRefCount, ++mRefCount);
+        EvE::traceStack();
+        mDeleted = false;
+        return;
+    }
+    assert( mDeleted == false );
+    ++mRefCount;
+}
+
+void PyRep::DecRef() const
+{
+    if (mDeleted) {
+        _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %u", mRefCount);
+        //EvE::traceStackLN();        // this is painfully slow
+        EvE::traceStack();
+        return;
+    }
+
+    assert( mDeleted == false );
+    --mRefCount;
+
+    if (mRefCount < 1)
+        delete this;
 }
 
 
@@ -662,8 +694,9 @@ PyTuple::PyTuple(const PyTuple& oth) : PyRep(PyRep::PyTypeTuple), items(oth.item
 
 PyTuple::~PyTuple()
 {
-    for (auto &cur : cleanupVec)
-        PySafeDecRef(items[cur]);
+    //for (auto &cur : cleanupVec)
+    //    PySafeDecRef(items[cur]);
+    clear();
 }
 
 PyTuple* PyTuple::Clone() const
@@ -736,7 +769,7 @@ PyList::PyList(const PyList& oth) : PyRep(PyRep::PyTypeList), items(oth.items)
     //sLog.Cyan("PyList()", "Copy C'tor.");
 }
 // this may not work right...
-PyList::PyList(PyList&& oth) : PyRep(PyRep::PyTypeList, oth.GetCount()), items(std::move(oth.items)), cleanup(std::move(oth.cleanup))
+PyList::PyList(PyList&& oth) : PyRep(PyRep::PyTypeList, oth.mRefCount), items(std::move(oth.items)), cleanup(std::move(oth.cleanup))
 {
     sLog.Cyan("PyList()", "Move C'tor.");
 }
@@ -825,7 +858,7 @@ PyDict::PyDict(const PyDict& oth) : PyRep(PyRep::PyTypeDict), items(oth.items)
     //sLog.Cyan("PyDict()", "Copy C'tor.");
 }
 // this may not work right...
-PyDict::PyDict(PyDict&& oth) : PyRep(PyRep::PyTypeDict, oth.GetCount()), items(std::move(oth.items))
+PyDict::PyDict(PyDict&& oth) : PyRep(PyRep::PyTypeDict, oth.mRefCount), items(std::move(oth.items))
 {
     sLog.Cyan("PyDict()", "Move C'tor.");
 }

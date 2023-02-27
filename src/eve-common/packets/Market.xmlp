@@ -1,7 +1,7 @@
 
 
 <elements>
-  <elementDef name="Call_PlaceCharOrder">
+  <elementDef name="Call_PlaceCharOrder" encode="false">
     <tupleInline>
       <int name="stationID" />
       <int name="typeID" />
@@ -17,7 +17,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_ModifyCharOrder">
+  <elementDef name="Call_ModifyCharOrder" encode="false">
     <tupleInline>
       <int name="orderID" />
       <real name="newPrice" />
@@ -31,14 +31,14 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_CancelCharOrder">
+  <elementDef name="Call_CancelCharOrder" encode="false">
     <tupleInline>
       <int name="orderID" />
       <int name="regionID" />
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Notify_OnOwnOrderChanged">
+  <elementDef name="Notify_OnOwnOrderChanged" decode="false">
     <tupleInline>
       <raw name="order" />
       <string name="reason" /><!-- Add, Expiry, Modify -->
@@ -46,7 +46,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetNewCharTransactions">
+  <elementDef name="Call_GetNewCharTransactions" encode="false">
      <tupleInline>
        <int name="sellBuy" none_marker="-1" />
        <int name="typeID" none_marker="0" />
@@ -58,7 +58,7 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_GetNewCorpTransactions">
+  <elementDef name="Call_GetNewCorpTransactions" encode="false">
     <tupleInline>
        <int name="sellBuy" none_marker="-1" />
        <int name="typeID" none_marker="0" />

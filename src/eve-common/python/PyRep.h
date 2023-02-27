@@ -64,7 +64,7 @@ class DBRowDescriptor;
 /**
  * @brief Base Python wire object
  */
-class PyRep : public RefObject
+class PyRep
 {
 public:
     /**
@@ -157,9 +157,6 @@ public:
     PyPackedRow* AsPackedRow()                           { assert(IsPackedRow()); return (PyPackedRow*)this; }
     const PyPackedRow* AsPackedRow() const               { assert(IsPackedRow()); return (const PyPackedRow*)this; }
 
-    using RefObject::IncRef;
-    using RefObject::DecRef;
-
     /**
      * @brief Dumps object to file.
      *
@@ -218,6 +215,8 @@ public:
     // move c'tor
     PyRep(PyRep&& oth);
 
+    virtual ~PyRep();
+
     // copy assignment
     PyRep& operator= (const PyRep& oth) {
         // this is just noise until proven otherwise
@@ -232,10 +231,15 @@ public:
         return *this;
     }
 
-    virtual ~PyRep();
+    void IncRef() const;
+    void DecRef() const;
 
 protected:
     const PyType		mType;
+
+    /// Reference count of instance.
+    mutable uint16              mRefCount;
+    mutable bool                mDeleted;
 };
 
 /**

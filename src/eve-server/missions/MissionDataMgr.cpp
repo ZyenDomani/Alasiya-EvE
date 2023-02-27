@@ -123,6 +123,8 @@ void MissionDataMgr::Populate()
     PNG = new PyString("<img src='res:/UI/netres/mission_content/smash_and_grab.png' align=center hspace=4 vspace=4>");
     */
 
+    sLog.Cyan("   MissionDataMgr", "Loading Mission Data.  Loaded counts are '#normal(#important)'.");
+
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
@@ -419,28 +421,9 @@ void MissionDataMgr::LoadMissionOffers(uint32 charID, std::vector<MissionOffer>&
 void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID, bool important, MissionOffer& data)
 {
     // variable mission data based on agent, init to 0 here.
+    data = MissionOffer();
     data.stateID                = Mission::State::Allocated;
     data.dateIssued             = GetFileTimeNow();
-    data.remoteOfferable        = false;
-    data.remoteCompletable      = false;
-    data.range                  = 0;
-    data.offerID                = 0;
-    data.agentID                = 0;
-    data.rewardLP               = 0;
-    data.originID               = 0;
-    data.originOwnerID          = 0;
-    data.originSystemID         = 0;
-    data.acceptFee              = 0;
-    data.expiryTime             = 0;
-    data.characterID            = 0;
-    data.dateAccepted           = 0;
-    data.dateCompleted          = 0;
-    data.destinationID          = 0;
-    data.destinationTypeID      = 0;
-    data.destinationOwnerID     = 0;
-    data.destinationSystemID    = 0;
-    data.dungeonLocationID      = 0;
-    data.dungeonSolarSystemID   = 0;
     data.bookmarks              = new PyList();
 
     /** @todo  this will need to be adjusted for raceID eventually */
