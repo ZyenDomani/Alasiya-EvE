@@ -151,7 +151,7 @@ void Prospector::CheckSuccess()
     if (roll < chance)
         m_success = true;
 
-    _log(MODULE__DEBUG, "Prospector::CheckSuccess - chance: %i, roll: %u, success: %s", chance, roll, (m_success ? "true" : "false"));
+    _log(MODULE__DEBUG, "Prospector::CheckSuccess - chance: %li, roll: %u, success: %s", chance, roll, (m_success ? "true" : "false"));
 }
 
 void Prospector::DropSalvage()

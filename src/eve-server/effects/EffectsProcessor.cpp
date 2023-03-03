@@ -69,7 +69,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             /*
             if (data.math > Math::MaxMathMethod) {
                 Operand operand = sFxDataMgr.GetOperand(expression.operandID);
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range mathOp: %s(%i) for operand %u (%s).", \
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range mathOp: %s(%li) for operand %u (%s).", \
                         GetMathMethodName(data.math), data.math, expression.operandID, operand.operandKey.c_str());
             } */
         } break;
@@ -78,7 +78,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             /*
             if (data.targLoc > Target::MaxTargLocation) {
                 Operand operand = sFxDataMgr.GetOperand(expression.operandID);
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range targLoc: %i for operand %u (%s).", \
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range targLoc: %li for operand %u (%s).", \
                         data.targAttr, expression.operandID, operand.operandKey.c_str());
             } */
         } break;
@@ -457,7 +457,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             if ((cur.second.typeID == 0)
             and (cur.second.grpID == 0)) {
                 // only concerned when typeID/grpID is 0.  when either are populated, ship dont have that module.  nbd
-                _log(EFFECTS__WARNING, "FxProc::ApplyEffects(%i): %s(%u): target item vector empty.", \
+                _log(EFFECTS__WARNING, "FxProc::ApplyEffects(%li): %s(%u): target item vector empty.", \
                         cur.first, cur.second.srcRef->name(), cur.second.srcRef->itemID());
                 _log(EFFECTS__WARNING, "Data:  src(%s:%u), targ(%s:%u), grpID:%u, typeID:%u, math:%s.", \
                         GetSourceName(cur.second.fxSrc), cur.second.srcAttr, \
@@ -506,7 +506,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             // send data to calculator
             newValue = CalculateAttributeValue(targValue, srcValue, cur.first);
             // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u)=%.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", \
+            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%li): %s(%u) - src(%s:%u)=%.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", \
                     cur.first, cur.second.srcRef->name(), cur.second.srcRef->itemID(), \
                     GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(cur.first), \
                     GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float(), newValue.get_float());
@@ -555,7 +555,7 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
             _log(EFFECTS__WARNING, "FxProc::CalculateNewAttributeValue() - Invalid Association used");
             return val1;
     }
-    _log(EFFECTS__ERROR, "FxProc::CalculateNewAttributeValue() - Unknown Association used: %i", (int8)method);
+    _log(EFFECTS__ERROR, "FxProc::CalculateNewAttributeValue() - Unknown Association used: %li", (int8)method);
     return val1;
 }
 

@@ -811,11 +811,11 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
 
 InventoryItemRef InventoryItem::Split(int32 qty/*0*/, bool notify/*true*/, bool silent/*false*/) {
     if (qty < 1) {
-        _log(ITEM__ERROR, "II::Split() - %s(%u): Asked to split into a chunk of %i", m_data.name.c_str(), m_itemID, qty);
+        _log(ITEM__ERROR, "II::Split() - %s(%u): Asked to split into a chunk of %li", m_data.name.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
     }
     if (!AlterQuantity(-qty, notify)) {
-        _log(ITEM__ERROR, "II::Split() - %s(%u): Failed to remove quantity of %i during split.", m_data.name.c_str(), m_itemID, qty);
+        _log(ITEM__ERROR, "II::Split() - %s(%u): Failed to remove quantity of %li during split.", m_data.name.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
     }
 
@@ -943,7 +943,7 @@ bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
 
     int32 new_qty = m_data.quantity + qty;
     if (new_qty < 0) {
-        codelog(ITEM__ERROR, "II::AlterQuantity() - %s(%u): Tried to remove %i from stack of %i for ownerID %u.", \
+        codelog(ITEM__ERROR, "II::AlterQuantity() - %s(%u): Tried to remove %li from stack of %li for ownerID %u.", \
                 m_data.name.c_str(), m_itemID, qty, m_data.quantity, m_data.ownerID);
         // make player error msg here.....
         Delete();
@@ -956,7 +956,7 @@ bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
 bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZero/*true*/) {
     //if an object is singleton, there is only one, and it shouldn't be able to alter qty
     if (m_data.singleton) {
-        _log(ITEM__ERROR, "II::SetQuantity() - %s(%u): Failed to set quantity %i; the items singleton bit is set", m_data.name.c_str(), m_itemID, qty);
+        _log(ITEM__ERROR, "II::SetQuantity() - %s(%u): Failed to set quantity %li; the items singleton bit is set", m_data.name.c_str(), m_itemID, qty);
         // make player error msg here.....
         return false;
     }

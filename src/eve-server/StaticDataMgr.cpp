@@ -298,7 +298,7 @@ void StaticDataMgr::Populate()
         size += m_whClassDestinations[i].size();
     }
 
-    sLog.Cyan("    StaticDataMgr", "%i WH Destination Classes loaded in %.3fms.",
+    sLog.Cyan("    StaticDataMgr", "%li WH Destination Classes loaded in %.3fms.",
               size, (GetTimeMSeconds() - startTime));
 
     // Load wormhole system classes into static memory object
@@ -314,7 +314,7 @@ void StaticDataMgr::Populate()
         size += m_whClassSystems[i].size();
     }
 
-    sLog.Cyan("    StaticDataMgr", "%i WH Class Systems loaded in %.3fms.",
+    sLog.Cyan("    StaticDataMgr", "%li WH Class Systems loaded in %.3fms.",
               size, (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();

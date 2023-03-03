@@ -185,7 +185,7 @@ void EvE::traceStack(void)
     char **strings;
 
     nptrs = backtrace(buffer, SIZE);
-    printf("backtrace() returned %i addresses\n", nptrs);
+    printf("backtrace() returned %li addresses\n", nptrs);
 
     /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
      *       would produce similar output to the following: */

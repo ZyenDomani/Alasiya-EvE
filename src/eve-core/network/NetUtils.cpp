@@ -46,7 +46,7 @@ uint32 ResolveIP(const char* hostname, char* errbuf) {
     {
         if ( errbuf )
 #ifdef HAVE_WINSOCK2_H
-            snprintf( errbuf, ERRBUF_SIZE, "Unable to get the host name. Error: %i", WSAGetLastError() );
+            snprintf( errbuf, ERRBUF_SIZE, "Unable to get the host name. Error: %li", WSAGetLastError() );
 #else /* !HAVE_WINSOCK2_H */
             snprintf( errbuf, ERRBUF_SIZE, "Unable to get the host name. Error: %s", strerror( errno ) );
 #endif /* !HAVE_WINSOCK2_H */

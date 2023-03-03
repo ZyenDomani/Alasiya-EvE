@@ -63,7 +63,7 @@ int32 LSCDB::GetNextAvailableChannelID()
         "SELECT"
         "    channelID "
         " FROM channels "
-        " WHERE channelID >= %i ", LSCService::BASE_CHANNEL_ID ))
+        " WHERE channelID >= %li ", LSCService::BASE_CHANNEL_ID ))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
@@ -94,7 +94,7 @@ void LSCDB::UpdateChannelInfo(LSCChannel *channel) {
     if (!sDatabase.RunQuery(err,
         " INSERT INTO channels"
         "   (channelID, ownerID, displayName, motd, comparisonKey, memberless, password, mailingList, cspa)"
-        " VALUES (%i, %u, '%s', '%s', '%s', %u, '%s', %u, %u)"
+        " VALUES (%li, %u, '%s', '%s', '%s', %u, '%s', %u, %u)"
         " ON DUPLICATE KEY UPDATE"
         "  ownerID=VALUES(ownerID),"
         "  displayName=VALUES(displayName),"
@@ -123,20 +123,20 @@ void LSCDB::UpdateSubscription(int32 channelID, Client* pClient) {
     sDatabase.RunQuery(err,
         " INSERT INTO channelChars "
         " (channelID, corpID, charID, allianceID, role, extra) "
-        " VALUES (%i, %i, %i, %i, %li, 0) ",
+        " VALUES (%li, %li, %li, %li, %lli, 0) ",
         channelID, pClient->GetCorporationID(),  pClient->GetCharacterID(), pClient->GetAllianceID(), pClient->GetAccountRole());
 }
 
 void LSCDB::DeleteChannel(int32 channelID)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "DELETE FROM channels WHERE channelID=%i", channelID);
+    sDatabase.RunQuery(err, "DELETE FROM channels WHERE channelID=%li", channelID);
 }
 
 void LSCDB::DeleteSubscription(int32 channelID, uint32 charID)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "DELETE FROM channelChars WHERE channelID=%i AND charID=%u", channelID, charID );
+    sDatabase.RunQuery(err, "DELETE FROM channelChars WHERE channelID=%li AND charID=%u", channelID, charID );
 }
 
 
@@ -177,7 +177,7 @@ bool LSCDB::IsChannelIDAvailable(int32 channelID)
         "SELECT"
         "    channelID "
         " FROM channels "
-        " WHERE channelID = %i", channelID ))
+        " WHERE channelID = %li", channelID ))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
@@ -204,7 +204,7 @@ bool LSCDB::IsChannelSubscribedByThisChar(uint32 charID, int32 channelID)
         "   channelID, "
         "   charID "
         " FROM channelChars "
-        " WHERE channelID = %i AND charID = %u", channelID, charID ))
+        " WHERE channelID = %li AND charID = %u", channelID, charID ))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
@@ -256,7 +256,7 @@ void LSCDB::GetChannelInformation(int32 channelID, std::string & name,
         "   mailingList, "
         "   cspa "
         " FROM channels "
-        " WHERE channelID = %i", channelID))
+        " WHERE channelID = %li", channelID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
@@ -266,7 +266,7 @@ void LSCDB::GetChannelInformation(int32 channelID, std::string & name,
 
     if (!(res.GetRow(row)))
     {
-            _log(SERVICE__ERROR, "Channel %i isn't present in the database", channelID );
+            _log(SERVICE__ERROR, "Channel %li isn't present in the database", channelID );
             return;
     }
 
@@ -344,7 +344,7 @@ void LSCDB::GetChannelSubscriptions(uint32 charID, std::vector<long> & ids, std:
 bool LSCDB::GetChannelInfo(int32 channelID, std::string &name, std::string &motd)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT displayName, motd FROM channels WHERE channelID = %i ", channelID)) {
+    if (!sDatabase.RunQuery(res, "SELECT displayName, motd FROM channels WHERE channelID = %li ", channelID)) {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
@@ -410,7 +410,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
     if (!sDatabase.RunQueryLID(err, messageID,
         " INSERT INTO eveMail "
         " (channelID, senderID, subject, created) "
-        " VALUES (%u, %u, '%s', %li) ",
+        " VALUES (%u, %u, '%s', %lli) ",
                                recipID, senderID, escaped.c_str(), sentTime ))
     {
         _log(DATABASE__ERROR, "Error in query, message header couldn't be saved: %s", err.c_str());

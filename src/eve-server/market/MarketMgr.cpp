@@ -124,14 +124,14 @@ void MarketMgr::UpdatePriceHistory()
             "    SUM(quantity),"
             "    COUNT(transactionID)"
             " FROM mktTransactions"
-            " WHERE transactionType=%u AND transactionDate < %li",
+            " WHERE transactionType=%u AND transactionDate < %lli",
             //" GROUP BY regionID, typeID, transactionDate",
             Market::Type::Sell, cutoff_time);
 
     /** @todo  this doesnt belong here...  */
     // remove the transactions which have been aged out?
     if (sConfig.market.DeleteOldTransactions)
-        sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE transactionDate < %li", (cutoff_time - EvE::Time::Year));
+        sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE transactionDate < %lli", (cutoff_time - EvE::Time::Year));
 }
 
     /*DBColumnTypeMap colmap;

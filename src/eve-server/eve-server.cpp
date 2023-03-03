@@ -542,7 +542,7 @@ int main( int argc, char* argv[] )
 
     sLog.Blue("     ServerConfig", "Misc Switches");
     if (sConfig.server.ModuleDamageChance) {
-        sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
+        sLog.Green("    Module Damage","Enabled.  Set to %li%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
     } else {
         sLog.Warning("    Module Damage","Disabled.");
     }
@@ -842,6 +842,7 @@ int main( int argc, char* argv[] )
     std::printf("\n");     // spacer
     sLiveUpdateDB.Init();
     std::printf("\n");     // spacer
+    PyStatic.Init();
 
     // clear dynamic system data (player counts, etc) on server start
     MapDB::SystemStartup();
@@ -881,7 +882,7 @@ int main( int argc, char* argv[] )
         if (setpriority(PRIO_PROCESS, 0, PROCESS_HIGH_PRIORITY))
             sLog->outError("Can't set worldserver process priority class, error: %s", strerror(errno));
         else
-            sLog->outString("worldserver process priority class set to %i", getpriority(PRIO_PROCESS, 0));
+            sLog->outString("worldserver process priority class set to %li", getpriority(PRIO_PROCESS, 0));
     }
 
     #endif

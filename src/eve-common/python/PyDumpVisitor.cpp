@@ -38,13 +38,13 @@ PyDumpVisitor::PyDumpVisitor( const char* pfx, bool full_nested ) : PyPfxVisitor
 
 bool PyDumpVisitor::VisitInteger( const PyInt* rep )
 {
-    _print( "%s   Integer: %i", _pfx(), rep->value() );
+    _print( "%s   Integer: %li", _pfx(), rep->value() );
     return true;
 }
 
 bool PyDumpVisitor::VisitLong( const PyLong* rep )
 {
-    _print( "%s      Long: %li", _pfx(), rep->value() );
+    _print( "%s      Long: %lli", _pfx(), rep->value() );
     return true;
 }
 
@@ -170,6 +170,7 @@ bool PyDumpVisitor::VisitDict( const PyDict* rep )
     } else {
         _print( "%s Dictionary: %lu entries", _pfx(), rep->size() );
 
+        bool res(true);
         PyDict::const_iterator cur = rep->begin(), end = rep->end();
         for (uint8 i(0); cur != end; cur++, i++ )  {
             if (i > 100 && !fullNested() ) {
@@ -178,7 +179,7 @@ bool PyDumpVisitor::VisitDict( const PyDict* rep )
             }
 
             _pfxExtend( "  [%2u]   Key: ", i );
-            bool res = cur->first->visit( *this );
+            res = cur->first->visit( *this );
             _pfxWithdraw();
 
             if (!res)
@@ -233,6 +234,7 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
     if (rep->list().empty()) {
         _print( "%s  Empty", _pfx() );
     } else {
+        bool res(true);
         PyList::const_iterator lItr = rep->list().begin(), lEnd = rep->list().end();
         for(uint8 i(0); lItr != lEnd; lItr++, i++ ) {
             if (*lItr == nullptr)
@@ -243,7 +245,7 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
             }
 
             _pfxExtend( "  [%2u] ", i );
-            bool res = (*lItr)->visit( *this );
+            res = (*lItr)->visit( *this );
             _pfxWithdraw();
 
             if (!res )
@@ -255,6 +257,7 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
     if (rep->dict().empty()) {
         _print( "%s   Empty", _pfx() );
     } else {
+        bool res(true);
         PyDict::const_iterator dItr = rep->dict().begin(), dEnd = rep->dict().end();
         for(uint8 i(0); dItr != dEnd; dItr++, i++ ) {
             if (i > 100 && !fullNested() ) {
@@ -263,7 +266,7 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
             }
 
             _pfxExtend( "  [%2u]   Key: ", i );
-            bool res = dItr->first->visit( *this );
+            res = dItr->first->visit( *this );
             _pfxWithdraw();
 
             if (!res)

@@ -98,7 +98,7 @@ int MailDB::SendMail(int sender, std::vector<int>& toCharacterIDs, int toListID,
                                " INSERT INTO mailMessage "
                                " (senderID, toCharacterIDs, toListID, toCorpOrAllianceID, "
                                " title, body, sentDate) "
-                               " VALUES (%u, '%s', %d, %d, '%s', '%s', %li)" ,
+                               " VALUES (%u, '%s', %d, %d, '%s', '%s', %lli)" ,
                                sender, toStr.c_str(), toListID, toCorpOrAllianceID, title.c_str(),
                                bodyEscaped.c_str(), Win32TimeNow()))
     {

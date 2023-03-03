@@ -118,7 +118,7 @@ PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
     uint8 int1 = PyRep::IntegerValueU32(call.tuple->GetItem(0));
     uint8 int2 = PyRep::IntegerValueU32(call.tuple->GetItem(1));
     if (is_log_enabled(SERVICE__CALLS))
-        sLog.Cyan( "MapService::Handle_GetHistory()", "type: %i, timeframe: %i", int1, int2 );
+        sLog.Cyan( "MapService::Handle_GetHistory()", "type: %li, timeframe: %li", int1, int2 );
 
     return MapDB::GetDynamicData(int1, int2);
 }

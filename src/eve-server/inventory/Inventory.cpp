@@ -701,7 +701,7 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
     float volume = iRef->GetAttribute(AttrVolume).get_float();
     float totalVolume = iRef->quantity() * volume;
 
-    _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %.2f to add %i %s at %.2f (%.3f each)",
+    _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %.2f to add %li %s at %.2f (%.3f each)",
          m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), totalVolume, volume);
 
     /** modify checks for splitting items in same container or moving items between a container's corp hangars

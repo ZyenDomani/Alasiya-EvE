@@ -46,7 +46,7 @@ PyRep *MarketDB::GetStationAsks(int32 stationID) {
         "SELECT"
         "    typeID, MIN(price) AS price, volRemaining, stationID "
         " FROM mktOrders "
-        " WHERE stationID=%i"
+        " WHERE stationID=%li"
         " GROUP BY typeID",
         stationID))
     {
@@ -117,13 +117,13 @@ PyRep *MarketDB::GetOrders( uint32 regionID, int32 typeID )
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders "
-        " WHERE regionID=%u AND typeID=%i AND bid=%u", regionID, typeID, Market::Type::Sell))
+        " WHERE regionID=%u AND typeID=%li AND bid=%u", regionID, typeID, Market::Type::Sell))
     {
         codelog( MARKET__DB_ERROR, "Error in query: %s", res.error.c_str() );
         PyDecRef(tup);
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu sell orders for type %i", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu sell orders for type %li", res.GetRowCount(), typeID);
     tup->SetItem(0, DBResultToCRowset( res ) );
 
     //query buy orders
@@ -133,13 +133,13 @@ PyRep *MarketDB::GetOrders( uint32 regionID, int32 typeID )
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders "
-        " WHERE regionID=%u AND typeID=%i AND bid=%u", regionID, typeID, Market::Type::Buy))
+        " WHERE regionID=%u AND typeID=%li AND bid=%u", regionID, typeID, Market::Type::Buy))
     {
         codelog( MARKET__DB_ERROR, "Error in query: %s", res.error.c_str() );
         PyDecRef(tup);
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu buy orders for type %i", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu buy orders for type %li", res.GetRowCount(), typeID);
     tup->SetItem(1, DBResultToCRowset( res ) );
 
     if (is_log_enabled(MARKET__DUMP))
@@ -157,13 +157,13 @@ PyRep* MarketDB::GetOrdersForOwner(int32 ownerID)
         "   issued as issueDate, minVolume, contraband,"
         "   duration, isCorp, solarSystemID, escrow"
         " FROM mktOrders"
-        " WHERE ownerID=%i", ownerID))
+        " WHERE ownerID=%li", ownerID))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
 
-    _log(MARKET__DB_TRACE, "GetOrdersForOwner() - Fetched %lu buy orders for %i", res.GetRowCount(), ownerID);
+    _log(MARKET__DB_TRACE, "GetOrdersForOwner() - Fetched %lu buy orders for %li", res.GetRowCount(), ownerID);
 
     return DBResultToRowset(res);
 }
@@ -176,7 +176,7 @@ PyRep *MarketDB::GetOrderRow(int32 orderID) {
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders"
-        " WHERE orderID=%i", orderID))
+        " WHERE orderID=%li", orderID))
     {
         codelog(MARKET__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -184,7 +184,7 @@ PyRep *MarketDB::GetOrderRow(int32 orderID) {
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(MARKET__ERROR, "Order %i not found.", orderID);
+        codelog(MARKET__ERROR, "Order %li not found.", orderID);
         return nullptr;
     }
 
@@ -198,9 +198,9 @@ uint32 MarketDB::FindBuyOrder(Call_PlaceCharOrder &call) {
         "SELECT orderID"
         " FROM mktOrders"
         " WHERE bid=1"
-        "  AND typeID=%i"
-        "  AND stationID=%i"
-        "  AND volRemaining >= %i"
+        "  AND typeID=%li"
+        "  AND stationID=%li"
+        "  AND volRemaining >= %li"
         "  AND price > %.0f"
         " ORDER BY price DESC"
         " LIMIT 1;",
@@ -227,9 +227,9 @@ uint32 MarketDB::FindSellOrder(Call_PlaceCharOrder &call)
         "SELECT orderID"
         " FROM mktOrders"
         " WHERE bid=0"
-        "  AND typeID=%i"
-        "  AND stationID=%i"
-        "  AND volRemaining >= %i"
+        "  AND typeID=%li"
+        "  AND stationID=%li"
+        "  AND volRemaining >= %li"
         "  AND price < %.0f"
         " ORDER BY price ASC"
         " LIMIT 1;",
@@ -301,7 +301,7 @@ bool MarketDB::AlterOrderQuantity(uint32 orderID, uint32 new_qty) {
 
 bool MarketDB::AlterOrderPrice(int32 orderID, double new_price) {
     DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE mktOrders SET price = %.2f WHERE orderID = %i", new_price, orderID)) {
+    if (!sDatabase.RunQuery(err, "UPDATE mktOrders SET price = %.2f WHERE orderID = %li", new_price, orderID)) {
         _log(MARKET__DB_ERROR, "Error in query: %s.", err.c_str());
         return false;
     }
@@ -328,7 +328,7 @@ uint32 MarketDB::StoreOrder(Market::SaveData &data) {
         " ) VALUES ("
         "    %u, %u, %u, %u, %u, %u,"
         "    %u, %.2f, %.2f, %u, %u, %u,"
-        "    %li, %u, %u, %u, %u, %u, %u"
+        "    %lli, %u, %u, %u, %u, %u, %u"
         " )",
         data.typeID, data.ownerID, data.regionID, data.stationID, data.solarSystemID, data.orderRange,
         data.bid?1:0, data.price, data.escrow, data.minVolume, data.volEntered, data.volRemaining,
@@ -361,7 +361,7 @@ PyRep *MarketDB::GetTransactions(uint32 clientID, Market::TxData& data) {
         "   transactionType, clientID, regionID, stationID, corpTransaction, characterID"
         " FROM mktTransactions "
         " WHERE clientID=%u %s AND quantity>=%u AND price>=%.2f AND "
-        " transactionDate>=%li %s AND keyID=%u AND characterID=%u",
+        " transactionDate>=%lli %s AND keyID=%u AND characterID=%u",
         clientID, typeID.c_str(), data.quantity, data.price,
         data.time, buy.c_str(), data.accountKey, data.memberID))
     {
@@ -443,7 +443,7 @@ PyRep *MarketDB::GetMarketGroups() {
         pyrow->SetField(9,   new PyInt(row.GetUInt(9))); //descriptionID
     }
 
-    _log(MARKET__DB_TRACE, "GetMarketGroups returned %li keys.", filterRowset->GetKeyCount());
+    _log(MARKET__DB_TRACE, "GetMarketGroups returned %lli keys.", filterRowset->GetKeyCount());
     if (is_log_enabled(MARKET__DB_TRACE))
         filterRowset->Dump(MARKET__DB_TRACE, "    ");
 
@@ -468,7 +468,7 @@ int64 MarketDB::GetUpdateTime()
 void MarketDB::SetUpdateTime(int64 setTime)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mktUpdates SET timeStamp = %li WHERE server = 1", setTime);
+    sDatabase.RunQuery(err, "UPDATE mktUpdates SET timeStamp = %lli WHERE server = 1", setTime);
 }
 
 /** @todo this needs work for better logic.   may need to pull data from transactions */
@@ -497,14 +497,14 @@ PyRep* MarketDB::GetNewPriceHistory(uint32 regionID, uint16 typeID, int64 m_time
     if (!sDatabase.RunQuery(res,
         "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
         " FROM mktHistory "
-        " WHERE regionID=%u AND typeID=%i"
-        " AND historyDate > %li  LIMIT %u",
+        " WHERE regionID=%u AND typeID=%li"
+        " AND historyDate > %lli  LIMIT %u",
         regionID, typeID, (m_timeStamp - EvE::Time::Day), sConfig.market.NewPriceLimit))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "MarketDB::GetNewPriceHistory() - Fetched %lu buy orders for type %i in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
+    _log(MARKET__DB_TRACE, "MarketDB::GetNewPriceHistory() - Fetched %lu buy orders for type %li in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
 
     PyRep* result = DBResultToCRowset(res);
     if (result == nullptr) {
@@ -520,14 +520,14 @@ PyRep* MarketDB::GetOldPriceHistory(uint32 regionID, uint16 typeID, int64 m_time
 
     if (!sDatabase.RunQuery(res,
         "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
-        " FROM mktHistory WHERE regionID=%u AND typeID=%i"
-        " AND historyDate > %li AND historyDate < %li LIMIT %u",
+        " FROM mktHistory WHERE regionID=%u AND typeID=%li"
+        " AND historyDate > %lli AND historyDate < %lli LIMIT %u",
         regionID, typeID, (m_timeStamp - (EvE::Time::Day *3)), (m_timeStamp - EvE::Time::Day), sConfig.market.OldPriceLimit))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "MarketDB::GetOldPriceHistory() - Fetched %lu orders for type %i in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
+    _log(MARKET__DB_TRACE, "MarketDB::GetOldPriceHistory() - Fetched %lu orders for type %li in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
 
     PyRep* result = DBResultToCRowset(res);
     if (result == nullptr) {

@@ -154,6 +154,6 @@ bool EVEPacketDispatcher::Handle_PingRsp(PyPacket* packet)
 
 bool EVEPacketDispatcher::Handle_Other(PyPacket* packet)
 {
-    sLog.Error("EVEPacketDispatcher","Unhandled Packet of type %s (%i)", MACHONETMSG_TYPE_NAMES[ packet->type ], (int)packet->type);
+    sLog.Error("EVEPacketDispatcher","Unhandled Packet of type %s (%li)", MACHONETMSG_TYPE_NAMES[ packet->type ], (int)packet->type);
     return false;
 }

@@ -73,8 +73,8 @@ PyRep* BookmarkDB::GetBookmarksInFolder(uint32 folderID)
 void BookmarkDB::GetBookmarkByFolderID(int32 folderID, std::vector< int32 >& bmIDs)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT bookmarkID FROM bookmarks WHERE folderID = %i", folderID)) {
-        sLog.Error( "BmDB::GetBookmarkByFolderID()", "Failed to query bookmarks for folderID %i: %s.", folderID, res.error.c_str() );
+    if (!sDatabase.RunQuery(res, "SELECT bookmarkID FROM bookmarks WHERE folderID = %li", folderID)) {
+        sLog.Error( "BmDB::GetBookmarkByFolderID()", "Failed to query bookmarks for folderID %li: %s.", folderID, res.error.c_str() );
         return;
     }
 
@@ -347,7 +347,7 @@ bool BookmarkDB::UpdateBookmark(Call_UpdateBookmark& args)
         sDatabase.DoEscapeString(eNote, PyRep::StringContent(args.comment));
 
     DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE bookmarks SET memo = '%s', note = '%s', folderID = %i, ownerID = %i WHERE bookmarkID = %i",
+    if (!sDatabase.RunQuery(err, "UPDATE bookmarks SET memo = '%s', note = '%s', folderID = %li, ownerID = %li WHERE bookmarkID = %li",
         eMemo.c_str(), eNote.c_str(), args.folderID, args.ownerID, args.bookmarkID))
     {
         sLog.Error( "BmDB::UpdateBookmarkInDatabase()", "Error in query: %s", err.c_str() );
@@ -381,7 +381,7 @@ bool BookmarkDB::UpdateFolder(int32 folderID, std::string folderName)
     sDatabase.DoEscapeString( eName, folderName.c_str());
 
     DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE bookmarkFolders SET folderName = '%s' WHERE folderID = %i",
+    if (!sDatabase.RunQuery(err, "UPDATE bookmarkFolders SET folderName = '%s' WHERE folderID = %li",
                                eName.c_str(), folderID))
     {
         sLog.Error( "BmDB::UpdateFolder()", "Error in query, Folder couldn't be saved: %s", err.c_str() );
@@ -394,11 +394,11 @@ bool BookmarkDB::UpdateFolder(int32 folderID, std::string folderName)
 bool BookmarkDB::DeleteFolder(int32 folderID)
 {
     DBerror err;
-    if (!sDatabase.RunQuery(err, "DELETE FROM bookmarkFolders WHERE folderID = %i", folderID))
+    if (!sDatabase.RunQuery(err, "DELETE FROM bookmarkFolders WHERE folderID = %li", folderID))
         sLog.Error( "BmDB::DeleteFolder(1)", "Error in query: %s", err.c_str() );
 
     // these bms may have copies....cannot delete yet
-    if (!sDatabase.RunQuery(err, "UPDATE bookmarks SET ownerID = 1 WHERE folderID = %i", folderID))
+    if (!sDatabase.RunQuery(err, "UPDATE bookmarks SET ownerID = 1 WHERE folderID = %li", folderID))
         sLog.Error( "BmDB::DeleteFolder(2)", "Error in query: %s", err.c_str() );
 
     return true;
@@ -415,7 +415,7 @@ void BookmarkDB::MoveBookmarkToFolder(int32 folderID, std::vector<int32>& bookma
     }
 
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE bookmarks SET folderID = %i WHERE bookmarkID IN (%s)", folderID, st.str().c_str());
+    sDatabase.RunQuery(err, "UPDATE bookmarks SET folderID = %li WHERE bookmarkID IN (%s)", folderID, st.str().c_str());
 }
 
 void BookmarkDB::GetVoucherData( BmData& data ) {

@@ -105,16 +105,16 @@ bool CharacterDB::SaveCorpData(uint32 characterID, const CorpData &data) {
         " SET"
         "  corporationID = %u, "
         "  baseID = %u,"
-        "  corpRole = %li,"
-        "  corpAccountKey = %i,"
-        "  rolesAtAll = %li,"
-        "  rolesAtBase = %li,"
-        "  rolesAtHQ = %li,"
-        "  rolesAtOther = %li,"
-        "  grantableRoles = %li,"
-        "  grantableRolesAtBase = %li,"
-        "  grantableRolesAtHQ = %li,"
-        "  grantableRolesAtOther = %li"
+        "  corpRole = %lli,"
+        "  corpAccountKey = %li,"
+        "  rolesAtAll = %lli,"
+        "  rolesAtBase = %lli,"
+        "  rolesAtHQ = %lli,"
+        "  rolesAtOther = %lli,"
+        "  grantableRoles = %lli,"
+        "  grantableRolesAtBase = %lli,"
+        "  grantableRolesAtHQ = %lli,"
+        "  grantableRolesAtOther = %lli"
         " WHERE characterID = %u",
         data.corporationID, data.baseID, data.corpRole, data.corpAccountKey, data.rolesAtAll, data.rolesAtBase, data.rolesAtHQ, data.rolesAtOther,
         data.grantableRoles, data.grantableRolesAtBase, data.grantableRolesAtHQ, data.grantableRolesAtOther, characterID))
@@ -169,7 +169,7 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
 bool CharacterDB::ReportRespec(uint32 characterId)
 {
     DBerror error;
-    if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %f, nextRespecDateTime = %li WHERE characterId = %u",
+    if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %f, nextRespecDateTime = %lli WHERE characterId = %u",
         GetFileTimeNow(), (GetFileTimeNow() + EvE::Time::Month *3), characterId))
         return false;
     return true;
@@ -202,7 +202,7 @@ int64 CharacterDB::PrepareCharacterForDelete(uint32 accountID, uint32 charID)
 
     DBerror error;
     uint32 affectedRows;
-    sDatabase.RunQuery(error, affectedRows, "UPDATE chrCharacters SET deletePrepareDateTime = %li WHERE accountID = %u AND characterID = %u", deleteTime, accountID, charID);
+    sDatabase.RunQuery(error, affectedRows, "UPDATE chrCharacters SET deletePrepareDateTime = %lli WHERE accountID = %u AND characterID = %u", deleteTime, accountID, charID);
     if (affectedRows != 1)
         return 0;
 
@@ -899,7 +899,7 @@ void CharacterDB::AddContact(uint32 ownerID, uint32 charID, int32 standing, bool
     sDatabase.RunQuery(err,
         "INSERT INTO chrContacts (ownerID, contactID, relationshipID, "
         " inWatchlist, labelMask, blocked) VALUES "
-        " (%u, %u, %i, %i, 0, 0) ",
+        " (%u, %u, %li, %li, 0, 0) ",
         ownerID, charID, standing, inWatchlist);
 }
 
@@ -907,7 +907,7 @@ void CharacterDB::UpdateContact(int32 standing, uint32 charID, uint32 ownerID)
 {
     DBerror err;
     sDatabase.RunQuery(err,
-        "UPDATE chrContacts SET relationshipID=%i "
+        "UPDATE chrContacts SET relationshipID=%li "
         " WHERE contactID=%u AND ownerID=%u ",
          standing, charID, ownerID);
 }
@@ -1565,7 +1565,7 @@ bool CharacterDB::SaveSkillQueue(uint32 characterID, SkillQueue &data) {
     for (uint8 i = 0; i < data.size(); i++) {
         const QueuedSkill &qs = data[i];
         char buf[80];
-        snprintf(buf, sizeof(buf), "(%u, %u, %u, %u, %li, %li)", characterID, i, qs.typeID, qs.level, qs.startTime, qs.endTime );
+        snprintf(buf, sizeof(buf), "(%u, %u, %u, %u, %lli, %lli)", characterID, i, qs.typeID, qs.level, qs.startTime, qs.endTime );
 
         if (i > 0)
             query += ',';
@@ -1641,7 +1641,7 @@ PyRep* CharacterDB::GetSkillHistory(uint32 characterID) {
 
 void CharacterDB::UpdateSkillQueueEndTime(int64 endtime, uint32 charID) {
     DBerror err;
-    sDatabase.RunQuery( err, "UPDATE chrCharacters SET skillQueueEndTime = %li WHERE characterID = %u ", endtime, charID );
+    sDatabase.RunQuery( err, "UPDATE chrCharacters SET skillQueueEndTime = %lli WHERE characterID = %u ", endtime, charID );
 }
 
 void CharacterDB::SetLogInTime(uint32 charID)
@@ -1739,7 +1739,7 @@ PyRep* CharacterDB::GetKillOrLoss(uint32 charID) {
 void CharacterDB::SetCorpRole(uint32 charID, int64 role)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE chrCharacters SET corpRole = %li WHERE characterID = %u", role, charID);
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET corpRole = %lli WHERE characterID = %u", role, charID);
 }
 
 int64 CharacterDB::GetCorpRole(uint32 charID)

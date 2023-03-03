@@ -339,7 +339,7 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         troll.effectStamp = sEntityList.GetStamp();
     into.Append( troll );
 
-    _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
@@ -581,7 +581,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
         troll.formationID = 0xFF;
         troll.effectStamp = sEntityList.GetStamp();
     into.Append( troll );
-    _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *WreckSE::MakeSlimItem() {

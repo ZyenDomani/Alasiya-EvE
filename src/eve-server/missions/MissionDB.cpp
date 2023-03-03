@@ -49,9 +49,9 @@ void MissionDB::CreateOfferID(MissionOffer& data)
         " remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime, stateID, typeID, dungeonLocationID, dungeonSolarSystemID)"
         " VALUES ("
         " %u, %u, %u, %u, %u, %f, %f, %f, %u,"
-        " %u, %u, %u, %f, %i, %u,"
-        " %u, %u, '%s', %u, %u, %u, %u, %i,"
-        " %i, %u, %u, %u, %u, %u, %u, %u,"
+        " %u, %u, %u, %f, %li, %u,"
+        " %u, %u, '%s', %u, %u, %u, %u, %li,"
+        " %li, %u, %u, %u, %u, %u, %u, %u,"
         " %u, %u, %u)",
             data.acceptFee, data.agentID, data.characterID, data.courierAmount, data.courierTypeID, data.courierItemVolume, data.dateAccepted, data.dateIssued, data.destinationID,
             data.destinationTypeID, data.destinationOwnerID, data.destinationSystemID, data.expiryTime, (data.important?1:0), data.storyline,

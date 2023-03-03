@@ -352,7 +352,7 @@ void StructureSE::Init()
 
     if (!IsStaticMapItem(m_data.anchorpointID)) {
         // make error here.  this should never hit.
-        _log(POS__MESSAGE, "StructureSE::Init %s(%u) - anchorpointID %i is invalid.  Load Failure.", \
+        _log(POS__MESSAGE, "StructureSE::Init %s(%u) - anchorpointID %li is invalid.  Load Failure.", \
                 m_self->name(), m_data.itemID, m_data.anchorpointID);
         m_loaded = false;
         return;
@@ -1080,8 +1080,8 @@ void StructureSE::EncodeDestiny(Buffer &into)
         into.Append(main);
     }
 
-    _log(SE__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-    _log(POS__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(POS__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *StructureSE::MakeSlimItem()

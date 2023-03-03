@@ -120,7 +120,7 @@ void DBcore::Connect(uint* errnum, char* errbuf)
         pStatus = Error;
         *errnum = mysql_errno(mysql);
         if (errbuf != nullptr)
-            snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
+            snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%li: %s", mysql_errno(mysql), mysql_error(mysql));
         DBerror err;
         err.SetError(*errnum, errbuf);
         sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
@@ -571,7 +571,7 @@ bool DBQueryResult::GetRow( DBResultRow& into )
 const char* DBQueryResult::ColumnName( uint32 index ) const
 {
     if (index >= mColumnCount) {
-        _log(DATABASE__ERROR,  "DBCore ColumnName: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount );
+        _log(DATABASE__ERROR,  "DBCore ColumnName: Column index %u exceeds number of columns in row (%li)\n", index, mColumnCount );
         EvE::traceStack();
         return "(ERROR)";
     }
@@ -582,7 +582,7 @@ const char* DBQueryResult::ColumnName( uint32 index ) const
 DBTYPE DBQueryResult::ColumnType( uint32 index ) const
 {
     if (index >= mColumnCount) {
-        _log(DATABASE__ERROR,  "DBCore ColumnType: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount );
+        _log(DATABASE__ERROR,  "DBCore ColumnType: Column index %u exceeds number of columns in row (%li)\n", index, mColumnCount );
         EvE::traceStack();
         return DBTYPE_STR;
     }

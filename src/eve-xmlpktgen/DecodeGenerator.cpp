@@ -49,7 +49,7 @@ bool ClassDecodeGenerator::ProcessElementDef(const TiXmlElement* field)
 
     mName = field->Attribute("name");
     if (mName == nullptr)  {
-        _log(COMMON__ERROR, "DecodeGen:: <element> at line %i is missing the name attribute, skipping.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen:: <element> at line %li is missing the name attribute, skipping.", field->Row());
         return false;
     }
 
@@ -119,7 +119,7 @@ bool ClassDecodeGenerator::ProcessElementPtr(const TiXmlElement* field)
 
     const char* type = field->Attribute("type");
     if (type == nullptr) {
-        _log(COMMON__ERROR, "DecodeGen::ProcessElementPtr field at line %i is missing the type attribute, skipping.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen::ProcessElementPtr field at line %li is missing the type attribute, skipping.", field->Row());
         return false;
     }
 
@@ -392,7 +392,7 @@ bool ClassDecodeGenerator::ProcessStringInline(const TiXmlElement* field)
 {
     const char* value = field->Attribute("value");
     if (value == nullptr) {
-        _log(COMMON__ERROR, "DecodeGen::ProcessStringInline String element at line %i has no value attribute.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen::ProcessStringInline String element at line %li has no value attribute.", field->Row());
         return false;
     }
 
@@ -477,7 +477,7 @@ bool ClassDecodeGenerator::ProcessWStringInline(const TiXmlElement* field)
 {
     const char* value = field->Attribute("value");
     if (!value)   {
-        _log(COMMON__ERROR, "DecodeGen::ProcessWStringInline element at line %i has no value attribute.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen::ProcessWStringInline element at line %li has no value attribute.", field->Row());
         return false;
     }
 
@@ -545,7 +545,7 @@ bool ClassDecodeGenerator::ProcessTokenInline(const TiXmlElement* field)
 {
     const char* value = field->Attribute("value");
     if (!value)  {
-        _log(COMMON__ERROR, "DecodeGen::ProcessTokenInline Token element at line %i has no value attribute.", field->Row());
+        _log(COMMON__ERROR, "DecodeGen::ProcessTokenInline Token element at line %li has no value attribute.", field->Row());
         return false;
     }
 

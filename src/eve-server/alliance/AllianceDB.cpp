@@ -26,7 +26,7 @@ void AllianceDB::EditBulletin(uint32 bulletinID, uint32 eCharID, int64 eDataTime
 {
     DBerror err;
     sDatabase.RunQuery(err,
-                       "UPDATE alnBulletins SET editCharacterID = %u, editDateTime = %li, title = '%s', body = '%s'"
+                       "UPDATE alnBulletins SET editCharacterID = %u, editDateTime = %lli, title = '%s', body = '%s'"
                        " WHERE bulletinID = %u",
                        eCharID, eDataTime, title.c_str(), body.c_str(), bulletinID);
 }
@@ -172,7 +172,7 @@ bool AllianceDB::InsertApplication(Alliance::ApplicationInfo &aInfo)
     if (!sDatabase.RunQueryLID(err, aInfo.appID,
                                " INSERT INTO alnApplications"
                                " (corporationID, allianceID, applicationText, state, applicationDateTime)"
-                               " VALUES (%u, %u, '%s', %u, %li)",
+                               " VALUES (%u, %u, '%s', %u, %lli)",
                                aInfo.corpID, aInfo.allyID, escaped.c_str(), aInfo.state, GetFileTimeNow()))
     {
         codelog(ALLY__DB_ERROR, "Error in query: %s", err.c_str());
@@ -243,7 +243,7 @@ void AllianceDB::AddContact(uint32 ownerID, Call_CorporateContactData contactDat
     sDatabase.RunQuery(err,
                        "INSERT INTO alnContacts (ownerID, contactID, relationshipID, "
                        " inWatchlist, labelMask) VALUES "
-                       " (%u, %u, %i, 0, 0) ",
+                       " (%u, %u, %li, 0, 0) ",
                        ownerID, contactData.contactID, contactData.relationshipID);
 }
 
@@ -251,7 +251,7 @@ void AllianceDB::UpdateContact(int32 relationshipID, uint32 contactID, uint32 ow
 {
     DBerror err;
     sDatabase.RunQuery(err,
-                       "UPDATE alnContacts SET relationshipID=%i "
+                       "UPDATE alnContacts SET relationshipID=%li "
                        " WHERE contactID=%u AND ownerID=%u ",
                        relationshipID, contactID, ownerID);
 }

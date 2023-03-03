@@ -279,7 +279,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     sig.sigItemID = iRef->itemID();
     sig.bubbleID = cSE->SysBubble()->GetID();
 
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - %s using templateID %u and roomID %i", sig.sigName.c_str(), templateID, dTemplate.dunRoomID);
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - %s using templateID %u and roomID %li", sig.sigName.c_str(), templateID, dTemplate.dunRoomID);
 
     /* do we need this?  persistent dungeons?
     if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {

@@ -193,7 +193,7 @@ bool PyPacket::Decode(PyRep **in_packet)
             type = (MACHONETMSG_TYPE) PyRep::IntegerValue(tuple->items[0]);
         } break;
         default: {
-            codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Unknown message type %li", PyRep::IntegerValue(tuple->items[0]));
+            codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Unknown message type %lli", PyRep::IntegerValue(tuple->items[0]));
             PyDecRef( pRep );
             return false;
         } break;
@@ -280,13 +280,13 @@ service("")
 void PyAddress::Dump(FILE *into, const char *pfx) const {
     switch(type) {
         case Any:
-            fprintf(into, "%sAny: service='%s' callID=%li", pfx, service.c_str(), callID);
+            fprintf(into, "%sAny: service='%s' callID=%lli", pfx, service.c_str(), callID);
         break;
         case Node:
-            fprintf(into, "%sNode: nodeID=%li service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sNode: nodeID=%lli service='%s' callID=%lli", pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            fprintf(into, "%sClient: clientID=%li service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sClient: clientID=%lli service='%s' callID=%lli", pfx, objectID, service.c_str(), callID);
         break;
         case Broadcast:
             fprintf(into, "%sBroadcast: broadcastID='%s' narrowcast=(not implemented) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
@@ -300,13 +300,13 @@ void PyAddress::Dump(FILE *into, const char *pfx) const {
 void PyAddress::Dump(LogType ltype, const char *pfx) const {
     switch(type) {
         case Any:
-            _log(ltype, "%sAny: service='%s' callID=%li", pfx, service.c_str(), callID);
+            _log(ltype, "%sAny: service='%s' callID=%lli", pfx, service.c_str(), callID);
         break;
         case Node:
-            _log(ltype, "%sNode: nodeID=%li service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
+            _log(ltype, "%sNode: nodeID=%lli service='%s' callID=%lli", pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            _log(ltype, "%sClient: clientID=%li callID=%li service='%s'", pfx, objectID, callID, service.c_str());
+            _log(ltype, "%sClient: clientID=%lli callID=%lli service='%s'", pfx, objectID, callID, service.c_str());
         break;
         case Broadcast:
             _log(ltype, "%sBroadcast: broadcastID='%s' narrowcast=(not implemented) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
@@ -448,7 +448,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
             }*/
         }   break;
         default: {
-            codelog(NET__PACKET_ERROR, "Unknown address type: %li", PyRep::IntegerValue(tuple->items[0]));
+            codelog(NET__PACKET_ERROR, "Unknown address type: %lli", PyRep::IntegerValue(tuple->items[0]));
             PyDecRef( pRep );
             PySafeDecRef(tuple);
             return false;

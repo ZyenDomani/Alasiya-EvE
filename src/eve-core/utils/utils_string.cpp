@@ -161,7 +161,7 @@ const char* itoa( int64 num )
     static char buf[ _ITOA_BUFLEN ];
     memset( buf, 0, _ITOA_BUFLEN );
 
-    snprintf( buf, _ITOA_BUFLEN, "%li", num );
+    snprintf( buf, _ITOA_BUFLEN, "%lli", num );
 
     return buf;
 }
@@ -191,10 +191,10 @@ void ListToINString( const std::vector<int32>& ints, std::string& into, const ch
     for(; cur != end; cur++)
     {
         if ( ( cur + 1 ) != end )
-            format_index += snprintf( &into[ format_index ], 12, "%i,", *cur );
+            format_index += snprintf( &into[ format_index ], 12, "%li,", *cur );
         else
             // last value to be printed
-            format_index += snprintf( &into[ format_index ], 11, "%i", *cur );
+            format_index += snprintf( &into[ format_index ], 11, "%li", *cur );
     }
 }
 
