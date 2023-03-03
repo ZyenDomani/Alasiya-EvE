@@ -522,7 +522,7 @@ bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field )
     uint32 count = 0;
     while( ( i = field->IterateChildren( i ) ) ) {
         if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
-            count++;
+            ++count;
     }
 
     char iname[16];
@@ -545,8 +545,8 @@ bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field )
     if (!ParseElementChildren( field ) )
         return false;
 
-    fprintf( mOutputFile,
-        "    %s = %s;\n",
+    fprintf(mOutputFile,
+            "    %s = %s;\n",
         top(), iname
     );
 
@@ -611,8 +611,8 @@ bool ClassEncodeGenerator::ProcessListInline( const TiXmlElement* field )
     if (!ParseElementChildren( field ))
         return false;
 
-    fprintf( mOutputFile,
-             "    %s = %s;\n\n",
+    fprintf(mOutputFile,
+            "    %s = %s;\n\n",
         top(), iname
     );
 
@@ -635,7 +635,7 @@ bool ClassEncodeGenerator::ProcessListInt( const TiXmlElement* field )
              "    PyList* %s = new PyList();\n"
         "    for (auto &cur : %s)\n"
         "        %s->AddItemInt(cur);\n"
-        "    %s = %s;\n\n",
+        "    %s = %s;\n",
         rname, name, rname,
         top(), rname
     );
@@ -659,7 +659,7 @@ bool ClassEncodeGenerator::ProcessListLong( const TiXmlElement* field )
              "    PyList *%s = new PyList();\n"
         "    for (auto &cur : %s)\n"
         "        %s->AddItemLong(cur);\n"
-        "    %s = %s;\n\n",
+        "    %s = %s;\n",
         rname,
         name,
         rname,
@@ -685,7 +685,7 @@ bool ClassEncodeGenerator::ProcessListStr( const TiXmlElement* field )
              "    PyList *%s = new PyList();\n"
         "    for (auto &cur : %s)\n"
         "        %s->AddItemString(cur.c_str());\n"
-        "    %s = %s;\n\n",
+        "    %s = %s;\n",
         rname, name,
         rname,
         top(), rname
@@ -736,6 +736,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
     const TiXmlNode* i = nullptr;
 
     uint32 count = 0;
+    bool keyTypeInt = false, keyTypeLong = false;
     while ((i = field->IterateChildren(i))) {
         if (i->Type() == TiXmlNode::TINYXML_ELEMENT) {
             const TiXmlElement* ele = i->ToElement();
@@ -751,7 +752,6 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
                 return false;
             }
 
-            bool keyTypeInt = false, keyTypeLong = false;
             const char* keyType = ele->Attribute( "key_type" );
             if (keyType != nullptr) {
                 keyTypeInt = ( strcmp( keyType, "int" ) == 0 );
@@ -759,8 +759,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
             }
 
             char vname[32];
-            snprintf( vname, sizeof( vname ), "%s_%u", iname, count );
-            ++count;
+            snprintf( vname, sizeof( vname ), "%s_%u", iname, count++ );
 
             fprintf( mOutputFile,
                 "    PyRep* %s(nullptr);\n",
@@ -843,7 +842,7 @@ bool ClassEncodeGenerator::ProcessDictRaw( const TiXmlElement* field )
         "    PyDict* %s = new PyDict();\n"
         "    for (auto &cur : %s) \n"
         "        %s->SetItem(new Py%s(cur.first), new Py%s(cur.second));\n"
-        "    %s = %s;\n\n",
+        "    %s = %s;\n",
         rname,
         name,
             rname, pykey, pyvalue,
@@ -868,8 +867,8 @@ bool ClassEncodeGenerator::ProcessDictInt( const TiXmlElement* field )
     fprintf( mOutputFile,
         "    PyDict* %s = new PyDict();\n"
         "    for (auto &cur : %s) {\n"
-        "        %s->SetItem(new PyInt(cur.first ), cur.second);\n"
         "        PyIncRef(cur.second);\n"
+        "        %s->SetItem(new PyInt(cur.first ), cur.second);\n"
         "    }\n\n"
         "    %s = %s;\n",
         iname,
@@ -892,13 +891,13 @@ bool ClassEncodeGenerator::ProcessDictStr( const TiXmlElement* field )
     }
 
     char iname[16];
-    snprintf( iname, sizeof( iname ), "dict%d", mItemNumber++ );
+    snprintf( iname, sizeof( iname ), "dict%u", mItemNumber++ );
 
     fprintf( mOutputFile,
         "    PyDict* %s = new PyDict();\n"
         "    for (auto &cur : %s) {\n"
-        "        %s->SetItemString(cur.first.c_str(), cur.second);\n"
         "        PyIncRef(cur.second);\n"
+        "        %s->SetItemString(cur.first.c_str(), cur.second);\n"
         "    }\n\n"
         "    %s = %s;\n",
         iname,
@@ -912,19 +911,10 @@ bool ClassEncodeGenerator::ProcessDictStr( const TiXmlElement* field )
     return true;
 }
 
-/** @todo  these are wrong....not sure how yet....
- *
-    PyRep* ss_3;
-    ss_3 = new PySubStruct( ss_3 );
-    PyRep* ss_4;
-    ss_4 = new PySubStream( ss_4 );
-
-    */
-
 bool ClassEncodeGenerator::ProcessSubStreamInline( const TiXmlElement* field )
 {
     char varname[16];
-    snprintf( varname, sizeof( varname ), "ss_%d", mItemNumber++ );
+    snprintf( varname, sizeof( varname ), "ss_%u", mItemNumber++ );
 
     //encode the sub-element into a temp
     fprintf( mOutputFile,
@@ -949,7 +939,7 @@ bool ClassEncodeGenerator::ProcessSubStreamInline( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessSubStructInline( const TiXmlElement* field )
 {
     char varname[16];
-    snprintf( varname, sizeof( varname ), "ss_%d", mItemNumber++ );
+    snprintf( varname, sizeof( varname ), "ss_%u", mItemNumber++ );
 
     //encode the sub-element into a temp
     fprintf( mOutputFile,

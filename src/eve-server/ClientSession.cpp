@@ -84,7 +84,6 @@ m_sessionID(15)
 
 ClientSession::~ClientSession()
 {
-    // do we clear session vars here, or let ~PyDict() do it?
     PyDecRef(mSession);
     sEntityList.RemoveSID(m_sessionID);
 }
@@ -193,6 +192,7 @@ void ClientSession::_Set(const char* name, PyRep* value)
 {
     PyTuple* tuple(_GetValueTuple(name)); // copy c'tor
     if (tuple == nullptr) {
+        // this may no longer be needed
         tuple = new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse());
         mSession->SetItemString(name, tuple);
     } else {
@@ -202,7 +202,7 @@ void ClientSession::_Set(const char* name, PyRep* value)
 
     PyRep* current(tuple->GetItem(1)); // copy c'tor
     if (value->hash() != current->hash()) {
-        tuple->SetItem(0, current); /* didn't the session need to store the old value too? */
+        tuple->SetItem(0, current); 
         tuple->SetItem(1, value);
         tuple->SetItem(2, PyStatic.NewTrue());
         mDirty = true;

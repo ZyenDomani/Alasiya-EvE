@@ -172,8 +172,8 @@ PyRep* UnmarshalStream::LoadRep()
 
     PyRep* rep = ( this->*s_mLoadMap[ opcode ] )();
 
-    if ( 0 != storageIndex )
-        StoreObject( storageIndex, rep );
+    if (storageIndex)
+        StoreObject(storageIndex, rep);
 
     return rep;
 }
@@ -203,8 +203,7 @@ PyRep* UnmarshalStream::GetStoredObject( uint32 index )
 
 void UnmarshalStream::StoreObject( uint32 index, PyRep* object )
 {
-    if ( index )
-    {
+    if (index) {
         PyIncRef( object );
         mStoredObjects->SetItem( --index, object );
     }
