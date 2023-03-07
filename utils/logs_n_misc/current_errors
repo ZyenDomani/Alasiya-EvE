@@ -76,3 +76,79 @@ EXCEPTION END
 22:47:52 [DestinyTrace] Destiny::SetPosition() called by Hulk(140018752)
 22:47:52 [Bound] BeyonceBound::CmdSetSpeedFraction()
 
+
+
+********** data race  *************
+14:19:15 [PresRep]       Args:   [ 2]   Args:  Tuple: 4 elements
+14:19:1514:19:15 [PresRep]       Args:   [ 2]   Args:   [ 0]    Integer: 1
+14:19:15 [PresRep]       Args:   [ 2]   Args:   [ 1]    Integer: 888444
+ C 14:19:15 [PresRep]       Args:   [ 2]   Args:   [ 2]       None
+      ImageServer: 14:19:15 [PresRep]       Args:   [ 2]   Args:   [ 3]       None
+ GetImage() called. Cat: Character, id: 90000000, size:3214:19:15 [PresRep]       Args:   [ 3]    Integer: 1
+
+14:19:15 [PresRep]       Args:   [ 4]  Tuple: 1 elements
+14:19:15 [PresRep]       Args:   [ 4]   [ 0]  Tuple: 2 elements
+
+
+
+n
+11:27:13 [SvcMsg] charMgr Service: MachoBindObject also contains call to ListStations
+11:27:13 [Bound] CharMgrBound::ListStations()
+11:27:13 [CharDebug]   Call Arguments:
+11:27:13 [CharDebug]      Tuple: 2 elements
+11:27:13 [CharDebug]       [ 0]    Integer: 0
+11:27:13 [CharDebug]       [ 1]    Integer: 0
+11:27:13 [Service] map::GetStationExtraInfo()
+11:27:13 [Service] facWarMgr::GetWarFactions()
+11:27:31 [Service] alert::BeanCount()
+11:27:32 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #7 logged at  03/04/2023 11:27:32 Unhandled exception in <TaskletExt object at 3eaf7138, abps=1001, ctxt='Tick::Sleep'>
+Caught at:
+/common/lib/bluepy.py(98) CallWrapper
+Thrown at:
+/common/lib/bluepy.py(86) CallWrapper
+/../carbon/common/script/util/timerstuff.py(213) Loop
+/../carbon/client/script/ui/control/menu.py(356) ExpandMenu
+/../carbon/client/script/ui/control/menu.py(386) Expand
+/../carbon/client/script/ui/control/menu.py(462) CreateMenuView
+/../carbon/client/script/ui/control/menu.py(129) Setup
+/../carbon/client/script/ui/control/menu.py(289) Setup
+/../carbon/client/script/ui/primitives/base.py(137) __init__
+/client/script/ui/control/eveicon.py(231) ApplyAttributes
+/client/script/ui/control/eveicon.py(256) LoadIcon
+/client/script/ui/control/eveicon.py(245) LoadIconByGraphicID
+/../carbon/common/script/sys/cfg.py(1232) Get
+        self = <Instance of Recordset.Row>
+                       Key column: iconID, Cache entries: 1685
+                       Field names: iconID, iconFile, description, obsolete, iconType, directoryID
+        key = 90000000
+        flush = 0
+KeyError: ('RecordNotFound', 90000000)
+
+
+'
+12:59:03 [Bound] CorpRegistryBound::GetOffices()
+12:59:03 [CorpCall] CorpRegistryBound::Handle_GetOffices() size=0
+12:59:03 [SvcMsg] Service Mgr Binding PyBoundObject to node 888444:107 for Allan
+12:59:03 [ClientOutAll]     Object:
+12:59:03 [ClientOutAll]       Type:     String: 'util.SparseRowset'
+12:59:03 [ClientOutAll]       Args:  Tuple: 3 elements
+12:59:03 [ClientOutAll]       Args:   [ 0]   List: 4 elements
+12:59:03 [ClientOutAll]       Args:   [ 0]   [ 0]     String: 'stationID'
+12:59:03 [ClientOutAll]       Args:   [ 0]   [ 1]     String: 'typeID'
+12:59:03 [ClientOutAll]       Args:   [ 0]   [ 2]     String: 'officeID'
+12:59:03 [ClientOutAll]       Args:   [ 0]   [ 3]     String: 'officeFolderID'
+12:59:03 [ClientOutAll]       Args:   [ 1]  Substruct:
+12:59:03 [ClientOutAll]       Args:   [ 1]    Substream: from rep
+12:59:03 [ClientOutAll]       Args:   [ 1]      Tuple: 3 elements
+12:59:03 [ClientOutAll]       Args:   [ 1]       [ 0]     String: 'N=888444:107'
+12:59:03 [ClientOutAll]       Args:   [ 1]       [ 1]  Dictionary: 1 entries
+12:59:03 [ClientOutAll]       Args:   [ 1]       [ 1]   [ 0]   Key:     String: 'realRowCount'
+12:59:03 [ClientOutAll]       Args:   [ 1]       [ 1]   [ 0] Value:    Integer: 2
+12:59:03 [ClientOutAll]       Args:   [ 1]       [ 2]       Long: 133224299438008192
+12:59:03 [ClientOutAll]       Args:   [ 2]    Integer: 2
+12:59:03 [ClientOutAll]      Dictionary: 1 entries
+12:59:03 [ClientOutAll]       [ 0]   Key:     String: 'OID+'
+12:59:03 [ClientOutAll]       [ 0] Value:  Dictionary: 1 entries
+12:59:03 [ClientOutAll]       [ 0] Value:   [ 0]   Key:     String: 'N=888444:107'
+12:59:03 [ClientOutAll]       [ 0] Value:   [ 0] Value:       Long: 133224299438008192

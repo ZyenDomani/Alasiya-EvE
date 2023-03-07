@@ -66,11 +66,6 @@ request for smartbombs...lol  cause i dont have enough to work on
 
 loading probes in station does not update count in hangar
 
-wtf???
-11:45:54 [DestinyWarning] Warp Cap need for Rifter(140007395) is 0.0007
-new wtf???
-20:58:40 [DestinyWarning] Warp Cap need for Hulk(140018752) for 0AU is 0.0000000000
-
 noob ships do not Init() correctly....  most attrs are 0
     -- check this.  may be fixed already
 
@@ -107,12 +102,6 @@ char creation - figure certs and set skills accordingly
     - they should at least have a starter profession cert
     - this will take more thought and time
 
-**************************
-NOTE:  have not see this again since i fixed session init...few more tests and i'll call it fixed
-...still not sure on this.  throws a shitton of errors in client error log
-"Cleaning session *clientID 2888444* because it's ID doesn't match  0"
-*** found (something) about it in old logs....see /home/allan/Desktop/eve_packets/clientID_data? for more (sparse) info
-
 
 *******************************************************
 *******************************************************
@@ -136,18 +125,22 @@ entire Inv codebase is slow.  loading chars (and their inventory) is biggest bot
 
 InventoryItem - multiple remove calls....trace and fix
 
+character/client/item data
+    there are still multiple calls to set item position and other data.
+    this shit needs to be sorted to a single common place....i thought i fixed that shit already....
+
 Coverity found more shit
 ImageServer::GetImage - fclose(fp)
 temp object going out of scope - return (uptime.str().c_str());
 ImageServerConnection() - init members _size, _id
 
 go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
-while you're at it, verify member initalization is correct.  i know destiny isnt (and it's member list is huge)
+while you're at it, verify member initialization is correct.  i know destiny isnt (and it's member list is huge)
 	- im sure its not the only one...but some (or most) of my 'newer' classes should be right (at least a lot closer).
 
 remove GPoint/GVector code and replace with evemoo's Vec3 code (after thorough review)  or just write my own.
     - float/double not needed and math on those are expensive.  replace with int64
-    - note:  client logs show all position data is pyfloat (some float.7, some double.15)  but i see no point of needing decimeter precision.
+    - note:  client logs show all position data is pyfloat (some float.7, some double.15)  but i see no point of needing decimeter (or higher) precision.
 
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
     - every 60s for every bubble object is a bit much.
@@ -155,6 +148,7 @@ as bubble code becomes more stable, consider updating/removing/recoding wander t
     - anomaly spawn in bubble w/o npc is considered "empty" and deleted from system.
         this is wrong.  IsEmpty() should check m_entities list first.  verify anoms are added correctly
         while this will cut down on bubble proc, is it really necessary?  shouldnt these bubbles remain active?
+        -- yes, they should, as long as dungeon isnt deleted.  no need for bubble proc on anom.  maybe?
 
 remove character queries from InventoryDB
 remove station/static queries from InventoryDB
@@ -326,6 +320,10 @@ i know what it's doing, cause i did it like that on purpose, but then hits the c
 20:36:49 [ItemWarning] II::Move()::Add() - 10 is invalid location.
 need to find a better way to verify locations enum (locTemp, locJunkyard, et Al.)
 
+move warp checks to beyonce
+or, have warpTo return bool, THEN apply all the other shit...
+right now, we decloak and all that before even calling warpto
+
 
 *******************************************************
 *******************************************************
@@ -439,6 +437,10 @@ shooting wrecks to destroy loot.
     - this really is a thing on live.  implement it.
   - should call TargetManager::Destroyed() to properly shut down other modules targeting this item
 
+need to verify GFX data in modules
+  - notably, some single-run modules have m_repeat set which sends to client as a repeat event  (survey scanner)
+  - while this mostly works, its not right.  seems like this type of module should be repeat=0
+
 warp scram should deactivate mwd and deny activation (it IS a micro WARP drive...)
 
 module/rack OL incomplete.  includes OL Heat (basic heat code done/working)  -priority level: low-med
@@ -474,14 +476,12 @@ this includes fx13 and fx10 calls
 23:51:06 [FxError] guid empty for F85 Peripheral Damage System I using effectID 2302
 isDefault used to send to activate for effectID
 go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
-    - gfx display is wonky.  dunno why some show and some dont
+    - gfx display is wonky.  dunno why some show and some dont...our packets are wrong...wip
     - stripminer on hulk working 20feb21 (still 1Feb23)
     - salvager on trasher working 20feb21
 put EVEEffectID enum into namespace
 turn fx sending on and follow calls to verify proper OnSpecialFX data
     - found and added client fx classification data to destinyMgr.h
-    - remove xmlp data for specialFX and build packet in code?
-    - remove specialFX10.  easier if specialFX is built in code, else send None...still not sure on what we can NOT send
 
 mining gfx/deactivate is almost immediate.  this is supposed to have a 5s timer to simulate module shutdown
   looks immediate.  timer shows 5s.  needs more review
@@ -1015,7 +1015,7 @@ rename EntityList to EntityManager/EntityMgr
 
 ****  make safe save method to verify and save data on segfault
 
-check into making module tics faster (like targetMgr) for sub-tic timer calls/checks
+check into making module tics faster (like targetMgr) for sub-tic timer calls/checks?  probably not.
 
 aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for all clients in system
     - should create instance on system boot, then pass that instance to clients when requested.

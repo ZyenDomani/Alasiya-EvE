@@ -1,69 +1,134 @@
-149597870700
-302583043403
+e
+21:28:00 [DestinyWarning] Warp Cap need for kitty(140020259) for 3442521179440m (23AU) is 30.756062
+21:28:00 [DestinyTrace] Destiny::WarpTo() m_shipHeading: 0.0000000,0.0000000,0.0000000.  m_targetHeading: 0.8391059,-0.2657055,0.4746597
+21:28:00 [MoveTrace] Destiny::SetSpeedFraction() - kitty(140020259):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+21:28:00 [MoveTrace] Destiny::UpdateVelocity - kitty(140020259): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 408.25, accel: true, decel: false, delta: 1.000
+21:28:00 [MoveTrace] Destiny::UpdateVelocity - kitty(140020259):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 32.05, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
+21:28:00 [WarpTrace] Destiny::WarpTo() toBubble:7 from:8, m_targetPoint: 1266447601645.02,-728162179816.98,2314581808872.27  stop distance: 2581  m_targetDistance: 3442521179440
+21:28:01 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 70.960 m/s (tf:0.1738 asf:0.1738).
+21:28:02 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 136.361 m/s (tf:0.3340 asf:0.3340).
+21:28:03 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 189.080 m/s (tf:0.4631 asf:0.4631).
+21:28:04 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 231.578 m/s (tf:0.5672 asf:0.5672).
+21:28:05 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 265.837 m/s (tf:0.6512 asf:0.6512).
+21:28:06 [ClientTimer] ProcessClient():  SetInvul to false for Allan(90000000)
+21:28:06 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 293.453 m/s (tf:0.7188 asf:0.7188).
+21:28:07 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 315.710 m/s (tf:0.7733 asf:0.7733).
+21:28:07 [WarpTrace] Destiny::InitWarp(): kitty(140020259) is initializing warp.
+21:28:07 M MM::ShipWarping(): Deactivating non-warpsafe modules.
+21:28:07 [WarpTrace] Destiny::InitWarp():Calculate - kitty(140020259): Warp will accelerate for 8s, cruise for 0.000, then decelerate for 21s, with total time of 29.0s, and warp speed of 2243967844352 m/s.
+21:28:07 [WarpTrace] Destiny::InitWarp():Calculate - kitty(140020259): Accel distance is 149597870700m. Cruise distance is 2170939386564m.  Decel distance is 1121983922176m.  Heading is 0.8391,-0.2657,0.4747.
+21:28:07 [WarpTrace] Destiny::InitWarp():Calculate - kitty(140020259): We will exit warp at 1266447601645.02,-728162179816.98,2314581808872.27 at a distance of 23 AU (3442521179440m).
+21:28:07 [WarpTrace] Destiny::InitWarp():Calculate - kitty(140020259): calculated exit is 1266447602905.73,-728162180216.19,2314581809585.42 and delta is 1502.4385.
+21:28:07 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(0s): velocity 3 m/s with 3442521179439 m left to go. Current distance 1 from origin.
+21:28:07 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 3442521182838.560547 from center of target bubble 7.
+21:28:08 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(1s): velocity 60 m/s with 3442521179419 m left to go. Current distance 20 from origin.
+21:28:08 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 3442521182778.561523 from center of target bubble 7.
+21:28:09 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(2s): velocity 1209 m/s with 3442521179016 m left to go. Current distance 403 from origin.
+21:28:09 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 3442521181569.561035 from center of target bubble 7.
+21:28:10 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(3s): velocity 24309 m/s with 3442521170913 m left to go. Current distance 8103 from origin.
+21:28:10 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 3442521157260.561035 from center of target bubble 7.
+21:28:11 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(4s): velocity 488262 m/s with 3442521008159 m left to go. Current distance 162754 from origin.
+21:28:11 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 3442520668998.561035 from center of target bubble 7.
+21:28:12 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) is being removed from bubble 8.
+21:28:12 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(5s): velocity 9807051 m/s with 3442517739142 m left to go. Current distance 3269017 from origin.
+21:28:12 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 3442510861947.561035 from center of target bubble 7.
+21:28:13 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(6s): velocity 196979907 m/s with 3442452079173 m left to go. Current distance 65659969 from origin.
+21:28:13 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 3442313882040.561035 from center of target bubble 7.
+21:28:14 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(7s): velocity 3956447202 m/s with 3441133263439 m left to go. Current distance 1318815734 from origin.
+21:28:14 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 3438357434838.561523 from center of target bubble 7.
+21:28:15 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(8s): velocity 79467366387 m/s with 3414644141310 m left to go. Current distance 26489122129 from origin.
+21:28:15 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 3358890068451.560547 from center of target bubble 7.
+21:28:16 [WarpTrace] Destiny::WarpAccel(): kitty(140020259) - Warp Accelerating(9s): velocity 448793612100 m/s with 3265046270610 m left to go. Current distance 149597870700 from origin.
+21:28:16 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 2910096456351.561035 from center of target bubble 7.
+21:28:17 [WarpTrace] Destiny::WarpCruise(false): kitty(140020259) - Warp Crusing(10s): velocity 2243967844352 m/s. with 1121983922176 m left to go.
+21:28:17 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 666128611999.561279 from center of target bubble 7.
+21:28:18 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(3s/11s): velocity 111720580482 m/s with 55860290242 m left to go.
+21:28:18 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 554408031517.561401 from center of target bubble 7.
+21:28:19 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(4s/12s): velocity 41099704715 m/s with 20549852358 m left to go.
+21:28:19 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 513308326802.561401 from center of target bubble 7.
+21:28:20 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(5s/13s): velocity 15119736402 m/s with 7559868202 m left to go.
+21:28:20 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 498188590400.561340 from center of target bubble 7.
+21:28:21 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(6s/14s): velocity 5562240178 m/s with 2781120090 m left to go.
+21:28:21 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 492626350222.561279 from center of target bubble 7.
+21:28:22 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(7s/15s): velocity 2046233808 m/s with 1023116905 m left to go.
+21:28:22 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 490580116414.561218 from center of target bubble 7.
+21:28:23 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(8s/16s): velocity 752767349 m/s with 376383675 m left to go.
+21:28:23 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489827349065.561157 from center of target bubble 7.
+21:28:24 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(9s/17s): velocity 276927632 m/s with 138463817 m left to go.
+21:28:24 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489550421433.561157 from center of target bubble 7.
+21:28:25 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(10s/18s): velocity 101875982 m/s with 50937992 m left to go.
+21:28:25 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489448545451.561096 from center of target bubble 7.
+21:28:26 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(11s/19s): velocity 37478079 m/s with 18739040 m left to go.
+21:28:26 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489411067372.561096 from center of target bubble 7.
+21:28:27 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(12s/20s): velocity 13787414 m/s with 6893708 m left to go.
+21:28:27 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489397279958.561035 from center of target bubble 7.
+21:28:28 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(13s/21s): velocity 5072106 m/s with 2536054 m left to go.
+21:28:28 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489392207852.561096 from center of target bubble 7.
+21:28:29 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(14s/22s): velocity 1865923 m/s with 932962 m left to go.
+21:28:29 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489390341929.561096 from center of target bubble 7.
+21:28:30 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(15s/23s): velocity 686434 m/s with 343218 m left to go.
+21:28:30 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489389655495.561035 from center of target bubble 7.
+21:28:31 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(16s/24s): velocity 252525 m/s with 126263 m left to go.
+21:28:31 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489389402970.561035 from center of target bubble 7.
+21:28:31 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship at 855798056355.27,-598128720337.23,2082288388153.99 is calling Add() for bubble 7.
+21:28:32 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(17s/25s): velocity 92898 m/s with 46450 m left to go.
+21:28:32 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489389310072.560974 from center of target bubble 7.
+21:28:33 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(18s/26s): velocity 34175 m/s with 17088 m left to go.
+21:28:33 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489389275897.561035 from center of target bubble 7.
+21:28:34 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(19s/27s): velocity 12572 m/s with 6287 m left to go.
+21:28:34 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489389263325.560974 from center of target bubble 7.
+21:28:35 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(20s/28s): velocity 4625 m/s with 2313 m left to go.
+21:28:35 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489389258700.561096 from center of target bubble 7.
+21:28:36 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(21s/29s): velocity 1701 m/s with 851 m left to go.
+21:28:36 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489389256999.561035 from center of target bubble 7.
+21:28:37 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(22s/30s): velocity 625 m/s with 313 m left to go.
+21:28:37 [WarpTrace] Destiny::WarpUpdate()  kitty(140020259): Ship is 489389256374.561035 from center of target bubble 7.
+21:28:38 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(23s/31s): velocity 230 m/s with 116 m left to go.
+21:28:38 [DestinyTrace] Destiny::SetPosition() called by kitty(140020259)
+21:28:38 [WarpTrace] Destiny::WarpStop(): kitty(140020259) - Warp complete. Exit velocity 230 m/s with 116 m left to go.
+21:28:38 [WarpTrace] Destiny::WarpStop(): kitty(140020259): Ship currently at 855798179557.84,-598128759349.71,2082288457846.37.
+21:28:38 [MoveTrace] Destiny::SetSpeedFraction() - kitty(140020259):   prevSpeed:230.00, fraction: 0.00, start: false, stop: false, accel: false, decel: false
+21:28:38 [MoveTrace] Destiny::UpdateVelocity - kitty(140020259):  ship dropped out of warp.      --Begin Decel  AccelTime: 18.05, USF: 0.00, ASF: 0.56, TF: 0.00, PSF: 0.56
+21:28:39 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 185.456 m/s (tf:0.1937 asf:0.4543 ps:230.00 psf:0.5634).
+21:28:39 [DestinyTrace] Destiny::SetPosition() called by kitty(140020259)
+21:28:40 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 149.495 m/s (tf:0.3500 asf:0.3662 ps:230.00 psf:0.5634).
+21:28:41 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 120.508 m/s (tf:0.4761 asf:0.2952 ps:230.00 psf:0.5634).
+21:28:42 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 97.141 m/s (tf:0.5776 asf:0.2379 ps:230.00 psf:0.5634).
+21:28:43 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 78.305 m/s (tf:0.6595 asf:0.1918 ps:230.00 psf:0.5634).
+21:28:44 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 63.122 m/s (tf:0.7256 asf:0.1546 ps:230.00 psf:0.5634).
+21:28:45 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 50.874 m/s (tf:0.7788 asf:0.1246 ps:230.00 psf:0.5634).
+21:28:46 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 41.009 m/s (tf:0.8217 asf:0.1005 ps:230.00 psf:0.5634).
+21:28:47 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 33.063 m/s (tf:0.8562 asf:0.0810 ps:230.00 psf:0.5634).
+21:28:48 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 26.652 m/s (tf:0.8841 asf:0.0653 ps:230.00 psf:0.5634).
+21:28:49 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 21.484 m/s (tf:0.9066 asf:0.0526 ps:230.00 psf:0.5634).
+21:28:50 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 17.318 m/s (tf:0.9247 asf:0.0424 ps:230.00 psf:0.5634).
+21:28:51 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 13.960 m/s (tf:0.9393 asf:0.0342 ps:230.00 psf:0.5634).
+21:28:52 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 11.253 m/s (tf:0.9511 asf:0.0276 ps:230.00 psf:0.5634).
+21:28:53 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 9.071 m/s (tf:0.9606 asf:0.0222 ps:230.00 psf:0.5634).
+21:28:54 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 7.312 m/s (tf:0.9682 asf:0.0179 ps:230.00 psf:0.5634).
+21:28:55 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 5.894 m/s (tf:0.9744 asf:0.0144 ps:230.00 psf:0.5634).
+21:28:56 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 4.752 m/s (tf:0.9793 asf:0.0116 ps:230.00 psf:0.5634).
+21:28:57 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 3.830 m/s (tf:0.9833 asf:0.0094 ps:230.00 psf:0.5634).
+21:28:58 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 3.087 m/s (tf:0.9866 asf:0.0076 ps:230.00 psf:0.5634).
+21:28:59 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 2.489 m/s (tf:0.9892 asf:0.0061 ps:230.00 psf:0.5634).
+21:29:00 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 2.006 m/s (tf:0.9913 asf:0.0049 ps:230.00 psf:0.5634).
+21:29:01 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 1.617 m/s (tf:0.9930 asf:0.0040 ps:230.00 psf:0.5634).
+21:29:02 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 1.304 m/s (tf:0.9943 asf:0.0032 ps:230.00 psf:0.5634).
+21:29:03 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 1.051 m/s (tf:0.9954 asf:0.0026 ps:230.00 psf:0.5634).
+21:29:04 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.847 m/s (tf:0.9963 asf:0.0021 ps:230.00 psf:0.5634).
+21:29:05 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.683 m/s (tf:0.9970 asf:0.0017 ps:230.00 psf:0.5634).
+21:29:06 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.550 m/s (tf:0.9976 asf:0.0013 ps:230.00 psf:0.5634).
+21:29:07 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.444 m/s (tf:0.9981 asf:0.0011 ps:230.00 psf:0.5634).
+21:29:08 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.358 m/s (tf:0.9984 asf:0.0009 ps:230.00 psf:0.5634).
+21:29:09 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.288 m/s (tf:0.9987 asf:0.0007 ps:230.00 psf:0.5634).
+21:29:10 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.232 m/s (tf:0.9990 asf:0.0006 ps:230.00 psf:0.5634).
+21:29:11 [MoveTrace] Destiny::MoveObject() - kitty(140020259) has decel'd from 230.00m/s to 0.23m/s in 32.999s.
+21:29:11 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is at full stop after 32.999 seconds.
+21:29:11 [DestinyTrace] Destiny::SetPosition() called by kitty(140020259)
+21:29:11 C DM: kitty calling ClearTurn()
+21:29:11 C DM: kitty calling ClearOrbit()
+21:29:11 [MoveTrace] Destiny::Halt(true) - kitty(140020259) Halted - m_shipHeading: 0.839,-0.086,0.475
+21:29:19 [DestinyWarning] SystemBubble::ProcessWander() - entity 140020259(sys:30000006) not in bubble 7 for systemID 30000006.
+21:29:19 [BubbleWarning] BubbleManager::Process() - Wanderer kitty(140020259) in system Zaid(30000006) is being added to a bubble.
+21:29:19 [BubbleWarning] BubbleManager::CheckBubble() - Entity 'kitty'(140020259) at (855798180359.77,-598128759496.40,2082288458300.00) is no longer located in bubble 7 at 1266447605760.00,-728162181120.00,2314581811200.00.  Removing...
 
-21:23:04 [Bound] BeyonceBound::CmdWarpToStuff()
-21:23:04 [AP Msg] Allan called WarpToStuff. AP: false
-21:23:04 [MoveTrace] Destiny::SetSpeedFraction() - kitty(140020259):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
-21:23:04 [MoveTrace] Destiny::UpdateVelocity - kitty(140020259): Speed Change - USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 408.25, accel: true, decel: false, delta: 1.000
-21:23:04 [MoveTrace] Destiny::UpdateVelocity - kitty(140020259):  USF != 0 and ship is Stopped.  --Begin Accel  AccelTime: 32.05, USF: 1.00, ASF: 0.00, TF: 0.00, PSF: 0.00
-21:23:04 [WarpTrace] Destiny::Warp() toBubble:7 from:6, m_targetPoint: -413757216367.69,-61528590564.75,172505215993.16  exit distance: 0  m_targetDistance: 1935333850
-21:23:05 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 65.570 m/s (tf:0.1606 asf:0.1606).
-21:23:06 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 132.021 m/s (tf:0.3234 asf:0.3234).
-21:23:07 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 185.580 m/s (tf:0.4546 asf:0.4546).
-21:23:08 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 228.757 m/s (tf:0.5603 asf:0.5603).
-21:23:09 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 263.561 m/s (tf:0.6456 asf:0.6456).
-21:23:10 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is accelerating at 291.617 m/s (tf:0.7143 asf:0.7143).
-21:23:11 [DestinyError] Destiny::ProcessState() Error!  Ship kitty(140020259) for Player Allan(90000000) - warp align/speed is incorrect, but time > shipTimeToWarp.
-21:23:11 [WarpTrace] Destiny::InitWarp(): kitty(140020259) is initializing warp.
-21:23:11 [DestinyWarning] Warp Cap need for kitty(140020259) for 0AU is 1.0000000000
-21:23:11 M MM::ShipWarping(): Deactivating non-warpsafe modules.
-21:23:11 [WarpTrace] Destiny::InitWarp():Calculate - kitty(140020259): Warp will accelerate for 0s, cruise for 0.000, then decelerate for 0s, with total time of 0.000s, and warp speed of 0 m/s.
-21:23:11 [WarpTrace] Destiny::InitWarp():Calculate - kitty(140020259): Accel distance is 0. Cruise distance is 0.  Decel distance is 0.  Direction is -0.955,-0.142,-0.259.
-21:23:11 [WarpTrace] Destiny::InitWarp():Calculate - kitty(140020259): We will exit warp at -413757216367.69,-61528590564.75,172505215993.16 at a distance of 0 AU (0m).
-21:23:11 [WarpTrace] Destiny::InitWarp():Calculate - kitty(140020259): calculated exit is -124706861043.50,-18548613737.45,250985225131.29 and vector is -0.9553,-0.1420,-0.2594.
-21:23:11 [WarpTrace] Destiny::InitWarp():Calculate - target vs calculated delta is 302583043403.68m.
-21:23:11 [TargetTrace] ClearAllTargets:  kitty(140020259) has cleared all targeting information.
-21:23:12 [WarpTrace] Destiny::WarpDecel(): kitty(140020259) - Warp Decelerating(1s/1s): velocity 0 m/s with 0 m left to go.
-21:23:12 [WarpTrace] Destiny::WarpStop(): kitty(140020259) - Warp complete. Exit velocity 0 m/s with 0 m left to go.
-21:23:12 [WarpTrace] Destiny::WarpStop(): kitty(140020259): Ship currently at -413757216367.69,-61528590564.75,172505215993.16.
-21:23:12 [AP Msg] Destiny::WarpStop(): kitty(140020259) - Warp complete.
-21:23:12 [MoveTrace] Destiny::SetSpeedFraction() - kitty(140020259):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: false, decel: false
-21:23:12 [MoveTrace] Destiny::UpdateVelocity - kitty(140020259):  ship dropped out of warp.      --Begin Decel  AccelTime: 6.43, USF: 0.00, ASF: 0.00, TF: 0.71, PSF: 0.75
-21:23:12 [DestinyWarning] SystemBubble::ProcessWander() - entity 140020259(sys:30000053) not in bubble 6 for systemID 30000053.
-21:23:12 [BubbleWarning] BubbleManager::Process() - Wanderer kitty(140020259) in system Ibaria(30000053) is being added to a bubble.
-21:23:12 [BubbleWarning] BubbleManager::CheckBubble() - Entity 'kitty'(140020259) at (-413757216367.69,-61528590564.75,172505215993.16) is no longer located in bubble 6 at -124706856960.00,-18548613120.00,250985226240.00.  Removing...
-21:23:13 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 149.270 m/s (tf:0.3500 asf:0.4875 ps:306.19 psf:0.7500).
-21:23:14 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 120.306 m/s (tf:0.4761 asf:0.3929 ps:306.19 psf:0.7500).
-21:23:15 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 96.995 m/s (tf:0.5776 asf:0.3168 ps:306.19 psf:0.7500).
-21:23:16 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 78.187 m/s (tf:0.6595 asf:0.2554 ps:306.19 psf:0.7500).
-21:23:17 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 63.027 m/s (tf:0.7255 asf:0.2058 ps:306.19 psf:0.7500).
-21:23:18 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 50.805 m/s (tf:0.7788 asf:0.1659 ps:306.19 psf:0.7500).
-21:23:19 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 40.954 m/s (tf:0.8217 asf:0.1338 ps:306.19 psf:0.7500).
-21:23:20 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 33.013 m/s (tf:0.8562 asf:0.1078 ps:306.19 psf:0.7500).
-21:23:21 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 26.612 m/s (tf:0.8841 asf:0.0869 ps:306.19 psf:0.7500).
-21:23:22 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 21.451 m/s (tf:0.9066 asf:0.0701 ps:306.19 psf:0.7500).
-21:23:23 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 17.292 m/s (tf:0.9247 asf:0.0565 ps:306.19 psf:0.7500).
-21:23:24 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 13.939 m/s (tf:0.9393 asf:0.0455 ps:306.19 psf:0.7500).
-21:23:25 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 11.236 m/s (tf:0.9511 asf:0.0367 ps:306.19 psf:0.7500).
-21:23:26 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 9.058 m/s (tf:0.9606 asf:0.0296 ps:306.19 psf:0.7500).
-21:23:27 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 7.301 m/s (tf:0.9682 asf:0.0238 ps:306.19 psf:0.7500).
-21:23:28 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 5.885 m/s (tf:0.9744 asf:0.0192 ps:306.19 psf:0.7500).
-21:23:29 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 4.744 m/s (tf:0.9793 asf:0.0155 ps:306.19 psf:0.7500).
-21:23:30 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 3.824 m/s (tf:0.9833 asf:0.0125 ps:306.19 psf:0.7500).
-21:23:31 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 3.083 m/s (tf:0.9866 asf:0.0101 ps:306.19 psf:0.7500).
-21:23:32 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 2.485 m/s (tf:0.9892 asf:0.0081 ps:306.19 psf:0.7500).
-21:23:33 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 2.003 m/s (tf:0.9913 asf:0.0065 ps:306.19 psf:0.7500).
-21:23:34 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 1.615 m/s (tf:0.9930 asf:0.0053 ps:306.19 psf:0.7500).
-21:23:35 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 1.302 m/s (tf:0.9943 asf:0.0043 ps:306.19 psf:0.7500).
-21:23:36 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 1.049 m/s (tf:0.9954 asf:0.0034 ps:306.19 psf:0.7500).
-21:23:37 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.846 m/s (tf:0.9963 asf:0.0028 ps:306.19 psf:0.7500).
-21:23:38 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.682 m/s (tf:0.9970 asf:0.0022 ps:306.19 psf:0.7500).
-21:23:39 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.550 m/s (tf:0.9976 asf:0.0018 ps:306.19 psf:0.7500).
-21:23:40 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.443 m/s (tf:0.9981 asf:0.0014 ps:306.19 psf:0.7500).
-21:23:41 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.357 m/s (tf:0.9984 asf:0.0012 ps:306.19 psf:0.7500).
-21:23:42 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.288 m/s (tf:0.9987 asf:0.0009 ps:306.19 psf:0.7500).
-21:23:43 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is decelerating at 0.232 m/s (tf:0.9990 asf:0.0008 ps:306.19 psf:0.7500).
-21:23:44 [MoveTrace] Destiny::MoveObject() - kitty(140020259) has decel'd from 306.19m/s to 0.23m/s in 32.998s.
-21:23:44 [MoveTrace] Destiny::MoveObject() - kitty(140020259) is at full stop after 32.998 seconds.
-21:23:44 [MoveTrace] Destiny::Halt(false) - kitty(140020259) Halted - m_shipHeading: -0.955,-0.082,-0.259
-21:23:44 [DestinyTrace] Destiny::SetPosition() called by kitty(140020259)
