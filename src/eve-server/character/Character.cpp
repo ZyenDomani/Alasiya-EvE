@@ -244,13 +244,11 @@ Character::Character(
   m_freePoints(0),
   m_loginTime(0)
 {
-    // enforce characters to be singletons
+    // enforce characters to be singletons  probably no longer needed
     assert(isSingleton());
 
-    if (!IsAgent(m_itemID)) {
-        m_loginTime = sEntityList.GetStamp();
+    if (!IsAgent(m_itemID))
         pInventory = new Inventory(InventoryItemRef(this));
-    }
 }
 
 Character::~Character()
@@ -258,6 +256,7 @@ Character::~Character()
     SaveBookMarks();
     SaveFullCharacter();
     SaveCertificates();
+    // should we unload inventory before delete?
     SafeDelete(pInventory);
 }
 
@@ -278,15 +277,6 @@ bool Character::_Load() {
     if (!m_db.LoadSkillQueue(m_itemID, m_skillQueue)) {
         sLog.Error("Character::_Load","LoadSkillQueue returned false for char %u", m_itemID);
         return (m_loaded = false);
-    }
-    if (!m_skillQueue.empty()) {
-        SkillRef sRef = GetCharSkillRef(m_skillQueue.front().typeID);
-        if (sRef.get() != nullptr) {
-            sRef->SetFlag(flagSkillInTraining, false);
-            m_inTraining = sRef.get();
-        }
-    } else {
-        ClearSkillFlags();
     }
 
     m_loaded = InventoryItem::_Load();
@@ -313,6 +303,18 @@ void Character::VerifySP()
     for (auto &cur : skills) {
         SkillRef::StaticCast(cur)->VerifyAttribs();
         SkillRef::StaticCast(cur)->VerifySP();
+    }
+}
+
+void Character::CheckSkillQueue() {
+    if (!m_skillQueue.empty()) {
+        SkillRef sRef = GetCharSkillRef(m_skillQueue.front().typeID);
+        if (sRef.get() != nullptr) {
+            sRef->SetFlag(flagSkillInTraining, false);
+            m_inTraining = sRef.get();
+        }
+    } else {
+        ClearSkillFlags();
     }
 }
 
@@ -1181,12 +1183,12 @@ PyDict *Character::GetCharInfo() {
             return nullptr;
         }
 
-    Rsp_CommonGetInfo_Entry entry1;
-    if (!Populate(entry1))
+    Rsp_CommonGetInfo_Entry entry;
+    if (!Populate( entry ))
         return nullptr;
 
     PyDict *result = new PyDict();
-    result->SetItem(new PyInt(m_itemID), new PyObject("util.KeyVal", entry1.Encode()));
+    result->SetItem(new PyInt(m_itemID), new PyObject("util.KeyVal", entry.Encode()));
 
     //now encode skills...
     std::vector<InventoryItemRef> skills;
@@ -1198,7 +1200,7 @@ PyDict *Character::GetCharInfo() {
 
     //encode an entry for each one.
     for (auto &cur : skills) {
-        Rsp_CommonGetInfo_Entry entry;
+        //Rsp_CommonGetInfo_Entry entry;
         if (cur->Populate(entry)) {
             result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry.Encode()));
         } else {
@@ -1226,7 +1228,7 @@ void Character::AddItem(InventoryItemRef iRef)
 
     InventoryItem::AddItem(iRef);
 
-    _log(CHARACTER__INFO, "%s(%u) has been added to %s with flag %i.", iRef->name(), iRef->itemID(), name(), (uint8)iRef->flag());
+    _log(CHARACTER__INFO, "%s(%u) has been added to %s with flag %li.", iRef->name(), iRef->itemID(), name(), (uint8)iRef->flag());
 }
 
 void Character::SetActiveShip(uint32 shipID)

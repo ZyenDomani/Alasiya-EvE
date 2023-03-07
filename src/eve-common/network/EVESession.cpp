@@ -196,9 +196,9 @@ void EVEClientSession::SendVersion() {
     tup->SetItemInt(0, EVEBirthday);
     tup->SetItemInt(1, MachoNetVersion);
     tup->SetItemInt(2, GetClientCount());
-    tup->SetItem(3, new PyFloat(EVEVersionNumber), true);
+    tup->SetItem(3, new PyFloat(EVEVersionNumber));
     tup->SetItemInt(4, EVEBuildVersion);
-    tup->SetItem(5, new PyString(EVEProjectVersion), true);
-    tup->SetItem(6, PyStatic.NewNone(), true);
+    tup->SetItem(5, new PyString(EVEProjectVersion));
+    tup->SetItem(6, PyStatic.NewNone());
     mNet->QueueRep( tup );
 }

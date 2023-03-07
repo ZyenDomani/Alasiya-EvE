@@ -243,6 +243,7 @@ public:
     Skill*          GetSkillInTraining() const          { return m_inTraining; }
     void            GetSkillsList(std::vector<InventoryItemRef>& skills) const;
     void            VerifySP();
+    void            CheckSkillQueue();
     uint32          GetTotalSPTrained()                 { return m_charData.skillPoints; };
     uint8           GetSPPerMin(Skill* skill);
     int64           GetEndOfTraining();
@@ -453,6 +454,8 @@ private:
     uint32 m_loginTime;
 
     std::map<uint8, InventoryItemRef>  m_implantMap;    // slotID/itemRef
+    // for storyline mission counting
+    std::map<uint32, std::map<uint8, uint8>> m_missionMap;      // factionID, [level, count]
 };
 
 #endif /* !__CHARACTER__H__INCL__ */

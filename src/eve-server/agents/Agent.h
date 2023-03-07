@@ -66,8 +66,6 @@ public:
 
 protected:
     std::string GetMinReqStanding(uint8 level);
-    const uint32 m_agentID;
-    AgentData m_agentData;
 
     std::map<uint16, uint8>             m_skills;       // skillID/level
     std::map<uint32, MissionOffer>      m_offers;       // charID/data      -- shouldnt this be in mission data??
@@ -75,8 +73,9 @@ protected:
 
 private:
     bool m_important;
-
     uint16 m_buttonID;
+    const uint32 m_agentID;
+    AgentData m_agentData;
 };
 
 #endif  // _EVE_SERVER_AGENT_H

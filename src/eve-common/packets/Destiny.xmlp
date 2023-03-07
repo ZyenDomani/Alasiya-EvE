@@ -310,13 +310,13 @@ DST_WARPEXIT = 11
             <!-- 0: shipID -->
             <int name="entityID" />
             <!-- 1: moduleID -->
-            <int name="moduleID" none_marker="0" />
+            <none name="moduleID" />
             <!-- 2: moduleTypeID -->
-            <int name="moduleTypeID" none_marker="0" />
+            <none name="moduleTypeID" />
             <!-- 3: targetID -->
-            <int name="targetID" none_marker="0" />
-            <!-- 4: chargeTypeID -->
-            <int name="chargeTypeID" none_marker="0" />
+            <raw name="targetID" />     <!-- only used by jumpOut -->
+            <!-- 4: otherTypeID -->
+            <raw name="otherTypeID" /> <!-- only used by jumpOutWormhole.  not sure what/where the data is for this -->
             <!-- 5: area, completely unknown contents, empty PyList in packets -->
             <list name="area" />
             <!-- 6: see scripts/parklife/fxSequencer.py -->
@@ -340,29 +340,29 @@ DST_WARPEXIT = 11
             <!-- 0: shipID -->
             <int name="entityID" />
             <!-- 1: moduleID (shipID for NPC) -->
-            <int name="moduleID" none_marker="0" />
+            <int name="moduleID" />
             <!-- 2: moduleTypeID -->
-            <int name="moduleTypeID" none_marker="0" />
+            <int name="moduleTypeID" />
             <!-- 3: targetID or None -->
             <raw name="targetID" />
-            <!-- 4: chargeTypeID or None -->
-            <raw name="chargeTypeID" />
+            <!-- 4: otherTypeID or None -->
+            <raw name="otherTypeID" />
             <!-- 5: area, completely unknown contents, empty PyList in packets -->
             <list name="area" />
             <!-- 6: guid: see scripts/parklife/fxSequencer.py -->
             <string name="guid" />
             <!-- 7: isOffensive -->
-            <bool name="isOffensive" default="false" />
+            <bool name="isOffensive" />
             <!-- 8: start -->
             <int name="start" />
             <!-- 9: active -->
             <int name="active" />
-            <!-- 10: duration in milliseconds (optional) -->
-            <int name="duration" default="-1" none_marker="0" />
-            <!-- 11: repeat (optional) (really defaults to None, but -1 seems to work too) -->
-            <int name="repeat" none_marker="0" />
-            <!-- 12: startTime (optional) -->
-            <long name="startTime" none_marker="0" />
+            <!-- 10: duration in milliseconds -->
+            <int name="duration" />
+            <!-- 11: repeat  -->
+            <int name="repeat" />
+            <!-- 12: startTime -->
+            <long name="startTime" />
             <!-- 13: graphicInfo or None  - not sure what this is yet.  -->
             <raw name="graphicInfo" />
         </tupleInline>
@@ -499,34 +499,34 @@ DST_WARPEXIT = 11
 
   <elementDef name="CallAlignTo" encode="false">
     <tupleInline>
-      <int name="entityID" none_marker="0" />
+      <int name="entityID" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="CallWarpToStuff" encode="false">
     <tupleInline>
       <string name="type" none_marker="" />
-      <int name="ID" none_marker="0" />
+      <int name="ID" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="CallWarpToStuffAutopilot" encode="false">
     <tupleInline>
-      <int name="destID" none_marker="0" />
+      <int name="destID" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_StargateJump" encode="false">
     <tupleInline>
-      <int name="fromStargateID" none_marker="0" />
-      <int name="toStargateID" none_marker="0" />
-      <int name="shipID" none_marker="0" />
+      <int name="fromStargateID" />
+      <int name="toStargateID" />
+      <int name="shipID" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_FollowBall" encode="false">
     <tupleInline>
-      <int name="ballID" none_marker="0" />
+      <int name="ballID" />
       <!-- may be integer or real -->
       <raw name="distance" />
     </tupleInline>
@@ -534,7 +534,7 @@ DST_WARPEXIT = 11
 
   <elementDef name="Call_Orbit" encode="false">
     <tupleInline>
-      <int name="entityID" none_marker="0" />
+      <int name="entityID" />
       <!-- may be integer or real -->
       <raw name="range" />
     </tupleInline>
@@ -727,6 +727,17 @@ DST_WARPEXIT = 11
             <int name="entityID" />
             <bool name="cloaked" />
             <!-- optional: maybe <real name="cloakMode" /> -->
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
+  <elementDef name="SetBallUncloak" decode="false" >
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="UncloakBall" />
+        <!-- 1 -->
+        <tupleInline>
+            <int name="entityID" />
         </tupleInline>
       </tupleInline>
   </elementDef>

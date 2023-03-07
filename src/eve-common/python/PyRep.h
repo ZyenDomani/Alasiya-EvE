@@ -634,7 +634,7 @@ public:
     // copy c'tor
     PyTuple(const PyTuple& oth);
     // move c'tor
-    PyTuple(PyTuple&& oth) : PyRep(PyRep::PyTypeTuple), items(std::move(oth.items)), cleanupVec(std::move(oth.cleanupVec)) {}
+    PyTuple(PyTuple&& oth) : PyRep(PyRep::PyTypeTuple), items(std::move(oth.items)) {}
     // copy assignment
     PyTuple& operator= (const PyTuple& oth);
     // move assignment
@@ -654,31 +654,25 @@ public:
 
     PyRep* GetItem(size_t index) const		        { return items.at(index); }
 
-    void SetItem(size_t index, PyRep* object, bool cleanup=false) {
+    void SetItem(size_t index, PyRep* object) {
         PyRep** rep = &items.at(index);
 
         PySafeDecRef(*rep);
         if (object == nullptr) {
             *rep = new PyNone();
-            cleanup = true;
         } else {
             *rep = object;
         }
 
-        if (cleanup)
-            cleanupVec.push_back(index);
-
         PyIncRef(*rep);
     }
 
-    void SetItemInt(size_t index, int32 val)		    { SetItem(index, new PyInt(val), true); }
-    void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str), true); }
+    void SetItemInt(size_t index, int32 val)		    { SetItem(index, new PyInt(val)); }
+    void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str)); }
 
     int32 hash() const;
 
     std::vector<PyRep*>	items;
-    // use vector with indexes of items to cleanup
-    std::vector<int16>  cleanupVec;
 };
 
 /**
@@ -736,7 +730,6 @@ public:
         PySafeDecRef(*rep);
         if (object == nullptr) {
             *rep = new PyNone();
-            cleanup.push_back(index);
         } else {
             *rep = object;
         }
@@ -748,23 +741,16 @@ public:
      * @param[in] index Index at which the object should be stored.
      * @param[in] str   String to be stored.
      */
-    void SetItemString(size_t index, const char* str) { SetItem(index, new PyString(str)); cleanup.push_back(index); }
+    void SetItemString(size_t index, const char* str) { SetItem(index, new PyString(str)); }
 
     void AddItem(PyRep* i)				{ items.push_back(i); }
     void AddItemInt(int32 intval)			{ AddItem(new PyInt(intval)); }
     void AddItemLong(int64 intval)			{ AddItem(new PyLong(intval)); }
     void AddItemReal(double realval)			{ AddItem(new PyFloat(realval)); }
-    void AddItemString(const char* str)	        { AddItem(new PyString(str)); }
+    void AddItemString(const char* str)	                { AddItem(new PyString(str)); }
 
     // This needs to be public:
     std::vector<PyRep*>		items;
-
-protected:
-	// use vector with indexes of items to cleanup
-//NOTE: there isnt a 'good' way to get the index here, as we're using push_back.
-//  if needed later (which i might) i'll use emplace which returns an iterator to inserted item.  from there, i'll get index
-//  and add to cleanup vector.
-    std::vector<int>  cleanup;
 };
 
 /**
@@ -909,7 +895,6 @@ public:
 protected:
     PyString*			mType;
     PyRep*      		mArguments;
-    bool			cleanup=false;
 };
 
 /**
@@ -957,7 +942,6 @@ public:
 protected:
     PyRep*      		mHeader;
     bool			mIsType2;
-    bool                        cleanup=false;
 
     PyList* 	        	mList;
     PyDict*     		mDict;
@@ -1219,16 +1203,16 @@ class pyStatic
 {
 public:
     pyStatic()
+    : m_none(new PyNone()),
+    m_zero(new PyInt(0)),
+    m_one(new PyInt(1)),
+    m_negone(new PyInt(-1)),
+    m_true(new PyBool(true)),
+    m_false(new PyBool(false)),
+    m_dict(new PyDict()),
+    m_list(new PyList()),
+    m_tuple(new PyTuple(0))
     {
-        m_none = new PyNone();
-        m_zero = new PyInt(0);
-        m_one = new PyInt(1);
-        m_negone = new PyInt(-1);
-        m_true = new PyBool(true);
-        m_false = new PyBool(false);
-        m_dict = new PyDict();
-        m_list = new PyList();
-        m_tuple = new PyTuple(0);
     }
 
    ~pyStatic()
@@ -1244,6 +1228,8 @@ public:
        PyDecRef(m_tuple);
     }
 
+    void Init()                 { /* just to create object */ }
+    
     PyRep* NewNone()            { PyIncRef(m_none); return m_none; }
     PyRep* NewZero()            { PyIncRef(m_zero); return m_zero; }
     PyRep* NewOne()             { PyIncRef(m_one); return m_one; }

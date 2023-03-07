@@ -197,6 +197,7 @@ uint16 FxDataMgr::GetEffectID(std::string effectName)
     std::map<std::string, uint16>::const_iterator itr = m_effectName.find(effectName);
     if (itr != m_effectName.end())
         return itr->second;
+    sLog.Warning("FxDataMgr", "GetEffectID not found for %s", effectName.c_str());
     return 0;
 }
 
@@ -205,6 +206,7 @@ std::string FxDataMgr::GetEffectGuid(uint16 eID)
     effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second.guid;
+    sLog.Warning("FxDataMgr", "GetEffectGuid not found for %u", eID);
     return "";   // default to 'nothing' if effectID not found
 }
 
@@ -213,6 +215,7 @@ std::string FxDataMgr::GetEffectName(uint16 eID)
     effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second.effectName;
+    sLog.Warning("FxDataMgr", "GetEffectName not found for %u", eID);
     return "";   // default to 'nothing' if effectID not found
 }
 

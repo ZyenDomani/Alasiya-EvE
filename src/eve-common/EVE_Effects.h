@@ -12,6 +12,7 @@
 
 /** updated list from current server data...
  *  allan - 21 March 2017
+ *  verified again - 3Feb23
  */
 enum EVEEffectID {
     shieldBoosting =   4,     // effects.ShieldBoosting
@@ -72,8 +73,8 @@ enum EVEEffectID {
     armorRepairForEntities =   878,     // effects.ArmorRepair
     suicideBomb =   885,     // effects.EMPWave
     onlineForStructures =   901,     // effects.StructureOnline
-    decloakWave =   902,     // effects.DecloakWave
-    cloakingWarpSafe =   980,     // effects.CloakingCovertOps
+    decloakWave =   902,     // effects.DecloakWave             -- this isnt gfx, but module effect radiating from origin
+    cloakingWarpSafe =   980,     // effects.CloakingCovertOps       -- not in Crucible
     anchorDropForStructures =   1022,     // effects.AnchorDrop
     anchorLiftForStructures =   1023,     // effects.AnchorLift
     projectileFiredForEntities =   1086,     // effects.ProjectileFiredForEntities
@@ -83,7 +84,7 @@ enum EVEEffectID {
     newEwTestscanStrengthBonusTargetHostile =   1271,     // effects.ScanStrengthBonusTarget
     newEwTestswarpScramble =   1272,     // effects.WarpScramble
     newEwTestssensorBoostTargetedHostile =   1273,     // effects.ElectronicAttributeModifyTarget
-    newEwTeststurretWeaponRangeTrackingSpeedMultiplyTargetHostile =   1274,     // effects.Target_paint
+    newEwTeststurretWeaponRangeTrackingSpeedMultiplyTargetHostile =   1274,     // effects.TargetPaint
     newEwTestsdecreaseTargetSpeed =   1275,     // effects.ModifyTargetSpeed
     ewTestEffectRsd =   1354,     // effects.ElectronicAttributeModifyTarget
     ewTestEffectWs =   1355,     // effects.WarpScramble
@@ -177,31 +178,31 @@ enum EVEEffectID {
     anchorLiftForOrbitals =   4770,     // effects.AnchorLift
     onlineOrbital =   4771,     // effects.StructureOnline
     hackOrbital =   4773,     // effects.TargetScan
-    deployPledge =   4774,     // DeployPledge
+    deployPledge =   4774,     // DeployPledge          -- no clue what this is...
     siegeModeEffect5 =   4838,     // effects.SiegeMode
     triageModeEffect3 =   4839,     // effects.TriageMode
     siegeModeEffect6 =   4877,     // effects.SiegeMode
     triageModeEffect7 =   4893,     // effects.TriageMode
-    microJumpDrive =   4921,     // effects.MicroJumpDriveEngage
+    microJumpDrive =   4921,     // effects.MicroJumpDriveEngage        -- not in Crucible
     adaptiveArmorHardener =   4928,     // effects.ArmorHardening
     targetTrackingDisruptorCombinedGunneryAndMissileEffect =   4932,     // effects.ElectronicAttributeModifyTarget
     fueledShieldBoosting =   4936,     // effects.ShieldBoosting
-    targetBreaker =   4942,     // effects.TargetBreaker
+    targetBreaker =   4942,     // effects.TargetBreaker      -- not in Crucible
     unusedEntityTrackingDisrupt4 =   4980,     // effects.ElectronicAttributeModifyTarget
     unusedEntityTrackingDisrupt5 =   4981,     // effects.ElectronicAttributeModifyTarget
     entityTrackingDisrupt =   4982,     // effects.ElectronicAttributeModifyTarget
-    orbitalStrike =   5141,     // effects.OrbitalStrike
+    orbitalStrike =   5141,     // effects.OrbitalStrike      -- for dust514
     salvageDroneEffect =   5163,     // effects.Salvaging
     modifyActiveShieldResonancePostPercent =   5230,     // effects.ModifyShieldResonance
     modifyActiveArmorResonancePostPercent =   5231,     // effects.ArmorHardening
     fueledArmorRepair =   5275,     // effects.ArmorRepair
     gangSensorIntegrity =   5551,     // effects.ElectronicAttributeModifyActivate
     marauderModeEffect25 =   5643,     // effects.SiegeMode
-    EssWarpScramble =   5768,     // effects.BeamCollecting
+    EssWarpScramble =   5768,     // effects.BeamCollecting    -- not in Crucible
     marauderModeEffect26 =   5788,     // effects.SiegeMode
     warpScrambleTargetMWDBlockActivationForEntity =   5928,     // effects.WarpScramble
     warpScrambleBlockMWDWithNPCEffect =   5934,     // effects.WarpScramble
-    cloakingPrototype =   5945,     // effects.CloakingPrototype
+    cloakingPrototype =   5945,     // effects.CloakingPrototype  -- not in Crucible
     shipModeScanStrengthPostDiv =   6012,     // effects.ScanStrengthBonusActivate
 };
 

@@ -36,17 +36,13 @@
 
 
 Agent::Agent(uint32 id)
-: m_agentID(id)
+: m_important(false),
+m_buttonID(1),
+m_agentID(id),
+m_agentData(AgentData())
 {
-    m_important = false;
-    m_buttonID = 1;
-
-    m_actions.clear();
-    m_offers.clear();
-
     _log(AGENT__TRACE, "Agent created for AgentID %u", id);
 }
-
 
 bool Agent::Load() {
     AgentDB::LoadAgentData(m_agentID, m_agentData);

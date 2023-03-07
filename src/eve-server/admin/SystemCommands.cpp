@@ -838,14 +838,17 @@ PyResult Command_cloak(Client* pClient, CommandDB* db, PyServiceMgr* services, c
 {
     if (args.argCount() == 1) {
         if (pClient->IsInSpace()) {
-            if (pClient->GetShipSE()->DestinyMgr()->IsCloaked())
+            if (pClient->GetShipSE()->DestinyMgr()->IsCloaked()) {
                 pClient->GetShipSE()->DestinyMgr()->UnCloak();
-            else
+            } else {
                 pClient->GetShipSE()->DestinyMgr()->Cloak();
-        } else
-            throw CustomError("ERROR!  You MUST be in space to cloak!");
-    } else
+            }
+        } else {
+            throw CustomError("ERROR!  You must be in space to cloak!");
+        }
+    } else {
         throw CustomError("Correct Usage: /cloak");
+    }
 
     return nullptr;
 }

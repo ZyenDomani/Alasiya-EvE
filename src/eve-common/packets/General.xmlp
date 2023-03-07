@@ -147,8 +147,8 @@
 
   <elementDef name="Call_TwoIntegerArgs" encode="false">
     <tupleInline>
-      <int name="arg1"  />
-      <int name="arg2"  />
+      <int name="arg1" />
+      <int name="arg2" />
     </tupleInline>
   </elementDef>
 
@@ -175,7 +175,7 @@
 
   <elementDef name="Call_SingleStringArg" encode="false">
     <tupleInline>
-      <string name="arg"  />
+      <string name="arg" />
     </tupleInline>
   </elementDef>
 
@@ -199,7 +199,7 @@
 
   <elementDef name="Call_IntBoolArg" encode="false">
     <tupleInline>
-      <int name="arg1"  />
+      <int name="arg1" />
       <bool name="arg2" />
     </tupleInline>
   </elementDef>
@@ -217,14 +217,14 @@
       <!-- 0 -->
         <raw name="bindParams" />
       <!-- 1 -->
-      <int name="justQuery"  />
+      <int name="justQuery" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="CallMachoBindObject_call" encode="false">
       <tupleInline>
         <!-- 0 -->
-        <string name="method_name"  />
+        <string name="method_name" />
         <!-- 1 -->
         <tuple name="arguments" />
         <!-- 2 -->
@@ -295,18 +295,18 @@
   <elementDef name="CallGetInventoryFromId" encode="false">
     <tupleInline>
         <!-- 0 -->
-        <int name="entityID"  />
+        <int name="entityID" />
         <!-- 1 -->
-        <int name="passive"  />
+        <int name="passive" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="CallGetMessageDetails" encode="false">
     <tupleInline>
       <!-- 0 -->
-      <int name="channelID"  />
+      <int name="channelID" />
       <!-- 1 -->
-      <int name="messageID"  />
+      <int name="messageID" />
     </tupleInline>
   </elementDef>
 
@@ -315,7 +315,7 @@
       <!-- 0 -->
       <listInline>
         <!-- 0 -->
-        <int name="messageID"  />
+        <int name="messageID" />
       </listInline>
     </tupleInline>
   </elementDef>
@@ -361,23 +361,23 @@
 
   <elementDef name="ServerNotification_ReleaseObj">
     <tupleInline>
-        <string name="boundID"  />
+        <string name="boundID" />
         <long name="timestamp" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Notify_OnRemoteMessage" decode="false">
     <tupleInline>
-      <string name="msgType"  />
+      <string name="msgType" />
       <dictStr name="args" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_InsureShip" encode="false">
       <tupleInline>
-          <int name="shipID"  />
+          <int name="shipID" />
           <real name="amount" />
-          <int name="isCorp"  />
+          <int name="isCorp" />
       </tupleInline>
   </elementDef>
 
@@ -390,8 +390,8 @@
 
   <elementDef name="Call_BoardShip" encode="false">
     <tupleInline>
-      <int name="newShipID"  />
-      <int name="oldShipID"  />
+      <int name="newShipID" />
+      <int name="oldShipID" />
     </tupleInline>
   </elementDef>
 
