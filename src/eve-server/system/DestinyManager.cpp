@@ -946,7 +946,8 @@ void DestinyManager::Turn(float &speed, std::string &move) {
 
     float change(m_turnPct * m_turnTime);
 
-    // accel/decel in turn act different. ignore MoveObject() speed and set per turn change here (5us)
+    move += " in turn";
+    // accel/decel in turn act different. ignore MoveObject() speed and set per turn change here (+5-9us)
     if (m_turnDecel) {
         // our speed is above min for this turn.
         if (m_turnTime > (m_alignTime * 0.5f)) {
@@ -967,13 +968,12 @@ void DestinyManager::Turn(float &speed, std::string &move) {
             if (m_activeSpeedFraction > m_turnMinFraction)
                 sLog.Warning("Turn()", "asf > mtsf during first half.");
             // have to figure out how to keep this down and everything sane at same time.
-    } else if (m_turnAccel) {
+    }
+	if (m_turnAccel) {
         // we are now resuming accel after 1/2 turn
         m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_turnMinFraction, 1.0f - (change * 2));
         speed = m_maxShipSpeed * m_activeSpeedFraction;
         move = "accel in turn";
-    } else {
-        move += " in turn";
     }
 
     // apex is current ship position + direction * (speed * 1/2 turn time)
