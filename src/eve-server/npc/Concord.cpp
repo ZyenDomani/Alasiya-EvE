@@ -638,7 +638,7 @@ void ConcordAI::Attack(SystemEntity* pSE)
 //entityWarpScrambleChance
 void ConcordAI::AttackTarget(SystemEntity* pTarget) {
     std::string guid = "effects.Laser";
-    m_npc->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
+    m_npc->DestinyMgr()->SendGFX14(m_npc->GetSelf()->itemID(),
                                            m_npc->GetSelf()->itemID(),
                                            m_npc->GetSelf()->typeID(), //m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
                                            pTarget->GetID(),

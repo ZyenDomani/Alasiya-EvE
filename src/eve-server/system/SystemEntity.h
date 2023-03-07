@@ -227,7 +227,7 @@ public:
     uint8                       GetCategoryID()         { return m_self->categoryID(); }
     EVEItemFlags                GetFlag()               { return m_self->flag(); }
     uint32                      GetID()                 { return m_self->itemID(); }
-    double                      GetRadius()             { return m_radius; }
+    int32                       GetRadius()             { return m_radius; }
     uint32                      GetLocationID()         { return m_self->locationID(); }
     const char*                 GetName() const         { return m_self->name(); }
     const GPoint&               GetPosition() const     { return m_self->position(); }
@@ -292,7 +292,7 @@ protected:
 
     bool                        m_killed;
 
-    double                      m_radius;
+    int32                       m_radius;
 
     /* this is POS ForceField status */
     int32                       m_harmonic;

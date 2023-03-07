@@ -60,9 +60,9 @@ m_npcs(0),
 m_stamp(1000),   /* arbitrary.  start at 1k.  in seconds.  used for destiny and client counters */
 m_minutes(0),
 m_connections(0),
-m_clientSeedID(0)
+m_clientSeedID(0),
+m_shipTracking(sConfig.debug.UseShipTracking)
 {
-    m_shipTracking = sConfig.debug.UseShipTracking;
 }
 
 EntityList::~EntityList() {
@@ -178,33 +178,36 @@ void EntityList::RemovePlayer(Client* pClient)
 
 void EntityList::Process() {
     //m_profileTime = GetTimeUSeconds();
-    std::vector<Client*>::iterator citr = m_clients.begin();
-    while (citr != m_clients.end()) {
+    std::vector<Client*>::iterator citr = m_clients.begin(), cend = m_clients.end();
+    while (citr != cend ) {
         if ((*citr)->ProcessNet()) {
             ++citr;
         } else {
             m_procClient = *citr;
             citr = m_clients.erase(citr);
+            cend = m_clients.end();
             SafeDelete(m_procClient);
         }
     }
 
     // testing targeting and scan probes at 2/sec
     if (m_targTimer.Check()) {
-        std::unordered_map<SystemEntity*, TargetManager*>::iterator titr = m_targMgrs.begin();
-        while (titr != m_targMgrs.end()) {
+        std::unordered_map<SystemEntity*, TargetManager*>::iterator titr = m_targMgrs.begin(), tend = m_targMgrs.end();
+        while (titr != tend ) {
             if (titr->second->Process()) {
                 ++titr;
             } else {
                 titr = m_targMgrs.erase(titr);
+                tend = m_targMgrs.end();
             }
         }
-        std::map<uint32, ProbeSE*>::iterator pitr = m_probes.begin();
-        while (pitr != m_probes.end()) {
+        std::map<uint32, ProbeSE*>::iterator pitr = m_probes.begin(), pend = m_probes.end();
+        while (pitr != pend ) {
             if (pitr->second->ProcessTic()) {
                 ++pitr;
             } else {
                 pitr = m_probes.erase(pitr);
+                pend = m_probes.end();
             }
         }
     }
@@ -225,16 +228,18 @@ void EntityList::Process() {
     // this wont work....possibility of removing systems, therefore invalidating the iterator.
     // bad things can happen if this is running parallel on MP
     //#pragma omp parallel  // starts a new team
-        std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
-        while (itr != m_systems.end()) {
+        std::map<uint32, SystemManager*>::iterator itr = m_systems.begin(), end = m_systems.end();
+        while (itr != end) {
             if (itr->second == nullptr) { /* this shouldnt happen.  log error to make note */
                 sLog.Error(" EntityList::Proc", "Deleting System %u because itr->second=nullptr", itr->first);
                 itr = m_systems.erase(itr);
+                end = m_systems.end();
                 continue;
             } else if (!itr->second->ProcessTic()) {    /* Process each loaded system */
                 itr->second->UnloadSystem();
                 SafeDelete(itr->second);
                 itr = m_systems.erase(itr);
+                end = m_systems.end();
                 continue;
             }
             ++itr;

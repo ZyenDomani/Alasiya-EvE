@@ -66,11 +66,11 @@ m_killed(false)
     m_fleetID = 0;
     m_ownerID = 1;
 
-    m_radius = m_self->GetAttribute(AttrRadius).get_double();
+    m_radius = m_self->GetAttribute(AttrRadius).get_int();
 
     m_harmonic = EVEPOS::Harmonic::Inactive;
 
-    _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %.1f.", self->name(), self->itemID(), m_radius);
+    _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %li.", self->name(), self->itemID(), m_radius);
 }
 
 // copy c'tor
@@ -140,7 +140,7 @@ void SystemEntity::EncodeDestiny( Buffer& into )
     RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-    _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void SystemEntity::Killed(Damage& fatal_blow)
@@ -313,7 +313,7 @@ void StaticSystemEntity::EncodeDestiny( Buffer& into ) {
     RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-    _log(SE__DESTINY, "SSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
+    _log(SE__DESTINY, "SSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
 }
 
 BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -469,7 +469,7 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(SE__DESTINY, "ISE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "ISE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
@@ -529,7 +529,7 @@ void FieldSE::EncodeDestiny( Buffer& into )
         into.Append( main );
     }
 
-    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *FieldSE::MakeSlimItem()
@@ -584,7 +584,7 @@ void ObjectSystemEntity::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(SE__DESTINY, "OSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "OSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict* ObjectSystemEntity::MakeSlimItem() {
@@ -735,7 +735,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(SE__DESTINY, "DSE::EncodeDestiny(): %s - id:%li, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "DSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void DynamicSystemEntity::MakeDamageState(DoDestinyDamageState &into) {

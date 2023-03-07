@@ -227,7 +227,7 @@ void TowerSE::SetOnline()
         CreateForceField();
 
     SendSlimUpdate();
-    m_destiny->SendSpecialEffect(m_self->itemID(),m_self->itemID(),m_self->typeID(),0,0,"effects.StructureOnline",0,1,1,-1,0);
+    m_destiny->SendGFX14(m_self->itemID(),m_self->itemID(),m_self->typeID(),0,0,"effects.StructureOnline",0,1,1,-1,0);
 
     m_db.UpdateBaseData(m_data);
 

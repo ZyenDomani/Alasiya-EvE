@@ -88,7 +88,7 @@ void SuperWeapon::StopCycle(bool abort)
     timeLeft /= 1000;
 
 	// Create Special Effect:
-	m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+	m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendGFX
 	(
         m_shipRef,
         m_modRef->itemID(),
@@ -204,7 +204,7 @@ void SuperWeapon::_ShowCycle()
 	}
 
 	// Create Special Effect:
-	m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+	m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendGFX
 	(
         m_shipRef,
         m_modRef->itemID(),

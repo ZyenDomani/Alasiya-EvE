@@ -63,10 +63,11 @@ bool TargetManager::Process() {
         return false;
 
     //process outgoing targeting (outgoing will call incoming as needed)
-    std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.begin();
-    while (itr != m_targets.end()) {
+    std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.begin(), end = m_targets.end();
+    while (itr != end) {
         if ((itr->first == nullptr) or (itr->second == nullptr)) {
             itr = m_targets.erase(itr);
+            end = m_targets.end();
             continue;
         }
         switch (itr->second->state) {

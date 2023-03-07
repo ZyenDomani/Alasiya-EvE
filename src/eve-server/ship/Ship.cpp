@@ -2545,7 +2545,7 @@ void ShipSE::Dock() {
     m_shipRef->Dock();
 }
 
-void ShipSE::Jump(bool showCloak) {
+void ShipSE::Jump(int32 fromGateID, bool showCloak/*true*/) {
     if (m_targMgr != nullptr) {
         m_targMgr->ClearModules();
         m_targMgr->ClearAllTargets(false);
@@ -2553,7 +2553,7 @@ void ShipSE::Jump(bool showCloak) {
     }
 
     m_shipRef->Jump();
-    m_destiny->Jump(showCloak);
+    m_destiny->Jump(fromGateID, showCloak);
 }
 
 void ShipSE::Warp() {
@@ -2669,7 +2669,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         case 12: modeStr = "Formation"; break;
     }
 
-    _log(SE__DESTINY, "ShipSE::EncodeDestiny(): %s - id:%li, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
+    _log(SE__DESTINY, "ShipSE::EncodeDestiny(): %s - id:%lli, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
             GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);
 }
 

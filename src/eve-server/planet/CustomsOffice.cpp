@@ -330,7 +330,8 @@ void CustomsSE::SetAnchor(Client* pClient, GPoint& pos)
     m_destiny->SendDestinyUpdates(updates); //consumed
 
     //SendEffectUpdate(anchorDropForOrbitals, true);
-    m_destiny->SendSpecialEffect(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);
+    // this also needs a timestamp
+    m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);
 }
 
 void CustomsSE::PullAnchor()
@@ -347,7 +348,8 @@ void CustomsSE::PullAnchor()
     SendSlimUpdate();
 
     //SendEffectUpdate(anchorLiftForOrbitals, true);
-    m_destiny->SendSpecialEffect(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
+    // this also needs a timestamp
+    m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
 }
 
 void CustomsSE::EncodeDestiny( Buffer& into )

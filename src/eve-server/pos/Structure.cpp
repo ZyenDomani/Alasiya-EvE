@@ -464,14 +464,16 @@ void StructureSE::Process()
         case ProcState::Unanchoring:
         {
             SendSlimUpdate();
-            m_destiny->SendSpecialEffect(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 0, 0, -1, 0);
+            // this also needs a timestamp
+            m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 0, 0, -1, 0);
             m_db.UpdateBaseData(m_data);
         }
         break;
         case ProcState::Anchoring:
         {
             SendSlimUpdate();
-            m_destiny->SendSpecialEffect(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 0, 0, -1, 0);
+            // this also needs a timestamp
+            m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
             if (m_tower)
                 m_moonSE->SetTower(this);
             if (m_sbu)
@@ -727,7 +729,7 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
      sbr.radius = m_self->radius();
     updates.push_back(sbr.Encode());
     m_destiny->SendDestinyUpdates(updates); //consumed
-    m_destiny->SendSpecialEffect(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
+    m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
 }
 
 void StructureSE::PullAnchor()
@@ -758,7 +760,7 @@ void StructureSE::PullAnchor()
         SendEffectUpdate(anchorLiftForOrbitals, true);
     else
         */
-    m_destiny->SendSpecialEffect(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 1, 1, -1, 0);
+    m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 1, 1, -1, 0);
 }
 
 /*
@@ -817,7 +819,7 @@ void StructureSE::Activate(int32 effectID)
     m_data.timestamp = GetFileTimeNow();
 
     SendSlimUpdate();
-    m_destiny->SendSpecialEffect(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnline", 0, 1, 1, -1, 0);
+    m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnline", 0, 1, 1, -1, 0);
 
     // should this be done here?
     if (m_module)
@@ -836,7 +838,7 @@ void StructureSE::Deactivate(int32 effectID)
     m_db.UpdateBaseData(m_data);
 
     SendSlimUpdate();
-    //m_destiny->SendSpecialEffect(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.StructureOnline",0,0,0,-1,0);
+    //m_destiny->SendGFX14(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.StructureOnline",0,0,0,-1,0);
 }
 
 void StructureSE::SetOnline()
@@ -848,7 +850,7 @@ void StructureSE::SetOnline()
 
     SetTimer(m_duration);
     m_db.UpdateBaseData(m_data);
-    m_destiny->SendSpecialEffect(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnlined", 0, 1, 1, -1, 0);
+    m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnlined", 0, 1, 1, -1, 0);
 
     if (m_generator) {
         svDataMgr.UpdateSystemBeaconID(m_self->locationID(),m_self->itemID());

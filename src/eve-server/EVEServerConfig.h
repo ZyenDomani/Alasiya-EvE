@@ -87,7 +87,7 @@ public:
         uint8 StationDockDelay;
         uint16 shipBoardDistance;
         uint16 gridUnloadTime;
-        uint16 apWarptoDistance;
+        int32 apWarptoDistance;
     } world;
 
     // From <rates>

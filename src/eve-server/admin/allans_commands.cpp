@@ -394,7 +394,7 @@ PyResult Command_halt(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     if (!pClient->GetShipSE()->DestinyMgr())
         pClient->SetDestiny(NULL_ORIGIN);
 
-    pClient->GetShipSE()->DestinyMgr()->Halt();
+    pClient->GetShipSE()->DestinyMgr()->Halt(true);
 
     char reply[25];
     snprintf(reply, 25,
@@ -808,7 +808,7 @@ PyResult Command_warpto(Client* pClient, CommandDB* db, PyServiceMgr* services, 
         pClient->SetDestiny(NULL_ORIGIN);
 
     /** @todo  finish this.... */
-    pClient->GetShipSE()->DestinyMgr()->Halt();
+    pClient->GetShipSE()->DestinyMgr()->Halt(true);
 
     char reply[55];
     snprintf(reply, 55, "Command Unavailible.\nShip Halted.");
@@ -829,7 +829,7 @@ PyResult Command_entityspawn(Client* pClient, CommandDB* db, PyServiceMgr* servi
 
 //sm.RemoteSvc('slash').SlashCmd('/entityspawn {0} {1} {2} 0 {3}'.format(recipeID, typeID, x, y))
     /** @todo  finish this.... */
-    pClient->GetShipSE()->DestinyMgr()->Halt();
+    pClient->GetShipSE()->DestinyMgr()->Halt(true);
 
     char reply[55];
     snprintf(reply, 55, "Command Unfinished.\nShip Halted.");

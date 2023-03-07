@@ -1224,7 +1224,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         timeLeft = m_linkMaster->GetActiveModule()->GetRemainingCycleTimeMS();
 
     if (m_destinyMgr != nullptr)
-        m_destinyMgr->SendSpecialEffect(
+        m_destinyMgr->SendGFX14(
                 m_shipRef->itemID(),
                 m_modRef->itemID(),
                 m_modRef->typeID(),

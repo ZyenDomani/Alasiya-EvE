@@ -252,11 +252,11 @@ public:
     void SetSessionTimer()                              { m_sessionChangeActive = true; m_sessionTimer.Start(Player::Timer::Session); }
     void SetSessionChange(bool set=false)               { m_sessionChangeActive = set; }
     void SetBallPark();
-    void StargateJump(uint32 fromGate, uint32 toGate);
+    void StargateJump(int32 fromGate, int32 toGate);
     void CynoJump(InventoryItemRef beacon);
     void WormholeJump(InventoryItemRef wormhole);
 
-    bool IsAutoPilot()                                  { return m_autoPilot; }
+    bool IsAutoPilot();
     void SetAutoPilot(bool set=false);
 
     void JumpInEffect();
@@ -367,7 +367,6 @@ protected:
     bool m_autoStop;        // boolean for auto-stopping modules when target attrib is full (ROLE_PLAYER)
     bool m_packaged;        // used to correctly package updates into a PackagedAction list
     bool m_portrait;        // used to verify new char pic received
-    bool m_autoPilot;       // set true for using autopilot.
     bool m_scanProbe;       // scanning with probes
     bool m_bubbleWait;
     bool m_setStateSent;
@@ -375,6 +374,7 @@ protected:
 
     int32 m_wing;
     int32 m_squad;
+    int32 m_toGateID;
 
     uint32 m_fleet;
     uint32 m_shipId;

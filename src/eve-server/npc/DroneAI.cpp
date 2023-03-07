@@ -336,7 +336,7 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
     uint32 gfxID = 0;
     if (m_pDrone->GetSelf()->HasAttribute(AttrGfxTurretID))// graphicID for turret for drone type ships
         gfxID = m_pDrone->GetSelf()->GetAttribute(AttrGfxTurretID).get_uint32();
-    m_pDrone->DestinyMgr()->SendSpecialEffect(m_pDrone->GetSelf()->itemID(),
+    m_pDrone->DestinyMgr()->SendGFX14(m_pDrone->GetSelf()->itemID(),
                                              m_pDrone->GetSelf()->itemID(),
                                              m_pDrone->GetSelf()->typeID(), //m_pDrone->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
                                              pTarget->GetID(),

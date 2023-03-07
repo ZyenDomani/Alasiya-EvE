@@ -112,14 +112,13 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_canThrow = false;
     m_packaged = false;
     m_portrait = false;
-    m_autoPilot = false;
     m_bubbleWait = false;     // allow client processing of subsquent destiny msgs
     m_charCreation = false;
     m_setStateSent = false;
     m_validSession = false;
     m_sessionChangeActive = false;
 
-    //m_toGate = 0;
+    m_toGateID = 0;
     m_locationID = 0;
     m_moveSystemID = 0;
     m_skillTimer = 0;
@@ -149,7 +148,7 @@ Client::~Client() {
          *      6)  remove client from sysmgr/destiny/server
          */
 
-        sLog.Green("  Client::Logout()","%s (Acct:%i) logging out.", m_char->name(), GetUserID());
+        sLog.Green("  Client::Logout()","%s (Acct:%li) logging out.", m_char->name(), GetUserID());
 
         if (!sConsole.IsDbError()) {
             ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
@@ -209,7 +208,7 @@ bool Client::ProcessNet()
     while ((pPacket = PopPacket()) != nullptr) {
         try {
             if (!DispatchPacket(pPacket))
-                sLog.Error("Client", "Failed to dispatch packet of type %s (%i).", \
+                sLog.Error("Client", "Failed to dispatch packet of type %s (%li).", \
                         MACHONETMSG_TYPE_NAMES[ pPacket->type ], (int)pPacket->type);
         }
         catch(PyException& e) {
@@ -230,7 +229,7 @@ bool Client::ProcessNet()
 bool Client::SelectCharacter(int32 charID/*0*/)
 {
     if (sEntityList.IsOnline(charID)) {
-        sLog.Error("Client::SelectCharacter()", "Char %i already online.", charID);
+        sLog.Error("Client::SelectCharacter()", "Char %li already online.", charID);
         SendErrorMsg("That Character is already online.  Selection Failed.");
         CloseClientConnection();
         return false;
@@ -238,7 +237,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     InitSession(charID);
     if (!m_validSession){
-        sLog.Error("Client::SelectCharacter()", "Failed to init session for char %i.", charID);
+        sLog.Error("Client::SelectCharacter()", "Failed to init session for char %li.", charID);
         SendErrorMsg("Unable to Initialize Character session.  Selection Failed.");
         CloseClientConnection();
         return false;
@@ -249,7 +248,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_system = sEntityList.FindOrBootSystem(m_systemData.systemID);
     if (m_system == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "Failed to boot system %u for char %i.", m_systemData.systemID, charID);
+        sLog.Error("Client::SelectCharacter()", "Failed to boot system %u for char %li.", m_systemData.systemID, charID);
         SendErrorMsg("SolarSystem %s(%u) - Boot Failure.", m_systemData.name.c_str(), m_systemData.systemID);
         CloseClientConnection();
         return false;
@@ -257,7 +256,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_char = sItemFactory.GetCharacterRef(charID);
     if (m_char.get() == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "GetChar for %i = nullptr", charID);
+        sLog.Error("Client::SelectCharacter()", "GetChar for %li = nullptr", charID);
         SendErrorMsg("Unable to locate Character.  Selection Failed.");
         sItemFactory.UnsetUsingClient();
         CloseClientConnection();
@@ -265,6 +264,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     }
 
     m_char->VerifySP();
+    m_char->CheckSkillQueue();
     m_char->SetLoginTime();
     m_char->SetClient(this);
     m_char->SkillQueueLoop(false);
@@ -279,11 +279,11 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_ship = sItemFactory.GetShipRef(m_shipId);
     if (m_ship.get() == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %i.  Selecting new ship...", m_shipId, charID);
+        sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %li.  Selecting new ship...", m_shipId, charID);
         PickAlternateShip();    // incase shipID wasnt set correctly in db (seen on 'bad' Damage::Killed())
         m_ship = sItemFactory.GetShipRef(m_shipId);
         if (m_ship.get() == nullptr) {
-            sLog.Error("Client::SelectCharacter()", "shipID %u for %i also invalid.  Loading Pod.", m_shipId, charID);
+            sLog.Error("Client::SelectCharacter()", "shipID %u for %li also invalid.  Loading Pod.", m_shipId, charID);
             m_ship = m_pod;
         }
         SetShip(m_ship);
@@ -582,13 +582,23 @@ void Client::WarpOut() {
     */
 }
 
+bool Client::IsAutoPilot() {
+    if (pShipSE == nullptr)
+        return false;
+    if (pShipSE->DestinyMgr() == nullptr)
+        return false;
+    return pShipSE->DestinyMgr()->IsAutoPilot();
+}
+
 void Client::SetAutoPilot(bool set/*false*/)
 {
     // itemID=10644  flag=*module*  not published - not in client data
-    if (m_autoPilot == set)
+    if (pShipSE == nullptr)
+        return;
+    if (pShipSE->DestinyMgr() == nullptr)
         return;
 
-    m_autoPilot = set;
+    pShipSE->DestinyMgr()->SetAutoPilot(set);
     _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
 }
 
@@ -603,8 +613,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         SendErrorMsg("Move requested to unsupported location %u", locationID);
         return;
     }
-
-    _log(AUTOPILOT__TRACE, "MoveToLocation() - m_autoPilot = %s", (m_autoPilot ? "true" : "false"));
 
     if (!m_login and (m_locationID == locationID) and !sDataMgr.IsStation(locationID)) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_locationID == location");
@@ -631,15 +639,10 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             CharNoLongerInStation();
             wasDocked = false;  // dont update station again on this call (redundant check later in this method)
         }
-        if (pShipSE != nullptr)
-            if ((IsJump()) and !m_autoPilot)
-                pShipSE->DestinyMgr()->Halt();
 
         // remove from current system before resetting system vars
         m_system->RemoveEntity(pShipSE);
-
         m_system->RemoveClient(this, (count = true), IsJump());
-
         m_system = nullptr;
     }
 
@@ -697,7 +700,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
     } else {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u. (setState %s, beyonce %s)", \
-        m_char->name(), m_char->itemID(), m_locationID, m_setStateSent ? "true" : "false", m_beyonce ? "true" : "false");
+                m_char->name(), m_char->itemID(), m_locationID, m_setStateSent ? "true" : "false", \
+                m_beyonce ? "true" : "false");
         char ci[45];
         snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
         m_ship->SetCustomInfo(ci);
@@ -746,9 +750,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         */
 
         SetDestiny(pt);
-
-        if (IsJump() and !m_autoPilot)
-            pShipSE->DestinyMgr()->Stop();
     }
 
     if (!m_login)
@@ -817,9 +818,11 @@ void Client::SetBallPark() {
         m_ballparkTimer.Disable();
         if (IsGateJump()) {
             SetInvulTimer(Player::Timer::JumpInvul);
-            // dont use timer method here...(jumping ship will flash at destination)
+            // dont use settimer method here...(jumping ship will flash at destination)
             m_cloakTimer.Start(Player::Timer::JumpCloak);
             m_clientState = Player::State::Idle;
+            pShipSE->DestinyMgr()->SendGateActivity(m_toGateID);
+            m_toGateID = 0;
         }
         if (IsDriveJump()) {
             SetInvulTimer(Player::Timer::JumpInvul);
@@ -868,7 +871,6 @@ void Client::MoveToPosition(const GPoint &pt) {
 void Client::DockToStation() {
     pShipSE->Dock();
     // ap cleared on client side when docking.
-    m_autoPilot = false;
     m_setStateSent = false;
     m_clientState = Player::State::Idle;
     _log(AUTOPILOT__TRACE, "DockToStation() - m_clientState set to Idle");
@@ -1134,7 +1136,6 @@ void Client::Eject()
 
 void Client::ResetAfterPopped(GPoint& position)
 {
-    m_autoPilot = false;
     m_bubbleWait = false;    // allow client processing of subsquent destiny msgs
 
     if (m_pod.get() == nullptr)
@@ -1181,8 +1182,6 @@ void Client::ResetAfterPodded() {
      * check skillpoints vs. clone grade and adjust accordingly.
      * reset skill effects if clone != current SP and skills lost
      */
-
-    m_autoPilot = false;
 
     CreateNewPod();
     SetShip(m_pod);
@@ -1341,46 +1340,39 @@ PyRep *Client::GetAggressors() const {
     return dict;
 }
 
-void Client::StargateJump(uint32 fromGate, uint32 toGate) {
+void Client::StargateJump(int32 fromGateID, int32 toGateID) {
     if ((m_clientState != Player::State::Idle) or m_stateTimer.Enabled()) {
         sLog.Error("Client","%s: StargateJump called when a move is already pending. Ignoring.", m_char->name());
         /** @todo  send error to client here */
         return;
     }
 
-    // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
-    MapDB::AddJump(m_systemData.systemID);
-
-    // call Stop() per packet sniff - shuts off AP.  Halt() does also.  try not calling any movement updates
-    //pShipSE->DestinyMgr()->Halt();  // Stop() disables ap.  try Halt() to reset ship movement to null
-    pShipSE->DestinyMgr()->SendJumpOut(fromGate);
-    //  show gate animation in from gate.   -working -allan 15Nov15
-    pShipSE->DestinyMgr()->SendGateActivity(fromGate);
-
-    //m_toGate = toGate;
     StaticData toData = StaticData();
-    if (!sDataMgr.GetStaticInfo(toGate, toData)) {
-        _log(DATA__ERROR, "Failed to retrieve data for stargate %u", toGate);
+    if (!sDataMgr.GetStaticInfo(toGateID, toData)) {
+        _log(DATA__ERROR, "Failed to retrieve data for stargate %u", toGateID);
         /** @todo  send error to client here */
         return;
     }
 
+
     // this is where we can put the msgs about system closed or w/e
 
     // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
-    MapDB::AddJump(toData.systemID);
-    // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
-    m_char->VisitSystem(toData.systemID);
+    MapDB::AddJump(m_systemData.systemID);
 
+    m_toGateID = toGateID;
+    pShipSE->Jump( fromGateID );
+
+    char ci[25];
+    snprintf(ci, sizeof(ci), "Jumping:%u", m_toGateID);
+    m_ship->SetCustomInfo(ci);
+
+    // set dest data
     m_movePoint = toData.position;
     // Make Jump-In point a random spot on ~10km radius sphere about the stargate radius
-    m_movePoint.MakeRandomPointOnSphereLayer(toData.radius + 6500, toData.radius + 9500);
+    m_movePoint.MakeRandomPointOnSphereLayer(toData.radius + 5500, toData.radius + 9500);
     m_moveSystemID = toData.systemID;
-/*
-    char ci[25];
-    snprintf(ci, sizeof(ci), "Jumping:%u", toGate);
-    m_ship->SetCustomInfo(ci);
-*/
+
     //delay the move 4sec so they can see the JumpOut animation
     SetStateTimer(Player::State::Jump, Player::Timer::Jumping);
 }
@@ -1421,7 +1413,6 @@ void Client::WormholeJump(InventoryItemRef wormhole) {
     MapDB::AddJump(m_moveSystemID);
     m_char->VisitSystem(m_moveSystemID);
 
-
     // Get destination wormhole position and start jump timer
     InventoryItemRef destWh;
     destWh = sItemFactory.GetItemRefFromID(wormhole->GetAttribute(AttrWormholeTargetSystem2).get_int());
@@ -1439,9 +1430,13 @@ void Client::ExecuteJump() {
         return;
     }
 
+    // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
+    MapDB::AddJump(m_moveSystemID);
+    // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
+    m_char->VisitSystem(m_moveSystemID);
+
     //OnScannerInfoRemoved  - no args.  flushes current scan data in client
-    SendNotification("OnScannerInfoRemoved", "charid", new PyTuple(0), true);  // this is sequenced
-    pShipSE->Jump();
+    SendNotification("OnScannerInfoRemoved", "charid", PyStatic.mtTuple(), true);  // this is sequenced
 
     MoveToLocation(m_moveSystemID, m_movePoint);
 
@@ -1594,6 +1589,7 @@ void Client::SetStateTimer( int8 state, uint32 time/*Player::Timer::Default*/)
 }
 
 // these next two are for sending jump effects (easier to test here)
+/** @todo  these jumpfx are incomplete */
 void Client::JumpInEffect()
 {
     if (pShipSE != nullptr)
@@ -1927,17 +1923,17 @@ void Client::UpdateSession()
     uint32 stationID = m_char->stationID();
     uint32 solarsystemID = m_char->solarSystemID();
     if (sDataMgr.IsStation(stationID)) {
-        pSession->Clear("solarsystemid");    //must be 0 in station
-        pSession->Clear("shipid");    //must be 0 in station
+        pSession->Clear("solarsystemid");               //must be 0 in station
+        pSession->Clear("shipid");                      //must be 0 in station
         pSession->SetInt("stationid", stationID);
-        pSession->SetInt("stationid2", stationID);   // client uses this for continer location checks
+        pSession->SetInt("stationid2", stationID);      // client uses this for container location checks
         pSession->SetInt("worldspaceid", 0);            // all zero in logs, but 200+ refs in code
         pSession->SetInt("locationid", stationID);
     } else {
         pSession->Clear("stationid");
         pSession->Clear("stationid2");
         pSession->Clear("worldspaceid");
-        pSession->SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
+        pSession->SetInt("solarsystemid", solarsystemID); // used to tell client they are in space
         pSession->SetInt("locationid", solarsystemID);
         pSession->SetInt("shipid", m_shipId);
     }
@@ -2290,7 +2286,7 @@ bool Client::_VerifyCrypto(CryptoRequestPacket& cr)
         if (!car.Decode(cr.keyParams)) {
             sLog.Error("Client","%s: Received invalid CryptoAPI request!", GetAddress().c_str());
         } else {
-            sLog.Error("Client","%s: Unhandled CryptoAPI request: hashmethod=%s sessionkeylength=%i provider=%s sessionkeymethod=%s", \
+            sLog.Error("Client","%s: Unhandled CryptoAPI request: hashmethod=%s sessionkeylength=%li provider=%s sessionkeymethod=%s", \
                     GetAddress().c_str(), car.hashmethod.c_str(), car.sessionkeylength, car.provider.c_str(), car.sessionkeymethod.c_str());
             SendErrorMsg("Invalid CryptoAPI request - You must change your client to use Placebo crypto in common.ini to talk to this server.");
         }

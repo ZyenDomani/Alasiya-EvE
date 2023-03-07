@@ -142,66 +142,48 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
         call.client->CheckBallparkTimer();
 
     PyTuple* res = new PyTuple( 2 );
-        Beyonce_Formation f;
-            //Diamond formation
-            f.name = "Diamond";
-            f.pos1.x = 100;
-            f.pos2.y = 100;
-            f.pos3.x = -100;
-            f.pos4.y = -100;
-        res->SetItem( 0, f.Encode() );
-            //Arrow formation
-            f.name = "Arrow";
-            f.pos1.x = 100;
-            f.pos1.z = -50;
-            f.pos2.x = 50;
-            f.pos2.y = 0;
-            f.pos3.x = -100;
-            f.pos3.z = -50;
-            f.pos4.x = -50;
-            f.pos4.y = 0;
-        res->SetItem( 1, f.Encode() );
+    Beyonce_Formation f;
+    //Diamond formation
+    f.name = "Diamond";
+    f.pos1.x = 100;
+    f.pos2.y = 100;
+    f.pos3.x = -100;
+    f.pos4.y = -100;
+    res->SetItem( 0, f.Encode() );
+    //Arrow formation
+    f.name = "Arrow";
+    f.pos1.x = 100;
+    f.pos1.z = -50;
+    f.pos2.x = 50;
+    f.pos2.y = 0;
+    f.pos3.x = -100;
+    f.pos3.z = -50;
+    f.pos4.x = -50;
+    f.pos4.y = 0;
+    res->SetItem( 1, f.Encode() );
     return res;
 }
 
-PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
-    codelog(CLIENT__ERROR, "%s: Client sent UpdateStateRequest. Previous call generated a bad return.  Check Logs.", call.client->GetName());
-
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    }
-    if (pDestiny->IsWarping()) {
-        call.client->SendNotifyMsg( "You can't do this while warping");
-        return PyStatic.NewNone();
-    }
-
-    call.client->SetStateSent(false);
-    pDestiny->SendSetState();
-
-    return PyStatic.NewNone();
-}
-
 PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
-    _log(AUTOPILOT__MESSAGE, "%s called Stop. AP: %s, Invul: %s", call.client->GetName(), \
-    (call.client->IsAutoPilot() ? "true" : "false"), call.client->IsInvul()?"true":"false");
+    _log(AUTOPILOT__MESSAGE, "%s called Stop. AP: %s, Invul: %s, Jump: %s", call.client->GetName(), \
+    (call.client->IsAutoPilot() ? "true" : "false"), (call.client->IsInvul()?"true":"false"), \
+        (call.client->IsJump()?"true":"false"));
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
     }
-    if (!pDestiny->IsMoving())
-        return PyStatic.NewNone();
     if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't do this while warping");
         // send client error about 'systems fail to function' or w/e it is
         return PyStatic.NewNone();
     }
+    if (!pDestiny->IsMoving())
+        return PyStatic.NewNone();
 
     call.client->SetUndock(false);
-    call.client->SetAutoPilot(false);
+    pDestiny->SetAutoPilot(false);
 
     pDestiny->Stop();
 
@@ -210,7 +192,6 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called GotoDirection. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    //call.client->SetAutoPilot(false);
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
@@ -231,6 +212,8 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
+    pDestiny->SetAutoPilot(false);
+
     const GPoint dir(arg.x, arg.y, arg.z);
     pDestiny->GotoDirection(dir);
 
@@ -238,6 +221,8 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 }
 
 PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
+    _log(AUTOPILOT__MESSAGE, "%s called SetSpeedFraction. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
+
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
@@ -259,7 +244,9 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
     if ((arg.arg != 0.0) and (arg.arg < 0.01))
         return PyStatic.NewNone();
 
-    if (!call.client->IsUndock()) {
+    if (pDestiny->IsAutoPilot()) {
+        pDestiny->SetSpeedFraction(arg.arg);
+    } else if (!call.client->IsUndock()) {
         // need to update move time first
         pDestiny->SetMoveTimeNow();
         if (pDestiny->IsTurning()) {
@@ -306,6 +293,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
 
     call.client->SetInvul(false);
     call.client->SetUndock(false);
+    pDestiny->SetAutoPilot(false);
 
     pDestiny->AlignTo(pSE);
 
@@ -359,46 +347,30 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
     }
 
     /** @todo  check distance from ship to gate */
-    call.client->StargateJump(args.fromStargateID, args.toStargateID);
+    SystemEntity* pGateSE = call.client->SystemMgr()->GetSE(args.fromStargateID);
+    if (pGateSE == nullptr) {
+        call.client->SendNotifyMsg("Error - Stargate not found.");
+        _log(SERVICE__ERROR, "%s: Unable to find stargate %i.", call.client->GetName(), args.fromStargateID);
+        return PyStatic.NewNone();
+    }
 
-    /* return error msg from this call, if applicable, else nodeid and timestamp */
-    // returns nodeID and timestamp
+    float dist = call.client->GetShipSE()->GetPosition().distance(pGateSE->GetPosition());
+    dist -= pGateSE->GetRadius();
+    if (dist < 2500) {
+        call.client->StargateJump(args.fromStargateID, args.toStargateID);
+    } else {
+        // {'FullPath': u'UI/Messages', 'messageID': 277027, 'label': u'GenericTooFarAway'}(u'You are too far away to do that.', None, None)
+        call.client->SendNotifyMsg( "You are too far from the Gate to activate it. You need to be within 2500m but are %.0fm.", dist);
+        pDestiny->SetPosition(call.client->GetShip()->position(), true);
+        return PyStatic.NewNone();
+    }
+
+    /* return error msg from this call, if applicable, else none
     PyTuple* tuple = new PyTuple(2);
     tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
     tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
-}
-
-PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
-    /*  remotePark.CmdAbandonLoot(wrecks)  <- this is pylist from 'abandonAllWrecks'
-     *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID in list
-     */
-    sLog.White( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %lu", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    Call_SingleIntList arg;
-    if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
-    }
-
-    /** @todo  change ownerID to _system for all loot also!!  */
-    SystemEntity* pSE(nullptr);
-    SystemManager* pSysMgr = call.client->SystemMgr();
-    for (auto &cur : arg.ints) {
-        pSE = pSysMgr->GetSE(cur);
-        if (pSE == nullptr)
-            continue;
-        pSE->Abandon();
-        PyTuple* slimData = new PyTuple(2);
-        slimData->SetItem(0, new PyLong(pSE->GetID()));
-        slimData->SetItem(1, new PyObject( "foo.SlimItem", pSE->MakeSlimItem()));
-        PyTuple* itemData = new PyTuple(2);
-        itemData->SetItem(0, new PyString("OnSlimItemChange"));
-        itemData->SetItem(1, slimData);
-        pSE->SysBubble()->BubblecastDestinyUpdate(&itemData, "OnSlimItemChange" );
-    }
-
+    */
     return PyStatic.NewNone();
 }
 
@@ -427,21 +399,24 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
 
     SystemEntity* pSE = pSystem->GetSE(args.ballID);
     if (pSE == nullptr) {
-        _log(CLIENT__ERROR, "%s: Unable to find entity %u to Follow/Approach.", call.client->GetName(), args.ballID);
+        _log(CLIENT__ERROR, "%s: Unable to find entity %li to Follow/Approach.", call.client->GetName(), args.ballID);
         return PyStatic.NewNone();
     }
 
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    pDestiny->Follow(pSE, PyRep::IntegerValue(args.distance));
+    // ap sends distance as float.  all others use int
+    //if (args.distance->IsFloat())
+        //pDestiny->SetAutoPilot(true);
+
+    pDestiny->Follow(pSE, PyRep::IntegerValueI32(args.distance));
 
     return PyStatic.NewNone();
 }
 
 PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called GotoBookmark. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    //call.client->SetAutoPilot(false);
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
@@ -457,6 +432,8 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
+
+    pDestiny->SetAutoPilot(false);
 
     double x(0.0), y(0.0), z(0.0);
     uint16 typeID(0);
@@ -498,7 +475,6 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called Orbit. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    call.client->SetAutoPilot(false);
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
@@ -531,6 +507,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
 
     call.client->SetInvul(false);
     call.client->SetUndock(false);
+    pDestiny->SetAutoPilot(false);
 
     pDestiny->InitOrbit(pEntity, PyRep::IntegerValueU32(args.range));
 
@@ -539,7 +516,6 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuff. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    //call.client->SetAutoPilot(false);
 
   _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %lu", call.tuple->size() );
    call.Dump(SERVICE__CALL_DUMP);
@@ -565,6 +541,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
+    pDestiny->SetAutoPilot(false);
+
     bool fleet(false);
     if (call.byname.find("fleet") != call.byname.end())
         if (!(call.byname.find("fleet")->second->IsNone()))
@@ -573,11 +551,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     // get the warp-to distance specified by the client
     int32 distance(5000);
     if (call.byname.find("minRange") != call.byname.end())
-        distance = PyRep::IntegerValueU32(call.byname.find("minRange")->second);
+        distance = PyRep::IntegerValueI32(call.byname.find("minRange")->second);
 
     GPoint warpToPoint(NULL_ORIGIN);
     SystemEntity* pSE(nullptr);
-    double radius(0);
+    int32 radius(0);
     uint32 toID(0);
     std::string stringArg = "";
 
@@ -717,10 +695,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         } else if (pSE->IsStationSE()) {
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
-        } else if (pSE->IsCOSE()) {
-            distance += (radius / 2);
-        } else if (pSE->IsGateSE()) {
-            distance += (radius / 3);  // fudge the distance a bit for gates... its' a lil close by default
+        } else if (pSE->IsCOSE() or pSE->IsGateSE()) {
+            distance += (radius / 2);  // fudge the distance a bit for these... its' a lil close by default
         } else if (pSE->IsMoonSE()) {
             if (pSE->GetMoonSE()->HasTower()) {
                 // if moon has a tower, make warpin point 20km inside edge of tower's bubble.
@@ -761,16 +737,14 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
     call.client->SetInvul(false);
     call.client->SetUndock(false);
-    call.client->SetAutoPilot(false);
 
-    pDestiny->WarpTo(warpToPoint, distance);
+    pDestiny->WarpTo(warpToPoint, distance, false, pSE);
 
     return PyStatic.NewNone();
 }
 
 /** @todo THIS is how we know client is using AP...it needs to be updated   */
 PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
-    _log(AUTOPILOT__MESSAGE, "%s called WarpToStuffAutopilot. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
@@ -786,7 +760,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    //  sends targeted celestial itemID as arg.destID
+    //  sends targeted celestial's itemID as arg.destID
     // this is usually a gate or station.  no need for special checks here
     CallWarpToStuffAutopilot arg;
     if (!arg.Decode(&call.tuple)) {
@@ -802,16 +776,14 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 
     call.client->SetInvul(false);
     call.client->SetUndock(false);
-    // AP shit here.....
-    call.client->SetAutoPilot(true);
-    call.client->UpdateSessionInt("solarsystemid", pSystem->GetID());
-    //call.client->UpdateSession();
-    //call.client->SendSessionChange();
 
-    uint16 distance = sConfig.world.apWarptoDistance;    //10km default
-    //Adding in ship and target object radius'
-    distance += call.client->GetShipSE()->GetRadius() + pSE->GetRadius();
-    pDestiny->WarpTo(pSE->GetPosition(), distance, true, pSE);
+    //pDestiny->SetAutoPilot(true);
+
+    _log(AUTOPILOT__MESSAGE, "%s called WarpToStuffAutopilot. AP: %s  Target:%s(%u)", \
+            call.client->GetName(), (pDestiny->IsAutoPilot() ? "true" : "false"), \
+            pSE->GetName(), pSE->GetID());
+
+    pDestiny->WarpTo(pSE->GetPosition(), sConfig.world.apWarptoDistance, true, pSE);
 
     return PyStatic.NewNone();
 }
@@ -845,8 +817,63 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
     //  this sets m_dockStationID for radius checks and other things
     call.client->SetDockStationID( args.arg1 );
 
+    pDestiny->SetAutoPilot(false);
+
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     return pDestiny->AttemptDockOperation();
+}
+
+PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
+    /*  remotePark.CmdAbandonLoot(wrecks)  <- this is pylist from 'abandonAllWrecks'
+     *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID in list
+     */
+    sLog.White( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %lu", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    Call_SingleIntList arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewNone();
+    }
+
+    /** @todo  change ownerID to _system for all loot also!!  */
+    SystemEntity* pSE(nullptr);
+    SystemManager* pSysMgr = call.client->SystemMgr();
+    for (auto &cur : arg.ints) {
+        pSE = pSysMgr->GetSE(cur);
+        if (pSE == nullptr)
+            continue;
+        pSE->Abandon();
+        PyTuple* slimData = new PyTuple(2);
+        slimData->SetItem(0, new PyLong(pSE->GetID()));
+        slimData->SetItem(1, new PyObject( "foo.SlimItem", pSE->MakeSlimItem()));
+        PyTuple* itemData = new PyTuple(2);
+        itemData->SetItem(0, new PyString("OnSlimItemChange"));
+        itemData->SetItem(1, slimData);
+        pSE->SysBubble()->BubblecastDestinyUpdate(&itemData, "OnSlimItemChange" );
+    }
+
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
+    sLog.Error("BeyonceBound", "UpdateStateRequest");
+    codelog(CLIENT__ERROR, "%s: Client sent UpdateStateRequest. Previous call generated a bad return.  Check Logs.", call.client->GetName());
+
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+    if (pDestiny->IsWarping()) {
+        call.client->SendNotifyMsg( "You can't do this while warping");
+        return PyStatic.NewNone();
+    }
+
+    call.client->SetStateSent(false);
+    pDestiny->SendSetState();
+
+    return PyStatic.NewNone();
 }
 
 /**     ***********************************************************************

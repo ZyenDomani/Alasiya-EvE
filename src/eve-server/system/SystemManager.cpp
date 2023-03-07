@@ -216,23 +216,27 @@ bool SystemManager::ProcessTic() {
      *  when iteration starts over, increment until cur > mLast and continue from there to end of list.
      * note:  this will get expensive for many items (like ship tracking)
      */
-    std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin();
-    while (itr != m_ticEntities.end()) {
-        mLast = itr->first;
+    std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin(), end = m_ticEntities.end();
+    while (itr != end) {
 
         /* main process call. */
         itr->second->Process();
 
-        // something in the list has changed.
-        // usually, it is NOT the cur SE here...
-        // this entity has killed, popped, removed, depleted, etc the entity that has changed the list.
+        // hell, even if things changed, whats the harm in leaving it be till next tic?
         if (m_entityChanged) {
+            /* something in the list has changed.
+             * usually, it is NOT the cur SE here...
+             * this entity has killed, popped, removed, depleted, etc the entity that has been changed in the list.
+             *    hmmm.....test this and see if its even needed anymore.
+             * originally, they iterated thru entire list again, which did weird shit and was a horrible loop
+             */
+            mLast = itr->first;
             m_entityChanged = false;
-            //at this point, iterator is still valid UNLESS it is the item being deleted.
-            // will need more testing  but using .find() is MUCH faster than iterating thru entire list as previously coded
+            // using .find() is MUCH faster than iterating thru entire list
             itr = m_ticEntities.find(mLast);
+            end = m_ticEntities.end();
 
-            if (itr == m_ticEntities.end()) {
+            if (itr == end) {
                 // cur SE is the iterator being deleted.  make note and break out.
                 // NOTE:  do NOT start over here, as that will allow all previous SE a second action in this tic.
                 sLog.Error("SysMgr", "list changed and mLast=end()");

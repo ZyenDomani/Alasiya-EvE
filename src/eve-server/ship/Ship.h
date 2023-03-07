@@ -333,7 +333,7 @@ public:
 
     /* specific functions handled here. */
     void Dock();
-    void Jump(bool showCloak=true);        // this sets ship cloak
+    void Jump(int32 fromGateID, bool showCloak=true);        // this also sets ship cloak
     void Warp();
     void RemoveTarget(SystemEntity* pSE);
     void SetPassword(std::string pass)                  { m_towerPass = pass; }
