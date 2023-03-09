@@ -8,7 +8,7 @@
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
+    Foundation; either version 2 of the License, or(at your option) any later
     version.
 
     This program is distributed in the hope that it will be useful, but WITHOUT
@@ -65,7 +65,7 @@ void Inventory::Unload()
     if (!mContentsLoaded)
         return;
 
-    //  save contents on the off-chance they have changed, but not on shutdown. (saved in ItemFactory::Close())
+    //  save contents on the off-chance they have changed, but not on shutdown.(saved in ItemFactory::Close())
     if (sConsole.IsShutdown()) {
         mContents.clear();
         m_contentsByFlag.clear();
@@ -75,12 +75,12 @@ void Inventory::Unload()
     Inventory* inv(nullptr);
     std::vector<Inv::SaveData> items;
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
-    while (itr != mContents.end()) {
+    while(itr != mContents.end()) {
         // test for item contents and unload as required
         inv = itr->second->GetMyInventory();
         if (inv != nullptr)
             inv->Unload();
-        if (IsPlayerItem(itr->first)) {   // only save player items (except skills - saved in Character::SaveAll())
+        if (IsPlayerItem(itr->first)) {   // only save player items(except skills - saved in Character::SaveAll())
             if (itr->second->flag() == flagSkill) {
                 sItemFactory.RemoveItem(itr->first);
                 itr = mContents.erase(itr);
@@ -118,7 +118,7 @@ bool Inventory::LoadContents() {
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
     m_loadClient = sItemFactory.GetUsingClient();
 
-    // test for character creation (which throws errors) and station loading
+    // test for character creation(which throws errors) and station loading
     if (m_loadClient != nullptr) {
         if (m_loadClient->IsCharCreation())
             return true;
@@ -159,14 +159,14 @@ bool Inventory::LoadContents() {
                 /* this will load corp hangars' inventory for this station */
                 od.ownerID = od.corpID;
                 _log(INV__TRACE, "Inventory::LoadContents() - Loading office inventory %u(%p) for corp %u in station %s",\
-                            m_myID, this , od.ownerID, (m_loadClient->IsValidSession() ? itoa(m_loadClient->GetStationID()) : "(invalid)"));
+                            m_myID, this , od.ownerID,(m_loadClient->IsValidSession() ? itoa(m_loadClient->GetStationID()) : "(invalid)"));
                 GetItems(od, items);
             } else {
                 // make error for loading office and NOT a PC corp
                 _log(INV__WARNING, "Inventory::LoadContents() - inventory of officeID %u using corpID %u. Continuing...", m_myID, od.corpID);
             }
         }
-        // test for char creation  (data set incomplete in char creation)
+        // test for char creation (data set incomplete in char creation)
         if (m_loadClient->IsValidSession()) {
             od.ownerID = m_loadClient->GetCharacterID();
         } else {
@@ -187,7 +187,7 @@ bool Inventory::LoadContents() {
     _log(INV__TRACE, "Inventory::LoadContents() - Adding %lu items to inventory of %s(%u) with owner %u", \
             items.size(), m_self->name(), m_myID, od.ownerID);
     for (auto &cur : items) {
-        if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_myID))
+        if ((cur == od.ownerID) or(cur == od.locID) or(cur == m_myID))
             continue;
         AddItem(sItemFactory.GetItemRef(cur));
     }
@@ -212,7 +212,7 @@ void Inventory::AddItem(InventoryItemRef iRef) {
 /*
     if (is_log_enabled(INV__TRACE)) {
         if (test.second) {
-            _log(INV__TRACE, "Inventory::AddItem() - Updated %s(%u) to contain (%u) %s(%u) in %s.", \
+            _log(INV__TRACE, "Inventory::AddItem() - Updated %s(%u) to contain(%u) %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->quantity(), iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
         } else {
             _log(INV__TRACE, "Inventory::AddItem() - %s(%u) already contains %s(%u) in %s.", \
@@ -245,7 +245,7 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     }
 
     /** @todo @note  this isnt working right, and im not sure why yet...  */
-    // test after changing iteration (pre to post)
+    // test after changing iteration(pre to post)
     auto range = m_contentsByFlag.equal_range(iRef->flag());
     for (auto &cur = range.first; cur != range.second; cur++) {
         if (cur->second == iRef) {
@@ -267,7 +267,7 @@ void Inventory::DeleteContents()
         return;
     InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator cur = mContents.begin();
-    while (cur != mContents.end()) {
+    while(cur != mContents.end()) {
         iRef = cur->second;
         ++cur;
         iRef->Delete();
@@ -302,7 +302,7 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
         bool space = sDataMgr.IsSolarSystem(m_self->locationID());
         for (auto &cur : mContents) {
             // this also fills module/charges in fit window when docked.
-            //  charges not sent like this in space (uses subLocation sent via shipInfo())
+            //  charges not sent like this in space(uses subLocation sent via shipInfo())
             if (space and IsFittingSlot(cur.second->flag()))
                 if (cur.second->categoryID() == EVEDB::invCategories::Charge)
                     continue;
@@ -311,8 +311,8 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
         }
     } else {
         for (auto &cur : mContents) {
-            if (((ownerID == 0) or (cur.second->ownerID() == ownerID))
-            and ((flag == flagNone) or (cur.second->flag() == flag))) {
+            if (((ownerID == 0) or(cur.second->ownerID() == ownerID))
+            and((flag == flagNone) or(cur.second->flag() == flag))) {
                 row = into->NewRow();
                 cur.second->GetItemRow(row);
             }
@@ -355,7 +355,7 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     //12:57:36 [ItemTrace] Inventory::SortVector() - 21 items sorted in 16.000us with 60 loops.
     //13:00:55 [ItemTrace] Inventory::SortVector() - 15 items sorted in 20.750us with 28 loops.
     //13:01:20 [ItemTrace] Inventory::SortVector() - 19 items sorted in 46.000us with 90 loops.
-    /* sorts a vector of items by category, with loaded modules first (in slot order), then loaded charges (in slot order), then cargo
+    /* sorts a vector of items by category, with loaded modules first(in slot order), then loaded charges(in slot order), then cargo
      * if there is only one item, no sorting required...
      *  this should only be called by ships
      *   -allan
@@ -370,11 +370,11 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     bool done(false);
     InventoryItemRef tmp(nullptr);
 
-    while (!done) { //check if sorted
+    while(!done) { //check if sorted
         done = true;  //assume sorted
         //iterate though list
-        for (int i = 0, i2 = 1; (i < itemVec.size()) && (i2 < itemVec.size()); i++, i2++) {
-            if ((IsModuleSlot(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) {
+        for (int i = 0, i2 = 1;(i < itemVec.size()) &&(i2 < itemVec.size()); i++, i2++) {
+            if ((IsModuleSlot(itemVec[i]->flag())) &&(IsModuleSlot(itemVec[i2]->flag()))) {
                 //check if each pair is sorted by category.  subsystems > charges > modules
                 if (itemVec[i]->categoryID() > itemVec[i2]->categoryID()) {
                     //it's not, so flip the values
@@ -385,7 +385,7 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
                     done = false;  //we weren't sorted, so now go back and check if we are
                 }
             //check if each pair is sorted by flag.  cargo > module
-            } else if ((IsCargoHoldFlag(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) {
+            } else if ((IsCargoHoldFlag(itemVec[i]->flag())) &&(IsModuleSlot(itemVec[i2]->flag()))) {
                 //it's not, so flip the values
                 tmp = itemVec[i];
                 itemVec[i] = itemVec[i2];
@@ -397,7 +397,7 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     }
 
     if (sConfig.debug.IsTestServer)
-        _log(INV__TRACE, "Inventory::SortVector() - %lu items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
+        _log(INV__TRACE, "Inventory::SortVector() - %lu items sorted in %.3fus with %u loops.", itemVec.size(),(GetTimeUSeconds() - start), count);
 
     return itemVec;  //returns sorted list
 }
@@ -416,7 +416,7 @@ void Inventory::UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const
     // this method is for changing flags for existing items in our inventory
     /*   is this really needed?   currently we remove() then add()
     auto range = m_contentsByFlag.equal_range(iRef->flag());
-    for ( auto itr = range.first; itr != range.second; itr++ )
+    for (auto itr = range.first; itr != range.second; itr++ )
         if (itr->second == iRef)
             m_contentsByFlag.erase(itr);
     m_contentsByFlag.emplace(newFlag, iRef);
@@ -448,7 +448,7 @@ InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
 
 InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const {
     auto range = m_contentsByFlag.equal_range(flag);
-    for ( auto itr = range.first; itr != range.second; itr++ )
+    for (auto itr = range.first; itr != range.second; itr++ )
         if (itr->second->typeID() == typeID)
             return itr->second;
 
@@ -462,7 +462,7 @@ void Inventory::GetInventoryMap( std::map< uint32, InventoryItemRef >& invMap ) 
 
 uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
     auto range = m_contentsByFlag.equal_range(flag);
-    for ( auto itr = range.first; itr != range.second; itr++ )
+    for (auto itr = range.first; itr != range.second; itr++ )
             items.push_back(itr->second);
     return items.size();
 }
@@ -470,10 +470,10 @@ uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef
 bool Inventory::GetTypesByFlag(EVEItemFlags flag, std::map< uint16, InventoryItemRef >& items)
 {
     auto range = m_contentsByFlag.equal_range(flag);
-    for ( auto itr = range.first; itr != range.second; itr++ )
+    for (auto itr = range.first; itr != range.second; itr++ )
         items.emplace(itr->second->typeID(), itr->second);
 
-    return (items.size() > 0);
+    return(items.size() > 0);
 }
 
 InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
@@ -490,7 +490,7 @@ InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
 }
 
 bool Inventory::IsEmptyByFlag(EVEItemFlags flag) const {
-    return (m_contentsByFlag.find(flag) == m_contentsByFlag.end());
+    return(m_contentsByFlag.find(flag) == m_contentsByFlag.end());
 }
 
 uint32 Inventory::GetItemsByFlagRange(EVEItemFlags lowflag, EVEItemFlags highflag, std::vector<InventoryItemRef> &items) const
@@ -530,7 +530,7 @@ bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty/*0*/) const
         }
     }
 
-    return (count >= qty);
+    return(count >= qty);
 }
 
 bool Inventory::ContainsTypeQtyByFlag(uint16 typeID, EVEItemFlags flag, uint32 qty) const
@@ -548,7 +548,7 @@ bool Inventory::ContainsTypeQtyByFlag(uint16 typeID, EVEItemFlags flag, uint32 q
         }
     }
 
-    return (count >= qty);
+    return(count >= qty);
 }
 
 bool Inventory::ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag) const
@@ -573,16 +573,16 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
     auto range = m_contentsByFlag.equal_range(locFlag);
     for (auto itr = range.first; itr != range.second; itr++) {
         iRef = itr->second;
-        // check to avoid removing modules (and their charges) from ship (crazy error)
+        // check to avoid removing modules(and their charges) from ship(crazy error)
         if (IsModuleSlot(iRef->flag()))
             continue;
         // singletons dont stack
         if (iRef->isSingleton())
             continue;
-        if ((ownerID == 0) or (ownerID == iRef->ownerID())) {
+        if ((ownerID == 0) or(ownerID == iRef->ownerID())) {
             tItr = types.find(iRef->typeID());
             if (tItr == types.end()) {
-                // insert type into map for later comparison (existing stack to merge into)
+                // insert type into map for later comparison(existing stack to merge into)
                 types.emplace(iRef->typeID(), iRef);
             } else {
                 // found another stack of this type.
@@ -606,7 +606,7 @@ float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
                 totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
     } else {
         auto range = m_contentsByFlag.equal_range(flag);
-        for ( auto itr = range.first; itr != range.second; itr++ )
+        for (auto itr = range.first; itr != range.second; itr++ )
             totalVolume += itr->second->quantity() * itr->second->GetAttribute(AttrVolume).get_float();
             // This formula is a hybrid of both old and new ones...and it works \o/
     }
@@ -618,18 +618,18 @@ bool Inventory::HasAvailableSpace(EVEItemFlags flag, InventoryItemRef iRef) cons
     float volume(iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float());
 
     if (is_log_enabled(INV__CAPY))
-        _log(INV__CAPY, "Inventory::HasAvailableSpace() - Testing %s's %s available capy of %.2f to add %u %s at %.2f (%.3f each)", \
+        _log(INV__CAPY, "Inventory::HasAvailableSpace() - Testing %s's %s available capy of %.2f to add %u %s at %.2f(%.3f each)", \
                 m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), \
                 volume, iRef->GetAttribute(AttrVolume).get_float());
 
-    return (volume < capacity);
+    return(volume < capacity);
 }
 
 float Inventory::GetCapacity(EVEItemFlags flag) const {
     // added hangar capy for all hangar types
     // are we missing any hangar types here?  POS types?  yes...see next line
     /** @todo  finish these for POS */
-    //   IsFlagCapacityLocationWide   item.groupID in (const.groupCorporateHangarArray, const.groupAssemblyArray, const.groupMobileLaboratory):
+    //   IsFlagCapacityLocationWide   item.groupID in(const.groupCorporateHangarArray, const.groupAssemblyArray, const.groupMobileLaboratory):
 
     switch( flag ) {
         case flagOffice:
@@ -669,7 +669,7 @@ float Inventory::GetCapacity(EVEItemFlags flag) const {
         case flagCorpHangar7: {
             if (sDataMgr.IsStation(m_myID))
                 return maxHangarCapy;
-            //for ship, this is TOTAL capy for all corp hangars (they share capy)
+            //for ship, this is TOTAL capy for all corp hangars(they share capy)
             if (m_self->HasAttribute(AttrHasCorporateHangars))
                 return m_self->GetAttribute(AttrCorporateHangarCapacity).get_float();
         } break;
@@ -701,20 +701,20 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
     float volume = iRef->GetAttribute(AttrVolume).get_float();
     float totalVolume = iRef->quantity() * volume;
 
-    _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %.2f to add %li %s at %.2f (%.3f each)",
+    _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %.2f to add %li %s at %.2f(%.3f each)",
          m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), totalVolume, volume);
 
     /** modify checks for splitting items in same container or moving items between a container's corp hangars
-     * flag and iRef->flag() will be same (or same type).
+     * flag and iRef->flag() will be same(or same type).
      * add requested move volume to container's available capy before other checks
      *   this will show item being removed from container to allow subsequent additions
      */
     if (m_self->itemID() == iRef->locationID())
         if ((flag == iRef->flag())
-        or  (IsHangarFlag(flag) and IsHangarFlag(iRef->flag()))) {
+        or (IsHangarFlag(flag) and IsHangarFlag(iRef->flag()))) {
             // possible item split.  will have to molest the shit outta this one to verify nullablity of exploits
             capacity += totalVolume;
-            _log(INV__CAPY, "Inventory::ValidateAddItem() - flag() %s (%u) == iRef->flag() %s (%u) - test capacity changed to %.2f",
+            _log(INV__CAPY, "Inventory::ValidateAddItem() - flag() %s(%u) == iRef->flag() %s(%u) - test capacity changed to %.2f",
                     sDataMgr.GetFlagName(flag), flag, sDataMgr.GetFlagName(iRef->flag()), iRef->flag(), capacity);
         }
 
@@ -726,43 +726,43 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
             args["volume"] = new PyFloat(volume);
             sItemFactory.UnsetUsingClient();
             if (IsCargoHoldFlag(flag)) {
-                throw UserError ("NotEnoughCargoSpace")
-                .AddAmount ("volume", volume)
-                .AddAmount ("available", capacity);
+                throw UserError("NotEnoughCargoSpace")
+                .AddAmountD("volume", volume)
+                .AddAmountD("available", capacity);
             } else if (flag == flagShipHangar) {
-                throw UserError ("NotEnoughCargoSpaceFor1Unit")
-                .AddAmount ("volume", volume)
-                .AddFormatValue ("type", new PyInt (iRef->itemID ()))
-                .AddAmount ("required", volume)
-                .AddAmount ("free", capacity);
+                throw UserError("NotEnoughCargoSpaceFor1Unit")
+                .AddAmountD("volume", volume)
+                .AddFormatValue("type", new PyInt(iRef->itemID()))
+                .AddAmountD("required", volume)
+                .AddAmountD("free", capacity);
             } else if (IsSpecialHoldFlag(flag)) {
-                throw UserError ("NotEnoughSpecialBaySpaceOverload")
-                .AddAmount ("volume", volume)
-                .AddFormatValue ("item", new PyInt (iRef->itemID ()))
-                .AddAmount ("maximum", GetCapacity (flag))
-                .AddAmount ("user", GetStoredVolume (flag));
+                throw UserError("NotEnoughSpecialBaySpaceOverload")
+                .AddAmountD("volume", volume)
+                .AddFormatValue("item", new PyInt(iRef->itemID()))
+                .AddAmountD("maximum", GetCapacity(flag))
+                .AddAmountD("user", GetStoredVolume(flag));
             } else if (IsModuleSlot(flag)) {
-                throw UserError ("NotEnoughChargeSpace")
-                .AddAmount ("volume", volume)
-                .AddAmount ("capacity", GetCapacity (flag));
+                throw UserError("NotEnoughChargeSpace")
+                .AddAmountD("volume", volume)
+                .AddAmountD("capacity", GetCapacity(flag));
             } else if (IsHangarFlag(flag)) {
-                throw UserError ("NotEnoughSpaceOverload")
-                .AddAmount ("volume", volume)
-                .AddLocationName ("item", iRef->itemID ())
-                .AddAmount ("maximum", GetCapacity (flag))
-                .AddAmount ("user", GetStoredVolume (flag));
+                throw UserError("NotEnoughSpaceOverload")
+                .AddAmountD("volume", volume)
+                .AddLocationName("item", iRef->itemID())
+                .AddAmountD("maximum", GetCapacity(flag))
+                .AddAmountD("user", GetStoredVolume(flag));
             } else if (flag == flagDroneBay) {
-                throw UserError ("NotEnoughDroneBaySpaceOverload")
-                .AddAmount ("volume", volume)
-                .AddLocationName ("item", iRef->itemID ())
-                .AddAmount ("maximum", GetCapacity (flag))
-                .AddAmount ("used", GetStoredVolume (flag));
+                throw UserError("NotEnoughDroneBaySpaceOverload")
+                .AddAmountD("volume", volume)
+                .AddLocationName("item", iRef->itemID())
+                .AddAmountD("maximum", GetCapacity(flag))
+                .AddAmountD("used", GetStoredVolume(flag));
             } else {
-                throw UserError ("NoSpaceForThatOverload")
-                .AddAmount ("volume", volume)
-                .AddFormatValue ("item", new PyInt (iRef->itemID ()))
-                .AddAmount ("maximum", GetCapacity (flag))
-                .AddAmount ("used", GetStoredVolume (flag));
+                throw UserError("NoSpaceForThatOverload")
+                .AddAmountD("volume", volume)
+                .AddFormatValue("item", new PyInt(iRef->itemID()))
+                .AddAmountD("maximum", GetCapacity(flag))
+                .AddAmountD("used", GetStoredVolume(flag));
             }
         //}
         return false;
@@ -771,29 +771,29 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
     // check capy for all units
     if (totalVolume > capacity) {
         if (IsSpecialHoldFlag(flag)) {
-            throw UserError ("NotEnoughSpecialBaySpace")
-            .AddAmount ("volume", totalVolume)
-            .AddAmount ("available", capacity);
+            throw UserError("NotEnoughSpecialBaySpace")
+            .AddAmountD("volume", totalVolume)
+            .AddAmountD("available", capacity);
         } else if (flag == flagDroneBay) {
-            throw UserError ("NotEnoughDroneBaySpace")
-            .AddAmount ("volume", totalVolume)
-            .AddAmount ("available", capacity);
+            throw UserError("NotEnoughDroneBaySpace")
+            .AddAmountD("volume", totalVolume)
+            .AddAmountD("available", capacity);
         } else if (IsHangarFlag(flag)) {
-            throw UserError ("NotEnoughCargoSpaceOverload")
-            .AddAmount ("volume", totalVolume)
-            .AddLocationName ("item", iRef->itemID ())
-            .AddAmount ("maximum", GetCapacity (flag))
-            .AddAmount ("used", GetStoredVolume (flag));
+            throw UserError("NotEnoughCargoSpaceOverload")
+            .AddAmountD("volume", totalVolume)
+            .AddLocationName("item", iRef->itemID())
+            .AddAmountD("maximum", GetCapacity(flag))
+            .AddAmountD("used", GetStoredVolume(flag));
         } else if (IsCargoHoldFlag(flag)) {
-            throw UserError ("NotEnoughCargoSpace")
-            .AddAmount ("volume", totalVolume)
-            .AddAmount ("available", capacity);
+            throw UserError("NotEnoughCargoSpace")
+            .AddAmountD("volume", totalVolume)
+            .AddAmountD("available", capacity);
         } else {
-            throw UserError ("NoSpaceForThat")
-            .AddAmount ("volume", totalVolume)
-            .AddFormatValue ("itemTypeName", new PyInt (iRef->itemID ()))
-            .AddAmount ("itemVolume", totalVolume)
-            .AddAmount ("volumeAvailable", capacity);
+            throw UserError("NoSpaceForThat")
+            //.AddAmountD("volume", totalVolume)
+            .AddFormatValue("itemTypeName", new PyInt(iRef->itemID()))
+            .AddAmountD("itemVolume", totalVolume)
+            .AddAmountD("volumeAvailable", capacity);
         }
         return false;
     }

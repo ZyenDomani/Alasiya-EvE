@@ -107,8 +107,8 @@ void RamMethods::JobsCheck(Character* pChar, const Call_InstallJob& args)
 
         if (charMaxJobs <= jobCount)
             throw UserError("MaxFactorySlotUsageReached")
-                    .AddAmount("current", jobCount)
-                    .AddAmount("max", charMaxJobs);
+                    .AddAmountU("current", jobCount)
+                    .AddAmountU("max", charMaxJobs);
     } else {
         uint8 charMaxJobs = pChar->GetAttribute(AttrMaxLaborotorySlots).get_uint32()
                             + pChar->GetSkillLevel(EvESkill::LaboratoryOperation)
@@ -117,8 +117,8 @@ void RamMethods::JobsCheck(Character* pChar, const Call_InstallJob& args)
         uint8 jobCount = FactoryDB::CountResearchJobs(pChar->itemID());
         if (charMaxJobs <= jobCount)
             throw UserError("MaxResearchFacilitySlotUsageReached")
-                    .AddAmount("current", jobCount)
-                    .AddAmount("max", charMaxJobs);
+                    .AddAmountU("current", jobCount)
+                    .AddAmountU("max", charMaxJobs);
     }
 }
 

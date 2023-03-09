@@ -456,9 +456,9 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                             list->AddItem(new PyInt(newItem->itemID()));
                         } else {
                             throw UserError("MaxBandwithExceeded2")
-                                    .AddTypeName("droneNAme", newItem->typeID ())
-                                    .AddAmount("droneBandwithUsed", newItem->GetAttribute (AttrDroneBandwidthUsed).get_uint32())
-                                    .AddAmount("bandwidthLeft", pShip->GetAttribute (AttrDroneBandwidth).get_uint32 () - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32());
+                                    .AddTypeName("droneName", newItem->typeID())
+                                    .AddAmountU("droneBandwithUsed", newItem->GetAttribute (AttrDroneBandwidthUsed).get_uint32())
+                                    .AddAmountU("bandwidthLeft", pShip->GetAttribute (AttrDroneBandwidth).get_uint32() - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32());
                         }
                     }
                 } else {
@@ -468,9 +468,9 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                         list->AddItem(new PyInt(iRef->itemID()));
                     } else {
                         throw UserError("MaxBandwithExceeded2")
-                                .AddTypeName("droneNAme", iRef->typeID ())
-                                .AddAmount("droneBandwithUsed", iRef->GetAttribute (AttrDroneBandwidthUsed).get_uint32())
-                                .AddAmount("bandwidthLeft", pShip->GetAttribute (AttrDroneBandwidth).get_uint32 () - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32());
+                                .AddTypeName("droneName", iRef->typeID())
+                                .AddAmountU("droneBandwithUsed", iRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32())
+                                .AddAmountU("bandwidthLeft", pShip->GetAttribute(AttrDroneBandwidth).get_uint32() - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32());
                     }
                 }
             } break;

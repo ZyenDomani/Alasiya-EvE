@@ -95,7 +95,7 @@ PyDict* GPSTransportClosed::_CreateKeywords( const char* reason )
 
 
 UserError::UserError(const char* exceptionType)
-: PyException(new PyObjectEx_Type1(new PyToken(EXCEPTION_NAME), _CreateArgs(exceptionType), _CreateKeywords(exceptionType)))
+: PyException(new PyObjectEx_Type1(new PyToken("ccp_exceptions.UserError"), _CreateArgs(exceptionType), _CreateKeywords(exceptionType)))
 {
 }
 
@@ -106,7 +106,7 @@ UserError& UserError::AddFormatValue(const char* name, PyRep* value)
     return *this;
 }
 
-UserError& UserError::AddParameterKeyword(const char* name, UserError_ParameterIDs type, PyRep* value, PyRep* value2)
+UserError& UserError::AddParameterKeyword(const char* name, UE::IDs type, PyRep* value, PyRep* value2)
 {
     PyTuple* param = new PyTuple(value2 == nullptr ? 2 : 3);
 
@@ -121,134 +121,135 @@ UserError& UserError::AddParameterKeyword(const char* name, UserError_ParameterI
 
 UserError& UserError::AddDateTime(const char* name, time_t date)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_DateTime, new PyLong(date));
+    return this->AddParameterKeyword(name,  UE::DateTime, new PyLong(date));
 }
 
 UserError& UserError::AddDate(const char* name, time_t date)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_Date, new PyLong(date));
+    return this->AddParameterKeyword(name,  UE::Date, new PyLong(date));
 }
 
 UserError& UserError::AddTime(const char* name, time_t time)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_Time, new PyLong(time));
+    return this->AddParameterKeyword(name,  UE::Time, new PyLong(time));
 }
 
 UserError& UserError::AddTimeShort(const char* name, time_t time)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_TimeShort, new PyLong(time));
+    return this->AddParameterKeyword(name,  UE::TimeShort, new PyLong(time));
 }
 UserError& UserError::AddA(const char* name, const char* value)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_A, new PyString(value));
+    return this->AddParameterKeyword(name,  UE::A, new PyString(value));
 }
 
 UserError& UserError::AddThe(const char* name, const char* value)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_The, new PyString(value));
+    return this->AddParameterKeyword(name,  UE::The, new PyString(value));
 }
 
 UserError& UserError::AddUELocalization(const char* name, const char* strKey, PyDict* args)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_Localization, new PyString(strKey), args);
+    return this->AddParameterKeyword(name,  UE::Localization, new PyString(strKey), args);
 }
 
 UserError& UserError::AddList(const char* name, PyList* listEntries, const char* separator)
 {
-    if (separator == nullptr)
-        return this->AddParameterKeyword(name, UserError_Parameter_List, listEntries);
-    else
-        return this->AddParameterKeyword(name, UserError_Parameter_List, listEntries, new PyString(separator));
+    if (separator == nullptr) {
+        return this->AddParameterKeyword(name,  UE::List, listEntries);
+    } else {
+        return this->AddParameterKeyword(name,  UE::List, listEntries, new PyString(separator));
+    }
 }
 
 UserError& UserError::AddOwnerName(const char* name, uint32 ownerID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_OwnerName, new PyLong(ownerID));
+    return this->AddParameterKeyword(name,  UE::OwnerName, new PyLong(ownerID));
 }
 
 UserError& UserError::AddOwnerNick(const char* name, uint32 ownerID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_OwnerNick, new PyLong(ownerID));
+    return this->AddParameterKeyword(name,  UE::OwnerNick, new PyLong(ownerID));
 }
 
 UserError& UserError::AddLocationName(const char* name, uint32 locationID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_LocationName, new PyLong(locationID));
+    return this->AddParameterKeyword(name,  UE::LocationID, new PyLong(locationID));
 }
 
 UserError& UserError::AddTypeName(const char* name, uint32 typeID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_TypeName, new PyInt(typeID));
+    return this->AddParameterKeyword(name,  UE::TypeName, new PyInt(typeID));
 }
 
 UserError& UserError::AddTypeDescription(const char* name, uint32 typeID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_TypeDescription, new PyInt(typeID));
+    return this->AddParameterKeyword(name,  UE::TypeDescription, new PyInt(typeID));
 }
 
 UserError& UserError::AddTypeList(const char* name, PyList* typeIDs)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_TypeIDList, typeIDs);
+    return this->AddParameterKeyword(name,  UE::TypeIDList, typeIDs);
 }
 
 UserError& UserError::AddBlueprintTypeName(const char* name, uint32 bpTypeID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_BluePrintTypeName, new PyInt(bpTypeID));
+    return this->AddParameterKeyword(name,  UE::BPTypeName, new PyInt(bpTypeID));
 }
 
 UserError& UserError::AddGroupName(const char* name, uint32 groupID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_GroupName, new PyInt(groupID));
+    return this->AddParameterKeyword(name,  UE::GroupName, new PyInt(groupID));
 }
 
 UserError& UserError::AddGroupDescription(const char* name, uint32 groupID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_GroupDescription, new PyInt(groupID));
+    return this->AddParameterKeyword(name,  UE::GroupDescription, new PyInt(groupID));
 }
 
 UserError& UserError::AddCategoryName(const char* name, uint32 categoryID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_CategoryName, new PyInt(categoryID));
+    return this->AddParameterKeyword(name,  UE::CategoryName, new PyInt(categoryID));
 }
 
 UserError& UserError::AddCategoryDescription(const char* name, uint32 categoryID)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_CategoryDescription, new PyInt(categoryID));
+    return this->AddParameterKeyword(name,  UE::CategoryDescription, new PyInt(categoryID));
 }
 
-UserError& UserError::AddAmount(const char* name, int quantity)
+UserError& UserError::AddAmountI( const char* name, int value )
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_Amount, new PyInt(quantity));
+    return this->AddParameterKeyword(name,  UE::Amount, new PyInt(value));
 }
 
-UserError& UserError::AddAmount(const char* name, uint quantity)
+UserError& UserError::AddAmountU(const char* name, uint value)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_Amount, new PyInt(quantity));
+    return this->AddParameterKeyword(name,  UE::Amount, new PyInt(value));
 }
 
-UserError& UserError::AddAmount(const char* name, double quantity)
+UserError& UserError::AddAmountD(const char* name, double value)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_Amount, new PyFloat(quantity));
+    return this->AddParameterKeyword(name,  UE::Amount, new PyFloat(value));
 }
 
 UserError& UserError::AddISK(const char* name, double isk)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_ISK, new PyFloat(isk));
+    return this->AddParameterKeyword(name,  UE::ISK, new PyFloat(isk));
 }
 
 UserError& UserError::AddAUR(const char* name, double aur)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_AUR, new PyFloat(aur));
+    return this->AddParameterKeyword(name,  UE::AUR, new PyFloat(aur));
 }
 
 UserError& UserError::AddDistance(const char* name, double distance)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_Distance, new PyFloat(distance));
+    return this->AddParameterKeyword(name,  UE::Distance, new PyFloat(distance));
 }
 
-UserError& UserError::AddTypeIDAndQuantity(const char* name, uint32 typeID, int quantity)
+UserError& UserError::AddTypeIDAndQuantity(const char* name, int16 typeID, int quantity)
 {
-    return this->AddParameterKeyword(name, UserError_Parameter_TypeIDAndQuantity, new PyInt(typeID), new PyInt(quantity));
+    return this->AddParameterKeyword(name,  UE::TypeAndQty, new PyInt(typeID), new PyInt(quantity));
 }
 
 void UserError::AddKeyword( const char* name, PyRep* value )
@@ -292,7 +293,7 @@ PyDict* UserError::_CreateKeywords( const char* msg )
 }
 
 CustomError::CustomError(const char *fmt, ...)
-: UserError(EXCEPTION_NAME)
+: UserError("CustomError")
 {
     va_list va;
     va_start(va, fmt);
@@ -308,5 +309,5 @@ CustomError::CustomError(const char *fmt, ...)
     SafeFree(str);
 }
 
-const char* CustomError::EXCEPTION_NAME = "CustomError";
-const char* UserError::EXCEPTION_NAME = "ccp_exceptions.UserError";
+//const char* UserError::EXCEPTION_NAME = "ccp_exceptions.UserError";
+//const char* CustomError::EXCEPTION_NAME = "CustomError";

@@ -794,21 +794,21 @@ void StructureSE::Activate(int32 effectID)
             // throwing an error negates further processing
             float total = m_towerSE->GetSelf()->GetAttribute(AttrCpuOutput).get_float();
             float remaining = total - m_towerSE->GetCPULoad();
-            throw UserError ("NotEnoughCpu")
-                    .AddAmount ("total", total)
-                    .AddAmount ("require", m_self->GetAttribute (AttrCpu).get_float ())
-                    .AddAmount ("remaining", remaining)
-                    .AddFormatValue ("moduleType", new PyInt (m_self->typeID ()));
+            throw UserError("NotEnoughCpu")
+                    .AddAmountD("total", total)
+                    .AddAmountD("require", m_self->GetAttribute (AttrCpu).get_float ())
+                    .AddAmountD("remaining", remaining)
+                    .AddFormatValue("moduleType", new PyInt (m_self->typeID ()));
         }
         if (!m_towerSE->HasPG(m_self->GetAttribute(AttrPower).get_float())) {
             // throwing an error negates further processing
             float total = m_towerSE->GetSelf()->GetAttribute(AttrPowerOutput).get_float();
             float remaining = total - m_towerSE->GetPGLoad();
-            throw UserError ("NotEnoughPower")
-                    .AddAmount ("total", total)
-                    .AddAmount ("require", m_self->GetAttribute (AttrPower).get_float ())
-                    .AddAmount ("remaining", remaining)
-                    .AddFormatValue ("moduleType", new PyInt (m_self->typeID ()));
+            throw UserError("NotEnoughPower")
+                    .AddAmountD("total", total)
+                    .AddAmountD("require", m_self->GetAttribute (AttrPower).get_float ())
+                    .AddAmountD("remaining", remaining)
+                    .AddFormatValue("moduleType", new PyInt (m_self->typeID ()));
         }
     }
 

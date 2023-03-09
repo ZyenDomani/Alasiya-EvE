@@ -88,7 +88,7 @@ PyResult DevToolsProviderService::Handle_ExceptionFluentExample (PyCallArgs& cal
         case 6:
             throw UserError("SalvagingTooComplex").AddISK ("type", 160.52);
         case 7:
-            throw UserError("SalvagingTooComplex").AddAmount ("type", 150000);
+            throw UserError("SalvagingTooComplex").AddAmountI ("type", 150000);
         case 8:
             throw UserError("SalvagingTooComplex").AddTypeDescription ("type", EVEItemTypeID::itemTypeTrit);
         case 9:

@@ -8,7 +8,7 @@
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
+    Foundation; either version 2 of the License, or(at your option) any later
     version.
 
     This program is distributed in the hope that it will be useful, but WITHOUT
@@ -82,33 +82,34 @@ protected:
 /**
  * @brief Enumeration that indicates what parameters can be sent along with an UserError
  */
-enum UserError_ParameterIDs
-{
-    UserError_Parameter_OwnerName = 2,
-    UserError_Parameter_LocationName = 3,
-    UserError_Parameter_TypeName = 4,
-    UserError_Parameter_TypeDescription = 5,
-    UserError_Parameter_BluePrintTypeName = 6,
-    UserError_Parameter_GroupName = 7,
-    UserError_Parameter_GroupDescription = 8,
-    UserError_Parameter_CategoryName = 9,
-    UserError_Parameter_CategoryDescription = 10,
-    UserError_Parameter_Date = 15,
-    UserError_Parameter_Time = 16,
-    UserError_Parameter_TimeShort = 17,
-    UserError_Parameter_Amount = 18,
-    UserError_Parameter_Distance = 21,
-    UserError_Parameter_DateTime = 14,
-    UserError_Parameter_The = 22,
-    UserError_Parameter_A = 23,
-    UserError_Parameter_TypeIDAndQuantity = 24,
-    UserError_Parameter_OwnerNick = 25,
-    UserError_Parameter_ISK = 28,
-    UserError_Parameter_TypeIDList = 29,
-    UserError_Parameter_AUR = 30,
-    UserError_Parameter_Localization = 101,
-    UserError_Parameter_List = 103,
-};
+namespace UE {
+    enum IDs {
+        OwnerName = 2,
+        LocationID = 3,
+        TypeName = 4,
+        TypeDescription = 5,
+        BPTypeName = 6,
+        GroupName = 7,
+        GroupDescription = 8,
+        CategoryName = 9,
+        CategoryDescription = 10,
+        DateTime = 14,
+        Date = 15,
+        Time = 16,
+        TimeShort = 17,
+        Amount = 18,
+        Distance = 21,
+        The = 22,
+        A = 23,
+        TypeAndQty = 24,
+        OwnerNick = 25,
+        ISK = 28,
+        TypeIDList = 29,
+        AUR = 30,
+        Localization = 101,
+        List = 103
+    };
+}
 
 /**
  * @brief Python object "ccp_exceptions.UserError"
@@ -122,7 +123,7 @@ class UserError
 : public PyException
 {
 public:
-    UserError (const char* exceptionType);
+    UserError(const char* exceptionType);
 
     /**
      * @brief Fluent version of the protected AddKeyword, allows for adding a keyword to the exception
@@ -135,7 +136,7 @@ public:
      *
      * @return self
      */
-    UserError& AddFormatValue (const char* name, PyRep* value);
+    UserError& AddFormatValue(const char* name, PyRep* value);
 
     /**
      * @brief Shorthand method for adding the given date-time as a datetime string in the message
@@ -145,7 +146,7 @@ public:
      *
      * @return self
      */
-    UserError& AddDateTime (const char* name, time_t date);
+    UserError& AddDateTime(const char* name, time_t date);
 
     /**
      * @brief Shorthand method for adding the given date time as a date string in the message
@@ -155,7 +156,7 @@ public:
      *
      * @return self
      */
-    UserError& AddDate (const char* name, time_t date);
+    UserError& AddDate(const char* name, time_t date);
 
     /**
      * @brief Shorthand method for adding the given date time as a time string in the message
@@ -165,19 +166,19 @@ public:
      *
      * @return self
      */
-    UserError& AddTime (const char* name, time_t time);
+    UserError& AddTime(const char* name, time_t time);
 
     /**
-     * @brief Shorthand method for adding the given time as a time string in the message (without minutes)
+     * @brief Shorthand method for adding the given time as a time string in the message(without minutes)
      *
-     * Specially useful when displaying time lapses (like time left for something)
+     * Specially useful when displaying time lapses(like time left for something)
      *
      * @param[in] name The parameter
      * @param[in] time The date in win32 epoch format
      *
      * @return self
      */
-    UserError& AddTimeShort (const char* name, time_t time);
+    UserError& AddTimeShort(const char* name, time_t time);
 
     /**
      * @brief Shorthand method for adding "a" before the beginning of the value
@@ -189,7 +190,7 @@ public:
      *
      * @return self
      */
-    UserError& AddA (const char* name, const char* value);
+    UserError& AddA(const char* name, const char* value);
 
     /**
      * @brief Shorthand method for adding "the" before the beginning of the value
@@ -199,7 +200,7 @@ public:
      *
      * @return self
      */
-    UserError& AddThe (const char* name, const char* value);
+    UserError& AddThe(const char* name, const char* value);
 
     /**
      * @brief Shorthand method for adding a string in the client's translations
@@ -210,7 +211,7 @@ public:
      *
      * @return self
      */
-    UserError& AddUELocalization (const char* name, const char* strKey, PyDict* args = nullptr);
+    UserError& AddUELocalization(const char* name, const char* strKey, PyDict* args = nullptr);
 
     /**
      * @brief Shorthand method for adding a list of format parameters
@@ -219,11 +220,11 @@ public:
      *
      * @param[in] name The parameter
      * @param[in] listEntries The list of data to concatenate
-     * @param[in] separator The separator to use (if any), uses the language's default if not specified
+     * @param[in] separator The separator to use(if any), uses the language's default if not specified
      *
      * @return self
      */
-    UserError& AddList (const char* name, PyList* listEntries, const char* separator = nullptr);
+    UserError& AddList(const char* name, PyList* listEntries, const char* separator = nullptr);
 
     /**
      * @brief Shorthand method for adding an owner's name
@@ -233,17 +234,17 @@ public:
      *
      * @return self
      */
-    UserError& AddOwnerName (const char* name, uint32 ownerID);
+    UserError& AddOwnerName(const char* name, uint32 ownerID);
 
     /**
-     * @brief Shorthand method for adding an owner's nick (first name without surname)
+     * @brief Shorthand method for adding an owner's nick(first name without surname)
      *
      * @param[in] name The parameter
      * @param[in] ownerID The owner's ID
      *
      * @return self
      */
-    UserError& AddOwnerNick (const char* name, uint32 ownerID);
+    UserError& AddOwnerNick(const char* name, uint32 ownerID);
 
     /**
      * @brief Shorthand method for adding a location's name
@@ -253,7 +254,7 @@ public:
      *
      * @return self
      */
-    UserError& AddLocationName (const char* name, uint32 locationID);
+    UserError& AddLocationName(const char* name, uint32 locationID);
 
     /**
      * @brief Shorthand method for adding a type's name
@@ -263,7 +264,7 @@ public:
      *
      * @return self
      */
-    UserError& AddTypeName (const char* name, uint32 typeID);
+    UserError& AddTypeName(const char* name, uint32 typeID);
 
     /**
      * @brief Shorthand method for adding a type's description
@@ -273,7 +274,7 @@ public:
      *
      * @return self
      */
-    UserError& AddTypeDescription (const char* name, uint32 typeID);
+    UserError& AddTypeDescription(const char* name, uint32 typeID);
 
     /**
      * @brief Shorthand method for adding a list of types' names
@@ -283,7 +284,7 @@ public:
      *
      * @return self
      */
-    UserError& AddTypeList (const char* name, PyList* typeIDs);
+    UserError& AddTypeList(const char* name, PyList* typeIDs);
 
     /**
      * @brief Shorthand method for adding a blueprint's type name
@@ -293,7 +294,7 @@ public:
      *
      * @return self
      */
-    UserError& AddBlueprintTypeName (const char* name, uint32 bpTypeID);
+    UserError& AddBlueprintTypeName(const char* name, uint32 bpTypeID);
 
     /**
      * @brief Shorthand method for adding a group's name
@@ -303,7 +304,7 @@ public:
      *
      * @return self
      */
-    UserError& AddGroupName (const char* name, uint32 groupID);
+    UserError& AddGroupName(const char* name, uint32 groupID);
 
     /**
      * @brief Shorthand method for adding a group's description
@@ -313,7 +314,7 @@ public:
      *
      * @return self
      */
-    UserError& AddGroupDescription (const char* name, uint32 groupID);
+    UserError& AddGroupDescription(const char* name, uint32 groupID);
 
     /**
      * @brief Shorthand method for adding a category's name
@@ -323,7 +324,7 @@ public:
      *
      * @return self
      */
-    UserError& AddCategoryName (const char* name, uint32 categoryID);
+    UserError& AddCategoryName(const char* name, uint32 categoryID);
 
     /**
      * @brief Shorthand method for adding a category's description
@@ -333,7 +334,7 @@ public:
      *
      * @return self
      */
-    UserError& AddCategoryDescription (const char* name, uint32 categoryID);
+    UserError& AddCategoryDescription(const char* name, uint32 categoryID);
 
     /**
      * @brief Shorthand method for adding a quantity value
@@ -343,7 +344,7 @@ public:
      *
      * @return self
      */
-    UserError& AddAmount (const char* name, int quantity);
+    UserError& AddAmountI(const char* name, int value);
 
     /**
      * @brief Shorthand method for adding a quantity value
@@ -353,7 +354,7 @@ public:
      *
      * @return self
      */
-    UserError& AddAmount (const char* name, uint quantity);
+    UserError& AddAmountU(const char* name, uint value);
 
     /**
      * @brief Shorthand method for adding a quantity value
@@ -363,7 +364,7 @@ public:
      *
      * @return self
      */
-    UserError& AddAmount (const char* name, double quantity);
+    UserError& AddAmountD(const char* name, double value);
 
     /**
      * @brief Shorthand method for adding an ISK amount
@@ -373,7 +374,7 @@ public:
      *
      * @return self
      */
-    UserError& AddISK (const char* name, double isk);
+    UserError& AddISK(const char* name, double isk);
 
     /**
      * @brief Shorthand method for adding an AUR amount
@@ -383,17 +384,17 @@ public:
      *
      * @return self
      */
-    UserError& AddAUR (const char* name, double aur);
+    UserError& AddAUR(const char* name, double aur);
 
     /**
      * @brief Shorthand method for adding distance in a easy to read unit
      *
      * @param[in] name The parameter
-     * @param[in] distance The distance for the client to format (in meters)
+     * @param[in] distance The distance for the client to format(in meters)
      *
      * @return self
      */
-    UserError& AddDistance (const char* name, double distance);
+    UserError& AddDistance(const char* name, double distance);
 
     /**
      * @brief Shorthand method for adding type ID and quantity
@@ -404,13 +405,9 @@ public:
      *
      * @return self
      */
-    UserError& AddTypeIDAndQuantity (const char* name, uint32 typeID, int quantity);
+    UserError& AddTypeIDAndQuantity(const char* name, int16 typeID, int quantity);
 
 protected:
-    /**
-     * The name of the exception for EVE
-     */
-    static const char* EXCEPTION_NAME;
 
     /**
      * @brief Adds keyword to exception.
@@ -428,11 +425,11 @@ protected:
      * @param[in] name The keyword
      * @param[in] type Type of parameter to send
      * @param[in] value The parameter's value
-     * @param[in] value2 The second value (if present)
+     * @param[in] value2 The second value(if present)
      *
      * @return self
      */
-    UserError& AddParameterKeyword (const char* name, UserError_ParameterIDs type, PyRep* value, PyRep* value2 = nullptr);
+    UserError& AddParameterKeyword(const char* name, UE::IDs type, PyRep* value, PyRep* value2 = nullptr);
 
     PyDict* _GetTupleKeywords() const;
     PyDict* _GetDictKeywords() const;
@@ -459,8 +456,6 @@ public:
      * @param[in] ... Format arguments to the message
      */
     CustomError(const char* message, ...);
-private:
-    static const char* EXCEPTION_NAME;
 };
 
 #endif /* !__PY_EXCEPTIONS_H__INCL__ */

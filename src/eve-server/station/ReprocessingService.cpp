@@ -211,7 +211,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         if (iRef->type().portionSize() > iRef->quantity()) {
             throw UserError("QuantityLessThanMinimumPortion")
                     .AddTypeName("typename", iRef->typeID())
-                    .AddAmount("portion", iRef->type().portionSize());
+                    .AddAmountU("portion", iRef->type().portionSize());
         }
 
         float efficiency = CalcReprocessingEfficiency( call.client, iRef );
@@ -311,7 +311,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     if (iRef->quantity() < iRef->type().portionSize())
         throw UserError("QuantityLessThanMinimumPortion")
                 .AddTypeName("typename", iRef->typeID())
-                .AddAmount("portion", iRef->type().portionSize());
+                .AddAmountU("portion", iRef->type().portionSize());
 
     std::vector<Recoverable> recoverables;
     if (!m_db.GetRecoverables( iRef->typeID(), recoverables))
