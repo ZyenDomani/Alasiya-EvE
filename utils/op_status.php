@@ -49,7 +49,7 @@ There will be some response, like opening windows, but *should not* generate an 
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;"><tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td><td style="width: 26%;">Comments</td></tr>
-<tr><td> - Stable, Efficient Server Code</td><td class="working">820%
+<tr><td> - Stable, Efficient Server Code</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -69,7 +69,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=orange>Recently found very elusive data race.<BR>Not solved yet.</font><BR>8Mar23</td></tr>
+<td><font color=brown>Mostly Complete</font><BR><font color=orange>Recently found very elusive data race.<BR>Not solved yet.</font><BR>8Mar23</td></tr>
 <tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
@@ -79,7 +79,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=magenta>Needs Work</font><BR>4Feb23</td></tr>
+<td><font color=teal>Working</font> - <font color=magenta>Needs Work</font><BR>4Feb23</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Information"> Item Information Windows (<font color=green>Current</font>)</span></h2>
@@ -163,7 +163,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=olive>Testing</font><BR>3Mar19</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>3Mar19</td></tr>
 <tr><td> - Character entrance to last location</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -290,7 +290,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=olive>Testing</font><BR>17Nov17</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>17Nov17</td></tr>
 <tr><td> - Skill training time</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -305,7 +305,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=yellow>Few Odd Bugs</font><BR>8Mar23</td></tr>
+<td><font color=brown>Mostly Complete</font><BR><font color=yellow>Few Odd Bugs</font><BR>8Mar23</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Standings"> Standings (<font color=green>Current</font>)</span></h2>
@@ -445,12 +445,12 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=red>corp trade not coded.</font><BR>27Jun17</td></tr>
+<td><font color=brown>Mostly Complete</font><BR><font color=red>corp trade not coded.</font><BR>27Jun17</td></tr>
 <tr><td> - Repair Services</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=olive>Testing</font><BR>19Nov18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
 <tr><td> - Insurance Services</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -465,13 +465,13 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR>
+<td><font color=brown>Mostly Complete</font><BR>
 <font color=red>Corp Buy/Sell Incomplete</font><BR>10Dec18</td></tr>
 <tr><td> - Medical Services</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=yellow>Few Odd Bugs</font><BR>30Dec14</td></tr>
+<td><font color=brown>Mostly Complete</font><BR><font color=yellow>Few Odd Bugs</font><BR>30Dec14</td></tr>
 <tr><td> - LP Services</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -543,32 +543,32 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>19Nov18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
 <tr><td> - Can initiate conversation with agent</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>19Nov18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
 <tr><td> - Agents offer Missions</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>19Nov18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
 <tr><td> - Can View Mission Offer</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>19Nov18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
 <tr><td> - Can Accept Mission Offer</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>19Nov18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
 <tr><td> - Can Complete Mission Offer</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>19Nov18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
 <tr><td> - Can Search Agents</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
@@ -600,7 +600,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=pink>Testing</font><BR>19Nov18</td></tr>
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>19Nov18</td></tr>
 <tr><td> - Missions Give LP</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -612,7 +612,7 @@ Item(s) to deliver are supplied by Agent.<BR>No standing loss from opposing fact
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>19Nov18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
 <tr><td> - <font color=lime>Mining Missions</font> - 2 Types. <BR>Mine specific ore at specific location.<BR>
 Supply agent with ore or minerals.</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
@@ -723,12 +723,12 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR>24Nov17</td></tr>
+<td><font color=brown>Mostly Complete</font><BR>24Nov17</td></tr>
 <tr><td> - Chat in Corp</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR>24Nov17</td></tr>
+<td><font color=brown>Mostly Complete</font><BR>24Nov17</td></tr>
 <tr><td> - Initiate Private Conversation Chat</td><td class="broken">20%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
@@ -801,22 +801,22 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=orange>Still Buggy</font><BR>7Sep14</td></tr>
+<td><font color=teal>Working</font> - <font color=orange>Still Buggy</font><BR>7Sep14</td></tr>
 <tr><td> - Can Receive Eve-mails</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=orange>Still Buggy</font><BR>7Sep14</td></tr>
+<td><font color=teal>Working</font> - <font color=orange>Still Buggy</font><BR>7Sep14</td></tr>
 <tr><td> - Can View Eve-mails</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=orange>Still Buggy</font><BR>7Sep14</td></tr>
+<td><font color=teal>Working</font> - <font color=orange>Still Buggy</font><BR>7Sep14</td></tr>
 <tr><td> - Can Reply-to Eve-mails</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=orange>Still Buggy</font><BR>7Sep14</td></tr>
+<td><font color=teal>Working</font> - <font color=orange>Still Buggy</font><BR>7Sep14</td></tr>
 <tr><td> - Can Send Eve-mails to Groups (like Corp)</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
@@ -909,7 +909,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=olive>Testing</font><BR>31Oct20</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
 <tr><td> - Edit Response to Event</td><td class="working">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
@@ -919,7 +919,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Personal </h3></font></td></tr>
 <tr><td> - Create Event</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
@@ -935,7 +935,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Corporate </h3></font></td></tr>
 <tr><td> - Create Event</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
@@ -951,13 +951,13 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alliance </h3></font></td></tr>
 <tr><td> - Create Event</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=pink>Alliances partially implemented</font><BR>31Oct20</td></tr>
+<td><font color=brown>Mostly Complete</font><BR><font color=pink>Alliances partially implemented</font><BR>31Oct20</td></tr>
 <tr><td> - Edit Event</td><td class="working">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
@@ -967,7 +967,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=pink>Alliances partially implemented</font><BR>31Oct20</td></tr>
+<td><font color=brown>Mostly Complete</font><BR><font color=pink>Alliances partially implemented</font><BR>31Oct20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Market_Details"> Market Details (<font color=pink>Rewrite on hold</font> - <font color=yellow>needs review</font>)</span></h2>
@@ -1010,7 +1010,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>11Dec18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Placing Buy Orders</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
@@ -1118,7 +1118,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <h2> <span class="mw-headline" id="Assets_Window"> Assets Window (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:820%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:40%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: transparent; width:86%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
@@ -1368,11 +1368,11 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>30Dec14</td></tr>
-<tr><td> - Can Get Satistics on Systems</td><td class="working">90%
+<tr><td> - Can Get Statistics on Systems</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Complete</font><BR><font color=pink>PlayTesting</font><BR>25Mar14</td></tr>
+<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>25Mar14</td></tr>
 <tr><td> - Can Get Visited Systems</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1460,7 +1460,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=lime>testing</font><BR>2Feb20</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>2Feb20</td></tr>
 <tr><td> - Bookmarks loaded from database at character login</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1506,12 +1506,12 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=lime>Testing</font><BR>2Feb20</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>2Feb20</td></tr>
 <tr><td> - Move Bookmark to another Folder</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=lime>Testing</font><BR>2Feb20</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Corporation Bookmarks</h3></font></td></tr>
 <tr><td> - Update a Character Bookmark</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
@@ -1585,7 +1585,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR><font color=red>Implants and Boosters not implemented</font><BR>19Jun19</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR><font color=red>Implants and Boosters not implemented</font><BR>19Jun19</td></tr>
 <tr><td> - <font color=lime>Process Ship Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is Ship Subsystem (T3 ships only)</td><td class="broken">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
@@ -1611,7 +1611,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font><BR><font color=olive>Testing</font><BR>19Jun19</td></tr>
+<td><font color=brown>Mostly Complete</font><BR><font color=olive>Testing</font><BR>19Jun19</td></tr>
 // -->
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fx Target Processing - These vary depending on Source</h3></font></td></tr>
 <tr><td> - <font color=lime>Apply Processed Effects to Self</font><BR>&nbsp;&nbsp;&nbsp;Source Item or a Location for Group Effects</td><td class="working">95%
@@ -1749,12 +1749,12 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>2Feb20</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
 <tr><td> - Module racks Dissipate Heat</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>2Feb20</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T3 Ship Management</h3></font></td></tr>
 <tr><td> - Fit Subsystems</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
@@ -2031,12 +2031,12 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Can Exploit</font><BR><font color=violet>Needs Update</font><BR>25Feb20</td></tr>
+<td><font color=orange>Can Exploit</font> - <font color=violet>Needs Update</font><BR>25Feb20</td></tr>
 <tr><td> - Can remove modules from Fitting window to cargo or hangar</td><td class="working">60%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Can Exploit</font><BR><font color=violet>Needs Update</font><BR>25Feb20</td></tr>
+<td><font color=orange>Can Exploit</font> - <font color=violet>Needs Update</font><BR>25Feb20</td></tr>
 <tr><td> - Can add/remove charges to modules slots in Fitting window</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2051,7 +2051,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Can Exploit</font><BR><font color=violet>Needs Update</font><BR>25Feb20</td></tr>
+<td><font color=orange>Can Exploit</font> - <font color=violet>Needs Update</font><BR>25Feb20</td></tr>
 <tr><td> - Activated modules on ship in space produce desired effect</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2066,7 +2066,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Can Exploit</font><BR><font color=violet>Needs Update</font><BR>25Feb20</td></tr>
+<td><font color=orange>Can Exploit</font> - <font color=violet>Needs Update</font><BR>25Feb20</td></tr>
 <tr><td> - De-activated modules on ship in space remove effect</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2207,7 +2207,8 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drone AI </h3></font></td></tr>
-<tr><td><font color=lime>Passive/Aggressive</font><BR>(toggle - <font color=lime>passive</font>: attack only upon command.  <font color=lime>aggressive</font>: attack any valid target.)</td><td class="broken">15%
+<tr><td><font color=lime>Passive/Aggressive</font>   (toggle)<BR><font color=teal>Passive</font>: attack only upon command.<BR>
+<font color=teal>Aggressive</font>: attack any valid target.</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -2218,7 +2219,7 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td><font color=lime>Assist</font><BR>Drone will engage assigned ship's target once an offensive module is activated on that target. (passive/aggressive setting ignored)<BR>Drone will continue attack until itself, target or assigned ship is popped.</td><td class="broken">10%
+<tr><td><font color=lime>Assist</font>   (passive/aggressive setting ignored)<BR>Drone will engage assigned ship's target once an offensive module is activated on that target. <BR>Drone will continue attack until itself, target or assigned ship is popped.</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -2228,7 +2229,7 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td><font color=lime>Mine</font<BR>Drone will mine assigned target until canceled or full, then drop mined ore into assigned ship's hold.</td><td class="broken">10%
+<tr><td><font color=lime>Mine</font><BR>Drone will mine assigned target until canceled or full, then drop mined ore into assigned ship's hold.</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -2268,7 +2269,7 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>2Feb20</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
 <tr><td><font color=lime>Return and orbit</font><BR>Should I explain this?</td><td class="working">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
@@ -2335,12 +2336,12 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=orange>Still Glitchy</font><BR>2Feb23</td></tr>
+<td><font color=teal>Working</font> - <font color=orange>Still Glitchy</font><BR>2Feb23</td></tr>
 <tr><td> - Rats warp out of Asteroid fields</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=orange>Still Glitchy</font><BR>2Feb23</td></tr>
+<td><font color=teal>Working</font> - <font color=orange>Still Glitchy</font><BR>2Feb23</td></tr>
 <tr><td> - Rats find/harass Players in space</td><td class="broken">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
@@ -2466,7 +2467,7 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=orange>Still Glitchy</font><BR>2Feb23</td></tr>
+<td><font color=teal>Working</font> - <font color=orange>Still Glitchy</font><BR>2Feb23</td></tr>
 <tr><td> - Launch Probes from ship</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -2486,17 +2487,17 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>6Mar18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>6Mar18</td></tr>
 <tr><td> - Bookmark Scanned Result</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=orange>Found Errors</font><BR>2Feb23</td></tr>
+<td><font color=teal>Working</font> - <font color=orange>Found Errors</font><BR>2Feb23</td></tr>
 <tr><td> - Warp to Scanned Result</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Working</font><BR><font color=orange>Found Errors</font><BR>2Feb23</td></tr>
+<td><font color=teal>Working</font> - <font color=orange>Found Errors</font><BR>2Feb23</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Fleet_System"> Fleet System (<font color=green>Current</font>)</span></h2>
@@ -2675,43 +2676,43 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
 <tr><td> - Planet Resource Survey</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
 <tr><td> - Install/Use Command Center </td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>
 Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <tr><td> - Creating Extractor Heads</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
 <tr><td> - Install/Use Silo</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
 <tr><td> - Creating logistic routes (links) on planet</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
 <tr><td> - Installing Schematics</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
 <tr><td> - Factory Automation (run schematics)</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Dec16</td></tr>
 <tr><td> - Install/Use Space Ports</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
@@ -2753,7 +2754,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>20Dec17</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>20Dec17</td></tr>
 <tr><td>   - Apply to Join Corp</td><td class="broken">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2818,7 +2819,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>20Dec17</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>20Dec17</td></tr>
 <tr><td> - Viewing Corp History</td><td class="broken">20%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
@@ -2894,11 +2895,11 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <h2> <span class="mw-headline" id="Alliance_Management"> Alliance Management (<font color=yellow>needs review after adding James' SOV updates</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:320%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:15%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:320%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>35.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:15%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>15.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -2906,29 +2907,29 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Creating Alliance</td><td class="broken">320%
+<tr><td> - Creating Alliance</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 320%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>Begin Testing<BR>25May21</td></tr>
-<tr><td> - Join Alliance</td><td class="broken">320%
+<tr><td> - Join Alliance</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 320%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>Begin Testing<BR>25May21</td></tr>
-<tr><td> - Alliance Bulletins</td><td class="broken">320%
+<tr><td> - Alliance Bulletins</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 320%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>Begin Testing<BR>25May21</td></tr>
-<tr><td> - Alliance History (Corp Employment)</td><td class="broken">320%
+<tr><td> - Alliance History (Corp Employment)</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 320%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>Begin Testing<BR>25May21</td></tr>
-<tr><td> - Alliance Wars</td><td class="broken">320%
+<tr><td> - Alliance Wars</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 320%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>Begin Testing<BR>25May21</td></tr>
 </table>
@@ -2953,9 +2954,9 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Final Testing</font><BR>28Dec17</td></tr>
-<tr><td> - Scoop Structures to Cargo Bay</td><td class="working">820%
+<tr><td> - Scoop Structures to Cargo Bay</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 820%; background:#00DB00">
+<tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00">
 </td><td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table>
 <td><font color=yellow>Needs More Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Anchoring Structures</td><td class="working">95%
@@ -2977,12 +2978,12 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>28Dec17</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Managing Tower Field Access</td><td class="broken">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>28Dec19</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>28Dec19</td></tr>
 <tr><td> - Can Add/Remove Fuel and Strontium in Tower Holds</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -3007,7 +3008,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>28Dec17</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Can Add/Remove Charges for Offensive Batteries</td><td class="working">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
@@ -3064,17 +3065,17 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 79%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Aug17</td></tr>
-<tr><td> - Spawn Manager</td><td class="working">80%
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Aug17</td></tr>
+<tr><td> - Spawn Manager</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Aug17</td></tr>
-<tr><td> - Scan Manager</td><td class="working">80%
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Aug17</td></tr>
+<tr><td> - Scan Manager</td><td class="working">78.7%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 78%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Aug17</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Aug17</td></tr>
 <tr><td> - WormHole Manager</td><td class="broken">23%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 23%; background:#00DB00"></td>
@@ -3106,12 +3107,12 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>12Feb17</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>12Feb17</td></tr>
 <tr><td> - Gravametric Site Destruction</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>2Feb20</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
 <tr><td> - Magnetometric Site Creation</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
@@ -3163,12 +3164,12 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>12Feb17</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>12Feb17</td></tr>
 <tr><td> - Anomaly Dungeon Destruction</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>2Feb20</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
 <tr><td> - Mission Dungeon Creation</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -3183,12 +3184,12 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>12Feb17</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>12Feb17</td></tr>
 <tr><td> - Unrated Dungeon Destruction</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>2Feb20</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
 <tr><td> - Unrated Escalation Creation</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -3256,11 +3257,11 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <h2> <span class="mw-headline" id="Spawn_Manager"> Spawn Manager (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width: 80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>80.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width: 85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>85.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -3272,42 +3273,42 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
 <tr><td> - Static spawning (Gate)</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
 <tr><td> - Spawn Destruction/Removal</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
 <tr><td> - Spawns Warp into Belts</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
 <tr><td> - Spawns Warp out of Belts</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
 <tr><td> - Spawns guard Gates</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Scan_Manager"> Scan Manager (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:78%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>80.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:78%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>78.7</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -3319,22 +3320,22 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>11Dec18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Anomaly Data compilation based on Probe Results</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>11Dec18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Reporting of Compiled Data</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=pink">Final Testing</font><BR>11Dec18</td></tr>
+<td><font color=pink>Final Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Probe Management</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>11Dec18</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Dec18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="WormHole_Manager"> WormHole Manager (<font color=green>Current</font>)</span></h2>
@@ -3371,7 +3372,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Working</font><BR><font color=olive>Testing</font><BR>12Feb17</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>12Feb17</td></tr>
 <tr><td> - Jumping thru WormHole</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
@@ -3382,10 +3383,10 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <h2> <span class="mw-headline" id="Civilian_Manager"> Civilian Manager (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:6%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<table style="background: transparent; width:8%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> &#160;<font color=red><b>5.8</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
@@ -3430,14 +3431,14 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 
 
 <!--  Modern browsers (since 2005) support 140(147) named colors
-17 vga colors are aqua, black, blue, fuchsia, gray, green, lime, maroon, navy, olive, purple, red, silver, teal, white, and yellow
+17 vga colors are aqua, black, blue, fuchsia, gray, green, lime, maroon, navy, olive, purple, red, silver, brown, white, and yellow
 COLOR				PHASE				ESTIMATED COMPLETION
 <green> 		COMPLETE						= 100%
 <lime>			Final Testing					= 95
 <lime/pink>		Complete - PlayTesting			= 90
-<teal/pink>		Mostly Complete - PlayTesting	= 85
-<teal/orange>	Mostly Complete - Still Glitchy	= 80
-<teal/orange>	Mostly Complete - Still Buggy	= 80
+<brown/pink>	Mostly Complete - PlayTesting	= 85
+<brown/orange>	Mostly Complete - Still Glitchy	= 80
+<brown/orange>	Mostly Complete - Still Buggy	= 80
 <brown/olive>	Working - Testing				= 75
 <brown/magenta>	Working - Needs Work			= 70
 <orange/silver>	Can Exploit - Needs Update		= 60
@@ -3453,7 +3454,7 @@ COLOR				PHASE				ESTIMATED COMPLETION
 
 green
 lime
-teal
+brown
 brown
 violet
 yellow
