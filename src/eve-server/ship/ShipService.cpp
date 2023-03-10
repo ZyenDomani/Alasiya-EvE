@@ -453,10 +453,10 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                             list->AddItem(new PyInt(newItem->itemID()));
                         } else {
                             // this is not in my list
-                            throw UserError("MaxBandwithExceeded2")
-                                    .AddTypeName("droneName", newItem->typeID())
-                                    .AddAmountU("droneBandwithUsed", newItem->GetAttribute (AttrDroneBandwidthUsed).get_uint32())
-                                    .AddAmountU("bandwidthLeft", pShip->GetAttribute (AttrDroneBandwidth).get_uint32() - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32());
+                            throw UserError("MaxBandwidthExceeded2")
+                            .AddFormatValue("droneName", new PyString(iRef->itemName()))
+                            .AddFormatValue("droneBandwithUsed", new PyInt(iRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32()))
+                            .AddFormatValue("bandwidthLeft", new PyInt(pShip->GetAttribute(AttrDroneBandwidth).get_uint32() - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32()));
                         }
                     }
                 } else {
@@ -465,11 +465,11 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                         shipDrop = true;
                         list->AddItem(new PyInt(iRef->itemID()));
                     } else {
-                        // this is not in my list
-                        throw UserError("MaxBandwithExceeded2")
-                                .AddTypeName("droneName", iRef->typeID())
-                                .AddAmountU("droneBandwithUsed", iRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32())
-                                .AddAmountU("bandwidthLeft", pShip->GetAttribute(AttrDroneBandwidth).get_uint32() - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32());
+                        // this isnt worded right in client.  may change later
+                        throw UserError("MaxBandwidthExceeded")
+                                .AddFormatValue("droneName", new PyString(iRef->itemName()))
+                                .AddFormatValue("droneBandwithUsed", new PyInt(iRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32()))
+                                .AddFormatValue("bandwidthNeeded", new PyInt(pShip->GetAttribute(AttrDroneBandwidth).get_uint32() - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32()));
                     }
                 }
             } break;

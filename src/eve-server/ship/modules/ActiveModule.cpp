@@ -1090,7 +1090,7 @@ bool ActiveModule::CanActivate()
 
                 // test for ownership here...wip
                 // once crim shit is implemented, allow for tractoring no matter owner.
-                bool allowed(false);
+                allowed = false;
                 if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
                     allowed = true;
                 if (m_targetSE->GetCorporationID() == m_shipRef->GetPilot()->GetCorporationID())
@@ -1106,10 +1106,9 @@ bool ActiveModule::CanActivate()
                 if (allowed) {
                     m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
                 } else {
-                    int id = m_targetSE->GetID();
                     Clear();
                     throw UserError("InvalidTargetCanOwner")
-                            .AddFormatValue("module", new PyInt(id));
+                            .AddFormatValue("module", new PyInt(m_modRef->itemID()));
                 }
             } break;
             case Shield_Transporter: {

@@ -762,7 +762,7 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
         }
         if (GetAttribute(AttrUpgradeSlotsLeft) < 1) {
             throw UserError("NotEnoughUpgradeSlots")
-                    .AddAmountI("moduleType", new PyInt(iRef->typeID()));
+                    .AddTypeID("moduleType", iRef->typeID());
         }
 
         if ((GetAttribute(AttrUpgradeLoad) + iRef->GetAttribute(AttrUpgradeCost)) > GetAttribute(AttrUpgradeCapacity)) {
