@@ -567,7 +567,7 @@ void ModuleManager::Online(uint32 itemID)
             if (pShipItem->GetPilot()->CanThrow()) {
                 // this isnt working right....no msg in client
                 throw UserError("EffectAlreadyActive2")
-                        .AddTypeName("modulename", pMod->GetSelf()->typeID());
+                        .AddFormatValue("modulename", new PyString(pMod->GetSelf()->itemName()));
             }
         return;
     }

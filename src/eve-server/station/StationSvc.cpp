@@ -30,6 +30,7 @@
 #include "cache/ObjCacheService.h"
 #include "station/StationDataMgr.h"
 #include "station/StationSvc.h"
+#include "system/sov/SovereigntyDataMgr.h"
 
 
 PyCallable_Make_InnerDispatcher(StationSvc)
@@ -44,6 +45,7 @@ StationSvc::StationSvc(PyServiceMgr *mgr)
     PyCallable_REG_CALL(StationSvc, GetSolarSystem);
     PyCallable_REG_CALL(StationSvc, GetStation);
     PyCallable_REG_CALL(StationSvc, GetAllianceSystems);
+    PyCallable_REG_CALL(StationSvc, GetSystemsForAlliance);
 }
 
 StationSvc::~StationSvc() {
@@ -69,7 +71,7 @@ PyResult StationSvc::Handle_GetSolarSystem(PyCallArgs &call) {
         m_manager->cache_service->GiveCache(method_id, (PyRep **)&t);
     }
 
-    return(m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id));
+    return m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
 }
 
 PyResult StationSvc::Handle_GetStation(PyCallArgs &call) {
@@ -82,8 +84,15 @@ PyResult StationSvc::Handle_GetStation(PyCallArgs &call) {
     return stDataMgr.GetStationPyData(arg.arg);
 }
 
+//This is called when opening up the sov dashboard
 PyResult StationSvc::Handle_GetAllianceSystems(PyCallArgs &call) {
-  sLog.White( "StationSvc::Handle_GetAllianceSystems()", "size= %lu", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    return svDataMgr.GetAllianceSystems();
+}
+
+//This call is made by client when player opens 'Settled Systems' dropdown in alliance details ui
+PyResult StationSvc::Handle_GetSystemsForAlliance(PyCallArgs &call) {
+    // systems = sm.RemoteSvc('stationSvc').GetSystemsForAlliance(session.allianceid)
+    sLog.White( "StationSvc::Handle_GetSystemsForAlliance()", "size=%lu", call.tuple->size());
+    call.Dump(SOV__CALL_DUMP);
     return nullptr;
 }

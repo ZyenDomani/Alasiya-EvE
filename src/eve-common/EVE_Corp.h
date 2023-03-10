@@ -475,8 +475,6 @@ typedef enum {
  * {'FullPath': u'UI/Messages', 'messageID': 259780, 'label': u'CorpApplicationsHintBody'}(u'Used for processing applications made by people wanting to join your corporation.', None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 259781, 'label': u'CorpCantSetHQAsNoRealEstateHereTitle'}(u'Relocating HQ', None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 259782, 'label': u'CorpCantSetHQAsNoRealEstateHereBody'}(u"Your corporation's HQ cannot be relocated to this station as it owns no real estate here. In order to relocate your corporation's HQ here, it must own the station or an office in the station.", None, None)
- * {'FullPath': u'UI/Messages', 'messageID': 259783, 'label': u'CorpHQIsAtThisStationTitle'}(u'Relocating HQ', None, None)
- * {'FullPath': u'UI/Messages', 'messageID': 259784, 'label': u'CorpHQIsAtThisStationBody'}(u"Your corporation's HQ is already located at this station.", None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 259785, 'label': u'CorpHasNoMoneyToPayoutDividendsTitle'}(u'No Funds Available', None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 259786, 'label': u'CorpHasNoMoneyToPayoutDividendsBody'}(u'It is not possible to pay out a dividend now as the corporation has no funds available to do so.', None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 259787, 'label': u'CorpMembersHintBody'}(u'Lists the members of the corporation.', None, None)

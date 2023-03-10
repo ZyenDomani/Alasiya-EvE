@@ -380,7 +380,7 @@ bool Character::AlterBalance(float amount, uint8 type) {
     if ((balance(type) + amount) < 0) {
         throw UserError("NotEnoughMoney")
                 .AddISK("amount", -amount)
-                .AddISK("balance", balance (type));
+                .AddISK("balance", balance(type));
     }
 
     //adjust balance and send notification of change

@@ -210,17 +210,15 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         // this should never happen, but just to be sure ...
         if (iRef->type().portionSize() > iRef->quantity()) {
             throw UserError("QuantityLessThanMinimumPortion")
-                    .AddTypeName("typename", iRef->typeID())
                     .AddAmountU("portion", iRef->type().portionSize());
         }
-
-        float efficiency = CalcReprocessingEfficiency( call.client, iRef );
 
         // dont hit db for this shit...we kinda have to....dont have this data in static shit.
         std::vector<Recoverable> recoverables;
         if ( !m_db.GetRecoverables( iRef->typeID(), recoverables ) )
             continue;
 
+        float efficiency = CalcReprocessingEfficiency( call.client, iRef );
         std::vector<Recoverable>::iterator itr = recoverables.begin();
         for (; itr != recoverables.end(); itr++) {
             uint32 full = itr->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
@@ -242,6 +240,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             iRef->SetQuantity(qtyLeft, true);
         } else {
             iRef->Move(iRef->locationID(), flagJunkyardReprocessed, true);
+            // is this redundant?
             m_stationRef->RemoveItem(iRef);
             iRef->Delete();
         }
@@ -310,7 +309,6 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
 
     if (iRef->quantity() < iRef->type().portionSize())
         throw UserError("QuantityLessThanMinimumPortion")
-                .AddTypeName("typename", iRef->typeID())
                 .AddAmountU("portion", iRef->type().portionSize());
 
     std::vector<Recoverable> recoverables;
@@ -323,7 +321,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     quote.quantityToProcess = iRef->quantity() - quote.leftOvers;
     quote.playerStanding = GetStanding(pClient);
 
-    double tax = CalcTax( quote.playerStanding );
+    double tax = CalcTax(quote.playerStanding);
     double efficiency = CalcReprocessingEfficiency(pClient, iRef);
 
     for (auto &cur :recoverables) {

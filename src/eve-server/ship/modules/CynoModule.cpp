@@ -13,18 +13,17 @@
 
 CynoModule::CynoModule(ModuleItemRef mRef, ShipItemRef sRef)
 : ActiveModule(mRef, sRef),
-pClient(nullptr),
+pClient(sRef->GetPilot()),
 pShipSE(nullptr),
 cSE(nullptr),
 m_firstRun(true),
 m_shipVelocity(0.0f)
 {
-    if (!m_shipRef->HasPilot())
+    if (pClient == nullptr)
         return;
 
-    pClient = m_shipRef->GetPilot();
-
-    // increase scan speed by level of survey skill
+    // increase cycleTime by level of survey skill
+    /** @todo  this doesnt really make much sense.... */
     float cycleTime = GetAttribute(AttrDuration).get_float();
     cycleTime *= (1 + (0.03f * (pClient->GetChar()->GetSkillLevel(EvESkill::Survey, true))));
     SetAttribute(AttrDuration, cycleTime);
@@ -33,6 +32,12 @@ m_shipVelocity(0.0f)
 void CynoModule::Activate(uint16 effectID, uint32 targetID, int16 repeat)
 {
     pShipSE = pClient->GetShipSE();
+
+    if (pShipSE->DestinyMgr()->IsMoving()) {
+        // cant activate while ship is moving.
+        pClient->SendNotifyMsg("You cannot light the cyno while your ship is moving.");
+        return;
+    }
 
     m_firstRun = true;
     ActiveModule::Activate(effectID, targetID, repeat);
@@ -45,6 +50,7 @@ void CynoModule::Activate(uint16 effectID, uint32 targetID, int16 repeat)
 
     // hack to disable ship movement here
     m_shipVelocity = pShipSE->DestinyMgr()->GetMaxVelocity();
+    pShipSE->DestinyMgr()->Halt(true);
     pShipSE->DestinyMgr()->SetFrozen(true);
 }
 

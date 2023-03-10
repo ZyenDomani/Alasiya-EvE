@@ -80,6 +80,7 @@ bool Prospector::CanActivate()
     if (m_salvager)
         if (m_targetSE->IsWreckSE())
             return ActiveModule::CanActivate();
+    /** @todo  is this right? */
     if (m_dataMiner)
         if (m_targetSE->IsContainerSE())
             return ActiveModule::CanActivate();

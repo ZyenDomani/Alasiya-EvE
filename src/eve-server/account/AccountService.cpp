@@ -390,10 +390,10 @@ void AccountService::HandleCorpTransaction(uint32 corpID, int8 entryTypeID, uint
     if (amount < 0) {
         if (-amount > balance) {
             throw UserError("NotEnoughMoneyCorp")
-                    .AddOwnerName ("owner", corpID)
-                    .AddISK ("amount", -amount)
-                    .AddISK ("balance", balance)
-                    .AddFormatValue ("division", new PyString (CorporationDB::GetDivisionName (corpID, accountKey)));
+                    .AddOwnerID("owner", corpID)
+                    .AddISK("amount", -amount)
+                    .AddISK("balance", balance)
+                    .AddFormatValue("division", new PyString(CorporationDB::GetDivisionName(corpID, accountKey)));
         }
     }
     // get new corp balance

@@ -341,7 +341,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         m_targetSE = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
         if (m_targetSE == nullptr) {
             Clear();
-            throw UserError ("DeniedActivateTargetNotPresent");
+            throw UserError("DeniedActivateTargetNotPresent");
         }
     }
 
@@ -372,12 +372,12 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         if (sFxDataMgr.isAssistance(effectID)) {
             if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
                 Clear();
-                throw UserError ("DeniedActivateTargetAssistDisallowed");
+                throw UserError("DeniedActivateTargetAssistDisallowed");
             }
             /** @todo criminal shit isnt written yet....fix this once it is.
             if (m_targetSE->HasPilot())
                 if (m_targetSE->GetPilot()->IsCriminal())
-                    throw UserError ("ModuleActivationDeniedCriminalAssistance");
+                    throw UserError("ModuleActivationDeniedCriminalAssistance");
              */
         }
         if (m_targetSE->IsCOSE()) {
@@ -1088,31 +1088,29 @@ bool ActiveModule::CanActivate()
                     return false;
                 }
 
-                    // test for ownership here...wip
-                    // once crim shit is implemented, allow for tractoring no matter owner.
-                    bool owner(false), fleet(false), corp(false), ally(false), war(false);
-                    if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
-                        owner = true;
-                    if (m_targetSE->GetCorporationID() == m_shipRef->GetPilot()->GetCorporationID())
-                        corp = true;
-                    if (m_targetSE->GetAllianceID() == m_shipRef->GetPilot()->GetAllianceID())
-                        ally = true;
-                    if (m_targetSE->GetWarFactionID() == m_shipRef->GetPilot()->GetWarFactionID())
-                        war = true;
-                    if (m_shipRef->GetPilot()->InFleet())
-                        if (m_shipRef->GetPilot()->GetFleetID() == m_targetSE->GetFleetID())
-                            fleet = true;
+                // test for ownership here...wip
+                // once crim shit is implemented, allow for tractoring no matter owner.
+                bool allowed(false);
+                if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
+                    allowed = true;
+                if (m_targetSE->GetCorporationID() == m_shipRef->GetPilot()->GetCorporationID())
+                    allowed = true;
+                if (m_targetSE->GetAllianceID() == m_shipRef->GetPilot()->GetAllianceID())
+                    allowed = true;
+                if (m_targetSE->GetWarFactionID() == m_shipRef->GetPilot()->GetWarFactionID())
+                    allowed = true;
+                if (m_shipRef->GetPilot()->InFleet())
+                    if (m_shipRef->GetPilot()->GetFleetID() == m_targetSE->GetFleetID())
+                        allowed = true;
 
-                    if (owner or fleet or corp or ally or war) {
-                        m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
-                    } else {
-                        int id = m_targetSE->GetID ();
-
-                        Clear ();
-
-                        throw UserError ("InvalidTargetCanOwner")
-                                .AddFormatValue ("module", new PyInt (id));
-                    }
+                if (allowed) {
+                    m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
+                } else {
+                    int id = m_targetSE->GetID();
+                    Clear();
+                    throw UserError("InvalidTargetCanOwner")
+                            .AddFormatValue("module", new PyInt(id));
+                }
             } break;
             case Shield_Transporter: {
                 range = GetAttribute(AttrShieldTransferRange).get_float();
@@ -1369,8 +1367,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 void ActiveModule::LaunchMissile()
 {
     // must not throw here...
-    //throw UserError ("TargetingMissileToSelf");
-    //throw UserError ("NoCharges");
+    //throw UserError("TargetingMissileToSelf");
+    //throw UserError("NoCharges");
 
     //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
 

@@ -224,7 +224,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
 
     // this may not be needed, as rental fee is queried immediately prior to this call
     if (arg.arg != pStationItem->GetOfficeRentalFee())
-        _log(CORP__WARNING, "RentOffice() - Was quoted %li but station reports %u for office rental at %s", \
+        _log(CORP__WARNING, "RentOffice() - Was quoted %li but station reports %li for office rental at %s", \
                 arg.arg, pStationItem->GetOfficeRentalFee(), pStationItem->name());
 
     // check if the corp has enough money
@@ -234,14 +234,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     reason += " by ";
     reason += pClient->GetCharName();
     AccountService::TranserFunds(pClient->GetCorporationID(), pStationItem->GetOwnerID(), arg.arg, reason.c_str(), Journal::EntryType::OfficeRentalFee);
-/** @note  why is this disabled?
-    int64 balance = AccountDB::GetCorpBalance(pClient->GetCorporationID(), Account::KeyType::Cash);
-    if (balance < arg.arg) {
-        throw UserError("NotEnoughMoney");
-                .AddISK("amount", arg.arg)
-                .AddISK("balance", balance);
-    }
-*/
+
     OfficeData odata = OfficeData();
         // should corpname be in char's corp data?  i dont like hitting db for this.  is it even needed?
         //odata.name = CorporationDB::GetCorpName(pClient->GetCorporationID());

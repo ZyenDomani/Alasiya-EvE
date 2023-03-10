@@ -470,7 +470,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
     //const ItemAttributeMgr::Attr attribute = (ItemAttributeMgr::Attr)atoi(args.arg(2).c_str());
 
     if (!args.isNumber(3))
-        throw CustomError("3rd argument must be value (got %s).", args.arg(3).c_str());
+        throw CustomError("3rd argument must be Value(got %s).", args.arg(3).c_str());
     //const double value = atof(args.arg(3).c_str());
 
     if (itemID < minPlayerItem)
@@ -625,10 +625,10 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
         }
         // END LOOP
         pTarget->SendErrorMsg("You need to relog for skills to get saved and show in character sheet.");
-        return new PyString ("Gifting skills complete");
+        return new PyString("Gifting skills complete");
     }
 
-    return new PyString ("Skill Gifting Failure");
+    return new PyString("Skill Gifting Failure");
 }
 
 PyResult Command_giveskills(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {

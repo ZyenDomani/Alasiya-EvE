@@ -82,32 +82,38 @@ protected:
 /**
  * @brief Enumeration that indicates what parameters can be sent along with an UserError
  */
+
 namespace UE {
     enum IDs {
-        OwnerName = 2,
-        LocationID = 3,
-        TypeName = 4,
-        TypeDescription = 5,
-        BPTypeName = 6,
-        GroupName = 7,
-        GroupDescription = 8,
-        CategoryName = 9,
-        CategoryDescription = 10,
-        DateTime = 14,
-        Date = 15,
-        Time = 16,
-        TimeShort = 17,
-        Amount = 18,
-        Distance = 21,
-        The = 22,
-        A = 23,
-        TypeAndQty = 24,
-        OwnerNick = 25,
-        ISK = 28,
-        TypeIDList = 29,
-        AUR = 30,
-        Localization = 101,
-        List = 103
+        OwnerID                 = 2,    //UE_OWNERID = 2        ownerName
+        LocationID              = 3,    //UE_LOCID = 3          locationName
+        TypeID                  = 4,    //UE_TYPEID = 4         typeName
+        TypeDescription         = 5,    //UE_TYPEID2 = 5        description
+        BPTypeID                = 6,    //UE_BPTYPEID = 6       blueprintTypeName
+        GroupID                 = 7,    //UE_GROUPID = 7        groupName
+        GroupDescription        = 8,    //UE_GROUPID2 = 8       description
+        CategoryID              = 9,    //UE_CATID = 9          categoryName
+        CategoryDescription     = 10,   //UE_CATID2 = 10        description
+        AttribID                = 11,   //UE_DGMATTR = 11
+        FXID                    = 12,   //UE_DGMFX = 12
+        TypeFXID                = 13,   //UE_DGMTYPEFX = 13
+        DateTime                = 14,   //UE_DATETIME = 14
+        Date                    = 15,   //UE_DATE = 15
+        Time                    = 16,   //UE_TIME = 16
+        TimeShort               = 17,   //UE_TIMESHRT = 17
+        Amount                  = 18,   //UE_AMT = 18           generic amount
+        ISK1                    = 19,   //UE_AMT2 = 19          ISK
+        ISK2                    = 20,   //UE_AMT3 = 20          ISK
+        Distance                = 21,   //UE_DIST = 21          Distance
+        The                     = 22,   //UE_MSGARGS = 22
+        A                       = 23,   //
+        TypeAndQty              = 24,   //UE_TYPEIDANDQUANTITY = 24
+        OwnerNick               = 25,   //UE_OWNERIDNICK = 25        ownerName.split(' ')[0]
+        ISK                     = 28,   //UE_ISK = 28           ISK
+        TypeIDList              = 29,   //UE_TYPEIDL = 29
+        AUR                     = 30,   //UE_AUR = 30           AUR
+        Localization            = 101,  //UE_LOC = 101
+        List                    = 103   //UE_LIST = 103         List of UE_TYPEIDs
     };
 }
 
@@ -234,7 +240,7 @@ public:
      *
      * @return self
      */
-    UserError& AddOwnerName(const char* name, uint32 ownerID);
+    UserError& AddOwnerID(const char* name, uint32 ownerID);
 
     /**
      * @brief Shorthand method for adding an owner's nick(first name without surname)
@@ -254,7 +260,7 @@ public:
      *
      * @return self
      */
-    UserError& AddLocationName(const char* name, uint32 locationID);
+    UserError& AddLocationID(const char* name, uint32 locationID);
 
     /**
      * @brief Shorthand method for adding a type's name
@@ -264,7 +270,7 @@ public:
      *
      * @return self
      */
-    UserError& AddTypeName(const char* name, uint32 typeID);
+    UserError& AddTypeID(const char* name, uint16 typeID);
 
     /**
      * @brief Shorthand method for adding a type's description
@@ -274,7 +280,7 @@ public:
      *
      * @return self
      */
-    UserError& AddTypeDescription(const char* name, uint32 typeID);
+    UserError& AddTypeDescription(const char* name, uint16 typeID);
 
     /**
      * @brief Shorthand method for adding a list of types' names
@@ -284,7 +290,7 @@ public:
      *
      * @return self
      */
-    UserError& AddTypeList(const char* name, PyList* typeIDs);
+    UserError& AddTypeIDList(const char* name, PyList* typeIDs);
 
     /**
      * @brief Shorthand method for adding a blueprint's type name
@@ -294,7 +300,7 @@ public:
      *
      * @return self
      */
-    UserError& AddBlueprintTypeName(const char* name, uint32 bpTypeID);
+    UserError& AddBlueprintTypeID(const char* name, uint16 bpTypeID);
 
     /**
      * @brief Shorthand method for adding a group's name
@@ -304,7 +310,7 @@ public:
      *
      * @return self
      */
-    UserError& AddGroupName(const char* name, uint32 groupID);
+    UserError& AddGroupID(const char* name, uint16 groupID);
 
     /**
      * @brief Shorthand method for adding a group's description
@@ -314,7 +320,7 @@ public:
      *
      * @return self
      */
-    UserError& AddGroupDescription(const char* name, uint32 groupID);
+    UserError& AddGroupDescription(const char* name, uint16 groupID);
 
     /**
      * @brief Shorthand method for adding a category's name
@@ -324,7 +330,7 @@ public:
      *
      * @return self
      */
-    UserError& AddCategoryName(const char* name, uint32 categoryID);
+    UserError& AddCategoryID(const char* name, uint16 categoryID);
 
     /**
      * @brief Shorthand method for adding a category's description
@@ -334,7 +340,7 @@ public:
      *
      * @return self
      */
-    UserError& AddCategoryDescription(const char* name, uint32 categoryID);
+    UserError& AddCategoryDescription(const char* name, uint16 categoryID);
 
     /**
      * @brief Shorthand method for adding a quantity value
@@ -405,7 +411,7 @@ public:
      *
      * @return self
      */
-    UserError& AddTypeIDAndQuantity(const char* name, int16 typeID, int quantity);
+    UserError& AddTypeIDAndQuantity(const char* name, uint16 typeID, int quantity);
 
 protected:
 

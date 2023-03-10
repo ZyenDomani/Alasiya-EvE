@@ -422,21 +422,18 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 }
 
                 if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() < 1) {
-                    throw UserError ("NoDroneManagementAbilities")
-                    .AddFormatValue ("typeID", new PyInt (iRef->typeID ()));
-                    //{'FullPath': u'UI/Messages', 'messageID': 259203, 'label': u'NoDroneManagementAbilitiesBody'}(u'You cannot launch {[item]typeID.nameWithArticle} because you do not have the ability to control any drones.', None, {u'{[item]typeID.nameWithArticle}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'nameWithArticle', 'args': 0, 'kwargs': {}, 'variableName': 'typeID'}})
+                    throw UserError("NoDroneManagementAbilities")
+                    .AddFormatValue("typeID", new PyInt(iRef->typeID()));
                 }
                 if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() <= pClient->GetShipSE()->DroneCount()) {
-                    throw UserError ("NoDroneManagementAbilitiesLeft")
-                    .AddFormatValue ("item", new PyInt (iRef->typeID ()))
-                    .AddFormatValue ("limit", new PyInt (pClient->GetChar ()->GetAttribute (AttrMaxActiveDrones).get_uint32()));
-                    //{'FullPath': u'UI/Messages', 'messageID': 259140, 'label': u'NoDroneManagementAbilitiesLeftBody'}(u'You cannot launch {[item]item.name} because you are already controlling {[numeric]limit} drones, as much as you have skill to.', None, {u'{[numeric]limit}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'limit'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+                    throw UserError("NoDroneManagementAbilitiesLeft")
+                    .AddFormatValue("item", new PyInt(iRef->itemID()))
+                    .AddFormatValue("limit", new PyInt(pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32()));
                 }
 
                 if (iRef->flag() != flagDroneBay) {
-                    throw UserError ("DropItemNotInDroneBay")
-                    .AddFormatValue ("item", new PyInt (iRef->typeID ()));
-                    // {'FullPath': u'UI/Messages', 'messageID': 259680, 'label': u'DropItemNotInDroneBayBody'}(u'{[item]item.name} cannot be dropped because it is not in your drone bay.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+                    throw UserError("DropItemNotInDroneBay")
+                    .AddFormatValue("item", new PyInt(iRef->itemID()));
                 }
 
                 // This item is a drone, so launch it into space:
@@ -455,6 +452,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                             shipDrop = true;
                             list->AddItem(new PyInt(newItem->itemID()));
                         } else {
+                            // this is not in my list
                             throw UserError("MaxBandwithExceeded2")
                                     .AddTypeName("droneName", newItem->typeID())
                                     .AddAmountU("droneBandwithUsed", newItem->GetAttribute (AttrDroneBandwidthUsed).get_uint32())
@@ -467,6 +465,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                         shipDrop = true;
                         list->AddItem(new PyInt(iRef->itemID()));
                     } else {
+                        // this is not in my list
                         throw UserError("MaxBandwithExceeded2")
                                 .AddTypeName("droneName", iRef->typeID())
                                 .AddAmountU("droneBandwithUsed", iRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32())

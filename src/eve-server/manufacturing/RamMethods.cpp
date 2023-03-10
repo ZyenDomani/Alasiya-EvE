@@ -243,7 +243,7 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
                     (args.isCorpJob)
                     ? "RamCorpInstalledItemWrongLocation"
                     : "RamInstalledItemWrongLocation")
-                .AddLocationName("location", args.lineContainerID);
+                .AddLocationID("location", args.lineContainerID);
             } else {
                 throw UserError("RamRemoteInstalledItemNotInStation");
             }
@@ -255,14 +255,14 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
                             (args.isCorpJob)
                             ? "RamCorpInstalledItemWrongLocation"
                             : "RamInstalledItemWrongLocation")
-                        .AddLocationName("location", args.lineContainerID);
+                        .AddLocationID("location", args.lineContainerID);
                     }
                 }
             } else {
                 if (installedItem->flag() != flagHangar) {
                     if (args.lineLocationID == pClient->GetLocationID()) {
                         throw UserError("RamInstalledItemWrongLocation")
-                        .AddLocationName("location", args.lineContainerID);
+                        .AddLocationID("location", args.lineContainerID);
                     } else {
                         throw UserError("RamRemoteInstalledItemInStationNotHangar");
                     }
@@ -348,7 +348,7 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
             if (pClient->GetChar()->GetSkillLevel(cur.typeID) < cur.quantity) {
                 throw UserError("RamNeedSkillForJob")
                 .AddFormatValue("skillID", new PyInt(cur.typeID))
-                .AddFormatValue("skillLevel", new PyInt(cur.quantity));
+                .AddAmountI("skillLevel", cur.quantity);
             }
         } else {
             uint32 qtyNeeded = ceil(cur.quantity * rsp.materialMultiplier * runs);
@@ -365,7 +365,7 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
                 }
 
                 if (qtyNeeded)
-                    throw UserError ("RamNeedMoreForJob")
+                    throw UserError("RamNeedMoreForJob")
                     .AddFormatValue("item", new PyInt(cur.typeID));
         }
     }
@@ -373,10 +373,13 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
 
 void RamMethods::ProductionTimeCheck(uint32 productionTime)
 {
+    /** @todo  i think this error needs time formatted before sending to client.
+     * it doesnt appear the error msg formats the time
+     */
     if (productionTime > RAM_PRODUCTION_TIME_LIMIT)
         throw UserError("RamProductionTimeExceedsLimits")
-        .AddFormatValue("productionTime", new PyInt(productionTime))
-        .AddFormatValue("limit", new PyInt(RAM_PRODUCTION_TIME_LIMIT));
+        .AddAmountI("productionTime", productionTime)
+        .AddAmountI("limit", RAM_PRODUCTION_TIME_LIMIT);
 }
 
 void RamMethods::VerifyCompleteJob(const Call_CompleteJob &args, EvERam::JobProperties &data, Client* const pClient)

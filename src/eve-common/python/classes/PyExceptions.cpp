@@ -162,57 +162,57 @@ UserError& UserError::AddList(const char* name, PyList* listEntries, const char*
     }
 }
 
-UserError& UserError::AddOwnerName(const char* name, uint32 ownerID)
+UserError& UserError::AddOwnerID(const char* name, uint32 ownerID)
 {
-    return this->AddParameterKeyword(name,  UE::OwnerName, new PyLong(ownerID));
+    return this->AddParameterKeyword(name,  UE::OwnerID, new PyInt(ownerID));
 }
 
 UserError& UserError::AddOwnerNick(const char* name, uint32 ownerID)
 {
-    return this->AddParameterKeyword(name,  UE::OwnerNick, new PyLong(ownerID));
+    return this->AddParameterKeyword(name,  UE::OwnerNick, new PyInt(ownerID));
 }
 
-UserError& UserError::AddLocationName(const char* name, uint32 locationID)
+UserError& UserError::AddLocationID(const char* name, uint32 locationID)
 {
-    return this->AddParameterKeyword(name,  UE::LocationID, new PyLong(locationID));
+    return this->AddParameterKeyword(name,  UE::LocationID, new PyInt(locationID));
 }
 
-UserError& UserError::AddTypeName(const char* name, uint32 typeID)
+UserError& UserError::AddTypeID( const char* name, uint16 typeID )
 {
-    return this->AddParameterKeyword(name,  UE::TypeName, new PyInt(typeID));
+    return this->AddParameterKeyword(name,  UE::TypeID, new PyInt(typeID));
 }
 
-UserError& UserError::AddTypeDescription(const char* name, uint32 typeID)
+UserError& UserError::AddTypeDescription(const char* name, uint16 typeID)
 {
     return this->AddParameterKeyword(name,  UE::TypeDescription, new PyInt(typeID));
 }
 
-UserError& UserError::AddTypeList(const char* name, PyList* typeIDs)
+UserError& UserError::AddTypeIDList(const char* name, PyList* typeIDs)
 {
     return this->AddParameterKeyword(name,  UE::TypeIDList, typeIDs);
 }
 
-UserError& UserError::AddBlueprintTypeName(const char* name, uint32 bpTypeID)
+UserError& UserError::AddBlueprintTypeID(const char* name, uint16 bpTypeID)
 {
-    return this->AddParameterKeyword(name,  UE::BPTypeName, new PyInt(bpTypeID));
+    return this->AddParameterKeyword(name,  UE::BPTypeID, new PyInt(bpTypeID));
 }
 
-UserError& UserError::AddGroupName(const char* name, uint32 groupID)
+UserError& UserError::AddGroupID(const char* name, uint16 groupID)
 {
-    return this->AddParameterKeyword(name,  UE::GroupName, new PyInt(groupID));
+    return this->AddParameterKeyword(name,  UE::GroupID, new PyInt(groupID));
 }
 
-UserError& UserError::AddGroupDescription(const char* name, uint32 groupID)
+UserError& UserError::AddGroupDescription(const char* name, uint16 groupID)
 {
     return this->AddParameterKeyword(name,  UE::GroupDescription, new PyInt(groupID));
 }
 
-UserError& UserError::AddCategoryName(const char* name, uint32 categoryID)
+UserError& UserError::AddCategoryID(const char* name, uint16 categoryID)
 {
-    return this->AddParameterKeyword(name,  UE::CategoryName, new PyInt(categoryID));
+    return this->AddParameterKeyword(name,  UE::CategoryID, new PyInt(categoryID));
 }
 
-UserError& UserError::AddCategoryDescription(const char* name, uint32 categoryID)
+UserError& UserError::AddCategoryDescription(const char* name, uint16 categoryID)
 {
     return this->AddParameterKeyword(name,  UE::CategoryDescription, new PyInt(categoryID));
 }
@@ -247,7 +247,7 @@ UserError& UserError::AddDistance(const char* name, double distance)
     return this->AddParameterKeyword(name,  UE::Distance, new PyFloat(distance));
 }
 
-UserError& UserError::AddTypeIDAndQuantity(const char* name, int16 typeID, int quantity)
+UserError& UserError::AddTypeIDAndQuantity(const char* name, uint16 typeID, int quantity)
 {
     return this->AddParameterKeyword(name,  UE::TypeAndQty, new PyInt(typeID), new PyInt(quantity));
 }

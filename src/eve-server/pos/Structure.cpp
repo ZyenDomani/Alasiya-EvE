@@ -188,7 +188,7 @@ void StructureItem::Rename(std::string name)
     }
     else
     {
-        throw UserError ("SetNameObjectMustBeAnchoredInSpace");
+        throw UserError("SetNameObjectMustBeAnchoredInSpace");
     }
     // {'FullPath': u'UI/Messages', 'messageID': 258480, 'label': u'SetNameObjectMustBeAnchoredInSpaceBody'}(u'You can only rename this type of object if it is anchored in space (and you have a right to do so).', None, None)
 }
@@ -796,9 +796,9 @@ void StructureSE::Activate(int32 effectID)
             float remaining = total - m_towerSE->GetCPULoad();
             throw UserError("NotEnoughCpu")
                     .AddAmountD("total", total)
-                    .AddAmountD("require", m_self->GetAttribute (AttrCpu).get_float ())
+                    .AddAmountD("require", m_self->GetAttribute(AttrCpu).get_float())
                     .AddAmountD("remaining", remaining)
-                    .AddFormatValue("moduleType", new PyInt (m_self->typeID ()));
+                    .AddTypeID("moduleType", m_self->typeID());
         }
         if (!m_towerSE->HasPG(m_self->GetAttribute(AttrPower).get_float())) {
             // throwing an error negates further processing
@@ -806,9 +806,9 @@ void StructureSE::Activate(int32 effectID)
             float remaining = total - m_towerSE->GetPGLoad();
             throw UserError("NotEnoughPower")
                     .AddAmountD("total", total)
-                    .AddAmountD("require", m_self->GetAttribute (AttrPower).get_float ())
+                    .AddAmountD("require", m_self->GetAttribute(AttrPower).get_float())
                     .AddAmountD("remaining", remaining)
-                    .AddFormatValue("moduleType", new PyInt (m_self->typeID ()));
+                    .AddTypeID("moduleType", m_self->typeID());
         }
     }
 
