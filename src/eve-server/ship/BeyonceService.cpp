@@ -241,7 +241,7 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
     }
 
     // client should not legally send anything < 0.1 (except on rare occasion a 0.0 instead of Stop.)
-    if ((arg.arg != 0.0) and (arg.arg < 0.01))
+    if ((arg.arg != 0.0) and (arg.arg < 0.1))
         return PyStatic.NewNone();
 
     if (pDestiny->IsAutoPilot()) {
@@ -693,10 +693,19 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.y += (0.5f * radius * std::sin(j));
             warpToPoint.z -= (d * std::cos(t));
         } else if (pSE->IsStationSE()) {
+            // fudge the distance a bit for these... its' a lil close by default
+            GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
+            vectorFromOrigin.normalize();   //we now have a direction
+            GPoint stopPoint = (vectorFromOrigin * radius);
+            warpToPoint -= stopPoint;
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
         } else if (pSE->IsCOSE() or pSE->IsGateSE()) {
-            distance += (radius / 2);  // fudge the distance a bit for these... its' a lil close by default
+            // fudge the distance a bit for these... its' a lil close by default
+            GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
+            vectorFromOrigin.normalize();   //we now have a direction
+            GPoint stopPoint = (vectorFromOrigin * (radius / 2));
+            warpToPoint -= stopPoint;
         } else if (pSE->IsMoonSE()) {
             if (pSE->GetMoonSE()->HasTower()) {
                 // if moon has a tower, make warpin point 20km inside edge of tower's bubble.
@@ -712,13 +721,18 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 warpToPoint -= (radius * 1.25f);
             }
         } else if (pSE->IsWormholeSE()) {
-                distance += 20000;  // add 20k for wh
+            // move warpin point -20km from center of wh.
+            GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
+            vectorFromOrigin.normalize();   //we now have a direction
+            GPoint stopPoint = (vectorFromOrigin * 20000) + radius;
+            warpToPoint -= stopPoint;
         } else if (radius > 90000) {
             // this doesnt work for moons
             warpToPoint.x += ((radius + 500000) * std::cos(radius));
             warpToPoint.y += ((radius * 1.3f) - 7500);
             warpToPoint.z -= ((radius + 500000) * std::sin(radius));
         }
+        /*
         if (radius < 90000) {
             // this will include stations (max station radius 60km)
             GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
@@ -726,6 +740,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             GPoint stopPoint = (vectorFromOrigin * radius);
             warpToPoint -= stopPoint;
         }
+        */
     }
 
     if (warpToPoint.isZero()) {
@@ -777,13 +792,19 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    //pDestiny->SetAutoPilot(true);
+    pDestiny->SetAutoPilot(true);
+
+    GPoint warpToPoint = pSE->GetPosition();
+    GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
+    vectorFromOrigin.normalize();   //we now have a direction
+    GPoint stopPoint = (vectorFromOrigin * sConfig.world.apWarptoDistance * pSE->GetRadius());
+    warpToPoint -= stopPoint;
 
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuffAutopilot. AP: %s  Target:%s(%u)", \
             call.client->GetName(), (pDestiny->IsAutoPilot() ? "true" : "false"), \
             pSE->GetName(), pSE->GetID());
 
-    pDestiny->WarpTo(pSE->GetPosition(), sConfig.world.apWarptoDistance, true, pSE);
+    pDestiny->WarpTo(pSE->GetPosition(), pSE->GetRadius(), true, pSE);
 
     return PyStatic.NewNone();
 }

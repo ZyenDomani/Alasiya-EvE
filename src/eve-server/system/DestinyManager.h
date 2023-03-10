@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur, Aknor Jaden
     Rewrite:        Allan
-	Update:        Allan (organized header - 15Feb23)
+    Update:        Allan (organized header - 15Feb23)
 */
 
 #ifndef __SERVER_SYSTEM_DESTINY_H
@@ -254,7 +254,7 @@ protected:
     float m_degPerTic;                  //ship turn variable
     float m_orbitTime;                  //in s - time to complete one orbit using current variables
     float m_orbitRadTic;                //in rad/sec  - radians around orbit per tic
-    float m_radians;                   //in rad    - radians of an ongoing turn
+    float m_radians;                    //in rad    - radians of an ongoing turn
 
     float m_timeFraction;               //fuzzy logic - holds current euler value for time
     float m_turnMinFraction;            //fuzzy logic - used for turn accel/decel checks
@@ -327,6 +327,9 @@ private:
     void WarpDecel(uint16 sec_into_warp);
     void WarpStop(int64 currentShipSpeed);
     void WarpUpdate(int64 currentShipSpeed);
+
+    // trying update queue
+    std::vector<PyTuple*> m_updateQueue;
 
     // Variables used during Warp.
     class WarpState {
