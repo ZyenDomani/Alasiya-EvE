@@ -1228,7 +1228,7 @@ void Character::AddItem(InventoryItemRef iRef)
 
     InventoryItem::AddItem(iRef);
 
-    _log(CHARACTER__INFO, "%s(%u) has been added to %s with flag %li.", iRef->name(), iRef->itemID(), name(), (uint8)iRef->flag());
+    _log(CHARACTER__INFO, "%s(%u) has been added to %s with flag %i.", iRef->name(), iRef->itemID(), name(), (uint8)iRef->flag());
 }
 
 void Character::SetActiveShip(uint32 shipID)

@@ -70,7 +70,7 @@ m_killed(false)
 
     m_harmonic = EVEPOS::Harmonic::Inactive;
 
-    _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %li.", self->name(), self->itemID(), m_radius);
+    _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %i.", self->name(), self->itemID(), m_radius);
 }
 
 // copy c'tor

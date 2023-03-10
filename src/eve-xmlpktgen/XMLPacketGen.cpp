@@ -130,7 +130,7 @@ bool XMLPacketGen::ParseInclude( const TiXmlElement* field )
     const char* file = field->Attribute( "file" );
     if( file == NULL )
     {
-        _log( COMMON__ERROR, "field at line %li is missing the file attribute, skipping.", field->Row() );
+        _log( COMMON__ERROR, "field at line %i is missing the file attribute, skipping.", field->Row() );
         return false;
     }
 

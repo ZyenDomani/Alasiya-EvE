@@ -622,7 +622,7 @@ PyResult Command_showsession(Client* pClient, CommandDB* db, PyServiceMgr* servi
     std::ostringstream str;
     str << "Current Session Values.<br><br>"; //32
 
-    str << "charid: %li <br>"; //14+10
+    str << "charid: %i <br>"; //14+10
     str << "charname: %s <br>"; //16+20
     str << "shipid: %u <br>"; //14+10
     str << "cloneStationID: %u <br>"; //21+10
@@ -632,24 +632,24 @@ PyResult Command_showsession(Client* pClient, CommandDB* db, PyServiceMgr* servi
     str << "sessionID: %lli <br>"; //18+20
 
     str << "locationid: %u <br>"; //18+10
-    str << "stationid: %li <br>"; //17+10
-    str << "stationid2: %li <br>"; //17+10
+    str << "stationid: %i <br>"; //17+10
+    str << "stationid2: %i <br>"; //17+10
     str << "solarsystemid2: %u <br>"; //22+10
     str << "constellationid: %u <br>"; //23+10
     str << "regionid: %u <br>";
 
     str << "corpid: %u <br>"; //14+10
     str << "hqID: %u <br>"; //12+10
-    str << "corpAccountKey: %li <br>"; //22+10
+    str << "corpAccountKey: %i <br>"; //22+10
     str << "corpRole: %lli <br>"; //17+20
     str << "rolesAtAll: %lli <br>"; //19+20
     str << "rolesAtBase: %lli <br>"; //20+20
     str << "rolesAtHQ: %lli <br>"; //18+20
     str << "rolesAtOther: %lli <br>"; //21+20
 
-    str << "fleetID: %li <br>"; //14+10
-    str << "wingID: %li <br>"; //13+10
-    str << "squadID: %li <br>"; //14+10
+    str << "fleetID: %i <br>"; //14+10
+    str << "wingID: %i <br>"; //13+10
+    str << "squadID: %i <br>"; //14+10
     str << "job: %s <br>"; //10+10
     str << "role: %s <br>"; //11+10
     str << "booster: %s <br>"; //14+10
@@ -657,7 +657,7 @@ PyResult Command_showsession(Client* pClient, CommandDB* db, PyServiceMgr* servi
 
     int size = 32;  // header
     size += 445;    // text
-    size += 170;    // %li
+    size += 170;    // %i
     size += 140;    // %l*
     size += 50;     // %s
     char reply[size];

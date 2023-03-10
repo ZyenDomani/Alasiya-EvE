@@ -142,7 +142,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             } else if (IsNPC(objectID)) {
                 throw CustomError("Translocate: Invalid Object - You really wanna relocate an NPC?");
             } else
-                throw CustomError("Translocate: Invalid Object - %li is neither a character nor a ship", objectID);
+                throw CustomError("Translocate: Invalid Object - %i is neither a character nor a ship", objectID);
         } else if (strcmp(args.arg(1).c_str(), "me") == 0) {
             // tr <me> to ?
             //  pClient doesnt change.  do nothing here
@@ -241,7 +241,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
                 // get object's ownerID
                 pOtherClient = sEntityList.FindClientByCharID(objectID);
             } else
-                throw CustomError("Translocate: Invalid Object - %li is neither a character nor a ship", objectID);
+                throw CustomError("Translocate: Invalid Object - %i is neither a character nor a ship", objectID);
         } else if (strcmp(args.arg(1).c_str(), "me") == 0) {
             // tr <me> to ?
             //  pClient doesnt change.  do nothing here
@@ -375,7 +375,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
 //  need to test locationID here to verify its valid.
 
     if (!IsValidLocationID(locationID))
-        throw CustomError("Translocate: Invalid Location %li", locationID);
+        throw CustomError("Translocate: Invalid Location %i", locationID);
 
     if (IsPlayerItem(locationID)) {
         // locationID is sent as player item.  this can be any celestial object, ship, pos, jetcan, wreck, etc.

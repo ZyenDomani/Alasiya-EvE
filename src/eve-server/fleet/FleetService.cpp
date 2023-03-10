@@ -121,7 +121,7 @@ uint32 FleetService::CreateFleet(Client *pClient)
 
     _log(FLEET__INFO, "FleetService::CreateFleet() - fleetID: %u, wingID: %u, squadID: %u, leaderID: %u", m_fleetID, m_wingID, m_squadID, pChar->itemID());
 
-    sLog.Cyan("CreateFleet", "bData -- leader: %li, armored: %li, info: %li, siege: %li, skirmish: %li, mining: %li", \
+    sLog.Cyan("CreateFleet", "bData -- leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \
             sData.boost.leader, sData.boost.armored, sData.boost.info, sData.boost.siege, sData.boost.skirmish, sData.boost.mining);
 
     if (sConfig.chat.EnableFleetChat)
@@ -235,7 +235,7 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
     if (pChar == nullptr)
         return false;
 
-    _log(FLEET__TRACE, "AddMember - CharID: %u, FleetID: %u, WingID: %li, Squad: %li, Job: %s, Role: %s, Booster: %s", \
+    _log(FLEET__TRACE, "AddMember - CharID: %u, FleetID: %u, WingID: %i, Squad: %i, Job: %s, Role: %s, Booster: %s", \
     pChar->itemID(), fleetID, wingID, squadID, GetJobName(job).c_str(), GetRoleName(role).c_str(), GetBoosterName(booster).c_str());
 
     // add new member to fleet data
@@ -496,7 +496,7 @@ bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, 
         }
     }
 
-    _log(FLEET__TRACE, "UpdateMember - CharID: %u, FleetID: %u, oldWingID: %li, newWingID: %li, oldSquad: %li, newSquadID: %li, oldJob: %s, newJob: %s, oldRole: %s, newRole: %s, oldBooster: %s, newBooster: %s", \
+    _log(FLEET__TRACE, "UpdateMember - CharID: %u, FleetID: %u, oldWingID: %i, newWingID: %i, oldSquad: %i, newSquadID: %i, oldJob: %s, newJob: %s, oldRole: %s, newRole: %s, oldBooster: %s, newBooster: %s", \
             charID, fleetID, oldWingID, newWingID, oldSquadID, newSquadID, \
             GetJobName(oldJob).c_str(), GetJobName(newJob).c_str(), GetRoleName(oldRole).c_str(), GetRoleName(newRole).c_str(), \
             GetBoosterName(oldBooster).c_str(), GetBoosterName(newBooster).c_str());
@@ -581,7 +581,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
             }
     }
 
-    _log( FLEET__TRACE, "UpdateBoost - FB: %s, leader: %li, armored: %li, info: %li, siege: %li, skirmish: %li, mining: %li", \
+    _log( FLEET__TRACE, "UpdateBoost - FB: %s, leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \
             (fBoost ? "true" : "false"), fData.leader, fData.armored, fData.info, fData.siege, fData.skirmish, fData.mining);
 
     // check squad boost updates....sb overwriting higher boosts
@@ -717,7 +717,7 @@ void FleetService::SetWingBoostData(uint32 wingID, BoostData& bData)
     if (!boost)
         wItr->second.boost = BoostData();
 
-    _log( FLEET__TRACE, "BoostData - WB: %s, wingID: %u - leader: %li, armored: %li, info: %li, siege: %li, skirmish: %li, mining: %li", \
+    _log( FLEET__TRACE, "BoostData - WB: %s, wingID: %u - leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \
             (boost ? "true" : "false"), wingID, wItr->second.boost.leader, wItr->second.boost.armored, wItr->second.boost.info, \
             wItr->second.boost.siege, wItr->second.boost.skirmish, wItr->second.boost.mining);
 }
@@ -762,7 +762,7 @@ void FleetService::SetSquadBoostData(uint32 squadID, BoostData bData, bool& sboo
     if (!sboost)
         sItr->second.boost = BoostData();
 
-    _log( FLEET__TRACE, "BoostData - SB: %s, squadID: %u - leader: %li, armored: %li, info: %li, siege: %li, skirmish: %li, mining: %li", \
+    _log( FLEET__TRACE, "BoostData - SB: %s, squadID: %u - leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \
             (sboost ? "true" : "false"), squadID, sItr->second.boost.leader, sItr->second.boost.armored, sItr->second.boost.info, \
             sItr->second.boost.siege, sItr->second.boost.skirmish, sItr->second.boost.mining);
 }
@@ -1311,12 +1311,12 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
 
     int32 wingID(pFrom->GetChar()->wingID());
     if ((wingID > 0) and !IsWingID(wingID)) {
-        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid wing %li for fleet %u.", pFrom->GetName(), wingID, fleetID);
+        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid wing %i for fleet %u.", pFrom->GetName(), wingID, fleetID);
         return;
     }
     int32 squadID(pFrom->GetChar()->squadID());
     if ((squadID > 0) and !IsSquadID(squadID)) {
-        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid squad %li for fleet %u.", pFrom->GetName(), squadID, fleetID);
+        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid squad %i for fleet %u.", pFrom->GetName(), squadID, fleetID);
         return;
     }
 

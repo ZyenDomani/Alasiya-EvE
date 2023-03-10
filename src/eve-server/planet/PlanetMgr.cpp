@@ -48,7 +48,7 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
             m_client->SendErrorMsg("Internal Server Error.");
             return nullptr;
         }
-        _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork() - loop: %u, command: %s(%li)", i, sPlanetDataMgr.GetCommandName(uunc.command), uunc.command);
+        _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork() - loop: %u, command: %s(%i)", i, sPlanetDataMgr.GetCommandName(uunc.command), uunc.command);
         switch (uunc.command) {
             case Command::CreatePin:                cancel = CreatePin(uunc);               break;
             case Command::RemovePin:                RemovePin(uunc);                        break;
@@ -65,7 +65,7 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
             case Command::KillExtractorHead:        KillExtractorHead(uunc);                break;
             case Command::PrioritizeRoute:          PrioritizeRoute(uunc);                  break;
             default: {
-                _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork() %s command %li", sPlanetDataMgr.GetCommandName(uunc.command), uunc.command);
+                _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork() %s command %i", sPlanetDataMgr.GetCommandName(uunc.command), uunc.command);
             } break;
         }
     }

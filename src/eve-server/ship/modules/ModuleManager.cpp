@@ -676,7 +676,7 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         return;
     }
 
-    _log(MODULE__TRACE, "MM::Activate() - %s (%u - %s)  targetID: %li, repeat: %li.", \
+    _log(MODULE__TRACE, "MM::Activate() - %s (%u - %s)  targetID: %i, repeat: %i.", \
                 pMod->GetSelf()->name(), effectID, sFxDataMgr.GetEffectName(effectID).c_str(), targetID, repeat);
 
     if (effectID == 16) { //16    online

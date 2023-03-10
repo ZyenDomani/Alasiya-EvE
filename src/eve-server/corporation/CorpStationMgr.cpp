@@ -224,7 +224,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
 
     // this may not be needed, as rental fee is queried immediately prior to this call
     if (arg.arg != pStationItem->GetOfficeRentalFee())
-        _log(CORP__WARNING, "RentOffice() - Was quoted %li but station reports %li for office rental at %s", \
+        _log(CORP__WARNING, "RentOffice() - Was quoted %i but station reports %i for office rental at %s", \
                 arg.arg, pStationItem->GetOfficeRentalFee(), pStationItem->name());
 
     // check if the corp has enough money

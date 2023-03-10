@@ -123,7 +123,7 @@ bool FactoryDB::SaveBlueprintData(uint32 blueprintID, EvERam::bpData& data) {
         "INSERT INTO invBlueprints"
         "  (itemID, copy, mLevel, pLevel, runs)"
         " VALUES"
-        "  (%u, %u, %li, %li, %li)"
+        "  (%u, %u, %i, %i, %i)"
         "ON DUPLICATE KEY UPDATE "
         "mLevel=VALUES(mLevel), "
         "pLevel=VALUES(pLevel), "
@@ -492,7 +492,7 @@ bool FactoryDB::GetAssemblyLineRestrictions(const int32 assemblyLineID, EvERam::
         " restrictionMask,"
         " activityID"
         " FROM ramAssemblyLines"
-        " WHERE assemblyLineID = %li",
+        " WHERE assemblyLineID = %i",
         assemblyLineID))
     {
         _log(DATABASE__ERROR, "Failed to query verify properties for assembly line %u: %s.", assemblyLineID, res.error.c_str());
@@ -528,8 +528,8 @@ uint32 FactoryDB::InstallJob(const uint32 ownerID, const uint32 installerID, Cal
         " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime,"
         " runs, outputFlag, licensedProductionRuns)"
         " VALUES"
-        " (%u, %u, %li, %li, %.0f, %lli, %lli,"
-        " %li, %li, %li)",
+        " (%u, %u, %i, %i, %.0f, %lli, %lli,"
+        " %i, %i, %i)",
         ownerID, installerID, args.AssemblyLineID, args.bpItemID, GetFileTimeNow(), beginTime, endTime,
         args.runs, args.outputFlag, args.copyRuns))
     {
@@ -541,7 +541,7 @@ uint32 FactoryDB::InstallJob(const uint32 ownerID, const uint32 installerID, Cal
     if (!sDatabase.RunQuery(err,
         "UPDATE ramAssemblyLines"
         " SET nextFreeTime = %lli"
-        " WHERE assemblyLineID = %li",
+        " WHERE assemblyLineID = %i",
         endTime, args.AssemblyLineID))
     {
         _log(DATABASE__ERROR, "Failed to update next free time for assembly line %u: %s.", args.AssemblyLineID, err.c_str());
@@ -636,8 +636,8 @@ bool FactoryDB::GetJobProperties(const uint32 jobID, EvERam::JobProperties &data
 bool FactoryDB::CompleteJob(const uint32 jobID, const int8 completedStatus) {
     DBerror err;
 
-    if (!sDatabase.RunQuery(err, "UPDATE ramJobs SET completedStatusID = %li WHERE jobID = %u", completedStatus, jobID)) {
-        _log(DATABASE__ERROR, "Failed to complete job %u (status = %li): %s.", jobID, completedStatus, err.c_str());
+    if (!sDatabase.RunQuery(err, "UPDATE ramJobs SET completedStatusID = %i WHERE jobID = %u", completedStatus, jobID)) {
+        _log(DATABASE__ERROR, "Failed to complete job %u (status = %i): %s.", jobID, completedStatus, err.c_str());
         return false;
     }
 

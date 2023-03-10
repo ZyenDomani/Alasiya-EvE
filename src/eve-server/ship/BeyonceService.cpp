@@ -399,7 +399,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
 
     SystemEntity* pSE = pSystem->GetSE(args.ballID);
     if (pSE == nullptr) {
-        _log(CLIENT__ERROR, "%s: Unable to find entity %li to Follow/Approach.", call.client->GetName(), args.ballID);
+        _log(CLIENT__ERROR, "%s: Unable to find entity %i to Follow/Approach.", call.client->GetName(), args.ballID);
         return PyStatic.NewNone();
     }
 

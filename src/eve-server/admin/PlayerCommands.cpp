@@ -250,7 +250,7 @@ PyResult Command_srvoptions(Client* pClient, CommandDB* db, PyServiceMgr* servic
 
     sLog.Blue("     ServerConfig", "Misc Switches");
     if (sConfig.server.ModuleDamageChance) {
-        sLog.Green("    Module Damage","Enabled.  Set to %li%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
+        sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
     } else {
         sLog.Warning("    Module Damage","Disabled.");
     }

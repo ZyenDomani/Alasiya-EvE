@@ -270,19 +270,19 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
     if (data.role == Fleet::Role::FleetLeader) {
         data.wingID = -1;
         data.squadID = -1;
-        _log(FLEET__MESSAGE, "Fleet Invite:  Role: %s, WingID: %li, SquadID: %li", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
+        _log(FLEET__MESSAGE, "Fleet Invite:  Role: %s, WingID: %i, SquadID: %i", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
     } else if (data.role == Fleet::Role::WingLeader) {
         // wing should be populated at this point
         data.squadID = -1;
-        _log(FLEET__MESSAGE, "Fleet Invite:  Role: %s, WingID: %li, SquadID: %li", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
+        _log(FLEET__MESSAGE, "Fleet Invite:  Role: %s, WingID: %i, SquadID: %i", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
     } else if (data.role == Fleet::Role::SquadLeader) {
         // wing and squad should both be populated at this point
-        _log(FLEET__MESSAGE, "Fleet Invite:  Role: %s, WingID: %li, SquadID: %li", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
+        _log(FLEET__MESSAGE, "Fleet Invite:  Role: %s, WingID: %i, SquadID: %i", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
     } else if ((data.wingID == 0) and (data.squadID == 0)) {// char invited as generic squad member, no specific position
         sFltSvc.GetRandUnitIDs(m_fleetID, data.wingID, data.squadID);
-        _log(FLEET__MESSAGE, "Fleet Invite:  Role: %s, WingID: %li, SquadID: %li", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
+        _log(FLEET__MESSAGE, "Fleet Invite:  Role: %s, WingID: %i, SquadID: %i", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
     } else {
-        _log(FLEET__ERROR, "Fleet Invite Role/UnitID error.  Role: %s, WingID: %li, SquadID: %li", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
+        _log(FLEET__ERROR, "Fleet Invite Role/UnitID error.  Role: %s, WingID: %i, SquadID: %i", sFltSvc.GetRoleName(data.role).c_str(), data.wingID, data.squadID);
     }
 
     if (!sFltSvc.SaveInviteData(args.charID, data)) {

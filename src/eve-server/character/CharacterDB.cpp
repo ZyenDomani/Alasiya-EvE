@@ -106,7 +106,7 @@ bool CharacterDB::SaveCorpData(uint32 characterID, const CorpData &data) {
         "  corporationID = %u, "
         "  baseID = %u,"
         "  corpRole = %lli,"
-        "  corpAccountKey = %li,"
+        "  corpAccountKey = %i,"
         "  rolesAtAll = %lli,"
         "  rolesAtBase = %lli,"
         "  rolesAtHQ = %lli,"
@@ -899,7 +899,7 @@ void CharacterDB::AddContact(uint32 ownerID, uint32 charID, int32 standing, bool
     sDatabase.RunQuery(err,
         "INSERT INTO chrContacts (ownerID, contactID, relationshipID, "
         " inWatchlist, labelMask, blocked) VALUES "
-        " (%u, %u, %li, %li, 0, 0) ",
+        " (%u, %u, %i, %i, 0, 0) ",
         ownerID, charID, standing, inWatchlist);
 }
 
@@ -907,7 +907,7 @@ void CharacterDB::UpdateContact(int32 standing, uint32 charID, uint32 ownerID)
 {
     DBerror err;
     sDatabase.RunQuery(err,
-        "UPDATE chrContacts SET relationshipID=%li "
+        "UPDATE chrContacts SET relationshipID=%i "
         " WHERE contactID=%u AND ownerID=%u ",
          standing, charID, ownerID);
 }

@@ -319,14 +319,14 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
     PyDict* toBeChanged = new PyDict();
     int32 bulkFileID = sBulkDB.GetFileIDfromChunk(args.chunkSetID, args.chunkNumber);
     if (bulkFileID < 0) {
-        _log(BULKDATA__ERROR, "BulkMgrService::Handle_GetFullFilesChunk(): chunkSetID: %u, chunkNumber: %u, bulkFileID: %li", args.chunkSetID, args.chunkNumber, bulkFileID);
+        _log(BULKDATA__ERROR, "BulkMgrService::Handle_GetFullFilesChunk(): chunkSetID: %u, chunkNumber: %u, bulkFileID: %i", args.chunkSetID, args.chunkNumber, bulkFileID);
         // make and send client error also.  may be able to throw here.
         PySafeDecRef(response);
         PySafeDecRef(toBeChanged);
         return PyStatic.NewNone();
     }
 
-    _log(BULKDATA__INFO, "BulkMgrService::Handle_GetFullFilesChunk(): bulkFileID: %li, chunkSetID: %u, chunkNumber: %u", bulkFileID, args.chunkSetID, args.chunkNumber);
+    _log(BULKDATA__INFO, "BulkMgrService::Handle_GetFullFilesChunk(): bulkFileID: %i, chunkSetID: %u, chunkNumber: %u", bulkFileID, args.chunkSetID, args.chunkNumber);
     toBeChanged->SetItem(new PyInt(bulkFileID), sBulkDB.GetBulkDataChunks(args.chunkSetID, args.chunkNumber));
 
     // 2, 4, 36

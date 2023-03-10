@@ -148,7 +148,7 @@ Client::~Client() {
          *      6)  remove client from sysmgr/destiny/server
          */
 
-        sLog.Green("  Client::Logout()","%s (Acct:%li) logging out.", m_char->name(), GetUserID());
+        sLog.Green("  Client::Logout()","%s (Acct:%i) logging out.", m_char->name(), GetUserID());
 
         if (!sConsole.IsDbError()) {
             ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
@@ -208,7 +208,7 @@ bool Client::ProcessNet()
     while ((pPacket = PopPacket()) != nullptr) {
         try {
             if (!DispatchPacket(pPacket))
-                sLog.Error("Client", "Failed to dispatch packet of type %s (%li).", \
+                sLog.Error("Client", "Failed to dispatch packet of type %s (%i).", \
                         MACHONETMSG_TYPE_NAMES[ pPacket->type ], (int)pPacket->type);
         }
         catch(PyException& e) {
@@ -229,7 +229,7 @@ bool Client::ProcessNet()
 bool Client::SelectCharacter(int32 charID/*0*/)
 {
     if (sEntityList.IsOnline(charID)) {
-        sLog.Error("Client::SelectCharacter()", "Char %li already online.", charID);
+        sLog.Error("Client::SelectCharacter()", "Char %i already online.", charID);
         SendErrorMsg("That Character is already online.  Selection Failed.");
         CloseClientConnection();
         return false;
@@ -237,7 +237,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     InitSession(charID);
     if (!m_validSession){
-        sLog.Error("Client::SelectCharacter()", "Failed to init session for char %li.", charID);
+        sLog.Error("Client::SelectCharacter()", "Failed to init session for char %i.", charID);
         SendErrorMsg("Unable to Initialize Character session.  Selection Failed.");
         CloseClientConnection();
         return false;
@@ -248,7 +248,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_system = sEntityList.FindOrBootSystem(m_systemData.systemID);
     if (m_system == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "Failed to boot system %u for char %li.", m_systemData.systemID, charID);
+        sLog.Error("Client::SelectCharacter()", "Failed to boot system %u for char %i.", m_systemData.systemID, charID);
         SendErrorMsg("SolarSystem %s(%u) - Boot Failure.", m_systemData.name.c_str(), m_systemData.systemID);
         CloseClientConnection();
         return false;
@@ -256,7 +256,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_char = sItemFactory.GetCharacterRef(charID);
     if (m_char.get() == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "GetChar for %li = nullptr", charID);
+        sLog.Error("Client::SelectCharacter()", "GetChar for %i = nullptr", charID);
         SendErrorMsg("Unable to locate Character.  Selection Failed.");
         sItemFactory.UnsetUsingClient();
         CloseClientConnection();
@@ -279,11 +279,11 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_ship = sItemFactory.GetShipRef(m_shipId);
     if (m_ship.get() == nullptr) {
-        sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %li.  Selecting new ship...", m_shipId, charID);
+        sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %i.  Selecting new ship...", m_shipId, charID);
         PickAlternateShip();    // incase shipID wasnt set correctly in db (seen on 'bad' Damage::Killed())
         m_ship = sItemFactory.GetShipRef(m_shipId);
         if (m_ship.get() == nullptr) {
-            sLog.Error("Client::SelectCharacter()", "shipID %u for %li also invalid.  Loading Pod.", m_shipId, charID);
+            sLog.Error("Client::SelectCharacter()", "shipID %u for %i also invalid.  Loading Pod.", m_shipId, charID);
             m_ship = m_pod;
         }
         SetShip(m_ship);
@@ -2286,7 +2286,7 @@ bool Client::_VerifyCrypto(CryptoRequestPacket& cr)
         if (!car.Decode(cr.keyParams)) {
             sLog.Error("Client","%s: Received invalid CryptoAPI request!", GetAddress().c_str());
         } else {
-            sLog.Error("Client","%s: Unhandled CryptoAPI request: hashmethod=%s sessionkeylength=%li provider=%s sessionkeymethod=%s", \
+            sLog.Error("Client","%s: Unhandled CryptoAPI request: hashmethod=%s sessionkeylength=%i provider=%s sessionkeymethod=%s", \
                     GetAddress().c_str(), car.hashmethod.c_str(), car.sessionkeylength, car.provider.c_str(), car.sessionkeymethod.c_str());
             SendErrorMsg("Invalid CryptoAPI request - You must change your client to use Placebo crypto in common.ini to talk to this server.");
         }

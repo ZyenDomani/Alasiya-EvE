@@ -112,7 +112,7 @@ PyResult SkillMgrBound::Handle_CharStartTrainingSkill( PyCallArgs& call ) {
         return nullptr;
     }
 
-    _log(SKILL__WARNING, "Called CharStartTrainingSkill for itemID %li in location %li", args.arg1, args.arg2);
+    _log(SKILL__WARNING, "Called CharStartTrainingSkill for itemID %i in location %i", args.arg1, args.arg2);
     return nullptr;
 }
 

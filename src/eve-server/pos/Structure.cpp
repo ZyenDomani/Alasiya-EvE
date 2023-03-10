@@ -352,7 +352,7 @@ void StructureSE::Init()
 
     if (!IsStaticMapItem(m_data.anchorpointID)) {
         // make error here.  this should never hit.
-        _log(POS__MESSAGE, "StructureSE::Init %s(%u) - anchorpointID %li is invalid.  Load Failure.", \
+        _log(POS__MESSAGE, "StructureSE::Init %s(%u) - anchorpointID %i is invalid.  Load Failure.", \
                 m_self->name(), m_data.itemID, m_data.anchorpointID);
         m_loaded = false;
         return;

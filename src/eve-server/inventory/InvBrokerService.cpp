@@ -305,7 +305,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
     sItemFactory.UnsetUsingClient();
 
     if (iRef.get() == nullptr) {
-        codelog(INV__ERROR, "%s: Unable to load item %u for flag %li", call.client->GetName(), m_locationID, args.container);
+        codelog(INV__ERROR, "%s: Unable to load item %u for flag %i", call.client->GetName(), m_locationID, args.container);
         return nullptr;
     }
 
@@ -364,7 +364,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
             //break;
         // there is no 10005, 10006, or 10007 defined in client
         default:
-            _log(INV__ERROR, "Unhandled container type %li for locationID %u", args.container, m_locationID);
+            _log(INV__ERROR, "Unhandled container type %i for locationID %u", args.container, m_locationID);
             return nullptr;
     }
 
@@ -387,7 +387,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     sItemFactory.SetUsingClient( call.client );
     InventoryItemRef iRef = sItemFactory.GetItemRef( args.itemID );
     if (iRef.get() == nullptr) {
-        codelog(INV__ERROR, "%s: Unable to load item %li", call.client->GetName(), args.itemID);
+        codelog(INV__ERROR, "%s: Unable to load item %i", call.client->GetName(), args.itemID);
         sItemFactory.UnsetUsingClient();
         return nullptr;
     }
@@ -401,14 +401,14 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     /** @todo if owner is corp, make sure char has permissions to rename corp items  */
     if (IsPlayerCorp(iRef->ownerID())) {
         if (iRef->ownerID() != call.client->GetCorporationID()) {
-            _log(INV__ERROR, "%s(%li) tried to rename CorpItem %s(%u) owned by %u.", \
+            _log(INV__ERROR, "%s(%i) tried to rename CorpItem %s(%u) owned by %u.", \
                     call.client->GetName(), call.client->GetCharacterID(), iRef->name(), \
                     iRef->itemID(), iRef->ownerID());
             error = true;
         }
     } else if (IsCharacterID(iRef->ownerID())) {
         if (iRef->ownerID() != call.client->GetCharacterID()) {
-            _log(INV__ERROR, "%s(%li) tried to rename PlayerItem %s(%u) owned by %u.", \
+            _log(INV__ERROR, "%s(%i) tried to rename PlayerItem %s(%u) owned by %u.", \
                     call.client->GetName(), call.client->GetCharacterID(), iRef->name(), \
                     iRef->itemID(), iRef->ownerID());
             error = true;

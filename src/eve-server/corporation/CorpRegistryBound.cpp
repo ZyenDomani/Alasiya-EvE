@@ -1169,7 +1169,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
                 case Corp::JoinOp::None:
                 default: {
                     // error
-                    _log(CORP__ERROR, "CorpRegistryBound::Handle_GetMemberIDsByQuery() sent invalid JoinOp %li", args4.joinOp);
+                    _log(CORP__ERROR, "CorpRegistryBound::Handle_GetMemberIDsByQuery() sent invalid JoinOp %i", args4.joinOp);
                     return nullptr;
                 } break;
             }
@@ -1279,7 +1279,7 @@ bool CorpRegistryBound::GetSearchValues(int8 op, PyRep* rep, std::ostringstream&
             query << PyRep::StringContent(rep);
         } break;
         default: {
-            _log(CORP__ERROR, "CorpRegistryBound::GetSearchValues() sent invalid searchOp %li", op);
+            _log(CORP__ERROR, "CorpRegistryBound::GetSearchValues() sent invalid searchOp %i", op);
             return false;
         };
     }

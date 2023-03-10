@@ -38,7 +38,7 @@ PyDumpVisitor::PyDumpVisitor( const char* pfx, bool full_nested ) : PyPfxVisitor
 
 bool PyDumpVisitor::VisitInteger( const PyInt* rep )
 {
-    _print( "%s   Integer: %li", _pfx(), rep->value() );
+    _print( "%s   Integer: %i", _pfx(), rep->value() );
     return true;
 }
 

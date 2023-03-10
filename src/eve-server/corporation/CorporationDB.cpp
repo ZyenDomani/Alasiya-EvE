@@ -381,7 +381,7 @@ PyRep* CorporationDB::GetRecipientsOfMedal(int32 medalID)
     if (!sDatabase.RunQuery(res,
         "SELECT recepientID, issuerID, date, reason, status"
         " FROM chrMedals"
-        " WHERE medalID = %li", medalID))
+        " WHERE medalID = %i", medalID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -424,7 +424,7 @@ PyRep* CorporationDB::GetMedalsReceived(int32 charID)
         "SELECT chr.medalID, crp.creatorID, crp.noRecepients, crp.date, crp.title, crp.description, chr.status"
         " FROM chrMedals AS chr"
         " LEFT JOIN crpMedals AS crp USING (medalID)"
-        " WHERE chr.recepientID = %li", charID))
+        " WHERE chr.recepientID = %i", charID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -439,7 +439,7 @@ PyRep* CorporationDB::GetMedalsReceivedDetails(int32 charID)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT medalID, part, graphic, color FROM crpMedalData"
-        " WHERE medalID IN (SELECT medalID FROM chrMedals WHERE recepientID = %li)", charID))
+        " WHERE medalID IN (SELECT medalID FROM chrMedals WHERE recepientID = %i)", charID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -453,7 +453,7 @@ PyObjectEx* CorporationDB::GetMedalDetails(int32 medalID)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT medalID, ownerID, creatorID, noRecepients AS numberOfRecipients, date, title, description FROM crpMedals"
-        " WHERE medalID = %li", medalID))
+        " WHERE medalID = %i", medalID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -1155,7 +1155,7 @@ void CorporationDB::AddContact(uint32 ownerID, Call_CorporateContactData corpDat
     sDatabase.RunQuery(err,
         "INSERT INTO crpContacts (ownerID, contactID, relationshipID, "
         " inWatchlist, labelMask) VALUES "
-        " (%u, %u, %li, 0, 0) ",
+        " (%u, %u, %i, 0, 0) ",
         ownerID, corpData.contactID, corpData.relationshipID);
 }
 
@@ -1163,7 +1163,7 @@ void CorporationDB::UpdateContact(int32 relationshipID, uint32 contactID, uint32
 {
     DBerror err;
     sDatabase.RunQuery(err,
-        "UPDATE crpContacts SET relationshipID=%li "
+        "UPDATE crpContacts SET relationshipID=%i "
         " WHERE contactID=%u AND ownerID=%u ",
          relationshipID, contactID, ownerID);
 }
@@ -2028,7 +2028,7 @@ void CorporationDB::AddRoleHistory(uint32 corpID, uint32 charID, uint32 issuerID
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO crpRoleHistroy (corporationID, characterID, issuerID, changeTime, oldRoles, newRoles, grantable)"
-        " VALUES (%u, %u, %u, %f, %lli, %lli, %li)", corpID, charID, issuerID, GetFileTimeNow(), oldRoles, newRoles, (grantable ? 1 : 0));
+        " VALUES (%u, %u, %u, %f, %lli, %lli, %i)", corpID, charID, issuerID, GetFileTimeNow(), oldRoles, newRoles, (grantable ? 1 : 0));
 }
 
 PyRep* CorporationDB::GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDate, int64 toDate, uint8 rowsPerPage)
@@ -2263,7 +2263,7 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     DBerror err;
     // remove from old owner
     sDatabase.RunQuery(err,
-        "UPDATE crpShares SET shares = shares - %li"
+        "UPDATE crpShares SET shares = shares - %i"
         " WHERE corporationID = %u AND shareholderID = %u ", args.numberOfShares, args.corporationID, ownerID);
 
     // get new owner data
@@ -2312,8 +2312,8 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     // add to new owner
     sDatabase.RunQuery(err,
         "INSERT INTO crpShares (corporationID, shareholderID, shares, shareholderCorporationID)"
-        " VALUES (%li, %li, %li, %u)"
-        " ON DUPLICATE KEY UPDATE shares = shares + %li", args.corporationID, args.toShareholderID, args.numberOfShares, corpID, args.numberOfShares);
+        " VALUES (%i, %i, %i, %u)"
+        " ON DUPLICATE KEY UPDATE shares = shares + %i", args.corporationID, args.toShareholderID, args.numberOfShares, corpID, args.numberOfShares);
 }
 
 PyRep* CorporationDB::GetShares(uint32 corpID)

@@ -265,7 +265,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
             reply.Dump(LSC__RSP_DUMP);
         return reply.Encode();
     } else {
-        _log(LSC__ERROR, "%s: Already joined Channel %li \"%s\".", pClient->GetName(), channel->GetChannelID(), channel->GetDisplayName().c_str());
+        _log(LSC__ERROR, "%s: Already joined Channel %i \"%s\".", pClient->GetName(), channel->GetChannelID(), channel->GetDisplayName().c_str());
         reply.ChannelInfo = new PyInt(LSC::Error::errUnspecified);
         if (is_log_enabled(LSC__RSP_DUMP))
             reply.Dump(LSC__RSP_DUMP);

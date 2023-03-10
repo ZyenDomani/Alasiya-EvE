@@ -243,7 +243,7 @@ void AllianceDB::AddContact(uint32 ownerID, Call_CorporateContactData contactDat
     sDatabase.RunQuery(err,
                        "INSERT INTO alnContacts (ownerID, contactID, relationshipID, "
                        " inWatchlist, labelMask) VALUES "
-                       " (%u, %u, %li, 0, 0) ",
+                       " (%u, %u, %i, 0, 0) ",
                        ownerID, contactData.contactID, contactData.relationshipID);
 }
 
@@ -251,7 +251,7 @@ void AllianceDB::UpdateContact(int32 relationshipID, uint32 contactID, uint32 ow
 {
     DBerror err;
     sDatabase.RunQuery(err,
-                       "UPDATE alnContacts SET relationshipID=%li "
+                       "UPDATE alnContacts SET relationshipID=%i "
                        " WHERE contactID=%u AND ownerID=%u ",
                        relationshipID, contactID, ownerID);
 }

@@ -343,7 +343,7 @@ PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
         return nullptr;
     }
 
-    sLog.Cyan("CharMgrService::SetActivityStatus()", "Player %s(%u) AFK:%s, time:%li.", \
+    sLog.Cyan("CharMgrService::SetActivityStatus()", "Player %s(%u) AFK:%s, time:%i.", \
             call.client->GetName(), call.client->GetCharacterID(), (args.arg1 ? "true" : "false"), args.arg2);
 
     if (args.arg1) {

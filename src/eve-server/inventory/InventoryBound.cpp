@@ -301,7 +301,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     if (toFlag == flagLocked) {
         // corp role 'equip config' can move locked items (per client)
         sLog.Error("IB::Handle_Add()", "Error.  see below");
-        _log(INV__ERROR, "IB::Handle_Add() - item %li from %li sent flagLocked.  continuing but this needs to be fixed.", \
+        _log(INV__ERROR, "IB::Handle_Add() - item %i from %i sent flagLocked.  continuing but this needs to be fixed.", \
                 args.itemID, args.containerID);
         toFlag = flagCargoHold;
     }
@@ -517,7 +517,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
         iRef = sItemFactory.GetItemRef(*itr);
         if (iRef.get() == nullptr) {
-            _log(INV__ERROR, "IB::MoveItems() - item %li not found.  continuing.", (*itr));
+            _log(INV__ERROR, "IB::MoveItems() - item %i not found.  continuing.", (*itr));
             continue;
         }
 
@@ -635,7 +635,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 if (contRef.get() != nullptr) {
                     contRef->AddItem(iRef);
                 } else {
-                    _log(INV__ERROR, "IB::MoveItems() - previous container for item %li not found.  continuing.", (*itr));
+                    _log(INV__ERROR, "IB::MoveItems() - previous container for item %i not found.  continuing.", (*itr));
                 }
                 continue;
             }

@@ -142,7 +142,7 @@ void PosMgrDB::SaveBaseData(EVEPOS::StructureData& data)
     sDatabase.RunQuery(err,
         "INSERT INTO posStructureData "
         "(itemID, towerID, anchorpointID, state, status, timestamp, canUse, canView, canTake)"
-        " VALUES ( %li, %li, %li, %li, %li, %lli, %li, %li, %li)",
+        " VALUES ( %i, %i, %i, %i, %i, %lli, %i, %i, %i)",
         data.itemID, data.towerID, data.anchorpointID, data.state, data.status, data.timestamp, data.use, data.view, data.take);
 }
 
@@ -150,7 +150,7 @@ void PosMgrDB::UpdateBaseData(EVEPOS::StructureData& data)
 {
     DBerror err;
     sDatabase.RunQuery(err,
-        "UPDATE posStructureData SET state=%li, status=%li, timestamp=%lli WHERE itemID = %li",
+        "UPDATE posStructureData SET state=%i, status=%i, timestamp=%lli WHERE itemID = %i",
         data.state, data.status, data.timestamp, data.itemID);
 }
 
@@ -162,7 +162,7 @@ bool PosMgrDB::GetTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sDa
             " harmonic, standing, standingOwnerID, statusDrop, corpWar, allyStandings, showInCalendar,"
             " sendFuelNotifications, allowCorp, allowAlliance, password, anchor, unanchor, online, offline, status"
             " FROM posTowerData"
-            " WHERE itemID = %li", sData.itemID))
+            " WHERE itemID = %i", sData.itemID))
     {
         codelog(DATABASE__ERROR, "Error in GetTowerData query: %s", res.error.c_str());
         return false;
@@ -199,7 +199,7 @@ void PosMgrDB::SaveTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sD
         "INSERT INTO posTowerData"
         " (itemID, harmonic, standing, standingOwnerID, status, statusDrop, corpWar, allyStandings, showInCalendar,"
         " sendFuelNotifications, allowCorp, allowAlliance, anchor, unanchor, online, offline)"
-        " VALUES ( %li, %li, %f, %li, %f, %u, %u, %u, %u, %u, %u, %u, %li, %li, %li,%li)",
+        " VALUES ( %i, %i, %f, %i, %f, %u, %u, %u, %u, %u, %u, %u, %i, %i, %i,%i)",
         sData.itemID, tData.harmonic, tData.standing, tData.standingOwnerID, tData.status, tData.statusDrop, tData.corpWar, tData.allyStandings,
         tData.showInCalendar, tData.sendFuelNotifications, tData.allowCorp, tData.allowAlliance,
         tData.anchor, tData.unanchor, tData.online, tData.offline);
@@ -210,7 +210,7 @@ bool PosMgrDB::GetBridgeData(EVEPOS::JumpBridgeData& data)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT towerID, corpID, allyID, systemID, toItemID, toSystemID, toTypeID, password, allowCorp, allowAlliance"
-            " FROM posJumpBridgeData WHERE itemID = %li", data.itemID))
+            " FROM posJumpBridgeData WHERE itemID = %i", data.itemID))
         {
             codelog(DATABASE__ERROR, "Error in GetBridgeData query: %s", res.error.c_str());
             return false;
@@ -243,7 +243,7 @@ void PosMgrDB::SaveBridgeData(EVEPOS::JumpBridgeData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO posJumpBridgeData(itemID, towerID, corpID, allyID, systemID, toItemID, toTypeID, toSystemID, password, allowCorp, allowAlliance)"
-        " VALUES (%li,%li,%li,%li,%li,%li,%li,%li,'%s',%u,%u)",
+        " VALUES (%i,%i,%i,%i,%i,%i,%i,%i,'%s',%u,%u)",
         data.itemID, data.towerID, data.corpID, data.allyID, data.systemID, data.toItemID, data.toTypeID,
         data.toSystemID, escPass.c_str(), data.allowCorp, data.allowAlliance);
 }
@@ -255,8 +255,8 @@ void PosMgrDB::UpdateBridgeData(EVEPOS::JumpBridgeData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posJumpBridgeData"
-        " SET allyID=%li, toItemID=%li, toTypeID=%li, toSystemID=%li, password='%s', allowCorp=%u, allowAlliance=%u"
-        " WHERE itemID=%li",
+        " SET allyID=%i, toItemID=%i, toTypeID=%i, toSystemID=%i, password='%s', allowCorp=%u, allowAlliance=%u"
+        " WHERE itemID=%i",
         data.allyID, data.toItemID, data.toTypeID, data.toSystemID, escPass.c_str(), data.allowCorp, data.allowAlliance, data.itemID);
 }
 
@@ -265,8 +265,8 @@ void PosMgrDB::InstallBridgeLink(uint32 itemID, uint32 toSystemID, uint32 toItem
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posJumpBridgeData SET "
-        " toItemID=%li, toTypeID=27897, toSystemID=%li "
-        " WHERE itemID=%li",
+        " toItemID=%i, toTypeID=27897, toSystemID=%i "
+        " WHERE itemID=%i",
         toItemID, toSystemID, itemID);
 }
 
@@ -276,7 +276,7 @@ void PosMgrDB::UninstallBridgeLink(uint32 itemID)
     sDatabase.RunQuery(err,
         "UPDATE posJumpBridgeData SET "
         " toItemID=0, toTypeID=0, toSystemID=0 "
-        " WHERE itemID=%li",
+        " WHERE itemID=%i",
         itemID);
 }
 
@@ -286,7 +286,7 @@ void PosMgrDB::UninstallRemoteBridgeLink(uint32 itemID) //Removes a link from th
     sDatabase.RunQuery(err,
         "UPDATE posJumpBridgeData SET "
         " toItemID=0, toTypeID=0, toSystemID=0 "
-        " WHERE itemID=(SELECT toItemID FROM posJumpBridgeData WHERE itemID=%li)",
+        " WHERE itemID=(SELECT toItemID FROM posJumpBridgeData WHERE itemID=%i)",
         itemID);
 }
 
@@ -319,7 +319,7 @@ bool PosMgrDB::GetCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& o
         "SELECT ownerID, allowAlly, allowStandings, selectedHour, standingValue,"
         " corpTax, allyTax, horribleTax, badTax, neutTax, goodTax, highTax, timestamp,"
         " rotX, rotY, rotZ, orbitalHackerProgress, orbitalHackerID, state, status, level"
-        " FROM posCustomsOfficeData WHERE itemID = %li", cData.itemID))
+        " FROM posCustomsOfficeData WHERE itemID = %i", cData.itemID))
     {
         codelog(DATABASE__ERROR, "Error in GetCustomsData query: %s", res.error.c_str());
         return false;
@@ -365,7 +365,7 @@ void PosMgrDB::SaveCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& 
         "INSERT INTO posCustomsOfficeData (itemID, ownerID, allowAlly, allowStandings, selectedHour, standingValue,"
         " corpTax, allyTax, horribleTax, badTax, neutTax, goodTax, highTax, timestamp,"
         " rotX, rotY, rotZ, orbitalHackerProgress, orbitalHackerID, state, status, level)"
-        " VALUES (%u, %u, %u, %u, %u, %u, %f, %f, %f, %f, %f, %f, %f, %lli, %f, %f, %f, %f, %u, %li, %li, %li)",
+        " VALUES (%u, %u, %u, %u, %u, %u, %f, %f, %f, %f, %f, %f, %f, %lli, %f, %f, %f, %f, %u, %i, %i, %i)",
         cData.itemID, cData.ownerID, cData.allowAlliance, cData.allowStandings, cData.selectedHour, cData.standingValue,
         cData.taxRateValues[TaxValues::Corp], cData.taxRateValues[TaxValues::Alliance], cData.taxRateValues[TaxValues::StandingHorrible],
         cData.taxRateValues[TaxValues::StandingBad], cData.taxRateValues[TaxValues::StandingNeutral], cData.taxRateValues[TaxValues::StandingGood],
@@ -381,8 +381,8 @@ void PosMgrDB::UpdateCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData
         "UPDATE posCustomsOfficeData"
         " SET allowAlly=%u, allowStandings=%u, selectedHour=%u, standingValue=%u,"
         " corpTax=%f, allyTax=%f, horribleTax=%f, badTax=%f, neutTax=%f, goodTax=%f, highTax=%f, timestamp=%lli,"
-        " orbitalHackerProgress=%f, orbitalHackerID=%u, state=%li, status=%li"
-        " WHERE itemID=%li",
+        " orbitalHackerProgress=%f, orbitalHackerID=%u, state=%i, status=%i"
+        " WHERE itemID=%i",
         cData.allowAlliance, cData.allowStandings, cData.selectedHour, cData.standingValue,
         cData.taxRateValues[TaxValues::Corp], cData.taxRateValues[TaxValues::Alliance], cData.taxRateValues[TaxValues::StandingHorrible],
         cData.taxRateValues[TaxValues::StandingBad], cData.taxRateValues[TaxValues::StandingNeutral], cData.taxRateValues[TaxValues::StandingGood],
@@ -423,7 +423,7 @@ void PosMgrDB::UpdateAccess(int32 itemID, EVEPOS::TowerData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posTowerData"
-        " SET allowAlliance=%li, allowCorp=%li, password = '%s'"
+        " SET allowAlliance=%i, allowCorp=%i, password = '%s'"
         " WHERE itemID = %u", data.allowAlliance, data.allowCorp, nameEsc.c_str(), itemID);
 }
 
@@ -440,7 +440,7 @@ void PosMgrDB::UpdateNotify(int32 itemID, EVEPOS::TowerData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posTowerData"
-        " SET showInCalendar=%li, sendFuelNotifications=%li"
+        " SET showInCalendar=%i, sendFuelNotifications=%i"
         " WHERE itemID = %u", data.showInCalendar, data.sendFuelNotifications, itemID);
 }
 
@@ -449,7 +449,7 @@ void PosMgrDB::UpdateSentry(int32 itemID, EVEPOS::TowerData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posTowerData"
-        " SET standing=%f, statusDrop=%li, corpWar=%li, allyStandings=%li WHERE itemID = %u",
+        " SET standing=%f, statusDrop=%i, corpWar=%i, allyStandings=%i WHERE itemID = %u",
         data.standing, data.statusDrop, data.corpWar, data.allyStandings, itemID);
 }
 
@@ -458,7 +458,7 @@ void PosMgrDB::UpdateHarmonicAndPassword(int32 itemID, EVEPOS::TowerData& data)
     std::string nameEsc;
     sDatabase.DoEscapeString(nameEsc, data.password);
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE posTowerData SET harmonic=%li, password = '%s' WHERE itemID = %li", data.harmonic, nameEsc.c_str(), itemID);
+    sDatabase.RunQuery(err, "UPDATE posTowerData SET harmonic=%i, password = '%s' WHERE itemID = %i", data.harmonic, nameEsc.c_str(), itemID);
 }
 
 void PosMgrDB::UpdatePermission(int32 itemID, EVEPOS::TowerData& data)
@@ -466,7 +466,7 @@ void PosMgrDB::UpdatePermission(int32 itemID, EVEPOS::TowerData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posTowerData"
-        " SET allowCorp=%li, allowAlliance=%li"
+        " SET allowCorp=%i, allowAlliance=%i"
         " WHERE itemID = %u", data.allowCorp, data.allowAlliance, itemID);
 }
 
@@ -475,7 +475,7 @@ void PosMgrDB::UpdateUsageFlags(int32 itemID, EVEPOS::StructureData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posStructureData"
-        " SET canUse=%li, canView=%li, canTake=%li"
+        " SET canUse=%i, canView=%i, canTake=%i"
         " WHERE itemID = %u", data.use, data.view, data.take, itemID);
 }
 
@@ -484,6 +484,6 @@ void PosMgrDB::UpdateDeployFlags(int32 itemID, EVEPOS::TowerData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posTowerData"
-        " SET anchor=%f, unanchor=%li, online=%li, offline=%li WHERE itemID = %u",
+        " SET anchor=%f, unanchor=%i, online=%i, offline=%i WHERE itemID = %u",
         data.anchor, data.unanchor, data.online, data.offline, itemID);
 }

@@ -1609,19 +1609,19 @@ void Colony::ProcessPlants(bool& updateTimes)
                         plant->second.lastRunTime -= plant->second.cycleTime;
                     } else {
                         if (is_log_enabled(COLONY__DEBUG))
-                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - cycle incomplete (%li < %li).", delta, divisor);
+                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - cycle incomplete (%i < %i).", delta, divisor);
                         continue;
                     }
                 }
             } else {
                 if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - divisor < 0 (%li).", divisor);
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - divisor < 0 (%i).", divisor);
                 continue;
             }
             // we are doing 'batch' cycles here.  get #cycles completed based on proc times
             cycles = delta / divisor;
             if (is_log_enabled(COLONY__DEBUG))
-                _log(COLONY__DEBUG, "Colony::ProcessPlants() - current cycle count is %li (%li / %li).", \
+                _log(COLONY__DEBUG, "Colony::ProcessPlants() - current cycle count is %i (%i / %i).", \
                             cycles, delta, divisor);
 
             if (cycles < 1) {
@@ -1681,7 +1681,7 @@ void Colony::ProcessPlants(bool& updateTimes)
                     srcPin->second.contents.erase(itemItr);
                 }
                 if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Removed %li %s (%u) from src %u.", \
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Removed %i %s (%u) from src %u.", \
                             amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID, srcPin->first);
 
                 // update contents of storage pin
@@ -1711,7 +1711,7 @@ void Colony::ProcessPlants(bool& updateTimes)
                 plant->second.hasReceivedInputs = true;
 
                 if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Added %li %s (%u) to Plant Inventory.", \
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Added %i %s (%u) to Plant Inventory.", \
                             amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
             }
             // current plant has received product as defined by routing info
@@ -1770,14 +1770,14 @@ void Colony::ProcessPlants(bool& updateTimes)
                         // this required material was not sufficient quantity for (num cycles) runs.
                         // determine how many cycles we can run with current material quantity
                         if (is_log_enabled(COLONY__DEBUG))
-                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - Not enough %s (%u) for %li cycles.  Need %u, Have %u", \
+                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - Not enough %s (%u) for %i cycles.  Need %u, Have %u", \
                                     sPIDataMgr.GetProductName(mats.first), mats.first, cycles, mats.second * cycles, itemItr->second);
                         cycles2 = itemItr->second / mats.second;
                         if (cycles2 > 0) {
                             itemItr->second -= mats.second * cycles2;
                             plant->second.receivedInputsLastCycle = true;
                             if (is_log_enabled(COLONY__DEBUG))
-                                _log(COLONY__DEBUG, "Colony::ProcessPlants() - Have enough material for %li cycles.", cycles2);
+                                _log(COLONY__DEBUG, "Colony::ProcessPlants() - Have enough material for %i cycles.", cycles2);
                         } else {
                             plant->second.lastRunTime = m_procTime;
                             plant->second.state = PI::Pin::State::Idle;
@@ -1808,7 +1808,7 @@ void Colony::ProcessPlants(bool& updateTimes)
                  * this will allow routing (and subsquent process checks) on next loop, as defined in beginning of this loop
                  */
                 if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Updating timers for %li cycles using current inventory.", cycles);
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Updating timers for %i cycles using current inventory.", cycles);
 
                 plant->second.state = PI::Pin::State::Active;
                 updateTimes = true;
