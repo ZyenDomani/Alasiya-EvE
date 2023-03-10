@@ -118,7 +118,7 @@ PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
     uint8 int1 = PyRep::IntegerValueU32(call.tuple->GetItem(0));
     uint8 int2 = PyRep::IntegerValueU32(call.tuple->GetItem(1));
     if (is_log_enabled(SERVICE__CALLS))
-        sLog.Cyan( "MapService::Handle_GetHistory()", "type: %li, timeframe: %li", int1, int2 );
+        sLog.Cyan( "MapService::Handle_GetHistory()", "type: %u, timeframe: %u", int1, int2 );
 
     return MapDB::GetDynamicData(int1, int2);
 }
@@ -157,7 +157,7 @@ PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
     PyList* list = new PyList();
     DBResultRow row;
     while (res.GetRow(row)) {
-        // SELECT systemID, itemID
+        // SELECT ?
         PyTuple* tuple = new PyTuple(2);
         tuple->SetItem(0, new PyInt(row.GetInt(0)));
         tuple->SetItem(1, new PyInt(row.GetInt(1)));
@@ -201,20 +201,20 @@ PyResult MapService::Handle_GetAllianceBeacons(PyCallArgs &call)
 PyResult MapService::Handle_GetCurrentSovData(PyCallArgs &call)
 {/**
     data = sm.RemoteSvc('map').GetCurrentSovData(constellationID)
-    returns locationID, ?
-    return sm.RemoteSvc('map').GetCurrentSovData(locationID)
+    returns locationHeader, items {allianceID*None*, stationCount*outposts*, locationID}
+    return sm.RemoteSvc('map').GetCurrentSovData(locationID)    <<-- locID is not solSystem here
     */
-    sLog.Warning( "MapService::Handle_GetCurrentSovData()", "size= %lu", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
-    return svDataMgr.GetCurrentSovData(args.arg);
+    // this is started but needs work.  cannot build command center in empire
+    //return svDataMgr.GetCurrentSovData(args.arg);
+    return PyStatic.NewNone();
 }
+
 PyResult MapService::Handle_GetRecentSovActivity(PyCallArgs &call)
 {
     /** @todo will have to make db table for this one.  */
@@ -241,9 +241,7 @@ PyResult MapService::Handle_GetRecentSovActivity(PyCallArgs &call)
      *
      */
 
-    PyDict* result = new PyDict();
-
-    return result;
+    return PyStatic.mtDict();
 }
 
 //   DED Agent Site Report
@@ -252,9 +250,8 @@ PyResult MapService::Handle_GetDeadspaceAgentsMap(PyCallArgs &call)
         dungeons = sm.RemoteSvc('map').GetDeadspaceAgentsMap(eve.session.languageID)
         solarSystemID, dungeonID, difficulty, dungeonName = dungeons
 */
-    PyRep *result = new PyDict();
 
-    return result;
+    return PyStatic.mtDict();
 }
 
 //  DED Deadspace Report
@@ -269,9 +266,8 @@ PyResult MapService::Handle_GetDeadspaceComplexMap(PyCallArgs &call)
 */
     sLog.Warning( "MapService::Handle_GetDeadspaceComplexMap()", "size= %lu", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-    PyRep *result = new PyDict();
 
-    return result;
+    return PyStatic.mtDict();
 }
 
 PyResult MapService::Handle_GetSystemsInIncursions(PyCallArgs &call) {
@@ -402,15 +398,6 @@ PyResult MapService::Handle_GetStuckSystems(PyCallArgs &call)
     sLog.Warning( "MapService::Handle_GetStuckSystems()", "size= %lu", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    uint8 none = 0;
-
-    PyTuple* res = NULL;
-    PyTuple* tuple0 = new PyTuple( 1 );
-
-    tuple0->items[ 0 ] = new PyInt( none );
-
-    res = tuple0;
-
-    return res;
+    return PyStatic.mtTuple();
 }
 

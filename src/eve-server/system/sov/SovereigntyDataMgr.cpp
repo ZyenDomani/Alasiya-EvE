@@ -208,7 +208,7 @@ PyRep *SovereigntyDataMgr::GetCurrentSovData(uint32 locationID)
 {
     DBRowDescriptor *header = new DBRowDescriptor();
     header->AddColumn("locationID", DBTYPE_I4);
-    header->AddColumn("allianceID", DBTYPE_I4);
+    header->AddColumn("allianceID", DBTYPE_I4); // can be None 
     header->AddColumn("stationCount", DBTYPE_I2);
     header->AddColumn("militaryPoints", DBTYPE_I2);
     header->AddColumn("industrialPoints", DBTYPE_I2);

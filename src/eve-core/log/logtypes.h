@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 10.7
+ Log Version: 10.8
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -270,6 +270,7 @@ LOG_TYPE( DESTINY, MOVE_DEBUG, DISABLED, "MoveDebug" )
 LOG_TYPE( DESTINY, TURN_TRACE, DISABLED, "TurnTrace" )
 LOG_TYPE( DESTINY, TURN_DEBUG, DISABLED, "TurnDebug" )
 LOG_TYPE( DESTINY, WARP_TRACE, DISABLED, "WarpTrace" )
+LOG_TYPE( DESTINY, WARP_DEBUG, DISABLED, "TurnDebug" )
 LOG_TYPE( DESTINY, ORBIT_TRACE, DISABLED, "OrbitTrace" )
 
 LOG_CATEGORY( DRONE )
