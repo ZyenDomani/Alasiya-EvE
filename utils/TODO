@@ -14,6 +14,7 @@ Altahirs contract code
 james sov code
 lp implemented (unknown quality)
 other updates?
+eve# liveupdates
 
 
 *******************************************************
@@ -22,11 +23,10 @@ other updates?
 
 
 !! destiny (all space movement)
--- even with heading identical (client and server) there is still some deviation after turning...i dont understand where its from
 
 
 market --  some queries dont work...sending price data returns null
-
+    - no clue how to fix this
 
 ships  ---  attrAgility will need to be recalc'd and reset anytime inertia or mass changes.
   - does this include adding/dropping ore, items, loot, drones?  what about the large PI items?
@@ -62,8 +62,6 @@ lsc system better, but incomplete and needs revisiting    -priority level: med-h
 
 request for smartbombs...lol  cause i dont have enough to work on
 
-**** weapon hardpoints not decreasing  (may be fixed)
-
 loading probes in station does not update count in hangar
 
 noob ships do not Init() correctly....  most attrs are 0
@@ -91,10 +89,8 @@ dungeon deco items need better placement
 
 ship warp speed on attributes tab is wrong
 
-
 error:
 "turret not fitted on shipID (npc)"
-
 
 
 char creation - figure certs and set skills accordingly
@@ -125,10 +121,6 @@ entire Inv codebase is slow.  loading chars (and their inventory) is biggest bot
 
 InventoryItem - multiple remove calls....trace and fix
 
-character/client/item data
-    there are still multiple calls to set item position and other data.
-    this shit needs to be sorted to a single common place....i thought i fixed that shit already....
-
 Coverity found more shit
 ImageServer::GetImage - fclose(fp)
 temp object going out of scope - return (uptime.str().c_str());
@@ -138,8 +130,8 @@ go thru entire codebase and determine where variable precision is needed and adj
 while you're at it, verify member initialization is correct.  i know destiny isnt (and it's member list is huge)
 	- im sure its not the only one...but some (or most) of my 'newer' classes should be right (at least a lot closer).
 
-remove GPoint/GVector code and replace with evemoo's Vec3 code (after thorough review)  or just write my own.
-    - float/double not needed and math on those are expensive.  replace with int64
+remove GPoint/GVector code and just write my own.
+    - float/double not needed and math on those are expensive.  replace with int64?
     - note:  client logs show all position data is pyfloat (some float.7, some double.15)  but i see no point of needing decimeter (or higher) precision.
 
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
@@ -212,7 +204,7 @@ RAM code - implement invention, re    -priority level: low
     - (LocationRolesCheck) - incomplete
     - (ItemLocationCheck)  unfinished for POS/Outpost
     - (InstallationCheck)  - incomplete
-    - add Almanu's cal'c fix from official
+    - add Almanu's cal'c fix from official?
 
 blueprints - look over data and verify
     - LPRR = -11??
@@ -411,7 +403,6 @@ there is a lot more to machonet than we currently have coded/working....
     - narrowcast is for notification types of "broadcast" using "bcast_idtype"
 
 look into removing xmlp encode() for things we can build in code
-
 
 *******************************************************
 *******************************************************
