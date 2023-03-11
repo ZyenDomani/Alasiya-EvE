@@ -1215,21 +1215,10 @@ public:
     {
     }
 
-   ~pyStatic()
-   {
-       PyDecRef(m_none);
-       PyDecRef(m_zero);
-       PyDecRef(m_one);
-       PyDecRef(m_negone);
-       PyDecRef(m_true);
-       PyDecRef(m_false);
-       PyDecRef(m_dict);
-       PyDecRef(m_list);
-       PyDecRef(m_tuple);
-    }
+   ~pyStatic();
 
     void Init()                 { /* just to create object */ }
-    
+
     PyRep* NewNone()            { PyIncRef(m_none); return m_none; }
     PyRep* NewZero()            { PyIncRef(m_zero); return m_zero; }
     PyRep* NewOne()             { PyIncRef(m_one); return m_one; }

@@ -1132,7 +1132,7 @@ void DestinyManager::Follow() {
         if (m_autoPilot) {
             if (m_userSpeedFraction > 0.1f)
                 SetSpeedFraction(0.1);
-            _log(AUTOPILOT__TRACE, "DM::Follow() - targetDistance: %im, FollowDistance: %um.  usf: %.2f.  asf: %.2f", \
+            _log(AUTOPILOT__TRACE, "DM::Follow() - targetDistance: %lim, FollowDistance: %um.  usf: %.2f.  asf: %.2f", \
                 m_targetDistance, m_followDistance, m_userSpeedFraction, m_activeSpeedFraction);
         } else if (m_tractored) {
     /* this will allow following entities to keep their follow state, yet stop movement if within their follow distance.
@@ -2019,7 +2019,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         double capNeeded = mySE->GetSelf()->GetAttribute(AttrMass).get_float() * m_warpCapacitorNeed * (m_targetDistance / ONE_AU_IN_METERS);
         capNeeded *= (1.0f - (0.1f * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
 
-        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %llim (%iAU) is %f", \
+        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %llim (%liAU) is %f", \
             mySE->GetName(), mySE->GetID(), m_targetDistance, (m_targetDistance / ONE_AU_IN_METERS), capNeeded);
 
         // set min cap need to 1.0

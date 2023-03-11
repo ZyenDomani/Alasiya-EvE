@@ -243,17 +243,19 @@ void PyRep::DecRef() const
         //EvE::traceStackLN();        // this is painfully slow
         EvE::traceStack();
     }
+    
+    --mRefCount;
     // hacked until i dig into memMgmt again...
     return;
-
+/*
     assert( mDeleted == false );
     assert(mRefCount > 0);
-    --mRefCount;
 
     _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
 
     if (mRefCount < 1)
         delete this;
+    */
 }
 
 
@@ -1479,4 +1481,16 @@ PyTuple* new_tuple(PyRep* arg1, PyRep* arg2, PyRep* arg3)
         res->SetItem(1, arg2);
         res->SetItem(2, arg3);
     return res;
+}
+
+pyStatic::~pyStatic() {
+    SafeDelete(m_none);
+    SafeDelete(m_zero);
+    SafeDelete(m_one);
+    SafeDelete(m_negone);
+    SafeDelete(m_true);
+    SafeDelete(m_false);
+    SafeDelete(m_dict);
+    SafeDelete(m_list);
+    SafeDelete(m_tuple);
 }
