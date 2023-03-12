@@ -454,7 +454,7 @@ protected:
     void _SendCallReturn( const PyAddress& source, int64 callID, PyResult& rsp);
     void _SendPingResponse( const PyAddress& source, int64 callID );
 
-    bool Handle_CallReq( PyPacket* packet, PyCallStream& req );
+    bool Handle_CallReq( PyPacket* packet, PyCallStream* req );
     bool Handle_Notify( PyPacket* packet );
     bool Handle_PingReq( PyPacket* packet )             { _SendPingResponse( packet->dest, packet->source.callID ); return true; }
     bool Handle_PingRsp( PyPacket* packet )             { /* do nothing */ return true; }

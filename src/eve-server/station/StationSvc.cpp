@@ -63,15 +63,20 @@ PyResult StationSvc::Handle_GetSolarSystem(PyCallArgs &call) {
         return nullptr;
     }
 
-    ObjectCachedMethodID method_id(GetName(), "GetSolarSystem");
-
+    //    segfaults with new memmgmt code testing  11Mar23
+    std::string method_name ("GetSolarSystem_");
+    method_name += std::to_string(arg.arg);
+    ObjectCachedMethodID method_id(GetName(), method_name.c_str());
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        PyPackedRow *t = SystemDB::GetSolarSystemPackedRow(arg.arg);
-
-        m_manager->cache_service->GiveCache(method_id, (PyRep **)&t);
+        PyRep* result = SystemDB::GetSolarSystemPackedRow(arg.arg);
+        m_manager->cache_service->GiveCache(method_id, &result);
     }
 
     return m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+
+
+    /** @todo  update this to NOT hit db when called... */
+    //return SystemDB::GetSolarSystemPackedRow(arg.arg);
 }
 
 PyResult StationSvc::Handle_GetStation(PyCallArgs &call) {

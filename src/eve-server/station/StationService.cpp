@@ -38,22 +38,10 @@ StationService::StationService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(StationService, GetGuests);
-    PyCallable_REG_CALL(StationService, GetSolarSystem);
 }
 
 StationService::~StationService() {
     delete m_dispatch;
-}
-
-PyResult StationService::Handle_GetSolarSystem(PyCallArgs &call) {
-    SingleIntegerArg arg;
-    if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return nullptr;
-    }
-
-    // this needs to return some cache status?
-    return new PyObject("util.CachedObject", new PyInt(arg.arg));
 }
 
 PyResult StationService::Handle_GetGuests(PyCallArgs &call) {
@@ -61,12 +49,12 @@ PyResult StationService::Handle_GetGuests(PyCallArgs &call) {
     sEntityList.GetStationGuestList(call.client->GetStationID(), clients);
     PyList* res = new PyList();
     for (auto &cur : clients) {
-        PyTuple* t = new PyTuple(4);
-            t->items[0] = new PyInt(cur->GetCharacterID());
-            t->items[1] = new PyInt(cur->GetCorporationID());
-            t->items[2] = new PyInt(cur->GetAllianceID());
-            t->items[3] = new PyInt(cur->GetWarFactionID());
-        res->AddItem(t);
+        PyTuple* tuple = new PyTuple(4);
+            tuple->items[0] = new PyInt(cur->GetCharacterID());
+            tuple->items[1] = new PyInt(cur->GetCorporationID());
+            tuple->items[2] = new PyInt(cur->GetAllianceID());
+            tuple->items[3] = new PyInt(cur->GetWarFactionID());
+        res->AddItem( tuple );
     }
 
     return res;

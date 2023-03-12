@@ -51,8 +51,6 @@ EVEClientSession::~EVEClientSession() {
 }
 
 void EVEClientSession::Reset() {
-    // this is deleted already at this point...
-    //PySafeDecRef(mRep);
     mPacketHandler = nullptr;
 
     // Connection has been lost, there's no point in reset

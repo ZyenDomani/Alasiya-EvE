@@ -1801,7 +1801,7 @@ void Client::CharNoLongerInStation() {
         PyIncRef(tmp);
         cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp); //consumed
     }
-    PyDecRef(tmp);
+    //PyDecRef(tmp);
 
     // delete current station data
     m_stationData = StationData();
@@ -1818,10 +1818,10 @@ void Client::CharNowInStation() {
     std::vector<Client*> clients;
     sEntityList.GetStationGuestList(m_locationID, clients);
     for (auto &cur : clients) {
-        PySafeIncRef(tmp);
+        PyIncRef(tmp);
         cur->SendNotification("OnCharNowInStation", "stationid", &tmp);
     }
-    PySafeDecRef(tmp);
+    //PyDecRef(tmp);
 }
 
 /**********************************************************************
@@ -2090,7 +2090,7 @@ void Client::QueueDestinyEvent(PyTuple** event) {
     if (is_log_enabled(CLIENT__QUEUE_DUMP))
         (*event)->Dump(CLIENT__QUEUE_DUMP, "");
     m_destinyEventQueue->AddItem(*event);
-    //PyDecRef(*event);
+    ////PyDecRef(*event);
 }
 
 void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool IsSetState /*false*/) {
@@ -2124,7 +2124,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             dum.waitForBubble = m_bubbleWait;
         PyTuple* t = dum.Encode();
         SendNotification("DoDestinyUpdate", "clientID", &t, false);
-        PyDecRef(t);
+        //PyDecRef(t);
     } else {
         act.update = *update;
         m_packaged = true;
@@ -2132,6 +2132,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
     }
     // do i need to clean up *update here?
     //PySafeDecRef(*update);
+    //SafeDelete(update);
 }
 
 void Client::_SendQueuedUpdates() {
@@ -2572,7 +2573,7 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
 /************************************************************************/
 /* EVEPacketDispatcher interface                                        */
 /************************************************************************/
-bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
+bool Client::Handle_CallReq(PyPacket* packet, PyCallStream* req)
 {
     double profileStartTime(GetTimeUSeconds());
 
@@ -2580,8 +2581,8 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     if (packet->dest.service == "") {
         //bound object
         uint32 nodeID = 0, bindID = 0;
-        if (sscanf(req.remoteObjectStr.c_str(), "N=%u:%u", &nodeID, &bindID) != 2) {
-            sLog.Error("Client::CallReq","Failed to parse bind string '%s'.", req.remoteObjectStr.c_str());
+        if (sscanf(req->remoteObjectStr.c_str(), "N=%u:%u", &nodeID, &bindID) != 2) {
+            sLog.Error("Client::CallReq","Failed to parse bind string '%s'.", req->remoteObjectStr.c_str());
             return false;
         }
 
@@ -2606,11 +2607,11 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     }
 
     //build arguments
-    PyCallArgs args(this, req.arg_tuple, req.arg_dict);
+    PyCallArgs args(this, req->arg_tuple, req->arg_dict);
 
     //parts of call may be consumed here
     m_canThrow = true;      // test for throwable.  -allan 29Jul16      should we use try/catch here?   yes
-    PyResult result(dest->Call(req.method, args));
+    PyResult result(dest->Call(req->method, args));
     m_canThrow = false;
 
     SendSessionChange();  //send out the session change before the return.
@@ -2626,6 +2627,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::clientCall, GetTimeUSeconds() - profileStartTime);
 
+    SafeDelete(req);
     return true;
 }
 

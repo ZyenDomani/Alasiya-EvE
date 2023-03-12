@@ -65,22 +65,24 @@ CorpBookmarkMgr::~CorpBookmarkMgr()
 
 PyResult CorpBookmarkMgr::Handle_GetBookmarks(PyCallArgs& call)
 {
-    /*
-    ObjectCachedMethodID method_id(GetName(), "GetBookmarks");
+    //  segfaults with new memmgmt code testing  11Mar23
+    PyRep* result(nullptr);
+    std::string method_name ("GetBookmarks_");
+    method_name += std::to_string(call.client->GetCorporationID());
+    ObjectCachedMethodID method_id(GetName(), method_name.c_str());
+    //check to see if this method is in the cache already.
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
+        //this method is not in cache yet, load up the contents and cache it
         PyTuple *tuple = new PyTuple(2);
-            tuple->SetItem(0, m_db.GetBookmarks(call.client->GetCorporationID()));
-            tuple->SetItem(1, m_db.GetFolders(call.client->GetCorporationID()));
-        PyRep* rep = tuple;
-
-        m_manager->cache_service->GiveCache(method_id, &rep);
+        tuple->SetItem(0, m_db.GetBookmarks(call.client->GetCorporationID()));
+        tuple->SetItem(1, m_db.GetFolders(call.client->GetCorporationID()));
+        result = tuple;
+        m_manager->cache_service->GiveCache(method_id, &result);
     }
 
-    return(m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id));
-    */
-    PyTuple* result = new PyTuple(2);
-    result->SetItem(0, m_db.GetBookmarks(call.client->GetCorporationID()));
-    result->SetItem(1, m_db.GetFolders(call.client->GetCorporationID()));
+    //now we know its in the cache one way or the other, so build a
+    //cached object cached method call result.
+    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
     result->Dump(BOOKMARK__RSP_DUMP, "    ");
     return result;
 }

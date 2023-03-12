@@ -87,17 +87,18 @@ FactionWarMgrService::~FactionWarMgrService()
     delete m_dispatch;
 }
 
+/** @todo  cache isnt working with memmgmt update  11Mar23  */
 PyResult FactionWarMgrService::Handle_GetWarFactions(PyCallArgs &call) {
+    /*
     ObjectCachedMethodID method_id(GetName(), "GetWarFactions");
-
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
         PyRep *res = m_db.GetWarFactions();
-        if (res == NULL)
-            return nullptr;
         m_manager->cache_service->GiveCache(method_id, &res);
     }
 
     return m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+    */
+    return m_db.GetWarFactions();
 }
 
 PyResult FactionWarMgrService::Handle_GetFWSystems( PyCallArgs& call )
@@ -118,18 +119,14 @@ PyResult FactionWarMgrService::Handle_GetFWSystems( PyCallArgs& call )
             [PyString "factionID"]
             [PyInt 500004]
             */
-    ObjectCachedMethodID method_id( GetName(), "GetFacWarSystems" );
 
-    if ( !m_manager->cache_service->IsCacheLoaded( method_id ) )
-    {
+    ObjectCachedMethodID method_id(GetName(), "GetFacWarSystems");
+    if (!m_manager->cache_service->IsCacheLoaded(method_id))     {
         PyRep* res = m_db.GetFacWarSystems();
-        if ( res == NULL )
-            return nullptr;
-
-        m_manager->cache_service->GiveCache( method_id, &res );
+        m_manager->cache_service->GiveCache(method_id, &res);
     }
 
-    return m_manager->cache_service->MakeObjectCachedMethodCallResult( method_id );
+    return m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
 }
 
 /**     ***********************************************************************

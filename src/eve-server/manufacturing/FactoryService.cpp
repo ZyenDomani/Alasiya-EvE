@@ -85,7 +85,7 @@ PyResult FactoryService::Handle_GetBlueprintAttributes(PyCallArgs &call) {
 }
 
 PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call) {
-    // this is the material and manuf tab of bp.  -working  allan 1Jan17
+    // this is the material and manuf tab of bp.  -working  allan 1Jan17        -broken  before now 11Mar23
 	SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Failed to decode args.");

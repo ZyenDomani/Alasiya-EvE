@@ -32,7 +32,6 @@ PyCallable::PyCallable()
 {
 }
 
-
 PyResult PyCallable::Call(const std::string &method, PyCallArgs &args) {
     //call the dispatcher, capturing the result.
     try {
@@ -57,22 +56,21 @@ PyCallArgs::PyCallArgs(Client *c, PyTuple* tup, PyDict* dict)
 : client(c),
   tuple(tup)
 {
-   // PyIncRef( tup );
-    for (PyDict::const_iterator cur = dict->begin(); cur != dict->end(); cur++) {
+    for (PyDict::const_iterator cur = dict->begin(); cur != dict->end(); ++cur) {
         if (!cur->first->IsString()) {
             _log(SERVICE__ERROR, "Non-string key in call named arguments. Skipping.");
             cur->first->Dump(SERVICE__ERROR, "    ");
             continue;
         }
         PyIncRef( cur->second );
-        byname[ cur->first->AsString()->content() ] = cur->second;
+        byname[cur->first->AsString()->content()] = cur->second;
     }
 }
 
 PyCallArgs::~PyCallArgs() {
-    PySafeDecRef( tuple );
+    //PySafeDecRef( tuple );
     for (auto &cur : byname)
-        PySafeDecRef( cur.second );
+        PySafeDecRef(cur.second);
 }
 
 void PyCallArgs::Dump(LogType type) const {
@@ -91,32 +89,35 @@ void PyCallArgs::Dump(LogType type) const {
 }
 
 /* PyResult */
-PyResult::PyResult() : ssResult( nullptr ), ssNamedResult( nullptr ) {}
+PyResult::PyResult() : ssResult(nullptr), ssNamedResult(nullptr) {}
 PyResult::PyResult(PyRep* result)
 : ssResult(result != nullptr ? result : PyStatic.NewNone()),
-ssNamedResult( nullptr )
+ssNamedResult(nullptr)
 {}
 PyResult::PyResult(PyRep* result, PyDict* namedResult)
 : ssResult(result != nullptr ? result : PyStatic.NewNone()),
 ssNamedResult(namedResult)
 {}
 
-PyResult::PyResult( const PyResult& oth ) : ssResult( nullptr ), ssNamedResult( nullptr ) { *this = oth; }
-//PyResult::~PyResult() { PySafeDecRef( ssResult ); PySafeDecRef( ssNamedResult ); }
+PyResult::PyResult(const PyResult& oth) : ssResult(nullptr), ssNamedResult(nullptr) { *this = oth; }
+PyResult::~PyResult() {
+    //PySafeDecRef( ssResult );
+    //PySafeDecRef( ssNamedResult );
+}
 
-PyResult& PyResult::operator=( const PyResult& oth )
+PyResult& PyResult::operator=(const PyResult& oth)
 {
-    PySafeDecRef( ssResult );
-    if (oth.ssResult != nullptr ) {
-        ssResult = oth.ssResult;
-    } else {
+    PySafeDecRef(ssResult);
+    PySafeIncRef(oth.ssResult);
+    if (oth.ssResult == nullptr ) {
         ssResult = PyStatic.NewNone();
+    } else {
+        ssResult = oth.ssResult;
     }
-    //PySafeIncRef( ssResult );
 
-    PySafeDecRef( ssNamedResult );
+    PySafeDecRef(ssNamedResult);
+    PySafeIncRef(oth.ssNamedResult);
     ssNamedResult = oth.ssNamedResult;
-    //PySafeIncRef( ssNamedResult );
 
     return *this;
 }

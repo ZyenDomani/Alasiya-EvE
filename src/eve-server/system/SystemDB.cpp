@@ -57,6 +57,7 @@ PyObject* SystemDB::ListJumps(uint32 gateID) {
 
 PyPackedRow* SystemDB::GetSolarSystemPackedRow(uint32 systemID) {
     DBQueryResult res;
+    /* old query
     if (!sDatabase.RunQuery(res,
         "SELECT "
         " mss.solarSystemID,"
@@ -75,11 +76,23 @@ PyPackedRow* SystemDB::GetSolarSystemPackedRow(uint32 systemID) {
     {
         codelog(DATABASE__ERROR, "Error in GetSolarSystem query: %s", res.error.c_str());
         return nullptr;
+    } */
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT "
+        " constellationID,"
+        " factionID,"
+        " regionID"
+        " FROM mapSolarSystems"
+        " WHERE solarSystemID=%u", systemID ))
+    {
+        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: %s", res.error.c_str());
+        return nullptr;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: no solarsystem for id %u", systemID);
+        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: no solSystem data for id %u", systemID);
         return nullptr;
     }
 

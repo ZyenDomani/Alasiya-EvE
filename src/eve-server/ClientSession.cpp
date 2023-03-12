@@ -202,11 +202,11 @@ void ClientSession::_Set(const char* name, PyRep* value)
 
     PyRep* current(tuple->GetItem(1)); // copy c'tor
     if (value->hash() != current->hash()) {
-        tuple->SetItem(0, current); 
+        tuple->SetItem(0, current);
         tuple->SetItem(1, value);
         tuple->SetItem(2, PyStatic.NewTrue());
         mDirty = true;
-    } else {
-        PyDecRef(value);
-    }
+    } //else {
+      //  PyDecRef(value);
+    //}
 }

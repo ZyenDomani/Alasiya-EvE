@@ -30,7 +30,9 @@
 #include "packets/AccountPkts.h"
 #include "packets/General.h"
 #include "python/PyPacket.h"
+// may not need this one
 #include "python/PyVisitor.h"
+#include "python/PyDumpVisitor.h"
 #include "python/PyRep.h"
 
 bool EVEPacketDispatcher::DispatchPacket(PyPacket* packet)
@@ -61,10 +63,15 @@ bool EVEPacketDispatcher::DispatchPacket(PyPacket* packet)
                 return false;
             }
 
-            return Handle_CallReq(packet, call);
+            return Handle_CallReq(packet, call.Clone());
         }
         case CALL_RSP: {
             //TODO: decode substream in tuple
+            if (is_log_enabled(SERVICE__CALL_DUMP)) {
+                _log(SERVICE__CALL_DUMP, "Call_RSP packet:");
+                PyLogDumpVisitor dumper(SERVICE__CALL_DUMP, SERVICE__CALL_DUMP);
+                packet->Dump(SERVICE__CALL_DUMP, dumper);
+            }
 
             return Handle_CallRsp(packet);
         }
@@ -114,7 +121,7 @@ bool EVEPacketDispatcher::Handle_AuthenticationRsp(PyPacket* packet, Authenticat
     return false;
 }
 
-bool EVEPacketDispatcher::Handle_CallReq(PyPacket* packet, PyCallStream& req)
+bool EVEPacketDispatcher::Handle_CallReq( PyPacket* packet, PyCallStream* req )
 {
     sLog.Error("EVEPacketDispatcher","Unhandled Call Request");
     return false;

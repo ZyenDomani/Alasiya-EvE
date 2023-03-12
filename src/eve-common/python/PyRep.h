@@ -204,6 +204,8 @@ public:
     static uint32 IntegerValueU32(PyRep* pRep);// None returns 0. Returned as unsigned 32b int
     // this is used when PyRep can be Int, Long, Float or None
     static int32 IntegerValueI32(PyRep* pRep);// None returns 0. Returned as signed 32b int
+    // uses any numeric value.  string data is compared to on/true/off/false.  None return false.
+    static bool GetBool(PyRep* pRep);
 
     // no default c'tor
     // base c'tor
@@ -238,7 +240,7 @@ protected:
     const PyType		mType;
 
     /// Reference count of instance.
-    mutable uint16              mRefCount;
+    mutable int                 mRefCount;
     mutable bool                mDeleted;
 };
 

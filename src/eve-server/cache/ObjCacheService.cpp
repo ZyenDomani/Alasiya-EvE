@@ -138,6 +138,8 @@ const char *const ObjCacheService::CharCreateNewExtraCachableObjects[] = {
 };
 const uint32 ObjCacheService::CharCreateNewExtraCachableObjectCount = sizeof(ObjCacheService::CharCreateNewExtraCachableObjects) / sizeof(const char *);
 
+
+
 PyCallable_Make_InnerDispatcher(ObjCacheService)
 
 ObjCacheService::ObjCacheService(PyServiceMgr *mgr, const char *cacheDir)
@@ -290,16 +292,13 @@ PyResult ObjCacheService::Handle_GetCachableObject(PyCallArgs &call) {
     }
     */
 
-    PyObject *result = m_cache.GetCachedObject(args.objectID);
-
-    return result;
+    return m_cache.GetCachedObject(args.objectID);
 }
 
 void ObjCacheService::PrimeCache()
 {
     CacheKeysMapConstItr cur = m_cacheKeys.begin();
-    for(; cur != m_cacheKeys.end(); cur++)
-    {
+    for(; cur != m_cacheKeys.end(); ++cur) {
         PyString* str = new PyString( cur->first );
         _LoadCachableObject( str );
         PyDecRef( str );
@@ -320,13 +319,9 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
     const std::string objectID_string = CachedObjectMgr::OIDToString(objectID);
 
     if (!m_cacheDir.empty())
-    {
-        if ( m_cache.LoadCachedFromFile( m_cacheDir, objectID ) )
-        {
-            _log( CACHE__INFO, "Loaded cached object '%s' from file.", objectID_string.c_str() );
+        if (m_cache.LoadCachedFromFile( m_cacheDir, objectID))
+            _log( CACHE__INFO, "Loaded cached object '%s' from file.", objectID_string.c_str());
             return true;
-        }
-    }
 
     //first try to generate it from the database...
     //we go to the DB with a string, not a rep
@@ -338,9 +333,9 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
         //failed to query from the database... fall back to old
         //hackish file loading.
         PySubStream* ss = m_cache.LoadCachedFile( objectID_string.c_str() );
-        if ( ss == nullptr )
-        {
+        if ( ss == nullptr ) {
             _log(CACHE__ERROR, "Failed to create or load cache file for '%s'", objectID_string.c_str());
+            PyDecRef(cache);
             return false;
         }
 
@@ -349,8 +344,7 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
     }
 
     //if we have a cache dir, write out the cache entry:
-    if (!m_cacheDir.empty())
-    {
+    if (!m_cacheDir.empty()) {
         if (!m_cache.SaveCachedToFile(m_cacheDir, objectID)) {
             sLog.Error( "ObjCacheService", "Failed to save cache file for '%s' in '%s'", objectID_string.c_str(), m_cacheDir.c_str() );
         } else {
@@ -358,6 +352,7 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
         }
     }
 
+    PyDecRef(cache);
     return true;
 }
 

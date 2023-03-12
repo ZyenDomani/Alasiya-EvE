@@ -44,7 +44,7 @@ protected:
     virtual bool Handle_AuthenticationReq( PyPacket* packet, AuthenticationReq& req );
     virtual bool Handle_AuthenticationRsp( PyPacket* packet, AuthenticationRsp& rsp );
 
-    virtual bool Handle_CallReq( PyPacket* packet, PyCallStream& req );
+    virtual bool Handle_CallReq( PyPacket* packet, PyCallStream* req );
     virtual bool Handle_CallRsp( PyPacket* packet );
     virtual bool Handle_ErrorResponse( PyPacket* packet, ErrorResponse& error );
 

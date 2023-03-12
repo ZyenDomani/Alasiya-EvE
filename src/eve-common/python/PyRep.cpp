@@ -211,11 +211,56 @@ int32 PyRep::IntegerValueI32 ( PyRep* pRep ) {
     return 0;
 }
 
+bool PyRep::GetBool(PyRep* pRep) {
+    if (pRep == nullptr) {
+        return false;
+    }
+    if (pRep->IsInt()) {
+        return (pRep->AsInt()->value() != 0);
+    }
+    if (pRep->IsLong()) {
+        return (pRep->AsLong()->value() != 0);
+    }
+    if (pRep->IsFloat()) {
+        return (pRep->AsFloat()->value() != 0);
+    }
+    if (pRep->IsBool()) {
+        return pRep->AsBool()->value();
+    }
+    if (pRep->IsString()) {
+        if (pRep->AsString()->content().compare("true"))
+            return true;
+        if (pRep->AsString()->content().compare("on"))
+            return true;
+        if (pRep->AsString()->content().compare("false"))
+            return false;
+        if (pRep->AsString()->content().compare("off"))
+            return false;
+        return false;
+    }
+    if (pRep->IsWString()) {
+        if (pRep->AsWString()->content().compare("true"))
+            return true;
+        if (pRep->AsWString()->content().compare("on"))
+            return true;
+        if (pRep->AsWString()->content().compare("false"))
+            return false;
+        if (pRep->AsWString()->content().compare("off"))
+            return false;
+        return false;
+    }
+    if (pRep->IsNone()) {
+        return false;
+    }
+
+    return false;
+}
+
 void PyRep::IncRef() const
 {
 
     if (mDeleted) {
-        _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %u", mRefCount);
+        _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %i", mRefCount);
         EvE::traceStack();
         //return;
     }
@@ -223,8 +268,8 @@ void PyRep::IncRef() const
         _log(REFPTR__ERROR, "IncRef() - mRefCount = 0.");
         EvE::traceStack();
     }
-    assert( mDeleted == false );
-    assert(mRefCount > 0);
+    //assert( mDeleted == false );
+    //assert(mRefCount > 0);
     ++mRefCount;
     _log(REFPTR__INC, "IncRef() on %s.  Count is %u", TypeString(), mRefCount);
 }
@@ -233,29 +278,29 @@ void PyRep::DecRef() const
 {
 
     if (mDeleted) {
-        _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %u", mRefCount);
-        //EvE::traceStackLN();        // this is painfully slow
-        EvE::traceStack();
-        //return;
+        sLog.Error("DecRef()", "%s already deleted.", TypeString());
+        _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %i", mRefCount);
+        EvE::traceStackLN();        // this is painfully slow
+        //EvE::traceStack();
+        return;
     }
-    if (mRefCount == 0) {
-        _log(REFPTR__ERROR, "DecRef() - mRefCount = 0.");
-        //EvE::traceStackLN();        // this is painfully slow
-        EvE::traceStack();
-    }
-    
+
     --mRefCount;
-    // hacked until i dig into memMgmt again...
-    return;
-/*
-    assert( mDeleted == false );
-    assert(mRefCount > 0);
+
+    if (mRefCount < 0) {
+        _log(REFPTR__ERROR, "DecRef() - Count for %s is %i", TypeString(), mRefCount);
+        EvE::traceStackLN();        // this is painfully slow
+        //EvE::traceStack();
+        return;
+    }
+
+    //assert( mDeleted == false );
+    //assert(mRefCount > 0);
 
     _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
 
-    if (mRefCount < 1)
-        delete this;
-    */
+    //if (mRefCount < 1)
+    //    delete this;
 }
 
 
@@ -413,7 +458,7 @@ int32 PyFloat::hash() const
             if (plong == nullptr)
                 return -1;
             x = plong->hash();
-            PyDecRef(plong);
+            //PyDecRef(plong);
             return x;
         }
         /* Fits in a C long == a Python int, so is its own hash. */
@@ -869,7 +914,7 @@ void PyDict::clear()
 {
     iterator cur = items.begin(), end = items.end();
     for (; cur != end; cur++) {
-        PyDecRef(cur->first);
+        //PyDecRef(cur->first);
         PySafeDecRef(cur->second);
     }
 
@@ -893,7 +938,7 @@ PyRep* PyDict::GetItemString(const char* key) const
 
     PyString* str = new PyString(key);
     PyRep* res = GetItem(str);
-    PyDecRef(str);
+    //PyDecRef(str);
 
     return res;
 }
@@ -917,7 +962,7 @@ void PyDict::SetItem(PyRep* key, PyRep* value)
         // should we decRef key,value here?
     } else {
         // We found 'key' in current dict, so use itr->first and decRef sent 'key'.
-        PyDecRef(key);
+        //PyDecRef(key);
         // decRef existing value and Replace with new value.
         PySafeDecRef(itr->second);
         if (value == nullptr) {
@@ -1249,7 +1294,7 @@ bool PyPackedRow::visit(PyVisitor& v) const
 bool PyPackedRow::SetField(uint32 index, PyRep* value)
 {
     if (!mHeader->VerifyValue(index, value))  {
-        PyDecRef(value);
+        //PyDecRef(value);
         return false;
     }
 
@@ -1376,7 +1421,7 @@ PyChecksumedStream::PyChecksumedStream(const PyChecksumedStream& oth)
 PyChecksumedStream::~PyChecksumedStream()
 {
     // is this right?  havent had any "multiple deletion" msgs yet...
-    PyDecRef(mStream);
+    //PyDecRef(mStream);
 }
 
 PyChecksumedStream* PyChecksumedStream::Clone() const
@@ -1483,6 +1528,8 @@ PyTuple* new_tuple(PyRep* arg1, PyRep* arg2, PyRep* arg3)
     return res;
 }
 
+
+// not sure if this will work right...
 pyStatic::~pyStatic() {
     SafeDelete(m_none);
     SafeDelete(m_zero);

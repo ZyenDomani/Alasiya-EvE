@@ -716,14 +716,14 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
                             "  WHERE id = %u" , listID))
     {
         codelog(DATABASE__ERROR, " Failed to get mailing list settings" );
-        PyDecRef(ret);
+        //PyDecRef(ret);
         return nullptr;
     }
     DBResultRow row;
 
     if (!res.GetRow(row)) {
         codelog(DATABASE__ERROR, " mailList didn't give us a row" );
-        PyDecRef(ret);
+        //PyDecRef(ret);
         return nullptr;
     }
 
@@ -738,7 +738,7 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
                             " WHERE listID = %u" , listID))
     {
         codelog(DATABASE__ERROR, " Failed to get mailing list settings" );
-        PyDecRef(ret);
+        //PyDecRef(ret);
         return nullptr;
     }
 

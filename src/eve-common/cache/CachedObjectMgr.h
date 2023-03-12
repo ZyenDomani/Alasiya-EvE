@@ -212,39 +212,36 @@ public:
     {
         if ( !result.empty() )
             result += ".";
-
-        std::stringstream ss;
-        ss << rep->value();
-        result += ss.str();
-
+        result += std::to_string(rep->value());
         return true;
     }
-    bool VisitLong( const PyLong* rep ) { return false; }
-    bool VisitReal( const PyFloat* rep ) { return false; }
-    bool VisitBoolean( const PyBool* rep ) { return false; }
-    bool VisitNone( const PyNone* rep ) { return false; }
-    bool VisitBuffer( const PyBuffer* rep ) { return false; }
+    bool VisitLong( const PyLong* rep )                 { return false; }
+    bool VisitReal( const PyFloat* rep )                { return false; }
+    bool VisitBoolean( const PyBool* rep )              { return false; }
+    bool VisitNone( const PyNone* rep )                 { return false; }
+    bool VisitBuffer( const PyBuffer* rep )             { return false; }
     bool VisitString( const PyString* rep )
     {
         if ( !result.empty() )
             result += ".";
         result += rep->content();
-
         return true;
     }
-    bool VisitWString( const PyWString* rep ) { return false; }
-    bool VisitToken( const PyToken* rep ) { return false; }
+    bool VisitWString( const PyWString* rep )           { return false; }
+    bool VisitToken( const PyToken* rep )               { return false; }
 
-    bool VisitDict( const PyDict* rep ) { return false; }
+    bool VisitDict( const PyDict* rep )                 { return false; }
 
-    bool VisitObject( const PyObject* rep ) { return false; }
-    bool VisitObjectEx( const PyObjectEx* rep ) { return false; }
+    bool VisitObject( const PyObject* rep )             { return false; }
+    bool VisitObjectEx( const PyObjectEx* rep )         { return false; }
 
-    bool VisitPackedRow( const PyPackedRow* rep ) { return false; }
+    bool VisitPackedRow( const PyPackedRow* rep )       { return false; }
 
-    bool VisitSubStruct( const PySubStruct* rep ) { return false; }
-    bool VisitSubStream( const PySubStream* rep ) { return false; }
-    bool VisitChecksumedStream( const PyChecksumedStream* rep ) { return false; }
+    bool VisitSubStruct( const PySubStruct* rep )       { return false; }
+    bool VisitSubStream( const PySubStream* rep )       { return false; }
+    
+    bool VisitChecksumedStream( const PyChecksumedStream* rep )
+                                                        { return false; }
 };
 
 #endif

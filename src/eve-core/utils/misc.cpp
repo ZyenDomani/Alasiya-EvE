@@ -373,7 +373,7 @@ void EvE::traceStackLN(void)
             std::string cmd = "addr2line -e " + exec_path + " -f -C " + addr;
             auto r = sh(cmd);
             std::regex re2("\\n$");
-            auto r2 = std::regex_replace(r, re2, "");
+            auto r2 = std::regex_replace(r, re2, " ");
             printf("%s", r2.c_str());
         }
     }

@@ -129,7 +129,7 @@ void SBUSE::MarkContested(uint32 systemID, bool contested)
         }
 
     // cleanup
-    PyDecRef(data);
+    //PyDecRef(data);
 }
 
 /** @todo these can both be done better.... */

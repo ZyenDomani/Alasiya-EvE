@@ -159,14 +159,14 @@ bool CachedObjectMgr::HaveCached(const std::string &objectID) const
 
 bool CachedObjectMgr::HaveCached(const PyRep *objectID) const
 {
-    const std::string str = OIDToString(objectID);
-    return (m_cachedObjects.find(str) != m_cachedObjects.end());
+    //const std::string str = OIDToString(objectID);
+    return (m_cachedObjects.find(OIDToString(objectID)) != m_cachedObjects.end());
 }
 
 void CachedObjectMgr::InvalidateCache(const PyRep *objectID)
 {
-    const std::string str = OIDToString(objectID);
-    CachedObjMapItr res = m_cachedObjects.find(str);
+    //const std::string str = OIDToString(objectID);
+    CachedObjMapItr res = m_cachedObjects.find(OIDToString(objectID));
 
     if (res != m_cachedObjects.end()) {
         SafeDelete( res->second );
@@ -259,9 +259,8 @@ PyObject *CachedObjectMgr::MakeCacheHint(const std::string &objectID)
 
 PyObject *CachedObjectMgr::MakeCacheHint(const PyRep *objectID)
 {
-    const std::string str = OIDToString(objectID);
-
-    CachedObjMapItr res = m_cachedObjects.find(str);
+    //const std::string str = OIDToString(objectID);
+    CachedObjMapItr res = m_cachedObjects.find(OIDToString(objectID));
     if (res == m_cachedObjects.end())
         return nullptr;
 
@@ -280,7 +279,6 @@ PyObject *CachedObjectMgr::GetCachedObject(const std::string &objectID)
 PyObject *CachedObjectMgr::GetCachedObject(const PyRep *objectID)
 {
     const std::string str = OIDToString(objectID);
-
     CachedObjMapItr res = m_cachedObjects.find(str);
     if (res == m_cachedObjects.end())
         return nullptr;
@@ -292,25 +290,22 @@ PyObject *CachedObjectMgr::GetCachedObject(const PyRep *objectID)
     co.shared = true;
     co.objectID = res->second->objectID->Clone();
     co.cache = res->second->cache;
+    co.compressed = true;
 
-    if (res->second->cache->content().size() == 0 || res->second->cache->content()[0] == MarshalHeaderByte)
+    if ((res->second->cache->content().size() == 0)
+    or (res->second->cache->content()[0] == MarshalHeaderByte)) {
         co.compressed = false;
-    else
-        co.compressed = true;
+    }
 
     sLog.Debug("CachedObjMgr","Returning cached object '%s' with checksum 0x%x", str.c_str(), co.version);
 
-    PyObject* result = co.Encode();
-    co.cache = nullptr;    //avoid a copy
-
-    return result;
+    return co.Encode();
 }
 
 bool CachedObjectMgr::IsCacheUpToDate(const PyRep *objectID, uint32 version, int64 timestamp)
 {
-    const std::string str = OIDToString(objectID);
-
-    CachedObjMapItr res = m_cachedObjects.find(str);
+    //const std::string str = OIDToString(objectID);
+    CachedObjMapItr res = m_cachedObjects.find(OIDToString(objectID));
     if (res == m_cachedObjects.end())
         return false;
 
@@ -654,6 +649,7 @@ bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
     PySubStream *ss = *in_ss;    //consume
     *in_ss = nullptr;
 
+    // does this delete what's already in the cache??
     PySafeDecRef( cache );
     PySafeDecRef( objectID );
 
@@ -720,7 +716,7 @@ bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
         return false;
     }
 
-    PyTuple *objVt = (PyTuple *) args->items[0];
+    PyTuple *objVt = args->items[0]->AsTuple();
     if (!objVt->items[0]->IsInt()) {
         sLog.Error("PyCachedObjectDecoder","Cache object's version tuple %d is not an Integer: %s", 0, objVt->items[0]->TypeString());
         PyDecRef( ss );
@@ -733,21 +729,15 @@ bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
         return false;
     }
 
-    PyInt *nodeidr = (PyInt *) args->items[2];
-    PyInt *sharedr = (PyInt *) args->items[3];
-    PyInt *compressedr = (PyInt *) args->items[5];
-    PyInt *timer = (PyInt *) objVt->items[0];
-    PyInt *versionr = (PyInt *) objVt->items[1];
-
-    timestamp = timer->value();
-    version = versionr->value();
-    nodeID = nodeidr->value();
-    shared = ( sharedr->value() != 0 );
-    compressed = ( compressedr->value() != 0 );
+    timestamp = PyRep::IntegerValue(objVt->items[0]);
+    version = PyRep::IntegerValueI32(objVt->items[1]);
+    nodeID = PyRep::IntegerValueU32(args->items[2]);
+    shared = PyRep::GetBool(args->items[3]);
+    compressed = PyRep::GetBool(args->items[5]);
 
     //content (do this as the last thing, since its the heavy lifting):
     if (args->items[4]->IsSubStream()) {
-        cache = (PySubStream *) args->items[4];
+        cache = args->items[4]->AsSubStream();
         //take it
         args->items[4] = nullptr;
     } else if (args->items[4]->IsBuffer()) {
@@ -757,7 +747,7 @@ bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
     } else if (args->items[4]->IsString()) {
         //this is a data buffer, likely compressed, not sure why it comes through as a string...
         PyString* str = args->items[4]->AsString();
-        cache = new PySubStream( new PyBuffer( *str ) );
+        cache = new PySubStream( new PyBuffer(*str));
     } else {
         sLog.Error("PyCachedObjectMgr", "Cache object's arg %d is not a substream or buffer: %s", 4, args->items[4]->TypeString());
         PyDecRef( ss );
@@ -767,6 +757,8 @@ bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
     objectID = args->items[6]->Clone();
 
     PyDecRef( ss );
+    PyIncRef( cache );
+    PyIncRef( objectID );
     return true;
 }
 
@@ -848,7 +840,7 @@ bool PyCachedCall::Decode(PySubStream **in_ss)
     PySubStream *ss = *in_ss;    //consume
     *in_ss = nullptr;
 
-    PySafeDecRef( result );
+    //PySafeDecRef( result );
 
     ss->DecodeData();
     if (ss->decoded() == nullptr) {
@@ -862,19 +854,16 @@ bool PyCachedCall::Decode(PySubStream **in_ss)
         PyDecRef( ss );
         return false;
     }
-    PyDict *po = (PyDict *) ss->decoded();
+    PyDict *po = (PyDict*)ss->decoded();
 
-    PyDict::const_iterator cur, end;
-    cur = po->begin();
-    end = po->end();
-    for(; cur != end; cur++) {
+    PyDict::const_iterator cur = po->begin(), end = po->end();
+    for(; cur != end; ++cur) {
         if (!cur->first->IsString())
             continue;
-        PyString *key = (PyString *) cur->first;
-        if ( key->content() == "lret" )
+        if (PyRep::StringContent(cur->first).compare("lret") == 0)
             result = cur->second->Clone();
     }
 
-    PyDecRef( ss );
+    //PyDecRef( ss );
     return (result != nullptr);
 }

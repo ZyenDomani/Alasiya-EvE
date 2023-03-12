@@ -624,7 +624,7 @@ void ObjectSystemEntity::UpdateDamage()
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
     //source->QueueDestinyUpdate(&up);
-    PyDecRef(up);
+    //PyDecRef(up);
 }
 
 void ObjectSystemEntity::Killed(Damage &fatal_blow)
@@ -761,7 +761,7 @@ void DynamicSystemEntity::UpdateDamage()
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
     //source->QueueDestinyUpdate(&up);
-    PyDecRef(up);
+    //PyDecRef(up);
 }
 
 void DynamicSystemEntity::AwardBounty(Client* pClient)

@@ -170,7 +170,7 @@ PyResult TradeBound::Handle_OfferMoney(PyCallArgs &call) {
         list->SetItem(1, new PyFloat(0.0f)); //herMoney
         _log(CLIENT__ERROR, "TradeBound::Handle_OfferMoney() : %s(%u) - clients are neither mine nor hers.", \
                 call.client->GetName(), call.client->GetCharacterID());
-        PyDecRef(list);
+        //PyDecRef(list);
         return PyStatic.NewNone();
     }
 
@@ -231,7 +231,7 @@ void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSe
         itemRef->Move(stationID, flagHangar, true);
     }
 
-    PyDecRef(dict);
+    //PyDecRef(dict);
 }
 
 PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
@@ -419,7 +419,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     } else {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_MultiAdd() : %s(%u) & %s(%u) - clients are neither mine nor hers.", \
                 pClient->GetName(), pClient->GetCharacterID(), pOther->GetName(), pOther->GetCharacterID());
-        PyDecRef(dict);
+        //PyDecRef(dict);
         return PyStatic.NewNone();
     }
 
@@ -472,7 +472,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     pTSes->m_tradeSession.myState  = false;
     pTSes->m_tradeSession.herState = false;
 
-    PyDecRef(dict);
+    //PyDecRef(dict);
     // return none
     return PyStatic.NewNone();
 }
@@ -593,7 +593,7 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     pClient->SendNotification("OnTrade", "charid", &tuple);
     pOther->SendNotification("OnTrade", "charid", &tuple);
 
-    //PyDecRef(dict);
+    ////PyDecRef(dict);
 }
 
 void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryItemRef itemRef, uint32 newOwnerID)

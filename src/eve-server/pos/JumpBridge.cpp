@@ -139,5 +139,5 @@ void JumpBridgeSE::SendSlimUpdate()
         sItem->SetItem(0, new PyString("OnSlimItemChange"));
         sItem->SetItem(1, shipData);
     m_destiny->SendSingleDestinyUpdate(&sItem);
-    PyDecRef(sItem);
+    //PyDecRef(sItem);
 }

@@ -1432,7 +1432,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
     for (auto &cur : members) {
         if (cur == nullptr)
             continue;
-        PySafeIncRef(payload);
+        PyIncRef(payload);
         cur->SendNotification("OnFleetBroadcast", "clientID", payload, true);
         ++count;
     }
@@ -1454,7 +1454,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         payload->Dump(FLEET__BCAST_DUMP, "   ");
     }
 
-    PySafeDecRef(payload);
+    //PyDecRef(payload);
 }
 
 void FleetService::SendFleetUpdate(uint32 fleetID, const char* notifyType, PyTuple* payload)

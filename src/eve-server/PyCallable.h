@@ -58,7 +58,7 @@ public:
     PyResult( PyRep* result );
     PyResult( PyRep* result, PyDict* namedResult );
     PyResult( const PyResult& oth );
-    ~PyResult() {}
+    ~PyResult();
 
     PyResult& operator=( const PyResult& oth );
 
