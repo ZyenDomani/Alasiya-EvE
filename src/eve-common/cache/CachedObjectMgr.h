@@ -110,9 +110,9 @@ protected:
         PyObject *EncodeHint() const;
 
         PyRep *objectID;    //we own this
+        PyBuffer *cache; //we own this.
         int64 timestamp;
         uint32 version;
-        PyBuffer *cache; //we own this.
     };
     typedef std::map<std::string, CacheRecord *>    CachedObjMap;
     typedef CachedObjMap::iterator                  CachedObjMapItr;
@@ -239,7 +239,7 @@ public:
 
     bool VisitSubStruct( const PySubStruct* rep )       { return false; }
     bool VisitSubStream( const PySubStream* rep )       { return false; }
-    
+
     bool VisitChecksumedStream( const PyChecksumedStream* rep )
                                                         { return false; }
 };

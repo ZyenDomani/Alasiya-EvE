@@ -261,13 +261,14 @@ void PyRep::IncRef() const
 
     if (mDeleted) {
         _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %i", mRefCount);
-        EvE::traceStack();
+        EvE::traceStackLN();
         //return;
     }
+    /*
     if (mRefCount == 0) {
         _log(REFPTR__ERROR, "IncRef() - mRefCount = 0.");
-        EvE::traceStack();
-    }
+        EvE::traceStackLN();
+    }*/
     //assert( mDeleted == false );
     //assert(mRefCount > 0);
     ++mRefCount;
@@ -934,12 +935,9 @@ PyRep* PyDict::GetItem(PyRep* key) const
 
 PyRep* PyDict::GetItemString(const char* key) const
 {
-    assert(key != nullptr);
-
     PyString* str = new PyString(key);
     PyRep* res = GetItem(str);
-    //PyDecRef(str);
-
+    SafeDelete(str);
     return res;
 }
 
@@ -957,18 +955,20 @@ void PyDict::SetItem(PyRep* key, PyRep* value)
     /* check if we need to replace a dictionary entry */
     iterator itr = items.find(key);
     if (itr == items.end()) {
-        // Keep both key & value  (make_pair makes copy of args passed)
+        // make_pair() makes copy of args passed
         items.insert(std::make_pair(key, value));
-        // should we decRef key,value here?
+        PyIncRef(key);
+        PyIncRef(value);
     } else {
         // We found 'key' in current dict, so use itr->first and decRef sent 'key'.
-        //PyDecRef(key);
+        PyDecRef(key);
         // decRef existing value and Replace with new value.
         PySafeDecRef(itr->second);
         if (value == nullptr) {
             itr->second = PyStatic.NewNone();
         } else {
             itr->second = value;
+            PyIncRef(value);
         }
     }
 }

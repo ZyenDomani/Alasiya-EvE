@@ -90,11 +90,8 @@ static const uint32 HackCacheNodeID = 333444;
 
 CachedObjectMgr::~CachedObjectMgr()
 {
-    CachedObjMapItr cur, end;
-    cur = m_cachedObjects.begin();
-    end = m_cachedObjects.end();
-
-    for(; cur != end; cur++) {
+    CachedObjMapItr cur = m_cachedObjects.begin(), end = m_cachedObjects.end();
+    for (; cur != end; ++cur) {
         SafeDelete( cur->second );
     }
 }
@@ -105,20 +102,19 @@ CachedObjectMgr::~CachedObjectMgr()
 CachedObjectMgr::CacheRecord::CacheRecord() : objectID(nullptr), timestamp(0), version(0), cache(nullptr) {}
 CachedObjectMgr::CacheRecord::~CacheRecord()
 {
-    PyDecRef( objectID );
-    PyDecRef( cache );
+    SafeDelete( objectID );
+    SafeDelete( cache );
 }
 
 PyObject *CachedObjectMgr::CacheRecord::EncodeHint() const
 {
     objectCaching_CachedObject_spec spec;
-
     spec.objectID = objectID; //->Clone();
     spec.nodeID = HackCacheNodeID;
     spec.timestamp = timestamp;
     spec.version = version;
 
-    return(spec.Encode());
+    return spec.Encode();
 }
 
 
@@ -217,7 +213,7 @@ void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
         sLog.Error( "Cached Obj Mgr", "Failed to marshal or deflate new cache object." );
     }
 
-    SafeDelete( buf );
+    //SafeDelete( buf );
 }
 
 void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer **pbuf)

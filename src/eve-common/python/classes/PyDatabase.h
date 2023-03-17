@@ -227,7 +227,7 @@ public:
      */
     size_t GetKeyCount() const { return dict().size(); }
 
-	CRowSet* GetRowset( PyRep *key) const { return (CRowSet*)(dict().GetItem( key )); }
+    CRowSet* GetRowset( PyRep *key) const { return (CRowSet*)(dict().GetItem( key )); }
 
     /**
      * @param[in] Index of row to be returned.

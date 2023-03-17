@@ -109,6 +109,7 @@ public:
     const char* GetText( uint32 index ) const { return mRow[ index ]; }
     int32 GetInt( uint32 index ) const;
     bool GetBool( uint32 index ) const;
+    uint8 GetUInt8( uint32 index ) const;
     uint32 GetUInt( uint32 index ) const;
     int64 GetInt64( uint32 index ) const;
     float GetFloat( uint32 index ) const;

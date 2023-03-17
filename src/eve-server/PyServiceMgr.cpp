@@ -46,7 +46,6 @@ PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist )
 PyServiceMgr::~PyServiceMgr() {
     // these crash (segfault) on exit, and i dont know why (but not sure if it's needed...)
     //SafeDelete(lsc_service);
-    //SafeDelete(cache_service);
 
     Close();
 }
@@ -64,6 +63,7 @@ void PyServiceMgr::Close() {
         SafeDelete(bo);
     }
 
+    SafeDelete(cache_service);
     sLog.Warning("     PyServiceMgr", "Services Manager has been closed." );
 }
 
@@ -187,7 +187,7 @@ void PyServiceMgr::Initalize(double startTime)
         cache_service->GiveCache(str, (PyRep **)&dict);
     }
 
-    PyDecRef(str);
+    SafeDelete(str);
     sLog.Cyan("     PyServiceMgr", "%lu services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
 }
 

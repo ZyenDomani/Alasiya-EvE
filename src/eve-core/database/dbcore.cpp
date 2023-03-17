@@ -654,7 +654,19 @@ bool DBResultRow::GetBool( uint32 index ) const
         return false;
     }
 
-    return  (mRow[index][0] != 0);
+    return (mRow[index][0] != 0);
+}
+
+uint8 DBResultRow::GetUInt8( uint32 index ) const
+{
+    if (index >= mResult->ColumnCount()) {
+        _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        EvE::traceStack();
+        return 0;
+    }
+
+    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
+    return strtoul( mRow[index], nullptr, 0 );
 }
 
 uint32 DBResultRow::GetUInt( uint32 index ) const

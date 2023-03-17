@@ -35,6 +35,7 @@
 #include "python/PyDumpVisitor.h"
 #include "EVEVersion.h"
 
+
 EVEClientSession::EVEClientSession( EVETCPConnection** n )
 : mNet( *n ),
 mRep(nullptr),
@@ -46,7 +47,7 @@ mPacketHandler( nullptr )
 EVEClientSession::~EVEClientSession() {
     // Destroy connection we used
     delete mNet;
-    PySafeDecRef(mRep);
+    SafeDelete(mRep);
     mPacketHandler = nullptr;
 }
 

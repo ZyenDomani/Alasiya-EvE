@@ -666,10 +666,10 @@ public:
             *rep = object;
         }
 
-        PyIncRef(*rep);
+        PyIncRef(object);
     }
 
-    void SetItemInt(size_t index, int32 val)		    { SetItem(index, new PyInt(val)); }
+    void SetItemInt(size_t index, int32 val)		{ SetItem(index, new PyInt(val)); }
     void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str)); }
 
     int32 hash() const;
@@ -736,6 +736,7 @@ public:
             *rep = object;
         }
         PyIncRef(*rep);
+        PyIncRef(object);
     }
     /**
      * @brief Stores Python string.

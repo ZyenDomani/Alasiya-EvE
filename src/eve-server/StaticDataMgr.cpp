@@ -49,16 +49,16 @@ StaticDataMgr::~StaticDataMgr()
 
 void StaticDataMgr::Close()
 {
-    PySafeDecRef(m_keyMap);
-    PySafeDecRef(m_agents);
-    PySafeDecRef(m_operands);
-    PySafeDecRef(m_billTypes);
-    PySafeDecRef(m_entryTypes);
-    PySafeDecRef(m_factionInfo);
-    PySafeDecRef(m_npcDivisions);
+    SafeDelete(m_keyMap);
+    SafeDelete(m_agents);
+    SafeDelete(m_operands);
+    SafeDelete(m_billTypes);
+    SafeDelete(m_entryTypes);
+    SafeDelete(m_factionInfo);
+    SafeDelete(m_npcDivisions);
 
     for (auto &cur : m_bpMatlData)
-        PySafeDecRef(cur.second);
+        SafeDelete(cur.second);
 
     sLog.Warning("    StaticDataMgr", "Static Data Manager has been closed.");
 }
@@ -96,16 +96,16 @@ void StaticDataMgr::Clear()
     m_LootGroupTypeMap.clear();
     m_WrecksToTypesMap.clear();
 
-    PySafeDecRef(m_keyMap);
-    PySafeDecRef(m_agents);
-    PySafeDecRef(m_operands);
-    PySafeDecRef(m_billTypes);
-    PySafeDecRef(m_entryTypes);
-    PySafeDecRef(m_factionInfo);
-    PySafeDecRef(m_npcDivisions);
+    SafeDelete(m_keyMap);
+    SafeDelete(m_agents);
+    SafeDelete(m_operands);
+    SafeDelete(m_billTypes);
+    SafeDelete(m_entryTypes);
+    SafeDelete(m_factionInfo);
+    SafeDelete(m_npcDivisions);
 
     for (auto &cur : m_bpMatlData)
-        PySafeDecRef(cur.second);
+        SafeDelete(cur.second);
     m_bpMatlData.clear();
 }
 

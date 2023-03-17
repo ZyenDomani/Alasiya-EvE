@@ -6,6 +6,8 @@
   * @Author:        Allan
   * @date:      24 June 2018
   *
+  * @note:  MemMgmt data:
+  *     no leaks with 0 clients - 12Mar23
   */
 
 #include "../EVEServerConfig.h"
@@ -26,15 +28,13 @@ MissionDataMgr::MissionDataMgr()
 {
 }
 
-MissionDataMgr::~MissionDataMgr()
-{
-    PyDecRef(KillPNG);
-    PyDecRef(MiningPNG);
-    PyDecRef(CourierPNG);
+MissionDataMgr::~MissionDataMgr() {
+    SafeDelete(KillPNG);
+    SafeDelete(MiningPNG);
+    SafeDelete(CourierPNG);
 }
 
-void MissionDataMgr::Clear()
-{
+void MissionDataMgr::Clear() {
     m_names.clear();
     m_offers.clear();
     m_mining.clear();
@@ -58,8 +58,8 @@ void MissionDataMgr::GetInfo()
 // called every minute from EntityList::Process()
 void MissionDataMgr::Process()
 {
-    // process open offers every 5m
-    if (++m_procCount > 5) {
+    // process open offers every 10m
+    if (++m_procCount > 10) {
         m_procCount = 0;
 
         Agent* pAgent(nullptr);
