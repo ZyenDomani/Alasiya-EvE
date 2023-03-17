@@ -152,3 +152,70 @@ KeyError: ('RecordNotFound', 90000000)
 12:59:03 [ClientOutAll]       [ 0] Value:  Dictionary: 1 entries
 12:59:03 [ClientOutAll]       [ 0] Value:   [ 0]   Key:     String: 'N=888444:107'
 12:59:03 [ClientOutAll]       [ 0] Value:   [ 0] Value:       Long: 133224299438008192
+
+
+e
+09:45:24 [Bound] SkillMgrBound::GetEndOfTraining()
+09:45:24 [Bound] BeyonceBound::CmdStop()
+09:45:24 [AP Msg] Allan called Stop. AP: false, Invul: true, Jump: false
+09:45:24 [Service] alert::BeanCount()
+09:45:24 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #7 logged at  03/11/2023 9:45:23 Unhandled exception in <TaskletExt object at 40ebfad8, abps=1001, ctxt='<NO CONTEXT>^<bound method Neocom._UpdateSkillInfo of neocom.Neocom object at (snip)efbd0, name=Neocom, destroyed=False>>'>
+Caught at:
+/common/lib/bluepy.py(98) CallWrapper
+Thrown at:
+/common/lib/bluepy.py(86) CallWrapper
+/client/script/ui/shared/neocom/neocom/neocom.py(273) _UpdateSkillInfo
+/client/script/ui/shared/neocom/neocom/neocom.py(286) _UpdateSkillBar
+        self = neocom.Neocom object at 0x404efbd0, name=Neocom, destroyed=False>
+        skill = <DBRow object [140007070L, 3419, 90000000, 90000000, 61, -1, 271, 16, '', 1, 1]>
+        currSkillPoints = 768000
+        skillPointsAtStartOfLevel = 768000
+TypeError: float() argument must be a string or a number
+Thread Locals:  session was <Session: (sid:8209836207737040965, clientID:0, mutating:0, locationid:30000053, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:31027, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, shipid:140018752, solarsystemid:30000053, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1004)>
+
+EXCEPTION END
+
+09:45:24 [Service] infoGatheringMgr::GetStateAndConfig()
+09:45:24 [Service] clientStatsMgr::SubmitStats()
+09:45:28 [Service] charMgr::GetPublicInfo()
+09:45:29 [ClientTimer] Client::ProcessClient():  SetSessionChange to false for Allan(90000000)
+09:45:32 [Service] alert::BeanCount()
+09:45:32 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #8 logged at  03/11/2023 9:45:32 Unhandled exception in <TaskletExt object at 40ebf190, abps=1001, ctxt='<NO CONTEXT>^<bound method SkillEntry.UpdateTraining of listentry.SkillEntry object at (snip)e3af0, name=entry_16, destroyed=False>>'>
+Caught at:
+/common/lib/bluepy.py(98) CallWrapper
+Thrown at:
+/common/lib/bluepy.py(86) CallWrapper
+/client/script/ui/shared/neocom/skillinfo.py(422) UpdateTraining
+        self = listentry.SkillEntry object at 0x404e3af0, name=entry_16, destroyed=False>
+        currentPoints = 0
+        level = 5
+        skill = <DBRow object [140007070L, 3419, 90000000, 90000000, 61, -1, 271, 16, '', 1, 1]>
+        fill = None
+AttributeError: 'NoneType' object has no attribute 'state'
+Thread Locals:  session was <Session: (sid:8209836207737040965, clientID:0, mutating:0, locationid:30000053, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:31027, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, shipid:140018752, solarsystemid:30000053, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1004)>
+
+EXCEPTION END
+
+09:45:33 [Service] alert::BeanCount()
+09:45:33 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #9 logged at  03/11/2023 9:45:33
+Caught at:
+/common/lib/bluepy.py(86) CallWrapper
+/../carbon/common/script/util/timerstuff.py(213) Loop
+/client/script/ui/shared/neocom/skillinfo.py(465) UpdateProgress
+Thrown at:
+/client/script/ui/shared/neocom/skillinfo.py(457) UpdateProgress
+        timeLeft = 2159598993154L
+        self = listentry.SkillEntry object at 0x404e3af0, name=entry_16, destroyed=False>
+        secs = 215959L
+        ms = 1016
+        skill = <DBRow object [140007070L, 3419, 90000000, 90000000, 61, -1, 271, 16, '', 1, 1]>
+        timeEndured = 10165755L
+TypeError: unsupported operand type(s) for -: 'NoneType' and 'float'
+Thread Locals:  session was <Session: (sid:8209836207737040965, clientID:0, mutating:0, locationid:30000053, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.8:31027, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, shipid:140018752, solarsystemid:30000053, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1004)>
+
+EXCEPTION END
+
+09:45:37 [Bound] SkillMgrBound::GetSkillQueueAndFreePoints()

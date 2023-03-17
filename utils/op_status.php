@@ -23,7 +23,7 @@ Items listed as "<font color=orange>Skeleton Code Only</font>" has a basic outli
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
-<font color=magenta>Last Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>9 March 2023</font><BR>
+<font color=magenta>Last Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>17 March 2023</font><BR>
 <font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=red>Mostly Current</font> - <font color=yellow>Being Reviewed and Updated</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
@@ -55,9 +55,9 @@ There will be some response, like opening windows, but *should not* generate an 
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >10y<BR>4Feb23</td></tr>
 <tr><td> - Memory Management<BR>
-<font color=green>InventoryItem and PhotoService are only classes with accurate MemMgmt</font></td><td class="working">220%
+<font color=green>InventoryItem and PhotoService are only classes with accurate MemMgmt</font></td><td class="working">20%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 220%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Progress Halted</font><BR><font color=orange>Found Major errors in RefCounted Objects.</font><BR>8Mar23</td></tr>
 <tr><td> - Efficient, Accurate Packet Deciphering<BR><font color=blue>NOTE: at this point, "Efficient" is a misnomer.</font></td><td class="working">80%
@@ -65,16 +65,16 @@ There will be some response, like opening windows, but *should not* generate an 
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>In Progress - Most packets understood and correctly processed<BR>4Feb23</td></tr>
-<tr><td> - Mutexes</td><td class="working">90%
+<tr><td> - Mutexes</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=brown>Mostly Complete</font><BR><font color=orange>Recently found very elusive data race.<BR>Not solved yet.</font><BR>8Mar23</td></tr>
 <tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=pink>Not Complete</font><BR><font color=olive>Enabling all compiler warnings gives 21.2Mb log file of errors</font><BR>4Feb23</td></tr>
+<td><font color=pink>Not Complete</font><BR><font color=olive>Enabling all compiler warnings gives 12.5Mb log file of errors</font><BR>17Mar23</td></tr>
 <tr><td> - GM commands<BR>Most commands need complete rewrite or major update</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
@@ -1693,22 +1693,22 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Needs More Testing</font><BR>1Dec18</td></tr>
-<tr><td> - Can AutoLink Weapons **Using GroupAllWeapons button**</td><td class="working">80%
+<tr><td> - Can AutoLink Weapons Using GroupAllWeapons button</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Needs More Testing</font><BR>1Dec18</td></tr>
-<tr><td> - Can Load Linked Weapons **Linked Weapons Load as a group**</td><td class="working">80%
+<tr><td> - Can Load Linked Weapons<BR><font color=lime>NOTE: Linked Weapons Load as a group</font></td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Needs More Testing</font><BR>1Dec18</td></tr>
-<tr><td> - Can Unload Linked Weapons **Linked Weapons UnLoad as a group**</td><td class="working">80%
+<tr><td> - Can Unload Linked Weapons<BR><font color=lime>NOTE: Linked Weapons UnLoad as a group</font></td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Needs More Testing</font><BR>1Dec18</td></tr>
-<tr><td> - Can Unlink Weapons **Linked Weapons will NOT Unload Charges when Unlinked**</td><td class="working">80%
+<tr><td> - Can Unlink Weapons<BR><font color=lime>NOTE: Linked Weapons will not Unload Charges when Unlinked</font></td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -1756,26 +1756,26 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T3 Ship Management</h3></font></td></tr>
-<tr><td> - Fit Subsystems</td><td class="broken">10%
+<tr><td> - Fit Subsystems</td><td class="broken">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>8Mar23</td></tr>
-<tr><td> - Remove/Replace Subsystems</td><td class="broken">10%
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>17Mar23</td></tr>
+<tr><td> - Remove/Replace Subsystems</td><td class="broken">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>8Mar23</td></tr>
-<tr><td> - Fit Modules</td><td class="broken">10%
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>17Mar23</td></tr>
+<tr><td> - Fit Modules</td><td class="broken">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>8Mar23</td></tr>
-<tr><td> - Remove/Replace Modules</td><td class="broken">10%
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>17Mar23</td></tr>
+<tr><td> - Remove/Replace Modules</td><td class="broken">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>8Mar23</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>17Mar23</td></tr>
 <tr><td> - Character loses skills when Ship is killed.</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -2374,6 +2374,14 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
+<tr><td> - Blueprints<BR><font color=yellow>R.A.M. skills no longer displayed properly on tabs.<BR>Haven't found when/why this broke</font></td><td class="working">30%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>17Mar23</td></tr>
+<!--
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>6Mar18</td></tr>
+-->
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Players</h3></font></td></tr>
 <tr><td> - Research</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>

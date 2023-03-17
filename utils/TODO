@@ -316,6 +316,7 @@ move warp checks to beyonce
 or, have warpTo return bool, THEN apply all the other shit...
 right now, we decloak and all that before even calling warpto
 
+check into reducing some ops in GetOperandsForChar()
 
 *******************************************************
 *******************************************************
