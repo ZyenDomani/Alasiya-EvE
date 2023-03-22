@@ -41,7 +41,7 @@ public:
     void Dump(LogType type, const char *pfx) const;
     bool Decode(PyRep *&object);    //consumes object
     PyRep *Encode();
-    void operator=(const PyAddress &right);
+    PyAddress& operator=( const PyAddress& right );
 
     /*
     def __setstate__(self, state):

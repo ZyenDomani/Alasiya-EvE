@@ -44,7 +44,7 @@ class EVEServerConfig
 {
 public:
     EVEServerConfig();
-    ~EVEServerConfig()                                  { /* do nothing here */}
+    virtual ~EVEServerConfig()                          { /* do nothing here */}
 
     // From <server>
     struct {

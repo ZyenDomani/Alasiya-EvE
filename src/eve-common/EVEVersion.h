@@ -42,18 +42,18 @@ static const int32 EVEBirthday = 170472;
 static const char* const EVEMU_REVISION = "0.72.67";
 static const char* const EVEMU_BUILD_DATE = "10 March 2023";
 /* match versions here with stated files for full support */
-static const float Config_Version = 10.6; /* eve-server.xml and EveServerConfig.cpp */
-static const float Log_Version = 10.8;    /* logtypes.h and log.ini */
+static const float Config_Version = 10.6f; /* eve-server.xml and EveServerConfig.cpp */
+static const float Log_Version = 10.8f;    /* logtypes.h and log.ini */
 /* AI versions for shitz-n-giggles */
-static const float Joe_Version = 0.15;   /* MarketBot.xml and MarketBotConf.cpp */
+static const float Joe_Version = 0.15f;   /* MarketBot.xml and MarketBotConf.cpp */
 /* these  dont have separate config files ...yet */
-static const float NPC_AI_Version = 0.57;
-static const float Drone_AI_Version = 0.15;
-static const float Mission_Version = 0.31;
+static const float NPC_AI_Version = 0.57f;
+static const float Drone_AI_Version = 0.15f;
+static const float Mission_Version = 0.31f;
 /* these arent used yet, but are placeholders for future expansion */
-static const float Civilian_AI_Version = 0.10;
-static const float Sentry_AI_Version = 0.10;
-static const float POS_AI_Version = 0.01;
-static const float Scan_Version = 0.43;
+static const float Civilian_AI_Version = 0.10f;
+static const float Sentry_AI_Version = 0.10f;
+static const float POS_AI_Version = 0.01f;
+static const float Scan_Version = 0.43f;
 
 #endif

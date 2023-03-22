@@ -33,6 +33,11 @@ class ClassHeaderGenerator
 {
 public:
     ClassHeaderGenerator( FILE* outputFile = NULL );
+    /** @todo  finish this for -Weffc++ */
+    ClassHeaderGenerator(const ClassHeaderGenerator&) =delete;
+    ClassHeaderGenerator& operator=(const ClassHeaderGenerator&) =delete;
+
+    virtual ~ClassHeaderGenerator()                     { /* do nothing here */ }
 
 protected:
     bool RegisterName( const char* name, uint32 row );

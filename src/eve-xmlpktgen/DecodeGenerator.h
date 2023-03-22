@@ -33,6 +33,11 @@ class ClassDecodeGenerator
 {
 public:
     ClassDecodeGenerator( FILE* outputFile = NULL );
+    /** @todo  finish this for -Weffc++ */
+    ClassDecodeGenerator(const ClassDecodeGenerator&) =delete;
+    ClassDecodeGenerator& operator=(const ClassDecodeGenerator&) =delete;
+
+    virtual ~ClassDecodeGenerator()                     { /* do nothing here */ }
 
 protected:
     const char* top() const { return mVariableStack.top().c_str(); }

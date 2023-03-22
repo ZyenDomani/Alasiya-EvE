@@ -34,6 +34,8 @@
 class Lockable
 {
 public:
+    virtual ~Lockable()                                 { /* do nothing here */ }
+
     /**
      * @brief Locks the object.
      *

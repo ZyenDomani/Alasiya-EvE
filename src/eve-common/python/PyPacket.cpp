@@ -193,7 +193,7 @@ bool PyPacket::Decode(PyRep **in_packet)
             type = (MACHONETMSG_TYPE) PyRep::IntegerValue(tuple->items[0]);
         } break;
         default: {
-            codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Unknown message type %lli", PyRep::IntegerValue(tuple->items[0]));
+            codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Unknown message type %li", PyRep::IntegerValue(tuple->items[0]));
             //PyDecRef( pRep );
             return false;
         } break;
@@ -280,13 +280,13 @@ service("")
 void PyAddress::Dump(FILE *into, const char *pfx) const {
     switch(type) {
         case Any:
-            fprintf(into, "%sAny: service='%s' callID=%lli", pfx, service.c_str(), callID);
+            fprintf(into, "%sAny: service='%s' callID=%li", pfx, service.c_str(), callID);
         break;
         case Node:
-            fprintf(into, "%sNode: nodeID=%lli service='%s' callID=%lli", pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sNode: nodeID=%li service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            fprintf(into, "%sClient: clientID=%lli service='%s' callID=%lli", pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sClient: clientID=%li service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Broadcast:
             fprintf(into, "%sBroadcast: broadcastID='%s' narrowcast=(not implemented) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
@@ -300,13 +300,13 @@ void PyAddress::Dump(FILE *into, const char *pfx) const {
 void PyAddress::Dump(LogType ltype, const char *pfx) const {
     switch(type) {
         case Any:
-            _log(ltype, "%sAny: service='%s' callID=%lli", pfx, service.c_str(), callID);
+            _log(ltype, "%sAny: service='%s' callID=%li", pfx, service.c_str(), callID);
         break;
         case Node:
-            _log(ltype, "%sNode: nodeID=%lli service='%s' callID=%lli", pfx, objectID, service.c_str(), callID);
+            _log(ltype, "%sNode: nodeID=%li service='%s' callID=%li", pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            _log(ltype, "%sClient: clientID=%lli callID=%lli service='%s'", pfx, objectID, callID, service.c_str());
+            _log(ltype, "%sClient: clientID=%li callID=%li service='%s'", pfx, objectID, callID, service.c_str());
         break;
         case Broadcast:
             _log(ltype, "%sBroadcast: broadcastID='%s' narrowcast=(not implemented) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
@@ -317,12 +317,13 @@ void PyAddress::Dump(LogType ltype, const char *pfx) const {
     }
 }
 
-void PyAddress::operator=(const PyAddress &right) {
+PyAddress& PyAddress::operator=(const PyAddress &right) {
     type = right.type;
     objectID = right.objectID;
     callID = right.callID;
     service = right.service;
     bcast_idtype = right.bcast_idtype;
+    return *this;
 }
 
 bool PyAddress::Decode(PyRep *&in_object) {
@@ -448,7 +449,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
             }*/
         }   break;
         default: {
-            codelog(NET__PACKET_ERROR, "Unknown address type: %lli", PyRep::IntegerValue(tuple->items[0]));
+            codelog(NET__PACKET_ERROR, "Unknown address type: %li", PyRep::IntegerValue(tuple->items[0]));
             //PyDecRef( pRep );
             PySafeDecRef(tuple);
             return false;
@@ -821,10 +822,11 @@ EVENotificationStream *EVENotificationStream::Clone() const {
 void EVENotificationStream::Dump(LogType type, PyVisitor& dumper)
 {
     _log(type, "Notification: %s", notifyType.c_str());
-    if (remoteObject == 0)
+    if (remoteObject == 0) {
         _log(type, "  Remote Object: %s", remoteObjectStr.c_str());
-    else
+    } else {
         _log(type, "  Remote Object: %u", remoteObject);
+    }
 
     _log(type, "  Arguments:");
     args->visit( dumper );
@@ -925,7 +927,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 
     //parse first tuple element, remote object
     if (robjt->items[0]->IsInt()) {
-        remoteObject = PyRep::IntegerValue(robjt->items[0]);
+        remoteObject = PyRep::IntegerValueU32(robjt->items[0]);
         remoteObjectStr = "";
     } else if (robjt->items[0]->IsString()) {
         remoteObject = 0;

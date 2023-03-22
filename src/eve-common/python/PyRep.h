@@ -459,6 +459,8 @@ public:
     /** Copy constructor. */
     PyBuffer(const PyBuffer& oth);
 
+    PyBuffer& operator=(const PyBuffer&) =delete;
+
     PyBuffer* Clone() const;
     bool visit(PyVisitor& v) const;
 
@@ -1217,6 +1219,11 @@ public:
     m_tuple(new PyTuple(0))
     {
     }
+
+    // copy c'tor
+    pyStatic(const pyStatic& oth);
+    // copy assignment
+    pyStatic& operator= (const pyStatic& oth);
 
    ~pyStatic();
 

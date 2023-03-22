@@ -38,13 +38,13 @@ class Mutex
 {
 public:
     /**
-     * @brief Primary contructor.
+     * @brief Primary constructor.
      */
     Mutex();
     /**
      * @brief Destructor, releases allocated resources.
      */
-    ~Mutex();
+    virtual ~Mutex();
 
     /**
      * @brief Locks the mutex.

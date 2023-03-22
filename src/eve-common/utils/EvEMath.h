@@ -18,7 +18,7 @@ namespace EvESkill {
     // skill constants
     const uint8 MAXSKILLLEVEL = 5;
     const uint8 skillPointMultiplier = 250;
-    const float DIVCONSTANT = std::log(2) * 2.5;
+    const double DIVCONSTANT = std::log(2) * 2.5;
 }
 
 namespace EvEMath {
@@ -64,7 +64,7 @@ namespace EvEMath {
 
     namespace Market {
         float BrokerFee(uint8 brSkillLvl, float fStanding, float cStanding);
-        float RelistFee(float oldPrice, float newPrice, float brokerPercent=0.01, float discount=0);
+        float RelistFee(float oldPrice, float newPrice, float brokerPercent=0.01f, float discount=0.0f);
         float SalesTax(uint8 accountingLvl=0, uint8 taxEvasionLvl=0);
     }
 
