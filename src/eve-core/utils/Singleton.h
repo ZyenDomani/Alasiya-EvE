@@ -64,7 +64,7 @@ public:
         return *mInstance;
     }
 
-    virtual ~Singleton()                                { /* do nothing here */ }
+    virtual ~Singleton()                                { delete mInstance; }
 
 protected:
     /** Pointer to the singleton instance. */
