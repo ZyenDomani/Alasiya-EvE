@@ -64,6 +64,8 @@ public:
         return *mInstance;
     }
 
+    virtual ~Singleton()                                { delete mInstance; }
+
 protected:
     /** Pointer to the singleton instance. */
     static std::shared_ptr<X> mInstance;

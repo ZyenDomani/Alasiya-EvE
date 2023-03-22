@@ -299,7 +299,7 @@ public:
     void FlushQueue()                                   { _SendQueuedUpdates(); }
 
     //  mission
-    void RemoveMissionItem(uint16 typeID, uint32 qty);
+    void RemoveMissionItem(uint16 typeID, int32 qty);
     bool ContainsTypeQty(uint16 typeID, uint32 qty) const;
     bool IsMissionComplete(MissionOffer& data);
 

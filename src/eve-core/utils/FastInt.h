@@ -51,7 +51,7 @@ inline int32 float2int32( const float value )
     return i;
 #else /* !HAVE___ASM */
     union { int32 asInt[2]; double asDouble; } n;
-    n.asDouble = value + 6755399441055744.0;
+    n.asDouble = (double)value + 6755399441055744.0;
 
     return n.asInt[0];
 #endif /* !HAVE___ASM */

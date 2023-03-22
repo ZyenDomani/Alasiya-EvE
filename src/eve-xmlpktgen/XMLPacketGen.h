@@ -53,10 +53,14 @@ public:
      * @param[in] source Source file to be generated.
      */
     XMLPacketGen( const char* header = "", const char* source = "" );
+    /** @todo  finish this for -Weffc++ */
+    XMLPacketGen(const XMLPacketGen&) =delete;
+    XMLPacketGen& operator=(const XMLPacketGen&) =delete;
+
     /**
-     * @brief Destructory; closes output files.
+     * @brief Destructor; closes output files.
      */
-    ~XMLPacketGen();
+    virtual ~XMLPacketGen();
 
     /**
      * @brief Sets header file.

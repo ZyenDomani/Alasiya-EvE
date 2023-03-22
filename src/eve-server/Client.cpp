@@ -132,7 +132,7 @@ Client::~Client() {
     SafeDelete(pPacket);
     SafeDelete(m_destinyEventQueue);
     SafeDelete(m_destinyUpdateQueue);
-    
+
     if (!m_loaded)
         return;
 
@@ -1683,9 +1683,9 @@ uint32 Client::GetLoyaltyPoints(uint32 corpID) {
     return 0;
 }
 
-void Client::RemoveMissionItem(uint16 typeID, uint32 qty)
+void Client::RemoveMissionItem(uint16 typeID, int32 qty)
 {
-    uint16 count = qty;
+    int32 count = qty;
     InventoryItemRef iRef(nullptr);
     if (sDataMgr.IsStation(m_locationID)) {
         iRef = sItemFactory.GetStationRef(m_locationID)->GetMyInventory()->GetByTypeFlag(typeID, flagHangar);
@@ -1700,7 +1700,7 @@ void Client::RemoveMissionItem(uint16 typeID, uint32 qty)
         }
     }
 
-    if (count) {
+    if (count >= 0) {
         iRef = GetShip()->GetMyInventory()->GetByTypeFlag(typeID, flagCargoHold);
         if (iRef.get() != nullptr){
             if (count < iRef->quantity()) {
@@ -1711,9 +1711,9 @@ void Client::RemoveMissionItem(uint16 typeID, uint32 qty)
                 iRef->Delete();
             }
         }
+    } else {
+        // make error here for not enough?
     }
-    if (count)
-        ;  // make error here for not enough?
 }
 
 bool Client::ContainsTypeQty(uint16 typeID, uint32 qty) const

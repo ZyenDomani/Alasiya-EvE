@@ -44,6 +44,11 @@ public:
      * @param[in] outputFile The output file.
      */
     Generator( FILE* outputFile = NULL );
+    /** @todo  finish this for -Weffc++ */
+    Generator(const Generator&) =delete;
+    Generator& operator=(const Generator&) =delete;
+
+    virtual ~Generator()                                { /* do nothing here */ }
 
     /**
      * @brief Sets output file.

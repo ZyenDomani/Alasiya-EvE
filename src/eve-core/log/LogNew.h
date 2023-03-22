@@ -45,116 +45,28 @@ public:
     /// Primary constructor, initializes logging.
     NewLog();
     NewLog(std::string logPath);
+    /** @todo  finish this for -Weffc++ */
+    NewLog(const NewLog&) =delete;
+    NewLog& operator=(const NewLog&) =delete;
+
     /// Destructor, closes the logfile.
-    ~NewLog();
+    virtual ~NewLog();
 
     void Initialize();
 
-    /**
-     * @brief Initializes and sets the Log file path.
-     *
-     * @param[in] logPath is the absolute or relative path where log files are to be stored
-     */
     void InitializeLogging( std::string logPath );
-    /**
-     * @brief Logs a message to file.
-     *
-     * @param[in] source is the source from where the message is printed.
-     * @param[in] fmt is the message itself.
-     */
     void Log( const char* source, const char* fmt, ... );
-    /**
-     * @brief Logs error message to console and file.
-     *
-     * @param[in] source is the source from where the message is printed.
-     * @param[in] fmt is the error message itself.
-     */
     void Error( const char* source, const char* fmt, ... );
-    /**
-     * @brief Logs a warning message to file.
-     *
-     * @param[in] source is the source from where the message is printed.
-     * @param[in] fmt is the message itself.
-     */
     void Warning( const char* source, const char* fmt, ... );
-    /**
-     * @brief Logs a message to console in white.
-     *
-     * @param[in] source is the source from where the message is printed.
-     * @param[in] fmt is the message itself.
-     */
     void White( const char* source, const char* fmt, ... );
-    /**
-     * @brief Logs a message to console in green.
-     *
-     * @param[in] source is the source from where the message is printed.
-     * @param[in] fmt is the message itself.
-     */
     void Green( const char* source, const char* fmt, ... );
-    /**
-     * @brief Logs a message to console in blue.
-     *
-     * @param[in] source is the source from where the message is printed.
-     * @param[in] fmt is the message itself.
-     */
-	void Blue( const char* source, const char* fmt, ... );
-	/**
-	 * @brief Logs a message to console in magenta.
-	 *
-	 * @param[in] source is the source from where the message is printed.
-	 * @param[in] fmt is the message itself.
-	 */
-	void Magenta( const char* source, const char* fmt, ... );
-	/**
-	 * @brief Logs a message to console in yellow.
-	 *
-	 * @param[in] source is the source from where the message is printed.
-	 * @param[in] fmt is the message itself.
-	 */
+    void Blue( const char* source, const char* fmt, ... );
+    void Magenta( const char* source, const char* fmt, ... );
     void Yellow( const char* source, const char* fmt, ... );
-    /**
-     * @brief Logs a message to console in cyan.
-     *
-     * @param[in] source is the source from where the message is printed.
-     * @param[in] fmt is the message itself.
-     */
     void Cyan( const char* source, const char* fmt, ... );
-    /**
-     * @brief Logs a debug message to file and console.
-     *
-     * Optimized out on a release build.
-     *
-     * @param[in] source is the source from where the message is printed.
-     * @param[in] fmt is the message itself.
-     */
     void Debug( const char* source, const char* fmt, ... );
-
-    /**
-     * @brief Sets the logfile to be used.
-     *
-     * @param[in] filename A name of file.
-     *
-     * @retval true  The new logfile was successfully opened.
-     * @retval false Failed to open the new logfile.
-     */
     bool SetLogfile( const char* filename );
-    /**
-     * @brief Sets the logfile to be used.
-     *
-     * Passed @a file is closed during destruction.
-     *
-     * @param[in] file A handle to file.
-     *
-     * @retval true  The new logfile was successfully opened.
-     * @retval false Failed to open the new logfile.
-     */
     bool SetLogfile( FILE* file );
-
-    /**
-     * @brief Sets the log system time every main loop.
-     *
-     * @param[in] time is the timestamp.
-     */
     void SetTime( time_t time ) { mTime = time; }
 
 protected:
@@ -232,18 +144,8 @@ protected:
 
     bool m_initialized;
 
-#ifdef HAVE_WINDOWS_H
-    /// Handle to standard output stream.
-    const HANDLE mStdOutHandle;
-    /// Handle to standard error stream.
-    const HANDLE mStdErrHandle;
-
-    /// Color translation table.
-    static const WORD COLOR_TABLE[ COLOR_COUNT ];
-#else /* !HAVE_WINDOWS_H */
     /// Color translation table.
     static const char* const COLOR_TABLE[ COLOR_COUNT ];
-#endif /* !HAVE_WINDOWS_H */
 };
 
 /// Evaluates to a NewLog instance.

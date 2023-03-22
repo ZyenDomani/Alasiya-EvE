@@ -102,6 +102,10 @@ class DBResultRow
 {
 public:
     DBResultRow();
+    /** @todo  finish this for -Weffc++ */
+    DBResultRow(const DBResultRow&) =delete;
+    DBResultRow& operator=(const DBResultRow&) =delete;
+
     ~DBResultRow() { /* do nothing here */ }
 
     bool IsNull( uint32 index ) const { return ( NULL == GetText( index ) ); }
@@ -142,7 +146,11 @@ public:
     enum eStatus { Closed, Connected, Error };
 
     DBcore();
-    ~DBcore() { /* do nothing here */ }
+    /** @todo  finish this for -Weffc++ */
+    DBcore(const DBcore&) =delete;
+    DBcore& operator=(const DBcore&) =delete;
+
+    virtual ~DBcore()                     { /* do nothing here */ }
 
     void    Close();
     void    Initialize(std::string host, std::string user, std::string password, std::string database, bool compress=false, bool SSL=false,

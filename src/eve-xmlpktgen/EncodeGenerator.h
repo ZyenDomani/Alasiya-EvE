@@ -33,6 +33,11 @@ class ClassEncodeGenerator
 {
 public:
     ClassEncodeGenerator( FILE* outputFile = NULL );
+    /** @todo  finish this for -Weffc++ */
+    ClassEncodeGenerator(const ClassEncodeGenerator&) =delete;
+    ClassEncodeGenerator& operator=(const ClassEncodeGenerator&) =delete;
+
+    virtual ~ClassEncodeGenerator()                     { /* do nothing here */ }
 
 protected:
     const char* top() const { return mVariableStack.top().c_str(); }

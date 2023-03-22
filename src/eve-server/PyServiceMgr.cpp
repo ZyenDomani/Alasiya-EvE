@@ -63,7 +63,8 @@ void PyServiceMgr::Close() {
         SafeDelete(bo);
     }
 
-    SafeDelete(cache_service);
+    /** @todo this is already deleted here... */
+    //SafeDelete(cache_service);
     sLog.Warning("     PyServiceMgr", "Services Manager has been closed." );
 }
 

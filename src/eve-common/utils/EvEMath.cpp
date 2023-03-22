@@ -202,10 +202,10 @@ float EvEMath::Market::BrokerFee(uint8 brSkillLvl, float fStanding, float cStand
     return EvE::max(fee, 100.0f);
 }
 
-float EvEMath::Market::RelistFee(float oldPrice, float newPrice, float brokerPercent/*0.01*/, float discount/*0*/)
+float EvEMath::Market::RelistFee(float oldPrice, float newPrice, float brokerPercent/*0.01*/, float discount/*0.0*/)
 {
     // this needs a 'Relist Discount' but no clue where to find data for it yet
-    return EvE::max(brokerPercent * (newPrice -oldPrice)) + (1 -discount) *brokerPercent *newPrice;
+    return EvE::max(brokerPercent * (newPrice -oldPrice)) + (1 -discount) * brokerPercent * newPrice;
 }
 
 float EvEMath::Market::SalesTax(uint8 accountingLvl/*0*/, uint8 taxEvasionLvl/*0*/)

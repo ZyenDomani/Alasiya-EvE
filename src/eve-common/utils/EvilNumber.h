@@ -112,10 +112,10 @@ public:
     EvilNumber operator%=(const EvilNumber& val)
     {    return _SelfModulus(val);      }
 
-    EvilNumber operator++()
+    EvilNumber& operator++()
     {    return _SelfIncrement();       }
 
-    EvilNumber operator++(int)
+    EvilNumber& operator++(int)
     {
         EvilNumber temp = *this;
         _SelfIncrement();
@@ -365,7 +365,7 @@ public:
     {
         char buff[32]; // max uint32 will result in a 10 char string, a float will result in a ? char string.
         if (mType == evil_number_int) {
-            snprintf(buff, 32, "%lli", iVal);
+            snprintf(buff, 32, "%li", iVal);
 	} else if (mType == evil_number_float) {
             snprintf(buff, 32, "%f", fVal);
 	} else {
