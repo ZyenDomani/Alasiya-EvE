@@ -80,6 +80,8 @@ class TargetManager {
 public:
     TargetManager(SystemEntity* self);
     ~TargetManager()                            { /* do nothing here */ }
+    TargetManager(const TargetManager&) =delete;
+    TargetManager& operator=(const TargetManager&) =delete;
 
     /* Common Methods for all objects */
     bool                Process();

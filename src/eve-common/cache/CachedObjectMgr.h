@@ -46,10 +46,10 @@ class PyCachedObjectDecoder;
 #pragma pack(1)
 struct CacheFileHeader
 {
-    int64 timestamp;
-    uint32 version;
-    uint32 length;
-    uint32 magic;
+    int64 timestamp=0;
+    uint32 version=0;
+    uint32 length=0;
+    uint32 magic=0;
 };
 #pragma pack()
 
@@ -106,6 +106,8 @@ protected:
     public:
         CacheRecord();
         ~CacheRecord();
+        CacheRecord(const CacheRecord&) =delete;
+        CacheRecord& operator=(const CacheRecord&) =delete;
 
         PyObject *EncodeHint() const;
 
@@ -127,6 +129,8 @@ class PyCachedObject
 public:
     PyCachedObject();
     ~PyCachedObject();
+    PyCachedObject(const PyCachedObject&) =delete;
+    PyCachedObject& operator=(const PyCachedObject&) =delete;
 
     void Dump(FILE *into, const char *pfx, bool contents_too = false);
 //  bool Decode(PySubStream **ss);   //consumes substream
@@ -153,6 +157,8 @@ class PyCachedObjectDecoder
 public:
     PyCachedObjectDecoder();
     ~PyCachedObjectDecoder();
+    PyCachedObjectDecoder(const PyCachedObjectDecoder&) =delete;
+    PyCachedObjectDecoder& operator=(const PyCachedObjectDecoder&) =delete;
 
     void Dump(FILE *into, const char *pfx, bool contents_too = false);
     bool Decode(PySubStream **ss);   //consumes substream
@@ -178,6 +184,8 @@ class PyCachedCall
 public:
     PyCachedCall();
     ~PyCachedCall();
+    PyCachedCall(const PyCachedCall&) =delete;
+    PyCachedCall& operator=(const PyCachedCall&) =delete;
 
     void Dump(FILE *into, const char *pfx, bool contents_too = false);
     bool Decode(PySubStream **ss);   //consumes substream

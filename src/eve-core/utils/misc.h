@@ -121,7 +121,7 @@ namespace EvE {
     double trunicate2(double dig=0);
 
     // floating point comparison to 'precision' places
-    bool AlmostEquals(float mine, float hers, uint8 precision=5);
+    //bool AlmostEquals(float mine, float hers, uint8 precision=5);
     // floating point comparison to 'precision' places
     bool AlmostEquals(double mine, double hers, uint8 precision=10);
 

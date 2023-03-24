@@ -40,6 +40,8 @@ class Inventory
 public:
     Inventory(InventoryItemRef iRef);
     virtual ~Inventory() noexcept                       { /* do nothing here*/ }
+    Inventory(const Inventory&) =delete;
+    Inventory& operator=(const Inventory&) =delete;
 
     void Reset();
     void Unload();  // used by stations and solar systems for item saving and unloading

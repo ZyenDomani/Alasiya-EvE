@@ -67,12 +67,12 @@ namespace Fleet {
 
 // all bonuses are 2%/lvl
 struct BoostData {
-    int8 armored;  // armor hit points
-    int8 leader;   // targeting speed
-    int8 info;     // targeting range
-    int8 mining;   // mining yield
-    int8 siege;    // shield capacity
-    int8 skirmish; // agility
+    int8 armored=0;  // armor hit points
+    int8 leader=0;   // targeting speed
+    int8 info=0;     // targeting range
+    int8 mining=0;   // mining yield
+    int8 siege=0;    // shield capacity
+    int8 skirmish=0; // agility
 };
 
 class Client;
@@ -80,18 +80,18 @@ class Client;
 struct FleetAdvert {
     bool hideInfo :1;
     bool joinNeedsApproval :1;
-    uint8 inviteScope;
-    int32 fleetID;
-    uint32 solarSystemID;
-    int64 advertTime;
-    int64 dateCreated;
-    float local_minSecurity;
-    float public_minStanding;
-    float local_minStanding;
-    float public_minSecurity;
-    Client* leader;
-    std::string fleetName;
-    std::string description;
+    uint8 inviteScope=0;
+    int32 fleetID=0;
+    uint32 solarSystemID=0;
+    int64 advertTime=0;
+    int64 dateCreated=0;
+    float local_minSecurity=0.0f;;
+    float public_minStanding=0.0f;;
+    float local_minStanding=0.0f;;
+    float public_minSecurity=0.0f;;
+    Client* leader=nullptr;
+    std::string fleetName="none";
+    std::string description="none";
     std::vector<uint32> public_allowedEntities;
     std::vector<uint32> local_allowedEntities;
 };
@@ -101,13 +101,13 @@ struct FleetData {
     bool isRegistered :1;
     bool isVoiceEnabled :1;
     bool isLootLogging :1;
-    int8 squads;
-    int64 dateCreated;
-    Client* creator;
-    Client* leader;
-    Client* booster;
-    std::string name;
-    std::string motd;
+    int8 squads=0;
+    int64 dateCreated=0;
+    Client* creator=nullptr;
+    Client* leader=nullptr;
+    Client* booster=nullptr;
+    std::string name="none";
+    std::string motd="none";
     std::multimap<uint32, uint32> isMutedByLeader;
     std::multimap<uint32, uint32> isExcludedFromMuting;
 };
@@ -116,28 +116,28 @@ struct FleetData {
 struct WingData {
     uint32 fleetID;
     BoostData boost;
-    Client* leader;
-    Client* booster;
-    std::string name;
+    Client* leader=nullptr;
+    Client* booster=nullptr;
+    std::string name="none";
 };
 
 // wingID, squad name and member count (5 per wing)
 struct SquadData {
-    uint32 fleetID;
-    uint32 wingID;
-    BoostData boost;
-    Client* leader;
-    Client* booster;
-    std::string name;
+    uint32 fleetID=0;
+    uint32 wingID=0;
+    BoostData boost=BoostData();
+    Client* leader=nullptr;;
+    Client* booster=nullptr;;
+    std::string name="none";
     std::map<uint32, Client*> members;
 };
 
 struct InviteData {
-    int8 role;
-    int32 wingID;
-    int32 squadID;
-    Client* invited;
-    Client* inviteBy;
+    int8 role=0;
+    int32 wingID=0;
+    int32 squadID=0;
+    Client* invited=nullptr;;
+    Client* inviteBy=nullptr;;
 };
 
 #endif  // EVEMU_SRC_FLEET_DATA_H_

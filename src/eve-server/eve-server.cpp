@@ -313,13 +313,13 @@ int main( int argc, char* argv[] )
     std::printf("\n");     // spacer
 
     sLog.Blue("     ServerConfig", "Rate Modifiers");
-    if (sConfig.rates.secRate != 1.0) {
-        sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
+    if (sConfig.rates.secRate != 1.0f) {
+        sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate * 100) );
     } else {
         sLog.Green("        SecStatus","Normal.");
     }
-    if (sConfig.rates.npcBountyMultiply != 1.0) {
-        sLog.Yellow("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
+    if (sConfig.rates.npcBountyMultiply != 1.0f) {
+        sLog.Yellow("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply * 100) );
     } else {
         sLog.Green("          Bountys","Normal.");
     }
@@ -333,80 +333,80 @@ int main( int argc, char* argv[] )
     } else {
         sLog.Green("    Salvage Drops","Normal.");
     }
-    if (sConfig.rates.DropMoney != 1.0) {
-        sLog.Yellow("      Isk Rewards","Modified at %.0f%%.", (sConfig.rates.DropMoney *100) );
+    if (sConfig.rates.DropMoney != 1.0f) {
+        sLog.Yellow("      Isk Rewards","Modified at %.0f%%.", (sConfig.rates.DropMoney * 100) );
     } else {
         sLog.Green("      Isk Rewards","Normal.");
     }
-    if (sConfig.rates.damageRate != 1.0) {
-        sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
+    if (sConfig.rates.damageRate != 1.0f) {
+        sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate * 100) );
     } else {
         sLog.Green("      All Damages","Normal.");
     }
-    if (sConfig.rates.turretDamage != 1.0) {
-        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretDamage *100) );
+    if (sConfig.rates.turretDamage != 1.0f) {
+        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretDamage * 100) );
     } else {
         sLog.Green("       Turret Dmg","Normal.");
     }
-    if (sConfig.rates.turretRoF != 1.0) {
-        sLog.Yellow("       Turret ROF","Modified at %.0f%%.", (sConfig.rates.turretRoF *100) );
+    if (sConfig.rates.turretRoF != 1.0f) {
+        sLog.Yellow("       Turret ROF","Modified at %.0f%%.", (sConfig.rates.turretRoF * 100) );
     } else {
         sLog.Green("       Turret ROF","Normal.");
     }
-    if (sConfig.rates.missileDamage != 1.0) {
-        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileDamage *100) );
+    if (sConfig.rates.missileDamage != 1.0f) {
+        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileDamage * 100) );
     } else {
         sLog.Green("      Missile Dmg","Normal.");
     }
-    if (sConfig.rates.missileRoF != 1.0) {
-        sLog.Yellow("      Missile ROF","Modified at %.0f%%.", (sConfig.rates.missileRoF *100) );
+    if (sConfig.rates.missileRoF != 1.0f) {
+        sLog.Yellow("      Missile ROF","Modified at %.0f%%.", (sConfig.rates.missileRoF * 100) );
     } else {
         sLog.Green("      Missile ROF","Normal.");
     }
-    if (sConfig.rates.missileTime != 1.0) {
-        sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
+    if (sConfig.rates.missileTime != 1.0f) {
+        sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime * 100) );
     } else {
         sLog.Green("     Missile Time","Normal.");
     }
     std::printf("\n");     // spacer
     sLog.Blue("     ServerConfig", "R.A.M. Rate Modifiers");
-    if (sConfig.ram.ResPE != 1.0) {
-        sLog.Yellow(" PE Research Time","Modified at %.0f%%.", (sConfig.ram.ResPE *100) );
+    if (sConfig.ram.ResPE != 1.0f) {
+        sLog.Yellow(" PE Research Time","Modified at %.0f%%.", (sConfig.ram.ResPE * 100) );
     } else {
         sLog.Green(" PE Research Time","Normal.");
     }
-    if (sConfig.ram.ResME != 1.0) {
-        sLog.Yellow(" ME Research Time","Modified at %.0f%%.", (sConfig.ram.ResME *100) );
+    if (sConfig.ram.ResME != 1.0f) {
+        sLog.Yellow(" ME Research Time","Modified at %.0f%%.", (sConfig.ram.ResME * 100) );
     } else {
         sLog.Green(" ME Research Time","Normal.");
     }
-    if (sConfig.ram.MatMod != 1.0) {
-        sLog.Yellow("Material Modifier","Modified at %.0f%%.", (sConfig.ram.MatMod *100) );
+    if (sConfig.ram.MatMod != 1.0f) {
+        sLog.Yellow("Material Modifier","Modified at %.0f%%.", (sConfig.ram.MatMod * 100) );
     } else {
         sLog.Green("Material Modifier","Normal.");
     }
-    if (sConfig.ram.CopyTime != 1.0) {
-        sLog.Yellow("        Copy Time","Modified at %.0f%%.", (sConfig.ram.CopyTime *100) );
+    if (sConfig.ram.CopyTime != 1.0f) {
+        sLog.Yellow("        Copy Time","Modified at %.0f%%.", (sConfig.ram.CopyTime * 100) );
     } else {
         sLog.Green("        Copy Time","Normal.");
     }
-    if (sConfig.ram.ProdTime != 1.0) {
-        sLog.Yellow("  Production Time","Modified at %.0f%%.", (sConfig.ram.ProdTime *100) );
+    if (sConfig.ram.ProdTime != 1.0f) {
+        sLog.Yellow("  Production Time","Modified at %.0f%%.", (sConfig.ram.ProdTime * 100) );
     } else {
         sLog.Green("  Production Time","Normal.");
     }
-    if (sConfig.ram.InventTime != 1.0) {
-        sLog.Yellow("   Invention Time","Modified at %.0f%%.", (sConfig.ram.InventTime *100) );
+    if (sConfig.ram.InventTime != 1.0f) {
+        sLog.Yellow("   Invention Time","Modified at %.0f%%.", (sConfig.ram.InventTime * 100) );
     } else {
         sLog.Green("   Invention Time","Normal.");
     }
-    if (sConfig.ram.ReTime != 1.0) {
-        sLog.Yellow("          RE Time","Modified at %.0f%%.", (sConfig.ram.ReTime *100) );
+    if (sConfig.ram.ReTime != 1.0f) {
+        sLog.Yellow("          RE Time","Modified at %.0f%%.", (sConfig.ram.ReTime * 100) );
     } else {
         sLog.Green("          RE Time","Normal.");
     }
-    if (sConfig.ram.WasteMod != 1.0) {
-        sLog.Yellow("   Waste Modifier","Modified at %.0f%%.", (sConfig.ram.WasteMod *100) );
+    if (sConfig.ram.WasteMod != 1.0f) {
+        sLog.Yellow("   Waste Modifier","Modified at %.0f%%.", (sConfig.ram.WasteMod * 100) );
     } else {
         sLog.Green("   Waste Modifier","Normal.");
     }
@@ -414,27 +414,27 @@ int main( int argc, char* argv[] )
 
     sLog.Blue("     ServerConfig","Critical Hit Chances");
     if (sConfig.rates.PlayerCritChance != 0.02f) {
-        sLog.Yellow("           Player","Modified at %.1f%%.", (sConfig.rates.PlayerCritChance *100) );
+        sLog.Yellow("           Player","Modified at %.1f%%.", (sConfig.rates.PlayerCritChance * 100) );
     } else {
         sLog.Green("           Player","Normal at 2%%.");
     }
     if (sConfig.rates.NpcCritChance != 0.015f) {
-        sLog.Yellow("              NPC","Modified at %.1f%%.", (sConfig.rates.NpcCritChance *100) );
+        sLog.Yellow("              NPC","Modified at %.1f%%.", (sConfig.rates.NpcCritChance * 100) );
     } else {
         sLog.Green("              NPC","Normal at 1.5%%.");
     }
     if (sConfig.rates.SentryCritChance != 0.02f) {
-        sLog.Yellow("           Sentry","Modified at %.1f%%.", (sConfig.rates.SentryCritChance *100) );
+        sLog.Yellow("           Sentry","Modified at %.1f%%.", (sConfig.rates.SentryCritChance * 100) );
     } else {
         sLog.Green("           Sentry","Normal at 2%%.");
     }
     if (sConfig.rates.DroneCritChance != 0.03f) {
-        sLog.Yellow("            Drone","Modified at %.1f%%.", (sConfig.rates.DroneCritChance *100) );
+        sLog.Yellow("            Drone","Modified at %.1f%%.", (sConfig.rates.DroneCritChance * 100) );
     } else {
         sLog.Green("            Drone","Normal at 3%%.");
     }
     if (sConfig.rates.ConcordCritChance != 0.05f) {
-        sLog.Yellow("          Concord","Modified at %.1f%%.", (sConfig.rates.ConcordCritChance *100) );
+        sLog.Yellow("          Concord","Modified at %.1f%%.", (sConfig.rates.ConcordCritChance * 100) );
     } else {
         sLog.Green("          Concord","Normal at 5%%.");
     }
@@ -502,17 +502,17 @@ int main( int argc, char* argv[] )
         sLog.Warning("   Asteroid Belts","Disabled.");
     }
     if (sConfig.npc.StaticSpawns) {
-        sLog.Green("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer /60);
+        sLog.Green("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer / 60);
     } else {
         sLog.Warning("    Static Spawns","Disabled.");
     }
     if (sConfig.npc.RoamingSpawns) {
-        sLog.Green("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer /60);
+        sLog.Green("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer / 60);
     } else {
         sLog.Warning("   Roaming Spawns","Disabled.");
     }
     if (sConfig.npc.RoamingSpawns or sConfig.npc.StaticSpawns)
-        sLog.Green("   Spawns Enabled","Respawn timer checks every %u minutes", sConfig.npc.RespawnTimer /60);
+        sLog.Green("   Spawns Enabled","Respawn timer checks every %u minutes", sConfig.npc.RespawnTimer / 60);
     if (sConfig.server.BountyPayoutDelayed) {
         sLog.Green(" Delayed Bounties","Delayed Bounties are Enabled.  Loop runs every %u minutes", sConfig.server.BountyPayoutTimer);
         if (sConfig.server.FleetShareDelayed) {
@@ -542,7 +542,7 @@ int main( int argc, char* argv[] )
 
     sLog.Blue("     ServerConfig", "Misc Switches");
     if (sConfig.server.ModuleDamageChance) {
-        sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
+        sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance * 100));
     } else {
         sLog.Warning("    Module Damage","Disabled.");
     }

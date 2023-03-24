@@ -82,67 +82,67 @@ namespace PI {
 
 namespace Launch {
     struct Data {
-        uint8 status;
-        uint32 launchID;
-        uint32 itemID;
-        uint32 solarSystemID;
-        uint32 planetID;
-        int64 launchTime;
-        double x;
-        double y;
-        double z;
+        uint8 status=0;
+        uint32 launchID=0;
+        uint32 itemID=0;
+        uint32 solarSystemID=0;
+        uint32 planetID=0;
+        int64 launchTime=0;
+        double x=0.0;
+        double y=0.0;
+        double z=0.0;
     };
 }
 
 /** @todo these need their own namespace */
 /* POD structure entries for PI data */
 struct PlanetResourceData {
-    uint16 type_1;
-    uint16 type_2;
-    uint16 type_3;
-    uint16 type_4;
-    uint16 type_5;
-    float dist_1;
-    float dist_2;
-    float dist_3;
-    float dist_4;
-    float dist_5;
-    std::string buffer_1;
-    std::string buffer_2;
-    std::string buffer_3;
-    std::string buffer_4;
-    std::string buffer_5;
+    uint16 type_1=0;
+    uint16 type_2=0;
+    uint16 type_3=0;
+    uint16 type_4=0;
+    uint16 type_5=0;
+    float dist_1=0.0f;
+    float dist_2=0.0f;
+    float dist_3=0.0f;
+    float dist_4=0.0f;
+    float dist_5=0.0f;
+    std::string buffer_1="none";
+    std::string buffer_2="none";
+    std::string buffer_3="none";
+    std::string buffer_4="none";
+    std::string buffer_5="none";
 };
 
 struct PI_Link {
-    int8 state;
-    uint16 level;
-    uint16 typeID;
-    uint32 endpoint1;
-    uint32 endpoint2;
+    int8 state=0;
+    uint16 level=0;
+    uint16 typeID=0;
+    uint32 endpoint1=0;
+    uint32 endpoint2=0;
 };
 
 struct PI_Route {
-    int8 state;
-    int8 priority;
-    uint16 commodityTypeID;
-    uint16 commodityQuantity;
-    uint32 srcPinID;
-    uint32 destPinID;
+    int8 state=0;
+    int8 priority=0;
+    uint16 commodityTypeID=0;
+    uint16 commodityQuantity=0;
+    uint32 srcPinID=0;
+    uint32 destPinID=0;
     std::list<uint32> path;
 };
 
 struct PI_Heads {
-    uint16 typeID;
-    uint32 ecuPinID;
-    double latitude;
-    double longitude;
+    uint16 typeID=0;
+    uint32 ecuPinID=0;
+    double latitude=0.0;
+    double longitude=0.0;
 };
 
 struct PI_Schematic {
-    uint16 outputQty;
-    uint16 outputType;
-    uint16 cycleTime;                   // in seconds
+    uint16 outputQty=0;
+    uint16 outputType=0;
+    uint16 cycleTime=0;                 // in seconds
 
     // typeID, qty
     std::map<uint16, uint16> inputs;
@@ -153,16 +153,16 @@ struct PI_Plant {
     bool hasReceivedInputs :1;          // plant has received material from upstream process.  this enables check to verify type/qty for processing
     bool receivedInputsLastCycle :1;    // plant has received all required mat'l to make a production run.
 
-    int8 state;
-    uint8 pLevel;                       // production level of this plant
-    uint8 schematicID;
-    uint16 qtyPerCycle;
-    int64 cycleTime;                    // in filetime
-    //int64 expiryTime;                   // in filetime
-    int64 installTime;                  // in filetime
-    int64 lastRunTime;                  // in filetime
+    int8 state=0;
+    uint8 pLevel=0;                     // production level of this plant
+    uint8 schematicID=0;
+    uint16 qtyPerCycle=0;
+    int64 cycleTime=0;                  // in filetime
+    //int64 expiryTime;                 // in filetime
+    int64 installTime=0;                // in filetime
+    int64 lastRunTime=0;                // in filetime
 
-    PI_Schematic data;
+    PI_Schematic data=PI_Schematic();
 };
 
 struct PI_Pin {
@@ -180,25 +180,25 @@ struct PI_Pin {
     bool hasReceivedInputs :1;          // Process Only
     bool receivedInputsLastCycle :1;    // Process Only
 
-    int8 state;                         // common for all pins
-    uint16 level;                       // common for all pins
-    uint16 typeID;                      // common for all pins
-    uint16 schematicID;                 // used in ecu as extractor head typeID
-    uint16 programType;                 // used in extractors as extracted resource typeID
-    uint32 qtyPerCycle;                 // Process and ECU
-    uint32 ownerID;                     // common for all pins
-    int64 lastRunTime;                  // common for all pins - copy of launchTime for Spaceports
-    int64 cycleTime;                    // Process and ECU      // saved as filetime
-    int64 expiryTime;                   // ECU Only             // saved as filetime
-    int64 installTime;                  // Process and ECU processing time, Pin Creation Time for others      // saved as filetime
-    int64 lastLaunchTime;               // Command Center and Spaceports  // saved as filetime
+    int8 state=-1;                      // common for all pins
+    uint16 level=0;                     // common for all pins
+    uint16 typeID=0;                    // common for all pins
+    uint16 schematicID=0;               // used in ecu as extractor head typeID
+    uint16 programType=0;               // used in extractors as extracted resource typeID
+    uint32 qtyPerCycle=0;               // Process and ECU
+    uint32 ownerID=0;                   // common for all pins
+    int64 lastRunTime=0;                // common for all pins - copy of launchTime for Spaceports
+    int64 cycleTime=0;                  // Process and ECU      // saved as filetime
+    int64 expiryTime=0;                 // ECU Only             // saved as filetime
+    int64 installTime=0;                // Process and ECU processing time, Pin Creation Time for others      // saved as filetime
+    int64 lastLaunchTime=0;             // Command Center and Spaceports  // saved as filetime
 
-    float latitude;                     // planetary location common for all pins
-    float longitude;                    // planetary location common for all pins
+    float latitude=0.0f;                // planetary location common for all pins
+    float longitude=0.0f;               // planetary location common for all pins
 
-    float capacity;                     // pin volume cap in m3.  - this is not implemented yet
-    float quantity;                     // volume of current contents in m3.  - this is not implemented yet
-    float headRadius;                   // ECU Only
+    float capacity=0.0f;                // pin volume cap in m3.  - this is not implemented yet
+    float quantity=0.0f;                // volume of current contents in m3.  - this is not implemented yet
+    float headRadius=0.0f;              // ECU Only
 
     std::map<uint16, PI_Heads> heads;   // ECU Only
     std::map<uint16, uint32> contents;  // Storage    <typeID, qty>
@@ -207,7 +207,7 @@ struct PI_Pin {
 
 class PI_CCPin {
 public:
-    PI_CCPin()                                          { Init(); }
+    PI_CCPin() : level(0), ccPinID(0)                   { /* Init(); */ }
     ~PI_CCPin()                                         { /* do nothing here */ }
 
     void Clear()

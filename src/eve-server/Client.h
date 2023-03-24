@@ -118,7 +118,7 @@ public:
     int64 GetClientID() const                           { return pSession->GetCurrentLong( "user_clientid" ); }
     int64 GetSessionID() const                          { return pSession->GetCurrentLong( "sessionID" ); }
 
-    double GetCorpTaxRate()                             { return (m_char.get() != nullptr ? m_char->corpTaxRate() : 0.0); }
+    float GetCorpTaxRate()                              { return (m_char.get() != nullptr ? m_char->corpTaxRate() : 0.0f); }
     int32 GetCorporationID() const                      { return pSession->GetCurrentInt( "corpid" ); }
     int32 GetCorpHQ() const                             { return pSession->GetCurrentInt( "hqID" ); }
     int32 GetAllianceID() const                         { return pSession->GetCurrentInt( "allianceid" ); }

@@ -112,10 +112,10 @@ public:
     EvilNumber operator%=(const EvilNumber& val)
     {    return _SelfModulus(val);      }
 
-    EvilNumber& operator++()
+    EvilNumber operator++()
     {    return _SelfIncrement();       }
 
-    EvilNumber& operator++(int)
+    EvilNumber operator++(int)
     {
         EvilNumber temp = *this;
         _SelfIncrement();

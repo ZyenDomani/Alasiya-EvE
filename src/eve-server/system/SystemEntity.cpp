@@ -49,26 +49,12 @@
 
 
 SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-:m_self(self),
-m_services(services),
-m_system(system),
-m_bubble(nullptr),
-m_destiny(nullptr),
-m_targMgr(nullptr),
-m_killed(false)
+:m_self(self),m_services(services),m_system(system),m_bubble(nullptr),m_destiny(nullptr),
+m_targMgr(nullptr),m_killed(false),m_warID(0),m_allyID(0),m_corpID(0),m_fleetID(0),
+m_ownerID(1),m_radius(self->GetAttribute(AttrRadius).get_int()),m_harmonic(EVEPOS::Harmonic::Inactive)
 {
     assert(m_system != nullptr);
     assert(m_self.get() != nullptr);
-
-    m_warID = 0;
-    m_allyID = 0;
-    m_corpID = 0;
-    m_fleetID = 0;
-    m_ownerID = 1;
-
-    m_radius = m_self->GetAttribute(AttrRadius).get_int();
-
-    m_harmonic = EVEPOS::Harmonic::Inactive;
 
     _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %i.", self->name(), self->itemID(), m_radius);
 }
@@ -79,6 +65,15 @@ SystemEntity::SystemEntity(const SystemEntity* oth)
 m_destiny(oth->m_destiny),m_targMgr(oth->m_targMgr),m_killed(oth->m_killed),m_warID(oth->m_warID),
 m_allyID(oth->m_allyID),m_corpID(oth->m_corpID),m_fleetID(oth->m_fleetID),m_ownerID(oth->m_ownerID),
 m_radius(oth->m_radius),m_harmonic(oth->m_harmonic)
+{
+    // nothing to do here
+}
+
+SystemEntity::SystemEntity ( const SystemEntity& oth )
+: m_self(oth.m_self),m_services(oth.m_services),m_system(oth.m_system),m_bubble(oth.m_bubble),
+m_destiny(oth.m_destiny),m_targMgr(oth.m_targMgr),m_killed(oth.m_killed),m_warID(oth.m_warID),
+m_allyID(oth.m_allyID),m_corpID(oth.m_corpID),m_fleetID(oth.m_fleetID),m_ownerID(oth.m_ownerID),
+m_radius(oth.m_radius),m_harmonic(oth.m_harmonic)
 {
     // nothing to do here
 }
@@ -330,6 +325,13 @@ m_beltMgr(nullptr)
     // nothing to do here
 }
 
+BeltSE::BeltSE ( const BeltSE& oth )
+: StaticSystemEntity(oth.m_self, oth.m_services, oth.m_system),
+m_beltMgr(nullptr)
+{
+    // nothing to do here
+}
+
 bool BeltSE::LoadExtras() {
     if (!StaticSystemEntity::LoadExtras())
         return false;
@@ -352,6 +354,14 @@ m_jumps(nullptr)
 // copy c'tor
 StargateSE::StargateSE(const StargateSE* oth)
 : StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system),
+m_sbuSE(nullptr),
+m_jumps(nullptr)
+{
+    /** @todo  this is incomplete */
+}
+
+StargateSE::StargateSE ( const StargateSE& oth )
+: StaticSystemEntity(oth.m_self, oth.m_services, oth.m_system),
 m_sbuSE(nullptr),
 m_jumps(nullptr)
 {

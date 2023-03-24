@@ -197,10 +197,10 @@ public:
 
     //optimized checks for a very common case
     GaExpInl bool isZero() const {
-        return ((x == 0.0f) and (y == 0.0f) and (z == 0.0f));
+        return ((x == 0.0) and (y == 0.0) and (z == 0.0));
     }
     GaExpInl bool isNotZero() const {
-        return ((x != 0.0f) or (y != 0.0f) or (z != 0.0f));
+        return ((x != 0.0) or (y != 0.0) or (z != 0.0));
     }
     GaExpInl bool isNaN() const {
         return (isnan(x) or isnan(y) or isnan(z));
@@ -244,8 +244,8 @@ public:
         GaVec3 uv = v.crossProduct(vec);
         GaVec3 uuv = v.crossProduct(uv);
 
-        uv *= (2.0f * w);
-        uuv *= 2.0f;
+        uv *= (2.0 * w);
+        uuv *= 2.0;
 
         return GaVec3(vec.x + uv.x + uuv.x,vec.y + uv.y + uuv.y,vec.z + uv.z + uuv.z);
     }
@@ -463,7 +463,7 @@ public:
 
     GaExpInl GaVec3 operator*(const GaVec3 &v) const
     {
-        GaFloat w = 1.0f / ( m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] );
+        GaFloat w = 1.0 / ( m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] );
 
         GaVec3 r(
             ( m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] ) * w,

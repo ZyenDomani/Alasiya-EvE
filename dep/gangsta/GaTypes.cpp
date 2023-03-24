@@ -161,7 +161,7 @@ GaVec3 GaVec3::slerp(GaVec3 v0, GaVec3 v1, double t)
     // the shorter path. Note that v1 and -v1 are equivalent when
     // the negation is applied to all four components. Fix by
     // reversing one quaternion.
-    if (dot < 0.0f) {
+    if (dot < 0.0) {
         v1 = (v1 * -1);
         dot = -dot;
     }
@@ -177,7 +177,7 @@ GaVec3 GaVec3::slerp(GaVec3 v0, GaVec3 v1, double t)
 
     // Since dot is in range [0, 0.9995], acos is safe
     double theta_0 = acos(dot);        // theta_0 = angle between input vectors
-    double theta = theta_0*t;          // theta = angle between v0 and result
+    double theta = theta_0 * t;        // theta = angle between v0 and result
     double sin_theta = sin(theta);     // compute this value only once
     double sin_theta_0 = sin(theta_0); // compute this value only once
 
@@ -260,7 +260,7 @@ GaMat4x4 GaMat4x4::adjoint() const
 {
 	return GaMat4x4
 	(
-		matrix_minor(*this, 1, 2, 3, 1, 2, 3),
+        matrix_minor(*this, 1, 2, 3, 1, 2, 3),
         -matrix_minor(*this, 0, 2, 3, 1, 2, 3),
         matrix_minor(*this, 0, 1, 3, 1, 2, 3),
         -matrix_minor(*this, 0, 1, 2, 1, 2, 3),
@@ -287,70 +287,64 @@ GaFloat GaMat4x4::determinant() const
     return m[0][0] * matrix_minor(*this, 1, 2, 3, 1, 2, 3) -
            m[0][1] * matrix_minor(*this, 1, 2, 3, 0, 2, 3) +
            m[0][2] * matrix_minor(*this, 1, 2, 3, 0, 1, 3) -
-	       m[0][3] * matrix_minor(*this, 1, 2, 3, 0, 1, 2);
+           m[0][3] * matrix_minor(*this, 1, 2, 3, 0, 1, 2);
 }
 
 GaMat4x4 GaMat4x4::inverse() const
 {
-	return adjoint() * (1.0f / determinant());
+    return adjoint() * (1.0 / determinant());
 }
 
 GaQuat::GaQuat(const GaMat3x3 &rot)
 {
-	// Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
-	// article "Quaternion Calculus and Fast Animation".
+    // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
+    // article "Quaternion Calculus and Fast Animation".
 
-	GaFloat fTrace = rot[0][0]+rot[1][1]+rot[2][2];
-	GaFloat fRoot;
+    GaFloat fTrace = rot[0][0]+rot[1][1]+rot[2][2];
+    GaFloat fRoot;
 
-	if ( fTrace > 0.0f )
-	{
-		// |w| > 1/2, may as well choose w > 1/2
-		fRoot = Math::squareRoot(fTrace + 1.0f);  // 2w
-		w = 0.5f*fRoot;
-		fRoot = 0.5f/fRoot;  // 1/(4w)
-		v.x = (rot[2][1]-rot[1][2])*fRoot;
-		v.y = (rot[0][2]-rot[2][0])*fRoot;
-		v.z = (rot[1][0]-rot[0][1])*fRoot;
-	}
-	else
-	{
-		// |w| <= 1/2
-		static GaUint s_iNext[3] = { 1, 2, 0 };
-		GaUint i = 0;
-		if ( rot[1][1] > rot[0][0] )
-			i = 1;
-		if ( rot[2][2] > rot[i][i] )
-			i = 2;
-		GaUint j = s_iNext[i];
-		GaUint k = s_iNext[j];
+    if (fTrace > 0.0) {
+        // |w| > 1/2, may as well choose w > 1/2
+        fRoot = Math::squareRoot(fTrace + 1.0f);  // 2w
+        w = 0.5 * fRoot;
+        fRoot = 0.5 / fRoot;  // 1/(4w)
+        v.x = (rot[2][1]-rot[1][2])*fRoot;
+        v.y = (rot[0][2]-rot[2][0])*fRoot;
+        v.z = (rot[1][0]-rot[0][1])*fRoot;
+    } else {
+        // |w| <= 1/2
+        static GaUint s_iNext[3] = { 1, 2, 0 };
+        GaUint i = 0;
+        if ( rot[1][1] > rot[0][0] )
+            i = 1;
+        if ( rot[2][2] > rot[i][i] )
+            i = 2;
+        GaUint j = s_iNext[i];
+        GaUint k = s_iNext[j];
 
-		fRoot = Math::squareRoot(rot[i][i]-rot[j][j]-rot[k][k] + 1.0f);
-		GaFloat* apkQuat[3] = { &v.x, &v.y, &v.z };
-		*apkQuat[i] = 0.5f*fRoot;
-		fRoot = 0.5f/fRoot;
-		w = (rot[k][j]-rot[j][k])*fRoot;
-		*apkQuat[j] = (rot[j][i]+rot[i][j])*fRoot;
-		*apkQuat[k] = (rot[k][i]+rot[i][k])*fRoot;
-	}
+        fRoot = Math::squareRoot(rot[i][i] - rot[j][j] - rot[k][k] + 1.0);
+        GaFloat* apkQuat[3] = { &v.x, &v.y, &v.z };
+        *apkQuat[i] = 0.5 * fRoot;
+        fRoot = 0.5 / fRoot;
+        w = (rot[k][j]-rot[j][k]) * fRoot;
+        *apkQuat[j] = (rot[j][i]+rot[i][j]) * fRoot;
+        *apkQuat[k] = (rot[k][i]+rot[i][k]) * fRoot;
+    }
 }
 
 GaQuat GaQuat::inverse() const
 {
-	GaFloat nrm = w*w + v.x*v.x + v.y*v.y + v.z*v.z;
-    if(nrm > 0.0)
-    {
-		GaFloat inv = 1.0f/nrm;
-        return GaQuat(w*inv,-v.x*inv,-v.y*inv,-v.z*inv);
-    }
-    else
-    {
-		return GaQuat(0,0,0,0);
+    GaFloat nrm = w * w + v.x * v.x + v.y * v.y + v.z * v.z;
+    if (nrm > 0.0) {
+        GaFloat inv = 1.0f / nrm;
+        return GaQuat(w * inv,-v.x * inv,-v.y * inv,-v.z * inv);
+    } else {
+        return GaQuat(0,0,0,0);
     }
 }
 
 GaDegree::GaDegree(const GaRadian &a)
+: d(a.r * Math::GaRadianInDegree)
 {
-    d = a.r * Math::GaRadianInDegree;
 }
 

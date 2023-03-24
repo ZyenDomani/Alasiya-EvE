@@ -53,6 +53,8 @@ class ItemFactory
 {
 public:
     ItemFactory();
+    ItemFactory(const ItemFactory&) =delete;
+    ItemFactory& operator=(const ItemFactory&) =delete;
     ~ItemFactory()                                      { /* do nothing here */ }
 
     void Close();

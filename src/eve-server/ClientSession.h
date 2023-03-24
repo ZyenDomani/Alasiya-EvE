@@ -38,6 +38,8 @@ class ClientSession
 {
 public:
     ClientSession();
+    ClientSession(const ClientSession&) =delete;
+    ClientSession& operator=(const ClientSession&) =delete;
     ~ClientSession();
 
     bool isDirty() const { return mDirty; }

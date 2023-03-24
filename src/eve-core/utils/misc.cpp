@@ -219,10 +219,10 @@ std::string EvE::FormatTime(int64 time/*-1*/) {
         return "None";
     double seconds = time;
     double minutes = seconds / 60.0;
-    float hours = minutes / 60.0;
-    float days = hours / 24.0;
-    float weeks = days / 7.0;
-    float months = days / 30.0;
+    float hours = (minutes / 60.0f);
+    float days = (hours / 24.0f);
+    float weeks = (days / 7.0f);
+    float months = (days / 30.0f);
 
     int s(fmod(seconds, 60.0));
     int m(fmod(minutes, 60.0));
@@ -256,10 +256,10 @@ std::string EvE::FormatTime(double time/*-1*/) {
         return "None";
     double seconds = time;
     double minutes = seconds / 60.0;
-    float hours = minutes / 60.0;
-    float days = hours / 24.0;
-    float weeks = days / 7.0;
-    float months = days / 30.0;
+    float hours = minutes / 60.0f;
+    float days = hours / 24.0f;
+    float weeks = days / 7.0f;
+    float months = days / 30.0f;
 
     int s(fmod(seconds, 60.0));
     int m(fmod(minutes, 60.0));
@@ -293,13 +293,14 @@ double EvE::trunicate2(double dig)
     return ret;
     //return (double)((int)dig*100)/100;
 }
-
-bool EvE::AlmostEquals(float mine, float hers, uint8 precision/*5*/)
+/*
+bool EvE::AlmostEquals(float mine, float hers, uint8 precision)
 {
     int32 first = fabs(mine) * std::pow(10, precision);
     int32 second = fabs(hers) * std::pow(10, precision);
     return (first == second);
 }
+*/
 
 bool EvE::AlmostEquals(double mine, double hers, uint8 precision/*10*/)
 {

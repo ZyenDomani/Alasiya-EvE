@@ -391,7 +391,9 @@ protected:
         const CharacterData& _charData,
         const CorpData& _corpData
     );
-    virtual ~Character();
+    ~Character();
+    Character(const Character&) =delete;
+    Character& operator=(const Character&) =delete;
 
     void LoadBookmarks();
 

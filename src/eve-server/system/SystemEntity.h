@@ -91,6 +91,8 @@ public:
     SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
     SystemEntity(const SystemEntity* oth);
+    // copy c'tor
+    SystemEntity(const SystemEntity& oth);
     // move c'tor
     SystemEntity(SystemEntity&& oth) noexcept
     : SystemEntity(oth.GetSelf(), oth.GetServices(), oth.m_system) {
@@ -242,7 +244,7 @@ public:
     uint32                      GetFleetID()            { return m_fleetID; }
     void                        SetFleetID(uint32 set)  { m_fleetID = set; }
 
-    int8                        GetHarmonic()           { return m_harmonic; }
+    int32                       GetHarmonic()           { return m_harmonic; }
     void                        SetHarmonic(int8 set)   { m_harmonic = set; }
 
 
@@ -355,6 +357,8 @@ public:
     BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
     BeltSE(const BeltSE* oth);
+    // copy c'tor
+    BeltSE(const BeltSE& oth);
     // move c'tor
     /*
     BeltSE(BeltSE&& oth) noexcept
@@ -362,9 +366,9 @@ public:
         std::swap(*this, oth);
     } */
     // copy assignment
-    //BeltSE& operator=(BeltSE& oth) =delete;
+    BeltSE& operator=(BeltSE& oth) =delete;
     // move assignment
-    //BeltSE& operator=(BeltSE&& oth) =delete;
+    BeltSE& operator=(BeltSE&& oth) =delete;
 
     // d'tor
     virtual ~BeltSE()                                   { /* Do nothing here */ }
@@ -396,6 +400,8 @@ public:
     StargateSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
     StargateSE(const StargateSE* oth);
+    // copy c'tor
+    StargateSE(const StargateSE& oth);
     // move c'tor
     /*
     StargateSE(StargateSE&& oth) noexcept
@@ -403,9 +409,9 @@ public:
         std::swap(*this, oth);
     } */
     // copy assignment
-    //StargateSE& operator=(StargateSE& oth) =delete;
+    StargateSE& operator=(StargateSE& oth) =delete;
     // move assignment
-    //StargateSE& operator=(StargateSE&& oth) =delete;
+    StargateSE& operator=(StargateSE&& oth) =delete;
 
     // d'tor
     virtual ~StargateSE()                               { /* Do nothing here */ }

@@ -555,7 +555,7 @@ void Client::WarpIn() {
     //  when implemented, make sure we move the ship item, if needed....check this
     GPoint warpToPoint(m_ship->position());
     GPoint warpFromPoint(m_ship->position());
-    warpFromPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
+    warpFromPoint.MakeRandomPointOnSphere(0.5 * ONE_AU_IN_METERS);
     pShipSE->DestinyMgr()->SetPosition(warpFromPoint);
     pShipSE->DestinyMgr()->WarpTo(warpToPoint);        // Warp ship from the random login point to the position saved on last disconnect
     */
@@ -575,7 +575,7 @@ void Client::WarpOut() {
     SetInvulTimer(Player::Timer::WarpOutInvul);
     // We are logging out, so we need to warp to a random spot 1Mm away:
     GPoint warpToPoint(m_ship->position());
-    warpToPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
+    warpToPoint.MakeRandomPointOnSphere(0.5 * ONE_AU_IN_METERS);
     if (sConsole.IsShutdown())      // if server is being shutdown, set ship to WarpOut point, as if they warped there.
         pShipSE->SetPosition(warpToPoint);
     else

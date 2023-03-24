@@ -25,329 +25,329 @@ typedef std::map<uint16, CharCerts> CertMap;
 struct AccountData {
     bool online:1;
     bool banned:1;
-    uint8 type;
-    int32 id;
-    int32 visits;
-    uint32 clientID;
-    int64 role;
-    std::string name;
-    std::string hash;
-    std::string password;
-    std::string last_login;
+    uint8 type=0;
+    int32 id=0;
+    int32 visits=0;
+    uint32 clientID=0;
+    int64 role=0;
+    std::string name = "none";
+    std::string hash = "none";
+    std::string password = "none";
+    std::string last_login = "none";
 };
 
 /* POD structure for character data */
 struct CharacterData {
     bool gender:1;
-    uint8 flag;
-    uint8 bloodlineID;
-    uint8 raceID;
-    uint16 typeID;
-    uint32 accountID;
-    uint32 shipID;
-    uint32 capsuleID;
-    uint32 logonMinutes;
-    uint32 locationID;
-    uint32 stationID;
-    uint32 solarSystemID;
-    uint32 constellationID;
-    uint32 regionID;
-    uint32 ancestryID;
-    uint32 careerID;
-    uint32 schoolID;
-    uint32 careerSpecialityID;
-    uint32 skillPoints;
-    int64 loginTime;
-    int64 createDateTime;
-    float bounty;
-    float balance;
-    float aurBalance;
-    float securityRating;
-    std::string name;
-    std::string title;
-    std::string description;
+    uint8 flag=0;
+    uint8 bloodlineID=0;
+    uint8 raceID=0;
+    uint16 typeID=0;
+    uint32 accountID=0;
+    uint32 shipID=0;
+    uint32 capsuleID=0;
+    uint32 logonMinutes=0;
+    uint32 locationID=0;
+    uint32 stationID=0;
+    uint32 solarSystemID=0;
+    uint32 constellationID=0;
+    uint32 regionID=0;
+    uint32 ancestryID=0;
+    uint32 careerID=0;
+    uint32 schoolID=0;
+    uint32 careerSpecialityID=0;
+    uint32 skillPoints=0;
+    int64 loginTime=0;
+    int64 createDateTime=0;
+    float bounty=0.0f;
+    float balance=0.0f;
+    float aurBalance=0.0f;
+    float securityRating=0.0f;
+    std::string name = "none";
+    std::string title = "none";
+    std::string description = "none";
 };
 
 /* POD structure for corp data */
 struct CorpData {
-    int16 corpAccountKey;
-    int32 allianceID;
-    int32 warFactionID;
-    uint32 corporationID;
-    uint32 corpHQ;
-    uint32 baseID;
-    int64 startDateTime;
-    int64 corpRole;
-    int64 rolesAtAll;
-    int64 rolesAtBase;
-    int64 rolesAtHQ;
-    int64 rolesAtOther;
-    int64 grantableRoles;
-    int64 grantableRolesAtBase;
-    int64 grantableRolesAtHQ;
-    int64 grantableRolesAtOther;
-    float taxRate;
-    float secRating;
-    std::string name;
-    std::string ticker;
+    int16 corpAccountKey=0;
+    int32 allianceID=0;
+    int32 warFactionID=0;
+    uint32 corporationID=0;
+    uint32 corpHQ=0;
+    uint32 baseID=0;
+    int64 startDateTime=0;
+    int64 corpRole=0;
+    int64 rolesAtAll=0;
+    int64 rolesAtBase=0;
+    int64 rolesAtHQ=0;
+    int64 rolesAtOther=0;
+    int64 grantableRoles=0;
+    int64 grantableRolesAtBase=0;
+    int64 grantableRolesAtHQ=0;
+    int64 grantableRolesAtOther=0;
+    float taxRate=0.0f;
+    float secRating=0.0f;
+    std::string name = "none";
+    std::string ticker = "none";
 };
 
 /* POD structure for fleet data    -allan 31Jul14 */
 struct CharFleetData {
-    int8 job;
-    int8 role;
-    int8 booster;
-    int32 fleetID;
-    int32 wingID;
-    int32 squadID;
-    int64 joinTime;
+    int8 job=0;
+    int8 role=0;
+    int8 booster=0;
+    int32 fleetID=0;
+    int32 wingID=0;
+    int32 squadID=0;
+    int64 joinTime=0;
 };
 
 /* POD structure for bounty timer data  */
 struct BountyData {
-    uint8 refTypeID;
-    uint16 fromKey;
-    uint16 toKey;
-    uint32 fromID;
-    uint32 toID;
-    float amount;
-    std::string reason;
+    uint8 refTypeID=0;
+    uint16 fromKey=0;
+    uint16 toKey=0;
+    uint32 fromID=0;
+    uint32 toID=0;
+    float amount=0.0f;
+    std::string reason = "none";
 };
 
 
 /* POD structure for kill data  -allan 01May16 */
 struct KillData {
-    uint16 victimShipTypeID;
-    uint16 finalShipTypeID;
-    uint16 finalWeaponTypeID;
-    int32 finalAllianceID;
-    int32 victimAllianceID;
-    int32 victimFactionID;
-    int32 finalFactionID;
-    uint32 solarSystemID;
-    uint32 victimCharacterID;
-    uint32 victimCorporationID;
-    uint32 victimDamageTaken;
-    uint32 finalCharacterID;
-    uint32 finalCorporationID;
-    uint32 finalDamageDone;
-    uint32 moonID;
-    int64 killTime;
-    double finalSecurityStatus;
-    std::string killBlob;
+    uint16 victimShipTypeID=0;
+    uint16 finalShipTypeID=0;
+    uint16 finalWeaponTypeID=0;
+    int32 finalAllianceID=0;
+    int32 victimAllianceID=0;
+    int32 victimFactionID=0;
+    int32 finalFactionID=0;
+    uint32 solarSystemID=0;
+    uint32 victimCharacterID=0;
+    uint32 victimCorporationID=0;
+    uint32 victimDamageTaken=0;
+    uint32 finalCharacterID=0;
+    uint32 finalCorporationID=0;
+    uint32 finalDamageDone=0;
+    uint32 moonID=0;
+    int64 killTime=0;
+    double finalSecurityStatus=0.0;
+    std::string killBlob = "none";
 };
 
 /* POD structure for asteroid */
 struct AsteroidData {
-    uint16 typeID;
-    uint32 itemID;
-    uint32 systemID;
-    uint32 beltID;
-    double quantity;
-    double radius;
-    GPoint position;
-    std::string itemName;
+    uint16 typeID=0;
+    uint32 itemID=0;
+    uint32 systemID=0;
+    uint32 beltID=0;
+    double quantity=0.0;
+    double radius=0.0;
+    GPoint position = NULL_ORIGIN;
+    std::string itemName = "none";
 };
 
 /* POD structure for asteroid distribution methods by group */
 struct OreTypeChance {
-    uint16 typeID;
-    float chance;
+    uint16 typeID=0;
+    float chance=0.0f;
 };
 
 /* POD structure for cosmic signatures/anomalies */
 struct CosmicSignature {
-    uint8 dungeonType;          // internal for creation checks
-    uint16 bubbleID;            // internal for .siglist command
+    uint8 dungeonType=0;          // internal for creation checks
+    uint16 bubbleID=0;            // internal for .siglist command
     // typeID of signal
-    uint16 sigTypeID;           // type name if scanGroupID is not sig or anom and certainty > 0.75
+    uint16 sigTypeID=0;           // type name if scanGroupID is not sig or anom and certainty > 0.75
     // groupID of signal
-    uint16 sigGroupID;          // group name if scanGroupID is not sig or anom and certainty > 0.25
+    uint16 sigGroupID=0;          // group name if scanGroupID is not sig or anom and certainty > 0.25
     // groupID of signature...must be one of sig, anom, ship, drone, structure
-    uint16 scanGroupID;         // ship,drone and structure uses sigGroupID for group name
-    uint16 scanAttributeID;     // group naming data if scanGroupID is anom or sig and certainty > 0.25
-    uint32 ownerID;
-    uint32 systemID;
-    uint32 sigItemID;           // itemID of this entry
-    float sigStrength;
-    GPoint position;
-    std::string sigID;          // this is unique xxx-nnn id displayed in scanner.  can be other values
-    std::string sigName;        // site name if scanGroupID is sig or anom and certainty > 0.75
+    uint16 scanGroupID=0;         // ship,drone and structure uses sigGroupID for group name
+    uint16 scanAttributeID=0;     // group naming data if scanGroupID is anom or sig and certainty > 0.25
+    uint32 ownerID=0;
+    uint32 systemID=0;
+    uint32 sigItemID=0;           // itemID of this entry
+    float sigStrength=0.0f;
+    GPoint position=NULL_ORIGIN;
+    std::string sigID="none";          // this is unique xxx-nnn id displayed in scanner.  can be other values
+    std::string sigName="none";        // site name if scanGroupID is sig or anom and certainty > 0.75
 };
 
 /* POD structure for spawn groups */
 struct SystemSpawnGroup { //reference to this bubble's data for spawn groups.  may need later.
     //SystemBubble* pSysBubble;   //cant use reference or pointer here...
-    uint32 bubbleID;
-    uint32 systemID;
-    uint32 regionID;
-    double secRating;
+    uint32 bubbleID=0;
+    uint32 systemID=0;
+    uint32 regionID=0;
+    double secRating=0;
 };
 
 /* POD structure for spawn groups */
 struct SpawnGroup {
-    uint8 quantity; //quantity to spawn for this typeID
-    uint16 typeID;  //typeID to spawn
+    uint8 quantity=0; //quantity to spawn for this typeID
+    uint16 typeID=0;  //typeID to spawn
 };
 
 /* POD structure for spawn entries */
 struct SpawnEntry {     // notes for me while creating/writing/testing
-    bool enabled;       // is respawn enabled for this entry?  also provides conditional test for SpawnMgr::IsChaining() method
-    uint8 spawnClass;   // spawn class.  0 = none, 1-7 = easy to insance based on sysSec, 8 = hauler, 9 = commander, 10 = officer  - 20+ are anomalies
-    uint8 spawnGroup;   // spawn group.   1 = roaming, 2 = static, 3 = anomaly, 4 = combat, 5 = deadspace, 6 = mission, 7 = incursion, 8 = sleeper, 9 = escalation
-    uint8 total;        // total number of this group spawned
-    uint8 number;       // this rat's number in group (to match up with above total)
-    uint8 level;        // spawn data subtype/wave
-    uint8 classID;      // spawn data class id (in case we have to look it up again)
-    uint16 typeID;      // rat type id
-    uint16 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
-    uint16 spawnID;     // spawn id (if needed to match up with other spawns of this group (multiple spawn types in this group))
-    uint16 stamp;       // entry stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
-    uint32 itemID;      // rat entity id
-    uint32 corpID;      // rat corp id
-    uint32 factionID;   // rat faction id
+    bool enabled=false;       // is respawn enabled for this entry?  also provides conditional test for SpawnMgr::IsChaining() method
+    uint8 spawnClass=0;   // spawn class.  0 = none, 1-7 = easy to insance based on sysSec, 8 = hauler, 9 = commander, 10 = officer  - 20+ are anomalies
+    uint8 spawnGroup=0;   // spawn group.   1 = roaming, 2 = static, 3 = anomaly, 4 = combat, 5 = deadspace, 6 = mission, 7 = incursion, 8 = sleeper, 9 = escalation
+    uint8 total=0;        // total number of this group spawned
+    uint8 number=0;       // this rat's number in group (to match up with above total)
+    uint8 level=0;        // spawn data subtype/wave
+    uint8 classID=0;      // spawn data class id (in case we have to look it up again)
+    uint16 typeID=0;      // rat type id
+    uint16 groupID=0;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
+    uint16 spawnID=0;     // spawn id (if needed to match up with other spawns of this group (multiple spawn types in this group))
+    uint16 stamp=0;       // entry stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
+    uint32 itemID=0;      // rat entity id
+    uint32 corpID=0;      // rat corp id
+    uint32 factionID=0;   // rat faction id
 };
 
 /* POD structure for spawn faction groups */
 struct RatFactionGroups {  // notes for me while creating/writing/testing
-    uint8 shipClass;      // shipClass as defined in Spawn::Class
-    uint16 groupID;     // item groupID
+    uint8 shipClass=0;      // shipClass as defined in Spawn::Class
+    uint16 groupID=0;     // item groupID
 };
 
 /* POD structure for spawn classes */
 struct RatSpawnClass { // notes for me while creating/writing/testing
-    uint8 type;     // this is spawn type.  Spawn::Type 1 - 10
-    uint8 sub;      // this is spawn subtype.  ship grouping.  varies.  enables loop for random pick. no notes
-    uint8 f;        // frigate
-    uint8 af;       // advanced frigate
-    uint8 d;        // destroyer
-    uint8 c;        // cruiser
-    uint8 ac;       // advanced cruiser
-    uint8 bc;       // battlecruiser
-    uint8 bs;       // battleship
-    uint8 h;        // hauler
-    uint8 o;        // officer - swarm for rogue drones
-    uint8 cf;       // commander frigate
+    uint8 type=0;     // this is spawn type.  Spawn::Type 1 - 10
+    uint8 sub=0;      // this is spawn subtype.  ship grouping.  varies.  enables loop for random pick. no notes
+    uint8 f=0;        // frigate
+    uint8 af=0;       // advanced frigate
+    uint8 d=0;        // destroyer
+    uint8 c=0;        // cruiser
+    uint8 ac=0;       // advanced cruiser
+    uint8 bc=0;       // battlecruiser
+    uint8 bs=0;       // battleship
+    uint8 h=0;        // hauler
+    uint8 o=0;        // officer - swarm for rogue drones
+    uint8 cf=0;       // commander frigate
     //uint8 acf;      // advanced commander frigate
-    uint8 cd;       // commander destroyer
-    uint8 cc;       // commander cruiser
-    uint8 cbc;      // commander battlecruiser
-    uint8 cbs;      // commander battleship
+    uint8 cd=0;       // commander destroyer
+    uint8 cc=0;       // commander cruiser
+    uint8 cbc=0;      // commander battlecruiser
+    uint8 cbs=0;      // commander battleship
 };
 
 /* POD structure for loot groups */
 struct LootGroup {
     //uint32 groupID;
-    uint16 lootGroupID;
-    float dropChance;
+    uint16 lootGroupID=0;
+    float dropChance=0.0f;
 };
 
 /* POD structure for loot types */
 struct LootGroupType {
-    uint8 metaLevel;
-    uint16 lootGroupID;
-    uint16 typeID;
-    uint32 minQuantity;
-    uint32 maxQuantity;
+    uint8 metaLevel=0;
+    uint16 lootGroupID=0;
+    uint16 typeID=0;
+    uint32 minQuantity=0;
+    uint32 maxQuantity=0;
 };
 
 /* POD structure for possible loot drops */
 struct LootList {
-    uint8 minDrop;
-    uint8 maxDrop;
-    uint16 typeID;
+    uint8 minDrop=0;
+    uint8 maxDrop=0;
+    uint16 typeID=0;
 };
 /* POD structure for statistic data */
 struct StatisticData {
-    uint16 span;        // 45.5d in minutes (max)
-    uint16 shipsSalvaged;
-    uint16 probesLaunched;
-    uint16 sitesScanned;
-    uint16 ramJobs;
-    uint32 pcShots;
-    uint32 pcMissiles;
-    double pcBounties;
-    double npcBounties;
-    double oreMined;
-    double iskMarket;
+    uint16 span=0;        // 45.5d in minutes (max)
+    uint16 shipsSalvaged=0;
+    uint16 probesLaunched=0;
+    uint16 sitesScanned=0;
+    uint16 ramJobs=0;
+    uint32 pcShots=0;
+    uint32 pcMissiles=0;
+    double pcBounties=0;
+    double npcBounties=0;
+    double oreMined=0;
+    double iskMarket=0;
 };
 
 
 /* POD structure for systems. */
 struct SystemData {
-    uint32 systemID;
-    uint32 constellationID;
-    uint32 regionID;
-    uint32 factionID;
-    int64 radius;
-    float securityRating;
-    std::string name;
-    std::string securityClass;
+    uint32 systemID=0;
+    uint32 constellationID=0;
+    uint32 regionID=0;
+    uint32 factionID=0;
+    int64 radius=0;
+    float securityRating=0.0f;
+    std::string name="none";
+    std::string securityClass="none";
 };
 
-/* POD structure for solarsystem. */
+/* POD structure for solarsystem item. */
 struct SolarSystemData {
-    bool border;
-    bool fringe;
-    bool corridor;
-    bool hub;
-    bool international;
-    bool regional;
-    bool constellation;
-    uint32 factionID;
-    uint32 sunTypeID;
-    double security;
-    double radius;
-    double luminosity;
-    GPoint minPosition;
-    GPoint maxPosition;
-    std::string securityClass;
+    bool border=false;
+    bool fringe=false;
+    bool corridor=false;
+    bool hub=false;
+    bool international=false;
+    bool regional=false;
+    bool constellation=false;
+    uint32 factionID=0;
+    uint32 sunTypeID=0;
+    double security=0.0;
+    double radius=0.0;
+    double luminosity=0.0;
+    GPoint minPosition = NULL_ORIGIN;
+    GPoint maxPosition = NULL_ORIGIN;
+    std::string securityClass="none";
 };
 struct SystemKillData {
-    uint16 killsHour;
-    uint16 kills24Hour;
-    uint16 factionKills;
-    uint16 factionKills24Hour;
-    uint16 podKillsHour;
-    uint16 podKills24Hour;
+    uint16 killsHour=0;
+    uint16 kills24Hour=0;
+    uint16 factionKills=0;
+    uint16 factionKills24Hour=0;
+    uint16 podKillsHour=0;
+    uint16 podKills24Hour=0;
 
-    int64 killsDateTime;
-    int64 kills24DateTime;
-    int64 factionDateTime;
-    int64 faction24DateTime;
-    int64 podDateTime;
-    int64 pod24DateTime;
+    int64 killsDateTime=0;
+    int64 kills24DateTime=0;
+    int64 factionDateTime=0;
+    int64 faction24DateTime=0;
+    int64 podDateTime=0;
+    int64 pod24DateTime=0;
 };
 
 /* POD structure for static items. */
 struct StaticData {
-    uint16 typeID;
-    uint32 itemID;
-    uint32 systemID;
-    uint32 constellationID;
-    uint32 regionID;
-    float radius;
-    GPoint position;
+    uint16 typeID=0;
+    uint32 itemID=0;
+    uint32 systemID=0;
+    uint32 constellationID=0;
+    uint32 regionID=0;
+    float radius=0.0f;
+    GPoint position = NULL_ORIGIN;
 };
 
 
 /* POD structure for sovereignty */
 struct SovereigntyData {
-    uint8 contested;
-    uint8 stationCount;
-    uint8 militaryPoints;
-    uint8 industrialPoints;
-    uint32 claimID;
-    uint32 solarSystemID;
-    uint32 constellationID;
-    uint32 regionID;
-    uint32 corporationID;
-    uint32 allianceID;
-    uint32 claimStructureID;
-    uint32 hubID;
-    uint32 beaconID;
-    uint32 jammerID;
-    int64 claimTime;
+    uint8 contested=0;
+    uint8 stationCount=0;
+    uint8 militaryPoints=0;
+    uint8 industrialPoints=0;
+    uint32 claimID=0;
+    uint32 solarSystemID=0;
+    uint32 constellationID=0;
+    uint32 regionID=0;
+    uint32 corporationID=0;
+    uint32 allianceID=0;
+    uint32 claimStructureID=0;
+    uint32 hubID=0;
+    uint32 beaconID=0;
+    uint32 jammerID=0;
+    int64 claimTime=0;
 };
 
 /* Tags for sov multi-index container */
@@ -360,102 +360,102 @@ struct SovDataByClaim {};
 /* POD structure for stations. */
 struct StationData {
     bool conquerable :1;
-    uint8 officeSlots;
-    uint8 operationID;
-    uint16 typeID;
-    uint16 graphicID;
-    uint16 descriptionID;
-    uint16 hangarGraphicID;
-    uint16 dockingBayGraphicID;
-    uint16 reprocessingHangarFlag;
-    int32 officeRentalFee;
-    uint32 stationID;
-    uint32 corporationID;
-    uint32 maxShipVolumeDockable;
-    uint32 systemID;
-    uint32 constellationID;
-    uint32 regionID;
-    uint32 orbitID;
-    int64 serviceMask;
-    float radius;
-    float security;
-    float dockingCostPerVolume;
-    float reprocessingEfficiency;
-    float reprocessingStationsTake;
-    GPoint position;
-    GPoint dockEntry;
-    GPoint dockPosition;
-    GVector dockOrientation;
-    std::string name;
-    std::string description;
+    uint8 officeSlots=0;
+    uint8 operationID=0;
+    uint16 typeID=0;
+    uint16 graphicID=0;
+    uint16 descriptionID=0;
+    uint16 hangarGraphicID=0;
+    uint16 dockingBayGraphicID=0;
+    uint16 reprocessingHangarFlag=0;
+    int32 officeRentalFee=0;
+    uint32 stationID=0;
+    uint32 corporationID=0;
+    uint32 maxShipVolumeDockable=0;
+    uint32 systemID=0;
+    uint32 constellationID=0;
+    uint32 regionID=0;
+    uint32 orbitID=0;
+    int64 serviceMask=0;
+    float radius=0.0f;
+    float security=0.0f;
+    float dockingCostPerVolume=0.0f;
+    float reprocessingEfficiency=0.0f;
+    float reprocessingStationsTake=0.0f;
+    GPoint position = NULL_ORIGIN;
+    GPoint dockEntry = NULL_ORIGIN;
+    GPoint dockPosition = NULL_ORIGIN;
+    GVector dockOrientation = NULL_ORIGIN_V;
+    std::string name="none";
+    std::string description="none";
 };
 
 /* POD structure for corp office data */
 // this is used by multiple systems.  keep here instead of in corpData.h
 struct OfficeData {
     bool lockDown :1;
-    uint32 officeID;
-    uint32 folderID;
-    uint16 typeID;
-    uint32 stationID;
-    uint32 corporationID;
-    int64 rentalFee;
-    int64 expiryTime;
-    std::string ticker;
-    std::string name;
+    uint32 officeID=0;
+    uint32 folderID=0;
+    uint16 typeID=0;
+    uint32 stationID=0;
+    uint32 corporationID=0;
+    int64 rentalFee=0;
+    int64 expiryTime=0;
+    std::string ticker="none";
+    std::string name="none";
 };
 
 /* POD structure for loading dynamic items */
 struct OwnerData {
-    uint32          ownerID;
-    uint32          corpID;
-    uint32          locID;
+    uint32 ownerID=0;
+    uint32 corpID=0;
+    uint32 locID=0;
 };
 
 /* POD structure for container faction data */
 struct FactionData {
-    int32 allianceID;
-    int32 factionID;
-    uint32 ownerID;
-    uint32 corporationID;
+    int32 allianceID=0;
+    int32 factionID=0;
+    uint32 ownerID=0;
+    uint32 corporationID=0;
 };
 
 /* structure for loading static system items */
 struct DBSystemEntity {
-    uint16 typeID;
-    uint16 groupID;
-    uint32 itemID;
-    double radius;
+    uint16 typeID=0;
+    uint16 groupID=0;
+    uint32 itemID=0;
+    double radius=0.0;
 };
 
 struct DBSystemDynamicEntity {
-    uint8 categoryID;
-    uint16 typeID;
-    uint16 groupID;
-    int32 allianceID;
-    int32 factionID;
-    uint32 itemID;
-    uint32 ownerID;
-    uint32 corporationID;
-    uint32 planetID;
-    GPoint position;
-    std::string itemName;
+    uint8 categoryID=0;
+    uint16 typeID=0;
+    uint16 groupID=0;
+    int32 allianceID=0;
+    int32 factionID=0;
+    uint32 itemID=0;
+    uint32 ownerID=0;
+    uint32 corporationID=0;
+    uint32 planetID=0;
+    GPoint position = NULL_ORIGIN;
+    std::string itemName = "none";
 };
 
 struct DBGPointEntity {
-    uint8 idx;
-    uint32 itemID;
-    double radius;
-    GPoint position;
+    uint8 idx=0;
+    uint32 itemID=0;
+    double radius=0.0;
+    GPoint position = NULL_ORIGIN;
 };
 
 /* POD structure for decoded probe data */
 struct ProbeData {
-    uint8 state;
-    uint8 rangeStep;
-    int64 expiry;
-    float scanRange;
-    GPoint dest;
+    uint8 state=0;
+    uint8 rangeStep=0;
+    int64 expiry=0;
+    float scanRange=0.0f;
+    GPoint dest = NULL_ORIGIN;
 };
 
 

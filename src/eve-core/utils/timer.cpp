@@ -45,17 +45,15 @@ m_setAtTrigger(time)
         m_enabled = true;
 }
 
-Timer::Timer(uint32 startAt, uint32 time, bool useAcurateTiming /*false*/) {
-    m_duration = time;
-    m_startTime = startAt;
-    m_setAtTrigger = time;
-    m_useAcurateTiming = useAcurateTiming;
-
-    if (time) {
+Timer::Timer(uint32 startAt, uint32 time, bool useAcurateTiming /*false*/)
+: m_enabled(false),
+m_useAcurateTiming(useAcurateTiming),
+m_duration(time),
+m_startTime(startAt),
+m_setAtTrigger(time)
+{
+    if (time)
         m_enabled = true;
-    } else {
-        m_enabled = false;
-    }
 }
 
 /* This function checks if the timer triggered */
@@ -137,7 +135,7 @@ uint32 Timer::GetCurrentTime() {
     return currentTime;
 }
 
-const void Timer::SetCurrentTime()
+void Timer::SetCurrentTime()
 {
     int64 tickCount = GetSteadyTime();
     if (lastTime == 0) {

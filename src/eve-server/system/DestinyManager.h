@@ -96,6 +96,8 @@ class DestinyManager {
 public:
     DestinyManager(SystemEntity* self);
     ~DestinyManager();
+    DestinyManager(const DestinyManager&) =delete;
+    DestinyManager& operator=(const DestinyManager&) =delete;
 
     void Process();
 
@@ -110,7 +112,8 @@ public:
     SystemEntity* GetTargetEntity()                     { return m_targetEntity.second; }
     GPoint GetTargetPoint()                             { return m_targetPoint; }
     double GetMaxVelocity()                             { return m_maxShipSpeed; }
-    double GetFollowDistance()                          { return m_targetDistance; }
+    // is this right??
+    float GetFollowDistance()                           { return (float)m_targetDistance; }
     uint32 GetStateStamp()                              { return m_stateStamp; }
     GVector GetHeading()                                { return m_shipHeading; }
     float GetAccelTime()                                { return m_shipMaxAccelTime; }
@@ -121,7 +124,7 @@ public:
     float GetRadTic()                                   { return m_orbitRadTic; }
     uint8 GetState()                                    { return m_ballMode; }// this is only used by my bubble debug command
     bool IsFrozen()                                     { return m_frozen; }
-    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.0005); }
+    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.0005f); }
     bool IsGoto()                                       { return (m_ballMode == Destiny::Ball::Mode::GOTO); }
     bool IsStopped()                                    { return (m_ballMode == Destiny::Ball::Mode::STOP); }
     bool IsOrbiting()                                   { return (m_ballMode == Destiny::Ball::Mode::ORBIT); }
@@ -229,7 +232,7 @@ protected:
     uint8 m_alignTime;                  //in s      - time to change directions or enter warp
     float m_prevSpeed;                  //in m/s    - used to calculate speed during decel
     float m_maxShipSpeed;               //in m/s
-    float m_shipWarpSpeed;              //in au/s
+    double m_shipWarpSpeed;             //in au/s
     float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxShipSpeed
 
     //derived from above params:

@@ -204,10 +204,10 @@ private:
 
     int16   pPort;
 
-    std::string pHost;
-    std::string pUser;
-    std::string pPassword;
-    std::string pDatabase;
+    std::string pHost="none";
+    std::string pUser="none";
+    std::string pPassword="none";
+    std::string pDatabase="none";
 };
 
 #define sDatabase \

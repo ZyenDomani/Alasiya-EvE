@@ -2764,7 +2764,7 @@ Battleships                             0.155
 
     // this will catch speeds/needs for all ships (player and npc), and is easier to do here.
     if (sRef->HasAttribute(AttrWarpSpeedMultiplier))
-        m_shipWarpSpeed = sRef->GetAttribute(AttrWarpSpeedMultiplier).get_float();
+        m_shipWarpSpeed = sRef->GetAttribute(AttrWarpSpeedMultiplier).get_double();
     if (sRef->HasAttribute(AttrMaxVelocity))
         m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
     if (sRef->HasAttribute(AttrWarpCapacitorNeed)) {

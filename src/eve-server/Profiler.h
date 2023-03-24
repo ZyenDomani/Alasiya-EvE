@@ -79,7 +79,7 @@ protected:
     std::string GetKeyName(uint8& key);
 
 private:
-    std::vector<double> m_server;
+    std::vector<double> m_server{0};
     std::vector<double> m_functions;
     std::vector<double> m_db;
     std::vector<double> m_client;
