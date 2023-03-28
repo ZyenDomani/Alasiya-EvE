@@ -289,8 +289,8 @@ void PyRep::DecRef() const
 
     if (mRefCount < 0) {
         _log(REFPTR__ERROR, "DecRef() - Count for %s is %i", TypeString(), mRefCount);
-        EvE::traceStackLN();        // this is painfully slow
-        //EvE::traceStack();
+        //EvE::traceStackLN();        // this is painfully slow
+        EvE::traceStack();
         return;
     }
 

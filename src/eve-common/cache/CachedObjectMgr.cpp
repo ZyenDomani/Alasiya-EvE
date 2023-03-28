@@ -102,7 +102,7 @@ CachedObjectMgr::~CachedObjectMgr()
 CachedObjectMgr::CacheRecord::CacheRecord() : objectID(nullptr), timestamp(0), version(0), cache(nullptr) {}
 CachedObjectMgr::CacheRecord::~CacheRecord()
 {
-    SafeDelete( objectID );
+    PyDecRef( objectID );
     SafeDelete( cache );
 }
 
