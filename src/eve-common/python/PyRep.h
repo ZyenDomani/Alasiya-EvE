@@ -666,9 +666,8 @@ public:
             *rep = new PyNone();
         } else {
             *rep = object;
+            PyIncRef(object);
         }
-
-        PyIncRef(object);
     }
 
     void SetItemInt(size_t index, int32 val)		{ SetItem(index, new PyInt(val)); }
@@ -736,9 +735,8 @@ public:
             *rep = new PyNone();
         } else {
             *rep = object;
+            PyIncRef(object);
         }
-        PyIncRef(*rep);
-        PyIncRef(object);
     }
     /**
      * @brief Stores Python string.
@@ -1025,6 +1023,7 @@ public:
     // move assignment
     //PyPackedRow& operator= (PyPackedRow&& oth) = delete;
 
+    virtual ~PyPackedRow();
 
     PyPackedRow* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -1044,8 +1043,6 @@ public:
 
     int32 hash() const;
 
-    virtual ~PyPackedRow();
-
 protected:
     DBRowDescriptor*    	mHeader;
     PyList*     		mFields;
@@ -1055,7 +1052,7 @@ protected:
 class PySubStruct : public PyRep
 {
 public:
-    PySubStruct(PyRep* t);
+    PySubStruct( PyRep* rep );
     // copy c'tor
     PySubStruct(const PySubStruct& oth);
     // move c'tor
@@ -1071,7 +1068,7 @@ public:
 
     PyRep* sub() const					{ return mSub; }
 
-    virtual ~PySubStruct()				{ /* do nothing here */ }
+    virtual ~PySubStruct();
 
 protected:
     PyRep* const mSub;

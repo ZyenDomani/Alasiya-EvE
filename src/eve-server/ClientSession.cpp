@@ -84,7 +84,7 @@ m_sessionID(15)
 
 ClientSession::~ClientSession()
 {
-    PyDecRef(mSession);
+    delete mSession;
     sEntityList.RemoveSID(m_sessionID);
 }
 

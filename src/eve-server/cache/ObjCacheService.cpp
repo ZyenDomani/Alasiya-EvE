@@ -319,9 +319,10 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
     const std::string objectID_string = CachedObjectMgr::OIDToString(objectID);
 
     if (!m_cacheDir.empty())
-        if (m_cache.LoadCachedFromFile( m_cacheDir, objectID))
+        if (m_cache.LoadCachedFromFile( m_cacheDir, objectID)) {
             _log( CACHE__INFO, "Loaded cached object '%s' from file.", objectID_string.c_str());
             return true;
+        }
 
     //first try to generate it from the database...
     //we go to the DB with a string, not a rep
@@ -458,7 +459,7 @@ ObjectCachedMethodID::ObjectCachedMethodID(const char *service, const char *meth
 
 ObjectCachedMethodID::~ObjectCachedMethodID()
 {
-    PyDecRef( objectID );
+    SafeDelete(objectID);
 }
 
 ObjectCachedSessionMethodID::ObjectCachedSessionMethodID(const char *service, const char *method, int32 sessionValue)
@@ -477,5 +478,5 @@ ObjectCachedSessionMethodID::ObjectCachedSessionMethodID(const char *service, co
 
 ObjectCachedSessionMethodID::~ObjectCachedSessionMethodID()
 {
-    PyDecRef( objectID );
+    SafeDelete(objectID);
 }

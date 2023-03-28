@@ -63,7 +63,7 @@ const char* const s_mTypeString[] =
  *         however, i dont fully understand it enough to implement better memMgmt at this time
  *              -allan 10Jan19
  *
- *	UD:  gaining more understanding of how this class works. updated code and added more memMgmt
+ *	UD:  gaining more understanding of how this class works. updated code and added better memMgmt
  *		-allan 30Jan23
  */
 
@@ -277,7 +277,6 @@ void PyRep::IncRef() const
 
 void PyRep::DecRef() const
 {
-
     if (mDeleted) {
         sLog.Error("DecRef()", "%s already deleted.", TypeString());
         _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %i", mRefCount);
@@ -572,7 +571,7 @@ mValue(new Buffer(buffer.content())), mHashCache(buffer.mHashCache)
 PyBuffer::~PyBuffer()
 {
     //if (cleanup)
-    //    SafeDelete(mValue);
+    delete mValue;
 }
 
 PyBuffer* PyBuffer::Clone() const
@@ -1004,7 +1003,8 @@ PyObject::PyObject(const PyObject& oth) : PyRep(PyRep::PyTypeObject), mType(oth.
 PyObject::~PyObject()
 {
     //if (cleanup)
-        PySafeDecRef(mType);
+    PySafeDecRef(mType);
+    PySafeDecRef(mArguments);
 }
 
 PyObject* PyObject::Clone() const
@@ -1277,7 +1277,9 @@ PyPackedRow::PyPackedRow(const PyPackedRow& oth)
 PyPackedRow::~PyPackedRow()
 {
     //if (cleanup)
-        PySafeDecRef(mFields);
+    clear();
+    PySafeDecRef(mHeader);
+    PySafeDecRef(mFields);
 }
 
 PyPackedRow* PyPackedRow::Clone() const
@@ -1331,10 +1333,14 @@ PyPackedRow& PyPackedRow::operator=(const PyPackedRow& oth)
 /************************************************************************/
 /* PyRep SubStruct Class                                                */
 /************************************************************************/
-PySubStruct::PySubStruct(PyRep* t) : PyRep(PyRep::PyTypeSubStruct), mSub(t) {}
+PySubStruct::PySubStruct(PyRep* rep) : PyRep(PyRep::PyTypeSubStruct), mSub(rep) {}
 PySubStruct::PySubStruct(const PySubStruct& oth) : PyRep(PyRep::PyTypeSubStruct), mSub(oth.sub()->Clone())
 {
     //sLog.Cyan("PySubStruct()", "Copy C'tor.");
+}
+
+PySubStruct::~PySubStruct() {
+    PySafeDecRef(mSub);
 }
 
 PySubStruct* PySubStruct::Clone() const
@@ -1369,7 +1375,8 @@ PySubStream::PySubStream(const PySubStream& oth)
 PySubStream::~PySubStream()
 {
     //if (cleanup)
-        PySafeDecRef(mData);
+    PySafeDecRef(mData);
+    PySafeDecRef(mDecoded);
 }
 
 PySubStream* PySubStream::Clone() const
@@ -1421,7 +1428,7 @@ PyChecksumedStream::PyChecksumedStream(const PyChecksumedStream& oth)
 PyChecksumedStream::~PyChecksumedStream()
 {
     // is this right?  havent had any "multiple deletion" msgs yet...
-    //PyDecRef(mStream);
+    PyDecRef(mStream);
 }
 
 PyChecksumedStream* PyChecksumedStream::Clone() const
