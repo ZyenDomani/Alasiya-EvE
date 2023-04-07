@@ -345,8 +345,8 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
     */
     state = run_state;
     threads = num_threads;
-    user = utime / sysconf(_SC_CLK_TCK) / 100.0f;
-    kernel = stime / sysconf(_SC_CLK_TCK) / 100.0f;
+    user = utime / sysconf(_SC_CLK_TCK) / 800.0f;
+    kernel = stime / sysconf(_SC_CLK_TCK) / 800.0f;
     vm_usage     = ((vsize / sysconf(_SC_PAGE_SIZE)) / 1024.0f / 6);
     //rss (in pages) * page_size(in bytes, converted to k), then convert to Mb.
     resident_set = (rss * (sysconf(_SC_PAGE_SIZE) / 1024.0f) / 1024.0f);
@@ -355,12 +355,12 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Running Server Test Code:");
-    //sLog.Warning(" Server Test Code", "No Test Code at this time.");
+    sLog.Warning(" Server Test Code", "No Test Code at this time.");
 
     //sMktMgr.GetCruPrices();
     //sLog.Blue("       MktPricing", "Base material Prices Updated");
 
-    sMktMgr.SetBasePrice();
+    //sMktMgr.SetBasePrice();
 
     // execute code to begin filling missing data in mission db.
     //  first step:  get courier missionIDs

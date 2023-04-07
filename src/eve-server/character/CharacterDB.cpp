@@ -717,37 +717,32 @@ void CharacterDB::GetCharacterDataMap(uint32 charID, std::map<std::string, int64
     DBResultRow row;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT "       // fixed DB Query   -allan 11Jan14      UD: 04Dec17
-        "  ch.corporationID, "
-        "  ch.stationID, "
-        "  ch.solarSystemID, "
-        "  ch.constellationID, "
-        "  ch.regionID, "
-        "  co.stationID, "  //5
-        "  ch.corpRole, "
-        "  ch.corpAccountKey, "
-        "  ch.rolesAtAll, "
-        "  ch.rolesAtBase, "
-        "  ch.rolesAtHQ, "  //10
-        "  ch.rolesAtOther, "
-        "  ch.shipID, "
-        "  ch.gender, "
-        "  ch.bloodlineID, "
-        "  ch.raceID, "     //15
-        "  ch.locationID, "
-        "  ch.baseID,"
-        "  co.allianceID,"
-        "  co.warFactionID,"
-        "  ch.characterName"         //20
-        " FROM chrCharacters AS ch"
-        "    LEFT JOIN crpCorporation AS co USING (corporationID) "
+        "SELECT "       // fixed DB Query   -allan 11Jan14      UD: 04Dec17 - 28Mar23
+        "  corporationID, "
+        "  stationID, "
+        "  solarSystemID, "
+        "  constellationID, "
+        "  regionID, "
+        "  corpRole, "  //5
+        "  corpAccountKey, "
+        "  rolesAtAll, "
+        "  rolesAtBase, "
+        "  rolesAtHQ, "
+        "  rolesAtOther, "      //10
+        "  shipID, "
+        "  gender, "
+        "  bloodlineID, "
+        "  raceID, "
+        "  locationID, "        //15
+        "  baseID,"
+        "  characterName"
+        " FROM chrCharacters"
         " WHERE characterID = %u", charID))
     {
-        sLog.Error("CharacterDB::GetCharacterDataMap()", "Failed to query HQ of character's %u corporation: %s.", charID, res.error.c_str());
+        sLog.Error("CharacterDB::GetCharacterDataMap()", "Failed to query character's data: %s.", res.error.c_str());
     }
 
-    if (!res.GetRow(row))
-    {
+    if (!res.GetRow(row)) {
         sLog.Error("CharacterDB::GetCharacterDataMap()", "No valid rows were returned by the database query.");
         return;
     }
@@ -757,23 +752,20 @@ void CharacterDB::GetCharacterDataMap(uint32 charID, std::map<std::string, int64
     characterDataMap["solarSystemID"] = row.GetUInt(2);
     characterDataMap["constellationID"] = row.GetUInt(3);
     characterDataMap["regionID"] = row.GetUInt(4);
-    characterDataMap["corporationHQ"] = row.GetUInt(5);
-    characterDataMap["corpRole"] = row.GetInt64(6);
-    characterDataMap["corpAccountKey"] = row.GetInt(7);
-    characterDataMap["rolesAtAll"] = row.GetInt64(8);
-    characterDataMap["rolesAtBase"] = row.GetInt64(9);
-    characterDataMap["rolesAtHQ"] = row.GetInt64(10);
-    characterDataMap["rolesAtOther"] = row.GetInt64(11);
-    characterDataMap["shipID"] = row.GetUInt(12);
-    characterDataMap["gender"] = row.GetInt(13);
-    characterDataMap["bloodlineID"] = row.GetUInt(14);
-    characterDataMap["raceID"] = row.GetUInt(15);
-    characterDataMap["locationID"] = row.GetUInt(16);
-    characterDataMap["baseID"] = row.GetInt(17);
-    characterDataMap["allianceID"] = row.GetInt(18);
-    characterDataMap["warFactionID"] = row.GetInt(19);
+    characterDataMap["corpRole"] = row.GetInt64(5);
+    characterDataMap["corpAccountKey"] = row.GetInt(6);
+    characterDataMap["rolesAtAll"] = row.GetInt64(7);
+    characterDataMap["rolesAtBase"] = row.GetInt64(8);
+    characterDataMap["rolesAtHQ"] = row.GetInt64(9);
+    characterDataMap["rolesAtOther"] = row.GetInt64(10);
+    characterDataMap["shipID"] = row.GetUInt(11);
+    characterDataMap["gender"] = row.GetInt(12);
+    characterDataMap["bloodlineID"] = row.GetUInt(13);
+    characterDataMap["raceID"] = row.GetUInt(14);
+    characterDataMap["locationID"] = row.GetUInt(15);
+    characterDataMap["baseID"] = row.GetInt(16);
 
-    uint32 stationID = row.GetInt(17);
+    uint32 stationID = characterDataMap["baseID"];
     if (!CharacterDB::GetCharHomeStation(charID, stationID)) {
         ItemData iData( itemCloneAlpha, charID, stationID, flagClone, 1 );
         iData.customInfo="Active: ";
@@ -784,6 +776,26 @@ void CharacterDB::GetCharacterDataMap(uint32 charID, std::map<std::string, int64
         sItemFactory.SpawnItem( iData )->SaveItem();
     }
     characterDataMap["cloneStationID"] = stationID;
+
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT "
+        "  stationID, "
+        "  allianceID,"
+        "  warFactionID"
+        " FROM crpCorporation "
+        " WHERE corporationID = %li",
+        characterDataMap["corporationID"]))
+    {
+        sLog.Error("CharacterDB::GetCharacterDataMap()", "Failed to query character's corporation data: %s.", res.error.c_str());
+    }
+
+
+    if (res.GetRow(row)) {
+        characterDataMap["corporationHQ"] = row.GetUInt(0);
+        characterDataMap["allianceID"] = row.GetInt(1);
+        characterDataMap["warFactionID"] = row.GetInt(2);
+    }
 }
 
 PyRep* CharacterDB::GetCharPublicInfo3(uint32 charID) {
@@ -946,7 +958,7 @@ bool CharacterDB::GetCharItems(uint32 characterID, std::vector<uint32> &into) {
     }
 
     DBResultRow row;
-    while(res.GetRow(row))
+    while (res.GetRow(row))
         into.push_back(row.GetUInt(0));
 
     return true;
@@ -966,11 +978,10 @@ uint32 CharacterDB::PickAlternateShip(uint32 charID, uint32 locationID)
         "  LIMIT 1", charID, locationID, EVEDB::invCategories::Ship);
 
     DBResultRow row;
-    if (res.GetRow(row)) {
+    if (res.GetRow(row))
         return row.GetUInt(0);
-    } else {
-        return 0;
-    }
+
+    return 0;
 }
 
 void CharacterDB::SetCurrentShip(uint32 charID, uint32 shipID)
@@ -1020,10 +1031,10 @@ bool CharacterDB::GetActiveCloneID(uint32 characterID, uint32 &itemID) {
     DBResultRow row;
     if (res.GetRow(row)) {
         itemID=row.GetUInt(0);
-    } else {
-        return false;
+        return true;
     }
-    return true;
+
+    return false;
 }
 
 //we use this function because, when we change the clone type,
@@ -1055,22 +1066,23 @@ bool CharacterDB::GetActiveCloneType(uint32 characterID, uint32 &typeID) {
 
 // Return the Home station of the char based on the active clone
 bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
-	DBQueryResult res;
-	if ( !sDatabase.RunQuery(res,
+    DBQueryResult res;
+    if ( !sDatabase.RunQuery(res,
         "SELECT locationID "
         " FROM entity"
         " WHERE ownerID = %u"
         "  AND flag=400",
         characterID ))
-	{
+    {
         _log(CHARACTER__ERROR, "Could't get clone location for char %u", characterID );
-		return false;
-	}
+        return false;
+    }
 
-	DBResultRow row;
+    DBResultRow row;
     if (res.GetRow(row))
         stationID = row.GetUInt(0);
-	return true;
+
+    return true;
 }
 
 //replace all the typeID of the character's clones
@@ -1090,22 +1102,17 @@ bool CharacterDB::ChangeCloneType(uint32 characterID, uint32 typeID)
     }
 
     DBResultRow row;
-    if (!res.GetRow(row))
-    {
+    if (!res.GetRow(row)) {
         sLog.Error( "CharacterDB::ChangeCloneType()", "Could not find Clone typeID = %u in invTypes table.", typeID );
         return false;
     }
     std::string typeNameString = row.GetText(0);
 
     if (!sDatabase.RunQuery(res.error,
-        "UPDATE "
-        "entity "
+        "UPDATE entity "
         "SET typeID=%u, itemName='%s' "
-        "WHERE ownerID=%u "
-        "AND flag=400",
-        typeID,
-        typeNameString.c_str(),
-                           characterID))
+        "WHERE ownerID=%u AND flag=400",
+        typeID, typeNameString.c_str(), characterID))
     {
         _log(DATABASE__ERROR, "Failed to change clone type of char %u: %s.", characterID, res.error.c_str());
         return false;
@@ -1135,7 +1142,7 @@ bool CharacterDB::GetAttributesFromAncestry(uint32 ancestryID, uint8 &intelligen
         " WHERE ancestryID = %u ", ancestryID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return (false);
+        return false;
     }
 
     DBResultRow row;
@@ -1150,7 +1157,7 @@ bool CharacterDB::GetAttributesFromAncestry(uint32 ancestryID, uint8 &intelligen
     memory += row.GetUInt(3);
     willpower += row.GetUInt(4);
 
-    return (true);
+    return true;
 }
 
 bool CharacterDB::GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID) {
@@ -1175,12 +1182,12 @@ uint32 CharacterDB::GetStartingStationByCareer(uint32 careerID)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-                "SELECT "
-                "  co.stationID"
-                " FROM careers AS c"
-                "    LEFT JOIN chrSchools AS cs USING (schoolID)"
-                "    LEFT JOIN crpCorporation AS co ON cs.corporationID = co.corporationID"
-                " WHERE c.careerID = %u", careerID))
+        "SELECT "
+        "  co.stationID"
+        " FROM careers AS c"
+        "    LEFT JOIN chrSchools AS cs USING (schoolID)"
+        "    LEFT JOIN crpCorporation AS co ON cs.corporationID = co.corporationID"
+        " WHERE c.careerID = %u", careerID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
@@ -1196,15 +1203,15 @@ uint32 CharacterDB::GetStartingStationByCareer(uint32 careerID)
 }
 
 void CharacterDB::SetAvatar(uint32 charID, PyRep* hairDarkness) {
-	//populate the DB with avatar information
-	DBerror err;
-	if (!sDatabase.RunQuery(err,
-		"INSERT INTO avatars (charID, hairDarkness)"
-		" VALUES (%u, %f)",
-		charID, hairDarkness->AsFloat()->value()))
-	{
-		codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
-	}
+    //populate the DB with avatar information
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+        "INSERT INTO avatars (charID, hairDarkness)"
+        " VALUES (%u, %f)",
+        charID, hairDarkness->AsFloat()->value()))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
+    }
 }
 
 void CharacterDB::SetAvatarColors(uint32 charID, uint32 colorID, uint32 colorNameA, uint32 colorNameBC, double weight, double gloss) {
@@ -1325,11 +1332,7 @@ bool CharacterDB::GetSkillsByCareer(uint32 careerID, std::map<uint32, uint8> &in
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        if (into.find(row.GetUInt(0)) == into.end()) {
-            into[row.GetUInt(0)] = row.GetUInt(1);
-        } else {
-            into[row.GetUInt(0)] += row.GetUInt(1);
-        }
+        into[row.GetUInt(0)] += row.GetUInt(1);
         //check to avoid more than 5 levels of a skill
         if (into[row.GetUInt(0)] > 5)
             into[row.GetUInt(0)] = 5;
@@ -1739,7 +1742,7 @@ PyRep* CharacterDB::GetKillOrLoss(uint32 charID) {
 void CharacterDB::SetCorpRole(uint32 charID, int64 role)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE chrCharacters SET corpRole = %lli WHERE characterID = %u", role, charID);
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET corpRole = %li WHERE characterID = %u", role, charID);
 }
 
 int64 CharacterDB::GetCorpRole(uint32 charID)

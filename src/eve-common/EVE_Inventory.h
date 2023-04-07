@@ -124,8 +124,8 @@ namespace Inv {
 
     /* structure for type attributes */
     struct DmgTypeAttribute {
-        uint16          attributeID;
-        EvilNumber      value;
+        uint16          attributeID=0;
+        EvilNumber      value=0;
     };
 
 }

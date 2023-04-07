@@ -110,7 +110,7 @@ bool CommandDB::ItemSearch(const char *query, std::map<uint32, std::string> &int
         ))
     {
         codelog(SERVICE__ERROR, "Error in query: %s", result.error.c_str());
-        return (false);
+        return false;
     }
 
     DBResultRow row;
@@ -141,13 +141,13 @@ bool CommandDB::ItemSearch(uint32 typeID, uint32 &actualTypeID,
         ))
     {
         sLog.Error( "CommandDB::ItemSearch()", "Error in query: %s", result.error.c_str() );
-        return (false);
+        return false;
     }
 
     if ( !result.GetRow(row) )
     {
         sLog.Error( "CommandDB::ItemSearch()", "Query returned NO results: %s", result.error.c_str() );
-        return (false);
+        return false;
     }
 
     // Extract values from the first row:

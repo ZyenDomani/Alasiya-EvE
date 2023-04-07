@@ -170,6 +170,7 @@ PyResult CorpRegistryBound::Handle_GetEveOwners(PyCallArgs &call) {
      * it comes with the bind request for a particular corp.
      *
      * the client wants a member list for given corp
+     * ** should this be cached? **
      */
     return m_db.GetEveOwners(m_corpID);
 }
@@ -177,16 +178,18 @@ PyResult CorpRegistryBound::Handle_GetEveOwners(PyCallArgs &call) {
 PyResult CorpRegistryBound::Handle_GetInfoWindowDataForChar( PyCallArgs& call )
 {    //takes characterID
     //  returns corpID, allianceID, title
+    // should this be cached instead of db hit?
     return CharacterDB::GetInfoWindowDataForChar(call.client->GetCharacterID());
 }
 
 PyResult CorpRegistryBound::Handle_GetCorporation(PyCallArgs &call) {
     // called by member of this corp
+    // should this be cached instead of db hit?
     return m_db.GetCorporation(m_corpID);
 }
 
 PyResult CorpRegistryBound::Handle_GetRoles(PyCallArgs &call)
-{   // working
+{   // working  
     return m_db.GetCorpRoles();
 }
 

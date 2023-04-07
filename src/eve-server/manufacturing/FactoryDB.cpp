@@ -427,7 +427,7 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
     into.materialMultiplier     = row.GetFloat(0);
     into.timeMultiplier         = row.GetFloat(1);
     into.installCost            = row.GetFloat(2);
-    if (row.GetFloat(3) > row.GetFloat(4)) {            //min of base cost/hr vs minimum cost/hr
+    if (row.GetFloat(3) > row.GetFloat(4)) {            //max of base cost/hr vs minimum cost/hr
         into.usageCost          = row.GetFloat(3);
     } else {
         into.usageCost          = row.GetFloat(4);
@@ -452,7 +452,7 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
         }
 
         /** @todo  this shit will have to be verified for negative standings */
-        // modify end result by 25% for char standings with station owner
+        // modify end result by 2.5% for char standings with station owner
         standing *= (1 - (0.025f * StandingDB::GetStanding(row.GetInt(5), pChar->itemID())));
     } else {
         // else take personal standings with station corp only

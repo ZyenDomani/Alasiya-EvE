@@ -74,9 +74,11 @@ bool CorporationDB::GetCorporationBySchool(uint32 schoolID, uint32 &corporationI
 
 /**
  * @todo Here should come a call to Corp??::CharacterJoinToCorp or what the heck... for now we only put it there
+ * ....no clue what i was thinking when i wrote that above....
  */
 bool CorporationDB::GetLocationCorporationByCareer(CharacterData& cdata, uint32& corporationID) {
     DBQueryResult res;
+    /** @todo  this needs update to remove joins */
     if (!sDatabase.RunQuery(res,
         "SELECT "      // fixed DB Query   -allan 01/02/14  -UD 9Jul19
         "  cs.corporationID, "
@@ -852,7 +854,7 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         "  characterID, "
         "  corporationID,"
         "  corpAccountKey AS divisionID,"
-        "  0 AS squadronID,"
+        "  0 AS squadronID,"    // wtf is this?
         "  title, "
         "  corpRole AS roles,"
         "  rolesAtAll, "
@@ -1076,7 +1078,7 @@ bool CorporationDB::UpdateTitle(uint32 corpID, Call_UpdateTitleData& args, PyDic
     DBerror err;
     // We are here, so something must have changed...
     if (N < 1)
-    return false;
+        return false;
 
     if (!sDatabase.RunQuery(err, query.c_str())) {
         codelog(CORP__DB_ERROR, "Error in query: %s", err.c_str());
@@ -1883,7 +1885,6 @@ bool CorporationDB::UpdateCorporation(uint32 corpID, const Call_UpdateCorporatio
     return true;
 }
 
-#define NI(i) row.IsNull(i) ? 0 : row.GetInt(i)
 bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDict * notif) {
     DBQueryResult res;
 
@@ -1903,6 +1904,7 @@ bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDic
         return false;
     }
 
+#define NI(i) row.IsNull(i) ? 0 : row.GetInt(i)
     std::vector<std::string> dbQ;
     ProcessIntChange("shape1", NI(0), upd.shape1, notif, dbQ);
     ProcessIntChange("shape2", NI(1), upd.shape2, notif, dbQ);
@@ -1911,6 +1913,7 @@ bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDic
     ProcessIntChange("color1", NI(3), upd.color1, notif, dbQ);
     ProcessIntChange("color2", NI(4), upd.color2, notif, dbQ);
     ProcessIntChange("color3", NI(5), upd.color3, notif, dbQ);
+#undef NI
 
     std::string query = " UPDATE crpCorporation SET ";
 
@@ -1928,7 +1931,6 @@ bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDic
 
     return true;
 }
-#undef NI
 
 PyRep* CorporationDB::GetMemberTrackingInfo(uint32 corpID)
 {
@@ -2308,7 +2310,7 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     //AttributeError: 'dict' object has no attribute 'header'
     if (pClient != nullptr)
         pClient->SendNotification("OnShareChange", "charid", charUpdate.Encode());
-    
+
     // add to new owner
     sDatabase.RunQuery(err,
         "INSERT INTO crpShares (corporationID, shareholderID, shares, shareholderCorporationID)"

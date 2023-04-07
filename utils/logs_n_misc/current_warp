@@ -132,3 +132,14 @@ e
 21:29:19 [BubbleWarning] BubbleManager::Process() - Wanderer kitty(140020259) in system Zaid(30000006) is being added to a bubble.
 21:29:19 [BubbleWarning] BubbleManager::CheckBubble() - Entity 'kitty'(140020259) at (855798180359.77,-598128759496.40,2082288458300.00) is no longer located in bubble 7 at 1266447605760.00,-728162181120.00,2314581811200.00.  Removing...
 
+.
+21:52:22 [Bound] BeyonceBound::CmdFollowBall()
+21:52:22 [AP Msg] Allan called Follow. AP: false
+21:52:22 [TurnTrace] Destiny::IsTurn(false) - Hulk(140018752): degrees:0.0000
+21:52:22 [MoveTrace] Destiny::SetSpeedFraction() - Hulk(140018752):   prevSpeed:0.00, fraction: 1.00, start: true, stop: false, accel: false, decel: false
+21:52:22 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752): Speed Change - USF: 1.00, ASF: 1.00, TF: 1.00, PSF: 0.00, pSpeed: 0.00, mSpeed: 87.50, accel: false, decel: false, delta: 1.000
+21:52:22 [MoveTrace] Destiny::UpdateVelocity - Hulk(140018752):  ASF == USF                     --No Change  AccelTime: 94.30, USF: 1.00, ASF: 1.00, TF: 1.00, PSF: 0.00
+21:52:22 [ClientOutAll]           None
+21:52:23 E Destiny::MoveObject(): Hulk(140018752) - move checks are not set right. Acc:False, Dec:False, timeStamp:0.969, Tractored:False, TractorPause:False
+21:52:23 W DestinyManager: Hulk calling stop
+21:52:23 [MoveTrace] Destiny::SetSpeedFraction() - Hulk(140018752):   prevSpeed:0.00, fraction: 0.00, start: false, stop: false, accel: false, decel: false
