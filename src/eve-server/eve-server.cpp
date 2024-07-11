@@ -682,6 +682,7 @@ int main( int argc, char* argv[] )
     /* create the MarketMgr singleton */
     sLog.Green("       ServerInit", "Starting Market Manager");
     sMktMgr.Initialize(&pyServMgr);
+    /* create the StatMgr singleton */
     sLog.Green("       ServerInit", "Starting Statistics Manager");
     sStatMgr.Initialize();
     /* create console command interperter singleton */
@@ -813,8 +814,8 @@ int main( int argc, char* argv[] )
     sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
     std::printf("\n");     // spacer
     /** @note  this is NOT used correctly yet...  */
-    //sLog.Green("       ServerInit", "Priming cached objects.");
-    //pyServMgr.cache_service->PrimeCache();
+    sLog.Green("       ServerInit", "Priming cached objects.");
+    pyServMgr.cache_service->PrimeCache();
     sLog.Green("       ServerInit", "Initializing BulkData");
     if (sConfig.server.BulkDataOD) {
         sLog.Yellow("      BulkDataMgr", "PreLoading Disabled. BulkData will load on first call.");
