@@ -1516,14 +1516,6 @@ void DestinyManager::InitWarp() {
      *     http://www.eve-search.com/thread/478431-0/page/1
      */
 
-    // check for player warp
-    if (mySE->HasPilot()) {
-        //turn off non warp-safe modules
-        mySE->GetShipSE()->Warp();
-        //drain cap
-        mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_warpCapacitorNeed);
-    }
-
     //init warp:
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp(): %s(%u) is initializing warp.", mySE->GetName(), mySE->GetID());
@@ -1594,6 +1586,14 @@ void DestinyManager::InitWarp() {
     SafeDelete(m_warpState);
     m_warpState = new WarpState(m_stateStamp, m_targetDistance, warpSpeedInMeters, accelDistance, cruiseDistance,
                         decelDistance, warpTime, true, false, false);
+
+    // check for player warp
+    if (mySE->HasPilot()) {
+        //turn off non warp-safe modules
+        mySE->GetShipSE()->Warp();
+        //drain cap
+        mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_warpCapacitorNeed);
+    }
 
     //clear targets
     mySE->TargetMgr()->ClearAllTargets();
