@@ -620,7 +620,8 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
         mposition.z = sin(theta) *radius + (roidradius *2) + MakeRandomFloat(-3000, 5000 );
         mposition.y += MakeRandomFloat(-2000, 3000 ) + roidradius;
 
-        TODO:  make neocom note "there is odd vortex here..", then make ships drift!  (and update position)
+        TODO:  make neocom note "there is odd vortex here.."
+               then make ships drift!  (~5-10 m/s and update position)
      */
     /*
      *  flat circle @ 50k
@@ -658,4 +659,5 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
 
     /* idea...
      * huge rock in center, with smaller rocks in 'orbit' at various angles
+     * even better, give the smaller rocks a destinyMgr and make them actually orbit....not sure how client would handle it
      */
