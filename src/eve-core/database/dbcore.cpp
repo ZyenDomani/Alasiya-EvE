@@ -37,7 +37,6 @@
 
 // this is to enable profile tracking for db
 #define sProfiler ( Profiler::get() )
-
 class Profiler
 : public Singleton<Profiler>
 {
@@ -72,17 +71,19 @@ void DBcore::Connect(uint* errnum, char* errbuf)
         } else {
             sLog.Error("        DB Server", " Unix Socket Connection Option Failed");
             enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_TCP;
-            if (mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type) == 0)
+            if (mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type) == 0) {
                 sLog.Cyan("        DB Server", " %s:%d", pHost.c_str(), pPort);
-            else
+            } else {
                 sLog.Error("        DB Server", " TCP Connection Option Failed");
+            }
         }
     } else {
         enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_TCP;
-        if (mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type) == 0)
+        if (mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type) == 0) {
             sLog.Cyan("        DB Server", " %s:%d", pHost.c_str(), pPort);
-        else
+        } else {
             sLog.Error("        DB Server", " TCP Connection Option Failed");
+        }
     }
 
     int32 flags = CLIENT_FOUND_ROWS; //2
@@ -104,17 +105,21 @@ void DBcore::Connect(uint* errnum, char* errbuf)
      *            sLog.Cyan(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
      *        else
      *            sLog.Green(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-} else
-    sLog.Error(" DataBase Manager", "Connection Timeout Option Failed");
-*/
+     *    } else {
+              sLog.Error(" DataBase Manager", "Connection Timeout Option Failed");
+          }
+     */
     if (pReconnect) {
         my_bool reconnect = true;
-        if (mysql_options(mysql, MYSQL_OPT_RECONNECT, (void*)&reconnect) == 0) // this will enable auto-reconnect...and render my Reconnect() worthless
+        if (mysql_options(mysql, MYSQL_OPT_RECONNECT, (void*)&reconnect) == 0) {
+            // this will enable auto-reconnect...and render my Reconnect() worthless  (which may be a good thing....)
             sLog.Green(" DataBase Manager", "DataBase AutoReconnect Enabled");
-        else
+        } else {
             sLog.Error(" DataBase Manager", "DataBase AutoReconnect Option Failed");
-    } else
+        }
+    } else {
         sLog.Yellow(" DataBase Manager", "DataBase AutoReconnect Disabled");
+    }
 
     if (mysql_real_connect(mysql, pHost.c_str(), pUser.c_str(), pPassword.c_str(), pDatabase.c_str(), pPort, 0, flags) == nullptr) {
         pStatus = Error;
@@ -211,8 +216,7 @@ void DBcore::CallShutdown()
 } */
 
 // Sends the MySQL server a ping
-void DBcore::ping()
-{
+void DBcore::ping() {
     // well, if it's locked, someone's using it. If someone's using it, it doesn't need a ping
     if ( MDatabase.TryLock() ) {
         mysql_ping(mysql);
@@ -242,7 +246,6 @@ bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
     }
 
     into.SetResult(mysql_store_result(mysql), col_count);
-
     return true;
 }
 
@@ -280,9 +283,7 @@ bool DBcore::RunQuery(DBerror &err, uint32 &affected_rows, const char *query_fmt
         return false;
     }
     free(query);
-
     affected_rows = (uint32)mysql_affected_rows(mysql);
-
     return true;
 }
 
@@ -301,9 +302,7 @@ bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query
         return false;
     }
     free(query);
-
     last_insert_id = (uint32)mysql_insert_id(mysql);
-
     return true;
 }
 
@@ -314,15 +313,15 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
     if (mysql == nullptr) {
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore - mysql = null");
-        if (!Reconnect())
+        //if (!Reconnect())
             return false;
     }
 
     if (pStatus != Connected) {
         codelog(DATABASE__ERROR, "DBCore - Status != Connected");
         _log(DATABASE__MESSAGE, "DBCore error detected.  Look for error msgs in logs prior to this point.");
-        if (!Reconnect())
-            return false;
+        //if (!Reconnect())
+        //    return false;
     }
 
     if (is_log_enabled(DATABASE__QUERIES))
@@ -336,8 +335,8 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
         // there are many correctable errors to check for
         if ((num == CR_SERVER_LOST) or (num == CR_SERVER_GONE_ERROR)) {
             _log(DATABASE__ERROR, "DBCore error - server lost or gone.");
-            if (!Reconnect())
-                return false;
+            //if (!Reconnect())
+            //    return false;
         }
 
         if ((pStatus == Connected) and retry)
@@ -357,13 +356,11 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
 }
 
 
-int32 DBcore::DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen)
-{
+int32 DBcore::DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen) {
     return mysql_real_escape_string(mysql, tobuf, frombuf, fromlen);
 }
 
-void DBcore::DoEscapeString(std::string &to, const std::string &from)
-{
+void DBcore::DoEscapeString(std::string &to, const std::string &from) {
     assert(mysql);
     uint32 len = (uint32)from.length();
     to.resize(len * 2);   // make enough room
