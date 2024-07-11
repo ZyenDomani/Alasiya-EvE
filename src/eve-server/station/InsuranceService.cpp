@@ -233,5 +233,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     m_manager->lsc_service->SendMail(corpSCC, call.client->GetCharacterID(), subject, body);
 
+    // TODO: create calendar event for insurance expiry
+	
     return m_db->GetInsuranceByShipID(args.shipID);
 }
