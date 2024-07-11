@@ -102,8 +102,8 @@ void EntityList::Close()
         sLog.Yellow("       EntityList", "Cleaning up %lu clients, %lu systems, %lu agents, and %lu stations", \
                     m_clients.size(), m_systems.size(), m_agents.size(), m_stations.size());
     } else {
-        sLog.Green("       EntityList", "Cleaning up %lu clients, %lu systems, %lu agents, and %lu stations", \
-                    m_clients.size(), m_systems.size(), m_agents.size(), m_stations.size());
+        sLog.Green("       EntityList", "Cleaning up %lu systems, %lu agents, and %lu stations", \
+                    m_systems.size(), m_agents.size(), m_stations.size());
     }
 
     for (auto &cur : m_clients)
