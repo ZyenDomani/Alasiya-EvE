@@ -988,7 +988,7 @@ void DestinyManager::Turn(float &speed, std::string &move) {
         // however, we need to make sure asf < mtsf during first half of turn
         if (m_turnTime < (m_alignTime * 0.5f))
             if (m_activeSpeedFraction > m_turnMinFraction)
-                sLog.Warning("Turn()", "asf > mtsf during first half.");
+                ; //sLog.Warning("Turn()", "asf > mtsf during first half.");
             // have to figure out how to keep this down and everything sane at same time.
     }
 	if (m_turnAccel) {
@@ -1074,11 +1074,21 @@ void DestinyManager::Turn(float &speed, std::string &move) {
         head.normalize();
         m_shipHeading = head;
 
-        sLog.Warning("turn", "calc'd in %.3fus", GetTimeUSeconds() - timer);
+        //sLog.Warning("turn", "calc'd in %.3fus", GetTimeUSeconds() - timer);
         /*  this is pretty fuckin fast (before decel checks)
          * 17:10:09 W turn: calc'd in 5.500us
          * 17:10:10 W turn: calc'd in 4.750us
          * 17:10:11 W turn: calc'd in 8.000us
+	 * 
+18:32:17 W turn: calc'd in 1.250us
+18:32:18 W turn: calc'd in 11.250us
+18:32:18 W turn: calc'd in 1.250us
+18:32:19 W turn: calc'd in 5.750us
+18:32:19 W turn: calc'd in 1.500us
+18:32:20 W turn: calc'd in 5.250us
+18:32:20 W turn: calc'd in 1.500us
+18:32:21 W turn: calc'd in 5.750us
+18:32:21 W turn: calc'd in 1.500us
          */
         if (is_log_enabled(DESTINY__TURN_TRACE))
             _log(DESTINY__TURN_TRACE, "Destiny::Turn() - turnStamp:%u, change:%.2f, Position:%.1f,%.1f,%.1f, Heading:%.7f,%.7f,%.7f  state: %s", \

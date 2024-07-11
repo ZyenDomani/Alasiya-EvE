@@ -161,7 +161,7 @@ bool log_close_logfile() {
 bool load_log_settings(const char *filename) {
     //this is a terrible algorithm, but im lazy today
     FILE *f = fopen(filename, "r");
-    if (f = nullptr)
+    if (f == nullptr)
         return false;
     char linebuf[512], type_name[256], value[256];
     uint16 i(0), r(0), k(0);

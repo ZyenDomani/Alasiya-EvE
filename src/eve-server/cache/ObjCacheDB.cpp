@@ -659,7 +659,8 @@ PyRep *ObjCacheDB::Generate_certificates()
 PyRep *ObjCacheDB::Generate_certificateRelationships()
 {
     DBQueryResult res;
-    const char *q = "SELECT relationshipID, parentID, parentTypeID, parentLevel, childID, childTypeID FROM crtRelationships";
+    //const char *q = "SELECT relationshipID, parentID, parentTypeID, parentLevel, childID, childTypeID FROM crtRelationships";
+    const char *q = "SELECT relationshipID, parentID, parentTypeID, parentLevel, childID FROM crtRelationships";
     if (!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.certificaterelationships': %s", res.error.c_str());
