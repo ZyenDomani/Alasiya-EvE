@@ -1516,10 +1516,13 @@ void DestinyManager::InitWarp() {
      *     http://www.eve-search.com/thread/478431-0/page/1
      */
 
-    //turn off non warp-safe modules
-    mySE->GetShipSE()->Warp();
-    //drain cap
-    mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_warpCapacitorNeed);
+    // check for player warp
+    if (mySE->HasPilot()) {
+        //turn off non warp-safe modules
+        mySE->GetShipSE()->Warp();
+        //drain cap
+        mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_warpCapacitorNeed);
+    }
 
     //init warp:
     if (is_log_enabled(DESTINY__WARP_TRACE))

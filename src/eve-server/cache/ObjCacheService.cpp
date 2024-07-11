@@ -353,7 +353,7 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
         }
     }
 
-    PyDecRef(cache);
+    PySafeDecRef(cache);
     return true;
 }
 
