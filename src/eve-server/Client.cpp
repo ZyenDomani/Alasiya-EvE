@@ -129,10 +129,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 }
 
 Client::~Client() {
-    SafeDelete(pPacket);
-    SafeDelete(m_destinyEventQueue);
-    SafeDelete(m_destinyUpdateQueue);
-
     if (!m_loaded)
         return;
 
@@ -194,6 +190,9 @@ Client::~Client() {
     SafeDelete(m_TS);
     SafeDelete(m_scan);
     SafeDelete(pSession);
+    SafeDelete(pPacket);
+    SafeDelete(m_destinyEventQueue);
+    SafeDelete(m_destinyUpdateQueue);
 }
 
 bool Client::ProcessNet()

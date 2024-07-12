@@ -78,12 +78,10 @@ void log_message(LogType type, const char *fmt, ...) {
 }
 
 void log_messageVA(LogType type, const char *fmt, va_list args) {
-
     log_messageVA(type, 0, fmt, args);
 }
 
-extern void log_messageVA( LogType type, uint32 iden, const char *fmt, va_list args )
-{
+extern void log_messageVA( LogType type, uint32 iden, const char *fmt, va_list args) {
     /* allocate enough room for a med message  (changed from 4k to 1k) */
     size_t log_msg_size = 0x400;
     size_t log_msg_index = 0;
@@ -97,19 +95,19 @@ extern void log_messageVA( LogType type, uint32 iden, const char *fmt, va_list a
     int va_size = snprintf(&log_msg[log_msg_index], log_msg_size, "%02u:%02u:%02u [%s] ", t.tm_hour, t.tm_min, t.tm_sec, log_type_info[type].display_name );
 
     /* store the resulting size */
-    log_msg_size-=va_size;
-    log_msg_index+=va_size;
+    log_msg_size -= va_size;
+    log_msg_index += va_size;
 
     /* add the required spaces */
     for (uint32 i = 0; i < iden; i++)
         log_msg[log_msg_index++] = ' ';
 
     /* make sure the resulting size is corrected */
-    log_msg_size-=iden;
+    log_msg_size -= iden;
 
     /* put in the rest of the va stuff */
     va_size = vsnprintf(&log_msg[log_msg_index], log_msg_size, fmt, args);
-    log_msg_index+=va_size;
+    log_msg_index += va_size;
 
     /* make sure that there is a new line at the end */
     log_msg[log_msg_index++] = '\n';
@@ -128,27 +126,22 @@ extern void log_messageVA( LogType type, uint32 iden, const char *fmt, va_list a
     }
 
     lock.Unlock();
-
     free(log_msg);
 }
 
-void log_enable( LogType t )
-{
+void log_enable( LogType t ) {
     real_log_type_info[t].enabled = true;
 }
 
-void log_disable( LogType t )
-{
+void log_disable( LogType t ) {
     real_log_type_info[t].enabled = false;
 }
 
-void log_toggle( LogType t )
-{
+void log_toggle( LogType t ) {
     real_log_type_info[t].enabled = !real_log_type_info[t].enabled;
 }
 
-bool log_open_logfile( const char* filename )
-{
+bool log_open_logfile( const char* filename ) {
     MutexLock lock(mLogSys);
     if (logsys_log_file)
         if (!log_close_logfile())
@@ -158,8 +151,7 @@ bool log_open_logfile( const char* filename )
     return ( nullptr != logsys_log_file);
 }
 
-bool log_close_logfile()
-{
+bool log_close_logfile() {
     MutexLock lock(mLogSys);
     if (!logsys_log_file)
         return true;
@@ -169,22 +161,21 @@ bool log_close_logfile()
 bool load_log_settings(const char *filename) {
     //this is a terrible algorithm, but im lazy today
     FILE *f = fopen(filename, "r");
-    if (!f)
+    if (f == nullptr)
         return false;
     char linebuf[512], type_name[256], value[256];
-    uint16 i(0);
-    while(!feof(f)) {
+    uint16 i(0), r(0), k(0);
+    bool enabled(false);
+    while (!feof(f)) {
         ++i;
         if (fgets(linebuf, 512, f) == nullptr)
             continue;
         if (sscanf(linebuf, "%[^=]=%[^\r\n]\n", type_name, value) != 2)
             continue;
-
         if (type_name[0] == '\0' || type_name[0] == '#')
             continue;
 
         //first make sure we understand the value
-        bool enabled;
         if (!strcasecmp(value, "on") || !strcasecmp(value, "yes") || !strcasecmp(value, "enabled") || !strcmp(value, "1")) {
             enabled = true;
         } else if (!strcasecmp(value, "off") || !strcasecmp(value, "no") || !strcasecmp(value, "disabled") || !strcmp(value, "0")) {
@@ -194,7 +185,6 @@ bool load_log_settings(const char *filename) {
             continue;
         }
 
-        int r;
         //first see if it is a category name
         for(r = 0; r < NUMBER_OF_LOG_CATEGORIES; r++) {
             if (!strcasecmp(log_category_names[r], type_name))
@@ -202,7 +192,6 @@ bool load_log_settings(const char *filename) {
         }
         if (r != NUMBER_OF_LOG_CATEGORIES) {
             //matched a category.
-            int k;
             for(k = 0; k < NUMBER_OF_LOG_TYPES; k++) {
                 if (log_type_info[k].category != r)
                     continue;   //does not match this category.

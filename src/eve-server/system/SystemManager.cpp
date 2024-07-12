@@ -282,6 +282,7 @@ bool SystemManager::ProcessTic() {
 }
 
 bool SystemManager::SystemActivity() {
+    // TODO:  add gridUnload checks here for config option
     if (m_activityTime == 0)
         return true;
     if ((sEntityList.GetStamp() - m_activityTime) > 60)

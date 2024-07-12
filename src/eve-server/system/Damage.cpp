@@ -258,6 +258,9 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                 m_self->SetAttribute(AttrDamage, new_damage);
                 _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to structure. New structure damage: %.2f",
                      GetName(), GetID(), hull_damage, new_damage);
+                // module damage.  after armor is gone, make damage to random module.
+                if (HasPilot())
+                    GetShipSE()->DamageRandModule(sConfig.server.ModuleDamageChance);    // config option for random module damage chance
             } else {
                 total_damage += available_hull;
                 //dead....
@@ -265,11 +268,6 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                      GetName(), GetID(), hull_damage);
                 killed = true;
             }
-
-            // module damage.
-            //  after armor is gone, make damage to random module.
-            if (HasPilot())
-                GetShipSE()->DamageRandModule(sConfig.server.ModuleDamageChance);    // config option for random module damage chance
         }
     }
 
@@ -518,25 +516,26 @@ void ShipSE::Killed(Damage &damage) {
         if (deadShipInventory.empty()) {
             blob << "<i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/>";
         } else {
-            uint32 s = 0, d = 0, x = 0;
+            uint32 s(0), d(0), x(0);
             for (auto &cur : deadShipInventory) {
                 d = 0;
                 x = cur.second->quantity();
                 s = (cur.second->isSingleton() ? 1 : 0);
-                if (cur.second->categoryID() == EVEDB::invCategories::Blueprint) {
-                    // singleton for bpo = 1, bpc = 2.
-                    BlueprintRef bpRef = BlueprintRef::StaticCast(cur.second);
-                    s = (bpRef->copy() ? 2 : s);
-                }
-
-                blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() << " s=" << s ;
+                
+                blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() ;
+                                                
                 // all contained items have 50% chance of drop, except rigs, which do not survive
                 // todo:  add damage to item, if applicable, from ship explosion
                 //cur.second->SetAttribute(AttrDamage, 5);
                 if (IsRigSlot(cur.second->flag())) {
-                    /* just avoiding survive check */;
+                    continue;
                 } else if (IsEven(MakeRandomInt(0, 100))) {
                     // item survived.  check qty for drop
+                    if (cur.second->categoryID() == EVEDB::invCategories::Blueprint) {
+                        // singleton for bpo = 1, bpc = 2.
+                        BlueprintRef bpRef = BlueprintRef::StaticCast(cur.second);
+                        s = (bpRef->copy() ? 2 : s);
+                    }
                     if (x > 1) {
                         d = MakeRandomInt(0, x);
                         x -= d;
@@ -544,7 +543,7 @@ void ShipSE::Killed(Damage &damage) {
                     // move item to vector for insertion into wreck later on
                     survivedItems.push_back(cur.second);
                 }
-                blob << " d=" << d << " x=" << x << "/>";
+                blob  << " s=" << s << " d=" << d << " x=" << x << "/>";
             }
         }
         blob << "</items>";

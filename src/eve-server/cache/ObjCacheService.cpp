@@ -331,12 +331,10 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
         //we have generated the cache file in question, remember it
         m_cache.UpdateCache(objectID, &cache);
     } else {
-        //failed to query from the database... fall back to old
-        //hackish file loading.
+        //failed to query from the database... fall back to old hackish file loading.
         PySubStream* ss = m_cache.LoadCachedFile( objectID_string.c_str() );
         if ( ss == nullptr ) {
-            _log(CACHE__ERROR, "Failed to create or load cache file for '%s'", objectID_string.c_str());
-            PyDecRef(cache);
+            sLog.Error( "ObjCacheService", "Failed to create cache file for '%s'", objectID_string.c_str());
             return false;
         }
 
@@ -349,11 +347,11 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
         if (!m_cache.SaveCachedToFile(m_cacheDir, objectID)) {
             sLog.Error( "ObjCacheService", "Failed to save cache file for '%s' in '%s'", objectID_string.c_str(), m_cacheDir.c_str() );
         } else {
-            sLog.White( "ObjCacheService", "Saved cached object '%s' to file in '%s'.", objectID_string.c_str(), m_cacheDir.c_str() );
+            _log( CACHE__INFO, "Saved cached object '%s' to file in '%s'.", objectID_string.c_str(), m_cacheDir.c_str() );
         }
     }
 
-    PyDecRef(cache);
+    PySafeDecRef(cache);
     return true;
 }
 
@@ -363,7 +361,7 @@ PyRep *ObjCacheService::GetCacheHint(const PyRep* objectID) {
 
     PyObject *cache_hint = m_cache.MakeCacheHint(objectID);
     if (cache_hint == nullptr) {
-        _log(CACHE__ERROR, "Unable to build cache hint for object ID '%s' (h), skipping.", CachedObjectMgr::OIDToString(objectID).c_str());
+        sLog.Error( "ObjCacheService", "Unable to build cache hint for object ID '%s' (h), skipping.", CachedObjectMgr::OIDToString(objectID).c_str());
         return nullptr;
     }
 
@@ -393,13 +391,13 @@ void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {
     }
     if (objects == nullptr)
         return;
-    uint32 r;
+    
     std::map<std::string, std::string>::const_iterator res;
-    for(r = 0; r < object_count; r++) {
+    for(uint32 r = 0; r < object_count; r++) {
         //find the dict key to use for this object
         res = m_cacheKeys.find(objects[r]);
         if (res == m_cacheKeys.end()) {
-            _log(CACHE__ERROR, "Unable to find cache key for object ID '%s', skipping.", objects[r]);
+            sLog.Warning( "ObjCacheService", "Unable to find cache key for object ID '%s', skipping.", objects[r]);
             continue;
         }
 
