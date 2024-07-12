@@ -16,6 +16,9 @@ lp implemented (unknown quality)
 other updates?
 eve# liveupdates
 
+azerothcore benchmarked std::map vs std::unordered_map
+    unordered was faster
+    maybe update this in mine?
 
 *******************************************************
 *******************************************************
