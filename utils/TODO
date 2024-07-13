@@ -47,8 +47,7 @@ work on buglist, integrate this list in there where i can (in order)
     - lsc  ... probably needs complete rewrite.  see below
     - missions  - still have a long way to go here.  courier should be >95% before moving to next group
     - calendar - mostly working.  only goes back 12 months in client
-    - contracts  ... davinci coded this working system on official.  quick lookover shows multiple db hits that will need optimize
-    - ram  (slot # are STILL "1" on all slots) trying to get liveupdates to fix this, but no luck yet (was working at one time)
+    - contracts  ... davinci coded this working system on official.  quick lookover shows multiple db hits that will need optimizeing
     - cosmic systems  ... POC working.  will need more work.  James did a lot of WH work on official.  current status u/k
     - lp  ...  hmmm...
     - ?

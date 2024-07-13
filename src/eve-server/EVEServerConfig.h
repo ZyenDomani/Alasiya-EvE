@@ -62,6 +62,7 @@ public:
         bool CargoMassAdditive;
         bool LoadStaticRecyclable;
         bool LoadStaticRefinable;
+        bool StackTrace;
         uint8 ServerSleepTime;
         uint8 MaxThreadReport;
         uint8 BountyPayoutTimer;

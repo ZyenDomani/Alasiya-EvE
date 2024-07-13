@@ -211,8 +211,6 @@ void SystemBubble::Add(SystemEntity* pSE)
         rangeToStar /= ONE_AU_IN_METERS;
         _log(BUBBLE__DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
                 rangeToStar, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
-        //if (sConfig.debug.StackTrace)
-        //    EvE::traceStack();
     }
 
     if (pSE->HasPilot()) {
@@ -308,9 +306,9 @@ void SystemBubble::SetSpawnTimer(bool isBelt/*false*/)
     } else {
         // these randoms should be changed to reflect this npc's faction presence in system
         if (isBelt) {
-            m_spawnTimer.Start(MakeRandomInt(30, sConfig.npc.RoamingTimer) *1000);
+            m_spawnTimer.Start(MakeRandomInt(30, sConfig.npc.RoamingTimer) * 1000);
         } else {
-            m_spawnTimer.Start(MakeRandomInt(60, sConfig.npc.StaticTimer) *1000);
+            m_spawnTimer.Start(MakeRandomInt(60, sConfig.npc.StaticTimer) * 1000);
         }
     }
 }

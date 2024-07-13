@@ -258,7 +258,8 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
 
     _log(INV__WARNING,"Inventory::RemoveItem(2) - %s(%u) flagMap does not contain %s(%u) in %s.", \
             m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
-    //EvE::traceStack();
+    if (sConfig.server.StackTrace)
+        EvE::traceStack();
 }
 
 void Inventory::DeleteContents()

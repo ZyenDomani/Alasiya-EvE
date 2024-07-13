@@ -65,6 +65,7 @@ EVEServerConfig::EVEServerConfig()
     server.CargoMassAdditive = false;
     server.LoadStaticRecyclable = false;
     server.LoadStaticRefinable = false;
+    server.StackTrace = false;
 
     // world
     world.chatLogs = false;//N
@@ -347,6 +348,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "CargoMassAdditive",    server.CargoMassAdditive );
     AddValueParser( "LoadStaticRecyclable", server.LoadStaticRecyclable );
     AddValueParser( "LoadStaticRefinable",  server.LoadStaticRefinable );
+    AddValueParser( "StackTrace",           server.StackTrace );
 
     const bool result = ParseElementChildren( ele );
 
@@ -370,6 +372,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "CargoMassAdditive" );
     RemoveParser( "LoadStaticRecyclable" );
     RemoveParser( "LoadStaticRefinable" );
+    RemoveParser( "StackTrace" );
 
     return result;
 }

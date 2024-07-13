@@ -152,7 +152,19 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         }
     }
 
+
     /** @todo change these next 2 (rep and boost) to boolean to avoid timer creation/checks */
+    m_armorRepairDuration = 0;
+    m_armorRepairDelayChance = 0;
+    m_shieldBoosterDuration = 0;
+    m_shieldBoosterDelayChance = 0;
+    m_useTargSwitching = false;
+    m_useSecondTarget = false;
+    m_useSigRadius = false;
+    m_preferedSigRadius = 0;
+    m_warpScramRange = 0;
+    m_warpScramChance = 0;
+    m_switchTargChance = 0;
 
     // this is chance an npc has of delaying it's rep (if applicable)
     if (m_self->HasAttribute(AttrEntityArmorRepairDelayChance)) {
@@ -163,10 +175,8 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_float();
     } else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceLarge)) {
         m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float();
-    } else {
-        m_armorRepairDuration = 0;
-        m_armorRepairDelayChance = 0;
     }
+
     if (m_armorRepairDelayChance)
         m_armorRepairDuration = m_self->GetAttribute(AttrEntityArmorRepairDuration).get_uint32();
 
@@ -179,47 +189,31 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_shieldBoosterDelayChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChanceMedium).get_float();
     } else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceLarge)) {
         m_shieldBoosterDelayChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
-    } else {
-        m_shieldBoosterDuration = 0;
-        m_shieldBoosterDelayChance = 0;
     }
+
     if (m_shieldBoosterDelayChance)
         m_shieldBoosterDuration = m_self->GetAttribute(AttrEntityShieldBoostDuration).get_uint32();
 
     // advanced AI variables  only used by sleepers for now (and on live).  will update advanced npcs to use these also
-    if (m_self->HasAttribute(AttrAI_ShouldUseTargetSwitching)) {
+    if (m_self->HasAttribute(AttrAI_ShouldUseTargetSwitching))
         m_useTargSwitching = true;
-    } else {
-        m_useTargSwitching = false;
-    }
-    if (m_self->HasAttribute(AttrAI_ShouldUseSecondaryTarget)) {
+
+    if (m_self->HasAttribute(AttrAI_ShouldUseSecondaryTarget))
         m_useSecondTarget = true;
-    } else {
-        m_useSecondTarget = false;
-    }
+
     if (m_self->HasAttribute(AttrAI_ShouldUseSignatureRadius)) {
         m_useSigRadius = true;
         m_preferedSigRadius = m_self->GetAttribute(AttrAI_PreferredSignatureRadius).get_uint32();
-    } else {
-        m_useSigRadius = false;
-        m_preferedSigRadius = 0;
-    }
-    if (m_self->HasAttribute(AttrAI_ChanceToNotTargetSwitch)) {
-        m_switchTargChance = 1.0 - m_self->GetAttribute(AttrAI_ChanceToNotTargetSwitch).get_float();
-    } else {
-        m_switchTargChance = 0;
     }
 
-    if (m_self->HasAttribute(AttrWarpScrambleRange)) {
+    if (m_self->HasAttribute(AttrAI_ChanceToNotTargetSwitch))
+        m_switchTargChance = 1.0 - m_self->GetAttribute(AttrAI_ChanceToNotTargetSwitch).get_float();
+
+    if (m_self->HasAttribute(AttrWarpScrambleRange))
         m_warpScramRange = m_self->GetAttribute(AttrWarpScrambleRange).get_float();
-    } else {
-        m_warpScramRange = 0;
-    }
-    if (m_self->HasAttribute(AttrEntityWarpScrambleChance)) {
+
+    if (m_self->HasAttribute(AttrEntityWarpScrambleChance))
         m_warpScramChance = 1.0 - m_self->GetAttribute(AttrEntityWarpScrambleChance).get_float();
-    } else {
-        m_warpScramChance = 0;
-    }
 
     /*
     AttrWarpScrambleRange = 103,
@@ -401,9 +395,9 @@ void NPCAIMgr::WarpOut()
         if (newBeltID == sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()))
             newBeltID = pSys->GetRandBeltID();
 
-        SystemEntity* newSE = pSys->GetSE(newBeltID);
-        m_destiny->WarpTo(newSE->GetPosition());
-        m_npc->GetSpawnMgr()->MoveSpawn(m_npc, sBubbleMgr.FindBubble(newSE));
+        SystemEntity* newBeltSE = pSys->GetSE(newBeltID);
+        m_destiny->WarpTo(newBeltSE->GetPosition());
+        m_npc->GetSpawnMgr()->MoveSpawn(m_npc, sBubbleMgr.FindBubble(newBeltSE));
     }
 }
 

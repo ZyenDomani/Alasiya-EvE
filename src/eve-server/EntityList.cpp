@@ -649,7 +649,8 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
                 pSysMgr->GetClientList(cVec);
             } else {
                 sLog.Error("EntityList::Multicast 1", "DEST__LOCATION - location %u is neither station nor system", targID);
-                EvE::traceStack();
+                if (sConfig.server.StackTrace)
+                    EvE::traceStack();
             }
         } break;
         case NOTIF_DEST__CORPORATION: {

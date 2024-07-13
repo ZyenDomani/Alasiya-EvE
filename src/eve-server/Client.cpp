@@ -178,13 +178,13 @@ Client::~Client() {
     m_ship->LogOut();
 
     m_system->RemoveClient(this, true);
+    m_system = nullptr; // DO NOT delete m_system here
+
     // remove char from entitylist
     sEntityList.RemovePlayer(this);
 
     for (auto &cur : m_bindSet)
         m_services.ClearBoundObject(cur);
-
-    m_system = nullptr; // DO NOT delete m_system here
 
     SafeDelete(pShipSE);
     SafeDelete(m_TS);

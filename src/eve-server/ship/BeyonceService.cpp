@@ -696,7 +696,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // fudge the distance a bit for these... its' a lil close by default
             GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = (vectorFromOrigin * radius);
+            GPoint stopPoint = (vectorFromOrigin * radius) + 3000;
             warpToPoint -= stopPoint;
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
@@ -704,7 +704,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // fudge the distance a bit for these... its' a lil close by default
             GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = (vectorFromOrigin * (radius / 2));
+            GPoint stopPoint = (vectorFromOrigin * (radius / 2)) + 1000;
             warpToPoint -= stopPoint;
         } else if (pSE->IsMoonSE()) {
             if (pSE->GetMoonSE()->HasTower()) {

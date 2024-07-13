@@ -1079,7 +1079,7 @@ void DestinyManager::Turn(float &speed, std::string &move) {
          * 17:10:09 W turn: calc'd in 5.500us
          * 17:10:10 W turn: calc'd in 4.750us
          * 17:10:11 W turn: calc'd in 8.000us
-	 * 
+	 *
 18:32:17 W turn: calc'd in 1.250us
 18:32:18 W turn: calc'd in 11.250us
 18:32:18 W turn: calc'd in 1.250us
@@ -2078,7 +2078,10 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     }
 
     //You will always exit warp at a random point, 2,500 meters from your actual exit point - per EveUni
-    //m_targetPoint.MakeRandomPointOnSphereLayer(-2500, 2500);   disabled for testing
+    /*  disabled for testing
+     if (mySE->HasPilot())
+        m_targetPoint.MakeRandomPointOnSphereLayer(-2500, 2500);
+     */
 
     // reset heading for updated targPoint
     GVector toVec(m_position, m_targetPoint);
@@ -2086,9 +2089,6 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     toVec.normalize();
     // set targ heading
     m_targetHeading = toVec;
-
-    _log(DESTINY__TRACE, "Destiny::WarpTo() m_shipHeading: %.7f,%.7f,%.7f.  m_targetHeading: %.7f,%.7f,%.7f", \
-            m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z);
 
     // get targ bubble.  this will create bubble if needed
     m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), m_targetPoint);
@@ -2111,9 +2111,6 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
 
         // reset ball mode as it was changed in SSF()
         m_ballMode = Destiny::Ball::Mode::WARP;
-        // if ship is not moving, set usf for movement
-        if (m_userSpeedFraction < 0.749)
-            m_userSpeedFraction = 1.0f;
 
         // if no players in bubble, this isnt needed...
         if (mySE->SysBubble()->HasPlayers()) {
@@ -2143,6 +2140,9 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         return;
     }
 
+    _log(DESTINY__TRACE, "Destiny::WarpTo() m_shipHeading: %.7f,%.7f,%.7f.  m_targetHeading: %.7f,%.7f,%.7f", \
+            m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z);
+
     /*supercap warp modifiers
      * these will go here, and modify distance, target, and range accordingly
      *
@@ -2163,7 +2163,10 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
      *   NOTE:  warp bubble in path (or within 150km of m_targetPoint) will change m_targetDistance and m_targetPoint
      *   however, this does NOT affect original calculations for energy needed, etc...
      */
-     /** @todo  does this apply for ANY bubble along warp route or just end? */
+     /** @todo  does this apply for ANY bubble along warp route or just end?
+      * would be fun to check entire route for bubble...can bm along route to add bubble
+      * however, this will take a bit to implement
+      */
     if (m_targBubble->HasWarpBubble())
         if (!mySE->GetSelf()->HasAttribute(AttrWarpBubbleImmune)) {
             /*  there is a bubble here and ship isnt immune.
@@ -2274,7 +2277,6 @@ void DestinyManager::InitOrbit(SystemEntity *pSE, uint32 distance/*0*/) {
         mySE->GetName(), mySE->GetID(), m_agility, //mySE->GetSelf()->GetAttribute(AttrAgility).get_float(),
             mySE->GetSelf()->GetAttribute(AttrInertiaMod).get_double(),
              mySE->GetSelf()->GetAttribute(AttrMass).get_float() * 0.0000001, m_maxShipSpeed, m_radius);
-    //EvE::traceStack();
 
     // Target (orbited object)
     double Tr = pSE->GetRadius();

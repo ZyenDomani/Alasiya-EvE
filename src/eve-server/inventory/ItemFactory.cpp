@@ -278,8 +278,8 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
     if (itr == m_items.end()) {
         if (itemID < minAgent) {
             _log(ITEM__WARNING, "ItemFactory::_GetItem() called on invalid Item %u", itemID);
-            //if (sConfig.debug.StackTrace)
-            //    EvE::traceStack();
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>(nullptr);
         }
 

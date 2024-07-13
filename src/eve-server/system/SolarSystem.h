@@ -96,7 +96,7 @@ protected:
     static RefPtr<_Ty> _LoadItem( uint32 solarSystemID, const ItemType &type, const ItemData &data) {
         if (type.groupID() != EVEDB::invGroups::Solar_System) {
             _log(ITEM__ERROR, "Trying to load %s as SolarSystem.", sDataMgr.GetCategoryName(type.categoryID()));
-            if (sConfig.debug.StackTrace)
+            if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>(nullptr);
         }
@@ -129,7 +129,7 @@ protected:
      *    Constellation = always the same as Border
      *    Security = If it is positive, floor to nearest 1/10th gives the in-game security level. 0 or lower are 0.0 in-game.
      */
-    
+
     bool m_border :1;
     bool m_fringe :1;
     bool m_corridor :1;

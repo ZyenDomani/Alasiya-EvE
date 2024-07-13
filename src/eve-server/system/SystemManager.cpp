@@ -137,18 +137,15 @@ bool SystemManager::BootSystem() {
     }
 
     // system is loaded.  check for items that need initialization
-    for (auto &cur : m_ticEntities)
-        if (cur.second->IsPOSSE())
-            cur.second->GetPOSSE()->Init();
-
-    // check for operational static entities which need to be initialized (such as sovereignty structures)
-    for (auto &cur: m_opStaticEntities)  {
+    for (auto &cur : m_ticEntities) {
         if (cur.second->IsTCUSE())
             cur.second->GetTCUSE()->Init();
         if (cur.second->IsSBUSE())
             cur.second->GetSBUSE()->Init();
         if (cur.second->IsIHubSE())
             cur.second->GetIHubSE()->Init();
+        if (cur.second->IsPOSSE())
+            cur.second->GetPOSSE()->Init();
     }
 
     // check planets for colony/customs office
@@ -248,7 +245,8 @@ bool SystemManager::ProcessTic() {
         ++itr;
     }
 
-    // tic for sov structures (as they aren't in ticEntities)
+    /*
+    // tic for sov structures (as they aren't in ticEntities)  note: they are now.
     for (auto &cur : m_opStaticEntities) {
         if (cur.second->IsTCUSE())
             cur.second->GetTCUSE()->Process();
@@ -256,7 +254,7 @@ bool SystemManager::ProcessTic() {
             cur.second->GetSBUSE()->Process();
         if (cur.second ->IsIHubSE())
             cur.second->GetIHubSE()->Process();
-    }
+    } */
 
     // check bounty timer
     if (m_bountyTimer.Check(sConfig.server.BountyPayoutDelayed))
@@ -282,10 +280,11 @@ bool SystemManager::ProcessTic() {
 }
 
 bool SystemManager::SystemActivity() {
-    // TODO:  add gridUnload checks here for config option
+    if (!sConfig.world.gridUnload)
+        return true;
     if (m_activityTime == 0)
         return true;
-    if ((sEntityList.GetStamp() - m_activityTime) > 60)
+    if ((sEntityList.GetStamp() - m_activityTime) > sConfig.world.gridUnloadTime)
         return false;
 
     return true;
@@ -337,9 +336,9 @@ void SystemManager::UnloadSystem() {
             sEntityList.RemoveProbe(itr->first);
         }
 
-        if (pSE->IsOperSE()) { //Remove operational statics from list
-            m_opStaticEntities.erase(m_opStaticEntities.find(itr->first));
-        }
+        //if (pSE->IsOperSE()) //Remove operational statics from list
+        //    m_opStaticEntities.erase(m_opStaticEntities.find(itr->first));
+
 
         sItemFactory.RemoveItem(itr->first);
         m_ticEntities.erase(itr->first);
@@ -903,7 +902,10 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
         } break;
     }
     sLog.Warning("BuildEntity", "Unhandled dynamic entity category %u for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
-    EvE::traceStack();
+
+    if (sConfig.server.StackTrace)
+        EvE::traceStack();
+    
     return nullptr;
 }
 
@@ -1032,32 +1034,33 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
     if (m_entities.find(itemID) != m_entities.end()) {
         _log(ITEM__WARNING, "%s(%u): Called AddEntity(), but they're already in %s(%u).  Check bubble.", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
         return;
-    } else {
-        _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-        m_entities[itemID] = pSE;
-
-        if ((pSE->IsCOSE())
-        or  (pSE->isGlobal())) {
-            m_staticEntities[itemID] = pSE;
-            if (pSE->IsOperSE()) //Entities which need to be acted upon while nobody is in the system
-                m_opStaticEntities[itemID] = pSE;
-            if (m_loaded)   // only update when system is already loaded
-                SendStaticBall(pSE);
-        } else if (pSE->IsProbeSE()) {
-            // probes are now running sub-hz tics, so dont add to proc list.
-            addSignal = false;  // redundant...called with AddSignal=false
-            sEntityList.AddProbe(itemID, pSE->GetProbeSE());
-        } else if (!IsStaticItem(itemID)) {
-            // *most* dynamic items need proc tics.  add to proc list
-            m_entityChanged = true;
-            m_ticEntities[itemID] = pSE;
-        } else {
-            addSignal = false;
-        }
-
-        // Add Entity's Item Ref to Solar System Dynamic Inventory:
-        m_solarSystemRef->AddItemToInventory( pSE->GetSelf() );
     }
+
+    _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+    m_entities[itemID] = pSE;
+
+    if ((pSE->IsCOSE())
+    or  (pSE->isGlobal())) {
+        m_staticEntities[itemID] = pSE;
+        if (pSE->IsOperSE())
+            //m_opStaticEntities[itemID] = pSE;
+            m_ticEntities[itemID] = pSE;
+        if (m_loaded)   // only update when system is already loaded
+            SendStaticBall(pSE);
+    } else if (pSE->IsProbeSE()) {
+        // probes are now running sub-hz tics, so dont add to proc list.
+        sEntityList.AddProbe(itemID, pSE->GetProbeSE());
+    } else if (!IsStaticItem(itemID)) {
+        // *most* dynamic items need proc tics.  add to proc list
+        m_entityChanged = true;
+        m_ticEntities[itemID] = pSE;
+    } else {
+        addSignal = false;
+    }
+
+    // Add Entity's Item Ref to Solar System Dynamic Inventory:
+    m_solarSystemRef->AddItemToInventory( pSE->GetSelf() );
+
     sBubbleMgr.Add(pSE);
     // add item to our AnomalyMgr
     if (addSignal)
