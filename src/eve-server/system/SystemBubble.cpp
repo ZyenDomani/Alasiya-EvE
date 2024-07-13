@@ -201,18 +201,6 @@ void SystemBubble::Add(SystemEntity* pSE)
         return;
     }
 
-    _log(BUBBLE__TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u.  Dist to center: %.2f", \
-            pSE->GetID(), m_bubbleID, m_center.distance(pSE->GetPosition()));
-
-    if (is_log_enabled(BUBBLE__DEBUG)) {
-        GPoint startPoint( pSE->GetPosition() );
-        GVector direction(startPoint, NULL_ORIGIN);
-        double rangeToStar = direction.length();
-        rangeToStar /= ONE_AU_IN_METERS;
-        _log(BUBBLE__DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
-                rangeToStar, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
-    }
-
     if (pSE->HasPilot()) {
         // Set spawn timer for this bubble, if needed
         if (m_belt) {
@@ -241,12 +229,26 @@ void SystemBubble::Add(SystemEntity* pSE)
 
     // all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
     m_dynamicEntities[pSE->GetID()] = pSE;
+
+    if (is_log_enabled(BUBBLE__DEBUG)) {
+        GPoint startPoint(pSE->GetPosition());
+        GVector direction(startPoint, NULL_ORIGIN);
+        double rangeToStar = direction.length();
+        rangeToStar /= ONE_AU_IN_METERS;
+        _log(BUBBLE__DEBUG, "SystemBubble::Add() - Added entity %u to bubble %u.  Dist to center: %.2f", \
+                pSE->GetID(), m_bubbleID, m_center.distance(pSE->GetPosition()));
+        _log(BUBBLE__DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
+                rangeToStar, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
+    } else {
+        _log(BUBBLE__TRACE, "SystemBubble::Add() - Added entity %u to bubble %u.  Dist to center: %.2f", \
+                pSE->GetID(), m_bubbleID, m_center.distance(pSE->GetPosition()));
+    }
 }
 
 void SystemBubble::Remove(SystemEntity *pSE) {
     //assume that the entity is properly registered for its ID
     if (pSE->m_bubble == nullptr) {
-        if (sConfig.debug.StackTrace)
+       // if (sConfig.debug.StackTrace)
             EvE::traceStack();
 		return;
     }
@@ -422,6 +424,14 @@ bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const
 bool SystemBubble::IsOverlap( const GPoint& pt ) const
 {
     return (m_center.distance(pt) < (m_radius * 2));
+}
+
+bool SystemBubble::IsEmpty() const {
+    if (m_entities.empty())
+        return true;
+    if (m_dynamicEntities.empty())
+        return true;
+    return false;
 }
 
 void SystemBubble::PrintEntityList() {

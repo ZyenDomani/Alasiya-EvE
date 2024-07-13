@@ -83,11 +83,6 @@ bool ShipItem::_Load()
 
 void ShipItem::LogOut()
 {
-    SetAttribute(AttrOnline, EvilZero, false);
-    SaveShip();
-
-    pInventory->Unload();
-
     // remove ship item from factory master list here, as *something* changes ship position when saving from factory.
     sItemFactory.RemoveItem(m_itemID);
 
@@ -101,6 +96,10 @@ void ShipItem::LogOut()
 
     if (pInv != nullptr)
         pInv->RemoveItem(ShipItemRef(this));
+
+    SaveShip();
+    SetPlayer(nullptr);
+    pInventory->Unload();
 }
 
 void ShipItem::SetPlayer(Client* pClient) {
@@ -116,6 +115,7 @@ void ShipItem::SetPlayer(Client* pClient) {
         m_onlineModuleVec.clear();
         m_pilot = nullptr;
         m_isActive = false;
+        SetFlag(flagShipOffline);
         return;
     }
 
@@ -130,7 +130,6 @@ void ShipItem::SetPlayer(Client* pClient) {
 
     // this hits on login and when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
     if (sDataMgr.IsSolarSystem(locationID())) {
-        SetFlag(flagNone);
         /*  not sure if we're gonna keep this in here....
         if (pClient->IsLogin()) {
             if (sConfig.debug.IsTestServer) {
@@ -149,6 +148,8 @@ void ShipItem::SetPlayer(Client* pClient) {
 
 void ShipItem::Init()
 {
+    SetFlag(flagNone);
+
     // pods have 57 attribs and 0 effects
     if (groupID() == EVEDB::invGroups::Capsule) {
         InitPod();

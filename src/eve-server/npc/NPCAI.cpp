@@ -338,6 +338,8 @@ void NPCAIMgr::Process() {
                 return;
             }
             if (pTargSE->SysBubble() == nullptr) {
+                // target has no bubble?  make error
+                sLog.Error("NPCAI Proc()", "Targ %s(%u) has no bubble", pTargSE->GetName(), pTargSE->GetID());
                 ClearTarget(pTargSE);
                 return;
             }
@@ -416,7 +418,10 @@ void NPCAIMgr::SetWander()
     // wandering.  nothing to shoot.  look for target.
     if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission()) {
         return;
-    } else if (pBubble->HasDynamics() and pBubble->IsBelt()) {
+    }
+
+    // disable orbit-on-idle
+    if (pBubble->HasDynamics() or pBubble->IsBelt() and 0) {
         // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
         SystemEntity* pTargSE = pBubble->GetRandomEntity();
         if (pTargSE == nullptr)
@@ -432,10 +437,10 @@ void NPCAIMgr::SetWander()
         m_destiny->InitOrbit(pTargSE, orbitDistance);
         _log(NPC__AI_TRACE, "%s(%u):  Just for shits-n-giggles, I\'m gonna orbit %s(%u) at %um.", \
                 m_npc->GetName(), m_npc->GetID(), pTargSE->GetName(), pTargSE->GetID(), orbitDistance);
-    } else {
-        /** @todo  figure out a way for npc to wander 'aimlessly' around their bubble */
-        m_destiny->Stop();
+        return;
     }
+
+    m_destiny->Stop();
 }
 
 void NPCAIMgr::SetIdle() {
@@ -501,11 +506,12 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargSE) {
 void NPCAIMgr::SetEngaged(SystemEntity* pTargSE) {
     if (pTargSE == nullptr)
         return;
-    if ((m_state == NPCAI::State::Engaged) and m_destiny->IsOrbiting())
+    // actively fighting
+    if (m_state == NPCAI::State::Engaged) // and m_destiny->IsOrbiting())
         return;
+
     _log(NPC__AI_TRACE, "%s(%u): Begin engaging.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTargSE->GetName(), pTargSE->GetID());
-    // actively fighting
     m_destiny->SetMaxVelocity(m_orbitSpeed);
     m_destiny->InitOrbit(pTargSE, m_optimalRange);  //try to get inside orbit range
     m_state = NPCAI::State::Engaged;
@@ -684,8 +690,10 @@ void NPCAIMgr::Attack(SystemEntity* pTargSE)
 {
     if (pTargSE == nullptr)
         return;
+    // TODO:  most of these checks should not be needed on EVERY tic...
     if (m_mainAttackTimer.Check()) {
         // Check to see if the target still in the bubble (Client warped out)
+        //TODO:  this should be updated...target warpout should notify all targeters and cancel targeting
         if (!m_npc->SysBubble()->InBubble(pTargSE->GetPosition())) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
                     m_npc->GetName(), m_npc->GetID(), pTargSE->GetName(), pTargSE->GetID());
@@ -694,6 +702,7 @@ void NPCAIMgr::Attack(SystemEntity* pTargSE)
             return;
         }
         if (pTargSE->DestinyMgr() == nullptr) {
+            sLog.Error("NPC Attack()", "Target %s(%u) has no destiny manager.", pTargSE->GetName(), pTargSE->GetID());
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
                     m_npc->GetName(), m_npc->GetID(), pTargSE->GetName(), pTargSE->GetID());
             m_missileTimer.Disable();

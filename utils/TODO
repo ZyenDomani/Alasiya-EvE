@@ -1,7 +1,7 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****     23 January 2023
+****     12 July 2024
 
     note:  this whole file needs to be reorganized (wip)
 
@@ -14,11 +14,7 @@ Altahirs contract code
 james sov code
 lp implemented (unknown quality)
 other updates?
-eve# liveupdates
 
-azerothcore benchmarked std::map vs std::unordered_map
-    unordered was faster
-    maybe update this in mine?
 
 *******************************************************
 *******************************************************
@@ -36,6 +32,8 @@ ships  ---  attrAgility will need to be recalc'd and reset anytime inertia or ma
     -- there are also modules that modify all of these variables.  these need verification
     -  this needs to be complete and correct before i can finish destiny movement
     - after looking into this more, the fx system isnt set up to calculate effects dealing with skilllevels
+    note:  *somewhere* i've seen
+            agility = 1 - inertia;
 
 
 work on buglist, integrate this list in there where i can (in order)
@@ -62,17 +60,10 @@ lsc system better, but incomplete and needs revisiting    -priority level: med-h
     - whole system needs update or possible rewrite
     - "join channel" window->corp has "None" as corp name
 
-request for smartbombs...lol  cause i dont have enough to work on
-
 loading probes in station does not update count in hangar
 
 noob ships do not Init() correctly....  most attrs are 0
     -- check this.  may be fixed already
-
-npcs not getting destiny warpstate set (sometimes - this is cause of rats not warping into belts)
-  - multiple examples of npcs movement wonky
-  - wanderers shows npcs usually in wrong bubble.
-    -- i think this is more 'not added correctly' than a wander system fuckup
 
 check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?  no...ins is queried when needed
@@ -475,7 +466,7 @@ go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
     - salvager on trasher working 20feb21
 put EVEEffectID enum into namespace
 turn fx sending on and follow calls to verify proper OnSpecialFX data
-    - found and added client fx classification data to destinyMgr.h
+    - found and added client fx classification data to destinyMgr.h   where?? i dont see it
 
 mining gfx/deactivate is almost immediate.  this is supposed to have a 5s timer to simulate module shutdown
   looks immediate.  timer shows 5s.  needs more review
@@ -484,6 +475,24 @@ mining gfx/deactivate is almost immediate.  this is supposed to have a 5s timer 
 *******************************************************
 *******************************************************
 ********  improvements...low priority
+
+m_self is NOT being populated for non-piloted ships.   -priority level: low
+
+InvBrokerService needs love
+mapservice  needs love
+CharMgrService  needs love
+notificationMgr  needs love
+reproc  needs love
+certificateMgr needs looking at
+  claimed new certs today...got elite cruiser adv arty.  missing many prereqs for that cert.  :/
+paperDollServer incomplete
+factionWarMgr incomplete
+ShipService incomplete
+LookupService needs update
+serviceDB needs update
+    - maybe remove "Lookup*" shit to its own db file
+StationOffice::ValidateAddItem incomplete (but unused - Coverity complains about unchecked return of inv::hasspace)
+    - need tic to determine rent time on office.  implement lockdown when rent unpaid (grace period?  -nope)
 
 
 noob mining ships to have ore hold?  yes, but small...  100m3 or so
@@ -494,6 +503,7 @@ cruisers
 arbitrator, osprey, scythe, vexor
 
 still need to host agent photos...
+  search client code for xxxx and use liveupdates to replace to my server
 
 .inventory command
   - 10000000001 (office) - has no name
@@ -619,7 +629,6 @@ StaticDataMgr::GetSolarSystemData incomplete (unused)
 
 GetMyInventory()->ContainsTypeByFlag
     - should this check for items in holds other than default cargoHold?   -yes, but depends on how its used
-    - finish contents-by-flag map for this method
 
 pi working.  currently rewriting process code  -priority level: lo
     - rename/refactor comet0's original code?  i still dont like the names he used. :/ (semantics shit)
@@ -680,8 +689,6 @@ ship/cargo scanning
     - OnShipScanCompleted
     - there are packets on both of these.  must make bpc updates play nice with scanner code.  may have to update client
 
-m_self is NOT being populated for non-piloted ships.   -priority level: low
-
 these can be found in 'db_shit/output.txt'
 locationName = localization.GetByMessageID(self.locationNameID)
     - locationNameID is a messageID!!!
@@ -689,22 +696,6 @@ return localization.GetByMessageID(self.ownerNameID, languageID)
     - ownerNameID is a messageID!!!
 0 AS landmarkNameID
     - landmarkNameID is a messageID!!!
-
-InvBrokerService needs love
-mapservice  needs love
-CharMgrService  needs love
-notificationMgr  needs love
-reproc  needs love
-certificateMgr needs looking at
-  claimed new certs today...got elite cruiser adv arty.  missing many prereqs for that cert.  :/
-paperDollServer incomplete
-factionWarMgr incomplete
-ShipService incomplete
-LookupService needs update
-serviceDB needs update
-    - maybe remove "Lookup*" shit to its own db file
-StationOffice::ValidateAddItem incomplete (but unused - Coverity complains about unchecked return of inv::hasspace)
-    - need tic to determine rent time on office.  implement lockdown when rent unpaid (grace period?  -nope)
 
 KeeperService will need work (accel gates) (james updated official with some of this)
 
@@ -905,7 +896,7 @@ till then, we'll have to used the hacked system.
 after all, it works
 
 item flags are stored in db as 'entity.flag', but client wants 'flagID'.
-look into changing our code to conform.  most objects are built in-code and use flagID already, but some items need "flag AS flagID" in sql query.
+look into changing our code to conform. charDB and corpDB still use "flag AS flagID" in sql query.
 
 figure out how to colorize _log() msgs to console   -priority level: low
 
@@ -942,8 +933,6 @@ may have to rearrange things to properly implement jump clones.
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
-static items still not being removed from itemfactory map upon system unload (station removal fixed)
-
 began putting specific throw msgs in appropriate common/EVE_*.h files if available,
 else src/*/*.h files
 
@@ -961,6 +950,7 @@ Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed  ..
 player agent/error msgs - pool of msgs adjusted for character secstatus or standings with corp/sov holder, a la sphereScript's speech files
 
 when cynos are implemented, remember to update mapDynamicData for counts on both fields and generators
+  - official::staging has working cyno code
 
 better checks and reverts when creating corps fail
 - updated to not check for failure when adding data to evestaticowners, walletdivisions and corpshares
@@ -968,6 +958,7 @@ better checks and reverts when creating corps fail
 implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligible.
     update for ~20+ or so points to make a difference with our attributes
     implant map in character.h  -currently unused/unimplemented
+    update char remap in client to allow higher attribs
 
 turns use quaternion lerp curve (and mass/agility somehow)
     maybe bezier curve? (would be easier to implement)  nope...didnt work right
@@ -1009,18 +1000,12 @@ rename EntityList to EntityManager/EntityMgr
 
 ****  make safe save method to verify and save data on segfault
 
-check into making module tics faster (like targetMgr) for sub-tic timer calls/checks?  probably not.
-
 aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for all clients in system
     - should create instance on system boot, then pass that instance to clients when requested.
     - possible global static instance?  any way to make global and keep track of everything?
 
 drone chat window for drone specific msgs (using individual drone as sender)  depending on player drone skill(s)?
 player command to show drones' TargetedBy map
-
-warpstate class works very well, and no mem leaks (as opposed to changing to struct)
-    - less mem for struct?  harder to void struct, where class is just delete()'d (then recreated as needed)
-    - dunno...gotta think about this one a bit more.
 
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
     - npc will attack drones based on class

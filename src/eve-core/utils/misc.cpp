@@ -366,7 +366,7 @@ void EvE::traceStackLN(void)
     std::regex re("\\[(.+)\\]");
     auto exec_path = getExecPath();
 
-    for (uint8 i(0); i < nptrs; i++) {
+    for (uint8 i(0); i < nptrs; ++i) {
         std::string sym = strings[i];
         std::smatch ms;
         if (std::regex_search(sym, ms, re)) {

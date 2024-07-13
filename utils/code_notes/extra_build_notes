@@ -8,6 +8,9 @@ doxygen --
 valgrind -- (full logging)
   valgrind -v --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes --log-file="../logs/valgrind.log" ./eve-server
 
+liveupdates --
+  ./liveupdategen -host "127.0.0.1:3306" -u allan -p none -db EvE_AlasiyaDev -dump
+
   0.72.52-16feb23
 ==16109== LEAK SUMMARY:
 ==16109==    definitely lost: 4,138,352 bytes in 116,809 blocks

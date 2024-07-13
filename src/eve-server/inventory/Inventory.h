@@ -116,7 +116,7 @@ private:
 
     std::vector<InventoryItemRef> SortVector(std::vector<InventoryItemRef> &itemVec);
     std::map<uint32, InventoryItemRef> mContents;        // itemID/ItemRef
-    std::multimap<uint8, InventoryItemRef> m_contentsByFlag;  // flagID/ItemRef
+    std::multimap<int16, InventoryItemRef> m_contentsByFlag;  // flagID/ItemRef
 };
 
 #endif /* !__INVENTORY__H__INCL__ */

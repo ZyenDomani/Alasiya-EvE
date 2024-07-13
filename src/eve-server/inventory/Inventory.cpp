@@ -206,20 +206,9 @@ void Inventory::AddItem(InventoryItemRef iRef) {
         return;
 
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
-    //std::pair <std::_Rb_tree_iterator <std::pair <const uint32, InventoryItemRef > >, bool > test;
     if (itr == mContents.end())
-        /*test =*/ mContents.emplace(iRef->itemID(), iRef);
-/*
-    if (is_log_enabled(INV__TRACE)) {
-        if (test.second) {
-            _log(INV__TRACE, "Inventory::AddItem() - Updated %s(%u) to contain(%u) %s(%u) in %s.", \
-                m_self->name(), m_myID, iRef->quantity(), iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
-        } else {
-            _log(INV__TRACE, "Inventory::AddItem() - %s(%u) already contains %s(%u) in %s.", \
-                m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
-        }
-    }
-*/
+        mContents[iRef->itemID()] =  iRef;
+
     if (IsCharacterID(m_myID))
         if (iRef->categoryID() == EVEDB::invCategories::Skill) {
             m_contentsByFlag.emplace(flagSkill, iRef);
@@ -237,17 +226,16 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     if (itr != mContents.end()) {
         mContents.erase(itr);
-        _log(INV__TRACE, "Inventory::RemoveItem(1) - Updated %s(%u) to no longer contain %s(%u) in %s.", \
-                m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+        _log(INV__TRACE, "Inventory::RemoveItem(1) - Updated %s(%u) to no longer contain %s(%u).", \
+                m_self->name(), m_myID, iRef->name(), iRef->itemID());
     } else {
-        _log(INV__WARNING,"Inventory::RemoveItem(1) - %s(%u) contents does not contain %s(%u) in %s.", \
-                m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+        _log(INV__WARNING,"Inventory::RemoveItem(1) - %s(%u) contents does not contain %s(%u).", \
+                m_self->name(), m_myID, iRef->name(), iRef->itemID());
     }
 
     /** @todo @note  this isnt working right, and im not sure why yet...  */
-    // test after changing iteration(pre to post)
     auto range = m_contentsByFlag.equal_range(iRef->flag());
-    for (auto &cur = range.first; cur != range.second; cur++) {
+    for (auto &cur = range.first; cur != range.second; ++cur) {
         if (cur->second == iRef) {
             m_contentsByFlag.erase(cur);
             _log(INV__TRACE, "Inventory::RemoveItem(2) - %s(%u) removed from %s(%u) flagMap at %s.", \

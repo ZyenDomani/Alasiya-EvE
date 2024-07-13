@@ -57,9 +57,10 @@ class DBRowDescriptor;
 #define PyIncRef(op) (op)->IncRef()
 #define PyDecRef(op) (op)->DecRef()
 
-/* Macros to use in case the object pointer may be NULL */
+// Macros to use in case the object pointer may be NULL
 #define PySafeIncRef(op) if (op != nullptr) PyIncRef(op)
 #define PySafeDecRef(op) if (op != nullptr) PyDecRef(op)
+
 
 /**
  * @brief Base Python wire object
@@ -271,7 +272,7 @@ public:
         return *this;
     }
 
-    virtual ~PyInt()					{ /* do nothing here */ }
+    virtual ~PyInt()	override				{ /* do nothing here */ }
 
     PyInt* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -311,7 +312,7 @@ public:
         return *this;
     }
 
-    virtual ~PyLong()					{ /* do nothing here */ }
+    virtual ~PyLong()	override				{ /* do nothing here */ }
 
     PyLong* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -351,7 +352,7 @@ public:
         return *this;
     }
 
-    virtual ~PyFloat()					{ /* do nothing here */ }
+    virtual ~PyFloat()	override				{ /* do nothing here */ }
 
     PyFloat* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -391,7 +392,7 @@ public:
         return *this;
     }
 
-    virtual ~PyBool()					{ /* do nothing here */ }
+    virtual ~PyBool()	override				{ /* do nothing here */ }
 
     PyBool* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -427,7 +428,7 @@ public:
         return *this;
     }
 
-    virtual ~PyNone()					{ /* do nothing here */ }
+    virtual ~PyNone()	override				{ /* do nothing here */ }
 
     PyNone* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -480,7 +481,7 @@ public:
      */
     size_t size() const;
 
-    virtual ~PyBuffer();
+    virtual ~PyBuffer() override                        { delete mValue; }
 
 protected:
     const Buffer* const		mValue;
@@ -528,7 +529,7 @@ public:
     // updated to use std::hash for strings.  better checks without collision (so far)
     int32 hash() const;
 
-    virtual ~PyString()					{ /* do nothing here */ }
+    virtual ~PyString()	override				{ /* do nothing here */ }
 
 protected:
     const std::string		mValue;
@@ -577,7 +578,7 @@ public:
     // updated to use std::hash for strings.  better checks without collision (so far)
     int32 hash() const;
 
-    virtual ~PyWString()				{ /* do nothing here */ }
+    virtual ~PyWString()	override			{ /* do nothing here */ }
 
 protected:
     const std::string		mValue;
@@ -617,7 +618,7 @@ public:
      */
     const std::string& content() const			{ return mValue; }
 
-    virtual ~PyToken()					{ /* do nothing here */ }
+    virtual ~PyToken()		override			{ /* do nothing here */ }
 
 protected:
     const std::string		mValue;
@@ -644,7 +645,7 @@ public:
     // move assignment
     PyTuple& operator= (PyTuple&& oth);
 
-    virtual ~PyTuple();
+    virtual ~PyTuple() override;
 
     PyTuple* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -699,7 +700,7 @@ public:
     // move assignment
     PyList& operator= (PyList&& oth);
 
-    virtual ~PyList();
+    virtual ~PyList() override;
 
     PyList* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -808,7 +809,7 @@ public:
     }
 
     // all dict k,v pairs are made using new().  decRef them all on destruction
-    virtual ~PyDict()                                   { clear(); }
+    virtual ~PyDict()   override                                { clear(); }
 
     PyDict* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -893,7 +894,7 @@ public:
     PyString* type() const				{ return mType; }
     PyRep* arguments() const				{ return mArguments; }
 
-    virtual ~PyObject();
+    virtual ~PyObject() override;
 
 protected:
     PyString*			mType;
@@ -940,7 +941,7 @@ public:
     PyDict& dict()					{ return *mDict; }
     const PyDict& dict() const				{ return *mDict; }
 
-    virtual ~PyObjectEx();
+    virtual ~PyObjectEx() override;
 
 protected:
     PyRep*      		mHeader;
@@ -969,7 +970,7 @@ public:
 
     PyRep* FindKeyword(const char* keyword) const;
 
-    virtual ~PyObjectEx_Type1()				{ /* do nothing here */ }
+    virtual ~PyObjectEx_Type1()	override			{ /* do nothing here */ }
 
 protected:
     static PyTuple* _CreateHeader(PyToken* type, PyTuple* args, bool enclosed=false);
@@ -994,7 +995,7 @@ public:
 
     PyRep* FindKeyword(const char* keyword) const;
 
-    virtual ~PyObjectEx_Type2()				{ /* do nothing here */ }
+    virtual ~PyObjectEx_Type2()	override			{ /* do nothing here */ }
 
 protected:
     static PyTuple* _CreateHeader(PyTuple* args, PyDict* keywords, bool enclosed=false);
@@ -1023,7 +1024,7 @@ public:
     // move assignment
     //PyPackedRow& operator= (PyPackedRow&& oth) = delete;
 
-    virtual ~PyPackedRow();
+    virtual ~PyPackedRow() override;
 
     PyPackedRow* Clone() const;
     bool visit(PyVisitor& v) const;
@@ -1068,7 +1069,7 @@ public:
 
     PyRep* sub() const					{ return mSub; }
 
-    virtual ~PySubStruct();
+    virtual ~PySubStruct() override;
 
 protected:
     PyRep* const mSub;
@@ -1101,7 +1102,7 @@ public:
     //call to ensure that `decoded` represents `data` IF DECODED IS NULL
     void DecodeData() const;
 
-    virtual ~PySubStream();
+    virtual ~PySubStream() override;
 
 protected:
     //if both are non-NULL, they are considered to be equivalent
@@ -1132,7 +1133,7 @@ public:
     PyRep* stream() const				{ return mStream; }
     uint32 checksum() const				{ return mChecksum; }
 
-    virtual ~PyChecksumedStream();
+    virtual ~PyChecksumedStream() override;
 
 protected:
     PyRep* const		mStream;

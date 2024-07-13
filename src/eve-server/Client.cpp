@@ -546,8 +546,6 @@ void Client::WarpIn() {
     char ci[45];
     snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);
-    if (!InPod())
-        m_ship->SetFlag(flagNone);
     return;
     /*
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
@@ -565,8 +563,6 @@ void Client::WarpOut() {
     char ci[45];
     snprintf(ci, sizeof(ci), "Logout: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);
-    if (!InPod())
-        m_ship->SetFlag(flagShipOffline);
     pShipSE->SetPosition(m_ship->position());
     DestroyShipSE();
     return;
@@ -2074,7 +2070,7 @@ void Client::SendSessionChange()
     }
 
     QueuePacket(packet);
-    SafeDelete(packet);
+    //SafeDelete(packet);
 }
 
 void Client::QueueDestinyUpdates(std::vector< PyTuple* >& updates) {
@@ -2090,7 +2086,7 @@ void Client::QueueDestinyEvent(PyTuple** event) {
     if (is_log_enabled(CLIENT__QUEUE_DUMP))
         (*event)->Dump(CLIENT__QUEUE_DUMP, "");
     m_destinyEventQueue->AddItem(*event);
-    ////PyDecRef(*event);
+    //PyDecRef(*event);
 }
 
 void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool IsSetState /*false*/) {
@@ -2159,7 +2155,11 @@ void Client::_SendQueuedUpdates() {
     } //else nothing to be sent ...
 
     // clear the queues now, after the packets have been sent
+    //for (auto &curUD : m_destinyUpdateQueue)
+    //    PySafeDecRef(curUD);
     m_destinyUpdateQueue->clear();
+    //for (auto &curEv : m_destinyEventQueue)
+    //    PySafeDecRef(curEv);
     m_destinyEventQueue->clear();
     m_packaged = false;
 }
@@ -2232,7 +2232,7 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
     }
 
     QueuePacket(packet);
-    SafeDelete(packet);
+    //SafeDelete(packet);
 }
 
 /************************************************************************/
@@ -2450,7 +2450,7 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyResult &rs
     }
 
     QueuePacket(packet);
-    SafeDelete(packet);
+    //SafeDelete(packet);
 }
 
 void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_TYPE msgType, MACHONETERR_TYPE errCode, PyRep** payload)
@@ -2567,7 +2567,7 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
     packet->payload->SetItem(0, pingList);
 
     QueuePacket(packet);
-    SafeDelete(packet);
+    //SafeDelete(packet);
 }
 
 /************************************************************************/

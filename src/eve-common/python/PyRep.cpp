@@ -568,12 +568,6 @@ mValue(new Buffer(buffer.content())), mHashCache(buffer.mHashCache)
     //sLog.Cyan("PyBuffer(buffer)", "Copy C'tor.");
 }
 
-PyBuffer::~PyBuffer()
-{
-    //if (cleanup)
-    delete mValue;
-}
-
 PyBuffer* PyBuffer::Clone() const
 {
     //sLog.Magenta("PyBuffer()", "Clone.");
@@ -1002,7 +996,6 @@ PyObject::PyObject(const PyObject& oth) : PyRep(PyRep::PyTypeObject), mType(oth.
 
 PyObject::~PyObject()
 {
-    //if (cleanup)
     PySafeDecRef(mType);
     PySafeDecRef(mArguments);
 }
