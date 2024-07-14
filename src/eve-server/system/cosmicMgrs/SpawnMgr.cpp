@@ -455,7 +455,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
             }
         } else {
             _log(SPAWN__WARNING, "Ratspawn location is neither belt nor gate in %s for bubble %u.", \
-                    pBubble->GetSystem()->GetNameStr(), pBubble->GetID());
+                    pBubble->GetSystem()->GetName(), pBubble->GetID());
             return false;
         }
     }
