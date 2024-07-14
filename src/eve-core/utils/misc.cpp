@@ -177,31 +177,6 @@ double EvE::max(double x, double y, double z)
     return  ((max < z) ? z : max);
 }
 
-void EvE::traceStack(void)
-{
-    uint8 j(0), nptrs(0);
-    #define SIZE 100
-    void *buffer[100];
-    char **strings;
-
-    nptrs = backtrace(buffer, SIZE);
-    printf("backtrace() returned %i addresses\n", nptrs);
-
-    /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
-     *       would produce similar output to the following: */
-
-    strings = backtrace_symbols(buffer, nptrs);
-    if (!strings) {
-        printf("backtrace symbols error");
-        return;
-    }
-
-    for (j = 0; j < nptrs; j++)
-        printf("%s\n", strings[j]);
-
-    free(strings);
-}
-
 bool EvE::icontains(std::string data, std::string toSearch, size_t pos/*0*/)
 {
     // Convert complete given String to lower case
@@ -351,23 +326,22 @@ std::string EvE::sh(std::string cmd)
  */
 void EvE::traceStackLN(void)
 {
-    uint8 nptrs(0);
-    void *buffer[1024];
+    uint8  i(0), nptrs(0);
+    void *buffer[150];
     char **strings;
 
-    nptrs = backtrace(buffer, 1024);
+    nptrs = backtrace(buffer, 150);
     printf("backtrace() returned %u addresses\n", nptrs);
     strings = backtrace_symbols(buffer, nptrs);
-    if (!strings) {
+    if (strings == nullptr) {
         printf("backtrace symbols error");
         return;
     }
 
     std::regex re("\\[(.+)\\]");
     auto exec_path = getExecPath();
-
-    for (uint8 i(0); i < nptrs; ++i) {
-        std::string sym = strings[i];
+    while (i < nptrs) {
+        std::string sym = strings[i++];
         std::smatch ms;
         if (std::regex_search(sym, ms, re)) {
             std::string addr = ms[1];
@@ -378,6 +352,30 @@ void EvE::traceStackLN(void)
             printf("%s", r2.c_str());
         }
     }
+
+    free(strings);
+}
+
+void EvE::traceStack(void)
+{
+    uint8 i(0), nptrs(0);
+    void *buffer[150];
+    char **strings;
+
+    nptrs = backtrace(buffer, 150);
+    printf("backtrace() returned %i addresses\n", nptrs);
+
+    /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
+     *       would produce similar output to the following: */
+
+    strings = backtrace_symbols(buffer, nptrs);
+    if (strings == nullptr) {
+        printf("backtrace symbols error");
+        return;
+    }
+
+    while (i < nptrs)
+        printf("%s\n", strings[i++]);
 
     free(strings);
 }

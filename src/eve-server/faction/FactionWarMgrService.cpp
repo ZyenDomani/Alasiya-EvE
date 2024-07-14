@@ -120,6 +120,7 @@ PyResult FactionWarMgrService::Handle_GetFWSystems( PyCallArgs& call )
             [PyInt 500004]
             */
 
+    /*    segfaults with new memmgmt code testing  13jul24
     ObjectCachedMethodID method_id(GetName(), "GetFacWarSystems");
     if (!m_manager->cache_service->IsCacheLoaded(method_id))     {
         PyRep* res = m_db.GetFacWarSystems();
@@ -127,6 +128,9 @@ PyResult FactionWarMgrService::Handle_GetFWSystems( PyCallArgs& call )
     }
 
     return m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+    */
+
+    return m_db.GetFacWarSystems();
 }
 
 /**     ***********************************************************************

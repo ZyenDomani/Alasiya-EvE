@@ -285,8 +285,8 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     if (anomaly) {
         pcs += roidDist.size();
         radius += (radius * secValue);
-        radius += (pcs * 1000 / 4);
-        elevation = (radius / 4);
+        radius += (pcs * 250);
+        elevation = (radius * 0.25f);
     } else if (ice) {  //880 total systems with ice. 293 in hisec
         //  ice needs to be 30k to 75k, with radius of 40k to 100k
         radius *= 3; //24k base
@@ -304,8 +304,8 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     } else {
         pcs += MakeRandomInt(5, 30);
         radius += (radius * secValue);
-        radius += (pcs * 1000 / 4);
-        elevation = (radius / 4);
+        radius += (pcs * 250);
+        elevation = (radius * 0.25);
     }
 
     double degreeSeparation = (180 / pcs);

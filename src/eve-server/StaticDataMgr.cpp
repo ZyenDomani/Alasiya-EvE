@@ -50,19 +50,18 @@ StaticDataMgr::~StaticDataMgr()
 void StaticDataMgr::Close()
 {
     SafeDelete(m_keyMap);
-    SafeDelete(m_agents);
+    //SafeDelete(m_agents);
     //SafeDelete(m_operands);
     //SafeDelete(m_billTypes);
-    SafeDelete(m_entryTypes);
-    SafeDelete(m_factionInfo);
-    SafeDelete(m_npcDivisions);
+    //SafeDelete(m_entryTypes);
+    //SafeDelete(m_factionInfo);
+    //SafeDelete(m_npcDivisions);
 
-    for (auto &cur : m_bpMatlData)
-        SafeDelete(cur.second);
+    //for (auto &cur : m_bpMatlData)
+    //    SafeDelete(cur.second);
 
     sLog.Warning("    StaticDataMgr", "Static Data Manager has been closed.");
 }
-
 
 int StaticDataMgr::Initialize()
 {

@@ -80,8 +80,8 @@ PyPackedRow* SystemDB::GetSolarSystemPackedRow(uint32 systemID) {
 
     if (!sDatabase.RunQuery(res,
         "SELECT "
-        " constellationID,"
         " factionID,"
+        " constellationID,"
         " regionID"
         " FROM mapSolarSystems"
         " WHERE solarSystemID=%u", systemID ))

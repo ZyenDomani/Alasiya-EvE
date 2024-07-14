@@ -280,8 +280,8 @@ void PyRep::DecRef() const
     if (mDeleted) {
         sLog.Error("DecRef()", "%s already deleted.", TypeString());
         _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %i", mRefCount);
-        EvE::traceStackLN();        // this is painfully slow
-        //EvE::traceStack();
+        //EvE::traceStackLN();        // this is painfully slow
+        EvE::traceStack();
         return;
     }
 
@@ -299,8 +299,8 @@ void PyRep::DecRef() const
 
     _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
 
-    //if (mRefCount < 1)
-    //    delete this;
+    if (mRefCount < 1)
+        delete this;
 }
 
 
@@ -908,7 +908,7 @@ void PyDict::clear()
 {
     iterator cur = items.begin(), end = items.end();
     for (; cur != end; cur++) {
-        //PyDecRef(cur->first);
+        PyDecRef(cur->first);
         PySafeDecRef(cur->second);
     }
 

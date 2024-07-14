@@ -57,7 +57,7 @@ void StandingMgr::Populate()
     m_factionStandings = StandingDB::GetFactionStandings();
     if (m_factionStandings == nullptr)
         sLog.Error("      StandingMgr", "m_factionStandings is null");
-
+    PySafeIncRef(m_factionStandings);
 }
 
 void StandingMgr::UpdateStandings(uint32 fromID, uint32 toID, uint16 eventType, double amount, std::string msg)

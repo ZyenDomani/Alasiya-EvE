@@ -57,13 +57,14 @@ PyResult StationSvc::Handle_GetStationItemBits(PyCallArgs &call) {
 }
 
 PyResult StationSvc::Handle_GetSolarSystem(PyCallArgs &call) {
+    // this is for agent region/const id's and system sov owner
     SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
-    //    segfaults with new memmgmt code testing  11Mar23
+    /*    segfaults with new memmgmt code testing  11Mar23
     std::string method_name ("GetSolarSystem_");
     method_name += std::to_string(arg.arg);
     ObjectCachedMethodID method_id(GetName(), method_name.c_str());
@@ -73,10 +74,12 @@ PyResult StationSvc::Handle_GetSolarSystem(PyCallArgs &call) {
     }
 
     return m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+    */
 
-
-    /** @todo  update this to NOT hit db when called... */
-    //return SystemDB::GetSolarSystemPackedRow(arg.arg);
+    /** @todo  update this to NOT hit db when called...
+     *  static data maybe...?   7929 systems
+     */
+    return SystemDB::GetSolarSystemPackedRow(arg.arg);
 }
 
 PyResult StationSvc::Handle_GetStation(PyCallArgs &call) {

@@ -65,7 +65,15 @@ CorpBookmarkMgr::~CorpBookmarkMgr()
 
 PyResult CorpBookmarkMgr::Handle_GetBookmarks(PyCallArgs& call)
 {
-    //  segfaults with new memmgmt code testing  11Mar23
+
+    PyTuple *result = new PyTuple(2);
+    result->SetItem(0, m_db.GetBookmarks(call.client->GetCorporationID()));
+    result->SetItem(1, m_db.GetFolders(call.client->GetCorporationID()));
+    result->Dump(BOOKMARK__RSP_DUMP, "    ");
+    return result;
+
+    /*  segfaults with new memmgmt code testing  11Mar23
+    // first object is garbage...bad iterator somewhere?
     PyRep* result(nullptr);
     std::string method_name ("GetBookmarks_");
     method_name += std::to_string(call.client->GetCorporationID());
@@ -85,6 +93,7 @@ PyResult CorpBookmarkMgr::Handle_GetBookmarks(PyCallArgs& call)
     result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
     result->Dump(BOOKMARK__RSP_DUMP, "    ");
     return result;
+    */
 }
 
 PyResult CorpBookmarkMgr::Handle_UpdateBookmark(PyCallArgs& call) {
