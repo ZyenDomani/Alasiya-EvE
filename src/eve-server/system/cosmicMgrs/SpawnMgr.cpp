@@ -185,7 +185,7 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble)
             ++itr;
             continue;
         }
-        rNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) *100);
+        rNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) * 100);
         rNPC->GetAIMgr()->DisableWarpOutTimer();
         m_spawns.emplace(pBubble->GetID(), itr->second);
         itr = m_spawns.erase(itr);
@@ -200,7 +200,7 @@ void SpawnMgr::StartRatTimer()
 {
     if (m_ratTimer.Enabled())
         return;
-    uint16 time = sConfig.npc.RoamingTimer *1000;  //  s to ms
+    uint16 time = sConfig.npc.RoamingTimer * 1000;  //  s to ms
     if (sConfig.debug.SpawnTest)
         time = 5000; /* 5s for npc spawn testing */
     m_ratTimer.Start(time);
@@ -217,7 +217,7 @@ void SpawnMgr::StartRatGroupTimer()
             _log(SPAWN__MESSAGE, "SpawnMgr::StartRatGroupTimer() - Group Spawn Timer currently running.  Time left: %us", m_ratGroupTimer.GetRemainingTime() / 1000);
         return;
     }
-    m_ratGroupTimer.Start(m_groupTimerSetTime *1000);
+    m_ratGroupTimer.Start(m_groupTimerSetTime * 1000);
 
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "SpawnMgr::StartRatGroupTimer() - Group Spawn Timer started for %s(%u) at %us.", \
@@ -465,7 +465,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         if (is_log_enabled(SPAWN__MESSAGE))
             _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %lu.", m_factionGroups.size());    //should be 21 (22 for drones)
     } else {
-        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No RatFaction data for faction %u.  Cancelling spawn.", factionID);
+        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No Faction data for %u.  Cancelling spawn.", factionID);
         return false;
     }
 
@@ -474,7 +474,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         if (is_log_enabled(SPAWN__MESSAGE))
             _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %lu, class: %s(%u).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
     } else {
-        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %u (%s).  Cancelling spawn.", sClass, GetSpawnClassName(sClass).c_str());
+        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %u(%s).  Cancelling spawn.", sClass, GetSpawnClassName(sClass).c_str());
         return false;
     }
 
@@ -522,7 +522,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     spawnEntry.clear();
 
     // get typeIDs to spawn based on info in m_factionGroups and ship designators and put into Spawn Vector
-    // figure out how to distuinguish between roid, anomaly, incursion and mission defs for this....
+    // figure out how to distinguish between roid, anomaly, incursion and mission defs for this....
     uint8 shipClass = 0;
     if (sClass > Spawn::Class::BeltSpawn)
         shipClass = 14;
@@ -619,7 +619,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
             } else if (sClass > Spawn::Class::BeltSpawn) {
                 toSpawn.typeID = GetRandTypeID(22);
             }
-            toSpawn.quantity = o *10;
+            toSpawn.quantity = o * 10;
             m_toSpawn.push_back(toSpawn);
         }
     }
@@ -681,7 +681,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     } else {
         /** @todo  make method to get/use template positioning data for spawns here */
         // ratspawn will warp in, others will not.
-        startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
+        startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) * 100000); //1-1m5 km from current bubble center
     }
 
     uint32 corpID = sDataMgr.GetFactionCorp(factionID);
@@ -726,8 +726,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             if (sClass <= Spawn::Class::Officer) {   // ratspawn will warp in, others will not.
                 // adjust warpIn point so show some variation instead of a straight line.
                 GPoint warpTo(warpToPoint);
-                warpTo.MakeRandomPointOnSphere(sClass *1000);  // random point <class (1-12)> x 1k from center
-                pNPC->DestinyMgr()->WarpTo(warpTo, (MakeRandomInt(-5, 10) *1000));
+                warpTo.MakeRandomPointOnSphere(sClass * 1000);  // random point <class (1-12)> x 1k from center
+                pNPC->DestinyMgr()->WarpTo(warpTo, (MakeRandomInt(-5, 10) * 1000));
             }
 
             SpawnEntry se = SpawnEntry();
@@ -772,7 +772,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
         return;
     GPoint startPos(pBubble->GetCenter());
     GPoint warpToPoint(startPos);
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from bubble center
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) * 100000); //1-1m5 km from bubble center
     _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
             spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
             spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
@@ -806,7 +806,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
     }
 
     m_system->AddNPC(pNPC);
-    pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
+    pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) * 1000));
 
     spawnEntry.stamp = 0;
     spawnEntry.enabled = false;
