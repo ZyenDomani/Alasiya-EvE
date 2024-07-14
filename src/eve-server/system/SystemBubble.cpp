@@ -655,15 +655,15 @@ void SystemBubble::AddBallExclusive( SystemEntity* pSE ) {
  *      NOTE  RemoveBall doesnt not work as i thought it should....doesnt trigger explosion.
  */
 //TODO  update these based on above notes   (also look into better (non-ambigious) naming)
-void SystemBubble::RemoveBall(SystemEntity *about_who) {
+void SystemBubble::RemoveBall(SystemEntity *pSE) {
     // RemoveBallFromBP removeball;
-    //    removeball.entityID = about_who->GetID();
+    //    removeball.entityID = pSE->GetID();
     // using RemoveBalls instead of RemoveBall because client
     // seems not to trigger explosion on RemoveBall
     if (!m_system->IsLoaded())
         return;
     RemoveBallsFromBP removeball;
-    removeball.balls.push_back(about_who->GetID());
+    removeball.balls.push_back( pSE->GetID());
 
     _log(DESTINY__MESSAGE, "SystemBubble::RemoveBall()");
     if (is_log_enabled(DESTINY__BALL_DUMP))
@@ -675,29 +675,29 @@ void SystemBubble::RemoveBall(SystemEntity *about_who) {
 }
 
 // this *should* only be called from DestinyMgr::Cloak() and DestinyMgr::Jump()
-void SystemBubble::RemoveBallExclusive(SystemEntity *about_who) {
+void SystemBubble::RemoveBallExclusive(SystemEntity *pSE) {
     RemoveBallFromBP removeball;
-        removeball.entityID = about_who->GetID();
+        removeball.entityID = pSE->GetID();
     // RemoveBalls removeball;
-    //removeball.balls.push_back(about_who->GetID());
+    //removeball.balls.push_back(pSE->GetID());
 
     _log(DESTINY__MESSAGE, "SystemBubble::RemoveBallExclusive()");
     if (is_log_enabled(DESTINY__BALL_DUMP))
         removeball.Dump( DESTINY__BALL_DUMP, "    " );
 
     PyTuple *tmp = removeball.Encode();
-    BubblecastDestinyUpdateExclusive(&tmp, "RemoveBall", about_who);
+    BubblecastDestinyUpdateExclusive(&tmp, "RemoveBall", pSE );
     PySafeDecRef( tmp );
 }
 
-void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
+void SystemBubble::RemoveBalls( SystemEntity* pSE ) {
     if (!m_system->IsLoaded())
         return;
     if (m_dynamicEntities.empty())
         return;
-    if ((!to_who->HasPilot()) or (to_who->SysBubble() == nullptr))
+    if ((!pSE->HasPilot()) or ( pSE->SysBubble() == nullptr))
         return;
-    Client* pClient = to_who->GetPilot();
+    Client* pClient = pSE->GetPilot();
     if ((pClient == nullptr) or pClient->IsDock() or pClient->IsDocked())
         return;
 

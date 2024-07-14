@@ -171,12 +171,15 @@ void DestinyManager::ProcessState() {
                 if (mySE->HasPilot()) {
                     _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
                                 mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), m_alignTime, m_activeSpeedFraction);
+                    mySE->GetPilot()->SendNotifyMsg("Warp Code Error.  Stopping Ship.");
+                    Stop();
                 } else {
                     _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  NPC %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
                             mySE->GetName(), mySE->GetID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), m_alignTime, m_activeSpeedFraction);
+                    WarpTo(m_targetPoint);
                 }
-                m_shipHeading = m_targetHeading;
-                InitWarp();
+                //m_shipHeading = m_targetHeading;
+                //InitWarp();
             }
             // else ship is still aligning/accelerating
         } break;
@@ -2095,6 +2098,14 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
 
     // npcs have no warp restrictions (yet)
     if (mySE->IsNPCSE() or mySE->IsDroneSE()) {
+        // this was seen in logs...no clue why it's zero...
+        if (!toVec.isNotZero()) {
+            sLog.Warning("NPC Warp", "toVec is zero.  wtf?");
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
+            Stop();
+            return;
+        }
         // do drones warp??   they can, yes...with limitations
         if (mySE->IsDroneSE()) {
             // put drone limit checks here

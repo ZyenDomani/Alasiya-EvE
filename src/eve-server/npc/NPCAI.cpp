@@ -287,6 +287,12 @@ void NPCAIMgr::Process() {
     switch(m_state) {
         case NPCAI::State::Idle: {
             if (m_beginFindTarget.Check()) {
+                if (m_npc->SystemMgr()->PlayerCount() < 1) {
+                    if (sConfig.npc.IdleWander)
+                        if (!m_isWandering)
+                            SetWander();
+                    return;
+                }
                 std::vector<Client*> clientVec;
                 clientVec.clear();
                 DestinyManager* pDestiny(nullptr);
@@ -315,9 +321,6 @@ void NPCAIMgr::Process() {
                     Target(cur->GetShipSE());
                     return;
                 }
-                if (sConfig.npc.IdleWander)
-                    if (!m_isWandering)
-                        SetWander();
             } else {
                 if (!m_beginFindTarget.Enabled())
                     m_beginFindTarget.Start(m_attackSpeed);  //find target is based on npc attack speed.
@@ -347,7 +350,12 @@ void NPCAIMgr::Process() {
             if (m_missileTimer.Check())
                 LaunchMissile(m_missileTypeID, pTargSE);
         } break;
-        case NPCAI::State::WarpOut:
+        case NPCAI::State::WarpOut: {
+            if (!m_destiny->IsWarping()) {
+                _log(NPC__AI_TRACE, "%s(%u): Warping Complete.  Return to Idle.", m_npc->GetName(), m_npc->GetID());
+                SetIdle();
+            }
+        } break;
         case NPCAI::State::WarpFollow:
         case NPCAI::State::Fleeing:
         case NPCAI::State::Signaling:{
@@ -380,9 +388,6 @@ void NPCAIMgr::WarpOut()
         return;
     }
 
-    m_state = NPCAI::State::WarpOut;
-    SystemManager* pSys = m_npc->SystemMgr();
-
     /** @todo  eventually, this will check with anomaly mgr for possible npc hideouts in system
      * based on npc faction, system, players in system, players in bubble, and *more later*
      * to determine a warpto target for this npc, or this group
@@ -391,15 +396,17 @@ void NPCAIMgr::WarpOut()
      * if there are no players in this system, avoid using proc tics on npcs
      */
 
+    SystemManager* pSys = m_npc->SystemMgr();
     if (pSys->PlayerCount()) {
         // pSys->GetAnomMgr();
-        uint32 newBeltID = pSys->GetRandBeltID();
+        uint32 newBeltID(pSys->GetRandBeltID());
         if (newBeltID == sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()))
             newBeltID = pSys->GetRandBeltID();
 
+        m_state = NPCAI::State::WarpOut;
         SystemEntity* newBeltSE = pSys->GetSE(newBeltID);
-        m_destiny->WarpTo(newBeltSE->GetPosition());
         m_npc->GetSpawnMgr()->MoveSpawn(m_npc, sBubbleMgr.FindBubble(newBeltSE));
+        m_destiny->WarpTo(newBeltSE->GetPosition());
     }
 }
 
@@ -421,13 +428,14 @@ void NPCAIMgr::SetWander()
     }
 
     // disable orbit-on-idle
-    if (pBubble->HasDynamics() or pBubble->IsBelt() and 0) {
+    //if (pBubble->HasDynamics() or pBubble->IsBelt()) {
+    if (0) {
         // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
         SystemEntity* pTargSE = pBubble->GetRandomEntity();
         if (pTargSE == nullptr)
             pTargSE = m_npc->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(pBubble->GetID()));
         if (pTargSE == nullptr) {
-            _log(NPC__ERROR, "%s(%u): Wandering:  No Target or beltSE found.", m_npc->GetName(), m_npc->GetID());
+            _log(NPC__WARNING, "%s(%u): Wandering:  No Target or beltSE found.", m_npc->GetName(), m_npc->GetID());
             // nothing here...leave bubble
             WarpOut();
             return;
@@ -440,7 +448,8 @@ void NPCAIMgr::SetWander()
         return;
     }
 
-    m_destiny->Stop();
+    if (m_destiny->IsMoving())
+        m_destiny->Stop();
 }
 
 void NPCAIMgr::SetIdle() {
@@ -471,7 +480,7 @@ void NPCAIMgr::SetIdle() {
     //disallow warpout by NOT setting timer.
     if (sConfig.npc.WarpOut > 0)
         if (m_npc->GetSpawnMgr() != nullptr)
-            m_warpOutTimer.Start(sConfig.npc.WarpOut *1000); // s to ms
+            m_warpOutTimer.Start(sConfig.npc.WarpOut * 1000); // s to ms
 }
 
 void NPCAIMgr::SetChasing(SystemEntity* pTargSE) {

@@ -439,7 +439,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
                 }
             }
             if ((secRating < 0) and  (sClass < Spawn::Class::Hauler))
-                if (MakeRandomFloat() < 0.1)
+                if (MakeRandomFloat() < 0.1)  // 10% chance to get hellspawn in nullsec
                     sClass = Spawn::Class::Hell;
         } else if (pBubble->IsGate()) { // gate spawns are smaller/easier than roid spawns
             if (secRating < -0.7) {
@@ -454,7 +454,9 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
                 sClass = Spawn::Class::Easy;
             }
         } else {
-            // make error here?
+            _log(SPAWN__WARNING, "Ratspawn location is neither belt nor gate in %s for bubble %u.", \
+                    pBubble->GetSystem()->GetNameStr(), pBubble->GetID());
+            return false;
         }
     }
 
