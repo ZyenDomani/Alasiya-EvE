@@ -119,10 +119,6 @@ remove GPoint/GVector code and just write my own.
 as bubble code becomes more stable, consider updating/removing/recoding wander timer.
     - every 60s for every bubble object is a bit much.
     - check InBubble and IsOverlap code.
-    - anomaly spawn in bubble w/o npc is considered "empty" and deleted from system.
-        this is wrong.  IsEmpty() should check m_entities list first.  verify anoms are added correctly
-        while this will cut down on bubble proc, is it really necessary?  shouldnt these bubbles remain active?
-        -- yes, they should, as long as dungeon isnt deleted.  no need for bubble proc on anom.  maybe?
 
 remove character queries from InventoryDB
 remove station/static queries from InventoryDB
