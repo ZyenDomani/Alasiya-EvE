@@ -426,14 +426,6 @@ bool SystemBubble::IsOverlap( const GPoint& pt ) const
     return (m_center.distance(pt) < (m_radius * 2));
 }
 
-bool SystemBubble::IsEmpty() const {
-    if (m_entities.empty())
-        return true;
-    if (m_dynamicEntities.empty())
-        return true;
-    return false;
-}
-
 void SystemBubble::PrintEntityList() {
     bool found = false;
     for (auto &cur : m_dynamicEntities) {
