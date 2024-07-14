@@ -41,3 +41,22 @@
 ==13649== To see them, rerun with: --leak-check=full --show-leak-kinds=all
 ==13649==
 ==13649== ERROR SUMMARY: 281 errors from 281 contexts (suppressed: 0 from 0)
+
+current 13jul24  no client  with delete this enabled
+==30305== LEAK SUMMARY:
+==30305==    definitely lost: 16,446,744 bytes in 473,436 blocks
+==30305==    indirectly lost: 33,913,892 bytes in 874,894 blocks
+==30305==      possibly lost: 2,586 bytes in 52 blocks
+==30305==    still reachable: 1,136 bytes in 20 blocks
+==30305==         suppressed: 0 bytes in 0 blocks
+==30305==
+==30305== ERROR SUMMARY: 166 errors from 166 contexts (suppressed: 0 from 0)
+again, no client, with delete this disabled
+==1617== LEAK SUMMARY:
+==1617==    definitely lost: 9,023,424 bytes in 237,123 blocks
+==1617==    indirectly lost: 59,016,016 bytes in 1,551,819 blocks
+==1617==      possibly lost: 22,284 bytes in 594 blocks
+==1617==    still reachable: 3,843 bytes in 99 blocks
+==1617==         suppressed: 0 bytes in 0 blocks
+==1617==
+==1617== ERROR SUMMARY: 219 errors from 219 contexts (suppressed: 0 from 0)
