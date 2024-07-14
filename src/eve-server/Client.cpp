@@ -2070,7 +2070,6 @@ void Client::SendSessionChange()
     }
 
     QueuePacket(packet);
-    //SafeDelete(packet);
 }
 
 void Client::QueueDestinyUpdates(std::vector< PyTuple* >& updates) {
@@ -2232,7 +2231,6 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
     }
 
     QueuePacket(packet);
-    //SafeDelete(packet);
 }
 
 /************************************************************************/
@@ -2450,7 +2448,6 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyResult &rs
     }
 
     QueuePacket(packet);
-    //SafeDelete(packet);
 }
 
 void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_TYPE msgType, MACHONETERR_TYPE errCode, PyRep** payload)
@@ -2476,7 +2473,6 @@ void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_T
 
     packet->payload = e.Encode();
     QueuePacket(packet);
-    SafeDelete(packet);
 }
 
 void Client::_SendPingRequest()
@@ -2501,7 +2497,6 @@ void Client::_SendPingRequest()
     packet->named_payload = new PyDict();
 
     QueuePacket(packet);
-    SafeDelete(packet);
 }
 
 /** @todo fix this to provide a somewhat accurate response */
@@ -2567,7 +2562,6 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID)
     packet->payload->SetItem(0, pingList);
 
     QueuePacket(packet);
-    //SafeDelete(packet);
 }
 
 /************************************************************************/
