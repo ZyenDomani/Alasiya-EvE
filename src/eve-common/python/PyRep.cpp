@@ -299,8 +299,11 @@ void PyRep::DecRef() const
 
     _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
 
+    /*
     if (mRefCount < 1)
-        delete this;
+        if (sConfig.server.DelOnZero)
+            delete this;
+        */
 }
 
 

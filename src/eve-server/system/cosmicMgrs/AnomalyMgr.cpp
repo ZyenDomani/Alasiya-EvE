@@ -328,9 +328,9 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
 
     //m_mdb.SaveAnomaly(sig);
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Created Signal %s(%u) for %s in %s(%u), bubbleID %u with %.3f%% sigStrength.", \
-            sDunDataMgr.GetDungeonType(sig.dungeonType), sig.dungeonType, \
-            sig.sigName.c_str(), m_system->GetName(), sig.systemID, sig.bubbleID, sig.sigStrength *100);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Created  %s for %s(%u) Signal in %s(%u), bubbleID %u with %.3f%% sigStrength.", \
+            sig.sigName.c_str(), sDunDataMgr.GetDungeonType(sig.dungeonType), sig.dungeonType, \
+            m_system->GetName(), sig.systemID, sig.bubbleID, sig.sigStrength *100);
 }
 
 uint8 AnomalyMgr::GetDungeonType()
