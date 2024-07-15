@@ -141,9 +141,7 @@ client login screen...these all need code to show data    CharacterDB::GetCharSe
     upcomingEventCount:
     unreadMailCount:
     unprocessedNotifications:
-also need to optimize query....can join instead of using (current) multiple queries and variables
-
-FleetBound could use updates (client->getchar->name, etc)
+    alliance*
 
 fleet boosts - apply directly to ship/modules when calculated  (maybe try to use fxproc to apply, as ccp designed it)
     - leadership skill modifiers set on skill item.   look into using fxproc to apply
@@ -277,11 +275,6 @@ look over CallDispatcher to see if we can improve/update anything   -started.
 
 is DataClasses.h used?  will it be?
   - its refd in pos code, but not used yet
-
-active thread count is wrong....no...
-this is based on my thread class.  does not include classes using boost
-20:50:43 B    Active Threads: There are 1 active threads running in the server.
-20:50:43 W                  : ThreadID 0xEFFFF700
 
 
 when mining, create and add ore to ship hold throw item warnings....do we really need them?
