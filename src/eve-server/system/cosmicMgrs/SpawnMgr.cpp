@@ -681,7 +681,10 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     } else {
         /** @todo  make method to get/use template positioning data for spawns here */
         // ratspawn will warp in, others will not.
-        startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) * 100000); //1-1m5 km from current bubble center
+        /*  NOTE:  rats warping into bubbles has been iffy at best for years.  discovered why today (16jul24)
+         * npc accel dist < bubble radius.  WarpAccel.BubbleCheck is complete before npc is removed from bubble
+         */
+        startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) * 100000); //1m-1.5m meters from target bubble center
     }
 
     uint32 corpID = sDataMgr.GetFactionCorp(factionID);

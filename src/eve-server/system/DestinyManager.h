@@ -267,7 +267,7 @@ protected:
     float m_maxOrbitSpeedFraction;      //fuzzy logic - ship's max speed based on orbit data
 
     uint16 m_turnTime;                  //in s        - time turn started.  now uses EntityList.Stamp()
-    uint32 m_followDistance;            //in m
+    uint32 m_followDistance;            //in m        - used for follow, orbit, and distance where ship should be removed from bubble during warp if < bubble radius
     int64  m_targetDistance;            //in m
     double m_moveTime;                  //in ms       - time when speed change started.  used to calculate m_timeFraction
 
