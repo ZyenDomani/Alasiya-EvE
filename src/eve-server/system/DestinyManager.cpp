@@ -158,7 +158,7 @@ void DestinyManager::Process() {
                 InitWarp();
                 return;
             } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > m_alignTime) {
-                // catchall for turn checks messed up, and m_moveTime > ship's align time
+		/* TODO:  check this...turn checks for warp *shouldnt* mess up, but this WILL hit for insta-warp targets where ship is full speed and already aligned with warp targ
                 if (mySE->HasPilot()) {
                     _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
                                 mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), m_alignTime, m_activeSpeedFraction);
@@ -168,7 +168,7 @@ void DestinyManager::Process() {
                     _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  NPC %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
                             mySE->GetName(), mySE->GetID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), m_alignTime, m_activeSpeedFraction);
                     //WarpTo(m_targetPoint);
-                }
+                } */
                 m_shipHeading = m_targetHeading;
                 InitWarp();
             }
@@ -2136,7 +2136,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         if (IsTurn()) {
             InitTurn();
         } else if (IsMoving()) {
-            m_moveTime = GetTimeMSeconds();
+            ; //m_moveTime = GetTimeMSeconds();
         } else {
             BeginMovement();
         }
@@ -2227,7 +2227,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         if (IsTurn()) {
             InitTurn();
         } else if (IsMoving()) {
-            m_moveTime = GetTimeMSeconds();
+            ; //m_moveTime = GetTimeMSeconds();
         } else {
             BeginMovement();
         }
