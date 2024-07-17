@@ -75,17 +75,8 @@ DestinyManager::~DestinyManager() {
 void DestinyManager::Process() {
     double profileStartTime(GetTimeUSeconds());
 
-    ProcessState();
-
-    //SendDestinyUpdates(m_updateQueue);
-    //m_updateQueue.clear();
-
-    if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::destiny, GetTimeUSeconds() - profileStartTime);
-}
-
-void DestinyManager::ProcessState() {
     /*  not implemented yet...
+    // frozen is used by cyno, siege, others?
     if (mySE->IsFrozen()) {
         Halt();
         return;
@@ -194,7 +185,14 @@ void DestinyManager::ProcessState() {
             //no default on purpose
         } break;
     }
+	
+    //SendDestinyUpdates(m_updateQueue);
+    //m_updateQueue.clear();
+
+    if (sConfig.debug.UseProfiling)
+        sProfiler.AddTime(Profile::destiny, GetTimeUSeconds() - profileStartTime);
 }
+
 /* acceleration forumula
  * V(t) = Vmax*(1-e^-(t/a))
  * V(t) = velocity at time t
