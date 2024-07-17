@@ -158,17 +158,6 @@ void DestinyManager::Process() {
                 InitWarp();
                 return;
             } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > m_alignTime) {
-		/* TODO:  check this...turn checks for warp *shouldnt* mess up, but this WILL hit for insta-warp targets where ship is full speed and already aligned with warp targ
-                if (mySE->HasPilot()) {
-                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
-                                mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), m_alignTime, m_activeSpeedFraction);
-                    mySE->GetPilot()->SendNotifyMsg("Warp Code Error.  Stopping Ship.");
-                    //Stop();
-                } else {
-                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  NPC %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
-                            mySE->GetName(), mySE->GetID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), m_alignTime, m_activeSpeedFraction);
-                    //WarpTo(m_targetPoint);
-                } */
                 m_shipHeading = m_targetHeading;
                 InitWarp();
             }
@@ -201,11 +190,6 @@ void DestinyManager::Process() {
  //Velocity setting methods
 void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/*false*/) {
     // this sets current speed fraction for object.
-
-    // if orbiting, call Orbit() and let code reset the variables
-    // i dunno about this one.....
-    //if (m_orbiting != 0)
-    //    InitOrbit(m_targetEntity.second, m_targetDistance);
 
     if ((fraction == m_userSpeedFraction) and (!startMovement)) {
         // no change.
@@ -893,8 +877,6 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change.
     while (dot < -1.0f)
         dot += 1;
     // check for turning angle.  returns true if angle is enough to change movement variables
-    //float degrees = m_shipHeading.angle(m_targetHeading);
-    //if (degrees < TURN_ALIGNMENT) {             //  TURN_ALIGNMENT = 4* = 0.0698132 rad   WARP_ALIGNMENT = 6* = 0.10472 rad
     //  this will set m_radians in the range of [0,pi].
     m_radians = acos(dot);
     if (m_radians < 0.10472) {         //  TURN_ALIGNMENT = 4* = 0.0698132 rad    6* = 0.10472 rad
@@ -1556,8 +1538,7 @@ void DestinyManager::InitWarp() {
     float cruiseTime(0.0f);
     int64 accelDistance(0), cruiseDistance(0), decelDistance(0);
     int64 warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
-    // remove ship from bubble at this distance
-    m_followDistance = BUBBLE_RADIUS_METERS;
+	
     // set times and distances based on target distance
     if (m_targetDistance < warpSpeedInMeters) {
         //  short warp....no cruise
@@ -1698,7 +1679,6 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
     WarpUpdate(currentShipSpeed);
 
     if (mySE->SysBubble() == nullptr)
-        //if (m_targetDistance < BUBBLE_RADIUS_METERS) {
         if (m_targBubble->InBubble(m_position)) {
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "Destiny::WarpUpdate()  %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() for bubble %u.", \
@@ -1712,13 +1692,11 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
 void DestinyManager::WarpUpdate(int64 currentShipSpeed) {
     //  track position and velocity for all stages.
     m_velocity = (m_shipHeading * currentShipSpeed);
-    m_position += m_velocity; //(m_targetPoint - (m_shipHeading * m_targetDistance));
+    m_position += m_velocity;
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::WarpUpdate()  %s(%u): Ship is %f from center of target bubble %u.", \
                 mySE->GetName(), mySE->GetID(), m_targBubble->GetCenter().distance(m_position), m_targBubble->GetID());
-
-    //mySE->SetPosition(m_position);
 }
 
 void DestinyManager::WarpStop(int64 currentShipSpeed) {
