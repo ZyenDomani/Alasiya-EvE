@@ -1477,6 +1477,10 @@ void DestinyManager::ClearOrbit() {
 }
 
 void DestinyManager::InitWarp() {
+    // highly likely ship had to turn to align for warp...
+    if (m_turning)
+	ClearTurn();
+	
     // reset sub-warp move variables for warping
     m_accel = false;
     m_decel = false;
