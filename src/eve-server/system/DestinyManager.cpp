@@ -1722,9 +1722,8 @@ void DestinyManager::WarpUpdate(int64 currentShipSpeed) {
 }
 
 void DestinyManager::WarpStop(int64 currentShipSpeed) {
-    // targPoint is where we exit warp.
     m_velocity = (m_shipHeading * currentShipSpeed);
-    m_position = m_targetPoint;
+    m_position += m_velocity;
     SetPosition(m_position, true);
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
@@ -1737,14 +1736,6 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
     // reset asf/ps so call to SSF will set decel properly
     m_prevSpeed = currentShipSpeed;
     m_activeSpeedFraction = currentShipSpeed / m_maxSpeed;
-
-    m_targetPoint += (m_velocity * m_agility);
-    if (is_log_enabled(DESTINY__WARP_DEBUG)) {
-        // drop marker for decel point
-        std::string str = "Warp Decel Point - ";
-        str += mySE->GetName();
-        MarkPoint(m_targetPoint, str, str);
-    }
 
     // SetSpeedFraction() checks for m_state = Warp and warpstate != null to set decel variables correctly with warp decel.
     //   have to call this BEFORE deleting or reseting m_state or WarpState.
@@ -2216,10 +2207,17 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     }
 
     if (is_log_enabled(DESTINY__WARP_DEBUG)) {
-        // make marker at stop point
+        // marker for ship's stop point
         std::string str = "Warp Stop Point - ";
         str += mySE->GetName();
         MarkPoint(m_targetPoint, str, str);
+	str.clear();
+	    
+        // marker for ship's drop out of warp point
+	GPoint& dropPos(m_targetPoint - (m_targetHeading * m_speedToLeaveWarp * m_agility));
+        str = "Warp Drop Point - ";
+        str += mySE->GetName();
+        MarkPoint(dropPos, str, str);
     }
 
     // reset ball mode as it was possibly changed in SSF()
