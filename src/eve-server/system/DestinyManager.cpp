@@ -153,15 +153,16 @@ void DestinyManager::Process() {
 
             MoveObject();
 
-            if (!m_turning and (m_activeSpeedFraction > 0.74999f)) {
-                m_shipHeading = m_targetHeading;
-                InitWarp();
-                return;
-            } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > m_alignTime) {
-                m_shipHeading = m_targetHeading;
-                InitWarp();
-            }
-            // else ship is still aligning/accelerating
+            if (m_activeSpeedFraction > 0.74999f) {
+		if (!m_turning) {
+                    m_shipHeading = m_targetHeading;
+                    InitWarp();
+                    return;
+                } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > m_alignTime) {
+                    m_shipHeading = m_targetHeading;
+                    InitWarp();
+		}
+            } // else ship is still aligning/accelerating
         } break;
         // i dont think any of these actually move...
         case Ball::Mode::MUSHROOM:      // aoe?
