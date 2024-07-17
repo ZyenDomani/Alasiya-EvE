@@ -3290,6 +3290,7 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
 
         //Get all clients in our system
         std::vector<Client*> cv;
+	mySE->SystemMgr()->GetClientList(&cv);
         for (auto const& player : cv)
             if (player->IsInSpace()) {
                 PyIncRef(*ev);
@@ -3337,6 +3338,7 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
 
         //Get all clients in our system
         std::vector<Client*> cv;
+	mySE->SystemMgr()->GetClientList(&cv);
         for (auto const& player : cv)
             if (player->IsInSpace()) {
                 PyIncRef(*up);
