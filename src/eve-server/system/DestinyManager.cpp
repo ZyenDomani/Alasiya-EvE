@@ -157,7 +157,6 @@ void DestinyManager::Process() {
 		if (!m_turning) {
                     m_shipHeading = m_targetHeading;
                     InitWarp();
-                    return;
                 } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > m_alignTime) {
                     m_shipHeading = m_targetHeading;
                     InitWarp();
