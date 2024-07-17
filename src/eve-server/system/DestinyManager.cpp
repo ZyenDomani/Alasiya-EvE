@@ -2133,12 +2133,10 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
                 mySE->SysBubble()->GetID(), m_targBubble->GetID());
         }
 
-        if (IsTurn()) {
-            InitTurn();
-        } else if (IsMoving()) {
-            ; //m_moveTime = GetTimeMSeconds();
-        } else {
+	if (!IsMoving()) {
             BeginMovement();
+        } else if (IsTurn()) {
+            InitTurn();
         }
 
         // reset ball mode as it was changed in SSF()
@@ -2224,12 +2222,10 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
             InitTurn();
     } else {
         // everything else will use code from Turn() and BeginMovement()
-        if (IsTurn()) {
-            InitTurn();
-        } else if (IsMoving()) {
-            ; //m_moveTime = GetTimeMSeconds();
-        } else {
+	if (!IsMoving()) {
             BeginMovement();
+        } else if (IsTurn()) {
+            InitTurn();
         }
     }
 
