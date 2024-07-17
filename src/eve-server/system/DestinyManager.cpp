@@ -1651,6 +1651,17 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
         }
     }
 
+    WarpUpdate(currentShipSpeed);
+
+    // updated to use bubble.inbubble() check
+    if (mySE->SysBubble() != nullptr)
+        if (!mySE->SysBubble().InBubble(m_position)) {
+            if (is_log_enabled(DESTINY__WARP_TRACE))
+                _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) is being removed from bubble %u.",\
+                        mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID());
+            mySE->SysBubble()->Remove(mySE);
+        } 
+    /*
     // m_followDistance is set to distance when ship should be removed from bubble
     if (mySE->SysBubble() != nullptr)
         if (currentDistance > m_followDistance)
@@ -1659,9 +1670,7 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
                     _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) is being removed from bubble %u.",\
                             mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID());
                 mySE->SysBubble()->Remove(mySE);
-            }
-
-    WarpUpdate(currentShipSpeed);
+            }  */
 }
 
 void DestinyManager::WarpCruise(uint16 sec_into_warp) {
@@ -1705,7 +1714,8 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
     WarpUpdate(currentShipSpeed);
 
     if (mySE->SysBubble() == nullptr)
-        if (m_targetDistance < BUBBLE_RADIUS_METERS) {
+        //if (m_targetDistance < BUBBLE_RADIUS_METERS) {
+        if (m_targBubble->InBubble(m_position)) {
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "Destiny::WarpUpdate()  %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() for bubble %u.", \
                         mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_targBubble->GetID());
