@@ -1478,16 +1478,11 @@ void DestinyManager::ClearOrbit() {
 
 void DestinyManager::InitWarp() {
     // reset sub-warp move variables for warping
-    if (m_orbiting)
-        ClearOrbit();
-    if (m_turning)
-        ClearTurn();
-
     m_accel = false;
     m_decel = false;
     m_posHack = false;
     m_timeFraction = 0.0f;
-    // these will be reset with current values in WarpStop()
+    // these will be reset in WarpStop()
     m_prevSpeed = 0.0f;
     m_prevSpeedFraction = 0.0f;
     m_activeSpeedFraction = 0.0f;
@@ -1514,7 +1509,7 @@ void DestinyManager::InitWarp() {
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp(): %s(%u) is initializing warp.", mySE->GetName(), mySE->GetID());
 
     /*  this is from http://community.eveonline.com/news/dev-blogs/warp-drive-active/
-	  NOTE:  while this may be accurate now, it was not in crucible
+	  NOTE:  while this may be accurate now, it was not in crucible, but works rather well
      * x = e^(k*t)
      * v = k*e^(k*t)
      *
@@ -1577,7 +1572,6 @@ void DestinyManager::InitWarp() {
             mySE->GetName(), mySE->GetID(), destination.x, destination.y, destination.z, diff.length());
     }
 
-    SafeDelete(m_warpState);
     m_warpState = new WarpState(m_stateStamp, m_targetDistance, warpSpeedInMeters, accelDistance, cruiseDistance,
                         decelDistance, warpTime, true, false, false);
 
@@ -1589,6 +1583,8 @@ void DestinyManager::InitWarp() {
         mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_warpCapacitorNeed);
     }
 
+    // do npcs need to notify ai of warping?
+	
     //clear targets
     mySE->TargetMgr()->ClearAllTargets();
     //mySE->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::WarpingOut);
@@ -1630,7 +1626,7 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
     // updated to use inbubble() check
     if (mySE->SysBubble() != nullptr)
         if (!mySE->SysBubble().InBubble(m_position)
-	or ((!m_warpState->accel) and (mySE->SysBubble != m_targBubble ))) {
+	or ((!m_warpState->accel) and (mySE->SysBubble != m_targBubble ))) {  // in rare case accel is completed, but se is still in bubble
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) is being removed from bubble %u.",\
                         mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID());
