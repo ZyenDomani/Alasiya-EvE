@@ -208,7 +208,6 @@ public:
     void SendDestinyUpdates(std::vector<PyTuple*> &updates, bool self_only=false) const;// this will consume all updates in vector
 
 protected:
-    void ProcessState();				// determine method to call based on ball state
     bool IsTargetInvalid();              //performs common target checks
 
     // movement methods
