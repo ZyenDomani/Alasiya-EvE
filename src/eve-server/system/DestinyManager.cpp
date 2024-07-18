@@ -1665,13 +1665,12 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
      * distance = e^(k*s)
      * speed = -k*e^(k*s)
      */
-    uint8 decelTime = (sec_into_warp - m_decelTime);
-    m_targetDistance = (std::exp(-decelTime) * m_warpState->decelDist);
-    //int64 currentDistance = (m_warpState->total_distance - m_targetDistance);
-    int64 currentShipSpeed = (m_warpState->warpSpeed * exp(-decelTime));
+    uint8 decelTime(sec_into_warp - m_decelTime);
+    int64 currentShipSpeed(m_warpState->warpSpeed * exp(-decelTime));
+    m_targetDistance -= currentShipSpeed; //(std::exp(-decelTime) * m_warpState->decelDist);
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %lli m/s with %lli m left to go.", \
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(d:%us/t:%us): velocity %lli m/s with %lli m left to go.", \
                 mySE->GetName(), mySE->GetID(), decelTime, sec_into_warp, currentShipSpeed, m_targetDistance);
 
     if (currentShipSpeed <= m_speedToLeaveWarp) {
@@ -1692,7 +1691,7 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
         }
 }
 
-void DestinyManager::WarpUpdate(int64 currentShipSpeed) {
+void DestinyManager::WarpUpdate(int64 &currentShipSpeed) {
     //  track position and velocity for all stages.
     m_velocity = (m_shipHeading * currentShipSpeed);
     m_position += m_velocity;
@@ -1708,8 +1707,9 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
     SetPosition(m_position, true);
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpStop(): %s(%u) - Warp complete. Exit velocity %lli m/s with %lli m left to go.", \
-                mySE->GetName(), mySE->GetID(), currentShipSpeed, m_targetDistance);
+	    int64 stopDistance(m_agility * currentShipSpeed);
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpStop(): %s(%u) - Warp complete. Exit velocity %lli m/s with %lli m left to go.  Stop distance is %lli m.", \
+                mySE->GetName(), mySE->GetID(), currentShipSpeed, m_targetDistance, stopDistance);
         _log(DESTINY__WARP_TRACE, "Destiny::WarpStop(): %s(%u): Ship currently at %.2f,%.2f,%.2f.", \
                 mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
     }
