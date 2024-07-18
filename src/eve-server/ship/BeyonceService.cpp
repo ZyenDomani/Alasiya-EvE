@@ -520,6 +520,10 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
   _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %lu", call.tuple->size() );
    call.Dump(SERVICE__CALL_DUMP);
 
+   if (call.client->GetShipSE()->SysBubble() == nullptr) {
+       codelog(CLIENT__ERROR, "%s: Client is not in a bubble!", call.client->GetName());
+       return PyStatic.NewNone();
+   }
    /** @todo (allan) finish warp scramble system */
    // >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
    if (call.client->GetShip()->GetAttribute(AttrWarpScrambleStatus) > 0)

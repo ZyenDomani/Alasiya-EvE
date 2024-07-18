@@ -61,7 +61,7 @@ m_position(self->GetPosition()), m_velocity(NULL_ORIGIN_V), m_targetPoint(NULL_O
 m_autoPilot(false), m_alignTo(false), m_frozen(false), m_changeDelay(false), m_moveDelay(false), m_agility(0.0), m_bump(false),
 m_posHack(sConfig.debug.PositionHack), m_turnAccel(false), m_turnDecel(false), m_turnPct(0.0f),
 m_origHeading(NULL_ORIGIN_V), m_curveStart(NULL_ORIGIN), m_curveApex(NULL_ORIGIN), m_curveEnd(NULL_ORIGIN),
-m_inclination(0.0), m_longAscNode(0.0), m_decelTime(0), m_warpState(nullptr)
+m_inclination(0.0), m_longAscNode(0.0), m_accelTime(0), m_decelTime(0), m_warpState(nullptr)
 {
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -174,7 +174,7 @@ void DestinyManager::Process() {
             //no default on purpose
         } break;
     }
-	
+
     //SendDestinyUpdates(m_updateQueue);
     //m_updateQueue.clear();
 
@@ -1480,7 +1480,7 @@ void DestinyManager::InitWarp() {
     // highly likely ship had to turn to align for warp...
     if (m_turning)
 	ClearTurn();
-	
+
     // reset sub-warp move variables for warping
     m_accel = false;
     m_decel = false;
@@ -1537,7 +1537,7 @@ void DestinyManager::InitWarp() {
     float cruiseTime(0.0f);
     int64 accelDistance(0), cruiseDistance(0), decelDistance(0);
     int64 warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
-	
+
     // set times and distances based on target distance
     if (m_targetDistance < warpSpeedInMeters) {
         //  short warp....no cruise
@@ -1562,13 +1562,14 @@ void DestinyManager::InitWarp() {
     float warpTime(accelTime + decelTime + cruiseTime);
     //  set deceltime for time check in WarpDecel()
     m_decelTime = round(accelTime) + round(cruiseTime);
+    m_accelTime = floor(accelTime);
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Warp will accelerate for %.0fs, cruise for %.3f, then decelerate for %.0fs, with total time of %.1fs, and warp speed of %lli m/s.", \
-            mySE->GetName(), mySE->GetID(), accelTime, cruiseTime, decelTime, warpTime, warpSpeedInMeters);
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Warp will accelerate for %us, cruise for %.1f, then decelerate for %us, with total time of %.1fs, and warp speed of %lli m/s.", \
+            mySE->GetName(), mySE->GetID(), m_accelTime, cruiseTime, m_decelTime, warpTime, warpSpeedInMeters);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Accel distance is %llim. Cruise distance is %llim.  Decel distance is %llim.  Heading is %.4f,%.4f,%.4f.", \
         mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %lu AU (%lum).", \
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.1f,%.1f,%.1f at a distance of %lli AU (%llim).", \
             mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
         GPoint destination = m_position + (m_shipHeading * m_targetDistance);
         GVector diff(m_targetPoint, destination);
@@ -1588,7 +1589,7 @@ void DestinyManager::InitWarp() {
     }
 
     // do npcs need to notify ai of warping?
-	
+
     //clear targets
     mySE->TargetMgr()->ClearAllTargets();
     //mySE->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::WarpingOut);
@@ -1616,7 +1617,9 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
         _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %lli m/s with %lli m left to go. Current distance from origin: %llim.", \
             mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance);
 
-    if ((currentShipSpeed >= m_warpState->warpSpeed) or (currentDistance >= m_warpState->accelDist)) {
+    if (sec_into_warp >= m_accelTime)  {
+   // or (currentDistance >= m_warpState->accelDist)
+   // or (currentShipSpeed >= m_warpState->warpSpeed)) {
         m_warpState->accel = false;
         if (m_warpState->cruiseDist > 0) {
             m_warpState->cruise = true;
@@ -1629,13 +1632,13 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
 
     // updated to use inbubble() check
     if (mySE->SysBubble() != nullptr)
-        if (!mySE->SysBubble().InBubble(m_position)
-	or ((!m_warpState->accel) and (mySE->SysBubble != m_targBubble ))) {  // in rare case accel is completed, but se is still in bubble
+        if (!mySE->SysBubble()->InBubble(m_position)
+	or ((!m_warpState->accel) and (mySE->SysBubble() != m_targBubble ))) {  // in rare case accel is completed, but se is still in bubble
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) is being removed from bubble %u.",\
                         mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID());
             mySE->SysBubble()->Remove(mySE);
-        } 
+        }
 }
 
 void DestinyManager::WarpCruise(uint16 sec_into_warp) {
@@ -1664,7 +1667,7 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
      */
     uint8 decelTime = (sec_into_warp - m_decelTime);
     m_targetDistance = (std::exp(-decelTime) * m_warpState->decelDist);
-    int64 currentDistance = (m_warpState->total_distance - m_targetDistance);
+    //int64 currentDistance = (m_warpState->total_distance - m_targetDistance);
     int64 currentShipSpeed = (m_warpState->warpSpeed * exp(-decelTime));
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
@@ -1695,7 +1698,7 @@ void DestinyManager::WarpUpdate(int64 currentShipSpeed) {
     m_position += m_velocity;
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpUpdate()  %s(%u): Ship is %f from center of target bubble %u.", \
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpUpdate()  %s(%u): Ship is %.1f from center of target bubble %u.", \
                 mySE->GetName(), mySE->GetID(), m_targBubble->GetCenter().distance(m_position), m_targBubble->GetID());
 }
 
@@ -2190,12 +2193,12 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         str += mySE->GetName();
         MarkPoint(m_targetPoint, str, str);
 	str.clear();
-	    
+
         // marker for ship's drop out of warp point
-	GPoint& dropPos(m_targetPoint - (m_targetHeading * m_speedToLeaveWarp * m_agility));
+	GPoint dropPos(m_targetHeading * m_speedToLeaveWarp * m_agility);
         str = "Warp Drop Point - ";
         str += mySE->GetName();
-        MarkPoint(dropPos, str, str);
+        MarkPoint(m_targetPoint - dropPos, str, str);
     }
 
     // reset ball mode as it was possibly changed in SSF()
@@ -3290,7 +3293,7 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
 
         //Get all clients in our system
         std::vector<Client*> cv;
-	mySE->SystemMgr()->GetClientList(&cv);
+	mySE->SystemMgr()->GetClientList(cv);
         for (auto const& player : cv)
             if (player->IsInSpace()) {
                 PyIncRef(*ev);
@@ -3338,7 +3341,7 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
 
         //Get all clients in our system
         std::vector<Client*> cv;
-	mySE->SystemMgr()->GetClientList(&cv);
+	mySE->SystemMgr()->GetClientList(cv);
         for (auto const& player : cv)
             if (player->IsInSpace()) {
                 PyIncRef(*up);
