@@ -1,4 +1,5 @@
 coverity --
+delete all previously-built files...coverity must scan all files under make
 /usr/local/cov-analysis/bin/cov-build --dir cov-int make -j8
 tar czvf Alasiya-EvE.tgz cov-int
 

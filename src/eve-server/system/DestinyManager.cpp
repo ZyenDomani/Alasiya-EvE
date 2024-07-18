@@ -1569,8 +1569,8 @@ void DestinyManager::InitWarp() {
             mySE->GetName(), mySE->GetID(), m_accelTime, cruiseTime, m_decelTime, warpTime, warpSpeedInMeters);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Accel distance is %llim. Cruise distance is %llim.  Decel distance is %llim.  Heading is %.4f,%.4f,%.4f.", \
         mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.1f,%.1f,%.1f at a distance of %lli AU (%llim).", \
-            mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.1f,%.1f,%.1f at a distance of %.2f AU (%llim).", \
+            mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, float(m_targetDistance / ONE_AU_IN_METERS), m_targetDistance);
         GPoint destination = m_position + (m_shipHeading * m_targetDistance);
         GVector diff(m_targetPoint, destination);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): calculated exit is %.2f,%.2f,%.2f and delta is %.4f.", \
