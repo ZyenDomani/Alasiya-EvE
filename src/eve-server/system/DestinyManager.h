@@ -325,11 +325,11 @@ private:
     uint32 m_accelTime;
     uint32 m_decelTime;
     void InitWarp();
-    void WarpAccel(uint16& sec_into_warp);
-    void WarpCruise(uint16& sec_into_warp);
-    void WarpDecel(uint16& sec_into_warp);
-    void WarpStop(int64& currentShipSpeed);
-    void WarpUpdate(int64& currentShipSpeed);
+    void WarpAccel(uint16 sec_into_warp);
+    void WarpCruise(uint16 sec_into_warp);
+    void WarpDecel(uint16 sec_into_warp);
+    void WarpStop(int64 currentShipSpeed);
+    void WarpUpdate(int64 currentShipSpeed);
 
     // trying update queue
     std::vector<PyTuple*> m_updateQueue;
