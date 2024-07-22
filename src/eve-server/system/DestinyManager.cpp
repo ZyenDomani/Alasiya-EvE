@@ -150,28 +150,17 @@ void DestinyManager::Process() {
                 return;
             }
 
-            if (m_activeSpeedFraction > 0.74999f) {
-                if (!m_turning) {
-                    m_shipHeading = m_targetHeading;
-                    InitWarp();
-                    return;
+            // check aligntime, speed, and turn...if all is good, call InitWarp()
+            if (((GetTimeMSeconds() - m_moveTime) * 0.001f) >= m_alignTime) {
+                if (m_activeSpeedFraction > 0.74999f) {
+                    if (!m_turning) {
+                        m_shipHeading = m_targetHeading;
+                        InitWarp();
+                        return;
+                    }
                 }
-            } else if (((GetTimeMSeconds() - m_moveTime) * 0.001f) > ceil(1.386294 * m_agility)) {
-                // catchall for turn checks messed up, and m_moveTime > ship's align time
-                if (mySE->HasPilot()) {
-                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
-                            mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), ceil(1.386294 * m_agility), m_activeSpeedFraction);
-                } else {
-                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  NPC %s(%u) - warp align/speed is incorrect, but time > alignTime (%.1f > %u).  asf: %.3f",  \
-                            mySE->GetName(), mySE->GetID(), ((GetTimeMSeconds() - m_moveTime) * 0.001f), ceil(1.386294 * m_agility), m_activeSpeedFraction);
-                }
-
-                m_shipHeading = m_targetHeading;
-                InitWarp();
-                return;
             }
 
-            // else ship is still aligning/accelerating
             MoveObject();
         } break;
         // i dont think any of these actually move...
@@ -338,7 +327,7 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
         m_posHack = true;
         m_ballMode = Destiny::Ball::Mode::STOP;
         m_targBubble = nullptr;
-        m_shipAccelTime = m_shipMaxAccelTime; // * m_activeSpeedFraction;
+        m_shipAccelTime = m_shipMaxAccelTime;
     } else if (m_userSpeedFraction > 0.01f) {
         // commanded speed fraction > 0 and ...
         float delta(1.0f);
@@ -500,6 +489,7 @@ void DestinyManager::Halt(bool commanded/*false*/) {
 
     m_velocity = GVector(NULL_ORIGIN);
     m_targetPoint = GPoint(NULL_ORIGIN);
+    m_shipAccelTime = m_shipMaxAccelTime;
     m_targetHeading = GVector( NULL_ORIGIN );
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -514,7 +504,6 @@ void DestinyManager::Halt(bool commanded/*false*/) {
             du.entityID = mySE->GetID();
         PyTuple *up = du.Encode();
         SendSingleDestinyUpdate(&up);
-        //PyDecRef(up);
     }
 }
 
@@ -713,7 +702,7 @@ void DestinyManager::MoveObject() {
     float timeStamp((GetTimeMSeconds() - m_moveTime) * 0.001f);
     //timeStamp = sEntityList.GetStamp() - m_stateStamp;
     // update tf for this tic
-    m_timeFraction = (1 - exp(-timeStamp / m_agility)); //mySE->GetSelf()->GetAttribute(AttrAgility).get_float()));
+    m_timeFraction = (1 - exp(-timeStamp / m_agility));
 
     if ((timeStamp > m_shipAccelTime) and (m_timeFraction > (1 - ASF_CHECK))) {
         if (m_decel) {
@@ -754,6 +743,16 @@ void DestinyManager::MoveObject() {
             Halt(true);
             return;
         }
+    } else if (m_turning) {
+        // speed and msg set in turn code
+        Turn(speed, move);
+    } else if (m_orbiting) {
+        // this will need updating...
+        if (m_orbiting < Destiny::Ball::Orbit::TooClose) {
+            // object is orbiting...set orbit speed correctly.
+            speed *= m_maxOrbitSpeedFraction;  //<---  this may not be right.
+            move += " in orbit";
+        }
     } else {
         // changed speed and asf != usf
         if (m_accel) {
@@ -780,7 +779,7 @@ void DestinyManager::MoveObject() {
                 // this should never hit....should not have decel w/o psf
                 sLog.Warning("Destiny::MoveObject()", "decel = true, but psf = 0.");
             }
-        } else if (m_tractored or m_tractorPause or m_turning) {
+        } else if (m_tractored or m_tractorPause) {
             ;   // do nothing here.  this is to remove error reporting from next line.
         } else {
             sLog.Error("Destiny::MoveObject()", "%s(%u) - move checks are not set right. Acc:%s, Dec:%s, timeStamp:%.3f, Tractored:%s, TractorPause:%s", \
@@ -803,19 +802,6 @@ void DestinyManager::MoveObject() {
             } else if (m_shipHeading.y > 0.1f) {
                 m_shipHeading.y -= 0.03f;
             }
-    }
-
-    //set velocity and position for this tic
-    if (m_turning) {
-        // speed and msg set in turn code
-        Turn(speed, move);
-    } else if (m_orbiting) {
-        // this will need updating...
-        if (m_orbiting < Destiny::Ball::Orbit::TooClose) {
-            // object is orbiting...set orbit speed correctly.
-            speed *= m_maxOrbitSpeedFraction;  //<---  this may not be right.
-            move += " in orbit";
-        }
     }
 
     // floating point math is slow.
@@ -920,6 +906,11 @@ void DestinyManager::InitTurn()
      *  turn is calculated on the fly to deal with changing ship speeds
      */
 
+    /* UPDATE: 21jul24
+     * this is wrong.  i think ALL direction changes depend on ship's alignTime
+     * working on rewriting this to test...
+     */
+
     // just to be sure....
     m_stop = false;
 
@@ -937,9 +928,12 @@ void DestinyManager::InitTurn()
     float degrees = acos(toVec.dotProduct(m_shipHeading));
     //  calc min speed for this turn as absolute percent of shipMaxSpeed
     m_turnMinFraction = sqrt((cos(degrees) + 1) / 2);
-    // adjust turn shit based on degree of turn and ship agility
+    /*  OLD CODE
+     * adjust turn shit based on degree of turn and ship agility
     float alignTime = (float)m_alignTime - ((float)m_alignTime * m_turnMinFraction);
     m_alignTime = (uint8)ceil(alignTime);
+    */
+
     m_turnPct = 1.0f / m_alignTime;
 
     // check speed for changes and set vars accordingly
@@ -952,8 +946,8 @@ void DestinyManager::InitTurn()
     }
 
     if (is_log_enabled(DESTINY__TURN_TRACE))
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): pct:%.2f, steps:%u, alignTime:%f, mtsf:%.3f, decel: %s", \
-            mySE->GetName(), mySE->GetID(), m_turnPct, m_alignTime, alignTime, m_turnMinFraction, \
+        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): pct:%.2f, alignTime:%u, mtsf:%.3f, decel: %s", \
+            mySE->GetName(), mySE->GetID(), m_turnPct, m_alignTime, m_turnMinFraction, \
             m_turnDecel ? "true" : "false");
 }
 
@@ -986,8 +980,7 @@ void DestinyManager::Turn(float &speed, std::string &move) {
             if (m_activeSpeedFraction > m_turnMinFraction)
                 sLog.Warning("Turn()", "asf > mtsf during first half.");
             // have to figure out how to keep this down and everything sane at same time.
-    }
-	if (m_turnAccel) {
+    } else if (m_turnAccel) {
         // we are now resuming accel after 1/2 turn
         m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_turnMinFraction, 1.0f - (change * 2));
         speed = m_maxShipSpeed * m_activeSpeedFraction;
@@ -1055,16 +1048,16 @@ void DestinyManager::Turn(float &speed, std::string &move) {
         }
     } else {
         float change2(m_turnPct + change);
-        double ax = getPct(m_curveStart.x, m_curveApex.x, change2 );
-        double ay = getPct(m_curveStart.y, m_curveApex.y, change2 );
-        double az = getPct(m_curveStart.z, m_curveApex.z, change2 );
-        double bx = getPct(m_curveApex.x, m_curveEnd.x, change2 );
-        double by = getPct(m_curveApex.y, m_curveEnd.y, change2 );
-        double bz = getPct(m_curveApex.z, m_curveEnd.z, change2 );
+        double ax = getPct(m_curveStart.x, m_curveApex.x, change2);
+        double ay = getPct(m_curveStart.y, m_curveApex.y, change2);
+        double az = getPct(m_curveStart.z, m_curveApex.z, change2);
+        double bx = getPct(m_curveApex.x, m_curveEnd.x, change2);
+        double by = getPct(m_curveApex.y, m_curveEnd.y, change2);
+        double bz = getPct(m_curveApex.z, m_curveEnd.z, change2);
         // The Black Dot (our position at this tic)
-        GPoint next(getPct(ax, bx, change2 ),
-                    getPct(ay, by, change2 ),
-                    getPct(az, bz, change2 ));
+        GPoint next(getPct(ax, bx, change2),
+                    getPct(ay, by, change2),
+                    getPct(az, bz, change2));
 
         GVector head(m_position, next);
         head.normalize();
@@ -1098,7 +1091,7 @@ void DestinyManager::ClearTurn() {
         UpdateVelocity(IsMoving());
     }
 
-    m_alignTime = ceil(1.386294 * m_agility);
+    //m_alignTime = ceil(1.386294 * m_agility);
     m_turnPct = 1.0f / m_alignTime;
 
     m_curveEnd = NULL_ORIGIN;
@@ -1578,7 +1571,6 @@ void DestinyManager::InitWarp() {
             mySE->GetName(), mySE->GetID(), destination.x, destination.y, destination.z, diff.length());
     }
 
-    SafeDelete(m_warpState);
     m_warpState = new WarpState(m_stateStamp, m_targetDistance, warpSpeedInMeters, accelDistance, cruiseDistance,
                         decelDistance, warpTime, true, false, false);
 
@@ -1589,6 +1581,7 @@ void DestinyManager::InitWarp() {
         //drain cap
         mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_warpCapacitorNeed);
     }
+    // do npcs need to notify ai of warping?
 
     //clear targets
     mySE->TargetMgr()->ClearAllTargets();
@@ -1617,6 +1610,7 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
         _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %lli m/s with %lli m left to go. Current distance %lli from origin.", \
             mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance);
 
+    // if (sec_into_warp >= m_accelTime) {  <-- this is new style...
     if ((currentShipSpeed >= m_warpState->warpSpeed) or (currentDistance >= m_warpState->accelDist)) {
         m_warpState->accel = false;
         if (m_warpState->cruiseDist > 0) {
@@ -1642,7 +1636,7 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
 void DestinyManager::WarpCruise(uint16 sec_into_warp) {
     // in cruise....calculate distance to update position data.
     m_targetDistance -= m_warpState->warpSpeed;
-    int64 currentDistance = (m_warpState->total_distance - m_targetDistance);
+    //int64 currentDistance = (m_warpState->total_distance - m_targetDistance);
 
     if ((m_targetDistance - m_warpState->warpSpeed) < m_warpState->decelDist) {
         m_warpState->cruise = false;
@@ -1664,20 +1658,20 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
      * speed = -k*e^(k*s)
      */
     uint8 decelTime = (sec_into_warp - m_decelTime);
-    m_targetDistance = (exp(-decelTime) * m_warpState->decelDist);
-    int64 currentDistance = (m_warpState->total_distance - m_targetDistance);
     int64 currentShipSpeed = (m_warpState->warpSpeed * exp(-decelTime));
+    int64 distTest(m_targetDistance - currentShipSpeed);
+    m_targetDistance = (exp(-decelTime) * m_warpState->decelDist);
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %lli m/s with %lli m left to go.", \
-                mySE->GetName(), mySE->GetID(), decelTime, sec_into_warp, currentShipSpeed, m_targetDistance);
-
-    if (currentShipSpeed <= m_speedToLeaveWarp) {
-        WarpStop(m_speedToLeaveWarp);
-        return;
-    }
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %lli m/s with %lli m left to go.  test: %lli  diff: %lli", \
+                mySE->GetName(), mySE->GetID(), decelTime, sec_into_warp, currentShipSpeed, m_targetDistance, distTest, m_targetDistance - distTest);
 
     WarpUpdate(currentShipSpeed);
+
+    if (currentShipSpeed <= m_speedToLeaveWarp) {
+        WarpStop(currentShipSpeed);
+        return;
+    }
 
     if (mySE->SysBubble() == nullptr)
         if (m_targetDistance < BUBBLE_RADIUS_METERS) {
@@ -1691,19 +1685,21 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
 void DestinyManager::WarpUpdate(int64 currentShipSpeed) {
     //  track position and velocity for all stages.
     m_velocity = (m_shipHeading * currentShipSpeed);
-    m_position += m_velocity; //(m_targetPoint - (m_shipHeading * m_targetDistance));
+    m_position += m_velocity;
+    mySE->SetPosition(m_position);
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::WarpUpdate()  %s(%u): Ship is %f from center of target bubble %u.", \
                 mySE->GetName(), mySE->GetID(), m_targBubble->GetCenter().distance(m_position), m_targBubble->GetID());
 
-    mySE->SetPosition(m_position);
 }
 
 void DestinyManager::WarpStop(int64 currentShipSpeed) {
-    // targPoint is where we exit warp.
+    // targPoint is where we exit warp.  UPDATE...is this right?  i think it should be where ship stops...
+    /*
     m_velocity = (m_shipHeading * currentShipSpeed);
     m_position += m_velocity; //m_targetPoint;
+    */
     SetPosition(m_position, true);
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
@@ -1718,12 +1714,6 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
     m_activeSpeedFraction = currentShipSpeed / m_maxSpeed;
 
     m_targetPoint += (m_velocity * m_agility);
-    if (is_log_enabled(DESTINY__WARP_DEBUG)) {
-        // drop marker for decel point
-        std::string str = "Warp Decel Point - ";
-        str += mySE->GetName();
-        MarkPoint(m_targetPoint, str, str);
-    }
 
     // SetSpeedFraction() checks for m_state = Warp and warpstate != null to set decel variables correctly with warp decel.
     //   have to call this BEFORE deleting or reseting m_state or WarpState.
@@ -1868,10 +1858,6 @@ void DestinyManager::Follow(SystemEntity* pSE, int32 distance) {
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
     m_followDistance = distance;
-
-    // this makes ship approach station dock elevation (y), instead of approaching to stations "center point" position (where icon is)
-    if (pSE->IsStationSE())
-        m_targetPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
 
     if (m_autoPilot) {
         // fudge dist a bit for ap
@@ -2019,7 +2005,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         double capNeeded = mySE->GetSelf()->GetAttribute(AttrMass).get_float() * m_warpCapacitorNeed * dist;
         capNeeded *= (1.0f - (0.1f * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
 
-        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %llim (%.3AU) is %f", \
+        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %llim (%.3f AU) is %f", \
             mySE->GetName(), mySE->GetID(), m_targetDistance, dist, capNeeded);
 
         // set min cap need to 1.0
@@ -2065,8 +2051,10 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     }
 
     //You will always exit warp at a random point, 2,500 meters from your actual exit point - per EveUni
-    // if (mySE->HasPilot())
-        //m_targetPoint.MakeRandomPointOnSphereLayer(-2500, 2500);   disabled for testing
+    /* disabled for testing
+     * if (mySE->HasPilot())
+     *   m_targetPoint.MakeRandomPointOnSphereLayer(-2500, 2500);   disabled for testing
+     */
 
     // reset heading for updated targPoint
     GVector toVec(m_position, m_targetPoint);
@@ -2091,10 +2079,10 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
                 mySE->SysBubble()->GetID(), m_targBubble->GetID());
         }
 
-        if (IsTurn()) {
-            InitTurn();
-        } else {
+        if (!IsMoving()) {
             BeginMovement();
+        } else if (IsTurn()) {
+            InitTurn();
         }
 
         // reset ball mode as it was changed in SSF()
@@ -2151,7 +2139,11 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
      *   NOTE:  warp bubble in path (or within 150km of m_targetPoint) will change m_targetDistance and m_targetPoint
      *   however, this does NOT affect original calculations for energy needed, etc...
      */
-     /** @todo  does this apply for ANY bubble along warp route or just end? */
+
+    /** @todo  does this apply for ANY bubble along warp route or just end?
+     * would be fun to check entire route for bubble...can bm along route to add bubble
+     * however, this will take a bit to implement
+     */
     if (m_targBubble->HasWarpBubble())
         if (!mySE->GetSelf()->HasAttribute(AttrWarpBubbleImmune)) {
             /*  there is a bubble here and ship isnt immune.
@@ -2177,18 +2169,25 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
             InitTurn();
     } else {
         // everything else will use code from Turn() and BeginMovement()
-        if (IsTurn()) {
-            InitTurn();
-        } else {
+        if (!IsMoving()) {
             BeginMovement();
+        } else if (IsTurn()) {
+            InitTurn();
         }
     }
 
     if (is_log_enabled(DESTINY__WARP_DEBUG)) {
-        // make marker at stop point
+        // marker for ship's stop point
         std::string str = "Warp Stop Point - ";
         str += mySE->GetName();
         MarkPoint(m_targetPoint, str, str);
+        str.clear();
+
+        // marker for ship's drop out of warp point
+        GPoint dropPos(m_targetHeading * m_speedToLeaveWarp * m_agility);
+        str = "Warp Drop Point - ";
+        str += mySE->GetName();
+        MarkPoint(m_targetPoint - dropPos, str, str);
     }
 
     // reset ball mode as it was changed in SSF()
@@ -2374,6 +2373,7 @@ void DestinyManager::Undock(GPoint dir) {
     m_targetPoint = dir * 1.0e16;
     m_shipHeading = GVector(dir);
     SetUndockSpeed();
+    // can we keep undocking until move or timer runout?
     if (mySE->IsShipSE())
         mySE->GetShipSE()->GetShipItemRef()->SetUndocking(false);
 }
@@ -2381,10 +2381,6 @@ void DestinyManager::Undock(GPoint dir) {
 void DestinyManager::SetUndockSpeed() {
     //start ship movement @ max velocity for undocking.
     // this simulates being forcefully "ejected" from station (and is currently off)
-    m_stop = false;
-    m_accel = true;
-    m_orbiting = 0;
-    m_stateStamp = sEntityList.GetStamp();
     m_changeDelay = true;   // skip next tic before making change
     m_shipAccelTime = 0.8f;
     m_prevSpeedFraction = 0.0f;
@@ -2765,11 +2761,11 @@ Battleships                             0.155
 
     // this will catch speeds/needs for all ships (player and npc), and is easier to do here.
     if (sRef->HasAttribute(AttrWarpSpeedMultiplier))
-        m_shipWarpSpeed = sRef->GetAttribute(AttrWarpSpeedMultiplier).get_float();
+        m_shipWarpSpeed = sRef->GetAttribute(AttrWarpSpeedMultiplier).get_double();
     if (sRef->HasAttribute(AttrMaxVelocity))
         m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
     if (sRef->HasAttribute(AttrWarpCapacitorNeed)) {
-        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_double() * 2; //modified
+        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_double() * 1.5; // +50%
     } else {
         m_warpCapacitorNeed = 0.000000108911;   // arbitrary
     }
@@ -2788,8 +2784,8 @@ Battleships                             0.155
      * 75% of sub-warp max speed, or 100m/s, whichever is the lower.
      */
     m_speedToLeaveWarp = m_maxShipSpeed * 0.75f;
-    if ((m_speedToLeaveWarp < 100) and (m_maxShipSpeed > 135))      // 75% of 135 is 101.25
-        m_speedToLeaveWarp = 100;
+    if ((m_speedToLeaveWarp < 101) and (m_maxShipSpeed > 135))      // 75% of 135 is 101.25
+        m_speedToLeaveWarp = 101;
 
     //TimeToWarp = ((ln(2) * m_inertiaMod * m_mass) / 500000);  //18.922
     //TimeToWarp = (ln(0.25) * m_agility);						//18.922
