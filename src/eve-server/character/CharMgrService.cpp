@@ -301,7 +301,7 @@ PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
     if (args.arg2 < call.client->GetBalance()) {
         std::string reason = "Placing Bounty on ";
         reason += m_db.GetCharName(args.arg1);
-        AccountService::TranserFunds(call.client->GetCharacterID(), corpCONCORD, args.arg2, reason, Journal::EntryType::Bounty, args.arg1);
+        AccountService::TransferFunds(call.client->GetCharacterID(), corpCONCORD, args.arg2, reason, Journal::EntryType::Bounty, args.arg1);
         m_db.AddBounty(args.arg1, call.client->GetCharacterID(), args.arg2);
         // new system gives target a mail from concord about placement of bounty and char name placing it.
     } else {

@@ -176,7 +176,7 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
     reason += call.client->GetName();
     reason += " in ";   // just extra shit.  this will show in tooltip.  ;)
     reason += stDataMgr.GetStationName(call.client->GetStationID());
-    AccountService::TranserFunds(
+    AccountService::TransferFunds(
                                  call.client->GetCorporationID(),
                                  call.client->GetStationID(),
                                  sConfig.rates.medalCreateCost,
@@ -342,7 +342,7 @@ PyResult CorporationService::Handle_GiveMedalToCharacters(PyCallArgs &call)
     //take the money, send wallet blink event record the transaction in corp journal.
     std::string reason = "DESC: Awarding Medal by ";
     reason += call.client->GetName();
-    AccountService::TranserFunds(
+    AccountService::TransferFunds(
                                  call.client->GetCorporationID(),
                                  call.client->GetStationID(),
                                  cost,

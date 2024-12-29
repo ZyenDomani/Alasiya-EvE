@@ -452,7 +452,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         reason += " by ";
         reason += call.client->GetName();
     }
-    AccountService::TranserFunds(call.client->GetCharacterID(),
+    AccountService::TransferFunds(call.client->GetCharacterID(),
                                  stDataMgr.GetOwnerID(locationID),
                                  cost,
                                  reason.c_str(),

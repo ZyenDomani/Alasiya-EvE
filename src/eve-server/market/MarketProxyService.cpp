@@ -341,14 +341,14 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         _log(MARKET__DEBUG, "PlaceCharOrder(buy) - %s: Escrow: %.2f, Fee: %.2f", args.useCorp?"Corp":"Player", money, fee);
         // take monies and record actions
         if (args.useCorp) {
-            AccountService::TranserFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), fee, \
+            AccountService::TransferFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), fee, \
                 reason.c_str(), Journal::EntryType::Brokerfee, orderID, accountKey, Account::KeyType::Cash, call.client);
-            AccountService::TranserFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), money, \
+            AccountService::TransferFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), money, \
                 reason.c_str(), Journal::EntryType::MarketEscrow, orderID, accountKey, Account::KeyType::Escrow, call.client);
         } else {
-            AccountService::TranserFunds(call.client->GetCharacterID(), stDataMgr.GetOwnerID(args.stationID), fee, \
+            AccountService::TransferFunds(call.client->GetCharacterID(), stDataMgr.GetOwnerID(args.stationID), fee, \
                 reason.c_str(), Journal::EntryType::Brokerfee, orderID, accountKey);
-            AccountService::TranserFunds(call.client->GetCharacterID(), stDataMgr.GetOwnerID(args.stationID), money, \
+            AccountService::TransferFunds(call.client->GetCharacterID(), stDataMgr.GetOwnerID(args.stationID), money, \
                 reason.c_str(), Journal::EntryType::MarketEscrow, orderID, accountKey, Account::KeyType::Escrow);
         }
 
@@ -533,10 +533,10 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 
         // take monies and record actions (taxes are paid when item sells)
         if (args.useCorp) {
-            AccountService::TranserFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), fee, \
+            AccountService::TransferFunds(call.client->GetCorporationID(), stDataMgr.GetOwnerID(args.stationID), fee, \
                     reason.c_str(), Journal::EntryType::Brokerfee, orderID, accountKey, Account::KeyType::Cash, call.client);
         } else {
-            AccountService::TranserFunds(call.client->GetCharacterID(), stDataMgr.GetOwnerID(args.stationID), fee, \
+            AccountService::TransferFunds(call.client->GetCharacterID(), stDataMgr.GetOwnerID(args.stationID), fee, \
                     reason.c_str(), Journal::EntryType::Brokerfee, orderID, accountKey);
         }
     }
@@ -566,7 +566,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
     float money = (args.price - args.newPrice) * args.volRemaining;
     std::string reason = "DESC:  Altering Market Order #";
     reason += std::to_string(args.orderID);
-    AccountService::TranserFunds(call.client->GetCharID(), stDataMgr.GetOwnerID(args.stationID), money,
+    AccountService::TransferFunds(call.client->GetCharID(), stDataMgr.GetOwnerID(args.stationID), money,
                         reason.c_str(), Journal::EntryType::MarketEscrow, args.orderID,
                         Account::KeyType::Cash, Account::KeyType::Escrow);
 
@@ -600,7 +600,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
         // send wallet blink event and record the transaction in their journal.
         std::string reason = "DESC:  Canceling Market Order #";
         reason += std::to_string(args.orderID);
-        AccountService::TranserFunds(stDataMgr.GetOwnerID(oInfo.stationID), call.client->GetCharID(), money,
+        AccountService::TransferFunds(stDataMgr.GetOwnerID(oInfo.stationID), call.client->GetCharID(), money,
                                      reason.c_str(), Journal::EntryType::MarketEscrow, args.orderID,
                                      Account::KeyType::Escrow, Account::KeyType::Cash);
     } else {

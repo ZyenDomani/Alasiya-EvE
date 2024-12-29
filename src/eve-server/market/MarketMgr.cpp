@@ -422,7 +422,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         float tax = EvEMath::Market::SalesTax(lvl);
         tax *= money;
         _log(MARKET__DEBUG, "ExecuteBuyOrder - Buyer is Player: Price: %.2f, Tax: %.2f", money, tax);
-        AccountService::TranserFunds(oInfo.ownerID, corpSCC, tax, reason.c_str(), \
+        AccountService::TransferFunds(oInfo.ownerID, corpSCC, tax, reason.c_str(), \
                         Journal::EntryType::TransactionTax, orderID);
     } else if (isCorp) {
         // is corp taxes modified by using character skills?  im thinking yes...
@@ -437,7 +437,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         float tax = EvEMath::Market::SalesTax(lvl);
         tax *= money;
         _log(MARKET__DEBUG, "ExecuteBuyOrder - Buyer is Corp: Price: %.2f, Tax: %.2f", money, tax);
-        AccountService::TranserFunds(oInfo.ownerID, corpSCC, tax, reason.c_str(), \
+        AccountService::TransferFunds(oInfo.ownerID, corpSCC, tax, reason.c_str(), \
                         Journal::EntryType::TransactionTax, orderID, oInfo.accountKey);
     }
     // npc buyers dont pay tax
@@ -449,12 +449,12 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     // this is fulfilling a buy order.  seller will receive isk from escrow if buyer is player or corp
     if (isPlayer or isCorp) {
         //give the money to the seller from the escrow acct at station
-        AccountService::TranserFunds(stDataMgr.GetOwnerID(args.stationID), seller->GetCharacterID(), \
+        AccountService::TransferFunds(stDataMgr.GetOwnerID(args.stationID), seller->GetCharacterID(), \
                                 money, reason.c_str(), Journal::EntryType::MarketTransaction, orderID, \
                                 Account::KeyType::Escrow, accountKey);
     } else {
         // npc buyer.  direct xfer to seller
-        AccountService::TranserFunds(oInfo.ownerID, seller->GetCharacterID(), money, reason.c_str(), \
+        AccountService::TransferFunds(oInfo.ownerID, seller->GetCharacterID(), money, reason.c_str(), \
                                     Journal::EntryType::MarketTransaction, orderID, Account::KeyType::Cash, accountKey);
     }
 
@@ -535,7 +535,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
     std::string reason = "DESC:  Buying market items in ";
     reason += stDataMgr.GetStationName(args.stationID).c_str();
     // this will throw if funds not available.
-    AccountService::TranserFunds(buyer->GetCharacterID(), oInfo.ownerID, money, reason.c_str(), \
+    AccountService::TransferFunds(buyer->GetCharacterID(), oInfo.ownerID, money, reason.c_str(), \
                     Journal::EntryType::MarketTransaction, orderID, Account::KeyType::Cash);
 
     // get data needed and compute tax
@@ -543,7 +543,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
     float tax = EvEMath::Market::SalesTax(buyer->GetChar()->GetSkillLevel(EvESkill::Accounting), buyer->GetChar()->GetSkillLevel(EvESkill::TaxEvasion));
     tax *= money;
     _log(MARKET__DEBUG, "ExecuteSellOrder - Buyer is Player: Price: %.2f, Tax: %.2f", money, tax);
-    AccountService::TranserFunds(buyer->GetCharacterID(), corpSCC, money, reason.c_str(), \
+    AccountService::TransferFunds(buyer->GetCharacterID(), corpSCC, money, reason.c_str(), \
             Journal::EntryType::TransactionTax, orderID, Account::KeyType::Cash);
 
     // after money is xferd, create and add item.

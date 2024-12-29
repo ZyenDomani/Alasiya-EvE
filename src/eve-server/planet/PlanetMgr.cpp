@@ -99,7 +99,7 @@ bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
     uint32 ownerID = corpCONCORD;
     if (m_planet->SystemMgr()->GetSystemSecurityRating() < 0.5)
         ownerID = corpInterbus;
-    AccountService::TranserFunds(
+    AccountService::TransferFunds(
                     m_client->GetCharacterID(),
                     ownerID,  // concord in empire, interbus otherwise
                     cost,
@@ -126,7 +126,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
             uint32 ownerID = corpCONCORD;
             if (m_planet->SystemMgr()->GetSystemSecurityRating() < 0.5)
                 ownerID = corpInterbus;
-            AccountService::TranserFunds(
+            AccountService::TransferFunds(
                         m_client->GetCharacterID(),
                         ownerID,  // concord in empire, interbus otherwise
                         90000,
@@ -235,7 +235,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     uint32 ownerID = corpCONCORD;
     if (m_planet->SystemMgr()->GetSystemSecurityRating() < 0.5)
         ownerID = corpInterbus;
-    AccountService::TranserFunds(
+    AccountService::TransferFunds(
                 m_client->GetCharacterID(),
                 ownerID,  // concord in empire, interbus otherwise
                 cost,

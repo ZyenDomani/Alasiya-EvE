@@ -1038,7 +1038,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
         //take the money, send wallet blink event record the transaction in their journal.
         std::string reason = "DESC:  Launching PI items from ";
         reason += m_pSE->GetName();
-        AccountService::TranserFunds(
+        AccountService::TransferFunds(
                     m_client->GetCharacterID(),
                     corpCONCORD,  // pSysMgr->GetSovHolder(),
                     cost,
@@ -1115,7 +1115,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
         //take the money, send wallet blink event record the transaction in their journal.
         std::string reason = "DESC:  Importing items to ";
         reason += m_pSE->GetName();
-        AccountService::TranserFunds(
+        AccountService::TransferFunds(
                             m_client->GetCharacterID(),
                             m_pSE->GetCustomsOffice()->GetOwnerID(),
                             cost,
@@ -1167,7 +1167,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
         //take the money, send wallet blink event record the transaction in their journal.
         std::string reason = "DESC:  Exporting items from ";
         reason += m_pSE->GetName();
-        AccountService::TranserFunds(
+        AccountService::TransferFunds(
                             m_client->GetCharacterID(),
                             m_pSE->GetCustomsOffice()->GetOwnerID(),
                             cost,

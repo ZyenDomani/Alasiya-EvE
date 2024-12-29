@@ -620,7 +620,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     reason += " (";
     reason += args.corpTicker;
     reason += ")";
-    AccountService::TranserFunds(
+    AccountService::TransferFunds(
                                 pClient->GetCharacterID(),
                                 m_db.GetStationOwner(pClient->GetStationID()),  // station owner files paperwork, this is fee for that
                                 corp_cost,
@@ -828,7 +828,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call)
 
     std::string reason = "Change Corporation Logo.";
     // move cash and record the transaction.
-    AccountService::TranserFunds(
+    AccountService::TransferFunds(
         call.client->GetCharacterID(),
                                  m_db.GetStationOwner(call.client->GetStationID()),
                                  logo_change,
@@ -932,7 +932,7 @@ PyResult CorpRegistryBound::Handle_CreateRecruitmentAd(PyCallArgs &call) {
         case 28:   amount = 7500000;  break;
     }
 
-    AccountService::TranserFunds(m_corpID, call.client->GetCorpHQ(), amount, "Initial Advert Time for Corp Recruit Advert", Journal::EntryType::CorporationAdvertisementFee, call.client->GetCharacterID());
+    AccountService::TransferFunds(m_corpID, call.client->GetCorpHQ(), amount, "Initial Advert Time for Corp Recruit Advert", Journal::EntryType::CorporationAdvertisementFee, call.client->GetCharacterID());
 
     int32 adID = m_db.CreateAdvert(call.client, m_corpID, args.typeMask, args.days, m_db.GetCorpMemberCount(m_corpID), args.description, args.channelID, args.title);
 
@@ -987,7 +987,7 @@ PyResult CorpRegistryBound::Handle_UpdateRecruitmentAd(PyCallArgs &call) {
             case 14:   amount = 3500000;  break;
         }
 
-        AccountService::TranserFunds(m_corpID, call.client->GetCorpHQ(), amount, "Added Advert Time to Corp Recruit Advert", Journal::EntryType::CorporationAdvertisementFee);
+        AccountService::TransferFunds(m_corpID, call.client->GetCorpHQ(), amount, "Added Advert Time to Corp Recruit Advert", Journal::EntryType::CorporationAdvertisementFee);
 
         // do some funky shit to determine days left for advert then add additional time if requested
         int64 time = m_db.GetAdvertTime(args.adID, m_corpID);
@@ -1370,7 +1370,7 @@ PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
         std::string reason = "Dividend Payment from ";
     reason += ""; //corp name here
     for (auto &cur : toIDs)
-        AccountService::TranserFunds(m_corpID, cur, amount, reason.c_str(), Journal::EntryType::CorporationDividendPayment, call.client->GetCharacterID());
+        AccountService::TransferFunds(m_corpID, cur, amount, reason.c_str(), Journal::EntryType::CorporationDividendPayment, call.client->GetCharacterID());
 
     return nullptr;
 }

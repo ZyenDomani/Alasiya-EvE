@@ -40,7 +40,7 @@ public:
 
     // this moves currency, adds journal entries, and sends blink event. handles applicable corp taxes internally.
     //  will throw if fails
-    static void TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason = "", \
+    static void TransferFunds(uint32 fromID, uint32 toID, double amount, std::string reason = "", \
                             uint8 entryTypeID = Journal::EntryType::Undefined, uint32 referenceID = 0, \
                             uint16 fromKey = Account::KeyType::Cash, uint16 toKey = Account::KeyType::Cash, \
                             Client* pClient=nullptr);

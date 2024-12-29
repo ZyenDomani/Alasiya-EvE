@@ -192,7 +192,7 @@ PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
     reason += call.client->GetSystemName();
     reason += " at ";
     reason += stDataMgr.GetStationName(call.client->GetStationID());
-    AccountService::TranserFunds(
+    AccountService::TransferFunds(
                     call.client->GetCharacterID(),
                     call.client->GetStationID(),
                     cost,
@@ -233,7 +233,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     reason += pStationItem->itemName();
     reason += " by ";
     reason += pClient->GetCharName();
-    AccountService::TranserFunds(pClient->GetCorporationID(), pStationItem->GetOwnerID(), arg.arg, reason.c_str(), Journal::EntryType::OfficeRentalFee);
+    AccountService::TransferFunds(pClient->GetCorporationID(), pStationItem->GetOwnerID(), arg.arg, reason.c_str(), Journal::EntryType::OfficeRentalFee);
 
     OfficeData odata = OfficeData();
         // should corpname be in char's corp data?  i dont like hitting db for this.  is it even needed?

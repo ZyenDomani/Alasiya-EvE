@@ -224,7 +224,7 @@ PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
         reason += args.reason;
     }
 
-    TranserFunds(call.client->GetCharacterID(), args.toID, args.amount, reason.c_str(), Journal::EntryType::PlayerDonation, call.client->GetCharacterID());
+    TransferFunds(call.client->GetCharacterID(), args.toID, args.amount, reason.c_str(), Journal::EntryType::PlayerDonation, call.client->GetCharacterID());
     return nullptr;
 }
 
@@ -257,17 +257,17 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
         reason += call.client->GetCharName();
     }
 
-    TranserFunds(call.client->GetCorporationID(), args.toID, args.amount, reason.c_str(), Journal::EntryType::CorporationAccountWithdrawal, \
+    TransferFunds(call.client->GetCorporationID(), args.toID, args.amount, reason.c_str(), Journal::EntryType::CorporationAccountWithdrawal, \
                 call.client->GetCharacterID(), args.fromAcctKey, toAcctKey, call.client);
     return nullptr;
 }
 
-void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason /*""*/, uint8 entryTypeID /*Journal::EntryType::Undefined*/, \
+void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, std::string reason /*""*/, uint8 entryTypeID /*Journal::EntryType::Undefined*/, \
                                   uint32 referenceID/*0*/, uint16 fromKey/*Account::KeyType::Cash*/, uint16 toKey/*Account::KeyType::Cash*/,
                                   Client* pClient/*nullptr*/)
 {
     if (is_log_enabled(ACCOUNT__TRACE))
-        _log(ACCOUNT__TRACE, "TranserFunds() - from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, fKey: %u, tKey: %u", \
+        _log(ACCOUNT__TRACE, "TransferFunds() - from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, fKey: %u, tKey: %u", \
                             fromID, toID, entryTypeID, referenceID, amount, fromKey, toKey);
     uint8 fromCurrency = Account::CreditType::ISK;
     if (IsAUR(fromKey)) {
@@ -313,7 +313,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
             // this will throw if it fails
             pClientTo->AddBalance(amount, toCurrency);
             /** @todo if this DOES fail, return funds to origin.  this needs a try/catch block */
-            //TranserFunds(corpSCC, fromID, amount, reason, Journal::EntryType::Undefined, referenceID, fromKey, fromKey);
+            //TransferFunds(corpSCC, fromID, amount, reason, Journal::EntryType::Undefined, referenceID, fromKey, fromKey);
             newBalanceTo = pClientTo->GetBalance(toCurrency);
         }
         AccountDB::AddJournalEntry(toID, entryTypeID, fromID, toID, toCurrency, toKey, amount, newBalanceTo, reason, referenceID);
@@ -324,7 +324,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         HandleCorpTransaction(toID, entryTypeID, fromID, userID?userID:toID, toCurrency, toKey, amount, reason, referenceID);
         return;
     } else {
-        _log(ACCOUNT__TRACE, "TranserFunds() - toID: %s(%u) is neither player nor player corp.  Not sending update.", \
+        _log(ACCOUNT__TRACE, "TransferFunds() - toID: %s(%u) is neither player nor player corp.  Not sending update.", \
                 sDataMgr.GetCorpName(toID).c_str(), toID);
         return;
     }
@@ -367,13 +367,13 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         // Corp Taxed payment types
         case Journal::EntryType::BountyPrize:
         case Journal::EntryType::BountyPrizes: {
-            TranserFunds(toID, corpID, tax, reason.c_str(), Journal::EntryType::CorporationTaxNpcBounties, referenceID);
+            TransferFunds(toID, corpID, tax, reason.c_str(), Journal::EntryType::CorporationTaxNpcBounties, referenceID);
         } break;
         case Journal::EntryType::AgentMissionReward: {
-            TranserFunds(toID, corpID, tax, reason.c_str(), Journal::EntryType::CorporationTaxAgentRewards, referenceID);
+            TransferFunds(toID, corpID, tax, reason.c_str(), Journal::EntryType::CorporationTaxAgentRewards, referenceID);
         } break;
         case Journal::EntryType::AgentMissionTimeBonusReward: {
-            TranserFunds(toID, corpID, tax, reason.c_str(), Journal::EntryType::CorporationTaxAgentBonusRewards, referenceID);
+            TransferFunds(toID, corpID, tax, reason.c_str(), Journal::EntryType::CorporationTaxAgentBonusRewards, referenceID);
         } break;
     }
 }
