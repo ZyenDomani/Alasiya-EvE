@@ -136,7 +136,8 @@ PyCallable_Make_InnerDispatcher(PlanetMgrService)
 
 PlanetMgrService::PlanetMgrService(PyServiceMgr *mgr)
 : PyService(mgr, "planetMgr"),  /*planetBaseBroker is for dust*/
-  m_dispatch(new Dispatcher(this))
+m_dispatch(new Dispatcher(this)),
+m_db(nullptr)
 {
     _SetCallDispatcher(m_dispatch);
 

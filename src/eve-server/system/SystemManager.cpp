@@ -1503,6 +1503,14 @@ void SystemManager::GetClientList(std::vector< Client* >& cVec)
         cVec.push_back(cur.second);
 }
 
+SystemEntity* SystemManager::GetEntityByID ( uint32 itemID ) {
+    // only used by Cmd_Inventory()
+    if (m_entities.find(itemID) == m_entities.end())
+        return nullptr;
+
+    return m_entities.find(itemID)->second;
+}
+
 void SystemManager::DScan(int64 range, const GPoint& position, std::vector<SystemEntity*>& vector )
 {
     /** @todo finish this for correct dscan entity reporting

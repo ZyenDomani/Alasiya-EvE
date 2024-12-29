@@ -31,7 +31,7 @@ boost::asio::const_buffers_1 ImageServerConnection::_responseRedirectBegin = boo
 boost::asio::const_buffers_1 ImageServerConnection::_responseRedirectEnd = boost::asio::buffer("\r\n\r\n", 4);
 
 ImageServerConnection::ImageServerConnection(boost::asio::io_service& io)
-    : _socket(io)
+    : _socket(io), _id(0), _size(0)
 {
 }
 

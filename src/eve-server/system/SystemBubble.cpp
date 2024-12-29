@@ -146,7 +146,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u is in %u but this is %u.", \
                                 pSE->GetID(), pSE->SystemMgr()->GetID(), m_systemID);
             itr = m_dynamicEntities.erase(itr);
-            pSE = nullptr;
+            //pSE = nullptr;
             continue;
         } */
 
@@ -165,7 +165,6 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
         }
         ++itr;
     }
-    pSE = nullptr;
 
     if (!m_players.empty() and m_spawned)
         ResetBubbleRatSpawn();

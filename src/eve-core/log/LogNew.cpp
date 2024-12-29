@@ -59,7 +59,8 @@ NewLog::NewLog()
 
 NewLog::NewLog(std::string logPath)
 : mLogfile( NULL ),
-mTime( 0 )
+mTime( 0 ),
+m_initialized(false)
 {
     // open default logfile
     if ( logPath.empty() )
@@ -93,7 +94,7 @@ void NewLog::InitializeLogging( std::string logPath )
 
     m_initialized = true;
 
-    SetLogfileDefault(logPath);
+    SetLogfileDefault(std::move(logPath));
 }
 
 void NewLog::Log( const char* source, const char* fmt, ... )

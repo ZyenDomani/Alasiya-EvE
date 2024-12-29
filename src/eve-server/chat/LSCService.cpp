@@ -1257,7 +1257,7 @@ void Client::SelfEveMail(const char* subject, const char* fmt, ...)
     va_list args;
     va_start(args, fmt);
 
-    char* str = nullptr;
+    char* str(nullptr);
     vasprintf(&str, fmt, args);
     assert(str);
 

@@ -34,7 +34,7 @@ class LiveUpdateDB : public Singleton<LiveUpdateDB>
 {
 private:
 
-    PyList* m_updateList = nullptr;
+    PyList* m_updateList;
 
 public:
     void Init();

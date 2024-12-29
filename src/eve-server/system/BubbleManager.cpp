@@ -337,7 +337,7 @@ void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
             sig.scanGroupID = Scanning::Group::Signature;
             sig.dungeonType = Dungeon::Type::None;
         anom.push_back(sig);
-        cSE = nullptr;
+        //cSE = nullptr;
     }
 }
 
@@ -362,7 +362,7 @@ void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSi
             sig.scanGroupID = Scanning::Group::Signature;
             sig.dungeonType = Dungeon::Type::None;
         anom.push_back(sig);
-        cSE = nullptr;
+        //cSE = nullptr;
     }
 }
 

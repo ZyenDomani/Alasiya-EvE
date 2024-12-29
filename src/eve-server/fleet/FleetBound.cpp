@@ -234,7 +234,7 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
             member.wingID = pChar->wingID();
             member.timestamp = pChar->fleetJoinTime();
         dict2->SetItem(new PyInt(member.charID), member.Encode());
-        pChar = nullptr;
+        //pChar = nullptr;
     }
 
     rsp.members = dict2;
@@ -536,7 +536,7 @@ PyResult FleetBound::Handle_GetFleetComposition(PyCallArgs &call) {
             dict->SetItemString("skillIDs", skillIDs);
         }
         list->AddItem(new PyObject("util.KeyVal", dict));
-        pChar = nullptr;
+        //pChar = nullptr;
     }
 
     if (is_log_enabled(FLEET__DEBUG))

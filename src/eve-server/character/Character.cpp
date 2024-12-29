@@ -1032,7 +1032,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
             skill->SetFlag(flagSkill, true);
             skill->SaveItem();
             m_skillQueue.erase(m_skillQueue.begin());
-            skill = nullptr;
+            //skill = nullptr;
             m_inTraining = nullptr;
             continue;
         }
@@ -1105,7 +1105,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
             }
 
             // clear variables and continue
-            skill = nullptr;
+            //skill = nullptr;
             m_inTraining = nullptr;
             continue;
         }

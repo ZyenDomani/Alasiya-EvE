@@ -151,7 +151,7 @@ bool ModuleManager::Initialize() {
                         cur->SetAttribute(AttrQuantity, cur->quantity(), false);   // OMAC
                         m_charges.emplace(cur->flag(), cur);
                     }
-                    pMod = nullptr;
+                    //pMod = nullptr;
                 } break;
             }
         }
@@ -1384,7 +1384,7 @@ void ModuleManager::GetShipRigs(std::vector< uint32 >& modVec)
         pMod = GetModule((EVEItemFlags)i);
         if (pMod != nullptr)
             modVec.push_back(pMod->itemID());
-        pMod = nullptr;
+        //pMod = nullptr;
     }
 }
 
@@ -1396,7 +1396,7 @@ void ModuleManager::GetShipSubSystems(std::vector< uint32 >& modVec)
         pMod = GetModule((EVEItemFlags)i);
         if (pMod != nullptr)
             modVec.push_back(pMod->itemID());
-        pMod = nullptr;
+        //pMod = nullptr;
     }
 }
 
@@ -1410,7 +1410,7 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
         pMod = GetModule(cur);
         if (pMod != nullptr)
             tmpList.insert(std::pair<uint8, GenericModule*>((uint8)pMod->flag(), pMod));
-        pMod = nullptr;
+        //pMod = nullptr;
     }
     if (tmpList.empty())
         return;

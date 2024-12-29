@@ -43,7 +43,6 @@ public:
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
-    uint32 nextBookmarkID;
 
     BookmarkDB m_db;
 

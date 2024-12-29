@@ -73,22 +73,23 @@ class TradeSession
     friend class TradeService;
 
 public:
-    TradeSession() {}
+    TradeSession() { m_tradeSession(TradeSession::Session()); }
     ~TradeSession() {}
 
     struct Session {
+        bool myState;
+        bool herState;
         uint32 containerID;
         uint32 stationID;
         uint32 myID;
         uint32 herID;
-        bool myState;
-        bool herState;
         double myMoney;
         double herMoney;
         int64 fileTime;
     };
 
     struct TradeItems {
+        bool singleton;
         uint32 itemID;
         uint32 typeID;
         uint32 ownerID;
@@ -97,7 +98,6 @@ public:
         uint32 quantity;
         uint32 groupID;
         uint32 categoryID;
-        bool singleton;
         std::string customInfo;
     };
 

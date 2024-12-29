@@ -73,7 +73,8 @@ PyCallable_Make_InnerDispatcher(PlanetORB)
 
 PlanetORB::PlanetORB(PyServiceMgr *mgr)
 : PyService(mgr, "planetOrbitalRegistryBroker"),
-  m_dispatch(new Dispatcher(this))
+  m_dispatch(new Dispatcher(this)),
+  m_db(nullptr)
 {
     _SetCallDispatcher(m_dispatch);
 
