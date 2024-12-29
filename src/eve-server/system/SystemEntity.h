@@ -514,7 +514,7 @@ public:
 
 /* Non-Static / Non-Mobile / Destructible / Celestial Objects
  * - POS Structures, Outposts, Deployables, empty Ships, Asteroids
- *- has TargetMgr  has DestinyMgr*/
+ *- has TargetMgr  no DestinyMgr*/
 class ObjectSystemEntity : public SystemEntity {
 public:
     // default c'tor

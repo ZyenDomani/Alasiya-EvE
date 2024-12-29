@@ -107,23 +107,20 @@ void SystemBubble::Process()
      *    missions for ??
      *    incursions for ??
      */
-    if (m_belt and (m_system->GetSystemSecurityRating() > 0.9f)) // make config option here to spawn rats in secure empire space?   nope.
+
+    // config for belt or gate rats in secure empire space?  nope.  its secure
+    if ((m_belt or m_gate) and (m_system->GetSystemSecurityRating() > 0.9f))
         return;
-    if (m_spawned) {
-        m_spawnTimer.Disable();
-        return;
-    }
 
     // this must run a second time for spawn to actually hit.  first time only sets main system spawn timer.
     // may be nuts, but will remain enabled as long as player in bubble and bubble has no rats.
     if (m_spawnTimer.Enabled()) {
-        if (m_spawnTimer.Check()) {
-            if (!m_players.empty()) {
-                m_system->DoSpawnForBubble(this);
-            } else {
-                m_spawnTimer.Disable();
-            }
+        if (m_spawned or m_players.empty()) {
+            m_spawnTimer.Disable();
+            return;
         }
+        if (m_spawnTimer.Check())
+            m_system->DoSpawnForBubble(this);
     }
 }
 
@@ -132,47 +129,43 @@ void SystemBubble::Process()
 //if any entity is no longer in the bubble, they are removed
 //from the bubble and stuck into the vector for re-classification.
 void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
-    DynamicSystemEntity* pDSE(nullptr);
+    SystemEntity* pSE(nullptr);
     std::map<uint32, SystemEntity*>::iterator itr = m_dynamicEntities.begin();
     while (itr != m_dynamicEntities.end()) {
-        if (itr->second == nullptr) {
+        pSE = itr->second;
+        if (pSE == nullptr) {
             itr = m_dynamicEntities.erase(itr);
             continue;
         }
-	// this is not right.  there are other SE here that are NOT dSE which returns nullptr and they get erased from bubble map.
-	// go thru all possibilities here and write generic code instead of specific checks for all instances
-        pDSE = itr->second->GetDynamicSE();
-        if (pDSE == nullptr) {
+
+        /*
+        if (pSE->SystemMgr()->GetID() != m_systemID) {
+            // this entity is in a different system!  this shouldnt happen....
+            // remove this entity, insert into wanderers, and continue
+            wanderers.push_back( pSE );
+            _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u is in %u but this is %u.", \
+                                pSE->GetID(), pSE->SystemMgr()->GetID(), m_systemID);
             itr = m_dynamicEntities.erase(itr);
+            pSE = nullptr;
             continue;
-        }
-        if ((pDSE->DestinyMgr() == nullptr) or pDSE->DestinyMgr()->IsWarping()) {
+        } */
+
+        if ((pSE->DestinyMgr() != nullptr) and pSE->DestinyMgr()->IsWarping()) {
             ++itr;
             continue;
         }
-        // is this shit really needed??
-        if (pDSE->SystemMgr()->GetID() != m_systemID) {
-            // this entity is in a different system!  this shouldnt happen....
-            // remove this entity, insert into wanderers, and continue
-            wanderers.push_back(pDSE);
-            _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u is in %u but this is %u.", \
-                                pDSE->GetID(), pDSE->SystemMgr()->GetID(), m_systemID);
-            itr = m_dynamicEntities.erase(itr);
-            pDSE = nullptr;
-            continue;
-        }
-        if (!InBubble(pDSE->GetPosition())) {
-            wanderers.push_back(pDSE);
+        if (!InBubble(pSE->GetPosition())) {
+            wanderers.push_back( pSE );
             //17:38:57 [DestinyWarning] SystemBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
             _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
-                        pDSE->GetID(), pDSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);
+                        pSE->GetID(), pSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);
             itr = m_dynamicEntities.erase(itr);
-            pDSE = nullptr;
+            pSE = nullptr;
             continue;
         }
         ++itr;
     }
-    pDSE = nullptr;
+    pSE = nullptr;
 
     if (!m_players.empty() and m_spawned)
         ResetBubbleRatSpawn();
