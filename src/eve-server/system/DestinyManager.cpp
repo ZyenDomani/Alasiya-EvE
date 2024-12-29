@@ -75,11 +75,12 @@ DestinyManager::~DestinyManager() {
 void DestinyManager::Process() {
     double profileStartTime(GetTimeUSeconds());
 
-    /*  not implemented yet...
+    //  frozen is used by cyno, siege, others?*
     if (mySE->IsFrozen()) {
-        Halt();
+        if (!m_stop)
+            Halt();
         return;
-    }  */
+    }
 
     using namespace Destiny;
     switch(m_ballMode) {
@@ -632,7 +633,7 @@ void DestinyManager::MoveObject() {
         // reset m_moveTime and skip this tic
         // only used by undock
         m_changeDelay = false;
-        m_moveTime = GetTimeMSeconds() - EvE::Time::Second;
+        //m_moveTime = GetTimeMSeconds() - EvE::Time::Second;
         m_stateStamp = sEntityList.GetStamp();
         _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - ChangeDelay - %s(%u): stateStamp: %u", \
                 mySE->GetName(), mySE->GetID(), m_stateStamp);
@@ -706,22 +707,22 @@ void DestinyManager::MoveObject() {
 
     if ((timeStamp > m_shipAccelTime) and (m_timeFraction > (1 - ASF_CHECK))) {
         if (m_decel) {
-            m_decel = false;
-            m_prevSpeed = 0.0f;
-            m_prevSpeedFraction = 0.0f;
-
             if (is_log_enabled(DESTINY__MOVE_TRACE))
                 _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) has decel'd from %.2fm/s to %.2fm/s in %.3fs.", \
                 mySE->GetName(), mySE->GetID(), m_prevSpeed, m_maxSpeed * m_activeSpeedFraction, timeStamp);
-        }
-        if (m_accel) {
-            m_accel = false;
+
+            m_decel = false;
             m_prevSpeed = 0.0f;
             m_prevSpeedFraction = 0.0f;
-
+        }
+        if (m_accel) {
             if (is_log_enabled(DESTINY__MOVE_TRACE))
                 _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) has accel'd from %.2fm/s to %.2fm/s in %.3fs.", \
                 mySE->GetName(), mySE->GetID(), m_prevSpeed, m_maxSpeed * m_activeSpeedFraction, timeStamp);
+
+            m_accel = false;
+            m_prevSpeed = 0.0f;
+            m_prevSpeedFraction = 0.0f;
         }
 
         if (m_userSpeedFraction) {
@@ -751,7 +752,7 @@ void DestinyManager::MoveObject() {
         if (m_orbiting < Destiny::Ball::Orbit::TooClose) {
             // object is orbiting...set orbit speed correctly.
             speed *= m_maxOrbitSpeedFraction;  //<---  this may not be right.
-            move += " in orbit";
+            move = "in orbit";
         }
     } else {
         // changed speed and asf != usf
@@ -780,7 +781,10 @@ void DestinyManager::MoveObject() {
                 sLog.Warning("Destiny::MoveObject()", "decel = true, but psf = 0.");
             }
         } else if (m_tractored or m_tractorPause) {
-            ;   // do nothing here.  this is to remove error reporting from next line.
+            move = "tractored";
+        } else if (mySE->HasPilot() and mySE->GetPilot()->IsUndock()) {
+            //m_moveTime -= (EvE::Time::Second * m_alignTime);
+            move = "ejected from station";
         } else {
             sLog.Error("Destiny::MoveObject()", "%s(%u) - move checks are not set right. Acc:%s, Dec:%s, timeStamp:%.3f, Tractored:%s, TractorPause:%s", \
                     mySE->GetName(), mySE->GetID(), (m_accel ? "True" : "False"), (m_decel ? "True" : "False"), \
@@ -936,29 +940,28 @@ void DestinyManager::InitTurn()
 
     m_turnPct = 1.0f / m_alignTime;
 
+    if (is_log_enabled(DESTINY__TURN_TRACE))
+        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): pct:%.2f, alignTime:%u, mtsf:%.3f, asf:%.3f", \
+            mySE->GetName(), mySE->GetID(), m_turnPct, m_alignTime, m_turnMinFraction, m_activeSpeedFraction);
+
     // check speed for changes and set vars accordingly
     if (m_activeSpeedFraction > m_turnMinFraction) {
         m_turnDecel = true;
         m_prevSpeedFraction = m_activeSpeedFraction;
     } else {
+        // not sure what i was thinking here....probably not completely right
         m_moveTime = GetTimeMSeconds();
         UpdateVelocity(true);
     }
 
-    if (is_log_enabled(DESTINY__TURN_TRACE))
-        _log(DESTINY__TURN_TRACE, "Destiny::InitTurn() - %s(%u): pct:%.2f, alignTime:%u, mtsf:%.3f, decel: %s", \
-            mySE->GetName(), mySE->GetID(), m_turnPct, m_alignTime, m_turnMinFraction, \
-            m_turnDecel ? "true" : "false");
 }
 
 //NOTE:  new Turn() code
 // much better than old system
-void DestinyManager::Turn(float &speed, std::string &move) {
+void DestinyManager::Turn(float& speed, std::string& move) {
     double timer = GetTimeUSeconds();
-
     float change(m_turnPct * m_turnTime);
 
-    move += " in turn";
     // accel/decel in turn act different. ignore MoveObject() speed and set per turn change here (+5-9us)
     if (m_turnDecel) {
         // our speed is above min for this turn.
@@ -967,11 +970,11 @@ void DestinyManager::Turn(float &speed, std::string &move) {
             m_turnAccel = true;
             // we are now resuming accel after 1/2 turn
             m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_turnMinFraction, change * 2);
-            speed = m_maxShipSpeed * m_activeSpeedFraction;
+            //speed = m_maxShipSpeed * m_activeSpeedFraction;
             move = "continue accel in turn";
         } else {
             m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_turnMinFraction, change * 2);
-            speed = m_maxShipSpeed * m_activeSpeedFraction;
+            //speed = m_maxShipSpeed * m_activeSpeedFraction;
             move = "decel in turn";
         }
         // at this point, asf < mtsf @ InitTurn().
@@ -983,9 +986,10 @@ void DestinyManager::Turn(float &speed, std::string &move) {
     } else if (m_turnAccel) {
         // we are now resuming accel after 1/2 turn
         m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_turnMinFraction, 1.0f - (change * 2));
-        speed = m_maxShipSpeed * m_activeSpeedFraction;
         move = "accel in turn";
     }
+
+    speed = m_maxShipSpeed * m_activeSpeedFraction;
 
     // apex is current ship position + direction * (speed * 1/2 turn time)
     m_curveApex = m_curveStart + (m_origHeading * (speed * (m_alignTime * 0.5f)));
@@ -1063,15 +1067,17 @@ void DestinyManager::Turn(float &speed, std::string &move) {
         head.normalize();
         m_shipHeading = head;
 
-        sLog.Warning("turn", "calc'd in %.3fus", GetTimeUSeconds() - timer);
+        //sLog.Warning("turn", "calc'd in %.3fus", GetTimeUSeconds() - timer);
         /*  this is pretty fuckin fast (before decel checks)
          * 17:10:09 W turn: calc'd in 5.500us
          * 17:10:10 W turn: calc'd in 4.750us
          * 17:10:11 W turn: calc'd in 8.000us
+         * 20:17:29 W turn: calc'd in 14.500us
+         *
          */
         if (is_log_enabled(DESTINY__TURN_TRACE))
             _log(DESTINY__TURN_TRACE, "Destiny::Turn() - turnStamp:%u, change:%.2f, Position:%.1f,%.1f,%.1f, Heading:%.7f,%.7f,%.7f  state: %s", \
-                m_turnTime++, change, m_position.x, m_position.y, m_position.z, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, \
+                ++m_turnTime, change, m_position.x, m_position.y, m_position.z, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, \
             m_decel ? "decel" : m_accel ? "accel" : "steady");
     }
 }
@@ -2362,7 +2368,7 @@ bool DestinyManager::IsAligned(GPoint& targetPoint)
     GVector toVec(m_position, targetPoint);
     toVec.normalize();
     float dot = toVec.dotProduct(m_shipHeading);
-    float degrees = EvE::Trig::Rad2Deg(std::acos(dot));
+    float degrees = EvE::Trig::Rad2Deg(acos(dot));
     if (degrees < TURN_ALIGNMENT)
         return true;
     return false;
@@ -2373,21 +2379,20 @@ void DestinyManager::Undock(GPoint dir) {
     m_targetPoint = dir * 1.0e16;
     m_shipHeading = GVector(dir);
     SetUndockSpeed();
-    // can we keep undocking until move or timer runout?
-    if (mySE->IsShipSE())
-        mySE->GetShipSE()->GetShipItemRef()->SetUndocking(false);
 }
 
 void DestinyManager::SetUndockSpeed() {
     //start ship movement @ max velocity for undocking.
     // this simulates being forcefully "ejected" from station (and is currently off)
+    //m_accel = true;
     m_changeDelay = true;   // skip next tic before making change
     m_shipAccelTime = 0.8f;
     m_prevSpeedFraction = 0.0f;
     m_userSpeedFraction = 1.0f;
+    m_activeSpeedFraction = 1.0f;
+
     m_maxSpeed = m_maxShipSpeed;
     m_velocity = m_shipHeading * m_maxSpeed;
-    m_activeSpeedFraction = 1.0f;
 
     if (m_ballMode == Destiny::Ball::Mode::MISSILE)
         return;
@@ -2438,15 +2443,18 @@ PyResult DestinyManager::AttemptDockOperation() {
     pClient->SetStateTimer(Player::State::Dock, sConfig.world.StationDockDelay * 1000); // default @ 4sec();
     pClient->SetAutoPilot(false);
 
+    //pClient->SetDocking(true);
+
     return new PyLong(GetFileTimeNow());
 }
 
 void DestinyManager::DockingAccepted()
 {
     Stop();
-    UnCloak();
+    // does ship need to be uncloaked to dock?  probably not...
+    //UnCloak();
     Client *pClient = mySE->GetPilot();
-    // this would be an error.  only players use this method.
+    // this would be an error.  only players call this method.
     if (pClient == nullptr)
         return;
 
@@ -3227,7 +3235,7 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
                     sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
 
         //Get all clients in our system
-            // should this be bubblecast?  which would be faster?
+        // should this be bubblecast?  which would be faster?
         std::vector<Client*> cv;
         mySE->SystemMgr()->GetClientList(cv);
         for (auto const& player : cv)
@@ -3279,6 +3287,7 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
 
         //Get all clients in our system
         std::vector<Client*> cv;
+        mySE->SystemMgr()->GetClientList(cv);
         for (auto const& player : cv)
             if (player->IsInSpace()) {
                 PyIncRef(*ev);
@@ -3326,6 +3335,7 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
 
         //Get all clients in our system
         std::vector<Client*> cv;
+        mySE->SystemMgr()->GetClientList(cv);
         for (auto const& player : cv)
             if (player->IsInSpace()) {
                 PyIncRef(*up);

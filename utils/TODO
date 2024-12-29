@@ -91,10 +91,17 @@ char creation - figure certs and set skills accordingly
     - they should at least have a starter profession cert
     - this will take more thought and time
 
+*******************************************************
+*******************************************************
+**********  liveupdates code improvements ... hi priority
+update all 16 references to www.eveonline.com
+  ** create pages on server to respond properly
+add agent portraits to server and update 'backupurl' in server code
+
 
 *******************************************************
 *******************************************************
-**********  coding errors/corrections/improvements ...med priority
+**********  coding errors/corrections/improvements ... med priority
 
 SendServerMOTD needs to check account roles to send >player data (i.e. showall)
 
@@ -261,6 +268,7 @@ check items in corp hangar for proper locationID/flagID
 CorpOfficeSparseRowset is wrong.
     - actually, anything using sparserowset is wrong
     (xmlp encode wrong. maybe decode too...no, AuthenticationRsp& AuthenticationRsp::operator=() is right)
+    may be fixed in official::staging
 
 expeditions.  not sure how to do this one.
 dungeonExplorationMgr::GetMyEscalatingPathDetails()

@@ -169,7 +169,7 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
     (call.client->IsAutoPilot() ? "true" : "false"), (call.client->IsInvul()?"true":"false"), \
         (call.client->IsJump()?"true":"false"));
 
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -193,7 +193,7 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called GotoDirection. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -223,7 +223,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called SetSpeedFraction. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -257,6 +257,7 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
         }
     } else {
         // player undocked and wants to reset speed
+        // update....client started sending this on undock...dont know why yet...
         pDestiny->SetSpeedFraction(arg.arg);
     }
 
@@ -265,7 +266,8 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called Align. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -331,7 +333,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
         call.client->SendNotifyMsg("Session Change currently active.");
         return PyStatic.NewNone();
     }
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -377,7 +379,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called Follow. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -418,7 +420,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called GotoBookmark. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -476,7 +478,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called Orbit. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -529,7 +531,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
    if (call.client->GetShip()->GetAttribute(AttrWarpScrambleStatus) > 0)
         throw UserError("WarpScrambled");
 
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+   DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -764,7 +766,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
 /** @todo THIS is how we know client is using AP...it needs to be updated   */
 PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -820,7 +822,7 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
         call.client->SendNotifyMsg("Session Change currently active.");
         return PyStatic.NewNone();
     }
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -885,7 +887,7 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
     sLog.Error("BeyonceBound", "UpdateStateRequest");
     codelog(CLIENT__ERROR, "%s: Client sent UpdateStateRequest. Previous call generated a bad return.  Check Logs.", call.client->GetName());
 
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
@@ -902,7 +904,7 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
 }
 
 /**     ***********************************************************************
- * @note   these do absolutely nothing at this time....
+ * @note   fleet shit....these do absolutely nothing at this time....
  */
 
 

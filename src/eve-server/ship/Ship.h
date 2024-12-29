@@ -147,7 +147,7 @@ public:
     bool IsActive()                                     { return m_isActive; }
     bool IsDocking()                                    { return m_isDocking; }
     bool IsUndocking()                                  { return m_isUndocking; }
-    void SetDocked()                                    { m_isDocking = false; }
+    void SetDocked()                                    { m_isDocking = false; m_isUndocking = false; }
     void SetUndocking(bool set=false)                   { m_isUndocking = set; }
     InventoryItemRef GetTargetRef()                     { return m_targetRef; }
     void ClearTargetRef()                               { m_targetRef = InventoryItemRef(); }

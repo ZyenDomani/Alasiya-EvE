@@ -104,7 +104,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_fleet = false;
     m_squad = false;
     m_loaded = false;
-    m_undock = false;
     m_showall = false;
     m_uncloak = false;
     m_beyonce = false;
@@ -408,7 +407,7 @@ void Client::ProcessClient() {
             _log(CLIENT__TIMER, "ProcessClient():  SetInvul to false for %s(%u)", m_char->name(), m_char->itemID());
             m_invulTimer.Disable();
             m_invul = false;
-            m_undock = false;
+            m_ship->SetUndocking(false);
         }
 
     if (m_scanTimer.Enabled())
@@ -703,7 +702,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_ship->SetCustomInfo(ci);
 
         // if docked, update guestlist
-        if (wasDocked and m_undock)
+        if (wasDocked and m_ship->IsUndocking())
             CharNoLongerInStation();
 
         if (IsFleetID(m_fleet)) {
@@ -803,7 +802,7 @@ void Client::SetBallPark() {
     m_bubbleWait = false;   // allow client processing of subsequent destiny msgs
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
-    if (!m_beyonce and !m_login and !m_undock) {
+    if (!m_beyonce and !m_login and !m_ship->IsUndocking()) {
         m_bubbleWait = true;    // wait on proc destiny msgs
         CheckBallparkTimer();
         SetBallParkTimer(Player::Timer::Default);    // set timer 1s to wait for beyonce
@@ -831,8 +830,8 @@ void Client::SetBallPark() {
             m_clientState = Player::State::Idle;
         }
     }
-    if (m_undock)
-        pShipSE->DestinyMgr()->SetSpeedFraction();
+    //if (m_ship->IsUndocking())
+    //    pShipSE->DestinyMgr()->SetSpeedFraction();
 }
 
 void Client::CheckBallparkTimer() {
@@ -850,6 +849,14 @@ void Client::CheckBallparkTimer() {
         m_bubbleWait?"true":"false");
 }
 
+void Client::SetInvul(bool invul/*false*/) {
+    // check for invul timer and negate
+    if (m_invulTimer.Enabled()/*m_invul*/)
+        m_invulTimer.Disable();
+
+    m_invul = invul;
+}
+
 void Client::MoveToPosition(const GPoint &pt) {
     if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr)) {
         CreateShipSE();
@@ -858,7 +865,7 @@ void Client::MoveToPosition(const GPoint &pt) {
         UpdateNewShip();
     }
     pShipSE->DestinyMgr()->SetPosition(pt, true);
-    if (m_undock)
+    if (m_ship->IsUndocking())
         return;
     if (pShipSE->DestinyMgr()->IsMoving())
         pShipSE->DestinyMgr()->Halt();
@@ -903,7 +910,6 @@ void Client::UndockFromStation() {
     }
 
     m_invul = true;
-    m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = m_stationData.dockPosition;
     m_movePoint = m_stationData.dockOrientation;
@@ -921,8 +927,6 @@ void Client::UndockFromStation() {
     SetInvulTimer(Player::Timer::UndockInvul);
     SetStateTimer(Player::State::Undock, Player::Timer::Undock);
     SetSessionTimer();
-
-    m_ship->SetUndocking(false);
 }
 
 void Client::CreateShipSE() {

@@ -235,7 +235,7 @@ public:
     bool IsBoard()                                      { return (m_clientState == Player::State::Board); }
     bool IsInvul()                                      { return m_invul; }
     bool IsLogin()                                      { return m_login; }
-    bool IsUndock()                                     { return m_undock; }
+    bool IsUndock()                                     { return m_ship->IsUndocking(); }
     bool IsUncloak()                                    { return m_uncloak; }
     bool HasBeyonce()                                   { return m_beyonce; }
     bool IsBubbleWait()                                 { return m_bubbleWait; }
@@ -243,8 +243,9 @@ public:
     bool IsSessionChange()                              { return m_sessionChangeActive; }
     uint32 GetSessionChangeTime()                       { return m_sessionTimer.GetRemainingTime() / 1000; }
 
-    void SetInvul(bool invul=false)                     { m_invul = invul; }
-    void SetUndock(bool undock=false)                   { m_undock = undock; }
+    void SetInvul(bool invul=false);
+    //void SetDocking(bool dock=false)                    { m_ship->SetDocking(); }
+    void SetUndock(bool undock=false)                   { m_ship->SetUndocking(undock);}
     void SetBeyonce(bool beyonce=false)                 { m_beyonce = beyonce; }
     void SetUncloak(bool uncloak=false)                 { m_uncloak = uncloak; }
     void SetBubbleWait(bool wait=false)                 { m_bubbleWait = wait; }
@@ -359,7 +360,6 @@ protected:
     bool m_afk;             // for map info (pilots docked and active)
     bool m_invul;
     bool m_login;
-    bool m_undock;
     bool m_loaded;
     bool m_beyonce;
     bool m_uncloak;
