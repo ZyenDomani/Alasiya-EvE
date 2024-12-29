@@ -139,6 +139,8 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             itr = m_dynamicEntities.erase(itr);
             continue;
         }
+	// this is not right.  there are other SE here that are NOT dSE which returns nullptr and they get erased from bubble map.
+	// go thru all possibilities here and write generic code instead of specific checks for all instances
         pDSE = itr->second->GetDynamicSE();
         if (pDSE == nullptr) {
             itr = m_dynamicEntities.erase(itr);
