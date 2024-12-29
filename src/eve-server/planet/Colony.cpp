@@ -294,7 +294,7 @@ void Colony::LoadPlants()
 
     // set process timer to 30m
     if (!m_colonyTimer.Enabled())
-        m_colonyTimer.Start(30*60*1000);
+        m_colonyTimer.Start(30 * EvE::Timer::Minute);
 
     if (update)
         UpdatePlantPins();
@@ -784,7 +784,7 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/)
 
         // set process timer to 30m
         if (!m_colonyTimer.Enabled())
-            m_colonyTimer.Start(30*60*1000);
+            m_colonyTimer.Start(30 * EvE::Timer::Minute);
         _log(COLONY__INFO, "Colony::SetSchematic() - Set Schematic %u in plantID %u", schematicID, pinID);
     } else {
         itr->second = PI_Plant();
@@ -856,7 +856,7 @@ void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, fl
 
     // set process timer to 30m
     if (!m_colonyTimer.Enabled())
-        m_colonyTimer.Start(30*60*1000);
+        m_colonyTimer.Start(30 * EvE::Timer::Minute);
 }
 /*{'FullPath': u'UI/Messages', 'messageID': 256790, 'label': u'PlanetBlackListedBody'}(u'{planet} is not available for the general public.', None, {u'{planet}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'planet'}})
  * {'FullPath': u'UI/Messages', 'messageID': 256791, 'label': u'CannotInstallWithoutScanResultsBody'}(u'Your mining foreman reports that an intern seems to have misplaced the necessary mineral survey results. You will need to order a fresh deposit scan before this {typeName} can begin operating.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})

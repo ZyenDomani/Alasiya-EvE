@@ -157,7 +157,7 @@ bool SystemManager::BootSystem() {
             */
 
     if (sConfig.server.BountyPayoutDelayed)
-        m_bountyTimer.Start(sConfig.server.BountyPayoutTimer * 60 * 1000);
+        m_bountyTimer.Start(sConfig.server.BountyPayoutTimer * EvE::Timer::Minute);
 
     //create our chat channels
     m_services.lsc_service->CreateSystemChannel(m_data.regionID);

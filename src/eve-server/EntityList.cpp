@@ -74,8 +74,8 @@ void EntityList::Initialize() {
 
     /* start the timers */
     m_targTimer.Start(500);     // testing targeting and scan probes at 2/sec
-    m_stampTimer.Start(1000);   // 1hz tic timer
-    m_minuteTimer.Start(60000); // does this need to be accurate?
+    m_stampTimer.Start(EvE::Timer::Second);   // 1hz tic timer
+    m_minuteTimer.Start(EvE::Timer::Minute); // does this need to be accurate?
 
     m_clientSeedID = ServiceDB::SetClientSeed();
     sLog.Green( "       ServerInit", "ClientSeed Initialized." );

@@ -96,6 +96,9 @@ public:
     struct {
         // Decay timer for item deletion (garbage collection)
         uint8 WorldDecay;
+        // wander timer in minutes
+        uint8 WanderTimer;
+        // server status save time in minutes
         uint8 WebUpdate;
         // min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment.
         uint32 TaxAmount;

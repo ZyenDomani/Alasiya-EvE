@@ -106,8 +106,8 @@ m_scanShips(false)
         m_scanShips = self->GetAttribute(AttrProbeCanScanShips).get_bool();
 
     // set probe lifetime of 5h
-    m_expiry = GetFileTimeNow() + (EvE::Time::Hour *5);  // 5h abandoned lifespan
-    m_lifeTimer.Start(5*60*60*1000);        // 5h to ms
+    m_expiry = GetFileTimeNow() + (5 * EvE::Time::Hour);  // 5h abandoned lifespan
+    m_lifeTimer.Start(5 * EvE::Timer::Hour);        // 5h to ms
 
     _log(SCAN__INFO, "Created Abandoned ProbeSE for %u. expiry: %lli", m_self->itemID(), m_expiry);
 }
@@ -143,10 +143,10 @@ m_scanShips(false)
         m_scanShips = self->GetAttribute(AttrProbeCanScanShips).get_bool();
 
     // set probe lifetime
-    m_expiry = GetFileTimeNow() + (self->GetAttribute(AttrExplosionDelay).get_float() *10000); // ms to filetime
+    m_expiry = GetFileTimeNow() + (self->GetAttribute(AttrExplosionDelay).get_float() * 10000); // ms to filetime
     if (m_expiry < GetFileTimeNow()) {
-        m_expiry = GetFileTimeNow() + (EvE::Time::Minute *30);  // 30m default lifespan
-        m_lifeTimer.Start(30*60*1000);        // 30m to ms
+        m_expiry = GetFileTimeNow() + (EvE::Time::Minute * 30);  // 30m default lifespan
+        m_lifeTimer.Start(30 * EvE::Timer::Minute);        // 30m to ms
     } else {
         m_lifeTimer.Start(self->GetAttribute(AttrExplosionDelay).get_uint32());
     }
@@ -323,7 +323,7 @@ void ProbeSE::UpdateProbe(ProbeData& data)
         time = EvE::max(dist / mv, 1);
     }
 
-    m_stateTimer.Start(time *1000);
+    m_stateTimer.Start(time * 1000);
     _log(SCAN__TRACE, "ProbeSE::UpdateProbe()  id:%u, state: %s, scanRange: %.2f, step: %u, dist:%.2f, time: %.2f", \
                 GetID(), GetStateName(m_state), m_scanRange, m_rangeStep, dist, time );
 }

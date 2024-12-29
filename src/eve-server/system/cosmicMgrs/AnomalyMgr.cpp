@@ -128,7 +128,7 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     // range is 0.1 for 1.0 system to 2.0 for -0.9 system
     float security = m_system->GetSecValue();
     if (sConfig.debug.IsTestServer) {
-        m_procTimer.Start(10000);  // 10s
+        m_procTimer.Start(10 * EvE::Timer::Second);  // 10s
     } else {
              if (security == 2.0)  { m_maxSigs = 25; }
         else if (security > 1.501) { m_maxSigs = 20; }
@@ -138,7 +138,7 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
         else if (security > 0.251) { m_maxSigs = 5; }
         else                       { m_maxSigs = 3; }
 
-        m_procTimer.Start(120000);  // 2m
+        m_procTimer.Start(2 * EvE::Timer::Minute);  // 2m
     }
 
     /* load current data?, start timers, process current data, and create new items, if needed */

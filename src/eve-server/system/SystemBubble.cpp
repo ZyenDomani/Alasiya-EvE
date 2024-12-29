@@ -159,9 +159,9 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             //17:38:57 [DestinyWarning] SystemBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
             _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
                         pSE->GetID(), pSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);
-            itr = m_dynamicEntities.erase(itr);
-            pSE = nullptr;
-            continue;
+            //itr = m_dynamicEntities.erase(itr);
+            //pSE = nullptr;
+            //continue;
         }
         ++itr;
     }
@@ -245,7 +245,7 @@ void SystemBubble::Remove(SystemEntity *pSE) {
     if (pSE->m_bubble == nullptr) {
        // if (sConfig.debug.StackTrace)
             EvE::traceStack();
-		return;
+            return;
     }
 
     _log(BUBBLE__TRACE, "SystemBubble::Remove() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);

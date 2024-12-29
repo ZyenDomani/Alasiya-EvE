@@ -49,7 +49,7 @@ WormholeMgr::~WormholeMgr()
 void WormholeMgr::Initialize(PyServiceMgr* svc) {
     m_services = svc;
 
-    m_updateTimer.Start(300000);    // arbitrary 5m default
+    m_updateTimer.Start(5 * EvE::Timer::Minute);    // arbitrary 5m default
 
     m_initalized = true;
 

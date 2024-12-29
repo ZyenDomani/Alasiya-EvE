@@ -49,7 +49,7 @@ m_profileStartTime(0)
 
 int BubbleManager::Initialize() {
     // start timers
-    m_wanderTimer.Start(60000); //60s
+    m_wanderTimer.Start(sConfig.rates.WanderTimer * EvE::Timer::Minute);
 
     sLog.Blue("        BubbleMgr", "Bubble Manager Initialized.");
     return 1;

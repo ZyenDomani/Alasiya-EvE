@@ -47,7 +47,7 @@ void BeltMgr::Init(uint32 regionID)
 
     m_regionID = regionID;
     m_systemID = m_system->GetID();
-    m_respawnTimer.Start(sConfig.cosmic.BeltRespawn *60 *60 *1000);  // hours->ms
+    m_respawnTimer.Start(sConfig.cosmic.BeltRespawn * EvE::Timer::Hour);  // hours->ms
 
     m_initialized = true;
     _log(COSMIC_MGR__MESSAGE, "BeltMgr Initialized for %s(%u)", m_system->GetName(), m_systemID);

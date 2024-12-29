@@ -176,7 +176,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
 
     TargetEntry *te = new TargetEntry();
         te->state = TargMgr::State::Locking;
-        te->timer.Start(lockTime *1000);      //timer has ms resolution
+        te->timer.Start(lockTime * 1000);      //timer has ms resolution
     m_targets[tSE] = te;
     tSE->TargetMgr()->TargetedAdd(mySE);
 

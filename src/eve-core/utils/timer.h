@@ -27,6 +27,18 @@
 #ifndef TIMER_H
 #define TIMER_H
 
+namespace EvE {
+    namespace Timer {
+        // for ms timer setting
+        enum {
+            Second      = 1000,    //1000
+            Minute      = (Second * 60),
+            Hour        = (Minute * 60),
+            Day         = (Hour * 24)
+        };
+    }
+}
+
 class Timer
 {
 public:
@@ -43,7 +55,9 @@ public:
     inline uint32 GetDuration() const                   { return m_duration; }
 
     void Trigger();
+    // set time in ms
     void SetTimer(uint32 setTimerTime = 0);
+    // set time in ms
     void Start(uint32 setTimerTime = 0, bool changeResetTimer = true);
     void SetAtTrigger(uint32 setAtTrigger, bool enableIfDisabled = false);
 

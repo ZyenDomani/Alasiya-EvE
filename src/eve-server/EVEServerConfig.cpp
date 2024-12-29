@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    10.6
+    Version:    10.7
 */
 
 
@@ -115,6 +115,7 @@ EVEServerConfig::EVEServerConfig()
     rates.ConcordCritChance = 0.05f;
     rates.StationServiceFee = 0.01f;
     rates.CSPA = 2950;
+    rates.WanderTimer = 1;
 
     //market
     market.FindBuyOrder = 10;
@@ -450,6 +451,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "DroneCritChance",      rates.DroneCritChance );
     AddValueParser( "ConcordCritChance",    rates.ConcordCritChance );
     AddValueParser( "StationServiceFee",    rates.StationServiceFee );
+    AddValueParser( "WanderTimer",          rates.WanderTimer );
 
     const bool result = ParseElementChildren( ele );
 
@@ -482,6 +484,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "DroneCritChance" );
     RemoveParser( "ConcordCritChance" );
     RemoveParser( "StationServiceFee" );
+    RemoveParser( "WanderTimer" );
 
     return result;
 }
