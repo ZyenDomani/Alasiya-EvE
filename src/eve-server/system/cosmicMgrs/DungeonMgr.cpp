@@ -795,7 +795,7 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
 
         auto groupRange = sDunDataMgr.groups.equal_range(cur);
         auto it = groupRange.first;
-        double degreeSeparation = (250/level);
+        double degreeSeparation = (250.0 / level);
         // make 1-20 random items in the anomaly based on system trusec
         for (uint8 i=0; i < level; ++i) {
             Dungeon::GroupData grp = Dungeon::GroupData();

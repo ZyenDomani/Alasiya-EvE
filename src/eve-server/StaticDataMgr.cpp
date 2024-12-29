@@ -757,7 +757,7 @@ void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)
         data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
-        into[cur.first] = data;
+        into[cur.first] = std::move(data);
     }
 }
 
@@ -768,7 +768,7 @@ void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into)
         data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
-        into[cur.first] = data;
+        into[cur.first] = std::move(data);
     }
 }
 
@@ -779,7 +779,7 @@ void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into)
         data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
-        into[cur.first] = data;
+        into[cur.first] = std::move(data);
     }
 }
 
@@ -790,7 +790,7 @@ void StaticDataMgr::GetSalvageData(std::map< uint16, Market::matlData >& into)
         data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
-        into[cur.first] = data;
+        into[cur.first] = std::move(data);
     }
 }
 
@@ -801,7 +801,7 @@ void StaticDataMgr::GetPIResourceData(std::map< uint16, Market::matlData >& into
         data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
-        into[cur.first] = data;
+        into[cur.first] = std::move(data);
     }
 }
 
@@ -812,7 +812,7 @@ void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& int
         data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
-        into[cur.first] = data;
+        into[cur.first] = std::move(data);
     }
 }
 
@@ -823,7 +823,7 @@ void StaticDataMgr::GetMiscCommodityData(std::map< uint16, Market::matlData >& i
         data.price = 0.0f;
         data.typeID = cur.first;
         data.name = cur.second;
-        into[cur.first] = data;
+        into[cur.first] = std::move(data);
     }
 }
 

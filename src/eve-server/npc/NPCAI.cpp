@@ -63,6 +63,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
   m_armorRepairDuration(0),
   m_beginFindTarget(0),
   m_warpScramblerTimer(0),
+  m_targetRange(0),
   m_webifierTimer(0),
   m_missileTypeID(0),
   m_webber(false),

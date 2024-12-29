@@ -183,7 +183,7 @@ void StructureItem::Rename(std::string name)
 {
     if (mySE->GetPOSSE()->GetState() > EVEPOS::StructureState::Unanchored)
     {
-        InventoryItem::Rename(name);
+        InventoryItem::Rename(std::move(name));
         mySE->GetPOSSE()->SendSlimUpdate();
     }
     else

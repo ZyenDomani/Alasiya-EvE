@@ -53,7 +53,7 @@ void Threading::RunLoop() {
 
 /** @todo  begin basic thread pool for processing sockets, using select() */
 void Threading::Process() {
-    /* reset timeouts because select() reset them */
+    /* zero timeouts because select() reset them */
     tv.tv_sec = 0;
     tv.tv_usec = 0;
     FD_ZERO(&rSoc);
@@ -80,7 +80,7 @@ void Threading::Process() {
 
 }
 void Threading::AddSocket(SOCKET soc) {
-    /* when adding a new socket, we must add it to the read and write sets, with it's fd# */
+    /* when adding a new socket, we must add it to the read and write sets with it's fd# */
     FD_SET(soc, &rSoc);
     FD_SET(soc, &wSoc);
     ++nfds;

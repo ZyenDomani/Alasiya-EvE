@@ -308,7 +308,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
         elevation = (radius * 0.25);
     }
 
-    double degreeSeparation = (180 / pcs);
+    double degreeSeparation = (180.0 / pcs);
     ++pcs;
     GPoint center(pSE->SysBubble()->GetCenter());
     GPoint mposition(NULL_ORIGIN);

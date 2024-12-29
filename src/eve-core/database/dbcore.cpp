@@ -170,16 +170,16 @@ void DBcore::Initialize(std::string host, std::string user, std::string password
     if (pStatus == Connected)
         return;
 
-    pHost = host;
-    pUser = user;
-    pPassword = password;
-    pDatabase = database;
-    pPort = port;
-    pSSL = SSL;
-    pCompress = compress;
-    pSocket = socket;
-    pReconnect = reconnect;
-    pProfile = profile;
+    pHost = std::move(host);
+    pUser = std::move(user);
+    pPassword = std::move(password);
+    pDatabase = std::move(database);
+    pPort = std::move(port);
+    pSSL = std::move(SSL);
+    pCompress = std::move(compress);
+    pSocket = std::move(socket);
+    pReconnect = std::move(reconnect);
+    pProfile = std::move(profile);
 
     if (pHost.empty() or pUser.empty() or pPassword.empty() or pDatabase.empty()) {
         sLog.Error( "       ServerInit", "Unable to connect to the database:  required connect field(s) are empty.");
