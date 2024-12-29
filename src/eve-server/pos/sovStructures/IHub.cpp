@@ -20,7 +20,7 @@
 
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "planet/Planet.h"
 #include "pos/sovStructures/IHub.h"

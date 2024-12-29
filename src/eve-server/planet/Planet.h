@@ -12,7 +12,7 @@
 #ifndef EVEMU_PLANET_PLANET_H_
 #define EVEMU_PLANET_PLANET_H_
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "StaticDataMgr.h"
 #include "system/SystemEntity.h"
 

@@ -30,7 +30,7 @@
 #include "../../eve-common/EVE_Damage.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "manufacturing/Blueprint.h"
 #include "map/MapDB.h"

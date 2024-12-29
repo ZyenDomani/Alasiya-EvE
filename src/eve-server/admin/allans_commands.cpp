@@ -67,7 +67,7 @@ PyResult Command_heal(Client* pClient, CommandDB* db, PyServiceMgr* services, co
 
         uint32 entity = atoi(args.arg(1).c_str());
 
-        Client *target = sEntityList.FindClientByCharID(entity);
+        Client *target = sEntityMgr.FindClientByCharID(entity);
         if (target == nullptr)
             throw CustomError("Cannot find Character by the entityID %d", entity);
 
@@ -87,7 +87,7 @@ PyResult Command_healtarget(Client* pClient, CommandDB* db, PyServiceMgr* servic
 
         uint32 entity = atoi(args.arg(1).c_str());
 
-        Client *target = sEntityList.FindClientByCharID(entity);
+        Client *target = sEntityMgr.FindClientByCharID(entity);
         if (target == nullptr)
             throw CustomError("Cannot find Character by the entityID %d", entity);
 
@@ -450,7 +450,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     uint32 inventoryID = 0;
     if (pClient->IsDocked()) {
         inventoryID = pClient->GetStationID();
-        StationItemRef station = sEntityList.GetStationByID(inventoryID);
+        StationItemRef station = sEntityMgr.GetStationByID(inventoryID);
         if (station.get() == nullptr)
             throw CustomError("Cannot find Station Reference for stationID %u", inventoryID);
         inv = station->GetMyInventory();
@@ -710,13 +710,13 @@ PyResult Command_targlist(Client* pClient, CommandDB* db, PyServiceMgr* services
 
 PyResult Command_track(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    bool tracking = sEntityList.GetTracking();
+    bool tracking = sEntityMgr.GetTracking();
     std::string track = "enabled";
     if (tracking) {
-        sEntityList.SetTracking(false);
+        sEntityMgr.SetTracking(false);
         track = "disabled";
     } else {
-        sEntityList.SetTracking(true);
+        sEntityMgr.SetTracking(true);
     }
 
     char reply[30];
@@ -915,7 +915,7 @@ PyResult Command_getpositiondata(Client* pClient, CommandDB* db, PyServiceMgr* s
 PyResult Command_players(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     std::vector<Client*> cVec;
-    sEntityList.GetClients(cVec);
+    sEntityMgr.GetClients(cVec);
     std::ostringstream str;
     str << "Active Player List:<br>" << cVec.size() << " Online Players.<br>";
 

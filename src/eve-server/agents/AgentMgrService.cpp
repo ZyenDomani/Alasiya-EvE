@@ -49,7 +49,7 @@
 
 #include "eve-server.h"
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
@@ -87,7 +87,7 @@ PyBoundObject *AgentMgrService::CreateBoundObject(Client* pClient, const PyRep *
     }
 
     uint32 agentID(bind_args->AsInt()->value());
-    Agent* pAgent(sEntityList.GetAgent(agentID));
+    Agent* pAgent(sEntityMgr.GetAgent(agentID));
     if (pAgent == nullptr) {
         _log(AGENT__ERROR, "%s: Unable to obtain agent %u", pClient->GetName(), agentID);
         return nullptr;

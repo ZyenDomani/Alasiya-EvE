@@ -26,7 +26,7 @@
 
 #include "eve-server.h"
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "PyServiceCD.h"
 #include "account/AccountService.h"
@@ -339,12 +339,12 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     //now set up some initial inventory:
     /** @todo update this to reflect char career */
 
-    // add client to EntityList for subsequent calls that need Client* (AttributeMap changes)
+    // add client to EntityMgr for subsequent calls that need Client* (AttributeMap changes)
     pClient->SetChar(charRef);        // AddPlayer() needs charRef
-    sEntityList.AddPlayer(pClient);
+    sEntityMgr.AddPlayer(pClient);
 
     // need system loaded for proper ship creation/loading and subsquent character login
-    sEntityList.FindOrBootSystem(cdata.solarSystemID);
+    sEntityMgr.FindOrBootSystem(cdata.solarSystemID);
 
     // create alpha-level clone
     ItemData iData( itemCloneAlpha, charRef->itemID(), cdata.locationID, flagClone, 1 );
@@ -382,7 +382,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     charRef->LogOut();
     sRef->LogOut();
 
-    sEntityList.RemovePlayer(pClient);
+    sEntityMgr.RemovePlayer(pClient);
 
     pClient->CreateChar(false);
 

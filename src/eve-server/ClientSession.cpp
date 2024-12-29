@@ -25,7 +25,7 @@
 */
 
 #include "ClientSession.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 
 
@@ -37,7 +37,7 @@ m_sessionID(15)
     //  session id is unique to each session and client
     //random.getrandbits(63)
     m_sessionID *= GetTimeUSeconds();
-    sEntityList.RegisterSID(m_sessionID);
+    sEntityMgr.RegisterSID(m_sessionID);
 
     // set default session values
     mSession->SetItemString("role", new_tuple(PyStatic.NewNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE), PyStatic.NewFalse()));
@@ -85,7 +85,7 @@ m_sessionID(15)
 ClientSession::~ClientSession()
 {
     delete mSession;
-    sEntityList.RemoveSID(m_sessionID);
+    sEntityMgr.RemoveSID(m_sessionID);
 }
 
 // note:  cannot destroy these Py* objects here.

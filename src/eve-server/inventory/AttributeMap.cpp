@@ -28,7 +28,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "StaticDataMgr.h"
 #include "inventory/AttributeMap.h"
 #include "inventory/InventoryItem.h"
@@ -372,7 +372,7 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
     // i dunno wtf i put this here....modules maybe?
     /*
     if (IsCharacterID(mItem.ownerID())) {
-        Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
+        Client* pClient = sEntityMgr.FindClientByCharID(mItem.ownerID());
         if (pClient->IsDocked())
             return true;
     }  */
@@ -435,7 +435,7 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
         return true;
 /*
     if (IsCharacterID(mItem.ownerID())) {
-        Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
+        Client* pClient = sEntityMgr.FindClientByCharID(mItem.ownerID());
         if (pClient->IsDocked())
             return true;
     }
@@ -472,9 +472,9 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
         mct.corporations.insert(mItem.ownerID());
         if (sDataMgr.IsStation(mItem.locationID())) {
             mct.locations.insert(mItem.locationID());
-            sEntityList.Multicast("OnItemChange", "*stationid&corpid", &attrChange, mct);
+            sEntityMgr.Multicast("OnItemChange", "*stationid&corpid", &attrChange, mct);
         } else {
-            sEntityList.Multicast("OnItemChange", "corpid", &attrChange, mct);
+            sEntityMgr.Multicast("OnItemChange", "corpid", &attrChange, mct);
         }
     }
 
@@ -483,9 +483,9 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
 
     Client* pClient(nullptr);
     if (IsCharacterID(mItem.itemID())) {
-        pClient = sEntityList.FindClientByCharID(mItem.itemID());
+        pClient = sEntityMgr.FindClientByCharID(mItem.itemID());
     } else {
-        pClient = sEntityList.FindClientByCharID(mItem.ownerID());
+        pClient = sEntityMgr.FindClientByCharID(mItem.ownerID());
     }
 
     if (pClient == nullptr) {

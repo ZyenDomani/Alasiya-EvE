@@ -132,13 +132,13 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         if (args.isNumber(1)) {     // charID, shipID, {invalid}
             int objectID = atoi(args.arg(1).c_str());
             if (IsCharacterID(objectID)) {
-                pOtherClient = sEntityList.FindClientByCharID(objectID);
+                pOtherClient = sEntityMgr.FindClientByCharID(objectID);
             } else if (IsPlayerItem(objectID)) {
                 // get object's ownerID...this is rather powerful.
                 InventoryItemRef iRef = sItemFactory.GetItemRef(objectID);
                 if (iRef.get() == nullptr)
                     throw CustomError("Translocate: Invalid Arguments - target object was not found.");
-                pOtherClient = sEntityList.FindClientByCharID(iRef->ownerID());
+                pOtherClient = sEntityMgr.FindClientByCharID(iRef->ownerID());
             } else if (IsNPC(objectID)) {
                 throw CustomError("Translocate: Invalid Object - You really wanna relocate an NPC?");
             } else
@@ -162,7 +162,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             throw CustomError("Translocate: Fleet Move - This command is currently incomplete.");
         } else {
             // check for player name
-            pOtherClient = sEntityList.FindClientByName(args.arg(1).c_str());
+            pOtherClient = sEntityMgr.FindClientByName(args.arg(1).c_str());
             if (pOtherClient == nullptr)
                 throw CustomError("Translocate: Bad Name - %s is not online or is not a valid player name", args.arg(1).c_str());
         }
@@ -236,10 +236,10 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         if (args.isNumber(1)) {
             int objectID = atoi(args.arg(1).c_str());
             if (IsCharacterID(objectID)) {
-                pOtherClient = sEntityList.FindClientByCharID(objectID);
+                pOtherClient = sEntityMgr.FindClientByCharID(objectID);
             } else if (IsPlayerItem(objectID)) {
                 // get object's ownerID
-                pOtherClient = sEntityList.FindClientByCharID(objectID);
+                pOtherClient = sEntityMgr.FindClientByCharID(objectID);
             } else
                 throw CustomError("Translocate: Invalid Object - %i is neither a character nor a ship", objectID);
         } else if (strcmp(args.arg(1).c_str(), "me") == 0) {
@@ -385,7 +385,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             pt = iRef->position();
             locationID = iRef->locationID();
         } else { // tr to ship/item owner location
-            Client* pClient2 = sEntityList.FindClientByCharID(iRef->ownerID());
+            Client* pClient2 = sEntityMgr.FindClientByCharID(iRef->ownerID());
             if (pClient2 == nullptr) {
                 pt = iRef->position();
                 locationID = iRef->locationID();

@@ -45,7 +45,7 @@ void StatisticMgr::GetInfo()
     // return current data?
 }
 
-// called every 15m by ConsoleCommands::UpdateStatus() from EntityList::Process()
+// called every 15m by ConsoleCommands::UpdateStatus() from EntityMgr::Process()
 void StatisticMgr::Process()
 {
     SaveData();
@@ -56,7 +56,7 @@ void StatisticMgr::Process()
         m_counter = 0;
         // every [increment][time] save stat history data
         CompileData();
-        //sEntityList.ResetStartTime();
+        //sEntityMgr.ResetStartTime();
     }
     /*
      * SELECT timeStamp, timeSpan, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticData
@@ -66,13 +66,13 @@ void StatisticMgr::Process()
 
 void StatisticMgr::SaveData()
 {
-    m_data.span = sEntityList.GetMinutes();
+    m_data.span = sEntityMgr.GetMinutes();
     ManagerDB::SaveStatisticData(m_data);
 }
 
 void StatisticMgr::Add(uint8 key, double value)
 {
-    m_data.span = sEntityList.GetMinutes();
+    m_data.span = sEntityMgr.GetMinutes();
     switch(key) {
         case Stat::pcBounties:
             m_data.pcBounties += value;
@@ -94,7 +94,7 @@ void StatisticMgr::Add(uint8 key, double value)
 
 void StatisticMgr::Increment(uint8 key)
 {
-    m_data.span = sEntityList.GetMinutes();
+    m_data.span = sEntityMgr.GetMinutes();
     switch(key) {
         case Stat::pcShots:
             ++m_data.pcShots;
@@ -122,7 +122,7 @@ void StatisticMgr::Increment(uint8 key)
 
 void StatisticMgr::PrintInfo()
 {
-    m_data.span = sEntityList.GetMinutes();
+    m_data.span = sEntityMgr.GetMinutes();
     sLog.Cyan("     StatisticMgr", " Time Span: %u minutes", m_data.span);
     sLog.Cyan("     StatisticMgr", " PC Shots Fired: %u", m_data.pcShots);
     sLog.Cyan("     StatisticMgr", " PC Missiles Fired: %u", m_data.pcMissiles);
@@ -140,7 +140,7 @@ void StatisticMgr::CompileData()
 {
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
-    ManagerDB::GetStatisticData(*res, sEntityList.GetStartTime());
+    ManagerDB::GetStatisticData(*res, sEntityMgr.GetStartTime());
     if (res->GetRowCount() > 0) {
         StatisticData data = StatisticData();
         while (res->GetRow(row)) {

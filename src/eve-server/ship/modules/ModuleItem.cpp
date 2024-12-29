@@ -10,7 +10,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "ship/modules/ModuleItem.h"
 
 ModuleItem::ModuleItem(uint32 _modID, const ItemType& _type, const ItemData& _data)
@@ -62,7 +62,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
     if (!isRig)   // rigs DO NOT get isOnline attrib set.
         SetAttribute(AttrOnline, (online?1:0));
 
-    Client* pClient = sEntityList.FindClientByCharID(ownerID());
+    Client* pClient = sEntityMgr.FindClientByCharID(ownerID());
     if (pClient == nullptr) {
         _log(MODULE__WARNING, "ModuleItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
                     ownerID(), name(), m_itemID);

@@ -13,7 +13,7 @@
 #include "../EVEServerConfig.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "agents/Agent.h"
 #include "agents/AgentMgrService.h"
 #include "database/EVEDBUtils.h"
@@ -55,7 +55,7 @@ void MissionDataMgr::GetInfo()
     // nothing to do here
 }
 
-// called every minute from EntityList::Process()
+// called every minute from EntityMgr::Process()
 void MissionDataMgr::Process()
 {
     // process open offers every 10m
@@ -67,8 +67,8 @@ void MissionDataMgr::Process()
         std::multimap<uint32, MissionOffer>::iterator itr = m_offers.begin();
         while (itr != m_offers.end()) {
             if (itr->second.expiryTime < GetFileTimeNow()) {
-                pAgent = sEntityList.GetAgent(itr->second.agentID);
-                pClient = sEntityList.FindClientByCharID(itr->first);
+                pAgent = sEntityMgr.GetAgent(itr->second.agentID);
+                pClient = sEntityMgr.FindClientByCharID(itr->first);
                 // notify client if they are online.  eventually we'll send mail also
                 if (itr->second.stateID == Mission::State::Accepted) {
                     pAgent->SendMissionUpdate(pClient, "failed");

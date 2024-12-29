@@ -82,7 +82,7 @@ m_beltID(0)
 }
 
 void AsteroidSE::Process() {
-    /* called by EntityList::Process on every loop */
+    /* called by EntityMgr::Process on every loop */
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 

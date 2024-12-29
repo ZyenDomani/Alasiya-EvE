@@ -97,7 +97,7 @@ SystemManager::~SystemManager() {
     if (m_players or !m_clients.empty()) {
         _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %lu clients in mmaps", m_data.systemID, m_players, m_clients.size());
         for (auto &cur : m_clients)
-            sEntityList.Remove(cur.second);
+            sEntityMgr.Remove(cur.second);
     }
 
     if (m_loaded)
@@ -201,7 +201,7 @@ bool SystemManager::LoadCosmicMgrs()
     return true;
 }
 
-//called on 1Hz tic from EntityList.
+//called on 1Hz tic from EntityMgr.
 bool SystemManager::ProcessTic() {
     double profileStartTime(GetTimeUSeconds());
 
@@ -262,13 +262,13 @@ bool SystemManager::SystemActivity() {
         return true;
     if (m_activityTime == 0)
         return true;
-    if ((sEntityList.GetStamp() - m_activityTime) > sConfig.world.gridUnloadTime)
+    if ((sEntityMgr.GetStamp() - m_activityTime) > sConfig.world.gridUnloadTime)
         return false;
 
     return true;
 }
 
-// called from EntityList::Process() and EntityList::Close()
+// called from EntityMgr::Process() and EntityMgr::Close()
 void SystemManager::UnloadSystem() {
     if (!m_loaded)
         return;
@@ -301,17 +301,17 @@ void SystemManager::UnloadSystem() {
         if (pSE->IsStaticEntity() or pSE->isGlobal()) {
             if (pSE->IsStationSE()) {
                 pSE->GetStationSE()->UnloadStation();
-                sEntityList.RemoveStation(itr->first);
+                sEntityMgr.RemoveStation(itr->first);
             }
             m_staticEntities.erase(itr->first);
         } else if (pSE->IsShipSE()) {
             pSE->GetShipSE()->GetShipItemRef()->LogOut();
         } else if (pSE->IsNPCSE()) {
-            sEntityList.RemoveNPC();    // this is for loaded npc count.
+            sEntityMgr.RemoveNPC();    // this is for loaded npc count.
             m_npcs.erase(pSE->GetID());
             pSE->GetSelf()->Delete();
         } else if (pSE->IsProbeSE()) {
-            sEntityList.RemoveProbe(itr->first);
+            sEntityMgr.RemoveProbe(itr->first);
         }
 
         //if (pSE->IsOperSE()) //Remove operational statics from list
@@ -374,7 +374,7 @@ bool SystemManager::LoadSystemStatics() {
                 /*  types 29323 - 29390 in group 15 are wrecked stations */
                 StationItemRef itemRef = sItemFactory.GetStationRef(cur.itemID);
                 StationSE *pSSE = new StationSE(itemRef, *(GetServiceMgr()), this);
-                sEntityList.AddStation(cur.itemID, itemRef);
+                sEntityMgr.AddStation(cur.itemID, itemRef);
                 pSE = pSSE;
             } break;
             case EVEDB::invGroups::Asteroid_Belt: {
@@ -512,7 +512,7 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, uint
         WreckSE* pWE = pSE->GetWreckSE();
         pWE->SetLaunchedByID(launcherID);
         if (IsCharacterID(entity.ownerID)) {
-            Client* pClient = sEntityList.FindClientByCharID(entity.ownerID);
+            Client* pClient = sEntityMgr.FindClientByCharID(entity.ownerID);
             if (pClient->InFleet())
                 pWE->SetFleetID(pClient->GetFleetID());
         }
@@ -832,7 +832,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 /** @todo make error msg here */
                 NPC* npcSE = new NPC(npcRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                 npcSE->Load();
-                sEntityList.AddNPC();
+                sEntityMgr.AddNPC();
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making NPCSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return npcSE;
             }
@@ -915,7 +915,7 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*f
         _log(PLAYER__INFO, "%s(%u): Add Jump to %s(%u)", \
         pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID);
 
-        uint16 stamp = sEntityList.GetStamp();
+        uint16 stamp = sEntityMgr.GetStamp();
         std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
         if (itr != m_jumpMap.end()) {
             ++(itr->second);
@@ -948,7 +948,7 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
         _log(PLAYER__INFO, "%s(%u): Add Jump to %s(%u)", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID);
 
-        uint16 stamp = sEntityList.GetStamp();
+        uint16 stamp = sEntityMgr.GetStamp();
         std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
         if (itr != m_jumpMap.end()) {
             ++(itr->second);
@@ -966,7 +966,7 @@ void SystemManager::SetDockCount(Client* pClient, bool docked/*false*/)
         --m_docked;
     }
 
-    if (m_players > sEntityList.GetPlayerCount())
+    if (m_players > sEntityMgr.GetPlayerCount())
         GetPlayerCount();
     if (m_docked > m_players)
         GetDockedCount();
@@ -989,7 +989,7 @@ void SystemManager::AddNPC(NPC* pNPC) {
 
     _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", pNPC->GetName(), pNPC->GetID(), m_data.name.c_str(), m_data.systemID);
     AddEntity(pNPC, false);
-    sEntityList.AddNPC();
+    sEntityMgr.AddNPC();
 }
 
 void SystemManager::RemoveNPC(NPC* pNPC) {
@@ -1001,7 +1001,7 @@ void SystemManager::RemoveNPC(NPC* pNPC) {
 
     _log(NPC__TRACE, "%s(%u): Removed from system manager for %s(%u)", pNPC->GetName(), pNPC->GetID(), m_data.name.c_str(), m_data.systemID);
     RemoveEntity(pNPC);
-    sEntityList.RemoveNPC();    // this is for loaded npc count.
+    sEntityMgr.RemoveNPC();    // this is for loaded npc count.
     pNPC->RemoveNPC();   // this deletes NPC from DB.  NPC's dont jump, so no reason to remove from system unless killed
 }
 
@@ -1027,7 +1027,7 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
             SendStaticBall(pSE);
     } else if (pSE->IsProbeSE()) {
         // probes are now running sub-hz tics, so dont add to proc list.
-        sEntityList.AddProbe(itemID, pSE->GetProbeSE());
+        sEntityMgr.AddProbe(itemID, pSE->GetProbeSE());
     } else if (!IsStaticItem(itemID)) {
         // *most* dynamic items need proc tics.  add to proc list
         m_entityChanged = true;
@@ -1079,11 +1079,11 @@ void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/, bool ad
         //create AddBalls header
         Destiny::AddBall_header head = Destiny::AddBall_header();
             head.packet_type = 1;   // 0 = full state   1 = balls
-            head.stamp = sEntityList.GetStamp();
+            head.stamp = sEntityMgr.GetStamp();
         destinyBuffer->Append( head );
 
         AddBalls2 addballs2;
-            addballs2.stateStamp = sEntityList.GetStamp();
+            addballs2.stateStamp = sEntityMgr.GetStamp();
             addballs2.extraBallData = new PyList();
 
         PyTuple* balls = new PyTuple(2);
@@ -1357,11 +1357,11 @@ void SystemManager::SendStaticBall(SystemEntity* pSE)
     //create AddBalls header
     Destiny::AddBall_header head = Destiny::AddBall_header();
         head.packet_type = 1;   // 0 = full state   1 = balls
-        head.stamp = sEntityList.GetStamp();
+        head.stamp = sEntityMgr.GetStamp();
     destinyBuffer->Append( head );
 
     AddBalls2 addballs2;
-    addballs2.stateStamp = sEntityList.GetStamp();
+    addballs2.stateStamp = sEntityMgr.GetStamp();
     addballs2.extraBallData = new PyList();
 
     if (pSE->IsContainerSE()) {
@@ -1581,7 +1581,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         sig.bubbleID = 0;
         sig.dungeonType = Dungeon::Type::Anomaly;
         sig.ownerID = cur.second->GetOwnerID();
-        sig.sigID = sEntityList.GetAnomalyID();         // result.id
+        sig.sigID = sEntityMgr.GetAnomalyID();         // result.id
         sig.sigItemID = cur.first;
         sig.sigStrength = 0.9f; // these arent warpable yet
         sig.systemID = m_data.systemID;
@@ -1633,7 +1633,7 @@ void SystemManager::UpdateData()
     MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
 
     uint16 jumps = 0;
-    uint16 stamp = sEntityList.GetStamp() - 60;
+    uint16 stamp = sEntityMgr.GetStamp() - 60;
     std::map<uint32, uint8>::iterator itr = m_jumpMap.begin();
     while (itr != m_jumpMap.end()) {
         if (itr->first < stamp) {
@@ -1653,7 +1653,7 @@ void SystemManager::UpdateData()
         if (m_activityTime == 0)
             if (m_clients.empty())
                 if (m_jumpMap.empty())
-                    m_activityTime = sEntityList.GetStamp() - 50;
+                    m_activityTime = sEntityMgr.GetStamp() - 50;
 
     // this needs work....current profile shows ~2s time on current code
     ManipulateTimeData();
@@ -1695,7 +1695,7 @@ void SystemManager::ManipulateTimeData()
      * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN5MapDB14UpdateKillDataEjR14SystemKillData+0x11d) [0xd96d05]
      * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager18ManipulateTimeDataEv+0x41) [0xf865af]
      * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager10UpdateDataEv+0x17e) [0xf863be]
-     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList7ProcessEv+0x5e6) [0xabfcc2]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityMgr7ProcessEv+0x5e6) [0xabfcc2]
      *
      * 10:50:08 W   Profile Manager: Long Profile Time on key DB, time 2135.552ms.
      * backtrace() returned 11 addresses
@@ -1706,7 +1706,7 @@ void SystemManager::ManipulateTimeData()
      * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN5MapDB14UpdateKillDataEjR14SystemKillData+0x11d) [0xd96d05]
      * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager18ManipulateTimeDataEv+0x41) [0xf865af]
      * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN13SystemManager10UpdateDataEv+0x17e) [0xf863be]
-     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityList7ProcessEv+0x5e6) [0xabfcc2]
+     * /srv/games/eve/Alasiya-EvE/bin/eve-server(_ZN10EntityMgr7ProcessEv+0x5e6) [0xabfcc2]
      *
      */
 

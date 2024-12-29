@@ -29,7 +29,7 @@
 
 #include "eve-server.h"
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
 #include "inventory/InvBrokerService.h"
@@ -293,7 +293,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
     /** @todo fix/update this shit.... */
     if (m_groupID == EVEDB::invGroups::Station) {
         _log(INV__WARNING, "GetInventory called for station %u", m_locationID);
-        //iRef = sEntityList.GetStationByID(m_locationID);
+        //iRef = sEntityMgr.GetStationByID(m_locationID);
         iRef = sItemFactory./*GetStation*/GetItemRef(m_locationID);
     } else if (m_groupID == EVEDB::invGroups::Solar_System) {
         _log(INV__WARNING, "GetInventory called for solar system %u", m_locationID);

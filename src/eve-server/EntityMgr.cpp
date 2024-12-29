@@ -30,7 +30,7 @@
 
 #include "Client.h"
 #include "ConsoleCommands.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
 #include "agents/Agent.h"
@@ -48,7 +48,7 @@
 #include "system/cosmicMgrs/ManagerDB.h"
 #include "corporation/CorporationDB.h"
 
-EntityList::EntityList()
+EntityMgr::EntityMgr()
 : m_services(nullptr),
 m_procClient(nullptr),
 m_targTimer(0, true),
@@ -65,11 +65,11 @@ m_shipTracking(sConfig.debug.UseShipTracking)
 {
 }
 
-EntityList::~EntityList() {
+EntityMgr::~EntityMgr() {
     sLog.Green("   ServerShutdown", " Complete.");
 }
 
-void EntityList::Initialize() {
+void EntityMgr::Initialize() {
     m_startTime = GetFileTimeNow();
 
     /* start the timers */
@@ -83,10 +83,10 @@ void EntityList::Initialize() {
     if (is_log_enabled(SERVER__STACKTRACE))
         sConfig.debug.StackTrace = true;
 
-    sLog.Blue("       EntityList", "Entity Manager Initialized.");
+    sLog.Blue("       EntityMgr", "Entity Manager Initialized.");
 }
 
-void EntityList::Shutdown() {
+void EntityMgr::Shutdown() {
     /** @todo finish this....
      * halt server called from admin client. (gm command ingame)
      * call d'tor on all connected clients
@@ -96,13 +96,13 @@ void EntityList::Shutdown() {
         SafeDelete(cur);
 }
 
-void EntityList::Close()
+void EntityMgr::Close()
 {
     if (m_clients.size() > 0) {
-        sLog.Yellow("       EntityList", "Cleaning up %lu clients, %lu systems, %lu agents, and %lu stations", \
+        sLog.Yellow("       EntityMgr", "Cleaning up %lu clients, %lu systems, %lu agents, and %lu stations", \
                     m_clients.size(), m_systems.size(), m_agents.size(), m_stations.size());
     } else {
-        sLog.Green("       EntityList", "Cleaning up %lu systems, %lu agents, and %lu stations", \
+        sLog.Green("       EntityMgr", "Cleaning up %lu systems, %lu agents, and %lu stations", \
                     m_systems.size(), m_agents.size(), m_stations.size());
     }
 
@@ -117,7 +117,7 @@ void EntityList::Close()
         SafeDelete(cur.second);
     }
 
-    sLog.Warning("       EntityList", "Entity List has been closed." );
+    sLog.Warning("       EntityMgr", "Entity List has been closed." );
 }
 
 /* m_clients is used to search for online players and numerous other things.
@@ -128,13 +128,13 @@ void EntityList::Close()
  * update:  done and working very well.
  */
 
-void EntityList::Add( Client* pClient ) {
+void EntityMgr::Add( Client* pClient ) {
     ++m_connections;
     if (pClient != nullptr)
         m_clients.push_back(pClient);
 }
 
-void EntityList::Remove(Client* pClient) {
+void EntityMgr::Remove(Client* pClient) {
     /* note:  will get expensive for many clients  */
     std::vector<Client*>::iterator itr = m_clients.begin();
     for (; itr != m_clients.end(); itr++)
@@ -144,7 +144,7 @@ void EntityList::Remove(Client* pClient) {
         }
 }
 
-void EntityList::AddPlayer(Client* pClient)
+void EntityMgr::AddPlayer(Client* pClient)
 {
     if (pClient != nullptr)
         if (pClient->IsValidSession()) {
@@ -161,7 +161,7 @@ void EntityList::AddPlayer(Client* pClient)
         }
 }
 
-void EntityList::RemovePlayer(Client* pClient)
+void EntityMgr::RemovePlayer(Client* pClient)
 {
     if (pClient != nullptr)
         if (pClient->IsValidSession()) {
@@ -176,7 +176,7 @@ void EntityList::RemovePlayer(Client* pClient)
 }
 
 
-void EntityList::Process() {
+void EntityMgr::Process() {
     //m_profileTime = GetTimeUSeconds();
     std::vector<Client*>::iterator citr = m_clients.begin();
     while (citr != m_clients.end()) {
@@ -228,7 +228,7 @@ void EntityList::Process() {
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
         while (itr != m_systems.end()) {
             if (itr->second == nullptr) { /* this shouldnt happen.  log error to make note */
-                sLog.Error(" EntityList::Proc", "Deleting System %u because itr->second=nullptr", itr->first);
+                sLog.Error(" EntityMgr::Proc", "Deleting System %u because itr->second=nullptr", itr->first);
                 itr = m_systems.erase(itr);
                 continue;
             } else if (!itr->second->ProcessTic()) {    /* Process each loaded system */
@@ -271,7 +271,7 @@ void EntityList::Process() {
     }
 }
 
-SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
+SystemManager* EntityMgr::FindOrBootSystem(uint32 systemID) {
     if (!sDataMgr.IsSolarSystem(systemID)) {
         _log(SERVER__INIT_ERR, "BootSystem() called with invalid systemID (%u)", systemID);
         return nullptr;
@@ -294,15 +294,15 @@ SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
 }
 
 // cannot put add/remove station in header due to incomplete StationItemRef class
-void EntityList::AddStation(uint32 stationID, StationItemRef itemRef) {
+void EntityMgr::AddStation(uint32 stationID, StationItemRef itemRef) {
     m_stations[stationID] = itemRef;
 }
 
-void EntityList::RemoveStation(uint32 stationID) {
+void EntityMgr::RemoveStation(uint32 stationID) {
     m_stations.erase(stationID);
 }
 
-Agent* EntityList::GetAgent(uint32 agentID) {
+Agent* EntityMgr::GetAgent(uint32 agentID) {
     std::map<uint32, Agent*>::iterator res = m_agents.find(agentID);
     if (res != m_agents.end())
         return res->second;
@@ -316,12 +316,12 @@ Agent* EntityList::GetAgent(uint32 agentID) {
     return pAgent;
 }
 
-void EntityList::GetClients(std::vector<Client*> &result) const {
+void EntityMgr::GetClients(std::vector<Client*> &result) const {
     for (auto &cur : m_players)
         result.push_back(cur.second);
 }
 
-void EntityList::GetCorpClients(std::vector<Client*> &result, uint32 corpID) const {
+void EntityMgr::GetCorpClients(std::vector<Client*> &result, uint32 corpID) const {
     std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(corpID);
     if (cItr == m_corpMembers.end())
         return;
@@ -334,27 +334,27 @@ void EntityList::GetCorpClients(std::vector<Client*> &result, uint32 corpID) con
     }
 }
 // this method is corrected, as stations have their own guestlist now.
-void EntityList::GetStationGuestList(uint32 stationID, std::vector<Client*> &result) const {
+void EntityMgr::GetStationGuestList(uint32 stationID, std::vector<Client*> &result) const {
     std::map<uint32, StationItemRef>::const_iterator itr = m_stations.find(stationID);
     if (itr != m_stations.end())
         itr->second->GetGuestList(result);
 }
 
-bool EntityList::IsOnline(uint32 charID)
+bool EntityMgr::IsOnline(uint32 charID)
 {
     if (m_players.find(charID) == m_players.end())
         return false;
     return true;
 }
 
-PyRep* EntityList::PyIsOnline(uint32 charID)
+PyRep* EntityMgr::PyIsOnline(uint32 charID)
 {
     if (m_players.find(charID) == m_players.end())
         return PyStatic.NewFalse();
     return PyStatic.NewTrue();
 }
 
-Client* EntityList::FindClientByCharID(uint32 charID) const
+Client* EntityMgr::FindClientByCharID(uint32 charID) const
 {
     std::map<uint32, Client*>::const_iterator itr = m_players.find(charID);
     if (itr != m_players.end())
@@ -362,14 +362,14 @@ Client* EntityList::FindClientByCharID(uint32 charID) const
     return nullptr;
 }
 
-StationItemRef EntityList::GetStationByID(uint32 stationID) {
+StationItemRef EntityMgr::GetStationByID(uint32 stationID) {
     std::map<uint32, StationItemRef>::iterator res = m_stations.find(stationID);
     if (res != m_stations.end())
         return res->second;
     return StationItemRef(nullptr);
 }
 
-std::string EntityList::GetAnomalyID()
+std::string EntityMgr::GetAnomalyID()
 {
     // these should be totally unique.  design a way to enforce this
     std::string str1 = "", str2 = "";
@@ -386,7 +386,7 @@ std::string EntityList::GetAnomalyID()
     return res;
 }
 
-void EntityList::GetUpTime( std::string& time )
+void EntityMgr::GetUpTime( std::string& time )
 {
     float seconds = m_stamp - 1000;
     float minutes = seconds/60;
@@ -423,7 +423,7 @@ void EntityList::GetUpTime( std::string& time )
 
 
 // this is my answer to the crazy looping of Multicast shit...
-void EntityList::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyType, const char* idType, PyTuple* payload) const
+void EntityMgr::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyType, const char* idType, PyTuple* payload) const
 {
     // make sure this is player corp (which it really should be, but just in case....)
     if (IsNPCCorp(corpID))
@@ -602,7 +602,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTy
 }
 
 // Broadcast() is only used by Fleet() and Agent() (so far)
-void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const {
+void EntityMgr::Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const {
     //build a little notification out of it.
     EVENotificationStream notify;
         notify.remoteObject = 1;
@@ -617,12 +617,12 @@ void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple**
     Broadcast(dest, notify);
 }
 
-void EntityList::Broadcast(const PyAddress &dest, EVENotificationStream &noti) const {
+void EntityMgr::Broadcast(const PyAddress &dest, EVENotificationStream &noti) const {
     for (auto &cur : m_players)
         cur.second->SendNotification(dest, noti);
 }
 
-void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const {
+void EntityMgr::Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const {
     std::map<uint32, Client*>::const_iterator itr = m_players.begin();
     for (auto &cur : cset) {
         itr = m_players.find(cur);
@@ -632,7 +632,7 @@ void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVE
 }
 
 // updated to remove looping thru entire client list for each call....still needs work
-void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple** in_payload, NotificationDestination target, uint32 targID, bool seq )
+void EntityMgr::Multicast( const char* notifyType, const char* idType, PyTuple** in_payload, NotificationDestination target, uint32 targID, bool seq )
 {
     PyTuple* payload = *in_payload;
     in_payload = nullptr;
@@ -648,7 +648,7 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
                     break;
                 pSysMgr->GetClientList(cVec);
             } else {
-                sLog.Error("EntityList::Multicast 1", "DEST__LOCATION - location %u is neither station nor system", targID);
+                sLog.Error("EntityMgr::Multicast 1", "DEST__LOCATION - location %u is neither station nor system", targID);
                 if (sConfig.server.StackTrace)
                     EvE::traceStack();
             }
@@ -674,7 +674,7 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
 }
 
 // updated.  so much better this way.
-void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple** in_payload, const MulticastTarget &mcset, bool seq)
+void EntityMgr::Multicast(const char* notifyType, const char* idType, PyTuple** in_payload, const MulticastTarget &mcset, bool seq)
 {
     // consume payload
     PyTuple* payload = *in_payload;
@@ -701,7 +701,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
                     continue;
                 pSysMgr->GetClientList(cVec);
             } else {
-                sLog.Error("EntityList::Multicast 2", "location %u is neither station nor system", cur);
+                sLog.Error("EntityMgr::Multicast 2", "location %u is neither station nor system", cur);
                 EvE::traceStack();
             }
         }
@@ -713,7 +713,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
 
     // this will need list of interested parties from corp.  update this call to use CorpNotify() where possible.
     if (!mcset.corporations.empty()) {
-        sLog.Error("EntityList::Multicast 2", "Corporation MulticastTarget called.");
+        sLog.Error("EntityMgr::Multicast 2", "Corporation MulticastTarget called.");
         EvE::traceStack();
         for (auto &cur : mcset.corporations) {
             std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(cur);
@@ -731,7 +731,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
     PyDecRef( payload );
 }
 
-void EntityList::Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** in_payload, bool seq) const
+void EntityMgr::Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** in_payload, bool seq) const
 {
     // consume payload
     PyTuple* payload = *in_payload;
@@ -748,7 +748,7 @@ void EntityList::Multicast(const character_set &cset, const char* notifyType, co
     PyDecRef( payload );
 }
 
-void EntityList::Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq) {
+void EntityMgr::Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq) {
     Client* pClient = FindClientByCharID(charID);
     if (pClient != nullptr)
         pClient->SendNotification( notifyType, idType, payload, seq );
@@ -757,7 +757,7 @@ void EntityList::Unicast(uint32 charID, const char* notifyType, const char* idTy
 /** @todo @note NOTE: TODO: HACK: the Find* methods below can get very expensive for many players */
 
 //used by gmCommands....i dont like this one either....but at least it's use will be seldom
-Client* EntityList::FindClientByName(const char* name) const {
+Client* EntityMgr::FindClientByName(const char* name) const {
     for (auto &cur : m_players) {
         CharacterRef cRef = cur.second->GetChar();
         if (cRef.get() != nullptr)
@@ -768,7 +768,7 @@ Client* EntityList::FindClientByName(const char* name) const {
 }
 
 /** @todo  this needs more work.  hacked for now...  */
-void EntityList::RegisterSID(int64 &sessionID) {
+void EntityMgr::RegisterSID(int64 &sessionID) {
     /*  this whole method is just made up...eventually it will return a unique long long */
     /* max for int64 = 9223372036854775807 */
     std::set<int64>::iterator itr = m_sessions.find(sessionID);
@@ -779,6 +779,6 @@ void EntityList::RegisterSID(int64 &sessionID) {
         return;
 }
 
-void EntityList::RemoveSID( int64 sessionID ) {
+void EntityMgr::RemoveSID( int64 sessionID ) {
     m_sessions.erase(sessionID);
 }

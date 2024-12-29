@@ -48,7 +48,7 @@ namespace Destiny {
             bool accel;
             bool cruise;
             bool decel;
-            uint32 startStamp;          //from sEntityList::GetStamp()
+            uint32 startStamp;          //from sEntityMgr::GetStamp()
             float warpTime;             //in s
             double total_distance;      //in m
             double warpSpeed;           //in m/s
@@ -265,7 +265,7 @@ protected:
     float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
     float m_maxOrbitSpeedFraction;      //fuzzy logic - ship's max speed based on orbit data
 
-    uint16 m_turnTime;                  //in s        - time turn started.  now uses EntityList.Stamp()
+    uint16 m_turnTime;                  //in s        - time turn started.  now uses EntityMgr.Stamp()
     uint32 m_followDistance;            //in m        - used for follow, orbit, and distance where ship should be removed from bubble during warp if < bubble radius
     int64  m_targetDistance;            //in m
     double m_moveTime;                  //in ms       - time when speed change started.  used to calculate m_timeFraction
@@ -359,7 +359,7 @@ private:
         cruise(cruise_),
         decel(decel_)
         {}
-        uint32 start_time;          //from sEntityList::GetStamp()
+        uint32 start_time;          //from sEntityMgr::GetStamp()
         int64  total_distance;      //in m
         int64 warpSpeed;           //in m/s
         int64 accelDist;           //in m

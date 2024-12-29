@@ -20,7 +20,7 @@
 
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "planet/Moon.h"
 #include "pos/Tower.h"
@@ -189,7 +189,7 @@ void TowerSE::Scoop() {
 
 void TowerSE::Process()
 {
-    /* called by EntityList::Process on every loop */
+    /* called by EntityMgr::Process on every loop */
 
     // starbase charter checks for empire space
 

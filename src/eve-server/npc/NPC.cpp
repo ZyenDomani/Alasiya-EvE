@@ -28,7 +28,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "inventory/AttributeEnum.h"
@@ -319,7 +319,7 @@ void NPC::Killed(Damage &fatal_blow) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
-        pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
+        pClient = sEntityMgr.FindClientByCharID( killer->GetSelf()->ownerID() );
         if (pClient == nullptr) {
             sLog.Error("NPC::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else {

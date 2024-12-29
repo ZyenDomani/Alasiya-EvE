@@ -14,7 +14,7 @@
 
 #include "EVEServerConfig.h"
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "StaticDataMgr.h"
 #include "effects/EffectsDataMgr.h"
 #include "inventory/Inventory.h"
@@ -1052,7 +1052,7 @@ void ModuleManager::UnloadCharge(GenericModule* pMod)
     chargeRef->SetAttribute(AttrQuantity, EvilZero);    // OMAC
 
     if (sDataMgr.IsStation(pShipItem->locationID())) {
-        StationItemRef sRef = sEntityList.GetStationByID(pShipItem->locationID());
+        StationItemRef sRef = sEntityMgr.GetStationByID(pShipItem->locationID());
         if (sRef.get() != nullptr) {
             InventoryItemRef iRef = sRef->GetMyInventory()->GetByTypeFlag(chargeRef->typeID(), flagHangar);
             if (iRef.get() != nullptr) {

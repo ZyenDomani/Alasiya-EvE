@@ -27,7 +27,7 @@
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "inventory/AttributeEnum.h"
 #include "npc/Drone.h"
 #include "system/Container.h"
@@ -53,7 +53,7 @@ m_system(pSystem)
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-    m_pClient = sEntityList.FindClientByCharID(data.ownerID);
+    m_pClient = sEntityMgr.FindClientByCharID(data.ownerID);
     m_targetID = 0;
     m_controllerID = 0;
     m_controllerOwnerID = 0;
@@ -382,7 +382,7 @@ void DroneSE::Killed(Damage &fatal_blow) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
-        pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
+        pClient = sEntityMgr.FindClientByCharID( killer->GetSelf()->ownerID() );
         if (pClient == nullptr) {
             sLog.Error("DroneSE::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else {

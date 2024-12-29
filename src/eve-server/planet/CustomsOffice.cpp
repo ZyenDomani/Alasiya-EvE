@@ -20,7 +20,7 @@
 
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "manufacturing/Blueprint.h"
@@ -168,7 +168,7 @@ void CustomsSE::InitData()
 }
 
 void CustomsSE::Process() {
-    /* called by EntityList::Process on every loop */
+    /* called by EntityMgr::Process on every loop */
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 }
@@ -444,7 +444,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
-        pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
+        pClient = sEntityMgr.FindClientByCharID( killer->GetSelf()->ownerID() );
         if (pClient == nullptr) {
             sLog.Error("CustomsSE::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else {

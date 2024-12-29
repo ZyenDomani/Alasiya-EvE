@@ -658,12 +658,12 @@ int main( int argc, char* argv[] )
     /* create a single item factory */
     sLog.Green("       ServerInit", "Starting Item Factory");
     sItemFactory.Initialize();
-    /* initialize EntityList singleton, clientID seed and start tic timer */
+    /* initialize EntityMgr singleton, clientID seed and start tic timer */
     sLog.Green("       ServerInit", "Starting Entity List");
-    sEntityList.Initialize();
+    sEntityMgr.Initialize();
     /* create a service manager */
     sLog.Green("       ServerInit", "Starting Service Manager");
-    PyServiceMgr pyServMgr( 888444, sEntityList );
+    PyServiceMgr pyServMgr( 888444, sEntityMgr );
     sLog.Blue("  Service Manager", "Service Manager Initialized.");
     /* create a command dispatcher */
     sLog.Green("       ServerInit", "Starting Command Dispatch Manager");
@@ -923,9 +923,9 @@ int main( int argc, char* argv[] )
 
         tcpc = tcps.PopConnection();
         if (tcpc != nullptr)
-            sEntityList.Add(new Client(pyServMgr, &tcpc));
+            sEntityMgr.Add(new Client(pyServMgr, &tcpc));
 
-        sEntityList.Process();
+        sEntityMgr.Process();
 
         /*  process console commands, if any, and check for 'exit' command */
         m_run = sConsole.Process();
@@ -975,7 +975,7 @@ int main( int argc, char* argv[] )
     if (!sConsole.IsDbError())
         sItemFactory.SaveItems();
     /* Close the entity list */
-    sEntityList.Close();
+    sEntityMgr.Close();
     /* Close the service manager */
     pyServMgr.Close();
     /* Shut down the Item system */
@@ -1080,7 +1080,7 @@ static void CleanUp() {
         sItemFactory.SaveItems();
     /* Close the entity list */
     sLog.Warning("   ServerShutdown", "Closing the Entity List." );
-    sEntityList.Close();
+    sEntityMgr.Close();
     /* Close the service manager */
     sLog.Warning("   ServerShutdown", "Closing the Services Manager." );
     //pyServMgr.Close();

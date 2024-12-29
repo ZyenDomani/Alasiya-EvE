@@ -28,7 +28,7 @@
 
 #include "Client.h"
 #include "ConsoleCommands.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "StaticDataMgr.h"
 #include "StatisticMgr.h"
 #include "account/AccountService.h"
@@ -1284,7 +1284,7 @@ void Character::PayBounty(CharacterRef cRef)
 
 void Character::SetLoginTime()
 {
-    m_loginTime = sEntityList.GetStamp();
+    m_loginTime = sEntityMgr.GetStamp();
     m_db.SetLogInTime(m_itemID);
 }
 
@@ -1300,12 +1300,12 @@ uint16 Character::OnlineTime()
 // called on 10m timer from client
 void Character::SetLogonMinutes() {
     //  get login time and set _logonMinutes       -allan
-    uint16 loginMinutes = (sEntityList.GetStamp() - m_loginTime) /60;
+    uint16 loginMinutes = (sEntityMgr.GetStamp() - m_loginTime) /60;
 
     // some checks are done < 1m, so if this check has no minutes, keep original time and exit
     if (loginMinutes > 0) {
         m_charData.logonMinutes += loginMinutes;
-        m_loginTime = sEntityList.GetStamp();
+        m_loginTime = sEntityMgr.GetStamp();
     }
 }
 

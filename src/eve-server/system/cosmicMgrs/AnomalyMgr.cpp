@@ -206,7 +206,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
     // compile data for new system anomaly.
     CosmicSignature sig = CosmicSignature();
         sig.systemID = m_system->GetID();
-        sig.sigID = sEntityList.GetAnomalyID();
+        sig.sigID = sEntityMgr.GetAnomalyID();
         // *Mgr will determine name, itemID and sigStrength.
         sig.sigItemID = 0;
         sig.sigName = "Test Name Here";
@@ -440,7 +440,7 @@ void AnomalyMgr::AddSignal(SystemEntity* pSE, uint32 id/*0*/)
         if (id) {
             sig.sigID = id;
         } else {
-            sig.sigID = sEntityList.GetAnomalyID();
+            sig.sigID = sEntityMgr.GetAnomalyID();
         }
         sig.sigItemID = iRef->itemID();
         sig.sigName = iRef->itemName();

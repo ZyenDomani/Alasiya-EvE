@@ -162,7 +162,7 @@ Client::~Client() {
                 }
                 CharNoLongerInStation();
                 // remove char from station
-                sEntityList.GetStationByID(m_locationID)->RemoveItem(m_char);
+                sEntityMgr.GetStationByID(m_locationID)->RemoveItem(m_char);
             }
         }
 
@@ -180,7 +180,7 @@ Client::~Client() {
     m_system = nullptr; // DO NOT delete m_system here
 
     // remove char from entitylist
-    sEntityList.RemovePlayer(this);
+    sEntityMgr.RemovePlayer(this);
 
     for (auto &cur : m_bindSet)
         m_services.ClearBoundObject(cur);
@@ -227,7 +227,7 @@ bool Client::ProcessNet()
 
 bool Client::SelectCharacter(int32 charID/*0*/)
 {
-    if (sEntityList.IsOnline(charID)) {
+    if (sEntityMgr.IsOnline(charID)) {
         sLog.Error("Client::SelectCharacter()", "Char %i already online.", charID);
         SendErrorMsg("That Character is already online.  Selection Failed.");
         CloseClientConnection();
@@ -242,10 +242,10 @@ bool Client::SelectCharacter(int32 charID/*0*/)
         return false;
     }
 
-    sEntityList.AddPlayer(this);
+    sEntityMgr.AddPlayer(this);
     sItemFactory.SetUsingClient(this);
 
-    m_system = sEntityList.FindOrBootSystem(m_systemData.systemID);
+    m_system = sEntityMgr.FindOrBootSystem(m_systemData.systemID);
     if (m_system == nullptr) {
         sLog.Error("Client::SelectCharacter()", "Failed to boot system %u for char %i.", m_systemData.systemID, charID);
         SendErrorMsg("SolarSystem %s(%u) - Boot Failure.", m_systemData.name.c_str(), m_systemData.systemID);
@@ -645,7 +645,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_system == NULL, m_locationID = %u", m_locationID);
         // find our new system's manager
         sItemFactory.SetUsingClient(this);
-        m_system = sEntityList.FindOrBootSystem(m_systemData.systemID);
+        m_system = sEntityMgr.FindOrBootSystem(m_systemData.systemID);
         sItemFactory.UnsetUsingClient();
         if (m_system == nullptr) {
             sLog.Error("Client", "Failed to boot system %u for char %s (%u)", m_systemData.systemID, m_char->name(), m_char->itemID());
@@ -687,7 +687,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
         CharNowInStation();
         DestroyShipSE();
-        StationItemRef sRef = sEntityList.GetStationByID(m_locationID);
+        StationItemRef sRef = sEntityMgr.GetStationByID(m_locationID);
         if (sRef.get() != nullptr) {
             sRef->LoadStationOffice(GetCorporationID());
             sRef->AddGuest(this);
@@ -1785,7 +1785,7 @@ void Client::ChannelLeft(LSCChannel *chan) {
 void Client::CharNoLongerInStation() {
     // clear station data
     // remove client from station guest list
-    sEntityList.GetStationByID(m_stationData.stationID)->RemoveGuest(this);
+    sEntityMgr.GetStationByID(m_stationData.stationID)->RemoveGuest(this);
     m_system->SetDockCount(this, false);
     OnCharNoLongerInStation ocnis;
         ocnis.charID = m_char->itemID();
@@ -1796,7 +1796,7 @@ void Client::CharNoLongerInStation() {
     if (tmp == nullptr)
         return;
     std::vector<Client*> clients;
-    sEntityList.GetStationGuestList(m_stationData.stationID, clients);
+    sEntityMgr.GetStationGuestList(m_stationData.stationID, clients);
     for (auto &cur : clients) {
         PyIncRef(tmp);
         cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp); //consumed
@@ -1816,7 +1816,7 @@ void Client::CharNowInStation() {
         ocnis.factionID = (IsFactionID(GetWarFactionID()) ? new PyInt(GetWarFactionID()) : PyStatic.NewNone());
     PyTuple* tmp = ocnis.Encode();
     std::vector<Client*> clients;
-    sEntityList.GetStationGuestList(m_locationID, clients);
+    sEntityMgr.GetStationGuestList(m_locationID, clients);
     for (auto &cur : clients) {
         PyIncRef(tmp);
         cur->SendNotification("OnCharNowInStation", "stationid", &tmp);
@@ -2100,7 +2100,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
     if (is_log_enabled(CLIENT__QUEUE_DUMP))
         (*update)->Dump(CLIENT__QUEUE_DUMP, "");
     DoDestinyAction act;
-        act.stamp = sEntityList.GetStamp();
+        act.stamp = sEntityMgr.GetStamp();
     if (DoPackage/* or m_packaged*/) {
         if (IsSetState) {
             // send the setstate buffer alone
@@ -2262,7 +2262,7 @@ void Client::BanClient()
 /* EVEClientSession interface                                           */
 /************************************************************************/
 int16 Client::GetClientCount() {
-    return sEntityList.GetClientCount();
+    return sEntityMgr.GetClientCount();
 }
 
 bool Client::_VerifyVersion(VersionExchangeClient& version)
@@ -2360,7 +2360,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     server_shake.serverChallenge = "";
     server_shake.func_marshaled_code = new PyBuffer(marshaledNone, marshaledNone + sizeof(marshaledNone));
     server_shake.verification = new PyBool(false);
-    server_shake.cluster_usercount = sEntityList.GetClientCount();
+    server_shake.cluster_usercount = sEntityMgr.GetClientCount();
     server_shake.proxy_nodeid = 0xFFAA; //888444
     server_shake.user_logonqueueposition = _GetQueuePosition();
     // binascii.crc_hqx of marshaled single-element tuple containing 64 zero-bytes string

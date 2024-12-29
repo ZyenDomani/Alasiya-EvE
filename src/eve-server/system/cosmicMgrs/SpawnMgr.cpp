@@ -108,7 +108,7 @@ void SpawnMgr::Process() {
             while (itr != end) {
                 if (itr->second.enabled) {
                     killTimer = false;
-                    if (itr->second.stamp < sEntityList.GetStamp()) {
+                    if (itr->second.stamp < sEntityMgr.GetStamp()) {
                         ++itr;
                         continue;
                     }
@@ -237,7 +237,7 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
         auto itr = range.first;
         while (itr != range.second) {
             if (itr->second.itemID == itemID) {
-                itr->second.stamp = sEntityList.GetStamp() + sConfig.npc.RespawnTimer; // in seconds
+                itr->second.stamp = sEntityMgr.GetStamp() + sConfig.npc.RespawnTimer; // in seconds
                 itr->second.enabled = true;
             }
             if (!itr->second.enabled)
@@ -749,7 +749,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             if (sClass <= Spawn::Class::Officer) {  // this spawn is for rat.
                 se.stamp = 0;   // this is for respawn time...do not set here.
             } else {
-                se.stamp = sEntityList.GetStamp(); // set time of this spawn for ??
+                se.stamp = sEntityMgr.GetStamp(); // set time of this spawn for ??
             }
             m_spawns.emplace(pBubble->GetID(), se);
             _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry for %s with ID %u to m_spawns. Class: %s, Group:%s, Level: %u.", \

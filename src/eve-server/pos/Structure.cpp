@@ -20,7 +20,7 @@
  */
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "manufacturing/Blueprint.h"
@@ -447,7 +447,7 @@ void StructureSE::Scoop()
 
 void StructureSE::Process()
 {
-    /* called by EntityList::Process on every loop */
+    /* called by EntityMgr::Process on every loop */
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 
@@ -1212,7 +1212,7 @@ void StructureSE::Killed(Damage &damage)
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
-        pClient = sEntityList.FindClientByCharID(killer->GetSelf()->ownerID());
+        pClient = sEntityMgr.FindClientByCharID(killer->GetSelf()->ownerID());
         if (pClient == nullptr) {
             sLog.Error("StructureSE::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else {

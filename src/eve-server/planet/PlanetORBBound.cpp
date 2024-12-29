@@ -25,7 +25,7 @@
 
 #include "eve-server.h"
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "packets/Planet.h"
@@ -107,7 +107,7 @@ PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
         return nullptr;
     }
 
-    CustomsSE* pCOSE = sEntityList.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
+    CustomsSE* pCOSE = sEntityMgr.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
 
     /** @todo  there's more to this...check for standings, alliance  */
     if (IsPlayerCorp(pCOSE->GetOwnerID()))
@@ -128,7 +128,7 @@ PyResult PlanetORBBound::Handle_GetSettingsInfo( PyCallArgs& call )
         return nullptr;
     }
 
-    CustomsSE* pCOSE = sEntityList.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
+    CustomsSE* pCOSE = sEntityMgr.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
     return pCOSE->GetSettingsInfo();
 }
 
@@ -151,7 +151,7 @@ PyResult PlanetORBBound::Handle_UpdateSettings( PyCallArgs& call )
         return nullptr;
     }
 
-    CustomsSE* pCOSE = sEntityList.FindOrBootSystem(m_systemID)->GetSE(args.orbitalID)->GetCOSE();
+    CustomsSE* pCOSE = sEntityMgr.FindOrBootSystem(m_systemID)->GetSE(args.orbitalID)->GetCOSE();
     pCOSE->UpdateSettings(args.reinforceValue, args.standingValue, args.allowAlliance, args.allowStandings, dict);
 
     return nullptr;

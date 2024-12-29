@@ -35,7 +35,7 @@ void ArraySE::Init()
 
 void ArraySE::Process()
 {
-    /* called by EntityList::Process on every loop */
+    /* called by EntityMgr::Process on every loop */
     /*  Enable base call to Process state changes  */
     StructureSE::Process();
 }

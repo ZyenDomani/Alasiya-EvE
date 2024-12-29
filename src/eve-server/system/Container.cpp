@@ -28,7 +28,7 @@
 
 #include "Client.h"
 #include "ConsoleCommands.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "planet/PlanetDB.h"
 #include "system/DestinyManager.h"
@@ -336,7 +336,7 @@ void ContainerSE::EncodeDestiny( Buffer& into )
     into.Append( data );
     TROLL_Struct troll;
         troll.formationID = 0xFF;
-        troll.effectStamp = sEntityList.GetStamp();
+        troll.effectStamp = sEntityMgr.GetStamp();
     into.Append( troll );
 
     _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
@@ -579,7 +579,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
     into.Append( data );
     TROLL_Struct troll;
         troll.formationID = 0xFF;
-        troll.effectStamp = sEntityList.GetStamp();
+        troll.effectStamp = sEntityMgr.GetStamp();
     into.Append( troll );
     _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }

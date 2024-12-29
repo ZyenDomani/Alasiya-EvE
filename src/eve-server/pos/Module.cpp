@@ -24,7 +24,7 @@ void ModuleSE::Init()
 
 void ModuleSE::Process()
 {
-    /* called by EntityList::Process on every loop */
+    /* called by EntityMgr::Process on every loop */
     /*  Enable base call to Process state changes  */
     StructureSE::Process();
 }
@@ -60,7 +60,7 @@ void ReactorSE::InitData() {
 
 void ReactorSE::Process()
 {
-    /* called by EntityList::Process on every loop */
+    /* called by EntityMgr::Process on every loop */
     /*  Enable base call to Process state changes  */
     StructureSE::Process();
 }

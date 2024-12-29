@@ -1245,7 +1245,7 @@ void LSCService::SendMail(uint32 sender, const std::vector<int32> &recipients, c
 
     //now, send a notification to each successful recipient
     PyTuple *answer = notify.Encode();
-    sEntityList.Multicast(successful_recipients, "OnMessage", "*multicastID", &answer, false);
+    sEntityMgr.Multicast(successful_recipients, "OnMessage", "*multicastID", &answer, false);
 }
 
 

@@ -270,7 +270,7 @@ void MarketMgr::SendOnOwnOrderChanged(Client* pClient, uint32 orderID, uint8 act
     PyTuple* tmp = ooc.Encode();
     // send journal blink and call 'self.RefreshOrders()' in client
     if (isCorp) {
-        sEntityList.CorpNotify(pClient->GetCorporationID(), 125 /*MarketOrder*/, "OnOwnOrderChanged", "*corpid&corprole", tmp);
+        sEntityMgr.CorpNotify(pClient->GetCorporationID(), 125 /*MarketOrder*/, "OnOwnOrderChanged", "*corpid&corprole", tmp);
     } else {
         pClient->SendNotification("OnOwnOrderChanged", "clientID", &tmp);
     }
@@ -413,7 +413,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     if (isPlayer) {
         // get data needed and compute tax
         uint8 lvl(0);
-        Client* pBuyer = sEntityList.FindClientByCharID(oInfo.ownerID);
+        Client* pBuyer = sEntityMgr.FindClientByCharID(oInfo.ownerID);
         if (pBuyer == nullptr) {
             lvl = CharacterDB::GetSkillLevel(oInfo.ownerID, EvESkill::Accounting);
         } else {
@@ -428,7 +428,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         // is corp taxes modified by using character skills?  im thinking yes...
         // get data needed and compute tax
         uint8 lvl(0);
-        Client* pBuyer = sEntityList.FindClientByCharID(oInfo.memberID);
+        Client* pBuyer = sEntityMgr.FindClientByCharID(oInfo.memberID);
         if (pBuyer == nullptr) {
             lvl = CharacterDB::GetSkillLevel(oInfo.memberID, EvESkill::Accounting);
         } else {
@@ -560,7 +560,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
 
     Client* seller(nullptr);
     if (IsCharacterID(oInfo.ownerID))
-        seller = sEntityList.FindClientByCharID(oInfo.ownerID);
+        seller = sEntityMgr.FindClientByCharID(oInfo.ownerID);
 
     if (orderConsumed) {
         _log(MARKET__TRACE, "ExecuteSellOrder - satisfied order #%u, deleting.", orderID);

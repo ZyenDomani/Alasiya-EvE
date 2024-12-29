@@ -27,14 +27,14 @@
 #include "eve-server.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "cache/ObjCacheService.h"
 #include "chat/LSCService.h"
 #include "PyService.h"
 #include "PyServiceMgr.h"
 #include "PyBoundObject.h"
 
-PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist )
+PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityMgr& elist )
 : lsc_service(nullptr),
   cache_service(nullptr),
   m_nextBindID(100),

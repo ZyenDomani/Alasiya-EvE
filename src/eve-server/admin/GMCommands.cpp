@@ -116,7 +116,7 @@ PyResult Command_giveisk(Client* who, CommandDB* db, PyServiceMgr* services, con
     Client* tgt;
     if (entity >= maxNPCItem)
     {
-        tgt = sEntityList.FindClientByCharID(entity);
+        tgt = sEntityMgr.FindClientByCharID(entity);
         if (!tgt)
             throw CustomError("Unable to find character %u", entity);
     }
@@ -556,7 +556,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
     if (args.argCount() >= 2) {
         if (args.isNumber(1)) {
             ownerID = atoi(args.arg(1).c_str());
-            pTarget = sEntityList.FindClientByCharID(ownerID);
+            pTarget = sEntityMgr.FindClientByCharID(ownerID);
             if (!pTarget)
                 throw CustomError("ERROR: Cannot find character #%d", ownerID);
             else
@@ -569,7 +569,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
             throw CustomError("The use of string based Character names for this command is not yet supported!  Use 'me' instead or the entityID of the character to which you wish to give skills.");
             /*
              *            const char *name = args.arg(1).c_str();
-             *            Client *target = sEntityList.FindCharacter(name);
+             *            Client *target = sEntityMgr.FindCharacter(name);
              *           if (target == NULL)
              *                throw CustomError("Cannot find Character by the name of %s", name);
              *            ownerID = target->GetCharacterID();
@@ -646,7 +646,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
     if (args.argCount() == 4) {
         if (args.isNumber(1)) {
             ownerID = atoi(args.arg(1).c_str());
-            character = sEntityList.FindClientByCharID(ownerID)->GetChar();
+            character = sEntityMgr.FindClientByCharID(ownerID)->GetChar();
             pTarget = character->GetClient();
         } else if (args.arg(1) == "me") {
             ownerID = who->GetCharacterID();
@@ -656,7 +656,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             throw CustomError("The use of string based Character names for this command is not yet supported!  Use 'me' instead or the entityID of the character to which you wish to give skills.");
             /*
             const char *name = args.arg(1).c_str();
-            pTarget = sEntityList.FindClientByName(name);
+            pTarget = sEntityMgr.FindClientByName(name);
             if (!pTarget)
                 throw CustomError("Cannot find Character by the name of %s", name);
             ownerID = pTarget->GetCharacterID();
@@ -742,7 +742,7 @@ PyResult Command_online(Client *who, CommandDB *db, PyServiceMgr *services, cons
             tgt = who;
         else
         {
-            tgt = sEntityList.FindClientByCharID(entity);
+            tgt = sEntityMgr.FindClientByCharID(entity);
             if (!tgt)
                 throw CustomError("Unable to find character %u", entity);
         }
@@ -786,7 +786,7 @@ PyResult Command_unload(Client *who, CommandDB *db, PyServiceMgr *services, cons
             tgt = who;
         else
         {
-            tgt = sEntityList.FindClientByCharID( entityID );
+            tgt = sEntityMgr.FindClientByCharID( entityID );
 
             if (!tgt)
                 throw CustomError("Unable to find character %u", entityID );
@@ -817,7 +817,7 @@ PyResult Command_repairmodules(Client* who, CommandDB* db, PyServiceMgr* service
             throw CustomError("Argument 1 should be a character ID");
         uint32 charID = atoi(args.arg(1).c_str());
 
-        Client *target = sEntityList.FindClientByCharID(charID);
+        Client *target = sEntityMgr.FindClientByCharID(charID);
         if (target == NULL)
             throw CustomError("Cannot find CharacterID %u", charID);
         target->GetShip()->RepairModules();
@@ -869,10 +869,10 @@ PyResult Command_kick(Client* who, CommandDB* db, PyServiceMgr* services, const 
     if (args.argCount() == 2) {
         if (args.isNumber(1)) {
             int id = atoi(args.arg(1).c_str());
-            target = sEntityList.FindClientByCharID(id);
+            target = sEntityMgr.FindClientByCharID(id);
         } else {
             const char *name = args.arg(1).c_str();
-            target = sEntityList.FindClientByName(name);
+            target = sEntityMgr.FindClientByName(name);
         }
     }
     //support for characters with first and last names
@@ -881,7 +881,7 @@ PyResult Command_kick(Client* who, CommandDB* db, PyServiceMgr* services, const 
             throw CustomError("Unknown arguments");
 
         std::string name = args.arg(1) + " " + args.arg(2);
-        target = sEntityList.FindClientByName(name.c_str()) ;
+        target = sEntityMgr.FindClientByName(name.c_str()) ;
     } else {
         throw CustomError("Correct Usage: /kick [Character Name]");
     }
@@ -904,7 +904,7 @@ PyResult Command_ban(Client* who, CommandDB* db, PyServiceMgr* services, const S
         if (!args.isNumber(1))
         {
             const char *name = args.arg(1).c_str();
-            target = sEntityList.FindClientByName(name);
+            target = sEntityMgr.FindClientByName(name);
         }
         else
             throw CustomError("Correct Usage: /ban [Character Name]");
@@ -916,7 +916,7 @@ PyResult Command_ban(Client* who, CommandDB* db, PyServiceMgr* services, const S
             throw CustomError("Unknown arguments");
 
         std::string name = args.arg(1) + " " + args.arg(2);
-        target = sEntityList.FindClientByName(name.c_str()) ;
+        target = sEntityMgr.FindClientByName(name.c_str()) ;
     }
     else
         throw CustomError("Correct Usage: /ban [Character Name]");

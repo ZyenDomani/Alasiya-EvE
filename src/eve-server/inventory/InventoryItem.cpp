@@ -30,7 +30,7 @@
 
 #include "Client.h"
 #include "ConsoleCommands.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "character/Skill.h"
 #include "effects/EffectsProcessor.h"
 #include "exploration/Probes.h"
@@ -642,7 +642,7 @@ void InventoryItem::Rename(std::string name)
     // get owner
     if (IsCharacterID(m_data.ownerID)) {
         // this will be the most-used case
-        Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
+        Client* pClient = sEntityMgr.FindClientByCharID(m_data.ownerID);
         if (pClient == nullptr) {
             PySafeDecRef(list);
             PySafeDecRef(tuple);
@@ -656,9 +656,9 @@ void InventoryItem::Rename(std::string name)
     } else if (IsPlayerCorp(m_data.ownerID)) {
         // bcast to all online corp members
         if (sDataMgr.IsStation(m_data.locationID)) {
-            sEntityList.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateStation, "OnCfgDataChanged", "corpid", tuple);
+            sEntityMgr.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateStation, "OnCfgDataChanged", "corpid", tuple);
         } else {
-            sEntityList.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateSystem, "OnCfgDataChanged", "solarsystemid", tuple);
+            sEntityMgr.CorpNotify(m_data.ownerID, Notify::Types::ItemUpdateSystem, "OnCfgDataChanged", "solarsystemid", tuple);
         }
     }
 
@@ -889,7 +889,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
     if (!to_merge->AlterQuantity(-qty, notify)) {
         _log(ITEM__ERROR, "II::Merge() - %s (%u): Failed to remove quantity %u.", to_merge->name(), to_merge->itemID(), qty);
         if (IsCharacterID(m_data.ownerID)) {
-            Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
+            Client* pClient = sEntityMgr.FindClientByCharID(m_data.ownerID);
             if (pClient != nullptr)
                 pClient->SendErrorMsg("Failure to alter quantity.");
         }
@@ -899,7 +899,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
     if (!AlterQuantity(qty, notify)) {
         _log(ITEM__ERROR, "%s (%u): Failed to add quantity %u.", m_data.name.c_str(), m_itemID, qty);
         if (IsCharacterID(m_data.ownerID)) {
-            Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
+            Client* pClient = sEntityMgr.FindClientByCharID(m_data.ownerID);
             if (pClient != nullptr)
                 pClient->SendErrorMsg("Failure to alter quantity.");
         }
@@ -967,7 +967,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZe
         codelog(ITEM__ERROR, "II::SetQuantity() - %s(%u): quantity overflow", m_data.name.c_str(), m_itemID);
         m_data.quantity = maxEveItem - 1;
         if (IsCharacterID(m_data.ownerID)) {
-            Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
+            Client* pClient = sEntityMgr.FindClientByCharID(m_data.ownerID);
             if (pClient != nullptr)
                 pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.<br>If you try to add any more to this stack, you will lose items.  This is your only warning.", m_data.name.c_str());
         }
@@ -982,7 +982,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZe
     // how are we gonna do modules owned by corp here???
     if (IsFittingSlot(m_data.flag) and (m_type.categoryID() == EVEDB::invCategories::Charge))
         if (IsCharacterID(m_data.ownerID)/* or IsPlayerCorp(m_data.ownerID)*/) {
-            Client* pClient = sEntityList.FindClientByCharID(m_data.ownerID);
+            Client* pClient = sEntityMgr.FindClientByCharID(m_data.ownerID);
             SetAttribute(AttrQuantity, m_data.quantity, pClient == nullptr ? notify : pClient->IsInSpace());
         }
 
@@ -1098,7 +1098,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
 
     //TODO: figure out the appropriate list of interested people...
     if (IsCharacterID(toID)) {
-        Client* pClient = sEntityList.FindClientByCharID(toID);
+        Client* pClient = sEntityMgr.FindClientByCharID(toID);
         if (pClient == nullptr)
             return;
         if (pClient->IsCharCreation())
@@ -1109,9 +1109,9 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
             pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this is for single items
     } else if (IsPlayerCorp(toID)) {
         if (sDataMgr.IsStation(m_data.locationID)) {
-            sEntityList.CorpNotify(toID, Notify::Types::ItemUpdateStation, "OnItemChange","*stationid&corpid", tmp);
+            sEntityMgr.CorpNotify(toID, Notify::Types::ItemUpdateStation, "OnItemChange","*stationid&corpid", tmp);
         } else {
-            sEntityList.CorpNotify(toID, Notify::Types::ItemUpdateSystem, "OnItemChange","corpid", tmp);
+            sEntityMgr.CorpNotify(toID, Notify::Types::ItemUpdateSystem, "OnItemChange","corpid", tmp);
         }
     }
 

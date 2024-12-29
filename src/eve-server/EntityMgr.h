@@ -61,12 +61,12 @@ public:
     std::set<uint32> corporations;
 };
 
-class EntityList
-: public Singleton<EntityList>
+class EntityMgr
+: public Singleton<EntityMgr>
 {
 public:
-    EntityList();
-    ~EntityList();
+    EntityMgr();
+    ~EntityMgr();
 
     typedef std::set<uint32> character_set;
 
@@ -208,8 +208,8 @@ private:
 };
 
 //Singleton
-#define sEntityList \
-    ( EntityList::get() )
+#define sEntityMgr \
+    ( EntityMgr::get() )
 
 
 #endif

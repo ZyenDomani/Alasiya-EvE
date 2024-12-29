@@ -25,7 +25,7 @@
 
 #include "eve-server.h"
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "PyServiceCD.h"
 #include "station/StationService.h"
 
@@ -46,7 +46,7 @@ StationService::~StationService() {
 
 PyResult StationService::Handle_GetGuests(PyCallArgs &call) {
     std::vector<Client*> clients;
-    sEntityList.GetStationGuestList(call.client->GetStationID(), clients);
+    sEntityMgr.GetStationGuestList(call.client->GetStationID(), clients);
     PyList* res = new PyList();
     for (auto &cur : clients) {
         PyTuple* tuple = new PyTuple(4);

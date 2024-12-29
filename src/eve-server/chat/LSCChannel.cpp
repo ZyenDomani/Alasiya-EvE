@@ -131,7 +131,7 @@ bool LSCChannel::JoinChannel(Client* pClient) {
     for( ; cur != m_chars.end(); cur++ )
         mct.characters.insert( cur->first );
     PyTuple *answer = join.Encode();
-    sEntityList.Multicast( "OnLSC", GetTypeString(), &answer, mct );
+    sEntityMgr.Multicast( "OnLSC", GetTypeString(), &answer, mct );
 
     _log(LSC__CHANNELS, "%s Joined Channel %u - %s", pClient->GetName(), m_channelID, m_displayName.c_str());
     return true;
@@ -163,7 +163,7 @@ void LSCChannel::LeaveChannel(Client *pClient)
     leave.channelID = EncodeID();
 
     PyTuple *answer = leave.Encode();
-    sEntityList.Multicast("OnLSC", GetTypeString(), &answer, mct);
+    sEntityMgr.Multicast("OnLSC", GetTypeString(), &answer, mct);
 
     _log(LSC__CHANNELS, "%s Left Channel %u - %s", pClient->GetName(), m_channelID, m_displayName.c_str());
 
@@ -187,7 +187,7 @@ void LSCChannel::Evacuate(Client * c) {
         mct.characters.insert(cur->first);
 
     PyTuple *answer = dc.Encode();
-    sEntityList.Multicast("OnLSC", GetTypeString(), &answer, mct);
+    sEntityMgr.Multicast("OnLSC", GetTypeString(), &answer, mct);
 }
 
 void LSCChannel::SendMessage(Client * c, const char * message, bool self/*false*/) {
@@ -209,12 +209,12 @@ void LSCChannel::SendMessage(Client * c, const char * message, bool self/*false*
     sm.member_count = m_chars.size();
 
     PyTuple *answer = sm.Encode();
-    sEntityList.Multicast("OnLSC", GetTypeString(), &answer, mct);
+    sEntityMgr.Multicast("OnLSC", GetTypeString(), &answer, mct);
 }
 
 void LSCChannel::SendServerMOTD(Client* pClient) {
     std::string uptime;
-    sEntityList.GetUpTime(uptime);
+    sEntityMgr.GetUpTime(uptime);
     std::string msg = "<br>Welcome to Alasiya's EvEmu Server";
     //msg += pClient->GetCharName();
     msg += ".<br>Server Version: ";
@@ -224,10 +224,10 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     msg += "<br>Uptime: ";
     msg += uptime;
     msg += "<br>Current Population: ";
-    msg += std::to_string(sEntityList.GetClientCount());
+    msg += std::to_string(sEntityMgr.GetClientCount());
     msg += "<br><br>Character Options:";
     msg += "<br>Ship Tracking: ";
-    msg += (sEntityList.GetTracking() ? "On" : "Off");
+    msg += (sEntityMgr.GetTracking() ? "On" : "Off");
     msg += "<br>Module AutoStop: ";
     msg += (pClient->AutoStop() ? "On" : "Off");
     msg += "<br>RAM Event: ";

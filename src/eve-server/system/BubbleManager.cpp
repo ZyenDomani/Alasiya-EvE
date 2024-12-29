@@ -29,7 +29,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVE_Scanning.h"
 #include "EVEServerConfig.h"
 #include "map/MapData.h"
@@ -74,7 +74,7 @@ void BubbleManager::Process() {
     }
 
     if (m_wanderTimer.Check()) {    //60s
-        _log(BUBBLE__INFO, "Wander Timer - %u", sEntityList.GetStamp());
+        _log(BUBBLE__INFO, "Wander Timer - %u", sEntityMgr.GetStamp());
         std::list<SystemBubble*>::iterator itr = m_bubbles.begin();
         while (itr != m_bubbles.end()) {
             if (*itr == nullptr) {
@@ -136,7 +136,7 @@ void BubbleManager::RemoveEmpty()
         if ((*itr)->IsEmpty()) {
             _log(BUBBLE__DEBUG, "BubbleManager::RemoveEmpty() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
             _log(BUBBLE__TRACE, "BubbleManager::RemoveEmpty() - Entity list of bubble %u as follows...", (*itr)->GetID());
-            (*itr)->PrintEntityList();
+            (*itr)->PrintEntityMgr();
             RemoveBubble((*itr)->GetSystem()->GetID(), (*itr));
             itr = m_bubbles.erase(itr);
         } else {

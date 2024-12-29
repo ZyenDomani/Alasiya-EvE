@@ -28,7 +28,7 @@
 
 #include <unordered_map>
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
@@ -151,8 +151,8 @@ PyBoundObject* TradeService::CreateBoundObject(Client* pClient, const PyRep *bin
 
 PyResult TradeBound::Handle_OfferMoney(PyCallArgs &call) {
     TradeSession* pTSes = call.client->GetTradeSession();
-    Client* pClient = sEntityList.FindClientByCharID(pTSes->m_tradeSession.myID);
-    Client* pOther = sEntityList.FindClientByCharID(pTSes->m_tradeSession.herID);
+    Client* pClient = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.myID);
+    Client* pOther = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.herID);
     PyList* list = new PyList(2);
 
     if (call.client->GetCharacterID() == pTSes->m_tradeSession.myID) {
@@ -192,8 +192,8 @@ PyResult TradeBound::Handle_OfferMoney(PyCallArgs &call) {
 
 PyResult TradeBound::Handle_Abort(PyCallArgs &call) {
     TradeSession* pTSes = call.client->GetTradeSession();
-    Client* pClient = sEntityList.FindClientByCharID(pTSes->m_tradeSession.myID);
-    Client* pOther = sEntityList.FindClientByCharID(pTSes->m_tradeSession.herID);
+    Client* pClient = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.myID);
+    Client* pOther = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.herID);
 
     CancelTrade(pClient, pOther, pTSes);
 
@@ -244,13 +244,13 @@ PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
 
     if (call.client->GetCharacterID() == pTSes->m_tradeSession.myID) {
         // this is 'my'
-        pClient = sEntityList.FindClientByCharID(pTSes->m_tradeSession.myID);
-        pOther = sEntityList.FindClientByCharID(pTSes->m_tradeSession.herID);
+        pClient = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.myID);
+        pOther = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.herID);
         myAccept = call.tuple->GetItem(0)->AsBool()->value();
     } else if (call.client->GetCharacterID() == pTSes->m_tradeSession.herID) {
         // this is 'her'
-        pClient = sEntityList.FindClientByCharID(pTSes->m_tradeSession.herID);
-        pOther = sEntityList.FindClientByCharID(pTSes->m_tradeSession.myID);
+        pClient = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.herID);
+        pOther = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.myID);
         herAccept = call.tuple->GetItem(0)->AsBool()->value();
     } else {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_ToggleAccept() : %s(%u) - clients are neither mine nor hers.", \
@@ -325,8 +325,8 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
     }
 
     TradeSession* pTSes = call.client->GetTradeSession();
-    Client* pClient(sEntityList.FindClientByCharID(pTSes->m_tradeSession.myID));
-    Client* pOther(sEntityList.FindClientByCharID(pTSes->m_tradeSession.herID));
+    Client* pClient(sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.myID));
+    Client* pOther(sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.herID));
 
     if (call.client->GetCharacterID() == pTSes->m_tradeSession.myID) {
         // this is 'my'
@@ -409,8 +409,8 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
         dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(args.contID));
 
     TradeSession* pTSes = call.client->GetTradeSession();
-    Client* pClient = sEntityList.FindClientByCharID(pTSes->m_tradeSession.myID);
-    Client* pOther = sEntityList.FindClientByCharID(pTSes->m_tradeSession.herID);
+    Client* pClient = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.myID);
+    Client* pOther = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.herID);
 
     if (call.client->GetCharacterID() == pTSes->m_tradeSession.myID) {
         // this is 'my'
@@ -548,8 +548,8 @@ PyResult TradeBound::Handle_List(PyCallArgs &call) {
 void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pTSes) {
     // trade completed.  perform item and money exchange
     if (pClient->GetCharacterID() == pTSes->m_tradeSession.herID) {
-        pOther = sEntityList.FindClientByCharID(pTSes->m_tradeSession.herID);
-        pClient = sEntityList.FindClientByCharID(pTSes->m_tradeSession.myID);
+        pOther = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.herID);
+        pClient = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.myID);
     }
     // transfer funds and add journal entries for both sides
     std::string reason = "Player Trade between ";
@@ -623,7 +623,7 @@ void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryIt
 PyResult TradeService::Handle_InitiateTrade(PyCallArgs &call) {
     Client* target(nullptr);
     if (call.client->GetTradeSession()) {
-        target = sEntityList.FindClientByCharID( call.client->GetTradeSession()->m_tradeSession.herID );
+        target = sEntityMgr.FindClientByCharID( call.client->GetTradeSession()->m_tradeSession.herID );
         call.client->SendErrorMsg("You are currently trading with %s.  You can only trade with one player at a time.", target->GetName());
         return nullptr;
     }
@@ -635,9 +635,9 @@ PyResult TradeService::Handle_InitiateTrade(PyCallArgs &call) {
         return nullptr;
     }
 
-    target = sEntityList.FindClientByCharID( args.arg );
+    target = sEntityMgr.FindClientByCharID( args.arg );
     if (target->GetTradeSession()) {
-        Client* otarget = sEntityList.FindClientByCharID( call.client->GetTradeSession()->m_tradeSession.herID );
+        Client* otarget = sEntityMgr.FindClientByCharID( call.client->GetTradeSession()->m_tradeSession.herID );
         call.client->SendErrorMsg("%s is currently trading with %s.  Try again later.", target->GetName(), otarget->GetName());
         return nullptr;
     }
@@ -677,7 +677,7 @@ void TradeService::RemoveActiveSession(uint32 myID) {
 
 void TradeService::CancelTrade(Client* pClient) {
     TradeSession* pTSes = pClient->GetTradeSession();
-    Client* pOther = sEntityList.FindClientByCharID(pTSes->m_tradeSession.herID);
+    Client* pOther = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.herID);
 
     TradeBound* pTB = new TradeBound(m_manager);
     pTB->CancelTrade(pClient, pOther, pTSes);

@@ -29,7 +29,7 @@
 #include "EVEServerConfig.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "PyServiceMgr.h"
 #include "StaticDataMgr.h"
 #include "map/MapData.h"
@@ -130,7 +130,7 @@ void DestinyManager::Process() {
              */
             if (m_warpState != nullptr) {
                 //warp is in progress
-                uint16 sec_into_warp = (sEntityList.GetStamp() - m_stateStamp);
+                uint16 sec_into_warp = (sEntityMgr.GetStamp() - m_stateStamp);
                 //  speed and distance formulas based on current warp distance
                 if (m_warpState->accel) {
                     WarpAccel(sec_into_warp);
@@ -442,7 +442,7 @@ void DestinyManager::Stop() {
     if (m_turning)
         ClearTurn();
 
-    m_stateStamp = sEntityList.GetStamp();
+    m_stateStamp = sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
 
     // need to check this after rewrite
@@ -602,7 +602,7 @@ void DestinyManager::Bounce(GVector direction, float speed)
      */
     m_ballMode = Destiny::Ball::Mode::GOTO;
     m_stop = false;
-    m_stateStamp = sEntityList.GetStamp();
+    m_stateStamp = sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
     m_shipAccelTime = 0.1f;
     m_userSpeedFraction = 1.0f;
@@ -634,7 +634,7 @@ void DestinyManager::MoveObject() {
         // only used by undock
         m_changeDelay = false;
         //m_moveTime = GetTimeMSeconds() - EvE::Time::Second;
-        m_stateStamp = sEntityList.GetStamp();
+        m_stateStamp = sEntityMgr.GetStamp();
         _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - ChangeDelay - %s(%u): stateStamp: %u", \
                 mySE->GetName(), mySE->GetID(), m_stateStamp);
         return;
@@ -645,7 +645,7 @@ void DestinyManager::MoveObject() {
         // reset m_moveTime to now and skip this tic
         m_moveDelay = false;
         m_moveTime = GetTimeMSeconds();
-        m_stateStamp = sEntityList.GetStamp();
+        m_stateStamp = sEntityMgr.GetStamp();
         _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - MoveDelay - %s(%u): stateStamp: %u", \
                 mySE->GetName(), mySE->GetID(), m_stateStamp);
         return;
@@ -701,7 +701,7 @@ void DestinyManager::MoveObject() {
     std::string move = "";
     // keep timer in seconds.
     float timeStamp((GetTimeMSeconds() - m_moveTime) * 0.001f);
-    //timeStamp = sEntityList.GetStamp() - m_stateStamp;
+    //timeStamp = sEntityMgr.GetStamp() - m_stateStamp;
     // update tf for this tic
     m_timeFraction = (1 - exp(-timeStamp / m_agility));
 
@@ -834,7 +834,7 @@ void DestinyManager::MoveObject() {
             mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_velocity.x, m_velocity.y, m_velocity.z,\
             m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 
-    if (sEntityList.GetTracking()) {
+    if (sEntityMgr.GetTracking()) {
         // only create can when ship is moving significant amount
         if (m_activeSpeedFraction > sConfig.debug.ShipTrackingTime) {
             // create jetcan to visualize movement
@@ -924,7 +924,7 @@ void DestinyManager::InitTurn()
     m_curveStart = GetPosition();
     m_origHeading = m_shipHeading;
     // reset move stamps
-    m_stateStamp = sEntityList.GetStamp();
+    m_stateStamp = sEntityMgr.GetStamp();
 
     // determine actual angle of turn for subsequent calc's
     GVector toVec(m_position, m_targetPoint);
@@ -1172,7 +1172,7 @@ void DestinyManager::Follow() {
             m_shipHeading = heading;
             m_velocity = m_shipHeading * m_maxSpeed;
             m_moveTime = GetTimeMSeconds();
-            m_stateStamp = sEntityList.GetStamp();
+            m_stateStamp = sEntityMgr.GetStamp();
             m_prevSpeedFraction = 0.0f;
             // there is no accel/decel for tractor'd items
             m_activeSpeedFraction = m_userSpeedFraction = m_timeFraction = 1;
@@ -1225,7 +1225,7 @@ void DestinyManager::Orbit() {
 
     /** @todo  will have to set/reset orbit time once actual orbit is started for proper radian setting */
     // get current times
-    //uint32 timeStamp = sEntityList.GetStamp() - m_stateStamp;
+    //uint32 timeStamp = sEntityMgr.GetStamp() - m_stateStamp;
     float timeStamp((GetTimeMSeconds() - m_moveTime) * 0.001f);
     float Tr = m_targetEntity.second->GetRadius();
     //float Tm = m_targetEntity.second->GetSelf()->GetAttribute(AttrMass).get_float();
@@ -1597,7 +1597,7 @@ void DestinyManager::InitWarp() {
     m_targetEntity.second = nullptr;
 
     // reset move times
-    m_stateStamp = sEntityList.GetStamp();
+    m_stateStamp = sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
 
     WarpAccel(0);
@@ -1727,7 +1727,7 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
     SafeDelete(m_warpState);
 
     // reset move stamps
-    m_stateStamp = sEntityList.GetStamp();
+    m_stateStamp = sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
 
     if ((mySE->IsNPCSE()) and (mySE->GetNPCSE()->GetAIMgr() != nullptr))
@@ -1833,7 +1833,7 @@ void DestinyManager::BeginMovement() {
     m_stop = false;
 
     // reset move stamps
-    m_stateStamp = sEntityList.GetStamp();
+    m_stateStamp = sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
 
     // if ship is not moving, set usf for movement
@@ -2166,7 +2166,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         UnCloak();
 
         // reset move stamps
-        m_stateStamp = sEntityList.GetStamp();
+        m_stateStamp = sEntityMgr.GetStamp();
         m_moveTime = GetTimeMSeconds();
         SetSpeedFraction(1.0f, true);
 
@@ -2839,7 +2839,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
 
     m_stop = false;
     m_ballMode = Destiny::Ball::Mode::MISSILE;
-    m_stateStamp = sEntityList.GetStamp();
+    m_stateStamp = sEntityMgr.GetStamp();
 
     SystemEntity* pTarget = pMissile->GetTargetSE();
     m_targetPoint = GPoint(pTarget->GetPosition());
@@ -2883,7 +2883,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)
     m_decel = false;
     m_tractored = true;
     //m_moveTime = GetTimeMSeconds();
-    m_stateStamp = sEntityList.GetStamp();
+    m_stateStamp = sEntityMgr.GetStamp();
 
     m_targetPoint = pShipSE->GetPosition();
     GVector moveVector(m_position, m_targetPoint);
@@ -3168,7 +3168,7 @@ void DestinyManager::SendSetState() const {
                         mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
     SetState ss;
-        ss.stamp = sEntityList.GetStamp();
+        ss.stamp = sEntityMgr.GetStamp();
         ss.ego = mySE->GetID();
 
     mySE->SystemMgr()->MakeSetState(mySE->SysBubble(), ss);
@@ -3213,7 +3213,7 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
             if (mySE->SysBubble() != nullptr) {
                 if (is_log_enabled(DESTINY__UPDATES))
                     _log( DESTINY__UPDATES, "[%u] BubbleCasting %lu DestinyUpdates to bubbleID %u from %s(%u)", \
-                            sEntityList.GetStamp(), updates.size(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                            sEntityMgr.GetStamp(), updates.size(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
                 mySE->SysBubble()->BubblecastDestinyUpdate(updates, "DestinyUpdates");
             } else {
                 for (auto &cur : updates)
@@ -3223,7 +3223,7 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
         }
         if (is_log_enabled(PLAYER__MESSAGE))
             _log(PLAYER__MESSAGE, "[%u] DM::SendDestinyUpdates() called as 'self_only' for %s(%li)", \
-                    sEntityList.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+                    sEntityMgr.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); itr++) {
             //PyIncRef(*itr);
@@ -3232,7 +3232,7 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
     } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all bubbles in a system
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting Structure DestinyUpdates in %s from %s(%u)", \
-                    sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
+                    sEntityMgr.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
 
         //Get all clients in our system
         // should this be bubblecast?  which would be faster?
@@ -3244,13 +3244,13 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
     } else if (mySE->SysBubble() != nullptr) {
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting %lu DestinyUpdates to bubbleID %u from %s(%u)", \
-                    sEntityList.GetStamp(), updates.size(), mySE->SysBubble()->GetID(),   \
+                    sEntityMgr.GetStamp(), updates.size(), mySE->SysBubble()->GetID(),   \
                     (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()), \
                     (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
             mySE->SysBubble()->BubblecastDestinyUpdate(updates, "DestinyUpdates");
     } else {
         _log(DESTINY__WARNING, "[%u] Cannot BubbleCast %lu DestinyUpdates; entity (%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
-                sEntityList.GetStamp(), updates.size(), mySE->GetID() );
+                sEntityMgr.GetStamp(), updates.size(), mySE->GetID() );
         for (auto &cur : updates)
             PySafeDecRef(cur);
         if (sConfig.debug.IsTestServer)
@@ -3270,20 +3270,20 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
             if (mySE->SysBubble() != nullptr) {
                 if (is_log_enabled(DESTINY__UPDATES))
                     _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny event to bubbleID %u from %s(%u)", \
-                    sEntityList.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                    sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
                 mySE->SysBubble()->BubblecastDestinyEvent(ev, "DestinyEvent");
             }
             return;
         }
         if (is_log_enabled(PLAYER__MESSAGE))
             _log(PLAYER__MESSAGE, "[%u] DM::SendSingleDestinyEvent() DestinyEvent called as 'self_only' for %s(%li)", \
-                sEntityList.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+                sEntityMgr.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         mySE->GetPilot()->QueueDestinyEvent(ev);
     } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all players in a system
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting Structure DestinyEvent in %s from %s(%u)", \
-            sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
+            sEntityMgr.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
 
         //Get all clients in our system
         std::vector<Client*> cv;
@@ -3296,13 +3296,13 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
     } else if (mySE->SysBubble() != nullptr) {
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting DestinyEvent to bubbleID %u from %s(%u)", \
-                    sEntityList.GetStamp(), mySE->SysBubble()->GetID(),   \
+                    sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(),   \
             (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
             (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
         mySE->SysBubble()->BubblecastDestinyEvent(ev, "DestinyEvent" );
     } else {
         _log(DESTINY__WARNING, "[%u] Cannot BubbleCast DestinyEvent; entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
-                sEntityList.GetStamp(), mySE->GetName(), mySE->GetID() );
+                sEntityMgr.GetStamp(), mySE->GetName(), mySE->GetID() );
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();
     }
@@ -3318,20 +3318,20 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
             if (mySE->SysBubble() != nullptr) {
                 if (is_log_enabled(DESTINY__UPDATES))
                     _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update to bubbleID %u from %s(%u)", \
-                    sEntityList.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                    sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
                 mySE->SysBubble()->BubblecastDestinyUpdate(up, "DestinyUpdate");
             }
             return;
         }
         if (is_log_enabled(PLAYER__MESSAGE))
             _log(PLAYER__MESSAGE, "[%u] DM::SendSingleDestinyUpdate() DestinyUpdate called as 'self_only' for %s(%li)", \
-            sEntityList.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+            sEntityMgr.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         mySE->GetPilot()->QueueDestinyUpdate(up);
     } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all players in a system
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting Structure DestinyUpdate in %s from %s(%u)", \
-            sEntityList.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
+            sEntityMgr.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
 
         //Get all clients in our system
         std::vector<Client*> cv;
@@ -3344,13 +3344,13 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
     } else if (mySE->SysBubble() != nullptr) {
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting DestinyUpdate to bubbleID %u from %s(%u)", \
-            sEntityList.GetStamp(), mySE->SysBubble()->GetID(),   \
+            sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(),   \
             (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
             (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
         mySE->SysBubble()->BubblecastDestinyUpdate(up, "DestinyUpdate" );
     } else {
         _log(DESTINY__WARNING, "[%u] Cannot BubbleCast DestinyUpdate; entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
-        sEntityList.GetStamp(), mySE->GetName(), mySE->GetID() );
+        sEntityMgr.GetStamp(), mySE->GetName(), mySE->GetID() );
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();
     }

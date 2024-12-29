@@ -27,7 +27,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "packets/CorporationPkts.h"
 #include "station/Station.h"
 #include "station/StationOffice.h"

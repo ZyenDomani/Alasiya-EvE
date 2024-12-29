@@ -38,7 +38,7 @@ class PyObject;
 class Client;
 class PyCallStream;
 class PyBoundObject;
-class EntityList;
+class EntityMgr;
 
 //convenience macro, you do not HAVE to use this
 #define PyCallable_DECL_CALL(n) PyResult Handle_##n(PyCallArgs &call);

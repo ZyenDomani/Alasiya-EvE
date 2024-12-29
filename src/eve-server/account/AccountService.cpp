@@ -27,7 +27,7 @@
 #include <boost/algorithm/string.hpp>
 #include "eve-server.h"
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
@@ -279,7 +279,7 @@ void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, st
     double newBalanceFrom(0), newBalanceTo(0);
     Client* pClientFrom(nullptr);
     if (IsCharacterID(fromID)) {
-        pClientFrom = sEntityList.FindClientByCharID(fromID);
+        pClientFrom = sEntityMgr.FindClientByCharID(fromID);
         if (pClientFrom == nullptr) {
             // sender is offline. xfer funds thru db.
             newBalanceFrom = AccountDB::OfflineFundXfer(fromID, -amount, fromCurrency);
@@ -305,7 +305,7 @@ void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, st
 
     Client* pClientTo(nullptr);
     if (IsCharacterID(toID)) {
-        pClientTo = sEntityList.FindClientByCharID(toID);
+        pClientTo = sEntityMgr.FindClientByCharID(toID);
         if (pClientTo == nullptr) {
             // recipient is offline. xfer funds thru db
             newBalanceTo = AccountDB::OfflineFundXfer(toID, amount, toCurrency);
@@ -414,6 +414,6 @@ void AccountService::HandleCorpTransaction(uint32 corpID, int8 entryTypeID, uint
     }
     oac.balance = balance;
     oac.ownerid = corpID;
-    sEntityList.CorpNotify(corpID, 126 /*WalletChange*/, "OnAccountChange", "*corpid&corpAccountKey", oac.Encode());
+    sEntityMgr.CorpNotify(corpID, 126 /*WalletChange*/, "OnAccountChange", "*corpid&corpAccountKey", oac.Encode());
     AccountDB::AddJournalEntry(corpID, entryTypeID, fromID, toID, currency, accountKey, amount, balance, description, referenceID);
 }

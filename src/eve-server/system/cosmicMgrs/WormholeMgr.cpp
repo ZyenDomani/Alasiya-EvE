@@ -58,7 +58,7 @@ void WormholeMgr::Initialize(PyServiceMgr* svc) {
     sLog.Blue(" Wormhole Manager", "Wormhole Manager Initialized.");
 }
 
-// this is called on a minute timer from EntityList
+// this is called on a minute timer from EntityMgr
 void WormholeMgr::Process() {
     if (!m_initalized)
         return;
@@ -116,7 +116,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
         return;
 
     // verify system is loaded
-    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sig.systemID);
+    SystemManager* pSysMgr = sEntityMgr.FindOrBootSystem(sig.systemID);
     if (pSysMgr == nullptr) {
         _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - Boot failure for system %u", sig.systemID);
         return;
@@ -144,7 +144,7 @@ void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
     // compile data for exit
     CosmicSignature sig = CosmicSignature();
     /*
-    sig.sigID = sEntityList.GetAnomalyID();
+    sig.sigID = sEntityMgr.GetAnomalyID();
     sig.systemID = pToSys->GetID();
     sig.dungeonType = Dungeon::Type::Wormhole;
 

@@ -65,7 +65,7 @@ void ConsoleCommand::Initialize(CommandDispatcher* cd)
 bool ConsoleCommand::Process() {
     if (m_haltServer) {
         if (!m_dbError)
-            sEntityList.Shutdown();
+            sEntityMgr.Shutdown();
         return false;
     }
     /* reset timeouts because select() reset them */
@@ -113,12 +113,12 @@ bool ConsoleCommand::Process() {
                 sLog.Magenta("      Server Says", " Hello World!" );
             } else if (strncmp(buf, "c", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Client Connection Information");
-                uint8 clients = sEntityList.GetClientCount();
+                uint8 clients = sEntityMgr.GetClientCount();
                 sLog.Warning("      Connections", " %u Current Clients Online", clients);
-                sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
+                sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityMgr.GetConnections() );
                 if (clients) {
                     std::vector<Client*> list;
-                    sEntityList.GetClients(list);
+                    sEntityMgr.GetClients(list);
                     for (auto &cur : list) {
                         if (cur->GetChar().get() == nullptr) {
                             sLog.Magenta("      Connections", " Account %u Connected, but no character selected yet.", cur->GetUserID() );
@@ -137,8 +137,8 @@ bool ConsoleCommand::Process() {
                 Status(state, threads, vm, rss, user, kernel);
                 sLog.Warning("    Server Status", "  S: %s | T: %lli(%u) | RSS: %.3fMb | VM: %.3fMb | U: %.2f | K: %.2f", \
                         state.data(), threads, aThreads, rss, vm, user, kernel );
-                sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
-                sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
+                sLog.Warning("      Connections", " %u Current Clients Online.", sEntityMgr.GetClientCount());
+                sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityMgr.GetConnections() );
                 if (sConfig.debug.UseProfiling) {
                     sLog.Green(" Server Profiling","Enabled.");
                 } else {
@@ -197,21 +197,21 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("    Server Status", "  S: %s | T: %lli(%u) | U: %.2f | K: %.2f", \
                 state.data(), threads, aThreads, user, kernel );
                 std::string uptime;
-                sEntityList.GetUpTime(uptime);
+                sEntityMgr.GetUpTime(uptime);
                 sLog.Warning("    Server UpTime", " %s", uptime.c_str() );
                 //  loaded items
                 sLog.Warning("     Loaded Items", " %u", sItemFactory.Count());
                 //  loaded NPCs
-                sLog.Warning("      Loaded NPCs", " %u", sEntityList.GetNPCCount());
+                sLog.Warning("      Loaded NPCs", " %u", sEntityMgr.GetNPCCount());
                 //  loaded systems
-                sLog.Warning("   Active Systems", " %u", sEntityList.GetSystemCount());
+                sLog.Warning("   Active Systems", " %u", sEntityMgr.GetSystemCount());
                 //  loaded stations
-                sLog.Warning("  Active Stations", " %u", sEntityList.GetStationCount());
+                sLog.Warning("  Active Stations", " %u", sEntityMgr.GetStationCount());
                 //  loaded bubbles
                 sLog.Warning("   Active Bubbles", " %u", sBubbleMgr.Count());
                 //  current clients
-                sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
-                sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
+                sLog.Warning("      Connections", " %u Current Clients Online.", sEntityMgr.GetClientCount());
+                sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityMgr.GetConnections() );
             } else if (strncmp(buf, "a", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server SaveAll:");
                 //sLog.Error("      Server Save", " Not Available Yet." );
@@ -226,7 +226,7 @@ bool ConsoleCommand::Process() {
                 sLog.Green("  Alasiya's EvEMu", "Server Notify:");
                 const char* buff = buf + 2;
                 std::vector<Client*> list;
-                sEntityList.GetClients(list);
+                sEntityMgr.GetClients(list);
                 for (auto &cur : list)
                     cur->SendNotifyMsg( buff );
                 sLog.Warning("  Console Command", " Notification sent to all online clients." );
@@ -234,19 +234,19 @@ bool ConsoleCommand::Process() {
                 sLog.Green("  Alasiya's EvEMu", "Server Modal Message:");
                 const char* buff = buf + 2;
                 std::vector<Client*> list;
-                sEntityList.GetClients(list);
+                sEntityMgr.GetClients(list);
                 for (auto &cur : list)
                     cur->SendInfoModalMsg( buff );
                 sLog.Warning("  Console Command", " Modal Message sent to all online clients." );
             } else if (strncmp(buf, "p", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Profile:");
                 if (sConfig.debug.UseProfiling) {
-                    sLog.Warning("    Current Stamp", " %u", sEntityList.GetStamp());
+                    sLog.Warning("    Current Stamp", " %u", sEntityMgr.GetStamp());
                     std::string uptime;
-                    sEntityList.GetUpTime(uptime);
+                    sEntityMgr.GetUpTime(uptime);
                     sLog.Warning("    Server UpTime", " %s", uptime.c_str() );
-                    sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
-                    sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
+                    sLog.Warning("      Connections", " %u Current Clients Online.", sEntityMgr.GetClientCount());
+                    sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityMgr.GetConnections() );
                     sProfiler.PrintProfile();
                 } else {
                     sLog.Error("   Server Profile", "Profiling is turned off.");

@@ -81,7 +81,7 @@ public:
 
     // called from main() loop
     bool                    ProcessNet();
-    // called by EntityList on 1Hz tic
+    // called by EntityMgr on 1Hz tic
     void                    ProcessClient();
 
     bool                    IsLoaded()                  { return m_loaded; }

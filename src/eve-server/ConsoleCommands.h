@@ -33,7 +33,7 @@
 #include "EVEServerConfig.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "ServiceDB.h"
 #include "admin/CommandDispatcher.h"
 #include "chat/LSCChannel.h"

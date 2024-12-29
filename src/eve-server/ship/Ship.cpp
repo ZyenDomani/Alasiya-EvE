@@ -1,6 +1,6 @@
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "Profiler.h"
 #include "StaticDataMgr.h"

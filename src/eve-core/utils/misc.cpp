@@ -318,9 +318,9 @@ std::string EvE::sh(std::string cmd)
  * /backups/local/src/eve/Alasiya-EvE/src/eve-core/memory/RefPtr.h:107PyCallStream::~PyCallStream()
  * /backups/local/src/eve/Alasiya-EvE/src/eve-common/python/PyPacket.cpp:566EVEPacketDispatcher::DispatchPacket(PyPacket*)
  * /backups/local/src/eve/Alasiya-EvE/src/eve-common/network/EVEPktDispatch.cpp:64 (discriminator 3)Client::ProcessNet()
- * /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206EntityList::Process()
- * /backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityList.cpp:192main
- * /backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927??
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-server/Client.cpp:206 EntityMgr::Process()
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-server/EntityMgr.cpp:192 main
+ * /backups/local/src/eve/Alasiya-EvE/src/eve-server/eve-server.cpp:927 ??
  *
  *
  */

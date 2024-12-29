@@ -32,7 +32,7 @@
 #include "corporation/CorporationDB.h"
 
 // this shall be removed when i remove MulticastTarget
-#include "EntityList.h"
+#include "EntityMgr.h"
 
 /*
  * CORP__DB_ERROR
@@ -2259,7 +2259,7 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
             mct.characters.insert(ownerID);
         }
         PyTuple* tuple = corpUpdate.Encode();
-        sEntityList.Multicast("OnShareChange", "*corpid&corprole", &tuple, mct);
+        sEntityMgr.Multicast("OnShareChange", "*corpid&corprole", &tuple, mct);
     }
 
     DBerror err;
@@ -2273,7 +2273,7 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     uint32 oldCorpID = 0;
     Client* pClient(nullptr);
     if (IsCharacterID(args.toShareholderID)) {
-        pClient = sEntityList.FindClientByCharID(args.toShareholderID);
+        pClient = sEntityMgr.FindClientByCharID(args.toShareholderID);
         if (pClient == nullptr) {
             oldCorpID = CharacterDB::GetCorpID(args.toShareholderID);
         } else {

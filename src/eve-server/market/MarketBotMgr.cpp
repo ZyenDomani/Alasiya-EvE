@@ -58,7 +58,7 @@ int MarketBotMgr::Initialize()
     return 1;
 }
 
-// this is called on a minute timer from EntityList
+// this is called on a minute timer from EntityMgr
 void MarketBotMgr::Process()
 {
     if (!m_initalized)

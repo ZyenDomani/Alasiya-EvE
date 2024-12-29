@@ -185,7 +185,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
                 mySE->GetPilot()->GetName(), mySE->GetName(), mySE->GetID(), tSE->GetName(), \
                 tSE->GetID(), targetDistance, lockTime);
 
-    sEntityList.AddTargMgr(mySE, this);
+    sEntityMgr.AddTargMgr(mySE, this);
 
     Dump();
     return true;
@@ -222,7 +222,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxL
     _log(TARGET__INFO, "NPC %s(%u) started targeting %s(%u) (%.2fs lock time)", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), (lockTime / 1000));
 
-    sEntityList.AddTargMgr(mySE, this);
+    sEntityMgr.AddTargMgr(mySE, this);
 
     Dump();
 
@@ -238,7 +238,7 @@ void TargetManager::RemoveTarget(SystemEntity* tSE) {
     if (m_targets.empty()) {
         m_canAttack = false;
         // no targets to process.  remove from proc map
-        sEntityList.DeleteTargMgr(mySE);
+        sEntityMgr.DeleteTargMgr(mySE);
     }
     _log(TARGET__TRACE, "RemoveTarget:  %s(%u) has removed target %s(%u).", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
@@ -254,7 +254,7 @@ void TargetManager::ClearTarget(SystemEntity *tSE) {
     if (m_targets.empty()) {
         m_canAttack = false;
         // no targets to process.  remove from proc map
-        sEntityList.DeleteTargMgr(mySE);
+        sEntityMgr.DeleteTargMgr(mySE);
     }
     _log(TARGET__TRACE, "ClearTarget:  %s(%u) has cleared target %s(%u).", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
@@ -296,7 +296,7 @@ void TargetManager::ClearTargets(bool notify/*true*/) {
     m_targets.clear();
 
     // no targets to process.  remove from proc map
-    sEntityList.DeleteTargMgr(mySE);
+    sEntityMgr.DeleteTargMgr(mySE);
 
     Dump();
 }
@@ -334,7 +334,7 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
     if (m_targets.empty()) {
         m_canAttack = false;
         // no targets to process.  remove from proc map
-        sEntityList.DeleteTargMgr(mySE);
+        sEntityMgr.DeleteTargMgr(mySE);
     }
     _log(TARGET__INFO, "%s(%u) has lost lock on %s(%u)", mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
 

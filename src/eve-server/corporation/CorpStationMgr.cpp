@@ -84,7 +84,7 @@ public:
         PyCallable_REG_CALL(CorpStationMgrIMBound, GetQuoteForGettingCorpJunkBack);
         PyCallable_REG_CALL(CorpStationMgrIMBound, PayForReturnOfCorpJunk);
 
-        pStationItem = sEntityList.GetStationByID(station_id).get();
+        pStationItem = sEntityMgr.GetStationByID(station_id).get();
     }
     virtual ~CorpStationMgrIMBound() { delete m_dispatch; }
 
@@ -321,7 +321,7 @@ PyResult CorpStationMgrIMBound::Handle_MoveCorpHQHere(PyCallArgs &call)
     std::vector<uint32> ids;
     CorporationDB::GetMemberIDs(corpID, ids, true);
     for (auto &cur : ids) {
-        pClient = sEntityList.FindClientByCharID(cur);
+        pClient = sEntityMgr.FindClientByCharID(cur);
         if (pClient != nullptr)
             pClient->GetChar()->SetCorpHQ(m_stationID);
     }

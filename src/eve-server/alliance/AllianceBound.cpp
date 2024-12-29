@@ -214,7 +214,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
         uint32 executorID = AllianceDB::GetExecutorID(newInfo.allyID);
 
         list.clear();
-        sEntityList.GetCorpClients(list, oamc.corpID);
+        sEntityMgr.GetCorpClients(list, oamc.corpID);
         for (auto &cur : list)
         {
             if (cur != nullptr)
@@ -225,7 +225,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
         }
 
         list.clear();
-        sEntityList.GetCorpClients(list, executorID);
+        sEntityMgr.GetCorpClients(list, executorID);
         for (auto &cur : list)
         {
             if (cur != nullptr)
@@ -274,7 +274,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
 
         //Send to everyone who needs to see it in the applying corp
         list.clear();
-        sEntityList.GetCorpClients(list, args.corporationID);
+        sEntityMgr.GetCorpClients(list, args.corporationID);
         for (auto &cur : list)
         {
             if (cur != nullptr)
@@ -299,7 +299,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
     uint32 executorID = AllianceDB::GetExecutorID(oaac.allianceID);
 
     list.clear();
-    sEntityList.GetCorpClients(list, oaac.corpID);
+    sEntityMgr.GetCorpClients(list, oaac.corpID);
     for (auto &cur : list)
     {
         if (cur != nullptr)
@@ -310,7 +310,7 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
     }
 
     list.clear();
-    sEntityList.GetCorpClients(list, executorID);
+    sEntityMgr.GetCorpClients(list, executorID);
     for (auto &cur : list)
     {
         if (cur != nullptr)

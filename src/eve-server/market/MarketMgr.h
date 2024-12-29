@@ -15,7 +15,7 @@
 
 #include "../eve-server.h"
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "market/MarketDB.h"
 
 class Client;

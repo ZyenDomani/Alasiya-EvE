@@ -101,7 +101,7 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     sMapData.GetMissionDestination(this, misionType, offer);
     if (offer.destinationID == 0) {
         // make error here and reset
-        sEntityList.FindClientByCharID(charID)->SendErrorMsg("Internal Server Error.");
+        sEntityMgr.FindClientByCharID(charID)->SendErrorMsg("Internal Server Error.");
         //return;
     }
 
@@ -578,7 +578,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
     float quality = EvEMath::Agent::EffectiveQuality(m_agentData.quality, pChar->GetSkillLevel(EvESkill::Negotiation), standing);
     float newStanding = EvEMath::Agent::Efficiency(m_agentData.level, quality);    // 0.018 to 0.38
-    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(m_agentData.solarSystemID);
+    SystemManager* pSysMgr = sEntityMgr.FindOrBootSystem(m_agentData.solarSystemID);
     if (pSysMgr != nullptr)
         newStanding *= pSysMgr->GetSecValue(); // 0.0018 to .76
 

@@ -255,7 +255,7 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    Client* pClient = sEntityList.FindClientByCharID(args.charID);
+    Client* pClient = sEntityMgr.FindClientByCharID(args.charID);
     if (pClient == nullptr)
         return PyStatic.NewNone();
     if (pClient->InFleet()) {
@@ -498,7 +498,7 @@ PyResult FleetBound::Handle_RejectJoinRequest(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    Client* pClient = sEntityList.FindClientByCharID(arg.arg);
+    Client* pClient = sEntityMgr.FindClientByCharID(arg.arg);
     sFltSvc.RemoveJoinRequest(call.client->GetFleetID(), pClient);
 
     pClient->SendInfoModalMsg("Your fleet join request was denied by %s", call.client->GetName());
@@ -640,7 +640,7 @@ PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
     }
 
     // update new leader
-    Character* pCharNew = sEntityList.FindClientByCharID(arg.arg)->GetChar().get();
+    Character* pCharNew = sEntityMgr.FindClientByCharID(arg.arg)->GetChar().get();
     if (pCharNew == nullptr)
         return PyStatic.NewNone();
     sFltSvc.UpdateMember(arg.arg, m_fleetID, -1, -1, pCharNew->fleetJob(), Fleet::Role::FleetLeader, pCharNew->fleetBooster());
@@ -661,7 +661,7 @@ PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
     }
 
     Character* pOldChar(nullptr);
-    Character* pChar = sEntityList.FindClientByCharID(args.charID)->GetChar().get();
+    Character* pChar = sEntityMgr.FindClientByCharID(args.charID)->GetChar().get();
     if (pChar == nullptr)
         return PyStatic.NewFalse();
 
@@ -711,7 +711,7 @@ PyResult FleetBound::Handle_MoveMember(PyCallArgs &call) {
         return PyStatic.NewFalse();
     }
 
-    Character* pChar = sEntityList.FindClientByCharID(args.charID)->GetChar().get();
+    Character* pChar = sEntityMgr.FindClientByCharID(args.charID)->GetChar().get();
     if (pChar == nullptr)
         return PyStatic.NewFalse();
 
@@ -740,7 +740,7 @@ PyResult FleetBound::Handle_KickMember(PyCallArgs &call) {
         return PyStatic.NewFalse();
     }
 
-    sFltSvc.LeaveFleet(sEntityList.FindClientByCharID(arg.arg));
+    sFltSvc.LeaveFleet(sEntityMgr.FindClientByCharID(arg.arg));
 
     // returns boolean
     return PyStatic.NewTrue();

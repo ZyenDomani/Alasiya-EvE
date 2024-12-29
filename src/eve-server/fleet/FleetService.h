@@ -16,7 +16,7 @@
 #include "utils/Singleton.h"
 
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "packets/Fleet.h"
 #include "fleet/FleetData.h"
 

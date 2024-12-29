@@ -28,7 +28,7 @@
 
 #include "eve-server.h"
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
 
@@ -151,7 +151,7 @@ bool ServiceDB::IncrementLoginCount( uint32 accountID )
 uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, const char* passHash, int64 role )
 {
     uint32 accountID(0);
-    uint32 clientID(sEntityList.GetClientSeed());
+    uint32 clientID(sEntityMgr.GetClientSeed());
 
     DBerror err;
     if ( !sDatabase.RunQueryLID( err, accountID,
@@ -349,7 +349,7 @@ void ServiceDB::SaveServerStats(double threads, float rss, float vm, float user,
     //"     Connections = %u,"
 	"     updateTime = UNIX_TIMESTAMP(CURRENT_TIMESTAMP)"
 	" WHERE AI = 1",
-	    threads, rss, vm, user, kernel, items, bubbles, sEntityList.GetSystemCount(), sEntityList.GetNPCCount()/*, sEntityList.GetConnections()*/);
+	    threads, rss, vm, user, kernel, items, bubbles, sEntityMgr.GetSystemCount(), sEntityMgr.GetNPCCount()/*, sEntityMgr.GetConnections()*/);
 
     _log(DATABASE__INFO, "Server Stats Saved");
 }

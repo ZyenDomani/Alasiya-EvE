@@ -31,7 +31,7 @@
 #include "PyServiceMgr.h"
 #include "PyCallable.h"
 #include "Client.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 
 class CommandDispatcher;
 

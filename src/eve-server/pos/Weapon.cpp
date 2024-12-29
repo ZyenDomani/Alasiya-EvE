@@ -41,7 +41,7 @@ void WeaponSE::Init()
 
 void WeaponSE::Process()
 {
-    /* called by EntityList::Process on every loop */
+    /* called by EntityMgr::Process on every loop */
     /*  Enable base call to Process state changes  */
     StructureSE::Process();
     /** @todo (Allan)  will need some form of AI to engage defensive modules if/when any structure is attacked */

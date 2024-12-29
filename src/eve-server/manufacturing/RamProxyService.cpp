@@ -33,7 +33,7 @@
 #include "../../eve-common/EVE_Mail.h"
 
 #include "PyServiceCD.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "StatisticMgr.h"
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
@@ -564,7 +564,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
         //force calendar reload (if corp job, update all online members, also)
         if (args.isCorpJob) {
-            sEntityList.CorpNotify(call.client->GetCorporationID(), Notify::Types::FactoryJob, "OnReloadCalendar", "charid", new PyTuple(0));
+            sEntityMgr.CorpNotify(call.client->GetCorporationID(), Notify::Types::FactoryJob, "OnReloadCalendar", "charid", new PyTuple(0));
         } else {
             call.client->SendNotification("OnReloadCalendar", "charid", new PyTuple(0), false);  // this is not sequenced
         }

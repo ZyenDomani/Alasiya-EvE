@@ -94,7 +94,7 @@ public:
     ContainerSE* GetCenterMarker()                      { return m_centerSE; }
 
     void clear();
-    void PrintEntityList();
+    void PrintEntityMgr();
 
     void Add(SystemEntity* pSE);
     void Remove(SystemEntity* pSE);

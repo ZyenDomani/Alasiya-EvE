@@ -37,7 +37,7 @@ class ServiceDB;
 class Client;
 class PyRep;
 class PySubStruct;
-class EntityList;
+class EntityMgr;
 class ObjCacheService;
 class DBcore;
 class ItemFactory;
@@ -53,7 +53,7 @@ public:
         PyBoundObject* object;  //we own this. PyServiceMgr deletes it
     };
 
-    PyServiceMgr( uint32 nodeID, EntityList& elist);
+    PyServiceMgr( uint32 nodeID, EntityMgr& elist);
     ~PyServiceMgr();
 
     void Initalize(double startTime);

@@ -26,7 +26,7 @@
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "chat/OnlineStatusService.h"
 
 PyCallable_Make_InnerDispatcher(OnlineStatusService)
@@ -97,13 +97,13 @@ PyResult OnlineStatusService::Handle_GetInitialState(PyCallArgs &call) {
     CRowSet *rowset = new CRowSet( &header );
     /** @todo loop thru contact list and fill following row accordingly */
     //PyPackedRow* row = rowset->NewRow();
-    //row->SetField(*charID*, sEntityList.PyIsOnline(PyRep::IntegerValue(charID)))); // charID/online
+    //row->SetField(*charID*, sEntityMgr.PyIsOnline(PyRep::IntegerValue(charID)))); // charID/online
     return rowset;
 }
 
 PyResult OnlineStatusService::Handle_GetOnlineStatus(PyCallArgs &call) {
     // this is used to query the online state of a character by charID.
-     return sEntityList.PyIsOnline(PyRep::IntegerValue(call.tuple->GetItem(0)));
+     return sEntityMgr.PyIsOnline(PyRep::IntegerValue(call.tuple->GetItem(0)));
 }
 
 /*

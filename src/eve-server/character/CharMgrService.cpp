@@ -30,7 +30,7 @@
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "account/AccountService.h"
 #include "character/CharMgrService.h"
 
@@ -96,7 +96,7 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
     bool isCorp(PyRep::IntegerValue(call.tuple->GetItem(1)));
 
     if (isCorp) {
-        Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+        Client* pClient = sEntityMgr.FindClientByCharID(m_ownerID);
         if (pClient == nullptr)
             return nullptr; // make error here
         ownerID = pClient->GetCorporationID();
@@ -124,7 +124,7 @@ PyResult CharMgrBound::Handle_ListStationBlueprintItems( PyCallArgs& call )
     bool forCorp(PyRep::IntegerValueU32(call.tuple->GetItem(2)));
 
     if (forCorp) { //forCorp
-        Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+        Client* pClient = sEntityMgr.FindClientByCharID(m_ownerID);
         if (pClient == nullptr)
             return nullptr; // make error here
         ownerID = pClient->GetCorporationID();

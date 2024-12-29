@@ -161,7 +161,7 @@ PyBoundObject* PlanetMgrService::CreateBoundObject(Client *pClient, const PyRep 
 
     StaticData sData = StaticData();
     sDataMgr.GetStaticInfo(bind_args->AsInt()->value(), sData);
-    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sData.systemID);
+    SystemManager* pSysMgr = sEntityMgr.FindOrBootSystem(sData.systemID);
     if (pSysMgr == nullptr) {
         pClient->SendErrorMsg("system boot failure");
         return nullptr;

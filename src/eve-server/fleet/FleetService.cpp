@@ -368,7 +368,7 @@ bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, 
     int8 oldRole(0), oldJob(0), oldBooster(0);
     int32 oldWingID(0), oldSquadID(0);
     // verify member data
-    Client* pClient = sEntityList.FindClientByCharID(charID);
+    Client* pClient = sEntityMgr.FindClientByCharID(charID);
     if (pClient == nullptr)
         return false;
     Character* pChar = pClient->GetChar().get();

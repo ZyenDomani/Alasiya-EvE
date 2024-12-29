@@ -26,7 +26,7 @@
 #ifndef __LSCCHANNEL_H_INCL__
 #define __LSCCHANNEL_H_INCL__
 
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "EVE_LSC.h"
 #include "packets/LSCPkts.h"
 

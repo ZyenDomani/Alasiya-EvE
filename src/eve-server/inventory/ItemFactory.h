@@ -43,7 +43,7 @@ class CharacterType;
 class StationType;
 class Missile;
 class Client;
-class EntityList;
+class EntityMgr;
 class Inventory;
 class PyServiceMgr;
 

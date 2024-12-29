@@ -13,7 +13,7 @@
 #include "EVE_Dungeon.h"
 #include "EVE_Inventory.h"
 #include "EVE_Scanning.h"
-#include "EntityList.h"
+#include "EntityMgr.h"
 #include "POD_containers.h"
 #include "system/SystemDB.h"
 

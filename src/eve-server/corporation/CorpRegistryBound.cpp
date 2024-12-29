@@ -475,7 +475,7 @@ PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call)
         MulticastTarget mct;
             mct.corporations.insert(notif.key);
         PyTuple * answer = notif.Encode();
-        sEntityList.Multicast("OnCorporationChanged", "corpid", &answer, mct);
+        sEntityMgr.Multicast("OnCorporationChanged", "corpid", &answer, mct);
         call.client->SendNotification("OnCorporationChanged", "clientID", &answer);
     }
 
@@ -669,7 +669,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     pClient->SendNotification("OnCorporationChanged", "clientID", &a1);
     // send multi to station guests
     PyIncRef(a1);
-    sEntityList.Multicast("OnCorporationChanged", "stationid", &a1, NOTIF_DEST__LOCATION, pClient->GetLocationID());
+    sEntityMgr.Multicast("OnCorporationChanged", "stationid", &a1, NOTIF_DEST__LOCATION, pClient->GetLocationID());
 
     return m_db.GetCorporations(corpID);
 }
@@ -695,7 +695,7 @@ PyResult CorpRegistryBound::Handle_UpdateTitle(PyCallArgs &call) {
         PyTuple* notif = change.Encode();
         MulticastTarget mct;
             mct.corporations.insert(m_corpID);
-        sEntityList.Multicast("OnTitleChanged", "corpid", &notif, mct);
+        sEntityMgr.Multicast("OnTitleChanged", "corpid", &notif, mct);
     }
 
     PyDecRef(updates);
@@ -758,7 +758,7 @@ PyResult CorpRegistryBound::Handle_UpdateTitles(PyCallArgs &call) {
             PyTuple* notif = change.Encode();
             MulticastTarget mct;
                 mct.corporations.insert(m_corpID);
-            sEntityList.Multicast("OnTitleChanged", "corpid", &notif, mct);
+            sEntityMgr.Multicast("OnTitleChanged", "corpid", &notif, mct);
         }
 
         PySafeDecRef(updates);
@@ -793,7 +793,7 @@ PyResult CorpRegistryBound::Handle_UpdateCorporation(PyCallArgs &call) {
         MulticastTarget mct;
         mct.corporations.insert(notif.key);
         PyTuple * answer = notif.Encode();
-        sEntityList.Multicast("OnCorporationChanged", "corpid", &answer, mct);
+        sEntityMgr.Multicast("OnCorporationChanged", "corpid", &answer, mct);
         call.client->SendNotification("OnCorporationChanged", "clientID", &answer);
     }
 
@@ -841,7 +841,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call)
     MulticastTarget mct;
     mct.locations.insert(call.client->GetLocationID());
     PyTuple *answer = notif.Encode();
-    sEntityList.Multicast("OnCorporationChanged", "corpid", &answer, mct);
+    sEntityMgr.Multicast("OnCorporationChanged", "corpid", &answer, mct);
 
     return m_db.GetCorporation(notif.key);
 }
@@ -1030,7 +1030,7 @@ PyResult CorpRegistryBound::Handle_MoveCompanyShares(PyCallArgs &call) {
     }
 
     uint32 corpID = 0;
-    Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
+    Client* pClient = sEntityMgr.FindClientByCharID(args.toShareholderID);
     if (pClient == nullptr) {
         corpID = CharacterDB::GetCorpID(args.toShareholderID);
     } else {
@@ -1056,7 +1056,7 @@ PyResult CorpRegistryBound::Handle_MovePrivateShares(PyCallArgs &call) {
     }
 
     uint32 corpID = 0;
-    Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
+    Client* pClient = sEntityMgr.FindClientByCharID(args.toShareholderID);
     if (pClient == nullptr) {
         corpID = CharacterDB::GetCorpID(args.toShareholderID);
     } else {
@@ -1443,7 +1443,7 @@ PyResult CorpRegistryBound::Handle_UpdateMember(PyCallArgs &call) {
     int64 oldRole = 0;
     bool grantable = false;  // boolean - do new roles have grantable privs?  they may.
 
-    Client* pClient = sEntityList.FindClientByCharID(args.charID);
+    Client* pClient = sEntityMgr.FindClientByCharID(args.charID);
     if (pClient == nullptr) {
         oldRole = CharacterDB::GetCorpRole(args.charID);
         CharacterDB::SetCorpRole(args.charID, args.roles);
@@ -1523,7 +1523,7 @@ PyResult CorpRegistryBound::Handle_InsertApplication(PyCallArgs &call)
     //  could you bind/req this call from a diff corp?
     OCAC.corpID = args.corpID;
     OCAC.charID = charID;
-    sEntityList.CorpNotify(args.corpID, Notify::Types::CorpAppNew, "OnCorporationApplicationChanged", "*corpid&corprole", OCAC.Encode());
+    sEntityMgr.CorpNotify(args.corpID, Notify::Types::CorpAppNew, "OnCorporationApplicationChanged", "*corpid&corprole", OCAC.Encode());
     // this is also sent to applicant
     call.client->SendNotification("OnCorporationApplicationChanged", "*corpid&corprole", OCAC.Encode(), false);
 
@@ -1549,7 +1549,7 @@ PyResult CorpRegistryBound::Handle_InsertApplication(PyCallArgs &call)
         onn.notifyID = 0;
         onn.senderID = charID;
         onn.typeID  = Notify::Types::CorpAppNew;
-    sEntityList.CorpNotify(args.corpID, Notify::Types::CorpAppNew, "OnNotificationReceived", "clientID", onn.Encode());
+    sEntityMgr.CorpNotify(args.corpID, Notify::Types::CorpAppNew, "OnNotificationReceived", "clientID", onn.Encode());
 
     /// Reply: ~\x00\x00\x00\x00\x01
     //returns none
@@ -1607,7 +1607,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             return nullptr;
         }
 
-        sEntityList.CorpNotify(m_corpID, Notify::Types::CorpAppAccept, "OnCorporationApplicationChanged", "*corpid&corprole", ocac.Encode());
+        sEntityMgr.CorpNotify(m_corpID, Notify::Types::CorpAppAccept, "OnCorporationApplicationChanged", "*corpid&corprole", ocac.Encode());
 
         // OnObjectPublicAttributesUpdated event        <<<---  needs to be updated. do search in packet logs
         OnObjectPublicAttributesUpdated opau;
@@ -1615,7 +1615,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             opau.bindID = GetBindStr();
             opau.changePKIndexValue = args.charID;    // logs show this as charID, but cant find anything about it in code as to why.
             opau.changes = change.Encode();
-        sEntityList.CorpNotify(m_corpID, Notify::Types::CorpNews, "OnObjectPublicAttributesUpdated", "objectID", opau.Encode());
+        sEntityMgr.CorpNotify(m_corpID, Notify::Types::CorpNews, "OnObjectPublicAttributesUpdated", "objectID", opau.Encode());
 
         // OnCorporationMemberChanged event
         OnCorpMemberChange ocmc;
@@ -1626,10 +1626,10 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             ocmc.oldDate = oldInfo.appTime; // PyRep::IntegerValue(OCAC.applicationDateTimeOld);
 
         // both corporations' members will be notified about the change
-        sEntityList.CorpNotify(m_corpID, Notify::Types::CorpNews, "OnCorporationMemberChanged", "corpid", ocmc.Encode());
+        sEntityMgr.CorpNotify(m_corpID, Notify::Types::CorpNews, "OnCorporationMemberChanged", "corpid", ocmc.Encode());
         // old corp MAY be NPC corp...
         if (IsPlayerCorp(ocmc.oldCorpID))
-            sEntityList.CorpNotify(ocmc.oldCorpID, Notify::Types::CorpNews, "OnCorporationMemberChanged", "corpid", ocmc.Encode());
+            sEntityMgr.CorpNotify(ocmc.oldCorpID, Notify::Types::CorpNews, "OnCorporationMemberChanged", "corpid", ocmc.Encode());
 
         CorpData data = CorpData();
             CharacterDB::GetCharCorpData(args.charID, data);
@@ -1644,7 +1644,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             data.grantableRolesAtHQ = Corp::Role::Member;
             data.grantableRolesAtOther = Corp::Role::Member;
             data.corporationID = m_corpID;
-        Client* recruit = sEntityList.FindClientByCharID(ocmc.charID);   // this returns nullptr for offline chars
+        Client* recruit = sEntityMgr.FindClientByCharID(ocmc.charID);   // this returns nullptr for offline chars
         if (recruit != nullptr) {
             recruit->GetChar()->JoinCorporation(data);
         } else {
@@ -1656,7 +1656,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
         if (IsPlayerCorp(ocmc.oldCorpID))
             m_db.AddItemEvent(ocmc.oldCorpID, args.charID, Corp::EventType::LeftCorporation);
     } else if (args.newStatus == Corp::AppStatus::RejectedByCorporation) {
-        sEntityList.CorpNotify(m_corpID, Notify::Types::CorpAppReject, "OnCorporationApplicationChanged", "*corpid&corprole", ocac.Encode());
+        sEntityMgr.CorpNotify(m_corpID, Notify::Types::CorpAppReject, "OnCorporationApplicationChanged", "*corpid&corprole", ocac.Encode());
     } else if (args.newStatus == Corp::AppStatus::RenegotiatedByCorporation) {
         // i dont see this option in client code...may not be able to reneg app.
         _log(CORP__MESSAGE, "CorpRegistryBound::Handle_UpdateApplicationOffer() hit AppStatus::RenegotiatedByCorporation by %s ", call.client->GetName() );
@@ -1666,7 +1666,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
     }
 
     // update applicant, if online
-    Client* pClient = sEntityList.FindClientByCharID(args.charID);
+    Client* pClient = sEntityMgr.FindClientByCharID(args.charID);
     if (pClient != nullptr)
         pClient->SendNotification("OnCorporationApplicationChanged", "clientID", ocac.Encode(), false);
 
@@ -1705,7 +1705,7 @@ PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call)
         return PyStatic.NewFalse();
     }
 
-    sEntityList.CorpNotify(m_corpID, Notify::Types::CorpAppNew, "OnCorporationApplicationChanged", "*corpid&corprole", ocac.Encode());
+    sEntityMgr.CorpNotify(m_corpID, Notify::Types::CorpAppNew, "OnCorporationApplicationChanged", "*corpid&corprole", ocac.Encode());
 
     return PyStatic.NewTrue();
 }
