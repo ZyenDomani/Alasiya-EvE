@@ -422,8 +422,14 @@ bool SystemBubble::IsOverlap( const GPoint& pt ) const
 }
 
 void SystemBubble::PrintEntityList() {
+    if (m_entities.empty() and m_dynamicEntities.empty()) {
+        sLog.Blue( "SystemBubble::PrintEntityList()", "Bubble %u in %s is empty", m_bubbleID, m_system->GetName());
+        return;
+    }
     bool found = false;
-    for (auto &cur : m_dynamicEntities) {
+    std::map<uint32, SystemEntity*> SElist = m_entities;
+    std::copy(SElist.begin(), SElist.end(), std::inserter(m_dynamicEntities, m_dynamicEntities.end()));
+    for (auto &cur : SElist) {
         found = false;
         if (cur.second->isGlobal())  //this should only hit beacons and cynos as global AND not static
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Global.", cur.second->GetName(), cur.second->GetID() );

@@ -135,6 +135,8 @@ void BubbleManager::RemoveEmpty()
     while (itr != m_bubbles.end()) {
         if ((*itr)->IsEmpty()) {
             _log(BUBBLE__DEBUG, "BubbleManager::RemoveEmpty() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
+            _log(BUBBLE__TRACE, "BubbleManager::RemoveEmpty() - Entity list of bubble %u as follows...", (*itr)->GetID());
+            (*itr)->PrintEntityList();
             RemoveBubble((*itr)->GetSystem()->GetID(), (*itr));
             itr = m_bubbles.erase(itr);
         } else {
