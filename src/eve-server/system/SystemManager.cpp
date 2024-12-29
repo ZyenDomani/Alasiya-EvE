@@ -83,7 +83,6 @@ m_activeGateSpawns(0),
 m_activeRoidSpawns(0),
 m_secValue(1.1f),
 m_minutes(0),
-mLast(0),
 // zero-init our data containers
 m_data(SystemData()),
 m_killData(SystemKillData())
@@ -206,37 +205,26 @@ bool SystemManager::LoadCosmicMgrs()
 bool SystemManager::ProcessTic() {
     double profileStartTime(GetTimeUSeconds());
 
-    /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid
-     * when SE->Process() returns because Process() will add/remove from the map as needed
-     *      (new objects, destroyed objects, moved objects, etc)
-     *  std::map internally orders items by key(itemID here), so use var to hold last-processed itemID (mLast).
-     *  when iteration starts over, increment until cur > mLast and continue from there to end of list.
-     * note:  this will get expensive for many items (like ship tracking)
-     */
     std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin(), end = m_ticEntities.end();
     while (itr != end) {
-
         /* main process call. */
         itr->second->Process();
 
-        // hell, even if things changed, whats the harm in leaving it be till next tic?
+    /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid
+     * when SE->Process() returns because it will add/remove from the map as needed for
+     * new objects, destroyed objects, moved objects, etc
+     *  std::map internally orders items by key(itemID here)
+     * when map changes, reset itr & end for new map and continue (much faster than old way of iteration)
+     */
         if (m_entityChanged) {
-            /* something in the list has changed.
-             * usually, it is NOT the cur SE here...
-             * this entity has killed, popped, removed, depleted, etc the entity that has been changed in the list.
-             *    hmmm.....test this and see if its even needed anymore.
-             * originally, they iterated thru entire list again, which did weird shit and was a horrible loop
-             */
-            mLast = itr->first;
             m_entityChanged = false;
             // using .find() is MUCH faster than iterating thru entire list
-            itr = m_ticEntities.find(mLast);
+            itr = m_ticEntities.find(itr->first);
             end = m_ticEntities.end();
 
             if (itr == end) {
-                // cur SE is the iterator being deleted.  make note and break out.
+                // cur SE is the iterator being deleted.  break out.
                 // NOTE:  do NOT start over here, as that will allow all previous SE a second action in this tic.
-                sLog.Error("SysMgr", "list changed and mLast=end()");
                 break;
             }
         }
@@ -245,20 +233,10 @@ bool SystemManager::ProcessTic() {
         ++itr;
     }
 
-    /*
-    // tic for sov structures (as they aren't in ticEntities)  note: they are now.
-    for (auto &cur : m_opStaticEntities) {
-        if (cur.second->IsTCUSE())
-            cur.second->GetTCUSE()->Process();
-        if (cur.second ->IsSBUSE())
-            cur.second->GetSBUSE()->Process();
-        if (cur.second ->IsIHubSE())
-            cur.second->GetIHubSE()->Process();
-    } */
-
     // check bounty timer
     if (m_bountyTimer.Check(sConfig.server.BountyPayoutDelayed))
         PayBounties();
+
     /* the following are coded for single-tic calls */
     m_anomMgr->Process();
     if (m_beltCount)

@@ -188,8 +188,6 @@ private:
 
     float m_secValue;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
 
-    uint32 mLast;
-
     // for dynamic data system  -allan 10June2019
     SystemKillData m_killData;
     uint16 m_docked;
