@@ -188,6 +188,7 @@ RAM code - implement invention, re    -priority level: low
     - (ItemLocationCheck)  unfinished for POS/Outpost
     - (InstallationCheck)  - incomplete
     - add Almanu's cal'c fix from official?
+    - verify char prod efficiency skill for Calculate()
 
 blueprints - look over data and verify
     - LPRR = -11??
