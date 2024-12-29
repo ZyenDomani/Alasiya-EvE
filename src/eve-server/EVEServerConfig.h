@@ -63,6 +63,7 @@ public:
         bool LoadStaticRecyclable;
         bool LoadStaticRefinable;
         bool StackTrace;
+        bool DelOnZero;
         uint8 ServerSleepTime;
         uint8 MaxThreadReport;
         uint8 BountyPayoutTimer;

@@ -33,6 +33,7 @@
 #include "python/PyVisitor.h"
 #include "python/PyRep.h"
 #include "utils/EVEUtils.h"
+#include "../../eve-server/EVEServerConfig.h"
 
 /** Lookup table for PyRep type object type names. */
 const char* const s_mTypeString[] =
@@ -299,11 +300,9 @@ void PyRep::DecRef() const
 
     _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
 
-    /*
     if (mRefCount < 1)
         if (sConfig.server.DelOnZero)
             delete this;
-        */
 }
 
 

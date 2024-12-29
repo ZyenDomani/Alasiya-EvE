@@ -66,6 +66,7 @@ EVEServerConfig::EVEServerConfig()
     server.LoadStaticRecyclable = false;
     server.LoadStaticRefinable = false;
     server.StackTrace = false;
+    server.DelOnZero = false;
 
     // world
     world.chatLogs = false;//N
@@ -349,6 +350,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "LoadStaticRecyclable", server.LoadStaticRecyclable );
     AddValueParser( "LoadStaticRefinable",  server.LoadStaticRefinable );
     AddValueParser( "StackTrace",           server.StackTrace );
+    AddValueParser( "DelOnZero",            server.DelOnZero );
 
     const bool result = ParseElementChildren( ele );
 
@@ -373,6 +375,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "LoadStaticRecyclable" );
     RemoveParser( "LoadStaticRefinable" );
     RemoveParser( "StackTrace" );
+    RemoveParser( "DelOnZero" );
 
     return result;
 }
