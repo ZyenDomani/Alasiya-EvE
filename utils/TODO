@@ -94,14 +94,17 @@ char creation - figure certs and set skills accordingly
 *******************************************************
 *******************************************************
 **********  liveupdates code improvements ... hi priority
-update all 16 references to www.eveonline.com
-  ** create pages on server to respond properly
+update all 16 references to www.eveonline.com and create pages on server to respond properly
 add agent portraits to server and update 'backupurl' in server code
 
 
 *******************************************************
 *******************************************************
 **********  coding errors/corrections/improvements ... med priority
+
+remove GPoint/GVector code and just write my own.
+    - float/double not needed and math on those are expensive.  replace with int64?
+    - note:  client logs show all position data is pyfloat (some float.7, some double.15)  but i see no point of needing decimeter (or higher) precision.
 
 SendServerMOTD needs to check account roles to send >player data (i.e. showall)
 
@@ -118,14 +121,6 @@ ImageServerConnection() - init members _size, _id
 go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
 while you're at it, verify member initialization is correct.  i know destiny isnt (and it's member list is huge)
 	- im sure its not the only one...but some (or most) of my 'newer' classes should be right (at least a lot closer).
-
-remove GPoint/GVector code and just write my own.
-    - float/double not needed and math on those are expensive.  replace with int64?
-    - note:  client logs show all position data is pyfloat (some float.7, some double.15)  but i see no point of needing decimeter (or higher) precision.
-
-as bubble code becomes more stable, consider updating/removing/recoding wander timer.
-    - every 60s for every bubble object is a bit much.
-    - check InBubble and IsOverlap code.
 
 remove character queries from InventoryDB
 remove station/static queries from InventoryDB
@@ -980,8 +975,6 @@ colorize SendServerMOTD  (currently 'system' red)
 add chat for system commands?  have commands send to cmd window instead of notification window
 
 finish player command "srvoptions" to show current server settings in client notification
-
-rename EntityList to EntityManager/EntityMgr
 
 ***  look into using sql prepared statements for oft-used queries  (undecided atm)
 
