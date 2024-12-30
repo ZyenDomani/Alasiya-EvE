@@ -73,9 +73,6 @@ class TradeSession
     friend class TradeService;
 
 public:
-    TradeSession() { m_tradeSession(TradeSession::Session()); }
-    ~TradeSession() {}
-
     struct Session {
         bool myState;
         bool herState;
