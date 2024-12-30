@@ -224,7 +224,7 @@ void NPC::EncodeDestiny( Buffer& into )
 void NPC::UseShieldRecharge()
 {
     // We recharge our shield until it's full.
-    if (m_self->GetAttribute(AttrShieldCapacity) > m_shieldCharge) {
+    if (m_self->GetAttribute(AttrShieldCapacity) > (m_shieldCharge - 0.1f)) {
         m_shieldCharge += m_self->GetAttribute(AttrEntityShieldBoostAmount).get_float();
         if (m_shieldCharge > m_self->GetAttribute(AttrShieldCapacity).get_float())
             m_shieldCharge = m_self->GetAttribute(AttrShieldCapacity).get_float();
@@ -241,8 +241,8 @@ void NPC::UseArmorRepairer()
 {
     if (m_armorDamage > 0) {
         m_armorDamage -= m_self->GetAttribute(AttrEntityArmorRepairAmount).get_float();
-        if (m_armorDamage < 0.0)
-            m_armorDamage = 0.0;
+        if (m_armorDamage < 0.0f)
+            m_armorDamage = 0.0f;
         m_self->SetAttribute(AttrArmorDamage, m_armorDamage);
     } else {
         m_AI->DisableRepTimers(false, true);
@@ -256,8 +256,8 @@ void NPC::UseHullRepairer()
 {
     if (m_hullDamage > 0) {
         //m_hullDamage -= m_self->GetAttribute(AttrEntityhullRepairAmount).get_float();  << NSA - create later
-        if (m_hullDamage < 0.0)
-            m_hullDamage = 0.0;
+        if (m_hullDamage < 0.0f)
+            m_hullDamage = 0.0f;
         m_self->SetAttribute(AttrDamage, m_hullDamage);
     } else {
         m_AI->DisableRepTimers(false, false);
