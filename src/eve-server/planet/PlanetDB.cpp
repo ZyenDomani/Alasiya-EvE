@@ -283,7 +283,7 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
         if (pin.isECU)
             LoadHeads(row.GetInt(0), pin.heads);
 
-        pins[row.GetInt(0)] = pin;
+        pins[row.GetInt(0)] = std::move(pin);
     }
 }
 

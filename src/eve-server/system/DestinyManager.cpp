@@ -1127,7 +1127,7 @@ void DestinyManager::Follow() {
         if (m_autoPilot) {
             if (m_userSpeedFraction > 0.1f)
                 SetSpeedFraction(0.1);
-            _log(AUTOPILOT__TRACE, "DM::Follow() - targetDistance: %im, FollowDistance: %um.  usf: %.2f.  asf: %.2f", \
+            _log(AUTOPILOT__TRACE, "DM::Follow() - targetDistance: %lim, FollowDistance: %um.  usf: %.2f.  asf: %.2f", \
                 m_targetDistance, m_followDistance, m_userSpeedFraction, m_activeSpeedFraction);
         } else if (m_tractored) {
     /* this will allow following entities to keep their follow state, yet stop movement if within their follow distance.
@@ -1872,7 +1872,7 @@ void DestinyManager::Follow(SystemEntity* pSE, int32 distance) {
 
     GVector targHeading(m_position, m_targetPoint);
     targHeading.normalize();
-    m_targetHeading = targHeading;
+    m_targetHeading = std::move(targHeading);
 
     if (IsTurn()) {
         InitTurn();
@@ -1936,7 +1936,7 @@ void DestinyManager::GotoPoint(const GPoint& point) {
     m_targetPoint = point;
     GVector head(m_position, point);
     head.normalize();
-    m_targetHeading = head;
+    m_targetHeading = std::move(head);
 
     if (IsTurn()) {
         InitTurn();
@@ -2067,7 +2067,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     // change to heading
     toVec.normalize();
     // set targ heading
-    m_targetHeading = toVec;
+    m_targetHeading = std::move(toVec);
 
     _log(DESTINY__TRACE, "Destiny::WarpTo() m_shipHeading: %.7f,%.7f,%.7f.  m_targetHeading: %.7f,%.7f,%.7f", \
             m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z);
@@ -2227,7 +2227,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     SendGFX10(mySE->GetID(),"effects.Warping" );
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %li  m_targetDistance: %lli",
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %i  m_targetDistance: %lli",
              m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
 }
 
@@ -2849,7 +2849,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
 
     GVector moveVector(m_position, m_targetPoint);
     moveVector.normalize();     //change vector to direction
-    m_shipHeading = moveVector;
+    m_shipHeading = std::move(moveVector);
 
     SetUndockSpeed();   /* sets all needed variables for max velocity */
     mySE->SystemMgr()->AddEntity(pMissile, false); // we are not adding missiles to anomaly map
@@ -2860,9 +2860,9 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
         maxspeed.speed = m_maxShipSpeed;
     updates.push_back(maxspeed.Encode());
     Rsp_LaunchMissile miss;
-        miss.shipID = pMissile->GetLauncherID();
-        miss.targetID = pTarget->GetID();
         miss.missileID = pMissile->GetID();
+        miss.targetID = pTarget->GetID();
+        miss.shipID = pMissile->GetLauncherID();
         miss.unk1 = 1;  // this is always "1" in packets.
         miss.unk2 = 1;  // this is always "1" in packets.
     updates.push_back(miss.Encode());
@@ -2889,7 +2889,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)
     GVector moveVector(m_position, m_targetPoint);
     m_targetDistance = moveVector.length();
     moveVector.normalize();
-    m_shipHeading = moveVector;
+    m_shipHeading = std::move(moveVector);
 
     m_maxShipSpeed = speed.get_float();   //AttrMaxTractorVelocity
     m_maxSpeed = m_maxShipSpeed;
@@ -3012,7 +3012,7 @@ void DestinyManager::SendGFX10(uint32 entityID, std::string guid, int32 targetID
         effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
         effect.otherTypeID = (otherTypeID == 0 ? PyStatic.NewNone() : new PyInt(otherTypeID));
         effect.area = PyStatic.mtList();        // no data.  not used in client
-        effect.guid = guid;
+        effect.guid = std::move(guid);
         effect.isOffensive = 0;
         effect.start = 1;
         effect.active = 0;
@@ -3034,7 +3034,7 @@ void DestinyManager::SendGFX14(uint32 entityID, uint32 moduleID, uint32 moduleTy
         effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
         effect.otherTypeID = (chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID));
         effect.area = PyStatic.mtList();        // no data.  not used in client
-        effect.guid = guid;
+        effect.guid = std::move(guid);
         effect.isOffensive = isOffensive;       // bool
         effect.start = start;                   // int bool
         effect.active = isActive;               // int bool
@@ -3222,7 +3222,7 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
             return;
         }
         if (is_log_enabled(PLAYER__MESSAGE))
-            _log(PLAYER__MESSAGE, "[%u] DM::SendDestinyUpdates() called as 'self_only' for %s(%li)", \
+            _log(PLAYER__MESSAGE, "[%u] DM::SendDestinyUpdates() called as 'self_only' for %s(%i)", \
                     sEntityMgr.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); itr++) {
@@ -3276,7 +3276,7 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
             return;
         }
         if (is_log_enabled(PLAYER__MESSAGE))
-            _log(PLAYER__MESSAGE, "[%u] DM::SendSingleDestinyEvent() DestinyEvent called as 'self_only' for %s(%li)", \
+            _log(PLAYER__MESSAGE, "[%u] DM::SendSingleDestinyEvent() DestinyEvent called as 'self_only' for %s(%i)", \
                 sEntityMgr.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         mySE->GetPilot()->QueueDestinyEvent(ev);
@@ -3324,7 +3324,7 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
             return;
         }
         if (is_log_enabled(PLAYER__MESSAGE))
-            _log(PLAYER__MESSAGE, "[%u] DM::SendSingleDestinyUpdate() DestinyUpdate called as 'self_only' for %s(%li)", \
+            _log(PLAYER__MESSAGE, "[%u] DM::SendSingleDestinyUpdate() DestinyUpdate called as 'self_only' for %s(%i)", \
             sEntityMgr.GetStamp(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         mySE->GetPilot()->QueueDestinyUpdate(up);

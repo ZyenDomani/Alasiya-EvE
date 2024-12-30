@@ -239,7 +239,7 @@ void StaticDataMgr::Populate()
         typeData.attributeCategory      = (row.IsNull(2) ? 0        : row.GetInt(2));
         typeData.displayName            = (row.IsNull(3) ? "*none*" : row.GetText(3));
         typeData.categoryID             = (row.IsNull(4) ? 0        : row.GetInt(4));
-        m_attrTypeData[row.GetInt(0)] = typeData;
+        m_attrTypeData[row.GetInt(0)] = std::move(typeData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Attribute data sets loaded in %.3fms.", m_attrTypeData.size(), (GetTimeMSeconds() - startTime));
 
@@ -255,7 +255,7 @@ void StaticDataMgr::Populate()
         sysData.securityClass     = (row.IsNull(4) ? "0" : row.GetText(4));
         sysData.securityRating    = row.GetFloat(5);    // this gives system trueSec
         sysData.factionID         = (row.IsNull(6) ? 0 : row.GetUInt(6));
-        m_systemData[row.GetInt(0)] = sysData;
+        m_systemData[row.GetInt(0)] = std::move(sysData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - startTime));
 /*
@@ -271,7 +271,7 @@ void StaticDataMgr::Populate()
         sysData.securityClass     = (row.IsNull(4) ? "0" : row.GetText(4));
         sysData.securityRating    = row.GetFloat(5);    // this gives system trueSec
         sysData.factionID         = (row.IsNull(6) ? 0 : row.GetUInt(6));
-        m_solSysData[row.GetInt(0)] = sysData);
+        m_solSysData[row.GetInt(0)] = std::move(sysData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static SolarSystem data sets loaded in %.3fms.", m_solSysData.size(), (GetTimeMSeconds() - startTime));
 */
@@ -328,7 +328,7 @@ void StaticDataMgr::Populate()
         data.typeID             = row.GetInt(4);
         data.radius             = row.GetFloat(5);
         data.position           = GPoint(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
-        //m_staticData[row.GetInt(0)] = data;
+        //m_staticData[row.GetInt(0)] = std::move(data);
         m_staticData.emplace(std::pair<uint32, StaticData>(row.GetInt(0), data));
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
@@ -469,7 +469,7 @@ void StaticDataMgr::Populate()
             bpTypeData.maxProductionLimit       = row.GetInt(12);
             bpTypeData.chanceOfRE               = row.GetFloat(13);
             bpTypeData.catID                    = (row.IsNull(14) ? 0 : row.GetInt(14));
-        m_bpTypeData[row.GetInt(0)] = bpTypeData;
+        m_bpTypeData[row.GetInt(0)] = std::move(bpTypeData);
         m_bpProductData.emplace(row.GetInt(2), bpTypeData);
     }
     for (auto &cur : m_bpTypeData)

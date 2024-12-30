@@ -127,7 +127,7 @@ void PIDataMgr::_Populate()
                 data.outputType = row.GetInt(1);
                 data.outputQty = row.GetInt(2);
             }
-            m_schematicData[row.GetInt(0)] = data;
+            m_schematicData[row.GetInt(0)] = std::move(data);
         }
     }
 

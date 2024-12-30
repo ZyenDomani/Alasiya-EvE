@@ -1121,7 +1121,6 @@ void ShipItem::ProcessHeat()
             SetAttribute(i, heat);
         } //else
           //  DeleteAttribute(i);
-        heat = 0.0f;
     }
     _log(SHIP__HEAT, "ShipItem::ProcessHeat() Executed in %.3f us.", GetTimeUSeconds() - start);
 
