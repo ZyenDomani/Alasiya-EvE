@@ -97,8 +97,8 @@ void SentryAI::Process() {
                 clientVec.clear();
                 DestinyManager* pDestiny(nullptr);
                 m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?  yes...later
+                /** @todo  this needs work
                 for (auto &cur : clientVec) {
-                    /** @todo  this needs work
                     if (cur->IsLogin() or cur->IsInvul() or cur->InPod())
                         continue;
                     if (!cur->GetShipTarget())
@@ -111,9 +111,8 @@ void SentryAI::Process() {
                     if (m_npc->GetPosition().distance(cur->GetShipTarget()->GetPosition()) > m_sightRange)
                         continue;
                     Target(cur->GetShipTarget());
-                    */
                     return;
-                }
+                } */
             } else {
                 if (!m_beginFindTarget.Enabled())
                     m_beginFindTarget.Start(m_attackSpeed);  //find target is based on npc attack speed.

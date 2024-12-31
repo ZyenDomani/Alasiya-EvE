@@ -755,8 +755,8 @@ void NPCAIMgr::AttackTarget(SystemEntity* pTargSE) {
         gfxID = m_self->GetAttribute(AttrGfxTurretID).get_uint32();
 
     m_destiny->SendGFX14(m_self->itemID(), m_self->itemID(), m_self->typeID(),
-                                 pTargSE->GetID(),0,guid,1,1,
-                                 1,m_attackSpeed,0,gfxID);
+                         pTargSE->GetID(),0,std::move(guid),1,1,
+                         1,m_attackSpeed,0,gfxID);
 
     Damage d(m_npc,
              m_self,

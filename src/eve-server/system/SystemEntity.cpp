@@ -233,13 +233,13 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
             msg += iRef->GetPilot()->GetName();
             msg += " in ";
             msg += m_system->GetNameStr();
-            sStandingMgr.UpdateStandings(iRef->itemID(), pChar->itemID(), Standings::CombatShipKill, secAward, msg);
+            sStandingMgr.UpdateStandings(iRef->itemID(), pChar->itemID(), Standings::CombatShipKill, secAward, std::move(msg));
         } else {
             msg += " pirates in ";
             msg += m_system->GetNameStr();
             sStandingMgr.UpdateStandings(corpCONCORD, pChar->itemID(), Standings::LawEnforcement, secAward, msg);
             // decrease standings with faction of this npc kill
-            sStandingMgr.UpdateStandings(iRef->ownerID(), pChar->itemID(), Standings::CombatShipKill, -secAward, msg);
+            sStandingMgr.UpdateStandings(iRef->ownerID(), pChar->itemID(), Standings::CombatShipKill, -secAward, std::move(msg));
         }
     }
 

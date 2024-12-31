@@ -1020,7 +1020,7 @@ void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, in
         m_targetRef = InventoryItemRef(nullptr);
     }
 
-    m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat);
+    m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(std::move(effectName)), targetID, repeat);
 }
 
 void ShipItem::OnlineAll()
@@ -1738,7 +1738,7 @@ void ShipItem::LoadWeaponGroups()
         if (itr == m_linkedWeapons.end()) {
             std::list<GenericModule*> slaves;
             slaves.push_back(pSlave);
-            m_linkedWeapons[pMaster] = slaves;
+            m_linkedWeapons[pMaster] = std::move(slaves);
             pMaster->SetLinked(true);
             pMaster->SetLinkMaster(pMaster);
         } else {

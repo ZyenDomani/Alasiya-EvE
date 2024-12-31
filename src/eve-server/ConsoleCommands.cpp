@@ -343,7 +343,7 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
               T is traced or stopped (on a signal),
               W is paging
     */
-    state = run_state;
+    state = std::move(run_state);
     threads = num_threads;
     user = utime / sysconf(_SC_CLK_TCK) / 800.0f;
     kernel = stime / sysconf(_SC_CLK_TCK) / 800.0f;

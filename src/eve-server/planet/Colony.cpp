@@ -424,7 +424,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
             pin.isProcess = true;
             pin.lastRunTime = 0;
             PI_Plant plant = PI_Plant();
-            ccPin->plants[iRef->itemID()] = plant;
+            ccPin->plants[iRef->itemID()] = std::move(plant);
         } break;
         case Extractor_Control_Units: { // 1063
             pin.isECU = true;
@@ -465,7 +465,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     //iRef->SetAttribute(AttrCpuLoad, m_cpu);
     //iRef->SetAttribute(AttrPowerLoad, m_pg);
 
-    ccPin->pins[iRef->itemID()] = pin;
+    ccPin->pins[iRef->itemID()] = std::move(pin);
 
     // save map of tempID to itemID - this handles the stacked-calls from client to use real itemIDs
     if (groupID != Command_Centers)
@@ -530,7 +530,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
             }
         }
         list1.clear();
-        list1 = list2;
+        list1 = std::move(list2);
     }
 
     PI_Route route = PI_Route();
@@ -540,7 +540,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
         route.commodityQuantity = qty;
         route.srcPinID = list1.front();
         route.destPinID = list1.back();
-        route.path = list1;
+        route.path = std::move(list1);
 
     routeID = m_db.SaveRoute(m_colonyID, route);
     ccPin->routes[routeID] = route;
@@ -1257,7 +1257,7 @@ PyTuple* Colony::GetPins()
 
         if (cur.second.isECU) {
             if (cur.second.installTime > 0) {
-                dict->SetItem("cycleTime", new PyFloat(cur.second.cycleTime / EvE::Time::Hour));
+                dict->SetItem("cycleTime", new PyFloat((float)cur.second.cycleTime / EvE::Time::Hour));
                 dict->SetItem("expiryTime", new PyLong(cur.second.expiryTime));
                 dict->SetItem("headRadius", new PyFloat(cur.second.headRadius));
                 dict->SetItem("installTime", new PyLong(cur.second.installTime));

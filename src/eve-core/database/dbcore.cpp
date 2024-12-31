@@ -124,11 +124,14 @@ void DBcore::Connect(uint* errnum, char* errbuf)
     if (mysql_real_connect(mysql, pHost.c_str(), pUser.c_str(), pPassword.c_str(), pDatabase.c_str(), pPort, 0, flags) == nullptr) {
         pStatus = Error;
         *errnum = mysql_errno(mysql);
-        if (errbuf != nullptr)
+        if (errbuf != nullptr) {
             snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
-        DBerror err;
-        err.SetError(*errnum, errbuf);
-        sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
+            DBerror err;
+            err.SetError(*errnum, errbuf);
+            sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
+        } else {
+            sLog.Error( "       ServerInit", "Unable to connect to the database: Error returned null");
+        }
         return;
     } else {
         pStatus = Connected;

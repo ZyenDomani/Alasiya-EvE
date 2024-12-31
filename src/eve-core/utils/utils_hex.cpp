@@ -36,22 +36,16 @@ void build_hex_line( const uint8* buffer, size_t length, size_t offset, char* re
 
     char printable[17];
 
-    for( size_t i = 0; i < 16; i++ )
-    {
+    for( size_t i = 0; i < 16; ++i ) {
         if ( i == 8 )
-        {
             ret += snprintf( ret, length, " -" );
-        }
 
-        if ( ( i + offset ) < length )
-        {
+        if ( ( i + offset ) < length ) {
             uint8 c = *(const uint8*)( buffer + offset + i );
 
             ret += snprintf( ret, length, " %02X", c );
             printable[i] = ( IsPrintable( c ) ? (char)c : '.' );
-        }
-        else
-        {
+        } else {
             ret += snprintf( ret, length, "   " );
             printable[i] = 0;
         }
@@ -64,8 +58,7 @@ void pfxHexDump( const char* pfx, FILE* into, const uint8* data, size_t length )
 {
     char buffer[80];
 
-    for( uint32 offset = 0; offset < length; offset += 16 )
-    {
+    for( uint32 offset = 0; offset < length; offset += 16 ) {
         build_hex_line( data, length, offset, buffer, 4 );
 
         fprintf( into, "%s%s\n", pfx, buffer );
@@ -76,8 +69,7 @@ void pfxHexDump( const char* pfx, LogType type, const uint8* data, size_t length
 {
     char buffer[80];
 
-    for( uint32 offset = 0; offset < length; offset += 16 )
-    {
+    for( uint32 offset = 0; offset < length; offset += 16 ) {
         build_hex_line( data, length, offset, buffer, 4 );
 
         _log( type, "%s%s", pfx, buffer );
@@ -86,32 +78,28 @@ void pfxHexDump( const char* pfx, LogType type, const uint8* data, size_t length
 
 void pfxHexDumpPreview( const char* pfx, FILE* into, const uint8* data, size_t length )
 {
-    char buffer[80];
-
-    if ( length > HEX_DUMP_PREVIEW_LIMIT )
-    {
+    if (length > HEX_DUMP_PREVIEW_LIMIT) {
         pfxHexDump( pfx, into, data, HEX_DUMP_PREVIEW_LIMIT - 32 );
         fprintf( into, "%s ... truncated ...\n", pfx );
 
+        char buffer[HEX_DUMP_PREVIEW_LIMIT];
         build_hex_line( data, length, length - 16, buffer, 4 );
         fprintf( into, "%s%s\n", pfx, buffer );
-    }
-    else
+    } else {
         pfxHexDump( pfx, into, data, length );
+    }
 }
 
 void pfxHexDumpPreview( const char* pfx, LogType type, const uint8* data, size_t length )
 {
-    char buffer[80];
-
-    if ( length > HEX_DUMP_PREVIEW_LIMIT )
-    {
+    if (length > HEX_DUMP_PREVIEW_LIMIT) {
         pfxHexDump( pfx, type, data, HEX_DUMP_PREVIEW_LIMIT - 32 );
         _log( type, "%s ... truncated ...", pfx );
 
+        char buffer[HEX_DUMP_PREVIEW_LIMIT];
         build_hex_line( data, length, length - 16, buffer, 4 );
         _log( type, "%s%s", pfx, buffer );
-    }
-    else
+    } else {
         pfxHexDump( pfx, type, data, length );
+    }
 }

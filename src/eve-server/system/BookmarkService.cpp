@@ -91,7 +91,7 @@ PyResult BookmarkService::Handle_CreateFolder(PyCallArgs &call) {
     Rsp_CreateFolder result;
         result.ownerID = ownerID;
         result.folderID = m_db.SaveNewFolder(name, ownerID, ownerID);
-        result.folderName = name;
+        result.folderName = std::move(name);
         result.creatorID = ownerID;
 
     result.Dump(BOOKMARK__RSP_DUMP, "    ");

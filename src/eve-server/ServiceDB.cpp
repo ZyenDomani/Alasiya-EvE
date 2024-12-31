@@ -107,7 +107,7 @@ bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& 
         }
     }
 
-    aData.name       = eLogin;
+    aData.name       = std::move(eLogin);
     aData.id         = row.GetInt(0);
     aData.clientID   = row.GetInt(1);
     aData.password   = (row.IsNull(2) ? "" : row.GetText(2));

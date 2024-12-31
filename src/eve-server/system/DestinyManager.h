@@ -322,7 +322,7 @@ private:
     void ClearOrbit();
 
     // Internal Warp Methods
-    uint32 m_accelTime;
+    //uint32 m_accelTime;
     uint32 m_decelTime;
     void InitWarp();
     void WarpAccel(uint16 sec_into_warp);

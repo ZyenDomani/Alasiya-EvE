@@ -978,9 +978,9 @@ void Character::AddToSkillQueue(uint16 typeID, uint8 level) {
     m_skillQueue.push_back(qs);
     skill->SaveItem();
 
-    float timeLeft = (qs.endTime - qs.startTime) / EvE::Time::Second;
+    float timeLeft = float(qs.endTime - qs.startTime) / EvE::Time::Second;
     _log(SKILL__QUEUE, "Added %s Level %u to queue with %s(%.1f) to train %u SP.", \
-    skill->name(), level, EvE::FormatTime(timeLeft).c_str(), timeLeft, nextSP - currentSP);
+            skill->name(), level, EvE::FormatTime(timeLeft).c_str(), timeLeft, nextSP - currentSP);
 }
 
 void Character::UpdateSkillQueue() {
@@ -1006,8 +1006,8 @@ void Character::SkillQueueLoop(bool update/*true*/)
     // at this point, there is a skill in training, and it is front of queue
     int64 curTime(GetFileTimeNow());
     if (m_skillQueue.front().endTime > curTime) {
-        float timeLeft = (m_skillQueue.front().endTime - curTime) / EvE::Time::Second;
-        _log(SKILL__INFO, "%s still training.  %s remaining.", m_inTraining->name(), EvE::FormatTime(timeLeft).c_str());
+        //float timeLeft = (m_skillQueue.front().endTime - curTime) / EvE::Time::Second;
+        _log(SKILL__INFO, "%s still training.  %s remaining.", m_inTraining->name(), EvE::FormatTime((m_skillQueue.front().endTime - curTime) / EvE::Time::Second).c_str());
         UpdateSkillQueueEndTime();
         return;
     }

@@ -1194,8 +1194,7 @@ recStoreItems = 'STOREITEMS'
         } //else {
             reason += ",...";    // this will show as "truncated" in client
         //}
-        AccountService::TransferFunds(corpCONCORD, cur.first, cur.second.amount, reason, Journal::EntryType::BountyPrizes, m_data.systemID);
-        count = 0;
+            AccountService::TransferFunds(corpCONCORD, cur.first, cur.second.amount, std::move(reason), Journal::EntryType::BountyPrizes, m_data.systemID);
     }
     m_ratMap.clear();
     m_bountyMap.clear();

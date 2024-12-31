@@ -218,7 +218,8 @@ TuplesetReader::TuplesetReader( const util_Tupleset& tupleset )
 /* TuplesetReader::iterator                                             */
 /************************************************************************/
 TuplesetReader::iterator::iterator()
-: mParent( NULL )
+: mParent( NULL ),
+mRow(nullptr)
 {
 }
 
