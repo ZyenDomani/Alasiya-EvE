@@ -550,7 +550,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         wreckEntity.factionID = m_warID;
         wreckEntity.groupID = EVEDB::invGroups::Wreck;
         wreckEntity.itemID = wreckItemRef->itemID();
-        wreckEntity.itemName = wreck_name;
+        wreckEntity.itemName = std::move(wreck_name);
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = 3962;
         wreckEntity.position = wreckPosition;

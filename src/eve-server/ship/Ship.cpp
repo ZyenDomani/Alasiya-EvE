@@ -2472,7 +2472,7 @@ void ShipSE::PayInsurance() {
     std::string reason = "Insurance payment for loss of the ship ";
     reason += m_self->itemName();
     AccountService::TransferFunds(corpSCC, m_ownerID, m_db.GetShipInsurancePayout(m_self->itemID()), \
-            reason, Journal::EntryType::Insurance, m_self->typeID());
+            std::move(reason), Journal::EntryType::Insurance, m_self->typeID());
     ShipDB::DeleteInsuranceByShipID(m_self->itemID());
 }
 

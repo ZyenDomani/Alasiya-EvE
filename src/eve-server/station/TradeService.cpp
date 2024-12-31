@@ -559,7 +559,7 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     reason += " in ";
     reason += pClient->GetSystemName();     // use system name or station name here?
     AccountService::TransferFunds(pClient->GetCharacterID(), pOther->GetCharacterID(), pTSes->m_tradeSession.myMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
-    AccountService::TransferFunds(pOther->GetCharacterID(), pClient->GetCharacterID(), pTSes->m_tradeSession.herMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
+    AccountService::TransferFunds(pOther->GetCharacterID(), pClient->GetCharacterID(), pTSes->m_tradeSession.herMoney, std::move(reason), Journal::EntryType::PlayerTrading, pClient->GetStationID());
 
     /** @todo  where does this dict go??  */
     //PyDict* dict = new PyDict();
@@ -568,7 +568,7 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     uint32 stationID = pTSes->m_tradeSession.stationID;
     for (auto &cur : pTSes->m_tradelist) {
         InventoryItemRef itemRef = sItemFactory.GetItemRef(cur.itemID);
-        if (!itemRef)  {
+        if (itemRef.get() == nullptr)  {
             _log(PLAYER__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
             continue;
         }

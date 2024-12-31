@@ -664,7 +664,7 @@ void MarketMgr::SetBasePrice()
     Market::matlData data = Market::matlData();
     data.typeID = 22175;
     data.name = "Codebreaker I";
-    materialMap[22175] = data;
+    materialMap[22175] = std::move(data);
 
     // this will have to use db to get current data.
     //  mineral prices are (will be) updated via a 'price average' method yet to be written
@@ -692,7 +692,7 @@ void MarketMgr::SetBasePrice()
         // get materials required for this item
         std::vector<EvERam::RamMaterials> matVec;
         sDataMgr.GetRamMaterials(itemItr->first, matVec);
-        itemMatMap[itemItr->first] = matVec;
+        itemMatMap[itemItr->first] = std::move(matVec);
     }
 
 

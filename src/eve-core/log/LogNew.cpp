@@ -52,7 +52,7 @@ NewLog::NewLog()
 {
     // open default logfile
     std::string logPath = EVEMU_ROOT "/logs/";
-    SetLogfileDefault(logPath);
+    SetLogfileDefault(std::move(logPath));
 
     m_initialized = true;
 }
@@ -66,7 +66,7 @@ m_initialized(false)
     if ( logPath.empty() )
         logPath = EVEMU_ROOT "/logs/";
 
-    SetLogfileDefault(logPath);
+    SetLogfileDefault(std::move(logPath));
 
     m_initialized = true;
 }

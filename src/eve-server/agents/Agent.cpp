@@ -653,7 +653,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
     if (IsPlayerCorp(pClient->GetCorporationID())) {
         sStandingMgr.UpdateStandings(m_agentID, pClient->GetCorporationID(), eventID, newStanding * sConfig.standings.Agent2PCorpMissionMultiplier, msg);
         sStandingMgr.UpdateStandings(m_agentData.corporationID, pClient->GetCorporationID(), eventID, newStanding * sConfig.standings.ACorp2PCorpMissionMultiplier, msg);
-        sStandingMgr.UpdateStandings(m_agentData.factionID, pClient->GetCorporationID(), eventID, newStanding * sConfig.standings.AFaction2PCorpMissionMultiplier, msg);
+        sStandingMgr.UpdateStandings(m_agentData.factionID, pClient->GetCorporationID(), eventID, newStanding * sConfig.standings.AFaction2PCorpMissionMultiplier, std::move(msg));
     }
 
     PyTuple* agent = new PyTuple(5);

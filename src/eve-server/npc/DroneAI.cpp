@@ -340,7 +340,7 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
                                              m_pDrone->GetSelf()->itemID(),
                                              m_pDrone->GetSelf()->typeID(), //m_pDrone->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
                                              pTarget->GetID(),
-                                             0,guid,1,1,1,m_attackSpeed,0,gfxID);
+                                             0,std::move(guid),1,1,1,m_attackSpeed,0,gfxID);
 
     Damage dam(m_pDrone,
              m_pDrone->GetSelf(),

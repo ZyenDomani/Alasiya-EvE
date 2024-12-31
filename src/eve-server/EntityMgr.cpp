@@ -295,7 +295,7 @@ SystemManager* EntityMgr::FindOrBootSystem(uint32 systemID) {
 
 // cannot put add/remove station in header due to incomplete StationItemRef class
 void EntityMgr::AddStation(uint32 stationID, StationItemRef itemRef) {
-    m_stations[stationID] = itemRef;
+    m_stations[stationID] = std::move(itemRef);
 }
 
 void EntityMgr::RemoveStation(uint32 stationID) {
@@ -303,9 +303,9 @@ void EntityMgr::RemoveStation(uint32 stationID) {
 }
 
 Agent* EntityMgr::GetAgent(uint32 agentID) {
-    std::map<uint32, Agent*>::iterator res = m_agents.find(agentID);
-    if (res != m_agents.end())
-        return res->second;
+    std::map<uint32, Agent*>::iterator itr = m_agents.find(agentID);
+    if ( itr != m_agents.end())
+        return itr->second;
 
     Agent* pAgent = new Agent(agentID);
     if (!pAgent->Load()) {
@@ -378,7 +378,7 @@ std::string EntityMgr::GetAnomalyID()
         str2 += std::to_string(MakeRandomInt(0,9));
     }
 
-    std::string res = str1;
+    std::string res = std::move(str1);
     res += "-";
     res += str2;
     // not sure if we need to keep track of these IDs...
@@ -428,7 +428,6 @@ void EntityMgr::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTyp
     // make sure this is player corp (which it really should be, but just in case....)
     if (IsNPCCorp(corpID))
         return;
-    std::map<uint32, Client*> cMap;
     std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(corpID);
     if (cItr == m_corpMembers.end()) {
         // no corp members online now.  nothing to do here.
@@ -438,6 +437,7 @@ void EntityMgr::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTyp
 
     // determine who in corp needs to be notified
     using namespace Notify::Types;
+    std::map<uint32, Client*> cMap;
     // this will only use a single iteration.
     corpRole::const_iterator itr = cItr->second.begin(), end = cItr->second.end();
     switch (bCastType) {
@@ -473,6 +473,52 @@ void EntityMgr::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTyp
                 // if (itr->first->GetChar()->HasShares())  // not written, no underlying code yet
                 if (mdb.HasShares(itr->first->GetCharacterID(), corpID))
                     cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
+
+        // internal Alasiya corp notifications
+        case FactoryJob: {      // factory job completion added to calendar
+            // who else wants/needs this?
+            //  lets start with factory manager, and may have to add later
+            while (itr != end) {
+                if ((itr->second & Corp::Role::FactoryManager) == Corp::Role::FactoryManager)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
+        case MarketOrder: {
+            // who else wants/needs this?
+            //  lets start with traders, and may have to add later
+            while (itr != end) {
+                if ((itr->second & Corp::Role::Trader) == Corp::Role::Trader)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
+        case WalletChange: {
+            while (itr != end) {
+                if ((itr->second & Corp::Role::Accountant) == Corp::Role::Accountant)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                if ((itr->second & Corp::Role::Auditor) == Corp::Role::Auditor)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                // this will need to check if player has access to division changed - will require a LOT more code
+                if ((itr->second & Corp::Role::JuniorAccountant) == Corp::Role::JuniorAccountant)
+                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
+        case ItemUpdateStation: {
+            // all members?
+            while (itr != end) {
+                cMap.emplace(itr->first->GetCharacterID(), itr->first);
+                ++itr;
+            }
+        } break;
+        case ItemUpdateSystem: {
+            // all members?
+            while (itr != end) {
+                cMap.emplace(itr->first->GetCharacterID(), itr->first);
                 ++itr;
             }
         } break;
@@ -545,52 +591,6 @@ void EntityMgr::CorpNotify(uint32 corpID, uint8 bCastType, const char* notifyTyp
         case OrbitalReinforced:
         case OwnershipTransferred:
             break;
-
-        // internal Alasiya corp notifications
-        case FactoryJob: {      // factory job completion added to calendar
-            // who else wants/needs this?
-            //  lets start with factory manager, and may have to add later
-            while (itr != end) {
-                if ((itr->second & Corp::Role::FactoryManager) == Corp::Role::FactoryManager)
-                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
-                ++itr;
-            }
-        } break;
-        case MarketOrder: {
-            // who else wants/needs this?
-            //  lets start with traders, and may have to add later
-            while (itr != end) {
-                if ((itr->second & Corp::Role::Trader) == Corp::Role::Trader)
-                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
-                ++itr;
-            }
-        } break;
-        case WalletChange: {
-            while (itr != end) {
-                if ((itr->second & Corp::Role::Accountant) == Corp::Role::Accountant)
-                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
-                if ((itr->second & Corp::Role::Auditor) == Corp::Role::Auditor)
-                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
-                // this will need to check if player has access to division changed - will require a LOT more code
-                if ((itr->second & Corp::Role::JuniorAccountant) == Corp::Role::JuniorAccountant)
-                    cMap.emplace(itr->first->GetCharacterID(), itr->first);
-                ++itr;
-            }
-        } break;
-        case ItemUpdateStation: {
-            // all members?
-            while (itr != end) {
-                cMap.emplace(itr->first->GetCharacterID(), itr->first);
-                ++itr;
-            }
-        } break;
-        case ItemUpdateSystem: {
-            // all members?
-            while (itr != end) {
-                cMap.emplace(itr->first->GetCharacterID(), itr->first);
-                ++itr;
-            }
-        } break;
     }
 
     for (auto &cur : cMap) {
@@ -775,6 +775,7 @@ void EntityMgr::RegisterSID(int64 &sessionID) {
     std::pair<std::_Rb_tree_const_iterator<int64>, bool > test;
     if (itr == m_sessions.end())
         test = m_sessions.insert(sessionID);
+    // what's the point here??
     if (test.second)
         return;
 }

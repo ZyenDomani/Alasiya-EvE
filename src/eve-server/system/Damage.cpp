@@ -433,7 +433,7 @@ void ShipSE::Killed(Damage &damage) {
             wreckEntity.factionID = sDataMgr.GetWreckFaction(wreckTypeID);
             wreckEntity.groupID = EVEDB::invGroups::Wreck;
             wreckEntity.itemID = wreckItemRef->itemID();
-            wreckEntity.itemName = wreck_name;
+            wreckEntity.itemName = std::move(wreck_name);
             wreckEntity.ownerID = killerID;
             wreckEntity.typeID = wreckTypeID;
             wreckEntity.position = wreckPosition;
@@ -623,7 +623,7 @@ void ShipSE::Killed(Damage &damage) {
             wreckEntity.factionID = sDataMgr.GetWreckFaction(wreckTypeID);
             wreckEntity.groupID = EVEDB::invGroups::Wreck;
             wreckEntity.itemID = wreckItemRef->itemID();
-            wreckEntity.itemName = wreck_name;
+            wreckEntity.itemName = std::move(wreck_name);
             wreckEntity.ownerID = pPilot->GetCharacterID();
             wreckEntity.typeID = wreckTypeID;
             wreckEntity.position = wreckPosition;

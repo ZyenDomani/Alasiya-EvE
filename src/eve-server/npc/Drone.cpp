@@ -427,7 +427,7 @@ void DroneSE::Killed(Damage &fatal_blow) {
         wreckEntity.factionID = (killer->GetWarFactionID() == 0 ? m_warID : killer->GetWarFactionID());
         wreckEntity.groupID = EVEDB::invGroups::Wreck;
         wreckEntity.itemID = wreckItemRef->itemID();
-        wreckEntity.itemName = wreck_name;
+        wreckEntity.itemName = std::move(wreck_name);
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = wreckTypeID;
         wreckEntity.position = wreckPosition;

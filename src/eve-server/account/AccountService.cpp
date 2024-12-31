@@ -415,5 +415,5 @@ void AccountService::HandleCorpTransaction(uint32 corpID, int8 entryTypeID, uint
     oac.balance = balance;
     oac.ownerid = corpID;
     sEntityMgr.CorpNotify(corpID, 126 /*WalletChange*/, "OnAccountChange", "*corpid&corpAccountKey", oac.Encode());
-    AccountDB::AddJournalEntry(corpID, entryTypeID, fromID, toID, currency, accountKey, amount, balance, description, referenceID);
+    AccountDB::AddJournalEntry(corpID, entryTypeID, fromID, toID, currency, accountKey, amount, balance, std::move(description), referenceID);
 }

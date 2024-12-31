@@ -330,7 +330,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             _log(MANUF__WARNING, "Failed to split %s for %s.", bpRef->name(), sRamMthd.GetActivityName(args.activityID));
             throw UserError("RamActivityRequiresABlueprint");
         }
-        bpRef = iRef;
+        bpRef = std::move(iRef);
     }
 
     // unpackage bpo and move to factory
@@ -558,7 +558,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         uint32 eventID = CalendarDB::SaveSystemEvent(args.isCorpJob?call.client->GetCorporationID():call.client->GetCharacterID(),
                                                      stDataMgr.GetOwnerID(locationID),
                                                      beginTime + rsp.productionTime * EvE::Time::Second,
-                                                     Calendar::AutoEvent::RAMJob, title, description);
+                                                     Calendar::AutoEvent::RAMJob, std::move(title), std::move(description));
 
         FactoryDB::SetJobEventID(jobID, eventID);
 

@@ -215,7 +215,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         entity.categoryID = actualCategoryID;
         entity.groupID = actualGroupID;
         entity.itemID = item->itemID();
-        entity.itemName = actualTypeName;
+        entity.itemName = std::move(actualTypeName);
         entity.typeID = actualTypeID;
         entity.position = loc;
         /** @todo need to get faction info here... */
@@ -949,7 +949,7 @@ PyResult Command_unban(Client* who, CommandDB* db, PyServiceMgr* services, const
             throw CustomError("Unknown arguments");
 
         std::string name = args.arg(1) + " " + args.arg(2);
-        ServiceDB::SetAccountBanStatus(db->GetAccountID(name),false);
+        ServiceDB::SetAccountBanStatus(db->GetAccountID(std::move(name)),false);
     }
     else
         throw CustomError("Correct Usage: /unban [Character Name / Character ID]");

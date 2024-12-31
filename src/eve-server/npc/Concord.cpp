@@ -639,10 +639,10 @@ void ConcordAI::Attack(SystemEntity* pSE)
 void ConcordAI::AttackTarget(SystemEntity* pTarget) {
     std::string guid = "effects.Laser";
     m_npc->DestinyMgr()->SendGFX14(m_npc->GetSelf()->itemID(),
-                                           m_npc->GetSelf()->itemID(),
-                                           m_npc->GetSelf()->typeID(), //m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
-                                           pTarget->GetID(),
-                                           0,guid,1,1,1,m_attackSpeed,0);
+                                   m_npc->GetSelf()->itemID(),
+                                   m_npc->GetSelf()->typeID(), //m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                   pTarget->GetID(),
+                                   0,std::move(guid),1,1,1,m_attackSpeed,0);
 
     Damage dam(m_npc,
              m_npc->GetSelf(),

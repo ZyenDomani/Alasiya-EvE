@@ -2319,33 +2319,33 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 
     // test account name for invalid chars (which may allow sql injection)
     if (!ServiceDB::ValidateAccountName(ccp, failMsg))
-        return _LoginFail(failMsg);
+        return _LoginFail(std::move(failMsg));
 
     AccountData aData = AccountData();
     if (!ServiceDB::GetAccountInformation(ccp, aData, failMsg))
-        return _LoginFail(failMsg);
+        return _LoginFail(std::move(failMsg));
 
     if (aData.banned) {
         failMsg = "Your account is banned. Contact Allan for further support";
-        return _LoginFail(failMsg);
+        return _LoginFail(std::move(failMsg));
     }
 
     if (aData.online) {
         failMsg = "This account is currently online.";
-        return _LoginFail(failMsg);
+        return _LoginFail(std::move(failMsg));
     }
 
     if (!ccp.user_password.empty()) {
         sLog.Warning("  Client::Login()", "%s(%u) - Using Plain Password", aData.name.c_str(), aData.clientID);
         if (strcmp(aData.password.c_str(), ccp.user_password.c_str()) != 0) {
             failMsg = "The plain Password you entered is incorrect for this account.";
-            return _LoginFail(failMsg);
+            return _LoginFail(std::move(failMsg));
         }
     } else {
         //sLog.Warning("  Client::Login()", "%s(%u) - Using Hashed Password", aData.name.c_str(), aData.clientID);
         if (strcmp(aData.hash.c_str(), ccp.user_password_hash.c_str()) != 0) {
             failMsg = "The Password you entered is incorrect for this account.";
-            return _LoginFail(failMsg);
+            return _LoginFail(std::move(failMsg));
         }
 
         if (!ccp.user_password.empty())

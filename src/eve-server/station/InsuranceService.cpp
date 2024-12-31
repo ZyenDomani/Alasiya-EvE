@@ -208,7 +208,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
         std::string reason = "Insurance Premium on ";
         reason += call.client->GetShip()->itemName();
         reason += ".  Reference ID : xxxxx";     // put contractID here
-        AccountService::TransferFunds(call.client->GetCharacterID(), corpSCC, args.amount, reason, \
+        AccountService::TransferFunds(call.client->GetCharacterID(), corpSCC, args.amount, std::move(reason), \
                 Journal::EntryType::Insurance, -shipRef->itemID());     // for paying ins, shipID should be negative
     } else {
         throw UserError("InsureShipFailed");
@@ -234,6 +234,6 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     m_manager->lsc_service->SendMail(corpSCC, call.client->GetCharacterID(), subject, body);
 
     // TODO: create calendar event for insurance expiry
-	
+
     return m_db->GetInsuranceByShipID(args.shipID);
 }
