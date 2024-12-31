@@ -84,6 +84,8 @@ ship warp speed on attributes tab is wrong
 
 error:
 "turret not fitted on shipID (npc)"
+shoot sends shipID, targetID, moduleID, etc
+this is used as 'trigger' in __INIT__ for turret/missile
 
 
 char creation - figure certs and set skills accordingly

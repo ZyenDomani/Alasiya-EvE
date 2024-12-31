@@ -60,3 +60,14 @@ again, no client, with delete this disabled
 ==1617==         suppressed: 0 bytes in 0 blocks
 ==1617==
 ==1617== ERROR SUMMARY: 219 errors from 219 contexts (suppressed: 0 from 0)
+
+current 30dec24  no client  with delete this enabled
+==17263== LEAK SUMMARY:
+==17263==    definitely lost: 16,446,272 bytes in 473,437 blocks
+==17263==    indirectly lost: 33,908,601 bytes in 874,713 blocks
+==17263==      possibly lost: 8,720 bytes in 231 blocks
+==17263==    still reachable: 2,560 bytes in 58 blocks
+==17263==         suppressed: 0 bytes in 0 blocks
+==17263==
+==17263== ERROR SUMMARY: 180 errors from 180 contexts (suppressed: 0 from 0)
+again, no client, with delete this disabled

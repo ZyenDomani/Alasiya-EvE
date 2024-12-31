@@ -75,10 +75,11 @@ PyRep::PyRep(PyType t) : mType(t), mRefCount(1), mDeleted(false) { }
 PyRep::PyRep(PyType t, size_t count) : mType(t), mRefCount(count), mDeleted(false) { }
 PyRep::PyRep(const PyRep& oth) : mType(oth.mType), mRefCount(oth.mRefCount), mDeleted(false)
 {
-    //sLog.Cyan("PyRep()", "Copy C'tor.");
+    sLog.Cyan("PyRep()", "Copy C'tor.");
 }
 PyRep::PyRep(PyRep&& oth) : mType(PyRep::PyTypeNone), mRefCount(1), mDeleted(false) {
     std::swap(*this, oth);
+    sLog.Cyan("PyRep()", "Move C'tor.");
 }
 
 PyRep::~PyRep()
@@ -263,17 +264,18 @@ void PyRep::IncRef() const
     if (mDeleted) {
         _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %i", mRefCount);
         EvE::traceStackLN();
-        //return;
+        return;
     }
     /*
     if (mRefCount == 0) {
         _log(REFPTR__ERROR, "IncRef() - mRefCount = 0.");
         EvE::traceStackLN();
     }*/
-    //assert( mDeleted == false );
-    //assert(mRefCount > 0);
+    assert( mDeleted == false );
+    assert(mRefCount > 0);
     ++mRefCount;
-    _log(REFPTR__INC, "IncRef() on %s.  Count is %u", TypeString(), mRefCount);
+    if (is_log_enabled(REFPTR__INC))
+        _log(REFPTR__INC, "IncRef() on %s.  Count is %u", TypeString(), mRefCount);
 }
 
 void PyRep::DecRef() const
@@ -298,11 +300,11 @@ void PyRep::DecRef() const
     //assert( mDeleted == false );
     //assert(mRefCount > 0);
 
-    _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
+    if (is_log_enabled(REFPTR__DEC))
+        _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
 
     if (mRefCount < 1)
-        if (sConfig.server.DelOnZero)
-            delete this;
+        delete this;
 }
 
 
@@ -853,7 +855,7 @@ bool PyList::visit(PyVisitor& v) const
 void PyList::clear()
 {
     iterator cur = items.begin(), end = items.end();
-    for (; cur != end; cur++)
+    for (; cur != end; ++cur)
         PySafeDecRef(*cur);
 
     items.clear();
@@ -909,7 +911,7 @@ bool PyDict::visit(PyVisitor& v) const
 void PyDict::clear()
 {
     iterator cur = items.begin(), end = items.end();
-    for (; cur != end; cur++) {
+    for (; cur != end; ++cur) {
         PyDecRef(cur->first);
         PySafeDecRef(cur->second);
     }
@@ -1422,7 +1424,6 @@ PyChecksumedStream::PyChecksumedStream(const PyChecksumedStream& oth)
 
 PyChecksumedStream::~PyChecksumedStream()
 {
-    // is this right?  havent had any "multiple deletion" msgs yet...
     PyDecRef(mStream);
 }
 
@@ -1530,6 +1531,12 @@ PyTuple* new_tuple(PyRep* arg1, PyRep* arg2, PyRep* arg3)
     return res;
 }
 
+pyStatic::pyStatic()
+: m_none(new PyNone()), m_zero(new PyInt(0)), m_one(new PyInt(1)), m_negone(new PyInt(-1)), m_true(new PyBool(true)),
+m_false(new PyBool(false)), m_dict(new PyDict()), m_list(new PyList()), m_tuple(new PyTuple(0))
+{
+    sLog.Cyan("pyStatic()", "Created.");
+}
 
 // not sure if this will work right...
 pyStatic::~pyStatic() {

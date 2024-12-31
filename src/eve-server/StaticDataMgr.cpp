@@ -49,16 +49,16 @@ StaticDataMgr::~StaticDataMgr()
 
 void StaticDataMgr::Close()
 {
-    SafeDelete(m_keyMap);
-    //SafeDelete(m_agents);
-    //SafeDelete(m_operands);
-    //SafeDelete(m_billTypes);
-    //SafeDelete(m_entryTypes);
-    //SafeDelete(m_factionInfo);
-    //SafeDelete(m_npcDivisions);
+    //PyDecRef(m_keyMap);
+    //PyDecRef(m_agents);
+    //PyDecRef(m_operands);
+    //PyDecRef(m_billTypes);
+    //PyDecRef(m_entryTypes);
+    //PyDecRef(m_factionInfo);
+    //PyDecRef(m_npcDivisions);
 
-    //for (auto &cur : m_bpMatlData)
-    //    SafeDelete(cur.second);
+    for (auto &cur : m_bpMatlData)
+        (cur.second)->DecRef();
 
     sLog.Warning("    StaticDataMgr", "Static Data Manager has been closed.");
 }
@@ -95,7 +95,6 @@ void StaticDataMgr::Clear()
     m_LootGroupTypeMap.clear();
     m_WrecksToTypesMap.clear();
 
-    SafeDelete(m_keyMap);
     SafeDelete(m_agents);
     SafeDelete(m_operands);
     SafeDelete(m_billTypes);
@@ -105,7 +104,6 @@ void StaticDataMgr::Clear()
 
     for (auto &cur : m_bpMatlData)
         SafeDelete(cur.second);
-    m_bpMatlData.clear();
 }
 
 void StaticDataMgr::Populate()
@@ -469,8 +467,8 @@ void StaticDataMgr::Populate()
             bpTypeData.maxProductionLimit       = row.GetInt(12);
             bpTypeData.chanceOfRE               = row.GetFloat(13);
             bpTypeData.catID                    = (row.IsNull(14) ? 0 : row.GetInt(14));
-        m_bpTypeData[row.GetInt(0)] = std::move(bpTypeData);
         m_bpProductData.emplace(row.GetInt(2), bpTypeData);
+        m_bpTypeData[row.GetInt(0)] = std::move(bpTypeData);
     }
     for (auto &cur : m_bpTypeData)
         m_bpMatlData[cur.first] = SetBPMatlType(cur.second.catID, cur.first, cur.second.productTypeID);
@@ -1332,7 +1330,8 @@ PyDict* StaticDataMgr::GetBPMatlData(uint16 typeID)
     auto itr = m_bpMatlData.find(typeID);
     if (itr != m_bpMatlData.end()) {
         PyIncRef(itr->second);
-        itr->second->Dump(MANUF__DEBUG, "    ");
+        if (is_log_enabled(MANUF__DEBUG))
+            itr->second->Dump(MANUF__DEBUG, "    ");
         return itr->second;
     }
     return nullptr;

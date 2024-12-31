@@ -966,6 +966,7 @@ int main( int argc, char* argv[] )
     /* Close the map data manager */
     sMapData.Close();
     /* Close the static data manager */
+    //sDataMgr.Clear();
     sDataMgr.Close();
     /* Close the statistics manager */
     sStatMgr.Close();

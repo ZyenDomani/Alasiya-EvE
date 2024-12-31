@@ -1205,23 +1205,16 @@ class pyStatic
 : public Singleton< pyStatic >
 {
 public:
-    pyStatic()
-    : m_none(new PyNone()),
-    m_zero(new PyInt(0)),
-    m_one(new PyInt(1)),
-    m_negone(new PyInt(-1)),
-    m_true(new PyBool(true)),
-    m_false(new PyBool(false)),
-    m_dict(new PyDict()),
-    m_list(new PyList()),
-    m_tuple(new PyTuple(0))
-    {
-    }
-
+    // default c'tor
+    pyStatic();
     // copy c'tor
-    pyStatic(const pyStatic& oth);
+    pyStatic(const pyStatic& oth) =delete;
+    // move c'tor
+    pyStatic(const pyStatic&& oth) =delete;
     // copy assignment
-    pyStatic& operator= (const pyStatic& oth);
+    pyStatic& operator= (const pyStatic& oth) =delete;
+    // move assignment
+    pyStatic& operator= (pyStatic&& oth) =delete;
 
    ~pyStatic();
 
