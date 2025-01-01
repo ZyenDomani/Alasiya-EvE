@@ -72,6 +72,7 @@ void PyServiceMgr::Initalize(double startTime)
 {
     //  look into this.  what's it for?  are we using it right?  missing anything?
     // client calls this, then loads cached data upon return.  not sure how this is used yet
+    PyString* str(new PyString("machoNet.serviceInfo"));
     if (!cache_service->IsCacheLoaded(str)) {
         PyDict *dict = new PyDict();
         /* ServiceCallGPCS.py:197
@@ -187,7 +188,6 @@ void PyServiceMgr::Initalize(double startTime)
         dict->SetItemString("zActionServer", PyStatic.NewNone());
 
         //register it
-        PyString* str(new PyString("machoNet.serviceInfo"));
         cache_service->GiveCache(str, (PyRep **)&dict);
     }
 
