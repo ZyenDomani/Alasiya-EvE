@@ -116,7 +116,7 @@ bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
         _print( "%s Tuple: %lu elements", _pfx(), rep->size() );
 
         PyTuple::const_iterator cur = rep->begin(), end = rep->end();
-        for ( uint8 i(0); cur != end; cur++, i++ )  {
+        for ( uint8 i(0); cur != end; ++cur, ++i )  {
             if (*cur == nullptr) {
                 _pfxExtend( "  [%2u]  nullptr", i );
                 _pfxWithdraw();

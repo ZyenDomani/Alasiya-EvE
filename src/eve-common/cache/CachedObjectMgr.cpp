@@ -92,7 +92,8 @@ CachedObjectMgr::~CachedObjectMgr()
 {
     CachedObjMapItr cur = m_cachedObjects.begin(), end = m_cachedObjects.end();
     for (; cur != end; ++cur) {
-        SafeDelete( cur->second );
+        //SafeDelete( cur->second );
+        delete cur->second;
     }
 }
 
@@ -213,7 +214,7 @@ void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
         sLog.Error( "Cached Obj Mgr", "Failed to marshal or deflate new cache object." );
     }
 
-    //SafeDelete( buf );
+    delete buf;
 }
 
 void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer **pbuf)

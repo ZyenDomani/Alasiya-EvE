@@ -70,8 +70,8 @@ public:
 
     //handlers for simple cached method calls.
     bool IsCacheLoaded(const PyRep *objectID) const;
-    bool IsCacheLoaded(const ObjectCachedMethodID &m) const { return(IsCacheLoaded(m.objectID)); }
-    bool IsCacheLoaded(const ObjectCachedSessionMethodID &m) const { return(IsCacheLoaded(m.objectID)); }
+    bool IsCacheLoaded(const ObjectCachedMethodID &m) const { return IsCacheLoaded(m.objectID); }
+    bool IsCacheLoaded(const ObjectCachedSessionMethodID &m) const { return IsCacheLoaded(m.objectID); }
 
     void InvalidateCache(const PyRep *objectID);
     void InvalidateCache(const ObjectCachedMethodID &m) { InvalidateCache(m.objectID); }

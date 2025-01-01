@@ -288,7 +288,8 @@ void PyRep::DecRef() const
         _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
 
     if (mRefCount < 1)
-        delete this;
+        if (sConfig.server.DelOnZero)
+            delete this;
 }
 
 
@@ -938,8 +939,8 @@ void PyDict::SetItem(PyRep* key, PyRep* value)
     if (itr == items.end()) {
         // make_pair() makes copy of args passed
         items.insert(std::make_pair(key, value));
-        //PyIncRef(key);
-        //PyIncRef(value);
+        PyIncRef(key);
+        PyIncRef(value);
     } else {
         // We found 'key' in current dict, so use itr->first and decRef sent 'key'.
         PyDecRef(key);
@@ -1097,7 +1098,7 @@ PyRep* PyObjectEx_Type1::FindKeyword(const char* keyword) const
     PyDict* kw = GetKeywords();
 
     PyDict::const_iterator cur = kw->begin();
-    for (; cur != kw->end(); cur++) {
+    for (; cur != kw->end(); ++cur) {
         if (cur->first->IsString())
             if (cur->first->AsString()->content() == keyword)
                 return cur->second;
@@ -1200,7 +1201,7 @@ PyRep* PyObjectEx_Type2::FindKeyword(const char* keyword) const
 {
     PyDict* kw = GetKeywords();
     PyDict::const_iterator cur = kw->begin();
-    for (; cur != kw->end(); cur++)
+    for (; cur != kw->end(); ++cur)
         if (cur->first->IsString())
             if (cur->first->AsString()->content() == keyword)
                 return cur->second;

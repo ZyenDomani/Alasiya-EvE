@@ -99,6 +99,8 @@ char creation - figure certs and set skills accordingly
 update all 16 references to www.eveonline.com and create pages on server to respond properly
 add agent portraits to server and update 'backupurl' in server code
 
+update char remap in client to allow higher attribs (~60 or so)
+
 
 *******************************************************
 *******************************************************
@@ -942,7 +944,6 @@ better checks and reverts when creating corps fail
 implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligible.
     update for ~20+ or so points to make a difference with our attributes
     implant map in character.h  -currently unused/unimplemented
-    update char remap in client to allow higher attribs
 
 turns use quaternion lerp curve (and mass/agility somehow)
     maybe bezier curve? (would be easier to implement)  nope...didnt work right
