@@ -241,8 +241,7 @@ protected:
     const PyType		mType;
 
     /// Reference count of instance.
-    mutable int                 mRefCount;
-    mutable bool                mDeleted;
+    mutable int16               mRefCount;
 };
 
 /**

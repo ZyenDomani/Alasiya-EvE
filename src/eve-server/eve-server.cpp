@@ -654,6 +654,9 @@ int main( int argc, char* argv[] )
     // basic shit done.  begin loading server specifics...
     sLog.Green("       ServerInit", "Loading server");
     std::printf("\n");     // spacer
+    
+    PyStatic.Init();
+    std::printf("\n");     // spacer
 
     /* create a single item factory */
     sLog.Green("       ServerInit", "Starting Item Factory");
@@ -825,6 +828,7 @@ int main( int argc, char* argv[] )
     std::printf("\n");     // spacer
 
     sLog.Green("       ServerInit", "Loading Data Sets");
+    std::printf("\n");     // spacer
     sDataMgr.Initialize();
     std::printf("\n");     // spacer
     sMissionDataMgr.Initialize();
@@ -842,8 +846,6 @@ int main( int argc, char* argv[] )
     stDataMgr.Initialize();
     std::printf("\n");     // spacer
     sLiveUpdateDB.Init();
-    std::printf("\n");     // spacer
-    PyStatic.Init();
 
     // clear dynamic system data (player counts, etc) on server start
     MapDB::SystemStartup();

@@ -301,7 +301,7 @@ void ObjCacheService::PrimeCache()
     for(; cur != m_cacheKeys.end(); ++cur) {
         PyString* str = new PyString( cur->first );
         _LoadCachableObject( str );
-        PyDecRef( str );
+        PyDecRef(str);
     }
 }
 
@@ -330,6 +330,7 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
     if (cache != nullptr) {
         //we have generated the cache file in question, remember it
         m_cache.UpdateCache(objectID, &cache);
+        //PyDecRef(cache);
     } else {
         //failed to query from the database... fall back to old hackish file loading.
         PySubStream* ss = m_cache.LoadCachedFile( objectID_string.c_str() );
@@ -351,7 +352,6 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
         }
     }
 
-    PySafeDecRef(cache);
     return true;
 }
 
@@ -391,7 +391,7 @@ void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {
     }
     if (objects == nullptr)
         return;
-    
+
     std::map<std::string, std::string>::const_iterator res;
     for(uint32 r = 0; r < object_count; r++) {
         //find the dict key to use for this object

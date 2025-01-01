@@ -196,7 +196,7 @@ void CachedObjectMgr::UpdateCache(const std::string &objectID, PyRep **in_cached
 void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
 {
     PyRep* cached_data(*in_cached_data);
-    *in_cached_data = nullptr;
+    in_cached_data = nullptr;
 
     //if (is_log_enabled(CACHE__DUMP)) {
     //  PyLogsysDump dumper(CACHE__DUMP, CACHE__DUMP, false, true);
@@ -235,11 +235,11 @@ void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer **pbuf)
     CachedObjMapItr res = m_cachedObjects.find(str);
 
     if (res != m_cachedObjects.end()) {
-        sLog.Debug("CachedObjMgr","Destroying old cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), res->second->cache->content().size(), res->second->version);
+        _log(CACHE__INFO,"Destroying old cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), res->second->cache->content().size(), res->second->version);
         SafeDelete( res->second );
     }
 
-    sLog.Debug("CachedObjMgr","Registering new cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), r->cache->content().size(), r->version);
+    _log(CACHE__INFO,"Registering new cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), r->cache->content().size(), r->version);
 
     m_cachedObjects[str] = r;
 }

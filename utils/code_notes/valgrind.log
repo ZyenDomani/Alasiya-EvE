@@ -71,3 +71,21 @@ current 30dec24  no client  with delete this enabled
 ==17263==
 ==17263== ERROR SUMMARY: 180 errors from 180 contexts (suppressed: 0 from 0)
 again, no client, with delete this disabled
+==23722== LEAK SUMMARY:
+==23722==    definitely lost: 9,021,984 bytes in 237,113 blocks
+==23722==    indirectly lost: 59,012,629 bytes in 1,551,704 blocks
+==23722==      possibly lost: 7,093 bytes in 178 blocks
+==23722==    still reachable: 3,212 bytes in 80 blocks
+==23722==         suppressed: 0 bytes in 0 blocks
+==23722==
+==23722== ERROR SUMMARY: 81 errors from 81 contexts (suppressed: 0 from 0)
+
+==20611== LEAK SUMMARY:
+==20611==    definitely lost: 16,703,032 bytes in 484,731 blocks
+==20611==    indirectly lost: 32,881,917 bytes in 850,054 blocks
+==20611==      possibly lost: 8,720 bytes in 231 blocks
+==20611==    still reachable: 2,560 bytes in 58 blocks
+==20611==         suppressed: 0 bytes in 0 blocks
+==20611==
+==20611== ERROR SUMMARY: 189 errors from 189 contexts (suppressed: 0 from 0)
+==20611== ERROR SUMMARY: 189 errors from 189 contexts (suppressed: 0 from 0)

@@ -71,24 +71,20 @@ const char* const s_mTypeString[] =
 /************************************************************************/
 /* PyRep base Class                                                     */
 /************************************************************************/
-PyRep::PyRep(PyType t) : mType(t), mRefCount(1), mDeleted(false) { }
-PyRep::PyRep(PyType t, size_t count) : mType(t), mRefCount(count), mDeleted(false) { }
-PyRep::PyRep(const PyRep& oth) : mType(oth.mType), mRefCount(oth.mRefCount), mDeleted(false)
+PyRep::PyRep(PyType t) : mType(t), mRefCount(1) { }
+PyRep::PyRep(PyType t, size_t count) : mType(t), mRefCount(count) { }
+PyRep::PyRep(const PyRep& oth) : mType(oth.mType), mRefCount(oth.mRefCount)
 {
     sLog.Cyan("PyRep()", "Copy C'tor.");
 }
-PyRep::PyRep(PyRep&& oth) : mType(PyRep::PyTypeNone), mRefCount(1), mDeleted(false) {
+PyRep::PyRep(PyRep&& oth) : mType(PyRep::PyTypeNone), mRefCount(1) {
     std::swap(*this, oth);
     sLog.Cyan("PyRep()", "Move C'tor.");
 }
 
 PyRep::~PyRep()
 {
-    if (mDeleted) {
-        _log(REFPTR__ERROR, "~PyRep() - mDeleted: true");
-        EvE::traceStack();
-    }
-    mDeleted = true;
+    // nothing to do anymore
 }
 
 const char* PyRep::TypeString() const
@@ -260,19 +256,13 @@ bool PyRep::GetBool(PyRep* pRep) {
 
 void PyRep::IncRef() const
 {
-
-    if (mDeleted) {
-        _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %i", mRefCount);
-        EvE::traceStackLN();
-        return;
-    }
     /*
     if (mRefCount == 0) {
         _log(REFPTR__ERROR, "IncRef() - mRefCount = 0.");
-        EvE::traceStackLN();
+        //EvE::traceStackLN();        // this is painfully slow
+        EvE::traceStack();
     }*/
-    assert( mDeleted == false );
-    assert(mRefCount > 0);
+
     ++mRefCount;
     if (is_log_enabled(REFPTR__INC))
         _log(REFPTR__INC, "IncRef() on %s.  Count is %u", TypeString(), mRefCount);
@@ -280,14 +270,6 @@ void PyRep::IncRef() const
 
 void PyRep::DecRef() const
 {
-    if (mDeleted) {
-        sLog.Error("DecRef()", "%s already deleted.", TypeString());
-        _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %i", mRefCount);
-        //EvE::traceStackLN();        // this is painfully slow
-        EvE::traceStack();
-        return;
-    }
-
     --mRefCount;
 
     if (mRefCount < 0) {
@@ -296,9 +278,6 @@ void PyRep::DecRef() const
         EvE::traceStack();
         return;
     }
-
-    //assert( mDeleted == false );
-    //assert(mRefCount > 0);
 
     if (is_log_enabled(REFPTR__DEC))
         _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
@@ -954,8 +933,8 @@ void PyDict::SetItem(PyRep* key, PyRep* value)
     if (itr == items.end()) {
         // make_pair() makes copy of args passed
         items.insert(std::make_pair(key, value));
-        PyIncRef(key);
-        PyIncRef(value);
+        //PyIncRef(key);
+        //PyIncRef(value);
     } else {
         // We found 'key' in current dict, so use itr->first and decRef sent 'key'.
         PyDecRef(key);

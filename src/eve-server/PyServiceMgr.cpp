@@ -70,8 +70,6 @@ void PyServiceMgr::Close() {
 
 void PyServiceMgr::Initalize(double startTime)
 {
-    PyString* str(new PyString("machoNet.serviceInfo"));
-
     //  look into this.  what's it for?  are we using it right?  missing anything?
     // client calls this, then loads cached data upon return.  not sure how this is used yet
     if (!cache_service->IsCacheLoaded(str)) {
@@ -84,19 +82,23 @@ void PyServiceMgr::Initalize(double startTime)
          *                    nodeID = self.services.get(k, None)
          *                    break
          */
-        dict->SetItemString("account", new PyString("station"));
-        dict->SetItemString("bookmark", new PyString("station"));
-        dict->SetItemString("contractMgr", new PyString("station"));
-        dict->SetItemString("gangSvc", new PyString("station"));
-        dict->SetItemString("trademgr", new PyString("station"));
-        dict->SetItemString("tutorialSvc", new PyString("station"));
-        dict->SetItemString("slash", new PyString("station"));
-        dict->SetItemString("wormholeMgr", new PyString("location"));
-        dict->SetItemString("LSC", new PyString("location"));
-        dict->SetItemString("station", new PyString("location"));
-        dict->SetItemString("config", new PyString("locationPreferred"));
-        dict->SetItemString("scanMgr", new PyString("solarsystem"));
-        dict->SetItemString("keeper", new PyString("solarsystem"));
+        PyString* station(new PyString("station"));
+        PyString* location(new PyString("location"));
+        PyString* locationPreferred(new PyString("locationPreferred"));
+        PyString* solarsystem(new PyString("solarsystem"));
+        dict->SetItemString("account", station);
+        dict->SetItemString("bookmark", station);
+        dict->SetItemString("contractMgr", station);
+        dict->SetItemString("gangSvc", station);
+        dict->SetItemString("trademgr", station);
+        dict->SetItemString("tutorialSvc", station);
+        dict->SetItemString("slash", station);
+        dict->SetItemString("wormholeMgr", location);
+        dict->SetItemString("LSC", location);
+        dict->SetItemString("station", location);
+        dict->SetItemString("config", locationPreferred);
+        dict->SetItemString("scanMgr", solarsystem);
+        dict->SetItemString("keeper", solarsystem);
         dict->SetItemString("agentMgr", PyStatic.NewNone());
         dict->SetItemString("aggressionMgr", PyStatic.NewNone());
         dict->SetItemString("alert", PyStatic.NewNone());
@@ -185,10 +187,10 @@ void PyServiceMgr::Initalize(double startTime)
         dict->SetItemString("zActionServer", PyStatic.NewNone());
 
         //register it
+        PyString* str(new PyString("machoNet.serviceInfo"));
         cache_service->GiveCache(str, (PyRep **)&dict);
     }
 
-    SafeDelete(str);
     sLog.Cyan("     PyServiceMgr", "%lu services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
 }
 
