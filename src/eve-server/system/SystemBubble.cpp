@@ -124,10 +124,9 @@ void SystemBubble::Process()
     }
 }
 
-//called every 60s from the bubble manager.
-//verifies that each entity is still in this bubble.
-//if any entity is no longer in the bubble, they are removed
-//from the bubble and stuck into the vector for re-classification.
+//called from the bubble manager.
+//if any entity is no longer in their registered bubble,
+//they are added to the vector for re-classification.
 void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
     SystemEntity* pSE(nullptr);
     std::map<uint32, SystemEntity*>::iterator itr = m_dynamicEntities.begin();
@@ -138,18 +137,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             continue;
         }
 
-        /*
-        if (pSE->SystemMgr()->GetID() != m_systemID) {
-            // this entity is in a different system!  this shouldnt happen....
-            // remove this entity, insert into wanderers, and continue
-            wanderers.push_back( pSE );
-            _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u is in %u but this is %u.", \
-                                pSE->GetID(), pSE->SystemMgr()->GetID(), m_systemID);
-            itr = m_dynamicEntities.erase(itr);
-            //pSE = nullptr;
-            continue;
-        } */
-
+        // need to check for jumping ships here also.
         if ((pSE->DestinyMgr() != nullptr) and pSE->DestinyMgr()->IsWarping()) {
             ++itr;
             continue;
@@ -159,9 +147,6 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             //17:38:57 [DestinyWarning] SystemBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
             _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
                         pSE->GetID(), pSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);
-            //itr = m_dynamicEntities.erase(itr);
-            //pSE = nullptr;
-            //continue;
         }
         ++itr;
     }
