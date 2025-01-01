@@ -120,6 +120,15 @@ void EntityMgr::Close()
     sLog.Warning("       EntityMgr", "Entity List has been closed." );
 }
 
+void EntityMgr::UnloadAll() {
+    for (auto &cur : m_systems) {
+        cur.second->UnloadSystem();
+        SafeDelete(cur.second);
+    }
+
+    sLog.Warning("       EntityMgr", "All Solar Systems have been unloaded." );
+}
+
 /* m_clients is used to search for online players and numerous other things.
  *  the problem here is any searching is done thru iteration, which can get expensive.
  *  however, clients are added before their char is selected, so there is no charID for map placement.

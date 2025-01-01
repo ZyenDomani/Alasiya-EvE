@@ -108,6 +108,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("(q)uery stat data", " Prints current statistic data.");
                 //sLog.Warning("       hea(r) all", " Echo all chat msgs to console. *Not Implemented*");
                 sLog.Warning(" reload (u)pdates", " Reload LiveUpdates from db.");
+                sLog.Warning(" unload s(y)stems", " Unload all Solar Systems.");
             } else if (strncmp(buf, "e", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Hello:");
                 sLog.Magenta("      Server Says", " Hello World!" );
@@ -302,6 +303,9 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "u", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Reloading LiveUpdates:");
                 sLiveUpdateDB.Reload();
+            } else if (strncmp(buf, "y", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "Unloading all Solar Systems:");
+                sEntityMgr.UnloadAll();
             } else {
                 sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
             }

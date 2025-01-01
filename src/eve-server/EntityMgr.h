@@ -74,6 +74,7 @@ public:
     void Close();
     void Process();
     void Shutdown();
+    void UnloadAll();
     void Add(Client* pClient);
     void Remove(Client* pClient);
     // this must be called AFTER a character is selected, after Client and Character class construction is complete. (need complete data)
