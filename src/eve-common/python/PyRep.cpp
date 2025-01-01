@@ -71,20 +71,24 @@ const char* const s_mTypeString[] =
 /************************************************************************/
 /* PyRep base Class                                                     */
 /************************************************************************/
-PyRep::PyRep(PyType t) : mType(t), mRefCount(1) { }
-PyRep::PyRep(PyType t, size_t count) : mType(t), mRefCount(count) { }
-PyRep::PyRep(const PyRep& oth) : mType(oth.mType), mRefCount(oth.mRefCount)
+PyRep::PyRep(PyType t) : mType(t), mRefCount(1), mDeleted(false) { }
+PyRep::PyRep(PyType t, size_t count) : mType(t), mRefCount(count), mDeleted(false) { }
+PyRep::PyRep(const PyRep& oth) : mType(oth.mType), mRefCount(oth.mRefCount), mDeleted(false)
 {
     sLog.Cyan("PyRep()", "Copy C'tor.");
 }
-PyRep::PyRep(PyRep&& oth) : mType(PyRep::PyTypeNone), mRefCount(1) {
+PyRep::PyRep(PyRep&& oth) : mType(PyRep::PyTypeNone), mRefCount(1), mDeleted(false) {
     std::swap(*this, oth);
     sLog.Cyan("PyRep()", "Move C'tor.");
 }
 
 PyRep::~PyRep()
 {
-    // nothing to do anymore
+    if (mDeleted) {
+        _log(REFPTR__ERROR, "~PyRep() - mDeleted: true");
+        EvE::traceStack();
+    }
+    mDeleted = true;
 }
 
 const char* PyRep::TypeString() const
@@ -256,12 +260,12 @@ bool PyRep::GetBool(PyRep* pRep) {
 
 void PyRep::IncRef() const
 {
-    /*
-    if (mRefCount == 0) {
-        _log(REFPTR__ERROR, "IncRef() - mRefCount = 0.");
+    if (mDeleted) {
+        _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %i", mRefCount);
         //EvE::traceStackLN();        // this is painfully slow
         EvE::traceStack();
-    }*/
+        return;
+    }
 
     ++mRefCount;
     if (is_log_enabled(REFPTR__INC))
@@ -270,14 +274,15 @@ void PyRep::IncRef() const
 
 void PyRep::DecRef() const
 {
-    --mRefCount;
-
-    if (mRefCount < 0) {
-        _log(REFPTR__ERROR, "DecRef() - Count for %s is %i", TypeString(), mRefCount);
+    if (mDeleted) {
+        sLog.Error("DecRef()", "%s already deleted.", TypeString());
+        _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %i", mRefCount);
         //EvE::traceStackLN();        // this is painfully slow
         EvE::traceStack();
         return;
     }
+
+    --mRefCount;
 
     if (is_log_enabled(REFPTR__DEC))
         _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);

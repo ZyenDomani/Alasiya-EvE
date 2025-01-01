@@ -219,3 +219,131 @@ Thread Locals:  session was <Session: (sid:8209836207737040965, clientID:0, muta
 EXCEPTION END
 
 09:45:37 [Bound] SkillMgrBound::GetSkillQueueAndFreePoints()
+)
+09:37:52 [Bound] CorpRegistryBound::GetRoleGroups()
+09:37:52 [Bound] CorpRegistryBound::GetRoles()
+09:37:52 [Service] standing2::GetSecurityRating()
+09:37:52 [Service] charMgr::GetPrivateInfo()
+09:37:52 [Bound] CorpRegistryBound::GetMember()
+09:37:52 [CorpCall] CorpRegistryBound::Handle_GetMember()
+09:37:52 [Bound] CorpRegistryBound::GetMember()
+09:37:52 [CorpCall] CorpRegistryBound::Handle_GetMember()
+09:37:52 [Bound] PyBoundObject::Fetch()
+09:37:52 [Service] alert::BeanCount()
+09:37:52 C       ImageServer:  GetImage() called. Cat: Character, id: 90000000, size:128
+09:37:52 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #7 logged at  01/01/2025 9:37:52
+Caught at:
+/common/lib/bluepy.py(86) CallWrapper
+/../carbon/client/script/ui/control/tabgroup.py(676) Select
+Thrown at:
+/../carbon/client/script/ui/control/tabgroup.py(672) Select
+/client/script/ui/shared/neocom/corporation/corp_dlg_edit_member.py(246) Load
+/client/script/ui/shared/neocom/corporation/corp_dlg_edit_member.py(324) OnTabGeneral
+        canEditBase = 1
+        data = {'OnChange': <bound method EditMemberDialog.OnComboChange of form.EditMemberDialog object at 0x3b6a4db0, name=EditMemberDialog, destroyed=False>>,
+                        '__guid__': 'listentry.Combo',
+                        'cfgName': 'baseID',
+                        'decoClass': <class 'listentry.Combo'>,
+                       ...
+        scrolllist = [Anonymous Bunch: {'setValue': '', 'GetHeightFunction': <function GetHeight at 0x09E099B0>, 'name': 'general_title', '__guid__': 'listentry.Edit', 'lines': 1, 'GetColumnWidthFunction': None, 'decoClass': <class 'listentry.Edit'>, 'label': u'Title', 'allowDynamicResize': False, 'charIndex': u'title', 'maxLength': 100, 'OnReturn': None, 'PreLoadFunction': None},
+                        Anonymous Bunch: {'setValue': 60014137, 'GetHeightFunction': <function GetHeight at 0x09E098B0>, 'name': 'baseID', '__guid__': 'listentry.Combo', 'GetColumnWidthFunction': None, 'decoClass': <class 'listentry.Combo'>, 'label': u'Base', 'allowDynamicResize': False, 'charIndex': u'base', 'cfgName': 'baseID', 'PreLoadFunction': None, 'OnChange': <bound method EditMemberDialog.OnComboChange of form.EditMemberDialog object at 0x3b6a4db0, name=EditMemberDialog, destroyed=False>>, 'options': [(u'No Base', None), (u'Ibaria III - Thukker Mix Warehouse', 60014137), (u'Zemalu IX - Moon 2 - Thukker Mix Factory', 60014140)]},
+                        Anonymous Bunch: {'GetHeightFunction':...
+        self = form.EditMemberDialog object at 0x3b6a4db0, name=EditMemberDialog, destroyed=False>
+AttributeError: 'blue.DBRow' object has no attribute 'characterID'
+Thread Locals:  session was <Session: (sid:2213706356087451940, clientID:0, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.11:10241, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
+
+EXCEPTION END
+
+09:38:39 [Bound] CorpRegistryBound::GetMember()
+09:38:39 [CorpCall] CorpRegistryBound::Handle_GetMember()
+09:38:43 [Service] machoNet::GetTime()
+09:38:43 [Service] machoNet::GetTime()
+09:38:43 [Service] machoNet::GetTime()
+09:38:43 [Service] machoNet::GetTime()
+09:38:43 [Service] machoNet::GetTime()
+09:38:48 [Bound] CorpRegistryBound::GetTitles()
+09:38:53 [Service] alert::BeanCount()
+09:38:53 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #8 logged at  01/01/2025 9:38:53
+Caught at:
+/common/lib/bluepy.py(86) CallWrapper
+/../carbon/client/script/ui/control/tabgroup.py(582) OnClick
+/../carbon/client/script/ui/control/tabgroup.py(676) Select
+Thrown at:
+/../carbon/client/script/ui/control/tabgroup.py(672) Select
+/client/script/ui/shared/neocom/corporation/corp_dlg_edit_member.py(246) Load
+/client/script/ui/shared/neocom/corporation/corp_dlg_edit_member.py(324) OnTabGeneral
+        canEditBase = 1
+        data = {'OnChange': <bound method EditMemberDialog.OnComboChange of form.EditMemberDialog object at 0x3b6a4db0, name=EditMemberDialog, destroyed=False>>,
+                        '__guid__': 'listentry.Combo',
+                        'cfgName': 'baseID',
+                        'decoClass': <class 'listentry.Combo'>,
+                       ...
+        scrolllist = [Anonymous Bunch: {'setValue': '', 'GetHeightFunction': <function GetHeight at 0x09E099B0>, 'name': 'general_title', '__guid__': 'listentry.Edit', 'lines': 1, 'GetColumnWidthFunction': None, 'decoClass': <class 'listentry.Edit'>, 'label': u'Title', 'allowDynamicResize': False, 'charIndex': u'title', 'maxLength': 100, 'OnReturn': None, 'PreLoadFunction': None},
+                        Anonymous Bunch: {'setValue': 60014137, 'GetHeightFunction': <function GetHeight at 0x09E098B0>, 'name': 'baseID', '__guid__': 'listentry.Combo', 'GetColumnWidthFunction': None, 'decoClass': <class 'listentry.Combo'>, 'label': u'Base', 'allowDynamicResize': False, 'charIndex': u'base', 'cfgName': 'baseID', 'PreLoadFunction': None, 'OnChange': <bound method EditMemberDialog.OnComboChange of form.EditMemberDialog object at 0x3b6a4db0, name=EditMemberDialog, destroyed=False>>, 'options': [(u'No Base', None), (u'Ibaria III - Thukker Mix Warehouse', 60014137), (u'Zemalu IX - Moon 2 - Thukker Mix Factory', 60014140)]},
+                        Anonymous Bunch: {'GetHeightFunction':...
+        self = form.EditMemberDialog object at 0x3b6a4db0, name=EditMemberDialog, destroyed=False>
+AttributeError: 'blue.DBRow' object has no attribute 'characterID'
+Thread Locals:  session was <Session: (sid:2213706356087451940, clientID:0, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.11:10241, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
+
+EXCEPTION END
+)
+09:34:04 [Service] holoscreenMgr::GetTwoHourCache()
+09:34:05 [Service] holoscreenMgr::GetRuntimeCache()
+09:34:05 [Service] holoscreenMgr::GetTwoHourCache()
+09:34:05 [Service] alert::BeanCount()
+09:34:05 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #5 logged at  01/01/2025 9:34:05 Uncaught (non-http) error with the mainscreen news ticker in GetNewsTickerData()
+Caught at:
+/common/lib/bluepy.py(86) CallWrapper
+/../carbon/client/script/graphics/uidesktopcomponent.py(101) UpdateUIDesktop_t
+/../carbon/client/script/graphics/uidesktopcomponent.py(111) UpdateUIDesktop
+/client/script/ui/station/captainsquarters/screens.py(13) UpdateCQMainScreen
+/client/script/ui/services/holoscreensvc.py(80) OnMainScreenDesktopCreated
+/client/script/ui/services/holoscreensvc.py(176) PlayTemplates
+/client/script/ui/services/holoscreensvc.py(691) GetNewsTickerData
+Thrown at:
+/client/script/ui/services/holoscreensvc.py(674) GetNewsTickerData
+/../carbon/client/script/ui/control/browser/browserutil.py(1079) GetStringFromURL
+/common/stdlib/urllib2.py(126) urlopen
+/common/stdlib/urllib2.py(397) open
+/common/stdlib/urllib2.py(510) http_response
+/common/stdlib/urllib2.py(429) error
+/common/stdlib/urllib2.py(369) _call_chain
+/common/stdlib/urllib2.py(616) http_error_302
+/common/stdlib/urllib2.py(391) open
+/common/stdlib/urllib2.py(409) _open
+/common/stdlib/urllib2.py(369) _call_chain
+/common/stdlib/urllib2.py(1233) https_open
+/common/stdlib/urllib2.py(1192) do_open
+        err = SSLError(1, '_ssl.c:777: error:1407742E:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert protocol version')
+        h = <httplib.HTTPSConnection instance at 0x3B4ED670>
+        self = <urllib2.HTTPSHandler instance at 0x051BC5A8>
+        req = <urllib2.Request instance at 0x3B4ED468>
+        headers = {'Connection': 'close', 'Host': 'www.eveonline.com', 'User-Agent': 'CCP-minibrowser/3.0'}
+        host = 'www.eveonline.com'
+        http_class = <class httplib.HTTPSConnection at 0x08ECA340>
+URLError: <urlopen error [Errno 1] _ssl.c:777: error:1407742E:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert protocol version>
+Thread Locals:  session was <Session: (sid:2213706356087451940, clientID:0, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.11:10241, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
+
+EXCEPTION END
+6
+09:34:12 [Service] alert::BeanCount()
+09:34:12 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #6 logged at  01/01/2025 9:34:12 Unhandled exception in <TaskletExt object at 395b6558, abps=1001, ctxt=None>
+Caught at:
+/common/lib/bluepy.py(98) CallWrapper
+Thrown at:
+/common/lib/bluepy.py(86) CallWrapper
+/client/script/paperdoll/paperdoll.py(3545) CompositeTasklet_t
+/client/script/paperdoll/paperdoll.py(1358) CompositeCombinedTexture
+/client/script/paperdoll/paperdoll.py(1389) ApplyCompressionSettingToTexture
+/client/script/paperdoll/paperdoll.py(1397) PerformTextureCompression
+        tex = None
+        mapType = 0
+        qualityLevel = 2
+AttributeError: 'NoneType' object has no attribute 'width'
+Thread Locals:  session was <Session: (sid:2213706356087451940, clientID:0, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.11:10241, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
+
+EXCEPTION END

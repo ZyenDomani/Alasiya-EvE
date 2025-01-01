@@ -57,8 +57,8 @@ void StaticDataMgr::Close()
     //PyDecRef(m_factionInfo);
     //PyDecRef(m_npcDivisions);
 
-    for (auto &cur : m_bpMatlData)
-        (cur.second)->DecRef();
+    //for (auto &cur : m_bpMatlData)
+    //    (cur.second)->DecRef();
 
     sLog.Warning("    StaticDataMgr", "Static Data Manager has been closed.");
 }

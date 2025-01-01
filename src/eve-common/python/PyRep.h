@@ -242,6 +242,7 @@ protected:
 
     /// Reference count of instance.
     mutable int16               mRefCount;
+    mutable bool                mDeleted;
 };
 
 /**

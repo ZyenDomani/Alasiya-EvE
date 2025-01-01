@@ -46,7 +46,8 @@ MarketMgr::~MarketMgr()
 void MarketMgr::Close()
 {
     /** @todo put a save method here which will save anything changed before shutdown */
-    SafeDelete(m_marketGroups);
+    //SafeDelete(m_marketGroups);
+    //PyDecRef(m_marketGroups);
     sLog.Warning("        MarketMgr", "Market Manager has been closed." );
 }
 
