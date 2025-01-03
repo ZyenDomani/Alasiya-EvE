@@ -310,7 +310,7 @@ enum EveAttrEnum {
     AttrBarrageFalloff = 328,                           //falloffAttributeID in dgmEffects
     AttrGangRofBonus = 329,
     AttrBoosterDuration = 330,
-    AttrImplantness = 331,
+    AttrImplantness = 331,                              //implant slot  1 - 10, 16-20
     AttrBurstDmg = 332,
     AttrBurstDmgMutator = 333,
     AttrShipPowerBonus = 334,
@@ -1001,7 +1001,7 @@ enum EveAttrEnum {
     AttrVelocityBonus2 = 1084,
     AttrHasFuelCargo = 1085,                    // flagFuelBay     AttrFuelCargoCapacity
     AttrFuelCargoCapacity = 1086,
-    AttrBoosterness = 1087,
+    AttrBoosterness = 1087,                             //booster slot  1 - 4
     AttrExpiryTime = 1088,
     AttrBoosterEffectChance1 = 1089,                    //fittingUsageChanceAttributeID in dgmEffects table
     AttrBoosterEffectChance2 = 1090,                    //fittingUsageChanceAttributeID in dgmEffects table

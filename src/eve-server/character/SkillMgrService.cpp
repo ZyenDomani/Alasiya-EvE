@@ -59,20 +59,21 @@ SkillMgrBound::SkillMgrBound(PyServiceMgr *mgr, CharacterDB &db)
 
     m_strBoundObjectName = "SkillMgrBound";
 
-    PyCallable_REG_CALL(SkillMgrBound, InjectSkillIntoBrain);
+    PyCallable_REG_CALL(SkillMgrBound, GetRespecInfo);
     PyCallable_REG_CALL(SkillMgrBound, GetSkillQueueAndFreePoints);
-    PyCallable_REG_CALL(SkillMgrBound, SaveSkillQueue);
-    PyCallable_REG_CALL(SkillMgrBound, AddToEndOfSkillQueue);
-    PyCallable_REG_CALL(SkillMgrBound, CharStartTrainingSkill);
-    PyCallable_REG_CALL(SkillMgrBound, CharStartTrainingSkillByTypeID);
-    PyCallable_REG_CALL(SkillMgrBound, CharStopTrainingSkill);
     PyCallable_REG_CALL(SkillMgrBound, GetEndOfTraining);
     PyCallable_REG_CALL(SkillMgrBound, GetSkillHistory);
-    PyCallable_REG_CALL(SkillMgrBound, CharAddImplant);
-    PyCallable_REG_CALL(SkillMgrBound, RemoveImplantFromCharacter);
-    PyCallable_REG_CALL(SkillMgrBound, GetRespecInfo);
+    PyCallable_REG_CALL(SkillMgrBound, CharStopTrainingSkill);
+    PyCallable_REG_CALL(SkillMgrBound, CharStartTrainingSkill);
+    PyCallable_REG_CALL(SkillMgrBound, AddToEndOfSkillQueue);
+    PyCallable_REG_CALL(SkillMgrBound, InjectSkillIntoBrain);
+    PyCallable_REG_CALL(SkillMgrBound, SaveSkillQueue);
+    PyCallable_REG_CALL(SkillMgrBound, CharStartTrainingSkillByTypeID);
     PyCallable_REG_CALL(SkillMgrBound, RespecCharacter);
     PyCallable_REG_CALL(SkillMgrBound, GetCharacterAttributeModifiers);
+    PyCallable_REG_CALL(SkillMgrBound, CharAddImplant);
+    PyCallable_REG_CALL(SkillMgrBound, RemoveImplantFromCharacter);
+    PyCallable_REG_CALL(SkillMgrBound, CharUseBooster);
 }
 
 SkillMgrBound::~SkillMgrBound()
@@ -257,18 +258,20 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
     }
 
     CharacterRef cRef(call.client->GetChar());
+    /* this is done in client
     if (cRef->GetSkillInTraining() != nullptr)
         throw UserError("RespecSkillInTraining");
+    */
 
     // return early if this is an illegal call
     if (!m_db.ReportRespec(call.client->GetCharacterID()))
         return nullptr;
-    uint8 multiplier(sConfig.character.statMultiplier);
-    cRef->SetAttribute(AttrCharisma, args.charisma * multiplier);
-    cRef->SetAttribute(AttrIntelligence, args.intelligence * multiplier);
-    cRef->SetAttribute(AttrMemory, args.memory * multiplier);
-    cRef->SetAttribute(AttrPerception, args.perception * multiplier);
-    cRef->SetAttribute(AttrWillpower, args.willpower * multiplier);
+    //uint8 multiplier(sConfig.character.statMultiplier);
+    cRef->SetAttribute(AttrCharisma, args.charisma);
+    cRef->SetAttribute(AttrIntelligence, args.intelligence);
+    cRef->SetAttribute(AttrMemory, args.memory);
+    cRef->SetAttribute(AttrPerception, args.perception);
+    cRef->SetAttribute(AttrWillpower, args.willpower);
     cRef->SaveAttributes();
 
     // no return value
@@ -313,20 +316,82 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
 
 PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 {
-    //sends itemid
+    //client only verifies implant categoryID and slot.  sends itemid
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
+    Character* pChar = call.client->GetChar();
+    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg);
+    if (iRef.get() == nullptr) {
+
+        return nullptr;
+    }
+
+
+    /*
+    AttrImplantSetBloodraider = 799,
+    AttrImplantSetSerpentis = 802,
+    AttrImplantSetSerpentis2 = 803,
+    AttrImplantSetGuristas = 838,
+    AttrImplantSetAngel = 863,
+    AttrImplantSetSansha = 864,
+    AttrImplantBonusVelocity = 1076,
+    AttrImplantSetThukker = 1282,
+    AttrImplantSetSisters = 1284,
+    AttrImplantSetSyndicate = 1291,
+    AttrImplantSetORE = 1292,
+    AttrImplantSetMordus = 1293,
+    AttrImplantSetImperialNavy = 1550,
+    AttrImplantSetCaldariNavy = 1552,
+    AttrImplantSetFederationNavy = 1553,
+    AttrImplantSetRepublicFleet = 1554,
+    AttrImplantSetLGImperialNavy = 1569,
+    AttrImplantSetLGFederationNavy = 1570,
+    AttrImplantSetLGCaldariNavy = 1571,
+    AttrImplantSetLGRepublicFleet = 1572,
+    AttrimplantSetChristmas = 1799,
+
+    */
+    uint8 implantSlot(iRef->GetAttribute(AttrImplantness));  //implant slot
+    if (!pChar->IsSlotAvaliable(implantSlot)) {
+        throw UserError("OnlyOneImplantActiveBody")
+        .AddFormatValue("typeName", new PyString(iRef->itemName()));
+    }
+
+    iRef->GetAttribute(AttrRequiredSkill1);
+    iRef->GetAttribute(AttrRequiredSkill1Level);
+
+    // gang implants and boosters use req skill 2
+
+
+    /* notes to implement this...
+     * is this just implants or does it handle boosters also?  i think yes
+     *
+     * if add implants in space -> remove all current fx, apply implant and run fx, rerun all other fx
+     * check skill and lvl - error
+     * find slot -> is slot occupied?  error
+     * add implant to char list
+     * implants have fx data and need to be added immediately  ... add/run fx on install here
+     *
+     *  note - no clue how to send data to client yet...
+     * NOTE:  on char podded, all implants are destroyed  (in char code)
+     */
     //{'FullPath': u'UI/Messages', 'messageID': 259242, 'label': u'OnlyOneBoosterActiveBody'}(u'You cannot consume the {typeName} as you are already using another similar booster {typeName2}.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}, u'{typeName2}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName2'}})
     //{'FullPath': u'UI/Messages', 'messageID': 259243, 'label': u'OnlyOneImplantActiveBody'}(u'You cannot install the {typeName} as there is already an implant installed in the slot it needs to occupy.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+    //{'FullPath': u'UI/Messages', 'messageID': 259217, 'label': u'PrereqImplantMissingBody'}(u'Attempting to use this implant without the aid of a {typeName} will destroy your cerebral cortex. Please consider alternate methods of suicide.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+    //{'FullPath': u'UI/Messages', 'messageID': 259604, 'label': u'ImplantHasSkillPrerequisitesBody'}(u'The implant {[item]item.name} requires the following {[numeric]skillCount -> "skill", "skills"}: {requiredSkills}.', None, {u'{[numeric]skillCount -> "skill", "skills"}': {'conditionalValues': [u'skill', u'skills'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'skillCount'}, u'{requiredSkills}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'requiredSkills'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+
+
+    // run fx proc here
+
 
     return nullptr;
 }
 
-PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
+PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter(PyCallArgs& call)
 {
     //sends itemid
     SingleIntegerArg args;
@@ -335,5 +400,66 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
         return nullptr;
     }
 
+    // removal is reverse of add as noted above
+    return nullptr;
+}
+
+PyResult SkillMgrBound::Handle_CharUseBooster(PyCallArgs& call)
+{
+    //GetSkillHandler().CharUseBooster(invItem.itemID, invItem.locationID)
+
+    // client only verifies booster groupID and slot.  sends itemID, locationID
+    Call_TwoIntegerArgs args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
+    }
+
+    Character* pChar = call.client->GetChar();
+    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg);
+    if (iRef.get() == nullptr) {
+
+        return nullptr;
+    }
+
+    /*
+     *    AttrBoosterDuration = 330,
+     *    AttrBoosterShieldBoostAmountPenalty = 616,
+     *    AttrBoosterEffectChance1 = 1089,                    //fittingUsageChanceAttributeID in dgmEffects table
+     *    AttrBoosterEffectChance2 = 1090,                    //fittingUsageChanceAttributeID in dgmEffects table
+     *    AttrBoosterEffectChance3 = 1091,                    //fittingUsageChanceAttributeID in dgmEffects table
+     *    AttrBoosterEffectChance4 = 1092,                    //fittingUsageChanceAttributeID in dgmEffects table
+     *    AttrBoosterEffectChance5 = 1093,                    //fittingUsageChanceAttributeID in dgmEffects table
+     *    AttrBoosterAttribute1 = 1099,
+     *    AttrBoosterAttribute2 = 1100,
+     *    AttrBoosterAttribute3 = 1101,
+     *    AttrBoosterAttribute4 = 1102,
+     *    AttrBoosterAttribute5 = 1103,
+     *    AttrBoosterChanceBonus = 1125,
+     *    AttrBoosterAttributeModifier = 1126,
+     *    AttrBoosterArmorHPPenalty = 1141,
+     *    AttrBoosterArmorRepairAmountPenalty = 1142,
+     *    AttrBoosterShieldCapacityPenalty = 1143,
+     *    AttrBoosterTurretOptimalRange = 1144,
+     *    AttrBoosterTurretTrackingPenalty = 1145,
+     *    AttrBoosterTurretFalloffPenalty = 1146,
+     *    AttrBoosterAOEVelocityPenalty = 1147,
+     *    AttrBoosterMissileVelocityPenalty = 1148,
+     *    AttrBoosterMissileAOECloudPenalty = 1149,
+     *    AttrBoosterCapacitorCapacityPenalty = 1150,
+     *    AttrBoosterMaxVelocityPenalty = 1151,
+     *    AttrBoosterMaxCharAgeHours = 1647,
+     */
+
+    if (iRef->groupID() == EVEDB::invGroups::Booster) {
+        uint8 boosterSlot(iRef->GetAttribute(AttrBoosterness));  //booster slot
+        if (!pChar->IsBoosterSlotAvaliable(boosterSlot)) {
+            throw UserError("OnlyOneBoosterActiveBody")
+            .AddFormatValue("typeName", new PyString(iRef->itemName()));
+        }
+
+    }
+
+    
     return nullptr;
 }

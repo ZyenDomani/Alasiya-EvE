@@ -1262,7 +1262,8 @@ void Character::SaveFullCharacter() {
     //GetTotalSP();
     SaveCharacter();
     SaveAttributes();
-    // is this needed on every logout?
+    //SaveImplants();  // this should save all implant data for this char
+    // is this needed on every logout?  no
     m_db.SaveCorpData(m_itemID, m_corpData);
 
     if (m_inTraining != nullptr) {

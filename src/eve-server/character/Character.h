@@ -376,11 +376,18 @@ public:
     //  Dynamic Data
     void                    VisitSystem(uint32 solarSystemID);
 
-    // character skill, implant and booster effects.  parsed and applied on undock and ship init in space (with all other ship-related effects)
-    // NOTE:  implants and boosters not implemented yet
+    // character skill effects are parsed and applied on undock and ship init in space (with all other ship-related effects)
     void                    ProcessEffects(ShipItem* pShip);
     void                    ResetModifiers();   // this will reset ALL char and skill attribs and modifier maps to default
 
+    // implant and booster system
+    // fx are applied immediately
+    void GetImplantSlots();             // found in m_implantMap.first
+    bool IsSlotAvaliable(uint8 slotID)                  { return (m_implantMap.find(slotID) == m_implantMap.end()); }
+    void GetBoosterSlots();             // found in m_boosterMap.first
+    bool IsBoosterSlotAvaliable(uint8 slotID)           { return (m_boosterMap.find(slotID) == m_boosterMap.end()); }
+
+    
 protected:
     Character(
         uint32 _characterID,
@@ -455,7 +462,10 @@ private:
 
     uint32 m_loginTime;
 
-    std::map<uint8, InventoryItemRef>  m_implantMap;    // slotID/itemRef
+    // implant map
+    std::map<uint8, InventoryItemRef>  m_implantMap;            // slotID/itemRef
+    // booster map
+    std::map<uint8, InventoryItemRef>  m_boosterMap;            // slotID/itemRef
     // for storyline mission counting
     std::map<uint32, std::map<uint8, uint8>> m_missionMap;      // factionID, [level, count]
 };

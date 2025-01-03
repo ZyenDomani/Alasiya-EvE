@@ -322,7 +322,9 @@ public:
     void ResetAttribute(uint16 attrID, bool notify=false)              { pAttributeMap->ResetAttribute(attrID, notify); }
     void DeleteAttribute(uint16 attrID)                                { pAttributeMap->DeleteAttribute(attrID); }
 
+    // returns 0 if not exist
     EvilNumber GetAttribute(const uint16 attrID) const                 { return pAttributeMap->GetAttribute(attrID); }
+    // returns 0 if not exist 
     EvilNumber GetDefaultAttribute(const uint16 attrID) const          { return m_type.GetAttribute(attrID); }
 
 protected:
