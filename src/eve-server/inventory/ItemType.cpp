@@ -170,7 +170,7 @@ EvilNumber ItemType::GetAttribute(const uint16 attributeID) const
     AttrMapConstItr itr = m_AttributeMap.find(attributeID);
     if (itr != m_AttributeMap.end())
         return itr->second;
-    return 0;
+    return EvilZero;
 }
 
 bool ItemType::HasReqSkill(const uint16 skillID) const

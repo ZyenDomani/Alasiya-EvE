@@ -198,7 +198,7 @@ void Profiler::PrintProfile()
     //std::printf("  EntList Proc   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_entityS, h, l, a);
     GetSize(m_entityS.size(), fSize);
-    std::printf("   EntList Tic   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("    EntMgr Tic   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_client, h, l, a);
     GetSize(m_client.size(), fSize);
     std::printf("Client Network   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );

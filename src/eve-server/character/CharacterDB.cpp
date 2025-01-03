@@ -170,7 +170,7 @@ bool CharacterDB::ReportRespec(uint32 characterId)
 {
     DBerror error;
     if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %f, nextRespecDateTime = %lli WHERE characterId = %u",
-        GetFileTimeNow(), (GetFileTimeNow() + EvE::Time::Month *3), characterId))
+        GetFileTimeNow(), (GetFileTimeNow() + EvE::Time::Month * 3), characterId))
         return false;
     return true;
 }
@@ -178,7 +178,7 @@ bool CharacterDB::ReportRespec(uint32 characterId)
 PyRep* CharacterDB::GetRespecInfo(uint32 characterId)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT freeRespecs, lastRespecDateTime, nextRespecDateTime FROM chrCharacters WHERE characterID = %u", characterId))
+    if (!sDatabase.RunQuery(res, "SELECT freeRespecs, nextRespecDateTime FROM chrCharacters WHERE characterID = %u", characterId))
         return nullptr;
     DBResultRow row;
     if (!res.GetRow(row))
@@ -186,8 +186,7 @@ PyRep* CharacterDB::GetRespecInfo(uint32 characterId)
 
     PyDict* result = new PyDict();
     result->SetItemString( "freeRespecs", new PyInt( row.GetInt(0) ) );
-    result->SetItemString( "lastRespecDate", new PyLong( row.GetInt64(1) ) );
-    result->SetItemString( "nextTimedRespec", new PyLong( row.GetInt64(2) ) );
+    result->SetItemString( "nextTimedRespec", new PyLong( row.GetInt64(1) ) );
 
     return result;
 }

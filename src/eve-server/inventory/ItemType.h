@@ -83,7 +83,7 @@ public:
 
     /* new attribute system */
     const bool HasAttribute(const uint16 attributeID) const;
-    EvilNumber GetAttribute(const uint16 attributeID) const;
+    EvilNumber GetAttribute(const uint16 attributeID) const;  // returns 0 if not exist 
     const void CopyAttributes(InventoryItem& itemRef) const;
 
     bool HasReqSkill(const uint16 skillID) const;

@@ -49,13 +49,13 @@ StaticDataMgr::~StaticDataMgr()
 
 void StaticDataMgr::Close()
 {
-    //PyDecRef(m_keyMap);
-    //PyDecRef(m_agents);
-    //PyDecRef(m_operands);
-    //PyDecRef(m_billTypes);
-    //PyDecRef(m_entryTypes);
-    //PyDecRef(m_factionInfo);
-    //PyDecRef(m_npcDivisions);
+    delete m_keyMap;
+    delete m_agents;
+    delete m_operands;
+    delete m_billTypes;
+    delete m_entryTypes;
+    delete m_factionInfo;
+    delete m_npcDivisions;
 
     //for (auto &cur : m_bpMatlData)
     //    (cur.second)->DecRef();
@@ -79,7 +79,6 @@ void StaticDataMgr::Clear()
     m_attrTypeData.clear();
     m_minerals.clear();
     m_compounds.clear();
-    m_bpMatlData.clear();
     m_systemData.clear();
     m_staticData.clear();
     m_salvageMap.clear();
@@ -104,6 +103,8 @@ void StaticDataMgr::Clear()
 
     for (auto &cur : m_bpMatlData)
         SafeDelete(cur.second);
+
+    m_bpMatlData.clear();
 }
 
 void StaticDataMgr::Populate()

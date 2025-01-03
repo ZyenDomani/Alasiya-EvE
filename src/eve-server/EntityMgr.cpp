@@ -126,6 +126,8 @@ void EntityMgr::UnloadAll() {
         SafeDelete(cur.second);
     }
 
+    m_systems.clear();
+
     sLog.Warning("       EntityMgr", "All Solar Systems have been unloaded." );
 }
 
