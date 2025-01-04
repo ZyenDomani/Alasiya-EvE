@@ -323,7 +323,6 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
         return nullptr;
     }
 
-    Character* pChar = call.client->GetChar();
     InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg);
     if (iRef.get() == nullptr) {
 
@@ -355,8 +354,10 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
     AttrimplantSetChristmas = 1799,
 
     */
-    uint8 implantSlot(iRef->GetAttribute(AttrImplantness));  //implant slot
-    if (!pChar->IsSlotAvaliable(implantSlot)) {
+
+    CharacterRef cRef(call.client->GetChar());
+    uint8 implantSlot(iRef->GetAttribute(AttrImplantness).get_uint32());  //implant slot
+    if (!cRef->IsSlotAvaliable(implantSlot)) {
         throw UserError("OnlyOneImplantActiveBody")
         .AddFormatValue("typeName", new PyString(iRef->itemName()));
     }
@@ -408,15 +409,14 @@ PyResult SkillMgrBound::Handle_CharUseBooster(PyCallArgs& call)
 {
     //GetSkillHandler().CharUseBooster(invItem.itemID, invItem.locationID)
 
-    // client only verifies booster groupID and slot.  sends itemID, locationID
+    // client only verifies booster groupID and slot.  sends itemID, locationID (why locID?)
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
-    Character* pChar = call.client->GetChar();
-    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg);
+    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg1);
     if (iRef.get() == nullptr) {
 
         return nullptr;
@@ -451,15 +451,13 @@ PyResult SkillMgrBound::Handle_CharUseBooster(PyCallArgs& call)
      *    AttrBoosterMaxCharAgeHours = 1647,
      */
 
-    if (iRef->groupID() == EVEDB::invGroups::Booster) {
-        uint8 boosterSlot(iRef->GetAttribute(AttrBoosterness));  //booster slot
-        if (!pChar->IsBoosterSlotAvaliable(boosterSlot)) {
-            throw UserError("OnlyOneBoosterActiveBody")
-            .AddFormatValue("typeName", new PyString(iRef->itemName()));
-        }
-
+    CharacterRef cRef(call.client->GetChar());
+    uint8 boosterSlot(iRef->GetAttribute(AttrBoosterness).get_uint32());  //booster slot
+    if (!cRef->IsBoosterSlotAvaliable(boosterSlot)) {
+        throw UserError("OnlyOneBoosterActiveBody")
+        .AddFormatValue("typeName", new PyString(iRef->itemName()));
     }
 
-    
+
     return nullptr;
 }
