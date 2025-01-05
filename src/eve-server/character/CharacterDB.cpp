@@ -30,6 +30,7 @@
 #include "character/Character.h"
 #include "character/CharacterDB.h"
 
+
 uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corpData) {
     DBerror err;
     std::string nameEsc, titleEsc, descriptionEsc;
@@ -767,9 +768,9 @@ void CharacterDB::GetCharacterDataMap(uint32 charID, std::map<std::string, int64
 
     uint32 stationID = characterDataMap["baseID"];
     if (!CharacterDB::GetCharHomeStation(charID, stationID)) {
-        ItemData iData( itemCloneAlpha, charID, stationID, flagClone, 1 );
+        ItemData iData(EVEDB::invTypes::CloneGradeAlpha, charID, stationID, flagClone, 1);
         iData.customInfo="Active: ";
-        iData.customInfo += row.GetText(20);
+        iData.customInfo += row.GetText(17);
         iData.customInfo += "(";
         iData.customInfo += std::to_string(charID);
         iData.customInfo += ") {ud}";
@@ -991,8 +992,7 @@ bool CharacterDB::GetCharClones(uint32 characterID, std::vector<uint32> &into) {
     return true;
 }
 
-//returns the itemID of the active clone
-bool CharacterDB::GetActiveCloneID(uint32 characterID, uint32 &itemID) {
+uint32 CharacterDB::GetCloneID(uint32 charID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
@@ -1000,49 +1000,32 @@ bool CharacterDB::GetActiveCloneID(uint32 characterID, uint32 &itemID) {
         " FROM entity"
         " WHERE ownerID = %u"
         "  AND flag=400",
-        characterID))
+        charID))
     {
-        _log(DATABASE__ERROR, "Failed to query active clone of char %u: %s.", characterID, res.error.c_str());
-        return false;
+        _log(CHARACTER__ERROR, "Couldn't get clone data for char %u", charID );
+        return 0;
     }
 
     DBResultRow row;
     if (res.GetRow(row)) {
-        itemID=row.GetUInt(0);
-        return true;
+        return row.GetUInt(0);
+    } else {
+        // clone not found...create new one
+        _log(CHARACTER__ERROR, "character %u doesn't have clone data.  creating new clone.", charID );
+        uint32 baseID(0);
+        GetCharHomeStation(charID, baseID);
+        ItemData iData(EVEDB::invTypes::CloneGradeAlpha, charID, baseID, flagClone, 1);
+        iData.customInfo="Active: ";
+        iData.customInfo += sItemFactory.GetCharacterRef(charID)->itemName();
+        iData.customInfo += "(";
+        iData.customInfo += std::to_string(charID);
+        iData.customInfo += ") {ud}";
+        InventoryItemRef iRef(sItemFactory.SpawnItem(iData));
+        iRef->SaveItem();
+        return iRef->itemID();
     }
-
-    return false;
 }
 
-//we use this function because, when we change the clone type,
-//the cached item type doesn't change, so we need to read it
-//directly from the db
-bool CharacterDB::GetActiveCloneType(uint32 characterID, uint32 &typeID) {
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT typeID"
-        " FROM entity"
-        " WHERE ownerID = %u"
-        "  AND flag=400",
-        characterID))
-    {
-        _log(DATABASE__ERROR, "Failed to query active clone of char %u: %s.", characterID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (res.GetRow(row)) {
-        typeID=row.GetUInt(0);
-        return true;
-    }
-
-    typeID = 0;
-    return false;
-}
-
-// Return the Home station of the char based on the active clone
 bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
     DBQueryResult res;
     if ( !sDatabase.RunQuery(res,
@@ -1052,50 +1035,20 @@ bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
         "  AND flag=400",
         characterID ))
     {
-        _log(CHARACTER__ERROR, "Could't get clone location for char %u", characterID );
+        _log(CHARACTER__ERROR, "Couldn't get clone location for char %u", characterID );
         return false;
     }
 
     DBResultRow row;
-    if (res.GetRow(row))
+    if (res.GetRow(row)) {
         stationID = row.GetUInt(0);
-
-    return true;
-}
-
-//replace all the typeID of the character's clones
-bool CharacterDB::ChangeCloneType(uint32 characterID, uint32 typeID)
-{
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT "
-        " typeName "
-        "FROM invTypes "
-        "WHERE typeID = %u",
-        typeID))
-    {
-        _log(DATABASE__ERROR, "Failed to change clone type of char %u: %s.", characterID, res.error.c_str());
-        return false;
+    } else {
+        // clone station not found
+        _log(CHARACTER__ERROR, "character %u doesn't have home station.", characterID );
+        stationID = sItemFactory.GetCharacterRef(characterID)->corporationHQ();
+        ChangeCloneLocation(characterID, stationID);
     }
 
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        sLog.Error( "CharacterDB::ChangeCloneType()", "Could not find Clone typeID = %u in invTypes table.", typeID );
-        return false;
-    }
-    std::string typeNameString = row.GetText(0);
-
-    if (!sDatabase.RunQuery(res.error,
-        "UPDATE entity "
-        "SET typeID=%u, itemName='%s' "
-        "WHERE ownerID=%u AND flag=400",
-        typeID, typeNameString.c_str(), characterID))
-    {
-        _log(DATABASE__ERROR, "Failed to change clone type of char %u: %s.", characterID, res.error.c_str());
-        return false;
-    }
-    sLog.Debug( "CharacterDB", "Clone upgrade successful" );
     return true;
 }
 
@@ -1103,7 +1056,7 @@ bool CharacterDB::ChangeCloneLocation(uint32 characterID, uint32 locationID)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res.error, "UPDATE entity SET locationID=%u WHERE ownerID=%u AND flag=400", locationID, characterID)) {
-        _log(DATABASE__ERROR, "Failed to change location of clone %u: %s.", characterID, res.error.c_str());
+        _log(DATABASE__ERROR, "Failed to change location of clone for %u: %s.", characterID, res.error.c_str());
         return false;
     }
 

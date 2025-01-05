@@ -181,6 +181,7 @@ public:
     // From <character>
     struct {
         bool allow3edChar;
+        bool DeleteImplantOnRemoval;
         uint8 statMultiplier;
         /// Starting corp ID for new characters
         uint32 startCorporation;

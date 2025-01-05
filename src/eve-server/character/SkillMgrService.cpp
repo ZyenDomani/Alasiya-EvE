@@ -360,33 +360,9 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
     //{'FullPath': u'UI/Messages', 'messageID': 259604, 'label': u'ImplantHasSkillPrerequisitesBody'}(u'The implant {[item]item.name} requires the following {[numeric]skillCount -> "skill", "skills"}: {requiredSkills}.', None, {u'{[numeric]skillCount -> "skill", "skills"}': {'conditionalValues': [u'skill', u'skills'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'skillCount'}, u'{requiredSkills}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'requiredSkills'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
     //{'FullPath': u'UI/Messages', 'messageID': 259217, 'label': u'PrereqImplantMissingBody'}(u'Attempting to use this implant without the aid of a {typeName} will destroy your cerebral cortex. Please consider alternate methods of suicide.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
 
-    /*  these are some kind of modifers for full sets....
-     *    AttrImplantSetBloodraider = 799,
-     *    AttrImplantSetSerpentis = 802,
-     *    AttrImplantSetSerpentis2 = 803,
-     *    AttrImplantSetGuristas = 838,
-     *    AttrImplantSetAngel = 863,
-     *    AttrImplantSetSansha = 864,
-     *    AttrImplantBonusVelocity = 1076,
-     *    AttrImplantSetThukker = 1282,
-     *    AttrImplantSetSisters = 1284,
-     *    AttrImplantSetSyndicate = 1291,
-     *    AttrImplantSetORE = 1292,
-     *    AttrImplantSetMordus = 1293,
-     *    AttrImplantSetImperialNavy = 1550,
-     *    AttrImplantSetCaldariNavy = 1552,
-     *    AttrImplantSetFederationNavy = 1553,
-     *    AttrImplantSetRepublicFleet = 1554,
-     *    AttrImplantSetLGImperialNavy = 1569,
-     *    AttrImplantSetLGFederationNavy = 1570,
-     *    AttrImplantSetLGCaldariNavy = 1571,
-     *    AttrImplantSetLGRepublicFleet = 1572,
-     *    AttrimplantSetChristmas = 1799,
-     *
-     */
-
-
-    // remove item from inventory
+    //   some of these implants will have to be processed BEFORE skills and AFTER ship/module effects
+    // i've noticed some offer bonus' for missions...27152, 27153
+    // also look at hacking implants...27196
 
     return nullptr;
 }
@@ -413,7 +389,8 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter(PyCallArgs& call)
 
     cRef->RemoveImplant(implantSlot);
     // delete implant
-    iRef->Delete();
+    if (sConfig.character.DeleteImplantOnRemoval)
+        iRef->Delete();
 
     return nullptr;
 }
@@ -446,30 +423,6 @@ PyResult SkillMgrBound::Handle_CharUseBooster(PyCallArgs& call)
 
     /* not sure if these need to be applied in code or from effects...
      *    AttrBoosterDuration = 330,
-     *    AttrBoosterShieldBoostAmountPenalty = 616,
-     *    AttrBoosterEffectChance1 = 1089,                    //fittingUsageChanceAttributeID in dgmEffects table
-     *    AttrBoosterEffectChance2 = 1090,                    //fittingUsageChanceAttributeID in dgmEffects table
-     *    AttrBoosterEffectChance3 = 1091,                    //fittingUsageChanceAttributeID in dgmEffects table
-     *    AttrBoosterEffectChance4 = 1092,                    //fittingUsageChanceAttributeID in dgmEffects table
-     *    AttrBoosterEffectChance5 = 1093,                    //fittingUsageChanceAttributeID in dgmEffects table
-     *    AttrBoosterAttribute1 = 1099,
-     *    AttrBoosterAttribute2 = 1100,
-     *    AttrBoosterAttribute3 = 1101,
-     *    AttrBoosterAttribute4 = 1102,
-     *    AttrBoosterAttribute5 = 1103,
-     *    AttrBoosterChanceBonus = 1125,
-     *    AttrBoosterAttributeModifier = 1126,
-     *    AttrBoosterArmorHPPenalty = 1141,
-     *    AttrBoosterArmorRepairAmountPenalty = 1142,
-     *    AttrBoosterShieldCapacityPenalty = 1143,
-     *    AttrBoosterTurretOptimalRange = 1144,
-     *    AttrBoosterTurretTrackingPenalty = 1145,
-     *    AttrBoosterTurretFalloffPenalty = 1146,
-     *    AttrBoosterAOEVelocityPenalty = 1147,
-     *    AttrBoosterMissileVelocityPenalty = 1148,
-     *    AttrBoosterMissileAOECloudPenalty = 1149,
-     *    AttrBoosterCapacitorCapacityPenalty = 1150,
-     *    AttrBoosterMaxVelocityPenalty = 1151,
      *    AttrBoosterMaxCharAgeHours = 1647,
      */
 

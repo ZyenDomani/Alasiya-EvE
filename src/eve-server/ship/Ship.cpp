@@ -1763,18 +1763,7 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 {
     double startTime(GetTimeMSeconds());
     _log(EFFECTS__TRACE, "ShipItem::ProcessEffects()");
-    /*
-    Effects processing order...
-        Skills     //char effect
-        Implants   //char effect
-        Boosters   //char effect
-        Ship       //ship effect
-        Subsystem  //module effect
-        Rigs       //module effect
-        Low        //module effect
-        Mid        //module effect
-        Hi         //module effect
-    */
+
     if (add) {
         m_pilot->GetChar()->ProcessEffects(this);
         ProcessShipEffects(update);
@@ -2666,7 +2655,7 @@ PyDict* ShipSE::MakeSlimItem() {
         slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("bounty",               new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetBounty() : 0));
         slim->SetItemString("securityStatus",       new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetSecurityRating() : 0.0));
-    if (m_self->typeID() == itemTypeCapsule) {
+    if (m_self->typeID() == EVEDB::invTypes::Capsule) {
         slim->SetItemString("launcherID",           new PyInt(m_podShipID));
         return slim;
     } else {

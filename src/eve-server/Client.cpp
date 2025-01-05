@@ -299,7 +299,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     if (sDataMgr.IsSolarSystem(m_locationID)) {
         WarpIn();
     } else {
-        if (m_ship->typeID() == itemTypeCapsule) {
+        if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
             if (sConfig.server.NoobShipCheck) {
                 StationItemRef sRef = m_system->GetStationFromInventory(m_locationID);
                 if (sRef.get() == nullptr) {
@@ -883,7 +883,7 @@ void Client::DockToStation() {
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a shiny, new, fully-fitted ship as replacement.  we dont....yet
     // this needs to be done before player is docked
-    if (m_ship->typeID() == itemTypeCapsule) {
+    if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
         if (sConfig.server.NoobShipCheck) {
             StationItemRef sRef = m_system->GetStationFromInventory(m_dockStationID);
             if (sRef.get() == nullptr) {
@@ -995,7 +995,7 @@ void Client::BoardShip(ShipItemRef newShipRef)
 
     if (m_login) {
         _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->name(), newShipRef->itemID());
-    } else if (m_ship->typeID() == itemTypeCapsule) {
+    } else if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
         m_ship->SetPosition(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
         m_ship->SetCustomInfo(nullptr);
@@ -1015,7 +1015,7 @@ void Client::Board(ShipSE* newShipSE)
 {
     CheckShipRef(newShipSE->GetShipItemRef());
 
-    if (m_ship->typeID() == itemTypeCapsule) {
+    if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
         m_ship->SetPosition(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
         // cannot use DestroyShipSE() for this.  it removes current shipSE, with pilot, like pilot is leaving bubble.
@@ -1177,26 +1177,18 @@ void Client::ResetAfterPopped(GPoint& position)
 }
 
 void Client::ResetAfterPodded() {
-    /** @todo
-     * destroy all implants
-     * check skillpoints vs. clone grade and adjust accordingly.
-     * reset skill effects if clone != current SP and skills lost
-     */
+    // verify clone station hangar isnt loaded yet.
+    RemoveStationHangar(GetCloneStationID());
+
+    // need to verify this order...
+    MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
 
     CreateNewPod();
     SetShip(m_pod);
 
-    // verify clone station hangar isnt loaded yet.
-    RemoveStationHangar(GetCloneStationID());
-
-    MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
-
-    m_ship->Move(m_locationID, flagHangar);
     m_ship->SaveShip();
-    m_char->ResetClone();
-    m_char->DeleteBoosters();
-    m_char->DeleteImplants();
-    m_char->SaveCharacter();
+
+    m_char->ResetChar();
 
     SpawnNewRookieShip(m_locationID);
 
@@ -1237,7 +1229,7 @@ void Client::PickAlternateShip() {
 
 void Client::CreateNewPod() {
     std::string pod_name = m_char->itemName() + "'s Capsule";
-    ItemData podItem( itemTypeCapsule, m_char->itemID(), locTemp, flagNone, pod_name.c_str() );
+    ItemData podItem(EVEDB::invTypes::Capsule, m_char->itemID(), locTemp, flagNone, pod_name.c_str() );
     m_pod = sItemFactory.SpawnShip( podItem );
     // make sure this is singleton
     m_pod->ChangeSingleton(true);

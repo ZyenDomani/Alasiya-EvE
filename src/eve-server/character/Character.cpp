@@ -270,6 +270,8 @@ bool Character::_Load() {
     if (IsAgent(m_itemID))
         return true;
 
+    // verify this order...
+
     if (!pInventory->LoadContents()) {
         sLog.Error("Character::_Load","LoadContents returned false for char %u", m_itemID);
         return (m_loaded = false);
@@ -281,17 +283,15 @@ bool Character::_Load() {
 
     m_loaded = InventoryItem::_Load();
 
-    if (m_loaded) {
-        if (!m_cdb.LoadCertificates(m_itemID, m_certificates)) {
-            sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", m_itemID);
-            return (m_loaded = false);
-        }
-    }
+    if (!m_cdb.LoadCertificates(m_itemID, m_certificates))
+        sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", m_itemID);
 
     // load char personal bookmarks and folders ... corp shit will be done ???
     LoadBookmarks();
-    // apply implants, if applicable
-    LoadImplants();
+
+    m_db.LoadImplants(m_itemID, m_implantMap);
+
+    m_cloneRef = sItemFactory.GetItemRefFromID(m_db.GetCloneID(m_itemID));
 
     m_charData.loginTime = GetFileTimeNow();
 
@@ -357,7 +357,7 @@ void Character::Delete() {
     pInventory->DeleteContents();
     // delete character record
     m_db.DeleteCharacter(m_itemID);
-    // let the parent care about the rest
+    // let our parent care about the rest
     InventoryItem::Delete();
 }
 
@@ -500,24 +500,73 @@ void Character::ProcessEffects(ShipItem* pShip)
     //ResetModifiers();
 
     //  427 total skills.  this should be fairly fast...it is.
-    std::vector<InventoryItemRef> allSkills;
-    pInventory->GetItemsByFlag(flagSkill, allSkills);
+    std::vector<InventoryItemRef> allFxItems;
+    pInventory->GetItemsByFlag(flagSkill, allFxItems);
+    pInventory->GetItemsByFlag(flagImplant, allFxItems);
+    pInventory->GetItemsByFlag(flagBooster, allFxItems);
 
     Effect curEffect = Effect();
     std::vector<TypeEffects> typeFx;
-    for (auto &curSkill : allSkills) {
+    for (auto &cur : allFxItems) {
         typeFx.clear();
-        sFxDataMgr.GetTypeEffect(curSkill->typeID(), typeFx);
+        sFxDataMgr.GetTypeEffect(cur->typeID(), typeFx);
         for (auto &curFx : typeFx) {
             curEffect = sFxDataMgr.GetEffect(curFx.effectID);
             fxData data = fxData();
             data.action = FX::Action::Invalid;
-            data.srcRef = curSkill;
+            data.srcRef = cur;
             sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(curEffect.preExpression), data);
         }
     }
     // apply processed char effects
     sFxProc.ApplyEffects(this, this, pShip);
+}
+
+void Character::ResetChar() {
+    // char has been podded.  reset to active clone state
+    DeleteBoosters();
+    DeleteImplants();
+
+    ResetModifiers();
+    ClearSkillQueue(false);
+    ClearSkillFlags();
+
+
+    /** @todo
+     * check skillpoints vs. clone grade and adjust accordingly.
+     * was char in t3 ship?  this is special
+     */
+    GetTotalSP();
+    if (m_charData.skillPoints > m_cloneRef->GetAttribute(AttrSkillPointsSaved).get_uint32()) {
+        // aw damn...clone isn't updated.
+        //  go thru trained skill history and remove points in lifo order
+        uint32 diff = m_charData.skillPoints - m_cloneRef->GetAttribute(AttrSkillPointsSaved).get_uint32();
+        _log(CHARACTER__MESSAGE, "Character %s(%u) killed.  sp diff is %u", name(), itemID(), diff);
+        //EvESkill::Event::ClonePenalty;
+
+    }
+
+    UpdateClone(EVEDB::invTypes::CloneGradeAlpha);
+
+    // what else needs to be reset here?
+
+    m_pClient->UpdateSessionInt("cloneStationID", m_charData.stationID);
+    SaveFullCharacter();
+}
+
+void Character::UpdateClone(int32 typeID) {
+    // to 'update' a clone, we first get clone location, create new clone at that location
+    // delete current clone, then update all relevant data
+
+    ItemData iData(typeID, m_itemID, m_cloneRef->locationID(), flagClone, 1);
+        iData.customInfo="Active: ";
+        iData.customInfo += itemName();
+        iData.customInfo += "(";
+        iData.customInfo += std::to_string(m_itemID);
+        iData.customInfo += ")";
+
+    m_cloneRef->Delete();
+    m_cloneRef = std::move(sItemFactory.SpawnItem(iData));
 }
 
 /*
@@ -1189,19 +1238,19 @@ PyDict *Character::GetCharInfo() {
     if (!Populate( entry ))
         return nullptr;
 
-    PyDict *result = new PyDict();
+    PyDict* result = new PyDict();
     result->SetItem(new PyInt(m_itemID), new PyObject("util.KeyVal", entry.Encode()));
 
     //now encode skills...
-    std::vector<InventoryItemRef> skills;
+    std::vector<InventoryItemRef> itemVec;
     //find all the skills contained within ourself.
-    pInventory->GetItemsByFlag(flagSkill, skills);
-    pInventory->GetItemsByFlag(flagSkillInTraining, skills);
-
-    /** @todo  get implants and boosters here once implemented */
+    pInventory->GetItemsByFlag(flagSkill, itemVec );
+    pInventory->GetItemsByFlag(flagSkillInTraining, itemVec );
+    pInventory->GetItemsByFlag(flagImplant, itemVec );
+    pInventory->GetItemsByFlag(flagBooster, itemVec );
 
     //encode an entry for each one.
-    for (auto &cur : skills) {
+    for (auto &cur : itemVec ) {
         //Rsp_CommonGetInfo_Entry entry;
         if (cur->Populate(entry)) {
             result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry.Encode()));
@@ -1209,8 +1258,6 @@ PyDict *Character::GetCharInfo() {
             codelog(CHARACTER__ERROR, "%s (%u): Failed to load character item %u for GetCharInfo", name(), m_itemID, cur->itemID());
         }
     }
-
-    /** @todo i dont know how boosters and implants work yet, so may have to set item different for them.  */
 
     return result;
 }
@@ -1242,40 +1289,6 @@ void Character::SetActivePod(uint32 podID) {
     m_db.SetCurrentPod(m_itemID, podID);
 }
 
-void Character::ResetClone() {
-    m_db.ChangeCloneType(m_itemID, itemCloneAlpha);
-}
-
-void Character::LoadImplants() {
-    /* implants are loaded as items in character container
-     * here, we are loading implants from separate table
-     * ... should we compare these?
-     */
-    m_db.LoadImplants(m_itemID, m_implantMap);
-
-    // apply implant effects
-    for (auto &cur : m_implantMap) {
-        if (!pInventory->ContainsItem(cur.second->itemID())) {
-            AddItem(cur.second);
-        }
-        Effect curEffect = Effect();
-        std::vector<TypeEffects> typeFx;
-        sFxDataMgr.GetTypeEffect(cur.second->typeID(), typeFx);
-        for (auto &curFx : typeFx) {
-            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-            fxData data = fxData();
-            data.action = FX::Action::Invalid;
-            data.srcRef = cur.second;
-            sFxProc.ParseExpression(cur.second.get(), sFxDataMgr.GetExpression(curEffect.preExpression), data);
-        }
-        // apply processed effects
-        sFxProc.ApplyEffects(cur.second.get(), this, nullptr, true);
-
-        // clear modifiers from implant
-        cur.second->ClearModifiers();
-    }
-}
-
 void Character::GetImplantSlots() {
 
 }
@@ -1289,26 +1302,30 @@ void Character::GetImplantSlots() {
 void Character::AddImplant(uint8 slotID, InventoryItemRef iRef) {
     _log(CHARACTER__MESSAGE, "CharAddImplant::ProcessEffects()");
 
-    Effect curEffect = Effect();
-    std::vector<TypeEffects> typeFx;
-    sFxDataMgr.GetTypeEffect(iRef->typeID(), typeFx);
-    for (auto &curFx : typeFx) {
-        curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-        fxData data = fxData();
-        data.action = FX::Action::Invalid;
-        data.srcRef = iRef;
-        sFxProc.ParseExpression(iRef.get(), sFxDataMgr.GetExpression(curEffect.preExpression), data);
-    }
-    // apply processed effects
-    sFxProc.ApplyEffects(iRef.get(), this, nullptr, true);
-
-    // clear modifiers from implant
-    iRef->ClearModifiers();
     iRef->ChangeSingleton(false);
     iRef->Move(m_itemID, flagImplant, true);
 
-    m_implantMap[slotID] = std::move(iRef);
+    if (m_pClient->IsInSpace()) {
+        // apply effect
+        Effect curEffect = Effect();
+        std::vector<TypeEffects> typeFx;
+        sFxDataMgr.GetTypeEffect(iRef->typeID(), typeFx);
+        for (auto &curFx : typeFx) {
+            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+            fxData data = fxData();
+            data.action = FX::Action::Invalid;
+            data.srcRef = iRef;
+            sFxProc.ParseExpression(iRef.get(), sFxDataMgr.GetExpression(curEffect.preExpression), data);
+        }
+        // apply processed effects
+        sFxProc.ApplyEffects(iRef.get(), this, nullptr, true);
+
+        // clear modifiers from implant
+        iRef->ClearModifiers();
+    }
+
     m_db.SaveImplant(m_itemID, iRef);
+    m_implantMap[slotID] = std::move(iRef);
 }
 
 void Character::RemoveImplant(uint8 slotID) {
@@ -1318,29 +1335,33 @@ void Character::RemoveImplant(uint8 slotID) {
         return;
     }
 
-    Effect curEffect = Effect();
-    std::vector<TypeEffects> typeFx;
-    sFxDataMgr.GetTypeEffect(itr->second->typeID(), typeFx);
-    for (auto &curFx : typeFx) {
-        curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-        fxData data = fxData();
-        data.action = FX::Action::Invalid;
-        data.srcRef = itr->second;
-        sFxProc.ParseExpression(itr->second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
-    }
-    // apply processed effects
-    sFxProc.ApplyEffects(itr->second.get(), this, nullptr, true);
-
-    // for now, we are removing implants and placing in cargo.
-    uint32 hangarID(m_pClient->GetLocationID());
-    EVEItemFlags flagID(flagIllegal);
     if (m_pClient->IsInSpace()) {
-        flagID = flagCargoHold;
-    } else {
-        flagID = flagHangar;
+        Effect curEffect = Effect();
+        std::vector<TypeEffects> typeFx;
+        sFxDataMgr.GetTypeEffect(itr->second->typeID(), typeFx);
+        for (auto &curFx : typeFx) {
+            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+            fxData data = fxData();
+            data.action = FX::Action::Invalid;
+            data.srcRef = itr->second;
+            sFxProc.ParseExpression(itr->second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
+        }
+        // apply processed effects
+        sFxProc.ApplyEffects(itr->second.get(), this, nullptr, true);
     }
 
-    itr->second->Move(hangarID, flagID, true);
+    if (!sConfig.character.DeleteImplantOnRemoval) {
+        uint32 hangarID(m_pClient->GetLocationID());
+        EVEItemFlags flagID(flagIllegal);
+        if (m_pClient->IsInSpace()) {
+            flagID = flagCargoHold;
+        } else {
+            flagID = flagHangar;
+        }
+
+        itr->second->Move(hangarID, flagID, true);
+    }
+
     m_implantMap.erase(itr);
 }
 
@@ -1369,21 +1390,24 @@ void Character::GetBoosterSlots() {
 
 void Character::RemoveBooster(uint8 slotID) {
     std::map<uint8, InventoryItemRef>::iterator itr = m_boosterMap.find(slotID);
-    if (itr != m_boosterMap.end()) {
-        Effect curEffect = Effect();
-        std::vector<TypeEffects> typeFx;
-        sFxDataMgr.GetTypeEffect(itr->second->typeID(), typeFx);
-        for (auto &curFx : typeFx) {
-            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-            fxData data = fxData();
-            data.action = FX::Action::Invalid;
-            data.srcRef = itr->second;
-            sFxProc.ParseExpression(itr->second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
-        }
-        // apply processed effects
-        sFxProc.ApplyEffects(itr->second.get(), this, nullptr, true);
-        m_boosterMap.erase(slotID);
+    if (itr == m_boosterMap.end()) {
+        // not found
+        return;
     }
+
+     Effect curEffect = Effect();
+    std::vector<TypeEffects> typeFx;
+    sFxDataMgr.GetTypeEffect(itr->second->typeID(), typeFx);
+    for (auto &curFx : typeFx) {
+        curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+        fxData data = fxData();
+        data.action = FX::Action::Invalid;
+        data.srcRef = itr->second;
+        sFxProc.ParseExpression(itr->second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
+    }
+    // apply processed effects
+    sFxProc.ApplyEffects(itr->second.get(), this, nullptr, true);
+    m_boosterMap.erase(slotID);
 }
 
 void Character::DeleteBoosters() {

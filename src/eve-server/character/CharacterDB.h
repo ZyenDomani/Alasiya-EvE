@@ -92,8 +92,6 @@ public:
     static bool GetCharacterData(uint32 characterID, CharacterData &into);
     static void GetCharacterDataMap(uint32 charID, std::map<std::string, int64> &characterDataMap);
     static bool GetCharHomeStation(uint32 charID, uint32 &stationID);
-    //if you want to get the typeID of the clone use GetActiveCloneType
-    static bool GetActiveCloneID(uint32 charID, uint32 &itemID);
     static PyRep *GetInfoWindowDataForChar(uint32 charID);
     static uint32 GetStartingStationByCareer(uint32 careerID);
 
@@ -122,11 +120,10 @@ public:
     void SetCurrentShip(uint32 charID, uint32 shipID);
     void SetCurrentPod(uint32 charID, uint32 podID);
 
-    bool ChangeCloneType(uint32 charID, uint32 typeID);
     static bool ChangeCloneLocation(uint32 charID, uint32 locationID);
     bool GetCharClones(uint32 charID, std::vector<uint32> &into);
-    bool GetActiveCloneType(uint32 charID, uint32 &typeID);
     std::string GetCharName(uint32 charID);
+    uint32 GetCloneID(uint32 charID);
 
     PyRep* GetContacts(uint32 charID, bool blocked);
     void AddContact(uint32 ownerID, uint32 charID, int32 standing, bool inWatchlist);

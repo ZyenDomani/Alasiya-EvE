@@ -153,6 +153,7 @@ EVEServerConfig::EVEServerConfig()
     character.terminationDelay = 180 /*s*/;
     character.statMultiplier = 1;
     character.allow3edChar = false;
+    character.DeleteImplantOnRemoval = true;
 
     // npc
     npc.IdleWander = false;
@@ -560,14 +561,15 @@ bool EVEServerConfig::ProcessAccount( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
 {
-    AddValueParser( "startBalance",     character.startBalance );
-    AddValueParser( "startAurBalance",  character.startAurBalance );  // added config entry and implemented  -allan 01/10/14
-    AddValueParser( "startStation",     character.startStation );
-    AddValueParser( "startSecRating",   character.startSecRating );
-    AddValueParser( "startCorporation", character.startCorporation );
-    AddValueParser( "terminationDelay", character.terminationDelay );
-    AddValueParser( "statMultiplier",   character.statMultiplier );
-    AddValueParser( "allow3edChar",     character.allow3edChar );
+    AddValueParser( "startBalance",             character.startBalance );
+    AddValueParser( "startAurBalance",          character.startAurBalance );  // added config entry and implemented  -allan 01/10/14
+    AddValueParser( "startStation",             character.startStation );
+    AddValueParser( "startSecRating",           character.startSecRating );
+    AddValueParser( "startCorporation",         character.startCorporation );
+    AddValueParser( "terminationDelay",         character.terminationDelay );
+    AddValueParser( "statMultiplier",           character.statMultiplier );
+    AddValueParser( "allow3edChar",             character.allow3edChar );
+    AddValueParser( "DeleteImplantOnRemoval",   character.DeleteImplantOnRemoval );
 
     const bool result = ParseElementChildren( ele );
 
@@ -579,6 +581,7 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
     RemoveParser( "terminationDelay" );
     RemoveParser( "statMultiplier" );
     RemoveParser( "allow3edChar" );
+    RemoveParser( "DeleteImplantOnRemoval" );
 
     return result;
 }

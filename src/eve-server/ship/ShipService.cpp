@@ -178,7 +178,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         throw CustomError("Something bad happened as you prepared to board the ship.");
     }
 
-    if (pShipSE->GetTypeID() == itemTypeCapsule) {
+    if (pShipSE->GetTypeID() == EVEDB::invTypes::Capsule) {
         codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSysMgr->GetID());
         throw CustomError("You already have a pod.  These cannot be boarded manally.");
     }

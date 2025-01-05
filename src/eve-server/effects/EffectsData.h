@@ -15,6 +15,19 @@
 #include "../eve-server.h"
 
 
+    /*
+    Effects processing order...
+        Skills     //char effect
+        Implants   //char effect
+        Boosters   //char effect
+        Ship       //ship effect
+        Subsystem  //module effect
+        Rigs       //module effect
+        Low        //module effect
+        Mid        //module effect
+        Hi         //module effect
+    */
+    
 // POD for effect data in mem objects
 struct Effect {
     bool isOffensive;

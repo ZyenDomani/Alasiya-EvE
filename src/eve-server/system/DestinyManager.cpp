@@ -2714,7 +2714,7 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     slim->SetItemString("warFactionID",             IsFactionID(mySE->GetWarFactionID()) ? new PyInt(mySE->GetWarFactionID()) : PyStatic.NewNone());
     slim->SetItemString("bounty",                   new PyFloat(pClient->GetBounty()));
     slim->SetItemString("securityStatus",           new PyFloat(pClient->GetSecurityRating()));
-    if (newShipRef->typeID() == itemTypeCapsule) {
+    if (newShipRef->typeID() == EVEDB::invTypes::Capsule) {
         slim->SetItemString("launcherID",               new PyInt(mySE->GetShipSE()->GetLauncherID()));
         slim->SetItemString("modules",                  new PyList());
     } else {

@@ -205,19 +205,24 @@ PyResult CharMgrService::Handle_GetRecentShipKillsAndLosses( PyCallArgs& call )
     return m_db.GetKillOrLoss(call.client->GetCharacterID());
 }
 
-PyResult CharMgrService::Handle_GetTopBounties( PyCallArgs& call )
-{
+PyResult CharMgrService::Handle_GetTopBounties( PyCallArgs& call ) {
     return m_db.GetTopBounties();
 }
 
-PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
-{
+PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call ) {
     return m_db.GetLabels(call.client->GetCharacterID());
 }
 
-PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call )
-{
+PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call ) {
     return new PyInt(Char::PDState::NoRecustomization);
+}
+
+PyResult CharMgrService::Handle_GetCloneTypeID( PyCallArgs& call ) {
+    return new PyInt(call.client->GetChar()->GetCloneTypeID());
+}
+
+PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call ) {
+    return new PyInt(call.client->GetCloneStationID());
 }
 
 PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call)
@@ -311,29 +316,6 @@ PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
     }
 
     return PyStatic.NewNone();
-}
-
-PyResult CharMgrService::Handle_GetCloneTypeID( PyCallArgs& call )
-{
-	uint32 typeID;
-	if (!m_db.GetActiveCloneType(call.client->GetCharacterID(), typeID ) )
-	{
-		// This should not happen, because a clone is created at char creation.
-		// We don't have a clone, so return a basic one. cloneTypeID = 9917 (Clone Grade Delta)
-		typeID = 9917;
-		sLog.Debug( "CharMgrService", "Returning a basic clone for Char %u of type %u", call.client->GetCharacterID(), typeID );
-	}
-    return new PyInt(typeID);
-}
-
-PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
-{
-	uint32 stationID = 0;
-    if (!CharacterDB::GetCharHomeStation(call.client->GetCharacterID(), stationID) ) {
-		sLog.Error( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
-		return PyStatic.NewNone();
-	}
-    return new PyInt(stationID);
 }
 
 PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {

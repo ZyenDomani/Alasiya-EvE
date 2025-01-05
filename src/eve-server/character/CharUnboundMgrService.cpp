@@ -347,7 +347,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     sEntityMgr.FindOrBootSystem(cdata.solarSystemID);
 
     // create alpha-level clone
-    ItemData iData( itemCloneAlpha, charRef->itemID(), cdata.locationID, flagClone, 1 );
+    ItemData iData(EVEDB::invTypes::CloneGradeAlpha, charRef->itemID(), cdata.locationID, flagClone, 1);
         iData.customInfo="Active: ";
         iData.customInfo += charRef->itemName();
         iData.customInfo += "(";

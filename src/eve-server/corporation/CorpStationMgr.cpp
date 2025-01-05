@@ -183,27 +183,7 @@ PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
     }
 
-    //Get cost of clone
-    double cost = m_db.GetCloneTypeCostByID(arg.CloneTypeID);
-
-    //take the money, send wallet blink event record the transaction in their journal.
-    std::string reason = "DESC: Updating Clone in ";
-    // make config option for station name or system name here?
-    reason += call.client->GetSystemName();
-    reason += " at ";
-    reason += stDataMgr.GetStationName(call.client->GetStationID());
-    AccountService::TransferFunds(
-                    call.client->GetCharacterID(),
-                    call.client->GetStationID(),
-                    cost,
-                    reason.c_str(),
-                    Journal::EntryType::CloneActivation,
-                    call.client->GetStationID(),
-                    Account::KeyType::Cash);
-
-    //update type of clone
-    CharacterDB c_db;
-    c_db.ChangeCloneType(call.client->GetCharacterID(), arg.CloneTypeID);
+    call.client->GetChar()->UpdateClone(arg.CloneTypeID);
     return PyStatic.NewNone();
 }
 

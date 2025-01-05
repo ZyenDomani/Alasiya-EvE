@@ -228,11 +228,16 @@ public:
     void            SetBaseID(uint32 baseID);
     void            SetFleetData(CharFleetData& fleet, bool clear=false);
     uint32          PickAlternateShip(uint32 locationID);
+    uint16          GetCloneTypeID()                    { return m_cloneRef->typeID(); }
 
     void            SetClient(Client* pClient)          { m_pClient = pClient; }
     Client*         GetClient()                         { return m_pClient; }
 
     void            AddItem(InventoryItemRef iRef);
+
+    void            UpdateClone(int32 typeID);
+    // character killed.  reset to active clone state
+    void            ResetChar();
 
     // skills
     bool            HasSkill(uint16 skillTypeID) const;
@@ -258,6 +263,7 @@ public:
     void            UpdateSkillQueue();
     void            UpdateSkillQueueEndTime();
     void            RemoveFromQueue(SkillRef sRef);
+    // set all skill flags to flagSkill which removes flagSkillInTraining
     void            ClearSkillFlags();
 
     PyRep*          GetSkillHistory();
@@ -289,11 +295,11 @@ public:
     float                   bounty() const                      { return m_charData.bounty; }
     float                   balance(uint8 type);
     float                   GetSecurityRating() const           { return m_charData.securityRating; }
-    uint32					loginTime() const                   { return m_loginTime; }
+    uint32                  loginTime() const                   { return m_loginTime; }
     uint32                  logonMinutes() const                { return m_charData.logonMinutes; }
     uint16                  OnlineTime();
 
-    void                    secStatusChange( float amount )    { m_charData.securityRating += amount; }
+    void                    secStatusChange(float amount)       { m_charData.securityRating += amount; }
 
     // Corporation:
     void                    UpdateCorpData(CorpData& data);
@@ -345,11 +351,9 @@ public:
 
     void                    SetActiveShip(uint32 shipID);
     void                    SetActivePod(uint32 podID);
-    // set clone type to alpha
-    void                    ResetClone();
 
     void                    PayBounty(CharacterRef cRef);
-    void                    LogKill(KillData data)          { ServiceDB::SaveKillOrLoss(data); }
+    void                    LogKill(KillData data)              { ServiceDB::SaveKillOrLoss(data); }
 
     //  saves
     void                    LogOut();
@@ -360,7 +364,7 @@ public:
     void                    SaveCertificates();
     void                    SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint16 skillTypeID, uint8 skillLevel, uint32 absolutePoints);
 
-    void                    SetLoaded(bool set=false)   { m_loaded = set; }
+    void                    SetLoaded(bool set=false)           { m_loaded = set; }
 
     void                    SetLoginTime();
     void                    SetLogonMinutes();
@@ -382,8 +386,7 @@ public:
     void                    ResetModifiers();   // this will reset ALL char and skill attribs and modifier maps to default
 
     // implant and booster system
-    void LoadImplants();
-    // fx are applied immediately
+
     void GetImplantSlots();             // found in m_implantMap.first
     bool IsSlotAvaliable(uint8 slotID)                  { return (m_implantMap.find(slotID) == m_implantMap.end()); }
     void GetBoosterSlots();             // found in m_boosterMap.first
@@ -392,6 +395,7 @@ public:
     void RemoveImplant(uint8 slotID);
     void AddBooster(uint8 slotID, InventoryItemRef iRef) { m_boosterMap.emplace(slotID, iRef); }
     void RemoveBooster(uint8 slotID);
+
     void DeleteImplants();
     void DeleteBoosters();
 
@@ -469,9 +473,9 @@ private:
 
     uint32 m_loginTime;
 
-    // implant map
+    InventoryItemRef m_cloneRef;
+
     std::map<uint8, InventoryItemRef>  m_implantMap;            // slotID/itemRef
-    // booster map
     std::map<uint8, InventoryItemRef>  m_boosterMap;            // slotID/itemRef
     // for storyline mission counting
     std::map<uint32, std::map<uint8, uint8>> m_missionMap;      // factionID, [level, count]
