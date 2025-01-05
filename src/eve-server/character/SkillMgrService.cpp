@@ -339,13 +339,13 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
     }
 
     // test skill level, if applicable
-    if (iRef->GetAttribute(AttrRequiredSkill1Level).get_uint32() > cRef->GetSkillLevel(iRef->GetAttribute(AttrRequiredSkill1)).get_uint32()) {
+    if (iRef->GetAttribute(AttrRequiredSkill1Level).get_uint32() > cRef->GetSkillLevel(iRef->GetAttribute(AttrRequiredSkill1).get_uint32())) {
         throw CustomError("The implant %s requires the %s skill trained to level %u", \
                         iRef->name(), sDataMgr.GetSkillName(iRef->GetAttribute(AttrRequiredSkill1).get_uint32()), \
                         iRef->GetAttribute(AttrRequiredSkill1Level).get_uint32());
     }
 
-    if (iRef->GetAttribute(AttrRequiredSkill2Level).get_uint32() > cRef->GetSkillLevel(iRef->GetAttribute(AttrRequiredSkill2)).get_uint32()) {
+    if (iRef->GetAttribute(AttrRequiredSkill2Level).get_uint32() > cRef->GetSkillLevel(iRef->GetAttribute(AttrRequiredSkill2).get_uint32())) {
         throw CustomError("The implant %s requires the %s skill trained to level %u", \
                         iRef->name(), sDataMgr.GetSkillName(iRef->GetAttribute(AttrRequiredSkill2).get_uint32()), \
                         iRef->GetAttribute(AttrRequiredSkill2Level).get_uint32());
