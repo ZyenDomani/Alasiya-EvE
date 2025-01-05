@@ -198,6 +198,9 @@ PyResult JumpCloneBound::Handle_CloneJump(PyCallArgs &call) {
     //lm.CloneJump, destLocationID
 _log(CHARACTER__INFO, "JumpCloneBound::Handle_CloneJump()");
 
+    // also todo:  save then remove implant/boosters from current char.
+    // determine if clone has implants and load/apply them after jump
+// will also have to change characters itemID and all references to new clone
     return nullptr;
 }
 

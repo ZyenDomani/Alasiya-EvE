@@ -496,6 +496,7 @@ void ModuleManager::UnfitModule(EVEItemFlags flag) {
 }
 
 // cannot throw without test
+//{'FullPath': u'UI/Messages', 'messageID': 259603, 'label': u'FittingHasSkillPrerequisitesBody'}(u'You do not have the required skills to do that. To fit and use that item requires having learned the following {[numeric]skillCount -> "skill", "skills"}: {requiredSkills}.', None, {u'{[numeric]skillCount -> "skill", "skills"}': {'conditionalValues': [u'skill', u'skills'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'skillCount'}, u'{requiredSkills}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'requiredSkills'}})
 bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {

@@ -134,7 +134,6 @@ public:
     void RemoveContact(uint32 charID, uint32 ownerID);
     void SetBlockContact(uint32 charID, uint32 ownerID, bool blocked);
 
-    bool GetCharItems(uint32 charID, std::vector<uint32> &into);
     static bool GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID);
 
     /**
@@ -230,6 +229,10 @@ public:
     void        DeleteLabel(uint32 charID, uint32 labelID);
 
     void        VisitSystem(uint32 solarSystemID, uint32 charID);
+
+    void        SaveImplant(uint32 charID, InventoryItemRef iRef);
+    void        DeleteImplant(uint32 charID, InventoryItemRef iRef);
+    void        LoadImplants(uint32 charID, std::map<uint8, InventoryItemRef> &into);
 
     /*  name validation shit */
     // called on CreateCharacterWithDoll() and will throw on error

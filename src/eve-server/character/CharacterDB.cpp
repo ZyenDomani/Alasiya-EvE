@@ -164,6 +164,7 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
     sDatabase.RunQuery(err, "DELETE FROM avatar_modifiers WHERE charID = %u", characterID);
     sDatabase.RunQuery(err, "DELETE FROM avatar_sculpts WHERE charID = %u", characterID);
     sDatabase.RunQuery(err, "DELETE FROM avatars WHERE charID = %u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM chrImplants WHERE charID = %u", characterID);
 }
 
 bool CharacterDB::ReportRespec(uint32 characterId)
@@ -941,28 +942,6 @@ void CharacterDB::RemoveContact(uint32 charID, uint32 ownerID)
          charID, ownerID);
 }
 
-//just return all itemIDs which has ownerID set to characterID
-bool CharacterDB::GetCharItems(uint32 characterID, std::vector<uint32> &into) {
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "  itemID"
-        " FROM entity"
-        " WHERE ownerID = %u",
-        characterID))
-    {
-        _log(DATABASE__ERROR, "Failed to query items of char %u: %s.", characterID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    while (res.GetRow(row))
-        into.push_back(row.GetUInt(0));
-
-    return true;
-}
-
 uint32 CharacterDB::PickAlternateShip(uint32 charID, uint32 locationID)
 {   // this picks first ship that db finds belonging to charID in locationID
     DBQueryResult res;
@@ -1129,6 +1108,36 @@ bool CharacterDB::ChangeCloneLocation(uint32 characterID, uint32 locationID)
     }
 
     return true;
+}
+
+void CharacterDB::DeleteImplant(uint32 charID, InventoryItemRef iRef) {
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM `chrImplants` WHERE charID = %u AND implantID = %u", \
+                    charID, iRef->itemID());
+}
+
+void CharacterDB::LoadImplants(uint32 charID, std::map<uint8, InventoryItemRef> &into) {
+    DBQueryResult res;
+
+    if (!sDatabase.RunQuery(res,
+        " SELECT "
+        "  slotID, implantID"
+        " FROM chrImplants"
+        " WHERE charID = %u", charID))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return;
+    }
+
+    DBResultRow row;
+    while (res.GetRow(row))
+        into[row.GetUInt8(0)] = std::move(sItemFactory.GetItemRef(row.GetUInt(1)));
+}
+
+void CharacterDB::SaveImplant(uint32 charID, InventoryItemRef iRef) {
+    DBerror err;
+    sDatabase.RunQuery(err, "INSERT INTO `chrImplants`(`charID`, `slotID`, `implantID`) VALUES (%u, %u, %u)", \
+                charID, iRef->GetAttribute(AttrImplantness).get_uint32(), iRef->itemID());
 }
 
 bool CharacterDB::GetAttributesFromAncestry(uint32 ancestryID, uint8 &intelligence, uint8 &charisma, uint8 &perception, uint8 &memory, uint8 &willpower) {

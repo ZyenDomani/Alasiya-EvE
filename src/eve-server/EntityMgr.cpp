@@ -131,10 +131,7 @@ void EntityMgr::UnloadAll() {
     sLog.Warning("       EntityMgr", "All Solar Systems have been unloaded." );
 }
 
-/* m_clients is used to search for online players and numerous other things.
- *  the problem here is any searching is done thru iteration, which can get expensive.
- *  however, clients are added before their char is selected, so there is no charID for map placement.
- *    maybe use m_clients for basic Process() calls and use m_players for character/client searching
+/* use m_clients for basic Process() calls and use m_players for character/client searching
  *
  * update:  done and working very well.
  */

@@ -572,11 +572,13 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     /** @todo  havent found a populated item in packet logs
      *
         def ProcessLocationInfo(self, cData):
-            for locationID, datas in cData.iteritems():
-        --still dont know what 'datas' are
-        ** this has *something* to do with POS
+            for locationID, data in cData.iteritems():  cData is locationID, dict[itemID, invItem]
+
+        if data.has_key(locationID):
+            row = data[locationID]
+            self.UpdateItem(row.invItem, row)
         */
-    if (args.arg2) {
+    if (0) {
         rsp->SetItemString("locationInfo", new PyDict());
     } else {
         rsp->SetItemString("locationInfo", PyStatic.NewNone());

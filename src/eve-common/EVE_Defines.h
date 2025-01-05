@@ -66,14 +66,11 @@
 #ifndef EVE_DEFINES_H
 #define EVE_DEFINES_H
 
-// defined breakPoint  --doesnt work.  not sure why.  dont care
-#define SrvPause()  do { printf("%s %d\n", __FILE__, __LINE__); getchar(); } while (0)
-
 // bulkdata version
 #define bulkDataBranch          4
 //  bulkDataChangeID rddmmyyyy
 //  where r=revision, dd=day, mm=month, yyyy=year
-#define bulkDataChangeID        107232020
+#define bulkDataChangeID        101032025
 
 //  define number of rentable offices in stations (config option later?)
 //  this replaces the hard-coded count previously used in station.h

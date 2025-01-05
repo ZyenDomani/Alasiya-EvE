@@ -232,7 +232,7 @@ public:
     void            SetClient(Client* pClient)          { m_pClient = pClient; }
     Client*         GetClient()                         { return m_pClient; }
 
-    void            AddItem(InventoryItemRef item);
+    void            AddItem(InventoryItemRef iRef);
 
     // skills
     bool            HasSkill(uint16 skillTypeID) const;
@@ -345,6 +345,7 @@ public:
 
     void                    SetActiveShip(uint32 shipID);
     void                    SetActivePod(uint32 podID);
+    // set clone type to alpha
     void                    ResetClone();
 
     void                    PayBounty(CharacterRef cRef);
@@ -381,13 +382,19 @@ public:
     void                    ResetModifiers();   // this will reset ALL char and skill attribs and modifier maps to default
 
     // implant and booster system
+    void LoadImplants();
     // fx are applied immediately
     void GetImplantSlots();             // found in m_implantMap.first
     bool IsSlotAvaliable(uint8 slotID)                  { return (m_implantMap.find(slotID) == m_implantMap.end()); }
     void GetBoosterSlots();             // found in m_boosterMap.first
     bool IsBoosterSlotAvaliable(uint8 slotID)           { return (m_boosterMap.find(slotID) == m_boosterMap.end()); }
+    void AddImplant(uint8 slotID, InventoryItemRef iRef);
+    void RemoveImplant(uint8 slotID);
+    void AddBooster(uint8 slotID, InventoryItemRef iRef) { m_boosterMap.emplace(slotID, iRef); }
+    void RemoveBooster(uint8 slotID);
+    void DeleteImplants();
+    void DeleteBoosters();
 
-    
 protected:
     Character(
         uint32 _characterID,

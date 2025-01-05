@@ -1194,6 +1194,8 @@ void Client::ResetAfterPodded() {
     m_ship->Move(m_locationID, flagHangar);
     m_ship->SaveShip();
     m_char->ResetClone();
+    m_char->DeleteBoosters();
+    m_char->DeleteImplants();
     m_char->SaveCharacter();
 
     SpawnNewRookieShip(m_locationID);

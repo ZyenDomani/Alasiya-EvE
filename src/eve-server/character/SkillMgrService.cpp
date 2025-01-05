@@ -28,6 +28,8 @@
 
 #include "PyServiceCD.h"
 #include "character/SkillMgrService.h"
+#include "effects/EffectsDataMgr.h"
+#include "effects/EffectsProcessor.h"
 
 PyCallable_Make_InnerDispatcher(SkillMgrService)
 PyCallable_Make_InnerDispatcher(SkillMgrBound)
@@ -316,7 +318,7 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
 
 PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 {
-    //client only verifies implant categoryID and slot.  sends itemid
+    //client verifies implant, slot and skillInTraining.  sends itemid
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -325,35 +327,9 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 
     InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg);
     if (iRef.get() == nullptr) {
-
+        _log(CHARACTER__ERROR, "CharAddImplant - iRef not found for itemID %i", args.arg);
         return nullptr;
     }
-
-
-    /*
-    AttrImplantSetBloodraider = 799,
-    AttrImplantSetSerpentis = 802,
-    AttrImplantSetSerpentis2 = 803,
-    AttrImplantSetGuristas = 838,
-    AttrImplantSetAngel = 863,
-    AttrImplantSetSansha = 864,
-    AttrImplantBonusVelocity = 1076,
-    AttrImplantSetThukker = 1282,
-    AttrImplantSetSisters = 1284,
-    AttrImplantSetSyndicate = 1291,
-    AttrImplantSetORE = 1292,
-    AttrImplantSetMordus = 1293,
-    AttrImplantSetImperialNavy = 1550,
-    AttrImplantSetCaldariNavy = 1552,
-    AttrImplantSetFederationNavy = 1553,
-    AttrImplantSetRepublicFleet = 1554,
-    AttrImplantSetLGImperialNavy = 1569,
-    AttrImplantSetLGFederationNavy = 1570,
-    AttrImplantSetLGCaldariNavy = 1571,
-    AttrImplantSetLGRepublicFleet = 1572,
-    AttrimplantSetChristmas = 1799,
-
-    */
 
     CharacterRef cRef(call.client->GetChar());
     uint8 implantSlot(iRef->GetAttribute(AttrImplantness).get_uint32());  //implant slot
@@ -362,32 +338,55 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
         .AddFormatValue("typeName", new PyString(iRef->itemName()));
     }
 
-    iRef->GetAttribute(AttrRequiredSkill1);
-    iRef->GetAttribute(AttrRequiredSkill1Level);
+    // test skill level, if applicable
+    if (iRef->GetAttribute(AttrRequiredSkill1Level).get_uint32() > cRef->GetSkillLevel(AttrRequiredSkill1)) {
+        if (iRef->GetAttribute(AttrRequiredSkill2Level).get_uint32() > cRef->GetSkillLevel(AttrRequiredSkill2)) {
+            // not sure how to make this yet...
+            throw UserError("ImplantHasSkillPrerequisitesBody")  // both skills
+            .AddFormatValue("item", new PyInt(iRef->itemID()));
+        } else {
+            // not sure how to make this yet...
+            throw UserError("ImplantHasSkillPrerequisitesBody")  // first skill
+            .AddFormatValue("item", new PyInt(iRef->itemID()));
+        }
+    }
 
-    // gang implants and boosters use req skill 2
+    _log(CHARACTER__MESSAGE, "CharAddImplant - Adding %s(%i) to %s(%u) in slot %u", \
+            iRef->name(), args.arg, cRef->name(), cRef->itemID(), implantSlot);
 
+    cRef->AddImplant(implantSlot, iRef);
 
-    /* notes to implement this...
-     * is this just implants or does it handle boosters also?  i think yes
-     *
-     * if add implants in space -> remove all current fx, apply implant and run fx, rerun all other fx
-     * check skill and lvl - error
-     * find slot -> is slot occupied?  error
-     * add implant to char list
-     * implants have fx data and need to be added immediately  ... add/run fx on install here
-     *
-     *  note - no clue how to send data to client yet...
-     * NOTE:  on char podded, all implants are destroyed  (in char code)
-     */
-    //{'FullPath': u'UI/Messages', 'messageID': 259242, 'label': u'OnlyOneBoosterActiveBody'}(u'You cannot consume the {typeName} as you are already using another similar booster {typeName2}.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}, u'{typeName2}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName2'}})
-    //{'FullPath': u'UI/Messages', 'messageID': 259243, 'label': u'OnlyOneImplantActiveBody'}(u'You cannot install the {typeName} as there is already an implant installed in the slot it needs to occupy.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
     //{'FullPath': u'UI/Messages', 'messageID': 259217, 'label': u'PrereqImplantMissingBody'}(u'Attempting to use this implant without the aid of a {typeName} will destroy your cerebral cortex. Please consider alternate methods of suicide.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
     //{'FullPath': u'UI/Messages', 'messageID': 259604, 'label': u'ImplantHasSkillPrerequisitesBody'}(u'The implant {[item]item.name} requires the following {[numeric]skillCount -> "skill", "skills"}: {requiredSkills}.', None, {u'{[numeric]skillCount -> "skill", "skills"}': {'conditionalValues': [u'skill', u'skills'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'skillCount'}, u'{requiredSkills}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'requiredSkills'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+    //{'FullPath': u'UI/Messages', 'messageID': 259217, 'label': u'PrereqImplantMissingBody'}(u'Attempting to use this implant without the aid of a {typeName} will destroy your cerebral cortex. Please consider alternate methods of suicide.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+
+    /*  these are some kind of modifers for full sets....
+     *    AttrImplantSetBloodraider = 799,
+     *    AttrImplantSetSerpentis = 802,
+     *    AttrImplantSetSerpentis2 = 803,
+     *    AttrImplantSetGuristas = 838,
+     *    AttrImplantSetAngel = 863,
+     *    AttrImplantSetSansha = 864,
+     *    AttrImplantBonusVelocity = 1076,
+     *    AttrImplantSetThukker = 1282,
+     *    AttrImplantSetSisters = 1284,
+     *    AttrImplantSetSyndicate = 1291,
+     *    AttrImplantSetORE = 1292,
+     *    AttrImplantSetMordus = 1293,
+     *    AttrImplantSetImperialNavy = 1550,
+     *    AttrImplantSetCaldariNavy = 1552,
+     *    AttrImplantSetFederationNavy = 1553,
+     *    AttrImplantSetRepublicFleet = 1554,
+     *    AttrImplantSetLGImperialNavy = 1569,
+     *    AttrImplantSetLGFederationNavy = 1570,
+     *    AttrImplantSetLGCaldariNavy = 1571,
+     *    AttrImplantSetLGRepublicFleet = 1572,
+     *    AttrimplantSetChristmas = 1799,
+     *
+     */
 
 
-    // run fx proc here
-
+    // remove item from inventory
 
     return nullptr;
 }
@@ -401,7 +400,21 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter(PyCallArgs& call)
         return nullptr;
     }
 
-    // removal is reverse of add as noted above
+    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg);
+    if (iRef.get() == nullptr) {
+        _log(CHARACTER__ERROR, "CharRemoveImplant - iRef not found for itemID %i", args.arg);
+        return nullptr;
+    }
+
+    CharacterRef cRef(call.client->GetChar());
+    uint8 implantSlot(iRef->GetAttribute(AttrImplantness).get_uint32());  //implant slot
+    _log(CHARACTER__MESSAGE, "CharRemoveImplant - Removing %s(%i) from %s(%u)", \
+            iRef->name(), args.arg, cRef->name(), cRef->itemID());
+
+    cRef->RemoveImplant(implantSlot);
+    // delete implant
+    iRef->Delete();
+
     return nullptr;
 }
 
@@ -418,11 +431,20 @@ PyResult SkillMgrBound::Handle_CharUseBooster(PyCallArgs& call)
 
     InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg1);
     if (iRef.get() == nullptr) {
-
+        _log(CHARACTER__ERROR, "CharRemoveImplant - iRef not found for itemID %i", args.arg1);
         return nullptr;
     }
 
-    /*
+    CharacterRef cRef(call.client->GetChar());
+    uint8 boosterSlot(iRef->GetAttribute(AttrBoosterness).get_uint32());  //booster slot
+    if (!cRef->IsBoosterSlotAvaliable(boosterSlot)) {
+        //{'FullPath': u'UI/Messages', 'messageID': 259242, 'label': u'OnlyOneBoosterActiveBody'}(u'You cannot consume the {typeName} as you are already using another similar booster {typeName2}.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}, u'{typeName2}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName2'}})
+        throw UserError("OnlyOneBoosterActiveBody")
+        .AddFormatValue("typeName", new PyString(iRef->itemName()));
+    }
+
+
+    /* not sure if these need to be applied in code or from effects...
      *    AttrBoosterDuration = 330,
      *    AttrBoosterShieldBoostAmountPenalty = 616,
      *    AttrBoosterEffectChance1 = 1089,                    //fittingUsageChanceAttributeID in dgmEffects table
@@ -451,13 +473,6 @@ PyResult SkillMgrBound::Handle_CharUseBooster(PyCallArgs& call)
      *    AttrBoosterMaxCharAgeHours = 1647,
      */
 
-    CharacterRef cRef(call.client->GetChar());
-    uint8 boosterSlot(iRef->GetAttribute(AttrBoosterness).get_uint32());  //booster slot
-    if (!cRef->IsBoosterSlotAvaliable(boosterSlot)) {
-        throw UserError("OnlyOneBoosterActiveBody")
-        .AddFormatValue("typeName", new PyString(iRef->itemName()));
-    }
-
-
+    // remove item from inventory
     return nullptr;
 }
