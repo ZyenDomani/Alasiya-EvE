@@ -93,7 +93,7 @@ void ManagerDB::GetTypeAttributes(DBQueryResult& res)
 
 void ManagerDB::LoadCorpNames(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT corporationID, corporationName FROM crpCorporations" ))
+    if (!sDatabase.RunQuery(res, "SELECT corporationID, corporationName FROM crpCorporation" ))
         codelog(DATABASE__ERROR, "Error in LoadCorpNames query: %s", res.error.c_str());
 
     _log(DATABASE__RESULTS, "LoadCorpNames returned %lu items", res.GetRowCount());
