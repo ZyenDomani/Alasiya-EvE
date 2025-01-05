@@ -878,7 +878,7 @@ void Client::DockToStation() {
     m_clientState = Player::State::Idle;
     _log(AUTOPILOT__TRACE, "DockToStation() - m_clientState set to Idle");
     pShipSE->DestinyMgr()->DockingAccepted();
-    m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
+    m_bubbleWait = true;     // deny client processing of subsequent destiny msgs
 
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a shiny, new, fully-fitted ship as replacement.  we dont....yet
@@ -899,6 +899,8 @@ void Client::DockToStation() {
 
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
 
+    m_char->Dock();
+
     SetSessionTimer();
     m_ship->SetDocked();
 }
@@ -914,6 +916,7 @@ void Client::UndockFromStation() {
     m_dockPoint = m_stationData.dockPosition;
     m_movePoint = m_stationData.dockOrientation;
 
+    m_char->Undock();   // postprocess implants here, before full fxProc() below
     m_ship->Undock();   // fx processed here
 
     /** @todo  this needs a bit of work to match live....

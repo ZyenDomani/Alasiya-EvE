@@ -239,6 +239,11 @@ public:
     // character killed.  reset to active clone state
     void            ResetChar();
 
+    // some implants aren't processed in client while docked
+    void            Dock();
+    // remove implant effects and clear map before calling full FxProc()
+    void            Undock();
+
     // skills
     bool            HasSkill(uint16 skillTypeID) const;
     bool            HasSkillTrainedToLevel(uint16 skillTypeID, uint8 skillLevel) const;
@@ -386,7 +391,7 @@ public:
     void                    ResetModifiers();   // this will reset ALL char and skill attribs and modifier maps to default
 
     // implant and booster system
-
+    void LoadImplants();
     void GetImplantSlots();             // found in m_implantMap.first
     bool IsSlotAvaliable(uint8 slotID)                  { return (m_implantMap.find(slotID) == m_implantMap.end()); }
     void GetBoosterSlots();             // found in m_boosterMap.first

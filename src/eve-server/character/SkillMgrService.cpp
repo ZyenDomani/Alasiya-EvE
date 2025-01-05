@@ -356,11 +356,12 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 
     cRef->AddImplant(implantSlot, iRef);
 
+    // for learning implants, client does NOT update effects.
+
     //{'FullPath': u'UI/Messages', 'messageID': 259217, 'label': u'PrereqImplantMissingBody'}(u'Attempting to use this implant without the aid of a {typeName} will destroy your cerebral cortex. Please consider alternate methods of suicide.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
     //{'FullPath': u'UI/Messages', 'messageID': 259604, 'label': u'ImplantHasSkillPrerequisitesBody'}(u'The implant {[item]item.name} requires the following {[numeric]skillCount -> "skill", "skills"}: {requiredSkills}.', None, {u'{[numeric]skillCount -> "skill", "skills"}': {'conditionalValues': [u'skill', u'skills'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'skillCount'}, u'{requiredSkills}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'requiredSkills'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
     //{'FullPath': u'UI/Messages', 'messageID': 259217, 'label': u'PrereqImplantMissingBody'}(u'Attempting to use this implant without the aid of a {typeName} will destroy your cerebral cortex. Please consider alternate methods of suicide.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
 
-    //   some of these implants will have to be processed BEFORE skills and AFTER ship/module effects
     // i've noticed some offer bonus' for missions...27152, 27153
     // also look at hacking implants...27196
 

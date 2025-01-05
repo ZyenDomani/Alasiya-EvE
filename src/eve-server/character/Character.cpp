@@ -289,7 +289,7 @@ bool Character::_Load() {
     // load char personal bookmarks and folders ... corp shit will be done ???
     LoadBookmarks();
 
-    m_db.LoadImplants(m_itemID, m_implantMap);
+    LoadImplants();
 
     m_cloneRef = sItemFactory.GetItemRefFromID(m_db.GetCloneID(m_itemID));
 
@@ -1289,9 +1289,69 @@ void Character::SetActivePod(uint32 podID) {
     m_db.SetCurrentPod(m_itemID, podID);
 }
 
+void Character::Dock() {
+    for (auto &cur : m_implantMap) {
+        Effect curEffect = Effect();
+        std::vector<TypeEffects> typeFx;
+        sFxDataMgr.GetTypeEffect(cur.second->typeID(), typeFx);
+        for (auto &curFx : typeFx) {
+            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+            fxData data = fxData();
+            data.action = FX::Action::Invalid;
+            data.srcRef = cur.second;
+            sFxProc.ParseExpression(cur.second.get(), sFxDataMgr.GetExpression(curEffect.preExpression), data);
+        }
+        // apply processed effects
+        sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
+        cur.second->ClearModifiers();
+    }
+}
+
+void Character::Undock() {
+    for (auto &cur : m_implantMap){
+        Effect curEffect = Effect();
+        std::vector<TypeEffects> typeFx;
+        sFxDataMgr.GetTypeEffect(cur.second->typeID(), typeFx);
+        for (auto &curFx : typeFx) {
+            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+            fxData data = fxData();
+            data.action = FX::Action::Invalid;
+            data.srcRef = cur.second;
+            sFxProc.ParseExpression(cur.second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
+        }
+        // apply processed effects
+        sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
+        cur.second->ClearModifiers();
+    }
+}
+
 void Character::GetImplantSlots() {
 
 }
+
+void Character::LoadImplants() {
+    // load and apply implants where applicable
+    m_db.LoadImplants(m_itemID, m_implantMap);
+
+    if (!m_pClient->IsInSpace()) {
+        for (auto &cur : m_implantMap){
+            Effect curEffect = Effect();
+            std::vector<TypeEffects> typeFx;
+            sFxDataMgr.GetTypeEffect(cur.second->typeID(), typeFx);
+            for (auto &curFx : typeFx) {
+                curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+                fxData data = fxData();
+                data.action = FX::Action::Invalid;
+                data.srcRef = cur.second;
+                sFxProc.ParseExpression(cur.second.get(), sFxDataMgr.GetExpression(curEffect.preExpression), data);
+            }
+            // apply processed effects
+            sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
+            cur.second->ClearModifiers();
+        }
+    }
+}
+
 
 /* booster flag is 88
  * implant flag is 89
@@ -1305,24 +1365,21 @@ void Character::AddImplant(uint8 slotID, InventoryItemRef iRef) {
     iRef->ChangeSingleton(false);
     iRef->Move(m_itemID, flagImplant, true);
 
-    if (m_pClient->IsInSpace()) {
-        // apply effect
-        Effect curEffect = Effect();
-        std::vector<TypeEffects> typeFx;
-        sFxDataMgr.GetTypeEffect(iRef->typeID(), typeFx);
-        for (auto &curFx : typeFx) {
-            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-            fxData data = fxData();
-            data.action = FX::Action::Invalid;
-            data.srcRef = iRef;
-            sFxProc.ParseExpression(iRef.get(), sFxDataMgr.GetExpression(curEffect.preExpression), data);
-        }
-        // apply processed effects
-        sFxProc.ApplyEffects(iRef.get(), this, nullptr, true);
-
-        // clear modifiers from implant
-        iRef->ClearModifiers();
+    // proc effect
+    Effect curEffect = Effect();
+    std::vector<TypeEffects> typeFx;
+    sFxDataMgr.GetTypeEffect(iRef->typeID(), typeFx);
+    for (auto &curFx : typeFx) {
+        curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+        fxData data = fxData();
+        data.action = FX::Action::Invalid;
+        data.srcRef = iRef;
+        sFxProc.ParseExpression(iRef.get(), sFxDataMgr.GetExpression(curEffect.preExpression), data);
     }
+
+    // apply processed effects
+    sFxProc.ApplyEffects(iRef.get(), this, nullptr, true);
+    iRef->ClearModifiers();
 
     m_db.SaveImplant(m_itemID, iRef);
     m_implantMap[slotID] = std::move(iRef);
@@ -1350,7 +1407,9 @@ void Character::RemoveImplant(uint8 slotID) {
         sFxProc.ApplyEffects(itr->second.get(), this, nullptr, true);
     }
 
-    if (!sConfig.character.DeleteImplantOnRemoval) {
+    if (sConfig.character.DeleteImplantOnRemoval) {
+        itr->second->Delete();
+    } else {
         uint32 hangarID(m_pClient->GetLocationID());
         EVEItemFlags flagID(flagIllegal);
         if (m_pClient->IsInSpace()) {
@@ -1359,6 +1418,7 @@ void Character::RemoveImplant(uint8 slotID) {
             flagID = flagHangar;
         }
 
+        itr->second->ClearModifiers();
         itr->second->Move(hangarID, flagID, true);
     }
 
