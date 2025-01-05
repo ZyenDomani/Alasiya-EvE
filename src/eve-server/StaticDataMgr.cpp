@@ -737,16 +737,15 @@ bool StaticDataMgr::IsSkillTypeID(uint16 typeID)
     return (m_skills.find(typeID) != m_skills.end());
 }
 
-bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
+const char* StaticDataMgr::GetSkillName(uint16 skillID)
 {
     std::map<uint16, std::string>::iterator itr = m_skills.find(skillID);
     if (itr != m_skills.end()) {
-        name = itr->second;
-        return true;
+        return itr->second.c_str();
     }
 
     _log(DATA__MESSAGE, "Failed to query name for skill %u: Skill not found.", skillID);
-    return false;
+    return nullptr;
 }
 
 void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)

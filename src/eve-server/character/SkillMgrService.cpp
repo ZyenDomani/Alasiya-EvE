@@ -340,15 +340,15 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 
     // test skill level, if applicable
     if (iRef->GetAttribute(AttrRequiredSkill1Level).get_uint32() > cRef->GetSkillLevel(AttrRequiredSkill1)) {
-        if (iRef->GetAttribute(AttrRequiredSkill2Level).get_uint32() > cRef->GetSkillLevel(AttrRequiredSkill2)) {
-            // not sure how to make this yet...
-            throw UserError("ImplantHasSkillPrerequisitesBody")  // both skills
-            .AddFormatValue("item", new PyInt(iRef->itemID()));
-        } else {
-            // not sure how to make this yet...
-            throw UserError("ImplantHasSkillPrerequisitesBody")  // first skill
-            .AddFormatValue("item", new PyInt(iRef->itemID()));
-        }
+        throw CustomError("The implant %s requires the %s skill trained to level %u", \
+                        iRef->name(), sDataMgr.GetSkillName(AttrRequiredSkill1), \
+                        iRef->GetAttribute(AttrRequiredSkill1Level).get_uint32());
+    }
+
+    if (iRef->GetAttribute(AttrRequiredSkill2Level).get_uint32() > cRef->GetSkillLevel(AttrRequiredSkill2)) {
+        throw CustomError("The implant %s requires the %s skill trained to level %u", \
+                        iRef->name(), sDataMgr.GetSkillName(AttrRequiredSkill2), \
+                        iRef->GetAttribute(AttrRequiredSkill2Level).get_uint32());
     }
 
     _log(CHARACTER__MESSAGE, "CharAddImplant - Adding %s(%i) to %s(%u) in slot %u", \

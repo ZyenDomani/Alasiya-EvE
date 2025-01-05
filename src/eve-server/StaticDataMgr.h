@@ -68,7 +68,7 @@ public:
     void                GetMoonResouces(std::map<uint16, uint8>& data);
 
     bool                IsSkillTypeID(uint16 typeID);
-    bool                GetSkillName(uint16 skillID, std::string& name);
+    const char*         GetSkillName(uint16 skillID);
 
     bool                GetNPCTypes(uint16 groupID, std::vector<uint16>& typeVec);
     bool                GetNPCGroups(uint32 factionID, std::map<uint8, uint16>& groupMap);
