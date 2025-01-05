@@ -159,6 +159,14 @@ void StaticDataMgr::Populate()
     DBResultRow row;
 
     startTime = GetTimeMSeconds();
+    ManagerDB::LoadCorpNames(*res);
+    while (res->GetRow(row)) {
+        //SELECT corporationID, corporationName FROM crpCorporations
+        m_corpName.emplace(row.GetUInt(0), row.GetText(1));
+    }
+    sLog.Cyan("    StaticDataMgr", "%lu Corp Names loaded in %.3fms.", m_corpName.size(), (GetTimeMSeconds() - startTime));
+
+    startTime = GetTimeMSeconds();
     ManagerDB::LoadNPCCorpFactionData(*res);
     while (res->GetRow(row)) {
         //SELECT corporationID, factionID FROM crpNPCCorporations
@@ -1664,19 +1672,12 @@ uint32 StaticDataMgr::GetFactionCorp(uint32 factionID)
 
 std::string StaticDataMgr::GetCorpName(uint32 corpID)
 {
-    switch (corpID) {
-        case corpArchangels:        return "Angel Cartel";
-        case corpTrueCreations:     return "True Creations/Sansha";    // sansha's nation
-        case corpTruePower:         return "True Power/Sansha";   // sansha's nation
-        case corpBloodRaider:       return "Blood Raiders";
-        case corpGuristas:          return "Guristas";
-        case corpSerpentis:         return "Serpentis";
-        case corpSerpentisInquest:  return "Serpentis Inquest";
-        case corpRogueDrones:       return "Rogue Drones";
-    }
+    std::map<uint32, std::string>::iterator itr = m_corpName.find(corpID);
+    if (itr != m_corpName.end())
+        return itr->second;
 
     _log(DATA__ERROR, "Name not found for corp %u", corpID);
-    return "Undefined - WIP";
+    return "";
 }
 
 uint32 StaticDataMgr::GetCorpFaction(uint32 corpID)

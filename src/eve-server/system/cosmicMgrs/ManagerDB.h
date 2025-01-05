@@ -35,6 +35,7 @@ public:
 
     static void GetOreBySSC(DBQueryResult& res);
     static void GetSkillList(DBQueryResult& res);
+    static void LoadCorpNames(DBQueryResult& res);
     static void GetSystemData(DBQueryResult& res);
     static void GetStaticData(DBQueryResult& res); // static items in a solar system
     static void GetMoonResouces(DBQueryResult& res);

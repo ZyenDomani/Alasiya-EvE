@@ -91,6 +91,14 @@ void ManagerDB::GetTypeAttributes(DBQueryResult& res)
     _log(DATABASE__RESULTS, "GetTypeAttributes returned %lu items", res.GetRowCount());
 }
 
+void ManagerDB::LoadCorpNames(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT corporationID, corporationName FROM crpCorporations" ))
+        codelog(DATABASE__ERROR, "Error in LoadCorpNames query: %s", res.error.c_str());
+
+    _log(DATABASE__RESULTS, "LoadCorpNames returned %lu items", res.GetRowCount());
+}
+
 void ManagerDB::LoadNPCCorpFactionData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT corporationID, factionID FROM crpNPCCorporations" ))
