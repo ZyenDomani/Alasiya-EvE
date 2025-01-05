@@ -833,6 +833,7 @@ PyResult CharMgrService::Handle_EditContactsRelationshipID( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_GetFactions( PyCallArgs& call )
 {
+    // not sure if this is used....cant find any calls to it
     sLog.Warning( "CharMgrService::Handle_GetFactions()", "size= %lu", call.tuple->size() );
     call.Dump(CHARACTER__TRACE);
     return nullptr;

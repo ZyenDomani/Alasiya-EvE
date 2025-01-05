@@ -726,7 +726,7 @@ bool FactoryDB::IsRefinable(const uint16 typeID) {
         " LIMIT 1",
         typeID))
     {
-        _log(DATABASE__ERROR, "Failed to check ore type ID: %s.", res.error.c_str());
+        _log(DATABASE__ERROR, "Failed to check ore typeID: %s.", res.error.c_str());
         return false;
     }
 
@@ -744,7 +744,7 @@ bool FactoryDB::IsRecyclable(const uint16 typeID) {
         " LIMIT 1",
         typeID))
     {
-        _log(DATABASE__ERROR, "Failed to check item type ID: %s.", res.error.c_str());
+        _log(DATABASE__ERROR, "Failed to check item typeID: %s.", res.error.c_str());
         return false;
     }
 

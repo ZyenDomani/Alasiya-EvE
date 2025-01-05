@@ -41,7 +41,7 @@ bool ReprocessingDB::GetRecoverables(const uint32 typeID, std::vector<Recoverabl
                 " GROUP BY requiredTypeID",
                 typeID, typeID))
     {
-        _log(DATABASE__ERROR, "Unable to get recoverables for type ID %u: '%s'", typeID, res.error.c_str());
+        _log(DATABASE__ERROR, "Unable to get first recoverables for typeID %u: '%s'", typeID, res.error.c_str());
         return false;
     }
 
@@ -62,7 +62,7 @@ bool ReprocessingDB::GetRecoverables(const uint32 typeID, std::vector<Recoverabl
                 " WHERE typeID=%u",
                 typeID))
     {
-        _log(DATABASE__ERROR, "Unable to get recoverables for ore ID %u: '%s'", typeID, res.error.c_str());
+        _log(DATABASE__ERROR, "Unable to get second recoverables for typeID %u: '%s'", typeID, res.error.c_str());
         return false;
     }
 

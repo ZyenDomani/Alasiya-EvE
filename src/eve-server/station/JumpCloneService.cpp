@@ -70,12 +70,12 @@ public:
     virtual ~JumpCloneBound() { delete m_dispatch; }
 
     PyCallable_DECL_CALL(GetCloneState);
-    PyCallable_DECL_CALL(GetShipCloneState);
     PyCallable_DECL_CALL(GetPriceForClone);
-    PyCallable_DECL_CALL(InstallCloneInStation);
+    PyCallable_DECL_CALL(GetShipCloneState);
     PyCallable_DECL_CALL(GetStationCloneState);
-    PyCallable_DECL_CALL(OfferShipCloneInstallation);
+    PyCallable_DECL_CALL(InstallCloneInStation);
     PyCallable_DECL_CALL(DestroyInstalledClone);
+    PyCallable_DECL_CALL(OfferShipCloneInstallation);
     PyCallable_DECL_CALL(AcceptShipCloneInstallation);
     PyCallable_DECL_CALL(CancelShipCloneInstallation);
     PyCallable_DECL_CALL(CloneJump);
@@ -130,7 +130,7 @@ PyResult JumpCloneBound::Handle_GetCloneState(PyCallArgs &call) {
 
     dict->SetItemString( "clones", clones );
     dict->SetItemString( "implants", implants );
-    dict->SetItemString( "timeLastJump", new PyLong(GetFileTimeNow() -(EvE::Time::Hour *MakeRandomFloat(1, 23))) );   /** @todo fix this to call.client->GetChar()->LastJumpTime()*/
+    dict->SetItemString( "timeLastJump", new PyLong(GetFileTimeNow() - (EvE::Time::Hour * MakeRandomFloat(1, 23))) );   /** @todo fix this to call.client->GetChar()->LastJumpTime()*/
 
     return new PyObject( "util.KeyVal", dict );
 }

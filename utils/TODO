@@ -211,9 +211,11 @@ can you repack t3 ships??
 when t3 ship killed, pilot will lose sp in a required skill for each of the 5 subsystems.
     not sure how this is determined, or how many sp lost.
 
-JumpCloneService needs work to allow capital ships `show info` tab to work in space.  hacked to avoid client error
+jumpCloneSvc needs work to allow capital ships `show info` tab to work in space.  hacked to avoid client error
     - this class is barely above skeleton code, and hardly researched.
     - jump clones arent even close to implementation, so its nbd at this point
+    - client distinguishes between clones by "podclone" and "jumpclone"
+        we should do the same once work begins on jump clones
 
 item contraband.....this needs implementing
     - will be used in system security
@@ -911,10 +913,6 @@ destiny shit - misc things found in destiny.dll
 
 need timer/var for after cloak for targeting (cannot target x sec after uncloak - currently no delay)
 
-so, cannot get info on cap ships with clone service because of incomplete jumpCloneSvc.
-jump clones - when i start this, need to check into diff between active clone and jumpclone.
-may have to rearrange things to properly implement jump clones.
-
 GetChar()->HasShares())  // not written, no underlying code yet
 
 began putting specific throw msgs in appropriate common/EVE_*.h files if available,
@@ -1042,7 +1040,7 @@ speaking of charges, how about a freight charge when moving large amounts of stu
      would this be docking charge?  no, that's akin to a full service gas station.  fill 'er up, check oil, wash windows, etc.
      based on standings with station owner?  ofc!
 
-boosters will damage/kill character (see description of 'Crash')
+boosters can&will damage/kill character (see description of 'Crash')
 others cause multiple other effects.  is this something we can implement/exploit?  most definitely...but later.
 
 

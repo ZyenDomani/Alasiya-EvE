@@ -118,6 +118,8 @@ PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &cal
     Rsp_GetOptionsForItemTypes_Arg  arg;
 
     for (auto &cur : args.typeIDs) {
+        // this only works right when sConfig.server.LoadStaticRefinable
+        //  and sConfig.server.LoadStaticRecyclable are both enabled.
         arg.isRecyclable = sDataMgr.IsRecyclable(cur.first);
         arg.isRefinable = sDataMgr.IsRefinable(cur.first);
         rsp.typeIDs[cur.first] = arg.Encode();
@@ -214,6 +216,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         }
 
         // dont hit db for this shit...we kinda have to....dont have this data in static shit.
+        // TODO:  put this in static data for faster call and avoid db hits
         std::vector<Recoverable> recoverables;
         if ( !m_db.GetRecoverables( iRef->typeID(), recoverables ) )
             continue;
