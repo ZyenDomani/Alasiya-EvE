@@ -778,9 +778,9 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
     double theta = 0;
 
     // level is 0 to 9, system multiplier is 0.1 to 2.0 (x10 is 1-20)
-    level *= (m_system->GetSecValue() *10);  // config variable here?
+    level *= (m_system->GetSecValue() * 10);  // config variable here?
     // set origLevel 0 to 18, rounding up
-    uint8 origLevel = ceil(level / 10);
+    uint8 origLevel = ceil(level / 10.0);
     if (origLevel < 1)
         origLevel = 1;
     for (auto &cur : groupVec) {
