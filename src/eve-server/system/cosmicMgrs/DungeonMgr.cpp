@@ -305,7 +305,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
      */
 
     int16 x=0, y=0, z=0;
-    Dungeon::GroupData grp;
+    Dungeon::GroupData grp = Dungeon::GroupData();
     auto roomRange = sDunDataMgr.rooms.equal_range(dTemplate.dunRoomID);
     for (auto it = roomRange.first; it != roomRange.second; ++it) {
         x = it->second.x;
