@@ -662,12 +662,13 @@ public:
     void SetItem(size_t index, PyRep* object) {
         PyRep** rep = &items.at(index);
 
+        // todo:  try this....
         PySafeDecRef(*rep);
         if (object == nullptr) {
-            *rep = new PyNone();
+            *rep = new PyNone();  //pyStatic.NewNone();
         } else {
-            *rep = object;
-            PyIncRef(object);
+            *rep = std::move(object);
+            //PyIncRef(object);
         }
     }
 
