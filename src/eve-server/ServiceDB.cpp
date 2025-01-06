@@ -37,8 +37,9 @@ uint32 ServiceDB::SetClientSeed()
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT ClientSeed FROM srvStatus WHERE AI = 1");
     DBResultRow row;
-    res.GetRow(row);
-    return row.GetInt(0);
+    if (res.GetRow(row))
+	return row.GetInt(0);
+    return 0;
 }
 
 bool ServiceDB::ValidateAccountName(CryptoChallengePacket& ccp, std::string& failMsg)
