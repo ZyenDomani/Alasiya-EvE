@@ -159,7 +159,7 @@ public:
 
     // character data used before session data is initialized
     uint32 GetLoyaltyPoints(uint32 corpID);
-    void SetChar(CharacterRef charRef)                  { m_char = charRef; }   // only used during char creation and ship state
+    void SetChar(CharacterRef charRef)                  { m_char = std::move(charRef); }   // only used during char creation and ship state
     CharacterRef GetChar() const                        { return m_char; }
     std::string GetCharName()                           { return m_char->itemName(); }
     uint32 GetCharID()                                  { return (m_char.get() != nullptr ? m_char->itemID() : 0); }   // only used during char creation
