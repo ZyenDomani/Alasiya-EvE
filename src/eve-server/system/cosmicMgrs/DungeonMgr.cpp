@@ -822,6 +822,7 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
                 grp.z = (pos + it->second.z + (radius*2)) * -1;
             } */
             grp.y = it->second.y + MakeRandomInt(-5000, radius * 2);
+            grp.radius = radius;
             m_anomalyItems.push_back(grp);
             it = groupRange.first;
         }
