@@ -1021,7 +1021,6 @@ std::string SpawnMgr::GetSpawnClassName(int8 sClass)
         case Spawn::Class::Mainframe:       return "Mainframe";
         case Spawn::Class::Center:          return "Center";
         case Spawn::Class::Server:          return "Server";
-        default:                            return "Invalid";
     }
     return "Undefined";
 }
