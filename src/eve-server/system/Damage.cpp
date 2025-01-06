@@ -87,7 +87,7 @@ explosive(cRef->GetAttribute(AttrExplosiveDamage).get_float())
 
 // No specific damage dealt here, just killed
 Damage::Damage(SystemEntity* pSE, bool fatal_blow/*false*/)
-: srcSE(pSE), em(0.0f),kinetic(0.0f),thermal(0.0f),explosive(0.0f),
+: srcSE(pSE), em(0.0f),kinetic(0.0f),thermal(0.0f),explosive(0.0f),modifier(1),
 weaponRef(InventoryItemRef(nullptr)),
 chargeRef(InventoryItemRef(nullptr))
 {
