@@ -392,7 +392,7 @@ public:
 
     // implant and booster system
     void LoadImplants();
-    void GetImplantSlots();             // found in m_implantMap.first
+    InventoryItemRef GetImplantForAttrib(uint8 attribID);
     InventoryItemRef GetImplantAtSlot(uint8 slotID);
     bool IsSlotAvaliable(uint8 slotID)                  { return (m_implantMap.find(slotID) == m_implantMap.end()); }
     void GetBoosterSlots();             // found in m_boosterMap.first
@@ -483,6 +483,7 @@ private:
     InventoryItemRef m_cloneRef;
 
     std::map<uint8, InventoryItemRef>  m_implantMap;            // slotID/itemRef
+    std::map<uint8, InventoryItemRef>  m_implantModMap;         // attribID/itemRef
     std::map<uint8, InventoryItemRef>  m_boosterMap;            // slotID/itemRef
     // for storyline mission counting
     std::map<uint32, std::map<uint8, uint8>> m_missionMap;      // factionID, [level, count]

@@ -254,6 +254,8 @@ Character::Character(
 Character::~Character()
 {
     SaveBookMarks();
+    // remove implant mods before saving char attribs
+    Undock();  //  this only removes implant mods
     SaveFullCharacter();
     SaveCertificates();
     // should we unload inventory before delete?
@@ -1325,9 +1327,14 @@ void Character::Undock() {
     }
 }
 
-void Character::GetImplantSlots() {
+InventoryItemRef Character::GetImplantForAttrib(uint8 attribID) {
+    std::map<uint8, InventoryItemRef>::iterator itr = m_implantModMap.find(attribID);
+    if (itr != m_implantModMap.end())
+        return itr->second;
 
+    return InventoryItemRef(nullptr);
 }
+
 
 InventoryItemRef Character::GetImplantAtSlot(uint8 slotID) {
     std::map<uint8, InventoryItemRef>::iterator itr = m_implantMap.find(slotID);
@@ -1358,6 +1365,21 @@ void Character::LoadImplants() {
             // apply processed effects
             sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
             cur.second->ClearModifiers();
+        }
+    }
+
+    for (auto &cur : m_implantMap) {
+        // find attrib this implant modifies, if applicable
+        if (cur.second->HasAttribute(AttrCharismaBonus)) {
+            m_implantModMap[AttrCharisma] = cur.second;
+        } else if (cur.second->HasAttribute(AttrIntelligenceBonus)) {
+            m_implantModMap[AttrIntelligence] = cur.second;
+        } else if (cur.second->HasAttribute(AttrMemoryBonus)) {
+            m_implantModMap[AttrMemory] = cur.second;
+        } else if (cur.second->HasAttribute(AttrPerceptionBonus)) {
+            m_implantModMap[AttrPerception] = cur.second;
+        } else if (cur.second->HasAttribute(AttrWillpowerBonus)) {
+            m_implantModMap[AttrWillpower] = cur.second;
         }
     }
 }
@@ -1392,7 +1414,21 @@ void Character::AddImplant(uint8 slotID, InventoryItemRef iRef) {
     iRef->ClearModifiers();
 
     m_db.SaveImplant(m_itemID, iRef);
-    m_implantMap[slotID] = std::move(iRef);
+    m_implantMap[slotID] = iRef;
+
+    // implant mod map by attribID
+    // find attrib this implant modifies, if applicable
+    if (iRef->HasAttribute(AttrCharismaBonus)) {
+        m_implantModMap[AttrCharisma] = std::move(iRef);
+    } else if (iRef->HasAttribute(AttrIntelligenceBonus)) {
+        m_implantModMap[AttrIntelligence] = std::move(iRef);
+    } else if (iRef->HasAttribute(AttrMemoryBonus)) {
+        m_implantModMap[AttrMemory] = std::move(iRef);
+    } else if (iRef->HasAttribute(AttrPerceptionBonus)) {
+        m_implantModMap[AttrPerception] = std::move(iRef);
+    } else if (iRef->HasAttribute(AttrWillpowerBonus)) {
+        m_implantModMap[AttrWillpower] = std::move(iRef);
+    }
 }
 
 void Character::RemoveImplant(uint8 slotID) {
@@ -1415,6 +1451,15 @@ void Character::RemoveImplant(uint8 slotID) {
         }
         // apply processed effects
         sFxProc.ApplyEffects(itr->second.get(), this, nullptr, true);
+    }
+
+    // remove from attrib mod map
+    std::map<uint8, InventoryItemRef>::iterator itr2 = m_implantModMap.begin();
+    while (itr2 != m_implantModMap.end()) {
+        if (itr2->second == itr->second) {
+            m_implantModMap.erase(itr2);
+            itr2 = m_implantModMap.end();
+        }
     }
 
     if (sConfig.character.DeleteImplantOnRemoval) {

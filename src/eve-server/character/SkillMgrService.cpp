@@ -282,36 +282,28 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 
 PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
 {
-    //  for (itemID, typeID, operation, value,) in modifiers:
-
-    /*
-     * client sends attrib# of stat in question...
-     *            [PyString "GetCharacterAttributeModifiers"]
-     *            [PyTuple 1 items]
-     *              [PyInt 165]
-     * we return this...
-     *        [PyList 1 items]
-     *          [PyTuple 4 items]
-     *            [PyIntegerVar 1866309449]   << implantID
-     *            [PyInt 9943]                << implantTypeID
-     *            [PyInt 2]                   << operation
-     *            [PyFloat 3]                 << value
-     */
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
-    CharacterRef cRef(call.client->GetChar());
+    InventoryItemRef iRef(call.client->GetChar()->GetImplantForAttrib(args.arg));
     PyList* list = new PyList();
-    // for each implant, make tuple and put into list
     PyTuple* tuple = new PyTuple(4);
-        tuple->SetItem(0, PyStatic.NewZero());   //implantID
-        tuple->SetItem(1, PyStatic.NewZero());   //implantTypeID
-        tuple->SetItem(2, PyStatic.NewZero());   //operation
-        tuple->SetItem(3, PyStatic.NewZero());   //value
+    if (iRef.get() != nullptr) {
+        tuple->SetItem(0, new PyInt(iRef->itemID()));
+        tuple->SetItem(1, new PyInt(iRef->typeID()));
+        tuple->SetItem(2, PyStatic.NewZero());   //operation (doesnt appear to be used - 2 in logs)
+        tuple->SetItem(3, iRef->GetAttribute(args.arg + 11).GetPyObject());
         list->AddItem(tuple);
+    } else {
+        tuple->SetItem(0, PyStatic.NewZero());
+        tuple->SetItem(1, PyStatic.NewZero());
+        tuple->SetItem(2, PyStatic.NewZero());
+        tuple->SetItem(3, PyStatic.NewZero());
+        list->AddItem(tuple);
+    }
 
     return list;
 }
