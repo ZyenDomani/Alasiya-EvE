@@ -700,8 +700,10 @@ void Colony::RemoveLink(uint32 src, uint32 dest)
 void Colony::RemoveRoute(uint16 routeID)
 {
     std::map<uint16, PI_Route>::iterator routeItr = ccPin->routes.find(routeID);
-    m_srcRoutes.erase(routeItr->second.srcPinID);
-    m_destRoutes.erase(routeItr->second.destPinID);
+    if (routeItr != ccPin->routes.end()) {
+        m_srcRoutes.erase(routeItr->second.srcPinID);
+        m_destRoutes.erase(routeItr->second.destPinID);
+    }
     ccPin->routes.erase(routeID);
     m_db.RemoveRoute(routeID);
     _log(COLONY__INFO, "Colony::RemoveRoute() - Removed route: %u", routeID);
