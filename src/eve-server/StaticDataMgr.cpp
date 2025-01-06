@@ -1780,7 +1780,6 @@ const char* StaticDataMgr::GetProcStateName(int8 state)
         case ProcState::Reinforcing:        return "Reinforcing";
         case ProcState::SheildReinforcing:  return "SheildReinforcing";
         case ProcState::ArmorReinforcing:   return "ArmorReinforcing";
-        default:                            return "Bad State";
     }
     return "Undefined";
 }
