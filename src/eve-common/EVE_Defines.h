@@ -264,7 +264,7 @@
 #define IsStaticItem(itemID) \
  (itemID <= maxNPCItem)
 
-// this covers ALL static celestial-type items
+// this covers all static celestial-type items
 #define IsStaticMapItem(itemID) \
 ((itemID >= minRegion) && (itemID < maxNPCItem))
 

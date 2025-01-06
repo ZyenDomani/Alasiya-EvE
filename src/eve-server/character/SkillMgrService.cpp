@@ -334,19 +334,19 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
     CharacterRef cRef(call.client->GetChar());
     uint8 implantSlot(iRef->GetAttribute(AttrImplantness).get_uint32());  //implant slot
     if (!cRef->IsSlotAvaliable(implantSlot)) {
-        throw UserError("OnlyOneImplantActiveBody")
-        .AddFormatValue("typeName", new PyString(iRef->itemName()));
+        throw CustomError("You cannot install the %s as there is %s installed in slot %u.", \
+                        iRef->name(), cRef->GetImplantAtSlot(implantSlot)->name(), implantSlot);
     }
 
     // test skill level, if applicable
     if (iRef->GetAttribute(AttrRequiredSkill1Level).get_uint32() > cRef->GetSkillLevel(iRef->GetAttribute(AttrRequiredSkill1).get_uint32())) {
-        throw CustomError("The implant %s requires the %s skill trained to level %u", \
+        throw CustomError("The %s requires the %s skill trained to level %u", \
                         iRef->name(), sDataMgr.GetSkillName(iRef->GetAttribute(AttrRequiredSkill1).get_uint32()), \
                         iRef->GetAttribute(AttrRequiredSkill1Level).get_uint32());
     }
 
     if (iRef->GetAttribute(AttrRequiredSkill2Level).get_uint32() > cRef->GetSkillLevel(iRef->GetAttribute(AttrRequiredSkill2).get_uint32())) {
-        throw CustomError("The implant %s requires the %s skill trained to level %u", \
+        throw CustomError("The %s requires the %s skill trained to level %u", \
                         iRef->name(), sDataMgr.GetSkillName(iRef->GetAttribute(AttrRequiredSkill2).get_uint32()), \
                         iRef->GetAttribute(AttrRequiredSkill2Level).get_uint32());
     }
@@ -417,8 +417,8 @@ PyResult SkillMgrBound::Handle_CharUseBooster(PyCallArgs& call)
     uint8 boosterSlot(iRef->GetAttribute(AttrBoosterness).get_uint32());  //booster slot
     if (!cRef->IsBoosterSlotAvaliable(boosterSlot)) {
         //{'FullPath': u'UI/Messages', 'messageID': 259242, 'label': u'OnlyOneBoosterActiveBody'}(u'You cannot consume the {typeName} as you are already using another similar booster {typeName2}.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}, u'{typeName2}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName2'}})
-        throw UserError("OnlyOneBoosterActiveBody")
-        .AddFormatValue("typeName", new PyString(iRef->itemName()));
+        throw CustomError("You cannot consume the %s as you are already using %s - a similar booster.", \
+                        iRef->name(), cRef->GetBoosterAtSlot(boosterSlot)->name());
     }
 
 

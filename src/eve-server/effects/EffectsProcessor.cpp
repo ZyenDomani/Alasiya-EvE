@@ -292,6 +292,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         // affected target depends on source.  get source and target(s) here.
         switch (cur.second.fxSrc) {
             case Source::Group: {     // not a source per se, but defines effect's target selection requirements
+                if (pShip == nullptr)
+                    return;
                 // this is to apply modifiers to ship's modules of groupID defined in 'grpID'
                 std::vector<InventoryItemRef> moduleList;
                 pShip->GetModuleManager()->GetModuleListOfRefsAsc(moduleList);
@@ -311,6 +313,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         itemRefVec.push_back(cur.second.srcRef);
                     } break;
                     case Target::Ship:  {
+                        if (pShip == nullptr)
+                            return;
                         if (cur.second.typeID) {
                             // .....ship's modules that require skillID defined in "typeID"
                             pShip->GetModuleManager()->GetModuleListByReqSkill(cur.second.typeID, itemRefVec);
@@ -335,10 +339,14 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Other: {
                         // ....ship from 'core' pilot skills (electronics, mechanics, navigation, etc)
+                        if (pShip == nullptr)
+                            return;
                         itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                     } break;
                     case Target::Charge: {
                         // ....charges
+                        if (pShip == nullptr)
+                            return;
                         // will need more testing to verify this.
                         std::map<EVEItemFlags, InventoryItemRef> charges;
                         pShip->GetModuleManager()->GetLoadedCharges(charges);
@@ -348,6 +356,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Target: {
                         // ...current target (focused, volatile...removed on 'invalid target')
+                        if (pShip == nullptr)
+                            return;
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
                     case Target::Invalid: {   // null
@@ -370,6 +380,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Ship:  {
                         // ....the ship the calling item is located in/on
+                        if (pShip == nullptr)
+                            return;
                         itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                     } break;
                     case Target::Self: {
@@ -378,6 +390,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Charge: {
                         // ....charge on src item (from module)
+                        if (pShip == nullptr)
+                            return;
                         if (cur.second.srcRef->flag() == flagNone) {
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is flagNone but need actual flag to acquire module.");
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
@@ -390,6 +404,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Other: {
                         // ....module containing the src item (from charge)
+                        if (pShip == nullptr)
+                            return;
                         if (cur.second.srcRef->flag() == flagNone) {
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is flagNone but need actual flag to acquire module.");
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
@@ -402,6 +418,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Target: {
                         // ...current target (focused, volatile...removed on 'invalid target')
+                        if (pShip == nullptr)
+                            return;
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
                     case Target::Invalid: {
@@ -425,6 +443,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 /** @note  these are processed and applied in fleet code
                     case Target::Ship:  {
                         // ....ship of member to apply leader's skill bonuses to
+                        if (pShip == nullptr)
+                            return;
                         itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                     } break;
                     case Target::Char:  {

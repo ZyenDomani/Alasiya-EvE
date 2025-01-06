@@ -393,8 +393,10 @@ public:
     // implant and booster system
     void LoadImplants();
     void GetImplantSlots();             // found in m_implantMap.first
+    InventoryItemRef GetImplantAtSlot(uint8 slotID);
     bool IsSlotAvaliable(uint8 slotID)                  { return (m_implantMap.find(slotID) == m_implantMap.end()); }
     void GetBoosterSlots();             // found in m_boosterMap.first
+    InventoryItemRef GetBoosterAtSlot(uint8 slotID);
     bool IsBoosterSlotAvaliable(uint8 slotID)           { return (m_boosterMap.find(slotID) == m_boosterMap.end()); }
     void AddImplant(uint8 slotID, InventoryItemRef iRef);
     void RemoveImplant(uint8 slotID);

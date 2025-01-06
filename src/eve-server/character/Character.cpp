@@ -1329,11 +1329,21 @@ void Character::GetImplantSlots() {
 
 }
 
+InventoryItemRef Character::GetImplantAtSlot(uint8 slotID) {
+    std::map<uint8, InventoryItemRef>::iterator itr = m_implantMap.find(slotID);
+    if (itr != m_implantMap.end())
+        return itr->second;
+
+    // implant not found in given slotID
+    return InventoryItemRef(nullptr);
+}
+
 void Character::LoadImplants() {
     // load and apply implants where applicable
     m_db.LoadImplants(m_itemID, m_implantMap);
 
-    if (!m_pClient->IsInSpace()) {
+    // note:  this is called on client load, before client is completely constructed, so m_pClient is still null
+    if (IsStationID(m_charData.locationID)) {
         for (auto &cur : m_implantMap){
             Effect curEffect = Effect();
             std::vector<TypeEffects> typeFx;
@@ -1446,6 +1456,15 @@ void Character::DeleteImplants() {
 
 void Character::GetBoosterSlots() {
 
+}
+
+InventoryItemRef Character::GetBoosterAtSlot(uint8 slotID) {
+    std::map<uint8, InventoryItemRef>::iterator itr = m_boosterMap.find(slotID);
+    if (itr != m_boosterMap.end())
+        return itr->second;
+
+    // booster not found in given slotID
+    return InventoryItemRef(nullptr);
 }
 
 void Character::RemoveBooster(uint8 slotID) {
