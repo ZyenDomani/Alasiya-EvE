@@ -286,7 +286,7 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
          *  RamInstalledItemInStructureNotInContainer
          *  RamInstalledItemInStructureUnknownLocation
          */
-        throw CustomError ("R.A.M. at POS/Outpost not supported yet");
+        throw CustomError("<font color='yellow'>R.A.M. at POS/Outpost not supported yet.</font>");
     }
 }
 

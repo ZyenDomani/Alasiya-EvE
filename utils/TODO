@@ -462,6 +462,9 @@ mining gfx/deactivate is almost immediate.  this is supposed to have a 5s timer 
 *******************************************************
 ********  improvements...low priority
 
+add formatting and colors to custom error msgs
+  - seem like client msg window has limited support for html
+  
 m_self is NOT being populated for non-piloted ships.   -priority level: low
 
 InvBrokerService needs love

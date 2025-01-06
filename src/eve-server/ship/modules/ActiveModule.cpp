@@ -331,7 +331,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
                 m_modRef->name(), m_needsCharge?"True":"False", m_chargeLoaded?"True":"False", \
                 m_chargeRef.get() == nullptr ? "(none)": m_chargeRef->name());
         Clear();
-        throw CustomError ("Your %s doesn't seem to be loaded.", m_modRef->name());
+        throw CustomError("Your %s doesn't seem to be loaded.", m_modRef->name());
     }
     if (IsValidTarget(targetID)) {
         // this is just a guess.  may have to use groupID test to verify if this doesnt work right.
@@ -357,16 +357,16 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
             if (m_targetSE->IsItemEntity() or m_targetSE->IsStaticEntity())
                 // or (m_targetSE->IsLogin()))       // this is incomplete, so always returns false
             {
-                throw CustomError ("You cannot attack the %s.", m_targetSE->GetName());
+                throw CustomError("You cannot attack the %s.", m_targetSE->GetName());
             }
 
             if (m_targetSE->IsWreckSE())
                 if (!sConfig.world.shootWrecks)
-                    throw CustomError ("Attacking wrecks is disabled.", m_targetSE->GetName());
+                    throw CustomError("Attacking wrecks is disabled.", m_targetSE->GetName());
 
             if (m_targetSE->IsAsteroidSE())
                 if (!sConfig.world.shootRoids)
-                    throw CustomError ("Attacking asteroids is disabled.", m_targetSE->GetName());
+                    throw CustomError("Attacking asteroids is disabled.", m_targetSE->GetName());
         }
 
         if (sFxDataMgr.isAssistance(effectID)) {
@@ -382,7 +382,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         }
         if (m_targetSE->IsCOSE()) {
             Clear();
-            throw CustomError ("Attacking Customs Offices isn't implemented at this time.");
+            throw CustomError("Attacking Customs Offices isn't implemented at this time.");
         }
     }
 
@@ -1437,7 +1437,7 @@ void ActiveModule::LaunchProbe()
     ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagNone, 1);
     ProbeItemRef probeRef = sItemFactory.SpawnProbe(idata);
     if (probeRef.get() == nullptr)
-        throw CustomError ("Unable to spawn item #%u:'%s' of type %u.", \
+        throw CustomError("Unable to spawn item #%u:'%s' of type %u.", \
                 m_chargeRef->itemID(), m_chargeRef->name(), m_chargeRef->typeID() );
 
     probeRef->SetPosition(pos);

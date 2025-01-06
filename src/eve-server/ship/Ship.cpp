@@ -611,7 +611,7 @@ void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
         throw UserError("CantFindChargeToAdd");
 
     if (!IsFittingSlot(flag))
-        throw CustomError ("Destination is not weapon.");
+        throw CustomError("Destination is not weapon.");
 
     if (IsFittingSlot(cRef->flag())) {
         _log(MODULE__TRACE, "ShipItem::LoadCharge - Trying to load %s from %s to %s.", \
@@ -624,7 +624,7 @@ void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
         throw UserError("ModuleNoLongerPresentForCharges");
 
     if (pMod->IsActive()) {
-        throw CustomError ("You cannot load active modules.");
+        throw CustomError("You cannot load active modules.");
     }
     if (pMod->GetModuleState() == Module::State::Loading) {
         throw UserError("LoadingChargeSlotAlready")
@@ -720,13 +720,13 @@ void ShipItem::RemoveCharge(EVEItemFlags fromFlag)
     if (IsFittingSlot(fromFlag)) {
         GenericModule* pMod(m_ModuleManager->GetModule(fromFlag));
         if (pMod == nullptr)
-            throw CustomError ("Module was not found at %s.", sDataMgr.GetFlagName(fromFlag));
+            throw CustomError("Module was not found at %s.", sDataMgr.GetFlagName(fromFlag));
 
         if (pMod->IsActive())
             throw UserError("CannotAccessChargeWhileInUse");
 
         if (!pMod->IsLoaded())
-            throw CustomError ("Your %s is not loaded.", pMod->GetSelf()->name());
+            throw CustomError("Your %s is not loaded.", pMod->GetSelf()->name());
 
         m_ModuleManager->UnloadCharge(pMod);
     }
@@ -797,24 +797,24 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     // this will never hit.  client checks before call.
     if (!m_ModuleManager->VerifySlotExchange(slot1, slot2))
-        throw CustomError ("Those locations are not compatible.");
+        throw CustomError("Those locations are not compatible.");
 
     // test for active module(s) before moving
     GenericModule* pMod(GetModule(slot1));
     if (pMod != nullptr)
         if (pMod->IsActive())
-            throw CustomError ("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name());
+            throw CustomError("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name());
 
     pMod = GetModule(slot2);
     if (pMod != nullptr)
         if (pMod->IsActive())
-            throw CustomError ("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name());
+            throw CustomError("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name());
 
     // slot1 is occupied, as this is where module is from.
     InventoryItemRef modItemRef1(GetModuleRef(slot1));
     if (modItemRef1.get() == nullptr) {
         _log(MODULE__TRACE, "ShipItem::MoveModuleSlot - modItemRef1 is null.");
-        throw CustomError ("The module to move was not found.");
+        throw CustomError("The module to move was not found.");
     }
     InventoryItemRef chargeItemRef1(m_ModuleManager->GetLoadedChargeOnModule(slot1));
     RemoveItem(modItemRef1);
@@ -1944,19 +1944,19 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
             return;
         case flagDroneBay: {
             if (iRef->categoryID() != EVEDB::invCategories::Drone) {
-                throw CustomError ("%s cannot be stowed in the Drone Bay", sDataMgr.GetGroupName(iRef->groupID()));
+                throw CustomError("%s cannot be stowed in the Drone Bay", sDataMgr.GetGroupName(iRef->groupID()));
             }
             if (groupID() == EVEDB::invGroups::Supercarrier) {
                 // these can only carry fighters and fighter/bombers in drone bay.  enforce that here.
                 if ((iRef->groupID() != EVEDB::invGroups::Fighter_Bomber)
                 and (iRef->groupID() != EVEDB::invGroups::Fighter_Drone)) {
-                    throw CustomError ("The %s can only carry fighter drones in it's Drone Bay.  The %s is not allowed.", name(), iRef->name());
+                    throw CustomError("The %s can only carry fighter drones in it's Drone Bay.  The %s is not allowed.", name(), iRef->name());
                 }
             }
         } break;
         case flagShipHangar: {    //AttrShipMaintenanceBayCapacity
             if (!HasAttribute(AttrHasShipMaintenanceBay)) {
-                throw CustomError ("Your %s has no ship maintenance bay.", name());
+                throw CustomError("Your %s has no ship maintenance bay.", name());
             }
             if (typeID() == EVEDB::invTypes::Rorqual)
                 if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
@@ -1966,59 +1966,59 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
                 and (iRef->groupID() != EVEDB::invGroups::Freighter)
                 and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
                 and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
-                    throw CustomError ("Only indy ships may be placed into the Rorqual's ship hold.");
+                    throw CustomError("Only indy ships may be placed into the Rorqual's ship hold.");
                 }
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                throw CustomError ("Only ships may be placed into the maintenance bay.");
+                throw CustomError("Only ships may be placed into the maintenance bay.");
             }
         } break;
         case flagFuelBay: {    //  AttrFuelBayCapacity
             if ((iRef->groupID() != EVEDB::invGroups::FuelBlock)
             and (iRef->groupID() != EVEDB::invGroups::Ice_Product)) {
-                throw CustomError ("Only fuel types may be stored in the fuel bay.");
+                throw CustomError("Only fuel types may be stored in the fuel bay.");
             }
         } break;
         case flagOreHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Asteroid) {
-                throw CustomError ("Only mined ore may be stored in the ore hold.");
+                throw CustomError("Only mined ore may be stored in the ore hold.");
             }
         } break;
         case flagGasHold: {
             if (iRef->groupID() != EVEDB::invGroups::Gas_Isotopes) {
-                throw CustomError ("Only gas products may be stored in the gas hold.");
+                throw CustomError("Only gas products may be stored in the gas hold.");
             }
         } break;
         case flagMineralHold: {
             if (iRef->groupID() != EVEDB::invGroups::Mineral) {
-                throw CustomError ("Only refined minerals may be placed into the mineral hold.");
+                throw CustomError("Only refined minerals may be placed into the mineral hold.");
             }
         } break;
         case flagSalvageHold: {
             if (iRef->groupID() != EVEDB::invGroups::Salvage_Materials) {
-                throw CustomError ("Only salvaged materials may be placed into the salvage bay.");
+                throw CustomError("Only salvaged materials may be placed into the salvage bay.");
             }
         } break;
         // not sure if all of these flag* are used.  if not, *may* update dgmData to add them....later.
         case flagShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                throw CustomError ("Only ships may be placed into the ship hold.");
+                throw CustomError("Only ships may be placed into the ship hold.");
             }
         } break;
 
         /** @todo need to figure out how to separate ships into s/m/l/i for these.... */
         case flagSmallShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                throw CustomError ("Only small ships may be placed into the ship's small ship hold.");
+                throw CustomError("Only small ships may be placed into the ship's small ship hold.");
             }
         } break;
         case flagMediumShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                throw CustomError ("Only medium ships may be placed into the ship's medium ship hold.");
+                throw CustomError("Only medium ships may be placed into the ship's medium ship hold.");
             }
         } break;
         case flagLargeShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                throw CustomError ("Only large ships may be placed into the ship's large ship hold.");
+                throw CustomError("Only large ships may be placed into the ship's large ship hold.");
             }
         } break;
         case flagIndustrialShipHold: {
@@ -2029,7 +2029,7 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
             and (iRef->groupID() != EVEDB::invGroups::Freighter)
             and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
             and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
-                throw CustomError ("Only indy ships may be placed into the ship's industrial ship hold.");
+                throw CustomError("Only indy ships may be placed into the ship's industrial ship hold.");
             }
         } break;
         case flagAmmoHold: {
@@ -2044,7 +2044,7 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Blaster_Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Railgun_Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Hybrid_Ammo)) {
-                throw CustomError ("Only ammunition and crystals may be placed into the ammo bay.");
+                throw CustomError("Only ammunition and crystals may be placed into the ammo bay.");
                 }
         } break;
         case flagHangar:
@@ -2055,7 +2055,7 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
         case flagCorpHangar6:
         case flagCorpHangar7: {    //AttrCorporateHangarCapacity
             if (GetAttribute(AttrHasCorporateHangars) == 0) {
-                throw CustomError ("Your %s has no corporate hangars.", name());
+                throw CustomError("Your %s has no corporate hangars.", name());
             }
         } break;
         default: {
@@ -2064,15 +2064,15 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
             if ((iRef->categoryID() != EVEDB::invCategories::Module)
             and (iRef->categoryID() != EVEDB::invCategories::Charge)
             and (iRef->categoryID() != EVEDB::invCategories::Subsystem)) {
-                throw CustomError ("%s cannot be fitted onto a ship. Only hardware modules may be fitted.", iRef->name());
+                throw CustomError("%s cannot be fitted onto a ship. Only hardware modules may be fitted.", iRef->name());
             }
 
             if (IsModuleSlot(flag)) {
                 if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
-                    throw CustomError ("You do not have the required skills to fit this %s.", iRef->name());
+                    throw CustomError("You do not have the required skills to fit this %s.", iRef->name());
                 }
                 if (!ValidateItemSpecifics(iRef)) {
-                    throw CustomError ("Your ship cannot equip the %s.<br>The group '%s' is not allowed on your %s.", \
+                    throw CustomError("Your ship cannot equip the %s.<br>The group '%s' is not allowed on your %s.", \
                             iRef->name(), sDataMgr.GetGroupName(iRef->groupID()), type().name().c_str());
                 }
                 if (iRef->categoryID() == EVEDB::invCategories::Charge) {
@@ -2084,24 +2084,24 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
                                 sLog.Error("ShipItem::VerifyHoldType", "Charge size %u for %s does not match Module size %u for %s.",\
                                         iRef->GetAttribute(AttrChargeSize).get_uint32(), iRef->name(),\
                                         pMod->GetAttribute(AttrChargeSize).get_uint32(), pMod->GetSelf()->name());
-                                throw CustomError ("Incorrect charge size for this module.");
+                                throw CustomError("Incorrect charge size for this module.");
                             }
                             if ((pMod->GetAttribute(AttrChargeGroup1) != iRef->groupID())
                             and (pMod->GetAttribute(AttrChargeGroup2) != iRef->groupID())
                             and (pMod->GetAttribute(AttrChargeGroup3) != iRef->groupID())
                             and (pMod->GetAttribute(AttrChargeGroup4) != iRef->groupID())
                             and (pMod->GetAttribute(AttrChargeGroup5) != iRef->groupID())) {
-                                throw CustomError ("Incorrect charge type for this module.");
+                                throw CustomError("Incorrect charge type for this module.");
                             }
                         // NOTE: Module Manager will check for actual room to load charges and make stack splits, or reject loading altogether
                     } else {
-                        throw CustomError ("There is no module in %s.", sDataMgr.GetFlagName(flag));
+                        throw CustomError("There is no module in %s.", sDataMgr.GetFlagName(flag));
                     }
                 }
             } else {
                 sLog.Error("ShipItem::VerifyHoldType", "testing %s to add %u %s of cat %s has reached the end.",
                         sDataMgr.GetFlagName(flag), iRef->quantity(), iRef->name(), sDataMgr.GetCategoryName(iRef->categoryID()));
-                throw CustomError ("Internal Server Error.");
+                throw CustomError("Internal Server Error.");
             }
         }
     }

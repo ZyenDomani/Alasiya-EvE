@@ -124,7 +124,7 @@ PyResult DevToolsProviderService::Handle_ExceptionFluentExample (PyCallArgs& cal
         case 22:
             throw UserError("SalvagingTooComplex").AddUELocalization("type", "UI/Commands/ShowInfo", nullptr);
         case 23:
-            throw CustomError ("This is a custom error, arguments: %s, %d", "Hello world!", 500);
+            throw CustomError("This is a custom error, arguments: %s, %d", "Hello world!", 500);
         default:
             throw UserError("SalvagingTooComplex").AddGroupDescription("type", EVEItemGroups::Clone);
     }

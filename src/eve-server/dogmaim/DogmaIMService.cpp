@@ -380,12 +380,12 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        throw CustomError ("Cannot find target.");
+        throw CustomError("Cannot find target.");
     }
     // calling client tests
     Client* pClient(call.client);
     if (pClient->IsDocked())
-        throw CustomError ("You can't do this while docked");
+        throw CustomError("You can't do this while docked");
 
     if (pClient->IsJump())
         throw UserError("CantTargetWhileJumping");
@@ -455,7 +455,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
                 .AddFormatValue("targetName", new PyString(tSE->GetName()));
     /** @todo SE->IsInvul() incomplete */
     if (tSE->IsInvul())
-        throw CustomError ("Cannot Engage %s as they are invulnerable.", tSE->GetName());
+        throw CustomError("Cannot Engage %s as they are invulnerable.", tSE->GetName());
         //throw UserError("DeniedTargetInvulnerable");
     /** @todo SE->IsFrozen() incomplete */
     if (tSE->IsFrozen())
@@ -465,7 +465,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (tSE->HasPilot()) {
         /** @todo SE->IsInvul() incomplete */
         if ( tSE->GetPilot()->IsInvul())
-            throw CustomError ("Cannot Engage %s as they are invulnerable.", tSE->GetName());
+            throw CustomError("Cannot Engage %s as they are invulnerable.", tSE->GetName());
         //throw UserError("DeniedTargetInvulnerable");
         if ( tSE->GetPilot()->IsSessionChange())
             throw UserError("DeniedTargetEvadesSensors")

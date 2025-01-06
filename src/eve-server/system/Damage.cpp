@@ -440,7 +440,7 @@ void ShipSE::Killed(Damage &damage) {
 
         if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
-            ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
+            ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Spawning Wreck Failed: typeID or typeName not supported." ) );
             wreckItemRef->Delete();
             return;
         }
