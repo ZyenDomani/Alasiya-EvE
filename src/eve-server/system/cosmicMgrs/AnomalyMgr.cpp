@@ -545,7 +545,6 @@ const char* AnomalyMgr::GetScanGroupName(uint8 groupID/*0*/) {
         case Anomaly:           return "Anomaly";
         case Ship:              return "Ship";
         case 0:                 return "Zero";
-        default:                return "Invalid";
     }
     return "None";
 }
