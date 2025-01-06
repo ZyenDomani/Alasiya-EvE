@@ -952,7 +952,6 @@ std::string SpawnMgr::GetSpawnGroupName(int8 sGroup)
         case Spawn::Group::Incursion:       return "Incursion";
         case Spawn::Group::Sleeper:         return "Sleeper";
         case Spawn::Group::Escalation:      return "Escalation";
-        default:                            return "Invalid";
     }
     return "Undefined";
 }
