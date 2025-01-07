@@ -259,16 +259,10 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
         return nullptr;
     }
 
-    CharacterRef cRef(call.client->GetChar());
-    /* this is done in client
-    if (cRef->GetSkillInTraining() != nullptr)
-        throw UserError("RespecSkillInTraining");
-    */
-
-    // return early if this is an illegal call
     if (!m_db.ReportRespec(call.client->GetCharacterID()))
         return nullptr;
-    //uint8 multiplier(sConfig.character.statMultiplier);
+
+    CharacterRef cRef(call.client->GetChar());
     cRef->SetAttribute(AttrCharisma, args.charisma);
     cRef->SetAttribute(AttrIntelligence, args.intelligence);
     cRef->SetAttribute(AttrMemory, args.memory);

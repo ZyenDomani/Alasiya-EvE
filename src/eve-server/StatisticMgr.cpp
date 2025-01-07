@@ -30,6 +30,7 @@ int StatisticMgr::Initialize()
 {
     //ClearAll();
     // reset current data for new session
+    m_data.changed = false;
     ManagerDB::UpdateStatisticHistory(m_data);
     m_data.changed = true;
     sLog.Blue( "     StatisticMgr", "Statistics Manager Initialized." );
@@ -81,18 +82,22 @@ void StatisticMgr::Add(uint8 key, double value)
         case Stat::pcBounties:
             m_data.changed = true;
             m_data.pcBounties += value;
+            m_data.changed = true;
             break;
         case Stat::npcBounties:
             m_data.changed = true;
             m_data.npcBounties += value;
+            m_data.changed = true;
             break;
         case Stat::oreMined:
             m_data.changed = true;
             m_data.oreMined += value;
+            m_data.changed = true;
             break;
         case Stat::iskMarket:
             m_data.changed = true;
             m_data.iskMarket += value;
+            m_data.changed = true;
             break;
         default:
             sLog.Error("StatisticMgr::Add()", "Default reached for key %u.", key );

@@ -314,8 +314,6 @@ void ItemDB::SaveAttributes(bool isChar, std::vector<Inv::AttrData>& data)
     std::ostringstream Inserts;
     // start the insert into command.
     if (isChar) {
-        DBerror err;
-        sDatabase.RunQuery(err, "DELETE FROM chrCharacterAttributes WHERE charID = %u", data[0].itemID);
         Inserts << "INSERT INTO chrCharacterAttributes";
         Inserts << " (charID, attributeID, valueInt, valueFloat)";
     } else {

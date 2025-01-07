@@ -31,6 +31,7 @@
  * DATA__INFO           # data loading msgs (container and amount) (mt)
  */
 
+
 /*
 StaticDataMgr::StaticDataMgr()
 : m_keyMap(nullptr),
@@ -48,7 +49,8 @@ StaticDataMgr::~StaticDataMgr()
     //Clear();
 }*/
 
-void StaticDataMgr::Close() {
+void StaticDataMgr::Close()
+{
     /*
     delete m_keyMap;
     delete m_agents;
@@ -57,7 +59,8 @@ void StaticDataMgr::Close() {
     delete m_entryTypes;
     delete m_factionInfo;
     delete m_npcDivisions;
-*/
+    */
+
     //for (auto &cur : m_bpMatlData)
     //    (cur.second)->DecRef();
 

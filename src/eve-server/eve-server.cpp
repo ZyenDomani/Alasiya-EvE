@@ -654,7 +654,7 @@ int main( int argc, char* argv[] )
     // basic shit done.  begin loading server specifics...
     sLog.Green("       ServerInit", "Loading server");
     std::printf("\n");     // spacer
-    
+
     PyStatic.Init();
     std::printf("\n");     // spacer
 

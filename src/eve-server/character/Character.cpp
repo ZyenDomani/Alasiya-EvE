@@ -1414,21 +1414,22 @@ void Character::AddImplant(uint8 slotID, InventoryItemRef iRef) {
     iRef->ClearModifiers();
 
     m_db.SaveImplant(m_itemID, iRef);
-    m_implantMap[slotID] = iRef;
 
     // implant mod map by attribID
     // find attrib this implant modifies, if applicable
     if (iRef->HasAttribute(AttrCharismaBonus)) {
-        m_implantModMap[AttrCharisma] = std::move(iRef);
+        m_implantModMap[AttrCharisma] = iRef;
     } else if (iRef->HasAttribute(AttrIntelligenceBonus)) {
-        m_implantModMap[AttrIntelligence] = std::move(iRef);
+        m_implantModMap[AttrIntelligence] = iRef;
     } else if (iRef->HasAttribute(AttrMemoryBonus)) {
-        m_implantModMap[AttrMemory] = std::move(iRef);
+        m_implantModMap[AttrMemory] = iRef;
     } else if (iRef->HasAttribute(AttrPerceptionBonus)) {
-        m_implantModMap[AttrPerception] = std::move(iRef);
+        m_implantModMap[AttrPerception] = iRef;
     } else if (iRef->HasAttribute(AttrWillpowerBonus)) {
-        m_implantModMap[AttrWillpower] = std::move(iRef);
+        m_implantModMap[AttrWillpower] = iRef;
     }
+
+    m_implantMap[slotID] = std::move(iRef);
 }
 
 void Character::RemoveImplant(uint8 slotID) {
@@ -1456,22 +1457,23 @@ void Character::RemoveImplant(uint8 slotID) {
     // remove from attrib mod map
     std::map<uint8, InventoryItemRef>::iterator itr2 = m_implantModMap.begin();
     while (itr2 != m_implantModMap.end()) {
-        if (itr2->second == itr->second) {
-            m_implantModMap.erase(itr2);
-            itr2 = m_implantModMap.end();
+        if (itr2->second != itr->second) {
+            ++itr2;
+            continue;
         }
+
+        m_implantModMap.erase(itr2);
+        itr2 = m_implantModMap.end();
     }
 
     if (sConfig.character.DeleteImplantOnRemoval) {
+        m_db.DeleteImplant(m_itemID, itr->second);
         itr->second->Delete();
     } else {
         uint32 hangarID(m_pClient->GetLocationID());
-        EVEItemFlags flagID(flagIllegal);
-        if (m_pClient->IsInSpace()) {
+        EVEItemFlags flagID(flagHangar);
+        if (m_pClient->IsInSpace())
             flagID = flagCargoHold;
-        } else {
-            flagID = flagHangar;
-        }
 
         itr->second->ClearModifiers();
         itr->second->Move(hangarID, flagID, true);
@@ -1494,6 +1496,7 @@ void Character::DeleteImplants() {
         }
         // apply processed effects
         sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
+        m_db.DeleteImplant(m_itemID, cur.second);
         cur.second->Delete();
     }
     m_implantMap.clear();
@@ -1519,7 +1522,7 @@ void Character::RemoveBooster(uint8 slotID) {
         return;
     }
 
-     Effect curEffect = Effect();
+    Effect curEffect = Effect();
     std::vector<TypeEffects> typeFx;
     sFxDataMgr.GetTypeEffect(itr->second->typeID(), typeFx);
     for (auto &curFx : typeFx) {
@@ -1564,12 +1567,9 @@ void Character::SaveCharacter() {
 
 void Character::SaveFullCharacter() {
     _log(CHARACTER__INFO, "Saving full character info for %u.", m_itemID);
-    //GetTotalSP();
     SaveCharacter();
-    SaveAttributes();
-    //SaveImplants();  // this should save all implant data for this char
-    // is this needed on every logout?  no
-    m_db.SaveCorpData(m_itemID, m_corpData);
+    // is this needed on every logout?  no, only when data changes
+    //m_db.SaveCorpData(m_itemID, m_corpData);
 
     if (m_inTraining != nullptr) {
         m_inTraining->SetAttribute(AttrSkillPoints, m_inTraining->GetCurrentSP(this, m_skillQueue.front().startTime), false);
@@ -1606,7 +1606,7 @@ uint16 Character::OnlineTime()
 // called on 10m timer from client
 void Character::SetLogonMinutes() {
     //  get login time and set _logonMinutes       -allan
-    uint16 loginMinutes = (sEntityMgr.GetStamp() - m_loginTime) /60;
+    uint16 loginMinutes = (sEntityMgr.GetStamp() - m_loginTime) / 60;
 
     // some checks are done < 1m, so if this check has no minutes, keep original time and exit
     if (loginMinutes > 0) {
