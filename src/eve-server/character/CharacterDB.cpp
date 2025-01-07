@@ -171,7 +171,7 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
 bool CharacterDB::ReportRespec(uint32 characterId)
 {
     DBerror error;
-    if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %f, nextRespecDateTime = %lli WHERE characterId = %u",
+    if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET lastRespecDateTime = %f, nextRespecDateTime = %lli WHERE characterId = %u",
         GetFileTimeNow(), (GetFileTimeNow() + EvE::Time::Month * 3), characterId))
         return false;
     return true;
@@ -1084,7 +1084,7 @@ void CharacterDB::LoadImplants(uint32 charID, std::map<uint8, InventoryItemRef> 
 
     DBResultRow row;
     while (res.GetRow(row))
-        into[row.GetUInt8(0)] = std::move(sItemFactory.GetItemRef(row.GetUInt(1)));
+        into[row.GetUInt8(0)] = sItemFactory.GetItemRef(row.GetUInt(1));
 }
 
 void CharacterDB::SaveImplant(uint32 charID, InventoryItemRef iRef) {

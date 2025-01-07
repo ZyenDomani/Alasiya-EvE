@@ -225,7 +225,7 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     msg += uptime;
     msg += "<br>Current Population: ";
     msg += std::to_string(sEntityMgr.GetClientCount());
-    msg += "<br><br>Character Options:";
+    msg += "<br><br><font color='yellow'>Character Options:</font>";
     msg += "<br>Ship Tracking: ";
     msg += (sEntityMgr.GetTracking() ? "On" : "Off");
     msg += "<br>Module AutoStop: ";
@@ -234,8 +234,10 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     //msg += (pClient->RAMEvent() ? "On" : "Off");
     msg += (sConfig.ram.AutoEvent ? "On" : "Off");
     // check account roles for this one
-    msg += "<br>ShowAll: ";
-    msg += (pClient->IsShowall() ? "On" : "Off");
+    if (pClient->GetAccountRole() & Acct::Role::GMH == Acct::Role::GMH) {
+        msg += "<br>ShowAll: ";
+        msg += (pClient->IsShowall() ? "On" : "Off");
+    }
 
     OnLSC_SendMessage sm;
     sm.sender = _FakeSenderInfo();

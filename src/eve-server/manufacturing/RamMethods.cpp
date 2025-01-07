@@ -412,8 +412,8 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
         return false;
 
     // set char defaults
-    into.charTimeMultiplier = 1.0;
-    into.charMaterialMultiplier = 1.0;
+    into.charTimeMultiplier = 1.0f;
+    into.charMaterialMultiplier = 1.0f;
 
     const ItemType* pType(nullptr);
     switch(args.activityID) {
@@ -493,11 +493,8 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
 
 void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &reqItems, float materialMultiplier, float charMaterialMultiplier, uint32 runs, BillOfMaterials &into)
 {
-    PySafeDecRef( into.extras.lines );
     into.extras.lines = new PyList();
-    PySafeDecRef( into.wasteMaterials.lines );
     into.wasteMaterials.lines = new PyList();
-    PySafeDecRef( into.rawMaterials.lines );
     into.rawMaterials.lines = new PyList();
 
     for (auto &cur : reqItems) {
