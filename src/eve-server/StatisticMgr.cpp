@@ -14,9 +14,9 @@
 
 
 StatisticMgr::StatisticMgr()
-: m_counter(3)  // do first update 15m after server starts
+: m_data(StatisticData()),
+m_counter(3)  // do first update 15m after server starts
 {
-    m_data = StatisticData();
 }
 
 void StatisticMgr::Close()
@@ -30,6 +30,7 @@ int StatisticMgr::Initialize()
 {
     //ClearAll();
     // reset current data for new session
+    m_data.changed = false;
     ManagerDB::UpdateStatisticHistory(m_data);
     sLog.Blue( "     StatisticMgr", "Statistics Manager Initialized." );
     return 1;
@@ -66,8 +67,11 @@ void StatisticMgr::Process()
 
 void StatisticMgr::SaveData()
 {
-    m_data.span = sEntityMgr.GetMinutes();
-    ManagerDB::SaveStatisticData(m_data);
+    if (m_data.changed) {
+        m_data.changed = false;
+        m_data.span = sEntityMgr.GetMinutes();
+        ManagerDB::SaveStatisticData(m_data);
+    }
 }
 
 void StatisticMgr::Add(uint8 key, double value)
@@ -76,15 +80,19 @@ void StatisticMgr::Add(uint8 key, double value)
     switch(key) {
         case Stat::pcBounties:
             m_data.pcBounties += value;
+            m_data.changed = true;
             break;
         case Stat::npcBounties:
             m_data.npcBounties += value;
+            m_data.changed = true;
             break;
         case Stat::oreMined:
             m_data.oreMined += value;
+            m_data.changed = true;
             break;
         case Stat::iskMarket:
             m_data.iskMarket += value;
+            m_data.changed = true;
             break;
         default:
             sLog.Error("StatisticMgr::Add()", "Default reached for key %u.", key );
@@ -98,21 +106,27 @@ void StatisticMgr::Increment(uint8 key)
     switch(key) {
         case Stat::pcShots:
             ++m_data.pcShots;
+            m_data.changed = true;
             break;
         case Stat::ramJobs:
             ++m_data.ramJobs;
+            m_data.changed = true;
             break;
         case Stat::pcMissiles:
             ++m_data.pcMissiles;
+            m_data.changed = true;
             break;
         case Stat::shipsSalvaged:
             ++m_data.shipsSalvaged;
+            m_data.changed = true;
             break;
         case Stat::sitesScanned:
             ++m_data.sitesScanned;
+            m_data.changed = true;
             break;
         case Stat::probesLaunched:
             ++m_data.probesLaunched;
+            m_data.changed = true;
             break;
         default:
             sLog.Error("StatisticMgr::Increment()", "Default reached for key %u.", key );
@@ -174,6 +188,7 @@ void StatisticMgr::CompileData()
 
         // data has been compiled for this running session.  save to history.
         ManagerDB::UpdateStatisticHistory(data);
+        m_data.changed = true;
     }
 
     SafeDelete(res);

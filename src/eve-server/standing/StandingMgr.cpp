@@ -30,11 +30,6 @@ StandingMgr::StandingMgr()
 
 }
 
-StandingMgr::~StandingMgr()
-{
-
-}
-
 void StandingMgr::Clear()
 {
     PySafeDecRef(m_factionStandings);

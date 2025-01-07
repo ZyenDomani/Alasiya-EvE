@@ -30,7 +30,7 @@
  * DATA__MESSAGE        # misc data msgs (mt)
  * DATA__INFO           # data loading msgs (container and amount) (mt)
  */
-
+/*
 StaticDataMgr::StaticDataMgr()
 : m_keyMap(nullptr),
 m_agents(nullptr),
@@ -46,9 +46,10 @@ StaticDataMgr::~StaticDataMgr()
 {
     //Clear();
 }
-
+*/
 void StaticDataMgr::Close()
 {
+    /*
     delete m_keyMap;
     delete m_agents;
     delete m_operands;
@@ -56,6 +57,7 @@ void StaticDataMgr::Close()
     delete m_entryTypes;
     delete m_factionInfo;
     delete m_npcDivisions;
+    */
 
     //for (auto &cur : m_bpMatlData)
     //    (cur.second)->DecRef();
@@ -1068,7 +1070,7 @@ void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity
 
 PyRep* StaticDataMgr::GetStationCount()
 {
-    PyList* list = new PyList();
+    PyList* list(std::move(new PyList()));
     std::map<uint32, uint8>::iterator itr = m_stationCount.begin(), end = m_stationCount.end();
     while (itr != end) {
         PyTuple* tuple = new PyTuple(2);
@@ -1317,7 +1319,7 @@ bool StaticDataMgr::IsStation(uint32 stationID/*0*/)
 
 DBRowDescriptor* StaticDataMgr::CreateHeader() {
     // this is correct data for crucible.  dont alter
-    PyList *keywords = new PyList();
+    PyList *keywords(std::move(new PyList()));
         keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
         keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
     DBRowDescriptor* header = new DBRowDescriptor(keywords);
@@ -1348,22 +1350,22 @@ PyDict* StaticDataMgr::GetBPMatlData(uint16 typeID)
 PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
 {
     // dunno how to do this part better...
-    PyList* matlListManuf = new PyList();
-    PyList* skillListManuf = new PyList();
-    PyList* extraListManuf = new PyList();
-    PyList* matlListTE = new PyList();
-    PyList* skillListTE = new PyList();
-    PyList* matlListME = new PyList();
-    PyList* skillListME = new PyList();
-    PyList* matlListCopy = new PyList();
-    PyList* skillListCopy = new PyList();
-    PyList* matlListDup = new PyList();
-    PyList* skillListDup = new PyList();
-    PyList* extraListDup = new PyList();
-    PyList* matlListRE = new PyList();
-    PyList* skillListRE = new PyList();
-    PyList* matlListInvent = new PyList();
-    PyList* skillListInvent = new PyList();
+    PyList* matlListManuf(std::move(new PyList()));
+    PyList* skillListManuf(std::move(new PyList()));
+    PyList* extraListManuf(std::move(new PyList()));
+    PyList* matlListTE(std::move(new PyList()));
+    PyList* skillListTE(std::move(new PyList()));
+    PyList* matlListME(std::move(new PyList()));
+    PyList* skillListME(std::move(new PyList()));
+    PyList* matlListCopy(std::move(new PyList()));
+    PyList* skillListCopy(std::move(new PyList()));
+    PyList* matlListDup(std::move(new PyList()));
+    PyList* skillListDup(std::move(new PyList()));
+    PyList* extraListDup(std::move(new PyList()));
+    PyList* matlListRE(std::move(new PyList()));
+    PyList* skillListRE(std::move(new PyList()));
+    PyList* matlListInvent(std::move(new PyList()));
+    PyList* skillListInvent(std::move(new PyList()));
 
     DBRowDescriptor* header = new DBRowDescriptor();
         header->AddColumn("quantity",          DBTYPE_I4);

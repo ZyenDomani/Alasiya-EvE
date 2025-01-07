@@ -659,18 +659,7 @@ public:
 
     PyRep* GetItem(size_t index) const		        { return items.at(index); }
 
-    void SetItem(size_t index, PyRep* object) {
-        PyRep** rep = &items.at(index);
-
-        // todo:  try this....
-        PySafeDecRef(*rep);
-        if (object == nullptr) {
-            *rep = new PyNone();  //pyStatic.NewNone();
-        } else {
-            *rep = std::move(object);
-            //PyIncRef(object);
-        }
-    }
+    void SetItem(size_t index, PyRep* object);
 
     void SetItemInt(size_t index, int32 val)		{ SetItem(index, new PyInt(val)); }
     void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str)); }
@@ -720,7 +709,7 @@ public:
      *
      * @return Python object.
      */
-    PyRep* GetItem(size_t index) const { return items.at(index); }
+    PyRep* GetItem(size_t index) const                  { return items.at(index); }
 
     /**
      * @brief Stores Python object.
@@ -728,25 +717,14 @@ public:
      * @param[in] index  Index at which the object should be stored.
      * @param[in] object Object to be stored.
      */
-    void SetItem(size_t index, PyRep* object)
-    {
-        PyRep** rep = &items.at(index);
-
-        PySafeDecRef(*rep);
-        if (object == nullptr) {
-            *rep = new PyNone();
-        } else {
-            *rep = object;
-            PyIncRef(object);
-        }
-    }
+    void SetItem(size_t index, PyRep* object);
     /**
      * @brief Stores Python string.
      *
      * @param[in] index Index at which the object should be stored.
      * @param[in] str   String to be stored.
      */
-    void SetItemString(size_t index, const char* str) { SetItem(index, new PyString(str)); }
+    void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str)); }
 
     void AddItem(PyRep* i)				{ items.push_back(i); }
     void AddItemInt(int32 intval)			{ AddItem(new PyInt(intval)); }

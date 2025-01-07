@@ -25,7 +25,7 @@ class StandingMgr
 {
 public:
     StandingMgr();
-    ~StandingMgr();
+    ~StandingMgr()                                      { /* do nothing here */ }
 
     int                 Initialize();
 

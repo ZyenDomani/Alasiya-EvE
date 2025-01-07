@@ -21,7 +21,7 @@ class BulkDB
 {
 public:
     BulkDB();
-    ~BulkDB();
+    ~BulkDB()                                           { /* do nothing here */ }
 
     void Initialize();
     void Close();

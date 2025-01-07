@@ -13,19 +13,11 @@
 
 
 BulkDB::BulkDB()
+: m_loaded(false),
+m_chunks(43)
 {
-    m_bulkData.clear();
-    m_bulkDataChunks.clear();
-
     // will need to make this dynamic at some point.
     //  dunno how yet.
-    m_chunks = 43;
-    m_loaded = false;
-}
-
-BulkDB::~BulkDB()
-{
-    //Close();
 }
 
 void BulkDB::Close()
