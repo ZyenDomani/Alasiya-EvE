@@ -27,17 +27,11 @@
 StandingMgr::StandingMgr()
 : m_factionStandings(nullptr)
 {
-
-}
-
-StandingMgr::~StandingMgr()
-{
-
 }
 
 void StandingMgr::Clear()
 {
-    PySafeDecRef(m_factionStandings);
+    //PySafeDecRef(m_factionStandings);
 }
 
 int StandingMgr::Initialize()

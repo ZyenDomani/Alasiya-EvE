@@ -29,10 +29,12 @@ class StaticDataMgr
 : public Singleton< StaticDataMgr >
 {
 public:
+    /*
     StaticDataMgr();
     StaticDataMgr(const StaticDataMgr&) =delete;
     StaticDataMgr& operator=(const StaticDataMgr&) =delete;
     ~StaticDataMgr();
+    */
 
     int                 Initialize();
 

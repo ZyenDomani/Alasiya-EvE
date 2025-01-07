@@ -259,6 +259,7 @@ struct LootList {
 };
 /* POD structure for statistic data */
 struct StatisticData {
+    bool changed=false;
     uint16 span=0;        // 45.5d in minutes (max)
     uint16 shipsSalvaged=0;
     uint16 probesLaunched=0;
