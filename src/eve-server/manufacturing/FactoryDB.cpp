@@ -246,7 +246,7 @@ PyRep *FactoryDB::AssemblyLinesSelectPublic(const uint32 regionID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT"
+        "SELECT DISTINCT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
         " station.solarSystemID AS containerLocationID,"
@@ -272,7 +272,7 @@ PyRep *FactoryDB::AssemblyLinesSelectPersonal(const uint32 charID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT"
+        "SELECT DISTINCT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
         " station.solarSystemID AS containerLocationID,"
@@ -296,7 +296,7 @@ PyRep *FactoryDB::AssemblyLinesSelectPrivate(const uint32 charID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT"
+        "SELECT DISTINCT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
         " station.solarSystemID AS containerLocationID,"
@@ -320,7 +320,7 @@ PyRep *FactoryDB::AssemblyLinesSelectCorporation(const uint32 corpID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT"
+        "SELECT DISTINCT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
         " station.solarSystemID AS containerLocationID,"
@@ -345,7 +345,7 @@ PyRep *FactoryDB::AssemblyLinesSelectAlliance(const int32 allianceID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT"
+        "SELECT DISTINCT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
         " station.solarSystemID AS containerLocationID,"
