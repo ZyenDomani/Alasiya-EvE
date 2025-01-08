@@ -844,7 +844,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         data.ownerID = pClient->GetCharacterID();
 
     // returns nodeID and timestamp
-    PyTuple* tuple = new PyTuple(2);
+    PyTuple* tuple(new PyTuple(2));
         tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
         tuple->SetItem(1, new PyLong(GetFileTimeNow()));
 
@@ -865,7 +865,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
                 sRef->Move(pClient->GetLocationID(), flagNone, true);
-                StructureSE* sSE = new StructureSE(sRef, *m_manager, pSysMgr, data);
+                StructureSE* sSE(new StructureSE(sRef, *m_manager, pSysMgr, data));
                 location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
                 sSE->SetPosition(location);
                 sRef->SaveItem();
@@ -879,7 +879,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
                 sRef->Move(pClient->GetLocationID(), flagNone, true);
-                CustomsSE* sSE = new CustomsSE(sRef, *m_manager, pSysMgr, data);
+                CustomsSE* sSE(new CustomsSE(sRef, *m_manager, pSysMgr, data));
                 location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
                 sSE->SetPosition(location);
                 sRef->SaveItem();
@@ -895,7 +895,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 cRef->Move(pClient->GetLocationID(), flagNone, true);
                 //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
                 // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
-                DeployableSE* dSE = new DeployableSE(cRef, *m_manager, pSysMgr, data);
+                DeployableSE* dSE(new DeployableSE(cRef, *m_manager, pSysMgr, data));
                 location.MakeRandomPointOnSphere(1500.0 + cRef->type().radius());
                 dSE->SetPosition(location);
                 cRef->SaveItem();
@@ -919,7 +919,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                             throw CustomError("Unable to spawn item of type %u.", ccRef->typeID());
 
                         ccRef->Move(pClient->GetLocationID(), flagNone, true);
-                        ContainerSE* cSE = new ContainerSE(ccRef, *m_manager, pSysMgr, data);
+                        ContainerSE* cSE(new ContainerSE(ccRef, *m_manager, pSysMgr, data));
                         location.MakeRandomPointOnSphere(500.0);
                         cSE->SetPosition(location);
                         ccRef->SaveItem();
@@ -979,7 +979,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             if (jcRef.get() == nullptr)
                 throw CustomError("Unable to spawn jetcan.");
             // create new container
-            ContainerSE* cSE = new ContainerSE(jcRef, *m_manager, pSysMgr, data);
+            ContainerSE* cSE(new ContainerSE(jcRef, *m_manager, pSysMgr, data));
 
             jcRef->SetMySE(cSE);
             // set anchored to avoid deletion when empty
@@ -1046,7 +1046,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     if (call.tuple->empty())
         return nullptr;
 
-    bool t3Ship = false;
+    bool t3Ship(false);
     std::vector<int32> itemIDList;
     PyList* subSystemList(nullptr);
     if (call.byname.find("subSystems") != call.byname.end()) {
@@ -1141,14 +1141,14 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 
 PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call)
 {
-    PyDict* dict = new PyDict();
+    PyDict* dict(new PyDict());
     dict->SetItemString("allowFleetSMBUsage", new PyBool(call.client->GetShipSE()->GetFleetSMBUsage()));
     return dict;
 }
 
 PyResult ShipBound::Handle_ConfigureShip(PyCallArgs &call)
 {
-    PyDict* dict = call.tuple->GetItem(0)->AsDict();
+    PyDict* dict(call.tuple->GetItem(0)->AsDict());
     call.client->GetShipSE()->SetFleetSMBUsage(dict->GetItemString("allowFleetSMBUsage")->AsBool());
 
     return nullptr;
@@ -1315,7 +1315,7 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
      */
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     // returns nodeID and timestamp
-    PyTuple* tuple = new PyTuple(2);
+    PyTuple* tuple(new PyTuple(2));
         tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
         tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
