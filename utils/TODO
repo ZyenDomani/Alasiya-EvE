@@ -15,6 +15,9 @@ james sov code
 lp implemented (unknown quality)
 other updates?
 
+NOTE:  for calls that use internal methods that send a reply, model from InjectSkillIntoBrain
+  which calls char::InjectSkillIntoBrain and returns a code for different errors used to customize reply to client
+
 
 *******************************************************
 *******************************************************
@@ -101,6 +104,7 @@ update all 16 references to www.eveonline.com and create pages on server to resp
 add agent portraits to server and update 'backupurl' in server code
 
 may need more updating for new attrib/implant systems
+  update advanced implants for better char attrib bonus'
 
 *******************************************************
 *******************************************************

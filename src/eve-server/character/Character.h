@@ -482,6 +482,19 @@ private:
 
     InventoryItemRef m_cloneRef;
 
+    /*  implant slot notes:
+     * There are 7 "simple" implants for each slot:
+     *   Limited (+4), Limited-Beta (+8), Basic (+12), Standard (+16), Improved (+20), Advanced (+24), Elite (+28)
+     * Each slot enhances a different attribute as follows:
+     *   Slot 1 - Alpha - Ocular Filter: Perception
+     *   Slot 2 - Beta - Memory Augmentation: Memory
+     *   Slot 3 - Gamma - Neural Boost: Willpower
+     *   Slot 4 - Delta - Cybernetic Subprocessor: Intelligence
+     *   Slot 5 - Epsilon - Social Adaptation Chip: Charisma
+     *
+     *   Skill hardwirings occupy implant slots 6-10
+     *
+     */
     std::map<uint8, InventoryItemRef>  m_implantMap;            // slotID/itemRef
     std::map<uint8, InventoryItemRef>  m_implantModMap;         // attribID/itemRef
     std::map<uint8, InventoryItemRef>  m_boosterMap;            // slotID/itemRef

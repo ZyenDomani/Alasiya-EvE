@@ -1346,8 +1346,30 @@ void Character::LoadImplants() {
     // load implants into their own maps and apply where applicable
     std::vector<InventoryItemRef> implants;
     pInventory->GetItemsByFlag(flagImplant, implants);
-    for (auto &cur : implants)
-        m_implantMap[cur->GetAttribute(AttrImplantness).get_uint32()] = cur;
+    uint32 slot(0);
+    for (auto &cur : implants) {
+        slot = cur->GetAttribute(AttrImplantness).get_uint32();
+        m_implantMap[slot] = cur;
+        switch (slot) {
+            case 1:     //Perception
+                m_implantModMap[AttrPerception] = cur;
+                break;
+            case 2:     //Memory
+                m_implantModMap[AttrMemory] = cur;
+                break;
+            case 3:     //Willpower
+                m_implantModMap[AttrWillpower] = cur;
+                break;
+            case 4:     //Intelligence
+                m_implantModMap[AttrIntelligence] = cur;
+                break;
+            case 5:     //Charisma
+                m_implantModMap[AttrCharisma] = cur;
+                break;
+            default:
+                break;
+        }
+    }
 
     // note:  this is called on client load, before client is completely constructed, so m_pClient is still null
     if (IsStationID(m_charData.locationID)) {
@@ -1365,21 +1387,6 @@ void Character::LoadImplants() {
             // apply processed effects
             sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
             cur.second->ClearModifiers();
-        }
-    }
-
-    for (auto &cur : m_implantMap) {
-        // find attrib this implant modifies, if applicable
-        if (cur.second->HasAttribute(AttrCharismaBonus)) {
-            m_implantModMap[AttrCharisma] = cur.second;
-        } else if (cur.second->HasAttribute(AttrIntelligenceBonus)) {
-            m_implantModMap[AttrIntelligence] = cur.second;
-        } else if (cur.second->HasAttribute(AttrMemoryBonus)) {
-            m_implantModMap[AttrMemory] = cur.second;
-        } else if (cur.second->HasAttribute(AttrPerceptionBonus)) {
-            m_implantModMap[AttrPerception] = cur.second;
-        } else if (cur.second->HasAttribute(AttrWillpowerBonus)) {
-            m_implantModMap[AttrWillpower] = cur.second;
         }
     }
 }

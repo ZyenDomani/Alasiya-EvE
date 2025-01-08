@@ -283,8 +283,8 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
     }
 
     InventoryItemRef iRef(call.client->GetChar()->GetImplantForAttrib(args.arg));
-    PyList* list = new PyList();
-    PyTuple* tuple = new PyTuple(4);
+    PyList* list(new PyList());
+    PyTuple* tuple(new PyTuple(4));
     if (iRef.get() != nullptr) {
         tuple->SetItem(0, new PyInt(iRef->itemID()));
         tuple->SetItem(1, new PyInt(iRef->typeID()));
@@ -299,6 +299,7 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
         list->AddItem(tuple);
     }
 
+    list->Dump(CHARACTER__TRACE, "    ");
     return list;
 }
 
@@ -363,7 +364,7 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter(PyCallArgs& call)
         return nullptr;
     }
 
-    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg);
+    InventoryItemRef iRef(sItemFactory.GetItemRefFromID(args.arg));
     if (iRef.get() == nullptr) {
         _log(CHARACTER__ERROR, "CharRemoveImplant - iRef not found for itemID %i", args.arg);
         return nullptr;
@@ -393,7 +394,7 @@ PyResult SkillMgrBound::Handle_CharUseBooster(PyCallArgs& call)
         return nullptr;
     }
 
-    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg1);
+    InventoryItemRef iRef(sItemFactory.GetItemRefFromID(args.arg1));
     if (iRef.get() == nullptr) {
         _log(CHARACTER__ERROR, "CharRemoveImplant - iRef not found for itemID %i", args.arg1);
         return nullptr;
