@@ -278,9 +278,12 @@ PyRep *FactoryDB::AssemblyLinesSelectPersonal(const uint32 charID) {
         " station.solarSystemID AS containerLocationID,"
         " station.assemblyLineTypeID,"
         " station.quantity,"
-        " station.ownerID"
+        " station.ownerID,"
+        " line.activityID"
         " FROM ramAssemblyLineStations AS station"
-        " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID AND station.assemblyLineTypeID = line.assemblyLineTypeID AND station.ownerID = line.ownerID"
+        " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID"
+        "  AND station.assemblyLineTypeID = line.assemblyLineTypeID"
+        "  AND station.ownerID = line.ownerID"
         " WHERE station.ownerID = %u"
         " AND (line.restrictionMask & %u) = %u",
         charID, (EvERam::RestrictionMask::ByCorp | EvERam::RestrictionMask::ByAlliance), (EvERam::RestrictionMask::ByCorp | EvERam::RestrictionMask::ByAlliance)))
@@ -302,9 +305,12 @@ PyRep *FactoryDB::AssemblyLinesSelectPrivate(const uint32 charID) {
         " station.solarSystemID AS containerLocationID,"
         " station.assemblyLineTypeID,"
         " station.quantity,"
-        " station.ownerID"
+        " station.ownerID,"
+        " line.activityID"
         " FROM ramAssemblyLineStations AS station"
-        " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID AND station.assemblyLineTypeID = line.assemblyLineTypeID AND station.ownerID = line.ownerID"
+        " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID"
+        "  AND station.assemblyLineTypeID = line.assemblyLineTypeID"
+        "  AND station.ownerID = line.ownerID"
         " WHERE station.ownerID = %u",
         charID))
     {
@@ -326,9 +332,12 @@ PyRep *FactoryDB::AssemblyLinesSelectCorporation(const uint32 corpID) {
         " station.solarSystemID AS containerLocationID,"
         " station.assemblyLineTypeID,"
         " station.quantity,"
-        " station.ownerID"
+        " station.ownerID,"
+        " line.activityID"
         " FROM ramAssemblyLineStations AS station"
-        " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID AND station.assemblyLineTypeID = line.assemblyLineTypeID AND station.ownerID = line.ownerID"
+        " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID"
+        "  AND station.assemblyLineTypeID = line.assemblyLineTypeID"
+        "  AND station.ownerID = line.ownerID"
         " WHERE station.ownerID = %u"
         " AND (line.restrictionMask & %u) = %u",
         corpID, EvERam::RestrictionMask::ByCorp, EvERam::RestrictionMask::ByCorp))
@@ -351,10 +360,13 @@ PyRep *FactoryDB::AssemblyLinesSelectAlliance(const int32 allianceID) {
         " station.solarSystemID AS containerLocationID,"
         " station.assemblyLineTypeID,"
         " station.quantity,"
-        " station.ownerID"
+        " station.ownerID,"
+        " line.activityID"
         " FROM ramAssemblyLineStations AS station"
         " LEFT JOIN crpCorporation AS crp ON station.ownerID = crp.corporationID"
-        " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID AND station.assemblyLineTypeID = line.assemblyLineTypeID AND station.ownerID = line.ownerID"
+        " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID"
+        "  AND station.assemblyLineTypeID = line.assemblyLineTypeID"
+        "  AND station.ownerID = line.ownerID"
         " WHERE crp.allianceID = %u"
         " AND (line.restrictionMask & %u) = %u",
         allianceID, EvERam::RestrictionMask::ByAlliance, EvERam::RestrictionMask::ByAlliance))
