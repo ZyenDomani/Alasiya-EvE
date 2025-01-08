@@ -93,12 +93,14 @@ char creation - figure certs and set skills accordingly
     - they should at least have a starter profession cert
     - this will take more thought and time
 
+
 *******************************************************
 *******************************************************
 **********  liveupdates code improvements ... hi priority
 update all 16 references to www.eveonline.com and create pages on server to respond properly
 add agent portraits to server and update 'backupurl' in server code
 
+may need more updating for new attrib/implant systems
 
 *******************************************************
 *******************************************************
@@ -118,9 +120,9 @@ InventoryItem - multiple remove calls....trace and fix
 Coverity found more shit
 ImageServer::GetImage - fclose(fp)
 temp object going out of scope - return (uptime.str().c_str());
-ImageServerConnection() - init members _size, _id
 
 go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
+go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
 while you're at it, verify member initialization is correct.  i know destiny isnt (and it's member list is huge)
 	- im sure its not the only one...but some (or most) of my 'newer' classes should be right (at least a lot closer).
 
@@ -131,8 +133,6 @@ remove *lsc_service and *cache_service from PyServiceMgr
     - cache_service....will have to look into this more before deciding.
 
 update headers to fix 'class' vs 'struct' declarations  (most done years ago in a major refactor)
-
-go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
 
 closely examine target mgr and see what we can improve.
     - test changing TargetEntry class (and enums) to struct
@@ -184,11 +184,12 @@ RAM code - implement invention, re    -priority level: low
     - (LocationRolesCheck) - incomplete
     - (ItemLocationCheck)  unfinished for POS/Outpost
     - (InstallationCheck)  - incomplete
-    - add Almanu's cal'c fix from official?
+    - add Almanu's cal'c fix from official?  not sure what he 'fixed'
     - verify char prod efficiency skill for Calculate()
 
 blueprints - look over data and verify
     - LPRR = -11??
+    - ram tabs not populating (again)...not sure when/why
     - research copy time.  huge discrepancy here....  3h20m base, <1m with skills???
     - was working on stacking bpc, but with singleton code, i dont think it's possible.
       -- however, bpc is not singleton, right?  shouldnt matter.  need more testing.
@@ -243,32 +244,32 @@ market history
     - may be cheating, but we dont have 'real' data for market history (yet)
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
-raceMask isnt implemented yet...will need more thought/coding
-still some corp shit not started/completed yet...need to finish it. may need to split file again.  -priority level: med-hi
-partial code for corpStations, member roles,
-no code for labels
-set initial standings when corp is created.
-when renting office, station offices dont refresh
-do all corps share officeFolderID?  (stationID + Offset)
-GetMemberTrackingInfo() incomplete
-CorpStationMgrIMBound incomplete
-CorpRegistryService incomplete
-corp jumpers? - decide/implement - config option?
-GetMemberIDsByQuery needs more work.  see notes in code.
-corp items not updating in db when moved (could be all items as we're not saving every item change)
-dividends incomplete
-OnCharShareChange packet sending wrong.  see /home/allan/Desktop/cruc/corp/OnShareChange_thread
-GetSanctionedActionsByCorporation incomplete
-decorations list doesnt include recipients.  also time is shown as elapsed
-contacts incomplete
-station office doesnt update after renting office
-SparseBound will need work for RAM and lock votes (and more)
-	- official has some updates for sparcebound code.
-check items in corp hangar for proper locationID/flagID
-CorpOfficeSparseRowset is wrong.
-    - actually, anything using sparserowset is wrong
-    (xmlp encode wrong. maybe decode too...no, AuthenticationRsp& AuthenticationRsp::operator=() is right)
-    may be fixed in official::staging
+    raceMask isnt implemented yet...will need more thought/coding
+    still some corp shit not started/completed yet...need to finish it. may need to split file again.  -priority level: med-hi
+    partial code for corpStations, member roles,
+    no code for labels
+    set initial standings when corp is created.
+    when renting office, station offices dont refresh
+    do all corps share officeFolderID?  (stationID + Offset)
+    GetMemberTrackingInfo() incomplete
+    CorpStationMgrIMBound incomplete
+    CorpRegistryService incomplete
+    corp jumpers? - decide/implement - config option?
+    GetMemberIDsByQuery needs more work.  see notes in code.
+    corp items not updating in db when moved (could be all items as we're not saving every item change)
+    dividends incomplete
+    OnCharShareChange packet sending wrong.  see /home/allan/Desktop/cruc/corp/OnShareChange_thread
+    GetSanctionedActionsByCorporation incomplete
+    decorations list doesnt include recipients.  also time is shown as elapsed
+    contacts incomplete
+    station office doesnt update after renting office
+    SparseBound will need work for RAM and lock votes (and more)
+        - official has some updates for sparcebound code.
+    check items in corp hangar for proper locationID/flagID
+    CorpOfficeSparseRowset is wrong.
+        - actually, anything using sparserowset is wrong
+        (xmlp encode wrong. maybe decode too...no, AuthenticationRsp& AuthenticationRsp::operator=() is right)
+        may be fixed in official::staging
 
 expeditions.  not sure how to do this one.
 dungeonExplorationMgr::GetMyEscalatingPathDetails()
@@ -346,6 +347,9 @@ Py* objects that have long int as key need 'delete' called on key when destroyed
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?
 
+added specific ref tracking to PyRep code, and removed inherited RefObject.
+  - easier to debug, but still convoluted system and not completely understood
+  - config var to delete on zero works, but references arent inc/dec properly yet (currently segfaults on char load into station with market open)
 
 *******************************************************
 *******************************************************
@@ -464,7 +468,7 @@ mining gfx/deactivate is almost immediate.  this is supposed to have a 5s timer 
 
 add formatting and colors to custom error msgs
   - seem like client msg window has limited support for html
-  
+
 m_self is NOT being populated for non-piloted ships.   -priority level: low
 
 InvBrokerService needs love
