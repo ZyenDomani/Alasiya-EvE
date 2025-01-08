@@ -24,8 +24,8 @@ class StandingMgr
 : public Singleton< StandingMgr >
 {
 public:
-    StandingMgr();
-    ~StandingMgr()                                      { /* do nothing here */ }
+    //StandingMgr();
+    //~StandingMgr()                                      { /* do nothing here */ }
 
     int                 Initialize();
 

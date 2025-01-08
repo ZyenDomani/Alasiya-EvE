@@ -916,7 +916,6 @@ void Client::UndockFromStation() {
     m_dockPoint = m_stationData.dockPosition;
     m_movePoint = m_stationData.dockOrientation;
 
-    m_char->Undock();   // postprocess implants here, before full fxProc() below
     m_ship->Undock();   // fx processed here
 
     /** @todo  this needs a bit of work to match live....

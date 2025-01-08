@@ -1063,36 +1063,6 @@ bool CharacterDB::ChangeCloneLocation(uint32 characterID, uint32 locationID)
     return true;
 }
 
-void CharacterDB::DeleteImplant(uint32 charID, InventoryItemRef iRef) {
-    DBerror err;
-    sDatabase.RunQuery(err, "DELETE FROM `chrImplants` WHERE charID = %u AND implantID = %u", \
-                    charID, iRef->itemID());
-}
-
-void CharacterDB::LoadImplants(uint32 charID, std::map<uint8, InventoryItemRef> &into) {
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        " SELECT "
-        "  slotID, implantID"
-        " FROM chrImplants"
-        " WHERE charID = %u", charID))
-    {
-        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return;
-    }
-
-    DBResultRow row;
-    while (res.GetRow(row))
-        into[row.GetUInt8(0)] = sItemFactory.GetItemRef(row.GetUInt(1));
-}
-
-void CharacterDB::SaveImplant(uint32 charID, InventoryItemRef iRef) {
-    DBerror err;
-    sDatabase.RunQuery(err, "INSERT INTO `chrImplants`(`charID`, `slotID`, `implantID`) VALUES (%u, %u, %u)", \
-                charID, iRef->GetAttribute(AttrImplantness).get_uint32(), iRef->itemID());
-}
-
 bool CharacterDB::GetAttributesFromAncestry(uint32 ancestryID, uint8 &intelligence, uint8 &charisma, uint8 &perception, uint8 &memory, uint8 &willpower) {
     DBQueryResult res;
 

@@ -227,10 +227,6 @@ public:
 
     void        VisitSystem(uint32 solarSystemID, uint32 charID);
 
-    void        SaveImplant(uint32 charID, InventoryItemRef iRef);
-    void        DeleteImplant(uint32 charID, InventoryItemRef iRef);
-    void        LoadImplants(uint32 charID, std::map<uint8, InventoryItemRef> &into);
-
     /*  name validation shit */
     // called on CreateCharacterWithDoll() and will throw on error
     static void        ValidateCharName(std::string name);

@@ -23,11 +23,11 @@
  * STANDING__RSPDUMP
  */
 
-
+/*
 StandingMgr::StandingMgr()
 : m_factionStandings(nullptr)
 {
-}
+}*/
 
 void StandingMgr::Clear()
 {

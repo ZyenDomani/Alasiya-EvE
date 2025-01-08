@@ -443,7 +443,7 @@ int32 PyFloat::hash() const
                 v = v < 0 ? -271828.0 : 314159.0;
             //plong = PyLong_FromDouble(v);
 
-            PyRep *plong(std::move(new PyLong((int64)v))); // this is a hack
+            PyRep *plong(new PyLong((int64)v)); // this is a hack
             if (plong == nullptr)
                 return -1;
             x = plong->hash();
@@ -813,7 +813,7 @@ void PyTuple::SetItem(size_t index, PyRep* object) {
     if (object == nullptr) {
         *rep = PyStatic.NewNone();
     } else {
-        *rep = std::move(object);
+        *rep = object;
         //PyIncRef(object);
     }
 }
@@ -887,7 +887,7 @@ void PyList::SetItem(size_t index, PyRep* object) {
     if (object == nullptr) {
         *rep = PyStatic.NewNone();
     } else {
-        *rep = std::move(object);
+        *rep = object;
         //PyIncRef(object);
     }
 }
@@ -941,7 +941,7 @@ PyRep* PyDict::GetItem(PyRep* key) const
 
 PyRep* PyDict::GetItemString(const char* key) const
 {
-    PyString* str(std::move(new PyString(key)));
+    PyString* str(new PyString(key));
     PyRep* res(GetItem(str));
     SafeDelete(str);
     return res;
@@ -963,16 +963,16 @@ void PyDict::SetItem(PyRep* key, PyRep* value)
     if (itr == items.end()) {
         // make_pair() makes copy of args passed
         items.insert(std::make_pair(key, value));
-        //PyIncRef(key);
-        //PyIncRef(value);
+        key->IncRef();
+        value->IncRef();
     } else {
         // decRef existing value and Replace with new value.
         PySafeDecRef(itr->second);
         if (value == nullptr) {
             itr->second = PyStatic.NewNone();
         } else {
-            itr->second = std::move(value);
-            //PyIncRef(value);
+            itr->second = value;
+            value->IncRef();
         }
     }
 
@@ -1109,7 +1109,7 @@ PyDict* PyObjectEx_Type1::GetKeywords() const
 {
     // This one is slightly more complicated since keywords are optional.
     assert(mHeader != nullptr);
-    PyTuple* t(std::move(mHeader->AsTuple()->Clone()));
+    PyTuple* t(mHeader->AsTuple()->Clone());
 
     if (t->size() < 3)
         t->items.push_back(new PyDict());
@@ -1136,9 +1136,9 @@ PyTuple* PyObjectEx_Type1::_CreateHeader(PyToken* type, PyTuple* args, bool encl
     if (args == nullptr)
         args = std::move(new PyTuple(0));
 
-    PyTuple* body(std::move(new PyTuple(2)));
+    PyTuple* body(new PyTuple(2));
     if (enclosed) {
-        PyTuple* body1(std::move(new PyTuple(1)));
+        PyTuple* body1(new PyTuple(1));
         body1->SetItem(0, type);
         body->SetItem(0, body1);
         body->SetItem(1, args);
@@ -1155,9 +1155,9 @@ PyTuple* PyObjectEx_Type1::_CreateHeader(PyObjectEx_Type1* args1, PyTuple* args2
     if (args2 == nullptr)
         args2 = std::move(new PyTuple(0));
 
-    PyTuple* body(std::move(new PyTuple(2)));
+    PyTuple* body(new PyTuple(2));
     if (enclosed) {
-        PyTuple* body1(std::move(new PyTuple(1)));
+        PyTuple* body1(new PyTuple(1));
         body1->SetItem(0, args1);
         body->SetItem(0, body1);
         body->SetItem(1, args2);
@@ -1174,7 +1174,7 @@ PyTuple* PyObjectEx_Type1::_CreateHeader(PyToken* type, PyTuple* args, PyDict* k
     if (args == nullptr)
         args = std::move(new PyTuple(0));
 
-    PyTuple* body(std::move(new PyTuple(keywords == nullptr ? 2 : 3)));
+    PyTuple* body(new PyTuple(keywords == nullptr ? 2 : 3));
         body->SetItem(0, type);
         body->SetItem(1, args);
         if (body->size() > 2)
@@ -1190,7 +1190,7 @@ PyTuple* PyObjectEx_Type1::_CreateHeader(PyToken* type, PyTuple* args, PyList* k
     if (args == nullptr)
         args = std::move(new PyTuple(0));
 
-    PyTuple* body(std::move(new PyTuple(keywords == nullptr ? 2 : 3)));
+    PyTuple* body(new PyTuple(keywords == nullptr ? 2 : 3));
         body->SetItem(0, type);
         body->SetItem(1, args);
     if (body->size() > 2)
@@ -1239,12 +1239,12 @@ PyTuple* PyObjectEx_Type2::_CreateHeader(PyTuple* args, PyDict* keywords, bool e
     if (keywords == nullptr)
         keywords = std::move(new PyDict());
 
-    PyTuple* body(std::move(new PyTuple(2)));
+    PyTuple* body(new PyTuple(2));
         body->SetItem(0, args);
         body->SetItem(1, keywords);
         /*
     if (enclosed) {
-        PyTuple* head(std::move(new PyTuple(1);
+        PyTuple* head(new PyTuple(1);
             head->SetItem(0, body);
     } */
 
@@ -1257,12 +1257,12 @@ PyTuple* PyObjectEx_Type2::_CreateHeader(PyToken* args, PyDict* keywords, bool e
     if (keywords == nullptr)
         keywords = std::move(new PyDict());
 
-    PyTuple* body(std::move(new PyTuple(2)));
+    PyTuple* body(new PyTuple(2));
         body->SetItem(0, args);
         body->SetItem(1, keywords);
     /*
     if (enclosed) {
-        PyTuple* head(std::move(new PyTuple(1);
+        PyTuple* head(new PyTuple(1);
             head->SetItem(0, body);
     } */
 
@@ -1401,7 +1401,7 @@ void PySubStream::EncodeData() const
     if ((mDecoded == nullptr) or (mData != nullptr))
         return;
 
-    Buffer* buf(std::move(new Buffer()));
+    Buffer* buf(new Buffer());
     if (!Marshal(mDecoded, *buf)) {
         sLog.Error("Marshal", "Failed to marshal rep %p.", mDecoded);
         SafeDelete(buf);
@@ -1453,14 +1453,14 @@ bool PyChecksumedStream::visit(PyVisitor& v) const
 /************************************************************************/
 PyTuple* new_tuple(int64 arg1)
 {
-    PyTuple* res(std::move(new PyTuple(1)));
+    PyTuple* res(new PyTuple(1));
         res->SetItem(0, new PyLong(arg1));
     return res;
 }
 
 PyTuple* new_tuple(int64 arg1, int64 arg2)
 {
-    PyTuple* res(std::move(new PyTuple(2)));
+    PyTuple* res(new PyTuple(2));
         res->SetItem(0, new PyLong(arg1));
         res->SetItem(1, new PyLong(arg2));
     return res;
@@ -1471,14 +1471,14 @@ PyTuple* new_tuple(int64 arg1, int64 arg2)
 /************************************************************************/
 PyTuple* new_tuple(const char* arg1)
 {
-    PyTuple* res(std::move(new PyTuple(1)));
+    PyTuple* res(new PyTuple(1));
         res->SetItem(0, new PyString(arg1));
     return res;
 }
 
 PyTuple* new_tuple(const char* arg1, const char* arg2)
 {
-    PyTuple* res(std::move(new PyTuple(2)));
+    PyTuple* res(new PyTuple(2));
         res->SetItem(0, new PyString(arg1));
         res->SetItem(1, new PyString(arg2));
     return res;
@@ -1486,7 +1486,7 @@ PyTuple* new_tuple(const char* arg1, const char* arg2)
 
 PyTuple* new_tuple(const char* arg1, const char* arg2, const char* arg3)
 {
-    PyTuple* res(std::move(new PyTuple(3)));
+    PyTuple* res(new PyTuple(3));
         res->SetItem(0, new PyString(arg1));
         res->SetItem(1, new PyString(arg2));
         res->SetItem(2, new PyString(arg3));
@@ -1498,7 +1498,7 @@ PyTuple* new_tuple(const char* arg1, const char* arg2, const char* arg3)
 /************************************************************************/
 PyTuple* new_tuple(const char* arg1, const char* arg2, PyTuple* arg3)
 {
-    PyTuple* res(std::move(new PyTuple(3)));
+    PyTuple* res(new PyTuple(3));
         res->SetItem(0, new PyString(arg1));
         res->SetItem(1, new PyString(arg2));
         res->SetItem(2, arg3);
@@ -1507,7 +1507,7 @@ PyTuple* new_tuple(const char* arg1, const char* arg2, PyTuple* arg3)
 
 PyTuple* new_tuple(const char* arg1, PyRep* arg2, PyRep* arg3)
 {
-    PyTuple* res(std::move(new PyTuple(3)));
+    PyTuple* res(new PyTuple(3));
         res->SetItem(0, new PyString(arg1));
         res->SetItem(1, arg2);
         res->SetItem(2, arg3);
@@ -1516,14 +1516,14 @@ PyTuple* new_tuple(const char* arg1, PyRep* arg2, PyRep* arg3)
 
 PyTuple* new_tuple(PyRep* arg1)
 {
-    PyTuple* res(std::move(new PyTuple(1)));
+    PyTuple* res(new PyTuple(1));
         res->SetItem(0, arg1);
     return res;
 }
 
 PyTuple* new_tuple(PyRep* arg1, PyRep* arg2)
 {
-    PyTuple* res(std::move(new PyTuple(2)));
+    PyTuple* res(new PyTuple(2));
         res->SetItem(0, arg1);
         res->SetItem(1, arg2);
     return res;
@@ -1531,7 +1531,7 @@ PyTuple* new_tuple(PyRep* arg1, PyRep* arg2)
 
 PyTuple* new_tuple(PyRep* arg1, PyRep* arg2, PyRep* arg3)
 {
-    PyTuple* res(std::move(new PyTuple(3)));
+    PyTuple* res(new PyTuple(3));
         res->SetItem(0, arg1);
         res->SetItem(1, arg2);
         res->SetItem(2, arg3);

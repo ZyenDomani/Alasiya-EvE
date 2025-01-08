@@ -526,13 +526,9 @@ void Character::ProcessEffects(ShipItem* pShip)
 
 void Character::ResetChar() {
     // char has been podded.  reset to active clone state
-    DeleteBoosters();
-    DeleteImplants();
-
     ResetModifiers();
     ClearSkillQueue(false);
     ClearSkillFlags();
-
 
     /** @todo
      * check skillpoints vs. clone grade and adjust accordingly.
@@ -1309,6 +1305,7 @@ void Character::Dock() {
     }
 }
 
+//not used
 void Character::Undock() {
     for (auto &cur : m_implantMap){
         Effect curEffect = Effect();
@@ -1346,8 +1343,11 @@ InventoryItemRef Character::GetImplantAtSlot(uint8 slotID) {
 }
 
 void Character::LoadImplants() {
-    // load and apply implants where applicable
-    m_db.LoadImplants(m_itemID, m_implantMap);
+    // load implants into their own maps and apply where applicable
+    std::vector<InventoryItemRef> implants;
+    pInventory->GetItemsByFlag(flagImplant, implants);
+    for (auto &cur : implants)
+        m_implantMap[cur->GetAttribute(AttrImplantness).get_uint32()] = cur;
 
     // note:  this is called on client load, before client is completely constructed, so m_pClient is still null
     if (IsStationID(m_charData.locationID)) {
@@ -1413,8 +1413,6 @@ void Character::AddImplant(uint8 slotID, InventoryItemRef iRef) {
     sFxProc.ApplyEffects(iRef.get(), this, nullptr, true);
     iRef->ClearModifiers();
 
-    m_db.SaveImplant(m_itemID, iRef);
-
     // implant mod map by attribID
     // find attrib this implant modifies, if applicable
     if (iRef->HasAttribute(AttrCharismaBonus)) {
@@ -1467,7 +1465,6 @@ void Character::RemoveImplant(uint8 slotID) {
     }
 
     if (sConfig.character.DeleteImplantOnRemoval) {
-        m_db.DeleteImplant(m_itemID, itr->second);
         itr->second->Delete();
     } else {
         uint32 hangarID(m_pClient->GetLocationID());
@@ -1496,7 +1493,6 @@ void Character::DeleteImplants() {
         }
         // apply processed effects
         sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
-        m_db.DeleteImplant(m_itemID, cur.second);
         cur.second->Delete();
     }
     m_implantMap.clear();

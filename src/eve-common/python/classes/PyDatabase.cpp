@@ -75,7 +75,7 @@ DBTYPE DBRowDescriptor::GetColumnType( uint32 index ) const
 uint32 DBRowDescriptor::FindColumn( const char* name ) const
 {
     uint32 cc(ColumnCount());
-    PyString* stringName = new PyString( name );
+    PyString* stringName(new PyString( name ));
 
     for( uint32 i(0); i < cc; i++ ) {
         if ( stringName->hash() == GetColumnName( i )->hash() ) {
@@ -95,7 +95,7 @@ bool DBRowDescriptor::VerifyValue( uint32 index, PyRep* value )
 
 void DBRowDescriptor::AddColumn( const char* name, DBTYPE type )
 {
-    PyTuple* col = new PyTuple( 2 );
+    PyTuple* col(new PyTuple( 2 ));
         col->SetItem( 0, new PyString( name ) );
         col->SetItem( 1, new PyInt( type ) );
     _GetColumnList()->items.push_back( col );
@@ -113,8 +113,8 @@ PyTuple* DBRowDescriptor::_GetColumn( size_t index ) const
 
 PyTuple* DBRowDescriptor::_CreateArgs()
 {
-    PyTuple* columnList = new PyTuple( 0 );
-    PyTuple* args = new PyTuple( 1 );
+    PyTuple* columnList(new PyTuple( 0 ));
+    PyTuple* args(new PyTuple( 1 ));
         args->SetItem( 0, columnList );
 
     return args;
@@ -131,7 +131,7 @@ CRowSet::CRowSet( DBRowDescriptor** rowDesc )
 
 PyPackedRow* CRowSet::NewRow()
 {
-    PyPackedRow* row = new PyPackedRow( _GetRowDesc() );
+    PyPackedRow* row(new PyPackedRow( _GetRowDesc() ));
 
     list().AddItem( row );
     return row;
@@ -147,7 +147,7 @@ DBRowDescriptor* CRowSet::_GetRowDesc() const
 
 PyTuple* CRowSet::_CreateArgs()
 {
-    PyTuple* args = new PyTuple( 1 );
+    PyTuple* args(new PyTuple( 1 ));
         args->SetItem( 0, new PyToken( "dbutil.CRowset" ) );
     return args;
 }
@@ -156,7 +156,7 @@ PyDict* CRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 {
     assert( rowDesc );
 
-    PyDict* keywords = new PyDict();
+    PyDict* keywords(new PyDict());
         keywords->SetItemString( "header", rowDesc );
 
     //The Type_2 i had no longer used this
@@ -180,7 +180,7 @@ CIndexedRowSet::CIndexedRowSet( DBRowDescriptor** rowDesc )
 
 PyPackedRow* CIndexedRowSet::NewRow( PyRep* key )
 {
-    PyPackedRow* row = new PyPackedRow( _GetRowDesc() );
+    PyPackedRow* row(new PyPackedRow( _GetRowDesc() ));
 
     dict().SetItem( key , row );
     return row;
@@ -196,7 +196,7 @@ DBRowDescriptor* CIndexedRowSet::_GetRowDesc() const
 
 PyTuple* CIndexedRowSet::_CreateArgs()
 {
-    PyTuple* args = new PyTuple( 1 );
+    PyTuple* args(new PyTuple( 1 ));
         args->SetItem( 0, new PyToken( "dbutil.CIndexedRowset" ) );
     return args;
 }
@@ -205,7 +205,7 @@ PyDict* CIndexedRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 {
     assert( rowDesc );
 
-    PyDict* keywords = new PyDict();
+    PyDict* keywords(new PyDict());
     keywords->SetItemString( "header", rowDesc );
     keywords->SetItemString( "columnName", rowDesc->GetColumnName(0) );
 
@@ -224,8 +224,8 @@ CFilterRowSet::CFilterRowSet( DBRowDescriptor** rowDesc )
 
 CRowSet* CFilterRowSet::NewRowset( PyRep* key )
 {
-    DBRowDescriptor* rowDesc = _GetRowDesc();
-    CRowSet* row = new CRowSet( &rowDesc );
+    DBRowDescriptor* rowDesc(_GetRowDesc());
+    CRowSet* row(new CRowSet( &rowDesc ));
 
     dict().SetItem( key , row );
     return row;
@@ -241,7 +241,7 @@ DBRowDescriptor* CFilterRowSet::_GetRowDesc() const
 
 PyTuple* CFilterRowSet::_CreateArgs()
 {
-    PyTuple* args = new PyTuple( 1 );
+    PyTuple* args(new PyTuple( 1 ));
         args->SetItem( 0, new PyToken( "dbutil.CFilterRowset" ) );
     return args;
 }
@@ -250,7 +250,7 @@ PyDict* CFilterRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 {
     assert( rowDesc );
 
-    PyDict* keywords = new PyDict();
+    PyDict* keywords(new PyDict());
     keywords->SetItemString( "header", rowDesc );
     keywords->SetItemString( "columnName", rowDesc->GetColumnName(0) );
 
