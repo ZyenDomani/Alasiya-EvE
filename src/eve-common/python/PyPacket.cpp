@@ -814,8 +814,8 @@ EVENotificationStream::~EVENotificationStream() {
 }
 
 EVENotificationStream *EVENotificationStream::Clone() const {
-    EVENotificationStream *res = new EVENotificationStream();
-    res->args = args->Clone()->AsTuple();
+    EVENotificationStream *res(new EVENotificationStream());
+    res->args = std::move(args->Clone()->AsTuple());
     return res;
 }
 

@@ -807,14 +807,14 @@ int32 PyTuple::hash() const
 }
 
 void PyTuple::SetItem(size_t index, PyRep* object) {
-    PyRep** rep = &items.at(index);
+    PyRep** rep(&items.at(index));
     // todo:  try this....
     PySafeDecRef(*rep);
     if (object == nullptr) {
         *rep = PyStatic.NewNone();
     } else {
         *rep = object;
-        //PyIncRef(object);
+        object->IncRef();
     }
 }
 
@@ -881,14 +881,14 @@ PyList& PyList::operator=(PyList&& oth) {
 }
 
 void PyList::SetItem(size_t index, PyRep* object) {
-    PyRep** rep = &items.at(index);
+    PyRep** rep(&items.at(index));
 
     PySafeDecRef(*rep);
     if (object == nullptr) {
         *rep = PyStatic.NewNone();
     } else {
         *rep = object;
-        //PyIncRef(object);
+        object->IncRef();
     }
 }
 
@@ -974,9 +974,8 @@ void PyDict::SetItem(PyRep* key, PyRep* value)
             itr->second = value;
             value->IncRef();
         }
+        key->DecRef();
     }
-
-    key->DecRef();
 }
 
 // copy assignment
