@@ -224,7 +224,7 @@ void StationItem::RentOffice(OfficeData& odata)
         PyIncRef(payload);
         cur.second->SendNotification("OnOfficeRentalChanged", "stationid", &payload, false);
     }
-    //PyDecRef( payload );
+    PyDecRef( payload );
 
     oRef->ChangeOwner(odata.corporationID, true);
 

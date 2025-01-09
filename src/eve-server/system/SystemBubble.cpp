@@ -744,7 +744,7 @@ void SystemBubble::SyncPos() {
                 du.z = dse.second->GetPosition().z;
             PyTuple* up = du.Encode();
             player.second->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&up);
-            //PyDecRef(up);
+            PyDecRef(up);
         }
 }
 

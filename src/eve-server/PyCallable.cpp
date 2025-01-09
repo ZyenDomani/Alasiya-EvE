@@ -68,7 +68,7 @@ PyCallArgs::PyCallArgs(Client *c, PyTuple* tup, PyDict* dict)
 }
 
 PyCallArgs::~PyCallArgs() {
-    //PySafeDecRef( tuple );
+    PySafeDecRef( tuple );
     for (auto &cur : byname)
         PySafeDecRef(cur.second);
 }
@@ -101,8 +101,8 @@ ssNamedResult(namedResult)
 
 PyResult::PyResult(const PyResult& oth) : ssResult(nullptr), ssNamedResult(nullptr) { *this = oth; }
 PyResult::~PyResult() {
-    //PySafeDecRef( ssResult );
-    //PySafeDecRef( ssNamedResult );
+    PySafeDecRef( ssResult );
+    PySafeDecRef( ssNamedResult );
 }
 
 PyResult& PyResult::operator=(const PyResult& oth)

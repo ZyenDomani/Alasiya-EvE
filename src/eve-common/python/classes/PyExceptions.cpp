@@ -37,8 +37,7 @@ PyException::~PyException() { PySafeDecRef( ssException ); }
 PyException& PyException::operator=( const PyException& oth )
 {
     PySafeDecRef( ssException );
-    ssException = oth.ssException;
-    //PySafeIncRef( ssException );
+    ssException = std::move(oth.ssException->Clone());
 
     return *this;
 }

@@ -1564,25 +1564,25 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     }
 
     // cleanup
-    //PyDecRef(row);    // this is cleaned up elsewhere.  throws deleted=true on DecRef
-    //PyDecRef(header);
-    //PyDecRef(matlListManuf);
-    //PyDecRef(skillListManuf);
-    //PyDecRef(extraListManuf);
-    //PyDecRef(matlListTE);
-    //PyDecRef(skillListTE);
-    //PyDecRef(matlListME);
-    //PyDecRef(skillListME);
-    //PyDecRef(matlListCopy);
-    //PyDecRef(skillListCopy);
-    //PyDecRef(matlListDup);
-    //PyDecRef(skillListDup);
-    //PyDecRef(extraListDup);
-    //PyDecRef(matlListRE);
-    //PyDecRef(skillListRE);
-    //PyDecRef(matlListInvent);
-    //PyDecRef(skillListInvent);
-    //PyDecRef(mtCRowSet);
+    PyDecRef(row);    // this is cleaned up elsewhere.  throws deleted=true on DecRef
+    PyDecRef(header);
+    PyDecRef(matlListManuf);
+    PyDecRef(skillListManuf);
+    PyDecRef(extraListManuf);
+    PyDecRef(matlListTE);
+    PyDecRef(skillListTE);
+    PyDecRef(matlListME);
+    PyDecRef(skillListME);
+    PyDecRef(matlListCopy);
+    PyDecRef(skillListCopy);
+    PyDecRef(matlListDup);
+    PyDecRef(skillListDup);
+    PyDecRef(extraListDup);
+    PyDecRef(matlListRE);
+    PyDecRef(skillListRE);
+    PyDecRef(matlListInvent);
+    PyDecRef(skillListInvent);
+    PyDecRef(mtCRowSet);
 
     return rsp;
 }

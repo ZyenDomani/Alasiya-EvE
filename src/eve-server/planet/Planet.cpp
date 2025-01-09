@@ -187,7 +187,7 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
         args->SetItemString("data", new PyString(data));
         args->SetItemString("numBands", new PyInt(dict.newBand));
         args->SetItemString("proximity", new PyInt(dict.proximity));
-    //PyIncRef(args);
+    PyIncRef(args);
     PyObject* rtn = new PyObject("util.KeyVal", args);
     if (is_log_enabled(PLANET__RES_DUMP))
         rtn->Dump(PLANET__RES_DUMP, "   ");
@@ -221,7 +221,7 @@ PyRep* PlanetSE::GetPlanetInfo(Colony* pColony) {
         args->SetItem("routes", pColony->GetRoutes());
         args->SetItem("currentSimTime", new PyLong(pColony->GetSimTime()));
     }
-    //PyIncRef(args);
+    PyIncRef(args);
     PyObject *rtn = new PyObject("util.KeyVal", args);
     if (is_log_enabled(PLANET__RES_DUMP))
         rtn->Dump(PLANET__RES_DUMP, "   ");

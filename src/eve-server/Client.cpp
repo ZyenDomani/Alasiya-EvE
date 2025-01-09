@@ -1797,7 +1797,7 @@ void Client::CharNoLongerInStation() {
         PyIncRef(tmp);
         cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp); //consumed
     }
-    //PyDecRef(tmp);
+    PyDecRef(tmp);
 
     // delete current station data
     m_stationData = StationData();
@@ -1817,7 +1817,7 @@ void Client::CharNowInStation() {
         PyIncRef(tmp);
         cur->SendNotification("OnCharNowInStation", "stationid", &tmp);
     }
-    //PyDecRef(tmp);
+    PyDecRef(tmp);
 }
 
 /**********************************************************************
@@ -2074,7 +2074,7 @@ void Client::SendSessionChange()
 
 void Client::QueueDestinyUpdates(std::vector< PyTuple* >& updates) {
     for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); itr++) {
-        //PyIncRef(*itr);
+        PyIncRef(*itr);
         QueueDestinyUpdate(&(*itr));
     }
 }
@@ -2085,7 +2085,7 @@ void Client::QueueDestinyEvent(PyTuple** event) {
     if (is_log_enabled(CLIENT__QUEUE_DUMP))
         (*event)->Dump(CLIENT__QUEUE_DUMP, "");
     m_destinyEventQueue->AddItem(*event);
-    //PyDecRef(*event);
+    PyDecRef(*event);
 }
 
 void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool IsSetState /*false*/) {
@@ -2119,14 +2119,14 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             dum.waitForBubble = m_bubbleWait;
         PyTuple* t = dum.Encode();
         SendNotification("DoDestinyUpdate", "clientID", &t, false);
-        //PyDecRef(t);
+        PyDecRef(t);
     } else {
         act.update = *update;
         m_packaged = true;
         m_destinyUpdateQueue->AddItem(act.Encode());
     }
     // do i need to clean up *update here?
-    //PySafeDecRef(*update);
+    PySafeDecRef(*update);
     //SafeDelete(update);
 }
 

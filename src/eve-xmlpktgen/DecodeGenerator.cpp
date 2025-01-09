@@ -242,7 +242,7 @@ bool ClassDecodeGenerator::ProcessReal(const TiXmlElement* field)
                 "        %s = %s->AsFloat()->value();\n"
                 "    } else {\n"
                 "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a Double: %%s\", %s->TypeString());\n"
-                "        //PyDecRef(%s);        // this shit aint right...cant get base item name here yet...testing\n"
+                "        PyDecRef(%s);        // this shit aint right...cant get base item name here yet...testing\n"
                 "        return false;\n"
                 "    }\n\n",
                 v,
@@ -260,7 +260,7 @@ bool ClassDecodeGenerator::ProcessReal(const TiXmlElement* field)
                 "        %s = %s->AsFloat()->value();\n"
                 "    } else {\n"
                 "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a Double: %%s\", %s->TypeString());\n"
-                "        //PyDecRef(%s);        // this shit aint right...cant get base item name here yet...testing\n"
+                "        PyDecRef(%s);        // this shit aint right...cant get base item name here yet...testing\n"
                 "        return false;\n"
                 "    }\n\n",
                 v,

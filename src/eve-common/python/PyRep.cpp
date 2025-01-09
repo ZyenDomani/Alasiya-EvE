@@ -447,7 +447,7 @@ int32 PyFloat::hash() const
             if (plong == nullptr)
                 return -1;
             x = plong->hash();
-            //PyDecRef(plong);
+            PyDecRef(plong);
             return x;
         }
         /* Fits in a C long == a Python int, so is its own hash. */
@@ -1301,7 +1301,7 @@ bool PyPackedRow::visit(PyVisitor& v) const
 bool PyPackedRow::SetField(uint32 index, PyRep* value)
 {
     if (!mHeader->VerifyValue(index, value))  {
-        //PyDecRef(value);
+        PyDecRef(value);
         return false;
     }
 

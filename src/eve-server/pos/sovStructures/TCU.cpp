@@ -89,7 +89,7 @@ void TCUSE::SetOnline()
             _log(SOV__DEBUG, "ProcessSovStatusChanged sent to %s (%u)", cur->GetName(), cur->GetCharID());
         }
 
-    //PyDecRef(data);
+    PyDecRef(data);
 }
 
 void TCUSE::SetOffline()
@@ -114,7 +114,7 @@ void TCUSE::SetOffline()
         }
 
     StructureSE::SetOffline();
-    //PyDecRef(data);
+    PyDecRef(data);
 }
 
 void TCUSE::Process()

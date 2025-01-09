@@ -135,7 +135,7 @@ bool ClassDestructGenerator::ProcessBuffer( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    //PySafeDecRef( %s );\n",
+        "    PySafeDecRef( %s );\n",
         name
     );
 
@@ -192,7 +192,7 @@ bool ClassDestructGenerator::ProcessObject( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    //PySafeDecRef( %s );\n\n",
+        "    PySafeDecRef( %s );\n\n",
         name
     );
 
@@ -213,7 +213,7 @@ bool ClassDestructGenerator::ProcessObjectEx( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    //PySafeDecRef( %s );\n\n",
+        "    PySafeDecRef( %s );\n\n",
         name
     );
 
@@ -229,7 +229,7 @@ bool ClassDestructGenerator::ProcessTuple( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "   //PySafeDecRef( %s );\n\n",
+        "   PySafeDecRef( %s );\n\n",
         name
     );
 
@@ -250,7 +250,7 @@ bool ClassDestructGenerator::ProcessList( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    //PySafeDecRef( %s );\n\n",
+        "    PySafeDecRef( %s );\n\n",
         name
     );
 
@@ -285,7 +285,7 @@ bool ClassDestructGenerator::ProcessDict( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    //PySafeDecRef( %s );\n\n",
+        "    PySafeDecRef( %s );\n\n",
         name
     );
 

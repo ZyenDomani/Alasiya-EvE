@@ -49,7 +49,7 @@ EVETCPConnection::EVETCPConnection( Socket* sock, uint32 rIP, uint16 rPort )
 
 void EVETCPConnection::QueueRep( const PyRep* rep, bool compress/*true*/ )
 {
-    Buffer* pBuffer = new Buffer();
+    Buffer* pBuffer(new Buffer());
 
     // make room for length
     const Buffer::iterator<uint32> bufLen = pBuffer->end<uint32>();

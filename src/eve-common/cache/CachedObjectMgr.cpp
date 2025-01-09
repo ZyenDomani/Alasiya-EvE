@@ -837,7 +837,7 @@ bool PyCachedCall::Decode(PySubStream **in_ss)
     PySubStream *ss = *in_ss;    //consume
     *in_ss = nullptr;
 
-    //PySafeDecRef( result );
+    PySafeDecRef( result );
 
     ss->DecodeData();
     if (ss->decoded() == nullptr) {
@@ -861,6 +861,6 @@ bool PyCachedCall::Decode(PySubStream **in_ss)
             result = cur->second->Clone();
     }
 
-    //PyDecRef( ss );
+    PyDecRef( ss );
     return (result != nullptr);
 }

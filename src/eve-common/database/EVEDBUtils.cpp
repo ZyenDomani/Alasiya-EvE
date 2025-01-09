@@ -418,7 +418,7 @@ PyObjectEx *DBResultToCRowset(DBQueryResult &result)
         FillPackedRow(row, into);
     }
 
-    //PyDecRef(header);
+    PyDecRef(header);
     return rowset;
 }
 
@@ -451,7 +451,7 @@ PyObjectEx *DBResultToCIndexedRowset(DBQueryResult &result, uint32 key_index) {
         FillPackedRow(row, into);
     }
 
-    //PyDecRef(header);
+    PyDecRef(header);
     return rowset;
 }
 

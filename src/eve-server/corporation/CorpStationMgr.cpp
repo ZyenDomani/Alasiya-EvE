@@ -265,7 +265,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
         PyIncRef(payload);
         cur->SendNotification("OnObjectPublicAttributesUpdated", "stationid", &payload, false);
     }
-    //PyDecRef( payload );
+    PyDecRef( payload );
 
     // returns officeID
     return new PyInt(odata.officeID);

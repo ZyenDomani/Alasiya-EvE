@@ -1454,7 +1454,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         payload->Dump(FLEET__BCAST_DUMP, "   ");
     }
 
-    //PyDecRef(payload);
+    PyDecRef(payload);
 }
 
 void FleetService::SendFleetUpdate(uint32 fleetID, const char* notifyType, PyTuple* payload)
