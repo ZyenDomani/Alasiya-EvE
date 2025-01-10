@@ -61,6 +61,10 @@ void StaticDataMgr::Close()
     delete m_npcDivisions;
     */
 
+    //m_agents->DecRef();
+    //m_operands->DecRef();
+    //m_billTypes->DecRef();
+
     //for (auto &cur : m_bpMatlData)
     //    (cur.second)->DecRef();
 
@@ -1480,8 +1484,8 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     // this is the response.  test for items populated above and create an ItemString in the dict for that item.
     // items not populated will not be shown in the BP info.
     DBQueryResult mtRes;
-    PyRep* mtCRowSet = DBResultToCRowset(mtRes);
-    PyDict* rsp = new PyDict();
+    PyRep* mtCRowSet(DBResultToCRowset(mtRes));
+    PyDict* rsp(new PyDict());
     // activity '0' should stay empty
     //activityNone = 0
     //rsp->SetItem(0, new PyDict());
@@ -1564,26 +1568,27 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     }
 
     // cleanup
-    PyDecRef(row);    // this is cleaned up elsewhere.  throws deleted=true on DecRef
-    PyDecRef(header);
-    PyDecRef(matlListManuf);
-    PyDecRef(skillListManuf);
-    PyDecRef(extraListManuf);
-    PyDecRef(matlListTE);
-    PyDecRef(skillListTE);
-    PyDecRef(matlListME);
-    PyDecRef(skillListME);
-    PyDecRef(matlListCopy);
-    PyDecRef(skillListCopy);
-    PyDecRef(matlListDup);
-    PyDecRef(skillListDup);
-    PyDecRef(extraListDup);
-    PyDecRef(matlListRE);
-    PyDecRef(skillListRE);
-    PyDecRef(matlListInvent);
-    PyDecRef(skillListInvent);
-    PyDecRef(mtCRowSet);
-
+    /*
+    //PyDecRef(row);    // this is cleaned up elsewhere.  throws deleted=true on DecRef
+    //PyDecRef(header);
+    //PyDecRef(matlListManuf);
+    //PyDecRef(skillListManuf);
+    //PyDecRef(extraListManuf);
+    //PyDecRef(matlListTE);
+    //PyDecRef(skillListTE);
+    //PyDecRef(matlListME);
+    //PyDecRef(skillListME);
+    //PyDecRef(matlListCopy);
+    //PyDecRef(skillListCopy);
+    //PyDecRef(matlListDup);
+    //PyDecRef(skillListDup);
+    //PyDecRef(extraListDup);
+    //PyDecRef(matlListRE);
+    //PyDecRef(skillListRE);
+    //PyDecRef(matlListInvent);
+    //PyDecRef(skillListInvent);
+    //PyDecRef(mtCRowSet);
+    */
     return rsp;
 }
 

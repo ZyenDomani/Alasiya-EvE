@@ -226,7 +226,7 @@ protected:
     //bool LoadAttributes();
     bool m_loaded;
 
-    static uint32 CreateItemID( ItemData &data);
+    static uint32 CreateItemID(ItemData &data);
 
 public:
     /* new effects system */

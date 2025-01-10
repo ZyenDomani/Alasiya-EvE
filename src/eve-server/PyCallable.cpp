@@ -101,17 +101,17 @@ ssNamedResult(namedResult)
 
 PyResult::PyResult(const PyResult& oth) : ssResult(nullptr), ssNamedResult(nullptr) { *this = oth; }
 PyResult::~PyResult() {
-    PySafeDecRef( ssResult );
-    PySafeDecRef( ssNamedResult );
+    //PySafeDecRef( ssResult );
+    //PySafeDecRef( ssNamedResult );
 }
 
 PyResult& PyResult::operator=(const PyResult& oth)
 {
-    PySafeDecRef(ssResult);
-    PySafeIncRef(oth.ssResult);
     if (oth.ssResult == nullptr ) {
         ssResult = PyStatic.NewNone();
     } else {
+        PySafeDecRef(ssResult);
+        PySafeIncRef(oth.ssResult);
         ssResult = oth.ssResult;
     }
 

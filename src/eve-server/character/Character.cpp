@@ -1420,21 +1420,28 @@ void Character::AddImplant(uint8 slotID, InventoryItemRef iRef) {
     sFxProc.ApplyEffects(iRef.get(), this, nullptr, true);
     iRef->ClearModifiers();
 
-    // implant mod map by attribID
-    // find attrib this implant modifies, if applicable
-    if (iRef->HasAttribute(AttrCharismaBonus)) {
-        m_implantModMap[AttrCharisma] = iRef;
-    } else if (iRef->HasAttribute(AttrIntelligenceBonus)) {
-        m_implantModMap[AttrIntelligence] = iRef;
-    } else if (iRef->HasAttribute(AttrMemoryBonus)) {
-        m_implantModMap[AttrMemory] = iRef;
-    } else if (iRef->HasAttribute(AttrPerceptionBonus)) {
-        m_implantModMap[AttrPerception] = iRef;
-    } else if (iRef->HasAttribute(AttrWillpowerBonus)) {
-        m_implantModMap[AttrWillpower] = iRef;
-    }
-
     m_implantMap[slotID] = std::move(iRef);
+
+    // implant mod map by slot
+    switch (slotID) {
+        case 1:     //Perception
+            m_implantModMap[AttrPerception] = iRef;
+            break;
+        case 2:     //Memory
+            m_implantModMap[AttrMemory] = iRef;
+            break;
+        case 3:     //Willpower
+            m_implantModMap[AttrWillpower] = iRef;
+            break;
+        case 4:     //Intelligence
+            m_implantModMap[AttrIntelligence] = iRef;
+            break;
+        case 5:     //Charisma
+            m_implantModMap[AttrCharisma] = iRef;
+            break;
+        default:
+            break;
+    }
 }
 
 void Character::RemoveImplant(uint8 slotID) {

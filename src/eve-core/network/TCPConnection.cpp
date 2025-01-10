@@ -165,7 +165,7 @@ void TCPConnection::Disconnect()
 bool TCPConnection::Send( Buffer** data )
 {
     // Invalidate pointer
-    Buffer* buf = *data;
+    Buffer* buf(*data);
     *data = nullptr;
 
     // Check we are in STATE_CONNECTED

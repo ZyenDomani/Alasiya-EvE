@@ -181,46 +181,46 @@ void CachedObjectMgr::UpdateCacheFromSS(const std::string &objectID, PySubStream
         return;
     }
 
-    PyString* str = new PyString( objectID );
+    PyString* str(new PyString( objectID ));
     PyBuffer* buf = cache.cache->data();
     _UpdateCache(str, &buf);
-    PyDecRef(str);
+    //PyDecRef(str);
 }
 
 void CachedObjectMgr::UpdateCache(const std::string &objectID, PyRep **in_cached_data)
 {
     PyString *str = new PyString( objectID );
     UpdateCache(str, in_cached_data);
-    PyDecRef(str);
+    //PyDecRef(str);
 }
 
 void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
 {
     PyRep* cached_data(*in_cached_data);
-    in_cached_data = nullptr;
+    *in_cached_data = nullptr;
 
     //if (is_log_enabled(CACHE__DUMP)) {
     //  PyLogsysDump dumper(CACHE__DUMP, CACHE__DUMP, false, true);
         //cached_data->visit(&dumper, 0);
     //}
 
-    Buffer* buf = new Buffer();
-    bool res = MarshalDeflate( cached_data, *buf );
+    Buffer* buf(new Buffer());
+    bool res(MarshalDeflate( cached_data, *buf ));
 
     if ( res ) {
-        PyBuffer* pbuf = new PyBuffer( &buf );
+        PyBuffer* pbuf(new PyBuffer( &buf ));
         _UpdateCache( objectID, &pbuf );
     } else {
         sLog.Error( "Cached Obj Mgr", "Failed to marshal or deflate new cache object." );
     }
 
-    delete buf;
+    objectID->DecRef();
 }
 
 void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer **pbuf)
 {
     //this is the hard one..
-    CacheRecord *r = new CacheRecord();
+    CacheRecord *r(new CacheRecord());
     r->timestamp = GetFileTimeNow();
     r->objectID = objectID->Clone();
 
@@ -233,11 +233,11 @@ void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer **pbuf)
     const std::string str = OIDToString(objectID);
 
     //find and destroy any older version of this object.
-    CachedObjMapItr res = m_cachedObjects.find(str);
+    CachedObjMapItr itr = m_cachedObjects.find(str);
 
-    if (res != m_cachedObjects.end()) {
-        _log(CACHE__INFO,"Destroying old cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), res->second->cache->content().size(), res->second->version);
-        SafeDelete( res->second );
+    if ( itr != m_cachedObjects.end()) {
+        _log(CACHE__INFO,"Destroying old cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), itr->second->cache->content().size(), itr->second->version);
+        SafeDelete( itr->second );
     }
 
     _log(CACHE__INFO,"Registering new cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), r->cache->content().size(), r->version);

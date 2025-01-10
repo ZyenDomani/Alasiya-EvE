@@ -33,21 +33,15 @@
 
 MarketMgr::MarketMgr()
 : m_marketGroups(nullptr),
-m_manager(nullptr)
+m_manager(nullptr),
+m_timeStamp(0)
 {
-    m_timeStamp = 0;
-}
-
-MarketMgr::~MarketMgr()
-{
-    PyDecRef(m_marketGroups);
 }
 
 void MarketMgr::Close()
 {
     /** @todo put a save method here which will save anything changed before shutdown */
     //SafeDelete(m_marketGroups);
-    PyDecRef(m_marketGroups);
     sLog.Warning("        MarketMgr", "Market Manager has been closed." );
 }
 

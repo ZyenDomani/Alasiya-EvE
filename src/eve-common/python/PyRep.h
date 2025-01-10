@@ -726,7 +726,7 @@ public:
      */
     void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str)); }
 
-    void AddItem(PyRep* i)				{ items.push_back(i); }
+    void AddItem(PyRep* pRep)				{ items.push_back(pRep); }
     void AddItemInt(int32 intval)			{ AddItem(new PyInt(intval)); }
     void AddItemLong(int64 intval)			{ AddItem(new PyLong(intval)); }
     void AddItemReal(double realval)			{ AddItem(new PyFloat(realval)); }

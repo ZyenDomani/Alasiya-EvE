@@ -25,7 +25,7 @@ class MarketMgr
 {
 public:
     MarketMgr();
-    ~MarketMgr();
+    ~MarketMgr()                                        { /* do nothing here */ }
 
     int Initialize(PyServiceMgr* pManager);
 

@@ -2425,7 +2425,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
 void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyResult &rsp)
 {
     //build the packet:
-    PyPacket* packet = new PyPacket();
+    PyPacket* packet(new PyPacket());
     packet->type_string = "macho.CallRsp";
     packet->type = CALL_RSP;
 
@@ -2437,7 +2437,7 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyResult &rs
 
     packet->userid = GetUserID();
 
-    packet->payload = new PyTuple(1);
+    packet->payload = std::move(new PyTuple(1));
     packet->payload->SetItem(0, new PySubStream(rsp.ssResult));
     packet->named_payload = rsp.ssNamedResult;
 
@@ -2621,7 +2621,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream* req)
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::clientCall, GetTimeUSeconds() - profileStartTime);
 
-    SafeDelete(req);
+    //SafeDelete(req);
     return true;
 }
 
@@ -2684,7 +2684,7 @@ void Client::SendErrorMsg(const char* fmt, ...)
     n.msgType = "CustomError";
     n.args[ "error" ] = new PyString(str);
 
-    PyTuple* tmp = n.Encode();
+    PyTuple* tmp(n.Encode());
 
     // NOTE: 'OnRemoteMessage' can be disabled in client
     SendNotification("OnRemoteMessage", "charid", &tmp);

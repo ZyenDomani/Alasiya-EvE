@@ -44,8 +44,7 @@ public:
     : m_parent(parent) {
     }
 
-    virtual ~PyCallableDispatcher() {
-    }
+    virtual ~PyCallableDispatcher()                     { /* do nothing here */ }
 
     void RegisterCall(const char *call_name, CallProc p) {
         m_serviceCalls[call_name] = p;
