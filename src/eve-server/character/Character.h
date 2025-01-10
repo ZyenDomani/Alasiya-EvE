@@ -496,7 +496,7 @@ private:
      *
      */
     std::map<uint8, InventoryItemRef>  m_implantMap;            // slotID/itemRef
-    std::map<uint8, InventoryItemRef>  m_implantModMap;         // attribID/itemRef
+    std::map<uint8, InventoryItemRef>  m_implantAttribMap;      // attribID/itemRef
     std::map<uint8, InventoryItemRef>  m_boosterMap;            // slotID/itemRef
     // for storyline mission counting
     std::map<uint32, std::map<uint8, uint8>> m_missionMap;      // factionID, [level, count]

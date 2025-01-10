@@ -1325,13 +1325,12 @@ void Character::Undock() {
 }
 
 InventoryItemRef Character::GetImplantForAttrib(uint8 attribID) {
-    std::map<uint8, InventoryItemRef>::iterator itr = m_implantModMap.find(attribID);
-    if (itr != m_implantModMap.end())
+    std::map<uint8, InventoryItemRef>::iterator itr = m_implantAttribMap.find(attribID);
+    if (itr != m_implantAttribMap.end())
         return itr->second;
 
     return InventoryItemRef(nullptr);
 }
-
 
 InventoryItemRef Character::GetImplantAtSlot(uint8 slotID) {
     std::map<uint8, InventoryItemRef>::iterator itr = m_implantMap.find(slotID);
@@ -1352,21 +1351,19 @@ void Character::LoadImplants() {
         m_implantMap[slot] = cur;
         switch (slot) {
             case 1:     //Perception
-                m_implantModMap[AttrPerception] = cur;
+                m_implantAttribMap[AttrPerception] = cur;
                 break;
             case 2:     //Memory
-                m_implantModMap[AttrMemory] = cur;
+                m_implantAttribMap[AttrMemory] = cur;
                 break;
             case 3:     //Willpower
-                m_implantModMap[AttrWillpower] = cur;
+                m_implantAttribMap[AttrWillpower] = cur;
                 break;
             case 4:     //Intelligence
-                m_implantModMap[AttrIntelligence] = cur;
+                m_implantAttribMap[AttrIntelligence] = cur;
                 break;
             case 5:     //Charisma
-                m_implantModMap[AttrCharisma] = cur;
-                break;
-            default:
+                m_implantAttribMap[AttrCharisma] = cur;
                 break;
         }
     }
@@ -1420,28 +1417,26 @@ void Character::AddImplant(uint8 slotID, InventoryItemRef iRef) {
     sFxProc.ApplyEffects(iRef.get(), this, nullptr, true);
     iRef->ClearModifiers();
 
-    m_implantMap[slotID] = std::move(iRef);
-
     // implant mod map by slot
     switch (slotID) {
         case 1:     //Perception
-            m_implantModMap[AttrPerception] = iRef;
+            m_implantAttribMap[AttrPerception] = iRef;
             break;
         case 2:     //Memory
-            m_implantModMap[AttrMemory] = iRef;
+            m_implantAttribMap[AttrMemory] = iRef;
             break;
         case 3:     //Willpower
-            m_implantModMap[AttrWillpower] = iRef;
+            m_implantAttribMap[AttrWillpower] = iRef;
             break;
         case 4:     //Intelligence
-            m_implantModMap[AttrIntelligence] = iRef;
+            m_implantAttribMap[AttrIntelligence] = iRef;
             break;
         case 5:     //Charisma
-            m_implantModMap[AttrCharisma] = iRef;
-            break;
-        default:
+            m_implantAttribMap[AttrCharisma] = iRef;
             break;
     }
+
+    m_implantMap[slotID] = std::move(iRef);
 }
 
 void Character::RemoveImplant(uint8 slotID) {
@@ -1451,32 +1446,18 @@ void Character::RemoveImplant(uint8 slotID) {
         return;
     }
 
-    if (m_pClient->IsInSpace()) {
-        Effect curEffect = Effect();
-        std::vector<TypeEffects> typeFx;
-        sFxDataMgr.GetTypeEffect(itr->second->typeID(), typeFx);
-        for (auto &curFx : typeFx) {
-            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-            fxData data = fxData();
-            data.action = FX::Action::Invalid;
-            data.srcRef = itr->second;
-            sFxProc.ParseExpression(itr->second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
-        }
-        // apply processed effects
-        sFxProc.ApplyEffects(itr->second.get(), this, nullptr, true);
+    Effect curEffect = Effect();
+    std::vector<TypeEffects> typeFx;
+    sFxDataMgr.GetTypeEffect(itr->second->typeID(), typeFx);
+    for (auto &curFx : typeFx) {
+        curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+        fxData data = fxData();
+        data.action = FX::Action::Invalid;
+        data.srcRef = itr->second;
+        sFxProc.ParseExpression(itr->second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
     }
-
-    // remove from attrib mod map
-    std::map<uint8, InventoryItemRef>::iterator itr2 = m_implantModMap.begin();
-    while (itr2 != m_implantModMap.end()) {
-        if (itr2->second != itr->second) {
-            ++itr2;
-            continue;
-        }
-
-        m_implantModMap.erase(itr2);
-        itr2 = m_implantModMap.end();
-    }
+    // apply processed effects
+    sFxProc.ApplyEffects(itr->second.get(), this, nullptr, true);
 
     if (sConfig.character.DeleteImplantOnRemoval) {
         itr->second->Delete();
@@ -1488,6 +1469,26 @@ void Character::RemoveImplant(uint8 slotID) {
 
         itr->second->ClearModifiers();
         itr->second->Move(hangarID, flagID, true);
+    }
+
+    // remove from attrib mod map
+    // implant mod map by slot
+    switch (slotID) {
+        case 1:     //Perception
+            m_implantAttribMap.erase(AttrPerception);
+            break;
+        case 2:     //Memory
+            m_implantAttribMap.erase(AttrMemory);
+            break;
+        case 3:     //Willpower
+            m_implantAttribMap.erase(AttrWillpower);
+            break;
+        case 4:     //Intelligence
+            m_implantAttribMap.erase(AttrIntelligence);
+            break;
+        case 5:     //Charisma
+            m_implantAttribMap.erase(AttrCharisma);
+            break;
     }
 
     m_implantMap.erase(itr);
@@ -1510,6 +1511,7 @@ void Character::DeleteImplants() {
         cur.second->Delete();
     }
     m_implantMap.clear();
+    m_implantAttribMap.clear();
 }
 
 void Character::GetBoosterSlots() {
