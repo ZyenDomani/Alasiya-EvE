@@ -1063,30 +1063,28 @@ bool CharacterDB::ChangeCloneLocation(uint32 characterID, uint32 locationID)
     return true;
 }
 
-bool CharacterDB::GetAttributesFromAncestry(uint32 ancestryID, uint8 &intelligence, uint8 &charisma, uint8 &perception, uint8 &memory, uint8 &willpower) {
-    DBQueryResult res;
-
+bool CharacterDB::GetAttributesFromAncestry(DBQueryResult &res) {
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        "  intelligence, charisma, perception, memory, willpower "
-        " FROM chrAncestries "
-        " WHERE ancestryID = %u ", ancestryID))
+        " SELECT"
+        "  ancestryID, intelligence, charisma, perception, memory, willpower"
+        " FROM chrAncestries"))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Failed to find ancestry information for ancestry %u", ancestryID);
+    return true;
+}
+
+bool CharacterDB::GetAttributesFromBloodline(DBQueryResult &res) {
+    if (!sDatabase.RunQuery(res,
+        " SELECT"
+        "  bloodlineID, intelligence, charisma, perception, memory, willpower"
+        " FROM chrBloodlines"))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
-
-    intelligence += row.GetUInt(0);
-    charisma += row.GetUInt(1);
-    perception += row.GetUInt(2);
-    memory += row.GetUInt(3);
-    willpower += row.GetUInt(4);
 
     return true;
 }

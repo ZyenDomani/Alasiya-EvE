@@ -79,93 +79,6 @@ public:
 };
 
 /**
- * Class which maintains character type data.
- */
-class CharacterType
-: public ItemType
-{
-    friend class ItemType; // to let it construct us
-public:
-    static CharacterType* Load(uint16 typeID);
-
-    /*
-     * Access functions:
-     */
-    uint8 bloodlineID() const                           { return m_bloodlineID; }
-
-    const std::string& bloodlineName() const            { return m_bloodlineName; }
-    const std::string& description() const              { return m_description; }
-    const std::string& maleDescription() const          { return m_maleDescription; }
-    const std::string& femaleDescription() const        { return m_femaleDescription; }
-    uint32 corporationID() const                        { return m_corporationID; }
-
-    uint8 perception() const                            { return m_perception; }
-    uint8 willpower() const                             { return m_willpower; }
-    uint8 charisma() const                              { return m_charisma; }
-    uint8 memory() const                                { return m_memory; }
-    uint8 intelligence() const                          { return m_intelligence; }
-
-    const std::string& shortDescription() const         { return m_shortDescription; }
-    const std::string& shortMaleDescription() const     { return m_shortMaleDescription; }
-    const std::string& shortFemaleDescription() const   { return m_shortFemaleDescription; }
-
-protected:
-    CharacterType(
-        uint16 _id,
-        uint8 _bloodlineID,
-        // ItemType stuff:
-        const Inv::TypeData& _data,
-        // CharacterType stuff:
-        const CharacterTypeData& _charData
-    );
-
-    /**
-     * Member functions
-     */
-    using ItemType::_Load;
-
-    // Template loader:
-    template<class _Ty>
-    static _Ty* _LoadType(uint16 typeID, const Inv::TypeData& data)
-    {
-        // check we are really loading a character type
-        if (data.groupID != EVEDB::invGroups::Character) {
-            _log( ITEM__ERROR, "Trying to load %s as CharacterType.", sDataMgr.GetGroupName(data.groupID));
-            return nullptr;
-        }
-
-        // query character type data
-        uint8 bloodlineID(0);
-        CharacterTypeData charData;
-        if (!CharacterDB::GetCharacterType(typeID, bloodlineID, charData) )
-            return nullptr;
-
-        return new CharacterType( typeID, bloodlineID, data, charData );
-    }
-
-    /*
-     * Data members
-     */
-    uint8 m_bloodlineID;
-
-    std::string m_bloodlineName;
-    std::string m_description;
-    std::string m_maleDescription;
-    std::string m_femaleDescription;
-    uint32 m_corporationID;
-
-    uint8 m_perception;
-    uint8 m_willpower;
-    uint8 m_charisma;
-    uint8 m_memory;
-    uint8 m_intelligence;
-
-    std::string m_shortDescription;
-    std::string m_shortMaleDescription;
-    std::string m_shortFemaleDescription;
-};
-
-/**
  * Container for character appearance stuff.
  */
 class CharacterAppearance {
@@ -286,8 +199,8 @@ public:
     PyTuple*        SendSkillQueue();
 
     /* Public fields */
-    const CharacterType&    type() const                        { return static_cast<const CharacterType& >(InventoryItem::type()); }
-    uint32                  bloodlineID() const                 { return type().bloodlineID(); }
+    //const CharacterType&    type() const                        { return static_cast<const CharacterType& >(InventoryItem::type()); }
+    //uint32                  bloodlineID() const                 { return type().bloodlineID(); }
     uint8                   race() const                        { return type().race(); }
 
     // Account:
@@ -406,11 +319,15 @@ public:
     void DeleteImplants();
     void DeleteBoosters();
 
+    // update char with new atrribute data
+    void FixCharAttribs();
+
+
 protected:
     Character(
         uint32 _characterID,
         // InventoryItem stuff:
-        const CharacterType& _charType,
+        const ItemType &_itemType,
         const ItemData& _data,
         // Character stuff:
         const CharacterData& _charData,
@@ -450,11 +367,8 @@ protected:
         if (!CharacterDB::GetCharCorpData(charID, corpData))
             return RefPtr<_Ty>(nullptr);
 
-        // cast the type
-        const CharacterType& charType = static_cast<const CharacterType& >(type);
-
         // construct the character item
-        return CharacterRef(new Character(charID, charType, data, charData, corpData));
+        return CharacterRef(new Character(charID, type, data, charData, corpData));
     }
 
 

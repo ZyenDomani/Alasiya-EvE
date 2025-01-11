@@ -283,19 +283,17 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
     }
 
     InventoryItemRef iRef(call.client->GetChar()->GetImplantForAttrib(args.arg));
+    // modified client code for this
+    //  for typeID, value in modifiers:
     PyList* list(new PyList());
-    PyTuple* tuple(new PyTuple(4));
+    PyTuple* tuple(new PyTuple(2));
     if (iRef.get() != nullptr) {
-        tuple->SetItem(0, new PyInt(iRef->itemID()));
-        tuple->SetItem(1, new PyInt(iRef->typeID()));
-        tuple->SetItem(2, PyStatic.NewZero());   //operation (doesnt appear to be used - 2 in logs)
-        tuple->SetItem(3, iRef->GetAttribute(args.arg + 11).GetPyObject());
+        tuple->SetItem(0, new PyInt(iRef->typeID()));
+        tuple->SetItem(1, iRef->GetAttribute(args.arg + 11).GetPyObject());
         list->AddItem(tuple);
     } else {
         tuple->SetItem(0, PyStatic.NewZero());
         tuple->SetItem(1, PyStatic.NewZero());
-        tuple->SetItem(2, PyStatic.NewZero());
-        tuple->SetItem(3, PyStatic.NewZero());
         list->AddItem(tuple);
     }
 

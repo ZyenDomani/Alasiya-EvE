@@ -32,6 +32,10 @@ def SaveChanges(self, *args):
                 return
         else:
             raise UserError('RespecTooSoon', {'nextTime': respecInfo['nextTimedRespec']})
+
+        for x in xrange(0, 5):
+            newAttributes[self.attributes[x]] +=  self.implantModifier[x]
+
         self.skillHandler.RespecCharacter(newAttributes[const.attributeCharisma], newAttributes[const.attributeIntelligence], newAttributes[const.attributeMemory], newAttributes[const.attributePerception], newAttributes[const.attributeWillpower])
     self.CloseByUser()
 

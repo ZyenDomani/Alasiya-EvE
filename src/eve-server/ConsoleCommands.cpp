@@ -38,7 +38,7 @@
 #include "market/MarketMgr.h"
 #include "missions/MissionDataMgr.h"
 #include "threading/Threading.h"
-// #include "testing/test.h"
+#include "testing/test.h"
 
 
 ConsoleCommand::ConsoleCommand()
@@ -359,7 +359,12 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Running Server Test Code:");
-    sLog.Warning(" Server Test Code", "No Test Code at this time.");
+    //sLog.Warning(" Server Test Code", "No Test Code at this time.");
+
+    double start = GetTimeMSeconds();
+    
+    testing t;
+    t.CharAttribTest();
 
     //sMktMgr.GetCruPrices();
     //sLog.Blue("       MktPricing", "Base material Prices Updated");
@@ -370,6 +375,8 @@ void ConsoleCommand::Test()
     //  first step:  get courier missionIDs
     //sMissionDataMgr.UpdateMissionData();
     //MarketDB::UpdateHistory();
+
+    sLog.Magenta("CC::Test()", "test code processed in %.3fms", (GetTimeMSeconds() - start));
 }
 
 void ConsoleCommand::UpdateStatus() {

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    10.6
+    Version:    10.8
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -182,7 +182,6 @@ public:
     struct {
         bool allow3edChar;
         bool DeleteImplantOnRemoval;
-        uint8 statMultiplier;
         /// Starting corp ID for new characters
         uint32 startCorporation;
         /// Delay for terminating a character in seconds

@@ -311,9 +311,11 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
 
 void ItemDB::SaveAttributes(bool isChar, std::vector<Inv::AttrData>& data)
 {
+    DBerror err;
     std::ostringstream Inserts;
     // start the insert into command.
     if (isChar) {
+        sDatabase.RunQuery(err, "DELETE FROM chrCharacterAttributes WHERE charID = %u", data.begin()->itemID);
         Inserts << "INSERT INTO chrCharacterAttributes";
         Inserts << " (charID, attributeID, valueInt, valueFloat)";
     } else {
@@ -339,7 +341,7 @@ void ItemDB::SaveAttributes(bool isChar, std::vector<Inv::AttrData>& data)
         Inserts << "ON DUPLICATE KEY UPDATE ";
         Inserts << "valueInt=VALUES(valueInt), ";
         Inserts << "valueFloat=VALUES(valueFloat)";
-        DBerror err;
+
         if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
             _log(DATABASE__ERROR, "SaveItems - unable to save data - %s", err.c_str());
     }

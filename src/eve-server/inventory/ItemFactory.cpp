@@ -78,9 +78,6 @@ void ItemFactory::Close()
     // types
     for (auto &cur : m_types)
         SafeDelete(cur.second);
-    // items
-    //for (auto &cur : m_items)
-    //    delete(cur.second.get());
     // Set Client pointer to NULL
     m_pClient = nullptr;
 }
@@ -256,17 +253,14 @@ const BlueprintType* ItemFactory::GetBlueprintType(uint16 blueprintTypeID) {
     return _GetType<BlueprintType>(blueprintTypeID);
 }
 
-const CharacterType* ItemFactory::GetCharacterType(uint16 characterTypeID) {
-    return _GetType<CharacterType>(characterTypeID);
-}
-
-const CharacterType* ItemFactory::GetCharacterTypeByBloodline(uint16 bloodlineID) {
+const ItemType* ItemFactory::GetCharacterTypeByBloodline(uint16 bloodlineID) {
     // Unfortunately, we have it indexed by typeID, so we must get it ...
-    uint16 characterTypeID;
+    uint16 characterTypeID(0);
     if (!CharacterDB::GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
         return nullptr;
-    return GetCharacterType(characterTypeID);
+    return GetType(characterTypeID);
 }
+
 const StationType* ItemFactory::GetStationType(uint16 stationTypeID) {
     return _GetType<StationType>(stationTypeID);
 }

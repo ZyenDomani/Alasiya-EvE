@@ -61,34 +61,6 @@ CharacterTypeData::CharacterTypeData(
 }
 
 /*
- * CharacterType
- */
-CharacterType::CharacterType(uint16 _id, uint8 _bloodlineID, const Inv::TypeData& _data, const CharacterTypeData& _charData)
-: ItemType(_id, _data),
-  m_bloodlineID(_bloodlineID),
-  m_bloodlineName(_charData.bloodlineName),
-  m_description(_charData.description),
-  m_maleDescription(_charData.maleDescription),
-  m_femaleDescription(_charData.femaleDescription),
-  m_corporationID(_charData.corporationID),
-  m_perception(_charData.perception),
-  m_willpower(_charData.willpower),
-  m_charisma(_charData.charisma),
-  m_memory(_charData.memory),
-  m_intelligence(_charData.intelligence),
-  m_shortDescription(_charData.shortDescription),
-  m_shortMaleDescription(_charData.shortMaleDescription),
-  m_shortFemaleDescription(_charData.shortFemaleDescription)
-{
-    // check for consistency
-    assert(_data.race == _charData.race);
-}
-
-CharacterType *CharacterType::Load(uint16 typeID) {
-    return ItemType::Load<CharacterType>(typeID);
-}
-
-/*
  * CharacterAppearance
  */
 void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
@@ -229,12 +201,12 @@ void CharacterPortrait::Build(uint32 charID, PyDict* data)
 Character::Character(
     uint32 _characterID,
     // InventoryItem stuff:
-    const CharacterType &_charType,
+    const ItemType &_itemType,
     const ItemData &_data,
     // Character stuff:
     const CharacterData &_charData,
     const CorpData &_corpData)
-: InventoryItem(_characterID, _charType, _data),
+: InventoryItem(_characterID, _itemType, _data),
   m_charData(_charData),
   m_corpData(_corpData),
   m_pClient(nullptr),
@@ -297,6 +269,12 @@ bool Character::_Load() {
 
     m_charData.loginTime = GetFileTimeNow();
 
+    // update attribs for new character attribute system
+    if (!HasAttribute(AttrMemoryBonus)) {
+        FixCharAttribs();
+        SaveAttributes();
+    }
+
     return m_loaded;
 }
 
@@ -324,8 +302,8 @@ void Character::CheckSkillQueue() {
 
 CharacterRef Character::Spawn(CharacterData& charData, CorpData& corpData) {
     // make sure it's a character
-    const CharacterType *ct = sItemFactory.GetCharacterType(charData.typeID);
-    if (ct == nullptr)
+    const ItemType *iType = sItemFactory.GetType(charData.typeID);
+    if (iType == nullptr)
         return CharacterRef(nullptr);
 
     uint32 characterID = CharacterDB::NewCharacter(charData, corpData);
@@ -1472,7 +1450,6 @@ void Character::RemoveImplant(uint8 slotID) {
     }
 
     // remove from attrib mod map
-    // implant mod map by slot
     switch (slotID) {
         case 1:     //Perception
             m_implantAttribMap.erase(AttrPerception);
@@ -1707,4 +1684,20 @@ void Character::SetStanding(uint32 fromID, uint32 toID, float standing) {
 // for map system
 void Character::VisitSystem(uint32 solarSystemID) {
 	m_db.VisitSystem(solarSystemID, m_itemID);
+}
+
+void Character::FixCharAttribs() {
+    // set attribute bonuses from ancestry
+    Char::AttrData ancestryData = Char::AttrData();
+    sDataMgr.GetAncestryBonuses(m_charData.ancestryID, ancestryData);
+    // query attribute bonuses from bloodline
+    Char::AttrData bloodlineData = Char::AttrData();
+    sDataMgr.GetBloodlineBonuses(m_charData.bloodlineID, bloodlineData);
+
+    // set attrib bonuses on char
+    SetAttribute(AttrIntelligenceBonus, ancestryData.intelligence + bloodlineData.intelligence, false);
+    SetAttribute(AttrCharismaBonus, ancestryData.charisma + bloodlineData.charisma, false);
+    SetAttribute(AttrPerceptionBonus, ancestryData.perception + bloodlineData.perception, false);
+    SetAttribute(AttrMemoryBonus, ancestryData.memory + bloodlineData.memory, false);
+    SetAttribute(AttrWillpowerBonus, ancestryData.willpower + bloodlineData.willpower, false);
 }

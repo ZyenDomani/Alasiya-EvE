@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    10.7
+    Version:    10.8
 */
 
 
@@ -151,7 +151,6 @@ EVEServerConfig::EVEServerConfig()
     character.startSecRating = 0.0;
     character.startCorporation = 0;
     character.terminationDelay = 180 /*s*/;
-    character.statMultiplier = 1;
     character.allow3edChar = false;
     character.DeleteImplantOnRemoval = true;
 
@@ -567,7 +566,6 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
     AddValueParser( "startSecRating",           character.startSecRating );
     AddValueParser( "startCorporation",         character.startCorporation );
     AddValueParser( "terminationDelay",         character.terminationDelay );
-    AddValueParser( "statMultiplier",           character.statMultiplier );
     AddValueParser( "allow3edChar",             character.allow3edChar );
     AddValueParser( "DeleteImplantOnRemoval",   character.DeleteImplantOnRemoval );
 
@@ -579,7 +577,6 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
     RemoveParser( "startSecRating" );
     RemoveParser( "startCorporation" );
     RemoveParser( "terminationDelay" );
-    RemoveParser( "statMultiplier" );
     RemoveParser( "allow3edChar" );
     RemoveParser( "DeleteImplantOnRemoval" );
 

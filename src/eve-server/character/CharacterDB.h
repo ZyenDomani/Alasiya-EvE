@@ -131,20 +131,10 @@ public:
     void RemoveContact(uint32 charID, uint32 ownerID);
     void SetBlockContact(uint32 charID, uint32 ownerID, bool blocked);
 
-    static bool GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID);
+    static bool        GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID);
 
-    /**
-     * Obtains attribute bonuses for given ancestry.
-     *
-     * @param[in] ancestryID ID of ancestry.
-     * @param[out] intelligence Bonus to intelligence.
-     * @param[out] charisma Bonus to charisma.
-     * @param[out] perception Bonus to perception.
-     * @param[out] memory Bonus to memory.
-     * @param[out] willpower Bonus to willpower.
-     * @return True if operation succeeded, false if failed.
-     */
-    static bool        GetAttributesFromAncestry(uint32 ancestryID, uint8 &intelligence, uint8 &charisma, uint8 &perception, uint8 &memory, uint8 &willpower);
+    static bool        GetAttributesFromAncestry(DBQueryResult &res);
+    static bool        GetAttributesFromBloodline(DBQueryResult &res);
 
     static bool        GetBaseSkills(std::map< uint32, uint8 >& into);
     static bool        GetSkillsByRace(uint32 raceID, std::map< uint32, uint8 >& into);

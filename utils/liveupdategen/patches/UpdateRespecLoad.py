@@ -11,14 +11,14 @@ def Load(self, *args):
             attrValue = attrDict[attr]
             if attrValue > 65:
                 attrValue = 65
-            if attrValue < 45:
-                attrValue = 45
+            if attrValue < 30:
+                attrValue = 30
             self.currentAttributes[attr] = attrValue
             self.respecBar[x].SetValue(attrValue - 45)
             unspentPts -= attrValue
         modifiers = self.skillHandler.GetCharacterAttributeModifiers(attr)
         implantBonus = 0
-        for itemID, typeID, operation, value in modifiers:
+        for typeID, value in modifiers:
             categoryID = cfg.invtypes.Get(typeID).categoryID
             if categoryID == const.categoryImplant:
                 implantBonus += value

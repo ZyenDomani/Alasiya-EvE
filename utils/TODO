@@ -130,7 +130,6 @@ go thru all header #include to determine if it is actually needed in header as o
 while you're at it, verify member initialization is correct.  i know destiny isnt (and it's member list is huge)
 	- im sure its not the only one...but some (or most) of my 'newer' classes should be right (at least a lot closer).
 
-remove character queries from InventoryDB
 remove station/static queries from InventoryDB
 remove *lsc_service and *cache_service from PyServiceMgr
     - lsc_service may be singleton.  channels should remain dynamic...will have to look into this more
@@ -470,8 +469,17 @@ mining gfx/deactivate is almost immediate.  this is supposed to have a 5s timer 
 *******************************************************
 ********  improvements...low priority
 
+found while updating char data for proper remap data
+***update***  CharacterType is not used...can be deleted in favor of II::type()
+`CharacterType`s are being loaded with data from chrBloodlines  it should be loaded from char's itemType
+  this data should be summed with data from chrAncestries saved to Attr*Bonus on char on creation (static data)
+  all character (base type, bloodline, ancestry) attribute data needs to be updated.  maybe use static data for BL and ancestry.
+  types are loaded when called.  attrib data is in type().attributemap
+characters have extra data - m_attributes   these are not needed or used
+
 add formatting and colors to custom error msgs
   - seem like client msg window has limited support for html
+  - also seems like i knew this already, as there are msgs using it (fleetdata)
 
 m_self is NOT being populated for non-piloted ships.   -priority level: low
 
@@ -794,6 +802,8 @@ materials for implants are wrong.  this leads to incorrect price estimates
 missing prices for salvage
 
 check/add dynamic tables to Dump.sh to avoid copying local server data to repo
+
+merge bloodlineTypes table into chrBloodlines table
 
 
 ************************************************

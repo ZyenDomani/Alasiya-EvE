@@ -39,8 +39,12 @@ def ConstructLayout(self):
 
     leftMargin += maxTextWidth + 20
     baseLabel = uicls.EveLabelMedium(text=localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/Attributes/BaseStatPoints'), parent=headingPar, left=leftMargin, maxLines=1)
+    dogmaLM = self.godma.GetDogmaLM()
+    attrDict = dogmaLM.GetCharacterBaseAttributes()
     for x in xrange(0, 5):
-        minText = localizationUtil.FormatNumeric(45, decimalPlaces=0)
+        attr = self.attributes[x]
+        attrValue = attrDict[attr]
+        minText = localizationUtil.FormatNumeric(attrValue, decimalPlaces=0)
         label2 = uicls.EveLabelMedium(text=minText, parent=self.attributePars[x], width=20, maxLines=1, state=uiconst.UI_DISABLED, left=leftMargin + baseLabel.textwidth / 2 - 10, top=10)
         label2.bold = 1
 

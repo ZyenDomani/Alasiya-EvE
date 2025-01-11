@@ -38,103 +38,6 @@
 #include "system/Asteroid.h"
 #include "system/SolarSystem.h"
 
-bool InventoryDB::GetCharacterType(uint8 bloodlineID, CharacterTypeData &into) {
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "  bloodlineName,"
-        "  raceID,"
-        "  description,"
-        "  maleDescription,"
-        "  femaleDescription,"
-        "  corporationID,"
-        "  perception,"
-        "  willpower,"
-        "  charisma,"
-        "  memory,"
-        "  intelligence,"
-        "  shortDescription,"
-        "  shortMaleDescription,"
-        "  shortFemaleDescription "
-        " FROM chrBloodlines "
-        " WHERE bloodlineID = %u",
-        bloodlineID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query bloodline %u: %s.", bloodlineID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "No data found for bloodline %u.", bloodlineID);
-        return false;
-    }
-
-    into.bloodlineName = row.GetText(0);
-    into.race = row.GetUInt(1);
-    into.description = row.GetText(2);
-    into.maleDescription = row.GetText(3);
-    into.femaleDescription = row.GetText(4);
-    into.corporationID = row.GetUInt(5);
-    into.perception = row.GetUInt(6);
-    into.willpower = row.GetUInt(7);
-    into.charisma = row.GetUInt(8);
-    into.memory = row.GetUInt(9);
-    into.intelligence = row.GetUInt(10);
-    into.shortDescription = row.GetText(11);
-    into.shortMaleDescription = row.GetText(12);
-    into.shortFemaleDescription = row.GetText(13);
-    return true;
-}
-
-bool InventoryDB::GetCharacterTypeByBloodline(uint8 bloodlineID, uint16& characterTypeID) {
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT typeID FROM bloodlineTypes WHERE bloodlineID = %u", bloodlineID)) {
-        codelog(DATABASE__ERROR, "Failed to query bloodline %u: %s.", bloodlineID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "No data for bloodline %u.", bloodlineID);
-        return false;
-    }
-
-    characterTypeID = row.GetUInt(0);
-
-    return true;
-}
-
-bool InventoryDB::GetBloodlineByCharacterType(uint16 characterTypeID, uint8 &bloodlineID) {
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT bloodlineID FROM bloodlineTypes WHERE typeID = %u", characterTypeID)) {
-        codelog(DATABASE__ERROR, "Failed to query character type %u: %s.", characterTypeID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "No data for character type %u.", characterTypeID);
-        return false;
-    }
-
-    bloodlineID = row.GetUInt(0);
-
-    return true;
-}
-
-bool InventoryDB::GetCharacterType(uint16 characterTypeID, uint8 &bloodlineID, CharacterTypeData &into) {
-    if (!GetBloodlineByCharacterType(characterTypeID, bloodlineID))
-        return false;
-    return GetCharacterType(bloodlineID, into);
-}
-
-bool InventoryDB::GetCharacterTypeByBloodline(uint8 bloodlineID, uint16 &characterTypeID, CharacterTypeData &into) {
-    if (!GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
-        return false;
-    return GetCharacterType(bloodlineID, into);
-}
 
 /* this is only called by Inventory::LoadContents()
  * it is optimized for specific calling objects, to avoid multiple db hits while loading,
@@ -280,7 +183,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
             "   name,"
             "   0 AS skillPoints,"
             "   typeID"
-			" FROM chrNPCCharacters AS chr"
+            " FROM chrNPCCharacters AS chr"
             " WHERE characterID = %u", characterID)) {
             codelog(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
             return false;

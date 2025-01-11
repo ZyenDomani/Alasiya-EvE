@@ -39,7 +39,6 @@ struct AsteroidData;
 class ItemData;
 class ItemType;
 class BlueprintType;
-class CharacterType;
 class StationType;
 class Missile;
 class Client;
@@ -76,9 +75,8 @@ public:
     // these load, cache and return requested type.
     const ItemType*         GetType(uint16 typeID);
     const StationType*      GetStationType(uint16 stationTypeID);
-    const CharacterType*    GetCharacterType(uint16 characterTypeID);
     const BlueprintType*    GetBlueprintType(uint16 blueprintTypeID);
-    const CharacterType*    GetCharacterTypeByBloodline(uint16 bloodlineID);
+    const ItemType*         GetCharacterTypeByBloodline(uint16 bloodlineID);
 
 
     // return a RefPtr of requested itemID, loading (and cache) as needed

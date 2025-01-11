@@ -14,6 +14,7 @@
 
 #include "StaticDataMgr.h"
 #include "EVEServerConfig.h"
+#include "character/CharacterDB.h"
 #include "database/EVEDBUtils.h"
 #include "manufacturing/FactoryDB.h"
 #include "map/MapDB.h"
@@ -31,23 +32,6 @@
  * DATA__INFO           # data loading msgs (container and amount) (mt)
  */
 
-
-/*
-StaticDataMgr::StaticDataMgr()
-: m_keyMap(nullptr),
-m_agents(nullptr),
-m_operands(nullptr),
-m_billTypes(nullptr),
-m_entryTypes(nullptr),
-m_factionInfo(nullptr),
-m_npcDivisions(nullptr)
-{
-}
-
-StaticDataMgr::~StaticDataMgr()
-{
-    //Clear();
-}*/
 
 void StaticDataMgr::Close()
 {
@@ -397,6 +381,31 @@ void StaticDataMgr::Populate()
 
         m_typeAttrMap.emplace(row.GetInt(0), typeAttr);
     }
+
+    CharacterDB::GetAttributesFromAncestry(*res);
+    while (res->GetRow(row)) {
+        //SELECT ancestryID, intelligence, charisma, perception, memory, willpower FROM chrAncestries
+        Char::AttrData data = Char::AttrData();
+        data.intelligence = row.GetUInt8(1);
+        data.charisma = row.GetUInt8(2);
+        data.perception = row.GetUInt8(3);
+        data.memory = row.GetUInt8(4);
+        data.willpower = row.GetUInt8(5);
+        m_ancestryBonuses[row.GetUInt8(0)] = std::move(data);
+    }
+
+    CharacterDB::GetAttributesFromBloodline(*res);
+    while (res->GetRow(row)) {
+        //SELECT bloodlineID, intelligence, charisma, perception, memory, willpowerFROM chrBloodlines
+        Char::AttrData data = Char::AttrData();
+        data.intelligence = row.GetUInt8(1);
+        data.charisma = row.GetUInt8(2);
+        data.perception = row.GetUInt8(3);
+        data.memory = row.GetUInt8(4);
+        data.willpower = row.GetUInt8(5);
+        m_bloodlineBonuses[row.GetUInt8(0)] = std::move(data);
+    }
+
     sLog.Cyan("    StaticDataMgr", "%lu Type Attribute Sets loaded in %.3fms", m_typeAttrMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
@@ -846,6 +855,18 @@ void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
     // make copy
     for (auto &cur : m_moonGoo)
         data.emplace(cur.first, cur.second);
+}
+
+void StaticDataMgr::GetAncestryBonuses(uint8 ancestryID, Char::AttrData& into) {
+    std::map<uint8, Char::AttrData>::iterator itr = m_ancestryBonuses.find(ancestryID);
+    if (itr != m_ancestryBonuses.end())
+        into = itr->second;
+}
+
+void StaticDataMgr::GetBloodlineBonuses(uint8 bloodlineID, Char::AttrData& into) {
+    std::map<uint8, Char::AttrData>::iterator itr = m_bloodlineBonuses.find(bloodlineID);
+    if (itr != m_bloodlineBonuses.end())
+        into = itr->second;
 }
 
 uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID)

@@ -10,6 +10,14 @@
 
 namespace Char {
 
+    struct AttrData {
+        uint8 intelligence;
+        uint8 charisma;
+        uint8 perception;
+        uint8 memory;
+        uint8 willpower;
+    };
+
     namespace Race {
         enum {
             Caldari     = 1,

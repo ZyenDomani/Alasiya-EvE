@@ -171,7 +171,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
                         arg.schoolID, arg.bloodlineID, arg.genderID == 1 ? "male" : "female", arg.ancestryID);
 
     // obtain character type
-    const CharacterType *char_type = sItemFactory.GetCharacterTypeByBloodline(arg.bloodlineID);
+    const ItemType *char_type = sItemFactory.GetCharacterTypeByBloodline(arg.bloodlineID);
     if (char_type == nullptr)
         return PyStatic.NewZero();
 
@@ -199,13 +199,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.careerSpecialityID = 11;
     }
 
-    // Variables for storing attribute bonuses
-    uint8 intelligence = char_type->intelligence();
-    uint8 charisma = char_type->charisma();
-    uint8 perception = char_type->perception();
-    uint8 memory = char_type->memory();
-    uint8 willpower = char_type->willpower();
-
     CorpData corpData = CorpData();
         corpData.startDateTime = cdata.createDateTime;
         corpData.corpRole = Corp::Role::Member;
@@ -219,7 +212,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         corpData.grantableRolesAtHQ = Corp::Role::Member;
         corpData.grantableRolesAtOther = Corp::Role::Member;
 
-    bool defCorp = true;
+    bool defCorp(true);
     if (sConfig.character.startCorporation) { // Skip if 0
         if ( CorporationDB::DoesCorporationExist( sConfig.character.startCorporation ) ) {
             corpData.corporationID = sConfig.character.startCorporation;
@@ -255,6 +248,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     sItemFactory.SetUsingClient( pClient );
 
+    // we have enough data to spawn a new character, so lets do it.
     CharacterRef charRef = sItemFactory.SpawnCharacter(cdata, corpData);
     if (charRef.get() == nullptr) {
         //a return to the client of 0 seems to be the only means of marking failure
@@ -274,19 +268,25 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     CharacterPortrait cpor;
         cpor.Build(charRef->itemID(), arg.portraitInfo);
 
-    // query attribute bonuses from ancestry
-    if (!CharacterDB::GetAttributesFromAncestry(cdata.ancestryID, intelligence, charisma, perception, memory, willpower)) {
-        _log(CLIENT__ERROR, "Failed to load char create details. Bloodline %u, ancestry %u.", char_type->bloodlineID(), cdata.ancestryID);
-        sItemFactory.UnsetUsingClient();
-        return PyStatic.NewZero();
-    }
-    // triple attributes and save
-    uint8 multiplier = sConfig.character.statMultiplier;
-    charRef->SetAttribute(AttrIntelligence, intelligence * multiplier, false);
-    charRef->SetAttribute(AttrCharisma, charisma * multiplier, false);
-    charRef->SetAttribute(AttrPerception, perception * multiplier, false);
-    charRef->SetAttribute(AttrMemory, memory * multiplier, false);
-    charRef->SetAttribute(AttrWillpower, willpower * multiplier, false);
+    // set attribute bonuses from ancestry
+    Char::AttrData ancestryData = Char::AttrData();
+    sDataMgr.GetAncestryBonuses(cdata.ancestryID, ancestryData);
+    // query attribute bonuses from bloodline
+    Char::AttrData bloodlineData = Char::AttrData();
+    sDataMgr.GetBloodlineBonuses(cdata.bloodlineID, bloodlineData);
+
+    // set attrib bonuses on char ...  update this to get base data from db, incase i change it again
+    charRef->SetAttribute(AttrIntelligence, 25 + ancestryData.intelligence + bloodlineData.intelligence, false);
+    charRef->SetAttribute(AttrCharisma, 25 + ancestryData.charisma + bloodlineData.charisma, false);
+    charRef->SetAttribute(AttrPerception, 25 + ancestryData.perception + bloodlineData.perception, false);
+    charRef->SetAttribute(AttrMemory, 25 + ancestryData.memory + bloodlineData.memory, false);
+    charRef->SetAttribute(AttrWillpower, 25 + ancestryData.willpower + bloodlineData.willpower, false);
+    charRef->SetAttribute(AttrIntelligenceBonus, ancestryData.intelligence + bloodlineData.intelligence, false);
+    charRef->SetAttribute(AttrCharismaBonus, ancestryData.charisma + bloodlineData.charisma, false);
+    charRef->SetAttribute(AttrPerceptionBonus, ancestryData.perception + bloodlineData.perception, false);
+    charRef->SetAttribute(AttrMemoryBonus, ancestryData.memory + bloodlineData.memory, false);
+    charRef->SetAttribute(AttrWillpowerBonus, ancestryData.willpower + bloodlineData.willpower, false);
+    charRef->SaveAttributes();
 
     //load skills
     std::map<uint32, uint8> startingSkills;
@@ -294,13 +294,13 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 	//  Base Skills
     if (!CharacterDB::GetBaseSkills(startingSkills)) {
         _log(CLIENT__ERROR, "Failed to load char Base skills. Bloodline %u, Ancestry %u.",
-             char_type->bloodlineID(), cdata.ancestryID);
+             cdata.bloodlineID, cdata.ancestryID);
         // dont really care if this fails.  not enough to deny creation ...maybe make error?
     }
 	//  Race Skills
     if (!CharacterDB::GetSkillsByRace(char_type->race(), startingSkills)) {
         _log(CLIENT__ERROR, "Failed to load char Race skills. Bloodline %u, Ancestry %u.",
-             char_type->bloodlineID(), cdata.ancestryID);
+             cdata.bloodlineID, cdata.ancestryID);
         // dont really care if this fails.  not enough to deny creation ...maybe make error?
     }
 	//  Career Skills

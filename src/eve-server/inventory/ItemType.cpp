@@ -67,9 +67,6 @@ _Ty* ItemType::_LoadType(uint16 typeID, const Inv::TypeData& data) {
         case EVEDB::invCategories::Bonus:
         case EVEDB::invCategories::Reaction:
         */
-        case EVEDB::invCategories::Owner: {
-            return CharacterType::_LoadType<CharacterType>(typeID, data );
-        }
         case EVEDB::invCategories::Station: {
             if (gData.id == EVEDB::invGroups::Station)
                 return StationType::_LoadType<StationType>(typeID, data );
@@ -97,6 +94,7 @@ _Ty* ItemType::_LoadType(uint16 typeID, const Inv::TypeData& data) {
         case EVEDB::invCategories::Asteroid: {
             // these are called but not sure if they need to be coded specifically
         } break;
+        case EVEDB::invCategories::Owner:       // this is character objects...using default ItemType now
         case EVEDB::invCategories::PlanetaryResources:
         case EVEDB::invCategories::PlanetaryCommodities:
         case EVEDB::invCategories::PlanetaryInteraction:  {

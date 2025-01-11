@@ -19,6 +19,8 @@
 #include "eve-server.h"
 #include "POD_containers.h"
 
+#include "../eve-common/EVE_Character.h"
+
 #include "../eve-common/EVE_RAM.h"
 #include "../eve-common/EVE_Market.h"
 
@@ -59,6 +61,9 @@ public:
     const char*         GetTypeName(uint16 typeID);     // not sure if this will be needed
     const char*         GetGroupName(uint16 grpID);
     const char*         GetCategoryName(uint8 catID);
+
+    void                GetAncestryBonuses(uint8 ancestryID, Char::AttrData& into);
+    void                GetBloodlineBonuses(uint8 bloodlineID, Char::AttrData& into);
 
     void                GetMineralData(std::map< uint16, Market::matlData >& into);
     void                GetSalvageData(std::map< uint16, Market::matlData >& into);
@@ -198,7 +203,9 @@ private:
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
     std::map<uint16, std::string>                       m_skills;           // typeID/name
     std::map<uint32, StaticData>                        m_staticData;       // itemID/data
-    std::map<uint16, Inv::AttrTypeData>                      m_attrTypeData;     // attrID/data
+    std::map<uint16, Inv::AttrTypeData>                 m_attrTypeData;     // attrID/data
+    std::map<uint8, Char::AttrData>                     m_ancestryBonuses;  // ancestryID/data
+    std::map<uint8, Char::AttrData>                     m_bloodlineBonuses; // bloodlineID/data
 
     std::multimap<uint16, EvERam::RamMaterials>         m_ramMatl;          // itemTypeID/data
     std::multimap<uint16, EvERam::RamRequirements>      m_ramReq;           // bpTypeID/data
