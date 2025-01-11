@@ -23,7 +23,7 @@ Items listed as "<font color=orange>Skeleton Code Only</font>" has a basic outli
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
-<font color=magenta>Last Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>17 March 2023</font><BR>
+<font color=magenta>Last Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>11 January 2025</font><BR>
 <font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=red>Mostly Current</font> - <font color=yellow>Being Reviewed and Updated</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
@@ -59,7 +59,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Progress Halted</font><BR><font color=orange>Found Major errors in RefCounted Objects.</font><BR>8Mar23</td></tr>
+<td><font color=green>Progress Restarted - Ongoing</font><BR><font color=orange>Rewrote Py* Object ref counting code. Working better, but still incomplete</font><BR>7Jan25</td></tr>
 <tr><td> - Efficient, Accurate Packet Deciphering<BR><font color=blue>NOTE: at this point, "Efficient" is a misnomer.</font></td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
@@ -70,11 +70,11 @@ There will be some response, like opening windows, but *should not* generate an 
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=brown>Mostly Complete</font><BR><font color=orange>Recently found very elusive data race.<BR>Not solved yet.</font><BR>8Mar23</td></tr>
-<tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">50%
+<tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">60%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=pink>Not Complete</font><BR><font color=olive>Enabling all compiler warnings gives 12.5Mb log file of errors</font><BR>17Mar23</td></tr>
+<td><font color=pink>In Progress</font><BR><font color=olive>Enabling all compiler warnings gives 9.6Mb log file of errors</font><BR>24Mar23</td></tr>
 <tr><td> - GM commands<BR>Most commands need complete rewrite or major update</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
@@ -203,7 +203,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR><font color=red>Implants Not Implemented</font><BR>1Feb14</td></tr>
+<td><font color=green>COMPLETE</font><BR>1Feb14</td></tr>
 <tr><td> - Open Jump Clones Window</td><td class="broken">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -223,12 +223,12 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>Standings partially Implemented (see below)<BR>17Nov18</td></tr>
+<td><font color=green>COMPLETE</font><BR>Standings mostly Implemented (see below)<BR>1Jan25</td></tr>
 <tr><td> - Open Security Status Window</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>SecStatus partially Implemented - changes not saved to db yet.<BR>1Feb14</td></tr>
+<td><font color=green>COMPLETE</font><BR>SecStatus mostly Implemented.<BR>1Jan25</td></tr>
 <tr><td> - Open Kill Rights Window</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -308,7 +308,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <td><font color=brown>Mostly Complete</font><BR><font color=yellow>Few Odd Bugs</font><BR>8Mar23</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Standings"> Standings (<font color=green>Current</font>)</span></h2>
+<h2> <span class="mw-headline" id="Standings"> Standings (<font color=yellow>needs review</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:23%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1581,11 +1581,11 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Final Testing</font><BR>10Feb20</td></tr>
-<tr><td> - <font color=lime>Process Skill Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is Skill, Implant or Booster</td><td class="working">70%
+<tr><td> - <font color=lime>Process Skill Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is Skill, Implant or Booster</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR><font color=red>Implants and Boosters not implemented</font><BR>19Jun19</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR><font color=red>Boosters not implemented</font><BR>11Jan25</td></tr>
 <tr><td> - <font color=lime>Process Ship Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is Ship Subsystem (T3 ships only)</td><td class="broken">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>

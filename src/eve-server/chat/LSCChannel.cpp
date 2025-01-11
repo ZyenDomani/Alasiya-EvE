@@ -226,17 +226,33 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     msg += "<br>Current Population: ";
     msg += std::to_string(sEntityMgr.GetClientCount());
     msg += "<br><br><font color='yellow'>Character Options:</font>";
-    msg += "<br>Ship Tracking: ";
-    msg += (sEntityMgr.GetTracking() ? "On" : "Off");
-    msg += "<br>Module AutoStop: ";
-    msg += (pClient->AutoStop() ? "On" : "Off");
-    msg += "<br>RAM Event: ";
+    msg += "<br><font color='white'>Ship Tracking: </font>";
+    if (sEntityMgr.GetTracking()) {
+        msg += "<font color='green'>On</font>";
+    } else {
+        msg += "<font color='red'>Off</font>";
+    }
+    msg += "<br><font color='white'>Module AutoStop: </font>";
+    if (pClient->AutoStop()) {
+        msg += "<font color='green'>On</font>";
+    } else {
+        msg += "<font color='red'>Off</font>";
+    }
+    msg += "<br><font color='white'>RAM Event: </font>";
     //msg += (pClient->RAMEvent() ? "On" : "Off");
-    msg += (sConfig.ram.AutoEvent ? "On" : "Off");
+    if (sConfig.ram.AutoEvent) {
+        msg += "<font color='green'>On</font>";
+    } else {
+        msg += "<font color='red'>Off</font>";
+    }
     // check account roles for this one
-    if (pClient->GetAccountRole() & Acct::Role::GMH == Acct::Role::GMH) {
-        msg += "<br>ShowAll: ";
-        msg += (pClient->IsShowall() ? "On" : "Off");
+    if (pClient->GetAccountRole() & Acct::Role::EPLAYER == Acct::Role::EPLAYER) {
+        msg += "<br><font color='white'>ShowAll: </font>";
+        if (pClient->IsShowall()) {
+            msg += "<font color='green'>On</font>";
+        } else {
+            msg += "<font color='red'>Off</font>";
+        }
     }
 
     OnLSC_SendMessage sm;
@@ -245,8 +261,8 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     sm.message = msg;
     sm.member_count = m_chars.size();
 
-    PyTuple *answer = sm.Encode();
-    pClient->SendNotification("OnLSC", GetTypeString(), &answer);
+    PyTuple *motd = sm.Encode();
+    pClient->SendNotification("OnLSC", GetTypeString(), &motd );
 }
 
 bool LSCChannel::IsJoined(uint32 charID) {
