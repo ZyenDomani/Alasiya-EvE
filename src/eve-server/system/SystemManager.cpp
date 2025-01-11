@@ -278,6 +278,11 @@ void SystemManager::UnloadSystem() {
     // inform MarketBot of system unloading to remove system stations from proc loop.
     //sMktBotMgr.RemoveSystem();
 
+    std::map<uint32, Client*> clients = m_clients;
+    std::map<uint32, Client*>::iterator cItr = clients.begin();
+    while (cItr != clients.end())
+        delete cItr->second;
+
     // system is being unloaded.  pay bounties now
     PayBounties();
     // unload belts, which saves and removes roids from system
