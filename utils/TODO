@@ -592,9 +592,9 @@ add cache calls/data for systems that use it after debugging and testing complet
     - bookmarks
     - agent data?
 
-bookmarks in cargo have name correctly (bm 'memo' is it's player-given name), but mouseover shows  ` - {memo}` ....  what is blank space before '-'??
 write new methods for List() and Move() for bookmarks where owner != player
 currently, all bookmarks are donated to calling player when moved into cargo/hangar
+when moving bm to corp folder in pnp, window is not updated.
 
 finish DestinyManager::SendCloakFx()
 
@@ -807,6 +807,8 @@ missing prices for salvage
 check/add dynamic tables to Dump.sh to avoid copying local server data to repo
 
 merge bloodlineTypes table into chrBloodlines table
+
+rename 'entities' to 'gameItems'
 
 
 ************************************************

@@ -825,17 +825,17 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
     if ( args.bmIDs->size() < 1 ) {
         sLog.Error( "IB::Handle_CreateBookmarkVouchers()", "%s: args.bmIDs->size() == 0.  Expected size > 0.", call.client->GetName() );
     } else {
-        BookmarkDB m_db;
         PyList::const_iterator itr = args.bmIDs->begin();
-        for (; itr != args.bmIDs->end(); itr++) {
+        for (; itr != args.bmIDs->end(); ++itr) {
             //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
-            ItemData iData( 51, call.client->GetCharacterID(), locTemp, flagNone, 1, itoa(PyRep::IntegerValueU32(*itr)));
+            ItemData iData(EVEDB::invTypes::Bookmark, call.client->GetCharacterID(), locTemp, flagNone, 1, itoa(PyRep::IntegerValueU32(*itr)));
             InventoryItemRef iRef = sItemFactory.SpawnItem( iData );
             if (iRef.get() == nullptr) {
                 codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), PyRep::IntegerValueU32(*itr));
                 continue;
             }
             //iRef->Rename(std::to_string(BookmarkDB::GetBookmarkName(PyRep::IntegerValueU32(*itr))));
+            iRef->ChangeSingleton(true);
             iRef->Move(locationID, (EVEItemFlags)args.flag, true);
             /*
             PyDict* dict = new PyDict();
@@ -852,12 +852,14 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
             vouchers->AddItem(new PyObject("util.KeyVal", dict));
             */
             if (args.isMove) {
+                BookmarkDB m_db;
                 PyDict* dict = new PyDict();
                 // may need more here.  not sure yet
                 //dict->SetItemString("description", new PyString(BookmarkDB::GetBookmarkName(atoi(iRef->customInfo().c_str()))));
                 dict->SetItemString("bookmarkID", new PyInt(PyRep::IntegerValueU32(*itr)));
                 deleted->AddItem(new PyObject("util.KeyVal", dict));
                 // change owner in db to remove bm from current owner's pnp window
+                //  not good idea, but cant think of a better way right now.
                 m_db.ChangeOwner(PyRep::IntegerValueU32(*itr));
             }
         }

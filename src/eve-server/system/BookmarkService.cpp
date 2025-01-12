@@ -381,7 +381,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
 
     PyList* list = new PyList();
-    for (size_t i = 0; i < bmList->size(); i++) {
+    for (size_t i = 0; i < bmList->size(); ++i) {
         InventoryItemRef iRef = sItemFactory.GetItemRef(bmList->GetItem(i)->AsInt()->value());
         if (iRef.get() == nullptr) {
             codelog(ITEM__ERROR, "%s: Failed to retrieve bookmark data for voucherID %u", call.client->GetName(), bmList->GetItem(i)->AsInt()->value());
@@ -424,6 +424,8 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
         list->AddItem(new PyObject("util.KeyVal", dict));
     }
 
+    //window not updating when dropping bm
+    
     PyTuple* tuple = new PyTuple(2);
     tuple->SetItem(0, list);
     tuple->SetItem(1, PyStatic.NewNone());
