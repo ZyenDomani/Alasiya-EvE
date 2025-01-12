@@ -24,8 +24,8 @@
     Rewrite:    Allan
 */
 
-#ifndef __SYSTEMENTITY_H_INCL__
-#define __SYSTEMENTITY_H_INCL__
+#ifndef _EVE_SERVER_SYSTEM_ENTITY_H_
+#define _EVE_SERVER_SYSTEM_ENTITY_H_
 
 #include "SystemDB.h"
 #include "inventory/InventoryItem.h"
@@ -637,4 +637,4 @@ private:
 };
 
 
-#endif
+#endif  // _EVE_SERVER_SYSTEM_ENTITY_H_

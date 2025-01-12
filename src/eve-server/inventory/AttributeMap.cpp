@@ -71,10 +71,10 @@ bool AttributeMap::Load(bool reset/*false*/) {
         /* load saved attribs from the db, if any, to update the defaults with items current (saved) values*/
         DBQueryResult res;
         if (!IsCharacterID(mItem.itemID())) {
-            /*
-            if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID()))
+            if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u"
+                " AND attributeID IN (175,176,172,178,179)", mItem.itemID()))
                 _log(DATABASE__ERROR, "AttributeMap Error in char db load query: %s", res.error.c_str());
-        } else {*/
+        } else {
             if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID()))
                 _log(DATABASE__ERROR, "AttributeMap Error in item db load query: %s", res.error.c_str());
         }
