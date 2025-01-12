@@ -184,19 +184,22 @@ PyResult PlanetMgrService::Handle_GetMyLaunchesDetails(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetResourceInfo(PyCallArgs &call) {
+    /*  this screws up client
     if (!sConfig.cosmic.PIEnabled) {
         call.client->SendErrorMsg("The PI system is currently disabled.");
         return nullptr;
-    }
+    } */
 
     return m_planet->GetPlanetResourceInfo();
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
+    /*  this screws up client
     if (!sConfig.cosmic.PIEnabled) {
         call.client->SendErrorMsg("The PI system is currently disabled.");
         return nullptr;
-    }
+    } */
+    
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%lu", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
