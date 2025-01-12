@@ -83,7 +83,7 @@ public:
 
     /* new attribute system */
     const bool HasAttribute(const uint16 attributeID) const;
-    EvilNumber GetAttribute(const uint16 attributeID) const;  // returns 0 if not exist 
+    EvilNumber GetAttribute(const uint16 attributeID) const;  // returns 0 if not exist
     const void CopyAttributes(InventoryItem& itemRef) const;
 
     bool HasReqSkill(const uint16 skillID) const;
@@ -130,10 +130,12 @@ protected:
         sDataMgr.GetType(typeID, data);
         if (data.id == 0)
             return nullptr;
-        /** @todo  this needs work.  other items we need are "non-published" */
+        /** @todo  this needs work.  other items we need are "non-published"
+         *    do we need this check here?
         if (data.groupID > 23)  // gID < 23 are map items.  will need to search for others
             if (!data.published)
                 return nullptr;
+         */
 
         return _Ty::template _LoadType<_Ty>(typeID, data );
     }

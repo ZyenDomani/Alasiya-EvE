@@ -243,7 +243,7 @@ protected:
     static RefPtr<_Ty> _Load( uint32 itemID)
     {
         // pull the specific item info from db
-        ItemData data;
+        ItemData data = ItemData();
         if (!ItemDB::GetItem(itemID, data))
             return RefPtr<_Ty>(nullptr);
 
@@ -324,7 +324,7 @@ public:
 
     // returns 0 if not exist
     EvilNumber GetAttribute(const uint16 attrID) const                 { return pAttributeMap->GetAttribute(attrID); }
-    // returns 0 if not exist 
+    // returns 0 if not exist
     EvilNumber GetDefaultAttribute(const uint16 attrID) const          { return m_type.GetAttribute(attrID); }
 
 protected:

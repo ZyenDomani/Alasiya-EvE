@@ -189,6 +189,9 @@ RAM code - implement invention, re    -priority level: low
     - add Almanu's cal'c fix from official?  not sure what he 'fixed'
     - verify char prod efficiency skill for Calculate()
     - many messages not implemented   see common/EVE_RAM.h
+    - rifter blueprint shows "criminal connections" as skill for RE.  wtf??
+        no matl for RE?
+        no skills for invention?
 
 blueprints - look over data and verify
     - skills not showing on tabs other than manufacturing
@@ -809,6 +812,8 @@ merge bloodlineTypes table into chrBloodlines table
 ************************************************
 **************************************************
 *****************   low on the list.....
+
+49  24  Player Kill     Kill confirmation
 
 some items dont have complete description in db (data is truncated)
     -- need more info on this.
