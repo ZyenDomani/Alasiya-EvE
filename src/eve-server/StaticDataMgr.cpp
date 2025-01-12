@@ -215,7 +215,8 @@ void StaticDataMgr::Populate()
             data.portionSize            = row.GetUInt(8);
             data.race                   = row.GetUInt(9);
             data.basePrice              = row.GetDouble(10);
-            data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(11));
+            //data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(11));
+            data.published              = row.GetBool(11);
             data.marketGroupID          = (row.IsNull(11) ? 0 : row.GetUInt(12));
             data.chanceOfDuplicating    = row.GetFloat(13);
             data.metaLvl                = (row.IsNull(14) ? 0 : row.GetUInt(14));
@@ -1425,7 +1426,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     for (auto &cur : ramReqs) {
         if (!IsPublished(cur.requiredTypeID))
             continue;
-        
+
         PyPackedRow* row = new PyPackedRow(header);
             row->SetFieldC("quantity",        new PyInt(cur.quantity));
             row->SetFieldC("requiredTypeID",  new PyInt(cur.requiredTypeID));

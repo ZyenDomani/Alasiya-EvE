@@ -24,8 +24,8 @@
     Updates:    Allan
 */
 
-#ifndef __CONTRACT_PROXY_H__INCL__
-#define __CONTRACT_PROXY_H__INCL__
+#ifndef _EVE_SERVER_CONTRACT_PROXY_H_
+#define _EVE_SERVER_CONTRACT_PROXY_H_
 
 #include "PyService.h"
 
@@ -49,8 +49,17 @@ protected:
     PyCallable_DECL_CALL(GetLoginInfo);
     PyCallable_DECL_CALL(SearchContracts);
     PyCallable_DECL_CALL(CollectMyPageInfo);
+    PyCallable_DECL_CALL(CompleteContract);
     PyCallable_DECL_CALL(GetMyExpiredContractList);
     PyCallable_DECL_CALL(GetContractListForOwner);
+
+    PyCallable_DECL_CALL(PlaceBid);
+    PyCallable_DECL_CALL(FinishAuction);
+    PyCallable_DECL_CALL(SplitStack);
+    PyCallable_DECL_CALL(GetItemsInContainer);
+    PyCallable_DECL_CALL(DeleteNotification);
+    PyCallable_DECL_CALL(GetCourierContractFromItemID);
+    
 };
 
-#endif /* !__CONTRACT_PROXY_H__INCL__ */
+#endif /* !_EVE_SERVER_CONTRACT_PROXY_H_ */

@@ -46,6 +46,8 @@ ContractMgr::~ContractMgr()
 
 PyResult ContractMgr::Handle_NumRequiringAttention( PyCallArgs& call )
 {
+    // cannot find this in client code
+    
     sLog.Warning( "ContractMgr", "Called NumRequiringAttention stub." );
 
     PyDict* args = new PyDict;
