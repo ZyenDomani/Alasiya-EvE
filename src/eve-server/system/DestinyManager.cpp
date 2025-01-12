@@ -61,7 +61,7 @@ m_position(self->GetPosition()), m_velocity(NULL_ORIGIN_V), m_targetPoint(NULL_O
 m_autoPilot(false), m_alignTo(false), m_frozen(false), m_changeDelay(false), m_moveDelay(false), m_agility(0.0), m_bump(false),
 m_posHack(sConfig.debug.PositionHack), m_turnAccel(false), m_turnDecel(false), m_turnPct(0.0f),
 m_origHeading(NULL_ORIGIN_V), m_curveStart(NULL_ORIGIN), m_curveApex(NULL_ORIGIN), m_curveEnd(NULL_ORIGIN),
-m_inclination(0.0), m_longAscNode(0.0), m_decelTime(0), m_warpState(nullptr)
+m_inclination(0.0), m_longAscNode(0.0), m_accelTime(0.0f), m_decelTime(0.0f), m_warpState(nullptr)
 {
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -1534,8 +1534,7 @@ void DestinyManager::InitWarp() {
      */
 
 //  150km - 15s, 1mkm - 23s, 1au - 29s
-    bool cruise(true);
-    float accelTime(7.5f), decelTime(7.5f);	// these are minimums
+    float accelTime(7.5f), decelTime(21.0f);	// these are minimums
     float cruiseTime(0.0f);
     int64 accelDistance(0), cruiseDistance(0), decelDistance(0);
     int64 warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
@@ -1543,7 +1542,6 @@ void DestinyManager::InitWarp() {
     if (m_targetDistance < warpSpeedInMeters) {
         //  short warp....no cruise
         // accel/decel are 7.5s min  (https://oldforums.eveonline.com/?a=topic&threadID=1514884)
-        cruise = false;
         // accel = 1/3 decel
         accelDistance = (m_targetDistance / 3);
         decelDistance = (m_targetDistance - accelDistance);
@@ -1551,26 +1549,34 @@ void DestinyManager::InitWarp() {
     } else {
         // accel/decel are 15s max
         accelDistance = ONE_AU_IN_METERS;
-        decelDistance = warpSpeedInMeters / 2;
+        decelDistance = warpSpeedInMeters / 2;  // half of warp speed to decel?  sounds close
         cruiseDistance = (m_targetDistance - accelDistance - decelDistance);
         cruiseTime = (cruiseDistance / warpSpeedInMeters);
     }
 
     decelTime = log(decelDistance / 3);
+    if (decelTime < 7.5f)
+        decelTime = 7.5f;
+
     accelTime = log(accelDistance / 3) / 3;
+    if (accelTime < 7.5f)
+        accelTime = 7.5f;
+
+    m_accelTime = ceil(accelTime);
 
     //  set total warp time based on above math.
     float warpTime(accelTime + decelTime + cruiseTime);
+
     //  set deceltime for time check in WarpDecel()
-    m_decelTime = round(accelTime) + round(cruiseTime);
+    m_decelTime = accelTime + cruiseTime;
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Warp will accelerate for %.0fs, cruise for %.3f, then decelerate for %.0fs, with total time of %.1fs, and warp speed of %lli m/s.", \
-            mySE->GetName(), mySE->GetID(), accelTime, cruiseTime, decelTime, warpTime, warpSpeedInMeters);
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Warp will accelerate for %.1fs(%.1f), cruise for %.1fs, then decelerate for %.1fs, with total time of %.1fs, and warp speed of %lli m/s.", \
+                mySE->GetName(), mySE->GetID(), accelTime, m_accelTime, cruiseTime, decelTime, warpTime, warpSpeedInMeters);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Accel distance is %llim. Cruise distance is %llim.  Decel distance is %llim.  Heading is %.4f,%.4f,%.4f.", \
-        mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+                mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %lu AU (%lum).", \
-            mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
+                mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
         GPoint destination = m_position + (m_shipHeading * m_targetDistance);
         GVector diff(m_targetPoint, destination);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): calculated exit is %.2f,%.2f,%.2f and delta is %.4f.", \
@@ -1609,22 +1615,27 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
      * speed = k*e^(k*s)
      */
     int64 currentDistance = exp(3 * sec_into_warp);
-    m_targetDistance -= currentDistance;
     int64 currentShipSpeed = (3 * currentDistance);
 
-    if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %lli m/s with %lli m left to go. Current distance %lli from origin.", \
-            mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance);
-
-    // if (sec_into_warp >= m_accelTime) {  <-- this is new style...
-    if ((currentShipSpeed >= m_warpState->warpSpeed) or (currentDistance >= m_warpState->accelDist)) {
+    // if any accel vars are greater than calculated, reset all and cancel accel
+    if ((sec_into_warp >= m_accelTime)
+    or (currentDistance >= m_warpState->accelDist)
+    or (currentShipSpeed >= m_warpState->warpSpeed)) {
         m_warpState->accel = false;
+        currentDistance = m_warpState->accelDist;
+        currentShipSpeed = m_warpState->warpSpeed;
         if (m_warpState->cruiseDist > 0) {
             m_warpState->cruise = true;
         } else {
             m_warpState->decel = true;
         }
     }
+    
+    m_targetDistance -= currentDistance;
+
+    if (is_log_enabled(DESTINY__WARP_TRACE))
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %lli m/s with %lli m left to go. Current distance %lli from origin.", \
+            mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance);
 
     WarpUpdate(currentShipSpeed);
 
@@ -1642,12 +1653,10 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
 void DestinyManager::WarpCruise(uint16 sec_into_warp) {
     // in cruise....calculate distance to update position data.
     m_targetDistance -= m_warpState->warpSpeed;
-    //int64 currentDistance = (m_warpState->total_distance - m_targetDistance);
 
     if ((m_targetDistance - m_warpState->warpSpeed) < m_warpState->decelDist) {
         m_warpState->cruise = false;
         m_warpState->decel = true;
-        //m_targetDistance = m_warpState->decelDist;
     }
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
@@ -1665,19 +1674,19 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
      */
     uint8 decelTime = (sec_into_warp - m_decelTime);
     int64 currentShipSpeed = (m_warpState->warpSpeed * exp(-decelTime));
-    int64 distTest(m_targetDistance - currentShipSpeed);
+    int64 distTest = (m_targetDistance - currentShipSpeed);
     m_targetDistance = (exp(-decelTime) * m_warpState->decelDist);
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %lli m/s with %lli m left to go.  test: %lli  diff: %lli", \
                 mySE->GetName(), mySE->GetID(), decelTime, sec_into_warp, currentShipSpeed, m_targetDistance, distTest, m_targetDistance - distTest);
 
-    WarpUpdate(currentShipSpeed);
-
     if (currentShipSpeed <= m_speedToLeaveWarp) {
         WarpStop(currentShipSpeed);
         return;
     }
+
+    WarpUpdate(currentShipSpeed);
 
     if (mySE->SysBubble() == nullptr)
         if (m_targetDistance < BUBBLE_RADIUS_METERS) {
@@ -1702,10 +1711,8 @@ void DestinyManager::WarpUpdate(int64 currentShipSpeed) {
 
 void DestinyManager::WarpStop(int64 currentShipSpeed) {
     // targPoint is where we exit warp.  UPDATE...is this right?  i think it should be where ship stops...
-    /*
     m_velocity = (m_shipHeading * currentShipSpeed);
     m_position += m_velocity; //m_targetPoint;
-    */
     SetPosition(m_position, true);
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {

@@ -223,7 +223,7 @@ protected:
     uint8 m_ballMode;                   //current state of ball
     bool m_hasSentShipUpdates;
 
-	// things dictataed by ship and skills
+	// things dictated by ship and skills
     double m_radius;                    //in m
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
 
@@ -322,8 +322,8 @@ private:
     void ClearOrbit();
 
     // Internal Warp Methods
-    //uint32 m_accelTime;
-    uint32 m_decelTime;
+    float m_accelTime;
+    float m_decelTime;
     void InitWarp();
     void WarpAccel(uint16 sec_into_warp);
     void WarpCruise(uint16 sec_into_warp);
