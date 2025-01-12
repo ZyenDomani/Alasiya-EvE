@@ -1043,6 +1043,13 @@ bool StaticDataMgr::GetBpDataForItem(uint16 typeID, EvERam::bpTypeData& tData)
     return false;
 }
 
+bool StaticDataMgr::IsPublished(uint16 typeID) {
+    std::map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
+    if (itr != m_typeData.end())
+        return itr->second.published;
+    return false;
+}
+
 bool StaticDataMgr::IsRecyclable(uint16 typeID)
 {
     std::map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
@@ -1398,6 +1405,8 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         std::vector<EvERam::RamMaterials> ramMatls;
         GetRamMaterials(prodID, ramMatls);
         for (auto &cur : ramMatls) {
+            if (!IsPublished(cur.materialTypeID))
+                continue;
             PyPackedRow* row = new PyPackedRow(header);
                 row->SetFieldC("quantity",        new PyInt(cur.quantity));
                 row->SetFieldC("requiredTypeID",  new PyInt(cur.materialTypeID));
@@ -1414,6 +1423,9 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     GetRamRequirements(typeID, ramReqs);
     GetRamRequirements(prodID, ramReqs);
     for (auto &cur : ramReqs) {
+        if (!IsPublished(cur.requiredTypeID))
+            continue;
+        
         PyPackedRow* row = new PyPackedRow(header);
             row->SetFieldC("quantity",        new PyInt(cur.quantity));
             row->SetFieldC("requiredTypeID",  new PyInt(cur.requiredTypeID));

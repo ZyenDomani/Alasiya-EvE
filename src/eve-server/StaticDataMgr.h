@@ -84,6 +84,7 @@ public:
     uint32              GetWreckID(uint32 typeID);  // returns wreck typeID based on given shipTypeID (incomplete, most ships done.)
     void                GetLoot(uint32 groupID, std::vector<LootList>& lootList);
 
+    bool                IsPublished(uint16 typeID);
     bool                IsRefinable(uint16 typeID);
     bool                IsRecyclable(uint16 typeID);
     void                GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs); // bp typeID/data
