@@ -2374,14 +2374,11 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Blueprints<BR><font color=yellow>R.A.M. skills no longer displayed properly on tabs.<BR>Haven't found when/why this broke</font></td><td class="working">30%
+<tr><td> - Blueprints<BR></td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>17Mar23</td></tr>
-<!--
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>6Mar18</td></tr>
--->
+<td><font color=lime>Final Testing</font><BR>11Jan25</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Players</h3></font></td></tr>
 <tr><td> - Research</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>

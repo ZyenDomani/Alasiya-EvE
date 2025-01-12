@@ -218,12 +218,12 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         // dont hit db for this shit...we kinda have to....dont have this data in static shit.
         // TODO:  put this in static data for faster call and avoid db hits
         std::vector<Recoverable> recoverables;
-        if ( !m_db.GetRecoverables( iRef->typeID(), recoverables ) )
+        if (!m_db.GetRecoverables(iRef->typeID(), recoverables))
             continue;
 
         float efficiency = CalcReprocessingEfficiency( call.client, iRef );
         std::vector<Recoverable>::iterator itr = recoverables.begin();
-        for (; itr != recoverables.end(); itr++) {
+        for (; itr != recoverables.end(); ++itr) {
             uint32 full = itr->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
             uint32 quantity(floor(full * efficiency * (1.0f - tax)));
             if (quantity == 0)

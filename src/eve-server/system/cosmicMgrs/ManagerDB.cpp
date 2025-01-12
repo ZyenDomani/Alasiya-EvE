@@ -69,7 +69,7 @@ void ManagerDB::GetTypeData(DBQueryResult& res)
 
 void ManagerDB::GetSkillList(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (SELECT groupID FROM invGroups WHERE categoryID = 16)"))
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (SELECT groupID FROM invGroups WHERE categoryID = 16) AND published = 1"))
         codelog(DATABASE__ERROR, "Error in GetSkillList query: %s", res.error.c_str());
 
     _log(DATABASE__RESULTS, "GetSkillList returned %lu items", res.GetRowCount());
@@ -89,6 +89,13 @@ void ManagerDB::GetTypeAttributes(DBQueryResult& res)
         codelog(DATABASE__ERROR, "Error in GetTypeAttributes query: %s", res.error.c_str());
 
     _log(DATABASE__RESULTS, "GetTypeAttributes returned %lu items", res.GetRowCount());
+}
+
+void ManagerDB::GetFactionNames(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT factionID, factionName FROM facFactions" ))
+        codelog(DATABASE__ERROR, "Error in LoadCorpNames query: %s", res.error.c_str());
+
+    _log(DATABASE__RESULTS, "LoadCorpNames returned %lu items", res.GetRowCount());
 }
 
 void ManagerDB::LoadCorpNames(DBQueryResult& res)

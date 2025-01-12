@@ -286,7 +286,7 @@ void StaticDataMgr::Populate()
     // Load wormhole destination classes into static memory object
     startTime = GetTimeMSeconds();
     int size = 0;
-    for (int i = 1; i < 10; i++) {
+    for (int i = 1; i < 10; ++i) {
         ManagerDB::GetWHClassDestinations(i, *res);
         DBResultRow row;
         m_whClassDestinations[i];
@@ -302,7 +302,7 @@ void StaticDataMgr::Populate()
     // Load wormhole system classes into static memory object
     startTime = GetTimeMSeconds();
     size = 0;
-    for (int i = 1; i < 10; i++) {
+    for (int i = 1; i < 10; ++i) {
         ManagerDB::GetWHClassSystems(i, *res);
         DBResultRow row;
         m_whClassSystems[i];
@@ -385,24 +385,24 @@ void StaticDataMgr::Populate()
     CharacterDB::GetAttributesFromAncestry(*res);
     while (res->GetRow(row)) {
         //SELECT ancestryID, intelligence, charisma, perception, memory, willpower FROM chrAncestries
-        Char::AttrData data = Char::AttrData();
-        data.intelligence = row.GetUInt8(1);
-        data.charisma = row.GetUInt8(2);
-        data.perception = row.GetUInt8(3);
-        data.memory = row.GetUInt8(4);
-        data.willpower = row.GetUInt8(5);
+        Char::AttrData data     = Char::AttrData();
+        data.intelligence       = row.GetUInt8(1);
+        data.charisma           = row.GetUInt8(2);
+        data.perception         = row.GetUInt8(3);
+        data.memory             = row.GetUInt8(4);
+        data.willpower          = row.GetUInt8(5);
         m_ancestryBonuses[row.GetUInt8(0)] = std::move(data);
     }
 
     CharacterDB::GetAttributesFromBloodline(*res);
     while (res->GetRow(row)) {
         //SELECT bloodlineID, intelligence, charisma, perception, memory, willpowerFROM chrBloodlines
-        Char::AttrData data = Char::AttrData();
-        data.intelligence = row.GetUInt8(1);
-        data.charisma = row.GetUInt8(2);
-        data.perception = row.GetUInt8(3);
-        data.memory = row.GetUInt8(4);
-        data.willpower = row.GetUInt8(5);
+        Char::AttrData data     = Char::AttrData();
+        data.intelligence       = row.GetUInt8(1);
+        data.charisma           = row.GetUInt8(2);
+        data.perception         = row.GetUInt8(3);
+        data.memory             = row.GetUInt8(4);
+        data.willpower          = row.GetUInt8(5);
         m_bloodlineBonuses[row.GetUInt8(0)] = std::move(data);
     }
 
@@ -417,41 +417,52 @@ void StaticDataMgr::Populate()
     sLog.Cyan("    StaticDataMgr", "%lu Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
+    uint piCount(0);
     FactoryDB::GetComponents(*res);     //766
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=composite or component]
         m_components[row.GetInt(0)] = row.GetText(1);
+        ++piCount;
     }
     FactoryDB::GetMinerals(*res);       //8
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=mineral]
         m_minerals[row.GetInt(0)] = row.GetText(1);
+        ++piCount;
     }
     FactoryDB::GetCompounds(*res);      //181
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=compound]
         m_compounds[row.GetInt(0)] = row.GetText(1);
+        ++piCount;
     }
     FactoryDB::GetSalvage(*res);        //53
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=salvage]
         m_salvage[row.GetInt(0)] = row.GetText(1);
+        ++piCount;
     }
     FactoryDB::GetResources(*res);      //15
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=pi resource]
         m_resources[row.GetInt(0)] = row.GetText(1);
+        ++piCount;
     }
     FactoryDB::GetCommodities(*res);    //66
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=pi commodity]
         m_commodities[row.GetInt(0)] = row.GetText(1);
+        ++piCount;
     }
     FactoryDB::GetMiscCommodities(*res);    //456
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=misc commodity]
         m_miscCommodities[row.GetInt(0)] = row.GetText(1);
+        ++piCount;
     }
+    sLog.Cyan("    StaticDataMgr", "%u PI datasets loaded in %.3fms.", piCount, (GetTimeMSeconds() - startTime));
+
+    startTime = GetTimeMSeconds();
     FactoryDB::GetRAMMaterials(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
@@ -475,10 +486,10 @@ void StaticDataMgr::Populate()
 
     startTime = GetTimeMSeconds();
     FactoryDB::GetBlueprintType(*res);
-    EvERam::bpTypeData bpTypeData = EvERam::bpTypeData();
     while (res->GetRow(row)) {
         //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
         //  researchTechTime, productivityModifier, materialModifier, wasteFactor, maxProductionLimit, chanceOfRE, catID FROM invBlueprintTypes
+            EvERam::bpTypeData bpTypeData = EvERam::bpTypeData();
             bpTypeData.parentBlueprintTypeID    = row.GetInt(1);
             bpTypeData.productTypeID            = row.GetInt(2);
             bpTypeData.productionTime           = row.GetInt(3);
@@ -493,18 +504,21 @@ void StaticDataMgr::Populate()
             bpTypeData.maxProductionLimit       = row.GetInt(12);
             bpTypeData.chanceOfRE               = row.GetFloat(13);
             bpTypeData.catID                    = (row.IsNull(14) ? 0 : row.GetInt(14));
-        m_bpProductData.emplace(row.GetInt(2), bpTypeData);
+        m_bpProductData[row.GetInt(2)] = bpTypeData;
         m_bpTypeData[row.GetInt(0)] = std::move(bpTypeData);
     }
+
+    _log(MANUF__DUMP, "m_bpTypeData.size() = %u", m_bpTypeData.size());
     for (auto &cur : m_bpTypeData)
         m_bpMatlData[cur.first] = SetBPMatlType(cur.second.catID, cur.first, cur.second.productTypeID);
+
     sLog.Cyan("    StaticDataMgr", "%lu BP Type defs loaded in %.3fms.", m_bpTypeData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetMoonResouces(*res);
     while (res->GetRow(row)) {
         //SELECT typeID,volume FROM invTypes [where group=moongoo]
-        m_moonGoo[row.GetInt(0)] = (uint8)(row.GetFloat(1) *10);
+        m_moonGoo[row.GetInt(0)] = (uint8)(row.GetFloat(1) * 10);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Moon Resources loaded in %.3fms.", m_moonGoo.size(), (GetTimeMSeconds() - startTime));
 
@@ -512,9 +526,9 @@ void StaticDataMgr::Populate()
     ManagerDB::GetOreBySSC(*res);
     while (res->GetRow(row)) {
         //SELECT systemSec, roidID, percent FROM roidDistribution
-        OreTypeChance oreChance = OreTypeChance();
-            oreChance.typeID  = row.GetInt(1);
-            oreChance.chance  = row.GetFloat(2);
+        OreTypeChance oreChance         = OreTypeChance();
+            oreChance.typeID            = row.GetInt(1);
+            oreChance.chance            = row.GetFloat(2);
         m_oreBySecClass.emplace(row.GetText(0), oreChance);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Ore defs loaded in %.3fms.", m_oreBySecClass.size(), (GetTimeMSeconds() - startTime));
@@ -538,18 +552,25 @@ void StaticDataMgr::Populate()
         //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
         m_ratRegions.emplace(row.GetInt(0), row.GetInt(1));
     }
+
+    ManagerDB::GetFactionNames(*res);
+    while (res->GetRow(row)) {
+        //SELECT factionID, factionName FROM facFactions
+        m_factionName.emplace(row.GetInt(0), row.GetText(1));
+    }
+
     sLog.Cyan("    StaticDataMgr", "%lu Region Faction Data Sets loaded in %.3fms.", (m_regions.size() + m_ratRegions.size()), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetFactionGroups(*res);
     DBQueryResult* res2 = new DBQueryResult();
     DBResultRow row2;
-    RatFactionGroups factionGroup;
     uint16 typeCount = 0;
     while (res->GetRow(row)) {
         //SELECT shipClass, groupID, factionID FROM npcClassGroup
-        factionGroup.shipClass = row.GetInt(0);
-        factionGroup.groupID = (uint16)row.GetInt(1);
+        RatFactionGroups factionGroup = RatFactionGroups();
+        factionGroup.shipClass  = row.GetInt(0);
+        factionGroup.groupID    = (uint16)row.GetInt(1);
         m_npcGroups.emplace(row.GetInt(2), factionGroup);
 
         rt_typeIDs rtt;
@@ -567,23 +588,23 @@ void StaticDataMgr::Populate()
     ManagerDB::GetSpawnClasses(*res);
     while (res->GetRow(row)) {
         //SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM npcSpawnClass
-        RatSpawnClass spawnClass = RatSpawnClass();
-        spawnClass.type = row.GetInt(0);
-        spawnClass.sub = row.GetInt(1);
-        spawnClass.f = row.GetInt(2);
-        spawnClass.af = row.GetInt(3);
-        spawnClass.d = row.GetInt(4);
-        spawnClass.c = row.GetInt(5);
-        spawnClass.ac = row.GetInt(6);
-        spawnClass.bc = row.GetInt(7);
-        spawnClass.bs = row.GetInt(8);
-        spawnClass.h = row.GetInt(9);
-        spawnClass.o = row.GetInt(10);
-        spawnClass.cf = row.GetInt(11);
-        spawnClass.cd = row.GetInt(12);
-        spawnClass.cc = row.GetInt(13);
-        spawnClass.cbc = row.GetInt(14);
-        spawnClass.cbs = row.GetInt(15);
+        RatSpawnClass spawnClass        = RatSpawnClass();
+        spawnClass.type                 = row.GetInt(0);
+        spawnClass.sub                  = row.GetInt(1);
+        spawnClass.f                    = row.GetInt(2);
+        spawnClass.af                   = row.GetInt(3);
+        spawnClass.d                    = row.GetInt(4);
+        spawnClass.c                    = row.GetInt(5);
+        spawnClass.ac                   = row.GetInt(6);
+        spawnClass.bc                   = row.GetInt(7);
+        spawnClass.bs                   = row.GetInt(8);
+        spawnClass.h                    = row.GetInt(9);
+        spawnClass.o                    = row.GetInt(10);
+        spawnClass.cf                   = row.GetInt(11);
+        spawnClass.cd                   = row.GetInt(12);
+        spawnClass.cc                   = row.GetInt(13);
+        spawnClass.cbc                  = row.GetInt(14);
+        spawnClass.cbs                  = row.GetInt(15);
         m_npcClasses.emplace((uint8)row.GetInt(0), spawnClass);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Rat Groups, %lu Rat Classes, and %u Rat Types for %lu regions loaded in %.3fms.",\
@@ -601,9 +622,9 @@ void StaticDataMgr::Populate()
     SystemDB::GetLootGroups(*res);
     while (res->GetRow(row)) {
         //SELECT npcGroupID, itemGroupID, groupDropChance FROM lootGroup
-        LootGroup lootGroup = LootGroup();
-        lootGroup.lootGroupID = row.GetInt(1);
-        lootGroup.dropChance = row.GetDouble(2);
+        LootGroup lootGroup             = LootGroup();
+        lootGroup.lootGroupID           = row.GetInt(1);
+        lootGroup.dropChance            = row.GetDouble(2);
         m_LootGroupMap.emplace(row.GetInt(0), lootGroup);
     }
 
@@ -611,19 +632,19 @@ void StaticDataMgr::Populate()
     SystemDB::GetLootGroupTypes(*res);
     while (res->GetRow(row)) {
         //SELECT itemGroupID, itemID, itemMetaLevel, minAmount, maxAmount FROM lootItemGroup
-        LootGroupType GroupType = LootGroupType();
-        GroupType.lootGroupID = row.GetInt(0);
-        GroupType.typeID =  row.GetInt(1);
-        GroupType.metaLevel = row.GetInt(2);
-        GroupType.minQuantity = row.GetInt(3);
-        GroupType.maxQuantity = row.GetInt(4);
+        LootGroupType GroupType         = LootGroupType();
+        GroupType.lootGroupID           = row.GetInt(0);
+        GroupType.typeID                =  row.GetInt(1);
+        GroupType.metaLevel             = row.GetInt(2);
+        GroupType.minQuantity           = row.GetInt(3);
+        GroupType.maxQuantity           = row.GetInt(4);
         m_LootGroupTypeMap.emplace(row.GetInt(0), GroupType);
     }
     sLog.Cyan("    StaticDataMgr", "%lu loot groups and %lu loot group types loaded in %.3fms.",
               m_LootGroupMap.size(), m_LootGroupTypeMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
-    uint32 locationID = 0;
+    uint32 locationID(0);
     ManagerDB::GetAgentLocation(*res);
     while (res->GetRow(row)) {
         //SELECT agentID, locationID FROM agtAgents
@@ -776,77 +797,77 @@ const char* StaticDataMgr::GetSkillName(uint16 skillID)
 void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)
 {
     for (auto &cur : m_components) {
-        Market::matlData data = Market::matlData();
-        data.price = 0.0f;
-        data.typeID = cur.first;
-        data.name = cur.second;
-        into[cur.first] = std::move(data);
+        Market::matlData data   = Market::matlData();
+        data.price              = 0.0f;
+        data.typeID             = cur.first;
+        data.name               = cur.second;
+        into[cur.first]         = std::move(data);
     }
 }
 
 void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into)
 {
     for (auto &cur : m_minerals) {
-        Market::matlData data = Market::matlData();
-        data.price = 0.0f;
-        data.typeID = cur.first;
-        data.name = cur.second;
-        into[cur.first] = std::move(data);
+        Market::matlData data   = Market::matlData();
+        data.price              = 0.0f;
+        data.typeID             = cur.first;
+        data.name               = cur.second;
+        into[cur.first]         = std::move(data);
     }
 }
 
 void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into)
 {
     for (auto &cur : m_compounds) {
-        Market::matlData data = Market::matlData();
-        data.price = 0.0f;
-        data.typeID = cur.first;
-        data.name = cur.second;
-        into[cur.first] = std::move(data);
+        Market::matlData data   = Market::matlData();
+        data.price              = 0.0f;
+        data.typeID             = cur.first;
+        data.name               = cur.second;
+        into[cur.first]         = std::move(data);
     }
 }
 
 void StaticDataMgr::GetSalvageData(std::map< uint16, Market::matlData >& into)
 {
     for (auto &cur : m_salvage) {
-        Market::matlData data = Market::matlData();
-        data.price = 0.0f;
-        data.typeID = cur.first;
-        data.name = cur.second;
-        into[cur.first] = std::move(data);
+        Market::matlData data   = Market::matlData();
+        data.price              = 0.0f;
+        data.typeID             = cur.first;
+        data.name               = cur.second;
+        into[cur.first]         = std::move(data);
     }
 }
 
 void StaticDataMgr::GetPIResourceData(std::map< uint16, Market::matlData >& into)
 {
     for (auto &cur : m_resources) {
-        Market::matlData data = Market::matlData();
-        data.price = 0.0f;
-        data.typeID = cur.first;
-        data.name = cur.second;
-        into[cur.first] = std::move(data);
+        Market::matlData data   = Market::matlData();
+        data.price              = 0.0f;
+        data.typeID             = cur.first;
+        data.name               = cur.second;
+        into[cur.first]         = std::move(data);
     }
 }
 
 void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& into)
 {
     for (auto &cur : m_commodities) {
-        Market::matlData data = Market::matlData();
-        data.price = 0.0f;
-        data.typeID = cur.first;
-        data.name = cur.second;
-        into[cur.first] = std::move(data);
+        Market::matlData data   = Market::matlData();
+        data.price              = 0.0f;
+        data.typeID             = cur.first;
+        data.name               = cur.second;
+        into[cur.first]         = std::move(data);
     }
 }
 
 void StaticDataMgr::GetMiscCommodityData(std::map< uint16, Market::matlData >& into)
 {
     for (auto &cur : m_miscCommodities) {
-        Market::matlData data = Market::matlData();
-        data.price = 0.0f;
-        data.typeID = cur.first;
-        data.name = cur.second;
-        into[cur.first] = std::move(data);
+        Market::matlData data   = Market::matlData();
+        data.price              = 0.0f;
+        data.typeID             = cur.first;
+        data.name               = cur.second;
+        into[cur.first]         = std::move(data);
     }
 }
 
@@ -915,23 +936,23 @@ bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& cl
 {
     auto classRange = m_npcClasses.equal_range(sClass);
     for (auto it = classRange.first; it != classRange.second; ++it) {
-        RatSpawnClass spawnClass = RatSpawnClass();
-        spawnClass.type = it->second.type;
-        spawnClass.sub = it->second.sub;
-        spawnClass.f = it->second.f;
-        spawnClass.af = it->second.af;
-        spawnClass.d = it->second.d;
-        spawnClass.c = it->second.c;
-        spawnClass.ac = it->second.ac;
-        spawnClass.bc = it->second.bc;
-        spawnClass.bs = it->second.bs;
-        spawnClass.h = it->second.h;
-        spawnClass.o = it->second.o;
-        spawnClass.cf = it->second.cf;
-        spawnClass.cd = it->second.cd;
-        spawnClass.cc = it->second.cc;
-        spawnClass.cbc = it->second.cbc;
-        spawnClass.cbs = it->second.cbs;
+        RatSpawnClass spawnClass        = RatSpawnClass();
+        spawnClass.type                 = it->second.type;
+        spawnClass.sub                  = it->second.sub;
+        spawnClass.f                    = it->second.f;
+        spawnClass.af                   = it->second.af;
+        spawnClass.d                    = it->second.d;
+        spawnClass.c                    = it->second.c;
+        spawnClass.ac                   = it->second.ac;
+        spawnClass.bc                   = it->second.bc;
+        spawnClass.bs                   = it->second.bs;
+        spawnClass.h                    = it->second.h;
+        spawnClass.o                    = it->second.o;
+        spawnClass.cf                   = it->second.cf;
+        spawnClass.cd                   = it->second.cd;
+        spawnClass.cc                   = it->second.cc;
+        spawnClass.cbc                  = it->second.cbc;
+        spawnClass.cbs                  = it->second.cbs;
         classMap.push_back(spawnClass);
     }
 
@@ -988,9 +1009,9 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
             if (!lootGrpVec.empty()) {
                 LootList loot_list;
                 uint16 i = MakeRandomInt(0, lootGrpVec.size());
-                loot_list.typeID = lootGrpVec[i].typeID;
-                loot_list.minDrop = lootGrpVec[i].minQuantity;
-                loot_list.maxDrop = lootGrpVec[i].maxQuantity;
+                loot_list.typeID        = lootGrpVec[i].typeID;
+                loot_list.minDrop       = lootGrpVec[i].minQuantity;
+                loot_list.maxDrop       = lootGrpVec[i].maxQuantity;
                 lootList.push_back(loot_list);
                 _log(LOOT__INFO, "adding %u to lootList", lootGrpVec[i].typeID);
                 lootGrpVec.clear();
@@ -1043,12 +1064,12 @@ void StaticDataMgr::GetRamReturns(uint16 typeID, int8 activityID, std::vector< E
     auto itr = m_ramReq.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; ++it)
         if ((it->second.activityID == activityID) and (it->second.extra) and !(IsSkillTypeID(it->second.requiredTypeID))) {
-            EvERam::RequiredItem data = EvERam::RequiredItem();
-            data.typeID = it->second.requiredTypeID;
-            data.quantity = it->second.quantity;
-            data.damagePerJob = it->second.damagePerJob;
-            data.isSkill = IsSkillTypeID(it->second.requiredTypeID);
-            data.extra = it->second.extra;
+            EvERam::RequiredItem data   = EvERam::RequiredItem();
+            data.typeID                 = it->second.requiredTypeID;
+            data.quantity               = it->second.quantity;
+            data.damagePerJob           = it->second.damagePerJob;
+            data.isSkill                = IsSkillTypeID(it->second.requiredTypeID);
+            data.extra                  = it->second.extra;
             ramReqs.push_back(data);
         }
 }
@@ -1075,8 +1096,8 @@ void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity
             auto range = m_ramMatl.equal_range(itr->second.productTypeID);
             for (auto it = range.first; it != range.second; ++it) {
                 EvERam::RequiredItem data = EvERam::RequiredItem();
-                data.typeID = it->second.materialTypeID;
-                data.quantity = it->second.quantity;
+                data.typeID             = it->second.materialTypeID;
+                data.quantity           = it->second.quantity;
                 into.push_back(data);
             }
         }
@@ -1085,12 +1106,12 @@ void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity
     auto itr = m_ramReq.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; ++it)
         if (it->second.activityID == activity) {
-            EvERam::RequiredItem data = EvERam::RequiredItem();
-            data.typeID = it->second.requiredTypeID;
-            data.quantity = it->second.quantity;
-            data.damagePerJob = it->second.damagePerJob;
-            data.isSkill = IsSkillTypeID(it->second.requiredTypeID);
-            data.extra = it->second.extra;
+            EvERam::RequiredItem data   = EvERam::RequiredItem();
+            data.typeID                 = it->second.requiredTypeID;
+            data.quantity               = it->second.quantity;
+            data.damagePerJob           = it->second.damagePerJob;
+            data.isSkill                = IsSkillTypeID(it->second.requiredTypeID);
+            data.extra                  = it->second.extra;
             into.push_back(data);
         }
 }
@@ -1269,65 +1290,37 @@ uint32 StaticDataMgr::GetRegionRatFaction(uint32 regionID)
 
     _log(DATA__MESSAGE, "Failed to query rat faction for region %u: region not found.", regionID);
     return 0;
+}
 
-/*
-def GetPirateFactionsOfRegion(self, regionID):
-return {10000001: (500019,),
-    10000002: (500010,),
-    10000003: (500010,),
-    10000005: (500011,),
-    10000006: (500011,),
-    10000007: (500011,),
-    10000008: (500011,),
-    10000009: (500011,),
-    10000010: (500010,),
-    10000011: (500011,),
-    10000012: (500011,),
-    10000014: (500019,),
-    10000015: (500010,),
-    10000016: (500010,),
-    10000020: (500019,),
-    10000022: (500019,),
-    10000023: (500010,),
-    10000025: (500011,),
-    10000028: (500011,),
-    10000029: (500010,),
-    10000030: (500011,),
-    10000031: (500011,),
-    10000032: (500020,),
-    10000033: (500010,),
-    10000035: (500010,),
-    10000036: (500019,),
-    10000037: (500020,),
-    10000038: (500012,),
-    10000039: (500019,),
-    10000041: (500020,),
-    10000042: (500011,),
-    10000043: (500019,),
-    10000044: (500020,),
-    10000045: (500010,),
-    10000046: (500020,),
-    10000047: (500019,),
-    10000048: (500020,),
-    10000049: (500012, 500019),
-    10000050: (500012,),
-    10000051: (500020,),
-    10000052: (500012,),
-    10000054: (500012,),
-    10000055: (500010,),
-    10000056: (500011,),
-    10000057: (500020,),
-    10000058: (500020,),
-    10000059: (500019,),
-    10000060: (500012,),
-    10000061: (500011,),
-    10000062: (500011,),
-    10000063: (500012,),
-    10000064: (500020,),
-    10000065: (500012,),
-    10000067: (500012,),
-    10000068: (500020,)}
-    */
+std::string StaticDataMgr::GetCorpName(uint32 corpID)
+{
+    std::map<uint32, std::string>::iterator itr = m_corpName.find(corpID);
+    if (itr != m_corpName.end())
+        return itr->second;
+
+    _log(DATA__ERROR, "Name not found for corp %u", corpID);
+    return "No Name";
+}
+
+uint32 StaticDataMgr::GetCorpFaction(uint32 corpID)
+{
+    std::map<uint32, uint32>::iterator itr = m_corpFaction.find(corpID);
+    if (itr != m_corpFaction.end())
+        return itr->second;
+
+    if (IsNPCCorp(corpID))
+        _log(DATA__ERROR, "Faction not found for NPC corp %s", GetCorpName(corpID).c_str());
+
+    return 0;
+}
+
+std::string StaticDataMgr::GetFactionName(uint32 factionID)
+{
+    std::map<uint32, std::string>::iterator itr = m_factionName.find(factionID);
+    if (itr != m_factionName.end())
+        return itr->second;
+
+    return "Undefined";
 }
 
 bool StaticDataMgr::IsSolarSystem(uint32 systemID/*0*/)
@@ -1413,25 +1406,24 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         }
     }
 
-    // booleans to only set items that are populated  NOTE: manuf is always populated for blueprints
+    // booleans to only set items that are populated
+    // NOTE: manuf is always populated for blueprints but not ancient relics
     bool manuf(false), copy(false), invent(false), dup(false), me(false), re(false), te(false), tech(false);
-    //  get R.A.M. skills and materials for both bp typeID and product typeID
     // the ramRequirements table holds ALL skill/item data for all aspects of RAM per BlueprintTypeID.
     std::vector<EvERam::RamRequirements> ramReqs;
     GetRamRequirements(typeID, ramReqs);
-    //GetRamRequirements(prodID, ramReqs);
-    PyPackedRow* row = new PyPackedRow(header);
+    GetRamRequirements(prodID, ramReqs);
     for (auto &cur : ramReqs) {
-        row->SetFieldC("quantity",        new PyInt(cur.quantity));
-        row->SetFieldC("requiredTypeID",  new PyInt(cur.requiredTypeID));
-        row->SetFieldC("damagePerJob",    new PyFloat(cur.damagePerJob));
+        PyPackedRow* row = new PyPackedRow(header);
+            row->SetFieldC("quantity",        new PyInt(cur.quantity));
+            row->SetFieldC("requiredTypeID",  new PyInt(cur.requiredTypeID));
+            row->SetFieldC("damagePerJob",    new PyFloat(cur.damagePerJob));
 
         using namespace EvERam;
         switch(cur.activityID) {
             case Activity::Manufacturing: {         //1
                 /** @todo  this needs work.  dunno how to remove 'extra' materials from this list */
                 manuf = true;
-                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListManuf->AddItem(row);
                 } else if (cur.extra) {
@@ -1445,7 +1437,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::ResearchTime: {          //3
                 te = true;
-                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListTE->AddItem(row);
                 } else {
@@ -1454,7 +1445,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::ResearchMaterial: {      //4
                 me = true;
-                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListME->AddItem(row);
                 } else {
@@ -1463,7 +1453,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::Copying: {               //5
                 copy = true;
-                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListCopy->AddItem(row);
                 } else {
@@ -1472,7 +1461,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::Duplicating: {           //6
                 dup = true;
-                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListDup->AddItem(row);
                 } else if (cur.extra) {
@@ -1483,7 +1471,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::ReverseEngineering: {    //7
                 re = true;
-                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListRE->AddItem(row);
                 } else {
@@ -1492,7 +1479,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
             } break;
             case Activity::Invention: {             //8
                 invent = true;
-                PyIncRef(row);
                 if (IsSkillTypeID(cur.requiredTypeID)) {
                     skillListInvent->AddItem(row);
                 } else {
@@ -1502,28 +1488,25 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         }
     }
 
-    // this is the response.  test for items populated above and create an ItemString in the dict for that item.
+    // build the response packet.  test for items populated above and create an ItemString in the dict for that item.
     // items not populated will not be shown in the BP info.
     DBQueryResult mtRes;
     PyRep* mtCRowSet(DBResultToCRowset(mtRes));
     PyDict* rsp(new PyDict());
-    // activity '0' should stay empty
-    //activityNone = 0
-    //rsp->SetItem(0, new PyDict());
 
     if (manuf) {        //activityManufacturing = 1
         PyDict* Manufacturing = new PyDict();
             Manufacturing->SetItemString("skills", skillListManuf);
             Manufacturing->SetItemString("rawMaterials", matlListManuf);
-            CRowSet *rowset = new CRowSet(&header);
-            PyList::const_iterator itr = extraListManuf->begin();
-            for (; itr != extraListManuf->end();itr++) {
-                PyPackedRow* from = (*itr)->AsPackedRow();
-                PyPackedRow* into = rowset->NewRow();
+        CRowSet *rowset = new CRowSet(&header);
+        PyList::const_iterator itr = extraListManuf->begin();
+        for (; itr != extraListManuf->end();++itr) {
+            PyPackedRow* from = (*itr)->AsPackedRow();
+            PyPackedRow* into = rowset->NewRow();
                 into->SetField(0, from->GetField(0));
                 into->SetField(1, from->GetField(1));
                 into->SetField(2, from->GetField(2));
-            }
+        }
         Manufacturing->SetItemString("extras", rowset);     // have to build a crowset for this
         rsp->SetItem(new PyInt(1), new PyObject("util.KeyVal", Manufacturing));
     }
@@ -1559,15 +1542,15 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         PyDict* Duplicating = new PyDict();
             Duplicating->SetItemString("skills", skillListDup);
             Duplicating->SetItemString("rawMaterials", matlListDup);
-            CRowSet *rowset = new CRowSet(&header);
-            PyList::const_iterator itr = extraListDup->begin();
-            for (; itr != extraListDup->end();itr++) {
-                PyPackedRow* from = (*itr)->AsPackedRow();
-                PyPackedRow* into = rowset->NewRow();
+        CRowSet *rowset = new CRowSet(&header);
+        PyList::const_iterator itr = extraListDup->begin();
+        for (; itr != extraListDup->end();++itr) {
+            PyPackedRow* from = (*itr)->AsPackedRow();
+            PyPackedRow* into = rowset->NewRow();
                 into->SetField(0, from->GetField(0));
                 into->SetField(1, from->GetField(1));
                 into->SetField(2, from->GetField(2));
-            }
+        }
         Duplicating->SetItemString("extras", rowset);    // have to build a crowset for this
         rsp->SetItem(new PyInt(6), new PyObject("util.KeyVal", Duplicating));
     }
@@ -1588,28 +1571,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         rsp->SetItem(new PyInt(8), new PyObject("util.KeyVal", Invention));
     }
 
-    // cleanup
-    /*
-    //PyDecRef(row);    // this is cleaned up elsewhere.  throws deleted=true on DecRef
-    //PyDecRef(header);
-    //PyDecRef(matlListManuf);
-    //PyDecRef(skillListManuf);
-    //PyDecRef(extraListManuf);
-    //PyDecRef(matlListTE);
-    //PyDecRef(skillListTE);
-    //PyDecRef(matlListME);
-    //PyDecRef(skillListME);
-    //PyDecRef(matlListCopy);
-    //PyDecRef(skillListCopy);
-    //PyDecRef(matlListDup);
-    //PyDecRef(skillListDup);
-    //PyDecRef(extraListDup);
-    //PyDecRef(matlListRE);
-    //PyDecRef(skillListRE);
-    //PyDecRef(matlListInvent);
-    //PyDecRef(skillListInvent);
-    //PyDecRef(mtCRowSet);
-    */
     return rsp;
 }
 
@@ -1698,41 +1659,6 @@ uint32 StaticDataMgr::GetFactionCorp(uint32 factionID)
     }
 
     return 0;
-}
-
-std::string StaticDataMgr::GetCorpName(uint32 corpID)
-{
-    std::map<uint32, std::string>::iterator itr = m_corpName.find(corpID);
-    if (itr != m_corpName.end())
-        return itr->second;
-
-    _log(DATA__ERROR, "Name not found for corp %u", corpID);
-    return "";
-}
-
-uint32 StaticDataMgr::GetCorpFaction(uint32 corpID)
-{
-    std::map<uint32, uint32>::iterator itr = m_corpFaction.find(corpID);
-    if (itr != m_corpFaction.end())
-        return itr->second;
-
-    if (IsNPCCorp(corpID))
-        _log(DATA__ERROR, "Faction not found for NPC corp %s", GetCorpName(corpID).c_str());
-
-    return 0;
-}
-
-std::string StaticDataMgr::GetFactionName(uint32 factionID)
-{
-    switch (factionID) {
-        case factionAngel:          return "Angel Cartel";
-        case factionSanshas:        return "Sansha Nation";
-        case factionBloodRaider:    return "Blood Raiders";
-        case factionGuristas:       return "Guristas Pirates";
-        case factionSerpentis:      return "Serpentis";
-        case factionRogueDrones:    return "Drone";
-    }
-    return "Undefined";
 }
 
 const char* StaticDataMgr::GetRaceName(uint8 raceID)

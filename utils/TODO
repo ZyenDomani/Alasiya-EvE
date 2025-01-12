@@ -177,7 +177,6 @@ move mining item depleted call to targmgr
 
 RAM code - implement invention, re    -priority level: low
     - (reproc) update GetRecoverables to use sDataMgr...currently hitting db on every call...
-    - some bp dont have invention data (dunno why)
     - invention and re will need lots of work
     - data interface dont show on install job tab (dunno why)
     - bpc may be a bit off (not sure why yet)
@@ -189,10 +188,11 @@ RAM code - implement invention, re    -priority level: low
     - (InstallationCheck)  - incomplete
     - add Almanu's cal'c fix from official?  not sure what he 'fixed'
     - verify char prod efficiency skill for Calculate()
+    - many messages not implemented   see common/EVE_RAM.h
 
 blueprints - look over data and verify
+    - skills not showing on tabs other than manufacturing
     - LPRR = -11??
-    - ram tabs not populating (again)...not sure when/why
     - research copy time.  huge discrepancy here....  3h20m base, <1m with skills???
     - was working on stacking bpc, but with singleton code, i dont think it's possible.
       -- however, bpc is not singleton, right?  shouldnt matter.  need more testing.

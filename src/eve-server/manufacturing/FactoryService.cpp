@@ -77,16 +77,17 @@ PyResult FactoryService::Handle_GetBlueprintAttributes(PyCallArgs &call) {
         return nullptr;
     }
 
-    BlueprintRef bRef = sItemFactory.GetBlueprintRef( arg.arg );
+    BlueprintRef bRef = sItemFactory.GetBlueprintRef(arg.arg);
     if (bRef.get() == nullptr)
         return nullptr;
 
     return bRef->GetBlueprintAttributes();
 }
 
+
 PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call) {
-    // this is the material and manuf tab of bp.  -working  allan 1Jan17        -broken  before now 11Mar23
-	SingleIntegerArg arg;
+    // this is the material and manuf tab of bp.  -working  allan 1Jan17
+    SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Failed to decode args.");
         return nullptr;
@@ -94,7 +95,6 @@ PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call
 
     return sDataMgr.GetBPMatlData(arg.arg);
 }
-
 
 // these next two are for corp locked items calls
 PyResult FactoryService::Handle_GetBlueprintInformationAtLocation(PyCallArgs &call) {

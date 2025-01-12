@@ -190,6 +190,7 @@ private:
     std::map<uint32, uint32>                            m_ratRegions;       // regionID/ratFactionID
     std::map<uint32, SystemData>                        m_systemData;       // systemID/data
     std::map<uint32, uint32>                            m_agentSystem;      // agentID/systemID
+    std::map<uint32, std::string>                       m_factionName;      // factionID/name
     std::map<uint32, std::string>                       m_corpName;         // corpID/name
     std::map<uint32, uint32>                            m_corpFaction;      // corpID/factionID
     std::map<uint32, uint8>                             m_stationCount;     // systemID/count
