@@ -464,6 +464,21 @@ void Character::FleetShareMissionStandings(float newStanding)
 void Character::ResetModifiers()
 {
     _log(EFFECTS__TRACE, "Character::ResetModifiers()");
+    for (auto &cur : m_implantMap){
+        Effect curEffect = Effect();
+        std::vector<TypeEffects> typeFx;
+        sFxDataMgr.GetTypeEffect(cur.second->typeID(), typeFx);
+        for (auto &curFx : typeFx) {
+            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+            fxData data = fxData();
+            data.action = FX::Action::Invalid;
+            data.srcRef = cur.second;
+            sFxProc.ParseExpression(cur.second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
+        }
+        // apply processed effects
+        sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
+        cur.second->ClearModifiers();
+    }
     ClearModifiers();
     ResetAttributes();
     std::vector<InventoryItemRef> allSkills;
@@ -1285,21 +1300,6 @@ void Character::Dock() {
 
 //not used
 void Character::Undock() {
-    for (auto &cur : m_implantMap){
-        Effect curEffect = Effect();
-        std::vector<TypeEffects> typeFx;
-        sFxDataMgr.GetTypeEffect(cur.second->typeID(), typeFx);
-        for (auto &curFx : typeFx) {
-            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-            fxData data = fxData();
-            data.action = FX::Action::Invalid;
-            data.srcRef = cur.second;
-            sFxProc.ParseExpression(cur.second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
-        }
-        // apply processed effects
-        sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
-        cur.second->ClearModifiers();
-    }
 }
 
 InventoryItemRef Character::GetImplantForAttrib(uint8 attribID) {
