@@ -174,12 +174,14 @@ void Skill::VerifySP()
         return;
 
     //TODO: check for proper saved level.  client doesnt use it, but we do
-    
+
     uint8 level(GetAttribute(AttrSkillLevel).get_uint32() + 1);
     if (level > EvESkill::MAXSKILLLEVEL) {
         level = EvESkill::MAXSKILLLEVEL;
         SetAttribute(AttrSkillLevel, level, false);
     }
+
+    uint32 spThisLevel(GetSPForLevel(level - 1));
     uint32 spCurrent(GetAttribute(AttrSkillPoints).get_uint32());
     if (spCurrent < spThisLevel) {
         _log(SKILL__WARNING, "Skill %s points low.  Updating from %u to %u", name(), spCurrent, spThisLevel);
@@ -189,6 +191,7 @@ void Skill::VerifySP()
         VerifySP();
         return;
     }
+    
     uint32 spNextLevel(GetSPForLevel(level));
     if (spCurrent > spNextLevel) {
         SetAttribute(AttrSkillLevel, level);
