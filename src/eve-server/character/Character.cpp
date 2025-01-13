@@ -271,7 +271,7 @@ bool Character::_Load() {
 
     // update attribs for new character attribute system
     if (!HasAttribute(AttrMemoryBonus)) {
-        FixCharAttribs();
+        SetCharAttrBonus();
         SaveAttributes();
     }
 
@@ -481,6 +481,7 @@ void Character::ResetModifiers()
     }
     ClearModifiers();
     ResetAttributes();
+    SetCharAttrBonus();
     std::vector<InventoryItemRef> allSkills;
     pInventory->GetItemsByFlag(flagSkill, allSkills);
     for (auto &curSkill : allSkills) {
@@ -611,6 +612,7 @@ SkillRef Character::GetCharSkillRef(uint16 skillTypeID) const
     return SkillRef::StaticCast(skill);
 }
 
+//TODO:  is this used?  skill level isnt saved correctly
 int8 Character::GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected /*true*/) const {
     SkillRef requiredSkill = GetCharSkillRef(skillTypeID);
     // First, check for existence of skill trained or in training:
@@ -644,6 +646,7 @@ PyRep* Character::GetRAMSkills()
      *            attributeValues  << this is a dict of max ram jobs
      */
 
+    //TODO:  i think we're missing skills here.
     PyDict* skillLevels = new PyDict();
         skillLevels->SetItem(new PyInt(EVEDB::invTypes::ScientificNetworking), new PyInt(GetSkillLevel(EvESkill::ScientificNetworking)));
         skillLevels->SetItem(new PyInt(EVEDB::invTypes::SupplyChainManagement), new PyInt(GetSkillLevel(EvESkill::SupplyChainManagement)));
@@ -1638,11 +1641,13 @@ void Character::SaveCertificates() {
 void Character::LoadBookmarks()
 {
     // nothing here yet.  wip
+    // bookmarks are loaded when pnp window is opened using bookmark.GetBookmarks()
 }
 
 void Character::SaveBookMarks()
 {
     // nothing here yet.  wip
+    // these are saved when created, copied or moved
 }
 
 
@@ -1686,7 +1691,7 @@ void Character::VisitSystem(uint32 solarSystemID) {
 	m_db.VisitSystem(solarSystemID, m_itemID);
 }
 
-void Character::FixCharAttribs() {
+void Character::SetCharAttrBonus() {
     // set attribute bonuses from ancestry
     Char::AttrData ancestryData = Char::AttrData();
     sDataMgr.GetAncestryBonuses(m_charData.ancestryID, ancestryData);

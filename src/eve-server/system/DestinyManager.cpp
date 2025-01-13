@@ -1568,7 +1568,7 @@ void DestinyManager::InitWarp() {
     float warpTime(accelTime + decelTime + cruiseTime);
 
     //  set deceltime for time check in WarpDecel()
-    m_decelTime = accelTime + cruiseTime;
+    m_decelTime = m_accelTime + cruiseTime;
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Warp will accelerate for %.1fs(%.1f), cruise for %.1fs, then decelerate for %.1fs, with total time of %.1fs, and warp speed of %lli m/s.", \
@@ -1616,6 +1616,7 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
      */
     int64 currentDistance = exp(3 * sec_into_warp);
     int64 currentShipSpeed = (3 * currentDistance);
+    int64 targetDistance = m_targetDistance - currentDistance;
 
     // if any accel vars are greater than calculated, reset all and cancel accel
     if ((sec_into_warp >= m_accelTime)
@@ -1624,18 +1625,17 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
         m_warpState->accel = false;
         currentDistance = m_warpState->accelDist;
         currentShipSpeed = m_warpState->warpSpeed;
+        m_targetDistance -= currentDistance;
         if (m_warpState->cruiseDist > 0) {
             m_warpState->cruise = true;
         } else {
             m_warpState->decel = true;
         }
     }
-    
-    m_targetDistance -= currentDistance;
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %lli m/s with %lli m left to go. Current distance %lli from origin.", \
-            mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance);
+            mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, targetDistance, currentDistance);
 
     WarpUpdate(currentShipSpeed);
 
@@ -1668,7 +1668,7 @@ void DestinyManager::WarpCruise(uint16 sec_into_warp) {
 }
 
 void DestinyManager::WarpDecel(uint16 sec_into_warp) {
-    /* For deceleration, k = -1.
+    /* For deceleration, k = -1
      * distance = e^(k*s)
      * speed = -k*e^(k*s)
      */
@@ -1691,7 +1691,7 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
     if (mySE->SysBubble() == nullptr)
         if (m_targetDistance < BUBBLE_RADIUS_METERS) {
             if (is_log_enabled(DESTINY__WARP_TRACE))
-                _log(DESTINY__WARP_TRACE, "Destiny::WarpUpdate()  %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() for bubble %u.", \
+                _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel()  %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() for bubble %u.", \
                         mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_targBubble->GetID());
             m_targBubble->Add(mySE);
         }
@@ -1706,7 +1706,6 @@ void DestinyManager::WarpUpdate(int64 currentShipSpeed) {
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::WarpUpdate()  %s(%u): Ship is %f from center of target bubble %u.", \
                 mySE->GetName(), mySE->GetID(), m_targBubble->GetCenter().distance(m_position), m_targBubble->GetID());
-
 }
 
 void DestinyManager::WarpStop(int64 currentShipSpeed) {

@@ -320,7 +320,7 @@ public:
     void DeleteBoosters();
 
     // update char with new atrribute data
-    void FixCharAttribs();
+    void SetCharAttrBonus();
 
 
 protected:

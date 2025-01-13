@@ -55,15 +55,15 @@ BookmarkService::BookmarkService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(BookmarkService, GetBookmarks);
+    PyCallable_REG_CALL(BookmarkService, CopyBookmarks);
+    PyCallable_REG_CALL(BookmarkService, DeleteBookmarks);
     PyCallable_REG_CALL(BookmarkService, CreateFolder);
     PyCallable_REG_CALL(BookmarkService, UpdateFolder);
     PyCallable_REG_CALL(BookmarkService, DeleteFolder);
     PyCallable_REG_CALL(BookmarkService, BookmarkLocation);
     PyCallable_REG_CALL(BookmarkService, BookmarkScanResult);
-    PyCallable_REG_CALL(BookmarkService, DeleteBookmarks);
     PyCallable_REG_CALL(BookmarkService, MoveBookmarksToFolder);
     PyCallable_REG_CALL(BookmarkService, AddBookmarkFromVoucher);
-    PyCallable_REG_CALL(BookmarkService, CopyBookmarks);
 }
 
 BookmarkService::~BookmarkService() {
@@ -364,6 +364,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
     //newBookmarks, message = bookmarkMgr.CopyBookmarks(bookmarksToCopy, folderID)
 
   //{'FullPath': u'UI/Messages', 'messageID': 258505, 'label': u'CantTradeMissionBookmarksBody'}(u'You cannot trade or copy mission bookmarks.', None, None)
+    //  use 'creatorID' to determine mission bms
 
     // this is called when dropping bms on corp header in bm window
 
@@ -425,7 +426,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
     }
 
     //window not updating when dropping bm
-    
+
     PyTuple* tuple = new PyTuple(2);
     tuple->SetItem(0, list);
     tuple->SetItem(1, PyStatic.NewNone());
