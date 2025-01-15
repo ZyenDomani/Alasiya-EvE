@@ -66,7 +66,7 @@ public:
 
     static PyTuple* GetBookmarkDescription(uint32 bookmarkID);
     static const char* GetBookmarkName(uint32 bookmarkID);
-    bool GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint16& typeID, uint32& locationID, double& x, double& y, double& z);
+    bool LookupBookmark(uint32 bookmarkID, uint32& itemID, uint16& typeID, uint32& locationID, double& x, double& y, double& z);
 
     bool UpdateBookmark(Call_UpdateBookmark& args);
     bool DeleteBookmark(uint32 ownerID, uint32 bookmarkID);

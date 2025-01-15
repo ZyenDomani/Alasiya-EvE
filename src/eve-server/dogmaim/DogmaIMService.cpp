@@ -181,24 +181,8 @@ PyResult DogmaIMBound::Handle_GetTargeters(PyCallArgs& call) {
     return call.client->GetShipSE()->TargetMgr()->GetTargeters();
 }
 
-PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call)
-{
-    Character* pChar = call.client->GetChar().get();
-
-    uint8 perception = pChar->type().GetAttribute(AttrIntelligence).get_uint32() + pChar->GetAttribute(AttrIntelligenceBonus).get_uint32();
-    uint8 willpower = pChar->type().GetAttribute(AttrPerception).get_uint32() + pChar->GetAttribute(AttrPerceptionBonus).get_uint32();
-    uint8 charisma = pChar->type().GetAttribute(AttrCharisma).get_uint32() + pChar->GetAttribute(AttrCharismaBonus).get_uint32();
-    uint8 memory = pChar->type().GetAttribute(AttrWillpower).get_uint32() + pChar->GetAttribute(AttrWillpowerBonus).get_uint32();
-    uint8 intelligence = pChar->type().GetAttribute(AttrMemory).get_uint32() + pChar->GetAttribute(AttrMemoryBonus).get_uint32();
-
-    PyDict* result = new PyDict();
-        result->SetItem(new PyInt(AttrIntelligence), new PyInt(intelligence));
-        result->SetItem(new PyInt(AttrPerception), new PyInt(perception));
-        result->SetItem(new PyInt(AttrCharisma), new PyInt(charisma));
-        result->SetItem(new PyInt(AttrWillpower), new PyInt(willpower));
-        result->SetItem(new PyInt(AttrMemory), new PyInt(memory));
-
-    return result;
+PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call) {
+    return call.client->GetChar()->GetCharacterBaseAttributes();
 }
 
 

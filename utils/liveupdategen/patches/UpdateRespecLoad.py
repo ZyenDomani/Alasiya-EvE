@@ -11,8 +11,8 @@ def Load(self, *args):
             attrValue = attrDict[attr]
             if attrValue > 65:
                 attrValue = 65
-            if attrValue < 30:
-                attrValue = 30
+            if attrValue < 45:
+                attrValue = 45
             self.currentAttributes[attr] = attrValue
             self.respecBar[x].SetValue(attrValue - 45)
             unspentPts -= attrValue

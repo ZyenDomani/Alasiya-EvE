@@ -71,12 +71,12 @@ BookmarkService::~BookmarkService() {
 }
 
 bool BookmarkService::LookupBookmark(uint32 bookmarkID, uint32& itemID, uint16& typeID, uint32& locationID, double& x, double& y, double& z) {
-    return m_db.GetBookmarkInformation(bookmarkID, itemID, typeID, locationID, x, y, z);
+    return m_db.LookupBookmark(bookmarkID, itemID, typeID, locationID, x, y, z);
 }
 
+//  NOTE:  this service is only for character bookmarks
 PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
-    //TODO:  find/implement a way to determine where the bookmarks are located, and load accordingly
-    //    currently, bms are only loaded for ownerID (calling client)
+    sLog.Cyan("BookmarkService", "GetBookmarks()");
     PyTuple* result = new PyTuple(2);
         result->SetItem(0, m_db.GetBookmarks(call.client->GetCharacterID()));
         result->SetItem(1, m_db.GetFolders(call.client->GetCharacterID()));

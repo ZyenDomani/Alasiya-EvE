@@ -263,11 +263,39 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
         return nullptr;
 
     CharacterRef cRef(call.client->GetChar());
+
+    // type() is base, *Bonus are ancestry + bloodline
+    //  remove these from sent values to get player's remap points
+    uint8 intelligence(args.intelligence);
+        intelligence -= cRef->type().GetAttribute(AttrIntelligence).get_uint32();
+        intelligence -= cRef->GetAttribute(AttrIntelligenceBonus).get_uint32();
+    uint8 perception(args.perception);
+        perception -= cRef->type().GetAttribute(AttrPerception).get_uint32();
+        perception -= cRef->GetAttribute(AttrPerceptionBonus).get_uint32();
+    uint8 charisma(args.charisma);
+        charisma -= cRef->type().GetAttribute(AttrCharisma).get_uint32();
+        charisma -= cRef->GetAttribute(AttrCharismaBonus).get_uint32();
+    uint8 willpower(args.willpower);
+        willpower -= cRef->type().GetAttribute(AttrWillpower).get_uint32();
+        willpower -= cRef->GetAttribute(AttrWillpowerBonus).get_uint32();
+    uint8 memory(args.memory);
+        memory -= cRef->type().GetAttribute(AttrMemory).get_uint32();
+        memory -= cRef->GetAttribute(AttrMemoryBonus).get_uint32();
+
+    // set character attributes to total remapped values
     cRef->SetAttribute(AttrCharisma, args.charisma);
     cRef->SetAttribute(AttrIntelligence, args.intelligence);
     cRef->SetAttribute(AttrMemory, args.memory);
     cRef->SetAttribute(AttrPerception, args.perception);
     cRef->SetAttribute(AttrWillpower, args.willpower);
+
+    // custom is player's remapping points
+    cRef->SetAttribute(AttrCustomCharismaBonus, charisma);
+    cRef->SetAttribute(AttrCustomIntelligenceBonus, intelligence);
+    cRef->SetAttribute(AttrCustomMemoryBonus, memory);
+    cRef->SetAttribute(AttrCustomPerceptionBonus, perception);
+    cRef->SetAttribute(AttrCustomWillpowerBonus, willpower);
+
     cRef->SaveAttributes();
 
     // no return value

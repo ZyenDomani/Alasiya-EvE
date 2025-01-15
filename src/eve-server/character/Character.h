@@ -153,9 +153,7 @@ public:
     void            ResetChar();
 
     // some implants aren't processed in client while docked
-    void            Dock();
-    // remove implant effects and clear map before calling full FxProc()
-    void            Undock();
+    void            ApplyImplantFX();
 
     // skills
     bool            HasSkill(uint16 skillTypeID) const;
@@ -275,7 +273,6 @@ public:
 
     //  saves
     void                    LogOut();
-    void                    SaveBookMarks();
     void                    SaveCharacter();
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
@@ -319,8 +316,9 @@ public:
     void DeleteImplants();
     void DeleteBoosters();
 
-    // update char with new atrribute data
+    // update char with static attribute data
     void SetCharAttrBonus();
+    PyResult GetCharacterBaseAttributes();
 
 
 protected:
@@ -336,8 +334,6 @@ protected:
     ~Character();
     Character(const Character&) =delete;
     Character& operator=(const Character&) =delete;
-
-    void LoadBookmarks();
 
     /*
      * templated loading system

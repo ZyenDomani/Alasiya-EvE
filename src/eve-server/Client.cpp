@@ -267,6 +267,8 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     m_char->SetLoginTime();
     m_char->SetClient(this);
     m_char->SkillQueueLoop(false);
+    if (sDataMgr.IsStation(m_locationID))
+        m_char->ApplyImplantFX();
 
     // register with our system manager AFTER character is constructed and initialized
     m_system->AddClient(this, true);
@@ -326,7 +328,6 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     //johnsus - characterOnline mod
     CharacterDB::SetCharacterOnlineStatus(charID, true);
     sItemFactory.UnsetUsingClient();
-
 
     SetStateTimer(Player::State::Login, Player::Timer::Login);
     SetInvulTimer(Player::Timer::WarpInInvul);
@@ -872,6 +873,7 @@ void Client::MoveToPosition(const GPoint &pt) {
 }
 
 void Client::DockToStation() {
+    // clear effects on ship and reset char attributes
     pShipSE->Dock();
     // ap cleared on client side when docking.
     m_setStateSent = false;
@@ -899,7 +901,8 @@ void Client::DockToStation() {
 
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
 
-    m_char->Dock();
+    // client doesn't automatically apply implants when docked
+    m_char->ApplyImplantFX();
 
     SetSessionTimer();
     m_ship->SetDocked();

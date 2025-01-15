@@ -228,7 +228,7 @@ PyTuple* BookmarkDB::GetBookmarkDescription(uint32 bookmarkID)
     return tuple;
 }
 
-bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint16& typeID, uint32& locationID, double& x, double& y, double& z)
+bool BookmarkDB::LookupBookmark(uint32 bookmarkID, uint32& itemID, uint16& typeID, uint32& locationID, double& x, double& y, double& z)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -240,7 +240,7 @@ bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint1
         " FROM bookmarks "
         " WHERE bookmarkID = %u ", bookmarkID))
     {
-        sLog.Error( "BmDB::GetBookmarkInformation()", "Error in query: %s", res.error.c_str() );
+        sLog.Error( "BmDB::LookupBookmark()", "Error in query: %s", res.error.c_str() );
         return false;
     }
 

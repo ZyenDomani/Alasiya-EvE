@@ -159,11 +159,11 @@ enum EveAttrEnum {
     AttrPerception = 167,                               // current attribute of character on character, base on char type
     AttrWillpower = 168,                                // current attribute of character on character, base on char type
     AttrInertiaMultiplier = 169,                        //Multiplier to the Inertia Modifier of an object
-    AttrCustomCharismaBonus = 170,                      // not used
-    AttrCustomWillpowerBonus = 171,                     // not used
-    AttrCustomPerceptionBonus = 172,                    // not used
-    AttrCustomMemoryBonus = 173,                        // not used
-    AttrCustomIntelligenceBonus = 174,                  // not used
+    AttrCustomCharismaBonus = 170,                      // remap points
+    AttrCustomWillpowerBonus = 171,                     // remap points
+    AttrCustomPerceptionBonus = 172,                    // remap points
+    AttrCustomMemoryBonus = 173,                        // remap points 
+    AttrCustomIntelligenceBonus = 174,                  // remap points
     AttrCharismaBonus = 175,                            // character ancestry & bloodline bonus, saved to character
     AttrIntelligenceBonus = 176,                        // character ancestry & bloodline bonus, saved to character
     AttrMemoryBonus = 177,                              // character ancestry & bloodline bonus, saved to character

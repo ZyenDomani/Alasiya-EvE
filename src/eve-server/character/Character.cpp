@@ -225,9 +225,6 @@ Character::Character(
 
 Character::~Character()
 {
-    SaveBookMarks();
-    // remove implant mods before saving char attribs
-    Undock();  //  this only removes implant mods
     SaveFullCharacter();
     SaveCertificates();
     // should we unload inventory before delete?
@@ -260,9 +257,6 @@ bool Character::_Load() {
     if (!m_cdb.LoadCertificates(m_itemID, m_certificates))
         sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", m_itemID);
 
-    // load char personal bookmarks and folders ... corp shit will be done ???
-    LoadBookmarks();
-
     LoadImplants();
 
     m_cloneRef = sItemFactory.GetItemRefFromID(m_db.GetCloneID(m_itemID));
@@ -272,7 +266,6 @@ bool Character::_Load() {
     // update attribs for new character attribute system
     if (!HasAttribute(AttrMemoryBonus)) {
         SetCharAttrBonus();
-        SaveAttributes();
     }
 
     return m_loaded;
@@ -450,6 +443,8 @@ void Character::SetFleetData(CharFleetData& fleet, bool clear/*false*/)
 void Character::FleetShareMissionRewards()
 {
     // nothing here yet.  wip
+    if (m_fleetData.fleetID == 0)
+        return;
 }
 
 void Character::FleetShareMissionStandings(float newStanding)
@@ -464,21 +459,6 @@ void Character::FleetShareMissionStandings(float newStanding)
 void Character::ResetModifiers()
 {
     _log(EFFECTS__TRACE, "Character::ResetModifiers()");
-    for (auto &cur : m_implantMap){
-        Effect curEffect = Effect();
-        std::vector<TypeEffects> typeFx;
-        sFxDataMgr.GetTypeEffect(cur.second->typeID(), typeFx);
-        for (auto &curFx : typeFx) {
-            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-            fxData data = fxData();
-            data.action = FX::Action::Invalid;
-            data.srcRef = cur.second;
-            sFxProc.ParseExpression(cur.second.get(), sFxDataMgr.GetExpression(curEffect.postExpression), data);
-        }
-        // apply processed effects
-        sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
-        cur.second->ClearModifiers();
-    }
     ClearModifiers();
     ResetAttributes();
     SetCharAttrBonus();
@@ -558,7 +538,7 @@ void Character::UpdateClone(int32 typeID) {
         iData.customInfo += ")";
 
     m_cloneRef->Delete();
-    m_cloneRef = std::move(sItemFactory.SpawnItem(iData));
+    m_cloneRef = sItemFactory.SpawnItem(iData);
 }
 
 /*
@@ -1283,7 +1263,7 @@ void Character::SetActivePod(uint32 podID) {
     m_db.SetCurrentPod(m_itemID, podID);
 }
 
-void Character::Dock() {
+void Character::ApplyImplantFX() {
     for (auto &cur : m_implantMap) {
         Effect curEffect = Effect();
         std::vector<TypeEffects> typeFx;
@@ -1299,10 +1279,6 @@ void Character::Dock() {
         sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
         cur.second->ClearModifiers();
     }
-}
-
-//not used
-void Character::Undock() {
 }
 
 InventoryItemRef Character::GetImplantForAttrib(uint8 attribID) {
@@ -1323,7 +1299,7 @@ InventoryItemRef Character::GetImplantAtSlot(uint8 slotID) {
 }
 
 void Character::LoadImplants() {
-    // load implants into their own maps and apply where applicable
+    // load attribute implants into their own maps
     std::vector<InventoryItemRef> implants;
     pInventory->GetItemsByFlag(flagImplant, implants);
     uint32 slot(0);
@@ -1346,25 +1322,6 @@ void Character::LoadImplants() {
             case 5:     //Charisma
                 m_implantAttribMap[AttrCharisma] = cur;
                 break;
-        }
-    }
-
-    // note:  this is called on client load, before client is completely constructed, so m_pClient is still null
-    if (IsStationID(m_charData.locationID)) {
-        for (auto &cur : m_implantMap){
-            Effect curEffect = Effect();
-            std::vector<TypeEffects> typeFx;
-            sFxDataMgr.GetTypeEffect(cur.second->typeID(), typeFx);
-            for (auto &curFx : typeFx) {
-                curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-                fxData data = fxData();
-                data.action = FX::Action::Invalid;
-                data.srcRef = cur.second;
-                sFxProc.ParseExpression(cur.second.get(), sFxDataMgr.GetExpression(curEffect.preExpression), data);
-            }
-            // apply processed effects
-            sFxProc.ApplyEffects(cur.second.get(), this, nullptr);
-            cur.second->ClearModifiers();
         }
     }
 }
@@ -1636,20 +1593,6 @@ void Character::SaveCertificates() {
     m_cdb.SaveCertificates(m_itemID, m_certificates);
 }
 
-// functions and methods for bookmark system (char mem maps)
-/** @todo this will need more thought/work   */
-void Character::LoadBookmarks()
-{
-    // nothing here yet.  wip
-    // bookmarks are loaded when pnp window is opened using bookmark.GetBookmarks()
-}
-
-void Character::SaveBookMarks()
-{
-    // nothing here yet.  wip
-    // these are saved when created, copied or moved
-}
-
 
 // functions and methods for standings system
 /** @todo  this needs to be moved to common standings code */
@@ -1705,4 +1648,37 @@ void Character::SetCharAttrBonus() {
     SetAttribute(AttrPerceptionBonus, ancestryData.perception + bloodlineData.perception, false);
     SetAttribute(AttrMemoryBonus, ancestryData.memory + bloodlineData.memory, false);
     SetAttribute(AttrWillpowerBonus, ancestryData.willpower + bloodlineData.willpower, false);
+}
+
+PyResult Character::GetCharacterBaseAttributes() {
+    // get character base attributes, ancestry modifiers, bloodline modifiers, and remap points (if applicable)
+
+    uint8 intelligence = type().GetAttribute(AttrIntelligence).get_uint32();
+    intelligence += GetAttribute(AttrIntelligenceBonus).get_uint32();
+    intelligence += GetAttribute(AttrCustomIntelligenceBonus).get_uint32();
+
+    uint8 perception = type().GetAttribute(AttrPerception).get_uint32();
+    perception += GetAttribute(AttrPerceptionBonus).get_uint32();
+    perception += GetAttribute(AttrCustomPerceptionBonus).get_uint32();
+
+    uint8 charisma = type().GetAttribute(AttrCharisma).get_uint32();
+    charisma += GetAttribute(AttrCharismaBonus).get_uint32();
+    charisma += GetAttribute(AttrCustomCharismaBonus).get_uint32();
+
+    uint8 willpower = type().GetAttribute(AttrWillpower).get_uint32();
+    willpower += GetAttribute(AttrWillpowerBonus).get_uint32();
+    willpower += GetAttribute(AttrCustomWillpowerBonus).get_uint32();
+
+    uint8 memory = type().GetAttribute(AttrMemory).get_uint32();
+    memory += GetAttribute(AttrMemoryBonus).get_uint32();
+    memory += GetAttribute(AttrCustomMemoryBonus).get_uint32();
+
+    PyDict* result = new PyDict();
+    result->SetItem(new PyInt(AttrIntelligence), new PyInt(intelligence));
+    result->SetItem(new PyInt(AttrPerception), new PyInt(perception));
+    result->SetItem(new PyInt(AttrCharisma), new PyInt(charisma));
+    result->SetItem(new PyInt(AttrWillpower), new PyInt(willpower));
+    result->SetItem(new PyInt(AttrMemory), new PyInt(memory));
+
+    return result;
 }

@@ -63,9 +63,11 @@ CorpBookmarkMgr::~CorpBookmarkMgr()
     delete m_dispatch;
 }
 
+//  NOTE:  this service is only for corporate bookmarks
+
 PyResult CorpBookmarkMgr::Handle_GetBookmarks(PyCallArgs& call)
 {
-
+    sLog.Cyan("CorpBookmarkMgr", "GetBookmarks()");
     PyTuple *result = new PyTuple(2);
     result->SetItem(0, m_db.GetBookmarks(call.client->GetCorporationID()));
     result->SetItem(1, m_db.GetFolders(call.client->GetCorporationID()));
@@ -124,6 +126,7 @@ PyResult CorpBookmarkMgr::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
 
 PyResult CorpBookmarkMgr::Handle_MoveBookmarksToFolder(PyCallArgs& call)
 {
+    sLog.Cyan("CorpBookmarkMgr", "MoveBookmarksToFolder()");
     // rows = bookmarkMgr.MoveBookmarksToFolder(folderID, bookmarkIDs)
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_MoveBookmarksToFolder args;

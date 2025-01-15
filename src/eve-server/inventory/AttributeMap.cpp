@@ -71,12 +71,12 @@ bool AttributeMap::Load(bool reset/*false*/) {
     or IsNPC(mItem.itemID()))
         return true;
 
-    /* load saved attribs from the db, if any, to update the defaults with items current (saved) values*/
+    // get saved attributes from db   i dont like hitting db for this.  every dock/undock for every char is a bit much
     DBQueryResult res;
-    if (!IsCharacterID(mItem.itemID())) {
-        /*if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID()))
+    if (IsCharacterID(mItem.itemID())) {
+        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID()))
             _log(DATABASE__ERROR, "AttributeMap Error in char db load query: %s", res.error.c_str());
-    } else {*/
+    } else {
         if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID()))
             _log(DATABASE__ERROR, "AttributeMap Error in item db load query: %s", res.error.c_str());
     }
