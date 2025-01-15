@@ -26,6 +26,8 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 
 !! destiny (all space movement)
 
+to avoid db hits for every dock/undock, implement postExpression processing
+
 
 market --  some queries dont work...sending price data returns null
     - no clue how to fix this
@@ -103,8 +105,6 @@ char creation - figure certs and set skills accordingly
 update all 16 references to www.eveonline.com and create pages on server to respond properly
 add agent portraits to server and update 'backupurl' in server code
 
-may need more updating for new attrib/implant systems
-  update advanced implants for better char attrib bonus'
 
 *******************************************************
 *******************************************************
@@ -594,7 +594,6 @@ add cache calls/data for systems that use it after debugging and testing complet
 
 write new methods for List() and Move() for bookmarks where owner != player
 currently, all bookmarks are donated to calling player when moved into cargo/hangar
-when moving bm to corp folder in pnp, window is not updated.
 
 finish DestinyManager::SendCloakFx()
 
