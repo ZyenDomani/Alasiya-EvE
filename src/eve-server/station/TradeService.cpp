@@ -296,8 +296,8 @@ PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
 }
 
 PyResult TradeBound::Handle_GetItemID(PyCallArgs &call) {
-    _log(CLIENT__CALL_DUMP, "TradeBound::Handle_GetItemID()");
-    call.Dump(CLIENT__CALL_DUMP);
+    _log(PLAYER__CALL_DUMP, "TradeBound::Handle_GetItemID()");
+    call.Dump(PLAYER__CALL_DUMP);
     // still not sure what this does...only returns PyNone in packet logs.
     // returns none
     return PyStatic.NewNone();
@@ -493,8 +493,8 @@ PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
 }
 
 PyResult TradeBound::Handle_IsCEOTrade(PyCallArgs &call) {
-    _log(CLIENT__CALL_DUMP, "TradeBound::Handle_IsCEOTrade()");
-    call.Dump(CLIENT__CALL_DUMP);
+    _log(PLAYER__CALL_DUMP, "TradeBound::Handle_IsCEOTrade()");
+    call.Dump(PLAYER__CALL_DUMP);
 
     //TODO will have to work on this later.  need corps working correctly first.
     return PyStatic.NewFalse();
