@@ -46,7 +46,8 @@ ClientStatsMgr::~ClientStatsMgr()
 
 PyResult ClientStatsMgr::Handle_SubmitStats( PyCallArgs& call )
 {
-    sLog.Debug( "ClientStatsMgr", "Called SubmitStats stub." );
+    sLog.Warning( "ClientStatsMgr", "Called SubmitStats stub." );
+    call.Dump(CLIENT__CALL_DUMP);
 
     return PyStatic.NewNone();
 }
