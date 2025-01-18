@@ -47,10 +47,105 @@ ClientStatsMgr::~ClientStatsMgr()
 PyResult ClientStatsMgr::Handle_SubmitStats( PyCallArgs& call )
 {
     sLog.Warning( "ClientStatsMgr", "Called SubmitStats stub." );
-    call.Dump(CLIENT__CALL_DUMP);
+    //call.Dump(CLIENT__CALL_DUMP);
 
     return PyStatic.NewNone();
 }
+
+/*)
+ * 18:23:27 [Service] clientStatsMgr::SubmitStats()
+ * 18:23:27 W ClientStatsMgr: Called SubmitStats stub.
+ * 18:23:27 [ClientCallDump]   Call Arguments:
+ * 18:23:27 [ClientCallDump]      Tuple: 1 elements
+ * 18:23:27 [ClientCallDump]       [ 0]  Tuple: 2 elements
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 0]  Tuple: 5 elements
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 0]   [ 0]    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 0]   [ 1]    Integer: 1745
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 0]   [ 2]    Integer: 360229
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 0]   [ 3]    Integer: 1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 0]   [ 4]    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]  Dictionary: 8 entries
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 0]   Key:    Integer: 512
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 0] Value:  Dictionary: 3 entries
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 0] Value:   [ 0]   Key:    Integer: 5
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 0] Value:   [ 0] Value:    Integer: 345205
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 0] Value:   [ 1]   Key:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 0] Value:   [ 1] Value:       Long: 8742031250
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 0] Value:   [ 2]   Key:    Integer: 0
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 0] Value:   [ 2] Value:    Integer: 755843072
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1]   Key:    Integer: 64
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1] Value:  Dictionary: 4 entries
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1] Value:   [ 0]   Key:    Integer: 5
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1] Value:   [ 0] Value:    Integer: 10600
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1] Value:   [ 1]   Key:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1] Value:   [ 1] Value:       Long: 2568906250
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1] Value:   [ 2]   Key:    Integer: 1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1] Value:   [ 2] Value:    Integer: 5926728
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1] Value:   [ 3]   Key:    Integer: 0
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 1] Value:   [ 3] Value:    Integer: 700846080
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2]   Key:    Integer: 8
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2] Value:  Dictionary: 4 entries
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2] Value:   [ 0]   Key:    Integer: 5
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2] Value:   [ 0] Value:    Integer: 2801
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2] Value:   [ 1]   Key:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2] Value:   [ 1] Value:       Long: 2465312500
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2] Value:   [ 2]   Key:    Integer: 1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2] Value:   [ 2] Value:    Integer: -1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2] Value:   [ 3]   Key:    Integer: 0
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 2] Value:   [ 3] Value:    Integer: 354742272
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3]   Key:    Integer: 4
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3] Value:  Dictionary: 4 entries
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3] Value:   [ 0]   Key:    Integer: 5
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3] Value:   [ 0] Value:    Integer: 194170
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3] Value:   [ 1]   Key:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3] Value:   [ 1] Value:       Long: 2462031250
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3] Value:   [ 2]   Key:    Integer: 1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3] Value:   [ 2] Value:    Integer: -1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3] Value:   [ 3]   Key:    Integer: 0
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 3] Value:   [ 3] Value:    Integer: 354742272
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4]   Key:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4] Value:  Dictionary: 4 entries
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4] Value:   [ 0]   Key:    Integer: 5
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4] Value:   [ 0] Value:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4] Value:   [ 1]   Key:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4] Value:   [ 1] Value:    Integer: 296093750
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4] Value:   [ 2]   Key:    Integer: 1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4] Value:   [ 2] Value:    Integer: -1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4] Value:   [ 3]   Key:    Integer: 0
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 4] Value:   [ 3] Value:    Integer: 215875584
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 5]   Key:    Integer: 1024
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 5] Value:  Dictionary: 3 entries
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 5] Value:   [ 0]   Key:    Integer: 5
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 5] Value:   [ 0] Value:    Integer: 109
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 5] Value:   [ 1]   Key:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 5] Value:   [ 1] Value:       Long: 8742812500
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 5] Value:   [ 2]   Key:    Integer: 0
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 5] Value:   [ 2] Value:    Integer: 755843072
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6]   Key:    Integer: 1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6] Value:  Dictionary: 4 entries
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6] Value:   [ 0]   Key:    Integer: 5
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6] Value:   [ 0] Value:    Integer: 14
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6] Value:   [ 1]   Key:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6] Value:   [ 1] Value:    Integer: 55312500
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6] Value:   [ 2]   Key:    Integer: 1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6] Value:   [ 2] Value:    Integer: -1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6] Value:   [ 3]   Key:    Integer: 0
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 6] Value:   [ 3] Value:    Integer: 65232896
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7]   Key:    Integer: 128
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7] Value:  Dictionary: 4 entries
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7] Value:   [ 0]   Key:    Integer: 5
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7] Value:   [ 0] Value:    Integer: 6909
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7] Value:   [ 1]   Key:    Integer: 2
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7] Value:   [ 1] Value:       Long: 2648281250
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7] Value:   [ 2]   Key:    Integer: 1
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7] Value:   [ 2] Value:    Integer: 9237748
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7] Value:   [ 3]   Key:    Integer: 0
+ * 18:23:27 [ClientCallDump]       [ 0]   [ 1]   [ 7] Value:   [ 3] Value:    Integer: 764661760
+ * 18:23:27 [ClientCallDump]  Named Arguments:
+ * 18:23:27 [ClientCallDump]   machoVersion
+ * 18:23:27 [ClientCallDump]        Integer: 1
+ */
+
 /**
     def SendContentsToServer(self, contents = None):
         try:
