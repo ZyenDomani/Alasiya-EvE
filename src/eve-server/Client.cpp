@@ -2419,7 +2419,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         res->Dump(CLIENT__CALL_DUMP, "    ");
     mNet->QueueRep(res, false);
 
-    // send out the session changeSkillQueueLoop
+    // send out the session change
     SendSessionChange();
 
     return true;
