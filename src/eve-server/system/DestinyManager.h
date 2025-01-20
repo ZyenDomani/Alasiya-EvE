@@ -231,7 +231,7 @@ protected:
     uint8 m_alignTime;                  //in s      - time to change directions or enter warp
     float m_prevSpeed;                  //in m/s    - used to calculate speed during decel
     float m_maxShipSpeed;               //in m/s
-    double m_shipWarpSpeed;             //in au/s
+    float m_shipWarpSpeed;              //in au/s   x/3 = warp speed multiplier
     float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxShipSpeed
 
     //derived from above params:
@@ -329,7 +329,7 @@ private:
     void WarpCruise(uint16 sec_into_warp);
     void WarpDecel(uint16 sec_into_warp);
     void WarpStop(int64 currentShipSpeed);
-    void WarpUpdate(int64 currentShipSpeed);
+    void WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, uint8 type);      // 0=error, 1=accel, 2=cruise, 3=decel
 
     // trying update queue
     std::vector<PyTuple*> m_updateQueue;

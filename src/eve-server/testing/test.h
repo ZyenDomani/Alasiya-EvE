@@ -50,14 +50,46 @@ struct attrTestData {
     std::string typeName;
 };
 
+struct warpState {
+    bool accel;
+    bool cruise;
+    bool decel;
+    int64 warpSpeed;           //in m/s
+    float warpTime;             //in s
+    float accelFraction;
+    float decelFraction;
+    double accelDist;           //in m
+    double cruiseDist;          //in m
+    double decelDist;           //in m
+};
+
 class testing {
 public:
 
     static void posTest(Client* pClient);
     void CharAttribTest();
 
+    void WarpTest(uint8 type);
+
+    int64  m_targetDistance;
+    int64  m_accelDistance;
+    int64  m_decelDistance;
+    float m_shipWarpSpeed;
+    float m_speedToLeaveWarp;
+    void InitWarp();
+    void WarpAccel(uint16 sec_into_warp);
+    void WarpCruise(uint16 sec_into_warp);
+    bool WarpDecel(uint16 sec_into_warp);
+    void WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, uint8 type);      // 0=error, 1=accel, 2=cruise, 3=decel
+
+
 
 private:
+    uint32 BUBBLE_RADIUS_METERS;
+    bool inBubble;
+
+    warpState wState;
+
     std::map<uint8, attrTestData> m_attribTest;         //ancestryID, data
 
 };

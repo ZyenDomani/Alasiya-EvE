@@ -306,6 +306,30 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "y", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Unloading all Solar Systems:");
                 sEntityMgr.UnloadAll();
+            } else if (strncmp(buf, "w", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                testing t;
+                t.WarpTest(0);
+            } else if (strncmp(buf, "1", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                testing t;
+                t.WarpTest(1);
+            } else if (strncmp(buf, "2", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                testing t;
+                t.WarpTest(2);
+            } else if (strncmp(buf, "3", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                testing t;
+                t.WarpTest(3);
+            } else if (strncmp(buf, "4", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                testing t;
+                t.WarpTest(4);
+            } else if (strncmp(buf, "5", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                testing t;
+                t.WarpTest(5);
             } else {
                 sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
             }
@@ -362,7 +386,7 @@ void ConsoleCommand::Test()
     //sLog.Warning(" Server Test Code", "No Test Code at this time.");
 
     double start = GetTimeMSeconds();
-    
+
     testing t;
     t.CharAttribTest();
 
