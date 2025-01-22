@@ -756,9 +756,9 @@ void StructureSE::PullAnchor()
 
     /*
     if (m_tower)
-        SendEffectUpdate(anchorLiftForStructures, true);
+        SendEffectUpdate(EvE::GFXID::anchorLiftForStructures, true);
     else if (m_co)
-        SendEffectUpdate(anchorLiftForOrbitals, true);
+        SendEffectUpdate(EvE::GFXID::anchorLiftForOrbitals, true);
     else
         */
     m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 1, 1, -1, 0);

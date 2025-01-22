@@ -904,9 +904,9 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
             if ((args.arg2 == anchorDropForStructures)
             or (args.arg2 == anchorDropOrbital)) {
                 pSE->GetPOSSE()->SetAnchor(args.arg2);
-            } else */ if (args.arg2 == anchorLiftForStructures) {
+            } else */ if (args.arg2 == EvE::GFXID::anchorLiftForStructures) {
                 pSE->GetPOSSE()->PullAnchor();
-            } else if (args.arg2 == onlineForStructures) {
+            } else if (args.arg2 == EvE::GFXID::onlineForStructures) {
                 pSE->GetPOSSE()->Activate(args.arg2);
             }
         } else if (pSE->IsContainerSE()) {
