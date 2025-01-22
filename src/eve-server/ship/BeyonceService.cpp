@@ -751,15 +751,16 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
     if (warpToPoint.isZero()) {
         // point is zero ....make error and return
-        codelog(CLIENT__ERROR, "%s: warpToPoint.isZero() = true.  Cannot find location %u for '%s'", call.client->GetName(), toID, type.c_str());
+        codelog(CLIENT__ERROR, "%s: warpToPoint.isZero() = true.  Cannot find location %u for '%s'", \
+                call.client->GetName(), toID, type.c_str());
         call.client->SendErrorMsg("WarpTo: Item location not found.");
         return PyStatic.NewNone();
     }
 
-    call.client->SetInvul(false);
-    call.client->SetUndock(false);
-
-    pDestiny->WarpTo(warpToPoint, distance, false, pSE);
+    if (pDestiny->WarpTo(warpToPoint, distance, false, pSE)) {
+        call.client->SetInvul(false);
+        call.client->SetUndock(false);
+    }
 
     return PyStatic.NewNone();
 }
