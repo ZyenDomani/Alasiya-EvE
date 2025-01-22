@@ -164,16 +164,13 @@ void Skill::VerifyAttribs()
     }
 }
 
-void Skill::VerifySP()
-{
+void Skill::VerifySP() {
     if (is_log_enabled(SKILL__MESSAGE))
         _log(SKILL__MESSAGE, "Begin SP check for %s. level %u: CurrentSP: %u", \
                 name(), GetAttribute(AttrSkillLevel).get_uint32(), GetAttribute(AttrSkillPoints).get_uint32());
 
     if (GetAttribute(AttrSkillPoints) == EvilZero)
         return;
-
-    //TODO: check for proper saved level.  client doesnt use it, but we do
 
     uint8 level(GetAttribute(AttrSkillLevel).get_uint32() + 1);
     if (level > EvESkill::MAXSKILLLEVEL) {
@@ -185,13 +182,12 @@ void Skill::VerifySP()
     uint32 spCurrent(GetAttribute(AttrSkillPoints).get_uint32());
     if (spCurrent < spThisLevel) {
         _log(SKILL__WARNING, "Skill %s points low.  Updating from %u to %u", name(), spCurrent, spThisLevel);
-        SetAttribute(AttrSkillLevel, level, false);
         SetAttribute(AttrSkillPoints, spThisLevel, false);
         // hit it again to be sure it's fixed
         VerifySP();
         return;
     }
-    
+
     uint32 spNextLevel(GetSPForLevel(level));
     if (spCurrent > spNextLevel) {
         SetAttribute(AttrSkillLevel, level);
@@ -202,7 +198,6 @@ void Skill::VerifySP()
             _log(SKILL__WARNING, " %s - Skillpoints high. Updating level from %u to %u and SP from %u to %u.", \
                 name(), level - 1, level, spCurrent, spNextLevel);
         }
-        SetAttribute(AttrSkillLevel, level, false);
         SetAttribute(AttrSkillPoints, spNextLevel, false);
         // hit it again to be sure it's fixed
         VerifySP();
@@ -211,16 +206,16 @@ void Skill::VerifySP()
 
 bool Skill::SkillPrereqsComplete(Character &ch) {
     EvilNumber skillID(0);
-    if (HasAttribute(AttrRequiredSkill1, skillID)) {
+    if (HasAttribute(AttrRequiredSkill1, skillID)) {//Primary Skill
         if (GetAttribute(AttrRequiredSkill1Level) > ch.GetSkillLevel(skillID.get_uint32()))
             return false;
-        if (HasAttribute(AttrRequiredSkill2, skillID)) {
+        if (HasAttribute(AttrRequiredSkill2, skillID)) {//Secondary Skill
             if (GetAttribute(AttrRequiredSkill2Level) > ch.GetSkillLevel(skillID.get_uint32()))
                 return false;
-            if (HasAttribute(AttrRequiredSkill3, skillID)) {
+            if (HasAttribute(AttrRequiredSkill3, skillID)) {//Tertiary Skill
                 if (GetAttribute(AttrRequiredSkill3Level) > ch.GetSkillLevel(skillID.get_uint32()))
                     return false;
-                if (HasAttribute(AttrRequiredSkill4, skillID)) {
+                if (HasAttribute(AttrRequiredSkill4, skillID)) {//Quarternary Skill
                     if (GetAttribute(AttrRequiredSkill4Level) > ch.GetSkillLevel(skillID.get_uint32()))
                         return false;
                 }
