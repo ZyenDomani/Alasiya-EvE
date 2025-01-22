@@ -27,7 +27,7 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 !! destiny (all space movement)
 
 to avoid db hits for every dock/undock, implement postExpression processing
-
+  -- yeah, easier to delete/reload
 
 market --  some queries dont work...sending price data returns null
     - no clue how to fix this
@@ -57,7 +57,7 @@ work on buglist, integrate this list in there where i can (in order)
 
 all movement commands should be checked for spam/multiple calls within (x) timeframe.
     - this will totally fuck up current code, especially if turns are involved
-    - multiple calls to Stop() already implemented (circa 2016)
+    - multiple calls to Stop() already implemented (circa 2016)  (fix removed in official - dumb move)
 
 
 lsc system better, but incomplete and needs revisiting    -priority level: med-hi
@@ -85,8 +85,6 @@ check for item ownership before rename
 
 dungeon deco items need better placement
 
-ship warp speed on attributes tab is wrong
-
 error:
 "turret not fitted on shipID (npc)"
 shoot sends shipID, targetID, moduleID, etc
@@ -110,11 +108,11 @@ add agent portraits to server and update 'backupurl' in server code
 *******************************************************
 **********  coding errors/corrections/improvements ... med priority
 
+character remap needs a bit more work.  attributes and bonuses save/load correctly.  client code needs update
+
 remove GPoint/GVector code and just write my own.
     - float/double not needed and math on those are expensive.  replace with int64?
     - note:  client logs show all position data is pyfloat (some float.7, some double.15)  but i see no point of needing decimeter (or higher) precision.
-
-SendServerMOTD needs to check account roles to send >player data (i.e. showall)
 
 entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
   updated as much as i know how right now
@@ -189,9 +187,6 @@ RAM code - implement invention, re    -priority level: low
     - add Almanu's cal'c fix from official?  not sure what he 'fixed'
     - verify char prod efficiency skill for Calculate()
     - many messages not implemented   see common/EVE_RAM.h
-    - rifter blueprint shows "criminal connections" as skill for RE.  wtf??
-        no matl for RE?
-        no skills for invention?
 
 blueprints - look over data and verify
     - skills not showing on tabs other than manufacturing
@@ -221,7 +216,7 @@ when t3 ship killed, pilot will lose sp in a required skill for each of the 5 su
 jumpCloneSvc needs work to allow capital ships `show info` tab to work in space.  hacked to avoid client error
     - this class is barely above skeleton code, and hardly researched.
     - jump clones arent even close to implementation, so its nbd at this point
-    - client distinguishes between clones by "podclone" and "jumpclone"
+    - client distinguishes between clones by "podClone" and "jumpClone"
         we should do the same once work begins on jump clones
 
 item contraband.....this needs implementing
@@ -298,11 +293,6 @@ i know what it's doing, cause i did it like that on purpose, but then hits the c
 20:36:49 [ItemWarning] II::Move()::Add() - 10 is invalid location.
 need to find a better way to verify locations enum (locTemp, locJunkyard, et Al.)
 
-move warp checks to beyonce
-or, have warpTo return bool, THEN apply all the other shit...
-right now, we decloak and all that before even calling warpto
-
-check into reducing some ops in GetOperandsForChar()
 
 *******************************************************
 *******************************************************
@@ -460,7 +450,7 @@ go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
     - gfx display is wonky.  dunno why some show and some dont...our packets are wrong...wip
     - stripminer on hulk working 20feb21 (still 1Feb23)
     - salvager on trasher working 20feb21
-put EVEEffectID enum into namespace
+
 turn fx sending on and follow calls to verify proper OnSpecialFX data
     - found and added client fx classification data to destinyMgr.h   where?? i dont see it
 
@@ -472,13 +462,6 @@ mining gfx/deactivate is almost immediate.  this is supposed to have a 5s timer 
 *******************************************************
 ********  improvements...low priority
 
-found while updating char data for proper remap data
-***update***  CharacterType is not used...can be deleted in favor of II::type()
-`CharacterType`s are being loaded with data from chrBloodlines  it should be loaded from char's itemType
-  this data should be summed with data from chrAncestries saved to Attr*Bonus on char on creation (static data)
-  all character (base type, bloodline, ancestry) attribute data needs to be updated.  maybe use static data for BL and ancestry.
-  types are loaded when called.  attrib data is in type().attributemap
-characters have extra data - m_attributes   these are not needed or used
 
 add formatting and colors to custom error msgs
   - seem like client msg window has limited support for html
@@ -512,6 +495,8 @@ arbitrator, osprey, scythe, vexor
 
 still need to host agent photos...
   search client code for xxxx and use liveupdates to replace to my server
+23:49:09 C       ImageServer:  GetImage() called. Cat: Character, id: 3014016, size:50
+23:49:09 W      Image Server:  RedirectLocation() called for http://images.evetech.net/Character/3014016_50.jpg.
 
 .inventory command
   - 10000000001 (office) - has no name
@@ -992,7 +977,7 @@ Creating a new bomb type that when it is carried in cargo and the ship is destro
 In high sec, the Tengu should have a chance of spontaneous self destruction when undocking.
 All ships bigger than a battlecruiser get a special bay for a frigate that you get ejected inside of (rather than pod) when the big ship dies.
 
-colorize SendServerMOTD  (currently 'system' red)
+colorize SendServerMOTD  (currently 'system' red)...wip
 
 add chat for system commands?  have commands send to cmd window instead of notification window
 
