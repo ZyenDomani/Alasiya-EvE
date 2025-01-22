@@ -170,7 +170,7 @@ public:
     void TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed);
 
     /* Larger movement */
-    void WarpTo(const GPoint& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
+    bool WarpTo(const GPoint& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
 
     //Destiny Update stuff:
     PyResult AttemptDockOperation();
@@ -324,6 +324,7 @@ private:
     // Internal Warp Methods
     float m_accelTime;
     float m_decelTime;
+    int64 m_accelDistance;
     void InitWarp();
     void WarpAccel(uint16 sec_into_warp);
     void WarpCruise(uint16 sec_into_warp);
@@ -345,6 +346,7 @@ private:
             int64 cruise_dist_,
             int64 decel_dist_,
             float warp_time_,
+            float accel_fraction_,
             bool accel_,
             bool cruise_,
             bool decel_)
@@ -355,6 +357,7 @@ private:
         cruiseDist(cruise_dist_),
         decelDist(decel_dist_),
         warpTime(warp_time_),
+        accelFraction(accel_fraction_),
         accel(accel_),
         cruise(cruise_),
         decel(decel_)
@@ -366,6 +369,7 @@ private:
         int64 cruiseDist;          //in m
         int64 decelDist;           //in m
         float warpTime;             //in s
+        float accelFraction;
         bool accel;
         bool cruise;
         bool decel;
