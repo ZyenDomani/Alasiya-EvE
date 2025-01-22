@@ -330,6 +330,14 @@ bool ConsoleCommand::Process() {
                 sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
                 testing t;
                 t.WarpTest(5);
+            } else if (strncmp(buf, "6", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                testing t;
+                t.WarpTest(6);
+            } else if (strncmp(buf, "7", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                testing t;
+                t.WarpTest(7);
             } else {
                 sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
             }

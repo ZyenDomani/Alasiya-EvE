@@ -111,7 +111,7 @@ void testing::WarpTest(uint8 type) {
 
     wState = warpState();
 
-    m_speedToLeaveWarp = 265;
+    m_speedToLeaveWarp = 265.0f;
     // warp speed 6au/s
     // ONE_AU_IN_METERS = 149597870700
     m_shipWarpSpeed = 6;
@@ -136,8 +136,14 @@ void testing::WarpTest(uint8 type) {
         case 5:
             m_targetDistance = 1645576577700; //11 au
             break;
-        default:
+        case 6:
             m_targetDistance = 6731904181500; //40 au
+            break;
+        case 7:
+            m_targetDistance = 17951744484000; //120 au
+            break;
+        default:
+            m_targetDistance = 897587224200; //6 au
             break;
     }
 
@@ -161,49 +167,80 @@ void testing::WarpTest(uint8 type) {
         ++curTime;
     }
 
-    sLog.Green("WarpTest", "actual accel distance: %lli.", m_accelDistance);
-    sLog.Green("WarpTest", "actual decel distance: %lli.", m_decelDistance);
+    //sLog.Green("WarpTest", "actual accel distance: %lli.", m_accelDistance);
+    //sLog.Green("WarpTest", "actual decel distance: %lli.", m_decelDistance);
     sLog.Cyan("WarpTest", "runtime: %.3fus.", GetTimeUSeconds() - profileStartTime);
 }
 
 
 void testing::InitWarp() {
     //  150km - 15s, 1mkm - 23s, 1au - 29s base + ship's wsm
-    double accelTime(0), decelTime(1.0), cruiseTime(0.0), cruiseDistance(0.0);
-    double accelDistance(0), decelDistance(0);
+    double decelTime(1.0f), cruiseTime(0.0f);
+    int64 accelDistance(0), decelDistance(0), cruiseDistance(0);
     int64 warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
     // set times and distances based on target distance
     if (m_targetDistance < (warpSpeedInMeters * 3)) {
         //  short warp....no cruise
         // accel = 1/3 decel
         accelDistance = (m_targetDistance / 3);
-        decelDistance = (m_targetDistance - accelDistance);
+        m_accelTime = log(accelDistance / 3) / 3;
+        //decelTime += m_accelTime * 2;
         warpSpeedInMeters = accelDistance;
-        accelTime = log(accelDistance / 3) / 3;
-        decelTime += accelTime * 2;
     } else {
-        accelTime = (27 + (m_shipWarpSpeed / 3)) / 3;
         accelDistance = warpSpeedInMeters;       // ship warp speed in meters
-        decelTime += (accelTime * 2);
-        decelDistance = (accelDistance * 2);
-        cruiseDistance = ((double)m_targetDistance - accelDistance - decelDistance);
-        cruiseTime = EvE::max(cruiseDistance / warpSpeedInMeters, 1.0);
+        //m_accelTime = (27 + (m_shipWarpSpeed / 3)) / 3;
+        m_accelTime = log(accelDistance / 3) / 3;
+        //decelTime += (m_accelTime * 2);
+        cruiseDistance = ((double)m_targetDistance - (accelDistance * 3));
+        cruiseTime = EvE::max(cruiseDistance / warpSpeedInMeters, 1);
     }
 
-    //  set total warp time based on above math.
-    wState.warpTime = accelTime + decelTime + cruiseTime;
+    uint16 intAccel = m_accelTime;
+    wState.accelFraction = (m_accelTime - intAccel);
 
-    uint16 intAccel = accelTime;
-    wState.accelFraction = (accelTime - intAccel);
+    decelDistance = accelDistance * 2;
+
+    m_decelTime = log(decelDistance);
+    //m_decelTime += adjust;
     uint16 intDecel = decelTime;
     wState.decelFraction = (decelTime - intDecel);
-    //wState.decelFraction += wState.accelFraction;
+
+    //  set total warp time based on above math.
+    wState.warpTime = m_accelTime + m_decelTime + cruiseTime;
+
+    decelTime = m_decelTime;
+    double speed(0.0f);
+    bool run(true);
+    uint16 step(0);
+    while (run) {
+        speed = exp(--decelTime);
+        ++step;
+        if (speed < m_speedToLeaveWarp) {
+            run = false;
+        }
+    }
+
+    double distance(0.0f);
+    while (step > 0) {
+        distance += exp(decelTime++);
+        --step;
+    }
+
+    decelDistance = distance;
+
+    float distanceAU = (m_targetDistance / ONE_AU_IN_METERS);
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
         _log(DESTINY__WARP_TRACE, "testing::InitWarp():Calculate - Warp will accelerate for %.1fs, cruise for %.1fs, then decelerate for %.1fs, with total time of %.2fs and warp speed of %lli m/s.", \
-                accelTime, cruiseTime, decelTime, wState.warpTime, warpSpeedInMeters);
-        _log(DESTINY__WARP_TRACE, "testing::InitWarp():Calculate - Accel distance is %.1f  Cruise distance is %.1f   Decel distance is %.1f.  Total distance is %lli (%.2f au).", \
-                accelDistance, cruiseDistance, decelDistance, m_targetDistance, (double)(m_targetDistance / ONE_AU_IN_METERS));
+                m_accelTime, cruiseTime, decelTime, wState.warpTime, warpSpeedInMeters);
+        if (wState.cruiseDist > 0.0) {
+            _log(DESTINY__WARP_TRACE, "testing::InitWarp():Calculate - Accel distance is %lli  Cruise distance is %lli   Decel distance is %lli.  Total distance is %lli (%.2f au).", \
+                    accelDistance, cruiseDistance, decelDistance, m_targetDistance, distanceAU);
+        } else {
+            int64 cruiseDist = m_targetDistance - accelDistance - decelDistance;
+            _log(DESTINY__WARP_TRACE, "testing::InitWarp():Calculate - Accel distance is %lli  Cruise distance is %lli   Decel distance is %lli.  Total distance is %lli (%.2f au).", \
+                    accelDistance, cruiseDist, decelDistance, m_targetDistance, distanceAU);
+        }
     }
 
     wState.accel = true;
@@ -211,56 +248,52 @@ void testing::InitWarp() {
     wState.cruise = false;
     wState.warpSpeed = warpSpeedInMeters;     //in m/s
     wState.accelDist = accelDistance;         //in m
-    wState.cruiseDist = cruiseDistance;       //in m
     wState.decelDist = decelDistance;         //in m
+    wState.cruiseDist = cruiseDistance;       //in m
 }
 
 void testing::WarpAccel(uint16 sec_into_warp) {
     float accelTime(sec_into_warp + wState.accelFraction);
-    //accelTime -= wState.decelFraction;
     int64 currentDistance = exp(3 * accelTime);
-    int64 currentShipSpeed = (3 * currentDistance);
 
-    int64 testDist = exp(3 * (accelTime + 1));
-    if ((testDist * 3) > wState.warpSpeed) {
+    if (accelTime >= m_accelTime) {
         wState.accel = false;
-        currentShipSpeed = wState.warpSpeed;
         currentDistance = wState.accelDist - m_accelDistance;
 
-        if (wState.cruiseDist > 0) {
+        if (wState.cruiseDist > 0.0) {
             wState.cruise = true;
         } else {
             wState.decel = true;
+            m_targetDistance = wState.decelDist + currentDistance;
         }
     }
 
     m_accelDistance += currentDistance;
-
-    sLog.Cyan("WarpTest", "accelTime: %.3f  distance: %lli  totalDistance: %lli", \
-            accelTime, currentDistance, m_accelDistance);
+    WarpUpdate(currentDistance, sec_into_warp, 1);
 
     if (inBubble)
         if (m_accelDistance > BUBBLE_RADIUS_METERS) {
+            // this will use actual InBubble() check
             inBubble = false;
             sLog.Error("WarpTest", "remove ship from bubble.");
         }
 
-    WarpUpdate(currentShipSpeed, sec_into_warp, 1);
+    //sLog.Cyan("WarpTest", "accelTime: %.3f  distance: %lli  totalDistance: %lli", \
+            accelTime, currentDistance, m_accelDistance);
 }
 
 void testing::WarpCruise(uint16 sec_into_warp) {
     // in cruise....only updating position data.
+    wState.cruiseDist -= wState.warpSpeed;
+    //sLog.Cyan("WarpTest", "cruiseDist: %.3f", wState.cruiseDist);
+
     WarpUpdate(wState.warpSpeed, sec_into_warp, 2);
 
-    wState.cruiseDist -= wState.warpSpeed;
-
-    if ((m_targetDistance - wState.warpSpeed) < wState.decelDist) {
+    if (m_targetDistance - wState.warpSpeed < wState.decelDist) {
         m_targetDistance = wState.decelDist;
         wState.cruise = false;
         wState.decel = true;
     }
-
-    sLog.Cyan("WarpTest", "cruiseDist: %.3f", wState.cruiseDist);
 }
 
 bool testing::WarpDecel(uint16 sec_into_warp) {
@@ -268,44 +301,20 @@ bool testing::WarpDecel(uint16 sec_into_warp) {
      * distance = e^(k*s)
      * speed = k*e^(k*s)
      */
-    /*
-    float decelTime(sec_into_warp - m_decelTime);
-    uint16 loopCount = floor(decelTime);
-    switch (loopCount) {
-        case 0:  // first loop
-            decelTime = 0.0f;
-            break;
-        case 1:  // second loop
-            //decelTime = wState.accelFraction;           // 0.240        39316 m/s
-            //decelTime = wState.decelFraction;           // 0.481        30915 m/s
-            decelTime = 1.0f - wState.decelFraction;    // 0.519        29749 m/s
-            //decelTime += 0;                             // 0.759        23392 m/s  **default w/o change
-            break;
-        default:
-            //--decelTime += wState.decelFraction;        // 1.240         14469 m/s
-            --decelTime -= wState.decelFraction;        // 1.279         13918 m/s
-            //--decelTime += wState.accelFraction;        // 1.480         11381 m/s
-            //--decelTime -= wState.accelFraction;        // 1.519         10944 m/s
-            //--decelTime += 0;                           // 1.759          8610 m/s
-            break;
-    }
-    //sLog.Cyan("WarpTest", "loopCount: %u  decelTime: %.3f", loopCount, decelTime);
 
-    //int64 currentShipSpeed = (wState.warpSpeed * exp(-decelTime));
-    */
-
-    float decelTime = --wState.warpTime;
+    double decelTime = --m_decelTime;
     int64 currentShipSpeed = exp(decelTime);
 
     m_decelDistance += currentShipSpeed;
 
-    WarpUpdate(currentShipSpeed, sec_into_warp, 3);
-
-    sLog.Cyan("WarpTest", "decelTime: %.3f  currentShipSpeed: %lli  currentDistance: %lli", \
+    //sLog.Cyan("WarpTest", "decelTime: %.3f  currentShipSpeed: %lli  totalDistance: %lli", \
             decelTime, currentShipSpeed, m_decelDistance);
+
+    WarpUpdate(currentShipSpeed, sec_into_warp, 3);
 
     if (!inBubble)
         if (m_targetDistance < BUBBLE_RADIUS_METERS) {
+            // this will use actual InBubble() check
             inBubble = true;
             sLog.Green("WarpTest", "add ship to bubble.");
         }
@@ -318,25 +327,25 @@ bool testing::WarpDecel(uint16 sec_into_warp) {
     return false;
 }
 
-void testing::WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, uint8 type/*0*/) {
+void testing::WarpUpdate(int64 currentDistance, uint16 sec_into_warp, uint8 type/*0*/) {
     //  track position and velocity for all stages.
-    m_targetDistance -= currentShipSpeed;
+    m_targetDistance -= currentDistance;
 
     switch (type) {
         case 1: {
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "testing::WarpAccel(): Warp Accelerating(%us): \t velocity \t %lli m/s.  \t %lli m remaining.", \
-                        sec_into_warp, currentShipSpeed, m_targetDistance);
+                        sec_into_warp, (currentDistance * 3), m_targetDistance);
         } break;
         case 2: {
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "testing::WarpCruise(): Warp Crusing(%us): \t velocity \t %lli m/s. \t %lli m remaining.", \
-                        sec_into_warp, currentShipSpeed, m_targetDistance);
+                        sec_into_warp, currentDistance, m_targetDistance);
         } break;
         case 3: {
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "testing::WarpDecel(): Warp Decelerating(%us): \t velocity \t %lli m/s. \t %lli m remaining.", \
-                        sec_into_warp, currentShipSpeed, m_targetDistance);
+                        sec_into_warp, currentDistance, m_targetDistance);
         } break;
     }
 }

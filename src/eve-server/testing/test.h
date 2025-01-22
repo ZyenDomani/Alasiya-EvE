@@ -74,15 +74,15 @@ public:
     int64  m_targetDistance;
     int64  m_accelDistance;
     int64  m_decelDistance;
-    float m_shipWarpSpeed;
+    int64 m_shipWarpSpeed;
     float m_speedToLeaveWarp;
+    double m_accelTime;
+    double m_decelTime;
     void InitWarp();
     void WarpAccel(uint16 sec_into_warp);
     void WarpCruise(uint16 sec_into_warp);
     bool WarpDecel(uint16 sec_into_warp);
-    void WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, uint8 type);      // 0=error, 1=accel, 2=cruise, 3=decel
-
-
+    void WarpUpdate(int64 currentDistance, uint16 sec_into_warp, uint8 type);      // 0=error, 1=accel, 2=cruise, 3=decel
 
 private:
     uint32 BUBBLE_RADIUS_METERS;
@@ -91,7 +91,6 @@ private:
     warpState wState;
 
     std::map<uint8, attrTestData> m_attribTest;         //ancestryID, data
-
 };
 
 
