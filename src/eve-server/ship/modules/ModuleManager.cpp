@@ -213,7 +213,7 @@ void ModuleManager::RemoveTarget(SystemEntity* pSE) {
         */
 }
 
-uint16 ModuleManager::GetAvailableSlotInBank(EvE::GFXID slotBank)
+uint16 ModuleManager::GetAvailableSlotInBank(uint16 slotBank)
 {
     switch (slotBank) {
         case EvE::GFXID::loPower: {

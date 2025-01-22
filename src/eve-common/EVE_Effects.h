@@ -19,7 +19,7 @@
 
 namespace EvE {
     namespace GFXID {
-      
+
 enum {
     shieldBoosting =   4,     // effects.ShieldBoosting
     missileLaunching =   9,     // effects.MissileDeployment
@@ -210,7 +210,7 @@ enum {
     warpScrambleBlockMWDWithNPCEffect =   5934,     // effects.WarpScramble
     cloakingPrototype =   5945,     // effects.CloakingPrototype  -- not in Crucible
     shipModeScanStrengthPostDiv =   6012,     // effects.ScanStrengthBonusActivate
-};
+} EffectsID;
     }
 }
 
