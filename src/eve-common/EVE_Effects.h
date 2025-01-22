@@ -14,7 +14,13 @@
  *  allan - 21 March 2017
  *  verified again - 3Feb23
  */
-enum EVEEffectID {
+
+//TODO:  fix this to use namespace
+
+namespace EvE {
+    namespace GFXID {
+      
+enum {
     shieldBoosting =   4,     // effects.ShieldBoosting
     missileLaunching =   9,     // effects.MissileDeployment
     targetAttack =   10,     // effects.Laser   ** this gfx is short bursts from module, with long pauses
@@ -205,5 +211,7 @@ enum EVEEffectID {
     cloakingPrototype =   5945,     // effects.CloakingPrototype  -- not in Crucible
     shipModeScanStrengthPostDiv =   6012,     // effects.ScanStrengthBonusActivate
 };
+    }
+}
 
 #endif  //EVE_EFFECTS_H

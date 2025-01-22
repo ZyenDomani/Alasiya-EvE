@@ -213,34 +213,34 @@ void ModuleManager::RemoveTarget(SystemEntity* pSE) {
         */
 }
 
-uint16 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
+uint16 ModuleManager::GetAvailableSlotInBank(EvE::GFXID slotBank)
 {
     switch (slotBank) {
-        case EVEEffectID::loPower: {
+        case EvE::GFXID::loPower: {
             uint8 max = flagLowSlot0 + pShipItem->GetAttribute(AttrLowSlots).get_uint32();
             for (uint8 slot=flagLowSlot0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
         } break;
-        case EVEEffectID::medPower: {
+        case EvE::GFXID::medPower: {
             uint8 max = flagMidSlot0 + pShipItem->GetAttribute(AttrMedSlots).get_uint32();
             for (uint8 slot=flagMidSlot0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
         } break;
-        case EVEEffectID::hiPower: {
+        case EvE::GFXID::hiPower: {
             uint8 max = flagHiSlot0 + pShipItem->GetAttribute(AttrHiSlots).get_uint32();
             for (uint8 slot=flagHiSlot0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
         } break;
-        case EVEEffectID::rigSlot: {
+        case EvE::GFXID::rigSlot: {
             uint8 max = flagRigSlot0 + pShipItem->GetAttribute(AttrRigSlots).get_uint32();
             for (uint8 slot=flagRigSlot0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
         } break;
-        case EVEEffectID::subSystem: {
+        case EvE::GFXID::subSystem: {
             uint8 max = flagSubSystem0 + pShipItem->GetAttribute(AttrSubSystemSlot).get_uint32();
             for (uint8 slot=flagSubSystem0; slot < max; ++slot)
                 if ( m_modules[slot] == nullptr )
@@ -1424,13 +1424,13 @@ void ModuleManager::GetActiveModules(uint8 rack, std::vector< GenericModule* >& 
 {
     std::vector< GenericModule* > modVecAll;
     switch (rack) {
-        case EVEEffectID::hiPower: {
+        case EvE::GFXID::hiPower: {
             GetModulesInBank(flagHiSlot0, modVecAll);
         } break;
-        case EVEEffectID::medPower: {
+        case EvE::GFXID::medPower: {
             GetModulesInBank(flagMidSlot0, modVecAll);
         } break;
-        case EVEEffectID::loPower: {
+        case EvE::GFXID::loPower: {
             GetModulesInBank(flagLowSlot0, modVecAll);
         } break;
     }
@@ -1445,13 +1445,13 @@ void ModuleManager::GetActiveModulesHeat(uint8 rack, float& heat)
 {
     std::vector< GenericModule* > modVecAll;
     switch (rack) {
-        case EVEEffectID::hiPower: {
+        case EvE::GFXID::hiPower: {
             GetModulesInBank(flagHiSlot0, modVecAll);
         } break;
-        case EVEEffectID::medPower: {
+        case EvE::GFXID::medPower: {
             GetModulesInBank(flagMidSlot0, modVecAll);
         } break;
-        case EVEEffectID::loPower: {
+        case EvE::GFXID::loPower: {
             GetModulesInBank(flagLowSlot0, modVecAll);
         } break;
     }
@@ -1471,13 +1471,13 @@ uint8 ModuleManager::GetActiveModulesCount(uint8 rack)
     uint8 count = 0;
     std::vector< GenericModule* > modVec;
     switch (rack) {
-        case EVEEffectID::hiPower: {
+        case EvE::GFXID::hiPower: {
             GetModulesInBank(flagHiSlot0, modVec);
         } break;
-        case EVEEffectID::medPower: {
+        case EvE::GFXID::medPower: {
             GetModulesInBank(flagMidSlot0, modVec);
         } break;
-        case EVEEffectID::loPower: {
+        case EvE::GFXID::loPower: {
             GetModulesInBank(flagLowSlot0, modVec);
         } break;
     }

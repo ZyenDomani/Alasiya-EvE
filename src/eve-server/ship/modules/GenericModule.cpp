@@ -39,20 +39,20 @@ m_subSystem(false),
 m_turret(false),
 m_launcher(false)
 {
-    if (mRef->type().HasEffect(EVEEffectID::loPower)) {
+    if (mRef->type().HasEffect(EvE::GFXID::loPower)) {
         m_loPower = true;
-    } else if (mRef->type().HasEffect(EVEEffectID::medPower)) {
+    } else if (mRef->type().HasEffect(EvE::GFXID::medPower)) {
         m_medPower = true;
-    } else if (mRef->type().HasEffect(EVEEffectID::hiPower)) {
+    } else if (mRef->type().HasEffect(EvE::GFXID::hiPower)) {
         m_hiPower = true;
-        if (mRef->type().HasEffect(EVEEffectID::turretFitted)) {
+        if (mRef->type().HasEffect(EvE::GFXID::turretFitted)) {
             m_turret = true;
-        } else if (mRef->type().HasEffect(EVEEffectID::launcherFitted)) {
+        } else if (mRef->type().HasEffect(EvE::GFXID::launcherFitted)) {
             m_launcher = true;
         }
-    } else if (mRef->type().HasEffect(EVEEffectID::rigSlot)) {
+    } else if (mRef->type().HasEffect(EvE::GFXID::rigSlot)) {
         m_rigSlot = true;
-    } else if (mRef->type().HasEffect(EVEEffectID::subSystem)) {
+    } else if (mRef->type().HasEffect(EvE::GFXID::subSystem)) {
         m_subSystem = true;
     }
 

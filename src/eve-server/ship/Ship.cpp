@@ -743,12 +743,12 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
 
     if (IsHiSlot(flag)) {
         // check available turret/launcher hardpoints
-        if (iRef->type().HasEffect(EVEEffectID::turretFitted)) {
+        if (iRef->type().HasEffect(EvE::GFXID::turretFitted)) {
             if (GetAttribute(AttrTurretSlotsLeft) < 1) {
                 throw UserError("NotEnoughTurretSlots")
                         .AddFormatValue("moduleName", new PyString(iRef->itemName()));
             }
-        } else if (iRef->type().HasEffect(EVEEffectID::launcherFitted)) {
+        } else if (iRef->type().HasEffect(EvE::GFXID::launcherFitted)) {
             if (GetAttribute(AttrLauncherSlotsLeft) < 1) {
                 throw UserError("NotEnoughLauncherSlots")
                         .AddFormatValue("moduleName", new PyString(iRef->itemName()));
@@ -775,16 +775,16 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
 
 EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
     uint16 slotFound(flagIllegal);
-    if (iRef->type().HasEffect(EVEEffectID::loPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::loPower);
-    } else if (iRef->type().HasEffect(EVEEffectID::medPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::medPower);
-    } else if (iRef->type().HasEffect(EVEEffectID::hiPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::hiPower);
-    } else if (iRef->type().HasEffect(EVEEffectID::subSystem)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::subSystem);
-    } else if (iRef->type().HasEffect(EVEEffectID::rigSlot)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
+    if (iRef->type().HasEffect(EvE::GFXID::loPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EvE::GFXID::loPower);
+    } else if (iRef->type().HasEffect(EvE::GFXID::medPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EvE::GFXID::medPower);
+    } else if (iRef->type().HasEffect(EvE::GFXID::hiPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EvE::GFXID::hiPower);
+    } else if (iRef->type().HasEffect(EvE::GFXID::subSystem)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EvE::GFXID::subSystem);
+    } else if (iRef->type().HasEffect(EvE::GFXID::rigSlot)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EvE::GFXID::rigSlot);
     } else {
         codelog(SHIP__ERROR, "ShipItem::FindAvailableModuleSlot() - iRef %s has no bank effect.", iRef->name());
     }
@@ -1159,16 +1159,16 @@ float ShipItem::GenerateHeat(uint16 attrID)
     switch(attrID) {
         case AttrHeatHi: {
             rack = "Hi";
-            //m_ModuleManager->GetActiveModules(EVEEffectID::hiPower, modVec);
-            m_ModuleManager->GetActiveModulesHeat(EVEEffectID::hiPower, t);
+            //m_ModuleManager->GetActiveModules(EvE::GFXID::hiPower, modVec);
+            m_ModuleManager->GetActiveModulesHeat(EvE::GFXID::hiPower, t);
         } break;
         case AttrHeatMed: {
             rack = "Mid";
-            m_ModuleManager->GetActiveModulesHeat(EVEEffectID::medPower, t);
+            m_ModuleManager->GetActiveModulesHeat(EvE::GFXID::medPower, t);
         } break;
         case AttrHeatLow: {
             rack = "Low";
-            m_ModuleManager->GetActiveModulesHeat(EVEEffectID::loPower, t);
+            m_ModuleManager->GetActiveModulesHeat(EvE::GFXID::loPower, t);
         } break;
         default: {
             _log(SHIP__HEAT, "GenerateHeat() - %s invalid rack sent (%u)", name(), attrID);

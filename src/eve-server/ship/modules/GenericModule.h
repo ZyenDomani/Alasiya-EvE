@@ -53,8 +53,8 @@ public:
     EvilNumber GetAttribute(uint32 attrID)              { return m_modRef->GetAttribute(attrID); }
 
     bool                isWarpSafe()                    { return m_isWarpSafe; }
-    bool                isTurretFitted()                { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
-    bool                isLauncherFitted()              { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
+    bool                isTurretFitted()                { return m_modRef->type().HasEffect(EvE::GFXID::turretFitted); }
+    bool                isLauncherFitted()              { return m_modRef->type().HasEffect(EvE::GFXID::launcherFitted); }
 
     /* class type pointer querys, public for anyone to access. */
     virtual ActiveModule*       GetActiveModule()       { return nullptr; }

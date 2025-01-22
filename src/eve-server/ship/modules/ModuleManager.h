@@ -29,7 +29,7 @@ public:
     bool Initialize();
     void LoadOnline();
     bool IsSlotOccupied(EVEItemFlags flag);
-    uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
+    uint16 GetAvailableSlotInBank(EvE::GFXID slotBank);
 
     void CargoFull();
     void RemoveTarget(SystemEntity* pSE);

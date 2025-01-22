@@ -483,7 +483,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
 
     SetModuleState(Module::State::Deactivating);
 
-    if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds)) {
+    if ((m_effectID == EvE::GFXID::miningLaser) or (m_effectID == EvE::GFXID::miningClouds)) {
         DeactivateCycle(true);
         return;
     }
@@ -1200,8 +1200,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     int64 abortTime(GetFileTimeNow());
     if (abort) {
         active = false;
-        if ((m_effectID == EVEEffectID::miningLaser)
-        or  (m_effectID == EVEEffectID::miningClouds)) {
+        if ((m_effectID == EvE::GFXID::miningLaser)
+        or  (m_effectID == EvE::GFXID::miningClouds)) {
             abortTime += (5 * EvE::Time::Second);    // delay abort for 5s to simulate module "completing" its' cycle and dumping ore to cargo
         } else {
             abortTime += (3 * EvE::Time::Second);    // delay abort for 3s to simulate module "completing" its' cycle
@@ -1209,7 +1209,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     }
 
     // there may be others here like this...this is ONLY for OnSpecialFX data
-    if ((m_effectID == EVEEffectID::useMissiles) and (m_chargeRef.get() != nullptr))   //operation defined by charge (use charge's default effectID)
+    if ((m_effectID == EvE::GFXID::useMissiles) and (m_chargeRef.get() != nullptr))   //operation defined by charge (use charge's default effectID)
         m_effectID = m_chargeRef->type().GetDefaultEffect();
     std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
     if (guidStr.empty())
