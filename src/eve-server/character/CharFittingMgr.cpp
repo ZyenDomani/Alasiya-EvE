@@ -56,7 +56,15 @@ CharFittingMgr::~CharFittingMgr() {
 PyResult CharFittingMgr::Handle_GetFittings(PyCallArgs &call) {
     //self.fittings[ownerID] = self.GetFittingMgr(ownerID).GetFittings(ownerID)
     // client/script/environment/fittingsvc.py(112) PersistFitting
-
+    /*
+    00:43:11 [PlayerCall] CharFittingMgr::Handle_GetFittings()
+    00:43:11 [PlayerCallDump]   Call Arguments:
+    00:43:11 [PlayerCallDump]      Tuple: 1 elements
+    00:43:11 [PlayerCallDump]       [ 0]    Integer: 90000000
+    00:43:11 [PlayerCallDump]  Named Arguments:
+    00:43:11 [PlayerCallDump]   machoVersion
+    00:43:11 [PlayerCallDump]        Integer: 1
+    */
     _log(PLAYER__CALL, "CharFittingMgr::Handle_GetFittings()");
     call.Dump(PLAYER__CALL_DUMP);
 

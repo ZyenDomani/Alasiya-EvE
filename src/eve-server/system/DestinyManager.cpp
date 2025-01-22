@@ -1673,7 +1673,7 @@ void DestinyManager::WarpCruise(uint16 sec_into_warp) {
         GVector update(m_shipHeading * m_targetDistance);
         m_position = m_targetPoint - update;
         mySE->SetPosition(m_position);
-        
+
         m_warpState->cruise = false;
         m_warpState->decel = true;
     }
@@ -1981,7 +1981,7 @@ void DestinyManager::GotoPoint(const GPoint& point) {
 }
 
 // Fleet warps - all ships will use the warp profile of the slowest ship
-bool DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool autoPilot/*false*/, SystemEntity* pSE/*nullptr*/) {
+void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool autoPilot/*false*/, SystemEntity* pSE/*nullptr*/) {
     /* warp order..
      * pick destination -> align/accel -> aura "warp drive active" -> cap drain -> accel
      *      -> enter warp -> warp -> decel -> leave warp -> coast -> stop
@@ -1999,7 +1999,6 @@ bool DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         } else {
             sLog.Error("Destiny::WarpTo()", "DestPoint is zero and pSE is null.");
             throw UserError("WarpDestinationGone");
-            return false;
         }
     } else {
         m_targetPoint = destPoint;
@@ -2023,7 +2022,7 @@ bool DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
                 pClient->SendErrorMsg("That is too close for your Warp Drive.  Stopping Ship.");
                 Stop();
             }
-            return false;
+            return;
         }
 
         // check for enough cap to warp.
@@ -2071,7 +2070,7 @@ bool DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
                         mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
 
                 Stop();
-                return false;
+                return;
             }
         } else {
             m_warpCapacitorNeed = currentShipCap - capNeeded;
@@ -2150,7 +2149,7 @@ bool DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
             _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %li  m_targetDistance: %lli",\
                     mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), mySE->SysBubble()->GetID(), \
                     m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
-        return true;
+        return;
     }
 
     /*supercap warp modifiers
@@ -2257,8 +2256,6 @@ bool DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %i  m_targetDistance: %lli",
              m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
-
-    return true;
 }
 
 void DestinyManager::InitOrbit(SystemEntity *pSE, uint32 distance/*0*/) {

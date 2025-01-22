@@ -170,7 +170,7 @@ public:
     void TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed);
 
     /* Larger movement */
-    bool WarpTo(const GPoint& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
+    void WarpTo( const GPoint& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr );
 
     //Destiny Update stuff:
     PyResult AttemptDockOperation();

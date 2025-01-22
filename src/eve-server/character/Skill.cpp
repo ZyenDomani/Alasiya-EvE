@@ -164,6 +164,7 @@ void Skill::VerifyAttribs()
     }
 }
 
+//TODO:  if lvl=0 and sp>0 set lvl accordingly
 void Skill::VerifySP() {
     if (is_log_enabled(SKILL__MESSAGE))
         _log(SKILL__MESSAGE, "Begin SP check for %s. level %u: CurrentSP: %u", \
