@@ -31,6 +31,8 @@
 
 /** @todo (Allan) this class needs more research to finish
  * see pics in ::GamePC/G/games/EvE/misc/POS
+ */
+/*
  * flagStructureActive             = 144,
  * flagStructureInactive           = 145,
  * AttrOperationConsumptionRate = 687,

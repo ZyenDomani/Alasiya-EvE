@@ -1655,23 +1655,23 @@ PyResult Character::GetCharacterBaseAttributes() {
 
     uint8 intelligence = type().GetAttribute(AttrIntelligence).get_uint32();
     intelligence += GetAttribute(AttrIntelligenceBonus).get_uint32();
-    intelligence += GetAttribute(AttrCustomIntelligenceBonus).get_uint32();
+    //intelligence += GetAttribute(AttrCustomIntelligenceBonus).get_uint32();
 
     uint8 perception = type().GetAttribute(AttrPerception).get_uint32();
     perception += GetAttribute(AttrPerceptionBonus).get_uint32();
-    perception += GetAttribute(AttrCustomPerceptionBonus).get_uint32();
+    //perception += GetAttribute(AttrCustomPerceptionBonus).get_uint32();
 
     uint8 charisma = type().GetAttribute(AttrCharisma).get_uint32();
     charisma += GetAttribute(AttrCharismaBonus).get_uint32();
-    charisma += GetAttribute(AttrCustomCharismaBonus).get_uint32();
+    //charisma += GetAttribute(AttrCustomCharismaBonus).get_uint32();
 
     uint8 willpower = type().GetAttribute(AttrWillpower).get_uint32();
     willpower += GetAttribute(AttrWillpowerBonus).get_uint32();
-    willpower += GetAttribute(AttrCustomWillpowerBonus).get_uint32();
+    //willpower += GetAttribute(AttrCustomWillpowerBonus).get_uint32();
 
     uint8 memory = type().GetAttribute(AttrMemory).get_uint32();
     memory += GetAttribute(AttrMemoryBonus).get_uint32();
-    memory += GetAttribute(AttrCustomMemoryBonus).get_uint32();
+    //memory += GetAttribute(AttrCustomMemoryBonus).get_uint32();
 
     PyDict* result = new PyDict();
     result->SetItem(new PyInt(AttrIntelligence), new PyInt(intelligence));

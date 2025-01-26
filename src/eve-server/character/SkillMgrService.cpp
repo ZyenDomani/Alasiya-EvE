@@ -264,7 +264,7 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 
     CharacterRef cRef(call.client->GetChar());
 
-    // type() is base, *Bonus are ancestry + bloodline
+    // type() is base, *Bonus are ancestry + bloodline, Custom* is player-set remap points
     //  remove these from sent values to get player's remap points
     uint8 intelligence(args.intelligence);
         intelligence -= cRef->type().GetAttribute(AttrIntelligence).get_uint32();

@@ -111,8 +111,6 @@ add agent portraits to server and update 'backupurl' in server code
 character remap needs a bit more work.  attributes and bonuses save/load correctly.  client code needs update
 
 remove GPoint/GVector code and just write my own.
-    - float/double not needed and math on those are expensive.  replace with int64?
-    - note:  client logs show all position data is pyfloat (some float.7, some double.15)  but i see no point of needing decimeter (or higher) precision.
 
 entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
   updated as much as i know how right now

@@ -872,7 +872,7 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
         (*payload)->Dump(BUBBLE__CAST_DUMP, "    ");
     for (auto &cur : m_players) {
         _log( BUBBLE__CAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
-        PyIncRef(*payload);
+        //PyIncRef(*payload);
         cur.second->QueueDestinyUpdate(payload);
     }
 }
