@@ -70,7 +70,6 @@ public:
     void CharAttribTest();
 
     void WarpTest(uint8 type);
-
     int64  m_targetDistance;
     int64  m_accelDistance;
     int64  m_decelDistance;
@@ -83,6 +82,34 @@ public:
     void WarpCruise(uint16 sec_into_warp);
     bool WarpDecel(uint16 sec_into_warp);
     void WarpUpdate(int64 currentDistance, uint16 sec_into_warp, uint8 type);      // 0=error, 1=accel, 2=cruise, 3=decel
+    // end of warp test
+
+
+    void TurnTest(uint8 type);
+    void InitTurn();
+    void Turn();
+
+    // return percent change between from and to
+    float getPctf(float from, float to, float pct) {
+        return from + ((to - from) * pct);
+    }
+    bool m_stop;
+    bool m_wasDecel;
+    bool m_turnAccel;
+    bool m_turnDecel;
+    uint16 m_turnTime;
+    float m_alignTime;                  //in s      - time to change directions or enter warp
+    float m_prevSpeed;                  //in m/s    - used to calculate speed during decel
+    float m_maxShipSpeed;               //in m/s
+    float m_turnPct;
+    float m_timeFraction;               //fuzzy logic - holds current euler value for time
+    float m_turnMinFraction;            //fuzzy logic - used for turn accel/decel checks
+    float m_prevSpeedFraction;          //fuzzy logic - previous percent of full speed.  used for speed changes
+    float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
+    float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
+    float m_agility;   
+    double degrees;
+    // end of turn test
 
 private:
     uint32 BUBBLE_RADIUS_METERS;

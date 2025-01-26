@@ -164,9 +164,9 @@ public:
         return Math::squareRoot(lengthSquared());
     }
 
-    GaExpInl GaFloat distance(const GaVec3& oth) const
+    GaExpInl GaFloat distance(const GaVec3& from) const
     {
-        return Math::squareRoot( pow((oth.x - x), 2) + pow((oth.y - y), 2) + pow((oth.z - z), 2) );
+        return Math::squareRoot(pow((from.x - x), 2) + pow((from.y - y), 2) + pow((from.z - z), 2));
     }
 
     // transform position to unit vector
@@ -187,7 +187,7 @@ public:
 
     // angle in degrees
     GaFloat angle(float ax, float ay, float bx, float by);
-    // angle between 2 vectors in degrees
+    // angle between 2 vectors in radians
     GaExpInl GaFloat angle(const Ga::GaVec3 oth) const
     {
         return acos(this->dotProduct(oth)/(this->length()*oth.length()));

@@ -9,6 +9,7 @@
   */
 
 #include "eve-server.h"
+#include "../../eve-core/math/Trig.h"
 
 #include "Client.h"
 #include "StaticDataMgr.h"
@@ -102,6 +103,7 @@ void testing::CharAttribTest() {
     }
 }
 
+// 11jan25
 void testing::WarpTest(uint8 type) {
     double profileStartTime(GetTimeUSeconds());
 
@@ -348,4 +350,127 @@ void testing::WarpUpdate(int64 currentDistance, uint16 sec_into_warp, uint8 type
                         sec_into_warp, currentDistance, m_targetDistance);
         } break;
     }
+}
+
+//22jan25
+void testing::TurnTest(uint8 type) {
+    double profileStartTime(GetTimeUSeconds());
+    m_stop = false;
+    m_agility = 18.4f;
+    m_alignTime = 25.50871f;
+    m_maxShipSpeed = 140;
+    m_turnMinFraction = 0.0;
+    m_prevSpeedFraction = 0.0;
+    m_userSpeedFraction = 1.0f;
+    m_activeSpeedFraction = 0.652;
+
+    switch (type) {
+        case 1:
+            degrees = 15.0;
+            break;
+        case 2:
+            degrees = 30.0;
+            break;
+        case 3:
+            degrees = 45.0;
+            break;
+        case 4:
+            degrees = 60.0;
+            break;
+        case 5:
+            degrees = 90.0;
+            break;
+        case 6:
+            degrees = 135.0;
+            break;
+    }
+
+    InitTurn();
+
+    while (++m_turnTime < m_alignTime) {
+        Turn();
+    }
+    sLog.Cyan("TurnTest", "runtime: %.3fus.", GetTimeUSeconds() - profileStartTime);
+}
+
+void testing::InitTurn() {
+    m_turnAccel = false;
+    m_turnDecel = false;
+    m_wasDecel = false;
+    m_turnTime = 0;
+
+    //  calc min speed for this turn as absolute percent of shipMaxSpeed
+    float radians = EvE::Trig::Deg2Rad(degrees);
+    m_turnMinFraction = sqrt((cos(radians) + 1) / 2);
+
+    m_turnPct = 1.0f / m_alignTime;
+
+    // check speed for changes and set vars accordingly
+    m_prevSpeedFraction = m_activeSpeedFraction;
+    if (m_activeSpeedFraction > m_turnMinFraction) {
+        m_turnDecel = true;
+        m_wasDecel = true;
+    } else {
+        m_turnAccel = true;
+    }
+
+    sLog.Green("TurnTest", "%.0f degree test init. start speed: %.1f  max speed: %.1f", \
+            degrees, m_activeSpeedFraction * m_maxShipSpeed, m_maxShipSpeed);
+    sLog.Green("TurnTest", "asf %.3f mtsf %.3f, pct:%.2f, alignTime:%.1f", \
+            m_activeSpeedFraction, m_turnMinFraction, m_turnPct, m_alignTime);
+}
+
+void testing::Turn() {
+    std::string move = "";
+    float speed(0.0f);
+    float change(m_turnPct * m_turnTime);
+
+    // update tf for this tic
+    m_timeFraction = (1 - exp(-m_turnTime / m_agility));
+
+    // accel/decel in turn act different. ignore MoveObject() speed and set per turn change here (+5-9us)
+    if (m_turnDecel) {
+        // our speed is above min for this turn.
+        //if (m_turnTime > (m_alignTime * 0.5f)) {
+        if (m_activeSpeedFraction > m_turnMinFraction) {
+            m_turnDecel = false;
+            m_turnAccel = true;
+            // we are now resuming accel after 1/2 turn
+            m_activeSpeedFraction = getPctf(m_turnMinFraction, m_userSpeedFraction, 1.0f - (change * 2));
+            //speed = m_maxShipSpeed * m_activeSpeedFraction;
+            move = "continue accel in turn";
+        } else {
+            m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_turnMinFraction, 1.0f - (change * 2));
+            //speed = m_maxShipSpeed * m_activeSpeedFraction;
+            move = "decel in turn";
+        }
+        // at this point, asf < mtsf @ InitTurn().
+        // however, we need to make sure asf < mtsf during first half of turn
+        if (m_turnTime < (m_alignTime * 0.5f)) {
+            sLog.Warning("TurnTest", "turn time %u < 1/2 align time %u.  asf %.3f mtsf %.3f", \
+                    m_turnTime, m_alignTime, m_activeSpeedFraction, m_turnMinFraction);
+            if (m_activeSpeedFraction > m_turnMinFraction) {
+                sLog.Warning("Turn()", "asf > mtsf during first half. ");
+            }
+        }
+        // have to figure out how to keep this down and everything sane at same time.
+    } else if (m_turnAccel) {
+        // we are below mtsf, either begin accel for align or resuming accel after 1/2 turn
+        if (m_wasDecel) {
+            m_activeSpeedFraction = getPctf(m_turnMinFraction, m_userSpeedFraction, change * 2);
+        } else {
+            m_activeSpeedFraction = getPctf(m_prevSpeedFraction, m_userSpeedFraction, change);
+        }
+        move = "accel in turn";
+    } else {
+        // error.  see if we can recover and continue
+        move = "error";
+    }
+
+    speed = m_maxShipSpeed * m_activeSpeedFraction;
+
+    sLog.Cyan("TurnTest", "%s at %u", move.c_str(), m_turnTime);
+    sLog.Cyan("TurnTest", "accel:%s, decel:%s, change: %.4f,  speed: %.1f  asf %.3f, tf: %.3f", \
+            m_turnAccel?"true":"false", m_turnDecel?"true":"false", change, \
+            speed, m_activeSpeedFraction, m_timeFraction);
 }

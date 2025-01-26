@@ -123,8 +123,9 @@ public:
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
     float GetRadTic()                                   { return m_orbitRadTic; }
     uint8 GetState()                                    { return m_ballMode; }// this is only used by my bubble debug command
+    std::string GetStateName();
     bool IsFrozen()                                     { return m_frozen; }
-    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.0005f); }
+    bool IsMoving()                                     { return (m_activeSpeedFraction > ASF_CHECK); }
     bool IsGoto()                                       { return (m_ballMode == Destiny::Ball::Mode::GOTO); }
     bool IsStopped()                                    { return (m_ballMode == Destiny::Ball::Mode::STOP); }
     bool IsOrbiting()                                   { return (m_ballMode == Destiny::Ball::Mode::ORBIT); }
@@ -253,13 +254,14 @@ protected:
     //Destiny::Ball::stateStamp m_stateStamp; //state and count of current state since beginning, in seconds
     //Destiny::Ball::timeStamp m_timeStamp; //mode and timestamp of when current mode began
 
-    float m_degPerTic;                  //ship turn variable
-    float m_orbitTime;                  //in s - time to complete one orbit using current variables
-    float m_orbitRadTic;                //in rad/sec  - radians around orbit per tic
-    float m_radians;                    //in rad    - radians of an ongoing turn
+    double m_degPerTic;                 //ship turn variable
+    double m_orbitTime;                 //in s - time to complete one orbit using current variables
+    double m_orbitRadTic;               //in rad/sec  - radians around orbit per tic
+    double m_radians;                   //in rad    - radians of an ongoing turn
 
     float m_timeFraction;               //fuzzy logic - holds current euler value for time
     float m_turnMinFraction;            //fuzzy logic - used for turn accel/decel checks
+    float m_origSpeedFraction;          //fuzzy logic - percent of full speed commanded before turn.  used for directional changes
     float m_prevSpeedFraction;          //fuzzy logic - previous percent of full speed.  used for speed changes
     float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
     float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
@@ -294,12 +296,13 @@ private:
     // Internal Turn Methods    -allan  Aug - Oct, 2015
     bool IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement
     void InitTurn();                   //set turn variables
-    void Turn(float &speed, std::string &move);   //apply velocity and heading updates as needed for turning.  called by MoveObject()
+    void Turn(float& speed, std::string& move);           //apply heading update and asf checks for turning.  called by MoveObject()
     void ClearTurn();
     void MarkPoint(const GPoint& position, std::string& name, std::string& desc);
     bool m_posHack;                    //force position update after turn
 
     // bezier turn data (wip)      -allan  Feb 2023
+    bool m_wasDecel;
     bool m_turnAccel;
     bool m_turnDecel;
     float m_turnPct;

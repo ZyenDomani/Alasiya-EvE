@@ -311,29 +311,29 @@ bool ConsoleCommand::Process() {
                 testing t;
                 t.WarpTest(0);
             } else if (strncmp(buf, "1", 1) == 0) {
-                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                sLog.Green("  Alasiya's EvEMu", "15* TurnTest in progress:");
                 testing t;
-                t.WarpTest(1);
+                t.TurnTest(1);
             } else if (strncmp(buf, "2", 1) == 0) {
-                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                sLog.Green("  Alasiya's EvEMu", "30* TurnTest in progress:");
                 testing t;
-                t.WarpTest(2);
+                t.TurnTest(2);
             } else if (strncmp(buf, "3", 1) == 0) {
-                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                sLog.Green("  Alasiya's EvEMu", "45* TurnTest in progress:");
                 testing t;
-                t.WarpTest(3);
+                t.TurnTest(3);
             } else if (strncmp(buf, "4", 1) == 0) {
-                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                sLog.Green("  Alasiya's EvEMu", "60* TurnTest in progress:");
                 testing t;
-                t.WarpTest(4);
+                t.TurnTest(4);
             } else if (strncmp(buf, "5", 1) == 0) {
-                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                sLog.Green("  Alasiya's EvEMu", "90* TurnTest in progress:");
                 testing t;
-                t.WarpTest(5);
+                t.TurnTest(5);
             } else if (strncmp(buf, "6", 1) == 0) {
-                sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
+                sLog.Green("  Alasiya's EvEMu", "135* TurnTest in progress:");
                 testing t;
-                t.WarpTest(6);
+                t.TurnTest(6);
             } else if (strncmp(buf, "7", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "WarpTest in progress:");
                 testing t;

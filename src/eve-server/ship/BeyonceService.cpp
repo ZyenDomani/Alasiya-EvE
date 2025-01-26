@@ -757,10 +757,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-        call.client->SetInvul(false);
-        call.client->SetUndock(false);
+    call.client->SetInvul(false);
+    call.client->SetUndock(false);
+
     pDestiny->WarpTo(warpToPoint, distance, false, pSE);
-    
+
     return PyStatic.NewNone();
 }
 
