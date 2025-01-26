@@ -1106,7 +1106,7 @@ void DestinyManager::Turn(float& speed, std::string& move) {
 }
 
 void DestinyManager::ClearTurn() {
-    sLog.Cyan("DM", "%s calling ClearTurn()", mySE->GetName());
+    sLog.Warning("DM", "%s calling ClearTurn()", mySE->GetName());
     m_radians = 0.0;
     m_turnTime = 0;
     m_turning = false;  // can probably del this and use m_turnTime for active check
@@ -2065,6 +2065,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
                 SetPosition(mySE->GetPosition(), true);
             // warp distance too close.  cancel warp and return
             if (pSE != nullptr) {
+                //TooCloseToWarp
                 pClient->SendErrorMsg("That is too close for your Warp Drive.  Approaching Target.");
                 Follow(pSE, distance);
             } else {
@@ -2115,6 +2116,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
                 m_targetDistance -= distance;
             } else {
                 // if not enough cap to do min warp. cancel and return
+                //WarpingWithAvailablePowerBody
                 pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
                 _log(DESTINY__WARNING, "Destiny::InitWarp() - %s(%u): Capacitor needed vs current  %f / %.5f",
                         mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
@@ -2162,15 +2164,17 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
                 mySE->SysBubble()->GetID(), m_targBubble->GetID());
         }
 
+        // everything else will use code from Turn() and BeginMovement()
         if (!IsMoving()) {
             BeginMovement();
-        } else if (IsTurn()) {
-            // if usf < 75%, set usf for warp
-            if (m_userSpeedFraction < 0.749)
-                m_userSpeedFraction = 1.0f;
-
-            InitTurn();
         }
+
+        // if usf < 75%, set usf for warp
+        if (m_userSpeedFraction < 0.749)
+            m_userSpeedFraction = 1.0f;
+
+        if (IsTurn())
+            InitTurn();
 
         // reset ball mode as it was changed in SSF()
         m_ballMode = Destiny::Ball::Mode::WARP;
@@ -2217,8 +2221,8 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
 
     /*  TODO PUT CHECK HERE FOR WARP BUBBLES
      *     and other things that affect warp-in point.....when we get to there.
-     * AttrWarpBubbleImmune = 1538,
-     * AttrWarpBubbleImmuneModifier = 1539,
+     * AttrWarpBubbleImmune = 1538,  (none in db)
+     * AttrWarpBubbleImmuneModifier = 1539,     (4 in db)
      *
      *   NOTE:  warp bubble in path (or within 150km of m_targetPoint) will change m_targetDistance and m_targetPoint
      *   however, this does NOT affect original calculations for energy needed, etc...
@@ -2227,6 +2231,8 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     /** @todo  does this apply for ANY bubble along warp route or just end?
      * would be fun to check entire route for bubble...can bm along route to add bubble
      * however, this will take a bit to implement
+     *
+     * IDEA:  ...nope, lost it.
      */
     if (m_targBubble->HasWarpBubble())
         if (!mySE->GetSelf()->HasAttribute(AttrWarpBubbleImmune)) {
@@ -2255,13 +2261,14 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         // everything else will use code from Turn() and BeginMovement()
         if (!IsMoving()) {
             BeginMovement();
-        } else if (IsTurn()) {
-            // if usf < 75%, set usf for warp
-            if (m_userSpeedFraction < 0.749)
-                m_userSpeedFraction = 1.0f;
-
-            InitTurn();
         }
+
+        // if usf < 75%, set usf for warp
+        if (m_userSpeedFraction < 0.749)
+            m_userSpeedFraction = 1.0f;
+
+        if (IsTurn())
+            InitTurn();
     }
 
     // reset ball mode as it was changed in SSF()
