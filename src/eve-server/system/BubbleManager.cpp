@@ -41,9 +41,7 @@
 
 
 BubbleManager::BubbleManager()
-: m_wanderTimer(0),
-m_bubbleID(0),
-m_profileStartTime(0)
+: m_wanderTimer(0), m_bubbleID(0), m_profileStartTime(0)
 {
 }
 
@@ -73,7 +71,7 @@ void BubbleManager::Process() {
             cur->Process();
     }
 
-    if (m_wanderTimer.Check()) {    //60s
+    if (m_wanderTimer.Check()) {    //600s
         _log(BUBBLE__INFO, "Wander Timer - %u", sEntityMgr.GetStamp());
         std::list<SystemBubble*>::iterator itr = m_bubbles.begin();
         while (itr != m_bubbles.end()) {
@@ -95,7 +93,7 @@ void BubbleManager::Process() {
                         cur->GetPilot()->SendErrorMsg("Internal Server Error.<br>Please either dock or relog.");
                     continue;
                 }
-                _log(BUBBLE__WARNING, "BubbleManager::Process() - Wanderer %s(%u) in system %s(%u) is being added to a bubble.", \
+                _log(BUBBLE__WARNING, "BubbleManager::Process() - Calling Checkbubble() for Wanderer %s(%u) in %s(%u).", \
                         cur->GetName(), cur->GetID(), cur->SystemMgr()->GetName(), cur->SystemMgr()->GetID());
                 CheckBubble(cur);
             }
@@ -136,7 +134,7 @@ void BubbleManager::RemoveEmpty()
         if ((*itr)->IsEmpty()) {
             _log(BUBBLE__DEBUG, "BubbleManager::RemoveEmpty() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
             _log(BUBBLE__TRACE, "BubbleManager::RemoveEmpty() - Entity list of bubble %u as follows...", (*itr)->GetID());
-            (*itr)->PrintEntityMgr();
+            (*itr)->PrintEntityList();
             RemoveBubble((*itr)->GetSystem()->GetID(), (*itr));
             itr = m_bubbles.erase(itr);
         } else {

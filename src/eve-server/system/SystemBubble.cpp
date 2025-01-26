@@ -21,7 +21,7 @@
  *    http://www.gnu.org/copyleft/lesser.txt.
  *    ------------------------------------------------------------------------------------
  *    Author:        Zhur
- *    Updates:        Allan
+ *   Rewrite:   Allan
  */
 
 #include <algorithm>
@@ -43,36 +43,23 @@
 
 
 SystemBubble::SystemBubble(SystemManager* pSystem, const GPoint& center, double radius)
-: m_system(pSystem),
-m_center(center),
-m_radius(radius),
-m_tcuSE(nullptr),
-m_sbuSE(nullptr),
-m_ihubSE(nullptr),
-m_towerSE(nullptr),
-m_centerSE(nullptr),
+: m_tcuSE(nullptr), m_sbuSE(nullptr), m_ihubSE(nullptr), m_towerSE(nullptr),
+m_system(pSystem), m_center(center), m_radius(radius),
+m_centerSE(nullptr), m_hasMarkers(false),m_hasBubble(false),
 m_spawnTimer(0),
-m_ice(false),
-m_belt(false),
-m_gate(false),
-m_anomaly(false),
-m_mission(false),
-m_spawned(false),
-m_incursion(false),
-m_hasBubble(false),
-m_hasMarkers(false),
-m_systemID(pSystem->GetID()),
-m_bubbleID(sBubbleMgr.GetBubbleID())
+m_ice(false), m_belt(false), m_gate(false),
+m_anomaly(false), m_mission(false), m_incursion(false),
+m_spawned(false), m_bubbleID(sBubbleMgr.GetBubbleID()),m_systemID(pSystem->GetID())
 {
-    _log(BUBBLE__TRACE, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f)[%.1f].",\
+    _log(BUBBLE__TRACE, "SysBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f)[%.1f m radius].",\
 	     m_bubbleID, this, m_center.x, m_center.y, m_center.z, m_radius);
 }
 
-SystemBubble::~SystemBubble()
-{
+SystemBubble::~SystemBubble() {
+    // delete marker cans here
     if (m_hasMarkers)
         for (auto &cur : m_markers) {
-            cur.second->Delete(); // delete marker cans here
+            cur.second->Delete();
             SafeDelete(cur.second);
         }
 }
@@ -100,8 +87,7 @@ void SystemBubble::clear() {
     m_dynamicEntities.clear();
 }
 
-void SystemBubble::Process()
-{
+void SystemBubble::Process() {
     /* this will need to process:
      *    belt and gate for spawn/respawn
      *    missions for ??
@@ -112,6 +98,7 @@ void SystemBubble::Process()
     if ((m_belt or m_gate) and (m_system->GetSystemSecurityRating() > 0.9f))
         return;
 
+    // TODO:  verify this
     // this must run a second time for spawn to actually hit.  first time only sets main system spawn timer.
     // may be nuts, but will remain enabled as long as player in bubble and bubble has no rats.
     if (m_spawnTimer.Enabled()) {
@@ -137,15 +124,15 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             continue;
         }
 
-        // need to check for jumping ships here also.
+        // need to check for jumping ships here also. (not written yet)
         if ((pSE->DestinyMgr() != nullptr) and pSE->DestinyMgr()->IsWarping()) {
             ++itr;
             continue;
         }
         if (!InBubble(pSE->GetPosition())) {
             wanderers.push_back( pSE );
-            //17:38:57 [DestinyWarning] SystemBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
-            _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
+            //17:38:57 [DestinyWarning] SysBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
+            _log(DESTINY__WARNING, "SysBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
                         pSE->GetID(), pSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);
         }
         ++itr;
@@ -155,11 +142,10 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
         ResetBubbleRatSpawn();
 }
 
-void SystemBubble::Add(SystemEntity* pSE)
-{
+void SystemBubble::Add(SystemEntity* pSE) {
     //if they are already in this bubble, do not continue.
     if (m_entities.find(pSE->GetID()) != m_entities.end()) {
-        _log(BUBBLE__TRACE, "SystemBubble::Add() - Tried to add Static Entity %u to bubble %u, but it is already in here.",\
+        _log(BUBBLE__TRACE, "SysBubble::Add() - Tried to add Static Entity %u to bubble %u, but it is already in here.",\
              pSE->GetID(), m_bubbleID);
         return;
     }
@@ -167,7 +153,7 @@ void SystemBubble::Add(SystemEntity* pSE)
     pSE->m_bubble = this;
     // global entities also in SystemMgr's static list.  this is used for SystemBubble->IsEmpty() deletion check
     if (pSE->IsStaticEntity() or pSE->isGlobal()) {
-        _log(BUBBLE__TRACE, "SystemBubble::Add() - Entity %s(%u) is static or global or both.", pSE->GetName(), pSE->GetID() );
+        _log(BUBBLE__TRACE, "SysBubble::Add() - Entity %s(%u) is static or global or both.", pSE->GetName(), pSE->GetID() );
         // all static and global entities (stations, gates, asteroid fields, cyno fields, etc) are put into bubble's staticEntity map
         m_entities[pSE->GetID()] = pSE;
         return;
@@ -175,7 +161,7 @@ void SystemBubble::Add(SystemEntity* pSE)
 
     //if they are already in this bubble, do not continue.
     if (m_dynamicEntities.find(pSE->GetID()) != m_dynamicEntities.end()) {
-        _log(BUBBLE__TRACE, "SystemBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
+        _log(BUBBLE__TRACE, "SysBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
                 pSE->GetID(), m_bubbleID);
         return;
     }
@@ -214,12 +200,12 @@ void SystemBubble::Add(SystemEntity* pSE)
         GVector direction(startPoint, NULL_ORIGIN);
         double rangeToStar = direction.length();
         rangeToStar /= ONE_AU_IN_METERS;
-        _log(BUBBLE__DEBUG, "SystemBubble::Add() - Added entity %u to bubble %u.  Dist to center: %.2f", \
+        _log(BUBBLE__DEBUG, "SysBubble::Add() - Added entity %u to bubble %u.  Dist to center: %.2f", \
                 pSE->GetID(), m_bubbleID, m_center.distance(pSE->GetPosition()));
-        _log(BUBBLE__DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
+        _log(BUBBLE__DEBUG, "SysBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
                 rangeToStar, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
     } else {
-        _log(BUBBLE__TRACE, "SystemBubble::Add() - Added entity %u to bubble %u.  Dist to center: %.2f", \
+        _log(BUBBLE__TRACE, "SysBubble::Add() - Added entity %u to bubble %u.  Dist to center: %.2f", \
                 pSE->GetID(), m_bubbleID, m_center.distance(pSE->GetPosition()));
     }
 }
@@ -232,7 +218,7 @@ void SystemBubble::Remove(SystemEntity *pSE) {
             return;
     }
 
-    _log(BUBBLE__TRACE, "SystemBubble::Remove() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
+    _log(BUBBLE__TRACE, "SysBubble::Remove() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
 
     m_entities.erase(pSE->GetID());
     m_dynamicEntities.erase(pSE->GetID());
@@ -250,7 +236,7 @@ void SystemBubble::Remove(SystemEntity *pSE) {
         m_drones.erase(pSE->GetID());
 
     if (is_log_enabled(BUBBLE__DEBUG))
-        sLog.Warning("SystemBubble::Remove()", "Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
+        sLog.Warning("SysBubble::Remove()", "Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
 
     pSE->m_bubble = nullptr;
 }
@@ -259,12 +245,11 @@ void SystemBubble::RemoveExclusive(SystemEntity *pSE) {
     if (pSE->m_bubble == nullptr)
         return;
 
-    _log(BUBBLE__TRACE, "SystemBubble::RemoveExclusive() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
+    _log(BUBBLE__TRACE, "SysBubble::RemoveExclusive() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
     RemoveBallExclusive(pSE);
 }
 
-void SystemBubble::ResetBubbleRatSpawn()
-{
+void SystemBubble::ResetBubbleRatSpawn() {
     /* the current spawn in this bubble was killed off, so reset timers accordingly
      *   once the timer hits, it will do all needed checks for players and respawn as needed.
      *  this enables creating a new spawn after previous group was killed off
@@ -278,8 +263,7 @@ void SystemBubble::ResetBubbleRatSpawn()
             SetSpawnTimer(false);
 }
 
-void SystemBubble::SetSpawnTimer(bool isBelt/*false*/)
-{
+void SystemBubble::SetSpawnTimer(bool isBelt/*false*/) {
     if (m_system->GetSystemSecurityRating() > 0.90)
         return;
     if (sConfig.debug.SpawnTest) {
@@ -294,8 +278,7 @@ void SystemBubble::SetSpawnTimer(bool isBelt/*false*/)
     }
 }
 
-void SystemBubble::SetBelt(InventoryItemRef itemRef)
-{
+void SystemBubble::SetBelt(InventoryItemRef itemRef) {
     m_belt = true;
     sBubbleMgr.AddSpawnID(m_bubbleID, itemRef->itemID());
     m_system->GetBeltMgr()->RegisterBelt(itemRef);
@@ -303,8 +286,7 @@ void SystemBubble::SetBelt(InventoryItemRef itemRef)
         m_ice = true;
 }
 
-void SystemBubble::SetGate(uint32 gateID)
-{
+void SystemBubble::SetGate(uint32 gateID) {
     m_gate = true;
     sBubbleMgr.AddSpawnID(m_bubbleID, gateID);
 }
@@ -337,8 +319,7 @@ void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
     }
 }
 
-void SystemBubble::GetAllEntities(std::map< uint32, SystemEntity* >& into) const
-{
+void SystemBubble::GetAllEntities(std::map< uint32, SystemEntity* >& into) const {
     if (m_dynamicEntities.empty())
         return;
 
@@ -347,8 +328,7 @@ void SystemBubble::GetAllEntities(std::map< uint32, SystemEntity* >& into) const
 }
 
 
-void SystemBubble::GetEntityVec(std::vector< SystemEntity* >& into) const
-{
+void SystemBubble::GetEntityVec(std::vector< SystemEntity* >& into) const {
     if (m_players.empty())
         return;
 
@@ -371,8 +351,7 @@ void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
         into.push_back(cur.second);
 }
 
-SystemEntity* SystemBubble::GetRandomEntity()
-{
+SystemEntity* SystemBubble::GetRandomEntity() {
     // this is used for idle npc's as a orbit target while waiting for something to pewpew
     if (m_dynamicEntities.empty())
         return nullptr;
@@ -395,19 +374,17 @@ uint32 SystemBubble::CountNPCs() {
     return count;
 }
 
-bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const
-{
+bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const {
     return (m_center.distance(pt) < m_radius);
 }
 
-bool SystemBubble::IsOverlap( const GPoint& pt ) const
-{
+bool SystemBubble::IsOverlap( const GPoint& pt ) const {
     return (m_center.distance(pt) < (m_radius * 2));
 }
 
-void SystemBubble::PrintEntityMgr() {
+void SystemBubble::PrintEntityList() {
     if (m_entities.empty() and m_dynamicEntities.empty()) {
-        sLog.Blue( "SystemBubble::PrintEntityMgr()", "Bubble %u in %s is empty", m_bubbleID, m_system->GetName());
+        sLog.Blue( "SysBubble::PrintEntityList()", "Bubble %u in %s is empty", m_bubbleID, m_system->GetName());
         return;
     }
     bool found = false;
@@ -416,64 +393,64 @@ void SystemBubble::PrintEntityMgr() {
     for (auto &cur : SElist) {
         found = false;
         if (cur.second->isGlobal())  //this should only hit beacons and cynos as global AND not static
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Global.", cur.second->GetName(), cur.second->GetID() );
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Global.", cur.second->GetName(), cur.second->GetID() );
         if (cur.second->IsShipSE()) {
             if (cur.second->HasPilot()) {
-                sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Player Ship.", cur.second->GetName(), cur.second->GetID() ); found = true;
+                sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Player Ship.", cur.second->GetName(), cur.second->GetID() ); found = true;
             } else {
-                sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Empty Player Ship.", cur.second->GetName(), cur.second->GetID() ); found = true;
+                sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Empty Player Ship.", cur.second->GetName(), cur.second->GetID() ); found = true;
             }
         }
         if (cur.second->IsNPCSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is NPC.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is NPC.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsJumpBridgeSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is JumpBridge.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is JumpBridge.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsTCUSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is TCU.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is TCU.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsCOSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Customs Office.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Customs Office.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsSBUSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is SBU.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is SBU.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsTowerSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Tower.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Tower.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsPOSSE() and !found) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is other POS.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is other POS and !found.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsContainerSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Container.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Container.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsWreckSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Wreck.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Wreck.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsOutpostSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Outpost.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Outpost.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsAsteroidSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Asteroid.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Asteroid.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsDeployableSE()) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Deployable.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Deployable.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsStaticEntity() and !found) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Static.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Static and !found.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsItemEntity() and !found) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Item.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Item and !found.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsObjectEntity() and !found) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Object.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Object and !found.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (cur.second->IsDynamicEntity() and !found) {
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is Dynamic.", cur.second->GetName(), cur.second->GetID() ); found = true;
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is Dynamic and !found.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
         if (!found)
-            sLog.Warning( "SystemBubble::PrintEntityMgr()", "entity %s(%u) is None of the Above.", cur.second->GetName(), cur.second->GetID() );
+            sLog.Warning( "SysBubble::PrintEntityList()", "entity %s(%u) is None of the Above.", cur.second->GetName(), cur.second->GetID() );
     }
 }
 
@@ -488,7 +465,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     if (pClient == nullptr)
         return;
     if (is_log_enabled(BUBBLE__DEBUG))
-        PrintEntityMgr();
+        PrintEntityList();
 
     Buffer* destinyBuffer = new Buffer();
 
@@ -517,7 +494,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
 
     addballs.state = new PyBuffer( &destinyBuffer );
 
-    _log(DESTINY__MESSAGE, "SystemBubble::SendAddBalls() to %s", pClient->GetName());
+    _log(DESTINY__MESSAGE, "SysBubble::SendAddBalls() to %s", pClient->GetName());
     if (is_log_enabled(DESTINY__BALL_DUMP))
         addballs.Dump( DESTINY__BALL_DUMP, "    " );
     _log( DESTINY__BALL_DECODE, "    Ball Decoded:" );
@@ -538,7 +515,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     if (pClient == nullptr)
         return;
     if (is_log_enabled(BUBBLE__TRACE))
-        PrintEntityMgr();
+        PrintEntityList();
 
     Buffer* destinyBuffer = new Buffer();
 
@@ -571,7 +548,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     addballs2.state = new PyBuffer(&destinyBuffer); //consumed
     SafeDelete( destinyBuffer );
 
-    _log( DESTINY__MESSAGE, "SystemBubble::SendAddBalls2() to %s", pClient->GetName());
+    _log( DESTINY__MESSAGE, "SysBubble::SendAddBalls2() to %s", pClient->GetName());
     if (is_log_enabled(DESTINY__BALL_DUMP))
         addballs2.Dump( DESTINY__BALL_DUMP, "    " );
     //_log( DESTINY__TRACE, "    Ball Binary:" );
@@ -612,7 +589,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* pSE ) {
     addballs.slims = new PyList();
     addballs.slims->AddItem( new PyObject( "foo.SlimItem", pSE->MakeSlimItem() ) );
 
-    _log(BUBBLE__TRACE, "SystemBubble::AddBallExclusive() - Adding entity %u to bubble %u", pSE->GetID(), m_bubbleID);
+    _log(BUBBLE__TRACE, "SysBubble::AddBallExclusive() - Adding entity %u to bubble %u", pSE->GetID(), m_bubbleID);
     if (is_log_enabled(DESTINY__BALL_DUMP))
         addballs.Dump( DESTINY__BALL_DUMP, "    " );
     _log( DESTINY__BALL_DECODE, "    Ball Decoded:" );
@@ -650,7 +627,7 @@ void SystemBubble::RemoveBall(SystemEntity *pSE) {
     RemoveBallsFromBP removeball;
     removeball.balls.push_back( pSE->GetID());
 
-    _log(DESTINY__MESSAGE, "SystemBubble::RemoveBall()");
+    _log(DESTINY__MESSAGE, "SysBubble::RemoveBall()");
     if (is_log_enabled(DESTINY__BALL_DUMP))
         removeball.Dump( DESTINY__BALL_DUMP, "    " );
 
@@ -666,7 +643,7 @@ void SystemBubble::RemoveBallExclusive(SystemEntity *pSE) {
     // RemoveBalls removeball;
     //removeball.balls.push_back(pSE->GetID());
 
-    _log(DESTINY__MESSAGE, "SystemBubble::RemoveBallExclusive()");
+    _log(DESTINY__MESSAGE, "SysBubble::RemoveBallExclusive()");
     if (is_log_enabled(DESTINY__BALL_DUMP))
         removeball.Dump( DESTINY__BALL_DUMP, "    " );
 
@@ -694,7 +671,7 @@ void SystemBubble::RemoveBalls( SystemEntity* pSE ) {
     if (remove_balls.balls.empty())
         return;
 
-    _log( DESTINY__MESSAGE, "SystemBubble::RemoveBalls() - sending to %s", pClient->GetName());
+    _log( DESTINY__MESSAGE, "SysBubble::RemoveBalls() - sending to %s", pClient->GetName());
     if (is_log_enabled(DESTINY__BALL_DUMP))
         remove_balls.Dump( DESTINY__BALL_DUMP, "    " );
 

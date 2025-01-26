@@ -236,6 +236,7 @@ public:
 
     void IncRef() const;
     void DecRef() const;
+    int16 GetRefCount()                                 { return mRefCount; }
 
 protected:
     const PyType		mType;

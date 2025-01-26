@@ -23,8 +23,8 @@
     Author:        Zhur
     Rewrite:    Allan
 */
-#ifndef __SYSTEMBUBBLE_H_INCL__
-#define __SYSTEMBUBBLE_H_INCL__
+#ifndef _EVE_SERVER_SYSTEM_BUBBLE_H_
+#define _EVE_SERVER_SYSTEM_BUBBLE_H_
 
 #include <map>
 #include <vector>
@@ -94,7 +94,7 @@ public:
     ContainerSE* GetCenterMarker()                      { return m_centerSE; }
 
     void clear();
-    void PrintEntityMgr();
+    void PrintEntityList();
 
     void Add(SystemEntity* pSE);
     void Remove(SystemEntity* pSE);
@@ -184,15 +184,6 @@ private:
     bool m_hasMarkers :1;
     bool m_hasBubble :1;       // for warp disruption bubbles (placeholder for later)
 
-    uint16 m_bubbleID;
-    uint32 m_systemID;
-
-    std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
-    std::map<uint32, SystemEntity*> m_markers;          // bubble marker cans.  we do own these.
-    std::map<uint32, SystemEntity*> m_dynamicEntities;  //entities which may/may not move. we do not own these.
-    std::map<uint32, SystemEntity*> m_entities;         //we do not own these.
-    std::map<uint32, DroneSE*> m_drones;                //we do not own these.
-
     // for spawn system     -allan 15July15
     Timer m_spawnTimer;
     bool m_ice :1;
@@ -202,6 +193,15 @@ private:
     bool m_mission :1;
     bool m_incursion :1;
     bool m_spawned :1;
+
+    uint16 m_bubbleID;
+    uint32 m_systemID;
+
+    std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
+    std::map<uint32, SystemEntity*> m_markers;          // bubble marker cans.  we do own these.
+    std::map<uint32, SystemEntity*> m_dynamicEntities;  //entities which may/may not move. we do not own these.
+    std::map<uint32, SystemEntity*> m_entities;         //we do not own these.
+    std::map<uint32, DroneSE*> m_drones;                //we do not own these.
 };
 
-#endif
+#endif  // _EVE_SERVER_SYSTEM_BUBBLE_H_
