@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    10.8
+    Version:    10.9
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -203,6 +203,7 @@ public:
         bool RoamingSpawns;
         bool StaticSpawns;
         bool TargetPod;
+        bool UseOrbit;
         uint16 WarpOut;
         uint16 RoamingTimer;
         uint16 StaticTimer;
@@ -345,6 +346,7 @@ public:
         bool UseShipTracking;
         bool DeleteTrackingCans;
         bool PositionHack;
+        bool UseOrbit;
         uint16 ProfileTraceTime;
         uint32 AnomalyFaction;
         float ShipTrackingTime;

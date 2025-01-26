@@ -513,6 +513,11 @@ int main( int argc, char* argv[] )
     }
     if (sConfig.npc.RoamingSpawns or sConfig.npc.StaticSpawns)
         sLog.Green("   Spawns Enabled","Respawn timer checks every %u minutes", sConfig.npc.RespawnTimer / 60);
+    if (sConfig.npc.UseOrbit)  {
+        sLog.Green("  NPC Orbit Calls","Enabled.");
+    } else {
+        sLog.Warning("  NPC Orbit Calls","Disabled.");
+    }
     if (sConfig.server.BountyPayoutDelayed) {
         sLog.Green(" Delayed Bounties","Delayed Bounties are Enabled.  Loop runs every %u minutes", sConfig.server.BountyPayoutTimer);
         if (sConfig.server.FleetShareDelayed) {
@@ -577,6 +582,11 @@ int main( int argc, char* argv[] )
         sProfiler.Initialize();
     } else {
         sLog.Warning(" Server Profiling","Disabled.");
+    }
+    if (sConfig.debug.UseOrbit)  {
+        sLog.Green(" Main Orbit Calls","Enabled.");
+    } else {
+        sLog.Warning(" Main Orbit Calls","Disabled.");
     }
     if (sConfig.debug.BeanCount) {
         sLog.Green("     BeanCounting","Enabled.");

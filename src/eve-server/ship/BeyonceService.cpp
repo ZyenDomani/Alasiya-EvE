@@ -476,6 +476,12 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 }
 
 PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
+    // is orbiting even enabled?
+    if (!sConfig.debug.UseOrbit) {
+        call.client->SendNotifyMsg( "Orbiting is disabled due to excessive desync.");
+        return PyStatic.NewNone();
+    }
+    
     _log(AUTOPILOT__MESSAGE, "%s called Orbit. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
     DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());

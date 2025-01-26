@@ -2291,6 +2291,9 @@ void DestinyManager::InitOrbit(SystemEntity *pSE, uint32 distance/*0*/) {
     and (m_targetDistance == distance))
         return;
 
+    if (!sConfig.debug.UseOrbit)
+        return;
+
     // if already orbiting, this would be a change of target or distance.  reset and recompute
     if (m_orbiting)
         m_shipHeading = NULL_ORIGIN_V;

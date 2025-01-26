@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    10.8
+    Version:    10.9
 */
 
 
@@ -170,6 +170,7 @@ EVEServerConfig::EVEServerConfig()
     npc.UseDamageMultiplier = true;
     npc.DefenderMissileChance = 0.0f;
     npc.LootDropChance = 0.75f;
+    npc.UseOrbit = false;
 
     // cosmic
     cosmic.PIEnabled = false;
@@ -231,6 +232,7 @@ EVEServerConfig::EVEServerConfig()
     testing.ShipHeat = false;
 
     // debug
+    debug.UseOrbit = false;
     debug.BeanCount = false;
     debug.StackTrace = false;
     debug.BubbleTrack = false;
@@ -600,6 +602,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "UseDamageMultiplier",      npc.UseDamageMultiplier );
     AddValueParser( "LootDropChance",           npc.LootDropChance );
     AddValueParser( "DefenderMissileChance",    npc.DefenderMissileChance );
+    AddValueParser( "UseOrbit",                 npc.UseOrbit );
 
     const bool result = ParseElementChildren( ele );
 
@@ -618,6 +621,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "UseDamageMultiplier" );
     RemoveParser( "LootDropChance" );
     RemoveParser( "DefenderMissileChance" );
+    RemoveParser( "UseOrbit" );
 
     return result;
 }
@@ -846,6 +850,7 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
     AddValueParser( "DeleteTrackingCans",   debug.DeleteTrackingCans );
     AddValueParser( "ProfileTraceTime",     debug.ProfileTraceTime );
     AddValueParser( "ShipTrackingTime",     debug.ShipTrackingTime );
+    AddValueParser( "UseOrbit",             debug.UseOrbit );
 
     const bool result = ParseElementChildren( ele );
 
@@ -861,6 +866,7 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
     RemoveParser( "BubbleTrack" );
     RemoveParser( "ProfileTraceTime" );
     RemoveParser( "ShipTrackingTime" );
+    RemoveParser( "UseOrbit" );
 
     return result;
 }
