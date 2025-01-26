@@ -319,18 +319,18 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
 
 void DestinyManager::UpdateVelocity(bool isMoving) {
     uint8 logType(0);
+    /*
     if ((m_ballMode == Destiny::Ball::Mode::WARP) and (m_warpState != nullptr)) {
-        /*  Warp() finished, and ship dropped out of warp at m_speedToLeaveWarp,
-         * set variables for decel from this speed.
-         */
+        //  Warp() finished, and ship dropped out of warp at m_speedToLeaveWarp,
         logType = 1;
         m_stop = true;
         m_decel = true;
         m_posHack = true;
         m_ballMode = Destiny::Ball::Mode::STOP;
         m_targBubble = nullptr;
-        m_shipAccelTime = m_shipMaxAccelTime;
-    } else if (m_userSpeedFraction > 0.01f) {
+        m_shipAccelTime = m_shipMaxAccelTime * m_activeSpeedFraction;
+    } else */
+    if (m_userSpeedFraction > 0.01f) {
         // commanded speed fraction > 0 and ...
         float delta(1.0f);
         if ((m_activeSpeedFraction == m_userSpeedFraction) and (!m_prevSpeed)) {
@@ -374,7 +374,9 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
                  m_accel ? "true" : "false", m_decel ? "true": "false", delta);
     } else if (m_activeSpeedFraction > ASF_CHECK) {
         //  commanded to stop while ship is moving.  begin decelerating
-        if (m_turning) {
+        if ((m_ballMode == Destiny::Ball::Mode::WARP) and (m_warpState != nullptr)) {
+            logType = 1;
+        } else if (m_turning) {
             logType = 6;
         } else {
             logType = 5;
@@ -388,7 +390,8 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
     } else {
         // ... ship is not moving.  reset all move vars by calling Halt()
         logType = 7;
-        Halt();
+        if (!m_stop)
+            Halt();
     }
 
     if (m_shipAccelTime < 0)
@@ -451,7 +454,6 @@ void DestinyManager::Stop() {
     m_stateStamp = sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
 
-    // need to check this after rewrite
     SetSpeedFraction(0.0f);
     m_stop = true;
 
@@ -472,11 +474,10 @@ void DestinyManager::Stop() {
 void DestinyManager::Halt(bool commanded/*false*/) {
     SafeDelete(m_warpState);
 
-    //  reset ALL movement variables and states.  calling this will set object to a COMPLETE and IMMEDIATE stop.
-    m_ballMode = Destiny::Ball::Mode::STOP;
-    ClearTurn();
     ClearOrbit();
 
+    //  reset ALL movement variables and states.  calling this will set object to a COMPLETE and IMMEDIATE stop.
+    m_ballMode = Destiny::Ball::Mode::STOP;
     m_stop = true;
     m_accel = false;
     m_decel = false;
@@ -493,6 +494,9 @@ void DestinyManager::Halt(bool commanded/*false*/) {
     m_userSpeedFraction = 0.0f;
     m_activeSpeedFraction = 0.0f;
     m_maxOrbitSpeedFraction = 1.0f;
+
+    // all checks and sf vars need to be zero'd before calling ClearTurn()
+    ClearTurn();
 
     m_velocity = GVector(NULL_ORIGIN);
     m_targetPoint = GPoint(NULL_ORIGIN);
@@ -943,20 +947,10 @@ void DestinyManager::InitTurn()
                 m_alignTime, m_turnMinFraction, m_activeSpeedFraction);
 
     if (m_activeSpeedFraction > m_turnMinFraction) {
-        bool warp(false);
-        if (m_ballMode == Destiny::Ball::Mode::WARP) {
-            warp = true;
-            // UpdateVelocity() checks for warp to decel ship.  we dont want that yet, so change mode before calling
-            m_ballMode = Destiny::Ball::Mode::GOTO;
-        }
-
         m_moveTime = GetTimeMSeconds();
         m_userSpeedFraction = 0.1f;
         m_prevSpeedFraction = m_activeSpeedFraction;
-        //modifier = 1.0f - (m_turnMinFraction / m_activeSpeedFraction);
         UpdateVelocity(true);
-        if (warp)
-            m_ballMode = Destiny::Ball::Mode::WARP;
     }
 
     // check speed for changes and set vars accordingly
@@ -1576,7 +1570,7 @@ void DestinyManager::InitWarp() {
      */
 
     //  150km - 15s, 1mkm - 23s, 1au - 29s base + ship's wsm
-    double decelTime(1.0f), cruiseTime(0.0f);
+    float decelTime(1.0f), cruiseTime(0.0f);
     int64 accelDistance(0), decelDistance(0), cruiseDistance(0);
     int64 warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
     // set times and distances based on target distance
@@ -1605,9 +1599,9 @@ void DestinyManager::InitWarp() {
 
     // check decel ship speed to drop out of warp
     decelTime = m_decelTime;
-    double speed(0.0f);
+    float speed(0.0f);
     bool run(true);
-    uint16 step(0);
+    uint8 step(0);
     while (run) {
         speed = exp(--decelTime);
         ++step;
@@ -1781,20 +1775,12 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
 
     //SetPosition(m_position, true);
 
-    // reset asf/ps so call to SSF will set decel properly
-    m_prevSpeed = currentShipSpeed;
+    // reset asf so call to SSF will set decel properly
     m_activeSpeedFraction = currentShipSpeed / m_maxSpeed;
 
     m_targetPoint += (m_velocity * m_agility);
 
-    // SetSpeedFraction() checks for m_state = Warp and warpstate != null to set decel variables correctly with warp decel.
-    //   have to call this BEFORE deleting or reseting m_state or WarpState.
-    SetSpeedFraction(0.0f);
-    SafeDelete(m_warpState);
-
-    // reset move stamps
-    m_stateStamp = sEntityMgr.GetStamp();
-    m_moveTime = GetTimeMSeconds();
+    Stop();
 
     if ((mySE->IsNPCSE()) and (mySE->GetNPCSE()->GetAIMgr() != nullptr))
         mySE->GetNPCSE()->GetAIMgr()->WarpOutComplete();
@@ -1903,10 +1889,13 @@ void DestinyManager::BeginMovement() {
     m_moveTime = GetTimeMSeconds();
 
     // if ship is not moving, set usf for movement
-    if (m_userSpeedFraction < ASF_CHECK)
+    bool start(false);
+    if (m_userSpeedFraction < ASF_CHECK) {
+        start = true;
         m_userSpeedFraction = 1.0f;
+    }
 
-    SetSpeedFraction(m_userSpeedFraction, true);
+    SetSpeedFraction(m_userSpeedFraction, start);
 }
 
 void DestinyManager::Follow(SystemEntity* pSE, int32 distance) {
@@ -1925,7 +1914,6 @@ void DestinyManager::Follow(SystemEntity* pSE, int32 distance) {
     if (m_turning)
         ClearTurn();
 
-    m_ballMode = Destiny::Ball::Mode::FOLLOW;
     m_targetPoint = pSE->GetPosition();
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
@@ -1940,11 +1928,12 @@ void DestinyManager::Follow(SystemEntity* pSE, int32 distance) {
     targHeading.normalize();
     m_targetHeading = std::move(targHeading);
 
-    if (IsTurn()) {
+    BeginMovement();
+
+    if (IsTurn())
         InitTurn();
-    } else {
-        BeginMovement();
-    }
+
+    m_ballMode = Destiny::Ball::Mode::FOLLOW;
 
     CmdFollowBall du;
         du.entityID = mySE->GetID();
@@ -1970,15 +1959,15 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
     if (m_turning)
         ClearTurn();
 
-    m_ballMode = Destiny::Ball::Mode::GOTO;
     m_targetHeading = direction;
     m_targetPoint = m_position + (direction * 1.0e15);
 
-    if (IsTurn()) {
+    BeginMovement();
+
+    if (IsTurn())
         InitTurn();
-    } else {
-        BeginMovement();
-    }
+
+    m_ballMode = Destiny::Ball::Mode::GOTO;
 
     CmdGotoDirection du;
         du.entityID = mySE->GetID();
@@ -2006,17 +1995,17 @@ void DestinyManager::GotoPoint(const GPoint& point) {
     if (m_turning)
         ClearTurn();
 
-    m_ballMode = Destiny::Ball::Mode::GOTO;
     m_targetPoint = point;
     GVector head(m_position, point);
     head.normalize();
     m_targetHeading = std::move(head);
 
-    if (IsTurn()) {
+    BeginMovement();
+
+    if (IsTurn())
         InitTurn();
-    } else {
-        BeginMovement();
-    }
+
+    m_ballMode = Destiny::Ball::Mode::GOTO;
 
     CmdGotoPoint gtpoint;
         gtpoint.entityID = mySE->GetID();
@@ -2164,15 +2153,10 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
                 mySE->SysBubble()->GetID(), m_targBubble->GetID());
         }
 
-        // everything else will use code from Turn() and BeginMovement()
-        if (!IsMoving()) {
-            BeginMovement();
-        }
-
+        BeginMovement();
         // if usf < 75%, set usf for warp
         if (m_userSpeedFraction < 0.749)
             m_userSpeedFraction = 1.0f;
-
         if (IsTurn())
             InitTurn();
 
@@ -2182,10 +2166,6 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         // if no players in bubble, this isnt needed...
         if (mySE->SysBubble()->HasPlayers()) {
             std::vector<PyTuple*> updates;
-            CmdSetSpeedFraction du;
-                du.entityID = mySE->GetID();
-                du.fraction = m_userSpeedFraction;
-            updates.push_back(du.Encode());
             // send warp update
             CmdWarpTo wt;
                 wt.entityID = mySE->GetID();
@@ -2248,28 +2228,14 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     if (autoPilot) {
         // make sure this is jumpcloak and not module cloak
         UnCloak();
-
-        // reset move stamps
-        m_stateStamp = sEntityMgr.GetStamp();
-        m_moveTime = GetTimeMSeconds();
-        SetSpeedFraction(1.0f, true);
-
-        // in some cases, ap is enabled while ship is moving.  check for turn.
-        if (IsTurn())
-            InitTurn();
-    } else {
-        // everything else will use code from Turn() and BeginMovement()
-        if (!IsMoving()) {
-            BeginMovement();
-        }
-
-        // if usf < 75%, set usf for warp
-        if (m_userSpeedFraction < 0.749)
-            m_userSpeedFraction = 1.0f;
-
-        if (IsTurn())
-            InitTurn();
     }
+
+    BeginMovement();
+    // if usf < 75%, set usf for warp
+    if (m_userSpeedFraction < 0.749)
+        m_userSpeedFraction = 1.0f;
+    if (IsTurn())
+        InitTurn();
 
     // reset ball mode as it was changed in SSF()
     m_ballMode = Destiny::Ball::Mode::WARP;
@@ -2300,10 +2266,6 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     }
 
     std::vector<PyTuple*> updates;
-    CmdSetSpeedFraction du;
-        du.entityID = mySE->GetID();
-        du.fraction = m_userSpeedFraction;
-    updates.push_back(du.Encode());
     // send warp update
     CmdWarpTo wt;
         wt.entityID = mySE->GetID();
@@ -2595,9 +2557,8 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     }
 }
 
-// settings for ship, npc and missile max speeds
-void DestinyManager::SetMaxVelocity(float maxVelocity)
-{
+// settings for npc and drone max speeds
+void DestinyManager::SetMaxVelocity(float maxVelocity) {
     float maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     /*
     if (mySE->IsMissileSE() or mySE->IsNPCSE()) {
@@ -2608,11 +2569,10 @@ void DestinyManager::SetMaxVelocity(float maxVelocity)
         ; // make error here?
     }
         */
-    if (mySE->IsShipSE())
-        if (is_log_enabled(DESTINY__TRACE))
-            _log(DESTINY__TRACE, "Destiny::SetMaxVelocity() - Ship:%s(%u) Pilot:%s(%u) - AttrMaxDirectionalVelocity is %.1f, maxSpeed is %.1f, update is %.1f", \
-                    mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID(), \
-                    mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float(), maxSpeed, maxVelocity);
+    if (is_log_enabled(DESTINY__TRACE))
+        _log(DESTINY__TRACE, "Destiny::SetMaxVelocity() - Ship:%s(%u) - AttrMaxDirectionalVelocity is %.1f, maxSpeed is %.1f, update sent %.1f", \
+                mySE->GetName(), mySE->GetID(), mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float(), \
+                maxSpeed, maxVelocity);
 
     if (maxVelocity > maxSpeed) {
         m_maxShipSpeed = maxSpeed;
@@ -2860,24 +2820,26 @@ Battleships                             0.155
     m_agility = mass * inertiaMod / 1000000;
     mySE->GetSelf()->SetAttribute(AttrAgility, m_agility, false);
 
-    // this will catch speeds/needs for all ships (player and npc), and is easier to do here.
+    // this will catch speeds/needs for all ships (player, npc, drone), and is easier to do here.
     if (sRef->HasAttribute(AttrWarpSpeedMultiplier))
         m_shipWarpSpeed = sRef->GetAttribute(AttrWarpSpeedMultiplier).get_float();
-    if (sRef->HasAttribute(AttrMaxVelocity))
-        m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
+    if (mySE->IsNPCSE()) {
+        m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
+    } else {
+        // for npc, this is mwd/ab speed, not sub-warp speed
+        if (sRef->HasAttribute(AttrMaxVelocity))
+            m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
+    }
     if (sRef->HasAttribute(AttrWarpCapacitorNeed)) {
         m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_double();
     } else {
         m_warpCapacitorNeed = 0.0000000138;   // lowest value in db
     }
 
-    // i dont think this is right....
-    //if (mySE->IsNPCSE() or mySE->IsDroneSE())
-    //    m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
-
     // verify hull overspeed
-    if (m_maxShipSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
-        m_maxShipSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
+    if (sRef->HasAttribute(AttrMaxDirectionalVelocity))
+        if (m_maxShipSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
+            m_maxShipSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
 
     /*  per https://forums.eveonline.com/default.aspx?g=posts&m=3912843   post#103
      *
@@ -2889,7 +2851,7 @@ Battleships                             0.155
         m_speedToLeaveWarp = 101;
 
     //TimeToWarp = ((ln(2) * m_inertiaMod * m_mass) / 500000);  //18.922
-    //TimeToWarp = (ln(0.25) * m_agility);						//18.922
+    //TimeToWarp = (ln(0.25) * m_agility);			//18.922
     //m_alignTime = (0.693147 * mass * inertiaMod) / 500000;
     m_alignTime = 1.386294 * m_agility;	// faster than above
     m_turnPct = 1.0f / m_alignTime;
@@ -3384,7 +3346,7 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
             if (mySE->SysBubble() != nullptr) {
                 if (is_log_enabled(DESTINY__UPDATES))
                     _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny event to bubbleID %u from %s(%u)", \
-                    sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                            sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
                 mySE->SysBubble()->BubblecastDestinyEvent(ev, "DestinyEvent");
             }
             return;
@@ -3411,8 +3373,8 @@ void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting DestinyEvent to bubbleID %u from %s(%u)", \
                     sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(),   \
-            (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
-            (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
+                    (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
+                    (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
         mySE->SysBubble()->BubblecastDestinyEvent(ev, "DestinyEvent" );
     } else {
         _log(DESTINY__WARNING, "[%u] Cannot BubbleCast DestinyEvent; entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
@@ -3432,7 +3394,7 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
             if (mySE->SysBubble() != nullptr) {
                 if (is_log_enabled(DESTINY__UPDATES))
                     _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update to bubbleID %u from %s(%u)", \
-                    sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                            sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
                 mySE->SysBubble()->BubblecastDestinyUpdate(up, "DestinyUpdate");
             }
             return;
@@ -3445,22 +3407,22 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
     } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all players in a system
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting Structure DestinyUpdate in %s from %s(%u)", \
-            sEntityMgr.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
+                    sEntityMgr.GetStamp(), mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
 
         //Get all clients in our system
         std::vector<Client*> cv;
         mySE->SystemMgr()->GetClientList(cv);
         for (auto const& player : cv)
             if (player->IsInSpace()) {
-                PyIncRef(*up);
+                //PyIncRef(*up);
                 player->QueueDestinyUpdate(up);
             }
     } else if (mySE->SysBubble() != nullptr) {
         if (is_log_enabled(DESTINY__UPDATES))
             _log(DESTINY__UPDATES, "[%u] BubbleCasting DestinyUpdate to bubbleID %u from %s(%u)", \
-            sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(),   \
-            (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
-            (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
+                    sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(),   \
+                    (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
+                    (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
         mySE->SysBubble()->BubblecastDestinyUpdate(up, "DestinyUpdate" );
     } else {
         _log(DESTINY__WARNING, "[%u] Cannot BubbleCast DestinyUpdate; entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \

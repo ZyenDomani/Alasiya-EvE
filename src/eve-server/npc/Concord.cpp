@@ -435,14 +435,14 @@ void ConcordAI::SetFollowing(SystemEntity* pTarget) {
     //_log(CONCORD__AI_TRACE, "%s(%u): SetFollowing: %s(%u) begin following.",
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // too close to chase, but to far to engage
-    m_npc->DestinyMgr()->SetMaxVelocity(m_chaseSpeed /2);
+    m_npc->DestinyMgr()->SetMaxVelocity(m_chaseSpeed / 2);
     m_npc->DestinyMgr()->Follow(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Following;
 }
 
 void ConcordAI::SetEngaged(SystemEntity* pTarget) {
     if (m_state == Engaged) return;
-    //_log(CONCORD__AI_TRACE, "%s(%u): SetEngaged: %s(%u) begin engaging.",
+    //_log(CONCORD__AI_TRACE, "%s(%u): SetEngaged: %s(%u) begin engaging.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fighting
     //   not sure of the actual orbit speed of npc's, but their 'cruise speed' seems a bit slow.
@@ -455,7 +455,7 @@ void ConcordAI::SetEngaged(SystemEntity* pTarget) {
 
 void ConcordAI::SetFleeing(SystemEntity* pTarget) {
     if (m_state == Fleeing) return;
-    //_log(CONCORD__AI_TRACE, "%s(%u): SetFleeing: %s(%u) begin fleeing.",
+    //_log(CONCORD__AI_TRACE, "%s(%u): SetFleeing: %s(%u) begin fleeing.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fleeing
     //  use superspeed to disengage, then warp.  << both these will need to be written.
@@ -466,7 +466,7 @@ void ConcordAI::SetFleeing(SystemEntity* pTarget) {
 
 void ConcordAI::SetSignaling(SystemEntity* pTarget) {
     if (m_state == Signaling) return;
-    //_log(CONCORD__AI_TRACE, "%s(%u): SetSignaling: %s(%u) begin signaling.",
+    //_log(CONCORD__AI_TRACE, "%s(%u): SetSignaling: %s(%u) begin signaling.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively signaling
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
@@ -546,7 +546,7 @@ void ConcordAI::Targeted(SystemEntity* pAgressor) {
                  m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
             SetChasing(pAgressor);
 
-			if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange)) {
+            if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange)) {
                 SetIdle();
                 return;
             }

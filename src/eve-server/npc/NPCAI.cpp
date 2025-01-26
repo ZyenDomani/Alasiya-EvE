@@ -507,7 +507,7 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargSE) {
     _log(NPC__AI_TRACE, "%s(%u): Begin following.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTargSE->GetName(), pTargSE->GetID());
     // too close to chase, but to far to engage
-    m_destiny->SetMaxVelocity(m_orbitSpeed *2);
+    m_destiny->SetMaxVelocity(m_orbitSpeed * 2);
     m_destiny->Follow(pTargSE, m_falloff);  //try to get inside falloff range
     m_state = NPCAI::State::Following;
     m_warpOutTimer.Disable();
