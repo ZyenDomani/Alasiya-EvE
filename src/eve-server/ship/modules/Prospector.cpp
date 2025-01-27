@@ -77,6 +77,8 @@ void Prospector::Activate(uint16 effectID, uint32 targetID, int16 repeat)
 
 bool Prospector::CanActivate()
 {
+    //  u'SalvagingTooComplexBody'}(u'Salvaging the {type} is too difficult for you to be able to do.')
+    
     if (m_salvager)
         if (m_targetSE->IsWreckSE())
             return ActiveModule::CanActivate();
