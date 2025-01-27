@@ -1323,63 +1323,46 @@ void InventoryItem::SetCustomInfo(const char *ci) {
         SaveItem();
 }
 
-void InventoryItem::SetPosition(const GPoint& pos)
-{
-    /*
-    if (m_data.position == pos)
-        return;
-    if (pos.isZero() and IsSolarSystem(m_data.locationID)) {
-        _log(DESTINY__TRACE, "II::SetPosition() - %s(%u) point is zero", m_data.name.c_str(), m_itemID);
-        EvE::traceStack();
-    } */
-
+void InventoryItem::SetPosition(const GPoint& pos) {
     m_data.position = pos;
     _log(ITEM__RELOCATE, "%s(%u) Relocating to %.2f, %.2f, %.2f.", m_data.name.c_str(), \
             m_itemID, m_data.position.x, m_data.position.y, m_data.position.z);
 }
 
-void InventoryItem::SetAttribute(uint16 attrID, float num, bool notify/*true*/)
-{
+void InventoryItem::SetAttribute(uint16 attrID, float num, bool notify/*true*/) {
     EvilNumber eNum(num);
     pAttributeMap->SetAttribute(attrID, eNum, notify);
 }
 
-void InventoryItem::SetAttribute(uint16 attrID, double num, bool notify/*true*/)
-{
+void InventoryItem::SetAttribute(uint16 attrID, double num, bool notify/*true*/) {
     EvilNumber eNum(num);
     pAttributeMap->SetAttribute(attrID, eNum, notify);
 }
 
-void InventoryItem::SetAttribute(uint16 attrID, EvilNumber num, bool notify/*true*/)
-{
+void InventoryItem::SetAttribute(uint16 attrID, EvilNumber num, bool notify/*true*/) {
     pAttributeMap->SetAttribute(attrID, num, notify);
 }
 
-void InventoryItem::SetAttribute(uint16 attrID, int num, bool notify/*true*/)
-{
+void InventoryItem::SetAttribute(uint16 attrID, int num, bool notify/*true*/) {
     EvilNumber eNum(num);
     pAttributeMap->SetAttribute(attrID, eNum, notify);
 }
 
-void InventoryItem::SetAttribute(uint16 attrID, int64 num, bool notify/*true*/)
-{
+void InventoryItem::SetAttribute(uint16 attrID, int64 num, bool notify/*true*/) {
     EvilNumber eNum(num);
     pAttributeMap->SetAttribute(attrID, eNum, notify);
 }
 
-void InventoryItem::SetAttribute(uint16 attrID, uint32 num, bool notify/*true*/)
-{
+void InventoryItem::SetAttribute(uint16 attrID, uint32 num, bool notify/*true*/) {
     EvilNumber eNum(num);
     pAttributeMap->SetAttribute(attrID, eNum, notify);
 }
 
-void InventoryItem::MultiplyAttribute(uint16 attrID, EvilNumber num, bool notify/*false*/)
-{
+void InventoryItem::MultiplyAttribute(uint16 attrID, EvilNumber num, bool notify/*false*/) {
     pAttributeMap->MultiplyAttribute(attrID, num, notify);
 }
 
-double InventoryItem::GetPackagedVolume()
-{
+double InventoryItem::GetPackagedVolume() {
     if (m_data.singleton)
         return m_type.volume();
 
@@ -1457,8 +1440,7 @@ double InventoryItem::GetPackagedVolume()
     return m_type.volume();
 }
 
-bool InventoryItem::SkillCheck(InventoryItemRef refItem)
-{
+bool InventoryItem::SkillCheck(InventoryItemRef refItem) {
     EvilNumber need = 0, has = 0;
     uint16 attr = 182, skill = 277;
     for (int8 i = 0; i < 3; ++i, ++attr, ++skill) {
@@ -1484,13 +1466,11 @@ bool InventoryItem::SkillCheck(InventoryItemRef refItem)
 }
 
 // new effects system  -allan 4Feb17
-void InventoryItem::AddModifier(fxData &data)
-{
+void InventoryItem::AddModifier(fxData &data) {
     m_modifiers.emplace(data.math, data);
 }
 
-void InventoryItem::RemoveModifier(fxData &data)
-{
+void InventoryItem::RemoveModifier(fxData &data) {
     switch (data.math) {
         case FX::Math::PreMul:         data.math = FX::Math::PreDiv;          break;
         case FX::Math::PreDiv:         data.math = FX::Math::PreMul;          break;
@@ -1505,8 +1485,7 @@ void InventoryItem::RemoveModifier(fxData &data)
     m_modifiers.emplace(data.math, data);
 }
 
-void InventoryItem::ClearModifiers()
-{
+void InventoryItem::ClearModifiers() {
     _log(EFFECTS__TRACE, "Clearing modifier map for %s", m_data.name.c_str());
     m_modifiers.clear();
 }

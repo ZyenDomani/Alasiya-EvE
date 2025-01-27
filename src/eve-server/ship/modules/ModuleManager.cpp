@@ -317,6 +317,9 @@ GenericModule* ModuleManager::GetRandModule()
         if (m_modules[flag] != nullptr)
             modVec.push_back(m_modules[flag]);
 
+    if (modVec.empty())
+        return nullptr;
+
     return modVec[MakeRandomInt(0, modVec.size())];
 }
 
@@ -763,27 +766,21 @@ void ModuleManager::DeOverload(uint32 itemID)
     pMod->DeOverload();
 }
 
-void ModuleManager::DamageModule(uint32 itemID, float amount)
-{
+void ModuleManager::DamageModule(uint32 itemID, float amount) {
     DamageModule(GetModule(itemID), amount);
 }
 
-void ModuleManager::DamageRandModule()
-{
+void ModuleManager::DamageRandModule() {
     DamageModule(GetRandModule(), 1.0f);
 }
 
-void ModuleManager::DamageRandModule(float amount)
-{
+void ModuleManager::DamageRandModule(float amount) {
     DamageModule(GetRandModule(), amount);
 }
 
-void ModuleManager::DamageModule(GenericModule* pMod, float amount)
-{
-    if (pMod == nullptr) {
-        _log(MODULE__ERROR, "MM::DamageModule() - Module not found.");
+void ModuleManager::DamageModule(GenericModule* pMod, float amount) {
+    if (pMod == nullptr)
         return;
-    }
 
     pMod->SetAttribute(AttrDamage, (pMod->GetAttribute(AttrDamage) + amount));  //verify this works as intended
     _log(MODULE__DAMAGE, "MM::DamageModule() - %s taking %.2f damage.  current damage %.2f",  \

@@ -2579,7 +2579,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                 warp.targZ = target.z;
                 warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
                 // warp timing.  see ShipSE::EncodeDestiny() for notes/updates
-                warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
+                warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
                 warp.followRange = 0;   //this isnt right
                 warp.followID = 0;  //this isnt right
             into.Append(warp);

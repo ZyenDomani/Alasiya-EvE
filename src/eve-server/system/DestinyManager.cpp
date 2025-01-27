@@ -101,7 +101,7 @@ void DestinyManager::Process() {
             m_shipHeading = moveVector;
             m_velocity = (moveVector * m_maxSpeed);
             m_position += m_velocity;
-            SetPosition(m_position);
+            mySE->SetPosition(m_position);
             return;
         } break;
         case Ball::Mode::ORBIT: {
@@ -260,7 +260,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
      *   -> may not be used after update
      *  m_stateStamp is server tic when move event began
      *   -> measured in seconds
-     *   -> data type is uint16
+     *   -> data type is int32
      *   -> set/reset in BeginMovement() for any/all speed/direction changes
      *   -> used to calculate TF
      *  m_moveTime is (exact) timestamp when move change started
@@ -295,8 +295,8 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
     }
 
     std::vector<PyTuple*> updates;
-    // send on usf change but not for orbit
-    if (!m_orbiting) {
+    // send on usf change > 0 but not for orbit
+    if (!m_orbiting or (fraction > 0.1f)) {
         CmdSetSpeedFraction du;
             du.entityID = mySE->GetID();
             du.fraction = fraction;
@@ -451,7 +451,7 @@ void DestinyManager::Stop() {
     if (m_turning)
         ClearTurn();
 
-    m_stateStamp = sEntityMgr.GetStamp();
+    m_stateStamp = (int32)sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
 
     SetSpeedFraction(0.0f);
@@ -612,7 +612,7 @@ void DestinyManager::Bounce(GVector direction, float speed)
      */
     m_ballMode = Destiny::Ball::Mode::GOTO;
     m_stop = false;
-    m_stateStamp = sEntityMgr.GetStamp();
+    m_stateStamp = (int32)sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
     m_shipAccelTime = 0.1f;
     m_userSpeedFraction = 1.0f;
@@ -644,8 +644,8 @@ void DestinyManager::MoveObject() {
         // only used by undock
         m_changeDelay = false;
         //m_moveTime = GetTimeMSeconds() - EvE::Time::Second;
-        m_stateStamp = sEntityMgr.GetStamp();
-        _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - ChangeDelay - %s(%u): stateStamp: %u", \
+        m_stateStamp = (int32)sEntityMgr.GetStamp();
+        _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - ChangeDelay - %s(%u): stateStamp: %i", \
                 mySE->GetName(), mySE->GetID(), m_stateStamp);
         return;
     }
@@ -655,8 +655,8 @@ void DestinyManager::MoveObject() {
         // reset m_moveTime to now and skip this tic
         m_moveDelay = false;
         m_moveTime = GetTimeMSeconds();
-        m_stateStamp = sEntityMgr.GetStamp();
-        _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - MoveDelay - %s(%u): stateStamp: %u", \
+        m_stateStamp = (int32)sEntityMgr.GetStamp();
+        _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - MoveDelay - %s(%u): stateStamp: %i", \
                 mySE->GetName(), mySE->GetID(), m_stateStamp);
         return;
     }
@@ -748,7 +748,7 @@ void DestinyManager::MoveObject() {
 
             m_velocity = m_shipHeading * m_maxSpeed * m_activeSpeedFraction;
             m_position += m_velocity;
-            SetPosition(m_position, true);
+            mySE->SetPosition(m_position);
             // this should never get here after warping with ap.
             // if it does, we'll have to code something to ignore it.
             Halt(true);
@@ -837,13 +837,12 @@ void DestinyManager::MoveObject() {
         }
         sLog.Cyan("DM", "state: %s", GetStateName().c_str());
     }
-
-    // will need to hack position setting after turn cause it's still wrong.
+/*
     if (sConfig.debug.PositionHack or m_posHack) {
         SetPosition(m_position, true);   // force position update to client
         m_posHack = false;
     }
-
+*/
     if (is_log_enabled(DESTINY__MOVE_DEBUG))
         _log(DESTINY__MOVE_DEBUG, "Destiny::MoveObject() - %s(%u) Pos:%.2f,%.2f,%.2f  Vel:%.3f,%.3f,%.3f  Head:%.3f,%.3f,%.3f", \
             mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_velocity.x, m_velocity.y, m_velocity.z,\
@@ -927,7 +926,7 @@ void DestinyManager::InitTurn()
     m_origHeading = m_shipHeading;
     m_origSpeedFraction = m_userSpeedFraction;
     // reset move stamps
-    m_stateStamp = sEntityMgr.GetStamp();
+    m_stateStamp = (int32)sEntityMgr.GetStamp();
 
     //  calc min speed for this turn as absolute percent of shipMaxSpeed
     m_turnMinFraction = sqrt((cos(m_radians) + 1) / 2);
@@ -1133,8 +1132,7 @@ void DestinyManager::ClearTurn() {
     m_curveStart = NULL_ORIGIN;
     m_origHeading = NULL_ORIGIN_V;
 
-    if (m_ballMode != Destiny::Ball::Mode::WARP)
-        SetPosition(m_position, true);
+    mySE->SetPosition(m_position);
 }
 
 // Follow is also used by client as AlignTo.
@@ -1211,7 +1209,7 @@ void DestinyManager::Follow() {
             m_shipHeading = m_targetHeading;
             m_velocity = m_shipHeading * m_maxSpeed;
             m_moveTime = GetTimeMSeconds();
-            m_stateStamp = sEntityMgr.GetStamp();
+            m_stateStamp = (int32)sEntityMgr.GetStamp();
             m_prevSpeedFraction = 0.0f;
             // there is no accel/decel for tractor'd items
             m_activeSpeedFraction = m_userSpeedFraction = m_timeFraction = 1;
@@ -1610,13 +1608,18 @@ void DestinyManager::InitWarp() {
         }
     }
 
-    // doublecheck ship decel speed to set proper decel distance.
+    //sLog.Warning("warptest 1", "step: %u, time: %.1f, speed: %.1f", step, decelTime, speed);
+    //decelTime = 0.0f;
     double distance(0.0f);
     while (step > 0) {
         distance += exp(decelTime++);
         --step;
     }
 
+    //sLog.Warning("warptest 2", "step: %u, time: %.1f, distance: %.1f", step, decelTime, distance);
+
+    m_targetDistance -= (decelDistance - distance);
+    //m_decelTime = decelTime;
     decelDistance = distance;
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
@@ -1624,7 +1627,7 @@ void DestinyManager::InitWarp() {
                 mySE->GetName(), mySE->GetID(), m_accelTime, cruiseTime, decelTime, warpTime, warpSpeedInMeters);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Accel distance is %lli  Cruise distance is %lli   Decel distance is %lli   Heading is %.4f,%.4f,%.4f.", \
                 mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %llu AU (%llu m).", \
+        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %lli AU (%lli m).", \
                 mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
         GPoint destination = m_position + (m_shipHeading * m_targetDistance);
         GVector diff(m_targetPoint, destination);
@@ -1656,7 +1659,7 @@ void DestinyManager::InitWarp() {
 
     // reset move times
     m_accelDistance = 0;
-    m_stateStamp = sEntityMgr.GetStamp();
+    m_stateStamp = (int32)sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
 
     WarpAccel(0);
@@ -1752,7 +1755,7 @@ void DestinyManager::WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, ui
             } break;
             case 3: {
                 _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %lli m/s.  %lli m remaining.", \
-                        mySE->GetName(), mySE->GetID(), (uint8)(sec_into_warp - m_decelTime), sec_into_warp, currentShipSpeed, m_targetDistance);
+                        mySE->GetName(), mySE->GetID(), (uint16)(sec_into_warp - m_decelTime), sec_into_warp, currentShipSpeed, m_targetDistance);
             } break;
             default: {
             _log(DESTINY__WARNING, "Destiny::WarpUpdate()  %s(%u): Called with no type.", \
@@ -1772,8 +1775,6 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
         _log(DESTINY__WARP_TRACE, "Destiny::WarpStop(): %s(%u): Ship currently at %.2f,%.2f,%.2f.", \
                 mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
     }
-
-    //SetPosition(m_position, true);
 
     // reset asf so call to SSF will set decel properly
     m_activeSpeedFraction = currentShipSpeed / m_maxSpeed;
@@ -1885,7 +1886,7 @@ void DestinyManager::BeginMovement() {
     m_stop = false;
 
     // reset move stamps
-    m_stateStamp = sEntityMgr.GetStamp();
+    m_stateStamp = (int32)sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
 
     // if ship is not moving, set usf for movement
@@ -1975,11 +1976,11 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
         du.y = m_targetHeading.y;
         du.z = m_targetHeading.z;
     PyTuple* up = du.Encode();
-    //sLog.Blue("", "refcount: before %u", up->GetRefCount());
+    sLog.Blue("", "refcount: before %u", up->GetRefCount());
     SendSingleDestinyUpdate(&up);
-    //sLog.Blue("", "refcount: after send %u", up->GetRefCount());
+    sLog.Blue("", "refcount: after send %u", up->GetRefCount());
     PyDecRef(up);
-    //sLog.Blue("", "refcount: after dec %u", up->GetRefCount());
+    sLog.Blue("", "refcount: after dec %u", up->GetRefCount());
     // TODO:  check ref counts in sent packets
     /* 22:26:23 B refcount: before 1
      * 22:26:23 B refcount: after send 2
@@ -2897,7 +2898,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
 
     m_stop = false;
     m_ballMode = Destiny::Ball::Mode::MISSILE;
-    m_stateStamp = sEntityMgr.GetStamp();
+    m_stateStamp = (int32)sEntityMgr.GetStamp();
 
     SystemEntity* pTarget = pMissile->GetTargetSE();
     m_targetPoint = std::move(GPoint(pTarget->GetPosition()));
@@ -2941,7 +2942,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)
     m_decel = false;
     m_tractored = true;
     //m_moveTime = GetTimeMSeconds();
-    m_stateStamp = sEntityMgr.GetStamp();
+    m_stateStamp = (int32)sEntityMgr.GetStamp();
 
     m_targetPoint = std::move(GPoint(pShipSE->GetPosition()));
     GVector moveVector(m_position, m_targetPoint);

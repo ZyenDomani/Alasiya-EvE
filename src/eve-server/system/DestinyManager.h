@@ -114,7 +114,7 @@ public:
     double GetMaxVelocity()                             { return m_maxShipSpeed; }
     // is this right??
     float GetFollowDistance()                           { return (float)m_targetDistance; }
-    uint32 GetStateStamp()                              { return m_stateStamp; }
+    int32 GetStateStamp()                               { return m_stateStamp; }
     GVector GetHeading()                                { return m_shipHeading; }
     float GetAccelTime()                                { return m_shipMaxAccelTime; }
     uint8 GetAlignTime()                                { return m_alignTime; } // this is only used by my GetShipVars command
@@ -250,7 +250,7 @@ protected:
     bool m_tractorPause;
 
     int8 m_orbiting;                    // 0=no orbit, >0=in orbit, 1=at distance, 2=too close , 3=too far, 4=way too close, 5=way too far
-    uint32 m_stateStamp;                //statestamp of when current state began, in seconds
+    int32 m_stateStamp;                 //statestamp of when current state began, in seconds
     //Destiny::Ball::stateStamp m_stateStamp; //state and count of current state since beginning, in seconds
     //Destiny::Ball::timeStamp m_timeStamp; //mode and timestamp of when current mode began
 
@@ -342,7 +342,7 @@ private:
     class WarpState {
     public:
         WarpState(
-            uint32 start_time_,
+            int32 start_time_,
             int64 total_distance_,
             int64 warp_speed_,
             int64 accel_dist_,
@@ -365,7 +365,7 @@ private:
         cruise(cruise_),
         decel(decel_)
         {}
-        uint32 start_time;          //from sEntityMgr::GetStamp()
+        int32 start_time;          //from sEntityMgr::GetStamp()
         int64  total_distance;      //in m
         int64 warpSpeed;           //in m/s
         int64 accelDist;           //in m
