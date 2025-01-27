@@ -274,6 +274,7 @@ expeditions.  not sure how to do this one.
 dungeonExplorationMgr::GetMyEscalatingPathDetails()
 
 many unimplemented salvage error msgs noted in prospector.h
+  - current code is working POC and not many checks made at this time
 
 OSE::Killed() unfinished.  (structures, empty ships  - need those systems finished first)
 
@@ -284,12 +285,6 @@ look over CallDispatcher to see if we can improve/update anything   -started.
 is DataClasses.h used?  will it be?
   - its refd in pos code, but not used yet
 
-
-when mining, create and add ore to ship hold throw item warnings....do we really need them?
-i know what it's doing, cause i did it like that on purpose, but then hits the check and throws warn
-20:36:49 [ItemWarning] II::Move()::Remove() - 5 is invalid location.
-20:36:49 [ItemWarning] II::Move()::Add() - 10 is invalid location.
-need to find a better way to verify locations enum (locTemp, locJunkyard, et Al.)
 
 
 *******************************************************
@@ -336,7 +331,7 @@ Py* objects that have long int as key need 'delete' called on key when destroyed
     - review valgrind logs to verify Decode() isnt leaking (multiple "new" w/o delete, but could be delete elsewhere)
 
 
- review all classes to add rule of 5 or =delete as required
+review all classes to add rule of 5 or =delete as required
     - PyRep Classes - add move semantics - done but still testing  so far no hits on move or copy assign
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?
