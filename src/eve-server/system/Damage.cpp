@@ -521,9 +521,9 @@ void ShipSE::Killed(Damage &damage) {
                 d = 0;
                 x = cur.second->quantity();
                 s = (cur.second->isSingleton() ? 1 : 0);
-                
+
                 blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() ;
-                                                
+
                 // all contained items have 50% chance of drop, except rigs, which do not survive
                 // todo:  add damage to item, if applicable, from ship explosion
                 //cur.second->SetAttribute(AttrDamage, 5);
@@ -633,5 +633,7 @@ void ShipSE::Killed(Damage &damage) {
             wreckItemRef->Delete();
             return;
         }
+        
+        wreckItemRef->SaveItem();
     }
 }
