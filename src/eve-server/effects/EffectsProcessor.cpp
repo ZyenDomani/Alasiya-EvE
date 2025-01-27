@@ -267,6 +267,18 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 }
                 _log(EFFECTS__UNDEFINED, "FxProc::ParseExpression() - %s", ret.str().c_str());
             }
+            /*
+             * 17:17:05 [Bound] DogmaIMBound::Activate()
+             * 17:17:05 [TargetInfo] Adding Hulk:Modulated Strip Miner II to Scordite's activeModule list.
+             * 17:17:05 [FxUndefined] FxProc::ParseExpression() - Operand id:J key:VERIFYTARGETGROUP - should be added as VerifyTargetGroup()
+             * 17:17:05 [FxUndefined] FxProc::ParseExpression() - Operand id:H key:TOOLTARGETSKILLS - should be added as CheckToolTargetSkills
+             * 17:17:07 [Bound] DogmaIMBound::Activate()
+             * 17:17:07 [TargetInfo] Adding Hulk:Modulated Strip Miner II to Scordite's activeModule list.
+             * 17:17:07 [FxUndefined] FxProc::ParseExpression() - Operand id:J key:VERIFYTARGETGROUP - should be added as VerifyTargetGroup()
+             * 17:17:07 [FxUndefined] FxProc::ParseExpression() - Operand id:H key:TOOLTARGETSKILLS - should be added as CheckToolTargetSkills
+             *
+             * 17:24:21 [FxUndefined] FxProc::ParseExpression() - Operand id:E key:SURVEYSCAN - should be added as SurveyScan()
+             */
         } break;
     }
 
