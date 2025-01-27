@@ -203,16 +203,18 @@
  ((itemID >= minCharacter) && (itemID <= maxCharacter))
 
 #define IsValidLocationID(itemID) \
-  ((IsSolarSystemID(itemID)) \
+((itemID == 5) \
+  or (itemID == 10) \
+  or (IsSolarSystemID(itemID)) \
   or (IsRegionID(itemID)) \
   or (IsStationID(itemID)) \
   or (IsPlayerItem(itemID)) \
   or (IsCharacterID(itemID)))
 
 #define IsValidOwner(itemID) \
-((itemID == 1) || ((itemID >= minNPCCorporation) && (itemID <= maxNPCCorporation)) \
-|| ((itemID >= minPCCorporation) && (itemID < minAlliance)) \
-|| ((itemID >= minCharacter) && (itemID <= maxCharacter)))
+((itemID == 1) or ((itemID >= minNPCCorporation) and (itemID <= maxNPCCorporation)) \
+or ((itemID >= minPCCorporation) and (itemID < minAlliance)) \
+or ((itemID >= minCharacter) and (itemID <= maxCharacter)))
 
 #define IsCharacterLocation(itemID) \
  (itemID >= minValidCharLocation)
