@@ -296,7 +296,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
 
     std::vector<PyTuple*> updates;
     // send on usf change > 0 but not for orbit
-    if (!m_orbiting or (fraction > 0.1f)) {
+    if (!m_orbiting and (fraction > 0.1f)) {
         CmdSetSpeedFraction du;
             du.entityID = mySE->GetID();
             du.fraction = fraction;
@@ -445,6 +445,7 @@ void DestinyManager::Stop() {
     m_autoPilot = false;
     m_prevSpeed = 0.0f;
     m_prevSpeedFraction = 0.0f;
+    //m_userSpeedFraction = 0.0f;
 
     if (m_orbiting)
         ClearOrbit();
@@ -461,7 +462,9 @@ void DestinyManager::Stop() {
 
     SafeDelete(m_warpState);
 
-    if (m_ballMode != Destiny::Ball::Mode::STOP) {
+    if (m_ballMode == Destiny::Ball::Mode::WARP) {
+        m_ballMode = Destiny::Ball::Mode::STOP;
+    } else if (m_ballMode != Destiny::Ball::Mode::STOP) {
         m_ballMode = Destiny::Ball::Mode::STOP;
         CmdStop du;
             du.entityID = mySE->GetID();
@@ -827,7 +830,7 @@ void DestinyManager::MoveObject() {
         mySE->SetPosition(m_position);
     }
 
-    if (is_log_enabled(DESTINY__MOVE_TRACE)) {
+    if (0 and is_log_enabled(DESTINY__MOVE_TRACE)) {
         if (m_prevSpeedFraction) {
             _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.3f m/s (tf:%.4f asf:%.4f ps:%.2f psf:%.4f).", \
                 mySE->GetName(), mySE->GetID(), move.c_str(), speed, m_timeFraction, m_activeSpeedFraction, m_prevSpeed, m_prevSpeedFraction);
@@ -1568,7 +1571,7 @@ void DestinyManager::InitWarp() {
      */
 
     //  150km - 15s, 1mkm - 23s, 1au - 29s base + ship's wsm
-    float decelTime(1.0f), cruiseTime(0.0f);
+    float decelTime(0.0f), cruiseTime(0.0f);
     int64 accelDistance(0), decelDistance(0), cruiseDistance(0);
     int64 warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
     // set times and distances based on target distance
@@ -1629,10 +1632,6 @@ void DestinyManager::InitWarp() {
                 mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %lli AU (%lli m).", \
                 mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
-        GPoint destination = m_position + (m_shipHeading * m_targetDistance);
-        GVector diff(m_targetPoint, destination);
-        _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): calculated exit is %.2f,%.2f,%.2f and delta is %.4f.", \
-            mySE->GetName(), mySE->GetID(), destination.x, destination.y, destination.z, diff.length());
     }
 
     uint16 intAccel = m_accelTime;
@@ -1661,6 +1660,8 @@ void DestinyManager::InitWarp() {
     m_accelDistance = 0;
     m_stateStamp = (int32)sEntityMgr.GetStamp();
     m_moveTime = GetTimeMSeconds();
+    m_prevSpeedFraction = m_activeSpeedFraction;
+    m_activeSpeedFraction = 1.0f;
 
     WarpAccel(0);
 }
@@ -1776,7 +1777,7 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
                 mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
     }
 
-    // reset asf so call to SSF will set decel properly
+    // reset asf so call to Stop() will set decel properly
     m_activeSpeedFraction = currentShipSpeed / m_maxSpeed;
 
     m_targetPoint += (m_velocity * m_agility);
