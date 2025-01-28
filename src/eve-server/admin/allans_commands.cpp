@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include "eve-server.h"
+#include "../../eve-common/EVEVersion.h"
 
 #include "PyBoundObject.h"
 #include "Client.h"
@@ -1228,6 +1229,29 @@ PyResult Command_distance(Client* pClient, CommandDB* db, PyServiceMgr* services
     uint32 distance = pClient->GetShipSE()->GetPosition().distance(pSE->GetPosition());
 
     pClient->SendInfoModalMsg("Distance between you and %s is %um", pSE->GetName(), distance);
+    return nullptr;
+}
+
+PyResult Command_version(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+
+    std::ostringstream str;
+    str << "Current Code versions:<br><br>";
+    str << "NPC_AI_Version: %0.2f<br>";
+    str << "Drone_AI_Version: %0.2f<br>";
+    str << "Sentry_AI_Version: %0.2f<br>";
+    str << "POS_AI_Version: %0.2f<br>";
+    str << "Civilian_AI_Version: %0.2f<br>";
+    str << "Scan_Version: %0.2f<br>";
+    str << "Mission_Version: %0.2f<br>";
+
+    int size = 32;  // header
+    size += 445;    // text
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), NPC_AI_Version, Drone_AI_Version, Sentry_AI_Version, \
+            POS_AI_Version, Civilian_AI_Version, Scan_Version, Mission_Version);
+    
+    pClient->SendInfoModalMsg(reply);
     return nullptr;
 }
 

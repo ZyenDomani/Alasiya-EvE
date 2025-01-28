@@ -70,3 +70,7 @@
           " - removes all ship position tracking cans in current system.")
  COMMAND( distance, Acct::Role::PLAYER,
           " - returns actual distance between centers of your ship and active target.")
+ COMMAND( version, Acct::Role::PLAYER,
+          " - returns current versions of All AIs, Mission code, and Scan System.")
+
+ 

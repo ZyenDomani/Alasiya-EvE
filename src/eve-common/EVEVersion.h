@@ -42,7 +42,7 @@ static const int32 EVEBirthday = 170472;
 //static std::string GIT_SHORT_HASH = std::string(GIT_COMMIT_HASH).erase(7, std::string::npos);
 //static std::string REVISION_STRING = std::string("0.72.75-") + std::string(GIT_BRANCH) + std::string("-") + GIT_SHORT_HASH;
 
-static const char* const EVEMU_REVISION = "0.72.89";
+static const char* const EVEMU_REVISION = "0.72.91";
 static const char* const EVEMU_BUILD_DATE = __DATE__;
 
 /*  Allan's Static Definitions */
@@ -50,7 +50,7 @@ static const char* const EVEMU_BUILD_DATE = __DATE__;
 //static const char* const EVEMU_BUILD_DATE = "24 March 2023";
 /* match versions here with stated files for full support */
 static const float Config_Version = 10.9f; /* eve-server.xml and EveServerConfig.cpp */
-static const float Log_Version = 10.9f;    /* logtypes.h and log.ini */
+static const float Log_Version = 11.1f;    /* logtypes.h and log.ini */
 /* AI versions for shitz-n-giggles */
 static const float Joe_Version = 0.15f;   /* MarketBot.xml and MarketBotConf.cpp */
 /* these  dont have separate config files ...yet */

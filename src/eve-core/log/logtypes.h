@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 10.9
+ Log Version: 11.1
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -114,6 +114,7 @@ LOG_TYPE( BOOKMARK, RSP_DUMP, DISABLED, "BM RspDump" )
 LOG_CATEGORY( BUBBLE )
 LOG_TYPE( BUBBLE, ERROR,   ENABLED, "BubbleError" )
 LOG_TYPE( BUBBLE, WARNING, DISABLED, "BubbleWarning" )
+LOG_TYPE( BUBBLE, MESSAGE, DISABLED, "BubbleMsg" )
 LOG_TYPE( BUBBLE, DEBUG, DISABLED, "BubbleDebug" )
 LOG_TYPE( BUBBLE, TRACE, DISABLED, "BubbleTrace" )
 LOG_TYPE( BUBBLE, INFO, DISABLED, "BubbleInfo" )
