@@ -119,7 +119,7 @@ PyDict* SystemEntity::MakeSlimItem() {
     return slim;
 }
 
-void SystemEntity::EncodeDestiny( Buffer& into )
+void SystemEntity::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
 
@@ -294,7 +294,7 @@ PyDict* StaticSystemEntity::MakeSlimItem() {
     return slim;
 }
 
-void StaticSystemEntity::EncodeDestiny( Buffer& into ) {
+void StaticSystemEntity::EncodeDestiny(Buffer& into) {
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
@@ -463,7 +463,7 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
     return slim;
 }
 
-void ItemSystemEntity::EncodeDestiny( Buffer& into )
+void ItemSystemEntity::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -510,7 +510,7 @@ FieldSE::FieldSE(const FieldSE* oth)
     /** @todo  this is incomplete */
 }
 
-void FieldSE::EncodeDestiny( Buffer& into )
+void FieldSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -578,7 +578,7 @@ ObjectSystemEntity::~ObjectSystemEntity()
     SafeDelete(m_targMgr);
 }
 
-void ObjectSystemEntity::EncodeDestiny( Buffer& into )
+void ObjectSystemEntity::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -714,7 +714,7 @@ PyDict *DynamicSystemEntity::MakeSlimItem() {
     return (slim);
 }
 
-void DynamicSystemEntity::EncodeDestiny( Buffer& into )
+void DynamicSystemEntity::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();

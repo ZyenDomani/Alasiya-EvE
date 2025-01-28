@@ -83,7 +83,7 @@ void Sentry::TargetedAdd(SystemEntity *who) {
     m_AI->Targeted(who);
 }
 
-void Sentry::EncodeDestiny( Buffer& into )
+void Sentry::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
 

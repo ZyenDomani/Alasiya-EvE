@@ -267,7 +267,7 @@ PyDict* DroneSE::MakeSlimItem() {
     return slim;
 }
 
-void DroneSE::EncodeDestiny( Buffer& into )
+void DroneSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
 

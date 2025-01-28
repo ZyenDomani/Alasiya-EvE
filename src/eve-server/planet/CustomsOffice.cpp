@@ -352,7 +352,7 @@ void CustomsSE::PullAnchor()
     m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
 }
 
-void CustomsSE::EncodeDestiny( Buffer& into )
+void CustomsSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
     //const uint16 miniballsCount = GetMiniBalls();

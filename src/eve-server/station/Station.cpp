@@ -308,7 +308,7 @@ StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManag
     station->SetAttribute(AttrVolume,             station->type().volume(), false);
 }
 
-void StationSE::EncodeDestiny( Buffer& into )
+void StationSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
 

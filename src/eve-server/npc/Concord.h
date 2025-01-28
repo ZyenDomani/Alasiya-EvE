@@ -44,7 +44,7 @@ public:
     void Orbit(SystemEntity* who);
 
     void Process();
-    void EncodeDestiny( Buffer& into ) const;
+    void EncodeDestiny(Buffer& into) const;
 
     bool ApplyDamage(Damage& d);
     void MakeDamageState(DoDestinyDamageState& into) const;

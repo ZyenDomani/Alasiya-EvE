@@ -342,7 +342,7 @@ public:
     virtual bool                IsStaticEntity()        { return true; }
 
     /* SystemEntity interface */
-    virtual void                EncodeDestiny( Buffer& into );
+    virtual void                EncodeDestiny(Buffer& into);
     virtual PyDict*             MakeSlimItem();
 
     /* virtual functions to be overridden in derived classes */
@@ -472,7 +472,7 @@ public:
     virtual bool                IsInanimateSE()         { return true; }
 
     /* SystemEntity interface */
-    virtual void                EncodeDestiny( Buffer& into );
+    virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
 
     virtual PyDict*             MakeSlimItem();
@@ -507,7 +507,7 @@ public:
     virtual bool                IsFieldSE()             { return true; }
 
     /* SystemEntity interface */
-    virtual void                EncodeDestiny( Buffer& into );
+    virtual void                EncodeDestiny(Buffer& into);
 
     virtual PyDict*             MakeSlimItem();
 };
@@ -542,7 +542,7 @@ public:
 
     /* SystemEntity interface */
     virtual void                UpdateDamage();
-    virtual void                EncodeDestiny( Buffer& into );
+    virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
 
     virtual PyDict*             MakeSlimItem();
@@ -615,7 +615,7 @@ public:
 
     /* SystemEntity interface */
     virtual void                UpdateDamage();
-    virtual void                EncodeDestiny( Buffer& into );
+    virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
 
     virtual PyDict*             MakeSlimItem();

@@ -164,7 +164,7 @@ void Missile::Process() {
         sProfiler.AddTime(Profile::missile, GetTimeUSeconds() - profileStartTime);
 }
 
-void Missile::EncodeDestiny( Buffer& into )
+void Missile::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();

@@ -307,7 +307,7 @@ void ContainerSE::AnchorContainer()
     m_contRef->SetAnchor(true);
 }
 
-void ContainerSE::EncodeDestiny( Buffer& into )
+void ContainerSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -327,16 +327,16 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
-        data.inertia = 1;
-        data.maxSpeed = 1;
         data.velX = 0;
         data.velY = 0;
         data.velZ = 0;
+        data.inertia = 1.0f;
+        data.maxSpeed = 1.0f;
         data.speedfraction = 1;
     into.Append( data );
     TROLL_Struct troll;
         troll.formationID = 0xFF;
-        troll.effectStamp = sEntityMgr.GetStamp();
+        troll.effectStamp = 0; //sEntityMgr.GetStamp();  // this isnt right
     into.Append( troll );
 
     _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
@@ -550,7 +550,7 @@ void WreckSE::Abandon()
     m_abandoned = true;
 }
 
-void WreckSE::EncodeDestiny( Buffer& into )
+void WreckSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -570,16 +570,16 @@ void WreckSE::EncodeDestiny( Buffer& into )
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
-        data.inertia = 1;
-        data.maxSpeed = 1;
         data.velX = 0;
         data.velY = 0;
         data.velZ = 0;
+        data.inertia = 1.0f;
+        data.maxSpeed = 1.0f;
         data.speedfraction = 1;
     into.Append( data );
     TROLL_Struct troll;
         troll.formationID = 0xFF;
-        troll.effectStamp = sEntityMgr.GetStamp();
+        troll.effectStamp = 0; //sEntityMgr.GetStamp();  // this isnt right
     into.Append( troll );
     _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }

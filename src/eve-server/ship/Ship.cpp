@@ -2553,14 +2553,14 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         } else {
             head.flags = Ball::Flag::IsFree;
         }
-    into.Append( head);
+    into.Append(head);
     MassSector mass = MassSector();
         mass.mass = m_self->GetAttribute(AttrMass).get_double();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append( mass);
+    into.Append(mass);
     DataSector data = DataSector();
         data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
         data.maxSpeed = m_destiny->GetMaxVelocity();
@@ -2568,7 +2568,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         data.velY = m_destiny->GetVelocity().y;
         data.velZ = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append( data);
+    into.Append(data);
     switch (mode) {
         case Ball::Mode::WARP: {
             GPoint target = m_destiny->GetTargetPoint();
@@ -2579,7 +2579,11 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                 warp.targZ = target.z;
                 warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
                 // warp timing.  see ShipSE::EncodeDestiny() for notes/updates
-                warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
+                if (m_destiny->IsWarping()) {
+                    warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
+                } else {
+                    warp.effectStamp = -1;
+                }
                 warp.followRange = 0;   //this isnt right
                 warp.followID = 0;  //this isnt right
             into.Append(warp);
@@ -2599,7 +2603,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
             into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
-            GPoint target = m_destiny->GetTargetPoint();
+            GVector target = m_destiny->GetHeading();
             GOTO_Struct go;
                 go.formationID = 0xFF;
                 go.x = target.x;

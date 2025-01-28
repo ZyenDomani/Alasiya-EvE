@@ -145,7 +145,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 void SystemBubble::Add(SystemEntity* pSE) {
     //if they are already in this bubble, do not continue.
     if (m_entities.find(pSE->GetID()) != m_entities.end()) {
-        _log(BUBBLE__TRACE, "SysBubble::Add() - Tried to add Static Entity %u to bubble %u, but it is already in here.",\
+        _log(BUBBLE__MESSAGE, "SysBubble::Add() - Tried to add Static Entity %u to bubble %u, but it is already in here.",\
              pSE->GetID(), m_bubbleID);
         return;
     }
@@ -161,7 +161,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
 
     //if they are already in this bubble, do not continue.
     if (m_dynamicEntities.find(pSE->GetID()) != m_dynamicEntities.end()) {
-        _log(BUBBLE__TRACE, "SysBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
+        _log(BUBBLE__MESSAGE, "SysBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
                 pSE->GetID(), m_bubbleID);
         return;
     }
@@ -180,7 +180,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
                 SetSpawnTimer(false);
 
         Client* pClient(pSE->GetPilot());
-        SendAddBalls( pSE );
+        SendAddBalls2(pSE);
         if (!m_players.empty())
             AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
 
@@ -464,7 +464,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     Client* pClient = to_who->GetPilot();
     if (pClient == nullptr)
         return;
-    if (is_log_enabled(BUBBLE__DEBUG))
+    if (is_log_enabled(BUBBLE__TRACE))
         PrintEntityList();
 
     Buffer* destinyBuffer = new Buffer();
@@ -484,7 +484,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
         if (!cur.second->IsMissileSE() or !cur.second->IsFieldSE())
             addballs.damageDict[cur.first] = cur.second->MakeDamageState();
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur.second->MakeSlimItem() ) );
-        cur.second->EncodeDestiny( *destinyBuffer );
+        cur.second->EncodeDestiny(*destinyBuffer);
     }
 
     if (addballs.slims->empty()) {
@@ -504,7 +504,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     pClient->QueueDestinyUpdate( &t );    //consumed
 }
 
-void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
+void SystemBubble::SendAddBalls2(SystemEntity* to_who) {
     if (!m_system->IsLoaded())
         return;
     if (m_dynamicEntities.empty())
@@ -581,8 +581,8 @@ void SystemBubble::AddBallExclusive( SystemEntity* pSE ) {
 
     AddBalls addballs;
     //encode destiny binary
-    pSE->EncodeDestiny( *destinyBuffer );
-    addballs.state = new PyBuffer( &destinyBuffer );
+    pSE->EncodeDestiny(*destinyBuffer);
+    addballs.state = new PyBuffer(&destinyBuffer);
 	//encode damage state
     addballs.damageDict[ pSE->GetID() ] = pSE->MakeDamageState();
 	//encode SlimItem
@@ -756,7 +756,7 @@ void SystemBubble::MarkCenter()
     if (m_hasMarkers)
         return;
     // create jetcan to mark bubble center
-    std::string str = "Center Marker for Bubble #", desc = "Bubble Center"; //std::to_string(m_bubbleID);
+    std::string str = "Center Marker for Bubble #", desc = "Bubble Center";
     str += std::to_string(m_bubbleID);
     MarkBubble(m_center, str, desc, true);
 
@@ -835,7 +835,7 @@ void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::st
 
     // create SE for item
     FactionData jetcanData = FactionData();
-    ContainerSE* cSE = new ContainerSE( cRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
+    ContainerSE* cSE = new ContainerSE(cRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
     if (cSE == nullptr) {
         _log(DESTINY__WARNING, "MarkBubble() could not create SE for %s (%s)", name.c_str(), desc.c_str());
         return;
@@ -847,7 +847,7 @@ void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::st
         cSE->SetGlobal(true);
         m_centerSE = cSE;
     }
-    m_markers.emplace( cRef->itemID(), cSE);
+    m_markers.emplace(cRef->itemID(), cSE);
     m_system->AddEntity(cSE, center);
 }
 

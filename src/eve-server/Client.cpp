@@ -111,7 +111,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_canThrow = false;
     m_packaged = false;
     m_portrait = false;
-    m_bubbleWait = false;     // allow client processing of subsquent destiny msgs
+    m_bubbleWait = false;     // allow client processing of subsequent destiny msgs
     m_charCreation = false;
     m_setStateSent = false;
     m_validSession = false;
@@ -693,7 +693,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             sRef->LoadStationOffice(GetCorporationID());
             sRef->AddGuest(this);
         }
-        m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
+        m_bubbleWait = true;     // deny client processing of subsequent destiny msgs
     } else {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u. (setState %s, beyonce %s)", \
                 m_char->name(), m_char->itemID(), m_locationID, m_setStateSent ? "true" : "false", \
@@ -1141,7 +1141,7 @@ void Client::Eject()
 
 void Client::ResetAfterPopped(GPoint& position)
 {
-    m_bubbleWait = false;    // allow client processing of subsquent destiny msgs
+    m_bubbleWait = false;    // allow client processing of subsequent destiny msgs
 
     if (m_pod.get() == nullptr)
         CreateNewPod();
@@ -2128,9 +2128,8 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         m_packaged = true;
         m_destinyUpdateQueue->AddItem(act.Encode());
     }
-    // do i need to clean up *update here?
+
     PySafeDecRef(*update);
-    //SafeDelete(update);
 }
 
 void Client::_SendQueuedUpdates() {

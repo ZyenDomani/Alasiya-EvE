@@ -91,7 +91,7 @@ void AsteroidSE::Process() {
             Grow();
 }
 
-void AsteroidSE::EncodeDestiny( Buffer& into )
+void AsteroidSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
 

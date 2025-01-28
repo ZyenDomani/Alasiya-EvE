@@ -125,7 +125,7 @@ void NPC::TargetedAdd(SystemEntity *who) {
     m_AI->Targeted(who);
 }
 
-void NPC::EncodeDestiny( Buffer& into )
+void NPC::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
 

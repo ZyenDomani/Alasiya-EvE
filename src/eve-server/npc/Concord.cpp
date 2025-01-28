@@ -117,8 +117,7 @@ void Concord::TargetedAdd(SystemEntity *who) {
     m_AI->Targeted(who);
 }
 
-void Concord::EncodeDestiny( Buffer& into ) const
-{
+void Concord::EncodeDestiny(Buffer& into) {
     using namespace Destiny;
 
     uint8 mode = m_destiny->GetState(); //Ball::Mode::STOP;

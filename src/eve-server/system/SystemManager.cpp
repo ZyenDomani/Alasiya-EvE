@@ -1116,7 +1116,7 @@ void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/, bool ad
 void SystemManager::AddBounty(uint32 charID, BountyData& data)
 {
     /*
-struct BountyData {     // this is comming from rat killed.
+struct BountyData {     // this is coming from rat killed.
     uint32 fromID;
     uint32 toID;
     double amount;
@@ -1157,7 +1157,7 @@ void SystemManager::PayBounties()
     _log(CLIENT__TEXT, "PayBounties called for system %s(%u).", m_data.name.c_str(), m_data.systemID);
     int8 count = 0;
         /* recDescNpcBountyList = 'NBL'                <-- descrives a full list of [typeID: qty]
-         * recDescNpcBountyListTruncated = 'NBLT'      <-- describes a trunicated list
+         * recDescNpcBountyListTruncated = 'NBLT'      <-- describes a truncated list
 recDescription = 'DESC'
 recDescNpcBountyList = 'NBL'
 recDescNpcBountyListTruncated = 'NBLT'
@@ -1282,11 +1282,11 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     pBubble->GetEntities(visibleEntities);
 
     into.slims = new PyList();
-    into.slims->clear();
+    //into.slims->clear();
     into.effectStates = new PyList();
-    into.effectStates->clear();
+    //into.effectStates->clear();
     into.allianceBridges = new PyList();
-    into.allianceBridges->clear();  //activeBeacon and activeBridge data found in fleetSvc.py
+    //into.allianceBridges->clear();  //activeBeacon and activeBridge data found in fleetSvc.py
 
     //go through all visible entities and gather the info we need...
     for (auto &cur : visibleEntities) {
@@ -1296,7 +1296,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         into.slims->AddItem( new PyObject( "foo.SlimItem", cur.second->MakeSlimItem()));
 
         //append the destiny binary data...
-        cur.second->EncodeDestiny( *stateBuffer );
+        cur.second->EncodeDestiny(*stateBuffer);
 
         // get tower effect state (if applicable)
         if (cur.second->IsTowerSE())
