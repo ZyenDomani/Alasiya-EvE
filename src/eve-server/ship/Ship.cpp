@@ -2603,7 +2603,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
             into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
-            GVector target = m_destiny->GetHeading();
+            GPoint target = m_destiny->GetTargetPoint();
             GOTO_Struct go;
                 go.formationID = 0xFF;
                 go.x = target.x;
@@ -2611,11 +2611,13 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                 go.z = target.z;
             into.Append(go);
         }  break;
+        /*
         default: {
             STOP_Struct main;
                 main.formationID = 0xFF;
-            into.Append(main);
+            into.Append( main );
         } break;
+        */
     }
 
     std::string modeStr = "Goto";
