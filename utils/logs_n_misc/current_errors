@@ -347,3 +347,19 @@ AttributeError: 'NoneType' object has no attribute 'width'
 Thread Locals:  session was <Session: (sid:2213706356087451940, clientID:0, mutating:0, locationid:60014137, corprole:0xffffe07ffffff81L, userid:1, languageID:EN, role:0x62f8000280c41000L, charid:90000000, address:192.168.1.11:10241, userType:30, sessionType:5, regionid:10000001, constellationid:20000008, corpid:98000001, stationid:60014137, stationid2:60014137, worldspaceid:60014137, solarsystemid2:30000053, hqID:60014137, baseID:60014137, rolesAtAll:0xffffe07ffffff81L, rolesAtHQ:0xffffe07ffffff81L, rolesAtBase:0xffffe07ffffff81L, rolesAtOther:0xffffe07ffffff81L, genderID:1, bloodlineID:3, raceID:2, corpAccountKey:1000)>
 
 EXCEPTION END
+
+23:33:02 [Bound] SkillMgrBound::GetEndOfTraining()
+23:33:02 [Service] alert::BeanCount()
+23:33:02 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #9 logged at  01/27/2025 23:33:01 Unhandled exception in <TaskletExt object at 3a535818, abps=1001, ctxt='<NO CONTEXT>^<bound method Neocom._UpdateSkillInfo of neocom.Neocom object at (snip)d737d30, name=Neocom, destroyed=False>>'>
+Caught at:
+/common/lib/bluepy.py(98) CallWrapper
+Thrown at:
+/common/lib/bluepy.py(86) CallWrapper
+/client/script/ui/shared/neocom/neocom/neocom.py(273) _UpdateSkillInfo
+/client/script/ui/shared/neocom/neocom/neocom.py(286) _UpdateSkillBar
+        self = neocom.Neocom object at 0x3d737d30, name=Neocom, destroyed=False>
+        skill = <DBRow object [140000017L, 3416, 90000000, 90000000, 61, -1, 271, 16, '', 1, 1]>
+        currSkillPoints = 256000
+        skillPointsAtStartOfLevel = 256000
+TypeError: float() argument must be a string or a number

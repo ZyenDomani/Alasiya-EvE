@@ -23,6 +23,7 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 *******************************************************
 **********  errors and other found shit...high priority
 
+same acct can be logged in multiple times
 
 !! destiny (all space movement)
 
@@ -108,6 +109,12 @@ add agent portraits to server and update 'backupurl' in server code
 *******************************************************
 **********  coding errors/corrections/improvements ... med priority
 
+implement TerminalExplosion.  to be sent after RemoveBalls
+  see notes in SystemBubble::RemoveBall()
+
+after using "Loot All" on yellow wreck, items dont show up in cargo.  (diff ownerID)
+  inv::load should use locationID (and does) but not sure about ownerID bit...review
+  
 character remap needs a bit more work.  attributes and bonuses save/load correctly.  client code needs update
 
 remove GPoint/GVector code and just write my own.
