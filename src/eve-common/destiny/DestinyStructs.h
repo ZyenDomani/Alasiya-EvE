@@ -188,7 +188,7 @@ struct MUSHROOM_Struct {
 
 struct TROLL_Struct {
     uint8  formationID;
-    uint32 effectStamp;   //statestamp of when effect started
+    int32 effectStamp;   //statestamp of when effect started
 };
 
 struct FIELD_Struct {
@@ -197,8 +197,7 @@ struct FIELD_Struct {
 
 struct RIGID_Struct {
     uint8  formationID;
-/* there is an optional 2 byte thing here, if it is non-zero. not sure what it
-   is yet. */
+/* there is an optional 2 byte thing here, if it is non-zero. not sure what it is yet. */
 };
 
 struct FORMATION_Struct {

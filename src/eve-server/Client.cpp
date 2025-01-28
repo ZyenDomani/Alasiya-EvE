@@ -2063,8 +2063,7 @@ void Client::SendSessionChange()
     packet->userid = GetUserID();
 
     packet->payload = scn.Encode();
-    // should anything go here?
-    packet->named_payload = nullptr;
+    packet->named_payload = PyStatic.NewNone();
 
     if (is_log_enabled(CLIENT__SESSION_DUMP)) {
         _log(CLIENT__SESSION_DUMP, "Sending Session packet:");
@@ -2121,7 +2120,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             dum.updates->AddItem(act.Encode());
             dum.waitForBubble = m_bubbleWait;
         PyTuple* t = dum.Encode();
-        SendNotification("DoDestinyUpdate", "clientID", &t, false);
+        SendNotification("DoDestinyUpdate", "clientID", &t);
         PyDecRef(t);
     } else {
         act.update = *update;
@@ -2221,13 +2220,17 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
 
     packet->payload = noti.Encode();
 
+    //TODO: check for and implement OID+ here.  sn & OID mutually exclusive
     if (seq) {
-        packet->named_payload = new PyDict();
-        packet->named_payload->SetItemString("sn", new PyInt(++m_nextNotifySequence));
+        PyDict* dict = new PyDict();
+        dict->SetItemString("sn", new PyInt(++m_nextNotifySequence));
+        packet->named_payload = std::move(dict);
     }
 
     if (is_log_enabled(CLIENT__NOTIFY_DUMP)) {
-        _log(CLIENT__NOTIFY_REP, "Sending notify of type %s with ID type %s to %s", dest.service.c_str(), dest.bcast_idtype.c_str(), GetName());
+        _log(CLIENT__NOTIFY_REP, "Sending notify of type %s with ID type %s to %s.  Sn:%s",  \
+                dest.service.c_str(), dest.bcast_idtype.c_str(), GetName(), \
+                seq?std::to_string(m_nextNotifySequence - 1).c_str():"None");
         PyLogDumpVisitor dumper(CLIENT__NOTIFY_DUMP, CLIENT__NOTIFY_REP, "", true, true);
         packet->Dump(CLIENT__NOTIFY_DUMP, dumper);
     }
@@ -2689,7 +2692,7 @@ void Client::SendErrorMsg(const char* fmt, ...)
     PyTuple* tmp(n.Encode());
 
     // NOTE: 'OnRemoteMessage' can be disabled in client
-    SendNotification("OnRemoteMessage", "charid", &tmp);
+    SendNotification("OnRemoteMessage", "charid", &tmp, false);
 
     SafeFree(str);
 }
@@ -2707,7 +2710,7 @@ void Client::SendErrorMsg(const char* fmt, va_list args)
     PyTuple* tmp = n.Encode();
 
     // NOTE: 'OnRemoteMessage' can be disabled in client
-    SendNotification("OnRemoteMessage", "charid", &tmp);
+    SendNotification("OnRemoteMessage", "charid", &tmp, false);
 
     SafeFree(str);
 }
@@ -2729,7 +2732,7 @@ void Client::SendInfoModalMsg(const char* fmt, ...)
     PyTuple* tmp = n.Encode();
 
     // NOTE: 'OnRemoteMessage' can be disabled in client
-    SendNotification("OnRemoteMessage", "charid", &tmp);
+    SendNotification("OnRemoteMessage", "charid", &tmp, false);
 
     SafeFree(str);
 }
@@ -2751,7 +2754,7 @@ void Client::SendNotifyMsg(const char* fmt, ...)
     PyTuple* tmp = n.Encode();
 
     // NOTE: 'OnRemoteMessage' can be disabled in client
-    SendNotification("OnRemoteMessage", "charid", &tmp);
+    SendNotification("OnRemoteMessage", "charid", &tmp, false);
 
     SafeFree(str);
 }
@@ -2769,7 +2772,7 @@ void Client::SendNotifyMsg(const char* fmt, va_list args)
     PyTuple* tmp = n.Encode();
 
     // NOTE: 'OnRemoteMessage' can be disabled in client
-    SendNotification("OnRemoteMessage", "charid", &tmp);
+    SendNotification("OnRemoteMessage", "charid", &tmp, false);
 
     SafeFree(str);
 }

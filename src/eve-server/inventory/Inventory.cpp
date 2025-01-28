@@ -187,7 +187,7 @@ bool Inventory::LoadContents() {
     _log(INV__TRACE, "Inventory::LoadContents() - Adding %lu items to inventory of %s(%u) with owner %u", \
             items.size(), m_self->name(), m_myID, od.ownerID);
     for (auto &cur : items) {
-        if ((cur == od.ownerID) or(cur == od.locID) or(cur == m_myID))
+        if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_myID))
             continue;
         AddItem(sItemFactory.GetItemRef(cur));
     }

@@ -116,8 +116,8 @@ public:
     PyAddress   source;
     PyAddress   dest;
     uint32      userid;
-    PyTuple  *payload;
-    PyDict   *named_payload;
+    PyTuple*    payload;
+    PyRep*      named_payload;
 
 #if 0
     //options:

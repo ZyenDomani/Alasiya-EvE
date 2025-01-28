@@ -91,7 +91,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     }
     */
     _log(into, "entity: %lli, mode: %s(%u) flags: %s", ballhead->entityID, modeNames[ballhead->mode], ballhead->mode, Destiny::GetFlagNames(ballhead->flags).c_str());
-    _log(into, "   pos: %.2f, %.2f, %.2f, radius: %.1f", ballhead->posX, ballhead->posY, ballhead->posZ, ballhead->radius);
+    _log(into, "   pos: %.1f, %.1f, %.1f, radius: %.1f", ballhead->posX, ballhead->posY, ballhead->posZ, ballhead->radius);
 
     if (ballhead->mode != Ball::Mode::RIGID) {
         const MassSector *masschunk = (const MassSector *) data;
@@ -126,7 +126,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const GOTO_Struct *b = (const GOTO_Struct *) data;
             data += sizeof(GOTO_Struct);
             len -= sizeof(GOTO_Struct);
-            _log(into, "       formID: %u, direction: %.2f, %.2f, %.2f", b->formationID, b->x, b->y, b->z);
+            _log(into, "       formID: %u, target: %.1f, %.1f, %.1f", b->formationID, b->x, b->y, b->z);
         } break;
         case Ball::Mode::FOLLOW: {
             const FOLLOW_Struct *b = (const FOLLOW_Struct *) data;
@@ -144,7 +144,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const WARP_Struct *b = (const WARP_Struct *) data;
             data += sizeof(WARP_Struct);
             len -= sizeof(WARP_Struct);
-            _log(into, "       formID: %u, TargPt: %.2f, %.2f, %.2f start: %i", b->formationID, b->targX, b->targY, b->targZ, b->effectStamp);
+            _log(into, "       formID: %u, TargPt: %.1f, %.1f, %.1f start: %i", b->formationID, b->targX, b->targY, b->targZ, b->effectStamp);
             _log(into, "       followRange: %lli, followID: %lli, warpSpeed: %i", b->followRange, b->followID, b->speed);
         } break;
         case Ball::Mode::ORBIT: {
@@ -158,7 +158,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             data += sizeof(MISSILE_Struct);
             len -= sizeof(MISSILE_Struct);
             _log(into, "       formID: %u, targetID: %lli, followRange: %.1f, ownerID: %lli, start: %i", b->formationID, b->targetID, b->followRange, b->ownerID, b->effectStamp);
-            _log(into, "       pos: %.2f, %.2f, %.2f", b->x, b->y, b->z);
+            _log(into, "       pos: %.1f, %.1f, %.1f", b->x, b->y, b->z);
         } break;
         case Ball::Mode::MUSHROOM: {
             const MUSHROOM_Struct *b = (const MUSHROOM_Struct *) data;
@@ -188,7 +188,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const FORMATION_Struct *b = (const FORMATION_Struct *) data;
             data += sizeof(FORMATION_Struct);
             len -= sizeof(FORMATION_Struct);
-            _log(into, "       formID: %u, followID: %lli, followRange: %.2f, start: %i", b->formationID, b->followID, b->followRange, b->effectStamp);
+            _log(into, "       formID: %u, followID: %lli, followRange: %.1f, start: %i", b->formationID, b->followID, b->followRange, b->effectStamp);
         } break;
         default:
             _log(into, "Error: Unknown ball mode %u!", ballhead->mode);
