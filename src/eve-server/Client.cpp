@@ -225,8 +225,7 @@ bool Client::ProcessNet()
     return true;
 }
 
-bool Client::SelectCharacter(int32 charID/*0*/)
-{
+bool Client::SelectCharacter(int32 charID/*0*/) {
     if (sEntityMgr.IsOnline(charID)) {
         sLog.Error("Client::SelectCharacter()", "Char %i already online.", charID);
         SendErrorMsg("That Character is already online.  Selection Failed.");
@@ -273,6 +272,9 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     // register with our system manager AFTER character is constructed and initialized
     m_system->AddClient(this, true);
 
+    //create corp and ally chat channels (if not already created)
+    m_services.lsc_service->CharacterLogin(this);
+
     // this will eventually check for d/c timer and rejoin existing fleet if applicable
     //  fleet data is zeroed when char item is created
 
@@ -299,7 +301,11 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     MoveToLocation(m_locationID, pos);
 
     if (sDataMgr.IsSolarSystem(m_locationID)) {
+        CreateShipSE();
+        m_system->AddEntity(pShipSE);
         WarpIn();
+        // if we are in space, everything is set up at this point, so set ballpark
+        //pShipSE->DestinyMgr()->SendSetState();
     } else {
         if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
             if (sConfig.server.NoobShipCheck) {
@@ -315,11 +321,10 @@ bool Client::SelectCharacter(int32 charID/*0*/)
         }
     }
 
-    //create corp and ally chat channels (if not already created)
-    m_services.lsc_service->CharacterLogin(this);
-
     // load char LPs
     //m_lpMap
+
+    m_loaded = true;
 
     // update account online status, increase login count, set last login timestamp
     ServiceDB::IncrementLoginCount(GetUserID());
@@ -340,12 +345,15 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     // send MOTD and server data to 'local' chat channel
     m_services.lsc_service->SendServerMOTD(this);
 
-    return (m_loaded = true);
+    return true;
 }
 
 void Client::ProcessClient() {
     if (m_charCreation)
         return;
+
+    //NOTE:  all the *Timers are actually SetTime +1s
+    // ...reason being is one tic to check (current tic +0), next tic to set (=1),  then another tic to hit (+2)
 
     m_profileStartTime = GetTimeUSeconds();
 
@@ -642,6 +650,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_system = nullptr;
     }
 
+    // this wont hit on login
     if (m_system == nullptr) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_system == NULL, m_locationID = %u", m_locationID);
         // find our new system's manager
@@ -657,7 +666,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_beyonce = false;
         m_setStateSent = false;
 
-        // register ourselves with new system manager (this wont hit on login)
+        // register ourselves with new system manager
         m_system->AddClient(this, count, IsJump());
     }
 
@@ -732,8 +741,10 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (pShipSE != nullptr)
             pShipSE->ResetShipSystemMgr(m_system);
 
-        // once systemData.radius implemented, remove this in favor of below check
-        m_ship->SetPosition(pt);
+        if (!m_login) {
+            m_ship->SetPosition(pt);  // pt comes from ship position...this is redundant for login
+            SetDestiny(pt);
+        }
 
         /* comment this block for later use...
          * m_systemData.radius is not populated yet, and this does weird things with ships
@@ -744,17 +755,15 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             ;  // oob
         }
         */
-
-        SetDestiny(pt);
     }
-
-    if (!m_login)
-        m_ship->SaveShip(); // this saves everything on ship
 
     m_char->SetLocation((sDataMgr.IsStation(m_locationID) ? m_locationID : 0), m_systemData);
 
     UpdateSession();
     SendSessionChange();
+
+    if (!m_login)
+        m_ship->SaveShip(); // this saves everything on ship
 }
 
 void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
@@ -771,11 +780,10 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
         CreateShipSE();
     }
 
-    if (pShipSE->SystemMgr()->GetID() != m_system->GetID())
-        _log(CLIENT__ERROR, "%s(%u) - Ship SysID of %u != Client SysID of %u.", GetName(), m_char->itemID(), pShipSE->SystemMgr()->GetID(), m_system->GetID());
+    m_system->AddEntity(pShipSE);
 
-    _log(PLAYER__AP_TRACE, "Client::SetDestiny():  shipSystemID: %u, SystemID: %u, update: %s, updateShip: %s, jump: %s, cloak: %s", \
-            pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
+    _log(PLAYER__AP_TRACE, "Client::SetDestiny(): %s:%u - shipSystemID: %u, SystemID: %u, update: %s, updateShip: %s, jump: %s, cloak: %s", \
+            GetName(), GetCharID(),  pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
             updateShip?"true":"false", IsJump()?"true":"false", pShipSE->DestinyMgr()->IsCloaked()?"true":"false");
 
     if (pt.isZero()) {
@@ -784,22 +792,18 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
         } else {
             pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), update);
         }
-    } else {
-        pShipSE->DestinyMgr()->SetPosition(pt, update);
     }
-
-    //if (m_login)
-    //    pShipSE->DestinyMgr()->SetCloak(true);
-
-    m_system->AddEntity(pShipSE);
 
     if (updateShip)
         UpdateNewShip();
+
+    //if (m_login)
+    //    pShipSE->DestinyMgr()->SetCloak(true);
 }
 
 void Client::SetBallPark() {
-    _log(PLAYER__AP_TRACE, "Client::SetBallPark():  State: %s, SetState: %s, Beyonce: %s", \
-                GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", m_beyonce?"true":"false");
+    _log(PLAYER__AP_TRACE, "Client::SetBallPark(): %s:%u -   State: %s, SetState: %s, Beyonce: %s", \
+            GetName(), GetCharID(), GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", m_beyonce?"true":"false");
     m_bubbleWait = false;   // allow client processing of subsequent destiny msgs
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
@@ -831,8 +835,6 @@ void Client::SetBallPark() {
             m_clientState = Player::State::Idle;
         }
     }
-    //if (m_ship->IsUndocking())
-    //    pShipSE->DestinyMgr()->SetSpeedFraction();
 }
 
 void Client::CheckBallparkTimer() {
@@ -941,6 +943,7 @@ void Client::CreateShipSE() {
         data.factionID = GetWarFactionID();
         data.ownerID = GetCharacterID();
     pShipSE = new ShipSE(m_ship, *(m_system->GetServiceMgr()), m_system, data);
+        //pShipSE->DestinyMgr()->UpdateShipVariables();
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->name(), m_char->itemID());
 }
 
@@ -955,11 +958,14 @@ void Client::DestroyShipSE() {
     pShipSE = nullptr;
 }
 
-void Client::UpdateNewShip()
-{
+void Client::UpdateNewShip() {
     sItemFactory.SetUsingClient(this);
     pShipSE->SetPilot(this);
-    pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
+    if (m_login) {
+        pShipSE->DestinyMgr()->UpdateShipVariables();
+    } else {
+        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
+    }
     sItemFactory.UnsetUsingClient();
 
     char ci[45];
@@ -2037,6 +2043,8 @@ void Client::SendSessionChange()
     if (is_log_enabled(CLIENT__SESSION)) {
         _log(CLIENT__SESSION, "Session updated.  Sending session change");
         scn.changes->Dump(CLIENT__SESSION, "   Changes: ");
+    } else {
+        _log(CLIENT__MESSAGE, "Session updated.  Sending session change");
     }
 
     scn.sessionID = pSession->GetSessionID();
@@ -2099,7 +2107,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         (*update)->Dump(CLIENT__QUEUE_DUMP, "");
     DoDestinyAction act;
         act.stamp = sEntityMgr.GetStamp();
-    if (DoPackage/* or m_packaged*/) {
+    if (DoPackage or IsSetState/* or m_packaged*/) {
         if (IsSetState) {
             // send the setstate buffer alone
             act.update = *update;
@@ -2118,9 +2126,13 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         DoDestinyUpdateMain_2 dum;
             dum.updates = new PyList();
             dum.updates->AddItem(act.Encode());
-            dum.waitForBubble = m_bubbleWait;
+            if (m_login) {
+                dum.waitForBubble = false;
+            } else {
+                dum.waitForBubble = m_bubbleWait;
+            }
         PyTuple* t = dum.Encode();
-        SendNotification("DoDestinyUpdate", "clientID", &t);
+        SendNotification("DoDestinyUpdate", "clientID", &t, false);
         PyDecRef(t);
     } else {
         act.update = *update;

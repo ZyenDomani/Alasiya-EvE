@@ -145,7 +145,7 @@ void ClientSession::EncodeChanges(PyDict* into)
         return;
 
     PyDict::const_iterator cur = mSession->begin(), end = mSession->end();
-    for (; cur != end; cur++)
+    for (; cur != end; ++cur)
         if (cur->second->AsTuple()->GetItem(2)->AsBool()->value()) {    // if this value hasnt changed, dont send it.
             _GetValueTuple(PyRep::StringContent(cur->first).c_str())->SetItem(2, PyStatic.NewFalse());
             into->SetItem(cur->first->AsString(), new_tuple(cur->second->AsTuple()->GetItem(0), cur->second->AsTuple()->GetItem(1)));

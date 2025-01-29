@@ -2862,9 +2862,10 @@ Battleships                             0.155
     m_turnPct = 1.0f / m_alignTime;
     m_shipMaxAccelTime = (-log(ASF_CHECK) * m_agility);
 
-    m_hasSentShipUpdates = true;
-
     if (!mySE->HasPilot())
+        return;
+
+    if (mySE->GetPilot()->IsLogin())
         return;
 
     if (mySE->GetPilot()->IsInSpace() and (mySE->SysBubble() != nullptr)) {
@@ -2886,6 +2887,7 @@ Battleships                             0.155
             sbspeed.speed = m_maxShipSpeed;
         updates.push_back(sbspeed.Encode());
         SendDestinyUpdates(updates); //consumed
+        m_hasSentShipUpdates = true;
     }
 }
 
@@ -3255,7 +3257,7 @@ void DestinyManager::SendSetState() const {
     mySE->SystemMgr()->MakeSetState(mySE->SysBubble(), ss);
     PyTuple* tmp(ss.Encode());
     //setstate should be alone and immediate.  send directly
-    mySE->GetPilot()->QueueDestinyUpdate(&tmp, true, true);   // consumed?
+    mySE->GetPilot()->QueueDestinyUpdate(&tmp, false, true);   // consumed?
     mySE->GetPilot()->SetStateSent(true);
 }
 
