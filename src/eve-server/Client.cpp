@@ -2083,7 +2083,7 @@ void Client::SendSessionChange()
 }
 
 void Client::QueueDestinyUpdates(std::vector< PyTuple* >& updates) {
-    for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); itr++) {
+    for (std::vector<PyTuple*>::iterator itr = updates.begin(); itr != updates.end(); ++itr) {
         PyIncRef(*itr);
         QueueDestinyUpdate(&(*itr));
     }
@@ -2136,7 +2136,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         PyDecRef(t);
     } else {
         act.update = *update;
-        m_packaged = true;
+        //m_packaged = true;
         m_destinyUpdateQueue->AddItem(act.Encode());
     }
 
