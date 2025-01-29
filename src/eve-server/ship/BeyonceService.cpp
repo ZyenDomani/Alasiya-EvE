@@ -79,10 +79,11 @@ public:
         PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughAlliance);
         PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughCorporationStructure);
 
-
+/*
         pClient->SetBeyonce(true);
         if (pClient->IsLogin() and !pClient->IsSetStateSent())
             pClient->SetBallPark();
+        */
     }
 
     virtual ~BeyonceBound()
@@ -481,7 +482,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         call.client->SendNotifyMsg( "Orbiting is disabled due to excessive desync.");
         return PyStatic.NewNone();
     }
-    
+
     _log(AUTOPILOT__MESSAGE, "%s called Orbit. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
     DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());

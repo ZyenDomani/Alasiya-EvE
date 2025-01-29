@@ -382,6 +382,16 @@ private:
 
 #endif  // __SERVER_SYSTEM_DESTINY_H
 
+/*
+ *    def OnSpecialFX(self, shipID, moduleID, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration = -1, repeat = None, startTime = None, graphicInfo = None):
+ *        if isinstance(moduleID, collections.Iterable):
+ *            for m in moduleID:
+ *                sm.ScatterEvent('OnSpecialFX', shipID, m, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration, repeat, startTime, graphicInfo)
+ *
+ *        else:
+ *            sm.ScatterEvent('OnSpecialFX', shipID, moduleID, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration, repeat, startTime, graphicInfo)
+ */
+
 /*  class          inertiaMod                   ~agility
  * Capsule          .06
  * Shuttle          1.6

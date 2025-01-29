@@ -2447,8 +2447,7 @@ void ShipSE::Process() {
     m_shipRef->ProcessModules();
 }
 
-void ShipSE::DamageRandModule(float chance)
-{
+void ShipSE::DamageRandModule(float chance) {
     if (chance == 0)
         return;
     if (chance > MakeRandomFloat())
@@ -2465,8 +2464,7 @@ void ShipSE::PayInsurance() {
     ShipDB::DeleteInsuranceByShipID(m_self->itemID());
 }
 
-void ShipSE::ResetShipSystemMgr(SystemManager* pSystem)
-{
+void ShipSE::ResetShipSystemMgr(SystemManager* pSystem) {
     m_system = pSystem;
 }
 
@@ -2482,8 +2480,7 @@ void ShipSE::SetPilot(Client* pClient) {
     m_corpID = pClient->GetCorporationID();
 }
 
-bool ShipSE::IsInvul()
-{
+bool ShipSE::IsInvul() {
     if (m_shipRef->HasPilot())
         return m_shipRef->GetPilot()->IsInvul();
     return false;

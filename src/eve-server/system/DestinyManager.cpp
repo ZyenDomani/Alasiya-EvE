@@ -2783,11 +2783,11 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
 
     std::vector<PyTuple*> updates;
     PyTuple* shipData = new PyTuple(2);
-    shipData->SetItem(0, new PyLong(newShipRef->itemID()));
-    shipData->SetItem(1, new PyObject( "foo.SlimItem", slim));
+        shipData->SetItem(0, new PyLong(newShipRef->itemID()));
+        shipData->SetItem(1, new PyObject( "foo.SlimItem", slim));
     PyTuple* shipItem = new PyTuple(2);
-    shipItem->SetItem(0, new PyString("OnSlimItemChange"));
-    shipItem->SetItem(1, shipData);
+        shipItem->SetItem(0, new PyString("OnSlimItemChange"));
+        shipItem->SetItem(1, shipData);
     updates.push_back(shipItem);
     SendDestinyUpdates(updates);        // consumed
 
@@ -2823,7 +2823,7 @@ Battleships                             0.155
     double mass = sRef->GetAttribute(AttrMass).get_double();
     double inertiaMod = sRef->GetAttribute(AttrInertiaMod).get_double();
     m_agility = mass * inertiaMod / 1000000;
-    mySE->GetSelf()->SetAttribute(AttrAgility, m_agility, false);
+    sRef->SetAttribute(AttrAgility, m_agility, false);
 
     // this will catch speeds/needs for all ships (player, npc, drone), and is easier to do here.
     if (sRef->HasAttribute(AttrWarpSpeedMultiplier))
@@ -3190,8 +3190,8 @@ void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
 void DestinyManager::SendBallInteractive(const ShipItemRef shipRef, bool set/*false*/) const {
     // interactive means "ship has pilot"
     SetBallInteractive sbi;
-    sbi.entityID = shipRef->itemID();
-    sbi.interactive = set;
+        sbi.entityID = shipRef->itemID();
+        sbi.interactive = set;
     PyTuple* up = sbi.Encode();
     SendSingleDestinyUpdate(&up);
     PyDecRef(up);

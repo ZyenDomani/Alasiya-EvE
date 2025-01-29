@@ -138,3 +138,38 @@ private:
 #endif /* !__DRONE__H__INCL__ */
 
 
+/*
+ *    def OnDroneStateChange(self, itemID, ownerID, controllerID, activityState, typeID, controllerOwnerID, targetID):
+ *        if session.charid != ownerID and session.shipid != controllerID:
+ *            if self.stateByDroneID.has_key(itemID):
+ *                del self.stateByDroneID[itemID]
+ *            if self.activityByDrone.has_key(itemID):
+ *                del self.activityByDrone[itemID]
+ *            sm.ScatterEvent('OnDroneControlLost', itemID)
+ *            return
+ *        state = self.stateByDroneID.get(itemID, None)
+ *        if state is None:
+ *            oldActivityState = None
+ *            self.stateByDroneID.UpdateLI([[itemID,
+ *              ownerID,
+ *              controllerID,
+ *              activityState,
+ *              typeID,
+ *              controllerOwnerID,
+ *              targetID]], 'droneID')
+ *        else:
+ *            state.ownerID = ownerID
+ *            state.controllerID = controllerID
+ *            state.controllerOwnerID = controllerOwnerID
+ *            oldActivityState = state.activityState
+ *            state.activityState = activityState
+ *            state.targetID = targetID
+ *        sm.ScatterEvent('OnDroneStateChange2', itemID, oldActivityState, activityState)
+ *
+ *    def OnDroneActivityChange(self, droneID, activityID, activity):
+ *        if not activity:
+ *            if self.activityByDrone.has_key(droneID):
+ *                del self.activityByDrone[droneID]
+ *        else:
+ *            self.activityByDrone[droneID] = (activity, activityID)
+ */
