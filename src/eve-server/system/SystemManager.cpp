@@ -362,9 +362,7 @@ void SystemManager::UnloadSystem() {
 
 bool SystemManager::LoadSystemStatics() {
     std::vector<DBSystemEntity> entities;
-    entities.clear();
-    m_entities.clear();
-    m_staticEntities.clear();
+
     if (!SystemDB::LoadSystemStaticEntities(m_data.systemID, entities)) {
         sLog.Error( "SystemManager::LoadSystemStatics()", "Unable to load celestial entities during boot of %s(%u).", m_data.name.c_str(), m_data.systemID);
         return false;
