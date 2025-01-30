@@ -37,7 +37,7 @@ m_Stop(true),
 // this is an internal variable only.
 m_reloadTime(mRef->GetAttribute(AttrReloadTime).get_uint32())
 {
-    m_repeat = 1000;    //good default.  this enabled continuous cycle.  less than will decrement in client
+    m_repeat = 200;    //good default.  this enabled continuous cycle.  less than 1000 will decrement in client
 
     if (m_needsCharge) {
         switch (mRef->groupID()) {

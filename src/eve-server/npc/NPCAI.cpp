@@ -485,8 +485,6 @@ void NPCAIMgr::SetIdle() {
 }
 
 void NPCAIMgr::SetChasing(SystemEntity* pTargSE) {
-    if (pTargSE == nullptr)
-        return;
     /** @todo implement chase timer using entityChaseMaxDuration to limit chase time. */
     if ((m_state == NPCAI::State::Chasing) and (m_destiny->IsGoto() or m_destiny->IsFollowing()))
         return;
@@ -500,8 +498,6 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargSE) {
 }
 
 void NPCAIMgr::SetFollowing(SystemEntity* pTargSE) {
-    if (pTargSE == nullptr)
-        return;
     if ((m_state == NPCAI::State::Following) and (m_destiny->IsGoto() or m_destiny->IsFollowing()))
         return;
     _log(NPC__AI_TRACE, "%s(%u): Begin following.  Target is %s(%u).", \
@@ -514,8 +510,6 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargSE) {
 }
 
 void NPCAIMgr::SetEngaged(SystemEntity* pTargSE) {
-    if (pTargSE == nullptr)
-        return;
     // actively fighting
     if (m_state == NPCAI::State::Engaged) // and m_destiny->IsOrbiting())
         return;
@@ -530,8 +524,6 @@ void NPCAIMgr::SetEngaged(SystemEntity* pTargSE) {
 
 // not used yet
 void NPCAIMgr::SetFleeing(SystemEntity* pTargSE) {
-    if (pTargSE == nullptr)
-        return;
     if ((m_state == NPCAI::State::Fleeing) and m_destiny->IsMoving())
         return;
     _log(NPC__AI_TRACE, "%s(%u): Begin fleeing.  Target is %s(%u).", \
@@ -546,8 +538,6 @@ void NPCAIMgr::SetFleeing(SystemEntity* pTargSE) {
 
 // not used yet
 void NPCAIMgr::SetSignaling(SystemEntity* pTargSE) {
-    if (pTargSE == nullptr)
-        return;
     if ((m_state == NPCAI::State::Signaling) and m_destiny->IsOrbiting())
         return;
     _log(NPC__AI_TRACE, "%s(%u): Begin signaling.  Target is %s(%u).", \
@@ -561,10 +551,7 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargSE) {
     m_warpOutTimer.Disable();
 }
 
-void NPCAIMgr::CheckDistance(SystemEntity* pTargSE)
-{
-    if (pTargSE == nullptr)
-        return;
+void NPCAIMgr::CheckDistance(SystemEntity* pTargSE) {
     double dist = m_npc->GetPosition().distance(pTargSE->GetPosition());
     if ((dist > m_sightRange) and (!m_npc->TargetMgr()->IsTargetedBy(pTargSE))) {
         _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%.1fm).  Return to Idle.", \
@@ -595,8 +582,6 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargSE)
 }
 
 void NPCAIMgr::Target(SystemEntity* pTargSE) {
-    if (pTargSE == nullptr)
-        return;
     float targetTime = GetTargetTime();
     bool chase(false);
 
@@ -696,21 +681,9 @@ void NPCAIMgr::TargetLost(SystemEntity* pTargSE) {
     }
 }
 
-void NPCAIMgr::Attack(SystemEntity* pTargSE)
-{
-    if (pTargSE == nullptr)
-        return;
+void NPCAIMgr::Attack(SystemEntity* pTargSE) {
     // TODO:  most of these checks should not be needed on EVERY tic...
     if (m_mainAttackTimer.Check()) {
-        // Check to see if the target still in the bubble (Client warped out)
-        //TODO:  this should be updated...target warpout should notify all targeters and cancel targeting
-        if (!m_npc->SysBubble()->InBubble(pTargSE->GetPosition())) {
-            _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
-                    m_npc->GetName(), m_npc->GetID(), pTargSE->GetName(), pTargSE->GetID());
-            m_missileTimer.Disable();
-            ClearTarget(pTargSE);
-            return;
-        }
         if (pTargSE->DestinyMgr() == nullptr) {
             sLog.Error("NPC Attack()", "Target %s(%u) has no destiny manager.", pTargSE->GetName(), pTargSE->GetID());
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
@@ -744,8 +717,6 @@ void NPCAIMgr::ClearTarget(SystemEntity* pTargSE) {
 //modifyTargetSpeedRange, modifyTargetSpeedChance
 //entityWarpScrambleChance
 void NPCAIMgr::AttackTarget(SystemEntity* pTargSE) {
-    if (pTargSE == nullptr)
-        return;
     // put checks here for point/tackle
 
     // effects are listed in EVE_Effects.h

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    10.9
+    Version:    11.1
 */
 
 
@@ -171,6 +171,8 @@ EVEServerConfig::EVEServerConfig()
     npc.DefenderMissileChance = 0.0f;
     npc.LootDropChance = 0.75f;
     npc.UseOrbit = false;
+    npc.UseRegen = false;
+    npc.UseRepair = false;
 
     // cosmic
     cosmic.PIEnabled = false;
@@ -603,6 +605,8 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "LootDropChance",           npc.LootDropChance );
     AddValueParser( "DefenderMissileChance",    npc.DefenderMissileChance );
     AddValueParser( "UseOrbit",                 npc.UseOrbit );
+    AddValueParser( "UseRegen",                 npc.UseRegen );
+    AddValueParser( "UseRepair",                npc.UseRepair );
 
     const bool result = ParseElementChildren( ele );
 
@@ -622,6 +626,8 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "LootDropChance" );
     RemoveParser( "DefenderMissileChance" );
     RemoveParser( "UseOrbit" );
+    RemoveParser( "UseRegen" );
+    RemoveParser( "UseRepair" );
 
     return result;
 }

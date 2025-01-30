@@ -417,7 +417,6 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
 
 //Global Actions:
 void DestinyManager::Stop() {
-    sLog.Warning("DestinyManager", "%s calling stop", mySE->GetName());
     if (m_stop)
         return;
 
@@ -428,6 +427,7 @@ void DestinyManager::Stop() {
         return;
     }
 
+    sLog.Warning("DestinyManager", "%s calling stop", mySE->GetName());
     // set marker for calc'd stop distance (testing)
     if (is_log_enabled(DESTINY__WARP_DEBUG)) {
         uint16 dist = m_maxShipSpeed * m_activeSpeedFraction * m_agility;
@@ -751,10 +751,10 @@ void DestinyManager::MoveObject() {
 
             m_velocity = m_shipHeading * m_maxSpeed * m_activeSpeedFraction;
             m_position += m_velocity;
-            mySE->SetPosition(m_position);
+            SetPosition(m_position, true);
             // this should never get here after warping with ap.
             // if it does, we'll have to code something to ignore it.
-            Halt(true);
+            //Halt(true);
             return;
         }
     } else if (m_orbiting) {
@@ -917,8 +917,6 @@ void DestinyManager::InitTurn()
      * working on rewriting this to test...
      */
 
-    // NOTE:  update 22Jan25 ...  not working right.  multiple errors
-
     // just to be sure....
     m_stop = false;
 
@@ -957,7 +955,7 @@ void DestinyManager::InitTurn()
 
     // check speed for changes and set vars accordingly
     float speed(m_maxShipSpeed * m_activeSpeedFraction);
-    // NOTE:  this MAY need ship data instead of hard 1/2 align time
+    // NOTE:  this will need ship data instead of hard 1/2 align time
     float modifier(m_alignTime * 0.5f);
     // apex is current ship position + direction * (speed * 1/2 turn time)
     m_curveApex = m_curveStart + (m_origHeading * (speed * modifier));
@@ -1653,6 +1651,9 @@ void DestinyManager::InitWarp() {
     mySE->TargetMgr()->ClearAllTargets();
     //mySE->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::WarpingOut);
 
+    // send warp gfx
+    SendGFX10(mySE->GetID(),"effects.Warping" );
+
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
 
@@ -1694,7 +1695,8 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
     WarpUpdate(currentDistance, sec_into_warp, 1);
 
     if (mySE->SysBubble() != nullptr) {
-        if (!mySE->SysBubble()->InBubble(m_position)) {  // in rare case accel is completed, but se is still in bubble
+        if (currentDistance > BUBBLE_RADIUS_METERS) {
+        //if (!mySE->SysBubble()->InBubble(m_position)) {  // in rare case accel is completed, but se is still in bubble
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) is being removed from bubble %u.",\
                     mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID());
@@ -2278,9 +2280,6 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
         wt.warpSpeed = GetWarpSpeed();      // warp speed x10
     updates.push_back(wt.Encode());
     SendDestinyUpdates(updates); //consumed
-
-    // send warp gfx
-    SendGFX10(mySE->GetID(),"effects.Warping" );
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %i  m_targetDistance: %lli",

@@ -518,6 +518,16 @@ int main( int argc, char* argv[] )
     } else {
         sLog.Warning("  NPC Orbit Calls","Disabled.");
     }
+    if (sConfig.npc.UseRegen)  {
+        sLog.Green(" NPC Shield Regen","Enabled.");
+    } else {
+        sLog.Warning(" NPC Shield Regen","Disabled.");
+    }
+    if (sConfig.npc.UseRepair)  {
+        sLog.Green("      NPC Reppers","Enabled.");
+    } else {
+        sLog.Warning("      NPC Reppers","Disabled.");
+    }
     if (sConfig.server.BountyPayoutDelayed) {
         sLog.Green(" Delayed Bounties","Delayed Bounties are Enabled.  Loop runs every %u minutes", sConfig.server.BountyPayoutTimer);
         if (sConfig.server.FleetShareDelayed) {

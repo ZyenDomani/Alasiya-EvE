@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    10.9
+    Version:    11.1
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -204,6 +204,8 @@ public:
         bool StaticSpawns;
         bool TargetPod;
         bool UseOrbit;
+        bool UseRegen;
+        bool UseRepair;
         uint16 WarpOut;
         uint16 RoamingTimer;
         uint16 StaticTimer;
