@@ -193,13 +193,11 @@ void NPC::EncodeDestiny(Buffer& into)
                 go.z = target.z;
             into.Append( go );
         }  break;
-        /*
         default: {
             STOP_Struct main;
                 main.formationID = 0xFF;
             into.Append( main );
         } break;
-        */
     }
 
     std::string modeStr = "Goto";

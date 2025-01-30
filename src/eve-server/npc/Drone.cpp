@@ -336,13 +336,11 @@ void DroneSE::EncodeDestiny(Buffer& into)
                 go.z = target.z;
             into.Append( go );
         }  break;
-        /*
         default: {
             STOP_Struct main;
                 main.formationID = 0xFF;
             into.Append( main );
         } break;
-        */
     }
     _log(SE__DESTINY, "DroneSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
