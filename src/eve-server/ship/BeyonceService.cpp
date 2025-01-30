@@ -527,28 +527,29 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
   _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %lu", call.tuple->size() );
    call.Dump(SERVICE__CALL_DUMP);
 
-   if (call.client->GetShipSE()->SysBubble() == nullptr) {
-       codelog(CLIENT__ERROR, "%s: Client is not in a bubble!", call.client->GetName());
+   Client* pClient = call.client;
+   if (pClient->GetShipSE()->SysBubble() == nullptr) {
+       codelog(CLIENT__ERROR, "%s: Client is not in a bubble!", pClient->GetName());
        return PyStatic.NewNone();
    }
    /** @todo (allan) finish warp scramble system */
    // >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
-   if (call.client->GetShip()->GetAttribute(AttrWarpScrambleStatus) > 0)
+   if (pClient->GetShip()->GetAttribute(AttrWarpScrambleStatus) > 0)
         throw UserError("WarpScrambled");
 
-   DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
+   DestinyManager* pDestiny(pClient->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
+        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
         return PyStatic.NewNone();
     }
     if (pDestiny->IsWarping()){
-        call.client->SendNotifyMsg( "You are already warping");
+        pClient->SendNotifyMsg( "You are already warping");
         return PyStatic.NewNone();
     }
 
-    SystemManager* pSystem = call.client->SystemMgr();
+    SystemManager* pSystem = pClient->SystemMgr();
     if (pSystem == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", pClient->GetName());
         return PyStatic.NewNone();
     }
 
@@ -581,7 +582,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     if (type == "item" ) {
         pSE = pSystem->GetSE(toID);
         if (pSE == nullptr) {
-            codelog(CLIENT__ERROR, "%s: unable to find item location %u in %s(%u)", call.client->GetName(), toID, pSystem->GetName(), pSystem->GetID());
+            codelog(CLIENT__ERROR, "%s: unable to find item location %u in %s(%u)", pClient->GetName(), toID, pSystem->GetName(), pSystem->GetID());
             return PyStatic.NewNone();
         }
     } else if (type == "bookmark" ) {
@@ -590,7 +591,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         uint32 locationID(0);
         uint32 bookmarkID(PyRep::IntegerValueU32(call.tuple->GetItem(1)));
 
-        BookmarkService* bkSrvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
+        BookmarkService* bkSrvc = (BookmarkService *)(pClient->services().LookupService( "bookmark" ));
         if (bkSrvc == nullptr) {
             sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Attempt to access BookmarkService returned NULL." );
             return PyStatic.NewNone();
@@ -598,7 +599,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         bkSrvc->LookupBookmark(bookmarkID, toID, typeID, locationID, x, y, z);
 
         if ( typeID == 5 ) {
-            if (call.client->GetSystemID() != locationID) {
+            if (pClient->GetSystemID() != locationID) {
                 //  this bm is for different system.  make error here.
                 return PyStatic.NewNone();
             }
@@ -609,7 +610,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
             pSE = pSystem->GetSE( toID );
             if (pSE == nullptr) {
-                codelog(CLIENT__ERROR, "%s: unable to find bookmark location %u in %s(%u)", call.client->GetName(), toID, pSystem->GetName(), pSystem->GetID());
+                codelog(CLIENT__ERROR, "%s: unable to find bookmark location %u in %s(%u)", pClient->GetName(), toID, pSystem->GetName(), pSystem->GetID());
                 return PyStatic.NewNone();
             }
         }
@@ -626,17 +627,17 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     else if (type == "epinstance") {
         // epinstance, instanceid
         //stringArg
-        call.client->SendErrorMsg("WarpToInstance is not implemented at this time.");
+        pClient->SendErrorMsg("WarpToInstance is not implemented at this time.");
         return PyStatic.NewNone();
     } else if (type == "tutorial") {
         // tutorial, none
-        call.client->SendErrorMsg("WarpToTutorial is not implemented at this time.");
+        pClient->SendErrorMsg("WarpToTutorial is not implemented at this time.");
         return PyStatic.NewNone();
     } else if (type == "char") {
     //  fleet warping
     // [warptomember] char, charid, minrange
     // [warpfleettomember] char, charid, minrange, fleet=1
-        call.client->SendErrorMsg("WarpToChar is not implemented at this time.");
+        pClient->SendErrorMsg("WarpToChar is not implemented at this time.");
         return PyStatic.NewNone();
     } else {
         sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Unexpected type value: '%s'.", type.c_str() );
@@ -705,23 +706,23 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.z -= (d * std::cos(t));
         } else if (pSE->IsStationSE()) {
             // fudge the distance a bit for these... its' a lil close by default
-            GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
+            GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = (vectorFromOrigin * (radius + 3000));
+            GPoint stopPoint = (vectorFromOrigin * (radius + 3500 + pClient->GetShip()->radius()));
             warpToPoint -= stopPoint;
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
         } else if (pSE->IsCOSE() or pSE->IsGateSE()) {
             // fudge the distance a bit for these... its' a lil close by default
-            GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
+            GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = (vectorFromOrigin * radius);
+            GPoint stopPoint = (vectorFromOrigin * (radius + 500 + pClient->GetShip()->radius()));
             warpToPoint -= stopPoint;
         } else if (pSE->IsMoonSE()) {
             if (pSE->GetMoonSE()->HasTower()) {
                 // if moon has a tower, make warpin point 20km inside edge of tower's bubble.
                 warpToPoint = pSE->GetMoonSE()->GetMyTower()->GetPosition();
-                GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
+                GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
                 vectorFromOrigin.normalize();   //we now have a direction
                 GPoint stopPoint = (vectorFromOrigin * (BUBBLE_RADIUS_METERS - 20000));  // 20km inside bubble.
                 warpToPoint -= stopPoint;
@@ -733,7 +734,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             }
         } else if (pSE->IsWormholeSE()) {
             // move warpin point -20km from center of wh.
-            GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
+            GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
             GPoint stopPoint = (vectorFromOrigin * 20000) + radius;
             warpToPoint -= stopPoint;
@@ -746,7 +747,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         /*
         if (radius < 90000) {
             // this will include stations (max station radius 60km)
-            GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
+            GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
             GPoint stopPoint = (vectorFromOrigin * radius);
             warpToPoint -= stopPoint;
@@ -757,13 +758,13 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     if (warpToPoint.isZero()) {
         // point is zero ....make error and return
         codelog(CLIENT__ERROR, "%s: warpToPoint.isZero() = true.  Cannot find location %u for '%s'", \
-                call.client->GetName(), toID, type.c_str());
-        call.client->SendErrorMsg("WarpTo: Item location not found.");
+                pClient->GetName(), toID, type.c_str());
+        pClient->SendErrorMsg("WarpTo: Item location not found.");
         return PyStatic.NewNone();
     }
 
-    call.client->SetInvul(false);
-    call.client->SetUndock(false);
+    pClient->SetInvul(false);
+    pClient->SetUndock(false);
 
     pDestiny->WarpTo(warpToPoint, distance, false, pSE);
 
