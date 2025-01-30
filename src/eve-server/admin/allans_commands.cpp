@@ -1123,7 +1123,7 @@ PyResult Command_bubblewarp(Client* pClient, CommandDB* db, PyServiceMgr* servic
         throw CustomError("You have no destiny manager.");
 
     if (args.argCount() < 2)
-        throw CustomError("Usage is: '.bubblewarp <bubbleID>.");
+        throw CustomError("Usage is: '.bubblewarp [bubbleID].");
     if (!args.isNumber(1))
         throw CustomError("Argument must be a number.");
     uint16 bubbleID = atoi(args.arg(1).c_str());

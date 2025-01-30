@@ -179,7 +179,7 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
 
     // TODO:  fix these speeds
     // set speed and begin orbit
-    m_destiny->SetMaxVelocity(500);     //TODO:  use AttrMaxVelocity here
+    m_destiny->SetMaxVelocity(500.0f);     //TODO:  use AttrMaxVelocity here
     m_destiny->SetSpeedFraction(0.6f);  // use 30-50% here
     m_destiny->InitOrbit(pShipSE, m_orbitRange);
 }

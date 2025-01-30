@@ -22,12 +22,18 @@
 
 
 MiningLaser::MiningLaser(ModuleItemRef mRef, ShipItemRef sRef)
-: ActiveModule(mRef, sRef)
+: ActiveModule(mRef, sRef),
+m_IsInitialCycle(true),
+m_rMiner(false),
+m_dcMiner(false),
+m_iMiner(false),
+m_gMiner(false),
+m_crystalDmg(0.0f),
+m_crystalRoidGrp(0),
+m_crystalDmgAmount(0.0f),
+m_crystalDmgChance(0.0f),
+m_holdFlag(flagCargoHold)
 {
-    m_IsInitialCycle = true;
-    m_rMiner = m_dcMiner = m_iMiner = m_gMiner = false;
-    m_crystalDmg = m_crystalRoidGrp = m_crystalDmgAmount = m_crystalDmgChance = 0;
-
     if (m_modRef->groupID() == EVEDB::invGroups::Mining_Laser) {
         m_rMiner = true;
     } else if ((m_modRef->typeID() == 12108) or (m_modRef->typeID() == 18068) or (m_modRef->typeID() == 24305) or (m_modRef->typeID() == 28748)) {
@@ -45,7 +51,7 @@ MiningLaser::MiningLaser(ModuleItemRef mRef, ShipItemRef sRef)
         m_rMiner = true;
     }
 
-    m_holdFlag = flagCargoHold;
+
     _log(MINING__TRACE, "MiningLaser Created for %s with %llims Duration.", mRef->name(), GetAttribute(AttrDuration).get_int());
 }
 

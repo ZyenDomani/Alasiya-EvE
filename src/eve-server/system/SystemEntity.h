@@ -379,7 +379,7 @@ public:
     virtual const char*         GetSEType()             { return "Belt SE"; }
     virtual BeltSE*             GetBeltSE()             { return this; }
     /* class type tests. */
-    virtual bool                IsSystemEntity()        { return false; }
+    virtual bool                IsSystemEntity()        { return true; }
     virtual bool                IsBeltSE()              { return true; }
 
     /* virtual functions to be overridden in derived classes */
@@ -423,7 +423,7 @@ public:
     virtual const char*         GetSEType()             { return "Stargate SE"; }
     virtual StargateSE*         GetGateSE()             { return this; }
     /* class type tests. */
-    virtual bool                IsSystemEntity()        { return false; }
+    virtual bool                IsSystemEntity()        { return true; }
     virtual bool                IsGateSE()              { return true; }
 
     /* SystemEntity interface */

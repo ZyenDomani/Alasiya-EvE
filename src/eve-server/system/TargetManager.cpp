@@ -145,7 +145,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
         maxLockedTargets = maxCharTargets;
 
     uint8 maxShipTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_uint32();
-    if (maxShipTargets > 0)
+    if (maxShipTargets > 0)  // is this redundant?
         if (maxLockedTargets > maxShipTargets)
             maxLockedTargets = maxShipTargets;
 
@@ -174,16 +174,16 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     // Calculate Time to Lock target:
     float lockTime = TimeToLock(sRef, tSE);
 
+    if (is_log_enabled(TARGET__INFO))
+        _log(TARGET__INFO, "Pilot %s in %s(%u) started targeting %s(%u) at %.1fm with %.2fs lock time.", \
+                mySE->GetPilot()->GetName(), mySE->GetName(), mySE->GetID(), tSE->GetName(), \
+                tSE->GetID(), targetDistance, lockTime);
+
     TargetEntry *te = new TargetEntry();
         te->state = TargMgr::State::Locking;
         te->timer.Start(lockTime * 1000);      //timer has ms resolution
     m_targets[tSE] = te;
     tSE->TargetMgr()->TargetedAdd(mySE);
-
-    if (is_log_enabled(TARGET__INFO))
-        _log(TARGET__INFO, "Pilot %s in %s(%u) started targeting %s(%u) at %.1fm with %.2fs lock time.", \
-                mySE->GetPilot()->GetName(), mySE->GetName(), mySE->GetID(), tSE->GetName(), \
-                tSE->GetID(), targetDistance, lockTime);
 
     sEntityMgr.AddTargMgr(mySE, this);
 

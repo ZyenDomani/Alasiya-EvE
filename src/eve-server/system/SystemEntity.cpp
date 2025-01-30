@@ -157,6 +157,7 @@ void SystemEntity::Delete()
         m_system->RemoveEntity(this);
     if (!IsContainerSE())
         m_self->Delete();
+    // what do we do if it is a Container?
 }
 
 double SystemEntity::DistanceTo2(const SystemEntity* other) {
