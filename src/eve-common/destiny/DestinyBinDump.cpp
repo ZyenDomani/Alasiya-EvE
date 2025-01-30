@@ -69,12 +69,18 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     len -= sizeof(BallHeader);
 
     if (ballhead->entityID == 0) {
-        _log(into, "Error: Invalid entityID 0 for ball");
+        _log(into, "Error: Invalid entityID 0 for ball.  remaining len %u", len);
+        return 0;
+    }
+
+    if (ballhead->entityID > maxEveItem) {
+        _log(into, "Error: Invalid entityID > maxEveItem for ball.  remaining len %u", len);
         return 0;
     }
 
     if (ballhead->mode > MAX_DSTBALL) {
-        _log(into, "Error: Invalid ball mode %u for ball %lli", ballhead->mode, ballhead->entityID);
+        _log(into, "Error: Invalid ball mode %u for ball %lli.  remaining len %u", \
+                ballhead->mode, ballhead->entityID, len);
         return 0;
     }
 
