@@ -398,15 +398,14 @@ PyResult Command_halt(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     pClient->GetShipSE()->DestinyMgr()->Halt(true);
 
     char reply[25];
-    snprintf(reply, 25,
-             "Ship Halted.");
+    snprintf(reply, 25, "Ship Halted.");
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
 PyResult Command_shutdown(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    /* ingame command to immediatly save loaded items and halt server.
+    /* ingame command to immediately save loaded items and halt server.
      */
     sConsole.HaltServer();
     return nullptr;
@@ -809,10 +808,9 @@ PyResult Command_warpto(Client* pClient, CommandDB* db, PyServiceMgr* services, 
         pClient->SetDestiny(NULL_ORIGIN);
 
     /** @todo  finish this.... */
-    pClient->GetShipSE()->DestinyMgr()->Halt(true);
 
     char reply[55];
-    snprintf(reply, 55, "Command Unavailible.\nShip Halted.");
+    snprintf(reply, 55, "Command Unfinished.");
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -830,10 +828,9 @@ PyResult Command_entityspawn(Client* pClient, CommandDB* db, PyServiceMgr* servi
 
 //sm.RemoteSvc('slash').SlashCmd('/entityspawn {0} {1} {2} 0 {3}'.format(recipeID, typeID, x, y))
     /** @todo  finish this.... */
-    pClient->GetShipSE()->DestinyMgr()->Halt(true);
 
     char reply[55];
-    snprintf(reply, 55, "Command Unfinished.\nShip Halted.");
+    snprintf(reply, 55, "Command Unfinished.");
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -1017,6 +1014,7 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     str << "    Qty  ItemName  (volume each)  stack volume<br>"; //50
 
     // get available cargo holds in ship and list contents for each
+    // TODO:  should this remove holds not available for this ship?  probably so
 
     // all ships have flagCargoHold (except pod)
     ++count;
@@ -1127,7 +1125,7 @@ PyResult Command_bubblewarp(Client* pClient, CommandDB* db, PyServiceMgr* servic
     if (args.argCount() < 2)
         throw CustomError("Usage is: '.bubblewarp <bubbleID>.");
     if (!args.isNumber(1))
-        throw CustomError("Argument 1 must be a valid bubbleID.");
+        throw CustomError("Argument must be a number.");
     uint16 bubbleID = atoi(args.arg(1).c_str());
     SystemBubble* pBubble = sBubbleMgr.FindBubbleByID(bubbleID);
     if (pBubble == nullptr)
@@ -1141,7 +1139,7 @@ PyResult Command_bubblewarp(Client* pClient, CommandDB* db, PyServiceMgr* servic
 
     int size(50);
     char reply[size];
-    snprintf(reply, size, "Ship Initalized warp to bubbleID %u", bubbleID);
+    snprintf(reply, size, "Ship Initialized warp to bubbleID %u", bubbleID);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
