@@ -1124,6 +1124,8 @@ PyResult Command_bubblewarp(Client* pClient, CommandDB* db, PyServiceMgr* servic
     if (!pClient->GetShipSE()->DestinyMgr())
         throw CustomError("You have no destiny manager.");
 
+    if (args.argCount() < 2)
+        throw CustomError("Usage is: '.bubblewarp <bubbleID>.");
     if (!args.isNumber(1))
         throw CustomError("Argument 1 must be a valid bubbleID.");
     uint16 bubbleID = atoi(args.arg(1).c_str());
@@ -1250,7 +1252,7 @@ PyResult Command_version(Client* pClient, CommandDB* db, PyServiceMgr* services,
     char reply[size];
     snprintf(reply, size, str.str().c_str(), NPC_AI_Version, Drone_AI_Version, Sentry_AI_Version, \
             POS_AI_Version, Civilian_AI_Version, Scan_Version, Mission_Version);
-    
+
     pClient->SendInfoModalMsg(reply);
     return nullptr;
 }
