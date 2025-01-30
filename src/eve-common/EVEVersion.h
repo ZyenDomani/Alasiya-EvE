@@ -42,7 +42,7 @@ static const int32 EVEBirthday = 170472;
 //static std::string GIT_SHORT_HASH = std::string(GIT_COMMIT_HASH).erase(7, std::string::npos);
 //static std::string REVISION_STRING = std::string("0.72.75-") + std::string(GIT_BRANCH) + std::string("-") + GIT_SHORT_HASH;
 
-static const char* const EVEMU_REVISION = "0.72.91";
+static const char* const EVEMU_REVISION = "0.72.95";
 static const char* const EVEMU_BUILD_DATE = __DATE__;
 
 /*  Allan's Static Definitions */

@@ -25,7 +25,10 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 
 same acct can be logged in multiple times
 
-!! destiny (all space movement)
+ship max speed set to 100 after ??
+
+!! destiny (all space movement)  NOTE: 28Jan25  MUCH better than any previous incarnation.  movement tracking very close
+  warp-in tracking and showing very well for all ships
 
 to avoid db hits for every dock/undock, implement postExpression processing
   -- yeah, easier to delete/reload
@@ -114,7 +117,8 @@ implement TerminalExplosion.  to be sent after RemoveBalls
 
 after using "Loot All" on yellow wreck, items dont show up in cargo.  (diff ownerID)
   inv::load should use locationID (and does) but not sure about ownerID bit...review
-  
+  NOTE:  all items show after relog
+
 character remap needs a bit more work.  attributes and bonuses save/load correctly.  client code needs update
 
 remove GPoint/GVector code and just write my own.
@@ -408,10 +412,6 @@ shooting wrecks to destroy loot.
     - this really is a thing on live.  implement it.
   - should call TargetManager::Destroyed() to properly shut down other modules targeting this item
 
-need to verify GFX data in modules
-  - notably, some single-run modules have m_repeat set which sends to client as a repeat event  (survey scanner)
-  - while this mostly works, its not right.  seems like this type of module should be repeat=0
-
 warp scram should deactivate mwd and deny activation (it IS a micro WARP drive...)
 
 module/rack OL incomplete.  includes OL Heat (basic heat code done/working)  -priority level: low-med
@@ -433,16 +433,21 @@ prop mod destiny call - update ship speed to AccelTime math isnt right...see cru
 *******************************************************
 *****************   module/ship gFx
 
-***  ideas
-
-***  errors
-
-
-***  other
+***  ideas/improvements
 
 update all specialFX to use common call in DestinyManager code.
 this includes fx13 and fx10 calls
     - see notes above for specialFX code improvements
+    - code snippet in destiny.h
+
+turn fx sending on and follow calls to verify proper OnSpecialFX data
+    - found and added client fx classification data to destinyMgr.h   where?? i dont see it
+
+***  errors
+
+need to verify GFX data in modules
+  - notably, some single-run modules have m_repeat set which sends to client as a repeat event  (survey scanner)
+  - while this mostly works, its not right.  seems like this type of module should be repeat=0
 
 23:51:06 [FxError] guid empty for F85 Peripheral Damage System I using effectID 2302
 isDefault used to send to activate for effectID
@@ -451,17 +456,22 @@ go thru all gfx "effect.xxx" and cross with EVEEffectID to verify
     - stripminer on hulk working 20feb21 (still 1Feb23)
     - salvager on trasher working 20feb21
 
-turn fx sending on and follow calls to verify proper OnSpecialFX data
-    - found and added client fx classification data to destinyMgr.h   where?? i dont see it
-
 mining gfx/deactivate is almost immediate.  this is supposed to have a 5s timer to simulate module shutdown
   looks immediate.  timer shows 5s.  needs more review
+
+
+***  other
+
+finish DestinyManager::SendCloakFx()
 
 
 *******************************************************
 *******************************************************
 ********  improvements...low priority
 
+
+all the *Timers in client are actually SetTime +1s
+ ...reason being is one tic to check (current tic +0), next tic to set (=1),  then another tic to hit (+2)
 
 add formatting and colors to custom error msgs
   - seem like client msg window has limited support for html
@@ -579,8 +589,6 @@ add cache calls/data for systems that use it after debugging and testing complet
 
 write new methods for List() and Move() for bookmarks where owner != player
 currently, all bookmarks are donated to calling player when moved into cargo/hangar
-
-finish DestinyManager::SendCloakFx()
 
 check client's locationID vs stationID.
     - multiple calls in client will test for these as separate values (tested separately)
@@ -990,6 +998,8 @@ finish player command "srvoptions" to show current server settings in client not
 aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for all clients in system
     - should create instance on system boot, then pass that instance to clients when requested.
     - possible global static instance?  any way to make global and keep track of everything?
+    ** remove from /character/* and put in /system/*
+    - code notes in AggressionMgrService.h
 
 drone chat window for drone specific msgs (using individual drone as sender)  depending on player drone skill(s)?
 player command to show drones' TargetedBy map
