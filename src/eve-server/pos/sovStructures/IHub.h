@@ -17,15 +17,16 @@ class IHubSE
 {
 public:
     IHubSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& fData);
-    virtual ~IHubSE()                                  { /* do nothing here */ }
+    virtual ~IHubSE()                                   { /* do nothing here */ }
 
     /* class type pointer querys. */
-    virtual IHubSE*             GetIHubSE()            { return this; }
+    virtual const char*         GetSEType()             { return "IHub SE"; }
+    virtual IHubSE*             GetIHubSE()             { return this; }
     virtual bool                isGlobal()              { return true; }
     virtual bool                IsOperSE()              { return true; }
 
     /* class type tests. */
-    virtual bool                IsIHubSE()             { return true; }
+    virtual bool                IsIHubSE()              { return true; }
 
     /* SystemEntity interface */
     virtual void                Process();

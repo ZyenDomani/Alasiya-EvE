@@ -24,6 +24,7 @@ public:
     virtual ~TowerSE()                                  { /* do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Tower SE"; }
     virtual TowerSE*            GetTowerSE()            { return this; }
 
     /* class type tests. */

@@ -77,7 +77,6 @@ private:
 /**
  * ObjectSystemEntity which represents asteroid object in space
  */
-
 class AsteroidSE
 : public ObjectSystemEntity
 {
@@ -86,6 +85,7 @@ public:
     virtual ~AsteroidSE()                               { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Asteroid SE"; }
     virtual AsteroidSE* GetAsteroidSE()                 { return this; }
     /* class type tests. */
     virtual bool IsAsteroidSE()                         { return true; }

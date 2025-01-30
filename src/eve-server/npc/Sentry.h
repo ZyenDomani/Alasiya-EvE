@@ -25,6 +25,7 @@ public:
     virtual ~Sentry();
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Sentry SE"; }
     virtual Sentry* GetSentrySE()                       { return this; }
     /* class type tests. */
     virtual bool IsSentrySE()                           { return true; }

@@ -85,17 +85,19 @@ protected:
 };
 
 
+class PyServiceMgr;
+
 /**
  * ItemSystemEntity which represents celestial object in space
  */
-class PyServiceMgr;
-
-class CelestialSE : public ItemSystemEntity {
+class CelestialSE
+: public ItemSystemEntity {
 public:
     CelestialSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system);
     virtual ~CelestialSE()                              { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Celestial SE"; }
     virtual const CelestialSE*  GetCelestialSE()        { return this; }
     /* class type tests. */
     virtual bool                IsCelestialSE()         { return true; }
@@ -110,6 +112,7 @@ public:
     virtual ~AnomalySE()                                { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Anomaly SE"; }
     virtual AnomalySE*          GetAnomalySE()          { return this; }
     /* class type tests. */
     /* Base */
@@ -127,6 +130,7 @@ public:
     virtual ~WormholeSE()                               { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Wormhole SE"; }
     virtual WormholeSE*          GetWormholeSE()        { return this; }
     /* class type tests. */
     /* Base */

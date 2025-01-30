@@ -46,6 +46,7 @@ public:
     virtual ~NPC();
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "NPC SE"; }
     virtual NPC* GetNPCSE()                             { return this; }
     /* class type tests. */
     virtual bool IsNPCSE()                              { return true; }

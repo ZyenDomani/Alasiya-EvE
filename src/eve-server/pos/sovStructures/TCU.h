@@ -17,10 +17,11 @@ class TCUSE
 {
 public:
     TCUSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& fData);
-    virtual ~TCUSE()                                  { /* do nothing here */ }
+    virtual ~TCUSE()                                    { /* do nothing here */ }
 
     /* class type pointer querys. */
-    virtual TCUSE*              GetTCUSE()            { return this; }
+    virtual const char*         GetSEType()             { return "TCU SE"; }
+    virtual TCUSE*              GetTCUSE()              { return this; }
 
     /* class type tests. */
     /* Base */

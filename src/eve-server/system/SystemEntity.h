@@ -117,6 +117,7 @@ public:
     /* class type pointer querys, grouped by base class.  public for anyone to access. */
     /* Base */
     virtual SystemEntity*       GetSE()                 { return this; }
+    virtual const char*         GetSEType()             { return "Base SE"; }
     /* Static */
     virtual StaticSystemEntity* GetStaticSE()           { return nullptr; }
     virtual StationSE*          GetStationSE()          { return nullptr; }
@@ -332,6 +333,7 @@ public:
     virtual ~StaticSystemEntity()                       { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Static SE"; }
     virtual StaticSystemEntity* GetStaticSE()           { return this; }
     /* class type tests. */
     /* Base */
@@ -374,6 +376,7 @@ public:
     virtual ~BeltSE()                                   { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Belt SE"; }
     virtual BeltSE*             GetBeltSE()             { return this; }
     /* class type tests. */
     virtual bool                IsSystemEntity()        { return false; }
@@ -417,6 +420,7 @@ public:
     virtual ~StargateSE()                               { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Stargate SE"; }
     virtual StargateSE*         GetGateSE()             { return this; }
     /* class type tests. */
     virtual bool                IsSystemEntity()        { return false; }
@@ -463,6 +467,7 @@ public:
     virtual ~ItemSystemEntity()                         { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Item SE"; }
     virtual ItemSystemEntity*   GetItemSE()             { return this; }
     /* class type tests. */
     virtual bool                IsSystemEntity()        { return false; }
@@ -501,6 +506,7 @@ public:
     virtual ~FieldSE()                             { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Field SE"; }
     virtual FieldSE*            GetFieldSE()            { return this; }
     /* class type tests. */
     virtual bool                IsSystemEntity()        { return false; }
@@ -532,6 +538,7 @@ public:
     virtual ~ObjectSystemEntity();
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Object SE"; }
     virtual ObjectSystemEntity* GetObjectSE()           { return this; }
     /* class type tests. */
     virtual bool                IsSystemEntity()        { return false; }
@@ -578,6 +585,7 @@ public:
     virtual ~DeployableSE()                             { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Deployable SE"; }
     virtual DeployableSE*       GetDeployableSE()       { return this; }
     /* class type tests. */
     virtual bool                IsSystemEntity()        { return false; }
@@ -606,6 +614,7 @@ public:
     virtual ~DynamicSystemEntity();
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Dynamic SE"; }
     virtual DynamicSystemEntity* GetDynamicSE()         { return this; }
     /* class type tests. */
     virtual bool                IsSystemEntity()        { return false; }

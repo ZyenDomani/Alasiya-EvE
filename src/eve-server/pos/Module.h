@@ -24,6 +24,7 @@ public:
     virtual ~ModuleSE()                                 { /* do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Module SE"; }
     virtual ModuleSE*           GetModuleSE()           { return this; }
 
     /* class type tests. */
@@ -47,6 +48,7 @@ public:
     virtual ~ReactorSE();
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Reactor SE"; }
     virtual ReactorSE*          GetReactorSE()          { return this; }
 
     /* class type tests. */

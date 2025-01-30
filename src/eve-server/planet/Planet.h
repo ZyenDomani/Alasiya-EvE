@@ -45,6 +45,7 @@ public:
     virtual void                Process();
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Planet SE"; }
     virtual PlanetSE*           GetPlanetSE()           { return this; }
     /* class type tests. */
     virtual bool                IsPlanetSE()            { return true; }

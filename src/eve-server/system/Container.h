@@ -146,6 +146,7 @@ public:
     /* Base */
     virtual bool                isGlobal()              { return m_global; }
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Container SE"; }
     virtual ContainerSE* GetContSE()                    { return this; }
     /* class type tests. */
     virtual bool IsContainerSE()                        { return true; }
@@ -248,6 +249,7 @@ public:
     virtual ~WreckSE();
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Wreck SE"; }
     virtual WreckSE*            GetWreckSE()            { return this; }
     /* class type tests. */
     virtual bool                IsWreckSE()             { return true; }

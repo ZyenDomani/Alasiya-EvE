@@ -17,15 +17,16 @@ class SBUSE
 {
 public:
     SBUSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& fData);
-    virtual ~SBUSE()                                  { /* do nothing here */ }
+    virtual ~SBUSE()                                    { /* do nothing here */ }
 
     /* class type pointer querys. */
-    virtual SBUSE*              GetSBUSE()            { return this; }
+    virtual const char*         GetSEType()             { return "SBU SE"; }
+    virtual SBUSE*              GetSBUSE()              { return this; }
     virtual bool                isGlobal()              { return true; }
     virtual bool                IsOperSE()              { return true; }
 
     /* class type tests. */
-    virtual bool                IsSBUSE()             { return true; }
+    virtual bool                IsSBUSE()               { return true; }
 
     /* SystemEntity interface */
     virtual void                Process();

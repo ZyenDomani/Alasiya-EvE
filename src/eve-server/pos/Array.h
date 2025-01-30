@@ -23,6 +23,7 @@ public:
     virtual ~ArraySE()                                  { /* do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Array SE"; }
     virtual ArraySE*            GetArraySE()            { return this; }
 
     /* class type tests. */

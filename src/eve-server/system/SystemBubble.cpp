@@ -112,8 +112,7 @@ void SystemBubble::Process() {
 }
 
 //called from the bubble manager.
-//if any entity is no longer in their registered bubble,
-//they are added to the vector for re-classification.
+//if any entity is no longer in their registered bubble, they are added to the vector for re-classification.
 void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
     SystemEntity* pSE(nullptr);
     std::map<uint32, SystemEntity*>::iterator itr = m_dynamicEntities.begin();
@@ -130,7 +129,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             continue;
         }
         if (!InBubble(pSE->GetPosition())) {
-            wanderers.push_back( pSE );
+            wanderers.push_back(pSE);
             //17:38:57 [DestinyWarning] SysBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
             _log(DESTINY__WARNING, "SysBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
                         pSE->GetID(), pSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);

@@ -33,6 +33,7 @@ public:
     virtual ~MoonSE()                                   { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Moon SE"; }
     virtual MoonSE* GetMoonSE()                         { return this; }
     /* class type tests. */
     virtual bool IsMoonSE()                             { return true; }

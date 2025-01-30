@@ -166,12 +166,12 @@ private:
 };
 
 
-/**
- * StaticSystemEntity which represents Station object in space
- */
 class PyServiceMgr;
 class SystemManager;
 
+/**
+ * StaticSystemEntity which represents Station object in space
+ */
 class StationSE
 : public StaticSystemEntity
 {
@@ -180,6 +180,7 @@ public:
     virtual ~StationSE()                                { /* Do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Station SE"; }
     virtual StationSE* GetStationSE()                   { return this; }
     /* Static */
     virtual bool IsStationSE()                          { return true; }

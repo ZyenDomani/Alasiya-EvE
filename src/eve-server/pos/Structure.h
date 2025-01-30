@@ -82,9 +82,6 @@ private:
 };
 
 
-/**
- * ObjectSystemEntity which represents structure object in space
- */
 class Client;
 class Missile;
 class MoonSE;
@@ -97,6 +94,9 @@ class ArraySE;
 class BatterySE;
 class WeaponSE;
 
+/**
+ * ObjectSystemEntity which represents structure object in space
+ */
 class StructureSE
 : public DynamicSystemEntity
 {
@@ -105,6 +105,7 @@ public:
     virtual ~StructureSE()  { /* do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Structure SE"; }
     virtual StructureSE*        GetPOSSE()              { return this; }
     virtual TowerSE*            GetTowerSE()            { return nullptr; }
     virtual ArraySE*            GetArraySE()            { return nullptr; }

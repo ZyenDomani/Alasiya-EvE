@@ -23,6 +23,7 @@ public:
     virtual ~BatterySE()                                { /* do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Battery SE"; }
     virtual BatterySE*          GetBatterySE()          { return this; }
 
     /* class type tests. */

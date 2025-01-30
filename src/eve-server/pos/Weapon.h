@@ -23,6 +23,7 @@ public:
     virtual ~WeaponSE()                                 { /* do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Weapon SE"; }
     virtual WeaponSE*           GetWeaponSE()           { return this; }
 
     /* class type tests. */

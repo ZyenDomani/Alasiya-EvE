@@ -85,17 +85,28 @@ void BubbleManager::Process() {
         }
 
         if (!m_wanderers.empty()) {
-            for (auto &cur : m_wanderers) {
-                // do we really want to check this?
-                if (cur->GetPosition().isNaN() or cur->GetPosition().isInf() or cur->GetPosition().isZero()) {
+            // these are never null 
+            std::vector<SystemEntity*>::iterator itr = m_wanderers.begin();
+            while (itr != m_wanderers.end()) {
+                // do we really want to check this?  yes.  have found errors where position isNaN
+                if ((*itr)->GetPosition().isNaN() or (*itr)->GetPosition().isInf() or (*itr)->GetPosition().isZero()) {
                     // position error.  this will screw things up.  if haspilot, send error.
-                    if (cur->HasPilot())
-                        cur->GetPilot()->SendErrorMsg("Internal Server Error.<br>Please either dock or relog.");
+                    if ((*itr)->HasPilot()) {
+                        (*itr)->GetPilot()->SendErrorMsg("Internal Server Error.<br>Invalid Position.  Sending you to your home station.");
+                        (*itr)->GetPilot()->MoveToLocation((*itr)->GetPilot()->GetCloneStationID(), NULL_ORIGIN);
+                    } else if ((*itr)->IsNPCSE()) {
+                        SystemEntity* pSE = *itr;
+                        itr = m_wanderers.erase(itr);
+                        pSE->Delete();
+                        SafeDelete(pSE);
+                    } else { //TODO: add items to check here
+                        sLog.Error("BubbleMgr", "Wanderer %s(%s) position invalid.", (*itr)->GetName(), (*itr)->GetSEType());
+                    }
                     continue;
                 }
                 _log(BUBBLE__WARNING, "BubbleManager::Process() - Calling Checkbubble() for Wanderer %s(%u) in %s(%u).", \
-                        cur->GetName(), cur->GetID(), cur->SystemMgr()->GetName(), cur->SystemMgr()->GetID());
-                CheckBubble(cur);
+                        (*itr)->GetName(), (*itr)->GetID(), (*itr)->SystemMgr()->GetName(), (*itr)->SystemMgr()->GetID());
+                CheckBubble(*itr);
             }
             m_wanderers.clear();
         }

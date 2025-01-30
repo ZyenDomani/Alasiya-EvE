@@ -307,6 +307,7 @@ public:
     virtual ~ShipSE()                                   { /* do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Ship SE"; }
     virtual ShipSE* GetShipSE()                         { return this; }
     /* class type tests. */
     virtual bool IsShipSE()                             { return true; }

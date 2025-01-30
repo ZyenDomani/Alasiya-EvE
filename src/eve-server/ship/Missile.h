@@ -42,6 +42,7 @@ public:
     virtual ~Missile()                                  { /* do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Missle SE"; }
     virtual Missile* GetMissileSE()                     { return this; }
     /* Dynamic */
     virtual bool IsMissileSE()                          { return true; }

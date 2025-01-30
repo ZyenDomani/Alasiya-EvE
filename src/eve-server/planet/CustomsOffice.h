@@ -29,6 +29,7 @@ public:
 
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Customs SE"; }
     virtual CustomsSE*          GetCOSE()               { return this; }
 
     /* class type tests. */

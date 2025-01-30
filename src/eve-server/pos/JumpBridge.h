@@ -23,6 +23,7 @@ public:
     virtual ~JumpBridgeSE()                                { /* do nothing here */ }
 
     /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Bridge SE"; }
     virtual JumpBridgeSE*       GetJumpBridgeSE()          { return this; }
 
     /* class type tests. */
