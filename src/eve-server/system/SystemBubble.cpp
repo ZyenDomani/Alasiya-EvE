@@ -386,78 +386,86 @@ void SystemBubble::PrintEntityList() {
         sLog.Blue("SysBubble::PrintEntityList()", "Bubble %u in %s is empty", m_bubbleID, m_system->GetName());
         return;
     }
-    bool found = false;
-    std::map<uint32, SystemEntity*> SElist = m_entities;
-    std::copy(m_dynamicEntities.begin(), m_dynamicEntities.end(), SElist.end());
+
+    bool found(false);
+    std::vector<SystemEntity*> SElist;
+    // load all entities visible in this bubble
+    for (auto &cur : m_entities)
+        SElist.push_back(cur.second);
+    for (auto &cur : m_dynamicEntities)
+        SElist.push_back(cur.second);
+
     for (auto &cur : SElist) {
         found = false;
-        if (cur.second->isGlobal()) {
-            if (cur.second->IsStaticEntity()) {
-                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Global and Static.", cur.second->GetName(), cur.second->GetID());
+        if (cur->isGlobal()) {
+            if (cur->IsStaticEntity()) {
+                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Global and Static.", cur->GetName(), cur->GetID());
                 found = true;
             } else {
                 //this should only hit beacons and cynos as global and not static
-                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Global and not Static.", cur.second->GetName(), cur.second->GetID());
+                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Global and not Static.", cur->GetName(), cur->GetID());
                 found = true;
             }
         }
-        if (cur.second->IsShipSE()) {
-            if (cur.second->HasPilot()) {
-                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Player Ship.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsShipSE()) {
+            if (cur->DestinyMgr()->IsCloaked()) {
+                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Cloaked Ship.", cur->GetName(), cur->GetID()); found = true;
+            } else if (cur->HasPilot()) {
+                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Player Ship.", cur->GetName(), cur->GetID()); found = true;
             } else {
-                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Empty Player Ship.", cur.second->GetName(), cur.second->GetID()); found = true;
+                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Empty Player Ship.", cur->GetName(), cur->GetID()); found = true;
             }
         }
-        if (cur.second->IsNPCSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is NPC.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsNPCSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is NPC.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsJumpBridgeSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is JumpBridge.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsJumpBridgeSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is JumpBridge.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsTCUSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is TCU.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsTCUSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is TCU.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsCOSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Customs Office.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsCOSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Customs Office.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsSBUSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is SBU.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsSBUSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is SBU.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsTowerSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Tower.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsTowerSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Tower.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsPOSSE() and !found) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is other POS and !found.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsPOSSE() and !found) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is other POS and !found.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsContainerSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Container.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsContainerSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Container.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsWreckSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Wreck.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsWreckSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Wreck.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsOutpostSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Outpost.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsOutpostSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Outpost.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsAsteroidSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Asteroid.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsAsteroidSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Asteroid.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsDeployableSE()) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Deployable.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsDeployableSE()) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Deployable.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsStaticEntity() and !found) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Static and !found.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsStaticEntity() and !found) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Static and !found.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsItemEntity() and !found) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Item and !found.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsItemEntity() and !found) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Item and !found.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsObjectEntity() and !found) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Object and !found.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsObjectEntity() and !found) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Object and !found.", cur->GetName(), cur->GetID()); found = true;
         }
-        if (cur.second->IsDynamicEntity() and !found) {
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Dynamic and !found.", cur.second->GetName(), cur.second->GetID()); found = true;
+        if (cur->IsDynamicEntity() and !found) {
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Dynamic and !found.", cur->GetName(), cur->GetID()); found = true;
         }
         if (!found)
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is None of the Above.", cur.second->GetName(), cur.second->GetID());
+            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is None of the Above.", cur->GetName(), cur->GetID());
     }
 }
 
