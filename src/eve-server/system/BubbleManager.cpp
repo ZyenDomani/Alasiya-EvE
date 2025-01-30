@@ -85,30 +85,32 @@ void BubbleManager::Process() {
         }
 
         if (!m_wanderers.empty()) {
-            // these are never null 
+            // these are never null
             std::vector<SystemEntity*>::iterator itr = m_wanderers.begin();
             while (itr != m_wanderers.end()) {
+                SystemEntity* pSE = *itr;
                 // do we really want to check this?  yes.  have found errors where position isNaN
-                if ((*itr)->GetPosition().isNaN() or (*itr)->GetPosition().isInf() or (*itr)->GetPosition().isZero()) {
+                if (pSE->GetPosition().isNaN() or pSE->GetPosition().isInf() or pSE->GetPosition().isZero()) {
                     // position error.  this will screw things up.  if haspilot, send error.
-                    if ((*itr)->HasPilot()) {
-                        (*itr)->GetPilot()->SendErrorMsg("Internal Server Error.<br>Invalid Position.  Sending you to your home station.");
-                        (*itr)->GetPilot()->MoveToLocation((*itr)->GetPilot()->GetCloneStationID(), NULL_ORIGIN);
-                    } else if ((*itr)->IsNPCSE()) {
-                        SystemEntity* pSE = *itr;
-                        itr = m_wanderers.erase(itr);
+                    if (pSE->HasPilot()) {
+                        pSE->GetPilot()->SendErrorMsg("Internal Server Error.<br>Invalid Position.  Sending you to your home station.");
+                        pSE->GetPilot()->MoveToLocation(pSE->GetPilot()->GetCloneStationID(), NULL_ORIGIN);
+                    } else if (pSE->IsNPCSE()) {
                         pSE->Delete();
                         SafeDelete(pSE);
                     } else { //TODO: add items to check here
-                        sLog.Error("BubbleMgr", "Wanderer %s(%s) position invalid.", (*itr)->GetName(), (*itr)->GetSEType());
+                        sLog.Error("BubbleMgr", "Wanderer %s(%s) position invalid.", pSE->GetName(), pSE->GetSEType());
                     }
+
+                    itr = m_wanderers.erase(itr);
                     continue;
                 }
                 _log(BUBBLE__WARNING, "BubbleManager::Process() - Calling Checkbubble() for Wanderer %s(%u) in %s(%u).", \
-                        (*itr)->GetName(), (*itr)->GetID(), (*itr)->SystemMgr()->GetName(), (*itr)->SystemMgr()->GetID());
-                CheckBubble(*itr);
+                        pSE->GetName(), pSE->GetID(), pSE->SystemMgr()->GetName(), pSE->SystemMgr()->GetID());
+                CheckBubble(pSE);
+                itr = m_wanderers.erase(itr);
             }
-            m_wanderers.clear();
+            //m_wanderers.clear();
         }
 
         RemoveEmpty();
@@ -209,8 +211,8 @@ void BubbleManager::Remove(SystemEntity* pSE) {
  *
  * NOTE:  these are only used here...
  */
-SystemBubble* BubbleManager::FindBubble(SystemEntity *ent) const {
-    return FindBubble(ent->SystemMgr()->GetID(), ent->GetPosition());
+SystemBubble* BubbleManager::FindBubble(SystemEntity *pSE) const {
+    return FindBubble(pSE->SystemMgr()->GetID(), pSE->GetPosition());
 }
 
 SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &position) const {
@@ -224,7 +226,7 @@ SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &position)
         if (itr->second->InBubble(position))
             return itr->second;
 
-    //not in any existing bubble.
+    //not in any existing bubble in given systemID
     return nullptr;
 }
 

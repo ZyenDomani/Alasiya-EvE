@@ -56,11 +56,11 @@ public:
     // call to check for and remove empty bubbles from bubble vector
     void RemoveEmpty();
     //call whenever an entity may have left its bubble.
-    void CheckBubble(SystemEntity* ent);
+    void CheckBubble(SystemEntity* pSE);
     //call when an entity is added to the system.
     void Add(SystemEntity* pSE, bool isPostWarp = false);
     //call to find the bubble containing the SystemEntity specified, if no bubble does, return NULL
-    SystemBubble* FindBubble(SystemEntity *ent) const;
+    SystemBubble* FindBubble(SystemEntity *pSE) const;
     //call to find the bubble containing the GPoint specified, if no bubble does, return NULL
     SystemBubble* FindBubble(uint32 systemID, const GPoint &pos) const;
     SystemBubble* FindBubbleByID(uint16 bubbleID);
@@ -70,7 +70,7 @@ public:
     //call to calculate new bubble's center from entity's velocity:
     void NewBubbleCenter(GVector shipVelocity, GPoint& newBubbleCenter);
     //call when an entity is removed from the system.
-    void Remove(SystemEntity* ent);
+    void Remove(SystemEntity* pSE);
     void clear();
     void ClearSystemBubbles(uint32 systemID);
     void RemoveBubble(uint32 systemID, SystemBubble* pSB);
