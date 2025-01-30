@@ -388,11 +388,19 @@ void SystemBubble::PrintEntityList() {
     }
     bool found = false;
     std::map<uint32, SystemEntity*> SElist = m_entities;
-    std::copy(SElist.begin(), SElist.end(), std::inserter(m_dynamicEntities, m_dynamicEntities.end()));
+    std::copy(m_dynamicEntities.begin(), m_dynamicEntities.end(), SElist.end());
     for (auto &cur : SElist) {
         found = false;
-        if (cur.second->isGlobal())  //this should only hit beacons and cynos as global AND not static
-            sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Global.", cur.second->GetName(), cur.second->GetID());
+        if (cur.second->isGlobal()) {
+            if (cur.second->IsStaticEntity()) {
+                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Global and Static.", cur.second->GetName(), cur.second->GetID());
+                found = true;
+            } else {
+                //this should only hit beacons and cynos as global and not static
+                sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Global and not Static.", cur.second->GetName(), cur.second->GetID());
+                found = true;
+            }
+        }
         if (cur.second->IsShipSE()) {
             if (cur.second->HasPilot()) {
                 sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Player Ship.", cur.second->GetName(), cur.second->GetID()); found = true;
