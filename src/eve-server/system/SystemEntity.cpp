@@ -534,6 +534,7 @@ void FieldSE::EncodeDestiny(Buffer& into)
         main.formationID = 0xFF;
         into.Append( main );
     } else if (head.mode == Ball::Mode::STOP) {
+        // TODO: is this accurate?
         STOP_Struct main;
         main.formationID = 0xFF;
         into.Append( main );

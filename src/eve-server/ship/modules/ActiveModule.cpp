@@ -37,7 +37,7 @@ m_Stop(true),
 // this is an internal variable only.
 m_reloadTime(mRef->GetAttribute(AttrReloadTime).get_uint32())
 {
-    m_repeat = 1000;    //based on client data
+    m_repeat = 1000;    //good default.  this enabled continuous cycle.  less than will decrement in client
 
     if (m_needsCharge) {
         switch (mRef->groupID()) {
@@ -247,7 +247,7 @@ void ActiveModule::Clear()
     m_targetSE = nullptr;
 
     m_Stop = true;
-    m_repeat = 1;
+    m_repeat = 0;
     m_targetID = 0;
     m_effectID = 0;
     m_bubble = nullptr;
@@ -1198,13 +1198,18 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     }
 
     int64 abortTime(GetFileTimeNow());
+    int32 timeLeft(GetRemainingCycleTimeMS());
+    if (m_linked)
+        timeLeft = m_linkMaster->GetActiveModule()->GetRemainingCycleTimeMS();
+
     if (abort) {
         active = false;
         if ((m_effectID == EvE::GFXID::miningLaser)
         or  (m_effectID == EvE::GFXID::miningClouds)) {
             abortTime += (5 * EvE::Time::Second);    // delay abort for 5s to simulate module "completing" its' cycle and dumping ore to cargo
         } else {
-            abortTime += (3 * EvE::Time::Second);    // delay abort for 3s to simulate module "completing" its' cycle
+            // this needs to be module remaining time in seconds
+            abortTime += (timeLeft * EvE::Time::mSecond);    // delay abort until module completes its' cycle
         }
     }
 
@@ -1216,9 +1221,6 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         _log(EFFECTS__ERROR, "guid empty for %s using effectID %u", m_modRef->name(), m_effectID);
 
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
-    int32 timeLeft(GetRemainingCycleTimeMS());
-    if (m_linked)
-        timeLeft = m_linkMaster->GetActiveModule()->GetRemainingCycleTimeMS();
 
     if (m_destinyMgr != nullptr)
         m_destinyMgr->SendGFX14(
@@ -1241,7 +1243,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.charID = m_shipRef->ownerID();       //ENV_IDX_CHAR = 1
         ge.shipID = m_shipRef->itemID();        //ENV_IDX_SHIP = 2
         ge.target = IsValidTarget(m_targetID) ? new PyInt(m_targetID) : PyStatic.NewNone();     //ENV_IDX_TARGET = 3
-        ge.area = new PyList();                 //ENV_IDX_AREA = 5 still dont know what this is.
+        ge.area = new PyList();                 //ENV_IDX_AREA = 5 still dont know what this is...always empty
         ge.effectID = m_effectID;               //ENV_IDX_EFFECT = 6
 
     if (chgTypeID > 0) {
@@ -1265,7 +1267,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.environment = ge.Encode();
         shipEff.startTime = (abort ? (abortTime / EvE::Time::Second) : shipEff.timeNow - (timeLeft * EvE::Time::Second));
         shipEff.duration = (abort ? 2000 : timeLeft);  // duration in seconds
-        shipEff.repeat = m_repeat;
+        shipEff.repeat = m_repeat;      // repeat < 1000 will count down (if x<1000 then --x)
+        shipEff.randomSeed = pyStatic.NewNone();
         // will need to check and update for data miners here  (any other cases?)
         if ((groupID() == EVEDB::invGroups::Salvager) and IsSuccess()) {
             // Create Destiny Updates:
