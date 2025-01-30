@@ -993,6 +993,7 @@ void StructureSE::SendEffectUpdate(int16 effectID, bool active)
     shipEff.startTime = shipEff.timeNow; // do we need to adjust this?
     shipEff.duration = (active ? 0 : -1);
     shipEff.repeat = (active ? 1 : 0);
+    shipEff.randomSeed = PyStatic.NewNone();
     shipEff.error = PyStatic.NewNone();
     PyList *events = new PyList();
     events->AddItem(shipEff.Encode());

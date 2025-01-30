@@ -1,5 +1,4 @@
 /*
- *
  *      this file is for cross referencing effect data.
  *      there are also checks where i use these fxIDs
  *
@@ -14,8 +13,6 @@
  *  allan - 21 March 2017
  *  verified again - 3Feb23
  */
-
-//TODO:  fix this to use namespace
 
 namespace EvE {
     namespace GFXID {

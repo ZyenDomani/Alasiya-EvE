@@ -97,6 +97,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
     }
 
         shipEff.repeat = (online ? 1 : 0);
+        shipEff.randomSeed = PyStatic.NewNone();
         shipEff.error = PyStatic.NewNone();
     PyList* events = new PyList();
         events->AddItem(shipEff.Encode());

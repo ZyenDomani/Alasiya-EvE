@@ -1071,7 +1071,7 @@ bool ActiveModule::CanActivate()
             case Tractor_Beam: {
                 /** @todo  add checks for other items vs cap tractors and maybe some items for small tractors */
                 bool allowed(false);
-                if ( m_targetSE->IsWreckSE()) {
+                if (m_targetSE->IsWreckSE()) {
                     allowed = true;
                 } else if (m_targetSE->IsContainerSE()) {
                     if (m_targetSE->GetContSE()->IsAnchored()) {
@@ -1194,6 +1194,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         // this is a major error.  make better warning.
         //_log(EFFECTS__ERROR, "fxID = 0 for %s.", m_modRef->name());
         sLog.Error("AM::ShowEffect()", "fxID=0 for %s.", m_modRef->name());
+        EvE::traceStack();
         return;
     }
 
@@ -1268,7 +1269,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.startTime = (abort ? (abortTime / EvE::Time::Second) : shipEff.timeNow - (timeLeft * EvE::Time::Second));
         shipEff.duration = (abort ? 2000 : timeLeft);  // duration in seconds
         shipEff.repeat = m_repeat;      // repeat < 1000 will count down (if x<1000 then --x)
-        shipEff.randomSeed = pyStatic.NewNone();
+        shipEff.randomSeed = PyStatic.NewNone();
         // will need to check and update for data miners here  (any other cases?)
         if ((groupID() == EVEDB::invGroups::Salvager) and IsSuccess()) {
             // Create Destiny Updates:
@@ -1435,7 +1436,7 @@ void ActiveModule::LaunchProbe()
     GPoint pos(m_shipRef->position());
     pos.MakeRandomPointOnSphere(MakeRandomFloat(500 + m_shipRef->radius(), 1500 + m_shipRef->radius()));
 
-    //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity);
+    //ItemData(uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity);
     // we are not changing singleton status of probes
     ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagNone, 1);
     ProbeItemRef probeRef = sItemFactory.SpawnProbe(idata);

@@ -121,13 +121,11 @@ bool MiningLaser::CanActivate()
         if (m_shipRef->GetRemainingVolumeByFlag(m_holdFlag) < GetMiningVolume()) {
             _log(MINING__WARNING, "Activate() - Cargo full.  Denying Activate() on %s", m_targetSE->GetName());
             if (m_shipRef->HasPilot())
-                m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: Your Cargo is full.");
+                m_shipRef->GetPilot()->SendNotifyMsg("Module cannot Activate:<br><br> Your Cargo hold is full.");
 
             return false;
         }
-    }
 
-    if (canActivate) {
         m_IsInitialCycle = true;
         m_targetSE->SystemMgr()->GetBeltMgr()->SetActive(m_targetSE->SysBubble()->GetID());
 
@@ -143,7 +141,8 @@ bool MiningLaser::CanActivate()
     } else {
         _log(MINING__WARNING, "Activate() - Invalid target: %s", m_targetSE->GetName());
         if (m_shipRef->HasPilot())
-            m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: %s is an invalid target", m_targetSE->GetName());
+            m_shipRef->GetPilot()->SendNotifyMsg("Module cannot Activate:<br><br> %s is an invalid target for your %s", \
+                    m_targetSE->GetName(), m_modRef->name());
     }
 
     return false;

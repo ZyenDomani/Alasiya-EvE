@@ -121,6 +121,7 @@ void SuperWeapon::StopCycle(bool abort)
         shipEff.startTime = (shipEff.timeNow + (timeLeft * EvE::Time::Second));
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
+        shipEff.randomSeed = PyStatic.NewNone();
         shipEff.error = PyStatic.NewNone();
 
     PyTuple* tuple = shipEff.Encode();
@@ -238,6 +239,7 @@ void SuperWeapon::_ShowCycle()
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
+        shipEff.randomSeed = PyStatic.NewNone();
         shipEff.error = sDataMgr.NewNone();
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
