@@ -1020,7 +1020,7 @@ void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, in
         m_targetRef = InventoryItemRef(nullptr);
     }
 
-    m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(std::move(effectName)), targetID, repeat);
+    m_ModuleManager->Activate(itemID, sFxDataMgr.GetEffectID(std::move(effectName)), targetID, repeat);
 }
 
 void ShipItem::OnlineAll()

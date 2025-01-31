@@ -194,7 +194,7 @@ namespace EVEDB {
             Biohazard = 284,
             CPU_Enhancer = 285,
             Tutorial_Drone = 286,
-            Rogue_Drone = 287,
+            Rogue_Drone = 287,                          //training drones
             Faction_Drone = 288,
             Projected_ECCM = 289,
             Remote_Sensor_Booster = 290,

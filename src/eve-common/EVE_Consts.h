@@ -29,9 +29,9 @@ static const GVector NULL_ORIGIN_V(0,0,0);
 
 static const float TIC_DURATION_IN_SECONDS(1000);       // not used yet
 
-static const uint32 minWarpDistance(130000);    // 130km here, client and live defined as 150km
+static const uint32 minWarpDistance(150000);    // client and live defined as 150km
 
-static const float onlineModInSpace(0.75);     // onling modules while NOT docked or using fitting services will take 75% of capacitor capacity.
+static const float onlineModInSpace(0.75);     // onlining modules while NOT docked or using fitting services will take 75% of capacitor capacity.
 
 //   based on client code...
 static const int64 ONE_LIGHTYEAR = 9460000000000000;  // in meters
@@ -48,7 +48,7 @@ static const double Gc = 0.000000000066725985;     //per client (changed from or
 static const double SMALL_NUMBER = 0.000000000000001;
 
 // constants for destiny movement checks
-static const float ASF_CHECK = 0.001f;
+static const float ASF_CHECK = 0.0011f;
 
 // verify that NO ONE tries to use "ccp" in their name
 // also check for mysql commands among other dumb shit

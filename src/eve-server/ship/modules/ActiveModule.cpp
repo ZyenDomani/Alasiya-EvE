@@ -464,7 +464,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     if (m_repeat < 1)
         m_Stop = true;
 
-    // check for one-hit kills and stop module after cycle completes
+    // check for one-hit kills and stop module after cycle completes (was elusive error)
     if (m_needsTarget)
         if ((m_targetSE != nullptr)
         and (m_targetSE->IsDead()))
@@ -1326,6 +1326,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     PyTuple* tuple = shipEff.Encode();
     if (is_log_enabled(EFFECTS__DUMP))
         tuple->Dump(EFFECTS__DUMP, "");
+
     if ((m_destinyMgr == nullptr)
     or  (m_bubble == nullptr)
     or   m_destinyMgr->IsWarping()) {

@@ -185,7 +185,6 @@ PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call) {
     return call.client->GetChar()->GetCharacterBaseAttributes();
 }
 
-
 PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
     // called when item 'row' info not in shipState data from GetAllInfo() return
     SingleIntegerArg args;
@@ -216,6 +215,7 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
             return PyStatic.NewNone();
         } else if (pDestiny->IsWarping()) {
             /** @todo  warpsafe modules can be activated while warping.  fix this */
+            //!sFxDataMgr.isWarpSafe(effectID)
             pClient->SendNotifyMsg("You can't do this while warping");
             return PyStatic.NewNone();
         }
@@ -247,6 +247,7 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
             return PyStatic.NewNone();
         } else if (pDestiny->IsWarping()) {
             /** @todo  warpsafe modules can be deactivated while warping.  fix this */
+            //!sFxDataMgr.isWarpSafe(effectID)
             pClient->SendNotifyMsg("You can't do this while warping");
             return PyStatic.NewNone();
         }

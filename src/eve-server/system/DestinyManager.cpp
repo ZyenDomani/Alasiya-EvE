@@ -754,7 +754,7 @@ void DestinyManager::MoveObject() {
             SetPosition(m_position, true);
             // this should never get here after warping with ap.
             // if it does, we'll have to code something to ignore it.
-            //Halt(true);
+            Halt(true);
             return;
         }
     } else if (m_orbiting) {
@@ -800,9 +800,10 @@ void DestinyManager::MoveObject() {
                     mySE->GetName(), mySE->GetID(), (m_accel ? "True" : "False"), (m_decel ? "True" : "False"), \
                     timeStamp, (m_tractored ? "True" : "False"), (m_tractorPause ? "True" : "False"));
             if (mySE->HasPilot())
-                mySE->GetPilot()->SendNotifyMsg("Error during calculations for changing ship speed. Ship halted.");
+                mySE->GetPilot()->SendNotifyMsg("Error during calculations for changing ship speed. Stopping Ship.");
 
-            Halt(true);
+            Stop();
+            //Halt(true);
             return;
         }
 
@@ -3078,6 +3079,8 @@ void DestinyManager::SendGFX10(uint32 entityID, std::string guid, int32 targetID
         effect.start = 1;
         effect.active = 0;
     PyTuple *up = effect.Encode();
+    if (is_log_enabled(EFFECTS__DUMP))
+        up->Dump(EFFECTS__DUMP, "");
     SendSingleDestinyUpdate(&up);
     PyDecRef(up);
 }
@@ -3104,6 +3107,8 @@ void DestinyManager::SendGFX14(uint32 entityID, uint32 moduleID, uint32 moduleTy
         effect.startTime = GetFileTimeNow();    // to use event start time from II once completed (this currently isntr ight)
         effect.graphicInfo = (graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo));
     PyTuple *up = effect.Encode();
+    if (is_log_enabled(EFFECTS__DUMP))
+        up->Dump(EFFECTS__DUMP, "");
     SendSingleDestinyUpdate(&up);
     PyDecRef(up);
 }

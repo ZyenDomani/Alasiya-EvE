@@ -511,7 +511,7 @@ void WreckContainer::MakeSlimItemChange()
 WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system, const FactionData &data)
 : DynamicSystemEntity(self, services, system),
 m_contRef(self),
-m_deleteTimer(sConfig.rates.WorldDecay *60 *1000),
+m_deleteTimer(sConfig.rates.WorldDecay * 60 * 1000),
 m_launchedByID(0),
 m_abandoned(false)
 {
