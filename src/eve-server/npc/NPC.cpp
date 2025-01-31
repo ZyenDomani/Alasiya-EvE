@@ -387,6 +387,9 @@ void NPC::Killed(Damage &fatal_blow) {
         _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                 GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
+    if ((MakeRandomFloat() < sConfig.npc.LootDropChance) or (m_allyID == factionRogueDrones))
+        DropLoot(wreckItemRef, m_self->groupID(), killerID);
+
     DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
         wreckEntity.categoryID = EVEDB::invCategories::Celestial;
@@ -405,11 +408,7 @@ void NPC::Killed(Damage &fatal_blow) {
         return;
     }
     m_destiny->SendJettisonPacket();
-
-    if ((MakeRandomFloat() < sConfig.npc.LootDropChance) or (m_allyID == factionRogueDrones))
-        DropLoot(wreckItemRef, m_self->groupID(), killerID);
 }
-
 
 void NPC::CmdDropLoot()
 {
