@@ -70,6 +70,7 @@ PyResult PaperDollService::Handle_UpdateExistingCharacterFull(PyCallArgs &call) 
 }
 
 PyResult PaperDollService::Handle_UpdateExistingCharacterLimited(PyCallArgs &call) {
+    // this is called when player updates their character pic
     call.Dump(PLAYER__CALL_DUMP);
     /*
         sm.RemoteSvc('paperDollServer').UpdateExistingCharacterLimited(charID, dollData, portraitInfo, dollExists)
@@ -106,14 +107,15 @@ PyResult PaperDollService::Handle_GetPaperDollPortraitDataFor(PyCallArgs &call) 
 
 PyResult PaperDollService::Handle_GetMyPaperDollData(PyCallArgs &call)
 {
+    Client* pClient = call.client;
+    sLog.Warning("GetMyPaperDollData", "Called by %s", pClient->GetName());
     call.Dump(PLAYER__CALL_DUMP);
 
-	PyDict* args = new PyDict;
-
-	args->SetItemString( "colors", m_db.GetPaperDollAvatarColors(call.client->GetCharacterID()) );
-	args->SetItemString( "modifiers", m_db.GetPaperDollAvatarModifiers(call.client->GetCharacterID()) );
-	args->SetItemString( "appearance", m_db.GetPaperDollAvatar(call.client->GetCharacterID()) );
-	args->SetItemString( "sculpts", m_db.GetPaperDollAvatarSculpts(call.client->GetCharacterID()) );
+    PyDict* args = new PyDict;
+    args->SetItemString( "colors", m_db.GetPaperDollAvatarColors(pClient->GetCharacterID()) );
+    args->SetItemString( "modifiers", m_db.GetPaperDollAvatarModifiers(pClient->GetCharacterID()) );
+    args->SetItemString( "appearance", m_db.GetPaperDollAvatar(pClient->GetCharacterID()) );
+    args->SetItemString( "sculpts", m_db.GetPaperDollAvatarSculpts(pClient->GetCharacterID()) );
 
     return new PyObject("util.KeyVal", args);
 }

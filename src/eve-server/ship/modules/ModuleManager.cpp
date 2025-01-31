@@ -1495,8 +1495,7 @@ uint8 ModuleManager::GetFittedModuleCountByGroup(uint16 groupID)
     return 0;
 }
 
-void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod)
-{
+void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod) {
     // add module to main map
     m_modules.at(flag) = pMod;
     // add module to proc maps
@@ -1513,7 +1512,8 @@ void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod)
         return;
     }
 
-    _log(MODULE__TRACE, "MM::addModuleRef() - adding %s in %s to map.", pMod->GetSelf()->name(), sDataMgr.GetFlagName(flag));
+    _log(MODULE__TRACE, "MM::addModuleRef() - adding %s in %s to %s's module map.", \
+            pMod->GetSelf()->name(), sDataMgr.GetFlagName(flag), pShipItem->name());
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if (m_modByGroup.find(pMod->groupID()) != m_modByGroup.end()) {
@@ -1569,7 +1569,8 @@ void ModuleManager::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
         return;
     }
 
-    _log(MODULE__TRACE, "MM::deleteModuleRef() - removing %s from %s.", pMod->GetSelf()->name(), sDataMgr.GetFlagName(flag));
+    _log(MODULE__TRACE, "MM::deleteModuleRef() - removing %s from %s in %s's module map.", \
+            pMod->GetSelf()->name(), sDataMgr.GetFlagName(flag), pShipItem->name());
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if (m_modByGroup.find(pMod->groupID()) != m_modByGroup.end()) {

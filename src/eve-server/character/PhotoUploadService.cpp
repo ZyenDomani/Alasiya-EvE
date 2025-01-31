@@ -45,11 +45,9 @@ PhotoUploadService::~PhotoUploadService()
     delete m_dispatch;
 }
 
-PyResult PhotoUploadService::Handle_Upload(PyCallArgs &call)
-{
+PyResult PhotoUploadService::Handle_Upload(PyCallArgs &call) {
     Call_SingleStringArg arg;
-    if (!arg.Decode(&call.tuple))
-    {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewFalse();
     }
@@ -58,7 +56,7 @@ PyResult PhotoUploadService::Handle_Upload(PyCallArgs &call)
     sImageServer.ReportNewImage(call.client->GetUserID(), data);
 
     call.client->SetPicRec(true);
-    sLog.Magenta("   PhotoUploadSvc", "Received image from account %u, size: %u", call.client->GetUserID(), (uint32)arg.arg.size());
+    sLog.Magenta("   PhotoUploadSvc", "Received image from accountID %i, size: %u", call.client->GetUserID(), (uint32)arg.arg.size());
 
     return PyStatic.NewTrue();
 }

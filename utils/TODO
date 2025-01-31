@@ -932,7 +932,7 @@ stations - look into individual hangers loaded into mem objects (charid/items)
 destiny shit - misc things found in destiny.dll
     - markers for ball's yaw, pitch, roll (dunRotation)
     - cruise velocity as a fraction of max velocity (uk)
-    - id of bubble ball belongs to, current and former (uk)
+    - id of bubble ball belongs to, both current and former (uk)
     - dunRotation is used for accel gates, customs offices, moon miners, and possibly others i havent found yet
 
 need timer/var for after cloak for targeting (cannot target x sec after uncloak - currently no delay)
