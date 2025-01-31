@@ -26,7 +26,6 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 same acct can be logged in multiple times
 
 ship max speed set to 100 after ??
-
 !! destiny (all space movement)  NOTE: 28Jan25  MUCH better than any previous incarnation.  movement tracking very close
   warp-in tracking and showing very well for all ships
 
@@ -90,9 +89,10 @@ check for item ownership before rename
 dungeon deco items need better placement
 
 error:
-"turret not fitted on shipID (npc)"
+"turret not fitted on shipID (npc)"  look for AttrGfxTurretID = 245,
 shoot sends shipID, targetID, moduleID, etc
 this is used as 'trigger' in __INIT__ for turret/missile
+turret gfx works for rogue drones....weird
 
 
 char creation - figure certs and set skills accordingly
@@ -199,7 +199,7 @@ RAM code - implement invention, re    -priority level: low
 
 blueprints - look over data and verify
     - skills not showing on tabs other than manufacturing
-    - LPRR = -11??
+    - LPRR = -11??  (runs remaining)
     - research copy time.  huge discrepancy here....  3h20m base, <1m with skills???
     - was working on stacking bpc, but with singleton code, i dont think it's possible.
       -- however, bpc is not singleton, right?  shouldnt matter.  need more testing.
@@ -469,6 +469,8 @@ finish DestinyManager::SendCloakFx()
 *******************************************************
 ********  improvements...low priority
 
+rename AttributeMap to AttributeMgr
+  actual maps can remain
 
 all the *Timers in client are actually SetTime +1s
  ...reason being is one tic to check (current tic +0), next tic to set (=1),  then another tic to hit (+2)
@@ -530,6 +532,8 @@ AuditLogSecureContainer types not coded (data coded in EvE_Inventory.h)
 skill training...
     2x training bonus for new chars (<30d)
 move skills to separate db table
+last skill in queue doesnt complete properly.  throws error in client also
+
 
 
 journal msgs need to be implemented (wip)
