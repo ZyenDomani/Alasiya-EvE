@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Rewrite:    Allan
-    AI Version: 0.57
+    AI Version: 0.59
 */
 
 /** @todo  ai update ideas
@@ -93,13 +93,14 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_maxSpeed = m_self->GetAttribute(AttrMaxVelocity).get_uint32();
     // Orbit Velocity
     m_orbitSpeed = m_self->GetAttribute(AttrEntityCruiseSpeed).get_uint32();   // ship speed when not chasing target
+    // there are 2600 of each of the following defined in db
     //AttrEntityChaseMaxDelay  - time before 'chase speed' kicks in
     //AttrEntityChaseMaxDelayChance  - chance npc will wait AttrEntityChaseMaxDelay before chasing
     //AttrEntityChaseMaxDuration  - max time a chase will last (unless weapons fired)
     //AttrEntityChaseMaxDurationChance  - chance that any chase will last for AttrEntityChaseMaxDuration
 
     // ship distances
-    //AttrEntityMaxWanderRange
+    //AttrEntityMaxWanderRange  -- none defined in db
     // Optimal Range  - TODO: test for 0
     m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_uint32();  // distance which npc starts using weapons
     // Accuracy falloff  (distance past optimal range at which accuracy has fallen by half) - TODO: test for 0
@@ -107,8 +108,14 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_trackingSpeed = m_self->GetAttribute(AttrTrackingSpeed).get_double();  //rad/sec
     // Orbit Range, Follow Range  - npc tries to stay at this distance from active target
     m_flyRange = m_self->GetAttribute(AttrEntityFlyRange).get_uint32();    //AttrOrbitRange is 0 for npc
-    if (!m_flyRange)
-        m_flyRange = 0;
+    if (m_flyRange < 1) {
+        if (m_optimalRange > 0) {
+            m_flyRange = m_optimalRange;
+        } else {
+            _log(NPC__WARNING, "%s(typeID:%u):  OptimalRange = 0", m_npc->GetName(), m_npc->GetTypeID());
+            m_flyRange = 500;
+        }
+    }
     // distance for Speed Boost activation  (this needs to be revisited)
     m_boostRange = m_self->GetAttribute(AttrEntityChaseMaxDistance).get_uint32();
     if (!m_boostRange)
@@ -138,7 +145,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_sightRange = 20000;
     }
     if (m_maxAttackRange > m_sightRange)
-        m_sightRange = m_maxAttackRange *2;
+        m_sightRange = m_maxAttackRange * 2;
 
     // ship targets
     m_maxAttackTargets = m_self->GetAttribute(AttrMaxAttackTargets).get_uint32();
@@ -567,6 +574,7 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargSE) {
 
     m_isWandering = false;
 
+    // TODO:  update these to proper weapon optimal distances
     if (dist < m_flyRange) {
         SetEngaged(pTargSE);
     } else if (dist < m_boostRange) {

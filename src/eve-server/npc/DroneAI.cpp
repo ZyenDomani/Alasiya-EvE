@@ -43,6 +43,9 @@ DroneAIMgr::DroneAIMgr(DroneSE* who)
 
     if (m_entityAttackRange < 10000)   // most of these are low...under 6k  that sux for targeting
         m_entityAttackRange *= 3;
+
+    // TODO:  fix this...
+    //m_pDrone->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
 }
 
 void DroneAIMgr::Process() {
@@ -330,9 +333,8 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
     //  woot!! --> group:1010        cat:8       Compact Citadel Torpedo         Citadel torpedoes for fighter-bombers
 
     // effects are listed in EVE_Effects.h
-    //  NOTE: drones are called 'entities' in client; EVE_Effects has 'entityxxx' for gfx
+    //  NOTE: drones are called 'entities' in client; EVE_Effects has 'entityxxx' for gfx...see below
     std::string guid = "effects.Laser"; // client looks for 'turret' in ship.ball.modules for 'effects.laser'
-    //effects.ProjectileFiredForEntities
     uint32 gfxID = 0;
     if (m_pDrone->GetSelf()->HasAttribute(AttrGfxTurretID))// graphicID for turret for drone type ships
         gfxID = m_pDrone->GetSelf()->GetAttribute(AttrGfxTurretID).get_uint32();
@@ -351,9 +353,26 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
              m_formula.GetDroneToHit(m_pDrone, pTarget)
             );
 
-    dam *= m_pDrone->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
+    //dam *= 1.0f
     pTarget->ApplyDamage(dam);
 }
+
+/*
+    warpScrambleForEntity =   563,     // effects.WarpScramble
+    missileLaunchingForEntity =   569,     // effects.MissileDeployment
+    entityCapacitorDrain =   1872,     // effects.EnergyVampire
+    entityTrackingDisruptOld =   1877,     // effects.ElectronicAttributeModifyTarget
+    entitySensorDampen =   1878,     // effects.ElectronicAttributeModifyTarget
+    entityTargetPaint =   1879,     // effects.TargetPaint
+    entityShieldBoostingSmall =   2192,     // effects.ShieldBoosting
+    entityShieldBoostingMedium =   2193,     // effects.ShieldBoosting
+    entityShieldBoostingLarge =   2194,     // effects.ShieldBoosting
+    entityArmorRepairingSmall =   2195,     // effects.ArmorRepair
+    entityArmorRepairingMedium =   2196,     // effects.ArmorRepair
+    entityArmorRepairingLarge =   2197,     // effects.ArmorRepair
+    entityTrackingDisrupt =   4982,     // effects.ElectronicAttributeModifyTarget
+    warpScrambleTargetMWDBlockActivationForEntity =   5928,     // effects.WarpScramble
+    */
 
 
 std::string DroneAIMgr::GetStateName(int8 stateID)

@@ -377,7 +377,8 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              sRef->GetAttribute(AttrMass).get_float(), dm->GetAlignTime(),
              dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10),
              dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(),
-             sRef->GetAttribute(AttrAgility).get_double(),
+             //sRef->GetAttribute(AttrAgility).get_double(),
+             dm->GetAgility(),
              sRef->GetAttribute(AttrInertiaMod).get_double(),
              heading.x, heading.y, heading.z);
 

@@ -400,14 +400,14 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             assert(0);  // this needs to make a serious error here....these CANNOT be called from here using the generic InventoryItem::Spawn() method
         } break;
         //! TODO not handled....use generic item
-        case EVEDB::invCategories::Bonus:               // no clue what this is
+        case EVEDB::invCategories::Bonus:               // trait bonus/handicap.  not sure how/if to use these.
         case EVEDB::invCategories::Implant:
-        case EVEDB::invCategories::Trading:
+        case EVEDB::invCategories::Trading:             // not sure how to use this one....may look into later
         case EVEDB::invCategories::Asteroid:            // ore is "asteroid" also
         case EVEDB::invCategories::Material:            // includes minerals
         case EVEDB::invCategories::Reaction:
         case EVEDB::invCategories::Commodity:
-        case EVEDB::invCategories::Accessories:         // this is for bookmark vouchers
+        case EVEDB::invCategories::Accessories:         // this is for clone, voucher, outpost improvement/upgrade, plex
         case EVEDB::invCategories::AncientRelics:       // t3 bpc from sleepers
         // these *may* need their own class
         case EVEDB::invCategories::Decryptors:

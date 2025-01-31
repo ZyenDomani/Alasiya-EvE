@@ -66,6 +66,7 @@ m_destiny(oth->m_destiny),m_targMgr(oth->m_targMgr),m_killed(oth->m_killed),m_wa
 m_allyID(oth->m_allyID),m_corpID(oth->m_corpID),m_fleetID(oth->m_fleetID),m_ownerID(oth->m_ownerID),
 m_radius(oth->m_radius),m_harmonic(oth->m_harmonic)
 {
+    sLog.Error("SystemEntity", "Calling Copy c'tor.");
     // nothing to do here
 }
 
@@ -75,6 +76,7 @@ m_destiny(oth.m_destiny),m_targMgr(oth.m_targMgr),m_killed(oth.m_killed),m_warID
 m_allyID(oth.m_allyID),m_corpID(oth.m_corpID),m_fleetID(oth.m_fleetID),m_ownerID(oth.m_ownerID),
 m_radius(oth.m_radius),m_harmonic(oth.m_harmonic)
 {
+    sLog.Error("SystemEntity", "Calling Move c'tor.");
     // nothing to do here
 }
 
@@ -277,6 +279,7 @@ StaticSystemEntity::StaticSystemEntity(InventoryItemRef self, PyServiceMgr &serv
 StaticSystemEntity::StaticSystemEntity(const StaticSystemEntity* oth)
 : SystemEntity(oth->m_self, oth->m_services, oth->m_system)
 {
+    sLog.Error("StaticSystemEntity", "Calling Copy c'tor.");
     // nothing to do here
 }
 
@@ -323,6 +326,7 @@ BeltSE::BeltSE(const BeltSE* oth)
 : StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system),
 m_beltMgr(nullptr)
 {
+    sLog.Error("BeltSE", "Calling Copy c'tor.");
     // nothing to do here
 }
 
@@ -330,6 +334,7 @@ BeltSE::BeltSE ( const BeltSE& oth )
 : StaticSystemEntity(oth.m_self, oth.m_services, oth.m_system),
 m_beltMgr(nullptr)
 {
+    sLog.Error("BeltSE", "Calling Move c'tor.");
     // nothing to do here
 }
 
@@ -358,6 +363,7 @@ StargateSE::StargateSE(const StargateSE* oth)
 m_sbuSE(nullptr),
 m_jumps(nullptr)
 {
+    sLog.Error("StargateSE", "Calling Copy c'tor.");
     /** @todo  this is incomplete */
 }
 
@@ -366,6 +372,7 @@ StargateSE::StargateSE ( const StargateSE& oth )
 m_sbuSE(nullptr),
 m_jumps(nullptr)
 {
+    sLog.Error("StargateSE", "Calling Move c'tor.");
     /** @todo  this is incomplete */
 }
 
@@ -508,6 +515,7 @@ FieldSE::FieldSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *s
 FieldSE::FieldSE(const FieldSE* oth)
 : ItemSystemEntity(oth->m_self, oth->m_services, oth->m_system)
 {
+    sLog.Error("FieldSE", "Calling Copy c'tor.");
     /** @todo  this is incomplete */
 }
 
@@ -565,6 +573,7 @@ ObjectSystemEntity::ObjectSystemEntity(const ObjectSystemEntity* oth)
 : SystemEntity(oth->m_self, oth->m_services, oth->m_system),
 m_invul(false)
 {
+    sLog.Error("ObjectSystemEntity", "Calling Copy c'tor.");
     /** @todo  this is incomplete */
 }
 
@@ -682,6 +691,7 @@ DynamicSystemEntity::DynamicSystemEntity(const DynamicSystemEntity* oth)
 m_invul(false),
 m_frozen(false)
 {
+    sLog.Error("DynamicSystemEntity", "Calling Copy c'tor.");
     /** @todo  this is incomplete */
 }
 

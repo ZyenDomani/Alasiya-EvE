@@ -63,6 +63,7 @@ m_posHack(sConfig.debug.PositionHack), m_turnAccel(false), m_turnDecel(false), m
 m_origHeading(NULL_ORIGIN_V), m_curveStart(NULL_ORIGIN), m_curveApex(NULL_ORIGIN), m_curveEnd(NULL_ORIGIN),
 m_inclination(0.0), m_longAscNode(0.0), m_accelTime(0.0f), m_accelDistance(0), m_decelTime(0.0f), m_warpState(nullptr)
 {
+    sLog.Magenta("Destiny", "created for %s", self->GetName());
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
 }
@@ -372,7 +373,7 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
             _log(DESTINY__MOVE_TRACE, "Destiny::UpdateVelocity - %s(%u): Speed Change - USF: %.3f, ASF: %.3f, TF: %.3f, PSF: %.3f, pSpeed: %.2f, mSpeed: %.2f, accel: %s, decel: %s, delta: %.3f", \
             mySE->GetName(), mySE->GetID(), m_userSpeedFraction, m_activeSpeedFraction, m_timeFraction, m_prevSpeedFraction, m_prevSpeed, m_maxSpeed, \
                  m_accel ? "true" : "false", m_decel ? "true": "false", delta);
-    } else if (m_activeSpeedFraction > ASF_CHECK) {
+    } else if (m_activeSpeedFraction > 0.01f) {
         //  commanded to stop while ship is moving.  begin decelerating
         if ((m_ballMode == Destiny::Ball::Mode::WARP) and (m_warpState != nullptr)) {
             logType = 1;

@@ -117,12 +117,13 @@ public:
     int32 GetStateStamp()                               { return m_stateStamp; }
     GVector GetHeading()                                { return m_shipHeading; }
     float GetAccelTime()                                { return m_shipMaxAccelTime; }
+    double GetAgility()                                 { return m_agility; }   // this is only used by my GetShipVars command
     uint8 GetAlignTime()                                { return m_alignTime; } // this is only used by my GetShipVars command
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
     double GetRadius()                                  { return m_radius; }
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
     float GetRadTic()                                   { return m_orbitRadTic; }
-    uint8 GetState()                                    { return m_ballMode; }// this is only used by my bubble debug command
+    uint8 GetState()                                    { return m_ballMode; }  // this is only used by my bubble debug command
     std::string GetStateName();
     bool IsFrozen()                                     { return m_frozen; }
     bool IsMoving()                                     { return (m_activeSpeedFraction > ASF_CHECK); }

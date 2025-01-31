@@ -301,7 +301,7 @@ void ObjCacheService::PrimeCache()
     for(; cur != m_cacheKeys.end(); cur++) {
         PyString* str = new PyString( cur->first );
         _LoadCachableObject( str );
-        PyDecRef(str);
+        //PySafeDecRef(str);
     }
 }
 
@@ -330,7 +330,7 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
     if (cache != nullptr) {
         //we have generated the cache file in question, remember it
         m_cache.UpdateCache(objectID, &cache);
-        PyDecRef(cache);
+        //PySafeDecRef(cache);
     } else {
         //failed to query from the database... fall back to old hackish file loading.
         PySubStream* ss = m_cache.LoadCachedFile( objectID_string.c_str() );
@@ -404,7 +404,7 @@ void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {
         //get the hint
         PyString* str = new PyString( objects[r] );
         PyRep *cache_hint = GetCacheHint( str );
-        PyDecRef( str );
+        //PySafeDecRef( str );
 
         if (cache_hint == nullptr)
             continue;    //print already done.
