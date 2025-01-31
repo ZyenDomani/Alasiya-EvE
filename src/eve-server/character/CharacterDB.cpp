@@ -769,12 +769,12 @@ void CharacterDB::GetCharacterDataMap(uint32 charID, std::map<std::string, int64
     uint32 stationID = characterDataMap["baseID"];
     if (!CharacterDB::GetCharHomeStation(charID, stationID)) {
         ItemData iData(EVEDB::invTypes::CloneGradeAlpha, charID, stationID, flagClone, 1);
-        iData.customInfo="Active: ";
-        iData.customInfo += row.GetText(17);
-        iData.customInfo += "(";
-        iData.customInfo += std::to_string(charID);
-        iData.customInfo += ") {ud}";
-        sItemFactory.SpawnItem( iData )->SaveItem();
+            iData.customInfo="Active: ";
+            iData.customInfo += row.GetText(17);
+            iData.customInfo += "(";
+            iData.customInfo += std::to_string(charID);
+            iData.customInfo += ") {ud}";
+        sItemFactory.SpawnItem(iData)->SaveItem();
     }
     characterDataMap["cloneStationID"] = stationID;
 
@@ -992,6 +992,7 @@ bool CharacterDB::GetCharClones(uint32 characterID, std::vector<uint32> &into) {
     return true;
 }
 
+// only used when loading character
 uint32 CharacterDB::GetCloneID(uint32 charID) {
     DBQueryResult res;
 
@@ -1007,28 +1008,15 @@ uint32 CharacterDB::GetCloneID(uint32 charID) {
     }
 
     DBResultRow row;
-    if (res.GetRow(row)) {
+    if (res.GetRow(row))
         return row.GetUInt(0);
-    } else {
-        // clone not found...create new one
-        _log(CHARACTER__ERROR, "character %u doesn't have clone data.  creating new clone.", charID );
-        uint32 baseID(0);
-        GetCharHomeStation(charID, baseID);
-        ItemData iData(EVEDB::invTypes::CloneGradeAlpha, charID, baseID, flagClone, 1);
-        iData.customInfo="Active: ";
-        iData.customInfo += sItemFactory.GetCharacterRef(charID)->itemName();
-        iData.customInfo += "(";
-        iData.customInfo += std::to_string(charID);
-        iData.customInfo += ") {ud}";
-        InventoryItemRef iRef(sItemFactory.SpawnItem(iData));
-        iRef->SaveItem();
-        return iRef->itemID();
-    }
+
+    return 0;
 }
 
 bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
     DBQueryResult res;
-    if ( !sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT locationID "
         " FROM entity"
         " WHERE ownerID = %u"
@@ -1042,14 +1030,10 @@ bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
     DBResultRow row;
     if (res.GetRow(row)) {
         stationID = row.GetUInt(0);
-    } else {
-        // clone station not found
-        _log(CHARACTER__ERROR, "character %u doesn't have home station.", characterID );
-        stationID = sItemFactory.GetCharacterRef(characterID)->corporationHQ();
-        ChangeCloneLocation(characterID, stationID);
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 bool CharacterDB::ChangeCloneLocation(uint32 characterID, uint32 locationID)

@@ -340,6 +340,7 @@ protected:
      */
 public:
     static CharacterRef Load( uint32 characterID);
+    // this also creates new clone (elusive error fix)
     static CharacterRef Spawn( CharacterData& charData, CorpData& corpData);
     virtual bool _Load();
 

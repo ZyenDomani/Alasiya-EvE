@@ -193,7 +193,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         //  The Specialization has been taken out in Crucible.  set to same as Career (default)
         cdata.careerSpecialityID = cdata.careerID;
     } else {
-        _log(CLIENT__MESSAGE, "Could not find default School ID %u. Using Caldari Military.", cdata.schoolID);
+        _log(CLIENT__MESSAGE, "Could not find default SchoolID %u. Using Caldari Military.", cdata.schoolID);
         cdata.raceID = 1;
         cdata.careerID = 11;
         cdata.careerSpecialityID = 11;
@@ -256,6 +256,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         sItemFactory.UnsetUsingClient();
         return PyStatic.NewZero();
     }
+    
     charRef->SetClient(pClient);      // set client in char
 
     // add call to JoinCorp here, and remove corp shit from charDB
@@ -346,15 +347,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     // need system loaded for proper ship creation/loading and subsquent character login
     sEntityMgr.FindOrBootSystem(cdata.solarSystemID);
 
-    // create alpha-level clone
-    ItemData iData(EVEDB::invTypes::CloneGradeAlpha, charRef->itemID(), cdata.locationID, flagClone, 1);
-        iData.customInfo="Active: ";
-        iData.customInfo += charRef->itemName();
-        iData.customInfo += "(";
-        iData.customInfo += std::to_string(charRef->itemID());
-        iData.customInfo += ")";
-    sItemFactory.SpawnItem( iData )->SaveItem();
-
     // give the player their pod and set in system (NOT hangar)
     pClient->CreateNewPod();
     pClient->GetPod()->Move(cdata.solarSystemID, flagCapsule, false);
@@ -390,3 +382,4 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     return new PyInt(charRef->itemID());
 }
+

@@ -260,37 +260,32 @@ bool Character::_Load() {
     LoadImplants();
 
     m_cloneRef = sItemFactory.GetItemRefFromID(m_db.GetCloneID(m_itemID));
+    if (m_cloneRef.get() == nullptr) {
+        sLog.Warning("Character::_Load","m_cloneRef == NULL for char %u", m_itemID);
+        ItemData iData(EVEDB::invTypes::CloneGradeAlpha, m_itemID, m_corpData.baseID, flagClone, 1);
+            iData.customInfo="Active: ";
+            iData.customInfo += m_charData.name;
+            iData.customInfo += "(";
+            iData.customInfo += std::to_string(m_itemID);
+            iData.customInfo += ")";
+            m_cloneRef = sItemFactory.SpawnItem(iData);
+        if (m_cloneRef.get() == nullptr) {
+            _log(CHARACTER__ERROR, "Failed to create clone for new character.");
+            return false;
+        }
+
+        //clone created, save and continue
+        m_cloneRef->SaveItem();
+        // is client created at this point?  player should be informed of new clone
+    }
 
     m_charData.loginTime = GetFileTimeNow();
 
     // update attribs for new character attribute system
-    if (!HasAttribute(AttrMemoryBonus)) {
+    if (!HasAttribute(AttrMemoryBonus))
         SetCharAttrBonus();
-    }
 
     return m_loaded;
-}
-
-void Character::VerifySP()
-{
-    std::vector<InventoryItemRef> skills;
-    pInventory->GetItemsByFlag(flagSkill, skills);
-    for (auto &cur : skills) {
-        SkillRef::StaticCast(cur)->VerifyAttribs();
-        SkillRef::StaticCast(cur)->VerifySP();
-    }
-}
-
-void Character::CheckSkillQueue() {
-    if (!m_skillQueue.empty()) {
-        SkillRef sRef = GetCharSkillRef(m_skillQueue.front().typeID);
-        if (sRef.get() != nullptr) {
-            sRef->SetFlag(flagSkillInTraining, false);
-            m_inTraining = sRef.get();
-        }
-    } else {
-        ClearSkillFlags();
-    }
 }
 
 CharacterRef Character::Spawn(CharacterData& charData, CorpData& corpData) {
@@ -304,6 +299,23 @@ CharacterRef Character::Spawn(CharacterData& charData, CorpData& corpData) {
         _log(CHARACTER__ERROR, "Failed to get itemID for new character.");
         return CharacterRef(nullptr);
     }
+
+    // create alpha-level clone for this character
+    ItemData iData(EVEDB::invTypes::CloneGradeAlpha, characterID, charData.locationID, flagClone, 1);
+        iData.customInfo="Active: ";
+        iData.customInfo += charData.name;
+        iData.customInfo += "(";
+        iData.customInfo += std::to_string(characterID);
+        iData.customInfo += ")";
+    InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
+    // in the off chance clone couldnt be created, freak out and do something else
+    if (iRef.get() == nullptr) {
+        _log(CHARACTER__ERROR, "Failed to create clone for new character.");
+        return CharacterRef(nullptr);
+    }
+
+    //clone created, save and continue
+    iRef->SaveItem();
 
     return Character::Load(characterID);
 }
@@ -332,6 +344,28 @@ void Character::Delete() {
     m_db.DeleteCharacter(m_itemID);
     // let our parent care about the rest
     InventoryItem::Delete();
+}
+
+void Character::VerifySP()
+{
+    std::vector<InventoryItemRef> skills;
+    pInventory->GetItemsByFlag(flagSkill, skills);
+    for (auto &cur : skills) {
+        SkillRef::StaticCast(cur)->VerifyAttribs();
+        SkillRef::StaticCast(cur)->VerifySP();
+    }
+}
+
+void Character::CheckSkillQueue() {
+    if (!m_skillQueue.empty()) {
+        SkillRef sRef = GetCharSkillRef(m_skillQueue.front().typeID);
+        if (sRef.get() != nullptr) {
+            sRef->SetFlag(flagSkillInTraining, false);
+            m_inTraining = sRef.get();
+        }
+    } else {
+        ClearSkillFlags();
+    }
 }
 
 float Character::balance(uint8 type)
