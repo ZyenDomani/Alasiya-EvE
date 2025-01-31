@@ -83,7 +83,7 @@ SkillMgrBound::~SkillMgrBound()
     delete m_dispatch;
 }
 
-PyResult SkillMgrBound::Handle_GetRespecInfo( PyCallArgs& call ) {
+PyResult SkillMgrBound::Handle_GetRespecInfo(PyCallArgs& call) {
     return m_db.GetRespecInfo(call.client->GetCharacterID());
 }
 
@@ -92,10 +92,10 @@ PyResult SkillMgrBound::Handle_GetSkillQueueAndFreePoints(PyCallArgs &call) {
 }
 
 PyResult SkillMgrBound::Handle_GetEndOfTraining(PyCallArgs &call) {
-    return new PyLong( call.client->GetChar()->GetEndOfTraining() );
+    return new PyLong(call.client->GetChar()->GetEndOfTraining());
 }
 
-PyResult SkillMgrBound::Handle_GetSkillHistory( PyCallArgs& call ) {
+PyResult SkillMgrBound::Handle_GetSkillHistory(PyCallArgs& call) {
     return call.client->GetChar()->GetSkillHistory();
 }
 
@@ -106,12 +106,12 @@ PyResult SkillMgrBound::Handle_CharStopTrainingSkill(PyCallArgs &call) {
     return nullptr;
 }
 
-PyResult SkillMgrBound::Handle_CharStartTrainingSkill( PyCallArgs& call ) {
+PyResult SkillMgrBound::Handle_CharStartTrainingSkill(PyCallArgs& call) {
     // sm.GetService('godma').GetSkillHandler().CharStartTrainingSkill(skillX.itemID, skillX.locationID)
     Call_TwoIntegerArgs args;
-    if ( !args.Decode( call.tuple ) )
+    if (!args.Decode(call.tuple))
     {
-        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -137,7 +137,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
 {
     Call_InjectSkillIntoBrain args;
     if (!args.Decode(&call.tuple)) {
-        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -149,7 +149,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
     for (auto &cur : args.skills)  {
         skillRef = sItemFactory.GetSkillRef(cur);
         if (skillRef.get() == nullptr) {
-            _log( ITEM__ERROR, "%s: failed to load skill %u for injection.", call.client->GetName(), cur);
+            _log(ITEM__ERROR, "%s: failed to load skill %u for injection.", call.client->GetName(), cur);
             std::string str = "Invalid Name #";
             str += std::to_string(cur);
             skills.emplace(str, 5);
@@ -227,7 +227,7 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
             _log(SERVICE__ERROR, "%s: Failed to decode element of SkillQueue. Skipping.", call.client->GetName());
             continue;
         }
-        cRef->AddToSkillQueue( el.typeID, el.level );
+        cRef->AddToSkillQueue(el.typeID, el.level);
     }
 
     cRef->UpdateSkillQueueEndTime();
@@ -237,13 +237,13 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
     return nullptr;
 }
 
-PyResult SkillMgrBound::Handle_CharStartTrainingSkillByTypeID( PyCallArgs& call )
+PyResult SkillMgrBound::Handle_CharStartTrainingSkillByTypeID(PyCallArgs& call)
 {
     // called when skill queue empty or paused
     // sends skill typeID to start training
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -329,8 +329,7 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
     return list;
 }
 
-PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
-{
+PyResult SkillMgrBound::Handle_CharAddImplant(PyCallArgs& call) {
     //client verifies implant, slot and skillInTraining.  sends itemid
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -338,7 +337,7 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
         return nullptr;
     }
 
-    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.arg);
+    InventoryItemRef iRef(sItemFactory.GetItemRefFromID(args.arg));
     if (iRef.get() == nullptr) {
         _log(CHARACTER__ERROR, "CharAddImplant - iRef not found for itemID %i", args.arg);
         return nullptr;

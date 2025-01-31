@@ -32,6 +32,8 @@
  *      - this should take system sov, npc anomalies, destruction speed, and pirate faction
  *   add methods to check target/targeter warping out and chance of npc following (and possibly calling backup)
  *
+ *   TODO:  since orbit is disabled, have npcs fly tangents to targets, using actual arc tracking
+ *
  *  have data...needs coding...
  *   chase duration/distance timers
  *   ewar shit, including point/tackle

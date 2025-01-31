@@ -172,9 +172,11 @@ Inventory* ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
 }
 
 InventoryItemRef ItemFactory::GetItemRefFromID(uint32 itemID, bool load /*true*/) {
-    if (itemID < minAgent)
+    if (itemID < minAgent) {
+        sLog.Error("GetItemRefFromID", "Called with itemID %u", itemID);
         return InventoryItemRef(nullptr);
-    
+    }
+
     InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
     if (itr != m_items.end()) {
