@@ -199,10 +199,12 @@ public:
     // this is for space-type effects - warping, GateActivity, jumping, jettison, cloak
     // jumpout sends stargateID as target - wormhole sends ?? as otherTypeID
     void SendGFX10(uint32 entityID, std::string guid, int32 targetID=0, int32 otherTypeID=0) const;
-    // this is for module and structure effects
-    void SendGFX14(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID,
-                             uint32 chargeTypeID, std::string guid, bool isOffensive, bool start,
-                             bool isActive, int32 duration, uint32 repeat, int32 graphicInfo = 0) const;
+    // this is for module effects
+    void SendModGFX(ModuleItemRef rMod);
+    // this is for structure effects
+    void SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeID, int32 targetID,
+                   int32 chargeTypeID, std::string guid, bool isOffensive, bool start,
+                   bool isActive, int32 duration, int32 repeat, int64 startTime=0, int32 graphicInfo=0) const;
 
     /* update and event queue methods */
     void SendSingleDestinyEvent(PyTuple** ev, bool self_only=false) const;// this will not consume *ev

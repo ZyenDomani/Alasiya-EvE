@@ -251,7 +251,7 @@ void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
         ge.subLoc = PyStatic.NewNone();
         ge.area = new PyList();
         ge.effectID = effectID;
-    Notify_OnGodmaShipEffect shipEff;
+    OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = effectID;
         shipEff.timeNow = GetFileTimeNow();
@@ -260,7 +260,7 @@ void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;    // do we need to adjust this?
         shipEff.duration = (active ? 0 : -1);
-        shipEff.repeat = (active ? 1 : 0);
+        shipEff.repeat = (active ? PyStatic.NewTrue() : PyStatic.NewFalse());
         shipEff.randomSeed = PyStatic.NewNone();
         shipEff.error = PyStatic.NewNone();
     PyList* events = new PyList();

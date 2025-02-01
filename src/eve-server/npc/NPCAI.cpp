@@ -730,14 +730,15 @@ void NPCAIMgr::AttackTarget(SystemEntity* pTargSE) {
     // put checks here for point/tackle
 
     // effects are listed in EVE_Effects.h
-    std::string guid = "effects.Laser"; // client looks for 'turret' in ship.ball.modules for 'effects.laser'
+    // TODO: this needs to be updated....rogue drones working
+    std::string guid = "effects.Laser"; // client looks for 'turret' in ship.ball.modules for 'effects.laser'...error for npcs ex drone
     uint32 gfxID(0);
     if (m_self->HasAttribute(AttrGfxTurretID))// graphicID for turret for drone type ships
         gfxID = m_self->GetAttribute(AttrGfxTurretID).get_uint32();
 
     m_destiny->SendGFX14(m_self->itemID(), m_self->itemID(), m_self->typeID(),
                          pTargSE->GetID(),0,std::move(guid),1,1,
-                         1,m_attackSpeed,0,gfxID);
+                         1,m_attackSpeed,0,0,gfxID);
 
     Damage d(m_npc,
              m_self,

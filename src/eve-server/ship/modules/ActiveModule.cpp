@@ -35,9 +35,27 @@ m_targetID(0),
 m_effectID(0),
 m_Stop(true),
 // this is an internal variable only.
-m_reloadTime(mRef->GetAttribute(AttrReloadTime).get_uint32())
-{
-    m_repeat = 200;    //good default.  this enabled continuous cycle.  less than 1000 will decrement in client
+m_reloadTime(mRef->GetAttribute(AttrReloadTime).get_uint32()),
+m_startTime(0)
+{ /*
+    repeat = settings.char.autorepeat.Get(self.sr.moduleInfo.itemID, -1)
+    if group.groupID in (const.groupMiningLaser, const.groupStripMiner):
+        self.SetRepeat(1000)
+        elif repeat != -1:
+        self.SetRepeat(repeat)
+        else:
+            repeatSet = 0
+            for key in self.sr.moduleInfo.effects.iterkeys():
+                effect = self.sr.moduleInfo.effects[key]
+                if self.IsEffectRepeatable(effect):
+                    self.SetRepeat(1000)
+                    repeatSet = 1
+                    break
+
+                    if not repeatSet:
+                        self.SetRepeat(0)
+    */
+    m_repeat = 1000;    //good default.  this enabled continuous cycle.  less than 1000 will decrement in client
 
     if (m_needsCharge) {
         switch (mRef->groupID()) {
@@ -250,6 +268,7 @@ void ActiveModule::Clear()
     m_repeat = 0;
     m_targetID = 0;
     m_effectID = 0;
+    m_startTime = 0;
     m_bubble = nullptr;
     m_sysMgr = nullptr;
     m_targMgr = nullptr;
@@ -397,6 +416,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_Stop = false;
     m_isWarpSafe = sFxDataMgr.isWarpSafe(m_effectID);
 
+    // should we check these after setting?
     ShipSE* pShip = m_shipRef->GetPilot()->GetShipSE();
     m_bubble = pShip->SysBubble();
     m_sysMgr = pShip->SystemMgr();
@@ -412,7 +432,11 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         return;
     }
 
-    // we have gotten this far, so activation is valid.  add to targMgr
+    // we have gotten this far, so activation is valid.
+    // record start time
+    m_startTime = GetFileTimeNow();
+
+    //add module to targMgr
     if (m_targetSE != nullptr)
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->AddTargetModule(this);
@@ -427,10 +451,10 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         for (auto &cur : modules) {
             cur->GetActiveModule()->SetSlaveData(pShip);
             cur->GetActiveModule()->SetEffectID(effectID);
-            cur->GetActiveModule()->ShowEffect(true, false);
+            cur->GetActiveModule()->SendShipEffect(true, false);
         }
     } else {
-        ShowEffect(true, false);
+        SendShipEffect(true, false);
     }
 
     SetModuleState(Module::State::Activated);
@@ -517,8 +541,7 @@ void ActiveModule::DeOverload()
     m_overLoaded = false;
 }
 
-uint32 ActiveModule::DoCycle()
-{
+uint32 ActiveModule::DoCycle() {
     if (m_destinyMgr == nullptr) {
         // make error for no destiny/bubble
         AbortCycle();
@@ -552,6 +575,9 @@ uint32 ActiveModule::DoCycle()
             }
         }
     }
+
+    // broadcast module gfx for this cycle
+    //SendGFX(true);
 
     // not sure if this is entirely accurate...wip
     switch (m_modRef->groupID()) {
@@ -699,9 +725,9 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         std::vector<GenericModule*> modules;
         m_shipRef->GetLinkedWeaponMods(this, modules);
         for (auto &cur : modules)
-            cur->GetActiveModule()->ShowEffect(false, abort);
+            cur->GetActiveModule()->SendShipEffect(false, abort);
     } else {
-        ShowEffect(false, abort);
+        SendShipEffect(false, abort);
     }
 
     // Remove modifier added by module
@@ -1188,35 +1214,33 @@ bool ActiveModule::CanActivate()
 }
 
 
-void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
-{
+void ActiveModule::SendGFX(bool active/*false*/, bool abort/*false*/) {
     if (m_effectID < 1) {
         // this is a major error.  make better warning.
-        //_log(EFFECTS__ERROR, "fxID = 0 for %s.", m_modRef->name());
-        sLog.Error("AM::ShowEffect()", "fxID=0 for %s.", m_modRef->name());
+        sLog.Error("AM::SendGFX()", "m_effectID < 1 for %s.", m_modRef->name());
         EvE::traceStack();
         return;
     }
 
-    int64 abortTime(GetFileTimeNow());
-    int32 timeLeft(GetRemainingCycleTimeMS());
-    if (m_linked)
-        timeLeft = m_linkMaster->GetActiveModule()->GetRemainingCycleTimeMS();
-
-    if (abort) {
+    if (abort)
         active = false;
-        if ((m_effectID == EvE::GFXID::miningLaser)
-        or  (m_effectID == EvE::GFXID::miningClouds)) {
-            abortTime += (5 * EvE::Time::Second);    // delay abort for 5s to simulate module "completing" its' cycle and dumping ore to cargo
-        } else {
-            // this needs to be module remaining time in seconds
-            abortTime += (timeLeft * EvE::Time::mSecond);    // delay abort until module completes its' cycle
-        }
+
+    int32 cycleTime(-1);
+    if (HasAttribute(AttrDuration)) {
+        cycleTime = (active ? GetAttribute(AttrDuration).get_int() : 0);
+    } else if (HasAttribute(AttrSpeed)) {
+        cycleTime = (active ? GetAttribute(AttrSpeed).get_int() : 0);
     }
 
-    // there may be others here like this...this is ONLY for OnSpecialFX data
-    if ((m_effectID == EvE::GFXID::useMissiles) and (m_chargeRef.get() != nullptr))   //operation defined by charge (use charge's default effectID)
-        m_effectID = m_chargeRef->type().GetDefaultEffect();
+    // most modules send their start time, even when !active
+    // exceptions are missiles and turrets
+    bool useStartTime(true);
+    switch (m_effectID) {
+        case EvE::GFXID::projectileFired:
+        case EvE::GFXID::targetAttack:
+        //case EvE::GFXID::mining:
+            useStartTime = false;
+    }
     std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
     if (guidStr.empty())
         _log(EFFECTS__ERROR, "guid empty for %s using effectID %u", m_modRef->name(), m_effectID);
@@ -1232,13 +1256,26 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
                 chgTypeID,
                 guidStr,
                 sFxDataMgr.isOffensive(m_effectID),
-                active,         // start    - if (start = 0) THEN remove effect
-                active,         // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
-                timeLeft,       // duration in ms
-                m_repeat);      // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
+                /*  still working on these...
+                 * !start - remove effect
+                 * start and !active - start ONE-SHOT event of (duration)  - seems to be Super_Weapon only
+                 * repeat > 0 - start REPEAT event
+                 * !repeat - start TOGGLE event (turn off with !start)
+                 */
+                active,         // start
+                active,         // active
+                cycleTime,      // duration in ms
+                m_repeat,       // repeat
+                (useStartTime ? m_startTime : 0));
+}
 
+void ActiveModule::SendShipEffect(bool active/*false*/, bool abort/*false*/) {
+    // test bcast module gfx sending thru here
+    SendGFX(active, abort);
+    
+    // Create Module Button Fx
+    uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
 
-    // Create Destiny Updates and GFx
     GodmaEnvironment ge;
         ge.selfID = m_modRef->itemID();         //ENV_IDX_SELF = 0
         ge.charID = m_shipRef->ownerID();       //ENV_IDX_CHAR = 1
@@ -1252,24 +1289,50 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             gsl.shipID = ge.shipID;
             gsl.slotID = m_modRef->flag();
             gsl.typeID = chgTypeID;
-        ge.subLoc = gsl.Encode();         //ENV_IDX_OTHER = 4
+        ge.subLoc = gsl.Encode();               //ENV_IDX_OTHER = 4
     } else {
-        ge.subLoc = PyStatic.NewNone();  //ENV_IDX_OTHER = 4
+        ge.subLoc = PyStatic.NewNone();         //ENV_IDX_OTHER = 4
     }
 
-    timeLeft /= 1000;
+    int32 cycleTime(-1);
+    if (HasAttribute(AttrDuration)) {
+        cycleTime = (active ? GetAttribute(AttrDuration).get_int() : 0);
+    } else if (HasAttribute(AttrSpeed)) {
+        cycleTime = (active ? GetAttribute(AttrSpeed).get_int() : 0);
+    }
+
     //def OnGodmaShipEffect(self, itemID, effectID, t, start, active, environment, startTime, duration, repeat, randomSeed, error, actualStopTime = None, stall = True):
-    Notify_OnGodmaShipEffect shipEff;
+    OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
         shipEff.timeNow = GetFileTimeNow();
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = (abort ? (abortTime / EvE::Time::Second) : shipEff.timeNow - (timeLeft * EvE::Time::Second));
-        shipEff.duration = (abort ? 2000 : timeLeft);  // duration in seconds
-        shipEff.repeat = m_repeat;      // repeat < 1000 will count down (if x<1000 then --x)
+        shipEff.startTime = m_startTime;
+        // have seen duration = -1 in some packets.  criteria u/k at this time
+        shipEff.duration = cycleTime;
         shipEff.randomSeed = PyStatic.NewNone();
+
+        if (!active) {
+            switch (m_effectID) {
+                case EvE::GFXID::targetAttack:
+                case EvE::GFXID::useMissiles:
+                case EvE::GFXID::projectileFired: {
+                    shipEff.repeat = PyStatic.NewTrue();   // true = wait for cycle to end
+                } break;
+                case EvE::GFXID::armorRepair:
+                case EvE::GFXID::decreaseTargetSpeed:
+                case EvE::GFXID::gunneryMaxRangeFalloffTrackingSpeedBonus: {
+                    shipEff.repeat = PyStatic.NewFalse();  // false = end now
+                } break;
+                default:
+                    shipEff.repeat = PyStatic.NewNegOne();
+            }
+        } else {
+            shipEff.repeat = new PyInt(m_repeat);      // repeat < 1000 will count down (if x<1000 then --x)
+        }
+
         // will need to check and update for data miners here  (any other cases?)
         if ((groupID() == EVEDB::invGroups::Salvager) and IsSuccess()) {
             // Create Destiny Updates:

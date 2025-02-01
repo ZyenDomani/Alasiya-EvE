@@ -943,7 +943,7 @@ bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
 
     int32 new_qty = m_data.quantity + qty;
     if (new_qty < 0) {
-        codelog(ITEM__ERROR, "II::AlterQuantity() - %s(%u): Tried to remove %i from stack of %i for ownerID %u.", \
+        codelog(ITEM__ERROR, "II::AlterQuantity() - %s(%u): Tried to remove %i from stack of %u for ownerID %u.", \
                 m_data.name.c_str(), m_itemID, qty, m_data.quantity, m_data.ownerID);
         // make player error msg here.....
         Delete();

@@ -80,7 +80,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
         ge.subLoc = PyStatic.NewNone();
         ge.area = new PyList();
         ge.effectID = 16;
-    Notify_OnGodmaShipEffect shipEff;
+    OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
         shipEff.timeNow = GetFileTimeNow();
@@ -88,15 +88,8 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
         shipEff.active = online;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-    if (HasAttribute(AttrDuration)) {
-        shipEff.duration = (online ? GetAttribute(AttrDuration).get_float() : 0.0);
-    } else if (HasAttribute(AttrSpeed)) {
-        shipEff.duration = (online ? GetAttribute(AttrSpeed).get_float() : 0.0);
-    } else {
-        shipEff.duration = 0.0;
-    }
-
-        shipEff.repeat = (online ? 1 : 0);
+        shipEff.duration = 0;
+        shipEff.repeat = (online ? PyStatic.NewOne() : PyStatic.NewZero());
         shipEff.randomSeed = PyStatic.NewNone();
         shipEff.error = PyStatic.NewNone();
     PyList* events = new PyList();

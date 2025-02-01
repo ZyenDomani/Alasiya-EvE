@@ -174,7 +174,7 @@ void MiningLaser::DeactivateCycle(bool abort/*false*/)
         return;
 
     ApplyEffect(FX::State::Active, false);
-    ShowEffect(false, abort);
+    SendShipEffect(false, abort);
 
     ProcessCycle(abort);
     m_holdFlag = flagCargoHold;

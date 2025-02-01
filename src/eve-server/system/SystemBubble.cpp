@@ -633,10 +633,6 @@ void SystemBubble::AddBallExclusive(SystemEntity* pSE) {
  */
 //TODO  update these based on above notes   (also look into better (non-ambigious) naming)
 void SystemBubble::RemoveBall(SystemEntity *pSE) {
-    // RemoveBallFromBP removeball;
-    //    removeball.entityID = pSE->GetID();
-    // using RemoveBalls instead of RemoveBall because client
-    // seems not to trigger explosion on RemoveBall
     if (!m_system->IsLoaded())
         return;
     RemoveBallsFromBP removeball;

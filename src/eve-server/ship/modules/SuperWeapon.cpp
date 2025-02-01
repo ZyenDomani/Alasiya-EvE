@@ -111,7 +111,7 @@ void SuperWeapon::StopCycle(bool abort)
         ge.subLoc = PyStatic.NewNone();
         ge.area = new PyList;
         ge.effectID = effectID;
-    Notify_OnGodmaShipEffect shipEff;
+    OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
         shipEff.timeNow = Win32TimeNow();
@@ -120,7 +120,7 @@ void SuperWeapon::StopCycle(bool abort)
         shipEff.environment = ge.Encode();
         shipEff.startTime = (shipEff.timeNow + (timeLeft * EvE::Time::Second));
         shipEff.duration = timeLeft;
-        shipEff.repeat = 0;
+        shipEff.repeat = PyStatic.NewZero();
         shipEff.randomSeed = PyStatic.NewNone();
         shipEff.error = PyStatic.NewNone();
 
@@ -229,7 +229,7 @@ void SuperWeapon::_ShowCycle()
         ge.subLoc = sDataMgr.NewNone();
         ge.area = new PyList;
         ge.effectID = effectID;
-    Notify_OnGodmaShipEffect shipEff;
+    OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
         shipEff.timeNow = Win32TimeNow();
@@ -238,7 +238,7 @@ void SuperWeapon::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = m_cycleTime;
-        shipEff.repeat = m_repeat;
+        shipEff.repeat = new PyInt(m_repeat);
         shipEff.randomSeed = PyStatic.NewNone();
         shipEff.error = sDataMgr.NewNone();
     std::vector<PyTuple*> events;

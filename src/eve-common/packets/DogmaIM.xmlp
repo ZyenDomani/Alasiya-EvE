@@ -106,7 +106,7 @@
                     [PyNone]
                     [PyNone]
   -->
-  <elementDef name="Notify_OnGodmaShipEffect">
+  <elementDef name="OnGodmaShipEffect">
     <tupleInline>
       <!-- setup to go into an OnMultiEvent (notify_type) -->
       <stringInline value="OnGodmaShipEffect" />
@@ -117,8 +117,8 @@
       <int name="active" />
       <raw name="environment" /><!-- GodmaEnvironment goes here-->
       <long name="startTime" />
-      <real name="duration" />
-      <int name="repeat" /><!-- # times to repeat  make it ammo qty?  live sends 1000 -->
+      <int name="duration" /><!--  duration in ms -->
+      <raw name="repeat" /><!-- # times to repeat or false for some gfx -->
       <raw name="randomSeed" /><!--  this sends tuple of 3 on target-affecting effects   (seed is 42...somewhere in client) -->
       <raw name="error" /><!-- reason module is stopped, i.e. target gone    - GodmaError goes here -->
       <!-- these next two are actually named args, defined in method, but not used -->

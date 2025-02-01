@@ -276,12 +276,9 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
             return true;
 
         m_killed = true;
-
-        // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
 
         Killed(damage);  // this must NOT remove dead SE from system. (except base class)
-
         if (!IsSystemEntity())
             SystemEntity::Killed(damage); // this removes dead SE from system then deletes itemRef and all its contents
     } else {
@@ -633,7 +630,7 @@ void ShipSE::Killed(Damage &damage) {
             wreckItemRef->Delete();
             return;
         }
-        
+
         wreckItemRef->SaveItem();
     }
 }

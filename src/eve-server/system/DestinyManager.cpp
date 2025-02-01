@@ -52,7 +52,7 @@
 // fixed variable init order  -allan 15Feb23
 DestinyManager::DestinyManager(SystemEntity *self)
 : mySE(self), m_targBubble(nullptr), m_ballMode(Destiny::Ball::Mode::STOP), m_hasSentShipUpdates(false), m_radius(self->GetRadius()),
-m_warpCapacitorNeed(0.0000000138), m_alignTime(5), m_prevSpeed(0.0f), m_maxShipSpeed(100.0f), m_shipWarpSpeed(1.0f), m_speedToLeaveWarp(100), m_maxSpeed(1.0f),
+m_warpCapacitorNeed(0.000000138), m_alignTime(5), m_prevSpeed(0.0f), m_maxShipSpeed(100.0f), m_shipWarpSpeed(1.0f), m_speedToLeaveWarp(100), m_maxSpeed(1.0f),
 m_shipAccelTime(0.0f), m_shipMaxAccelTime(0.0f), m_stop(false), m_accel(false), m_decel(false), m_cloaked(false), m_turning(false),
 m_tractored(false), m_tractorPause(false), m_orbiting(0), m_stateStamp(0), m_degPerTic(0.0), m_orbitTime(0.0), m_orbitRadTic(0.0), m_radians(0.0),
 m_timeFraction(0.0f), m_turnMinFraction(0), m_origSpeedFraction(0.0f), m_prevSpeedFraction(0.0f), m_userSpeedFraction(0.0f), m_activeSpeedFraction(0.0f), m_maxOrbitSpeedFraction(1.0f),
@@ -63,7 +63,7 @@ m_posHack(sConfig.debug.PositionHack), m_turnAccel(false), m_turnDecel(false), m
 m_origHeading(NULL_ORIGIN_V), m_curveStart(NULL_ORIGIN), m_curveApex(NULL_ORIGIN), m_curveEnd(NULL_ORIGIN),
 m_inclination(0.0), m_longAscNode(0.0), m_accelTime(0.0f), m_accelDistance(0), m_decelTime(0.0f), m_warpState(nullptr)
 {
-    sLog.Magenta("Destiny", "created for %s", self->GetName());
+    sLog.Magenta("Destiny", "created 0X%X for %s", this, self->GetName());
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
 }
@@ -1793,9 +1793,9 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
 
     // reset warp cap need
     if (mySE->GetSelf()->HasAttribute(AttrWarpCapacitorNeed)) {
-        m_warpCapacitorNeed = mySE->GetSelf()->GetAttribute(AttrWarpCapacitorNeed).get_double();
+        m_warpCapacitorNeed = mySE->GetSelf()->GetAttribute(AttrWarpCapacitorNeed).get_double() * 10;
     } else {
-        m_warpCapacitorNeed = 0.0000000138;   // lowest value in db
+        m_warpCapacitorNeed = 0.000000138;   // lowest value in db
     }
 
 
@@ -2837,9 +2837,9 @@ Battleships                             0.155
             m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
     }
     if (sRef->HasAttribute(AttrWarpCapacitorNeed)) {
-        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_double();
+        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_double() * 10;
     } else {
-        m_warpCapacitorNeed = 0.0000000138;   // lowest value in db
+        m_warpCapacitorNeed = 0.000000138;   // lowest value in db
     }
 
     // verify hull overspeed
@@ -3087,10 +3087,37 @@ void DestinyManager::SendGFX10(uint32 entityID, std::string guid, int32 targetID
 }
 
 // def OnSpecialFX(shipID, moduleID, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration = -1, repeat = None, startTime = None, graphicInfo = None):
-// GFX method for module and structure effects
-void DestinyManager::SendGFX14(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID,
-                                       uint32 chargeTypeID, std::string guid, bool isOffensive, bool start,
-                                       bool isActive, int32 duration, uint32 repeat, int32 graphicInfo/*0*/) const
+// GFX method for module effects
+void DestinyManager::SendModGFX(ModuleItemRef rMod) {
+    /*
+    OnSpecialFX14 effect;
+        effect.entityID = entityID;
+        effect.moduleID = moduleID;             // npc UID for npc's/drones
+        effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's/drones
+        effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
+        effect.otherTypeID = (chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID));
+        effect.area = PyStatic.mtList();        // no data.  not used in client
+        effect.guid = std::move(guid);
+        effect.isOffensive = isOffensive;       // bool
+        effect.start = start;                   // int bool
+        effect.active = isActive;               // int bool
+        effect.duration = duration;             // in ms
+        effect.repeat = repeat;
+        effect.startTime = GetFileTimeNow();    // to use event start time from II once completed (this currently isnt right)
+        effect.graphicInfo = (graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo));
+    PyTuple *up = effect.Encode();
+    if (is_log_enabled(EFFECTS__DUMP))
+        up->Dump(EFFECTS__DUMP, "");
+    SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
+    */
+}
+
+// GFX method for graphics effects
+void DestinyManager::SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeID, int32 targetID,
+                               int32 chargeTypeID, std::string guid, bool isOffensive, bool start,
+                               bool isActive, int32 duration, int32 repeat, int64 startTime/*0*/,
+                               int32 graphicInfo/*0*/) const
 {
     OnSpecialFX14 effect;
         effect.entityID = entityID;
@@ -3105,7 +3132,7 @@ void DestinyManager::SendGFX14(uint32 entityID, uint32 moduleID, uint32 moduleTy
         effect.active = isActive;               // int bool
         effect.duration = duration;             // in ms
         effect.repeat = repeat;
-        effect.startTime = GetFileTimeNow();    // to use event start time from II once completed (this currently isntr ight)
+        effect.startTime = (startTime > 0 ? startTime : GetFileTimeNow());
         effect.graphicInfo = (graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo));
     PyTuple *up = effect.Encode();
     if (is_log_enabled(EFFECTS__DUMP))

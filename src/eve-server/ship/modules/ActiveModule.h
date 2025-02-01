@@ -69,16 +69,18 @@ public:
 
     /* new effects processing code and updates */
     void                ApplyEffect(int8 state, bool active=false);
-    /* common method for all modules that have a visual effect when active */
-    void                ShowEffect(bool active=false, bool abort=false);
+    /* common method for all modules that have a visual effect every cycle when active */
+    void                SendGFX(bool active=false, bool abort=false);
+    /* send module info to ship for button gfx */
+    void                SendShipEffect(bool active=false, bool abort=false);
 
 protected:
     // we do not own any of these next 5
     SystemBubble*       m_bubble;
     SystemEntity*       m_targetSE;
-    DestinyManager*     m_destinyMgr;
-    SystemManager*      m_sysMgr;
-    TargetManager*      m_targMgr;
+    DestinyManager*     m_destinyMgr;   // ship's DestinyManager
+    SystemManager*      m_sysMgr;       // ship's SystemManager
+    TargetManager*      m_targMgr;      // ship's TargetManager
 
     void                Clear();
     void                ProcessActiveCycle();           // checks and sets cap use
@@ -110,6 +112,8 @@ protected:
 private:
     Timer               m_timer;
     Timer               m_reloadTimer;
+    // fx start timestamp
+    int64               m_startTime;
 
 };
 
