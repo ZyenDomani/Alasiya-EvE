@@ -30,14 +30,28 @@ Blueprints are showing BOM correctly again.<br>
 The Implant system is implemented and working quite well.<br>
 Also, I have updated the Attribute Remapper for our character attributes. (still few hiccups with remapping)<br><br>
 UPDATES AND CHANGELOG:  (note: only major/significant updates are listed)<br><br>
+31Jan25 - MAJOR UPDATES<br>
+        Fixed long-time error with module buttons not showing proper cycles, including running indefinitely<br>
+        Fixed error with modules not stopping properly on deactivate<br>
+        Rewrote GFX code for proper packet sending - all module gfx show properly now (unless missing from db)<br>
+        Fixed segfault and major error with character creation<br>
+        Fixed error where belt markers would be removed from overview when warping out of belt<br>
+        Rewrote wanderer code.  Working very well now<br>
+        Improvements on sending system data to clients<br>
+        Found and fixed misc errors in some commands<br>
+        Tweaked WarpTo distances for gates and stations (was a bit close, imo)<br>
+        A bit of code streamlining and removed some redundant calls<br>
+        More work on MemMgmt (still horribly incomplete)<br>
+        Fixed wreck icons not showing proper empty status on overview (was always empty)<br>
+        Fix for error when shooting rogue drones (was giving warning about "peaceful entities")<br>
 26Jan25 - Disabled Orbiting until i get server/client tracking closer than it currently is<br><br>
 25Jan25 - Refactored turn code for better implementation with existing movement code (instead of separate systems)<br>
         Updated wrong/missing variables with NPCs movement; This has corrected NPC warping<br><br>
-22Jan25 - Found and fixed very elusive error with turning (variable incrementor within disabled log message)<br>
+22Jan25 - Found and fixed very elusive error with turning (variable incrementor within a disabled log message)<br>
         Updated some movement variables for higher precision; this corrected previous inconsistencies with ship tracking<br><br>
 21Jan25 - Corrected distances in Warp code.  Finally tracking properly<br><br>
 12Jan25 - Found and fixed major error with warping today<br>
-        I was not aware of this error, as I have been working in stations for a while.<br><br>
+        I was not aware of this error, as I have been working in stations for a quite a while.<br><br>
 11Jan25 - Found and fixed blueprint BOM tab errors<br><br>
 10Jan25 - Completed Implant system<br><br>
 09Jan25 - Updated multiple data for Implants and Attributes<br><br>

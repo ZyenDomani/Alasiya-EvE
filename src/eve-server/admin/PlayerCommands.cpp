@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include "eve-server.h"
-
+#include "../EVEServerConfig.h"
 
 PyResult Command_srvoptions(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     // Custom config file options displayed on client notification
