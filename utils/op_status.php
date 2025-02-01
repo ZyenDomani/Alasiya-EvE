@@ -23,8 +23,8 @@ Items listed as "<font color=orange>Skeleton Code Only</font>" has a basic outli
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
-<font color=magenta>Last Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>11 January 2025</font><BR>
-<font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=red>Mostly Current</font> - <font color=yellow>Being Reviewed and Updated</font><BR>
+<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>31 January 2025</font><BR>
+<font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=green>Current</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
   <img alt="Coverity Scan Build Status"
@@ -42,25 +42,25 @@ There will be some response, like opening windows, but *should not* generate an 
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: transparent; width:66%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>65.8</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<td> &#160;<font color=red><b>67.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;"><tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td><td style="width: 26%;">Comments</td></tr>
-<tr><td> - Stable, Efficient Server Code</td><td class="working">40%
+<tr><td> - Stable, Efficient Server Code</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >10y<BR>4Feb23</td></tr>
+<td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >10y<BR>30Jan25</td></tr>
 <tr><td> - Memory Management<BR>
-<font color=green>InventoryItem and PhotoService are only classes with accurate MemMgmt</font></td><td class="working">20%
+<font color=green>InventoryItem and PhotoService are only classes with accurate MemMgmt</font></td><td class="working">35%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 35%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>Progress Restarted - Ongoing</font><BR><font color=orange>Rewrote Py* Object ref counting code. Working better, but still incomplete</font><BR>7Jan25</td></tr>
-<tr><td> - Efficient, Accurate Packet Deciphering<BR><font color=blue>NOTE: at this point, "Efficient" is a misnomer.</font></td><td class="working">80%
+<tr><td> - Efficient, Accurate Packet Deciphering<BR><font color=yellow>NOTE: at this point, "Efficient" is a misnomer.</font></td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -88,7 +88,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="background: #2222EE; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<table style="background: transparent; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> &#160;<font color=red><b>95.0</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
@@ -154,11 +154,11 @@ There will be some response, like opening windows, but *should not* generate an 
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>15Feb14</td></tr>
-<tr><td> - Character Creation</td><td class="working">100%
+<tr><td> - Character Creation (rewrite)</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>15Feb14</td></tr>
+<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
 <tr><td> - Character Deletion</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
@@ -194,7 +194,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>1Feb14</td></tr>
-<tr><td> - Neural Remap</td><td class="working">100%
+<tr><td> - Neural Remap (rewrite/update)</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00">
 </td><td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -203,7 +203,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>1Feb14</td></tr>
+<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
 <tr><td> - Open Jump Clones Window</td><td class="broken">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -252,7 +252,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <table style="background: #2222EE; width:97%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<table style="background: transparent; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> &#160;<font color=red><b>97.7</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
@@ -779,11 +779,11 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <h2> <span class="mw-headline" id="EvE_Mail"> EvE Mail (<font color=pink>Rewrite on hold</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:21%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>1.6</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:21%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>20.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td><font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -1118,7 +1118,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <h2> <span class="mw-headline" id="Assets_Window"> Assets Window (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:40%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:86%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: transparent; width:86%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
@@ -1200,7 +1200,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="background: #2222EE; width:99%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<table style="background: transparent; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> &#160;<font color=red><b>99.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
@@ -1863,7 +1863,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <td><font color=orange>Skeleton Code Only</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Ship_Navigation"> Ship Navigation (<font color=brown">Destiny</font> - <font color=cyan>Movement Rewrite</font> - <font color=yellow>In Progress</font>)</span></h2>
+<h2> <span class="mw-headline" id="Ship_Navigation"> Ship Navigation (<font color=brown">Destiny</font> - <font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:84%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1882,42 +1882,42 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27July15</td></tr>
-<tr><td> - Orbit Object</td><td class="broken">25%
+<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
+<tr><td> - Orbit Object</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Hacked - Horrible</font><BR>28Feb23</td></tr>
+<td><font color=yellow>Completely Disabled</font><BR><font color=cyan>Combat much better now</font><BR>30Jan25</td></tr>
 <tr><td> - Follow Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27July15</td></tr>
+<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
 <tr><td> - Approach Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27July15</td></tr>
+<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
 <tr><td> - Keep Object at Distance</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27July15</td></tr>
+<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
 <tr><td> - Aligning to Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27July15</td></tr>
+<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
 <tr><td> - Warp to object on-grid</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27July15</td></tr>
+<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
 <tr><td> - Warp to object off-grid</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27July15</td></tr>
+<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
 <tr><td> - Dock to Station</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1975,11 +1975,11 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - Can Orbit target</td><td class="broken">25%
+<tr><td> - Can Orbit target</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Hacked - Horrible</font><BR>8Mar23</td></tr>
+<td><font color=yellow>Completely Disabled</font><BR><font color=cyan>Combat much better now</font><BR>30Jan25</td></tr>
 <tr><td> - Can Follow target</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -2002,7 +2002,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <td><font color=green>COMPLETE</font><BR>2Dec18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Module_Management"> Module Management (<font color=cyan>Rewrite</font> - <font color=yellow>needs review</font>)</span></h2>
+<h2> <span class="mw-headline" id="Module_Management"> Module Management (<font color=cyan>Rewrite</font> - <font color=green>Mostly Complete</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:83%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2191,21 +2191,21 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Launch Drones</td><td class="working">90%
+<tr><td> - Launch Drones</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00">
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00">
 </td><td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table>
-<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
-<tr><td> - Scoop to Cargo</td><td class="working">90%
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<tr><td> - Scoop to Cargo</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
-<tr><td> - Scoop to Drone Bay</td><td class="working">90%
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<tr><td> - Scoop to Drone Bay</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Oct20</td></tr>
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drone AI </h3></font></td></tr>
 <tr><td><font color=lime>Passive/Aggressive</font>   (toggle)<BR><font color=teal>Passive</font>: attack only upon command.<BR>
 <font color=teal>Aggressive</font>: attack any valid target.</td><td class="broken">15%
@@ -2322,41 +2322,41 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>27July15</td></tr>
-<tr><td> - NPC notice new targets within sight range, and engage weakest</td><td class="working">30%
+<tr><td> - NPC notice new targets within sight range, and engage weakest</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Mostly Non-Working</font><BR><font color=olive>Testing</font><BR>2Feb20</td></tr>
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
 <tr><td> - NPC special actions/call for help/retreat</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Rats warp into Asteroid fields</td><td class="working">80%
+<tr><td> - Rats warp into Asteroid fields</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=orange>Still Glitchy</font><BR>2Feb23</td></tr>
-<tr><td> - Rats warp out of Asteroid fields</td><td class="working">80%
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<tr><td> - Rats warp out of Asteroid fields</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=orange>Still Glitchy</font><BR>2Feb23</td></tr>
-<tr><td> - Rats find/harass Players in space</td><td class="broken">30%
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<tr><td> - Rats find/harass Players in space</td><td class="broken">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Mostly Non-Working</font><BR><font color=olive>Testing</font><BR>2Feb20</td></tr>
-<tr><td> - Rat Wreck Creation</td><td class="working">90%
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<tr><td> - Rat Wreck Creation</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>12Feb17</td></tr>
-<tr><td> - Rat Loot</td><td class="working">90%
+<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Jan25</td></tr>
+<tr><td> - Rat Loot</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>12Feb17</td></tr>
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Science_and_Industry"> Science &amp; Industry (<font color=pink>Rewrite on hold</font>)</span></h2>
@@ -3066,9 +3066,9 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>27Aug17</td></tr>
-<tr><td> - Belt Manager</td><td class="working">79%
+<tr><td> - Belt Manager</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 79%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>27Aug17</td></tr>
 <tr><td> - Spawn Manager</td><td class="working">85%
@@ -3217,14 +3217,14 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <td><font color=orange>Skeleton Code Only</font><BR>12Feb17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Belt_Manager"> Belt Manager (<font color=yellow>needs review</font>)</span></h2>
+<h2> <span class="mw-headline" id="Belt_Manager"> Belt Manager (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:82%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:82%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>82.2</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>95.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -3232,41 +3232,41 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Asteroid Belt Creation</td><td class="working">90%
+<tr><td> - Asteroid Belt Creation</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>2Feb20</td></tr>
-<tr><td> - Asteroid Belt Destruction</td><td class="working">90%
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<tr><td> - Asteroid Belt Destruction</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>2Feb20</td></tr>
-<tr><td> - Asteroids Grow when idle</td><td class="broken">15%
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<tr><td> - Asteroids Grow when idle</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - Asteroids Disappear when mined out (individual roids)</td><td class="working">90%
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<tr><td> - Asteroids Disappear when mined out (individual roids)</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>2Feb20</td></tr>
-<tr><td> - Asteroids Belts Respawn when empty</td><td class="working">90%
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<tr><td> - Asteroids Belts Respawn when empty</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>2Feb20</td></tr>
+<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Spawn_Manager"> Spawn Manager (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:92%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width: 85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>85.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width: 92%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>91.6</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -3279,31 +3279,31 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
-<tr><td> - Static spawning (Gate)</td><td class="working">85%
+<tr><td> - Static spawning (Gate)</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
+<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Jan25</td></tr>
 <tr><td> - Spawn Destruction/Removal</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
-<tr><td> - Spawns Warp into Belts</td><td class="working">85%
+<tr><td> - Spawns Warp into Belts</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
-<tr><td> - Spawns Warp out of Belts</td><td class="working">85%
+<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Jan25</td></tr>
+<tr><td> - Spawns Warp out of Belts</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
-<tr><td> - Spawns guard Gates</td><td class="working">85%
+<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Jan25</td></tr>
+<tr><td> - Spawns guard Gates</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>11Dec18</td></tr>
+<td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Jan25</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Scan_Manager"> Scan Manager (<font color=green>Current</font>)</span></h2>
