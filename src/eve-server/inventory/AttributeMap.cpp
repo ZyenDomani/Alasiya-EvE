@@ -216,13 +216,6 @@ bool AttributeMap::Save() {
 }
 
 void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*true*/) {
-    if (mItem.HasPilot()) {
-        if (attrID == AttrMaxVelocity) {
-            sLog.Error("Attribute", "Setting AttrMaxVelocity of %s to %u", \
-                    mItem.name(), num.get_int());
-            EvE::traceStack();
-        }
-    }
     if (num.isNaN() or num.isInf()) {
         _log(ATTRIBUTE__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr %u on %s(%u). Returning without modifying.",\
                 attrID, mItem.name(), mItem.itemID());
@@ -356,13 +349,6 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
     if (attrID == AttrStartTime)
         return true;
 
-    if (mItem.HasPilot()) {
-        if (attrID == AttrMaxVelocity) {
-            sLog.Error("Attribute", "Changing AttrMaxVelocity of %s from %u to %u", \
-                mItem.name(), old_val.get_int(), new_val.get_int());
-            EvE::traceStack();
-        }
-    }
 /*
     if (
     // (attrID == AttrInertiaMultiplier)

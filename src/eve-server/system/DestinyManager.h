@@ -107,11 +107,11 @@ public:
     const GVector &GetVelocity() const                  { return m_velocity; }
     float GetSpeedFraction()                            { return m_activeSpeedFraction; }
     float GetSpeed()                                    { return (m_maxShipSpeed * m_activeSpeedFraction); }
-    int32 GetWarpSpeed()                                { return static_cast<int32>(m_shipWarpSpeed * 10); }
+    int32 GetWarpSpeed()                                { return (int32)(m_shipWarpSpeed * 10); }
     uint32 GetTargetID()                                { return m_targetEntity.first; }
     SystemEntity* GetTargetEntity()                     { return m_targetEntity.second; }
     GPoint GetTargetPoint()                             { return m_targetPoint; }
-    double GetMaxVelocity()                             { return m_maxShipSpeed; }
+    float GetMaxVelocity()                              { return m_maxShipSpeed; }
     // is this right??
     float GetFollowDistance()                           { return (float)m_targetDistance; }
     int32 GetStateStamp()                               { return m_stateStamp; }
