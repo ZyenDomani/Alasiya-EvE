@@ -19,11 +19,15 @@ cSE(nullptr),
 m_firstRun(true),
 m_shipVelocity(0.0f)
 {
+}
+
+void CynoModule::Init() {
+    ActiveModule::Init();
+
     if (pClient == nullptr)
         return;
 
-    // increase cycleTime by level of survey skill
-    /** @todo  this doesnt really make much sense.... */
+    // increase cycleTime by level of survey skill...use diff skill here?
     float cycleTime = GetAttribute(AttrDuration).get_float();
     cycleTime *= (1 + (0.03f * (pClient->GetChar()->GetSkillLevel(EvESkill::Survey, true))));
     SetAttribute(AttrDuration, cycleTime);
@@ -32,6 +36,17 @@ m_shipVelocity(0.0f)
 void CynoModule::Activate(uint16 effectID, uint32 targetID, int16 repeat)
 {
     pShipSE = pClient->GetShipSE();
+
+    // test for nullptrs here
+    if (pShipSE == nullptr) {
+        pClient->SendNotifyMsg("You cannot light the cyno while your ship is moving.");
+        return;
+    }
+
+    if (pShipSE->DestinyMgr() == nullptr) {
+        pClient->SendNotifyMsg("You cannot light the cyno while your ship is moving.");
+        return;
+    }
 
     if (pShipSE->DestinyMgr()->IsMoving()) {
         // cant activate while ship is moving.

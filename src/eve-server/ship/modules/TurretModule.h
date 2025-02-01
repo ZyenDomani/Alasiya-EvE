@@ -18,25 +18,26 @@ class TurretModule : public ActiveModule
 {
 public:
     TurretModule(ModuleItemRef mRef, ShipItemRef sRef);
-    virtual ~TurretModule()                            { /* do nothing here */ }
+    virtual ~TurretModule()                             { /* do nothing here */ }
 
-    virtual TurretModule*       GetTurretModule()       { return this; }
+    virtual TurretModule* GetTurretModule()             { return this; }
     //  class type helpers.  public for anyone to access.
-    virtual bool                IsTurretModule()        { return true; }
+    virtual bool        IsTurretModule()                { return true; }
 
     /* ActiveModule overrides */
-    virtual void LoadCharge(InventoryItemRef charge);
-    virtual void UnloadCharge();
+    virtual void        Init();
+    virtual void        LoadCharge(InventoryItemRef charge);
+    virtual void        UnloadCharge();
 
     //  functions to be handled in derived classes as needed
-    virtual void ApplyDamage();
+    virtual void        ApplyDamage();
 
 protected:
-    TurretFormulas m_formula;
+    TurretFormulas      m_formula;
 
-    float m_crystalDmg;
-    float m_crystalDmgAmount;
-    float m_crystalDmgChance;
+    float               m_crystalDmg;
+    float               m_crystalDmgAmount;
+    float               m_crystalDmgChance;
 
 };
 

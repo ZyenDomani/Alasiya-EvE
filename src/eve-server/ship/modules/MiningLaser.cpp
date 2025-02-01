@@ -34,6 +34,13 @@ m_crystalDmgAmount(0.0f),
 m_crystalDmgChance(0.0f),
 m_holdFlag(flagCargoHold)
 {
+
+    _log(MINING__TRACE, "MiningLaser Created for %s with %llims Duration.", mRef->name(), GetAttribute(AttrDuration).get_int());
+}
+
+void MiningLaser::Init() {
+    ActiveModule::Init();
+
     if (m_modRef->groupID() == EVEDB::invGroups::Mining_Laser) {
         m_rMiner = true;
     } else if ((m_modRef->typeID() == 12108) or (m_modRef->typeID() == 18068) or (m_modRef->typeID() == 24305) or (m_modRef->typeID() == 28748)) {
@@ -50,9 +57,6 @@ m_holdFlag(flagCargoHold)
     } else if (m_modRef->groupID() == EVEDB::invGroups::Strip_Miner) {
         m_rMiner = true;
     }
-
-
-    _log(MINING__TRACE, "MiningLaser Created for %s with %llims Duration.", mRef->name(), GetAttribute(AttrDuration).get_int());
 }
 
 void MiningLaser::LoadCharge(InventoryItemRef charge)

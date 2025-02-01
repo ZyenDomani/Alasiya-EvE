@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Luck
-    Updates:    Allan   13 March 2017    Implemented TRUE effects class and code that processess and applies all item effect using ccp's effects data
+    Updates:    Allan   13 March 2017    Implemented TRUE effects class and code that processes and applies all item effect using ccp's effects data
 */
 
 

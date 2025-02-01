@@ -21,9 +21,10 @@ public:
     virtual ~MiningLaser()                              { /* do nothing here */ }
 
     /* GenericModule overrides */
+    virtual void        Init();
     virtual MiningLaser*        GetMiningModule()       { return this; }
-    virtual bool IsMiningLaser() const                  { return true; }
-    virtual void DeactivateCycle(bool abort=false);
+    virtual bool        IsMiningLaser() const           { return true; }
+    virtual void        DeactivateCycle(bool abort=false);
 
     /* ActiveModule overrides */
     virtual uint32 DoCycle();

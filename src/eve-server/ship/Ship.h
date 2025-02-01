@@ -69,7 +69,7 @@ public:
 
     virtual void SetPlayer(Client* pClient);
     virtual bool HasPilot()                             { return (m_pilot != nullptr); }
-    virtual Client* GetPilot()                          { return m_pilot; }
+    virtual Client* GetPilot()                          { return m_pilot; }     // can be null
 
     // add item to our inventory and set singleton where applicable
     virtual void AddItem(InventoryItemRef iRef);

@@ -29,13 +29,12 @@ public:
     virtual bool        IsActiveModule() const          { return true; }
 
     /* GenericModule overrides */
+    virtual void        Init();
     virtual void        Process();
     // this will not move charge item.
-    // must NOT throw
-    virtual void        LoadCharge(InventoryItemRef charge);
+    virtual void        LoadCharge(InventoryItemRef charge);    // must NOT throw
     // this will not move charge item.
-    // must NOT throw
-    virtual void        UnloadCharge();
+    virtual void        UnloadCharge();    // must NOT throw
     virtual void        Overload();
     virtual void        AbortCycle();
     virtual void        DeOverload();
@@ -70,9 +69,9 @@ public:
     /* new effects processing code and updates */
     void                ApplyEffect(int8 state, bool active=false);
     /* common method for all modules that have a visual effect every cycle when active */
-    void                SendGFX(bool active=false, bool abort=false);
+    void                SendGFX(bool start=false, bool active=false,bool abort=false);
     /* send module info to ship for button gfx */
-    void                SendShipEffect(bool active=false, bool abort=false);
+    void                SendShipEffect(bool start=false, bool abort=false);
 
 protected:
     // we do not own any of these next 5

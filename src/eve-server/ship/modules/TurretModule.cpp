@@ -20,11 +20,17 @@ TurretModule::TurretModule(ModuleItemRef mRef, ShipItemRef sRef)
  m_crystalDmgAmount(0),
  m_crystalDmgChance(0)
 {
+
+}
+
+void TurretModule::Init() {
+    ActiveModule::Init();
+
     /* this may lead to some weird shit, but civilian turrets dont use charges.
      *  these turrets have the damage attribs set in turret item, so set chargeRef to turret item for damage calcs
      */
     if (!m_needsCharge)
-        m_chargeRef = mRef;
+        m_chargeRef = m_modRef;
 }
 
 void TurretModule::LoadCharge(InventoryItemRef cRef)

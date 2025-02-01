@@ -110,6 +110,7 @@ public:
     InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
 
     /* generic access functions to be handled in derived classes (must override) */
+    virtual void Init()                                 { /* do nothing here */ }
     virtual void Process()                              { /* do nothing here */ }
     virtual void Deactivate(std::string effect="")      { /* do nothing here */ }
     virtual void AbortCycle()                           { /* do nothing here */ }

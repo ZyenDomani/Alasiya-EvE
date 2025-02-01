@@ -29,36 +29,24 @@ m_targMgr(nullptr),
 m_targetSE(nullptr),
 m_destinyMgr(nullptr),
 m_usesCharge(false),
-m_needsCharge(mRef->HasAttribute(AttrChargeGroup1)),
+m_needsCharge(false),
 m_needsTarget(false),
 m_targetID(0),
 m_effectID(0),
 m_Stop(true),
 // this is an internal variable only.
-m_reloadTime(mRef->GetAttribute(AttrReloadTime).get_uint32()),
+m_reloadTime(0),
 m_startTime(0)
-{ /*
-    repeat = settings.char.autorepeat.Get(self.sr.moduleInfo.itemID, -1)
-    if group.groupID in (const.groupMiningLaser, const.groupStripMiner):
-        self.SetRepeat(1000)
-        elif repeat != -1:
-        self.SetRepeat(repeat)
-        else:
-            repeatSet = 0
-            for key in self.sr.moduleInfo.effects.iterkeys():
-                effect = self.sr.moduleInfo.effects[key]
-                if self.IsEffectRepeatable(effect):
-                    self.SetRepeat(1000)
-                    repeatSet = 1
-                    break
-
-                    if not repeatSet:
-                        self.SetRepeat(0)
-    */
+{
     m_repeat = 1000;    //good default.  this enabled continuous cycle.  less than 1000 will decrement in client
+}
+
+void ActiveModule::Init() {
+    m_needsCharge = m_modRef->HasAttribute(AttrChargeGroup1);
+    m_reloadTime = m_modRef->GetAttribute(AttrReloadTime).get_uint32();
 
     if (m_needsCharge) {
-        switch (mRef->groupID()) {
+        switch (m_modRef->groupID()) {
             // civilian turrets dont use charges.  this is checked in TurretModule()
             // these can use scripts as charge.  they can activate without scripts using 'default' values
             case EVEDB::invGroups::Remote_Sensor_Damper:
@@ -88,7 +76,7 @@ m_startTime(0)
      */
     if (m_needsCharge or m_usesCharge)  {
         if (m_reloadTime < 1) {
-            switch (mRef->groupID()) {
+            switch (m_modRef->groupID()) {
                 case EVEDB::invGroups::Tracking_Link:
                 case EVEDB::invGroups::Projected_ECCM:
                 case EVEDB::invGroups::Sensor_Booster:
@@ -136,14 +124,14 @@ m_startTime(0)
     if (is_log_enabled(MODULE__TRACE)) {
         if (m_reloadTime or m_usesCharge) {
             _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums. (uses charge: %s)", \
-                mRef->name(), mRef->itemID(), m_reloadTime, m_usesCharge?"true":"false");
+                    m_modRef->name(), m_modRef->itemID(), m_reloadTime, m_usesCharge?"true":"false");
         } else {
-            _log(MODULE__TRACE, "%s(%u) does not use reload time.", mRef->name(), mRef->itemID());
+            _log(MODULE__TRACE, "Active Module %s(%u) does not use reload time.", m_modRef->name(), m_modRef->itemID());
         }
     }
 
-    // these groups receive a 3% increase in scan range
-    switch (mRef->groupID()) {
+    // these groups receive a 3% increase in range
+    switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Ship_Scanner: {
             float range = GetAttribute(AttrShipScanRange).get_float();
             range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
@@ -187,17 +175,16 @@ m_startTime(0)
             SetAttribute(AttrMaxRange, range);
         } break;
         /*  these are 50AU.  we dont need to increase it...
-        case EVEDB::invGroups::System_Scanner:  {
-            float range = GetAttribute(AttrScanRange).get_float();        // range in AU
-            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
-            SetAttribute(AttrScanRange, range);
-        } break;
-        */
+         *   case EVEDB::invGroups::System_Scanner:  {
+         *       float range = GetAttribute(AttrScanRange).get_float();        // range in AU
+         *       range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+         *       SetAttribute(AttrScanRange, range);
+    } break;
+    */
     }
 }
 
-void ActiveModule::Update()
-{
+void ActiveModule::Update() {
     if (!m_shipRef->HasPilot())
         return;
 
@@ -405,7 +392,10 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         }
     }
 
-    m_repeat = repeat;
+    // this repeat comes directly from client.  test and set higher of these
+    if (repeat > m_repeat)
+        m_repeat = repeat;
+
     m_effectID = effectID;
 
     if (!CanActivate()) {
@@ -601,7 +591,7 @@ uint32 ActiveModule::DoCycle() {
         case EVEDB::invGroups::Capacitor_Booster:{
             ConsumeCharge();
             UpdateCharge(AttrCapacitorCharge, AttrCapacitorCapacity, AttrPowerTransferAmount, m_shipRef);
-            m_repeat = 1;
+            m_repeat = 0;
         } break;
         // i *think* these first 2 go here....need testing
         case EVEDB::invGroups::Energy_Vampire:
@@ -1214,25 +1204,27 @@ bool ActiveModule::CanActivate()
 }
 
 
-void ActiveModule::SendGFX(bool active/*false*/, bool abort/*false*/) {
+void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abort/*false*/) {
     if (m_effectID < 1) {
         // this is a major error.  make better warning.
         sLog.Error("AM::SendGFX()", "m_effectID < 1 for %s.", m_modRef->name());
-        EvE::traceStack();
+        //EvE::traceStack();
         return;
     }
 
-    if (abort)
+    if (abort) {
+        start = false;
         active = false;
+    }
 
     int32 cycleTime(-1);
     if (HasAttribute(AttrDuration)) {
-        cycleTime = (active ? GetAttribute(AttrDuration).get_int() : 0);
+        cycleTime = (start ? GetAttribute(AttrDuration).get_int() : 0);
     } else if (HasAttribute(AttrSpeed)) {
-        cycleTime = (active ? GetAttribute(AttrSpeed).get_int() : 0);
+        cycleTime = (start ? GetAttribute(AttrSpeed).get_int() : 0);
     }
 
-    // most modules send their start time, even when !active
+    // most modules send their start time, even when !start
     // exceptions are missiles and turrets
     bool useStartTime(true);
     switch (m_effectID) {
@@ -1262,17 +1254,29 @@ void ActiveModule::SendGFX(bool active/*false*/, bool abort/*false*/) {
                  * repeat > 0 - start REPEAT event
                  * !repeat - start TOGGLE event (turn off with !start)
                  */
-                active,         // start
+                start,          // start
                 active,         // active
                 cycleTime,      // duration in ms
                 m_repeat,       // repeat
                 (useStartTime ? m_startTime : 0));
 }
 
-void ActiveModule::SendShipEffect(bool active/*false*/, bool abort/*false*/) {
-    // test bcast module gfx sending thru here
-    SendGFX(active, abort);
-    
+void ActiveModule::SendShipEffect(bool start/*false*/, bool abort/*false*/) {
+    bool active(true);
+
+    // set <active> for ONE-SHOT gfx trigger
+    switch (m_effectID) {
+        case EvE::GFXID::cargoScan:
+        case EvE::GFXID::ecmBurst:
+        case EvE::GFXID::surveyScan:
+        case EvE::GFXID::doHacking:
+        case EvE::GFXID::hackOrbital:
+            active = false;
+    }
+
+    // test bcast module gfx sending thru here...working well
+    SendGFX(start, active, abort);
+
     // Create Module Button Fx
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
 
@@ -1296,9 +1300,9 @@ void ActiveModule::SendShipEffect(bool active/*false*/, bool abort/*false*/) {
 
     int32 cycleTime(-1);
     if (HasAttribute(AttrDuration)) {
-        cycleTime = (active ? GetAttribute(AttrDuration).get_int() : 0);
+        cycleTime = (start ? GetAttribute(AttrDuration).get_int() : 0);
     } else if (HasAttribute(AttrSpeed)) {
-        cycleTime = (active ? GetAttribute(AttrSpeed).get_int() : 0);
+        cycleTime = (start ? GetAttribute(AttrSpeed).get_int() : 0);
     }
 
     //def OnGodmaShipEffect(self, itemID, effectID, t, start, active, environment, startTime, duration, repeat, randomSeed, error, actualStopTime = None, stall = True):
@@ -1306,7 +1310,7 @@ void ActiveModule::SendShipEffect(bool active/*false*/, bool abort/*false*/) {
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
         shipEff.timeNow = GetFileTimeNow();
-        shipEff.start = (active ? 1 : 0);
+        shipEff.start = (start ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
         shipEff.startTime = m_startTime;

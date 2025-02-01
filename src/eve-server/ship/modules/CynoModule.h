@@ -17,18 +17,21 @@ class CynoModule: public ActiveModule
 {
 public:
     CynoModule(ModuleItemRef mRef, ShipItemRef sRef);
-    virtual ~CynoModule()                                 { /* do nothing here */ }
+    virtual ~CynoModule()                               { /* do nothing here */ }
 
-    virtual CynoModule*       GetCynoModule()             { return this; }
-    virtual bool        IsCynoModule() const        { return true; }
+    virtual CynoModule* GetCynoModule()                 { return this; }
+    virtual bool        IsCynoModule() const            { return true; }
 
+    /* GenericModule overrides */
+    virtual void        Init();
+    virtual void        Process()                       { /* do nothing here */ }
     /* ActiveModule overrides */
-    virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
-    virtual void DeactivateCycle(bool abort=false);
+    virtual void        Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
+    virtual void        DeactivateCycle(bool abort=false);
     virtual uint32      DoCycle();
 
     // this is a check for those active modules that need it (mining, weapons) and overridden as needed
-    virtual bool CanActivate();
+    virtual bool        CanActivate();
 
 private:
     Client* pClient;

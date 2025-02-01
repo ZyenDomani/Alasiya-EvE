@@ -121,7 +121,8 @@ void GenericModule::Online()
     m_modRef->SetOnline(true, isRig());
     m_ModuleState = Module::State::Online;
     _log(MODULE__MESSAGE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f, loaded: %s", \
-            itemID(), m_modRef->name(), cpuNeed.get_float(), pgNeed.get_float(), m_ChargeState == Module::State::Loaded?"true":"false");
+            itemID(), m_modRef->name(), cpuNeed.get_float(), pgNeed.get_float(), \
+            (m_ChargeState == Module::State::Loaded)?"true":"false");
 
     ProcessEffects(FX::State::Passive, true);
     ProcessEffects(FX::State::Online, true);
