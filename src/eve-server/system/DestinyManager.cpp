@@ -63,7 +63,7 @@ m_posHack(sConfig.debug.PositionHack), m_turnAccel(false), m_turnDecel(false), m
 m_origHeading(NULL_ORIGIN_V), m_curveStart(NULL_ORIGIN), m_curveApex(NULL_ORIGIN), m_curveEnd(NULL_ORIGIN),
 m_inclination(0.0), m_longAscNode(0.0), m_accelTime(0.0f), m_accelDistance(0), m_decelTime(0.0f), m_warpState(nullptr)
 {
-    sLog.Magenta("Destiny", "created 0X%X for %s", this, self->GetName());
+    //sLog.Magenta("Destiny", "created 0X%x for %s", this, self->GetName());
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
 }
@@ -286,6 +286,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
 
     m_prevSpeedFraction = 0.0f;
 
+    //TODO: client speedo checks for 0.05f either way  should update my code to reflect this
     if (m_activeSpeedFraction > ASF_CHECK) {
         m_userSpeedFraction = fraction;
         m_prevSpeedFraction = m_activeSpeedFraction;

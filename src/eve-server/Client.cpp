@@ -303,6 +303,7 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
     if (sDataMgr.IsSolarSystem(m_locationID)) {
         CreateShipSE();
         m_system->AddEntity(pShipSE);
+        UpdateNewShip();
         WarpIn();
         // if we are in space, everything is set up at this point, so set ballpark
         //pShipSE->DestinyMgr()->SendSetState();
@@ -676,6 +677,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         char ci[45];
         snprintf(ci, sizeof(ci), "Docked: %s(%u)", GetName(), m_char->itemID());
         m_ship->SetCustomInfo(ci);
+
         m_char->Move(m_locationID, flagNone, true);
         m_ship->Move(m_locationID, flagHangar, true);
 
@@ -707,9 +709,12 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u. (setState %s, beyonce %s)", \
                 m_char->name(), m_char->itemID(), m_locationID, m_setStateSent ? "true" : "false", \
                 m_beyonce ? "true" : "false");
-        char ci[45];
-        snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
-        m_ship->SetCustomInfo(ci);
+        if (!m_login) {
+            // this is set elsewhere for login
+            char ci[45];
+            snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
+            m_ship->SetCustomInfo(ci);
+        }
 
         // if docked, update guestlist
         if (wasDocked and m_ship->IsUndocking())

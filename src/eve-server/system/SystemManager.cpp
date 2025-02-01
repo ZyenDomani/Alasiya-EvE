@@ -1265,6 +1265,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         head.stamp = into.stamp;
     stateBuffer->Append( head );
 
+    // use map as it automagically orders by itemID
     std::map<uint32, SystemEntity*> visibleEntities;
 
     // get all static entities for this system

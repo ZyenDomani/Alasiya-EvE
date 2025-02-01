@@ -109,6 +109,14 @@ PyResult Command_status(Client* pClient, CommandDB* db, PyServiceMgr* services, 
 
     ShipItem* pShip = pClient->GetShip().get();
 
+    // test for args:   targ.
+    if (args.argCount() == 2) {
+        if (strcmp(args.arg(1).c_str(), "targ") == 0) {
+            // wow...that's a lot of redirecting here...
+            pShip = pClient->GetShipSE()->TargetMgr()->GetFirstTarget()->GetShipSE()->GetShipItemRef().get();
+        }
+    }
+
     char reply[150];
     snprintf(reply, 150,
              "PG: %.2f(%.3f)<br>" //25
@@ -358,6 +366,15 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
     DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
     GPoint heading(dm->GetHeading());
 
+    // test for args:   targ.
+    if (args.argCount() == 2) {
+        if (strcmp(args.arg(1).c_str(), "targ") == 0) {
+            sRef = pClient->GetShipSE()->TargetMgr()->GetFirstTarget()->GetSelf();
+            dm = pClient->GetShipSE()->TargetMgr()->GetFirstTarget()->GetShipSE()->DestinyMgr();
+            heading = dm->GetHeading();
+        }
+    }
+
     char reply[350];
     snprintf(reply, 350,
              "Destiny Variable List for %s<br><br>" //60
@@ -373,7 +390,7 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              "Agility: %.5f<br>" //27
              "InertiaMod: %.3f<br>" //27
              "Heading: %.3f,%.3f,%.3f<br>", //21
-             pClient->GetShipSE()->GetName(), pClient->GetShipID(),
+             sRef->name(), sRef->itemID(),
              sRef->GetAttribute(AttrMass).get_float(), dm->GetAlignTime(),
              dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10),
              dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(),
