@@ -2797,7 +2797,14 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     SendBallInteractive(newShipRef, true);
 }
 
-//  called from Client::ResetAfterPodded(), NPC::NPC(), Concord::Concord(), Drone::Drone(), DestinyManager::UpdateNewShip()
+/*  called from
+ * Client::ResetAfterPodded(),
+ * NPC::NPC(),
+ * Concord::Concord(),
+ * Drone::Drone(),
+ * DestinyManager::UpdateNewShip()
+ * DynamicEntityFactory::BuildEntity
+ */
 void DestinyManager::UpdateShipVariables()
 {
     /* basic InertiaMod

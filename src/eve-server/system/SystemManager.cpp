@@ -135,18 +135,6 @@ bool SystemManager::BootSystem() {
         return false;
     }
 
-    // system is loaded.  check for items that need initialization
-    for (auto &cur : m_ticEntities) {
-        if (cur.second->IsTCUSE())
-            cur.second->GetTCUSE()->Init();
-        if (cur.second->IsSBUSE())
-            cur.second->GetSBUSE()->Init();
-        if (cur.second->IsIHubSE())
-            cur.second->GetIHubSE()->Init();
-        if (cur.second->IsPOSSE())
-            cur.second->GetPOSSE()->Init();
-    }
-
     // check planets for colony/customs office
     /* does not work as intended
     for (auto &cur : m_planetMap)
@@ -549,6 +537,11 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             /** @todo make error msg here */
             ShipSE* sSE = new ShipSE(ship, *(sysMgr.GetServiceMgr()), &sysMgr, data);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ShipSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
+            if (data.ownerID == 1) {
+                // initialize abandoned ship here.
+                ship->Init();
+                sSE->DestinyMgr()->UpdateShipVariables();
+            }
             return sSE;
         } break;
         case EVEDB::invCategories::Deployable: {
@@ -621,6 +614,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                     pSSE = sSE;
                 } break;
             }
+            pSSE->Init();
             return pSSE;
         } break;
         case EVEDB::invCategories::SovereigntyStructure: {// SOV structures
@@ -652,6 +646,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                     sSSE = sSE;
                 } break;
             }
+            sSSE->Init();
             return sSSE;
         } break;
         case EVEDB::invCategories::Orbitals: {           // planet orbitals   these should go into m_staticEntities
