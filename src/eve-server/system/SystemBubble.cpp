@@ -33,7 +33,7 @@
 #include "EntityMgr.h"
 #include "npc/Drone.h"
 #include "npc/NPC.h"
-#include "ship/modules/GenericModule.h"
+#include "ship/modules/ActiveModule.h"
 #include "system/BubbleManager.h"
 #include "system/Container.h"
 #include "system/DestinyManager.h"
@@ -306,11 +306,11 @@ SystemEntity* const SystemBubble::GetEntity(uint32 entityID) const {
     return nullptr;
 }
 
-void SystemBubble::AddActiveModule(GenericModule* pMod) {
+void SystemBubble::AddActiveModule(ActiveModule* pMod) {
     m_activeModules[pMod->itemID()] = pMod;
 }
 
-void SystemBubble::RemoveActiveModule(GenericModule* pMod) {
+void SystemBubble::RemoveActiveModule(ActiveModule* pMod) {
     m_activeModules.erase(pMod->itemID());
 }
 

@@ -631,8 +631,7 @@ void TargetManager::Depleted(InventoryItemRef iRef)
 }
 
 // specific for asteroids; only called by asteroids
-void TargetManager::Depleted(MiningLaser* pMod)
-{
+void TargetManager::Depleted(MiningLaser* pMod) {
     if (!mySE->IsAsteroidSE()) {
         codelog(MODULE__ERROR, "TargMgr::Depleted() called by Non Asteroid %s", mySE->GetName());
         return;

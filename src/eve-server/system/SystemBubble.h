@@ -45,7 +45,7 @@ class SBUSE;
 class IHubSE;
 class DroneSE;
 class PyObject;
-class GenericModule;
+class ActiveModule;
 
 class SystemBubble {
 public:
@@ -158,8 +158,8 @@ public:
     PyObject* GetDroneState() const;
 
     /* methods for sending gfx to new ships */
-    void AddActiveModule(GenericModule* pMod);
-    void RemoveActiveModule(GenericModule* pMod);
+    void AddActiveModule(ActiveModule* pMod);
+    void RemoveActiveModule(ActiveModule* pMod);
 
     /* for command .syncloc - updates all players in bubble with positions of all dSE */
     void SyncPos();
@@ -204,10 +204,10 @@ private:
 
     std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
     std::map<uint32, DroneSE*> m_drones;                //we do not own these.
+    std::map<uint32, ActiveModule*> m_activeModules;    // for sending gfx to new ships in bubble
     std::map<uint32, SystemEntity*> m_markers;          // bubble marker cans.  we do own these.
     std::map<uint32, SystemEntity*> m_entities;         //we do not own these.
     std::map<uint32, SystemEntity*> m_dynamicEntities;  //entities which may/may not move. we do not own these.
-    std::map<uint32, GenericModule*> m_activeModules;   // for sending gfx to new ships in bubble
 };
 
 #endif  // _EVE_SERVER_SYSTEM_BUBBLE_H_

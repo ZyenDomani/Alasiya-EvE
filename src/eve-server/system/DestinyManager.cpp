@@ -3149,7 +3149,7 @@ void DestinyManager::SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeI
         SendSingleDestinyUpdate(&up);
     } else {
         // this is to update new ship in bubble with active gfx
-        pClient->QueueDestinyUpdate(up);
+        pClient->QueueDestinyUpdate(&up);
     }
     PyDecRef(up);
 }
