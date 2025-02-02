@@ -74,7 +74,8 @@ void ActiveModule::Init() {
      *  4s for turrets and scrips
      *  5s for snowball and probe launchers
      *  6s for miners and remote scripts
-     *  7s for missile launchers
+     *  7s for s/m missile launchers
+     *  8s for large missile launchers
      * 10s for others.
      */
     if (m_needsCharge or m_usesCharge)  {
@@ -100,16 +101,18 @@ void ActiveModule::Init() {
                     m_reloadTime = 6000;
                 } break;
                 case EVEDB::invGroups::Missile_Launcher_Bomb:
-                case EVEDB::invGroups::Missile_Launcher_Heavy:
-                case EVEDB::invGroups::Missile_Launcher_Siege:
-                case EVEDB::invGroups::Missile_Launcher_Cruise:
+                case EVEDB::invGroups::Missile_Launcher_Heavy:          //10m3
                 case EVEDB::invGroups::Missile_Launcher_Rocket:
-                case EVEDB::invGroups::Missile_Launcher_Assault:
-                case EVEDB::invGroups::Missile_Launcher_Citadel:
-                case EVEDB::invGroups::Missile_Launcher_Standard:
+                case EVEDB::invGroups::Missile_Launcher_Assault:        //10m3
+                case EVEDB::invGroups::Missile_Launcher_Standard:       //5m3
                 case EVEDB::invGroups::Missile_Launcher_Defender:
                 case EVEDB::invGroups::Missile_Launcher_Heavy_Assault: {
                     m_reloadTime = 7000;
+                } break;
+                case EVEDB::invGroups::Missile_Launcher_Siege:          //20m3
+                case EVEDB::invGroups::Missile_Launcher_Cruise:         //20m3
+                case EVEDB::invGroups::Missile_Launcher_Citadel: {      //20m3
+                    m_reloadTime = 8000;
                 } break;
                 default: {
                     m_reloadTime = 10000;
@@ -675,7 +678,7 @@ uint32 ActiveModule::DoCycle() {
     // do heat damage if overloaded...this will be handled in shipItem class
     if (m_overLoaded)
         m_shipRef->HeatDamageCheck(this);
-    
+
     EvilNumber cycleTime(10000);   // default to 10s
     if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         return cycleTime.get_uint32();
