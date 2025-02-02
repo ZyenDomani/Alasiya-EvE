@@ -40,7 +40,7 @@ public:
     virtual void        DeOverload();
     virtual void        Deactivate(std::string effect="");
     /* cancel current cycle after timer ends. */
-    virtual void        DeactivateCycle(bool abort=false); // this needs state=Deactivating for normal op.  set abort=true to cancel current cycle
+    virtual void        DeactivateCycle(bool abortCycle=false); // this needs state=Deactivating for normal op.  set abortCycle=true to cancel current cycle
     virtual void        Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
     virtual void        RemoveTarget(SystemEntity* pSE);
 
@@ -69,9 +69,9 @@ public:
     /* new effects processing code and updates */
     void                ApplyEffect(int8 state, bool active=false);
     /* common method for all modules that have a visual effect every cycle when active */
-    void                SendGFX(bool start=false, bool active=false,bool abort=false);
+    void                SendGFX(bool start=false, bool active=false,bool abortCycle=false);
     /* send module info to ship for button gfx */
-    void                SendShipEffect(bool start=false, bool abort=false);
+    void                SendShipEffect(bool start=false, bool abortCycle=false);
 
 protected:
     // we do not own any of these next 5

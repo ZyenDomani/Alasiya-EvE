@@ -675,7 +675,7 @@ uint32 ActiveModule::DoCycle() {
     // do heat damage if overloaded...this will be handled in shipItem class
     if (m_overLoaded)
         m_shipRef->HeatDamageCheck(this);
-
+    
     EvilNumber cycleTime(10000);   // default to 10s
     if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         return cycleTime.get_uint32();
@@ -703,14 +703,14 @@ void ActiveModule::AbortCycle()
     m_Stop = true;
 }
 
-void ActiveModule::DeactivateCycle(bool abort/*false*/)
+void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
 {
     if (m_ModuleState < Module::State::Deactivating)
         return;
 
-    _log(MODULE__TRACE, "%s(%u) calling DeactivateCycle(abort: %s)", m_modRef->name(), m_modRef->itemID(), abort?"true":"false");
-    if ((m_ModuleState == Module::State::Activated) and (!abort)) {
-        _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
+    _log(MODULE__TRACE, "%s(%u) calling DeactivateCycle(abortCycle: %s)", m_modRef->name(), m_modRef->itemID(), abortCycle?"true":"false");
+    if ((m_ModuleState == Module::State::Activated) and (!abortCycle)) {
+        _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abortCycle.",  \
                 m_modRef->name(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
         EvE::traceStack();
     }
@@ -719,9 +719,9 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         std::vector<GenericModule*> modules;
         m_shipRef->GetLinkedWeaponMods(this, modules);
         for (auto &cur : modules)
-            cur->GetActiveModule()->SendShipEffect(false, abort);
+            cur->GetActiveModule()->SendShipEffect(false, abortCycle);
     } else {
-        SendShipEffect(false, abort);
+        SendShipEffect(false, abortCycle);
     }
 
     // Remove modifier added by module
@@ -749,7 +749,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                 m_targetSE->DestinyMgr()->WebbedMe(m_modRef, false);
         } break;
         case EVEDB::invGroups::Survey_Scanner: {
-            if (abort) {
+            if (abortCycle) {
                 Clear();
                 return;
             }
@@ -1208,7 +1208,7 @@ bool ActiveModule::CanActivate()
 }
 
 
-void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abort/*false*/) {
+void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abortCycle/*false*/) {
     if (m_effectID < 1) {
         // this is a major error.  make better warning.
         sLog.Error("AM::SendGFX()", "m_effectID < 1 for %s.", m_modRef->name());
@@ -1216,7 +1216,7 @@ void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abort
         return;
     }
 
-    if (abort) {
+    if (abortCycle) {
         start = false;
         active = false;
     }
@@ -1265,7 +1265,7 @@ void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abort
                 (useStartTime ? m_startTime : 0));
 }
 
-void ActiveModule::SendShipEffect(bool start/*false*/, bool abort/*false*/) {
+void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/) {
     bool active(true);
 
     // set <active> for ONE-SHOT gfx trigger
@@ -1279,7 +1279,7 @@ void ActiveModule::SendShipEffect(bool start/*false*/, bool abort/*false*/) {
     }
 
     // test bcast module gfx sending thru here...working well
-    SendGFX(start, active, abort);
+    SendGFX(start, active, abortCycle);
 
     // Create Module Button Fx
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
