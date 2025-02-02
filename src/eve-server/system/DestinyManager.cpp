@@ -3125,7 +3125,7 @@ void DestinyManager::SendModGFX(ModuleItemRef rMod) {
 void DestinyManager::SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeID, int32 targetID,
                                int32 chargeTypeID, std::string guid, bool isOffensive, bool start,
                                bool isActive, int32 duration, int32 repeat, int64 startTime/*0*/,
-                               int32 graphicInfo/*0*/) const
+                               int32 graphicInfo/*0*/, Client* pClient/*nullptr*/) const
 {
     OnSpecialFX14 effect;
         effect.entityID = entityID;
@@ -3145,7 +3145,12 @@ void DestinyManager::SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeI
     PyTuple *up = effect.Encode();
     if (is_log_enabled(EFFECTS__DUMP))
         up->Dump(EFFECTS__DUMP, "");
-    SendSingleDestinyUpdate(&up);
+    if (pClient == nullptr) {
+        SendSingleDestinyUpdate(&up);
+    } else {
+        // this is to update new ship in bubble with active gfx
+        pClient->QueueDestinyUpdate(up);
+    }
     PyDecRef(up);
 }
 

@@ -105,8 +105,6 @@ uint32 Prospector::DoCycle()
         _log(MODULE__ERROR, "Prospector::DoCycle() hit end of conditional.");
     }
 
-    //SendGFX(true, true);
-    
     return ActiveModule::DoCycle();
 }
 

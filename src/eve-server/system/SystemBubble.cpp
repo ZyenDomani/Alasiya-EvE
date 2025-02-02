@@ -33,6 +33,7 @@
 #include "EntityMgr.h"
 #include "npc/Drone.h"
 #include "npc/NPC.h"
+#include "ship/modules/GenericModule.h"
 #include "system/BubbleManager.h"
 #include "system/Container.h"
 #include "system/DestinyManager.h"
@@ -183,6 +184,10 @@ void SystemBubble::Add(SystemEntity* pSE) {
         if (!m_players.empty())
             AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
 
+        //check to see if any ships are using gfx.  if so, send all gfx to new ship
+        for (auto &cur : m_activeModules)
+            cur.second->SendGFX(false, pClient);
+
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
     } else {
         if (!m_players.empty())
@@ -299,6 +304,14 @@ SystemEntity* const SystemBubble::GetEntity(uint32 entityID) const {
         return itr->second;
 
     return nullptr;
+}
+
+void SystemBubble::AddActiveModule(GenericModule* pMod) {
+    m_activeModules[pMod->itemID()] = pMod;
+}
+
+void SystemBubble::RemoveActiveModule(GenericModule* pMod) {
+    m_activeModules.erase(pMod->itemID());
 }
 
 void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {

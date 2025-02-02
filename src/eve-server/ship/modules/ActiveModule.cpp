@@ -442,6 +442,11 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     if (IsValidTarget(targetID))
         ApplyEffect(FX::State::Target, true);
 
+    SetModuleState(Module::State::Activated);
+
+    // add module to bubble's active module map
+    m_bubble->AddActiveModule(this);
+
     if (m_linkMaster) {
         std::vector<GenericModule*> modules;
         m_shipRef->GetLinkedWeaponMods(this, modules);
@@ -453,8 +458,6 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     } else {
         SendShipEffect(true, false);
     }
-
-    SetModuleState(Module::State::Activated);
 
     switch (groupID()) {
         case EVEDB::invGroups::Afterburner:
@@ -503,6 +506,9 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
             effect.c_str(), m_modRef->name(), m_modRef->itemID(), GetRemainingCycleTimeMS());
 
     SetModuleState(Module::State::Deactivating);
+
+    // remove module from bubble's active module map
+    m_bubble->RemoveActiveModule(this);
 
     if ((m_effectID == EvE::GFXID::miningLaser) or (m_effectID == EvE::GFXID::miningClouds)) {
         DeactivateCycle(true);
@@ -1211,17 +1217,29 @@ bool ActiveModule::CanActivate()
 }
 
 
-void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abortCycle/*false*/) {
+void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/) {
     if (m_effectID < 1) {
-        // this is a major error.  make better warning.
+        // not necessarily an error.  just make note
         sLog.Error("AM::SendGFX()", "m_effectID < 1 for %s.", m_modRef->name());
         //EvE::traceStack();
         return;
     }
 
-    if (abortCycle) {
+    bool active(false), start(false);
+
+    if (m_modRef->groupID() == EVEDB::invGroups::Super_Weapon) {
+        // this will enable a ONE-SHOT event in client.  is the only one that uses this
+        start = true;
+        active = false;
+    } else if (m_ModuleState == Module::State::Activated) {
+        start = true;
+        active = true;
+    } else if (m_ModuleState == Module::State::Deactivating) {
         start = false;
         active = false;
+    } else {
+        sLog.Warning("AM::SendGFX()", "%s on %s at %s has Invalid Module State for GFX: %s.  Sending False for start & active.", \
+                m_modRef->name(), m_shipRef->name(), sDataMgr.GetFlagName(m_modRef->flag()), GetModuleStateName());
     }
 
     int32 cycleTime(-1);
@@ -1231,7 +1249,7 @@ void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abort
         cycleTime = (start ? GetAttribute(AttrSpeed).get_int() : 0);
     }
 
-    // most modules send their start time, even when !start
+    // modules send their actual start time, even when !start
     // exceptions are missiles and turrets
     bool useStartTime(true);
     switch (m_effectID) {
@@ -1257,7 +1275,7 @@ void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abort
                 sFxDataMgr.isOffensive(m_effectID),
                 /*  still working on these...
                  * !start - remove effect
-                 * start and !active - start ONE-SHOT event of (duration)  - seems to be Super_Weapon only
+                 * start and !active - start ONE-SHOT event of (duration) - SuperWeapon only
                  * repeat > 0 - start REPEAT event
                  * !repeat - start TOGGLE event (turn off with !start)
                  */
@@ -1265,22 +1283,11 @@ void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abort
                 active,         // active
                 cycleTime,      // duration in ms
                 m_repeat,       // repeat
-                (useStartTime ? m_startTime : 0));
+                (useStartTime ? m_startTime : 0),
+                pClient);
 }
 
 void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/) {
-    bool active(true);
-/*
-    // set <active> for ONE-SHOT gfx trigger
-    switch (m_effectID) {
-        case EvE::GFXID::cargoScan:
-        case EvE::GFXID::ecmBurst:
-        case EvE::GFXID::surveyScan:  << nope.  broke module button gfx (wont turn off)
-        case EvE::GFXID::doHacking:
-        case EvE::GFXID::hackOrbital:
-            active = false;
-    }
-*/
     // test bcast module gfx sending thru here...working well
     SendGFX(start, start, abortCycle);
 
@@ -1318,14 +1325,14 @@ void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/)
         shipEff.effectID = ge.effectID;
         shipEff.timeNow = GetFileTimeNow();
         shipEff.start = (start ? 1 : 0);
-        shipEff.active = (active ? 1 : 0);
+        shipEff.active = (start ? 1 : 0);
         shipEff.environment = ge.Encode();
         shipEff.startTime = m_startTime;
         // have seen duration = -1 in some packets.  criteria u/k at this time
         shipEff.duration = cycleTime;
         shipEff.randomSeed = PyStatic.NewNone();
 
-        if (!active) {
+        if (!start) {
             switch (m_effectID) {
                 case EvE::GFXID::targetAttack:
                 case EvE::GFXID::useMissiles:

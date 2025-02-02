@@ -69,7 +69,7 @@ public:
     /* new effects processing code and updates */
     void                ApplyEffect(int8 state, bool active=false);
     /* common method for all modules that have a visual effect every cycle when active */
-    void                SendGFX(bool start=false, bool active=false,bool abortCycle=false);
+    void                SendGFX(bool abortCycle=false, Client* pClient=nullptr);
     /* send module info to ship for button gfx */
     void                SendShipEffect(bool start=false, bool abortCycle=false);
 

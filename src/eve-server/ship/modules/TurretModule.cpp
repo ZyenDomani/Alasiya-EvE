@@ -71,7 +71,7 @@ void TurretModule::ApplyDamage()
 
     // send gfx for this cycle
     if (m_needsCharge)
-        SendGFX(true, true);
+        SendGFX();
 
     // add data to StatisticMgr
     sStatMgr.Increment(Stat::pcShots);

@@ -204,7 +204,8 @@ public:
     // this is for structure effects
     void SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeID, int32 targetID,
                    int32 chargeTypeID, std::string guid, bool isOffensive, bool start,
-                   bool isActive, int32 duration, int32 repeat, int64 startTime=0, int32 graphicInfo=0) const;
+                   bool isActive, int32 duration, int32 repeat, int64 startTime=0, int32 graphicInfo=0,
+                   Client* pClient=nullptr) const;
 
     /* update and event queue methods */
     void SendSingleDestinyEvent(PyTuple** ev, bool self_only=false) const;// this will not consume *ev
