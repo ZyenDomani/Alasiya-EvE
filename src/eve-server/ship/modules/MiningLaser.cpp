@@ -163,6 +163,9 @@ uint32 MiningLaser::DoCycle() {
      * however, code processing runs at beginning of cycle, so this needs to 'fake' the ore acquisition to the end of cycle
      * we accomplish this by doing nothing on first cycle, and call the processing component at beginning of each cycle after that.
      */
+
+    //SendGFX(true, true);
+
     if (m_IsInitialCycle) {
     	m_IsInitialCycle = false;
     } else {

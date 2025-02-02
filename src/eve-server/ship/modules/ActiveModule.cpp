@@ -1270,19 +1270,19 @@ void ActiveModule::SendGFX(bool start/*false*/, bool active/*false*/, bool abort
 
 void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/) {
     bool active(true);
-
+/*
     // set <active> for ONE-SHOT gfx trigger
     switch (m_effectID) {
         case EvE::GFXID::cargoScan:
         case EvE::GFXID::ecmBurst:
-        case EvE::GFXID::surveyScan:
+        case EvE::GFXID::surveyScan:  << nope.  broke module button gfx (wont turn off)
         case EvE::GFXID::doHacking:
         case EvE::GFXID::hackOrbital:
             active = false;
     }
-
+*/
     // test bcast module gfx sending thru here...working well
-    SendGFX(start, active, abortCycle);
+    SendGFX(start, start, abortCycle);
 
     // Create Module Button Fx
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
