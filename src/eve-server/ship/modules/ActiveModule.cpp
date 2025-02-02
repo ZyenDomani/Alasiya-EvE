@@ -42,7 +42,10 @@ m_startTime(0)
 }
 
 void ActiveModule::Init() {
-    m_needsCharge = m_modRef->HasAttribute(AttrChargeGroup1);
+    if (m_modRef->HasAttribute(AttrChargeGroup1)) {
+        m_usesCharge = true;
+        m_needsCharge = true;
+    }
     m_reloadTime = m_modRef->GetAttribute(AttrReloadTime).get_uint32();
 
     if (m_needsCharge) {
@@ -122,9 +125,10 @@ void ActiveModule::Init() {
     //GM_Modules = 353,
 
     if (is_log_enabled(MODULE__TRACE)) {
-        if (m_reloadTime or m_usesCharge) {
-            _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums. (uses charge: %s)", \
-                    m_modRef->name(), m_modRef->itemID(), m_reloadTime, m_usesCharge?"true":"false");
+        if (m_reloadTime or m_usesCharge or m_needsCharge) {
+            _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums. needs charge: %s, uses charge: %s", \
+                    m_modRef->name(), m_modRef->typeID(), m_reloadTime, \
+                    m_needsCharge?"true":"false", m_usesCharge?"true":"false");
         } else {
             _log(MODULE__TRACE, "Active Module %s(%u) does not use reload time.", m_modRef->name(), m_modRef->itemID());
         }

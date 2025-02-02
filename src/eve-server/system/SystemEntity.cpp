@@ -256,8 +256,7 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
      */
 }
 
-void SystemEntity::Abandon()
-{
+void SystemEntity::Abandon() {
     m_warID = 0;
     m_allyID = 0;
     m_corpID = 0;

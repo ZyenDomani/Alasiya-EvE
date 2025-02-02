@@ -23,6 +23,9 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 *******************************************************
 **********  errors and other found shit...high priority
 
+empty ships not having destiny vars updated
+  not sure of a good generic place to put call to destiny updatevars
+
 same acct can be logged in multiple times
 
 to avoid db hits for every dock/undock, implement postExpression processing
@@ -89,6 +92,8 @@ add agent portraits to server and update 'backupurl' in server code
 *******************************************************
 *******************************************************
 **********  coding errors/corrections/improvements ... med priority
+
+if implants changed while skill training, update all training times for new char attribs
 
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: med-hi
     - npc will attack drones based on class
