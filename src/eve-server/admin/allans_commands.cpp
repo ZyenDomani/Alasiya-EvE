@@ -1273,6 +1273,13 @@ PyResult Command_version(Client* pClient, CommandDB* db, PyServiceMgr* services,
     return nullptr;
 }
 
+PyResult Command_resetroids(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    pClient->SystemMgr()->ResetAsteroids();
+    pClient->SendInfoModalMsg("Asteroids for %s have been reset.", pClient->SystemMgr()->GetName());
+    return nullptr;
+}
+
 
 
 /* groove's new command.....

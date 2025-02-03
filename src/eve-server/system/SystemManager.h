@@ -160,6 +160,7 @@ public:
 
     SystemEntity* GetPlanet(uint32 planetID);
 
+    void ResetAsteroids();
 
 protected:
     /** @todo  this needs more work */
@@ -201,7 +202,7 @@ private:
     uint8 m_activeRatSpawns;
     uint8 m_activeGateSpawns;
     uint16 m_activeRoidSpawns;
-    std::vector<uint32> m_beltVector;
+    std::vector<uint32> m_beltVector;                   // belts in system
     SpawnBubbleMap m_ratBubbles;  // map of id/bubble with rat spawns  - not actually used yet
     SpawnBubbleMap m_roidBubbles;  // map of id/bubble with roid spawns  - not actually used yet
 

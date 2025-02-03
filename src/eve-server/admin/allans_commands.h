@@ -72,5 +72,6 @@
           " - returns actual distance between centers of your ship and active target.")
  COMMAND( version, Acct::Role::PLAYER,
           " - returns current versions of All AIs, Mission code, and Scan System.")
+ COMMAND( resetroids, Acct::Role::PROGRAMMER,
+          " - removes all asteroids in current system.")
 
- 

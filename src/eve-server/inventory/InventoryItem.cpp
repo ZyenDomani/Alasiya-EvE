@@ -569,14 +569,12 @@ void InventoryItem::AddItem(InventoryItemRef iRef)
         pInventory->AddItem(iRef);
 }
 
-void InventoryItem::RemoveItem(InventoryItemRef iRef)
-{
+void InventoryItem::RemoveItem(InventoryItemRef iRef) {
     if (pInventory != nullptr)  // just in case
         pInventory->RemoveItem(iRef);
 }
 
-void InventoryItem::Delete()
-{
+void InventoryItem::Delete() {
     m_delete = true;
 
     // get out of client's sight.
@@ -600,8 +598,7 @@ void InventoryItem::Delete()
     sItemFactory.RemoveItem(m_itemID);
 }
 
-void InventoryItem::ToVirtual(uint32 locationID)
-{
+void InventoryItem::ToVirtual(uint32 locationID) {
     InventoryItemRef iRef = sItemFactory.GetItemContainerRef(m_itemID, false);
     if (iRef.get() != nullptr) {
         // verify this gets inventory containing item before trying to manipulate

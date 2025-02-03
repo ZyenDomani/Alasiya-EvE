@@ -1044,7 +1044,6 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
 }
 
 void SystemManager::RemoveEntity(SystemEntity* pSE) {
-    /** @note  this does not remove static balls (bubble center markers) and no clue why */
     if (pSE == nullptr)
         return;
     sBubbleMgr.Remove(pSE);
@@ -1053,6 +1052,7 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     // remove entity from our maps
     uint32 itemID(pSE->GetID());
     m_entityChanged = true;
+    m_entities.erase(itemID);
     m_ticEntities.erase(itemID);
     m_staticEntities.erase(itemID);
 
@@ -1393,13 +1393,11 @@ void SystemManager::SendStaticBall(SystemEntity* pSE)
     SafeDelete(destinyBuffer);
 }
 
-void SystemManager::AddItemToInventory(InventoryItemRef iRef)
-{
+void SystemManager::AddItemToInventory(InventoryItemRef iRef) {
     m_solarSystemRef->AddItemToInventory( iRef );
 }
 
-void SystemManager::RemoveItemFromInventory(InventoryItemRef iRef)
-{
+void SystemManager::RemoveItemFromInventory(InventoryItemRef iRef) {
     // just in case this is called from elsewhere (which it may be), make sure we remove entity from our map.
     auto itr = m_entities.find(iRef->itemID());
     if (itr != m_entities.end()) {
@@ -1420,39 +1418,33 @@ SystemEntity* SystemManager::GetSE(uint32 entityID) const {
     return itr->second;
 }
 
-NPC* SystemManager::GetNPCSE(uint32 entityID) const
-{
+NPC* SystemManager::GetNPCSE(uint32 entityID) const {
     std::map<uint32, NPC*>::const_iterator itr = m_npcs.find(entityID);
     if (itr == m_npcs.end())
         return nullptr;
     return itr->second;
 }
 
-ShipItemRef SystemManager::GetShipFromInventory(uint32 shipID)
-{
+ShipItemRef SystemManager::GetShipFromInventory(uint32 shipID) {
     return ShipItemRef::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( shipID ) );
 }
 
-CargoContainerRef SystemManager::GetContainerFromInventory(uint32 contID)
-{
+CargoContainerRef SystemManager::GetContainerFromInventory(uint32 contID) {
     return CargoContainerRef::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( contID ) );
 }
 
-StationItemRef SystemManager::GetStationFromInventory(uint32 stationID)
-{
+StationItemRef SystemManager::GetStationFromInventory(uint32 stationID) {
     return StationItemRef::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( stationID ) );
 }
 
-SystemEntity* SystemManager::GetPlanet(uint32 planetID)
-{
+SystemEntity* SystemManager::GetPlanet(uint32 planetID) {
     std::map<uint32, SystemEntity*>::iterator itr = m_planetMap.find(planetID);
     if (itr != m_planetMap.end())
         return itr->second;
     return nullptr;
 }
 
-uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos)
-{
+uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos) {
     std::map<double, SystemEntity*> sorted;
     for (auto &cur : m_planetMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
@@ -1462,8 +1454,7 @@ uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos)
     return itr->second->GetID();
 }
 
-SystemEntity* SystemManager::GetClosestPlanetSE(const GPoint& myPos)
-{
+SystemEntity* SystemManager::GetClosestPlanetSE(const GPoint& myPos) {
     std::map<double, SystemEntity*> sorted;
     for (auto &cur : m_planetMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
@@ -1473,8 +1464,7 @@ SystemEntity* SystemManager::GetClosestPlanetSE(const GPoint& myPos)
     return itr->second;
 }
 
-SystemEntity* SystemManager::GetClosestGateSE(const GPoint& myPos)
-{
+SystemEntity* SystemManager::GetClosestGateSE(const GPoint& myPos) {
     std::map<double, SystemEntity*> sorted;
     for (auto &cur : m_gateMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
@@ -1484,8 +1474,7 @@ SystemEntity* SystemManager::GetClosestGateSE(const GPoint& myPos)
     return itr->second;
 }
 
-SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos)
-{
+SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos) {
     std::map<double, SystemEntity*> sorted;
     for (auto &cur : m_moonMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
@@ -1495,8 +1484,7 @@ SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos)
     return itr->second;
 }
 
-void SystemManager::GetClientList(std::vector< Client* >& cVec)
-{
+void SystemManager::GetClientList(std::vector< Client* >& cVec) {
     for (auto &cur : m_clients)
         cVec.push_back(cur.second);
 }
@@ -1554,8 +1542,7 @@ void SystemManager::DScan(int64 range, const GPoint& position, std::vector<Syste
     }
 }
 
-PyRep* SystemManager::GetCurrentEntities()
-{
+PyRep* SystemManager::GetCurrentEntities() {
     /*  return list of dict
      * itemID, typeID, catID, name, pos[x,y,z]
      *
@@ -1578,8 +1565,7 @@ PyRep* SystemManager::GetCurrentEntities()
     return list;
 }
 
-void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
-{
+void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector) {
     /** @todo this will need to put entity's sigID into anomaly map for Scan::WarpTo object */
     /** @todo this should be updated/current/correct in system's AnomalyMgr.  try to get data from there for this list  */
     for (auto &cur : m_ticEntities) {
@@ -1634,8 +1620,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 
 
 //  time related methods to manipulate hour/24hour map data
-void SystemManager::UpdateData()
-{
+void SystemManager::UpdateData() {
     MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
 
     uint16 jumps = 0;
@@ -1666,8 +1651,7 @@ void SystemManager::UpdateData()
 }
 
 // checks for if it is safe to mark the system for unloading
-bool SystemManager::SafeToUnload()
-{
+bool SystemManager::SafeToUnload() {
     for (auto &cur: GetOperationalStatics()) {
         //If there are any ongoing operations by operational static structures, we don't want to unload the system until this is complete
         if (cur.second->IsPOSSE()) {
@@ -1681,6 +1665,25 @@ bool SystemManager::SafeToUnload()
     }
     return true; //by default, its always safe to unload
 }
+
+void SystemManager::ResetAsteroids() {
+    // player command to remove all asteroids in a system (roid reset)
+    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
+    SystemEntity* pSE(nullptr);
+    while (itr != m_entities.begin()) {
+        if (IsAsteroidID(itr->first)) {
+            pSE = itr->second;
+            sBubbleMgr.Remove(pSE);
+            //RemoveItemFromInventory(pSE->GetSelf());
+            pSE->GetSelf()->Delete();
+            itr = m_entities.erase(itr);
+        } else {
+            ++itr;
+        }
+    }
+    m_entityChanged = true;
+}
+
 
 // not sure how to do this one yet...
 void SystemManager::ManipulateTimeData()
