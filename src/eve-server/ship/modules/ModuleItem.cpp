@@ -20,15 +20,13 @@ m_Module(nullptr)
     _log(ITEM__TRACE, "Created ModuleItem for %s(%u).", name(), itemID());
 }
 
-ModuleItemRef ModuleItem::Load( uint32 modID)
-{
+ModuleItemRef ModuleItem::Load( uint32 modID) {
     return InventoryItem::Load<ModuleItem>(modID);
 }
 
-ModuleItemRef ModuleItem::Spawn( ItemData &data)
-{
+ModuleItemRef ModuleItem::Spawn( ItemData &data) {
     uint32 modID = InventoryItem::CreateItemID(data);
-    if ( modID == 0 )
+    if (modID == 0)
         return ModuleItemRef(nullptr);
 
     ModuleItemRef modRef = ModuleItem::Load(modID);
@@ -41,8 +39,7 @@ ModuleItemRef ModuleItem::Spawn( ItemData &data)
     return modRef;
 }
 
-bool ModuleItem::_Load()
-{
+bool ModuleItem::_Load() {
     Client* pClient = sItemFactory.GetUsingClient();
     // test for character creation (which throws errors here and isnt really needed)
     if ((pClient != nullptr) and pClient->IsCharCreation())

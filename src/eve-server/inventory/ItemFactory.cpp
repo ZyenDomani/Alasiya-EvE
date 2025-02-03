@@ -275,6 +275,9 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
 {
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
     if (itr == m_items.end()) {
+        // if item is currently in a temp location, then continue
+        if ((itemID == 5) or (itemID == 10))
+            return RefPtr<_Ty>(nullptr);
         if (itemID < minAgent) {
             _log(ITEM__WARNING, "ItemFactory::_GetItem() called on invalid Item %u", itemID);
             if (sConfig.server.StackTrace)
@@ -283,12 +286,12 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
         }
 
         // load the item
-        RefPtr<_Ty> item = _Ty::Load(itemID);
-        if (!item)
+        RefPtr<_Ty> iRef = _Ty::Load(itemID);
+        if (iRef.get() == nullptr)
             return RefPtr<_Ty>(nullptr);
 
         //we keep the original ref.
-        itr = m_items.insert(std::make_pair(itemID, item)).first;
+        itr = m_items.insert(std::make_pair(itemID, iRef )).first;
     }
     // return to the user.
     return RefPtr<_Ty>::StaticCast(itr->second);

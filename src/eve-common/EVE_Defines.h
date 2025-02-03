@@ -203,9 +203,7 @@
  ((itemID >= minCharacter) && (itemID <= maxCharacter))
 
 #define IsValidLocationID(itemID) \
-((itemID == 5) \
-  or (itemID == 10) \
-  or (IsSolarSystemID(itemID)) \
+((IsSolarSystemID(itemID)) \
   or (IsRegionID(itemID)) \
   or (IsStationID(itemID)) \
   or (IsPlayerItem(itemID)) \

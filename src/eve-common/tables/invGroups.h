@@ -292,7 +292,7 @@ namespace EVEDB {
             Cloaking_Device_Blueprint = 401,
             Silo = 404,
             Anti_Cloaking_Pulse = 405,
-            Smartbomb_Supercharger = 406,
+            Smartbomb_Supercharger = 406,                       //Modules that boost the Damage of Smartbombs
             Drone_Control_Unit = 407,
             Drone_Control_Unit_Blueprint = 408,
             Empire_Insignia_Drops = 409,

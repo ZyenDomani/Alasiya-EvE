@@ -749,14 +749,17 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
         return; //nothing to do...
 
     InventoryItemRef iRef(nullptr);
-    uint32 old_location = m_data.locationID;
-    EVEItemFlags old_flag = m_data.flag;
+    uint32 old_location(m_data.locationID);
+    EVEItemFlags old_flag(m_data.flag);
 
     if ((new_location != m_data.locationID) // diff container
     or ((new_location == m_data.locationID) // or same container
-        and (new_flag != m_data.flag))) {   //  but different flag
-        // remove from current location
-        if (IsValidLocationID(m_data.locationID)) {
+      and (new_flag != m_data.flag))) {   //  but different flag
+        // check for temp locations to avoid sending errors
+        if ((m_data.locationID == locTemp) or (m_data.locationID == locJunkyard)) {
+            // temp locations have no itemRef.
+        } else if (IsValidLocationID(m_data.locationID)) {
+            // remove from current location
             iRef = sItemFactory.GetItemRef(m_data.locationID);
             if (iRef.get() != nullptr) {
                 iRef->RemoveItem(InventoryItemRef(this));
@@ -776,9 +779,13 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
 
     if ((old_location != m_data.locationID) // diff container
     or ((old_location == m_data.locationID) // or same container
-        and (old_flag != m_data.flag))) {   //  but different flag
+      and (old_flag != m_data.flag))) {   //  but different flag
         // add to new location
-        if (IsValidLocationID(m_data.locationID)) {
+        // check for temp locations to avoid sending errors
+        if ((m_data.locationID == locTemp) or (m_data.locationID == locJunkyard)) {
+            // temp locations have no itemRef.
+        } else if (IsValidLocationID(m_data.locationID)) {
+            // add to new location
             iRef = sItemFactory.GetItemRef(m_data.locationID);
             if (iRef.get() != nullptr) {
                 iRef->AddItem(InventoryItemRef(this));
@@ -795,7 +802,8 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
     if (IsTempItem(m_itemID) or IsNPC(m_itemID))
         return;
 
-    if (IsValidLocationID(m_data.locationID) and (!m_delete))
+    // update location unless we're deleting this object
+    if (!m_delete)
         ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);
 
     //notify about the changes.
@@ -845,9 +853,12 @@ void InventoryItem::Relocate(uint32 locID, EVEItemFlags flag) {
 
     if ((old_location != m_data.locationID) // diff container
     or ((old_location == m_data.locationID) // or same container
-        and (old_flag != m_data.flag))) {   //  but different flag
-        // add to new location
-        if (IsValidLocationID(m_data.locationID)) {
+    and (old_flag != m_data.flag))) {   //  but different flag
+        // check for temp locations to avoid sending errors
+        if ((m_data.locationID == locTemp) or (m_data.locationID == locJunkyard)) {
+            // temp locations have no itemRef.
+        } else if (IsValidLocationID(m_data.locationID)) {
+            // remove from current location
             iRef = sItemFactory.GetItemRef(m_data.locationID);
             if (iRef.get() != nullptr) {
                 iRef->AddItem(InventoryItemRef(this));
@@ -858,7 +869,7 @@ void InventoryItem::Relocate(uint32 locID, EVEItemFlags flag) {
         }
     }
 
-    if (IsValidLocationID(m_data.locationID))
+    if (!m_delete)
         ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);
 
     //notify about the changes.

@@ -61,8 +61,7 @@ m_launcher(false)
 
 // this function must NOT throw
 // throwing an error negates further processing
-void GenericModule::Online()
-{
+void GenericModule::Online() {
     if (m_shipRef->GetPilot()->IsDocked() and (!m_shipRef->IsUndocking())) {
         m_ModuleState = Module::State::Online;
         SetAttribute(AttrOnline, EvilOne, !m_shipRef->GetPilot()->IsLogin());

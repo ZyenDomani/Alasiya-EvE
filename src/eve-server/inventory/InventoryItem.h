@@ -107,6 +107,8 @@ public:
 
     const char*             name()                      { return m_data.name.c_str(); }
 
+    bool                    IsDelete()                  { return m_delete; }
+
     /* public type queries  */
     uint16                  typeID() const              { return m_type.id(); }
     uint16                  groupID() const             { return m_type.groupID(); }
@@ -178,7 +180,7 @@ public:
     virtual Client*         GetPilot()                  { return nullptr; }
 
     /* specific function from real item to virtual item for PI commodity xfer */
-    void                    ToVirtual(uint32 locationID);    // this deletes item without updating client with 'this is deleted' data
+    void                    ToVirtual(uint32 locationID);    // this deletes the real item without updating client with 'this is deleted' data
 
     /*********************************************************************************************
      *
