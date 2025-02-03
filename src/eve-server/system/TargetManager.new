@@ -28,7 +28,7 @@
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
-#include "Profile.h"
+#include "Profiler.h"
 #include "Client.h"
 #include "inventory/AttributeEnum.h"
 #include "npc/NPC.h"
@@ -43,13 +43,10 @@
 #include "system/SystemBubble.h"
 
 TargetManager::TargetManager(SystemEntity *self)
-: mySE(self)
+: mySE(self),
+m_canAttack(false)
 {
-    m_canAttack = false;
 
-    m_modules.clear();
-    m_targets.clear();
-    m_targetedBy.clear();
 }
 
 bool TargetManager::Process() {
@@ -286,11 +283,10 @@ void TargetManager::OnTarget(SystemEntity* tSE, uint8 mode/*TargMgr::Mode::None*
 }
 
 void TargetManager::Unload() {
-
-    for (auto cur : m_targets)
+    for (auto &cur : m_targets)
         SafeDelete(cur.second);
     m_targets.clear();
-    for (auto cur : m_targetedBy)
+    for (auto &cur : m_targetedBy)
         SafeDelete(cur.second);
     m_targetedBy.clear();
 }
@@ -301,9 +297,9 @@ void TargetManager::ClearTargets(uint8 msg/*TargMgr::Msg::NoMsg*/) {
     if (m_targets.empty())
         return;
 
-    for (auto cur : m_targets) {
+    for (auto &cur : m_targets) {
         SafeDelete(cur.second);
-        // failsafe   still chance this code is incomplete
+        // failsafe   chance this code is still incomplete
         if (cur.first->TargetMgr() != nullptr)
             cur.first->TargetMgr()->OnTarget(mySE, TargMgr::Mode::OtherLost, msg);
     }
@@ -317,7 +313,7 @@ void TargetManager::ClearFromTargets(bool update/*true*/, uint8 msg/*TargMgr::Ms
         return;
 
     std::vector<SystemEntity *> ToNotify;
-    for (auto cur : m_targetedBy) {
+    for (auto &cur : m_targetedBy) {
         //SafeDelete(cur.second);
         //do not notify until we clear our target list! otherwise bad things happen.
         if (update)
@@ -327,7 +323,7 @@ void TargetManager::ClearFromTargets(bool update/*true*/, uint8 msg/*TargMgr::Ms
     }
     //m_targetedBy.clear();
 
-    for (auto cur : ToNotify)
+    for (auto &cur : ToNotify)
         if (cur->TargetMgr() != nullptr)
             cur->TargetMgr()->OnTarget(mySE, TargMgr::Mode::Lost, msg);
 }
@@ -349,14 +345,14 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     // get lower of ship and char target skills, with minimum of 1
-    uint8 maxLockedTargets = 1;
-    uint8 maxCharTargets = mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Targeting);
+    uint8 maxLockedTargets(1);
+    uint8 maxCharTargets(mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Targeting));
     maxCharTargets += mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Multitasking);
     if (maxCharTargets > 0)
         if (maxLockedTargets < maxCharTargets)
             maxLockedTargets = maxCharTargets;
 
-    uint8 maxShipTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_uint32();
+    uint8 maxShipTargets(sRef->GetAttribute(AttrMaxLockedTargets).get_uint32());
     if (maxShipTargets > 0)
         if (maxLockedTargets > maxShipTargets)
             maxLockedTargets = maxShipTargets;
@@ -368,10 +364,10 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
         return false;
     }
     // Check against max target range
-    double maxTargetRange = sRef->GetAttribute(AttrMaxTargetRange).get_double();
-    GVector rangeToTarget( mySE->GetPosition(), tSE->GetPosition() );
+    double maxTargetRange(sRef->GetAttribute(AttrMaxTargetRange).get_double());
+    GVector rangeToTarget(mySE->GetPosition(), tSE->GetPosition());
     // adjust for target radius, in case of ice or other large objects.
-    double targetDistance = rangeToTarget.length();
+    double targetDistance(rangeToTarget.length());
     if (tSE->IsAsteroidSE())
         targetDistance -= tSE->GetRadius();
     if (targetDistance > maxTargetRange) {
@@ -383,11 +379,11 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     // Calculate Time to Lock target:
-    float lockTime = TimeToLock( sRef, tSE );
+    float lockTime(TimeToLock(sRef, tSE));
 
-    TargetEntry *te = new TargetEntry();
+    TargetEntry *te(new TargetEntry());
         te->state = TargMgr::State::Locking;
-        te->timer.Start(lockTime *1000);      //timer has ms resolution
+        te->timer.Start(lockTime * 1000);      //timer has ms resolution
         m_targets[tSE] = te;
 
     _log(TARGET__INFO, "Pilot %s in %s(%u) started targeting %s(%u) (%.2fs lock time)", \
@@ -432,8 +428,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxL
     return true;
 }
 
-bool TargetManager::IsTargetedBy(SystemEntity* pSE)
-{
+bool TargetManager::IsTargetedBy(SystemEntity* pSE) {
     return (m_targetedBy.find(pSE) != m_targetedBy.end());
 }
 
@@ -444,7 +439,7 @@ SystemEntity* TargetManager::GetFirstTarget(bool need_locked/*false*/) {
     if (!need_locked)
         return m_targets.begin()->first;
 
-    for (auto cur : m_targets)
+    for (auto &cur : m_targets)
         if (cur.second->state > TargMgr::State::Locking)
             return cur.first;
 
@@ -456,7 +451,7 @@ PyList* TargetManager::GetTargets() const {
     if (m_targets.empty())
         return result;
 
-    for (auto cur : m_targets)
+    for (auto &cur : m_targets)
         result->AddItemInt(cur.first->GetID() );
 
     return result;
@@ -467,7 +462,7 @@ PyList* TargetManager::GetTargeters() const {
     if (m_targetedBy.empty())
         return result;
 
-    for (auto cur : m_targetedBy)
+    for (auto &cur : m_targetedBy)
         result->AddItemInt(cur.first->GetID() );
 
     return result;
@@ -562,7 +557,7 @@ void TargetManager::RemoveTargetModule(ActiveModule* pMod)
 }
 
 void TargetManager::ClearModules() {
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         cur.second->AbortCycle();
 }
 
@@ -573,7 +568,7 @@ void TargetManager::Destroyed()
 
     std::string effect = "TargetDestroyed";
     // iterate thru the map of modules targeting this object, and call Deactivate on each.
-    for (auto cur : m_modules) {
+    for (auto &cur : m_modules) {
         //  some modules should immediately cease cycle when target destroyed.  miners are NOT in this call
         switch (cur.second->groupID()) {
             //case EVEDB::invGroups::Target_Painter:
@@ -617,7 +612,7 @@ void TargetManager::Depleted(MiningLaser* pMod)
 
     std::multimap<float, MiningLaser*> mMap;
     // iterate thru the map of modules and add to map as MiningLasers with their mining volume
-    for (auto cur : m_modules)
+    for (auto &cur : m_modules)
         mMap.emplace(cur.second->GetMiningModule()->GetMiningVolume(), cur.second->GetMiningModule());
 
     // call Depleted() on master module with map of active modules
@@ -626,7 +621,7 @@ void TargetManager::Depleted(MiningLaser* pMod)
 
 void TargetManager::QueueEvent( PyTuple** event ) const
 {
-    for (auto cur : m_targetedBy)
+    for (auto &cur : m_targetedBy)
         if (cur.first->HasPilot()) {
             PyIncRef(*event);
             cur.first->GetPilot()->QueueDestinyEvent(event);
@@ -635,7 +630,7 @@ void TargetManager::QueueEvent( PyTuple** event ) const
 
 void TargetManager::QueueUpdate( PyTuple** update ) const
 {
-    for (auto cur : m_targetedBy)
+    for (auto &cur : m_targetedBy)
         if (cur.first->HasPilot()) {
             PyIncRef(*update);
             cur.first->GetPilot()->QueueDestinyUpdate(update);
@@ -652,7 +647,7 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
     } else {
         str << "Targets: <br>";
         length += 11;
-        for (auto cur : m_targets) {
+        for (auto &cur : m_targets) {
             str << "  " << cur.first->GetName();
             str << " (" << cur.first->GetID() << ") <br>";
             length += 35;
@@ -666,7 +661,7 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
     } else {
         str << "Targeted by: <br>";
         length += 15;
-        for (auto cur : m_targetedBy) {
+        for (auto &cur : m_targetedBy) {
             str << "  " << cur.first->GetName();
             str << " (" << cur.first->GetID() << ") <br>";
             length += 35;
@@ -679,7 +674,7 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
         str << "   *NONE*";
         length += 10;
     } else {
-        for (auto cur : m_modules) {
+        for (auto &cur : m_modules) {
             str << "  " << cur.second->GetShipRef()->itemName();
             str << ":" << cur.second->GetSelf()->itemName() << "<br>";
             length += 55;
@@ -698,13 +693,13 @@ void TargetManager::Dump() const {
     if (m_targets.empty()) {
         _log(TARGET__DUMP, "    No Targets");
     } else {
-        for (auto cur : m_targets)
+        for (auto &cur : m_targets)
             cur.second->Dump(cur.first);
     }
     if (m_targetedBy.empty()) {
         _log(TARGET__DUMP, "    No Targeters");
     } else {
-        for (auto cur : m_targetedBy)
+        for (auto &cur : m_targetedBy)
             cur.second->Dump(cur.first);
     }
 
@@ -712,7 +707,7 @@ void TargetManager::Dump() const {
     if (m_modules.empty()) {
         _log(TARGET__DUMP, "      *NONE*");
     } else {
-        for (auto cur : m_modules)
+        for (auto &cur : m_modules)
             _log(TARGET__DUMP, "\t\t %s: %s", cur.second->GetShipRef()->name(), cur.second->GetSelf()->name());
     }
 }

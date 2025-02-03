@@ -766,26 +766,23 @@ bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<fl
     auto groupRange = m_oreBySecClass.equal_range(secClass);
     for (auto &it = groupRange.first; it != groupRange.second; ++it) {
         _log(MINING__INFO, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
-        roids.insert(std::pair<float, uint32>(it->second.chance, it->second.typeID));
+        roids.emplace(it->second.chance, it->second.typeID);
     }
 
     return !roids.empty();
 }
 
-void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< Inv::DmgTypeAttribute >& typeAttrVec)
-{
+void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< Inv::DmgTypeAttribute >& typeAttrVec) {
     auto itr = m_typeAttrMap.equal_range(typeID);
     for (auto &it = itr.first; it != itr.second; ++it)
         typeAttrVec.push_back(it->second);
 }
 
-bool StaticDataMgr::IsSkillTypeID(uint16 typeID)
-{
+bool StaticDataMgr::IsSkillTypeID(uint16 typeID) {
     return (m_skills.find(typeID) != m_skills.end());
 }
 
-const char* StaticDataMgr::GetSkillName(uint16 skillID)
-{
+const char* StaticDataMgr::GetSkillName(uint16 skillID) {
     std::map<uint16, std::string>::iterator itr = m_skills.find(skillID);
     if (itr != m_skills.end()) {
         return itr->second.c_str();
@@ -795,8 +792,7 @@ const char* StaticDataMgr::GetSkillName(uint16 skillID)
     return nullptr;
 }
 
-void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)
-{
+void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into) {
     for (auto &cur : m_components) {
         Market::matlData data   = Market::matlData();
         data.price              = 0.0f;
@@ -806,8 +802,7 @@ void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)
     }
 }
 
-void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into)
-{
+void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into) {
     for (auto &cur : m_minerals) {
         Market::matlData data   = Market::matlData();
         data.price              = 0.0f;
@@ -817,8 +812,7 @@ void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into)
     }
 }
 
-void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into)
-{
+void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into) {
     for (auto &cur : m_compounds) {
         Market::matlData data   = Market::matlData();
         data.price              = 0.0f;
@@ -828,8 +822,7 @@ void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into)
     }
 }
 
-void StaticDataMgr::GetSalvageData(std::map< uint16, Market::matlData >& into)
-{
+void StaticDataMgr::GetSalvageData(std::map< uint16, Market::matlData >& into) {
     for (auto &cur : m_salvage) {
         Market::matlData data   = Market::matlData();
         data.price              = 0.0f;
@@ -839,8 +832,7 @@ void StaticDataMgr::GetSalvageData(std::map< uint16, Market::matlData >& into)
     }
 }
 
-void StaticDataMgr::GetPIResourceData(std::map< uint16, Market::matlData >& into)
-{
+void StaticDataMgr::GetPIResourceData(std::map< uint16, Market::matlData >& into) {
     for (auto &cur : m_resources) {
         Market::matlData data   = Market::matlData();
         data.price              = 0.0f;
@@ -850,8 +842,7 @@ void StaticDataMgr::GetPIResourceData(std::map< uint16, Market::matlData >& into
     }
 }
 
-void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& into)
-{
+void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& into) {
     for (auto &cur : m_commodities) {
         Market::matlData data   = Market::matlData();
         data.price              = 0.0f;
@@ -861,8 +852,7 @@ void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& int
     }
 }
 
-void StaticDataMgr::GetMiscCommodityData(std::map< uint16, Market::matlData >& into)
-{
+void StaticDataMgr::GetMiscCommodityData(std::map< uint16, Market::matlData >& into) {
     for (auto &cur : m_miscCommodities) {
         Market::matlData data   = Market::matlData();
         data.price              = 0.0f;
@@ -872,8 +862,7 @@ void StaticDataMgr::GetMiscCommodityData(std::map< uint16, Market::matlData >& i
     }
 }
 
-void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
-{
+void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data) {
     // make copy
     for (auto &cur : m_moonGoo)
         data.emplace(cur.first, cur.second);
@@ -891,8 +880,7 @@ void StaticDataMgr::GetBloodlineBonuses(uint8 bloodlineID, Char::AttrData& into)
         into = itr->second;
 }
 
-uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID)
-{
+uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID) {
     if (groupID == 0)
         return 0;
     std::vector< uint16 > typeVec;
@@ -912,8 +900,7 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID)
     return 0;
 }
 
-bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec)
-{
+bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec) {
     /*  this is now invalid.....
     auto groupRange = m_npcTypes.equal_range(groupID);
     for (auto it = groupRange.first; it != groupRange.second; ++it)
@@ -924,8 +911,7 @@ bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec)
     return false;
 }
 
-bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& groupMap)
-{
+bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& groupMap) {
     auto groupRange = m_npcGroups.equal_range(factionID);
     for (auto it = groupRange.first; it != groupRange.second; ++it)
         groupMap.emplace(it->second.shipClass, it->second.groupID);
@@ -933,8 +919,7 @@ bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& gr
     return !groupMap.empty();
 }
 
-bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& classMap)
-{
+bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& classMap) {
     auto classRange = m_npcClasses.equal_range(sClass);
     for (auto it = classRange.first; it != classRange.second; ++it) {
         RatSpawnClass spawnClass        = RatSpawnClass();
@@ -960,8 +945,7 @@ bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& cl
     return !classMap.empty();
 }
 
-uint32 StaticDataMgr::GetWreckID(uint32 typeID)
-{
+uint32 StaticDataMgr::GetWreckID(uint32 typeID) {
     std::map<uint32, uint32>::const_iterator itr = m_WrecksToTypesMap.find(typeID);
     if (itr != m_WrecksToTypesMap.end())
         return itr->second;

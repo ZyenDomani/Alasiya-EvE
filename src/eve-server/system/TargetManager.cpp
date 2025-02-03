@@ -138,13 +138,13 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     // get lower of ship and char target skills, with minimum of 1
-    uint8 maxLockedTargets = 1;
-    uint8 maxCharTargets = mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Targeting);
+    uint8 maxLockedTargets(1);
+    uint8 maxCharTargets(mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Targeting));
     maxCharTargets += mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Multitasking);
     if (maxCharTargets > 1)
         maxLockedTargets = maxCharTargets;
 
-    uint8 maxShipTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_uint32();
+    uint8 maxShipTargets((uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_uint32());
     if (maxShipTargets > 0)  // is this redundant?
         if (maxLockedTargets > maxShipTargets)
             maxLockedTargets = maxShipTargets;
@@ -157,10 +157,10 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     // Check against max target range
-    double maxTargetRange = sRef->GetAttribute(AttrMaxTargetRange).get_double();
-    GVector rangeToTarget( mySE->GetPosition(), tSE->GetPosition() );
+    double maxTargetRange(sRef->GetAttribute(AttrMaxTargetRange).get_double());
+    GVector rangeToTarget(mySE->GetPosition(), tSE->GetPosition());
     // adjust for target radius, in case of ice or other large objects..
-    double targetDistance = rangeToTarget.length();
+    double targetDistance(rangeToTarget.length());
     if (tSE->IsAsteroidSE())
         targetDistance -= tSE->GetRadius();
     if (targetDistance > maxTargetRange) {
@@ -172,7 +172,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     // Calculate Time to Lock target:
-    float lockTime = TimeToLock(sRef, tSE);
+    float lockTime(TimeToLock(sRef, tSE));
 
     if (is_log_enabled(TARGET__INFO))
         _log(TARGET__INFO, "Pilot %s in %s(%u) started targeting %s(%u) at %.1fm with %.2fs lock time.", \

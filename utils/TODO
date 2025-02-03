@@ -449,6 +449,10 @@ finish DestinyManager::SendCloakFx()
 rename AttributeMap to AttributeMgr
   actual maps can remain
 
+** called when asteroids are clicked on in belt...dunno why
+    19:50:46 [Service] config::GetMultiLocationsEx()
+    19:50:46 W GetMultiLocationsEx: Asteroid Items (450000577) requested.
+
 asteroid/belt grow
   - idea is roids' gravity will accumulate more ore in areas unmolested by ships...after 6h or so
      more/less based on sysSec?

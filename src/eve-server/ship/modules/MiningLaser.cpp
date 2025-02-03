@@ -255,17 +255,25 @@ void MiningLaser::ProcessCycle(bool abort/*false*/) {
         roidRef->SetAttribute(AttrQuantity, roidQuantity, false);
         // do not reset ice radius (our huge-ass chunks will probably never expire)
         if (m_rMiner) {
-            // formula from client
-            double radius = 89.675 * exp(4e-05 * roidQuantity);
-            roidRef->SetAttribute(AttrRadius, radius);
-            // update players in bubble of this change.
-            m_targetSE->MakeSlimItemChange();
+            if (roidRef.get() != nullptr) {
+                // formula from client
+                double radius = 89.675 * exp(4e-05 * roidQuantity);
+                roidRef->SetAttribute(AttrRadius, radius);
+            }
+            if (m_targetSE != nullptr) {
+                // update players in bubble of this change.
+                m_targetSE->MakeSlimItemChange();
+            }
         } else if (m_gMiner) {
-            // formula from client
-            double radius = roidQuantity * roidRef->type().radius() / 10.0f;
-            roidRef->SetAttribute(AttrRadius, radius);
-            // update players in bubble of this change.
-            m_targetSE->MakeSlimItemChange();
+            if (roidRef.get() != nullptr) {
+                // formula from client
+                double radius = roidQuantity * roidRef->type().radius() / 10.0f;
+                roidRef->SetAttribute(AttrRadius, radius);
+            }
+            if (m_targetSE != nullptr) {
+                // update players in bubble of this change.
+                m_targetSE->MakeSlimItemChange();
+            }
         }
     } else {
         //rock is depleted.
