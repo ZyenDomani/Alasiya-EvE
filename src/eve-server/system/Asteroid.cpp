@@ -90,13 +90,26 @@ void AsteroidSE::Process() {
             Grow();
 }
 
+PyDict* AsteroidSE::MakeSlimItem() {
+    _log(SE__SLIMITEM, "MakeSlimItem for ASE %s(%u)", GetName(), m_self->itemID());
+    PyDict *slim = new PyDict();
+    slim->SetItemString("name",             new PyString(m_self->itemName()));
+    slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
+    slim->SetItemString("typeID",           new PyInt(GetTypeID()));
+    slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
+    slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
+    slim->SetItemString("quantity",         new PyInt(m_self->GetAttribute(AttrQuantity).get_int()));
+    slim->SetItemString("radius",           new PyFloat(m_self->GetAttribute(AttrRadius).get_float()));
+    return slim;
+}
+
 void AsteroidSE::EncodeDestiny(Buffer& into) {
     using namespace Destiny;
 
     BallHeader head = BallHeader();
         head.entityID = GetID();
         head.mode = Ball::Mode::RIGID;
-        head.radius = GetRadius();
+        head.radius = m_self->GetAttribute(AttrRadius).get_float();
         head.posX = x();
         head.posY = y();
         head.posZ = z();

@@ -46,7 +46,7 @@ public:
     static AsteroidItemRef SpawnTemp(ItemData &idata, AsteroidData& adata);
 
 
-    double      radius() const                          { return m_data.radius; }
+    double              radius() const                  { return m_data.radius; }
 
 protected:
     using InventoryItem::_Load;
@@ -86,26 +86,29 @@ public:
 
     /* class type pointer querys. */
     virtual const char*         GetSEType()             { return "Asteroid SE"; }
-    virtual AsteroidSE* GetAsteroidSE()                 { return this; }
+    virtual AsteroidSE*         GetAsteroidSE()         { return this; }
     /* class type tests. */
-    virtual bool IsAsteroidSE()                         { return true; }
+    virtual bool                IsAsteroidSE()          { return true; }
 
     /* SystemEntity interface */
-    virtual void Delete();
-    virtual void Process();
-    virtual void Killed(Damage &damage);
-    virtual void EncodeDestiny(Buffer& into);
-    virtual void MakeDamageState(DoDestinyDamageState &into);
-    virtual void SendDamageStateChanged();  /* this uses targetMgr update to send to all interested parties */
+    virtual void                Delete();
+    virtual void                Process();
+    virtual void                Killed(Damage &damage);
+    virtual PyDict*             MakeSlimItem();
+    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                MakeDamageState(DoDestinyDamageState &into);
+    // this uses targetMgr update to send to all interested parties
+    virtual void                SendDamageStateChanged();
 
     /* specific functions handled in this class. */
-    void Grow();
-    void SetMgr(BeltMgr* beltMgr, uint32 beltID)        { m_beltMgr = beltMgr; m_beltID = beltID; }
+    void                        Grow();
+    void                        SetMgr(BeltMgr* beltMgr, uint32 beltID)
+                                                        { m_beltMgr = beltMgr; m_beltID = beltID; }
 
 private:
-    BeltMgr* m_beltMgr;
-    Timer m_growTimer;
-    uint32 m_beltID;
+    BeltMgr*    m_beltMgr;
+    Timer       m_growTimer;
+    uint32      m_beltID;
 };
 
 #endif /* !__ASTEROID__H__INCL__ */

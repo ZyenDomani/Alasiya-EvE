@@ -124,7 +124,7 @@ bool AttributeMap::Save() {
     std::vector<Inv::AttrData> attribs;
     AttrMapItr itr = mAttributes.begin(), end = mAttributes.end();
     if (IsCharacterID(mItem.itemID())) {
-        for (; itr != end; itr++) {
+        for (; itr != end; ++itr) {
             switch (itr->first) {
                 case AttrCharisma:
                 case AttrIntelligence:
@@ -182,7 +182,7 @@ bool AttributeMap::Save() {
             } break;
         }
 
-        for (; itr != end; itr++) {
+        for (; itr != end; ++itr) {
             save = false;
             if (skill)
                 if ((itr->first == AttrSkillPoints)

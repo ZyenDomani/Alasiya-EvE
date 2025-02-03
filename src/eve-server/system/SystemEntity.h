@@ -230,7 +230,7 @@ public:
     uint8                       GetCategoryID()         { return m_self->categoryID(); }
     EVEItemFlags                GetFlag()               { return m_self->flag(); }
     uint32                      GetID()                 { return m_self->itemID(); }
-    int32                       GetRadius()             { return m_radius; }
+    int32                       GetRadius()             { return m_radius; }    // not accurate for mining types (mutable radius)
     uint32                      GetLocationID()         { return m_self->locationID(); }
     const char*                 GetName() const         { return m_self->name(); }
     const GPoint&               GetPosition() const     { return m_self->position(); }

@@ -137,37 +137,51 @@ void ActiveModule::Init() {
         }
     }
 
-    // these groups receive a 3% increase in range
+    // group bonuses for Alasiya-EvE
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Ship_Scanner: {
             float range = GetAttribute(AttrShipScanRange).get_float();
-            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.01f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.01f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));
+            range *= (1 + (0.02f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::SignatureAnalysis, true))));
+            range *= (1 + (0.01f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));
+            range *= (1 + (0.02f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Survey, true))));
             SetAttribute(AttrShipScanRange, range);
         } break;
         case EVEDB::invGroups::Cargo_Scanner: {
             float range = GetAttribute(AttrCargoScanRange).get_float();
-            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.01f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.02f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));
+            range *= (1 + (0.02f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::SignatureAnalysis, true))));
+            range *= (1 + (0.02f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));
             SetAttribute(AttrCargoScanRange, range);
         } break;
         case EVEDB::invGroups::Survey_Scanner: {
+        // due to our larger asteroids and belts, additional bonuses are given to survey scanners for range
             float range = GetAttribute(AttrSurveyScanRange).get_float();
-            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.01f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.01f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));
+            range *= (1 + (0.02f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Astrogeology, true))));
+            range *= (1 + (0.02f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::AstrometricAcquisition, true))));
+            range *= (1 + (0.01f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::SignatureAnalysis, true))));
+            range *= (1 + (0.05f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Survey, true))));
             SetAttribute(AttrSurveyScanRange, range);
         } break;
         case EVEDB::invGroups::Shield_Transporter: {
             float range = GetAttribute(AttrShieldTransferRange).get_float();
-            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));
+            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::FrequencyModulation, true))));
             SetAttribute(AttrShieldTransferRange, range);
         } break;
         case EVEDB::invGroups::Energy_Vampire:
         case EVEDB::invGroups::Energy_Transfer_Array: {
             float range = GetAttribute(AttrPowerTransferRange).get_float();
-            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::FrequencyModulation, true))));
             SetAttribute(AttrPowerTransferRange, range);
         } break;
         case EVEDB::invGroups::Energy_Destabilizer: {
             float range = GetAttribute(AttrEnergyDestabilizationRange).get_float();
-            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::ElectronicWarfare, true))));
             SetAttribute(AttrEnergyDestabilizationRange, range);
         } break;
         case EVEDB::invGroups::Salvager:
@@ -178,7 +192,7 @@ void ActiveModule::Init() {
         case EVEDB::invGroups::Remote_Sensor_Booster:
         case EVEDB::invGroups::Armor_Repair_Projector: {
             float range = GetAttribute(AttrMaxRange).get_float();
-            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            range *= (1 + (0.03f * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));
             SetAttribute(AttrMaxRange, range);
         } break;
         /*  these are 50AU.  we dont need to increase it...
@@ -186,8 +200,7 @@ void ActiveModule::Init() {
          *       float range = GetAttribute(AttrScanRange).get_float();        // range in AU
          *       range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
          *       SetAttribute(AttrScanRange, range);
-    } break;
-    */
+        } break;  */
     }
 }
 

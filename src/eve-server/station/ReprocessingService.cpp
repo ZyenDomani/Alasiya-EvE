@@ -209,7 +209,8 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         if (iRef.get() == nullptr)
             continue;
 
-        // this should never happen, but just to be sure ...
+        // this should never happen, but just to be sure ... may have hit on reprocess
+        // TODO:  one of these isnt working right...
         if (iRef->type().portionSize() > iRef->quantity()) {
             throw UserError("QuantityLessThanMinimumPortion")
                     .AddAmountU("portion", iRef->type().portionSize());
@@ -310,6 +311,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
         return nullptr;
     }
 
+    // TODO:  one of these isnt working right...
     if (iRef->quantity() < iRef->type().portionSize())
         throw UserError("QuantityLessThanMinimumPortion")
                 .AddAmountU("portion", iRef->type().portionSize());

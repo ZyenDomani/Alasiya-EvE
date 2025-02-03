@@ -211,7 +211,6 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
         return;
     }
 
-
     uint32 quantity(0);
     std::vector<LootList>::iterator itr = lootList.begin();
     while (itr != lootList.end()) {
