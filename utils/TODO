@@ -218,6 +218,7 @@ when t3 ship killed, pilot will lose sp in a required skill for each of the 5 su
     not sure how this is determined, or how many sp lost.
 
 jumpCloneSvc needs work to allow capital ships `show info` tab to work in space.  hacked to avoid client error
+NOTE:  aknor has packets
     - this class is barely above skeleton code, and hardly researched.
     - jump clones arent even close to implementation, so its nbd at this point
     - client distinguishes between clones by "podClone" and "jumpClone"

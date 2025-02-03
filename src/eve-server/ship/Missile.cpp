@@ -153,6 +153,7 @@ void Missile::Process() {
         return;
     }
     double profileStartTime(GetTimeUSeconds());
+    
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 

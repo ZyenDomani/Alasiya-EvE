@@ -120,12 +120,12 @@ void DroneSE::Process() {
         return;
     double profileStartTime(GetTimeUSeconds());
 
-    /*  Enable base call to Process Targeting and Movement  */
-    SystemEntity::Process();
-
     /** @todo (allan) finish drone AI and processing */
     if (m_online)
         m_AI->Process();
+
+    /*  Enable base call to Process Targeting and Movement  */
+    SystemEntity::Process();
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);

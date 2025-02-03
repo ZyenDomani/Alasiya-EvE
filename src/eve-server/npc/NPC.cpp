@@ -100,10 +100,10 @@ void NPC::Process() {
 
     double profileStartTime(GetTimeUSeconds());
 
+    m_AI->Process();
+
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
-
-    m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::npc, GetTimeUSeconds() - profileStartTime);

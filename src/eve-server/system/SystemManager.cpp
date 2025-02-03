@@ -1654,14 +1654,9 @@ void SystemManager::UpdateData() {
 bool SystemManager::SafeToUnload() {
     for (auto &cur: GetOperationalStatics()) {
         //If there are any ongoing operations by operational static structures, we don't want to unload the system until this is complete
-        if (cur.second->IsPOSSE()) {
-            if ((cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Unanchoring) or
-            (cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Anchoring) or
-            (cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Offlining) or
-            (cur.second->GetPOSSE()->GetProcState() == EVEPOS::ProcState::Onlining)) {
+        if (cur.second->IsPOSSE())
+            if (cur.second->GetPOSSE()->GetProcState() < EVEPOS::ProcState::Online)
                 return false;
-            }
-        }
     }
     return true; //by default, its always safe to unload
 }
