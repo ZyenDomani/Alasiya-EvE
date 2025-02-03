@@ -60,8 +60,7 @@ void Inventory::Reset()
     LoadContents();
 }
 
-void Inventory::Unload()
-{
+void Inventory::Unload() {
     if (!mContentsLoaded)
         return;
 
@@ -70,7 +69,7 @@ void Inventory::Unload()
         mContents.clear();
         m_contentsByFlag.clear();
         mContentsLoaded = false;
-	}
+    }
 
     Inventory* inv(nullptr);
     std::vector<Inv::SaveData> items;

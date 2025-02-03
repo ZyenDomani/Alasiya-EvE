@@ -50,7 +50,7 @@
 
 SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 :m_self(self),m_services(services),m_system(system),m_bubble(nullptr),m_destiny(nullptr),
-m_targMgr(nullptr),m_killed(false),m_warID(0),m_allyID(0),m_corpID(0),m_fleetID(0),
+m_targMgr(nullptr),m_killed(false),m_abandoned(false),m_warID(0),m_allyID(0),m_corpID(0),m_fleetID(0),
 m_ownerID(1),m_radius(self->GetAttribute(AttrRadius).get_int()),m_harmonic(EVEPOS::Harmonic::Inactive)
 {
     assert(m_system != nullptr);
@@ -62,9 +62,9 @@ m_ownerID(1),m_radius(self->GetAttribute(AttrRadius).get_int()),m_harmonic(EVEPO
 // copy c'tor
 SystemEntity::SystemEntity(const SystemEntity* oth)
 : m_self(oth->m_self),m_services(oth->m_services),m_system(oth->m_system),m_bubble(oth->m_bubble),
-m_destiny(oth->m_destiny),m_targMgr(oth->m_targMgr),m_killed(oth->m_killed),m_warID(oth->m_warID),
-m_allyID(oth->m_allyID),m_corpID(oth->m_corpID),m_fleetID(oth->m_fleetID),m_ownerID(oth->m_ownerID),
-m_radius(oth->m_radius),m_harmonic(oth->m_harmonic)
+m_destiny(oth->m_destiny),m_targMgr(oth->m_targMgr),m_killed(oth->m_killed),m_abandoned(oth->m_abandoned),
+m_warID(oth->m_warID),m_allyID(oth->m_allyID),m_corpID(oth->m_corpID),m_fleetID(oth->m_fleetID),
+m_ownerID(oth->m_ownerID),m_radius(oth->m_radius),m_harmonic(oth->m_harmonic)
 {
     sLog.Error("SystemEntity", "Calling Copy c'tor.");
     // nothing to do here
@@ -72,9 +72,9 @@ m_radius(oth->m_radius),m_harmonic(oth->m_harmonic)
 
 SystemEntity::SystemEntity ( const SystemEntity& oth )
 : m_self(oth.m_self),m_services(oth.m_services),m_system(oth.m_system),m_bubble(oth.m_bubble),
-m_destiny(oth.m_destiny),m_targMgr(oth.m_targMgr),m_killed(oth.m_killed),m_warID(oth.m_warID),
-m_allyID(oth.m_allyID),m_corpID(oth.m_corpID),m_fleetID(oth.m_fleetID),m_ownerID(oth.m_ownerID),
-m_radius(oth.m_radius),m_harmonic(oth.m_harmonic)
+m_destiny(oth.m_destiny),m_targMgr(oth.m_targMgr),m_killed(oth.m_killed),m_abandoned(oth.m_abandoned),
+m_warID(oth.m_warID),m_allyID(oth.m_allyID),m_corpID(oth.m_corpID),m_fleetID(oth.m_fleetID),
+m_ownerID(oth.m_ownerID),m_radius(oth.m_radius),m_harmonic(oth.m_harmonic)
 {
     sLog.Error("SystemEntity", "Calling Move c'tor.");
     // nothing to do here
@@ -186,6 +186,22 @@ void SystemEntity::SendDamageStateChanged() {  //working 24Apr15
             GetName(), m_self->itemID(), dmgState.shield, dmgState.armor, dmgState.structure);
 }
 
+void SystemEntity::MakeSlimItemChange() {
+    if (m_self->IsDelete())
+        return;
+    if (m_bubble == nullptr)
+        return;
+    PyDict* slimPod = MakeSlimItem();
+    PyTuple* shipData = new PyTuple(2);
+    shipData->SetItem(0, new PyLong(m_self->itemID()));
+    shipData->SetItem(1, new PyObject( "foo.SlimItem", slimPod));
+    PyTuple* updates = new PyTuple(2);
+    updates->SetItem(0, new PyString("OnSlimItemChange"));
+    updates->SetItem(1, shipData);
+    //consumes updates
+    m_bubble->BubblecastDestinyUpdate(&updates, "destiny" );
+}
+
 void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner) {
     /*   allan 27Nov14    */
     std::vector<LootList> lootList;
@@ -257,6 +273,8 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
 }
 
 void SystemEntity::Abandon() {
+    m_abandoned = true;
+
     m_warID = 0;
     m_allyID = 0;
     m_corpID = 0;

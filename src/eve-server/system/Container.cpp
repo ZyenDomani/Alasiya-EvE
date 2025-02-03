@@ -379,7 +379,6 @@ PyDict *ContainerSE::MakeSlimItem() {
  */
 WreckContainer::WreckContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data)
 : InventoryItem(_containerID, _containerType, _data),
-m_delete(false),
 mySE(nullptr)
 {
     pInventory = new Inventory(InventoryItemRef(this));
@@ -432,7 +431,6 @@ uint32 WreckContainer::CreateItemID( ItemData &data)
 void WreckContainer::Delete()
 {
     // verify this is actually called correctly
-    m_delete = true;
     pInventory->LoadContents();
     pInventory->DeleteContents();
     InventoryItem::Delete();
@@ -482,26 +480,10 @@ void WreckContainer::RemoveItem(InventoryItemRef iRef)
         return;
 
     if (pInventory->IsEmpty()) {
-        MakeSlimItemChange();
+        if ((mySE != nullptr) and (mySE->SysBubble() != nullptr))
+            mySE->MakeSlimItemChange();
         _log(INV__INFO, "WreckContainer::IsEmpty() for %s(%u)", name(), itemID());
     }
-}
-
-void WreckContainer::MakeSlimItemChange()
-{
-    if (m_delete)
-        return;
-    if ((mySE == nullptr) or (mySE->SysBubble() == nullptr))
-        return;
-    PyDict* slimPod = mySE->MakeSlimItem();
-    PyTuple* shipData = new PyTuple(2);
-        shipData->SetItem(0, new PyLong(itemID()));
-        shipData->SetItem(1, new PyObject( "foo.SlimItem", slimPod));
-    PyTuple* updates = new PyTuple(2);
-        updates->SetItem(0, new PyString("OnSlimItemChange"));
-        updates->SetItem(1, shipData);
-    //consumes updates
-    mySE->SysBubble()->BubblecastDestinyUpdate(&updates, "destiny" );
 }
 
 // wrecks are invul.
@@ -512,8 +494,7 @@ WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* 
 : DynamicSystemEntity(self, services, system),
 m_contRef(self),
 m_deleteTimer(sConfig.rates.WorldDecay * 60 * 1000),
-m_launchedByID(0),
-m_abandoned(false)
+m_launchedByID(0)
 {
     assert(m_targMgr != nullptr);
     assert(m_destiny != nullptr);
@@ -526,8 +507,7 @@ m_abandoned(false)
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity());
 }
 
-WreckSE::~WreckSE()
-{
+WreckSE::~WreckSE() {
     // these are cleared in base class
     //SafeDelete(m_targMgr);
     //SafeDelete(m_destiny);
@@ -544,14 +524,7 @@ void WreckSE::Process() {
     }
 }
 
-void WreckSE::Abandon()
-{
-    SystemEntity::Abandon();
-    m_abandoned = true;
-}
-
-void WreckSE::EncodeDestiny(Buffer& into)
-{
+void WreckSE::EncodeDestiny(Buffer& into) {
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = GetID();

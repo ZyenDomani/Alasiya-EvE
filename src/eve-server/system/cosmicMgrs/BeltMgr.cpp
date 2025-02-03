@@ -189,7 +189,7 @@ void BeltMgr::Save() {
         return;
     }
 
-    double start = GetTimeUSeconds();
+    double start(GetTimeUSeconds());
     std::vector<AsteroidData> roids;
     roids.clear();
     uint16 save(0), skip(0);
@@ -206,7 +206,7 @@ void BeltMgr::Save() {
         entry.systemID = m_systemID;
         entry.beltID = cur.first;
         entry.radius = cur.second->GetRadius();
-        entry.quantity = ((25000 * log(entry.radius)) - 112404.8);   // quantity in m^3
+        entry.quantity = log(entry.radius / 89.675) * (1.0 / 4e-05);   // quantity in m^3
         entry.position = cur.second->GetPosition();
         roids.push_back(entry);
         ++save;
@@ -217,10 +217,9 @@ void BeltMgr::Save() {
             save, m_system->GetName(), m_systemID, (GetTimeUSeconds() - start), skip);
 }
 
-void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list)
-{
+void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list) {
     auto range = m_asteroids.equal_range(beltID);
-    for (auto itr = range.first; itr != range.second; itr++)
+    for (auto itr = range.first; itr != range.second; ++itr)
         list.push_back(itr->second);
 }
 
@@ -240,8 +239,7 @@ struct CosmicSignature {
 };
 */
 
-bool BeltMgr::Create(CosmicSignature& sig, std::unordered_multimap<float, uint16>& roidTypes)
-{
+bool BeltMgr::Create(CosmicSignature& sig, std::unordered_multimap<float, uint16>& roidTypes) {
     // register this as a belt.
     SystemEntity* pSE = m_system->GetSE(sig.sigItemID);
     if (pSE == nullptr)
@@ -385,21 +383,20 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         return;
     }
 
-    double quantity = 0;
+    double quantity(0.0);
     if (ice) {
         quantity = radius * 2;
     } else {
         radius *= sConfig.cosmic.roidRadiusMultiplier;
-        //Amount of Ore = (25000*ln(Radius))-112404.8   V = 25000Ln(r) - 112407
-        quantity = ((25000 * log(radius)) - 112404.8);
+        quantity = log(radius / 89.675) * (1.0 / 4e-05);
     }
 
     AsteroidData adata = AsteroidData();
         adata.beltID = beltID;
-        adata.systemID = m_systemID;
         adata.typeID = typeID;
-        adata.quantity = quantity;
         adata.radius = radius;
+        adata.systemID = m_systemID;
+        adata.quantity = quantity;
         adata.position = position;
     ItemData idata(typeID, ownerSystem, m_systemID, flagNone, "", position);
     InventoryItemRef iRef(nullptr);
@@ -411,7 +408,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
     if (iRef.get() == nullptr)
         return;
 
-    AsteroidSE* pASE = new AsteroidSE( iRef, *(m_system->GetServiceMgr()), m_system );
+    AsteroidSE* pASE = new AsteroidSE(iRef, *(m_system->GetServiceMgr()), m_system);
     if (pASE == nullptr)
         return;
 

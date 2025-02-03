@@ -26,8 +26,7 @@ m_data(adata)
     _log(ITEM__TRACE, "Created AsteroidItem for %s(%u).", adata.itemName.c_str(), adata.itemID);
 }
 
-AsteroidItemRef AsteroidItem::Load( uint32 asteroidID)
-{
+AsteroidItemRef AsteroidItem::Load( uint32 asteroidID) {
     return InventoryItem::Load<AsteroidItem>(asteroidID );
 }
 
@@ -76,7 +75,7 @@ AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemMana
 : ObjectSystemEntity(self, services, system),
 m_beltMgr(nullptr),
 m_growTimer(0),
-//m_growTimer(sConfig.cosmic.BeltGrowth *60 *60 *1000),  // hours->ms
+//m_growTimer(sConfig.cosmic.BeltGrowTime * EvE::Time::Hour),  // hours->ms
 m_beltID(0)
 {
 }
@@ -91,8 +90,7 @@ void AsteroidSE::Process() {
             Grow();
 }
 
-void AsteroidSE::EncodeDestiny(Buffer& into)
-{
+void AsteroidSE::EncodeDestiny(Buffer& into) {
     using namespace Destiny;
 
     BallHeader head = BallHeader();
@@ -131,30 +129,30 @@ void AsteroidSE::SendDamageStateChanged() {  //working 24Apr15
     PySafeDecRef(up);
 }
 
-void AsteroidSE::Killed(Damage& damage)
-{
+void AsteroidSE::Killed(Damage& damage) {
     // determine active miner(s) and call Depleted()
     m_targMgr->Depleted(damage.weaponRef);
     Delete();
 }
 
 void AsteroidSE::Grow() {
-    /*  not real sure how to implement this
-     * maybe use internal data structure to hold sizes (current, possible) and time interval
-     * use this to check/update current sizes (radius and mass)
-     *
-     * currently sets quantity back to full and disables m_growTimer
-     *   - not gonna work...radius is set to quantity AFTER being mined...
-     */
+    // this will increase asteroid size (radius, quantity and mass)
+    double radius = m_self->GetAttribute(AttrRadius).get_double();
+    // grow 10%?  based on system activity (or lack thereof)?  maybe something about secstatus too?
+    radius *= sConfig.cosmic.BeltGrowPct;
+    double quantity = log(radius / 89.675) * (1.0 / 4e-05);
 
-    //double quantity = ((25000 * log(GetRadius())) - 112404.8);
-    //m_self->SetAttribute(AttrQuantity,  quantity);   // quantity in m^3
+    // per client, roid quantity will never be above 130000m3
+    if (quantity > 130000) {
+        // if it is, cap and disable timer
+        quantity = 130000;
+        m_growTimer.Disable();
+    }
 
-    m_growTimer.Disable();
+    m_self->SetAttribute(AttrQuantity,  quantity);   // quantity in m^3
 }
 
-void AsteroidSE::Delete()
-{
+void AsteroidSE::Delete() {
     _log(SPAWN__DEPOP, "AsteroidSE::Delete() - Removing asteroid %s(%u) from beltID %u", \
             m_self->name(), m_self->itemID(), m_beltID);
     m_beltMgr->RemoveAsteroid(m_beltID, this);

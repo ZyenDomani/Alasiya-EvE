@@ -164,8 +164,6 @@ uint32 MiningLaser::DoCycle() {
      * we accomplish this by doing nothing on first cycle, and call the processing component at beginning of each cycle after that.
      */
 
-    //SendGFX(true, true);
-
     if (m_IsInitialCycle) {
     	m_IsInitialCycle = false;
     } else {
@@ -192,13 +190,16 @@ void MiningLaser::DeactivateCycle(bool abort/*false*/)
 
 // note:  gas cloud contains radius/10 units of gas.
 /** @todo verify for ice and gas */
-void MiningLaser::ProcessCycle(bool abort/*false*/)
-{
+void MiningLaser::ProcessCycle(bool abort/*false*/) {
     float cycleVol(GetMiningVolume());
 
     InventoryItemRef roidRef(m_targetSE->GetSelf());
     // verify gas clouds have volume attr.
     float oreVolume(roidRef->GetAttribute(AttrVolume).get_float());
+
+    _log(MINING__TRACE, "%s at %s on %s starting ProcessCycle with %.1fm3 per cycle on %s (%.1fm3 oreVolume).", \
+            m_modRef->name(), sDataMgr.GetFlagName(m_modRef->flag()), m_shipRef->name(), \
+            cycleVol, roidRef->name(), oreVolume);
 
     if ((cycleVol < oreVolume) or (cycleVol <= 0) or (oreVolume <= 0)) {
         _log(MINING__ERROR, "%s(%u) - Mining Laser could not extract ore from %s(%u)", m_modRef->name(), m_modRef->itemID(), roidRef->name(), m_targetSE->GetID() );
@@ -207,9 +208,9 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         return;
     }
 
-    float oreAmount((cycleVol /oreVolume));
+    float oreAmount(cycleVol / oreVolume);
     if (abort) {
-        // adjust amount AND cycle for partial cycle
+        // adjust amount and cycleVol for partial cycle
         float delta = 1 - (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_float());
         cycleVol *= delta;
         oreAmount *= delta;
@@ -226,7 +227,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     if (remainingCargoVolume < cycleVol) {
         // cargohold is full.  this module will fill to available volume and trash the rest
         if (remainingCargoVolume > oreVolume) {
-            oreAmount = remainingCargoVolume /oreVolume;
+            oreAmount = remainingCargoVolume / oreVolume;
         } else {
             oreAmount = 0;
         }
@@ -241,8 +242,8 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
             m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because your cargohold is full.", m_modRef->name());
     }
 
-    _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f/%.2f, oreAmount:%.2f", \
-                (abort?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, (remainingCargoVolume -cycleVol), oreAmount);
+    _log(MINING__DEBUG, "ProcessCycle(%s) -  remainingCargoVolume:%.2f - cycleVol:%.2f =  %.2f,  oreAmount:%.2f, roidQuantity:%.2f", \
+                (abort?"true":"false"), remainingCargoVolume, cycleVol, (remainingCargoVolume - cycleVol), oreAmount, roidQuantity);
 
     if (oreAmount <= 0)
         return;
@@ -251,16 +252,24 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     _log(MINING__TRACE, "new roidQuantity %.3f", roidQuantity);
 
     if (roidQuantity > 0.0f) {
-        roidRef->SetAttribute(AttrQuantity, roidQuantity);
+        roidRef->SetAttribute(AttrQuantity, roidQuantity, false);
         // do not reset ice radius (our huge-ass chunks will probably never expire)
-        if (!m_iMiner) {
-            /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
-            double radius = exp((roidQuantity + 112404.8) / 25000);
-            // need to update players in bubble of this change.  not sure how yet
+        if (m_rMiner) {
+            // formula from client
+            double radius = 89.675 * exp(4e-05 * roidQuantity);
             roidRef->SetAttribute(AttrRadius, radius);
+            // update players in bubble of this change.
+            m_targetSE->MakeSlimItemChange();
+        } else if (m_gMiner) {
+            // formula from client
+            double radius = roidQuantity * roidRef->type().radius() / 10.0f;
+            roidRef->SetAttribute(AttrRadius, radius);
+            // update players in bubble of this change.
+            m_targetSE->MakeSlimItemChange();
         }
     } else {
         //rock is depleted.
+        _log(MINING__TRACE, "roid %s targeted by %s on %s is depleted", roidRef->name(), m_modRef->name(), m_shipRef->name());
         // this will get all active miners on depleted rock and set mined amount accordingly for each.
         m_targetSE->TargetMgr()->Depleted(this);
         SystemEntity* pSE(m_targetSE);
@@ -271,7 +280,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         return;
     }
 
-    // at this point, there is still plenty of ore in rock
+    // at this point, there is still ore in the rock
     ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), locTemp, flagNone, oreAmount);
     InventoryItemRef oRef(sItemFactory.SpawnItem(idata));
     if (oRef.get() == nullptr) {
@@ -282,6 +291,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     bool oreError(true);
     if (m_shipRef->GetMyInventory()->HasAvailableSpace(m_holdFlag, oRef)) {
         oreError = false;
+        // automagically stack ore in hold.  this is a feature.
         oRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
     }
 
@@ -289,12 +299,15 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     sStatMgr.Add(Stat::oreMined, cycleVol);
 
     if (oreError and !abort) {
-        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as it couldn't add the %s to your %s.", \
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as it couldn't add the %s ore to your %s.", \
                 m_modRef->name(), oRef->name(), sDataMgr.GetFlagName(m_holdFlag));
         _log(MINING__ERROR, "Could not add ore to hold for %s(%u)", m_shipRef->name(), m_shipRef->itemID() );
         ActiveModule::DeactivateCycle(true);
         return;
     }
+
+    _log(MINING__TRACE, "%s at %s on %s completed ProcessCycle.", \
+            m_modRef->name(), sDataMgr.GetFlagName(m_modRef->flag()), m_shipRef->name());
 
     if (!m_chargeLoaded or (m_chargeRef.get() == nullptr))
         return;
@@ -361,12 +374,35 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
         cur.second->AddOreAndDeactivate(roidRef->typeID(), oreAmount);
 
         // inform pilot of asteroid depleted  ...no clue if it actually works like this
+        // throws error on most recent test..
+        /*
+21:46:22 [Service] alert::SendClientStackTraceAlert()
+EXCEPTION #16 logged at  02/01/2025 21:46:22 Something potentially bad happened with MiningItemDepleted
+Caught at:
+/client/script/remote/michelle.py(900) DoPreTick
+/client/script/remote/michelle.py(1394) RealFlushState
+Thrown at:
+/client/script/remote/michelle.py(1390) RealFlushState
+        entryStamp = 7131
+        e = AttributeError('MiningItemDepleted',)
+        eventStamp = 7131
+        self = <destiny.Ballpark object at 0x3C31D0D0>
+        args = {'modulename': 'Modulated Strip Miner II'}
+        funcName = 'MiningItemDepleted'
+        state = [(...), (...), (...), (...), (...), (...), (...), (...)]
+        action = (7131, (...))
+        synchronised = 1
+        event = ('MiningItemDepleted', {...})
+AttributeError: MiningItemDepleted
+
+
         PyTuple* tuple = new PyTuple(2);
-            tuple->SetItem(0, new PyString("MiningItemDepleted"));
+            tuple->SetItem(0, new PyString("MiningItemDepletedBody"));
         PyDict* dict = new PyDict();
             dict->SetItemString("modulename", new PyString(cur.second->GetSelf()->itemName()));
             tuple->SetItem(1, dict);
         cur.second->GetShipRef()->GetPilot()->QueueDestinyUpdate(&tuple);
+*/
     }
 
     // calculate ore for this laser

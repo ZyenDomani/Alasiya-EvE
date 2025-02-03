@@ -180,7 +180,8 @@ EVEServerConfig::EVEServerConfig()
     cosmic.DungeonEnabled = false;
     cosmic.BeltEnabled = false;
     cosmic.BeltRespawn = 8 /*h*/;
-    cosmic.BeltGrowth = 6 /*h*/;
+    cosmic.BeltGrowTime = 6 /*h*/;
+    cosmic.BeltGrowPct = 0.01f;
     cosmic.roidRadiusMultiplier = 1.0;
     cosmic.WormHoleEnabled = false;
     cosmic.CiviliansEnabled = false;
@@ -721,7 +722,8 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
     AddValueParser( "DungeonEnabled",       cosmic.DungeonEnabled );
     AddValueParser( "BeltEnabled",          cosmic.BeltEnabled );
     AddValueParser( "BeltRespawn",          cosmic.BeltRespawn );
-    AddValueParser( "BeltGrowth",           cosmic.BeltGrowth );
+    AddValueParser( "BeltGrowTime",           cosmic.BeltGrowTime );
+    AddValueParser( "BeltGrowPct",           cosmic.BeltGrowPct );
     AddValueParser( "roidRadiusMultiplier", cosmic.roidRadiusMultiplier );
     AddValueParser( "WormHoleEnabled",      cosmic.WormHoleEnabled );
     AddValueParser( "CiviliansEnabled",     cosmic.CiviliansEnabled);
@@ -734,7 +736,8 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
     RemoveParser( "DungeonEnabled" );
     RemoveParser( "BeltEnabled" );
     RemoveParser( "BeltRespawn" );
-    RemoveParser( "BeltGrowth" );
+    RemoveParser( "BeltGrowTime" );
+    RemoveParser( "BeltGrowPct" );
     RemoveParser( "roidRadiusMultiplier" );
     RemoveParser( "WormHoleEnabled" );
     RemoveParser( "CiviliansEnabled" );

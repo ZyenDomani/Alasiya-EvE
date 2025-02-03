@@ -279,8 +279,9 @@ public:
         bool CiviliansEnabled;
         bool BumpEnabled;
         uint8 BeltRespawn;
-        uint8 BeltGrowth;
+        uint8 BeltGrowTime;
         float roidRadiusMultiplier;
+        float BeltGrowPct;
     } cosmic;
 
     // From exploring

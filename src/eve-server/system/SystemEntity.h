@@ -258,7 +258,8 @@ public:
 
     /* public specific functions handled in base class. */
     virtual void                Abandon();
-    virtual void                SendDamageStateChanged();  /* this uses targetMgr update to send to all interested parties */
+    virtual void                SendDamageStateChanged();  // this uses targetMgr update to send to all interested parties
+    virtual void                MakeSlimItemChange();      // sends updated item info to players in bubble
 
     /* generic functions handled here, but set elsewhere */
     bool                        IsDead()                { return m_killed; }
@@ -294,6 +295,7 @@ protected:
     InventoryItemRef            m_self;
 
     bool                        m_killed;
+    bool                        m_abandoned;
 
     int32                       m_radius;
 

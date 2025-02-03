@@ -207,7 +207,6 @@ public:
     PyObject *WreckContainerGetInfo();
 
     bool IsEmpty()                                      { return pInventory->IsEmpty(); }
-    void MakeSlimItemChange();
     void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
     void Salvaged()                                     { m_salvaged = true; }
 
@@ -231,7 +230,6 @@ protected:
 
 private:
     SystemEntity* mySE;
-    bool m_delete;
     bool m_salvaged;
 };
 
@@ -259,9 +257,6 @@ public:
     virtual void                EncodeDestiny(Buffer& into);
     virtual PyDict*             MakeSlimItem();
 
-    /* virtual functions default to base class and overridden as needed */
-    virtual void                Abandon();
-
     /* specific functions handled in this class. */
     void Salvaged()                                     { m_contRef->Salvaged(); }
     void SetLaunchedByID(uint32 launcherID)             { m_launchedByID = launcherID; }
@@ -276,9 +271,6 @@ protected:
     Timer m_deleteTimer;
 
     uint32 m_launchedByID;
-
-private:
-    bool m_abandoned;
 };
 
 #endif /* !__CONTAINER__H__INCL__ */

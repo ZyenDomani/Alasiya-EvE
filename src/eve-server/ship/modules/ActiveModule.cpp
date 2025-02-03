@@ -277,8 +277,7 @@ void ActiveModule::Clear()
     SetModuleState(Module::State::Online);
 }
 
-void ActiveModule::Process()
-{
+void ActiveModule::Process() {
     // the order of Reload/Unload is significant.
     if (m_reloadTimer.Enabled()) {
         if (m_reloadTimer.Check(false)) {
@@ -395,14 +394,12 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         }
         if (m_targetSE->IsCOSE()) {
             Clear();
-            throw CustomError("Attacking Customs Offices isn't implemented at this time.");
+            throw CustomError("Attacking or Repairing Customs Offices isn't implemented at this time.");
         }
     }
 
-    // this repeat comes directly from client.  test and set higher of these
-    if (repeat > m_repeat)
-        m_repeat = repeat;
-
+    // repeat and effectID come directly from client.
+    m_repeat = repeat;
     m_effectID = effectID;
 
     if (!CanActivate()) {
@@ -762,7 +759,7 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
                 Clear();
                 return;
             }
-            // this is the complete belt scanner rsp code here.
+            // this is the complete belt scanner rsp code here.  (working)
             PyTuple* result = new PyTuple(2);
             result->SetItem(0, new PyString("OnSurveyScanComplete"));
             PyList* list = new PyList();
@@ -799,8 +796,6 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
             // Send results.
             m_shipRef->GetPilot()->QueueDestinyEvent(&result);
         } break;
-        //case EVEDB::invGroups::Data_Miner:
-        // some data containers will pop after successful access.  currently incomplete
         case EVEDB::invGroups::Salvager: {
             if (m_targetSE == nullptr)
                 break;
@@ -832,8 +827,15 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
             if (m_targetSE != nullptr)
                 ;  // not sure if we need this here.....do these work like belt scanner?
         } break;
-        // not sure just how this works yet
-        // case EVEDB::invGroups::System_Scanner:
+        // not sure just how these work yet
+        /*
+        case EVEDB::invGroups::System_Scanner: {
+
+        } break;
+        case EVEDB::invGroups::Data_Miner: {
+            // some data containers will pop after successful access.  currently incomplete
+        } break;
+        */
     }
 
     Clear();
@@ -922,6 +924,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
              *          [PyInt 203]                     << chargeTypeID
              *          [PyFloat 10000]                 << reloadTime (ms)
              */
+            //TODO:  check for module groups being loaded and adjust accordingly here
             PyTuple* module = new PyTuple(1);
                 module->SetItem(0, new PyInt(m_modRef->itemID()));
             PyTuple* tmp = new PyTuple(3);
@@ -982,7 +985,7 @@ void ActiveModule::UnloadCharge()
 
     // scripts boost one attrib, while reducing or deleting others.  once the attrib is deleted, i cant 'undo' without reload
     EvilNumber typeID(EvilZero);
-    if (m_modRef->HasAttribute(AttrChargeGroup1, typeID))
+    if (m_modRef->HasAttribute(AttrChargeGroup1, typeID)) {
         switch (typeID.get_int()) {
             // find what attribs were changed and reload them to default once charge is removed
             case 907:   //    Tracking Script
@@ -1002,6 +1005,7 @@ void ActiveModule::UnloadCharge()
                 m_modRef->ResetAttribute(AttrFalloffBonus, true);
             } break;
         }
+    }
 }
 
 void ActiveModule::ConsumeCharge() {
@@ -1017,15 +1021,13 @@ void ActiveModule::ConsumeCharge() {
     }
 }
 
-void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
-{
+void ActiveModule::ApplyEffect(int8 state, bool active/*false*/) {
     // process and apply module's active effects
     ProcessEffects(state, active);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
 
-void ActiveModule::UpdateCharge(uint16 attrID, uint16 testAttrID, uint16 srcAttrID, InventoryItemRef iRef)
-{
+void ActiveModule::UpdateCharge(uint16 attrID, uint16 testAttrID, uint16 srcAttrID, InventoryItemRef iRef) {
     // Apply boost amount:
     EvilNumber newValue = iRef->GetAttribute(attrID);
     newValue += GetAttribute(srcAttrID);
@@ -1040,8 +1042,7 @@ void ActiveModule::UpdateCharge(uint16 attrID, uint16 testAttrID, uint16 srcAttr
         m_shipRef->GetPilot()->GetShipSE()->SendDamageStateChanged();
 }
 
-void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRef iRef)
-{
+void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRef iRef) {
     EvilNumber newValue = iRef->GetAttribute(attrID);
     newValue -= GetAttribute(srcAttrID);
     if (newValue < EvilZero) {
@@ -1054,8 +1055,7 @@ void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRe
 }
 
 // not used
-void ActiveModule::ReprocessCharge()
-{
+void ActiveModule::ReprocessCharge() {
     if (m_chargeRef.get() == nullptr)
         return;
     /*  may not need to reset this...
@@ -1070,8 +1070,7 @@ void ActiveModule::ReprocessCharge()
     m_chargeRef->ClearModifiers();
 }
 
-bool ActiveModule::CanActivate()
-{
+bool ActiveModule::CanActivate() {
     // there is still more to be done here.  wip
     //  modules that require specific tests are coded in their module class, which will call this if their specific checks pass
 
@@ -1239,7 +1238,7 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
         active = false;
     } else {
         sLog.Warning("AM::SendGFX()", "%s on %s at %s has Invalid Module State for GFX: %s.  Sending False for start & active.", \
-                m_modRef->name(), m_shipRef->name(), sDataMgr.GetFlagName(m_modRef->flag()), GetModuleStateName());
+                m_modRef->name(), m_shipRef->name(), sDataMgr.GetFlagName(m_modRef->flag()), GetModuleStateName(m_ModuleState));
     }
 
     int32 cycleTime(-1);
@@ -1283,13 +1282,13 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
                 active,         // active
                 cycleTime,      // duration in ms
                 m_repeat,       // repeat
-                (useStartTime ? m_startTime : 0),
+                (useStartTime ? m_startTime : 0), 0,
                 pClient);
 }
 
 void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/) {
-    // test bcast module gfx sending thru here...working well
-    SendGFX(start, start, abortCycle);
+    // bcast module gfx thru here...working well
+    SendGFX(abortCycle);
 
     // Create Module Button Fx
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));

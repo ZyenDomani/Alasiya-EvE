@@ -388,13 +388,12 @@ void ShipItem::Undock() {
 
     // Recharge shields and cap if session change isnt active (undocking too fast)
     if (!m_pilot->IsSessionChange()) {
-        SetShipShield(1.0);
-        SetShipCapacitorLevel(1.0);
+        SetShipShield(1.0f);
+        SetShipCapacitorLevel(1.0f);
     }
 }
 
-void ShipItem::UpdateMass()
-{
+void ShipItem::UpdateMass() {
     std::map< uint32, InventoryItemRef > invMap;
     pInventory->GetInventoryMap(invMap);
     uint32 mass(GetAttribute(AttrMass).get_uint32());
