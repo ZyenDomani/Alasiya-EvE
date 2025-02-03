@@ -23,8 +23,8 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 *******************************************************
 **********  errors and other found shit...high priority
 
-empty ships not having destiny vars updated
-  not sure of a good generic place to put call to destiny updatevars
+module stop after roid depeleted will not allow restart in client...red circle, but timer runs
+  roids may not have enough ore...this one didnt last long.
 
 same acct can be logged in multiple times
 
@@ -166,6 +166,7 @@ wh system - started.   k162 for deco only at this time (POC)   -priority level: 
 	- james did lots of work on this system in official
 
 player drones - skeleton started. needs functionality    -priority level: med-hi
+drone is abandoned when owner warps out or logs out.  owner should remain until commanded to abandon
 drones mass and maxspeed need attention
 does controller and controllerownerid change when assigning drone to other pilots?
 ShipSE::LaunchDrone() needs bit of work.  drones are online and set to orbit after launch, before BW test
@@ -192,12 +193,11 @@ RAM code - implement invention, re    -priority level: low
     - verify char prod efficiency skill for Calculate()
     - many messages not implemented   see common/EVE_RAM.h
 
-blueprints - look over data and verify
-    - skills not showing on tabs other than manufacturing
+blueprints - look over data and verify...so far seems mostly accurate.
+    - rifter 691 - RE needs criminal connections l5???
+        invention needs no skills?
     - LPRR = -11??  (runs remaining)
     - research copy time.  huge discrepancy here....  3h20m base, <1m with skills???
-    - was working on stacking bpc, but with singleton code, i dont think it's possible.
-      -- however, bpc is not singleton, right?  shouldnt matter.  need more testing.
 
 contact list - no notification when contacts login.  no initial contact status when logging in.  -priority level: lo
 
@@ -435,6 +435,10 @@ this includes fx14 and fx10 calls
 
 ***  other
 
+all module gfx seems to be working properly
+  see if we can remove some of the args in SendGFX()
+
+
 finish DestinyManager::SendCloakFx()
 
 
@@ -444,6 +448,13 @@ finish DestinyManager::SendCloakFx()
 
 rename AttributeMap to AttributeMgr
   actual maps can remain
+
+asteroid/belt grow
+  - idea is roids' gravity will accumulate more ore in areas unmolested by ships...after 6h or so
+     more/less based on sysSec?
+  test around 5% or so (per hour?  that would work well for starters)
+  entire belt at once;  per belt or per roid? or per system?
+  basic code in place, but system incomplete
 
 all the *Timers in client are actually SetTime +1s
  ...reason being is one tic to check (current tic +0), next tic to set (=1),  then another tic to hit (+2)
@@ -781,10 +792,11 @@ rename 'entities' to 'gameItems'
 **************************************************
 *****************   low on the list.....
 
-49  24  Player Kill     Kill confirmation
+49  24  Player Kill     Kill confirmation  <-- itemType
 
 some items dont have complete description in db (data is truncated)
     -- need more info on this.
+    - will have to search and import from another db dataset
 
 go thru classes and rename per class type...
     -  *Item  for items
@@ -846,14 +858,6 @@ check into call returns.  they may be missing data (like callID)
 
 all classes need init list corrected
     - should be same order as declarations
-
-dont remember why i put this log in, but it got hit while testing earlier....
-19:54:01 [Service] config::GetMultiLocationsEx()
-19:54:01 W GetMultiLocationsEx: Asteroid Item requested.
-19:54:03 [Service] config::GetMultiLocationsEx()
-19:54:03 W GetMultiLocationsEx: Asteroid Item requested.
-19:54:05 [Service] config::GetMultiLocationsEx()
-19:54:05 W GetMultiLocationsEx: Asteroid Item requested.
 
 17908 - nerf bat    <<-- this is `QA Cruise Missile`  100km/s, 1k multi-spectral damage
 
@@ -918,6 +922,13 @@ create data needed for killboard, and integrate killboard into site  -priority l
     - page started.  data non-existent  will use src/eve-core/killboard/
 
 Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed  ....not working right.  later.
+current average takes all time into consideration, even ones that are way high.
+  idea: make map/list/vec of times, as it seems the high times are one-off
+    start loop
+    take times x higher than current average
+    times lower in another map/list/vec
+    use lower list to get better average times
+    get count & average of high times for a better idea of code runtimes
 
 player agent/error msgs - pool of msgs adjusted for character secstatus or standings with corp/sov holder, a la sphereScript's speech files
 
