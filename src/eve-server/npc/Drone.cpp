@@ -42,21 +42,45 @@ DroneSE::DroneSE(InventoryItemRef drone, PyServiceMgr &services, SystemManager* 
 m_pClient(nullptr),
 m_AI(new DroneAIMgr(this)),
 m_pShipSE(nullptr),
-m_system(pSystem)
+m_system(pSystem),
+m_controlDistance(20000),       // 20km default
+m_controllerID(0),
+m_controllerOwnerID(0),
+m_online(false)
 {
     assert (m_AI != nullptr);
     assert (m_system != nullptr);
-
-    m_online = false;
 
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-    m_pClient = sEntityMgr.FindClientByCharID(data.ownerID);
-    m_targetID = 0;
-    m_controllerID = 0;
-    m_controllerOwnerID = 0;
+
+    _log(DRONE__TRACE, "Created Drone object for %s (%u)", drone->name(), drone->itemID());
+}
+
+DroneSE::~DroneSE() {
+    SafeDelete(m_AI);
+}
+
+void DroneSE::Init() {
+    m_pClient = sEntityMgr.FindClientByCharID(m_ownerID);
+    if (m_pClient == nullptr) {
+        Abandon();
+    } else if (m_pClient->IsLogin()) {
+        /* creating system while player is login will load player drone
+         * then try to access client object, which isnt fully constructed at this point
+         */
+        // not much choice here yet, till i figure something else out...
+        Abandon();
+    } else if (m_pClient->GetShip()->typeID() != EVEDB::invTypes::Capsule) {
+        m_controllerID = m_pClient->GetShipID();
+        m_controllerOwnerID = m_ownerID;
+        if (m_pClient->GetShipSE() != nullptr) {
+            m_pShipSE = m_pClient->GetShipSE();
+            Online(m_pShipSE);
+        }
+    }
 
     m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_float();
     if (m_orbitRange < 1) {
@@ -68,10 +92,10 @@ m_system(pSystem)
     }
 
     // Create default dynamic attributes in the AttributeMap:
-    m_self->SetAttribute(AttrInertiaMod,             EvilOne, false);
+    m_self->SetAttribute(AttrInertiaMod,          EvilOne, false);
     m_self->SetAttribute(AttrDamage,              EvilZero, false);
     m_self->SetAttribute(AttrArmorDamage,         EvilZero, false);
-    m_self->SetAttribute(AttrWarpCapacitorNeed,   0.00001, false);
+    m_self->SetAttribute(AttrWarpCapacitorNeed,   0.0000001, false);
     m_self->SetAttribute(AttrOrbitRange,          m_orbitRange, false);
     m_self->SetAttribute(AttrMass,                m_self->type().mass(), false);
     m_self->SetAttribute(AttrRadius,              m_self->type().radius(), false);
@@ -81,6 +105,10 @@ m_system(pSystem)
     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
     /** @todo update attribs from char skills here....it's not done by Fx system */
+    // are we sure of this??
+    if (m_pClient != nullptr) {
+
+    }
 
     m_destiny->UpdateShipVariables();
 
@@ -95,24 +123,16 @@ m_system(pSystem)
     m_armorDamage = m_self->GetAttribute(AttrArmorDamage).get_float();
     m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
     m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
-
-    _log(DRONE__TRACE, "Created Drone object for %s (%u)", drone.get()->name(), drone.get()->itemID());
 }
 
-DroneSE::~DroneSE() {
-    SafeDelete(m_AI);
-}
-
-void DroneSE::SetOwner(Client* pClient) {
-    m_self->ChangeOwner(pClient->GetCharacterID());
+void DroneSE::AssignTo(Client* pClient) {
+    // does drone use skills of new pilot?  probably not
     m_pClient = pClient;
-    m_ownerID = pClient->GetCharacterID();
-    m_corpID = pClient->GetCorporationID();
-    m_allyID = pClient->GetAllianceID();
-    m_warID = pClient->GetWarFactionID();
-    m_pShipSE = pClient->GetShipSE();
     m_controllerID = pClient->GetShipID();
     m_controllerOwnerID = m_pShipSE->GetOwnerID();
+    m_AI->AssignShip(m_pShipSE);
+    if (m_bubble != nullptr)
+        StateChange();
 }
 
 void DroneSE::Process() {
@@ -127,6 +147,9 @@ void DroneSE::Process() {
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 
+    // TODO: shield regen
+    // 479     shieldRechargeRate  NULL    250000
+
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
 }
@@ -136,7 +159,6 @@ void DroneSE::SaveDrone() {
 }
 
 void DroneSE::RemoveDrone() {
-    // this seems to work properly
     m_self->Delete();
     delete this;
 }
@@ -147,19 +169,23 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     m_controllerID = pShipSE->GetID();
     m_controllerOwnerID = pShipSE->GetOwnerID();
 
+    m_self->ChangeSingleton(false);
     m_system->AddEntity(this);
 
     assert (m_bubble != nullptr);
+
+    if (m_bubble != nullptr)
+        StateChange();
 }
 
 void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
+    // TODO:  check for available bandwidth
     m_online = true;
-    StateChange();
-
-    if (pShipSE == nullptr)
-        pShipSE = m_pShipSE;
-
+    m_pShipSE = pShipSE;
     m_AI->AssignShip(pShipSE);
+
+    if (pShipSE != nullptr)
+        m_controlDistance = pShipSE->GetSelf()->GetAttribute(AttrDroneControlDistance).get_uint32();
 }
 
 void DroneSE::Offline() {
@@ -167,87 +193,155 @@ void DroneSE::Offline() {
     m_destiny->Stop();
     m_AI->AssignShip(nullptr);
     m_online = false;
-    StateChange();
+
+    if (m_bubble != nullptr)
+        StateChange();
 }
 
-void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
+void DroneSE::IdleOrbit(uint32 speed, ShipSE* pShipSE/*nullptr*/) {
+    // check this...
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
     if (!m_online)
         return;         // error here?
 
-    // TODO:  fix these speeds
-    // set speed and begin orbit
-    m_destiny->SetMaxVelocity(500.0f);     //TODO:  use AttrMaxVelocity here
-    m_destiny->SetSpeedFraction(0.6f);  // use 30-50% here
+    // set speed and begin lazy orbit
+    m_destiny->SetMaxVelocity(speed);
+    m_destiny->SetSpeedFraction(MakeRandomFloat(0.3, 0.6));  // use 30-60% here
     m_destiny->InitOrbit(pShipSE, m_orbitRange);
 }
 
 void DroneSE::Abandon() {
-    SystemEntity::Abandon();
+    //SystemEntity::Abandon();
+    m_abandoned = true;
+    m_controllerID = 0;
+    m_controllerOwnerID = 0;
+    m_controlDistance = 0;
+    m_AI->Abandon();
     Offline();
 }
 
-/*   when drone is scooped up....
- *
- *                    [PyTuple 2 items]
- *                      [PyString "OnDroneStateChange"]
- *                      [PyList 7 items]
- *                        [PyIntegerVar 1540263056]
- *                        [PyNone]
- *                        [PyNone]
- *                        [PyNone]
- *                        [PyNone]
- *                        [PyNone]
- *                        [PyNone]
- */
+void DroneSE::Reconnect(ShipSE* pShipSE) {
+    if (m_pShipSE != pShipSE ) {
+        // new owner
+        Client* pClient = pShipSE->GetPilot();
+        m_warID = pClient->GetWarFactionID();
+        m_allyID = pClient->GetAllianceID();
+        m_corpID = pClient->GetCorporationID();
+        m_ownerID = pClient->GetCharacterID();
+    }
+
+    m_controllerID = pShipSE->GetID();
+    m_controllerOwnerID = m_ownerID;
+
+    Online(pShipSE);
+    m_AI->SetIdle();
+
+    if (m_bubble != nullptr)
+        StateChange();
+}
+
+void DroneSE::ShipWarping(ShipSE* pShipSE) {
+    if (m_pShipSE != pShipSE ) {
+
+    }
+
+}
+
+void DroneSE::TargetDestroyed() {
+
+}
+
+void DroneSE::Engage(SystemEntity* pTarget) {
+    CheckCommandDistance();
+    // target, check distances, begin attack
+    m_AI->Target(pTarget);
+}
+
+void DroneSE::TargetAdded(SystemEntity* pSE) {
+    /** @todo (Allan) will need code once drones are implemented */
+}
+
+void DroneSE::TargetLost(SystemEntity* pSE) {
+    m_AI->TargetLost(pSE);
+}
+
+void DroneSE::TargetedAdd(SystemEntity* pSE) {
+    m_AI->Targeted(pSE);
+}
+
+void DroneSE::TargetedLost(SystemEntity* pSE) {
+    /** @todo (Allan) will need code once drones are implemented */
+}
+
+void DroneSE::BeginMining(SystemEntity* pTarget, bool repeat) {
+    CheckCommandDistance();
+    if (m_AI->GetState() == DroneAI::State::Mining) {
+        throw UserError("EntityCurrentlyMining")
+                .AddFormatValue("targetTypeName", new PyString(GetName()));
+    }
+
+    _log(DRONE__TRACE, "%s's %s begin mining", m_pClient->GetName(), GetName());
+    m_AI->Target(pTarget);
+}
+
+
+void DroneSE::CheckCommandDistance() {
+    if (m_pShipSE->GetPosition().distance(GetPosition()) > m_controlDistance) {
+        _log(DRONE__INFO, "%s outside control distance of %u", GetName(), m_controlDistance);
+
+        throw UserError("EntityDistantCommand")
+                .AddFormatValue("targetTypeName", new PyString(GetName()))
+                .AddAmountU("distance", m_controlDistance);
+    }
+}
+
+bool DroneSE::InControlDistance() {
+    return (m_pShipSE->GetPosition().distance(GetPosition()) < m_controlDistance);
+}
+
+
+// destiny methods below...
+
+uint32 DroneSE::GetTargetID() {
+    if  (m_AI->GetTarget() != nullptr)
+        return m_AI->GetTarget()->GetID();
+    if (m_targMgr->GetFirstTarget() != nullptr)
+        return m_targMgr->GetFirstTarget()->GetID();
+
+    return 0;
+}
 
 void DroneSE::StateChange() {
     //OnDroneStateChange(droneID, ownerID, controllerID, activityState, droneTypeID, controllerOwnerID, targetID)
     if (m_online) {
         OnDroneStateChange du;
-            du.droneID = m_self->itemID();
-            du.ownerID = m_ownerID;
-            du.droneTypeID = m_self->typeID();
-            du.controllerID = m_controllerID;
-            du.controllerOwnerID = m_controllerOwnerID;
-            du.activityState = m_AI->GetState();
-            du.targetID = m_targetID;
+        du.droneID = m_self->itemID();
+        du.ownerID = m_ownerID;
+        du.droneTypeID = m_self->typeID();
+        du.controllerID = m_controllerID;
+        du.controllerOwnerID = m_controllerOwnerID;
+        du.activityState = m_AI->GetState();
+        du.targetID = GetTargetID();
         PyTuple* up = du.Encode();
         // bubblecast is faster than destiny::update
         m_bubble->BubblecastDestinyUpdate(&up, "destiny");
         //pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);
     } else {
         PyList* list = new PyList();
-            list->AddItemInt(m_self->itemID());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
-            list->AddItem(PyStatic.NewNone());
+        list->AddItemInt(m_self->itemID());
+        list->AddItem(PyStatic.NewNone());
+        list->AddItem(PyStatic.NewNone());
+        list->AddItem(PyStatic.NewNone());
+        list->AddItem(PyStatic.NewNone());
+        list->AddItem(PyStatic.NewNone());
+        list->AddItem(PyStatic.NewNone());
         PyTuple* tuple = new PyTuple(2);
-            tuple->SetItem(0, new PyString("OnDroneStateChange"));
-            tuple->SetItem(1, list);
+        tuple->SetItem(0, new PyString("OnDroneStateChange"));
+        tuple->SetItem(1, list);
         m_bubble->BubblecastDestinyUpdate(&tuple, "destiny");
     }
-}
-
-void DroneSE::TargetAdded(SystemEntity* who) {
-    /** @todo (Allan) will need code once drones are implemented */
-}
-
-void DroneSE::TargetLost(SystemEntity *who) {
-    m_AI->TargetLost(who);
-}
-
-void DroneSE::TargetedAdd(SystemEntity *who) {
-    m_AI->Targeted(who);
-}
-
-void DroneSE::TargetedLost(SystemEntity* who) {
-    /** @todo (Allan) will need code once drones are implemented */
 }
 
 PyDict* DroneSE::MakeSlimItem() {
@@ -439,83 +533,3 @@ void DroneSE::Killed(Damage &fatal_blow) {
     }
     m_destiny->SendJettisonPacket();
 }
-
-/*
-    [PyObjectData Name: macho.MachoAddress]
-      [PyTuple 3 items]
-        [PyInt 8]
-        [PyString "entity"]
-        [PyNone]
-    [PyInt 5654387]
-    [PyTuple 1 items]
-      [PyTuple 2 items]
-        [PyInt 0]
-        [PySubStream 40 bytes]
-          [PyTuple 4 items]
-            [PyInt 1]
-            [PyString "MachoResolveObject"]
-            [PyTuple 2 items]
-              [PyInt 30000302]
-              [PyInt 0]
-            [PyDict 1 kvp]
-              [PyString "machoVersion"]
-              [PyInt 1]
-
-
-    [PyObjectData Name: macho.MachoAddress]
-      [PyTuple 4 items]
-        [PyInt 1]
-        [PyInt 790408]
-        [PyString "entity"]
-        [PyNone]
-    [PyInt 5654387]
-    [PyTuple 1 items]
-      [PyTuple 2 items]
-        [PyInt 0]
-        [PySubStream 88 bytes]
-          [PyTuple 4 items]
-            [PyInt 1]
-            [PyString "MachoBindObject"]
-            [PyTuple 2 items]
-              [PyInt 30000302]
-              [PyTuple 3 items]
-                [PyString "CmdEngage"]
-                [PyTuple 2 items]
-                  [PyList 3 items]
-                    [PyIntegerVar 1005909240632]
-                    [PyIntegerVar 1005909240642]
-                    [PyIntegerVar 1005902745093]
-                  [PyIntegerVar 9000000000001190094]
-                [PyDict 0 kvp]
-            [PyDict 1 kvp]
-              [PyString "machoVersion"]
-              [PyInt 1]
-
-    [PyObjectData Name: macho.MachoAddress]
-      [PyTuple 4 items]
-        [PyInt 1]
-        [PyInt 790408]
-        [PyString "entity"]
-        [PyNone]
-    [PyInt 5654387]
-    [PyTuple 1 items]
-      [PyTuple 2 items]
-        [PyInt 0]
-        [PySubStream 81 bytes]
-          [PyTuple 4 items]
-            [PyInt 1]
-            [PyString "MachoBindObject"]
-            [PyTuple 2 items]
-              [PyInt 30000302]
-              [PyTuple 3 items]
-                [PyString "CmdReturnBay"]
-                [PyTuple 1 items]
-                  [PyList 3 items]
-                    [PyIntegerVar 1005909240632]
-                    [PyIntegerVar 1005909240642]
-                    [PyIntegerVar 1005902745093]
-                [PyDict 0 kvp]
-            [PyDict 1 kvp]
-              [PyString "machoVersion"]
-              [PyInt 1]
-        */

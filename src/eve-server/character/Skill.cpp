@@ -207,52 +207,50 @@ void Skill::VerifySP() {
 
 bool Skill::SkillPrereqsComplete(Character &ch) {
     EvilNumber skillID(0);
-    if (HasAttribute(AttrRequiredSkill1, skillID)) {//Primary Skill
+    if (HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
         if (GetAttribute(AttrRequiredSkill1Level) > ch.GetSkillLevel(skillID.get_uint32()))
             return false;
-        if (HasAttribute(AttrRequiredSkill2, skillID)) {//Secondary Skill
-            if (GetAttribute(AttrRequiredSkill2Level) > ch.GetSkillLevel(skillID.get_uint32()))
-                return false;
-            if (HasAttribute(AttrRequiredSkill3, skillID)) {//Tertiary Skill
-                if (GetAttribute(AttrRequiredSkill3Level) > ch.GetSkillLevel(skillID.get_uint32()))
-                    return false;
-                if (HasAttribute(AttrRequiredSkill4, skillID)) {//Quarternary Skill
-                    if (GetAttribute(AttrRequiredSkill4Level) > ch.GetSkillLevel(skillID.get_uint32()))
-                        return false;
-                }
-            }
-        }
-    }
+
+    if (HasAttribute(AttrRequiredSkill2, skillID)) //Secondary Skill
+        if (GetAttribute(AttrRequiredSkill2Level) > ch.GetSkillLevel(skillID.get_uint32()))
+            return false;
+
+    if (HasAttribute(AttrRequiredSkill3, skillID)) //Tertiary Skill
+        if (GetAttribute(AttrRequiredSkill3Level) > ch.GetSkillLevel(skillID.get_uint32()))
+            return false;
+
+    if (HasAttribute(AttrRequiredSkill4, skillID)) //Quarternary Skill
+        if (GetAttribute(AttrRequiredSkill4Level) > ch.GetSkillLevel(skillID.get_uint32()))
+            return false;
 
     return true;
 }
 
 bool Skill::FitModuleSkillCheck(InventoryItemRef iRef, CharacterRef cRef) {
     EvilNumber skillID(0);
-    if (iRef->HasAttribute(AttrRequiredSkill1, skillID)) {//Primary Skill
+    if (iRef->HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
         if ( iRef->GetAttribute(AttrRequiredSkill1Level) > cRef->GetSkillLevel(skillID.get_uint32()))
             return false;
-        if (iRef->HasAttribute(AttrRequiredSkill2, skillID)) {//Secondary Skill
-            if ( iRef->GetAttribute(AttrRequiredSkill2Level) > cRef->GetSkillLevel(skillID.get_uint32()))
-                return false;
-            if (iRef->HasAttribute(AttrRequiredSkill3, skillID)) {//Tertiary Skill
-                if ( iRef->GetAttribute(AttrRequiredSkill3Level) > cRef->GetSkillLevel(skillID.get_uint32()))
-                    return false;
-                if (iRef->HasAttribute(AttrRequiredSkill4, skillID)) {//Quarternary Skill
-                    if ( iRef->GetAttribute(AttrRequiredSkill4Level) > cRef->GetSkillLevel(skillID.get_uint32()))
-                        return false;
-                    if (iRef->HasAttribute(AttrRequiredSkill5, skillID)) {//Quinary Skill
-                        if ( iRef->GetAttribute(AttrRequiredSkill5Level) > cRef->GetSkillLevel(skillID.get_uint32()))
-                            return false;
-                        if (iRef->HasAttribute(AttrRequiredSkill6, skillID)) {//Senary Skill
-                            if ( iRef->GetAttribute(AttrRequiredSkill6Level) > cRef->GetSkillLevel(skillID.get_uint32()))
-                                return false;
-                        }
-                    }
-                }
-            }
-        }
-    }
+
+    if (iRef->HasAttribute(AttrRequiredSkill2, skillID)) //Secondary Skill
+        if ( iRef->GetAttribute(AttrRequiredSkill2Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+            return false;
+
+    if (iRef->HasAttribute(AttrRequiredSkill3, skillID)) //Tertiary Skill
+        if ( iRef->GetAttribute(AttrRequiredSkill3Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+            return false;
+
+    if (iRef->HasAttribute(AttrRequiredSkill4, skillID)) //Quarternary Skill
+        if ( iRef->GetAttribute(AttrRequiredSkill4Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+            return false;
+
+    if (iRef->HasAttribute(AttrRequiredSkill5, skillID)) //Quinary Skill
+        if ( iRef->GetAttribute(AttrRequiredSkill5Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+            return false;
+
+    if (iRef->HasAttribute(AttrRequiredSkill6, skillID)) //Senary Skill
+        if ( iRef->GetAttribute(AttrRequiredSkill6Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+            return false;
 
     return true;
 }

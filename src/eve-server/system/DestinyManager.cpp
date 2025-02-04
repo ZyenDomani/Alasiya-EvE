@@ -1660,6 +1660,8 @@ void DestinyManager::InitWarp() {
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
 
+    //TODO:  determine if this ship has assigned drones in space and call drone:shipwarping
+
     // reset move times
     m_accelDistance = 0;
     m_stateStamp = (int32)sEntityMgr.GetStamp();

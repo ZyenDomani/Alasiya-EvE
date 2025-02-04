@@ -380,8 +380,8 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
 {
     if (pBubble == nullptr)
         return false;
-    float secRating = m_system->GetSecValue();
-    bool anomaly = false;
+    float secRating(m_system->GetSecValue());
+    bool anomaly(false);
     // get faction for this region
     uint32 factionID = factionRogueDrones;  // default to rogue drones.  this is my internal rogue drone factionID.
     if (sConfig.npc.RatFaction) {            // is RatFaction set in config?
@@ -505,20 +505,20 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
 
     // get ship class data from spawnEntry.at(subtype)
     // and put this spawn's group information in class designators
-    uint8 f = spawnEntry.at(level).f;
-    uint8 af = spawnEntry.at(level).af;
-    uint8 d = spawnEntry.at(level).d;
-    uint8 c = spawnEntry.at(level).c;
-    uint8 ac = spawnEntry.at(level).ac;
-    uint8 bc = spawnEntry.at(level).bc;
-    uint8 bs = spawnEntry.at(level).bs;
-    uint8 h = spawnEntry.at(level).h;
-    uint8 o = spawnEntry.at(level).o;
-    uint8 cf = spawnEntry.at(level).cf;
-    uint8 cd = spawnEntry.at(level).cd;
-    uint8 cc = spawnEntry.at(level).cc;
-    uint8 cbc = spawnEntry.at(level).cbc;
-    uint8 cbs = spawnEntry.at(level).cbs;
+    uint8 f = spawnEntry[level].f;
+    uint8 af = spawnEntry[level].af;
+    uint8 d = spawnEntry[level].d;
+    uint8 c = spawnEntry[level].c;
+    uint8 ac = spawnEntry[level].ac;
+    uint8 bc = spawnEntry[level].bc;
+    uint8 bs = spawnEntry[level].bs;
+    uint8 h = spawnEntry[level].h;
+    uint8 o = spawnEntry[level].o;
+    uint8 cf = spawnEntry[level].cf;
+    uint8 cd = spawnEntry[level].cd;
+    uint8 cc = spawnEntry[level].cc;
+    uint8 cbc = spawnEntry[level].cbc;
+    uint8 cbs = spawnEntry[level].cbs;
     spawnEntry.clear();
 
     // get typeIDs to spawn based on info in m_factionGroups and ship designators and put into Spawn Vector

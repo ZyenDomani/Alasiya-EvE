@@ -53,8 +53,8 @@ namespace Profile {
         applyFX     = 26,   //*
         onTarg      = 27,   //
         clientCall  = 28,   //*
-        civilians   = 29,    //
-        entityP     = 30   //*
+        civilians   = 29,   //
+        entityP     = 30    //*
     };
 }
 
@@ -73,7 +73,7 @@ public:
 
     void GetSize(size_t cSize, std::string& ret);
 
-    void GetRunTimes(std::vector< double >& container, float& h, float& l, float& a);
+    void GetRunTimes(std::vector<double>& container, double& h, double& l, double& a);
 
 protected:
     std::string GetKeyName(uint8& key);

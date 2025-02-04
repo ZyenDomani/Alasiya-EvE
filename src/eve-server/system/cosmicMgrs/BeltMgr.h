@@ -40,7 +40,7 @@ public:
     void Init(uint32 regionID);
     void Save();
     void Process();
-    void ClearAll();
+    void ClearAll(bool clear=false);
     void ClearBelt(uint16 bubbleID);
     void SetActive(uint16 bubbleID, bool active=true);
     void RegisterBelt(InventoryItemRef itemRef);

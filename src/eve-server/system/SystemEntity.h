@@ -247,6 +247,8 @@ public:
 
     int32                       GetHarmonic()           { return m_harmonic; }
     void                        SetHarmonic(int8 set)   { m_harmonic = set; }
+    bool                        IsAbandoned()           { return m_abandoned; }
+    void                        SetAbandoned(bool set)  { m_abandoned = set; }
 
 
     /* public generic functions handled in base class. */

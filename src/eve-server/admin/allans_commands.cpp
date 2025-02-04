@@ -231,6 +231,7 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
     uint32 bubble = b->GetID();
     uint32 dynamics = b->CountDynamics();
     uint32 npcs = b->CountNPCs();
+    uint32 drones = b->CountDrones();
     uint32 players = b->CountPlayers();
 
     std::map<uint32, SystemEntity*> into;
@@ -239,7 +240,8 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
     std::ostringstream str;
     str << "Bubble: %u<br>"; //22
     str << "Dynamics: %u<br>"; //19
-    str << "NPCs: %u<br>"; //18
+    str << "NPCs: %u<br>"; //15
+    str << "Drones: %u<br>"; //20
     str << "Players: %u<br>"; //23
     str << "<br>"; //5
 
@@ -280,9 +282,9 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
 
     int count = into.size();
     int size = count * 80;
-    size += 90;
+    size += 110;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), bubble, dynamics, npcs, players);
+    snprintf(reply, size, str.str().c_str(), bubble, dynamics, npcs, drones, players);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);

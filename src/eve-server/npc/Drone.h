@@ -51,88 +51,102 @@ public:
     virtual ~DroneSE();
 
     /* class type pointer querys. */
-    virtual DroneSE* GetDroneSE()                         { return this; }
+    virtual DroneSE*    GetDroneSE()                    { return this; }
     /* class type tests. */
-    virtual bool IsDroneSE()                            { return true; }
+    virtual bool        IsDroneSE()                     { return true; }
 
     /* SystemEntity interface */
-    virtual void Process();
-    virtual void EncodeDestiny(Buffer& into);
-    virtual void MakeDamageState(DoDestinyDamageState &into);
-    virtual PyDict* MakeSlimItem();
+    virtual void        Init();
+    virtual void        Process();
+    virtual void        EncodeDestiny(Buffer &into);
+    virtual void        MakeDamageState(DoDestinyDamageState &into);
+    virtual PyDict*     MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Killed(Damage &fatal_blow);
-    virtual void Abandon();     // reset all owner info and bubblecast new data
+    virtual void        Killed(Damage &fatal_blow);
+    virtual void        Abandon();     // reset all owner info and bubblecast new data
 
-    virtual void TargetAdded(SystemEntity *who);
-    virtual void TargetLost(SystemEntity *who);
-    virtual void TargetedAdd(SystemEntity *who);
-    virtual void TargetedLost(SystemEntity *who);
+    virtual void        TargetAdded(SystemEntity* pSE);
+    virtual void        TargetLost(SystemEntity* pSE);
+    virtual void        TargetedAdd(SystemEntity* pSE);
+    virtual void        TargetedLost(SystemEntity* pSE);
 
     /* specific functions handled here. */
-    Client* GetOwner()                                  { return m_pClient; }
-    DroneAIMgr* GetAI()                                 { return m_AI; }
+    Client*             GetOwner()                      { return m_pClient; }
+    DroneAIMgr*         GetAI()                         { return m_AI; }
 
-    void Launch(ShipSE* pShipSE);           //add drone entity to system
-    void Online(ShipSE* pShipSE=nullptr);         //  if nullptr sent, assign to controlling ship
-    void Offline();
-    void StateChange();
+    // assign drone to ship and add to system
+    void                Launch(ShipSE* pShipSE);
+    void                Online(ShipSE* pShipSE=nullptr);
+    void                Offline();
+    // sent on every state or controller change
+    void                StateChange();
     //begin idle orbit around assigned ship
-    void IdleOrbit(ShipSE* pShipSE=nullptr);
+    void                IdleOrbit(uint32 speed, ShipSE* pShipSE=nullptr);
 
-    void SaveDrone();
-    void RemoveDrone();
-    void SetResists();
-    void SetOwner(Client* pClient);
+    void                SaveDrone();
+    void                RemoveDrone();
+    void                SetResists();
+    void                AssignTo(Client* pClient);
 
-    uint32 GetBounty() const                            { return (m_pClient == nullptr ? 0 : m_pClient->GetChar()->bounty()); }
+    uint32              GetBounty() const               { return (m_pClient == nullptr ? 0 : m_pClient->GetChar()->bounty()); }
 
-    float GetThermal()                                  { return m_therDamage; }
-    float GetEM()                                       { return m_emDamage; }
-    float GetKinetic()                                  { return m_kinDamage; }
-    float GetExplosive()                                { return m_expDamage; }
-    float GetSecurityRating() const                     { return (m_pClient == nullptr ? 0.0 : m_pClient->GetChar()->GetSecurityRating()); }
+    float               GetThermal()                    { return m_therDamage; }
+    float               GetEM()                         { return m_emDamage; }
+    float               GetKinetic()                    { return m_kinDamage; }
+    float               GetExplosive()                  { return m_expDamage; }
+    float               GetSecurityRating() const       { return (m_pClient == nullptr ? 0.0f : m_pClient->GetChar()->GetSecurityRating()); }
 
-    double GetOrbitRange()                              { return m_orbitRange; }
+    double              GetOrbitRange()                 { return m_orbitRange; }
 
     /* for destiny setstate */
-    uint8 GetState()                                    { return m_AI->GetState(); }
-    uint32 GetControllerID()                            { return m_controllerID; }
-    uint32 GetControllerOwnerID()                       { return m_controllerOwnerID; }
-    uint32 GetTargetID()                                { return m_targetID/*m_targMgr->GetFirstTarget()->GetID()*/; }
+    uint8               GetState()                      { return m_AI->GetState(); }
+    uint32              GetControllerID()               { return m_controllerID; }
+    uint32              GetControllerOwnerID()          { return m_controllerOwnerID; }
+    uint32              GetTargetID();
 
     /* misc methods */
-    void Enable()                                       { m_online = true; }
-    void Disable()                                      { m_online = false; }
-    bool IsEnabled()                                    { return m_online; }
+    void                Enable()                        { m_online = true; }
+    void                Disable()                       { m_online = false; }
+    bool                IsEnabled()                     { return m_online; }
 
-    void AssignShip(ShipSE* pSE)                        { m_AI->AssignShip(pSE); }
-    void SetTarget(SystemEntity* pSE = nullptr)         { (pSE == nullptr ? 0 : m_targetID = pSE->GetID()); }
+    void                AssignShip(ShipSE* pShipSE)     { m_AI->AssignShip(pShipSE); }
+    void                TargetDestroyed();              // no need to clarify...drones have only one target
 
-    ShipSE* GetHomeShip()                               { return m_pShipSE; }
+    ShipSE*             GetHomeShip()                   { return m_pShipSE; }
+
+    void                ShipWarping(ShipSE* pShipSE);
+
+    /* commanded methods */
+    void                Engage(SystemEntity* pTarget);  // this is for fighting
+    void                Reconnect(ShipSE* pShipSE);     // this is for previously abandonded drones
+    void                BeginMining(SystemEntity* pTarget, bool repeat=false); // should i explain?
+
+    /* helper methods */
+    bool                InControlDistance();            // returns true if drone within control distance
+    void                CheckCommandDistance();         // will throw error on distance > control distance
 
 protected:
-    Client* m_pClient;          //we do not own this
-    DroneAIMgr* m_AI;           //we do own this
-    ShipSE* m_pShipSE;            //we do not own this
-    SystemManager* m_system;    //we do not own this
+    SystemManager*      m_system;               //we do not own this
+    DroneAIMgr*         m_AI;                   //we do own this
+    Client*             m_pClient;              //our owner
+    ShipSE*             m_pShipSE;              //owning ship (home ship)
 
 private:
-    bool m_online;              // is drone within ship's control range?
-    uint32 m_targetID;
-    uint32 m_controllerID;
-    uint32 m_controllerOwnerID;
+    bool                m_online;               // is drone within ship's control range?
+    uint32              m_controlDistance;
+    uint32              m_controllerID;
+    uint32              m_controllerOwnerID;
 
-    double m_orbitRange;
-    double m_emDamage;
-    double m_expDamage;
-    double m_kinDamage;
-    double m_therDamage;
-    double m_hullDamage;
-    double m_armorDamage;
-    double m_shieldCharge;
-    double m_shieldCapacity;
+    double              m_orbitRange;
+    double              m_emDamage;
+    double              m_expDamage;
+    double              m_kinDamage;
+    double              m_therDamage;
+    double              m_hullDamage;
+    double              m_armorDamage;
+    double              m_shieldCharge;
+    double              m_shieldCapacity;
 };
 
 #endif /* !__DRONE__H__INCL__ */

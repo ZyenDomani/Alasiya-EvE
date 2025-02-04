@@ -34,6 +34,9 @@
  *
  *   TODO:  since orbit is disabled, have npcs fly tangents to targets, using actual arc tracking
  *
+ * NOTE:  elite npc target drones first!
+ *   recall drones -> npc target player -> deploy drones -> timer countdown -> npc target drones again
+ *
  *  have data...needs coding...
  *   chase duration/distance timers
  *   ewar shit, including point/tackle
@@ -735,6 +738,10 @@ void NPCAIMgr::AttackTarget(SystemEntity* pTargSE) {
     uint32 gfxID(0);
     if (m_self->HasAttribute(AttrGfxTurretID))// graphicID for turret for drone type ships
         gfxID = m_self->GetAttribute(AttrGfxTurretID).get_uint32();
+    /*
+    if (m_pDrone->GetSelf()->HasAttribute(AttrGfxBoosterID))// graphicID for turret for drone type ships
+        gfxID = m_pDrone->GetSelf()->GetAttribute(AttrGfxBoosterID).get_uint32();
+    */
 
     m_destiny->SendGFX14(m_self->itemID(), m_self->itemID(), m_self->typeID(),
                          pTargSE->GetID(),0,std::move(guid),1,1,

@@ -52,7 +52,10 @@ protected:
 
 private:
     //cached item-type stuff
-    bool m_rMiner, m_dcMiner, m_iMiner, m_gMiner;
+    bool m_rMiner;
+    bool m_dcMiner;
+    bool m_iMiner;
+    bool m_gMiner;
     bool m_IsInitialCycle;
 
     float m_crystalDmg;

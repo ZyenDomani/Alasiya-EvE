@@ -37,7 +37,7 @@ class EntityBound
 public:
     PyCallable_Make_Dispatcher(EntityBound)
 
-    EntityBound(PyServiceMgr* mgr, SystemManager* systemMgr, uint32 systemID);
+    EntityBound(PyServiceMgr* mgr, Client* pClient);
     virtual ~EntityBound() { delete m_dispatch; }
 
     PyCallable_DECL_CALL(CmdEngage);
@@ -56,8 +56,7 @@ public:
 protected:
     Dispatcher *const m_dispatch;
     SystemManager* m_sysMgr;
-
-    uint32 m_systemID;
+    Client* m_pClient;
 };
 
 #endif  // __EVEMU_NPC_ENTITY_H
@@ -97,10 +96,7 @@ protected:
  * {'FullPath': u'UI/Messages', 'messageID': 258393, 'label': u'EntityTargetWarpDisruptedBody'}(u'Control of the {[item]item.name} cannot be delegated to someone who the drones cannot warp to.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
  * {'FullPath': u'UI/Messages', 'messageID': 259705, 'label': u'EntityUnknownCommandBody'}(u'{targetTypeName} does not recognize the command you are trying to give it.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
  * {'FullPath': u'UI/Messages', 'messageID': 259706, 'label': u'EntityNotPresentBody'}(u'{targetTypeName} cannot be commanded as it is not actually present.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- *
- */
-
-/*{'FullPath': u'UI/Messages', 'messageID': 259652, 'label': u'EntityBrokenCommandBody'}(u'{targetTypeName} seems to be defective and does not respond to the command you are giving it.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 259652, 'label': u'EntityBrokenCommandBody'}(u'{targetTypeName} seems to be defective and does not respond to the command you are giving it.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
  * {'FullPath': u'UI/Messages', 'messageID': 259653, 'label': u'EntityDistantCommandBody'}(u'{targetTypeName} is too far away and will not respond to the command you are giving it (must be within {distance} meters from it).', None, {u'{distance}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'distance'}, u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
  * {'FullPath': u'UI/Messages', 'messageID': 259668, 'label': u'EntityTargetTooDistantBody'}(u'The drones fail to execute your commands as the target {targetTypeName} is not within your {distance} m drone command range.', None, {u'{distance}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'distance'}, u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
  * {'FullPath': u'UI/Messages', 'messageID': 259694, 'label': u'EntityIncapacitatedCommandBody'}(u'{targetTypeName} is incapacitated due to damage or abandonment and will not respond to the command you are giving it (try scooping it).', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})

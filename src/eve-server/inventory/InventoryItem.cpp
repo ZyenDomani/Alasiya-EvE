@@ -803,6 +803,10 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
     if (!m_delete)
         ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);
 
+    // set position to null for scooped space objects (dont need coords in db)
+    if (IsSolarSystemID(old_location) and !IsSolarSystemID(new_location))
+        SetPosition(NULL_ORIGIN);
+
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;

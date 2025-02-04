@@ -1498,14 +1498,14 @@ uint8 ModuleManager::GetFittedModuleCountByGroup(uint16 groupID)
 
 void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod) {
     // add module to main map
-    m_modules.at(flag) = pMod;
+    m_modules[flag] = pMod;
     // add module to proc maps
     if (IsFittingSlot(flag)) {
-        m_fittings.at(flag) = pMod;
+        m_fittings[flag] = pMod;
     } else if (IsRigSlot(flag)) {
-        m_systems.at(flag) = pMod;
+        m_systems[flag] = pMod;
     } else if (IsSubSystem(flag)) {
-        m_systems.at(flag) = pMod;
+        m_systems[flag] = pMod;
     } else {  // error here.
         sLog.Error("MM::addModuleRef()", "%s(%u) sent flag '%s'", pMod->GetSelf()->name(), pMod->itemID(), sDataMgr.GetFlagName(flag));
         if (sConfig.debug.IsTestServer)
@@ -1555,14 +1555,14 @@ void ModuleManager::addModuleRef(EVEItemFlags flag, GenericModule* pMod) {
 void ModuleManager::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
 {
     // remove module from main map
-    m_modules.at(flag) = nullptr;
+    m_modules[flag] = nullptr;
     // remove module from proc maps
     if (IsFittingSlot(flag)) {
-        m_fittings.at(flag) = nullptr;
+        m_fittings[flag] = nullptr;
     } else if (IsRigSlot(flag)) {
-        m_systems.at(flag) = nullptr;
+        m_systems[flag] = nullptr;
     } else if (IsSubSystem(flag)) {
-        m_systems.at(flag) = nullptr;
+        m_systems[flag] = nullptr;
     } else {  // error here.
         sLog.Error("MM::deleteModuleRef()", "%s(%u) sent flag '%s'", pMod->GetSelf()->name(), pMod->itemID(), sDataMgr.GetFlagName(flag));
         if (sConfig.debug.IsTestServer)

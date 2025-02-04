@@ -2764,7 +2764,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
         data.factionID = pChar->warFactionID();
         data.ownerID = pChar->itemID();
     DroneSE* pDrone = new DroneSE(dRef, m_services, m_system, data);
-
+    pDrone->Init();
     // tell new drone it's being launched.
     pDrone->Launch(this);
     // add drone to launched drone map (whether onlined or not)
@@ -2779,9 +2779,9 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
     load += dRef->GetAttribute(AttrDroneBandwidthUsed);
     if (load <= m_shipRef->GetAttribute(AttrDroneBandwidth)) {
-        pDrone->Online();
+        pDrone->Online(this);
         pDrone->GetAI()->SetIdle();
-        m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
+        m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care (but we do)
         return true;
     }
     //{'FullPath': u'UI/Messages', 'messageID': 258031, 'label': u'MaxBandwidthExceededBody'}(u"You don't have enough bandwidth to launch {droneName}. You need {bandwidthNeeded} Mbit/s but {droneName} requires {droneBandwidthUsed} Mbit/s.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}, u'{bandwidthNeeded}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthNeeded'}})
@@ -2790,11 +2790,14 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
 }
 
 void ShipSE::ScoopDrone(SystemEntity* pSE) {
+    if (m_abandoned)
+        return;
     m_drones.erase(pSE->GetID());
     pSE->GetDroneSE()->Offline();
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
     load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
     m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
+    pSE->GetSelf()->ChangeSingleton(true);
 }
 
 void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {

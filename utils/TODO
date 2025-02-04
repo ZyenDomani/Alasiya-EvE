@@ -36,7 +36,7 @@ market --  some queries dont work...sending price data returns null
 
 work on buglist, integrate this list in there where i can (in order)
     - modules/fitting  ...  see 'module system coding' below for list of current problems
-    - drones  ... commands skeleton only
+    - drones  ... started coding commands.  lots of msgs to implement
     - standings  ... multiple notes in code for implementing and improvements
     - corp  ...  multiple systems incomplete
     - mail/notifications  ... there is still multiple mail db tables.  pick one.
@@ -100,6 +100,7 @@ npc ai - update for better ai. add advanced ai for advanced ship classes   -prio
     - npc lost target <- this method needs better thought to pick next target
     - should npc have 'pool' of available/preferred targets
      can warp-scramble and/or web you.
+update sendGFX to distinguish between weapon and ewar for using AttrGfxTurretID or AttrGfxBoosterID
 
     NPCs targeting drones (from eveuni)
     Frigate rats may attack your light drones and above.
@@ -107,7 +108,7 @@ npc ai - update for better ai. add advanced ai for advanced ship classes   -prio
     battleship rats may attack your heavy/sentry drones.
     In particular, elite rats (see NPC Naming Convention) have a higher probability of attacking your drones.
     At the extreme end, Sleeper NPC are very fond of attacking drones.
-
+*** check m_entityChaseRange and m_entityAttackRange.  same value for drones (need to adjust logic)
 
 after using "Loot All" on yellow wreck, items dont show up in cargo.  (diff ownerID)
   inv::load should use locationID (and does) but not sure about ownerID bit...review
@@ -165,18 +166,19 @@ reconnect to lost probes not implemented yet.
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 	- james did lots of work on this system in official
 
-player drones - skeleton started. needs functionality    -priority level: med-hi
-drone is abandoned when owner warps out or logs out.  owner should remain until commanded to abandon
+player drones - started coding functionality    -priority level: med-h
 drones mass and maxspeed need attention
-does controller and controllerownerid change when assigning drone to other pilots?
-ShipSE::LaunchDrone() needs bit of work.  drones are online and set to orbit after launch, before BW test
-    -Drone::Launch() also needs updating after above is completed.
+does controller and controllerownerid change when assigning drone to other pilots?  depends
 drone ai needs:
   - assigned ship killed, need code to reset
   - all states except idle
   - does drone bound calls make new bound object?  seems like it does, but why?  keep same object for each drone.
 mining methods will need updates to test for drones vs pilots
 move mining item depleted call to targmgr
+shield regen
+write specific damage method  254 types coded with incapRation (below)
+156     incapacitationRatio     NULL    0.75  << at this hull damage %, drone goes offline
+update sendGFX to distinguish between weapon and ewar for using AttrGfxTurretID or AttrGfxBoosterID
 
 RAM code - implement invention, re    -priority level: low
     - (reproc) update GetRecoverables to use sDataMgr...currently hitting db on every call...

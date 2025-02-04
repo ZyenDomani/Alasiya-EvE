@@ -78,6 +78,7 @@ public:
 
     /* various count queries */
     uint32 CountNPCs();
+    uint32 CountDrones()                                { return m_drones.size(); }
     uint32 CountPlayers()                               { return m_players.size(); }
     uint32 CountDynamics()                              { return m_dynamicEntities.size(); }
 

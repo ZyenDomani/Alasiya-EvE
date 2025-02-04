@@ -189,7 +189,7 @@ void Profiler::PrintProfile()
 
     double startTime = GetTimeUSeconds();
     std::string fSize;
-    float h(0.0f), l(0.0f), a(0.0f);
+    double h(0.0), l(0.0), a(0.0);
     sLog.Green("   Server Profile", " Current Process Profile times for this run:");
     //std::printf("\n");     // spacer
     std::printf("\t\tLoop Calls\n");
@@ -315,7 +315,7 @@ void Profiler::PrintStartUpData()
 {
     double startTime = GetTimeUSeconds();
     std::string fSize;
-    float h(0.0f), l(0.0f), a(0.0f);
+    double h(0.0), l(0.0), a(0.0);
     sLog.Green("   Server Profile", " Current Process Profile times for this run:");
 
     GetRunTimes(m_db, h, l, a);
@@ -339,28 +339,35 @@ void Profiler::PrintStartUpData()
     std::printf(" Profile Times Compiled in %.4fus\n", (GetTimeUSeconds() -startTime) );
 }
 
-void Profiler::GetRunTimes(std::vector< double >& container, float& h, float& l, float& a)
-{
+void Profiler::GetRunTimes(std::vector< double >& container, double& h, double& l, double& a) {
     if (container.empty()) {
-        h = 0.0f;
-        l = 0.0f;
-        a = 0.0f;
+        h = 0.0;
+        l = 0.0;
+        a = 0.0;
         return;
     }
 
-    uint32 size = container.size();
-    float total(0.0f), lo(0.0f), hi(0.0f);
-    for (uint32 i = 0; i < size; i++) {
-        total += container.at(i);
-        if ((lo > container.at(i)) or (lo < 0.000001f))
-            lo = container.at(i);
-        if (hi < container.at(i))
-            hi = container.at(i);
+    uint32 size(container.size()), over(0);
+    double total(0.0), lo(0.0), hi(0.0);
+    for (uint32 i(0); i < size; ++i) {
+        if (container[i] > 1000000.0) {
+            std::printf("hi time %.3f\n", container[i]);
+            ++over;
+            continue;
+        }
+        total += container[i];
+        if ((lo > container[i]) or (lo < 0.0001))
+            lo = container[i];
+        if (hi < container[i])
+            hi = container[i];
     }
 
     h = hi;
     l = lo;
     a = total / size;
+
+    if (over)
+        std::printf("%u over 1s.\n", over);
 }
 
 void Profiler::GetSize(size_t cSize, std::string& fSize)

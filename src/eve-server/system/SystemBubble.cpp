@@ -193,7 +193,8 @@ void SystemBubble::Add(SystemEntity* pSE) {
         if (!m_players.empty())
             AddBallExclusive(pSE);
         if (pSE->IsDroneSE())
-            m_drones[pSE->GetID()] = pSE->GetDroneSE();
+            if (!pSE->IsAbandoned())
+                m_drones[pSE->GetID()] = pSE->GetDroneSE();
     }
 
     // all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
@@ -703,8 +704,7 @@ void SystemBubble::RemoveBalls(SystemEntity* pSE) {
     pClient->QueueDestinyUpdate(&tmp);
 }
 
-PyObject* SystemBubble::GetDroneState() const
-{
+PyObject* SystemBubble::GetDroneState() const {
     PyList* header = new PyList(7);
         header->SetItemString(0, "droneID");
         header->SetItemString(1, "ownerID");

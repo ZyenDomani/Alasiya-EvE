@@ -67,8 +67,9 @@ void BeltMgr::ClearBelt(uint16 bubbleID)
     //ClearAll();
 }
 
-void BeltMgr::ClearAll() {
-    Save();
+void BeltMgr::ClearAll(bool clear/*false*/) {
+    if (!clear)
+        Save();
     for (auto &cur : m_asteroids) {
         m_system->RemoveEntity(cur.second);
         //cur.second->Delete();
@@ -87,7 +88,6 @@ void BeltMgr::CheckSpawn(uint16 bubbleID)
      */
     if (!Load(bubbleID)) {
         std::unordered_multimap<float, uint16> roidTypes;
-        roidTypes.clear();
         SpawnBelt(bubbleID, roidTypes);
     }
 }
@@ -358,8 +358,8 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
 
 uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, uint16>& roids) {
     std::unordered_multimap<float, uint16>::const_iterator cur = roids.begin();
-    float chance = 0.0;
-    for(; cur != roids.end(); cur++ ) {
+    float chance(0.0f);
+    for(; cur != roids.end(); ++cur ) {
         chance += cur->first;
         _log(COSMIC_MGR__DEBUG, "BeltMgr::GetAsteroidType - checking %u with chance %.3f(%.3f)", cur->second, chance, p);
         if (chance > p )

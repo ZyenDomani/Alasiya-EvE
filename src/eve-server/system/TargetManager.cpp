@@ -192,7 +192,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
 }
 
 bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
-{       // NOTE  this is for npcs
+{       // NOTE  this is for npcs (including player drones)
     //first make sure they are not already in the list
     if (m_targets.find(tSE) != m_targets.end()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
@@ -569,6 +569,8 @@ void TargetManager::Destroyed()
 
     std::string effect = "TargetDestroyed";
 
+    //TODO:  determine if this target has assigned drones in space and call drone:targetdestroyed
+
     ActiveModule* module(nullptr);
     // iterate thru the map of modules targeting this object, and call Deactivate on each.
     std::map<uint32, ActiveModule*>::iterator itr = m_modules.begin();
@@ -610,8 +612,9 @@ void TargetManager::Destroyed()
 }
 
 // specific for asteroids; only called by asteroids
-void TargetManager::Depleted(InventoryItemRef iRef)
-{
+void TargetManager::Depleted(InventoryItemRef iRef) {
+    //TODO:  determine if this target has assigned drones in space and call drone:targetdestroyed
+
     // this should only be called by a non-miner module, if shooting roids are enabled.
     std::map<uint32, ActiveModule*>::iterator itr = m_modules.find(iRef->itemID());
     if (itr != m_modules.end()) {
@@ -636,6 +639,9 @@ void TargetManager::Depleted(MiningLaser* pMod) {
         codelog(MODULE__ERROR, "TargMgr::Depleted() called by Non Asteroid %s", mySE->GetName());
         return;
     }
+
+    //TODO:  determine if this target has assigned drones in space and call drone:targetdestroyed
+
     // remove master module here to avoid placement in map
     m_modules.erase(pMod->itemID());
 

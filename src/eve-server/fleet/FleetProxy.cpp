@@ -102,11 +102,11 @@ PyResult FleetProxy::Handle_AddFleetFinderAdvert(PyCallArgs &call) {
         adata.public_minStanding = args.public_minStanding;
     PyList* localList = args.local_allowedEntities->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
         adata.local_allowedEntities.clear();
-    for (PyList::const_iterator itr = localList->begin(); itr != localList->end(); itr++)
+    for (PyList::const_iterator itr = localList->begin(); itr != localList->end(); ++itr)
         adata.local_allowedEntities.push_back(PyRep::IntegerValueU32(*itr));
     PyList* publicList = args.public_allowedEntities->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
         adata.public_allowedEntities.clear();
-    for (PyList::const_iterator itr = publicList->begin(); itr != publicList->end(); itr++)
+    for (PyList::const_iterator itr = publicList->begin(); itr != publicList->end(); ++itr)
         adata.public_allowedEntities.push_back(PyRep::IntegerValueU32(*itr));
     sFltSvc.CreateFleetAdvert(fleetID, adata);
 

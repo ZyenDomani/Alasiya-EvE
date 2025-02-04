@@ -427,13 +427,11 @@ bool SystemManager::LoadSystemStatics() {
     }
 
     _log(SERVER__INIT, "SystemManager::LoadSystemStatics() - %lu Static System entities loaded for %s (%u)", entities.size(), m_data.name.c_str(), m_data.systemID);
-    entities.clear();
     return true;
 }
 
 bool SystemManager::LoadSystemDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
-    entities.clear();
     if (!SystemDB::LoadSystemDynamicEntities(m_data.systemID, entities)) {
         sLog.Error( "SystemManager::LoadSystemDynamics()", "Unable to load dynamic entities during boot of %s(%u).", m_data.name.c_str(), m_data.systemID);
         return false;
@@ -461,7 +459,6 @@ bool SystemManager::LoadSystemDynamics() {
 
 bool SystemManager::LoadPlayerDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
-    entities.clear();
     if (!SystemDB::LoadPlayerDynamicEntities(m_data.systemID, entities)) {
         sLog.Error( "SystemManager::LoadPlayerDynamics()", "Unable to load player dynamic entities in %s(%u).", m_data.name.c_str(), m_data.systemID);
         return false;
@@ -851,6 +848,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                 return nullptr;
             /** @todo make error msg here */
             DroneSE* dSE = new DroneSE(drone, *(sysMgr.GetServiceMgr()), &sysMgr, data);
+            dSE->Init();
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DroneSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
         } break;
@@ -1663,6 +1661,8 @@ bool SystemManager::SafeToUnload() {
 
 void SystemManager::ResetAsteroids() {
     // player command to remove all asteroids in a system (roid reset)
+    m_beltMgr->ClearAll(true);
+    /*
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     SystemEntity* pSE(nullptr);
     while (itr != m_entities.begin()) {
@@ -1677,6 +1677,7 @@ void SystemManager::ResetAsteroids() {
         }
     }
     m_entityChanged = true;
+    */
 }
 
 

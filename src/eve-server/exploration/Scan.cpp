@@ -564,15 +564,15 @@ struct CosmicSignature {
                 */
     } else {
         ScanResultPos ssr_oed;
-            ssr_oed.x = probeVec.at(0)->GetPosition().x;
-            ssr_oed.y = probeVec.at(0)->GetPosition().y;
-            ssr_oed.z = probeVec.at(0)->GetPosition().z;
+            ssr_oed.x = probeVec[0]->GetPosition().x;
+            ssr_oed.y = probeVec[0]->GetPosition().y;
+            ssr_oed.z = probeVec[0]->GetPosition().z;
         PyToken* token = new PyToken("foo.Vector3");
         PyTuple* oed_tuple = new PyTuple(2);
             oed_tuple->SetItem(0, token);
             oed_tuple->SetItem(1, ssr_oed.Encode());
-        data.probes = new PyInt(probeVec.at(0)->GetID());
-        if (probeVec.at(0)->IsSphere())
+        data.probes = new PyInt(probeVec[0]->GetID());
+        if (probeVec[0]->IsSphere())
             ; // placeholder.  no clue how to do this yet
         data.probePos = new PyObjectEx(false, oed_tuple);
     }
@@ -600,10 +600,10 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
     data.deviation = 0;
     float scanStr1(0), rangeMod1(0), dist1(0), scanStr2(0), rangeMod2(0), dist2(0), angleMod(0);
     if (probeCount == 1) {
-        dist1 = probeVec.at(0)->GetPosition().distance(point);
-        rangeMod1 = probeVec.at(0)->GetRangeModifier(dist1);
-        scanStr1 = probeVec.at(0)->GetScanStrength();
-        data.deviation = probeVec.at(0)->GetDeviation() *1.3;  // fudge a bit for single probe
+        dist1 = probeVec[0]->GetPosition().distance(point);
+        rangeMod1 = probeVec[0]->GetRangeModifier(dist1);
+        scanStr1 = probeVec[0]->GetScanStrength();
+        data.deviation = probeVec[0]->GetDeviation() *1.3;  // fudge a bit for single probe
         data.certainty = data.sig.sigStrength * (scanStr1 / rangeMod1) / 2;
         _log(SCAN__TRACE, "Scan::GetSignalData(1)  dist: %.3fAU, rangeMod: %.5f, scanStr: %.5f", \
                 dist1 / ONE_AU_IN_METERS, rangeMod1, scanStr1);
@@ -612,7 +612,7 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
          *  combine all probe's data to get good sum based on probe range and strength
          */
         int8 count(0), max(2);
-        if (probeVec.at(0)->HasMaxSkill())
+        if (probeVec[0]->HasMaxSkill())
             max = 3;
         std::map<float, std::pair<ProbeSE*, ProbeSE*>> angleMap;     // angle, <probeSE1,probeSE2>
         CalcProbeAngles(point, probeVec, angleMap);    //determine probe angles to target
@@ -659,11 +659,11 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
     One Dot: Four or more probes can see the result. Once scan strength reaches 100%, the result will be warpable.
 */
     if ((data.certainty < 0.05) and (probeCount == 1)) { // set sphere
-        probeVec.at(0)->SetSphere(true);
+        probeVec[0]->SetSphere(true);
     } else if ((data.certainty < 0.08) and (probeCount == 2) ) {
         // set ring
-        probeVec.at(0)->SetRing(true);
-        probeVec.at(1)->SetRing(true);
+        probeVec[0]->SetRing(true);
+        probeVec[1]->SetRing(true);
     } else if (data.certainty > 0.99) {
         sStatMgr.Increment(Stat::sitesScanned);
     }
@@ -690,7 +690,7 @@ void Scan::CalcProbeAngles(GPoint& sigPos, std::vector<ProbeSE*>& probeVec, std:
     float dot(0.0f), angle(0.0f);
     ProbeSE* p1(nullptr);
     while (x < count) {
-        p1 = probeVec.at(x++);
+        p1 = probeVec[x++];
         if (p1 == nullptr)
             continue;
         GVector v1(p1->GetPosition(), sigPos);

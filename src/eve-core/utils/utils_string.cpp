@@ -343,3 +343,14 @@ void SplitPath( const std::string& path, std::vector<std::string>& into )
     if ( begin < p )
         into.push_back( std::string( begin, len ) );
 }
+
+
+#include <bitset>
+std::string BinString(std::string words) {
+    std::string binaryString = "";
+    for (char& _char : words) {
+        binaryString += std::bitset<8>(_char).to_string();
+    }
+    return binaryString;
+}
+

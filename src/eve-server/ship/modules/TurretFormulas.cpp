@@ -23,8 +23,7 @@
 #include "ship/modules/TurretModule.h"
 
 
-float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEntity* pTarget)
-{
+float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
     uint32 falloff = pMod->GetAttribute(AttrFalloff).get_uint32();
@@ -88,8 +87,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
     return 0;
 }
 
-float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
-{
+float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
     uint16 sigRes = pNPC->GetAIMgr()->GetSigRes();
@@ -133,8 +131,7 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     return 0;
 }
 
-float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget)
-{
+float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
     float falloff = pDrone->GetSelf()->GetAttribute(AttrFalloff).get_float();
@@ -156,8 +153,7 @@ float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget)
     return 0.1;
 }
 
-float TurretFormulas::GetSentryToHit(Sentry* pSentry, SystemEntity* pTarget)
-{
+float TurretFormulas::GetSentryToHit(Sentry* pSentry, SystemEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
     float sigRes = pSentry->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float();

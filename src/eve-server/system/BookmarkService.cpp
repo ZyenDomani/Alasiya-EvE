@@ -260,8 +260,8 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
 
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
     //std::vector<int32> bmIDs;
-    for (size_t i = 0; i < bmList->size(); i++)
-        m_db.ChangeOwner(bmList->GetItem(i)->AsInt()->value());
+    for (PyList::const_iterator itr = bmList->begin(); itr != bmList->end(); ++itr)
+        m_db.ChangeOwner(PyRep::IntegerValueU32(*itr));
         //bmIDs.push_back(bmList->GetItem(i)->AsInt()->value());
 
     // player is deleting this bm from their pnp window.  there may be copies, so dont remove from db

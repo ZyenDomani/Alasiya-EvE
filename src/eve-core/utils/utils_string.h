@@ -191,4 +191,6 @@ void SearchReplace( std::string& subject, const std::string& search, const std::
  */
 void SplitPath( const std::string& path, std::vector<std::string>& into );
 
+std::string BinString(std::string words);
+
 #endif /* !__UTILS__UTILS_STRING_H__INCL__ */

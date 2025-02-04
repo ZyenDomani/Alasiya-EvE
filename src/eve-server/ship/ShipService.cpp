@@ -402,13 +402,13 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
     InventoryItemRef iRef(nullptr);
     PyDict* dict = new PyDict();
-    for (uint32 i = 0; i < PyToDropList->size(); i++) {
+    for (uint32 i(0); i < PyToDropList->size(); ++i) {
         dropped = false;
         PyList* list = new PyList();
         GPoint location(pShip->position());
         location.MakeRandomPointOnSphereLayer(500,1500);
-        qty = PyToDropList->items.at(i)->AsTuple()->items.at(1)->AsInt()->value();
-        itemID = PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value();
+        qty = PyToDropList->items[i]->AsTuple()->items[1]->AsInt()->value();
+        itemID = PyToDropList->items[i]->AsTuple()->items[0]->AsInt()->value();
         iRef = sItemFactory.GetItemRef(itemID);
         if (iRef.get() == nullptr) {
             sLog.Error("ShipBound::Handle_Drop()", "%s: Unable to find item %u to drop.", pClient->GetName(), itemID);
@@ -771,6 +771,11 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
             continue;
         }
 
+        // check ownership/control
+        if (pDroneSE->GetDroneSE()->IsEnabled())
+            if (pDroneSE->GetDroneSE()->GetOwner() != pClient)
+                throw CustomError("The %s is under another pilot's control.  Cannot scoop.", pDroneSE->GetName());
+
         iRef = pDroneSE->GetSelf();
         if (iRef.get() == nullptr) {
             _log(SERVICE__ERROR, "%s: Unable to find droneItem %u to scoop.", pClient->GetName(), *cur);
@@ -780,11 +785,6 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         //AttrDroneBaySlotsLeft??
         // Check to see that this is really a drone:
         pClient->GetShip()->VerifyHoldType(flagDroneBay, iRef, pClient);
-
-        // check ownership/control
-        if (pDroneSE->GetDroneSE()->IsEnabled())
-            if (pDroneSE->GetDroneSE()->GetOwner() != pClient)
-                throw CustomError("The %s is under another pilot's control.  Cannot scoop.", pDroneSE->GetName());
 
         // Check drone bay capacity:
         if (pClient->GetShip()->GetMyInventory()->ValidateAddItem(flagDroneBay, iRef)) {  // this will throw if it fails
