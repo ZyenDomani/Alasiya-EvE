@@ -119,6 +119,7 @@ public:
 
     // this is public to allow deletion from DroneSE object
     InventoryItemRef    m_ore;                          //ore from mining
+    
 
 protected:
     void                MineTarget();                   // actual mining code
@@ -130,7 +131,7 @@ protected:
     bool                TargetValid();
 
     // checks if target is within <config.interactdist> to interact with target
-    bool                InActionDistance(SystemEntity* pTarget);        // ~2k5m
+    bool                InActionDistance(SystemEntity* pTarget);        // ~600m
     // checks if target is within m_orbitRange to engage with target
     bool                InOrbitDistance(SystemEntity* pTarget);         // near range 1
     // checks if target is within m_falloffRange to move closer to target
@@ -173,6 +174,7 @@ protected:
     void                SetAction(int8 action=-1);
     void                MarkPoint(const GPoint& position);
 
+
 private:
     SystemEntity*       m_targetSE;
     DroneSE*            m_droneSE;
@@ -203,11 +205,11 @@ private:
     uint32              m_shieldBoosterDuration;        //
 
     //in order of distance  far to close
-    uint32              m_maxRange;                     // maximum engagement distance
-    uint32              m_chaseRange;                   // min distance to activate mwd, if equipped
-    uint32              m_attackRange;                  // max distance drone will use weapons - weaponized drones only
-    uint32              m_falloffRange;                 // distance where accuracy has fallen by half  - weaponized only
-    uint32              m_orbitRange;                   // distance the drone orbits  - mining and unanchoring only
+    uint32              m_maxDistance;                  //[5] maximum engagement distance
+    uint32              m_chaseDistance;                //[4] min distance to activate mwd, if equipped
+    uint32              m_attackDistance;               //[3] max distance drone will use weapons - weaponized drones only
+    uint32              m_falloffDistance;              //[2] distance where accuracy has fallen by half  - weaponized only
+    uint32              m_orbitDistance;                //[1] distance the drone orbits  - mining and unanchoring only
 
     int64               m_startTime;                    // timestamp when effect started
 
@@ -225,21 +227,6 @@ private:
 };
 
 #endif  // __EVEMU_SHIP_DRONEAI_H__
-
-/*
- * vespa
- * 54      maxRange                NULL    4800
- * 158     falloff                 NULL    3000
- * 247     entityAttackRange       6400    NULL
- * 416     entityFlyRange          NULL    1600
- * 665     entityChaseMaxDistance  6400    NULL
- *
- * mining drone 1
- * 54      maxRange                5000    NULL
- * 154     proximityRange          250     NULL
- * 157     orbitRange              200     NULL
- *
- */
 
 /*  distance and speed attribs
  *     AttrMaxVelocity = 37,                       //Maximum velocity of ship

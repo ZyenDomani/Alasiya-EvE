@@ -46,12 +46,12 @@ m_cruiseSpeed(0),
 m_armorRepairDuration(0),
 m_shieldBoosterDuration(0),
 m_startTime(0),
-m_maxRange(0.0f),
+m_maxDistance(0.0f),
 m_cycleTime(0.0f),
-m_chaseRange(0.0f),
-m_orbitRange(0.0f),
-m_attackRange(0.0f),
-m_falloffRange(0.0f),
+m_chaseDistance(0.0f),
+m_orbitDistance(0.0f),
+m_attackDistance(0.0f),
+m_falloffDistance(0.0f),
 m_alignTime(0.0f),
 m_accelTime(0.0f),
 m_timeFraction(0.0f),
@@ -70,80 +70,79 @@ void DroneAIMgr::Init() {
     m_cycleTime = (dRef->GetAttribute(AttrSpeed).get_float());
     m_cruiseSpeed = (dRef->GetAttribute(AttrEntityCruiseSpeed).get_uint32());
 
-    // load distances into vector
-    std::multiset<uint32> ranges;
-    ranges.insert(dRef->GetAttribute(AttrMaxRange).get_uint32());
-    ranges.insert(dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32());
-    ranges.insert(dRef->GetAttribute(AttrOrbitRange).get_uint32());
-    ranges.insert(dRef->GetAttribute(AttrEntityAttackRange).get_uint32());
-    ranges.insert(dRef->GetAttribute(AttrFalloff).get_uint32());
-
-    // put sorted numbers into our distance-ordered variables, smallest first
-    // this will include multiple zeros, if in set.  checks below *should* fix them
-    std::multiset<uint32>::iterator itr = ranges.begin();
-    m_orbitRange = *itr;
-    m_falloffRange = *(++itr);
-    m_attackRange = *(++itr);
-    m_chaseRange = *(++itr);
-    m_maxRange = *(++itr);
-
-    // this is not working right....figure out how to delete zero values and make sure others are sane
-
-
-    // determine if any values are zero, largest to smallest
-    //  if any values are missing, use largest
-    if (m_maxRange == 0) {
-        sLog.Error("Drone::Init", "%s - m_maxRange is 0", dRef->name());
-        // well, these are usually stationary...
-    }
-    if (m_chaseRange == 0) {
-        sLog.Warning("Drone::Init", "%s - m_chaseRange is 0", dRef->name());
-        m_chaseRange = m_maxRange;
-    }
-    if (m_attackRange == 0) {
-        sLog.Warning("Drone::Init", "%s - m_attackRange is 0", dRef->name());
-        m_attackRange = m_maxRange;
-    }
-    if (m_falloffRange == 0) {
-        sLog.Warning("Drone::Init", "%s - m_falloffRange is 0", dRef->name());
-        m_falloffRange = m_maxRange;
-    }
-    if (m_orbitRange == 0) {
-        sLog.Warning("Drone::Init", "%s - m_orbitRange is 0", dRef->name());
-        m_orbitRange = m_maxRange / 2;
-    }
-
-
     // set times and ranges unique to these types (override above if required)
     switch (dRef->groupID()) {
         case EVEDB::invGroups::Combat_Drone: {    //100
+            m_chaseDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32();
+            m_orbitDistance = m_chaseDistance;
+
+            if (m_chaseDistance < 1000) {
+                // stationary drone, long range, no chase
+                // hi-lo: attack, max, falloff
+                m_falloffDistance = dRef->GetAttribute(AttrFalloff).get_uint32();
+                m_attackDistance = dRef->GetAttribute(AttrMaxRange).get_uint32();
+                m_maxDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32();
+            } else {
+                // hi-lo:  attack, chase, falloff, max
+                m_falloffDistance = dRef->GetAttribute(AttrMaxRange).get_uint32();
+                m_attackDistance = dRef->GetAttribute(AttrFalloff).get_uint32();
+                m_maxDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32();
+            }
         } break;
         case EVEDB::invGroups::Mining_Drone: {    //101
             m_cycleTime = (dRef->GetAttribute(AttrDuration).get_float());
             m_cruiseSpeed = (dRef->GetAttribute(AttrMaxVelocity).get_uint32());
-            m_orbitRange = dRef->GetAttribute(AttrOrbitRange).get_uint32();
-            m_chaseRange = 2500;
+            m_orbitDistance = dRef->GetAttribute(AttrOrbitRange).get_uint32();
+            m_falloffDistance = dRef->GetAttribute(AttrFalloff).get_uint32();//0
+            m_attackDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32();//0
+            m_chaseDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32();//0
+            m_maxDistance = dRef->GetAttribute(AttrMaxRange).get_uint32();
         } break;
-        case EVEDB::invGroups::Repair_Drone:     //299
         case EVEDB::invGroups::Logistic_Drone: {    //640
             m_booster = true;
+            m_orbitDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32() / 3;
+            m_falloffDistance = dRef->GetAttribute(AttrFalloff).get_uint32(); //0
+            m_attackDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32();//0
+            m_chaseDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32();
+            m_maxDistance = dRef->GetAttribute(AttrMaxRange).get_uint32();
             m_armorRepairDuration = (dRef->GetAttribute(AttrEntityArmorRepairDuration).get_uint32());
             m_shieldBoosterDuration = (dRef->GetAttribute(AttrEntityShieldBoostDuration).get_uint32());
         } break;
         case EVEDB::invGroups::Cap_Drain_Drone: {    //544
-        } break;
-        case EVEDB::invGroups::Warp_Scrambling_Drone: {    //545
+            m_orbitDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32() / 2;
+            m_falloffDistance = dRef->GetAttribute(AttrFalloff).get_uint32();//0
+            m_attackDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32();
+            m_chaseDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32();
+            m_maxDistance = dRef->GetAttribute(AttrMaxRange).get_uint32();
         } break;
         case EVEDB::invGroups::Fighter_Drone: {    //549
             // these are advanced drones.  will follow target in warp, but not jump
+            m_orbitDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32() / 2;
         } break;
         case EVEDB::invGroups::Electronic_Warfare_Drone: {    //639
+            m_orbitDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32() / 2;
+            m_falloffDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32();
+            m_attackDistance = dRef->GetAttribute(AttrMaxRange).get_uint32();
+            m_chaseDistance = dRef->GetAttribute(AttrFalloff).get_uint32();
+            m_maxDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32();
         } break;
         case EVEDB::invGroups::Stasis_Webifying_Drone: {    //641
+            m_orbitDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32() / 2;
+            m_falloffDistance = dRef->GetAttribute(AttrFalloff).get_uint32();
+            m_attackDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32();
+            m_chaseDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32();
+            m_maxDistance = dRef->GetAttribute(AttrMaxRange).get_uint32();
         } break;
         case EVEDB::invGroups::Fighter_Bomber: {    //1023
+            m_orbitDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32() / 4;
+            m_falloffDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32() / 2;
+            m_attackDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32();
+            m_chaseDistance = dRef->GetAttribute(AttrEntityChaseMaxDistance).get_uint32();
+            m_maxDistance = dRef->GetAttribute(AttrEntityAttackRange).get_uint32();
         } break;
         /*  i dont think these are available
+        case EVEDB::invGroups::Repair_Drone:     //299    non-published
+        case EVEDB::invGroups::Warp_Scrambling_Drone: {    //545    non-published
         case EVEDB::invGroups::Unanchoring_Drone: {    //470
         } break;
         case EVEDB::invGroups::Proximity_Drone: {    //97
@@ -188,25 +187,6 @@ void DroneAIMgr::Init() {
 }
 
 void DroneAIMgr::Process() {
-    /* Drone::State definitions   -allan 27Nov19  -major ud/rewrite  7Feb25
-            Incapacitated       = -2,
-            Invalid             = -1,
-            // defined in client
-            Idle                = 0,  // not doing anything....idle.
-            Combat              = 1,  // fighting - needs target
-            Mining              = 2,  // unsure - may need target
-            Approaching         = 3,  // too close to chase, but to far to engage
-            ReturnBay           = 4,  // return to bay  (Departing in client)
-            ReturnHome          = 5,  // return to ship  (Departing2 in client)
-            Pursuit             = 6,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-            Fleeing             = 7,  // running away
-            Operating           = 9,  // whats diff from engaged here? unanchoring?
-            Engaged             = 10, // either attack or aid - needs target
-            // internal only
-            Guarding            = 11, // as stated
-            Assisting           = 12  //  this will be remote reppers/boosters
-     */
-
     // disabled, invalid, orbiting all have movetime=0 to avoid tics;  nothing to process till new command received
     if (m_moveTime == 0)
         return;
@@ -768,7 +748,7 @@ void DroneAIMgr::OrbitTarget() {
 
     // get current target so we can calculate distance and set targetID properly
     int64 distance(0);
-    int32 targetID(0), orbitRange(m_orbitRange);
+    int32 targetID(0), orbitRange(m_orbitDistance);
     // target depends on which way we going
     switch (m_action) {
         case DroneAI::Action::OrbitShip:      // we are orbiting our ship.
@@ -865,7 +845,7 @@ void DroneAIMgr::OrbitTarget() {
     m_prevSpeedFraction = m_activeSpeedFraction;
 
     // for travel, sf=1.0 within orbit distance otherwise sf = orbit speed / max speed
-    if (distance > m_chaseRange) {
+    if (distance > m_chaseDistance) {
         //travel required; set full speed
         m_userSpeedFraction = 1.0f;
         m_accelTime = (-log(ASF_CHECK) * m_agility);
@@ -883,7 +863,7 @@ void DroneAIMgr::OrbitTarget() {
             m_droneSE->GetName(), m_droneSE->GetID(), GetStateName(m_state), GetActionName(m_action), \
             m_userSpeedFraction, distance, (m_sendCmd?"":"not "));
 
-    // check m_orbitRange to be sure it's not some crazy shit...
+    // check m_orbitDistance to be sure it's not some crazy shit...
     if (orbitRange > 3000)
         orbitRange /= 2;
 
@@ -1060,7 +1040,7 @@ uint32 DroneAIMgr::GetFollowDistance() {
         case DroneAI::Action::DecelToShip:
         case DroneAI::Action::AccelToTarget:
         case DroneAI::Action::DecelToTarget: {
-            return m_attackRange;
+            return m_attackDistance;
         } break;
     }
     return 0;
@@ -1131,26 +1111,26 @@ bool DroneAIMgr::InActionDistance(SystemEntity* pTarget) {
 
 bool DroneAIMgr::InOrbitDistance(SystemEntity* pTarget) {
     double dist(m_droneSE->GetPosition().distance(pTarget->GetPosition()) - pTarget->GetRadius());
-    return (dist < m_orbitRange);
+    return (dist < m_orbitDistance);
 }
 bool DroneAIMgr::InFalloffDistance(SystemEntity* pTarget) {
     double dist(m_droneSE->GetPosition().distance(pTarget->GetPosition()) - pTarget->GetRadius());
-    return (dist < m_falloffRange);
+    return (dist < m_falloffDistance);
 }
 
 bool DroneAIMgr::InEngageDistance(SystemEntity* pTarget) {
     double dist(m_droneSE->GetPosition().distance(pTarget->GetPosition()) - pTarget->GetRadius());
-    return (dist < m_attackRange);
+    return (dist < m_attackDistance);
 }
 
 bool DroneAIMgr::InChaseDistance(SystemEntity* pTarget) {
     double dist(m_droneSE->GetPosition().distance(pTarget->GetPosition()) - pTarget->GetRadius());
-    return (dist < m_chaseRange);
+    return (dist < m_chaseDistance);
 }
 
 bool DroneAIMgr::InMaxDistance(SystemEntity* pTarget) {
     double dist(m_droneSE->GetPosition().distance(pTarget->GetPosition()) - pTarget->GetRadius());
-    return (dist < m_maxRange);
+    return (dist < m_maxDistance);
 }
 
 
@@ -1512,10 +1492,13 @@ const char* DroneAIMgr::GetActionName(int8 stateID) {
     }
 }
 
+
 /*
+ *  these distances greatly depend on drone type.
+ * mining drone orbit ~200m where others dont have orbit defined, but falloff is 2000 - 5000 (some >40000)
  *
  *            // action, orbit, falloff, engage, chase, max
- *            if (InActionDistance(m_targetSE)) {
+ *            if (InActionDistance(m_targetSE)) {               600
  *            } else if (InOrbitDistance(m_targetSE)) {
  *            } else if (InFalloffDistance(m_targetSE)) {
  *            } else if (InEngageDistance(m_targetSE)) {

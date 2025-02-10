@@ -501,10 +501,10 @@ void testing::RunDroneAttribs() {
     double mass(0.0), inertiaMod(0.0), agility(0.0), alignTime(0.0), turnPct(0.0), accelTime(0.0);
     // loop thru drone refs and perform math as directed
     for (auto &cur : droneRefs) {
-        sLog.Yellow("   ", "%s(%u):  AttrMaxRange: %.3f, AttrOrbitRange: %.3f, AttrEntityAttackRange: %.3f, AttrFalloff: %.3f, AttrEntityChaseMaxDistance: %.3f ", \
-        cur->name(), cur->typeID(), cur->GetAttribute(AttrMaxRange).get_float(), cur->GetAttribute(AttrOrbitRange).get_float(),
-        cur->GetAttribute(AttrEntityAttackRange).get_float(), cur->GetAttribute(AttrFalloff).get_float(),
-        cur->GetAttribute(AttrEntityChaseMaxDistance).get_float());
+        sLog.Yellow("   ", "%s(%u) [%s]:  AttrMaxRange: %u, AttrOrbitRange: %u, AttrEntityAttackRange: %u, AttrFalloff: %u, AttrEntityChaseMaxDistance: %u ", \
+                cur->name(), cur->typeID(), cur->type().groupName().c_str(), cur->GetAttribute(AttrMaxRange).get_uint32(), \
+                cur->GetAttribute(AttrOrbitRange).get_uint32(), cur->GetAttribute(AttrEntityAttackRange).get_uint32(), \
+                cur->GetAttribute(AttrFalloff).get_uint32(), cur->GetAttribute(AttrEntityChaseMaxDistance).get_uint32());
 
         /*
         mass = cur->GetAttribute(AttrMass).get_double();
@@ -524,6 +524,17 @@ void testing::RunDroneAttribs() {
 }
 
 // 5Feb25
+/*
+17:09:39 G   Alasiya's EvEMu: NumberTest in progress:
+17:09:39 C f runtime:   1497.25000us
+17:09:39 C d runtime:   1601.50000us
+17:09:39 C i runtime:   968.75000us
+17:09:39 C u runtime:   788.75000us
+17:09:39 C b runtime:   870.25000us
+
+speed order fastest -> slowest
+uint32 -> int64 -> int32 -> float -> double
+*/
 void testing::NumberTest() {
     // time ops with diff variable types.  30k iterations
     float f(0.01f), ft(0.0f);
