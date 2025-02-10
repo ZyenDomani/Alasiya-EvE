@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 11.1
+ Log Version: 11.2
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -281,6 +281,7 @@ LOG_TYPE( DRONE, MESSAGE, DISABLED, "DroneMsg" )
 LOG_TYPE( DRONE, INFO, DISABLED, "DroneInfo" )
 LOG_TYPE( DRONE, BIND, DISABLED, "DroneBind" )
 LOG_TYPE( DRONE, DUMP, DISABLED, "DroneDump" )
+LOG_TYPE( DRONE, MOVE, DISABLED, "DroneMove" )
 LOG_TYPE( DRONE, TRACE, DISABLED, "DroneTrace" )
 LOG_TYPE( DRONE, AI_TRACE, DISABLED, "DroneAITrace" )
 

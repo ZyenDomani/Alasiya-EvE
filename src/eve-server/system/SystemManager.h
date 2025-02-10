@@ -162,6 +162,9 @@ public:
 
     void ResetAsteroids();
 
+    // adds SEs to deleteLater list, which is purged on next tic
+    void AddToDeleteLater(SystemEntity* pSE)     { m_deleteLater[pSE->GetID()] = pSE; }
+
 protected:
     /** @todo  this needs more work */
     void PayBounties();
@@ -226,6 +229,8 @@ private:
     std::map<uint32, SystemEntity*> m_ticEntities;      // this list is for entities that need process tics (objects, npc, client ships)
     std::map<uint32, SystemEntity*> m_staticEntities;   // this list is for static entities to send in setstate
     std::map<uint32, SystemEntity*> m_opStaticEntities; // this list is for static entities which are operational and need to be initialized and operated upon even when system is empty
+
+    std::map<uint32, SystemEntity*> m_deleteLater;      //  this list contains SEs that cannot be deleted immediately when removed from system.
 
     // for bounty processing (20m timer)
     Timer m_bountyTimer;

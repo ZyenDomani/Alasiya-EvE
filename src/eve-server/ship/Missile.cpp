@@ -154,7 +154,7 @@ void Missile::Process() {
     }
     double profileStartTime(GetTimeUSeconds());
     
-    /*  Enable base call to Process Targeting and Movement  */
+    /*   Base call to Process Movement  */
     SystemEntity::Process();
 
     if (m_hitTimer.Check(false)) {

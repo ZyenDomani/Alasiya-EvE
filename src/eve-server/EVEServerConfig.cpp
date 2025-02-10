@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    11.1
+    Version:    11.5
 */
 
 
@@ -34,7 +34,7 @@
 EVEServerConfig::EVEServerConfig()
 {
     // register needed parsers
-    AddMemberParser( "eve-server", &EVEServerConfig::ProcessEveServer );
+    AddMemberParser("eve-server", &EVEServerConfig::ProcessEveServer);
 
     // Set sane defaults
 
@@ -174,6 +174,19 @@ EVEServerConfig::EVEServerConfig()
     npc.UseRegen = false;
     npc.UseRepair = false;
 
+    // drone
+    drone.Enabled = true;
+    drone.AutoReconnect = false;
+    drone.FleetOnly = true;
+    drone.LocalOnly = true;
+    drone.StrictSkills = true;
+    drone.StrictDistance = true;
+    drone.GuardPod = false;
+    drone.RegenShields = true;
+    drone.RepairInBay = false;
+    drone.InteractDistace = 2500;
+    drone.RepairCostInBay = 1000.0f;
+
     // cosmic
     cosmic.PIEnabled = false;
     cosmic.AnomalyEnabled = false;
@@ -281,614 +294,627 @@ EVEServerConfig::EVEServerConfig()
     threads.WorldThreads = 2;//N
 }
 
-bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
-{
+bool EVEServerConfig::ProcessEveServer(const TiXmlElement* ele) {
     // entering element, extend allowed syntax
-    AddMemberParser( "server",      &EVEServerConfig::ProcessServer );
-    AddMemberParser( "world",       &EVEServerConfig::ProcessWorld );
-    AddMemberParser( "rates",       &EVEServerConfig::ProcessRates );
-    AddMemberParser( "market",      &EVEServerConfig::ProcessMarket );
-    AddMemberParser( "ram",     &EVEServerConfig::ProcessBPTimes );
-    AddMemberParser( "account",     &EVEServerConfig::ProcessAccount );
-    AddMemberParser( "character",   &EVEServerConfig::ProcessCharacter );
-    AddMemberParser( "npc",         &EVEServerConfig::ProcessNPC );
-    AddMemberParser( "cosmic",      &EVEServerConfig::ProcessCosmic );
-    AddMemberParser( "exploring",   &EVEServerConfig::ProcessExploring );
-    AddMemberParser( "crime",       &EVEServerConfig::ProcessCrime );
-    AddMemberParser( "standings",   &EVEServerConfig::ProcessStandings );
-    AddMemberParser( "chat",        &EVEServerConfig::ProcessChat );
-    AddMemberParser( "debug",       &EVEServerConfig::ProcessDebug );
-    AddMemberParser( "database",    &EVEServerConfig::ProcessDatabase );
-    AddMemberParser( "files",       &EVEServerConfig::ProcessFiles );
-    AddMemberParser( "net",         &EVEServerConfig::ProcessNet );
-    AddMemberParser( "testing",     &EVEServerConfig::ProcessTesting );
-    AddMemberParser( "threads",     &EVEServerConfig::ProcessThreads );
+    AddMemberParser("server",      &EVEServerConfig::ProcessServer);
+    AddMemberParser("world",       &EVEServerConfig::ProcessWorld);
+    AddMemberParser("rates",       &EVEServerConfig::ProcessRates);
+    AddMemberParser("market",      &EVEServerConfig::ProcessMarket);
+    AddMemberParser("ram",         &EVEServerConfig::ProcessBPTimes);
+    AddMemberParser("account",     &EVEServerConfig::ProcessAccount);
+    AddMemberParser("character",   &EVEServerConfig::ProcessCharacter);
+    AddMemberParser("npc",         &EVEServerConfig::ProcessNPC);
+    AddMemberParser("drone",       &EVEServerConfig::ProcessDrone);
+    AddMemberParser("cosmic",      &EVEServerConfig::ProcessCosmic);
+    AddMemberParser("exploring",   &EVEServerConfig::ProcessExploring);
+    AddMemberParser("crime",       &EVEServerConfig::ProcessCrime);
+    AddMemberParser("standings",   &EVEServerConfig::ProcessStandings);
+    AddMemberParser("chat",        &EVEServerConfig::ProcessChat);
+    AddMemberParser("debug",       &EVEServerConfig::ProcessDebug);
+    AddMemberParser("database",    &EVEServerConfig::ProcessDatabase);
+    AddMemberParser("files",       &EVEServerConfig::ProcessFiles);
+    AddMemberParser("net",         &EVEServerConfig::ProcessNet);
+    AddMemberParser("testing",     &EVEServerConfig::ProcessTesting);
+    AddMemberParser("threads",     &EVEServerConfig::ProcessThreads);
 
     // parse the element
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
     // leaving element, reduce allowed syntax
-    RemoveParser( "server" );
-    RemoveParser( "world" );
-    RemoveParser( "rates" );
-    RemoveParser( "market" );
-    RemoveParser( "ram" );
-    RemoveParser( "account" );
-    RemoveParser( "character" );
-    RemoveParser( "npc" );
-    RemoveParser( "cosmic" );
-    RemoveParser( "exploring" );
-    RemoveParser( "crime" );
-    RemoveParser( "standings" );
-    RemoveParser( "chat" );
-    RemoveParser( "debug" );
-    RemoveParser( "database" );
-    RemoveParser( "files" );
-    RemoveParser( "net" );
-    RemoveParser( "testing" );
-    RemoveParser( "threads" );
+    RemoveParser("server");
+    RemoveParser("world");
+    RemoveParser("rates");
+    RemoveParser("market");
+    RemoveParser("ram");
+    RemoveParser("account");
+    RemoveParser("character");
+    RemoveParser("npc");
+    RemoveParser("drone");
+    RemoveParser("cosmic");
+    RemoveParser("exploring");
+    RemoveParser("crime");
+    RemoveParser("standings");
+    RemoveParser("chat");
+    RemoveParser("debug");
+    RemoveParser("database");
+    RemoveParser("files");
+    RemoveParser("net");
+    RemoveParser("testing");
+    RemoveParser("threads");
 
     // return status of parsing
     return result;
 }
 
-bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
-{
-    AddValueParser( "DisableIGB",           server.DisableIGB );
-    AddValueParser( "TraderJoe",            server.TraderJoe );
-    AddValueParser( "maxPlayers",           server.maxPlayers );
-    AddValueParser( "NoobShipCheck",        server.NoobShipCheck );
-    AddValueParser( "BulkDataOD",           server.BulkDataOD );
-    AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
-    AddValueParser( "idleSleepTime",        server.idleSleepTime );
-    AddValueParser( "MaxThreadReport",      server.MaxThreadReport );
-    AddValueParser( "ModuleAutoOff",        server.ModuleAutoOff );
-    AddValueParser( "ModuleDamageChance",   server.ModuleDamageChance );
-    AddValueParser( "UnloadOnLinkAll",      server.UnloadOnLinkAll );
-    AddValueParser( "processTic",           server.processTic );
-    AddValueParser( "AllowNonPublished",    server.AllowNonPublished );
-    AddValueParser( "FleetShareDelayed",    server.FleetShareDelayed );
-    AddValueParser( "BountyPayoutDelayed",  server.BountyPayoutDelayed );
-    AddValueParser( "BountyPayoutTimer",    server.BountyPayoutTimer );
-    AddValueParser( "LoadOldMissions",      server.LoadOldMissions );
-    AddValueParser( "AsteroidsOnDScan",     server.AsteroidsOnDScan );
-    AddValueParser( "CargoMassAdditive",    server.CargoMassAdditive );
-    AddValueParser( "LoadStaticRecyclable", server.LoadStaticRecyclable );
-    AddValueParser( "LoadStaticRefinable",  server.LoadStaticRefinable );
-    AddValueParser( "StackTrace",           server.StackTrace );
-    AddValueParser( "DelOnZero",            server.DelOnZero );
+bool EVEServerConfig::ProcessServer(const TiXmlElement* ele) {
+    AddValueParser("DisableIGB",           server.DisableIGB);
+    AddValueParser("TraderJoe",            server.TraderJoe);
+    AddValueParser("maxPlayers",           server.maxPlayers);
+    AddValueParser("NoobShipCheck",        server.NoobShipCheck);
+    AddValueParser("BulkDataOD",           server.BulkDataOD);
+    AddValueParser("ServerSleepTime",      server.ServerSleepTime);
+    AddValueParser("idleSleepTime",        server.idleSleepTime);
+    AddValueParser("MaxThreadReport",      server.MaxThreadReport);
+    AddValueParser("ModuleAutoOff",        server.ModuleAutoOff);
+    AddValueParser("ModuleDamageChance",   server.ModuleDamageChance);
+    AddValueParser("UnloadOnLinkAll",      server.UnloadOnLinkAll);
+    AddValueParser("processTic",           server.processTic);
+    AddValueParser("AllowNonPublished",    server.AllowNonPublished);
+    AddValueParser("FleetShareDelayed",    server.FleetShareDelayed);
+    AddValueParser("BountyPayoutDelayed",  server.BountyPayoutDelayed);
+    AddValueParser("BountyPayoutTimer",    server.BountyPayoutTimer);
+    AddValueParser("LoadOldMissions",      server.LoadOldMissions);
+    AddValueParser("AsteroidsOnDScan",     server.AsteroidsOnDScan);
+    AddValueParser("CargoMassAdditive",    server.CargoMassAdditive);
+    AddValueParser("LoadStaticRecyclable", server.LoadStaticRecyclable);
+    AddValueParser("LoadStaticRefinable",  server.LoadStaticRefinable);
+    AddValueParser("StackTrace",           server.StackTrace);
+    AddValueParser("DelOnZero",            server.DelOnZero);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "DisableIGB" );
-    RemoveParser( "TraderJoe" );
-    RemoveParser( "maxPlayers" );
-    RemoveParser( "NoobShipCheck" );
-    RemoveParser( "BulkDataOD" );
-    RemoveParser( "ServerSleepTime" );
-    RemoveParser( "idleSleepTime" );
-    RemoveParser( "MaxThreadReport" );
-    RemoveParser( "ModuleAutoOff" );
-    RemoveParser( "ModuleDamageChance" );
-    RemoveParser( "processTic" );
-    RemoveParser( "AllowNonPublished" );
-    RemoveParser( "FleetShareDelayed" );
-    RemoveParser( "BountyPayoutDelayed" );
-    RemoveParser( "BountyPayoutTimer" );
-    RemoveParser( "LoadOldMissions" );
-    RemoveParser( "AsteroidsOnDScan" );
-    RemoveParser( "CargoMassAdditive" );
-    RemoveParser( "LoadStaticRecyclable" );
-    RemoveParser( "LoadStaticRefinable" );
-    RemoveParser( "StackTrace" );
-    RemoveParser( "DelOnZero" );
-
-    return result;
-}
-
-bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
-{
-    AddValueParser( "chatLogs",          world.chatLogs );
-    AddValueParser( "globalChat",        world.globalChat );
-    AddValueParser( "gridUnload",        world.gridUnload );
-    AddValueParser( "gridUnloadTime",    world.gridUnloadTime );
-    AddValueParser( "loginInfo",         world.loginInfo );
-    AddValueParser( "loginMsg",          world.loginMsg );
-    AddValueParser( "saveOnMove",        world.saveOnMove );
-    AddValueParser( "saveOnUpdate",      world.saveOnUpdate );
-    AddValueParser( "mailDelay",         world.mailDelay );
-    AddValueParser( "StationDockDelay",  world.StationDockDelay );
-    AddValueParser( "apWarptoDistance",  world.apWarptoDistance );
-    AddValueParser( "shipBoardDistance", world.shipBoardDistance );
-    AddValueParser( "shootRoids",        world.shootRoids );
-    AddValueParser( "shootWrecks",       world.shootWrecks );
-    AddValueParser( "highSecCyno",       world.highSecCyno );
-
-    const bool result = ParseElementChildren( ele );
-
-    RemoveParser( "chatLogs" );
-    RemoveParser( "globalChat" );
-    RemoveParser( "gridUnload" );
-    RemoveParser( "gridUnloadTime" );
-    RemoveParser( "loginInfo" );
-    RemoveParser( "loginMsg" );
-    RemoveParser( "saveOnMove" );
-    RemoveParser( "saveOnUpdate" );
-    RemoveParser( "mailDelay" );
-    RemoveParser( "StationDockDelay" );
-    RemoveParser( "apWarptoDistance" );
-    RemoveParser( "shipBoardDistance" );
-    RemoveParser( "shootRoids" );
-    RemoveParser( "shootWrecks" );
-    RemoveParser( "highSecCyno" );
+    RemoveParser("DisableIGB");
+    RemoveParser("TraderJoe");
+    RemoveParser("maxPlayers");
+    RemoveParser("NoobShipCheck");
+    RemoveParser("BulkDataOD");
+    RemoveParser("ServerSleepTime");
+    RemoveParser("idleSleepTime");
+    RemoveParser("MaxThreadReport");
+    RemoveParser("ModuleAutoOff");
+    RemoveParser("ModuleDamageChance");
+    RemoveParser("processTic");
+    RemoveParser("AllowNonPublished");
+    RemoveParser("FleetShareDelayed");
+    RemoveParser("BountyPayoutDelayed");
+    RemoveParser("BountyPayoutTimer");
+    RemoveParser("LoadOldMissions");
+    RemoveParser("AsteroidsOnDScan");
+    RemoveParser("CargoMassAdditive");
+    RemoveParser("LoadStaticRecyclable");
+    RemoveParser("LoadStaticRefinable");
+    RemoveParser("StackTrace");
+    RemoveParser("DelOnZero");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
-{
-    AddValueParser( "CSPA",                 rates.CSPA );
-    AddValueParser( "secRate",              rates.secRate );
-    AddValueParser( "npcBountyMultiply",    rates.npcBountyMultiply );
-    AddValueParser( "damageRate",           rates.damageRate );
-    AddValueParser( "missileRoF",           rates.missileRoF );
-    AddValueParser( "missileDamage",        rates.missileDamage );
-    AddValueParser( "missileTime",          rates.missileTime );
-    AddValueParser( "turretDamage",         rates.turretDamage );
-    AddValueParser( "turretRoF",            rates.turretRoF );
-    AddValueParser( "corpCost",             rates.corpCost );
-    AddValueParser( "medalAwardCost",       rates.medalAwardCost );
-    AddValueParser( "medalCreateCost",      rates.medalCreateCost );
-    AddValueParser( "WorldDecay",           rates.WorldDecay );
-    AddValueParser( "NPCDecay",             rates.NPCDecay );
-    AddValueParser( "DropItem",             rates.DropItem );
-    AddValueParser( "DropMoney",            rates.DropMoney );
-    AddValueParser( "DropSalvage",          rates.DropSalvage );
-    AddValueParser( "RepairCost",           rates.RepairCost );
-    AddValueParser( "ShipRepairModifier",   rates.ShipRepairModifier );
-    AddValueParser( "ModuleRepairModifier", rates.ModuleRepairModifier );
-    AddValueParser( "WebUpdate",            rates.WebUpdate );
-    AddValueParser( "TaxAmount",            rates.TaxAmount );
-    AddValueParser( "TaxedAmount",          rates.TaxedAmount );
-    AddValueParser( "PlayerCritChance",     rates.PlayerCritChance );
-    AddValueParser( "NpcCritChance",        rates.NpcCritChance );
-    AddValueParser( "SentryCritChance",     rates.SentryCritChance );
-    AddValueParser( "DroneCritChance",      rates.DroneCritChance );
-    AddValueParser( "ConcordCritChance",    rates.ConcordCritChance );
-    AddValueParser( "StationServiceFee",    rates.StationServiceFee );
-    AddValueParser( "WanderTimer",          rates.WanderTimer );
+bool EVEServerConfig::ProcessWorld(const TiXmlElement* ele) {
+    AddValueParser("chatLogs",          world.chatLogs);
+    AddValueParser("globalChat",        world.globalChat);
+    AddValueParser("gridUnload",        world.gridUnload);
+    AddValueParser("gridUnloadTime",    world.gridUnloadTime);
+    AddValueParser("loginInfo",         world.loginInfo);
+    AddValueParser("loginMsg",          world.loginMsg);
+    AddValueParser("saveOnMove",        world.saveOnMove);
+    AddValueParser("saveOnUpdate",      world.saveOnUpdate);
+    AddValueParser("mailDelay",         world.mailDelay);
+    AddValueParser("StationDockDelay",  world.StationDockDelay);
+    AddValueParser("apWarptoDistance",  world.apWarptoDistance);
+    AddValueParser("shipBoardDistance", world.shipBoardDistance);
+    AddValueParser("shootRoids",        world.shootRoids);
+    AddValueParser("shootWrecks",       world.shootWrecks);
+    AddValueParser("highSecCyno",       world.highSecCyno);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "CSPA" );
-    RemoveParser( "secRate" );
-    RemoveParser( "npcBountyMultiply" );
-    RemoveParser( "damageRate" );
-    RemoveParser( "missileDamage" );
-    RemoveParser( "missileRoF" );
-    RemoveParser( "missileTime" );
-    RemoveParser( "turretDamage" );
-    RemoveParser( "turretRoF" );
-    RemoveParser( "corpCost" );
-    RemoveParser( "medalAwardCost" );
-    RemoveParser( "medalCreateCost" );
-    RemoveParser( "WorldDecay" );
-    RemoveParser( "NPCDecay" );
-    RemoveParser( "DropItem" );
-    RemoveParser( "DropMoney" );
-    RemoveParser( "DropSalvage" );
-    RemoveParser( "RepairCost" );
-    RemoveParser( "ShipRepairModifier" );
-    RemoveParser( "ModuleRepairModifier" );
-    RemoveParser( "WebUpdate" );
-    RemoveParser( "TaxAmount" );
-    RemoveParser( "TaxedAmount" );
-    RemoveParser( "PlayerCritChance" );
-    RemoveParser( "NpcCritChance" );
-    RemoveParser( "SentryCritChance" );
-    RemoveParser( "DroneCritChance" );
-    RemoveParser( "ConcordCritChance" );
-    RemoveParser( "StationServiceFee" );
-    RemoveParser( "WanderTimer" );
+    RemoveParser("chatLogs");
+    RemoveParser("globalChat");
+    RemoveParser("gridUnload");
+    RemoveParser("gridUnloadTime");
+    RemoveParser("loginInfo");
+    RemoveParser("loginMsg");
+    RemoveParser("saveOnMove");
+    RemoveParser("saveOnUpdate");
+    RemoveParser("mailDelay");
+    RemoveParser("StationDockDelay");
+    RemoveParser("apWarptoDistance");
+    RemoveParser("shipBoardDistance");
+    RemoveParser("shootRoids");
+    RemoveParser("shootWrecks");
+    RemoveParser("highSecCyno");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele)
-{
-    AddValueParser( "StationOrderLimit",            market.StationOrderLimit );
-    AddValueParser( "SystemOrderLimit",             market.SystemOrderLimit);
-    AddValueParser( "RegionOrderLimit",             market.RegionOrderLimit );
-    AddValueParser( "FindBuyOrder",                 market.FindBuyOrder );
-    AddValueParser( "FindSellOrder",                market.FindSellOrder);
-    AddValueParser( "OldPriceLimit",                market.OldPriceLimit );
-    AddValueParser( "NewPriceLimit",                market.NewPriceLimit);
-    AddValueParser( "UseOrderRange",                market.UseOrderRange);
-    AddValueParser( "DeleteOldTransactions",        market.DeleteOldTransactions);
-    AddValueParser( "HistoryUpdateTime",     market.HistoryUpdateTime);
+bool EVEServerConfig::ProcessRates(const TiXmlElement* ele) {
+    AddValueParser("CSPA",                 rates.CSPA);
+    AddValueParser("secRate",              rates.secRate);
+    AddValueParser("npcBountyMultiply",    rates.npcBountyMultiply);
+    AddValueParser("damageRate",           rates.damageRate);
+    AddValueParser("missileRoF",           rates.missileRoF);
+    AddValueParser("missileDamage",        rates.missileDamage);
+    AddValueParser("missileTime",          rates.missileTime);
+    AddValueParser("turretDamage",         rates.turretDamage);
+    AddValueParser("turretRoF",            rates.turretRoF);
+    AddValueParser("corpCost",             rates.corpCost);
+    AddValueParser("medalAwardCost",       rates.medalAwardCost);
+    AddValueParser("medalCreateCost",      rates.medalCreateCost);
+    AddValueParser("WorldDecay",           rates.WorldDecay);
+    AddValueParser("NPCDecay",             rates.NPCDecay);
+    AddValueParser("DropItem",             rates.DropItem);
+    AddValueParser("DropMoney",            rates.DropMoney);
+    AddValueParser("DropSalvage",          rates.DropSalvage);
+    AddValueParser("RepairCost",           rates.RepairCost);
+    AddValueParser("ShipRepairModifier",   rates.ShipRepairModifier);
+    AddValueParser("ModuleRepairModifier", rates.ModuleRepairModifier);
+    AddValueParser("WebUpdate",            rates.WebUpdate);
+    AddValueParser("TaxAmount",            rates.TaxAmount);
+    AddValueParser("TaxedAmount",          rates.TaxedAmount);
+    AddValueParser("PlayerCritChance",     rates.PlayerCritChance);
+    AddValueParser("NpcCritChance",        rates.NpcCritChance);
+    AddValueParser("SentryCritChance",     rates.SentryCritChance);
+    AddValueParser("DroneCritChance",      rates.DroneCritChance);
+    AddValueParser("ConcordCritChance",    rates.ConcordCritChance);
+    AddValueParser("StationServiceFee",    rates.StationServiceFee);
+    AddValueParser("WanderTimer",          rates.WanderTimer);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "StationOrderLimit" );
-    RemoveParser( "SystemOrderLimit" );
-    RemoveParser( "RegionOrderLimit" );
-    RemoveParser( "FindBuyOrder" );
-    RemoveParser( "FindSellOrder" );
-    RemoveParser( "OldPriceLimit" );
-    RemoveParser( "NewPriceLimit" );
-    RemoveParser( "UseOrderRange" );
-    RemoveParser( "DeleteOldTransactions" );
-    RemoveParser( "HistoryUpdateTime" );
-
-    return result;
-}
-
-bool EVEServerConfig::ProcessBPTimes(const TiXmlElement* ele)
-{
-    AddValueParser( "AutoEvent",        ram.AutoEvent);
-    AddValueParser( "ProdTime",         ram.ProdTime);
-    AddValueParser( "CopyTime",         ram.CopyTime);
-    AddValueParser( "WasteMod",         ram.WasteMod);
-    AddValueParser( "MatMod",           ram.MatMod);
-    AddValueParser( "ResME",            ram.ResME);
-    AddValueParser( "ResPE",            ram.ResPE);
-    AddValueParser( "ReTime",           ram.ReTime);
-    AddValueParser( "InventTime",       ram.InventTime);
-
-    const bool result = ParseElementChildren( ele );
-
-    RemoveParser( "AutoEvent" );
-    RemoveParser( "ProdTime" );
-    RemoveParser( "CopyTime" );
-    RemoveParser( "WasteMod" );
-    RemoveParser( "MatMod" );
-    RemoveParser( "ResME" );
-    RemoveParser( "ResPE" );
-    RemoveParser( "ReTime" );
-    RemoveParser( "InventTime" );
-
-    return result;
-}
-
-bool EVEServerConfig::ProcessAccount( const TiXmlElement* ele )
-{
-    AddValueParser( "autoAccountRole",  account.autoAccountRole );
-    AddValueParser( "loginMessage",     account.loginMessage );
-
-    const bool result = ParseElementChildren( ele );
-
-    RemoveParser( "autoAccountRole" );
-    RemoveParser( "loginMessage" );
-
-    return result;
-}
-
-bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
-{
-    AddValueParser( "startBalance",             character.startBalance );
-    AddValueParser( "startAurBalance",          character.startAurBalance );  // added config entry and implemented  -allan 01/10/14
-    AddValueParser( "startStation",             character.startStation );
-    AddValueParser( "startSecRating",           character.startSecRating );
-    AddValueParser( "startCorporation",         character.startCorporation );
-    AddValueParser( "terminationDelay",         character.terminationDelay );
-    AddValueParser( "allow3edChar",             character.allow3edChar );
-    AddValueParser( "DeleteImplantOnRemoval",   character.DeleteImplantOnRemoval );
-
-    const bool result = ParseElementChildren( ele );
-
-    RemoveParser( "startBalance" );
-    RemoveParser( "startAurBalance" );
-    RemoveParser( "startStation" );
-    RemoveParser( "startSecRating" );
-    RemoveParser( "startCorporation" );
-    RemoveParser( "terminationDelay" );
-    RemoveParser( "allow3edChar" );
-    RemoveParser( "DeleteImplantOnRemoval" );
+    RemoveParser("CSPA");
+    RemoveParser("secRate");
+    RemoveParser("npcBountyMultiply");
+    RemoveParser("damageRate");
+    RemoveParser("missileDamage");
+    RemoveParser("missileRoF");
+    RemoveParser("missileTime");
+    RemoveParser("turretDamage");
+    RemoveParser("turretRoF");
+    RemoveParser("corpCost");
+    RemoveParser("medalAwardCost");
+    RemoveParser("medalCreateCost");
+    RemoveParser("WorldDecay");
+    RemoveParser("NPCDecay");
+    RemoveParser("DropItem");
+    RemoveParser("DropMoney");
+    RemoveParser("DropSalvage");
+    RemoveParser("RepairCost");
+    RemoveParser("ShipRepairModifier");
+    RemoveParser("ModuleRepairModifier");
+    RemoveParser("WebUpdate");
+    RemoveParser("TaxAmount");
+    RemoveParser("TaxedAmount");
+    RemoveParser("PlayerCritChance");
+    RemoveParser("NpcCritChance");
+    RemoveParser("SentryCritChance");
+    RemoveParser("DroneCritChance");
+    RemoveParser("ConcordCritChance");
+    RemoveParser("StationServiceFee");
+    RemoveParser("WanderTimer");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
-{
-    AddValueParser( "IdleWander",               npc.IdleWander );
-    AddValueParser( "WarpOut",                  npc.WarpOut );
-    AddValueParser( "WarpFollowChance",         npc.WarpFollowChance );
-    AddValueParser( "ThreatRadius",             npc.ThreatRadius );
-    AddValueParser( "RoamingSpawns",            npc.RoamingSpawns );
-    AddValueParser( "StaticSpawns",             npc.StaticSpawns );
-    AddValueParser( "RoamingTimer",             npc.RoamingTimer );
-    AddValueParser( "StaticTimer",              npc.StaticTimer );
-    AddValueParser( "RespawnTimer",             npc.RespawnTimer );
-    AddValueParser( "RatFaction",               npc.RatFaction );
-    AddValueParser( "TargetPod",                npc.TargetPod );
-    AddValueParser( "TargetPodSec",             npc.TargetPodSec );
-    AddValueParser( "UseDamageMultiplier",      npc.UseDamageMultiplier );
-    AddValueParser( "LootDropChance",           npc.LootDropChance );
-    AddValueParser( "DefenderMissileChance",    npc.DefenderMissileChance );
-    AddValueParser( "UseOrbit",                 npc.UseOrbit );
-    AddValueParser( "UseRegen",                 npc.UseRegen );
-    AddValueParser( "UseRepair",                npc.UseRepair );
+bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele) {
+    AddValueParser("StationOrderLimit",            market.StationOrderLimit);
+    AddValueParser("SystemOrderLimit",             market.SystemOrderLimit);
+    AddValueParser("RegionOrderLimit",             market.RegionOrderLimit);
+    AddValueParser("FindBuyOrder",                 market.FindBuyOrder);
+    AddValueParser("FindSellOrder",                market.FindSellOrder);
+    AddValueParser("OldPriceLimit",                market.OldPriceLimit);
+    AddValueParser("NewPriceLimit",                market.NewPriceLimit);
+    AddValueParser("UseOrderRange",                market.UseOrderRange);
+    AddValueParser("DeleteOldTransactions",        market.DeleteOldTransactions);
+    AddValueParser("HistoryUpdateTime",            market.HistoryUpdateTime);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "IdleWander" );
-    RemoveParser( "WarpOut" );
-    RemoveParser( "WarpFollowChance" );
-    RemoveParser( "ThreatRadius" );
-    RemoveParser( "RoamingSpawns" );
-    RemoveParser( "StaticSpawns" );
-    RemoveParser( "RoamingTimer" );
-    RemoveParser( "StaticTimer" );
-    RemoveParser( "RespawnTimer" );
-    RemoveParser( "RatFaction" );
-    RemoveParser( "TargetPod" );
-    RemoveParser( "TargetPodSec" );
-    RemoveParser( "UseDamageMultiplier" );
-    RemoveParser( "LootDropChance" );
-    RemoveParser( "DefenderMissileChance" );
-    RemoveParser( "UseOrbit" );
-    RemoveParser( "UseRegen" );
-    RemoveParser( "UseRepair" );
+    RemoveParser("StationOrderLimit");
+    RemoveParser("SystemOrderLimit");
+    RemoveParser("RegionOrderLimit");
+    RemoveParser("FindBuyOrder");
+    RemoveParser("FindSellOrder");
+    RemoveParser("OldPriceLimit");
+    RemoveParser("NewPriceLimit");
+    RemoveParser("UseOrderRange");
+    RemoveParser("DeleteOldTransactions");
+    RemoveParser("HistoryUpdateTime");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessDatabase( const TiXmlElement* ele )
-{
-    AddValueParser( "host",             database.host );
-    AddValueParser( "port",             database.port );
-    AddValueParser( "username",         database.username );
-    AddValueParser( "password",         database.password );
-    AddValueParser( "db",               database.db );
-    AddValueParser( "compress",         database.compress );
-    AddValueParser( "ssl",              database.ssl );
-    AddValueParser( "useSocket",        database.useSocket );
-    AddValueParser( "autoReconnect",    database.autoReconnect );
-    AddValueParser( "dbTimeout",        database.dbTimeout );
-    AddValueParser( "pingTime",         database.pingTime );
+bool EVEServerConfig::ProcessBPTimes(const TiXmlElement* ele) {
+    AddValueParser("AutoEvent",        ram.AutoEvent);
+    AddValueParser("ProdTime",         ram.ProdTime);
+    AddValueParser("CopyTime",         ram.CopyTime);
+    AddValueParser("WasteMod",         ram.WasteMod);
+    AddValueParser("MatMod",           ram.MatMod);
+    AddValueParser("ResME",            ram.ResME);
+    AddValueParser("ResPE",            ram.ResPE);
+    AddValueParser("ReTime",           ram.ReTime);
+    AddValueParser("InventTime",       ram.InventTime);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "host" );
-    RemoveParser( "port" );
-    RemoveParser( "username" );
-    RemoveParser( "password" );
-    RemoveParser( "db" );
-    RemoveParser( "compress" );
-    RemoveParser( "ssl" );
-    RemoveParser( "useSocket" );
-    RemoveParser( "autoReconnect" );
-    RemoveParser( "dbTimeout" );
-    RemoveParser( "pingTime" );
+    RemoveParser("AutoEvent");
+    RemoveParser("ProdTime");
+    RemoveParser("CopyTime");
+    RemoveParser("WasteMod");
+    RemoveParser("MatMod");
+    RemoveParser("ResME");
+    RemoveParser("ResPE");
+    RemoveParser("ReTime");
+    RemoveParser("InventTime");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessFiles( const TiXmlElement* ele )
-{
-    AddValueParser( "logDir",           files.logDir );
-    AddValueParser( "logSettings",      files.logSettings );
-    AddValueParser( "cacheDir",         files.cacheDir );
-    AddValueParser( "imageDir",         files.imageDir );
+bool EVEServerConfig::ProcessAccount(const TiXmlElement* ele) {
+    AddValueParser("autoAccountRole",  account.autoAccountRole);
+    AddValueParser("loginMessage",     account.loginMessage);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "logDir" );
-    RemoveParser( "logSettings" );
-    RemoveParser( "cacheDir" );
-    RemoveParser( "imageDir" );
+    RemoveParser("autoAccountRole");
+    RemoveParser("loginMessage");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessNet( const TiXmlElement* ele )
-{
-    AddValueParser( "port",             net.port );
-    AddValueParser( "imageServerPort",  net.imageServerPort);
-    AddValueParser( "imageServer",      net.imageServer);
+bool EVEServerConfig::ProcessCharacter(const TiXmlElement* ele) {
+    AddValueParser("startBalance",             character.startBalance);
+    AddValueParser("startAurBalance",          character.startAurBalance);  // added config entry and implemented  -allan 01/10/14
+    AddValueParser("startStation",             character.startStation);
+    AddValueParser("startSecRating",           character.startSecRating);
+    AddValueParser("startCorporation",         character.startCorporation);
+    AddValueParser("terminationDelay",         character.terminationDelay);
+    AddValueParser("allow3edChar",             character.allow3edChar);
+    AddValueParser("DeleteImplantOnRemoval",   character.DeleteImplantOnRemoval);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "port" );
-    RemoveParser( "imageServerPort" );
-    RemoveParser( "imageServer" );
-
-    return result;
-}
-
-bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
-{
-    AddValueParser( "ConsoleThreads",       threads.ConsoleThreads);
-    AddValueParser( "DatabaseThreads",      threads.DatabaseThreads);
-    AddValueParser( "ImageServerThreads",   threads.ImageServerThreads);
-    AddValueParser( "NetworkThreads",       threads.NetworkThreads );
-    AddValueParser( "WorldThreads",         threads.WorldThreads);
-
-    const bool result = ParseElementChildren( ele );
-
-    RemoveParser( "ConsoleThreads" );
-    RemoveParser( "DatabaseThreads" );
-    RemoveParser( "ImageServerThreads" );
-    RemoveParser( "NetworkThreads" );
-    RemoveParser( "WorldThreads" );
+    RemoveParser("startBalance");
+    RemoveParser("startAurBalance");
+    RemoveParser("startStation");
+    RemoveParser("startSecRating");
+    RemoveParser("startCorporation");
+    RemoveParser("terminationDelay");
+    RemoveParser("allow3edChar");
+    RemoveParser("DeleteImplantOnRemoval");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
-{
-    AddValueParser( "PIEnabled",            cosmic.PIEnabled );
-    AddValueParser( "AnomalyEnabled",       cosmic.AnomalyEnabled );
-    AddValueParser( "DungeonEnabled",       cosmic.DungeonEnabled );
-    AddValueParser( "BeltEnabled",          cosmic.BeltEnabled );
-    AddValueParser( "BeltRespawn",          cosmic.BeltRespawn );
-    AddValueParser( "BeltGrowTime",           cosmic.BeltGrowTime );
-    AddValueParser( "BeltGrowPct",           cosmic.BeltGrowPct );
-    AddValueParser( "roidRadiusMultiplier", cosmic.roidRadiusMultiplier );
-    AddValueParser( "WormHoleEnabled",      cosmic.WormHoleEnabled );
-    AddValueParser( "CiviliansEnabled",     cosmic.CiviliansEnabled);
-    AddValueParser( "BumpEnabled",          cosmic.BumpEnabled );
+bool EVEServerConfig::ProcessNPC(const TiXmlElement* ele) {
+    AddValueParser("IdleWander",               npc.IdleWander);
+    AddValueParser("WarpOut",                  npc.WarpOut);
+    AddValueParser("WarpFollowChance",         npc.WarpFollowChance);
+    AddValueParser("ThreatRadius",             npc.ThreatRadius);
+    AddValueParser("RoamingSpawns",            npc.RoamingSpawns);
+    AddValueParser("StaticSpawns",             npc.StaticSpawns);
+    AddValueParser("RoamingTimer",             npc.RoamingTimer);
+    AddValueParser("StaticTimer",              npc.StaticTimer);
+    AddValueParser("RespawnTimer",             npc.RespawnTimer);
+    AddValueParser("RatFaction",               npc.RatFaction);
+    AddValueParser("TargetPod",                npc.TargetPod);
+    AddValueParser("TargetPodSec",             npc.TargetPodSec);
+    AddValueParser("UseDamageMultiplier",      npc.UseDamageMultiplier);
+    AddValueParser("LootDropChance",           npc.LootDropChance);
+    AddValueParser("DefenderMissileChance",    npc.DefenderMissileChance);
+    AddValueParser("UseOrbit",                 npc.UseOrbit);
+    AddValueParser("UseRegen",                 npc.UseRegen);
+    AddValueParser("UseRepair",                npc.UseRepair);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "PIEnabled" );
-    RemoveParser( "AnomalyEnabled" );
-    RemoveParser( "DungeonEnabled" );
-    RemoveParser( "BeltEnabled" );
-    RemoveParser( "BeltRespawn" );
-    RemoveParser( "BeltGrowTime" );
-    RemoveParser( "BeltGrowPct" );
-    RemoveParser( "roidRadiusMultiplier" );
-    RemoveParser( "WormHoleEnabled" );
-    RemoveParser( "CiviliansEnabled" );
-    RemoveParser( "BumpEnabled" );
-
-    return result;
-}
-
-bool EVEServerConfig::ProcessExploring ( const TiXmlElement* ele ) {
-    AddValueParser( "Radar",                exploring.Radar );
-    AddValueParser( "Ladar",                exploring.Ladar );
-    AddValueParser( "Unrated",              exploring.Unrated );
-    AddValueParser( "Complex",              exploring.Complex );
-    AddValueParser( "Gravametric",          exploring.Gravametric );
-    AddValueParser( "Magnetometric",        exploring.Magnetometric );
-
-    const bool result = ParseElementChildren( ele );
-
-    RemoveParser( "Radar" );
-    RemoveParser( "Ladar" );
-    RemoveParser( "Unrated" );
-    RemoveParser( "Complex" );
-    RemoveParser( "Gravametric" );
-    RemoveParser( "Magnetometric" );
+    RemoveParser("IdleWander");
+    RemoveParser("WarpOut");
+    RemoveParser("WarpFollowChance");
+    RemoveParser("ThreatRadius");
+    RemoveParser("RoamingSpawns");
+    RemoveParser("StaticSpawns");
+    RemoveParser("RoamingTimer");
+    RemoveParser("StaticTimer");
+    RemoveParser("RespawnTimer");
+    RemoveParser("RatFaction");
+    RemoveParser("TargetPod");
+    RemoveParser("TargetPodSec");
+    RemoveParser("UseDamageMultiplier");
+    RemoveParser("LootDropChance");
+    RemoveParser("DefenderMissileChance");
+    RemoveParser("UseOrbit");
+    RemoveParser("UseRegen");
+    RemoveParser("UseRepair");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessChat(const TiXmlElement* ele)
-{
-    AddValueParser( "EnableFleetChat",      chat.EnableFleetChat );
-    AddValueParser( "EnableWingChat",       chat.EnableWingChat );
-    AddValueParser( "EnableSquadChat",      chat.EnableSquadChat );
-    AddValueParser( "EnableVoiceChat",      chat.EnableVoiceChat );
-    AddValueParser( "EnforceRookieInHelp",  chat.EnforceRookieInHelp );
+bool EVEServerConfig::ProcessDatabase(const TiXmlElement* ele) {
+    AddValueParser("host",             database.host);
+    AddValueParser("port",             database.port);
+    AddValueParser("username",         database.username);
+    AddValueParser("password",         database.password);
+    AddValueParser("db",               database.db);
+    AddValueParser("compress",         database.compress);
+    AddValueParser("ssl",              database.ssl);
+    AddValueParser("useSocket",        database.useSocket);
+    AddValueParser("autoReconnect",    database.autoReconnect);
+    AddValueParser("dbTimeout",        database.dbTimeout);
+    AddValueParser("pingTime",         database.pingTime);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "EnableFleetChat" );
-    RemoveParser( "EnableWingChat" );
-    RemoveParser( "EnableSquadChat" );
-    RemoveParser( "EnableVoiceChat" );
-    RemoveParser( "EnforceRookieInHelp" );
-
-    return result;
-}
-
-bool EVEServerConfig::ProcessStandings(const TiXmlElement* ele)
-{
-    AddValueParser( "MissionBonus",                     standings.MissionBonus );
-    AddValueParser( "MissionFailure",                   standings.MissionFailure );
-    AddValueParser( "MissionDeclined",                  standings.MissionDeclined );
-    AddValueParser( "MissionCompleted",                 standings.MissionCompleted );
-    AddValueParser( "MissionOfferExpired",              standings.MissionOfferExpired );
-    AddValueParser( "MissionFailedRollback",            standings.MissionFailedRollback );
-    AddValueParser( "ImportantMissionBonus",            standings.ImportantMissionBonus );
-    AddValueParser( "BaseMissionMultiplier",            standings.BaseMissionMultiplier );
-    AddValueParser( "FleetMissionMultiplier",           standings.FleetMissionMultiplier );
-    AddValueParser( "Agent2CharMissionMultiplier",      standings.Agent2CharMissionMultiplier );
-    AddValueParser( "ACorp2CharMissionMultiplier",      standings.ACorp2CharMissionMultiplier );
-    AddValueParser( "Agent2PCorpMissionMultiplier",     standings.Agent2PCorpMissionMultiplier );
-    AddValueParser( "ACorp2PCorpMissionMultiplier",     standings.ACorp2PCorpMissionMultiplier );
-    AddValueParser( "AFaction2CharMissionMultiplier",   standings.AFaction2CharMissionMultiplier );
-    AddValueParser( "AFaction2PCorpMissionMultiplier",  standings.AFaction2PCorpMissionMultiplier );
-
-    const bool result = ParseElementChildren( ele );
-
-    RemoveParser( "MissionBonus" );
-    RemoveParser( "MissionFailure" );
-    RemoveParser( "MissionDeclined" );
-    RemoveParser( "MissionCompleted" );
-    RemoveParser( "MissionOfferExpired" );
-    RemoveParser( "MissionFailedRollback" );
-    RemoveParser( "ImportantMissionBonus" );
-    RemoveParser( "BaseMissionMultiplier" );
-    RemoveParser( "FleetMissionMultiplier" );
-    RemoveParser( "Agent2CharMissionMultiplier" );
-    RemoveParser( "ACorp2CharMissionMultiplier" );
-    RemoveParser( "Agent2PCorpMissionMultiplier" );
-    RemoveParser( "ACorp2PCorpMissionMultiplier" );
-    RemoveParser( "AFaction2CharMissionMultiplier" );
-    RemoveParser( "AFaction2PCorpMissionMultiplier" );
+    RemoveParser("host");
+    RemoveParser("port");
+    RemoveParser("username");
+    RemoveParser("password");
+    RemoveParser("db");
+    RemoveParser("compress");
+    RemoveParser("ssl");
+    RemoveParser("useSocket");
+    RemoveParser("autoReconnect");
+    RemoveParser("dbTimeout");
+    RemoveParser("pingTime");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessCrime( const TiXmlElement* ele )
-{
-    AddValueParser( "Enabled",          crime.Enabled );
-    AddValueParser( "AggFlagTime",      crime.AggFlagTime );
-    AddValueParser( "CrimFlagTime",     crime.CrimFlagTime );
-    AddValueParser( "CWSessionTime",    crime.CWSessionTime );
-    AddValueParser( "KillRightTime",    crime.KillRightTime );
-    AddValueParser( "WeaponFlagTime",   crime.WeaponFlagTime );
+bool EVEServerConfig::ProcessFiles(const TiXmlElement* ele) {
+    AddValueParser("logDir",           files.logDir);
+    AddValueParser("logSettings",      files.logSettings);
+    AddValueParser("cacheDir",         files.cacheDir);
+    AddValueParser("imageDir",         files.imageDir);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "Enabled" );
-    RemoveParser( "AggFlagTime" );
-    RemoveParser( "CrimFlagTime" );
-    RemoveParser( "CWSessionTime" );
-    RemoveParser( "KillRightTime" );
-    RemoveParser( "WeaponFlagTime" );
+    RemoveParser("logDir");
+    RemoveParser("logSettings");
+    RemoveParser("cacheDir");
+    RemoveParser("imageDir");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
-{
-    AddValueParser( "UseBeanCount",         debug.BeanCount );
-    AddValueParser( "UseStackTrace",        debug.StackTrace );
-    AddValueParser( "IsTestServer",         debug.IsTestServer );
-    AddValueParser( "UseProfiling",         debug.UseProfiling );
-    AddValueParser( "UseShipTracking",      debug.UseShipTracking );
-    AddValueParser( "PositionHack",         debug.PositionHack );
-    AddValueParser( "AnomalyFaction",       debug.AnomalyFaction );
-    AddValueParser( "BubbleTrack",          debug.BubbleTrack );
-    AddValueParser( "SpawnTest",            debug.SpawnTest );
-    AddValueParser( "DeleteTrackingCans",   debug.DeleteTrackingCans );
-    AddValueParser( "ProfileTraceTime",     debug.ProfileTraceTime );
-    AddValueParser( "ShipTrackingTime",     debug.ShipTrackingTime );
-    AddValueParser( "UseOrbit",             debug.UseOrbit );
+bool EVEServerConfig::ProcessNet(const TiXmlElement* ele) {
+    AddValueParser("port",             net.port);
+    AddValueParser("imageServerPort",  net.imageServerPort);
+    AddValueParser("imageServer",      net.imageServer);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "UseBeanCount" );
-    RemoveParser( "UseStackTrace" );
-    RemoveParser( "IsTestServer" );
-    RemoveParser( "UseProfiling" );
-    RemoveParser( "UseShipTracking" );
-    RemoveParser( "PositionHack" );
-    RemoveParser( "DeleteTrackingCans" );
-    RemoveParser( "AnomalyFaction" );
-    RemoveParser( "SpawnTest" );
-    RemoveParser( "BubbleTrack" );
-    RemoveParser( "ProfileTraceTime" );
-    RemoveParser( "ShipTrackingTime" );
-    RemoveParser( "UseOrbit" );
+    RemoveParser("port");
+    RemoveParser("imageServerPort");
+    RemoveParser("imageServer");
 
     return result;
 }
 
-bool EVEServerConfig::ProcessTesting(const TiXmlElement* ele)
-{
-    AddValueParser( "ShipHeat",             testing.ShipHeat );
-    AddValueParser( "EnableDrones",         testing.EnableDrones);
+bool EVEServerConfig::ProcessThreads(const TiXmlElement* ele) {
+    AddValueParser("ConsoleThreads",       threads.ConsoleThreads);
+    AddValueParser("DatabaseThreads",      threads.DatabaseThreads);
+    AddValueParser("ImageServerThreads",   threads.ImageServerThreads);
+    AddValueParser("NetworkThreads",       threads.NetworkThreads);
+    AddValueParser("WorldThreads",         threads.WorldThreads);
 
-    const bool result = ParseElementChildren( ele );
+    const bool result = ParseElementChildren(ele);
 
-    RemoveParser( "ShipHeat" );
-    RemoveParser( "EnableDrones" );
+    RemoveParser("ConsoleThreads");
+    RemoveParser("DatabaseThreads");
+    RemoveParser("ImageServerThreads");
+    RemoveParser("NetworkThreads");
+    RemoveParser("WorldThreads");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessCosmic(const TiXmlElement* ele) {
+    AddValueParser("PIEnabled",            cosmic.PIEnabled);
+    AddValueParser("AnomalyEnabled",       cosmic.AnomalyEnabled);
+    AddValueParser("DungeonEnabled",       cosmic.DungeonEnabled);
+    AddValueParser("BeltEnabled",          cosmic.BeltEnabled);
+    AddValueParser("BeltRespawn",          cosmic.BeltRespawn);
+    AddValueParser("BeltGrowTime",           cosmic.BeltGrowTime);
+    AddValueParser("BeltGrowPct",           cosmic.BeltGrowPct);
+    AddValueParser("roidRadiusMultiplier", cosmic.roidRadiusMultiplier);
+    AddValueParser("WormHoleEnabled",      cosmic.WormHoleEnabled);
+    AddValueParser("CiviliansEnabled",     cosmic.CiviliansEnabled);
+    AddValueParser("BumpEnabled",          cosmic.BumpEnabled);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("PIEnabled");
+    RemoveParser("AnomalyEnabled");
+    RemoveParser("DungeonEnabled");
+    RemoveParser("BeltEnabled");
+    RemoveParser("BeltRespawn");
+    RemoveParser("BeltGrowTime");
+    RemoveParser("BeltGrowPct");
+    RemoveParser("roidRadiusMultiplier");
+    RemoveParser("WormHoleEnabled");
+    RemoveParser("CiviliansEnabled");
+    RemoveParser("BumpEnabled");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessExploring (const TiXmlElement* ele) {
+    AddValueParser("Radar",                exploring.Radar);
+    AddValueParser("Ladar",                exploring.Ladar);
+    AddValueParser("Unrated",              exploring.Unrated);
+    AddValueParser("Complex",              exploring.Complex);
+    AddValueParser("Gravametric",          exploring.Gravametric);
+    AddValueParser("Magnetometric",        exploring.Magnetometric);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("Radar");
+    RemoveParser("Ladar");
+    RemoveParser("Unrated");
+    RemoveParser("Complex");
+    RemoveParser("Gravametric");
+    RemoveParser("Magnetometric");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessChat(const TiXmlElement* ele) {
+    AddValueParser("EnableFleetChat",      chat.EnableFleetChat);
+    AddValueParser("EnableWingChat",       chat.EnableWingChat);
+    AddValueParser("EnableSquadChat",      chat.EnableSquadChat);
+    AddValueParser("EnableVoiceChat",      chat.EnableVoiceChat);
+    AddValueParser("EnforceRookieInHelp",  chat.EnforceRookieInHelp);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("EnableFleetChat");
+    RemoveParser("EnableWingChat");
+    RemoveParser("EnableSquadChat");
+    RemoveParser("EnableVoiceChat");
+    RemoveParser("EnforceRookieInHelp");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessStandings(const TiXmlElement* ele) {
+    AddValueParser("MissionBonus",                     standings.MissionBonus);
+    AddValueParser("MissionFailure",                   standings.MissionFailure);
+    AddValueParser("MissionDeclined",                  standings.MissionDeclined);
+    AddValueParser("MissionCompleted",                 standings.MissionCompleted);
+    AddValueParser("MissionOfferExpired",              standings.MissionOfferExpired);
+    AddValueParser("MissionFailedRollback",            standings.MissionFailedRollback);
+    AddValueParser("ImportantMissionBonus",            standings.ImportantMissionBonus);
+    AddValueParser("BaseMissionMultiplier",            standings.BaseMissionMultiplier);
+    AddValueParser("FleetMissionMultiplier",           standings.FleetMissionMultiplier);
+    AddValueParser("Agent2CharMissionMultiplier",      standings.Agent2CharMissionMultiplier);
+    AddValueParser("ACorp2CharMissionMultiplier",      standings.ACorp2CharMissionMultiplier);
+    AddValueParser("Agent2PCorpMissionMultiplier",     standings.Agent2PCorpMissionMultiplier);
+    AddValueParser("ACorp2PCorpMissionMultiplier",     standings.ACorp2PCorpMissionMultiplier);
+    AddValueParser("AFaction2CharMissionMultiplier",   standings.AFaction2CharMissionMultiplier);
+    AddValueParser("AFaction2PCorpMissionMultiplier",  standings.AFaction2PCorpMissionMultiplier);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("MissionBonus");
+    RemoveParser("MissionFailure");
+    RemoveParser("MissionDeclined");
+    RemoveParser("MissionCompleted");
+    RemoveParser("MissionOfferExpired");
+    RemoveParser("MissionFailedRollback");
+    RemoveParser("ImportantMissionBonus");
+    RemoveParser("BaseMissionMultiplier");
+    RemoveParser("FleetMissionMultiplier");
+    RemoveParser("Agent2CharMissionMultiplier");
+    RemoveParser("ACorp2CharMissionMultiplier");
+    RemoveParser("Agent2PCorpMissionMultiplier");
+    RemoveParser("ACorp2PCorpMissionMultiplier");
+    RemoveParser("AFaction2CharMissionMultiplier");
+    RemoveParser("AFaction2PCorpMissionMultiplier");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessCrime(const TiXmlElement* ele) {
+    AddValueParser("Enabled",          crime.Enabled);
+    AddValueParser("AggFlagTime",      crime.AggFlagTime);
+    AddValueParser("CrimFlagTime",     crime.CrimFlagTime);
+    AddValueParser("CWSessionTime",    crime.CWSessionTime);
+    AddValueParser("KillRightTime",    crime.KillRightTime);
+    AddValueParser("WeaponFlagTime",   crime.WeaponFlagTime);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("Enabled");
+    RemoveParser("AggFlagTime");
+    RemoveParser("CrimFlagTime");
+    RemoveParser("CWSessionTime");
+    RemoveParser("KillRightTime");
+    RemoveParser("WeaponFlagTime");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele) {
+    AddValueParser("UseBeanCount",         debug.BeanCount);
+    AddValueParser("UseStackTrace",        debug.StackTrace);
+    AddValueParser("IsTestServer",         debug.IsTestServer);
+    AddValueParser("UseProfiling",         debug.UseProfiling);
+    AddValueParser("UseShipTracking",      debug.UseShipTracking);
+    AddValueParser("PositionHack",         debug.PositionHack);
+    AddValueParser("AnomalyFaction",       debug.AnomalyFaction);
+    AddValueParser("BubbleTrack",          debug.BubbleTrack);
+    AddValueParser("SpawnTest",            debug.SpawnTest);
+    AddValueParser("DeleteTrackingCans",   debug.DeleteTrackingCans);
+    AddValueParser("ProfileTraceTime",     debug.ProfileTraceTime);
+    AddValueParser("ShipTrackingTime",     debug.ShipTrackingTime);
+    AddValueParser("UseOrbit",             debug.UseOrbit);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("UseBeanCount");
+    RemoveParser("UseStackTrace");
+    RemoveParser("IsTestServer");
+    RemoveParser("UseProfiling");
+    RemoveParser("UseShipTracking");
+    RemoveParser("PositionHack");
+    RemoveParser("DeleteTrackingCans");
+    RemoveParser("AnomalyFaction");
+    RemoveParser("SpawnTest");
+    RemoveParser("BubbleTrack");
+    RemoveParser("ProfileTraceTime");
+    RemoveParser("ShipTrackingTime");
+    RemoveParser("UseOrbit");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessDrone(const TiXmlElement* ele) {
+    AddValueParser("Enabled",               drone.Enabled);
+    AddValueParser("AutoReconnect",         drone.AutoReconnect);
+    AddValueParser("FleetOnly",             drone.FleetOnly);
+    AddValueParser("LocalOnly",             drone.LocalOnly);
+    AddValueParser("StrictSkills",          drone.StrictSkills);
+    AddValueParser("StrictDistance",        drone.StrictDistance);
+    AddValueParser("GuardPod",              drone.GuardPod);
+    AddValueParser("RegenShields",          drone.RegenShields);
+    AddValueParser("RepairInBay",           drone.RepairInBay);
+    AddValueParser("InteractDistace",       drone.InteractDistace);
+    AddValueParser("RepairCostInBay",       drone.RepairCostInBay);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("Enabled");
+    RemoveParser("AutoReconnect");
+    RemoveParser("FleetOnly");
+    RemoveParser("LocalOnly");
+    RemoveParser("StrictSkills");
+    RemoveParser("StrictDistance");
+    RemoveParser("GuardPod");
+    RemoveParser("RegenShields");
+    RemoveParser("RepairInBay");
+    RemoveParser("InteractDistace");
+    RemoveParser("RepairCostInBay");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessTesting(const TiXmlElement* ele) {
+    AddValueParser("ShipHeat",             testing.ShipHeat);
+    AddValueParser("EnableDrones",         testing.EnableDrones);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("ShipHeat");
+    RemoveParser("EnableDrones");
 
     return result;
 }

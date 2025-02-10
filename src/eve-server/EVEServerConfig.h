@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    11.1
+    Version:    11.5
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -218,6 +218,21 @@ public:
         float LootDropChance;
     } npc;
 
+    // From <drone>
+    struct {
+        bool Enabled;
+        bool FleetOnly;
+        bool StrictSkills;
+        bool StrictDistance;
+        bool LocalOnly;
+        bool AutoReconnect;
+        bool GuardPod;
+        bool RegenShields;
+        bool RepairInBay;
+        uint16 InteractDistace;
+        float RepairCostInBay;
+    } drone;
+
     // From <database>
     struct {
         bool compress;
@@ -356,30 +371,31 @@ public:
     } debug;
 
 protected:
-    bool ProcessEveServer( const TiXmlElement* ele );
-    bool ProcessServer( const TiXmlElement* ele );
-    bool ProcessWorld( const TiXmlElement* ele );
-    bool ProcessRates( const TiXmlElement* ele );
-    bool ProcessMarket( const TiXmlElement* ele );
-    bool ProcessAccount( const TiXmlElement* ele );
-    bool ProcessCharacter( const TiXmlElement* ele );
-    bool ProcessNPC( const TiXmlElement* ele );
-    bool ProcessDatabase( const TiXmlElement* ele );
-    bool ProcessFiles( const TiXmlElement* ele );
-    bool ProcessNet( const TiXmlElement* ele );
-    bool ProcessThreads( const TiXmlElement* ele );
-    bool ProcessCosmic( const TiXmlElement* ele );
-    bool ProcessExploring( const TiXmlElement* ele );
-    bool ProcessStandings( const TiXmlElement* ele );
-    bool ProcessChat( const TiXmlElement* ele );
-    bool ProcessCrime( const TiXmlElement* ele );
-    bool ProcessBPTimes( const TiXmlElement* ele );
-    bool ProcessTesting( const TiXmlElement* ele );
-    bool ProcessDebug( const TiXmlElement* ele );
+    bool ProcessEveServer(const TiXmlElement* ele);
+    bool ProcessServer(const TiXmlElement* ele);
+    bool ProcessWorld(const TiXmlElement* ele);
+    bool ProcessRates(const TiXmlElement* ele);
+    bool ProcessMarket(const TiXmlElement* ele);
+    bool ProcessAccount(const TiXmlElement* ele);
+    bool ProcessCharacter(const TiXmlElement* ele);
+    bool ProcessNPC(const TiXmlElement* ele);
+    bool ProcessDrone(const TiXmlElement* ele);
+    bool ProcessDatabase(const TiXmlElement* ele);
+    bool ProcessFiles(const TiXmlElement* ele);
+    bool ProcessNet(const TiXmlElement* ele);
+    bool ProcessThreads(const TiXmlElement* ele);
+    bool ProcessCosmic(const TiXmlElement* ele);
+    bool ProcessExploring(const TiXmlElement* ele);
+    bool ProcessStandings(const TiXmlElement* ele);
+    bool ProcessChat(const TiXmlElement* ele);
+    bool ProcessCrime(const TiXmlElement* ele);
+    bool ProcessBPTimes(const TiXmlElement* ele);
+    bool ProcessTesting(const TiXmlElement* ele);
+    bool ProcessDebug(const TiXmlElement* ele);
 };
 
 /// A macro for easier access to the singleton.
 #define sConfig \
-    ( EVEServerConfig::get() )
+    (EVEServerConfig::get())
 
 #endif /* !__EVE_SERVER_CONFIG__H__INCL__ */

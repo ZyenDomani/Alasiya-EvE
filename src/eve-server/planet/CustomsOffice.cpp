@@ -169,7 +169,7 @@ void CustomsSE::InitData()
 
 void CustomsSE::Process() {
     /* called by EntityMgr::Process on every loop */
-    /*  Enable base call to Process Targeting and Movement  */
+    /*   Base call to Process Movement  */
     SystemEntity::Process();
 }
 

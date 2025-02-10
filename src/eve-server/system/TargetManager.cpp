@@ -191,8 +191,12 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     return true;
 }
 
-bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
+bool TargetManager::StartTargeting(SystemEntity* tSE, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
 {       // NOTE  this is for npcs (including player drones)
+    // error check for testing drones...will remove later
+    if (maxLockedTargets < 1)
+        sLog.Error("TM::StartTargeting()","<1 locked for %s", mySE->GetName());
+
     //first make sure they are not already in the list
     if (m_targets.find(tSE) != m_targets.end()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
@@ -205,8 +209,8 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxL
         mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return false;
     }
-    // Check against max target range
-    if (mySE->GetPosition().distance(tSE->GetPosition()) > maxTargetLockRange){
+    // Check against max target range, except drones
+    if (!mySE->IsDroneSE() and (mySE->GetPosition().distance(tSE->GetPosition()) > maxTargetLockRange)) {
         _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are too far away.  Begin Approaching.", \
         mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         chase = true;
@@ -219,7 +223,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxL
     m_targets[tSE] = te;
     tSE->TargetMgr()->TargetedAdd(mySE);
 
-    _log(TARGET__INFO, "NPC %s(%u) started targeting %s(%u) (%.2fs lock time)", \
+    _log(TARGET__INFO, "%s(%u) started targeting %s(%u) (%.2fs lock time)", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), (lockTime / 1000));
 
     sEntityMgr.AddTargMgr(mySE, this);
@@ -479,8 +483,14 @@ void TargetManager::TargetsCleared() {
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
-bool TargetManager::IsTargetedBy(SystemEntity* pSE)
-{
+bool TargetManager::IsTargeting(SystemEntity* tSE) {
+    if (m_targets.empty())
+        return false;
+
+    return (m_targets.find(tSE) != m_targets.end());
+}
+
+bool TargetManager::IsTargetedBy(SystemEntity* pSE) {
     return (m_targetedBy.find(pSE) != m_targetedBy.end());
 }
 

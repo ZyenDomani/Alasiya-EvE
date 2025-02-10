@@ -206,6 +206,9 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
             m_self->SetAttribute(AttrShieldCharge, EvilZero);
         }
 
+        // report shields failed to advanced entity
+        ReportDamage(1);
+
         //Armor:
         float available_armor = m_self->GetAttribute(AttrArmorHP).get_float() - m_self->GetAttribute(AttrArmorDamage).get_float();
         Damage DamageToArmor = damage.MultiplyDup(
@@ -242,6 +245,9 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                 m_self->SetAttribute(AttrArmorDamage, m_self->GetAttribute(AttrArmorHP));
             }
 
+            // report armor failed to advanced entity
+            ReportDamage(2);
+            
             //Hull/Structure:
             //The base hp and damage attributes represent structure.
             float available_hull = m_self->GetAttribute(AttrHP).get_float() - m_self->GetAttribute(AttrDamage).get_float();

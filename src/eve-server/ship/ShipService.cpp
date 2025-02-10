@@ -102,6 +102,9 @@ protected:
     ShipDB& m_db;
     Dispatcher *const m_dispatch;
 
+    // helper method to check and set errors for scooping objects from space
+    void CheckScoop(SystemManager* sysMgr, PyList* droneList, PyDict* errorDict);
+
 private:
     ShipItem* pShip;
 };
@@ -225,7 +228,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
      * if (pClient->CrimeMgr()->IsWeaponFlagActive())
      *  deny eject
      */
-    //{'FullPath': u'UI/Messages', 'messageID': 256625, 'label': u'NoEjectingToSpaceInStationBody'}(u"You can't eject into space while you're docked. Try leaving your ship the usual way.", None, None)
+    //256625, 'label': u'NoEjectingToSpaceInStationBody'}(u"You can't eject into space while you're docked. Try leaving your ship the usual way.", None, None)
 
     SystemEntity* pShipSE = pClient->GetShipSE();
     if (pShipSE == nullptr)
@@ -382,13 +385,6 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
         return nullptr;
     }
 
-    PyList* PyToDropList = args.toDrop;
-    uint32 ownerID = args.ownerID;  // not sent for LaunchDrone() command  (not needed)
-    //used for LaunchUpgradePlatformWarning
-    // args.ignoreWarning
-
-    bool dropped = false, shipDrop = false;
-
     Client* pClient(call.client);
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
@@ -396,10 +392,16 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
         return nullptr;
     }
 
-    uint8 qty = 0;
-    uint32 itemID = 0;
-    double radius = pShip->radius();
+    PyList* PyToDropList(args.toDrop);
+    uint32 ownerID(args.ownerID);  // not sent for LaunchDrone() command  (not needed)
+    //used for LaunchUpgradePlatformWarning
+    // args.ignoreWarning
 
+    uint8 qty(0);
+    uint32 itemID(0);
+    double radius(pShip->radius());
+
+    bool dropped(false), shipDrop(false);
     InventoryItemRef iRef(nullptr);
     PyDict* dict = new PyDict();
     for (uint32 i(0); i < PyToDropList->size(); ++i) {
@@ -418,7 +420,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
         switch (iRef->categoryID()) {
             case EVEDB::invCategories::Drone: {
                 if (!sConfig.testing.EnableDrones) {
-                    throw CustomError("Drones are disabled.");
+                    throw CustomError("Player Drones are disabled.");
                 }
 
                 if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() < 1) {
@@ -438,7 +440,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
                 // This item is a drone, so launch it into space:
                 if (qty > 1) {
-                    for (uint8 i = 0; i < qty; i++) {
+                    for (uint8 i = 0; i < qty; ++i) {
                         InventoryItemRef newItem = iRef->Split(1);
                         if (newItem.get() == nullptr) {
                             _log(INV__ERROR, "ShipBound::Handle_Drop() - Error splitting item %u. Skipping.", iRef->itemID());
@@ -488,8 +490,8 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 }
 
                 /** @todo implement these checks  (may be more i havent found yet) */
-                //{'FullPath': u'UI/Messages', 'messageID': 259679, 'label': u'DropNeedsPlayerCorpBody'}(u'In order to launch {[item]item.name} you need to be a member of a independent corporation.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
-                //{'FullPath': u'UI/Messages', 'messageID': 256411, 'label': u'CantInHighSecSpaceBody'}(u'You cannot do that as CONCORD currently restricts the launching, anchoring and control of that type of structure within CONCORD-protected space to authorized agents of the empires.', None, None)
+                //259679, 'label': u'DropNeedsPlayerCorpBody'}(u'In order to launch {[item]item.name} you need to be a member of a independent corporation.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+                //256411, 'label': u'CantInHighSecSpaceBody'}(u'You cannot do that as CONCORD currently restricts the launching, anchoring and control of that type of structure within CONCORD-protected space to authorized agents of the empires.', None, None)
 
                 DBSystemDynamicEntity entity = DBSystemDynamicEntity();
                 entity.ownerID = ownerID;
@@ -709,14 +711,25 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     SystemEntity* pSE = pSysMgr->GetSE(arg.arg);
     if (pSE == nullptr) {
         _log(SERVICE__ERROR, "%s: Unable to find object %u to scoop.", pClient->GetName(), arg.arg);
-        return PyStatic.mtDict();
-        //{'FullPath': u'UI/Messages', 'messageID': 258825, 'label': u'ScoopObjectGoneBody'}(u'{target} is no longer there.', None, {u'{target}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
+
+        PyDict* data = new PyDict();
+            data->SetItemString("target", new PyString("NULL"));
+        PyTuple* error = new PyTuple(2);
+            error->SetItem(0, new PyString("ScoopObjectGone"));
+            error->SetItem(1, data);
+        PyDict* errorDict = new PyDict();
+            errorDict->SetItem(new PyInt(arg.arg), error);
+        return errorDict;
     }
 
     // check to see if this object is anchored and if so, refuse to scoop it
     if (pSE->IsContainerSE())
         if (pSE->GetContSE()->IsAnchored())
             throw CustomError("%s is anchored.  Cannot scoop.", pSE->GetName());
+
+    // no clue how to implement this...
+    //258611, 'label': u'ConfirmScoopWithIllicitGoodsBody'}(u'This container contains goods that are considered illicit by {faction}, which is the controlling faction of the solar system you are in.<br>Are you sure you would like to scoop this container?', None, {u'{faction}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'faction'}})
+
 
     // check drones for other pilots control
     if (pSE->IsDroneSE())
@@ -732,20 +745,18 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
 
     // Check cargo bay capacity:
     if (pClient->GetShip()->GetMyInventory()->ValidateAddItem(flagCargoHold, iRef)) {  // this will throw if it fails
-        // We have enough Cargo bay capacity to hold the item being scooped,
-        // so take ownership of it
-        iRef->ChangeOwner(pClient->GetCharacterID(), true);
+        // We have enough Cargo bay capacity to hold the item being scooped
         // perform data cleanup for structures
         if (pSE->IsPOSSE())
             pSE->GetPOSSE()->Scoop();
         // perform data cleanup for drones
         if (pSE->IsDroneSE())
             pClient->GetShipSE()->ScoopDrone(pSE);
-        // move it into the cargo bay:
-        pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagCargoHold);
         pSysMgr->RemoveEntity(pSE);
-        // delete SE since item is no longer in space
         SafeDelete(pSE);
+        // take ownership and move it into the cargo bay:
+        iRef->ChangeOwner(pClient->GetCharacterID(), true);
+        pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagCargoHold);
     }
 
     return PyStatic.mtDict();
@@ -759,12 +770,15 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     }
     // per patch notes, if ship is too far to scoop, it will automagically travel closer till drone is within range, then scoop and stop
 
+    PyDict* errorDict = new PyDict();
     Client* pClient(call.client);
     SystemEntity* pDroneSE(nullptr);
     InventoryItemRef iRef(nullptr);
     SystemManager* pSysMgr(pClient->SystemMgr());
+    PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
+
     std::vector<int32>::const_iterator cur = args.ints.begin();
-    for(; cur != args.ints.end(); cur++) {
+    for(; cur != args.ints.end(); ++cur) {
         pDroneSE = pSysMgr->GetSE(*cur);
         if (pDroneSE == nullptr) {
             _log(SERVICE__ERROR, "%s: Unable to find droneSE %u to scoop.", pClient->GetName(), *cur);
@@ -789,28 +803,77 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         // Check drone bay capacity:
         if (pClient->GetShip()->GetMyInventory()->ValidateAddItem(flagDroneBay, iRef)) {  // this will throw if it fails
             // We have enough Drone bay capacity to hold the drone,
-            // so take ownership of it and move it into the Drone bay:
-            iRef->ChangeOwner(pClient->GetCharacterID(), true);
-            pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagDroneBay);
             pClient->GetShipSE()->ScoopDrone(pDroneSE);
             pSysMgr->RemoveEntity(pDroneSE);
             SafeDelete(pDroneSE);
+            // take ownership of it and move it into the Drone bay:
+            iRef->ChangeOwner(pClient->GetCharacterID(), true);
+            pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagDroneBay);
         }
     }
-
-    /** @todo complete error msgs here */
-
-    //CannotScoopTargetedShip
-    //CantScoopAnchoring
-    //CantScoopOwnerNpc
-    //CantScoopThat
-    //ScoopObjectGone
-    //ShpScoopSecureCC
-    //CanOnlyScoopIfUnanchored
 
     // returns error on error else mtDict
     return PyStatic.mtDict();
 }
+
+// helper method  (these are not checked in client)
+// TODO: if errors, these should be returned for every drone in list as applicable
+// will have to check each drone in list, then populate dicts to return to client for drones that fail
+/*
+ *          [PyDict 5 kvp]
+ *            [PyIntegerVar 1005909162494]
+ *            [PyTuple 2 items]
+ *              [PyString "EntityTargetTooDistant"]
+ *              [PyDict 2 kvp]
+ *                [PyString "targetTypeName"]
+ *                [PyTuple 2 items]
+ *                  [PyInt 7]
+ *                  [PyInt 561]
+ *                [PyString "distance"]
+ *                [PyFloat 45000]
+ */
+
+void ShipBound::CheckScoop(SystemManager* sysMgr, PyList* itemList, PyDict* errorDict) {
+
+    /** @todo complete error msgs here
+     *    these will have to be coded like drone errors in entityservice.cpp
+     */
+
+    uint32 itemID(0);
+    SystemEntity* pSE(nullptr);
+    InventoryItemRef iRef(nullptr);
+    PyList::const_iterator itr = itemList->begin();
+    while (itr != itemList->end()) {
+        itemID = PyRep::IntegerValueU32(*itr);
+        pSE = sysMgr->GetEntityByID(itemID);
+        if (pSE == nullptr) {
+            PyDict* data = new PyDict();
+            if (pSE != nullptr) {
+                data->SetItemString("targetTypeName", new PyString(pSE->GetName()));
+            } else if (iRef.get() != nullptr) {
+                data->SetItemString("targetTypeName", new PyString(iRef->itemName()));
+            } else  {
+                data->SetItemString("targetTypeName", new PyString("NULL"));
+            }
+            PyTuple* error = new PyTuple(2);
+            error->SetItem(0, new PyString("EntityNotPresent"));
+            error->SetItem(1, data);
+            errorDict->SetItem(new PyInt(itemID), error);
+            continue;
+        }
+
+        ++itr;
+    }
+
+    //261541, 'label': u'CannotScoopTargetedShipBody'}(u'You cannot scoop a ship while it is being targeted', None, None)
+    //260170, 'label': u'CantScoopAnchoringBody'}(u'You cannot scoop item in group {group} while it is being anchored.', None, {u'{group}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'group'}})
+    //260124, 'label': u'CantScoopOwnerNpcBody'}(u'You cannot scoop the {group} because it belongs to EVE System or an NPC corporation. You should not be seeing this message, but if you are and you put that object there, fix it.', None, {u'{group}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'group'}})
+    //260167, 'label': u'CantScoopThatBody'}(u'Your ship is not capable of scooping up a {targetGroup}.', None, {u'{targetGroup}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetGroup'}})
+    //258825, 'label': u'ScoopObjectGoneBody'}(u'{target} is no longer there.', None, {u'{target}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
+    //258750, 'label': u'ShpScoopSecureCCBody'}(u'This is a secure container and will detonate upon scooping unless disarmed with a password.', None, None)
+    //260193, 'label': u'CanOnlyScoopIfUnanchoredBody'}(u'You cannot scoop that {group} because it is anchored.', None, {u'{group}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'group'}})
+}
+
 
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     Call_SingleIntList args;

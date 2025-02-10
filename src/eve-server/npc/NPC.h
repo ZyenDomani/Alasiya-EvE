@@ -62,7 +62,9 @@ public:
     virtual bool Load();  // sets orbit range and initalizes the AIMgr
 
     /* virtual functions to be overridden in derived classes */
-    virtual void MissileLaunched(Missile* pMissile);  // tells AI a missle has been launched at us.  allows defender missile code
+    virtual void MissileLaunched(Missile* pMissile);  // tells AI a missile has been launched at us.  allows defender missile code
+    virtual void        ReportDamage(uint8 type=0);
+
 
     /* specific functions handled here. */
     void SaveNPC();

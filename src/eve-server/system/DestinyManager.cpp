@@ -34,7 +34,6 @@
 #include "StaticDataMgr.h"
 #include "map/MapData.h"
 #include "math/Trig.h"
-#include "npc/Drone.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
 #include "packets/Missile.h"
@@ -306,7 +305,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
         m_hasSentShipUpdates = true;
     }
 
-    if (((mySE->IsNPCSE() or mySE->IsDroneSE()) and !m_hasSentShipUpdates)
+    if ((mySE->IsNPCSE() and !m_hasSentShipUpdates)
     or mySE->IsMissileSE() or mySE->IsContainerSE() or mySE->IsWreckSE()) {
         SetBallSpeed ms;   //NPCs, Missiles, containers, wrecks
             ms.entityID = mySE->GetID();
@@ -595,7 +594,7 @@ void DestinyManager::Bump(SystemEntity* pSE)
      */
 
     /*  run-time options for bumping jetcans, biomass, and other space objects
-     *   bump drones??  prolly not, for simplicity
+     *   bump drones??  nope...not a thing
      */
     std::string msg1 = "You have bumped ";
     msg1 += pSE->GetPilot()->GetName();
@@ -2153,15 +2152,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), m_targetPoint);
 
     // npcs have no warp restrictions (yet)
-    if (mySE->IsNPCSE() or mySE->IsDroneSE()) {
-        // do drones warp??   they can, yes...with limitations
-        if (mySE->IsDroneSE()) {
-            // put drone limit checks here
-            sLog.Warning("DroneWarp", "Drone %s (from ship %s) warping from bID %u to bID %u", \
-                mySE->GetName(), mySE->GetDroneSE()->GetShipSE()->GetName(), \
-                mySE->SysBubble()->GetID(), m_targBubble->GetID());
-        }
-
+    if (mySE->IsNPCSE()) {
         BeginMovement();
         // if usf < 75%, set usf for warp
         if (m_userSpeedFraction < 0.749)
@@ -2566,27 +2557,18 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     }
 }
 
-// settings for npc and drone max speeds
-void DestinyManager::SetMaxVelocity(float maxVelocity) {
-    float maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
-    /*
-    if (mySE->IsMissileSE() or mySE->IsNPCSE()) {
-        maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
-    } else if (mySE->IsShipSE() or mySE->IsDroneSE()) {
-        maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float();   // this is depreciated.  used as an absolute max speed, accounting for ab/mwd
-    } else {
-        ; // make error here?
-    }
-        */
+// settings for npc max speeds
+void DestinyManager::SetMaxVelocity(uint16 maxVelocity) {
+    uint16 maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_uint32();
+
     if (is_log_enabled(DESTINY__TRACE))
-        _log(DESTINY__TRACE, "Destiny::SetMaxVelocity() - Ship:%s(%u) - AttrMaxDirectionalVelocity is %.1f, maxSpeed is %.1f, update sent %.1f", \
-                mySE->GetName(), mySE->GetID(), mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float(), \
-                maxSpeed, maxVelocity);
+        _log(DESTINY__TRACE, "Destiny::SetMaxVelocity() - Ship:%s(%u) - maxSpeed is %u, update sent %u", \
+                mySE->GetName(), mySE->GetID(), maxSpeed, maxVelocity);
 
     if (maxVelocity > maxSpeed) {
-        m_maxShipSpeed = maxSpeed;
-    } else {
         m_maxShipSpeed = maxVelocity;
+    } else {
+        m_maxShipSpeed = maxSpeed;
     }
 }
 
@@ -2598,7 +2580,7 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     // set up initial variables
     InventoryItemRef sRef = mySE->GetSelf();
     if (!sRef->HasAttribute(AttrInertiaMod))    // this should never hit
-        sLog.Error("DM::UpdateShipVariables", "%s (%u) does not have an InertiaMod", mySE->GetName(), mySE->GetID());
+        sLog.Error("DM::SpeedBoost", "%s (%u) does not have an InertiaMod", mySE->GetName(), mySE->GetID());
 
     double mass = sRef->GetAttribute(AttrMass).get_double();
     double inertiaMod = sRef->GetAttribute(AttrInertiaMod).get_double();
@@ -2800,12 +2782,11 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
 }
 
 /*  called from
- * Client::ResetAfterPodded(),
- * NPC::NPC(),
- * Concord::Concord(),
- * Drone::Drone(),
+ * Client::ResetAfterPodded()
+ * NPC::NPC()
+ * Concord::Concord()
  * DestinyManager::UpdateNewShip()
- * DynamicEntityFactory::BuildEntity
+ * DynamicEntityFactory::BuildEntity()  (for abandoned ships)
  */
 void DestinyManager::UpdateShipVariables()
 {
@@ -2818,7 +2799,7 @@ Battlecruisers                          1.1
 Battleships                             0.155
 */
     /* this sets variables needed for correct movement math.
-     *  these attribs are set from ship item when shipSE created.  DO NOT modify anything here
+     *  these attribs are set for ship item when ship's SE created.  DO NOT modify anything here
      * this is also called when fleet boosts are updated.
      */
     /** @todo check for movement when fleet boosts are applied and this is called */
@@ -2833,18 +2814,20 @@ Battleships                             0.155
 
     double mass = sRef->GetAttribute(AttrMass).get_double();
     double inertiaMod = sRef->GetAttribute(AttrInertiaMod).get_double();
+
     m_agility = mass * inertiaMod / 1000000;
+
     sRef->SetAttribute(AttrAgility, m_agility, false);
 
-    // this will catch speeds/needs for all ships (player, npc, drone), and is easier to do here.
+    // this will catch speeds/needs for all ships (player, npc), and is easier to do here.
     if (sRef->HasAttribute(AttrWarpSpeedMultiplier))
         m_shipWarpSpeed = sRef->GetAttribute(AttrWarpSpeedMultiplier).get_float();
-    if (mySE->IsNPCSE()) {
-        m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
+
+    // for npc, this is mwd/ab speed, not sub-warp speed
+    if (sRef->HasAttribute(AttrMaxVelocity)) {
+        m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
     } else {
-        // for npc, this is mwd/ab speed, not sub-warp speed
-        if (sRef->HasAttribute(AttrMaxVelocity))
-            m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
+        m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
     }
     if (sRef->HasAttribute(AttrWarpCapacitorNeed)) {
         m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_double() * 10;
@@ -2852,7 +2835,7 @@ Battleships                             0.155
         m_warpCapacitorNeed = 0.000000138;   // lowest value in db
     }
 
-    // verify hull overspeed
+    // verify hull overspeed  ~950 types with this attrib
     if (sRef->HasAttribute(AttrMaxDirectionalVelocity))
         if (m_maxShipSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
             m_maxShipSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
@@ -2970,8 +2953,9 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)
 
     m_followDistance = 500 + pShipSE->GetRadius();
     m_shipAccelTime = 0.1f;
-
-    m_activeSpeedFraction = m_userSpeedFraction = m_timeFraction = 1.0f;
+    m_timeFraction = 1.0f;
+    m_userSpeedFraction = 1.0f;
+    m_activeSpeedFraction = 1.0f;
 
     m_targetEntity.first = pShipSE->GetID();
     m_targetEntity.second = pShipSE;
@@ -3102,8 +3086,8 @@ void DestinyManager::SendModGFX(ModuleItemRef rMod) {
     /*
     OnSpecialFX14 effect;
         effect.entityID = entityID;
-        effect.moduleID = moduleID;             // npc UID for npc's/drones
-        effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's/drones
+        effect.moduleID = moduleID;             // npc UID for npc's
+        effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's
         effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
         effect.otherTypeID = (chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID));
         effect.area = PyStatic.mtList();        // no data.  not used in client
@@ -3131,8 +3115,8 @@ void DestinyManager::SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeI
 {
     OnSpecialFX14 effect;
         effect.entityID = entityID;
-        effect.moduleID = moduleID;             // npc UID for npc's/drones
-        effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's/drones
+        effect.moduleID = moduleID;             // npc UID for npc's
+        effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's
         effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
         effect.otherTypeID = (chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID));
         effect.area = PyStatic.mtList();        // no data.  not used in client

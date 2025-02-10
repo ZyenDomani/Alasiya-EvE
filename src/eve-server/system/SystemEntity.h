@@ -286,6 +286,9 @@ public:
     virtual bool                HasPilot()              { return false; }
     virtual Client*             GetPilot()              { return nullptr; }
 
+    /* virtual functions for advanced npc and drones */
+    virtual void                ReportDamage(uint8 type=0) { /* do nothing here */ }
+
 protected:
     SystemBubble*               m_bubble;               /* we do not own this. never NULL in space */
     SystemManager*              m_system;               /* we do not own this  never NULL in space */

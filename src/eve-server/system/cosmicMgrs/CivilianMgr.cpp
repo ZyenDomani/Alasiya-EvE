@@ -53,3 +53,9 @@ void CivilianMgr::Process() {
     /* do something useful here */
 }
 
+/* groupIDs to use
+ *
+            Convoy = 297,
+            Convoy_Drone = 298, (police/guards)
+            */
+

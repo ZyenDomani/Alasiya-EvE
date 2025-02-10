@@ -399,8 +399,7 @@ void ProbeSE::RemoveProbe()
     }
     // remove from system
     m_system->RemoveEntity(this);
-    // set item loc to null
-    m_self->SetPosition(NULL_ORIGIN);
+    m_system->AddToDeleteLater(this);
 
     if (m_client != nullptr) {
         PyTuple* ev = new PyTuple(1);

@@ -82,7 +82,7 @@ m_beltID(0)
 
 void AsteroidSE::Process() {
     /* called by EntityMgr::Process on every loop */
-    /*  Enable base call to Process Targeting and Movement  */
+    /*   Base call to Process Movement  */
     SystemEntity::Process();
 
     if (m_growTimer.Check())

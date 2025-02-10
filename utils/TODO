@@ -95,7 +95,17 @@ add agent portraits to server and update 'backupurl' in server code
 
 if implants changed while skill training, update all training times for new char attribs
 
+remove GPoint/GVector code and just write my own using int64
+  positioning is whole numbers, but large (distances in space use meters, mostly in the billions)
+  simple arithmetic on floats only used for au
+  float/double precision not wanted or needed for positioning and int64 math is faster
+  go thru destiny and use int64 instead of double
+  go thru all position data and use int64 instead of double
+        except on math calls where precision is required (turn, orbit)
+
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: med-hi
+NOTE:  copy idea from drones (state/actions)
+    - will need updates based on drone findings and learned methods
     - npc will attack drones based on class
     - npc lost target <- this method needs better thought to pick next target
     - should npc have 'pool' of available/preferred targets
@@ -116,8 +126,6 @@ after using "Loot All" on yellow wreck, items dont show up in cargo.  (diff owne
 
 character remap needs a bit more work.  attributes and bonuses save/load correctly.  client code needs update
 
-remove GPoint/GVector code and just write my own.
-
 entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
   updated as much as i know how right now
 
@@ -128,6 +136,8 @@ ImageServer::GetImage - fclose(fp)
 temp object going out of scope - return (uptime.str().c_str());
 
 go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
+    radius() doesnt need to be double
+
 go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
 while you're at it, verify member initialization is correct.  i know destiny isnt (and it's member list is huge)
 	- im sure its not the only one...but some (or most) of my 'newer' classes should be right (at least a lot closer).
@@ -194,6 +204,7 @@ RAM code - implement invention, re    -priority level: low
     - add Almanu's cal'c fix from official?  not sure what he 'fixed'
     - verify char prod efficiency skill for Calculate()
     - many messages not implemented   see common/EVE_RAM.h
+    make note in customInfo on bp for ram activity and location
 
 blueprints - look over data and verify...so far seems mostly accurate.
     - rifter 691 - RE needs criminal connections l5???
@@ -322,6 +333,13 @@ DogmaIMBound::Handle_StopOverloadRack
 DATA RACE!!
     found data race on console log while running under valgrind.(imageSvr and BoundObject calls at same time)
     go thru log and verify MT safe status   -log uses mutex...wtf?   if mutex is right, this is impossible
+    found this in logs....maybe not data race, but inserted log into current dump....dunno yet.
+19:07:07 [SetStateDump]           [16]   Args:   [ 8] Value:    Integer: 98000001
+19:07:0719:07:07 [SetStateDump]           [16]   Args:   [ 9]   Key:     String: 'name'
+ C       ImageServer: 19:07:07 [SetStateDump]           [16]   Args:   [ 9] Value:     String: 'Hulk'
+ GetImage() called. Cat: Character, id: 90000000, size:32
+19:07:07 [SetStateDump]           [16]   Args:   [10]   Key:     String: 'allianceID'
+
 
 RefObjects -
     - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
@@ -381,9 +399,12 @@ there is a lot more to machonet than we currently have coded/working....
 
 look into removing xmlp encode() for things we can build in code
 
+
 *******************************************************
 *******************************************************
 *****************   module system coding
+
+module/charge fx out of order in map.
 
 module add/remove isnt fully thought out at this point.
     - will need complete walk thru to verify proper operation
@@ -644,6 +665,7 @@ petition system missing most calls
     - notes for ~20 system calls (may be complete)
 
 belt spawns - rework for better ship group selection   -priority level: med
+    - update entire system based on lessons learned over past years
 
 belt manager 'active' status on timer?
 
@@ -966,6 +988,10 @@ make EACS and E-UNI corps as tribute (static)?
 *******************************************************
 *****************  ideas for later
 
+asteroid belt formations other than the crescent
+  noted in beltmgr.cpp
+  other ideas/notes in same place
+
 Creating a new bomb type that when it is carried in cargo and the ship is destroyed it triggers a bomb explosion.
 In high sec, the Tengu should have a chance of spontaneous self destruction when undocking.
 All ships bigger than a battlecruiser get a special bay for a frigate that you get ejected inside of (rather than pod) when the big ship dies.
@@ -996,6 +1022,7 @@ rats should test for faction signals in system and set origin along that directi
     - if no faction presence in system, continue with random point
 
 civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file.   -priority level: low
+    - found and noted groupIDs for this class  ships and escorts
 
 expanded cargo modules update for specialized holds.   -priority level: low
     - there are some client checks for updated hold capy

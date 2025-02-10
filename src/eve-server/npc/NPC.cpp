@@ -66,10 +66,10 @@ m_orbitingID(0)
     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
     /* Gets the value from the NPC type and put on our own vars */
-    m_emDamage = m_self->GetAttribute(AttrEmDamage).get_float(),
-    m_kinDamage = m_self->GetAttribute(AttrKineticDamage).get_float(),
-    m_therDamage = m_self->GetAttribute(AttrThermalDamage).get_float(),
-    m_expDamage = m_self->GetAttribute(AttrExplosiveDamage).get_float(),
+    m_emDamage = m_self->GetAttribute(AttrEmDamage).get_float();
+    m_kinDamage = m_self->GetAttribute(AttrKineticDamage).get_float();
+    m_therDamage = m_self->GetAttribute(AttrThermalDamage).get_float();
+    m_expDamage = m_self->GetAttribute(AttrExplosiveDamage).get_float();
     m_hullDamage = m_self->GetAttribute(AttrDamage).get_float();
     m_armorDamage = m_self->GetAttribute(AttrArmorDamage).get_float();
     m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
@@ -102,7 +102,7 @@ void NPC::Process() {
 
     m_AI->Process();
 
-    /*  Enable base call to Process Targeting and Movement  */
+    /*   Base call to Process Movement  */
     SystemEntity::Process();
 
     if (sConfig.debug.UseProfiling)
@@ -292,6 +292,10 @@ void NPC::UseHullRepairer() {
 void NPC::MissileLaunched(Missile* pMissile)
 {
     m_AI->MissileLaunched(pMissile);
+}
+
+void NPC::ReportDamage(uint8 type) {
+    SystemEntity::ReportDamage(type);
 }
 
 void NPC::SaveNPC()

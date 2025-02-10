@@ -59,12 +59,12 @@ public:
     SystemEntity* GetTargetSE()                         { return m_targetSE; }
 
     void SetHitTimer(uint32 setTime)                    { m_hitTimer.Start(setTime); }
-    void SetSpeed(double speed)                         { m_speed = speed; }
+    void SetSpeed(uint16 speed)                         { m_speed = speed; }
 
     bool IsAlive()                                      { return m_alive; }
     bool IsOverloaded()                                 { return false; }
 
-    double GetSpeed()                                   { return m_speed; }
+    uint16 GetSpeed()                                   { return m_speed; }
 
 protected:
     SystemEntity* m_targetSE;
@@ -83,7 +83,7 @@ protected:
 
     float m_damageMod;
 
-    double m_speed;
+    uint16 m_speed;
     double m_hullHP;
 };
 

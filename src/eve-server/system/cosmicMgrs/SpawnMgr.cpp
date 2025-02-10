@@ -19,6 +19,8 @@
 #include "system/cosmicMgrs/SpawnMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
 
+// TODO:  UPDATE:  run thru this again, using lessons and insights learned over past 10 years to update this system
+
 /** @todo  this can be updated to spawn mission, anomaly and deadspace rats.
  *   change all *roidRat* to *somethingelse* to better explain/describe the maps and how they're used.
  *  add objects for mission, anomaly and deadspace rats as needed to aid in tracking/deleting.
@@ -863,8 +865,7 @@ void SpawnMgr::RemoveSpawn(uint16 bubbleID, uint32 itemID)
     return;
 }
 
-uint8 SpawnMgr::GetSpawnGroup(uint8 sClass)
-{
+uint8 SpawnMgr::GetSpawnGroup(uint8 sClass) {
     switch (sClass) {
         case Spawn::Class::Extra:    // placeholder - not used yet
         case Spawn::Class::None:
@@ -939,8 +940,7 @@ uint8 SpawnMgr::GetSpawnGroup(uint8 sClass)
     return Spawn::Group::None;
 }
 
-std::string SpawnMgr::GetSpawnGroupName(int8 sGroup)
-{
+std::string SpawnMgr::GetSpawnGroupName(int8 sGroup) {
     switch(sGroup) {
         case Spawn::Group::None:            return "None";
         case Spawn::Group::Roaming:         return "Roaming";
@@ -956,8 +956,7 @@ std::string SpawnMgr::GetSpawnGroupName(int8 sGroup)
     return "Undefined";
 }
 
-std::string SpawnMgr::GetSpawnClassName(int8 sClass)
-{
+std::string SpawnMgr::GetSpawnClassName(int8 sClass) {
     switch(sClass) {
         case Spawn::Class::None:            return "None";
         case Spawn::Class::Easy:            return "Easy";

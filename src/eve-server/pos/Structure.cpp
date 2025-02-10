@@ -276,7 +276,7 @@ void StructureSE::Init()
         // how the hell is itemID 0 here??
         sLog.Error("StructureSE::Init", "ItemID is 0.");
         EvE::traceStack();
-        m_system->RemoveEntity(this); //this may segfault here....
+        m_system->AddToDeleteLater(this);
         return;
     }
     m_data.state = EVEPOS::StructureState::Unanchored;
@@ -449,7 +449,7 @@ void StructureSE::Scoop()
 void StructureSE::Process()
 {
     /* called by EntityMgr::Process on every loop */
-    /*  Enable base call to Process Targeting and Movement  */
+    /*   Base call to Process Movement  */
     SystemEntity::Process();
 
     if (m_procTimer.Check(false))

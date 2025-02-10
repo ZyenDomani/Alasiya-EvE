@@ -1270,9 +1270,19 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
         //case EvE::GFXID::mining:
             useStartTime = false;
     }
-    std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
+
+    //TODO:  check for ship gfx data and set accordingly
+    uint32 gfxID(0);
+    /*  there are ~6500 listed for these, but dont see where they are used in packets
+    if (m_self->HasAttribute(AttrGfxTurretID))// graphicID for turret for drone type ships
+        gfxID = m_self->GetAttribute(AttrGfxTurretID).get_uint32();
+    if (m_pDrone->GetSelf()->HasAttribute(AttrGfxBoosterID))// graphicID for turret for drone type ships
+        gfxID = m_pDrone->GetSelf()->GetAttribute(AttrGfxBoosterID).get_uint32();
+     */
+
+    std::string guidStr = sFxDataMgr.GetEffectGuid(gfxID);
     if (guidStr.empty())
-        _log(EFFECTS__ERROR, "guid empty for %s using effectID %u", m_modRef->name(), m_effectID);
+        guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
 
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
 
@@ -1295,7 +1305,8 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
                 active,         // active
                 cycleTime,      // duration in ms
                 m_repeat,       // repeat
-                (useStartTime ? m_startTime : 0), 0,
+                (useStartTime ? m_startTime : 0),
+                gfxID,
                 pClient);
 }
 

@@ -58,7 +58,7 @@ enum EveAttrEnum {
     AttrCpu = 50,                                       //cpu required by this item for fitting
     AttrSpeed = 51,                                     //durationAttributeID in dgmEffects  Time in milliseconds between possible activations
     AttrDamageResistance = 52,
-    AttrMaxRange = 54,                                  //rangeAttributeID in dgmEffects  max distance range does not affect the to-hit equation.
+    AttrMaxRange = 54,                                  //max distance range does not affect the to-hit equation.
     AttrRechargeRate = 55,                              //Amount of time taken to fully recharge the capacitor.
     AttrChargeRate = 56,                                //Number of charges consumed per activation
     AttrTargetModule = 61,                              // module groupID targeted  - db has some data, but all are 0
@@ -148,7 +148,7 @@ enum EveAttrEnum {
     AttrProximityRange = 154,                           //The distance at which to react when relevant objects come within range.
     AttrIncapacitationRatio = 156,              //The hull damage proportion at which an entity becomes incapacitated.
     AttrOrbitRange = 157,                               // as stated     (is this NPC or Drone?  drone for sure)
-    AttrFalloff = 158,                                  //falloffAttributeID in dgmEffects
+    AttrFalloff = 158,                                  // distance from maximum range at which accuracy has fallen by half
     AttrTrackingSpeed = 160,                            //trackingSpeedAttributeID in dgmEffects
     AttrVolume = 161,
     AttrRadius = 162,
@@ -225,8 +225,8 @@ enum EveAttrEnum {
     AttrScanSpeedMultiplier = 242,
     AttrMaxRangeMultiplier = 243,
     AttrTrackingSpeedMultiplier = 244,
-    AttrGfxTurretID = 245,                                      //Graphic ID of the turrets for drone type ships.
-    AttrGfxBoosterID = 246,                                     //Graphic ID of the boosters for drone type ships.
+    AttrGfxTurretID = 245,                                      //Graphic ID of the turrets for some ships.  found in db.graphics
+    AttrGfxBoosterID = 246,                                     //Graphic ID of the boosters for some ships.  found in db.graphics
     AttrEntityAttackRange = 247,                                //The distance from a target an entity starts using its weapons.
     AttrEntityLootValueMin = 248,
     AttrEntityLootValueMax = 249,
@@ -379,7 +379,7 @@ enum EveAttrEnum {
     AttrCriminalConnectionsMutator = 413,
     AttrDiplomacyMutator = 414,
     AttrFastTalkMutator = 415,
-    AttrEntityFlyRange = 416,                           //The distance at which the entity orbits, follows.. and more.
+    AttrEntityFlyRange = 416,                           //The distance at which the entity follows.. and more.
     AttrMaxNonRaceCorporationMembers = 417,
     AttrNonRaceCorporationMembersBonus = 418,
     AttrSkillPointsSaved = 419,
@@ -421,7 +421,7 @@ enum EveAttrEnum {
     AttrLearningBonus = 455,
     AttrEntityEquipmentMin = 456,
     AttrEntityEquipmentMax = 457,
-    AttrDroneControlDistance = 458,
+    AttrDroneControlDistance = 458,                     // this is a character attrib...NOT ship
     AttrDroneRangeBonus = 459,
     AttrShipBonusMF = 460,
     AttrSpecialAbilityBonus = 461,
@@ -441,7 +441,7 @@ enum EveAttrEnum {
     AttrEntityAttackDelayMin = 475,
     AttrEntityAttackDelayMax = 476,
     AttrShipBonusAC = 478,
-    AttrShieldRechargeRate = 479,
+    AttrShieldRechargeRate = 479,                       // Amount of time taken to fully recharge the shield.
     AttrMaxEffectiveRange = 480,
     AttrEntityKillBounty = 481,
     AttrCapacitorCapacity = 482,
@@ -1185,7 +1185,7 @@ enum EveAttrEnum {
     AttrDroneIsAgressive = 1275,
     AttrNonBrokenModuleRepairCostMultiplier = 1276,
     AttrShipBrokenModuleRepairCostMultiplier = 1277,
-    AttrDroneIsChaotic = 1278,
+    AttrDroneIsChaotic = 1278,                                     // disabled in crucible
     AttrEliteBonusViolatorsRole3 = 1279,
     AttrEliteBonusInterceptorRole = 1280,
     AttrBaseWarpSpeed = 1281,

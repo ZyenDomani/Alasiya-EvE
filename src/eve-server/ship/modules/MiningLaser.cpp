@@ -381,36 +381,13 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
         // create and add ore to cargo for this laser
         cur.second->AddOreAndDeactivate(roidRef->typeID(), oreAmount);
 
-        // inform pilot of asteroid depleted  ...no clue if it actually works like this
-        // throws error on most recent test..
-        /*
-21:46:22 [Service] alert::SendClientStackTraceAlert()
-EXCEPTION #16 logged at  02/01/2025 21:46:22 Something potentially bad happened with MiningItemDepleted
-Caught at:
-/client/script/remote/michelle.py(900) DoPreTick
-/client/script/remote/michelle.py(1394) RealFlushState
-Thrown at:
-/client/script/remote/michelle.py(1390) RealFlushState
-        entryStamp = 7131
-        e = AttributeError('MiningItemDepleted',)
-        eventStamp = 7131
-        self = <destiny.Ballpark object at 0x3C31D0D0>
-        args = {'modulename': 'Modulated Strip Miner II'}
-        funcName = 'MiningItemDepleted'
-        state = [(...), (...), (...), (...), (...), (...), (...), (...)]
-        action = (7131, (...))
-        synchronised = 1
-        event = ('MiningItemDepleted', {...})
-AttributeError: MiningItemDepleted
-
-
+        // inform pilot of asteroid depleted
         PyTuple* tuple = new PyTuple(2);
-            tuple->SetItem(0, new PyString("MiningItemDepletedBody"));
+            tuple->SetItem(0, new PyString("MiningItemDepleted"));
         PyDict* dict = new PyDict();
             dict->SetItemString("modulename", new PyString(cur.second->GetSelf()->itemName()));
             tuple->SetItem(1, dict);
         cur.second->GetShipRef()->GetPilot()->QueueDestinyUpdate(&tuple);
-*/
     }
 
     // calculate ore for this laser

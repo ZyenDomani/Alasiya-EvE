@@ -32,7 +32,7 @@
 #include "system/SystemEntity.h"
 
 /**
- * DynamicSystemEntity which represents drone object in space
+ * ObjectSystemEntity which represents drone object in space
  */
 
 class PyServiceMgr;
@@ -44,9 +44,10 @@ class NPCAIMgr;
 class Damage;
 
 class DroneSE
-: public DynamicSystemEntity
+: public ObjectSystemEntity
 {
 public:
+  friend DroneAIMgr;
     DroneSE(InventoryItemRef drone, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
     virtual ~DroneSE();
 
@@ -54,9 +55,9 @@ public:
     virtual DroneSE*    GetDroneSE()                    { return this; }
     /* class type tests. */
     virtual bool        IsDroneSE()                     { return true; }
-
-    /* SystemEntity interface */
+    // this will initialize abandoned or offline drones during system load and launched drones into existing system
     virtual void        Init();
+    /* SystemEntity interface */
     virtual void        Process();
     virtual void        EncodeDestiny(Buffer &into);
     virtual void        MakeDamageState(DoDestinyDamageState &into);
@@ -71,21 +72,22 @@ public:
     virtual void        TargetedAdd(SystemEntity* pSE);
     virtual void        TargetedLost(SystemEntity* pSE);
 
+    /* virtual functions to be overridden in derived classes */
+    virtual void        MissileLaunched(Missile* pMissile);  // tell AI a missile has been launched at us.  allows defender missile code
+    virtual void        ReportDamage(uint8 type=0);
+
     /* specific functions handled here. */
     Client*             GetOwner()                      { return m_pClient; }
     DroneAIMgr*         GetAI()                         { return m_AI; }
 
     // assign drone to ship and add to system
-    void                Launch(ShipSE* pShipSE);
-    void                Online(ShipSE* pShipSE=nullptr);
-    void                Offline();
+    void                Launched(ShipSE* pShipSE);       // this is only for drone owner.
+    void                Online(ShipSE* pShipSE=nullptr); // this is only for drone owner.
     // sent on every state or controller change
-    void                StateChange();
-    //begin idle orbit around assigned ship
-    void                IdleOrbit(uint32 speed, ShipSE* pShipSE=nullptr);
+    void                StateChange();                  // droneAI.state must be set before calling this for client to get accurate state information
 
     void                SaveDrone();
-    void                RemoveDrone();
+    void                RemoveDrone();                  // this will delete the item and SE
     void                SetResists();
     void                AssignTo(Client* pClient);
 
@@ -97,8 +99,6 @@ public:
     float               GetExplosive()                  { return m_expDamage; }
     float               GetSecurityRating() const       { return (m_pClient == nullptr ? 0.0f : m_pClient->GetChar()->GetSecurityRating()); }
 
-    double              GetOrbitRange()                 { return m_orbitRange; }
-
     /* for destiny setstate */
     uint8               GetState()                      { return m_AI->GetState(); }
     uint32              GetControllerID()               { return m_controllerID; }
@@ -106,25 +106,39 @@ public:
     uint32              GetTargetID();
 
     /* misc methods */
-    void                Enable()                        { m_online = true; }
-    void                Disable()                       { m_online = false; }
     bool                IsEnabled()                     { return m_online; }
+    bool                IsDamaged()                     { return m_damaged; }
+    uint32              GetControlDistance()            { return m_controlDistance; }
 
-    void                AssignShip(ShipSE* pShipSE)     { m_AI->AssignShip(pShipSE); }
-    void                TargetDestroyed();              // no need to clarify...drones have only one target
+    // sets ship offline and removes assigned ship
+    void                OfflineDrone();                 // also calls StateChange
+    //sets ship offline but doesnt reset anything else
+    void                DisableDrone();                 // also calls StateChange
+
+    void                AssignShip(ShipSE* pShipSE);
+    void                TargetDestroyed( SystemEntity* pSE );              // no need to clarify...drones have only one target
 
     ShipSE*             GetHomeShip()                   { return m_pShipSE; }
 
     void                ShipWarping(ShipSE* pShipSE);
 
     /* commanded methods */
-    void                Engage(SystemEntity* pTarget);  // this is for fighting
-    void                Reconnect(ShipSE* pShipSE);     // this is for previously abandonded drones
-    void                BeginMining(SystemEntity* pTarget, bool repeat=false); // should i explain?
+    void                Reconnect(ShipSE* pShipSE, PyDict* dict);     // this is for previously abandonded drones
+    void                ReturnBay(PyDict* dict);                      // return to owner's ship and dock in drone bay
+    void                ReturnHome(PyDict* dict);                     // return to owner's ship and remain in range
+    void                Engage(SystemEntity* pTarget, PyDict* dict);  // this is for fighting
+    void                Assist(SystemEntity* pTarget, PyDict* dict);  // this is for assisting another pilot
+    void                Guard(SystemEntity* pTarget, PyDict* dict);   // this is for guarding another pilot
+    void                Delegate(SystemEntity* pTarget, PyDict* dict);// this is to give control to another pilot
+    void                Mine(SystemEntity* pTarget, PyDict* dict, bool repeat=false); // should i explain?
 
     /* helper methods */
     bool                InControlDistance();            // returns true if drone within control distance
-    void                CheckCommandDistance();         // will throw error on distance > control distance
+    void                CheckCommand(PyDict* dict);     // runs multiple checks and will throw on error
+    void                ChargeShield();                 // shield recharging while in space
+    float               CalculateRechargeRate(float Capacity, float RechargeTimeMS, float Current);
+
+    void                SendBallData();
 
 protected:
     SystemManager*      m_system;               //we do not own this
@@ -132,21 +146,25 @@ protected:
     Client*             m_pClient;              //our owner
     ShipSE*             m_pShipSE;              //owning ship (home ship)
 
+
 private:
+    Timer               m_processTimer;
+
     bool                m_online;               // is drone within ship's control range?
+    bool                m_damaged;              // damage beyond % as defined in AttrIncapacitationRatio
+
     uint32              m_controlDistance;
     uint32              m_controllerID;
     uint32              m_controllerOwnerID;
 
-    double              m_orbitRange;
-    double              m_emDamage;
-    double              m_expDamage;
-    double              m_kinDamage;
-    double              m_therDamage;
-    double              m_hullDamage;
-    double              m_armorDamage;
-    double              m_shieldCharge;
-    double              m_shieldCapacity;
+    float               m_emDamage;
+    float               m_expDamage;
+    float               m_kinDamage;
+    float               m_therDamage;
+    float               m_hullDamage;
+    float               m_armorDamage;
+    float               m_shieldCharge;
+    float               m_shieldCapacity;
 };
 
 #endif /* !__DRONE__H__INCL__ */

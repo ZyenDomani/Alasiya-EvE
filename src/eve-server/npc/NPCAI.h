@@ -44,6 +44,21 @@ namespace NPCAI {
             WarpFollow  = 8   // will follow warping ship to their destination (adv)
         };
     }
+    
+    namespace Action {
+        enum {
+            // TODO:  update these with proper names for npcs
+            Invalid     = -1,
+            Idle        = 1,  // not doing anything....idle.
+            Engaged     = 2,  // currently performing it's intended action
+            ToTarget    = 3,  // traveling to target
+            FromTarget  = 4,  // traveling from target
+            ToShip      = 5,  // traveling to assigned ship if !owner
+            FromShip    = 6,  // traveling from assigned ship if !owner
+            ReturnHome  = 7,  // return to home ship and follow
+            ReturnBay   = 8   // return to home ship and dock
+        };
+    }
 }
 
 class NPC;
@@ -97,6 +112,7 @@ protected:
     float GetTargetTime();
 
     int8 m_state;
+    int8 m_action;
 
     std::string GetStateName(int8 stateID);
 

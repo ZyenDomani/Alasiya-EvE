@@ -71,8 +71,11 @@ void BeltMgr::ClearAll(bool clear/*false*/) {
     if (!clear)
         Save();
     for (auto &cur : m_asteroids) {
+        // not sure why this would be null, but have seen weird shit before so...
+        if (cur.second == nullptr)
+            continue;
         m_system->RemoveEntity(cur.second);
-        //cur.second->Delete();
+        cur.second->Delete();
         SafeDelete(cur.second);
     }
     m_asteroids.clear();
@@ -618,7 +621,9 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
         mposition.y += MakeRandomFloat(-2000, 3000 ) + roidradius;
 
         TODO:  make neocom note "there is odd vortex here.."
-               then make ships drift!  (~5-10 m/s and update position)
+               then make ships drift towards center!  (~5-10 m/s and update position)
+               5-10s later send another note "ship motion detected...cannot hold position"
+               this formation will also have higher level roids (current tier +2)
      */
     /*
      *  flat circle @ 50k
@@ -657,4 +662,5 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
     /* idea...
      * huge rock in center, with smaller rocks in 'orbit' at various angles
      * even better, give the smaller rocks a destinyMgr and make them actually orbit....not sure how client would handle it
+     * hell, not sure how I'D handle it, as our orbit code is wonky, but this would be most awesome!!
      */

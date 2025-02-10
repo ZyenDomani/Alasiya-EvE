@@ -144,7 +144,7 @@ public:
 	// reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
     void SpeedBoost(bool deactivate=false);
     void SetPosition(const GPoint& pt, bool update=false);
-    void SetMaxVelocity(float maxVelocity);
+    void SetMaxVelocity(uint16 maxVelocity);
     void UpdateShipVariables();
     // set all movement vars for missile and add to system
     void MakeMissile(Missile* missile);  //  this is used by all entities (pc, npc, drone, sentry, pos, etc)
@@ -161,7 +161,7 @@ public:
 
     /* Local Movement */
     void InitOrbit(SystemEntity* pSE, uint32 distance=0);
-    void Follow( SystemEntity* pSE, int32 distance );
+    void Follow(SystemEntity* pSE, int32 distance=0);
     void AlignTo(SystemEntity* pSE);
     void GotoPoint(const GPoint &point);
     void GotoDirection(const GPoint &direction);
@@ -233,7 +233,7 @@ protected:
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
 
     //things dictated by our entity's configuration:
-    uint8 m_alignTime;                  //in s      - time to change directions or enter warp
+    float m_alignTime;                  //in s      - time to change directions or enter warp
     float m_prevSpeed;                  //in m/s    - used to calculate speed during decel
     float m_maxShipSpeed;               //in m/s
     float m_shipWarpSpeed;              //in au/s   x/3 = warp speed multiplier
@@ -289,7 +289,7 @@ private:
     bool m_frozen;                      // hack to keep ship from moving when using modules that prevent movement
     bool m_changeDelay;                 // this is to try to sync destiny with client, as client has a delay when changing destiny states.
     bool m_moveDelay;                   // same as above, for less of a delay when changing direction or speed
-    double m_agility;                   //unitless?   - not sent to client
+    float m_agility;                    //unitless?   - not sent to client
 
     // Internal Collision Methods   -allan Nov 2015
     bool m_bump;

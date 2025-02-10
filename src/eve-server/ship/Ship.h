@@ -367,7 +367,11 @@ public:
 
     void AbandonDrones();
     bool LaunchDrone(InventoryItemRef dRef);
-    void ScoopDrone(SystemEntity* pSE);
+    bool ReconnectDrone(DroneSE* pSE);
+    void ScoopDrone(SystemEntity* pSE);                 // this does not delete SE nor remove it from system
+    // used when drones enter/leave ship's control distance, including launch/scoop 
+    bool UpdateBandwidth(DroneSE* pSE);                 // drone's abandon and/or online status' must be set properly before calling
+
     // returns current count of drones in space for this ship
     uint8 DroneCount()                                  { return m_drones.size(); }
 

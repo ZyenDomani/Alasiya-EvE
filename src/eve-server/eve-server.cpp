@@ -555,6 +555,56 @@ int main( int argc, char* argv[] )
     }
     std::printf("\n");     // spacer
 
+    sLog.Blue("     ServerConfig", "Player Drones");
+    if (sConfig.drone.Enabled) {
+        sLog.Green("    Player Drones","Enabled.");
+    }  else {
+        sLog.Warning("    Player Drones","Disabled.");
+    }
+    if (sConfig.drone.AutoReconnect) {
+        sLog.Green("   Auto Reconnect","Enabled.");
+    }  else {
+        sLog.Warning("   Auto Reconnect","Disabled.");
+    }
+    if (sConfig.drone.FleetOnly) {
+        sLog.Green("   Fleet Use Only","Enabled.");
+    }  else {
+        sLog.Warning("   Fleet Use Only","Disabled.");
+    }
+    if (sConfig.drone.LocalOnly) {
+        sLog.Green("   Local Use Only","Enabled.");
+    }  else {
+        sLog.Warning("    Local Use Only","Disabled.");
+    }
+    if (sConfig.drone.StrictSkills) {
+        sLog.Green("     Skill Checks","Enabled.");
+    }  else {
+        sLog.Warning("      Skill Checks","Disabled.");
+    }
+    if (sConfig.drone.StrictDistance) {
+        sLog.Green("  Distance Checks","Enabled.");
+    }  else {
+        sLog.Warning("  Distance Checks","Disabled.");
+    }
+    if (sConfig.drone.GuardPod) {
+        sLog.Green(" Drones Guard Pod","Enabled.");
+    }  else {
+        sLog.Warning(" Drones Guard Pod","Disabled.");
+    }
+    if (sConfig.drone.RegenShields) {
+        sLog.Green("    Shields Regen","Enabled.");
+    }  else {
+        sLog.Warning("    Shields Regen","Disabled.");
+    }
+    if (sConfig.drone.RepairInBay) {
+        sLog.Green("    Repair In Bay","Enabled.");
+        sLog.Yellow("  Bay Repair Cost","%.1f isk per *something*", sConfig.drone.RepairCostInBay);
+    }  else {
+        sLog.Warning("    Repair In Bay","Disabled.");
+    }
+
+    std::printf("\n");     // spacer
+
     sLog.Blue("     ServerConfig", "Misc Switches");
     if (sConfig.server.ModuleDamageChance) {
         sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance * 100));

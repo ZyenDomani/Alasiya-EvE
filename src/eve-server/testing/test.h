@@ -84,6 +84,9 @@ public:
     void WarpUpdate(int64 currentDistance, uint16 sec_into_warp, uint8 type);      // 0=error, 1=accel, 2=cruise, 3=decel
     // end of warp test
 
+    void NumberTest();
+
+    void RunDroneAttribs();
 
     void TurnTest(uint8 type);
     void InitTurn();
@@ -107,7 +110,7 @@ public:
     float m_prevSpeedFraction;          //fuzzy logic - previous percent of full speed.  used for speed changes
     float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
     float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
-    float m_agility;   
+    float m_agility;
     double degrees;
     // end of turn test
 

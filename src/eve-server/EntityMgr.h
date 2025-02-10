@@ -37,15 +37,16 @@
 //#include "threading/Mutex.h"
 
 class Agent;
+class PyRep;
 class Client;
-class PyAddress;
-class EVENotificationStream;
-class SystemManager;
 class ProbeSE;
 class PyTuple;
+class PyAddress;
 class PyServiceMgr;
 class SystemEntity;
+class SystemManager;
 class TargetManager;
+class EVENotificationStream;
 
 typedef enum {
     NOTIF_DEST__LOCATION,
@@ -152,10 +153,10 @@ public:
     void Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true);
 
     //testing target tics in <1hz
-    // add SE* and targMgr* to map
+    // add SE* and their associated targMgr* to map
     void AddTargMgr(SystemEntity* pSE, TargetManager* pTM)
                                                         { m_targMgrs.emplace(pSE, pTM); }
-    // remove SE* and targMgr* from map
+    // remove SE* and their associated targMgr* from map
     void DeleteTargMgr(SystemEntity* pSE)               { m_targMgrs.erase(pSE); }
 
     // add ProbeSE* to map
@@ -163,6 +164,8 @@ public:
     // remove ProbeSE* from map
     void RemoveProbe(uint32 probeID)                    { m_probes.erase(probeID); }
 
+    // adds PyRep to deleteLater list, which is purged on next tic
+    void AddToDeleteLater(const PyRep* pType)                 { m_deleteLater.push_back(pType); }
 
 protected:
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.
@@ -195,6 +198,9 @@ private:
     // make list for corp members and their roles for easy access of notifications etc.
     typedef std::map<Client*, int64> corpRole;
     std::map<uint32, corpRole> m_corpMembers;     //corpID/{Client*/corpRole}
+
+    std::vector<const PyRep*> m_deleteLater;
+
 
     bool m_shipTracking;
 

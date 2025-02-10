@@ -68,7 +68,7 @@ void Sentry::Process() {
     double profileStartTime(GetTimeUSeconds());
 
     m_AI->Process();
-    /*  Enable base call to Process Targeting and Movement  */
+    /*   Base call to Process Movement  */
     SystemEntity::Process();
 
     if (sConfig.debug.UseProfiling)

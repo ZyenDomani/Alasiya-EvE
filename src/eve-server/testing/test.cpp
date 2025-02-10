@@ -19,7 +19,7 @@
 void testing::posTest(Client* pClient) {
     SystemEntity* mySE(pClient->GetShipSE());
 
-    sLog.Warning("\ttesting","Test competed");
+    sLog.Warning("\ttesting","Test competed (did nothing)");
 }
 
 void testing::CharAttribTest() {
@@ -474,3 +474,140 @@ void testing::Turn() {
             m_turnAccel?"true":"false", m_turnDecel?"true":"false", change, \
             speed, m_activeSpeedFraction, m_timeFraction);
 }
+
+void testing::RunDroneAttribs() {
+    // get drone movement attribs and calculate agility and friends
+
+    double start(GetTimeUSeconds());
+    // get drone ids from db  138 total
+    std::vector<InventoryItemRef> droneRefs;
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT `typeID` FROM `invTypes` WHERE `groupID` IN (SELECT `groupID`  FROM `invGroups` WHERE `categoryID` = 18)");
+    DBResultRow row, row2;
+    while (res.GetRow(row)) {
+        ItemData data = ItemData();
+        data.ownerID = 1;
+        data.locationID = locTemp;
+        data.quantity = 1;
+        data.flag = flagNone;
+        data.customInfo = "Drone Test";
+        data.typeID = row.GetUInt(0);
+        InventoryItemRef iRef = sItemFactory.SpawnTempItem(data);
+        if (iRef.get() != nullptr)
+            if (iRef->type().published())
+                droneRefs.push_back(iRef);
+    }
+
+    double mass(0.0), inertiaMod(0.0), agility(0.0), alignTime(0.0), turnPct(0.0), accelTime(0.0);
+    // loop thru drone refs and perform math as directed
+    for (auto &cur : droneRefs) {
+        sLog.Yellow("   ", "%s(%u):  AttrMaxRange: %.3f, AttrOrbitRange: %.3f, AttrEntityAttackRange: %.3f, AttrFalloff: %.3f, AttrEntityChaseMaxDistance: %.3f ", \
+        cur->name(), cur->typeID(), cur->GetAttribute(AttrMaxRange).get_float(), cur->GetAttribute(AttrOrbitRange).get_float(),
+        cur->GetAttribute(AttrEntityAttackRange).get_float(), cur->GetAttribute(AttrFalloff).get_float(),
+        cur->GetAttribute(AttrEntityChaseMaxDistance).get_float());
+
+        /*
+        mass = cur->GetAttribute(AttrMass).get_double();
+        inertiaMod = cur->GetAttribute(AttrInertiaMod).get_double();
+        agility = mass * inertiaMod / 1000000;
+        alignTime = 1.386294 * agility;
+        turnPct = 1.0f / alignTime;
+        accelTime = (-log(ASF_CHECK) * agility);
+
+        // print out data
+        sLog.Yellow("   ", "%s:  mass: %.3f, inertiaMod: %.3f, agility: %.3f, alignTime: %.3f, turnPct: %.3f, accelTime: %.3f ", \
+                cur->name(), mass, inertiaMod, agility, alignTime, turnPct, accelTime);
+                */
+    }
+
+    sLog.Cyan("dronetest runtime", "%u items processed in %.5fus", (uint8)droneRefs.size(), GetTimeUSeconds() - start);
+}
+
+// 5Feb25
+void testing::NumberTest() {
+    // time ops with diff variable types.  30k iterations
+    float f(0.01f), ft(0.0f);
+    double d(0.01), dt(0.0);
+    int i(0), it(0);
+    uint32 u(0), ut(0);
+    int64 b(0), bt(0);
+
+    uint32 run(0);
+
+    double start(GetTimeUSeconds());
+    while (run < 30000) {
+        f += 5;
+        f *= 15;
+        f /= 3;
+
+        ft = f;
+        ft += f / 6;
+        ft = f * 8 / 30;
+        ft *= 184;
+        ++run;
+    }
+    sLog.Cyan("f runtime", "  %.3fus", GetTimeUSeconds() - start);
+
+    run = 0;
+    start = GetTimeUSeconds();
+    while (run < 30000) {
+        d += 5;
+        d *= 15;
+        d /= 3;
+
+        dt = d;
+        dt += d / 6;
+        dt = d * 8 / 30;
+        dt *= 184;
+        ++run;
+    }
+    sLog.Cyan("d runtime", "  %.3fus", GetTimeUSeconds() - start);
+
+    run = 0;
+    start = GetTimeUSeconds();
+    while (run < 30000) {
+        i += 5;
+        i *= 15;
+        i /= 3;
+
+        it = i;
+        it += i / 6;
+        it = i * 8 / 30;
+        it *= 184;
+        ++run;
+    }
+    sLog.Cyan("i runtime", "  %.3fus", GetTimeUSeconds() - start);
+
+    run = 0;
+    start = GetTimeUSeconds();
+    while (run < 30000) {
+        u += 5;
+        u *= 15;
+        u /= 3;
+
+        ut = u;
+        ut += u / 6;
+        ut = u * 8 / 30;
+        ut *= 184;
+        ++run;
+    }
+    sLog.Cyan("u runtime", "  %.3fus", GetTimeUSeconds() - start);
+
+    run = 0;
+    start = GetTimeUSeconds();
+    while (run < 30000) {
+        b += 5;
+        b *= 15;
+        b /= 3;
+
+        bt = b;
+        bt += b / 6;
+        bt = b * 8 / 30;
+        bt *= 184;
+        ++run;
+    }
+    sLog.Cyan("b runtime", "  %.3fus", GetTimeUSeconds() - start);
+
+}
+
+

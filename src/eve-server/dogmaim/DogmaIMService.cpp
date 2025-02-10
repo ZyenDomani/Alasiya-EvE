@@ -153,6 +153,8 @@ PyResult DogmaIMService::Handle_GetAttributeTypes(PyCallArgs& call) {
     return result;
 }
 
+//TODO:  update this to use common error testing like in entityservice.cpp
+
 PyBoundObject* DogmaIMService::CreateBoundObject(Client *pClient, const PyRep* bind_args) {
     DogmaLM_BindArgs args;
     if (!args.Decode(bind_args)) {
@@ -1108,28 +1110,15 @@ PyResult DogmaIMBound::Handle_StopModuleRepair(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
-    /*
-     * 21:59:29 L DogmaIMBound::Handle_ChangeDroneSettings(): size=1
-     * 21:59:29 [SvcCall]   Call Arguments:
-     * 22:04:44 [SvcCall]       Tuple: 1 elements
-     * 22:04:44 [SvcCall]         [ 0] Dictionary: 3 entries
-     * 22:04:44 [SvcCall]         [ 0]   [ 0] Key: Integer field: 1283 <-- AttrFightersAttackAndFollow
-     * 22:04:44 [SvcCall]         [ 0]   [ 0] Value: Integer field: 1
-     * 22:04:44 [SvcCall]         [ 0]   [ 1] Key: Integer field: 1275 <-- AttrDroneIsAgressive
-     * 22:04:44 [SvcCall]         [ 0]   [ 1] Value: Integer field: 1
-     * 22:04:44 [SvcCall]         [ 0]   [ 2] Key: Integer field: 1297 <-- AttrDroneFocusFire
-     * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
-     */
-
     if (!call.tuple->GetItem(0)->IsDict()) {
-        codelog(DRONE__ERROR, "Tuple Item is wrong type: %s.  Expected PyDict.", call.tuple->GetItem(0)->TypeString());
+        codelog(DRONE__ERROR, "Tuple Item is wrong type: Got %s but expected PyDict.", call.tuple->GetItem(0)->TypeString());
         return nullptr;
     }
 
     PyDict* dict = call.tuple->GetItem(0)->AsDict();
 
     std::map<int16, int8> attribs;
-    for (PyDict::const_iterator itr = dict->begin(); itr != dict->end(); itr++)
+    for (PyDict::const_iterator itr = dict->begin(); itr != dict->end(); ++itr)
         attribs[PyRep::IntegerValueU32(itr->first)] = PyRep::IntegerValue(itr->second);
 
     call.client->GetShipSE()->UpdateDrones(attribs);

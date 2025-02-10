@@ -35,6 +35,10 @@
 /*
  * flagStructureActive             = 144,
  * flagStructureInactive           = 145,
+ * AttrProximityRange = 154,
+ * AttrFalloff = 158,
+ * AttrMaxStructureDistance = 650,
+ * AttrDecloakFieldRange = 651,
  * AttrOperationConsumptionRate = 687,
  * AttrReinforcedConsumptionRate = 688,
  * AttrResourceReinforced1Type = 694,
@@ -53,17 +57,24 @@
  * AttrResourceOnline4Type = 708,
  ***  many other attributes for towers and their modules.....
  * AttrControlTowerMissileVelocityBonus = 792,
+ * AttrPlanetAnchorDistance = 865,
  * AttrControlTowerSize = 1031,
  * AttrAnchoringSecurityLevelMax = 1032,
  * AttrAnchoringRequiresSovereignty = 1033,
  * AttrControlTowerMinimumDistance = 1165,
  * AttrPosPlayerControlStructure = 1167,
  * AttrIsIncapacitated = 1168,
+ A ttrStructureArmorRepairAmount = 1170,              //typeID 27*676
+ AttrStructureShieldRepairAmount = 1171,             //typeID 27676
+ AttrStructureArmorBoostValue = 1172,                // not used
+ AttrStructureShieldBoostValue = 1173,               // not used
  * AttrPosStructureControlAmount = 1174,
  * AttrOnliningRequiresSovereigntyLevel = 1185,
  * AttrPosAnchoredPerSolarSystemAmount = 1195,
  * AttrPosStructureControlDistanceMax = 1214,
  * AttrAnchoringRequiresSovereigntyLevel = 1215,
+ AttrAnchorDistanceMin = 1590,
+ AttrAnchorDistanceMax = 1591,
  * AttrHarvesterType = 709,
  * AttrHarvesterQuality = 710,
  * AttrMoonAnchorDistance = 711,

@@ -179,7 +179,7 @@ void ShipItem::InitPod() {
     // Check for existence of attributes.  if not loaded then set them to default values:
     if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, EvilZero, false);
     if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, EvilZero, false);
-    // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
+    // shield and cap are part of persistence, and loaded on attrib map initialization.  check for and set to full if no saved value found
     if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrShieldCharge,  GetAttribute(AttrShieldCapacity), false);
 
     m_ModuleManager->Initialize();
@@ -2372,7 +2372,7 @@ float ShipSE::CalculateRechargeRate(float Capacity, float Current, float Recharg
 {
     // C = Cmax * [ 1 + ( SQRT(C0/Cmax) - 1) * EXP((t0-t1)/tau) ] ^ 2
     // dC/dt = (SQRT(C/Cmax) - C/Cmax) * 2 * Cmax / tau
-    // tau = "Cap Recharge Time" / 5.0
+    // tau = "Shield Recharge Time" / 5.0
 
     // prevent divide by zero.
     RechargeTimeMS = (RechargeTimeMS < 1 ? 1 : RechargeTimeMS);
@@ -2744,14 +2744,12 @@ void ShipSE::ApplyBoost(BoostData& bData)
 
     m_boosted = true;
 }
-//{'FullPath': u'UI/Messages', 'messageID': 257802, 'label': u'DronesDroppedBecauseOfBandwidthModificationBody'}(u'The drone control bandwidth of your ship has been modified causing you to lose the ability to control some drones.', None, None)
 
 bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     Character* pChar = GetPilot()->GetChar().get();
-    sLog.Magenta("ShipSE::LaunchDrone()","%s: Launching drone %u",  pChar->name(), dRef->itemID());
+    sLog.Magenta("ShipSE::LaunchDrone()","%s: Launching drone %s(%u)",  pChar->name(), dRef->name(), dRef->itemID());
 
     dRef->Move(GetLocationID(), flagNone, true);
-    dRef->ChangeSingleton(true);
 
     GPoint position(GetPosition());
     position.MakeRandomPointOnSphere(500.0);
@@ -2765,39 +2763,38 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
         data.ownerID = pChar->itemID();
     DroneSE* pDrone = new DroneSE(dRef, m_services, m_system, data);
     pDrone->Init();
-    // tell new drone it's being launched.
-    pDrone->Launch(this);
+    // drones are scannable.  add signal to AnomalyMgr
+    m_system->AddEntity(this, true);
+    // send new ball data
+    pDrone->Launched(this);
     // add drone to launched drone map (whether onlined or not)
-    m_drones.emplace(dRef->itemID(), dRef.get());
+    m_drones[dRef->itemID()] = dRef.get();
 
-    /*
-    AttrDroneBandwidth = 1271,     <-- ship attribute  (total)
-    AttrDroneBandwidthUsed = 1272, <-- drone attribute
-    AttrDroneBandwidthLoad = 1273, <-- ship attribute  (current used)
-    */
-    //  if ship doesnt have bandwidth for drone, it will not online after launch (inert)
-    EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
-    load += dRef->GetAttribute(AttrDroneBandwidthUsed);
-    if (load <= m_shipRef->GetAttribute(AttrDroneBandwidth)) {
-        pDrone->Online(this);
-        pDrone->GetAI()->SetIdle();
-        m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care (but we do)
+    return pDrone->IsEnabled();
+}
+
+bool ShipSE::ReconnectDrone(DroneSE* pSE) {
+    //  if ship doesnt have bandwidth for drone, it will not online
+    if (UpdateBandwidth(pSE)) {
+        pSE->SendBallData();
         return true;
     }
-    //{'FullPath': u'UI/Messages', 'messageID': 258031, 'label': u'MaxBandwidthExceededBody'}(u"You don't have enough bandwidth to launch {droneName}. You need {bandwidthNeeded} Mbit/s but {droneName} requires {droneBandwidthUsed} Mbit/s.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}, u'{bandwidthNeeded}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthNeeded'}})
-    //{'FullPath': u'UI/Messages', 'messageID': 258041, 'label': u'MaxBandwidthExceeded2Body'}(u"You don't have enough bandwidth to launch {droneName}. You need {droneBandwidthUsed} Mbit/s but only have {bandwidthLeft} Mbit/s available.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{bandwidthLeft}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthLeft'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}})
     return false;
 }
 
 void ShipSE::ScoopDrone(SystemEntity* pSE) {
-    if (m_abandoned)
-        return;
     m_drones.erase(pSE->GetID());
-    pSE->GetDroneSE()->Offline();
-    EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
-    load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
-    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
-    pSE->GetSelf()->ChangeSingleton(true);
+    pSE->GetDroneSE()->OfflineDrone();
+    // this isnt entirely right....what if we are scooping another drone we didnt launch?
+    if (pSE->IsAbandoned()) {
+        // drone is abandoned...no bandwidth used
+        return;
+    } else if (pSE->GetOwnerID() != m_ownerID) {
+        // finders keepers    wasnt connected to our ship
+        return;
+    }
+    //  if drone launched or reconnected, bandwidth will be set
+    UpdateBandwidth(pSE->GetDroneSE());
 }
 
 void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
@@ -2806,21 +2803,49 @@ void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
         cur.second->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
         cur.second->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
         cur.second->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
-        //cur.second->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic]);    // no longer used?
+        //cur.second->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic]);    // no longer used?  still in client
     }
 }
 
 void ShipSE::AbandonDrones() {
     SystemEntity* pSE(nullptr);
-    EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
     for (auto &cur : m_drones) {
         pSE = m_system->GetSE(cur.first);
         if (pSE != nullptr)
-            if (pSE->IsDroneSE()) {
-                pSE->GetDroneSE()->Abandon();
-                load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
-            }
+            if (pSE->IsDroneSE())
+                pSE->GetDroneSE()->Abandon();   // this also updates bandwidth
     }
-    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
+    
+    // all abandoned.  clear map
+    m_drones.clear();
 }
-//AttrDroneControlDistance
+
+    /*
+    AttrDroneBandwidth = 1271,     <-- ship attribute  (total)
+    AttrDroneBandwidthUsed = 1272, <-- drone attribute
+    AttrDroneBandwidthLoad = 1273, <-- ship attribute  (current used)
+    */
+bool ShipSE::UpdateBandwidth(DroneSE* pSE) {
+    EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
+    if (pSE->IsDamaged() or pSE->IsAbandoned()) {
+        // disconnect drone from ship comms
+        load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
+        m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false);
+        return true;
+    } else {
+        load += pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
+        if (load <= m_shipRef->GetAttribute(AttrDroneBandwidth)) {
+            m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care (but we do)
+            return true;
+        }
+    }
+    uint16 available = EvilNumber(m_shipRef->GetAttribute(AttrDroneBandwidth) - load).get_uint32();
+
+    GetPilot()->SendNotifyMsg("Your %s tried connecting, but there is not enough bandwidth available (%u) to bring it online.<br>You can try scooping up some drones to free bandwidth, or scoop this one to cargo or drone bay.", m_self->name(), available);
+    return false;
+}
+
+
+//{'FullPath': u'UI/Messages', 'messageID': 257802, 'label': u'DronesDroppedBecauseOfBandwidthModificationBody'}(u'The drone control bandwidth of your ship has been modified causing you to lose the ability to control some drones.', None, None)
+//{'FullPath': u'UI/Messages', 'messageID': 258031, 'label': u'MaxBandwidthExceededBody'}(u"You don't have enough bandwidth to launch {droneName}. You need {bandwidthNeeded} Mbit/s but {droneName} requires {droneBandwidthUsed} Mbit/s.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}, u'{bandwidthNeeded}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthNeeded'}})
+//{'FullPath': u'UI/Messages', 'messageID': 258041, 'label': u'MaxBandwidthExceeded2Body'}(u"You don't have enough bandwidth to launch {droneName}. You need {droneBandwidthUsed} Mbit/s but only have {bandwidthLeft} Mbit/s available.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{bandwidthLeft}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthLeft'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}})

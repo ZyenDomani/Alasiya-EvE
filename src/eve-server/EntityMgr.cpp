@@ -83,7 +83,7 @@ void EntityMgr::Initialize() {
     if (is_log_enabled(SERVER__STACKTRACE))
         sConfig.debug.StackTrace = true;
 
-    sLog.Blue("       EntityMgr", "Entity Manager Initialized.");
+    sLog.Blue("        EntityMgr", "Entity Manager Initialized.");
 }
 
 void EntityMgr::Shutdown() {
@@ -222,6 +222,13 @@ void EntityMgr::Process() {
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
         m_profileTime = GetTimeUSeconds();
+
+        if (!m_deleteLater.empty()) {
+            sLog.Error(" EntityMgr::Proc", "deleting %u later objects.", (uint32)m_deleteLater.size());
+            for (auto &cur : m_deleteLater)
+                SafeDelete(cur);
+            m_deleteLater.clear();
+        }
 
         ++m_stamp;
 

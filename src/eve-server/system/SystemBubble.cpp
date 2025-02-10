@@ -187,6 +187,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
         //check to see if any ships are using gfx.  if so, send all gfx to new ship
         for (auto &cur : m_activeModules)
             cur.second->SendGFX(false, pClient);
+        // will need to do same thing for active drones, if any
 
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
     } else {
@@ -763,8 +764,9 @@ void SystemBubble::RemoveMarkers()
     if (m_hasMarkers)
         for (auto &cur : m_markers) {
             m_system->RemoveEntity(cur.second);
-            cur.second->Delete(); // delete marker cans here
-            SafeDelete(cur.second);
+            m_system->AddToDeleteLater(cur.second);
+            // delete marker can item here
+            cur.second->Delete();
         }
     m_markers.clear();
     m_centerSE = nullptr;

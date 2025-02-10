@@ -805,14 +805,12 @@ DST_WARPEXIT = 11
             <int name="activityState" />
             <!-- 4: droneTypeID -->
             <int name="droneTypeID" />
-            <!-- 5: controllerOwnerID (ship's owner ID) -->
+            <!-- 5: controllerOwnerID (assigned ship's owner ID) -->
             <int name="controllerOwnerID" />
             <!-- 6: targetID -->
-            <int name="targetID" />
+            <raw name="targetID" />
         </tupleInline>
       </tupleInline>
   </elementDef>
 
 </elements>
-
-

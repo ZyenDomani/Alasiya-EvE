@@ -17,6 +17,8 @@
  * 0.1 - 20:30
  */
 
+// Concord_Drone = 301
+
 /*  note.....this taken straight from NPC */
 
 #include "Concord.h"
@@ -95,7 +97,7 @@ void Concord::Process() {
     double profileStartTime(GetTimeUSeconds());
 
     m_AI->Process();
-    /*  Enable base call to Process Targeting and Movement  */
+    /*   Base call to Process Movement  */
     SystemEntity::Process();
 
     if (sConfig.debug.UseProfiling)

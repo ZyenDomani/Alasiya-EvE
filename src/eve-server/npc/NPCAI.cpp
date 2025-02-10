@@ -736,10 +736,10 @@ void NPCAIMgr::AttackTarget(SystemEntity* pTargSE) {
     // TODO: this needs to be updated....rogue drones working
     std::string guid = "effects.Laser"; // client looks for 'turret' in ship.ball.modules for 'effects.laser'...error for npcs ex drone
     uint32 gfxID(0);
-    if (m_self->HasAttribute(AttrGfxTurretID))// graphicID for turret for drone type ships
+    if (m_self->HasAttribute(AttrGfxTurretID))// graphicID for turret
         gfxID = m_self->GetAttribute(AttrGfxTurretID).get_uint32();
     /*
-    if (m_pDrone->GetSelf()->HasAttribute(AttrGfxBoosterID))// graphicID for turret for drone type ships
+    if (m_pDrone->GetSelf()->HasAttribute(AttrGfxBoosterID))// graphicID for turret
         gfxID = m_pDrone->GetSelf()->GetAttribute(AttrGfxBoosterID).get_uint32();
     */
 

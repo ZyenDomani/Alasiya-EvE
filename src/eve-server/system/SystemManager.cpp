@@ -193,6 +193,9 @@ bool SystemManager::LoadCosmicMgrs()
 bool SystemManager::ProcessTic() {
     double profileStartTime(GetTimeUSeconds());
 
+    for (auto &cur : m_deleteLater)
+        SafeDelete(cur.second);
+
     std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin(), end = m_ticEntities.end();
     while (itr != end) {
         /* main process call. */
@@ -317,6 +320,9 @@ void SystemManager::UnloadSystem() {
         sBubbleMgr.Remove(pSE);
         SafeDelete(pSE);
     }
+
+    for (auto &cur : m_deleteLater)
+        SafeDelete(cur.second);
 
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
@@ -1033,7 +1039,7 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
     }
 
     // Add Entity's Item Ref to Solar System Dynamic Inventory:
-    m_solarSystemRef->AddItemToInventory( pSE->GetSelf() );
+    m_solarSystemRef->AddItemToInventory(pSE->GetSelf());
 
     sBubbleMgr.Add(pSE);
     // add item to our AnomalyMgr
@@ -1056,6 +1062,8 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
 
     // remove from anomaly map, if exists
     m_anomMgr->RemoveSignal(itemID);
+
+    m_entityChanged = true;
 }
 
 void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/, bool addSignal/*false*/) {

@@ -115,56 +115,53 @@ bool ItemType::_Load()
     std::vector< Inv::DmgTypeAttribute > typeAttrVec;
     sDataMgr.GetDgmTypeAttrVec(m_type.id, typeAttrVec);
     for (auto &cur : typeAttrVec)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(cur.attributeID, cur.value));
+        m_AttributeMap.emplace(cur.attributeID, cur.value);
 
     // load attributes found in invTypes
     if (m_type.mass)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrMass, m_type.mass));
+        m_AttributeMap.emplace(AttrMass, m_type.mass);
     if (m_type.radius)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRadius, m_type.radius));
+        m_AttributeMap.emplace(AttrRadius, m_type.radius);
     if (m_type.volume)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrVolume, m_type.volume));
+        m_AttributeMap.emplace(AttrVolume, m_type.volume);
     if (m_type.capacity)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrCapacity, m_type.capacity));
+        m_AttributeMap.emplace(AttrCapacity, m_type.capacity);
     if (m_type.race)
-        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRaceID, m_type.race));
+        m_AttributeMap.emplace(AttrRaceID, m_type.race);
 
     // load required skills and levels into their own map, for later checks
     if (HasAttribute(AttrRequiredSkill1))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill1).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill1Level).get_uint32()));
+        m_reqSkillMap.emplace(GetAttribute(AttrRequiredSkill1).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill1Level).get_uint32());
     if (HasAttribute(AttrRequiredSkill2))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill2).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill2Level).get_uint32()));
+        m_reqSkillMap.emplace(GetAttribute(AttrRequiredSkill2).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill2Level).get_uint32());
     if (HasAttribute(AttrRequiredSkill3))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill3).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill3Level).get_uint32()));
+        m_reqSkillMap.emplace(GetAttribute(AttrRequiredSkill3).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill3Level).get_uint32());
     if (HasAttribute(AttrRequiredSkill4))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill4).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill4Level).get_uint32()));
+        m_reqSkillMap.emplace(GetAttribute(AttrRequiredSkill4).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill4Level).get_uint32());
     if (HasAttribute(AttrRequiredSkill5))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill5).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill5Level).get_uint32()));
+        m_reqSkillMap.emplace(GetAttribute(AttrRequiredSkill5).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill5Level).get_uint32());
     if (HasAttribute(AttrRequiredSkill6))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill6).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill6Level).get_uint32()));
+        m_reqSkillMap.emplace(GetAttribute(AttrRequiredSkill6).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill6Level).get_uint32());
 
     LoadEffects();
 
     return true;
 }
 
-const void ItemType::CopyAttributes(InventoryItem& itemRef) const
-{
+const void ItemType::CopyAttributes(InventoryItem& itemRef) const {
     // set attributes in the item's own attrMap.
     for (auto &cur : m_AttributeMap)
         itemRef.SetAttribute(cur.first, cur.second, false);
 }
 
-const bool ItemType::HasAttribute(const uint16 attributeID) const
-{
+const bool ItemType::HasAttribute(const uint16 attributeID) const {
     AttrMapConstItr itr = m_AttributeMap.find(attributeID);
     if (itr != m_AttributeMap.end())
         return true;
     return false;
 }
 
-EvilNumber ItemType::GetAttribute(const uint16 attributeID) const
-{
+EvilNumber ItemType::GetAttribute(const uint16 attributeID) const {
     AttrMapConstItr itr = m_AttributeMap.find(attributeID);
     if (itr != m_AttributeMap.end())
         return itr->second;
@@ -185,8 +182,7 @@ bool ItemType::HasReqSkill(const uint16 skillID) const
     return false;
 }
 
-void ItemType::LoadEffects()
-{
+void ItemType::LoadEffects() {
     std::vector< TypeEffects > typeEffMap;
     sFxDataMgr.GetTypeEffect(m_type.id, typeEffMap);
 
@@ -203,20 +199,18 @@ void ItemType::LoadEffects()
     }
 }
 
-bool ItemType::HasEffect(uint16 effectID) const
-{
+bool ItemType::HasEffect(uint16 effectID) const {
     std::unordered_multimap<int8, Effect>::const_iterator itr = m_stateFxMap.begin();
-    for (; itr != m_stateFxMap.end(); itr++)
+    for (; itr != m_stateFxMap.end(); ++itr)
         if (itr->second.effectID == effectID)
             return true;
     return false;
 }
 
-void ItemType::GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const
-{
+void ItemType::GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const {
     auto itr = m_stateFxMap.equal_range(state);
-    for (auto it = itr.first; it != itr.second; it++)
-        effectMap.insert(std::pair<uint16, Effect>(it->second.effectID, it->second));
+    for (auto it = itr.first; it != itr.second; ++it)
+        effectMap.emplace(it->second.effectID, it->second);
 }
 
 

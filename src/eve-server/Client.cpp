@@ -1562,7 +1562,6 @@ void Client::SetInvulTimer(uint32 time/*Player::Timer::Default*/)
 {
     if (time == 0) {
         SetInvul(false);
-        m_invulTimer.Disable();
         _log(CLIENT__TIMER, "%s: Invul Timer Disabled", m_char->name());
         return;
     }
@@ -1574,8 +1573,8 @@ void Client::SetInvulTimer(uint32 time/*Player::Timer::Default*/)
     }
 
     _log(CLIENT__TIMER, "%s: Invul Timer set at %ums.   current state time is %ums", m_char->name(), time, m_invulTimer.GetCurrentTime());
-    m_invulTimer.Start(time);
     SetInvul(true);
+    m_invulTimer.Start(time);
 }
 
 void Client::SetStateTimer( int8 state, uint32 time/*Player::Timer::Default*/)

@@ -9,7 +9,7 @@
 </head>
 <body>
 <font color=red>MAJOR UPDATE</font><br>
-<font color=yellow>Orbit has been disabled</font><font color=cyan>see <a ref="http://eve.alasiya.net/phpBB3/viewtopic.php?f=42&t=267" target=_new>this post</a> for details</font><br><br>
+<font color=yellow>Orbit has been disabled!</font><font color=cyan> see <a href="http://eve.alasiya.net/phpBB3/viewtopic.php?f=42&t=267" target=_new>this post</a> for details</font><br><br>
 
 This is the updates page for Alasiya-EvE.<br>
 I will eventually make this a little more aesthetically pleasing  (maybe)<br><br>
@@ -24,17 +24,32 @@ CURRENT TEST POINTS<br>
  - R.A.M.(still need to update research times for my server)<br>
 <br>
 NOTES:<br>
-I have begun working on the current buglist and other errors i find while testing.<br>
+I have begun working on coding player drones and other errors i find while testing.<br>
 I am also working on my TODO list where I can.  As there is around 1000 lines, this will take a while<br><br>
 Notable updates at this time are:<br>
+Drone System has been started.  Not pushed to main server yet.<br>
 Recent Destiny rewrites have movement tracking around 98% with client except orbit.<br>
 NPC warping in and out of bubbles is working correctly again.<br>
 Blueprints are showing BOM correctly again.<br>
 The Implant system is implemented and working quite well.<br>
 Also, I have updated the Attribute Remapper for our character attributes. (still few hiccups with remapping)<br><br>
 UPDATES AND CHANGELOG:  (note: only major/significant updates are listed)<br><br>
+8Feb25 - Wrote and Debugged drone AI system<br>
+        Wrote and Debugged drone movement system(required custom Destiny)<br>
+        Wrote drone GFX based on existing working system (required custom GFX)<br>
+        Enabled drone orbit in client (hacked server-side thru custom Destiny)<br><br>
+7Feb25 - Coded and tested drone error reporting: much different than current 'throw' errors<br><br>
+4Feb25 - Drone launching, abandon, reconnect, and scooping debugged and working<br>
+        Debugged Drone Item and Command systems<br><br>
+1Feb25 - Begin coding player drones: most systems are unique and will require custom code for drones<br>
+        This will take a while, but I'll update status page every few days.<br>
+        Drone Item and SysEntity objects written<br>
+        Command calls and various checks written<br>
+        See code status page for current drone system status<br>
+        NOTE:  drones are not enabled on main server yet<br><br>
+<font color=red>
+31Jan25 - MAJOR UPDATES<br></font>
 <font color=cyan>
-31Jan25 - MAJOR UPDATES<br>
         Fixed long-time error with module buttons not showing proper cycles, including running indefinitely<br>
         Fixed error with modules not stopping properly on deactivate<br>
         Rewrote GFX code for proper packet sending - all module gfx show properly now (unless missing from db)<br>

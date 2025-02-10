@@ -34,6 +34,7 @@
 #include "python/PyRep.h"
 #include "utils/EVEUtils.h"
 #include "../../eve-server/EVEServerConfig.h"
+#include "../../eve-server/EntityMgr.h"
 
 /** Lookup table for PyRep type object type names. */
 const char* const s_mTypeString[] =
@@ -289,7 +290,7 @@ void PyRep::DecRef() const
 
     if (mRefCount < 1)
         if (sConfig.server.DelOnZero)
-            delete this;
+            sEntityMgr.AddToDeleteLater(this);
 }
 
 
@@ -1541,7 +1542,7 @@ pyStatic::pyStatic()
 : m_none(new PyNone()), m_zero(new PyInt(0)), m_one(new PyInt(1)), m_negone(new PyInt(-1)), m_true(new PyBool(true)),
 m_false(new PyBool(false)), m_dict(new PyDict()), m_list(new PyList()), m_tuple(new PyTuple(0))
 {
-    sLog.Cyan("pyStatic()", "Created.");
+    sLog.Cyan("       pyStatic()", "Created.");
 }
 
 // not sure if this will work right...
