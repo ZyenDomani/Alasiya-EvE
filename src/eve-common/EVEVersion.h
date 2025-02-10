@@ -55,7 +55,7 @@ static const float Log_Version = 11.2f;    /* logtypes.h and log.ini */
 static const float Joe_Version = 0.15f;   /* MarketBot.xml and MarketBotConf.cpp */
 /* these  dont have separate config files ...yet */
 static const float NPC_AI_Version = 0.59f;
-static const float Drone_AI_Version = 0.41f;
+static const float Drone_AI_Version = 0.73f;
 static const float Mission_Version = 0.31f;
 /* these arent used yet, but are placeholders for future expansion */
 static const float Civilian_AI_Version = 0.10f;

@@ -15,6 +15,31 @@
 // only for drones
 namespace DroneAI {
     namespace State {
+        /*
+        droneStates = {const.entityIdle: 'UI/Inflight/Drone/Idle',
+         const.entityCombat: 'UI/Inflight/Drone/Fighting',
+         const.entityMining: 'UI/Inflight/Drone/Mining',
+         const.entityApproaching: 'UI/Inflight/Drone/Approaching',
+         const.entityDeparting: 'UI/Inflight/Drone/ReturningToShip',
+         const.entityDeparting2: 'UI/Inflight/Drone/ReturningToShip',
+         const.entityOperating: 'UI/Inflight/Drone/Operating',
+         const.entityPursuit: 'UI/Inflight/Drone/Following',
+         const.entityFleeing: 'UI/Inflight/Drone/Fleeing',
+         const.entityEngage: 'UI/Inflight/Drone/Repairing',
+
+
+         entityIdle = 0
+         entityCombat = 1
+         entityMining = 2
+         entityApproaching = 3
+         entityDeparting = 4
+         entityDeparting2 = 5
+         entityPursuit = 6
+         entityFleeing = 7
+         entityOperating = 9
+         entityEngage = 10
+         */
+
         enum {
             Incapacitated       = -2,
             Invalid             = -1,
@@ -28,7 +53,7 @@ namespace DroneAI {
             Pursuit             = 6,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
             Fleeing             = 7,  // running away
             Operating           = 9,  // whats diff from engaged here? unanchoring?
-            Engaged             = 10, // either attack or aid - needs target
+            Repairing           = 10, // repairing target (shield or armor)
             // internal only
             Guarding            = 11, // as stated
             Assisting           = 12  //  this will be remote reppers/boosters
@@ -109,6 +134,7 @@ public:
 
     uint32              GetMaxSpeed()                   { return m_maxSpeed; }
 
+    const GVector&      GetVelocity()                   { return m_velocity; }
     float               GetVelocityX()                  { return m_velocity.x; }
     float               GetVelocityY()                  { return m_velocity.y; }
     float               GetVelocityZ()                  { return m_velocity.z; }
@@ -119,13 +145,13 @@ public:
 
     // this is public to allow deletion from DroneSE object
     InventoryItemRef    m_ore;                          //ore from mining
-    
+
 
 protected:
     void                MineTarget();                   // actual mining code
     void                ClearTarget();                  // actual clear code (lol)
     void                AttackTarget();                 // actual attack code
-    void                EngageTarget();                 // called when close enough to engage - sets action
+    void                RepairTarget();                 // called when close enough to engage - sets action
     void                OrbitTarget();                  // called when setting initial orbit - sets action, usf and heading
 
     bool                TargetValid();
@@ -143,8 +169,8 @@ protected:
     // checks if target is within m_maxRange to engage with target
     bool                InMaxDistance(SystemEntity* pTarget);           // distant range 5
 
-    void                SendGFX(Client* pClient=nullptr); // sent on every cycle -  active = (action==engaged)
-    void                SendShipEffect(bool start=false); // sent on begin and end of fx
+    void                SendGFX(bool repeat/*false*/, Client* pClient=nullptr); // active = (action==engaged)
+    void                SendShipEffect(bool start=false); // sent on begin and end of fx  ***NOT NEEDED***
 
     const char*         GetStateName(int8 stateID);
     const char*         GetActionName(int8 stateID);
@@ -164,6 +190,7 @@ protected:
     GVector             m_velocity;                     // current speed and heading
 
     void                Stop();                         // called when offline - calls SetIdle()
+    void                Pause();                        // called when orbiting - sets position and velocity then stops movement and processing
 
     void                Move(double timeStamp=0);       // called by proc tic to keep ship position accurate
     void                UpdatePosition(bool update=false); // this is for tracking position changes
@@ -184,15 +211,14 @@ private:
 
     EVEItemFlags        m_holdFlag;
 
-    Timer               m_processTimer;
-    Timer               m_mainAttackTimer;
+    Timer               m_processTimer;                 // set to m_cycleTime;  for all drones to engage target
     Timer               m_beginFindTarget;
     Timer               m_warpScramblerTimer;
     Timer               m_webifierTimer;
 
     bool                m_sendCmd;                      // send updated orbit packet?
     bool                m_booster;                      // repair drone
-    bool                m_repeat;                       // for mining drones.
+    bool                m_repeat;                       // continue for mining drones, gfx repeat for others
 
     int8                m_state;
     int8                m_action;
@@ -258,4 +284,57 @@ private:
  *     AttrEntityChaseMaxDuration = 582,           //The maximum amount of time chase is engaged
  *     AttrEntityChaseMaxDurationChance = 583,     //The chance of engaging chase for the maximum duration.
  *     AttrEntityChaseMaxDistance = 665,           // min distance where entity will activate their speed mod
+ */
+
+/*  defined in client
+ *
+ attributeEntityArmorRepairAmount = 631
+ attributeEntityAttackDelayMax = 476
+ attributeEntityAttackDelayMin = 475
+ attributeEntityAttackRange = 247
+ attributeEntityBracketColour = 798
+ attributeEntityChaseMaxDelay = 580
+ attributeEntityChaseMaxDelayChance = 581
+ attributeEntityChaseMaxDistance = 665
+ attributeEntityChaseMaxDuration = 582
+ attributeEntityChaseMaxDurationChance = 583
+ attributeEntityCruiseSpeed = 508
+ attributeEntityDefenderChance = 497
+ attributeEntityEquipmentGroupMax = 465
+ attributeEntityEquipmentMax = 457
+ attributeEntityEquipmentMin = 456
+ attributeEntityFactionLoss = 562
+ attributeEntityFlyRange = 416
+ attributeEntityFlyRangeFactor = 772
+ attributeEntityGroupRespawnChance = 640
+ attributeEntityGroupArmorResistanceBonus = 1676
+ attributeEntityGroupArmorResistanceActivationChance = 1682
+ attributeEntityGroupArmorResistanceDuration = 1681
+ attributeEntityGroupPropJamBonus = 1675
+ attributeEntityGroupPropJamActivationChance = 1680
+ attributeEntityGroupPropJamDuration = 1679
+ attributeEntityGroupShieldResistanceBonus = 1671
+ attributeEntityGroupShieldResistanceActivationChance = 1673
+ attributeEntityGroupShieldResistanceDuration = 1672
+ attributeEntityGroupSpeedBonus = 1674
+ attributeEntityGroupSpeedActivationChance = 1678
+ attributeEntityGroupSpeedDuration = 1677
+ attributeEntityKillBounty = 481
+ attributeEntityLootCountMax = 251
+ attributeEntityLootCountMin = 250
+ attributeEntityLootValueMax = 249
+ attributeEntityLootValueMin = 248
+ attributeEntityMaxVelocitySignatureRadiusMultiplier = 1133
+ attributeEntityMaxWanderRange = 584
+ attributeEntityMissileTypeID = 507
+ attributeEntityRemoteECMBaseDuration = 1661
+ attributeEntityRemoteECMChanceOfActivation = 1664
+ attributeEntityRemoteECMDuration = 1658
+ attributeEntityRemoteECMDurationScale = 1660
+ attributeEntityRemoteECMExtraPlayerScale = 1662
+ attributeEntityRemoteECMIntendedNumPlayers = 1663
+ attributeEntityRemoteECMMinDuration = 1659
+ attributeEntitySecurityMaxGain = 563
+ attributeEntitySecurityStatusKillBonus = 252
+ attributeEntityWarpScrambleChance = 504
  */

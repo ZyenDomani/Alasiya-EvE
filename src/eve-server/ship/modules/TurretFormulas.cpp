@@ -134,17 +134,18 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
 float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
-    float falloff = pDrone->GetSelf()->GetAttribute(AttrFalloff).get_float();
-    float distance = pDrone->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
+    InventoryItemRef dRef = pDrone->GetSelf();
+    float falloff(dRef->GetAttribute(AttrFalloff).get_float());
+    float distance(pDrone->GetPosition().distance(pTarget->DestinyMgr()->GetPosition()));
     GVector vector = pTarget->GetVelocity() - pDrone->GetVelocity();
-    float transversalV = vector.length();
-    float a = (transversalV / (distance * pDrone->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float()));
-    float b = (pDrone->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
-    float c = pow((a * b), 2);
-    float d = EvE::max(distance - pDrone->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float());
-    float e = pow((d / falloff), 2);
-    float ChanceToHit = pow(0.5, c + e);
-    float rNum = MakeRandomFloat(0.0, 1.0);
+    float transversalV(vector.length());
+    float a(transversalV / (distance * dRef->GetAttribute(AttrTrackingSpeed).get_float()));
+    float b(dRef->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
+    float c(pow((a * b), 2));
+    float d(EvE::max(distance - dRef->GetAttribute(AttrEntityAttackRange).get_float()));
+    float e(pow((d / falloff), 2));
+    float ChanceToHit(pow(0.5, c + e));
+    float rNum(MakeRandomFloat(0.0, 1.0));
     if (rNum <= sConfig.rates.DroneCritChance)
         return 3.0f;
     if (rNum < ChanceToHit)

@@ -70,13 +70,15 @@ void BeltMgr::ClearBelt(uint16 bubbleID)
 void BeltMgr::ClearAll(bool clear/*false*/) {
     if (!clear)
         Save();
+    AsteroidSE* pASE(nullptr);
     for (auto &cur : m_asteroids) {
+        pASE = cur.second;
         // not sure why this would be null, but have seen weird shit before so...
-        if (cur.second == nullptr)
+        if (pASE == nullptr)
             continue;
-        m_system->RemoveEntity(cur.second);
-        cur.second->Delete();
-        SafeDelete(cur.second);
+        m_system->RemoveEntity(pASE);
+        //pASE->Delete();
+        SafeDelete(pASE);
     }
     m_asteroids.clear();
     m_belts.clear();
@@ -425,7 +427,7 @@ void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
     ManagerDB::RemoveAsteroid(pASE->GetID());
     // this doesnt work right.  not sure why yet.
     auto range = m_asteroids.equal_range(beltID);
-    for (auto itr = range.first; itr != range.second; itr++) {
+    for (auto itr = range.first; itr != range.second; ++itr) {
         if (itr->second == pASE) {
             m_asteroids.erase(itr);
             return;

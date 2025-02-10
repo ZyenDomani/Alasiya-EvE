@@ -73,7 +73,7 @@ m_dispatch(new Dispatcher(this))
 
     m_strBoundObjectName = "EntityBound";
 
-    PyCallable_REG_CALL(EntityBound, CmdEngage);                // called from EngageTarget
+    PyCallable_REG_CALL(EntityBound, CmdEngage);                // called from EngageTarget...mears "Repair"
     PyCallable_REG_CALL(EntityBound, CmdAssist);
     PyCallable_REG_CALL(EntityBound, CmdGuard);
     PyCallable_REG_CALL(EntityBound, CmdMine);
@@ -388,10 +388,12 @@ PyResult EntityBound::Handle_CmdReconnectToDrones(PyCallArgs &call) {
 PyResult EntityBound::Handle_CmdUnanchor(PyCallArgs &call) {
     // fx for forced unanchoring   1129 structureUnanchorForced
     call.client->SendNotifyMsg("Unanchor is not implemented yet.");
+    sLog.Error("EntityBound", "%s sent CmdUnanchor", call.client->GetName());
+    /*
     int32 targID = PyRep::IntegerValueI32(call.tuple->AsTuple()->GetItem(1));
     SystemEntity* pTarget = m_sysMgr->GetEntityByID(targID);
     PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
-
+    */
     //CheckTarget();
     //CheckTower();
     //CheckMisc();

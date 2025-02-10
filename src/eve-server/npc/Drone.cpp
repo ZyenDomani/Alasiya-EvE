@@ -176,13 +176,12 @@ void DroneSE::Launched(ShipSE* pShipSE) {
     if (!pShipSE->UpdateBandwidth(this))
         return;
 
+    SendBallData();
+
     // just to be sure...
     m_abandoned = false;
     m_online = true;
     m_AI->SetIdle();
-
-    StateChange();
-    SendBallData();
 }
 
 void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
@@ -275,7 +274,11 @@ void DroneSE::Engage(SystemEntity* pTarget, PyDict* dict) {
 
     // target, check distances, begin attack
     m_AI->Target(pTarget);
-    m_AI->Engage(dict, DroneAI::State::Engaged);
+    if (pTarget->IsNPCSE()) {
+        m_AI->Engage(dict, DroneAI::State::Combat);
+    } else {
+        m_AI->Engage(dict, DroneAI::State::Repairing);
+    }
 }
 
 void DroneSE::Assist(SystemEntity* pTarget, PyDict* dict) {
@@ -325,9 +328,8 @@ void DroneSE::Reconnect(ShipSE* pShipSE, PyDict* dict) {
     } else {
         // make note about not enough bandwidth to online reconnected drones
         m_pShipSE->GetPilot()->SendNotifyMsg("Your %s tried reconnecting, but there is not enough bandwidth available to bring it online.<br>You can try scooping up some drones to free bandwidth, or scoop this one to cargo or drone bay.", m_self->name());
+        StateChange();
     }
-
-    StateChange();
 }
 
 /*

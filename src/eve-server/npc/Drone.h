@@ -63,9 +63,14 @@ public:
     virtual void        MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*     MakeSlimItem();
 
+    // override because drones dont have actual destiny...fake it via AI
+    //DroneAIMgr*         DestinyMgr()                    { return m_AI; }
+
     /* virtual functions default to base class and overridden as needed */
     virtual void        Killed(Damage &fatal_blow);
     virtual void        Abandon();     // reset all owner info and bubblecast new data
+    virtual const GVector& GetVelocity()                { return m_AI->GetVelocity(); }
+
 
     virtual void        TargetAdded(SystemEntity* pSE);
     virtual void        TargetLost(SystemEntity* pSE);

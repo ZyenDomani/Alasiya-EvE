@@ -265,7 +265,8 @@ public:
 
     /* generic functions handled here, but set elsewhere */
     bool                        IsDead()                { return m_killed; }
-    const GVector&              GetVelocity()           { return (m_destiny != nullptr ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
+    // this is virtual to allow drones to override it (they dont have DestinyMgr)
+    virtual const GVector&      GetVelocity()           { return (m_destiny != nullptr ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
 
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &damage);

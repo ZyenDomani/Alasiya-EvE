@@ -31,7 +31,6 @@ m_assignedShipSE(nullptr),
 m_ore(nullptr),
 m_holdFlag(flagCargoHold),
 m_processTimer(0),
-m_mainAttackTimer(0),
 m_beginFindTarget(0),
 m_warpScramblerTimer(0),
 m_webifierTimer(0),
@@ -215,6 +214,7 @@ void DroneAIMgr::Process() {
                     move = false;
                     m_moveTime = 0;
                     sLog.Error("movetime", "0");
+                    Pause();
                 } break;
                 case DroneAI::Action::OrbitShip:
                 case DroneAI::Action::OrbitTarget: {
@@ -224,6 +224,7 @@ void DroneAIMgr::Process() {
                     move = false;
                     m_moveTime = 0;
                     sLog.Error("movetime", "0");
+                    Pause();
                 } break;
                 default: {
                     _log(DRONE__ERROR, "%s - state is %s but action is %s.", \
@@ -249,8 +250,9 @@ void DroneAIMgr::Process() {
                         m_startTime = GetFileTimeNow();
                         m_moveTime = GetTimeMSeconds();
                         sLog.Error("movetime", "set");
-                        SendGFX();
+                        SendGFX(false);
                         move = false;
+                        Pause();
                        }
                 } break;
                 case DroneAI::Action::OrbitShip:
@@ -320,7 +322,8 @@ void DroneAIMgr::Process() {
                         m_startTime = GetFileTimeNow();
                         m_moveTime = GetTimeMSeconds();
                         sLog.Error("movetime", "set");
-                        SendGFX();
+                        SendGFX(false);
+                        Pause();
                     } else {
                         _log(DRONE__AI_TRACE, "%s - too far from target to engage. begin travel.", m_droneSE->GetName());
                         SendTrueState(DroneAI::State::Approaching);
@@ -342,7 +345,7 @@ void DroneAIMgr::Process() {
             }
         } break;
 
-        case DroneAI::State::Engaged: {
+        case DroneAI::State::Repairing: {
             if (!TargetValid()) {
                 move = false;
                 SetIdle();
@@ -350,18 +353,37 @@ void DroneAIMgr::Process() {
             }
             switch (m_action) {
                 case DroneAI::Action::Engaged: {
-                    if (m_mainAttackTimer.Check())
-                        AttackTarget();
+                    move = false;
+                    if (m_processTimer.Check())
+                        RepairTarget();
                 } break;
+                case DroneAI::Action::OrbitTarget:
                 case DroneAI::Action::AccelToTarget:
                 case DroneAI::Action::DecelToTarget: {
-                    if (InEngageDistance(m_targetSE))
-                        EngageTarget();
+                    if (InEngageDistance(m_targetSE)) {
+                        move = false;
+                        m_startTime = GetFileTimeNow();
+                        // this is a repeatable action
+                        m_repeat = true;
+                        SendGFX(true);
+                        SetAction(DroneAI::Action::Engaged);
+                        SendTrueState(DroneAI::State::Repairing);
+                        m_processTimer.Start(m_cycleTime);
+                        RepairTarget();
+                        Pause();
+                    }
                 } break;
                 case DroneAI::Action::DecelToStop: {
                     move = false;
                     SetIdle();
                 } break;
+                /*  these should not hit here  make error below
+                case DroneAI::Action::OrbitShip:
+                case DroneAI::Action::AccelToShip:
+                case DroneAI::Action::DecelToShip: {
+                    // currently traveling or idle.  set new command
+                } break;
+                */
                 default: {
                     // error
                     _log(DRONE__AI_TRACE, "%s - hmmmmm... state is Engaged but action is %s.", \
@@ -394,6 +416,7 @@ void DroneAIMgr::Process() {
                     move = false;
                     SendTrueState(DroneAI::State::Idle);
                     SetState(DroneAI::State::Idle);
+                    Pause();
                 } break;
                 case DroneAI::Action::Idle: {
                     _log(DRONE__AI_TRACE, "%s - hmmmmm... state is ReturnHome but action is idle.", m_droneSE->GetName());
@@ -460,12 +483,69 @@ void DroneAIMgr::Process() {
             }
         } break;
 
+        case DroneAI::State::Combat: {
+            if (!TargetValid()) {
+                move = false;
+                SetIdle();
+                break;
+            }
+            switch (m_action) {
+                case DroneAI::Action::Engaged: {
+                    // this is actively fighting, whether ewar or weapons
+                    move = false;
+                    if (m_processTimer.Check())
+                        AttackTarget();
+                } break;
+                case DroneAI::Action::OrbitTarget:
+                case DroneAI::Action::AccelToTarget:
+                case DroneAI::Action::DecelToTarget: {
+                    if (InEngageDistance(m_targetSE)) {
+                        move = false;
+                        m_startTime = GetFileTimeNow();
+                        // this is a repeatable action
+                        m_repeat = true;
+                        SendGFX(true);
+                        SetAction(DroneAI::Action::Engaged);
+                        SendTrueState(DroneAI::State::Combat);
+                        m_processTimer.Start(m_cycleTime);
+                        AttackTarget();
+                        Pause();
+                    }
+                } break;
+                case DroneAI::Action::DecelToStop: {
+                    // this is almost always an error
+                    _log(DRONE__AI_TRACE, "%s - %s.  decel to stop", m_droneSE->GetName(), GetStateName(m_state));
+                    SetState(DroneAI::State::Idle);
+                    // stop processing until another call hits
+                    move = false;
+                    m_moveTime = 0;
+                    sLog.Error("movetime", "0");
+                } break;
+                /*  these should not hit here.  make error below
+                case DroneAI::Action::Idle:
+                case DroneAI::Action::Invalid:
+                case DroneAI::Action::OrbitShip:
+                case DroneAI::Action::AccelToShip:
+                case DroneAI::Action::DecelToShip:
+                */
+                default: {
+                    // error
+                    _log(DRONE__AI_TRACE, "%s - hmmmmm... state is %s but action is %s.", \
+                    m_droneSE->GetName(), GetStateName(m_state), GetActionName(m_action));
+                    SetState(DroneAI::State::Idle);
+                    // stop processing until another call hits
+                    move = false;
+                    m_moveTime = 0;
+                    sLog.Error("movetime", "0");
+                }
+            }
+        } break;
+
         // not sure how im gonna do these...
         case DroneAI::State::Fleeing:
         case DroneAI::State::Operating:
         case DroneAI::State::Guarding:
         case DroneAI::State::Assisting:
-        case DroneAI::State::Combat:
         case DroneAI::State::Approaching:
         case DroneAI::State::Pursuit: {
             // do nothing here yet
@@ -528,7 +608,6 @@ void DroneAIMgr::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
                 SetState(DroneAI::State::ReturnBay);
             }
             m_sendCmd = true;
-            OrbitTarget();
         } break;
         case DroneAI::State::ReturnHome: {
             // this is easy...drop everything and return
@@ -549,7 +628,6 @@ void DroneAIMgr::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
                 SetState(DroneAI::State::ReturnHome);
             }
             m_sendCmd = true;
-            OrbitTarget();
         } break;
         case DroneAI::State::Mining: {
             // are we currently mining?
@@ -576,32 +654,69 @@ void DroneAIMgr::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
                 SetAction(DroneAI::Action::AccelToTarget);
                 SendTrueState(DroneAI::State::Approaching);
             }
-
-            OrbitTarget();  //try to get inside orbit range
         } break;
-        case DroneAI::State::Engaged: {
-            // this is can be either attack or aid, depending on drone type
-            //  player has confirmed choice, so proceed with requested action
+        case DroneAI::State::Combat: {
             m_sendCmd = true;
-            SetState(DroneAI::State::Engaged);
-            OrbitTarget();
+            SetState(DroneAI::State::Combat);
+            // determine target distance to set action
+            if (InOrbitDistance(m_targetSE)) {
+                SetAction(DroneAI::Action::OrbitTarget);
+                SendTrueState(DroneAI::State::Combat);
+            } else {
+                SetAction(DroneAI::Action::AccelToTarget);
+                SendTrueState(DroneAI::State::Pursuit);
+            }
         } break;
-        case DroneAI::State::Idle: {
-            sLog.Warning("DroneEngage()", "sent idle...why?");
+        case DroneAI::State::Repairing: {
+            m_sendCmd = true;
+            SetState(DroneAI::State::Repairing);
+            // determine target distance to set action
+            if (InOrbitDistance(m_targetSE)) {
+                SetAction(DroneAI::Action::OrbitTarget);
+            } else {
+                SetAction(DroneAI::Action::AccelToTarget);
+                SendTrueState(DroneAI::State::Approaching);
+            }
         } break;
-        // these arent coded yet, so ignore them for now
-        case DroneAI::State::Guarding:
-        case DroneAI::State::Operating:
+        case DroneAI::State::Guarding: {
+            m_sendCmd = true;
+            SetState(DroneAI::State::Guarding);
+            // determine target distance to set action
+            if (InOrbitDistance(m_targetSE)) {
+                SetAction(DroneAI::Action::OrbitTarget);
+                SendTrueState(DroneAI::State::Idle);
+            } else {
+                SetAction(DroneAI::Action::AccelToTarget);
+                SendTrueState(DroneAI::State::Approaching);
+            }
+        } break;
+        case DroneAI::State::Assisting: {
+            m_sendCmd = true;
+            SetState(DroneAI::State::Assisting);
+            // determine target distance to set action
+            if (InOrbitDistance(m_targetSE)) {
+                SetAction(DroneAI::Action::OrbitTarget);
+                SendTrueState(DroneAI::State::Idle);
+            } else {
+                SetAction(DroneAI::Action::AccelToTarget);
+                SendTrueState(DroneAI::State::Approaching);
+            }
+        } break;
+        // these should not be sent as they are actions and not commands
+        case DroneAI::State::Idle:
         case DroneAI::State::Fleeing:
-        case DroneAI::State::Assisting:
-        case DroneAI::State::Combat:
-        case DroneAI::State::Approaching:
-        case DroneAI::State::Pursuit: {
+        case DroneAI::State::Pursuit:
+        case DroneAI::State::Operating:
+        case DroneAI::State::Approaching: {
+            sLog.Warning("DroneEngage()", "sent %s...why?", GetStateName(state));
+            return;
         } break;
         /* this is negative...will never be sent thru here
         case DroneAI::State::Incapacitated:
         */
     }
+
+    OrbitTarget();
 }
 
 void DroneAIMgr::SetIdle() {
@@ -613,22 +728,28 @@ void DroneAIMgr::SetIdle() {
     _log(DRONE__AI_TRACE, "%s(%u): SetIdle: returning to idle.",
             m_droneSE->GetName(), m_droneSE->GetID());
 
-    // set action to idle first.  gfx checks this to set active
-    /*   may not need this
-    SetAction(DroneAI::Action::Idle);
-    if (m_state > DroneAI::State::Idle) {
-        sLog.Warning("DroneAIMgr::SetIdle()", " state is %s for %s", GetStateName(m_state), m_droneSE->GetName());
-        // probably had some active gfx before returning to idle
-        SendGFX();
-    } */
+    // if drone engaged in repeat action, cancel gfx
+    if (m_repeat) {
+        m_repeat = false;
+        // cancel gfx for drones except miners
+        if (m_droneSE->GetGroupID() != EVEDB::invGroups::Mining_Drone) {
+            // set action to idle first.  gfx checks this to set active
+            SetAction(DroneAI::Action::Idle);
+            if (m_state > DroneAI::State::Idle) {
+                sLog.Warning("DroneAIMgr::SetIdle()", " state is %s for %s.  Canceling GFX", GetStateName(m_state), m_droneSE->GetName());
+                // probably had some active gfx before returning to idle
+                SendGFX(false);
+            }
+        }
+    }
 
     m_startTime = 0;
     ClearTargets();
 
-    // disable ewar timers
+    // disable timers
+    m_processTimer.Disable();
     m_webifierTimer.Disable();
     m_beginFindTarget.Disable();
-    m_mainAttackTimer.Disable();
     m_warpScramblerTimer.Disable();
 
     if (m_droneSE->InControlDistance()) {
@@ -638,11 +759,14 @@ void DroneAIMgr::SetIdle() {
         if (InActionDistance(m_assignedShipSE)) {
             SendTrueState(DroneAI::State::Idle);
             SetAction(DroneAI::Action::OrbitShip);
+            // orbit must be called before pause
+            OrbitTarget();
+            Pause();
         } else {
             SetAction(DroneAI::Action::AccelToShip);
             SendTrueState(DroneAI::State::ReturnHome);
+            OrbitTarget();
         }
-        OrbitTarget();
     } else {
         if (m_droneSE->IsEnabled()) {
             // we're idle and outside control distance.  not good
@@ -657,14 +781,14 @@ void DroneAIMgr::SetIdle() {
     }
 }
 
-void DroneAIMgr::EngageTarget() {
-    _log(DRONE__AI_TRACE, "Drone %s(%u): EngageTarget: %s(%u) begin engaging.",
+void DroneAIMgr::RepairTarget() {
+    _log(DRONE__AI_TRACE, "Drone %s(%u): RepairTarget: %s(%u) begin engaging.",
             m_droneSE->GetName(), m_droneSE->GetID(), m_targetSE->GetName(), m_targetSE->GetID());
 
     // actively engaged with target
     m_startTime = GetFileTimeNow();
     SetAction(DroneAI::Action::Engaged);
-    //SendShipEffect(true);
+    SendGFX(true);
 }
 
 
@@ -734,7 +858,7 @@ void DroneAIMgr::Target(SystemEntity* pTarget) {
     m_heading = std::move(targHeading);
 
     m_beginFindTarget.Disable();
-    m_mainAttackTimer.Start(m_cycleTime);
+    // test  do we need to set timer here?
 }
 
 void DroneAIMgr::OrbitTarget() {
@@ -764,7 +888,7 @@ void DroneAIMgr::OrbitTarget() {
                     distance = m_droneSE->GetPosition().distance(m_assignedShipSE->GetPosition());
                     distance -= m_assignedShipSE->GetRadius();
                     targetID = m_assignedShipSE->GetID();
-                    orbitRange += m_assignedShipSE->GetRadius();
+                    //orbitRange += m_assignedShipSE->GetRadius();
                     // update heading
                     GVector targHeading(m_droneSE->GetPosition(), m_assignedShipSE->GetPosition());
                     targHeading.normalize();
@@ -773,14 +897,14 @@ void DroneAIMgr::OrbitTarget() {
                 // these are probably target
                 case DroneAI::State::Combat:
                 case DroneAI::State::Mining:
-                case DroneAI::State::Engaged:
                 case DroneAI::State::Pursuit:
                 case DroneAI::State::Operating:
+                case DroneAI::State::Repairing:
                 case DroneAI::State::Approaching: {     // im gonna go with "Approaching Target" here....
                     distance = m_droneSE->GetPosition().distance(m_targetSE->GetPosition());
                     distance -= m_targetSE->GetRadius();
                     targetID = m_targetSE->GetID();
-                    orbitRange += m_targetSE->GetRadius();
+                    //orbitRange += m_targetSE->GetRadius();
                     // update heading
                     GVector targHeading(m_droneSE->GetPosition(), m_targetSE->GetPosition());
                     targHeading.normalize();
@@ -800,7 +924,7 @@ void DroneAIMgr::OrbitTarget() {
             distance = m_droneSE->GetPosition().distance(m_targetSE->GetPosition());
             distance -= m_targetSE->GetRadius();
             targetID = m_targetSE->GetID();
-            orbitRange += m_targetSE->GetRadius();
+            //orbitRange += m_targetSE->GetRadius();
             // update heading
             GVector targHeading(m_droneSE->GetPosition(), m_targetSE->GetPosition());
             targHeading.normalize();
@@ -812,7 +936,7 @@ void DroneAIMgr::OrbitTarget() {
             distance = m_droneSE->GetPosition().distance(m_assignedShipSE->GetPosition());
             distance -= m_assignedShipSE->GetRadius();
             targetID = m_assignedShipSE->GetID();
-            orbitRange += m_assignedShipSE->GetRadius();
+            //orbitRange += m_assignedShipSE->GetRadius();
             // update heading
             GVector targHeading(m_droneSE->GetPosition(), m_assignedShipSE->GetPosition());
             targHeading.normalize();
@@ -851,7 +975,7 @@ void DroneAIMgr::OrbitTarget() {
         m_accelTime = (-log(ASF_CHECK) * m_agility);
     } else {
         // close enough impulse drives; set orbit speed
-        m_userSpeedFraction = m_cruiseSpeed / m_maxSpeed;
+        m_userSpeedFraction = (float)m_cruiseSpeed / m_maxSpeed;
         m_accelTime = (-log(ASF_CHECK) * m_agility);
         m_accelTime *= m_accelTime;
     }
@@ -904,7 +1028,6 @@ void DroneAIMgr::Abandon() {
     m_processTimer.Disable();
     m_webifierTimer.Disable();
     m_beginFindTarget.Disable();
-    m_mainAttackTimer.Disable();
     m_warpScramblerTimer.Disable();
 
     SetState(DroneAI::State::Invalid);
@@ -997,7 +1120,6 @@ void DroneAIMgr::AttackTarget() {
     if (!m_droneSE->TargetMgr()->CanAttack())
         return;
 
-    SendGFX();
     Damage dam(m_droneSE,
                m_droneSE->GetSelf(),
                m_droneSE->GetKinetic(),
@@ -1137,7 +1259,6 @@ bool DroneAIMgr::InMaxDistance(SystemEntity* pTarget) {
 // destiny methods below...
 
 void DroneAIMgr::Stop() {
-    // not sure how im gonna handle this yet.
     // only called when drone offline or disabled
     if (m_droneSE->IsEnabled())
         m_droneSE->DisableDrone();
@@ -1155,6 +1276,19 @@ void DroneAIMgr::Stop() {
         PyTuple* up = stop.Encode();
         // edit  m_droneSE->SysBubble()->BubblecastDestinyUpdate(&up, "destiny drone");
     }
+}
+
+void DroneAIMgr::Pause() {
+    // this will set position and velocity, then stop further processing until next command
+    //  velocity is set for faking proper weapon tracking and tohit calc's
+
+    if (!m_droneSE->IsEnabled())
+        return;
+
+    m_velocity = m_heading * m_maxSpeed * m_activeSpeedFraction;
+
+    m_moveTime = 0;
+    sLog.Error("movetime", "0");
 }
 
 void DroneAIMgr::Move(double timeStamp) {
@@ -1309,7 +1443,7 @@ void DroneAIMgr::ReportDamage(uint8 type/*0*/) {
     m_assignedShipSE->GetPilot()->SendNotifyMsg(BinString(text).c_str());
 }
 
-void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
+void DroneAIMgr::SendGFX(bool repeat/*false*/, Client* pClient/*nullptr*/) {
     sLog.Blue("Drone", "sending gfx");
     if (m_effectID < 1) {
         // not necessarily an error.  just make note
@@ -1362,7 +1496,7 @@ void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
         effect.start = start;                   // int bool
         effect.active = active;               // int bool
         effect.duration = m_cycleTime;             // in ms
-        effect.repeat = 0;                 // dont allow repeat
+        effect.repeat = repeat;                 // mining drones dont repeat
         effect.startTime = (useStartTime ? m_startTime : GetFileTimeNow());
         effect.graphicInfo = (gfxID == 0 ? PyStatic.NewNone() : new PyInt(gfxID));
     PyTuple *up = effect.Encode();
@@ -1379,7 +1513,7 @@ void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
 }
 
 void DroneAIMgr::SendShipEffect(bool start/*false*/) {
-    // NOTE:  not sure if this is needed or not....test without first...
+    // NOTE:  not sure if this is needed or not....test without first...****NOT NEEDED****
     // MUST have target to start/stop effect
 
     //def OnGodmaShipEffect(self, itemID, effectID, t, start, active, environment, startTime, duration, repeat, randomSeed, error, actualStopTime = None, stall = True):
@@ -1450,9 +1584,11 @@ int8 DroneAIMgr::GetState() {
     switch (m_state) {
         case DroneAI::State::Invalid:
             return DroneAI::State::Idle;
+        // these really depend on distance
         case DroneAI::State::Guarding:
         case DroneAI::State::Assisting:
-            return DroneAI::State::Engaged;
+            return DroneAI::State::Combat;
+            // Approaching, Pursuit
         default:
             return m_state;
     }
@@ -1467,7 +1603,7 @@ const char* DroneAIMgr::GetStateName(int8 stateID) {
         case DroneAI::State::ReturnHome:      return "\033[1mReturning to ship\033[0m";
         case DroneAI::State::ReturnBay:       return "\033[1mReturning to Bay\033[0m";
         case DroneAI::State::Pursuit:         return "\033[1mPursuit\033[0m";
-        case DroneAI::State::Engaged:         return "\033[1mEngaged\033[0m";
+        case DroneAI::State::Repairing:       return "\033[1mEngaged\033[0m";
         case DroneAI::State::Fleeing:         return "\033[1mFleeing\033[0m";
         case DroneAI::State::Operating:       return "\033[1mOperating\033[0m";
         case DroneAI::State::Assisting:       return "\033[1mAssisting\033[0m";
@@ -1554,10 +1690,27 @@ switch (m_action) {
     case DroneAI::Action::DecelToShip: {
     } break;
     case DroneAI::Action::OrbitTarget: {
-        } break;
+    } break;
     case DroneAI::Action::OrbitShip: {
-        } break;
+    } break;
     case DroneAI::Action::DecelToStop: {
+        // this is almost always an error
+        _log(DRONE__AI_TRACE, "%s - %s.  decel to stop", m_droneSE->GetName(), GetStateName(m_state));
+        SetState(DroneAI::State::Idle);
+        // stop processing until another call hits
+        move = false;
+        m_moveTime = 0;
+        sLog.Error("movetime", "0");
+    } break;
+    default: {
+        // error
+        _log(DRONE__AI_TRACE, "%s - hmmmmm... state is %s but action is %s.", \
+        m_droneSE->GetName(), GetStateName(m_state), GetActionName(m_action));
+        SetState(DroneAI::State::Idle);
+        // stop processing until another call hits
+        move = false;
+        m_moveTime = 0;
+        sLog.Error("movetime", "0");
     } break;
 }
 */
