@@ -124,6 +124,8 @@ protected:
     void                MineTarget();                   // actual mining code
     void                ClearTarget();                  // actual clear code (lol)
     void                AttackTarget();                 // actual attack code
+    void                EngageTarget();                 // called when close enough to engage - sets action
+    void                OrbitTarget();                  // called when setting initial orbit - sets action, usf and heading
 
     bool                TargetValid();
 
@@ -155,14 +157,12 @@ protected:
      * this will also show "Idle" when drone is actually orbit home ship
      */
     void                SendTrueState(int8 state=DroneAI::State::Idle);
-    
+
     /* internal destiny methods.  testing drone w/o actual DestinyManager (dont need the overhead) */
     GPoint              m_heading;                      // well, drone heading, ofc
     GVector             m_velocity;                     // current speed and heading
 
     void                Stop();                         // called when offline - calls SetIdle()
-    void                SetOrbit();                     // called when setting initial orbit - sets action, usf and heading
-    void                SetEngaged();                   // called when close enough to engage - sets action
 
     void                Move(double timeStamp=0);       // called by proc tic to keep ship position accurate
     void                UpdatePosition(bool update=false); // this is for tracking position changes

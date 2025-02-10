@@ -176,8 +176,6 @@ void DroneSE::Launched(ShipSE* pShipSE) {
     if (!pShipSE->UpdateBandwidth(this))
         return;
 
-    assert (m_bubble == nullptr);
-
     // just to be sure...
     m_abandoned = false;
     m_online = true;
@@ -268,7 +266,6 @@ void DroneSE::Mine(SystemEntity* pTarget, PyDict* dict, bool repeat/*false*/) {
 
     m_AI->Target(pTarget);
     m_AI->Engage(dict, DroneAI::State::Mining, repeat);
-    StateChange();
 }
 
 void DroneSE::Engage(SystemEntity* pTarget, PyDict* dict) {
@@ -279,7 +276,6 @@ void DroneSE::Engage(SystemEntity* pTarget, PyDict* dict) {
     // target, check distances, begin attack
     m_AI->Target(pTarget);
     m_AI->Engage(dict, DroneAI::State::Engaged);
-    StateChange();
 }
 
 void DroneSE::Assist(SystemEntity* pTarget, PyDict* dict) {
@@ -290,7 +286,6 @@ void DroneSE::Assist(SystemEntity* pTarget, PyDict* dict) {
     // target, check distances, begin attack
     m_AI->Target(pTarget);
     m_AI->Engage(dict, DroneAI::State::Assisting);
-    StateChange();
 }
 
 void DroneSE::Guard(SystemEntity* pTarget, PyDict* dict) {
@@ -301,7 +296,6 @@ void DroneSE::Guard(SystemEntity* pTarget, PyDict* dict) {
     // target, check distances, begin attack
     m_AI->Target(pTarget);
     m_AI->Engage(dict, DroneAI::State::Guarding);
-    StateChange();
 }
 
 void DroneSE::Delegate(SystemEntity* pTarget, PyDict* dict) {

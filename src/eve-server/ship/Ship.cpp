@@ -2764,7 +2764,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     DroneSE* pDrone = new DroneSE(dRef, m_services, m_system, data);
     pDrone->Init();
     // drones are scannable.  add signal to AnomalyMgr
-    m_system->AddEntity(this, true);
+    m_system->AddEntity(pDrone, true);
     // send new ball data
     pDrone->Launched(this);
     // add drone to launched drone map (whether onlined or not)
@@ -2815,7 +2815,7 @@ void ShipSE::AbandonDrones() {
             if (pSE->IsDroneSE())
                 pSE->GetDroneSE()->Abandon();   // this also updates bandwidth
     }
-    
+
     // all abandoned.  clear map
     m_drones.clear();
 }
