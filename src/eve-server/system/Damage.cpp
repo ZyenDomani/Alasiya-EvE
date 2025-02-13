@@ -130,7 +130,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         case EVEDB::invGroups::Missile_Launcher_Standard: {
             // apply damage modifier from config
             damage *= sConfig.rates.missileDamage;
-            // should this be adjusted based on damage?
+            // should this be adjusted based on damage?  no, missiles always hit
             damageID = 6;
         } break;
         case EVEDB::invGroups::Super_Weapon: {
@@ -143,13 +143,13 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         } break;
         case EVEDB::invGroups::Missile_Launcher_Snowball: {
             // these dont do any damage
-            //  update this to use real toHit data (once we implement them....)
+            //TODO:  update this to use real toHit data (once we implement them....)
             damageID = MakeRandomInt(0,8);
         } break;
         default: {
             float modifier = damage.GetModifier();
             damage *= modifier;
-                 if (modifier == 3.0f)   { damageID = 8; }  //strikes perfectly, wrecking
+                 if (modifier == 3.0f)   { damageID = 8; } //strikes perfectly, wrecking
             else if (modifier > 1.2501f) { damageID = 7; } //places an excellent hit
             else if (modifier > 0.9999f) { damageID = 6; } //aims well
             else if (modifier > 0.7501f) { damageID = 5; } //hits
@@ -247,7 +247,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
 
             // report armor failed to advanced entity
             ReportDamage(2);
-            
+
             //Hull/Structure:
             //The base hp and damage attributes represent structure.
             float available_hull = m_self->GetAttribute(AttrHP).get_float() - m_self->GetAttribute(AttrDamage).get_float();
@@ -284,6 +284,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         m_killed = true;
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
 
+        //TODO: find a way to determine if this entity has missiles out and update missile for dead launcher
         Killed(damage);  // this must NOT remove dead SE from system. (except base class)
         if (!IsSystemEntity())
             SystemEntity::Killed(damage); // this removes dead SE from system then deletes itemRef and all its contents
@@ -293,6 +294,11 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
          * fixed msgIDs and removed xmlp  - 15Sept19
          * @todo  still need to check/add detailed dmg msgs
          */
+        // check for srcSE destroyed before missile hit
+        if ((damage.srcSE == nullptr) or (damage.srcSE->IsDead())) {
+            SendDamageStateChanged();
+            return killed;
+        }
         if (HasPilot()) {
             //  notify player of damage received
             PyDict* dict = new PyDict();
@@ -329,29 +335,17 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
             }
             tuple->SetItem(2, dict);
             damage.srcSE->GetPilot()->QueueDestinyEvent(&tuple);
-        } else if (damage.srcSE->IsDroneSE()) {
-            // verify drone has owner set
-            if (damage.srcSE->GetDroneSE()->GetOwner() != nullptr) {
-                //  notify player of damage done by drone
-                PyDict* dict = new PyDict();
-                    dict->SetItemString("source", new PyInt(damage.srcSE->GetID()));
-                    dict->SetItemString("target", new PyInt(GetID()));
-                /*
-                PyTuple* tuple = new PyTuple(2);
-                    tuple->AddItem(0, PyStatic.NewNone());  // i dont know what this is
-                    tuple->AddItem(1, new PyInt(d.srcSE->GetDroneSE()->GetOwner()->GetCharID())):
-                */
-                    //dict->SetItemString("owner", tuple));
-                    dict->SetItemString("damage", new PyFloat(total_damage));
-                PyTuple* tuple = new PyTuple(3);
-                    tuple->SetItem(0, new PyString("OnDamageMessage"));
-                    tuple->SetItem(1, new PyString(Dmg::Msg::Taken[damageID]));
-                    tuple->SetItem(2, dict);
-                damage.srcSE->GetDroneSE()->GetOwner()->QueueDestinyEvent(&tuple);
-            } else {
-                // make error about active drone with no owner set
-                _log(DRONE__WARNING, "Drone %u attacking %s with no owner set.", damage.srcSE->GetID(), GetName());
-            }
+        } else if (damage.srcSE->IsDroneSE() and 0) {
+            //  notify player of damage done by drone...not working right
+            PyDict* dict = new PyDict();
+                dict->SetItemString("weapon", new PyInt(damage.srcSE->GetID()));
+                dict->SetItemString("target", new PyInt(GetID()));
+                dict->SetItemString("damage", new PyFloat(total_damage));
+            PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0, new PyString("OnDamageMessage"));
+                tuple->SetItem(1, new PyString(Dmg::Msg::Given[damageID]));
+                tuple->SetItem(2, dict);
+            damage.srcSE->GetDroneSE()->GetOwner()->QueueDestinyEvent(&tuple);
         }
 
         SendDamageStateChanged();

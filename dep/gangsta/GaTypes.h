@@ -164,9 +164,8 @@ public:
         return Math::squareRoot(lengthSquared());
     }
 
-    GaExpInl GaFloat distance(const GaVec3& from) const
-    {
-        return Math::squareRoot(pow((from.x - x), 2) + pow((from.y - y), 2) + pow((from.z - z), 2));
+    GaExpInl GaFloat distance(const GaVec3& to) const {
+        return Math::squareRoot(pow((to.x - x), 2) + pow((to.y - y), 2) + pow((to.z - z), 2));
     }
 
     // transform position to unit vector

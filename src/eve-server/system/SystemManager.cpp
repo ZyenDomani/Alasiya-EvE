@@ -195,6 +195,7 @@ bool SystemManager::ProcessTic() {
 
     for (auto &cur : m_deleteLater)
         SafeDelete(cur.second);
+    m_deleteLater.clear();
 
     std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin(), end = m_ticEntities.end();
     while (itr != end) {
@@ -332,6 +333,7 @@ void SystemManager::UnloadSystem() {
     // at this point, these lists should be clear
     m_npcs.clear();
     m_entities.clear();
+    m_deleteLater.clear();
     m_ticEntities.clear();
     m_staticEntities.clear();
     m_opStaticEntities.clear();

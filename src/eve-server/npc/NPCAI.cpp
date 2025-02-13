@@ -330,6 +330,8 @@ void NPCAIMgr::Process() {
                         continue;
                     if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_sightRange)
                         continue;
+                    _log(NPC__INFO, "%s(%u): Found %s(%u) - Begin Targeting.", \
+                        m_npc->GetName(), m_npc->GetID(), cur->GetShipSE()->GetName(), cur->GetShipSE()->GetID());
 
                     Target(cur->GetShipSE());
                     return;

@@ -188,6 +188,8 @@ void SystemBubble::Add(SystemEntity* pSE) {
         for (auto &cur : m_activeModules)
             cur.second->SendGFX(false, pClient);
         // will need to do same thing for active drones, if any
+        for (auto &cur : m_drones)
+            cur.second->GetAI()->SendGFX(pClient);
 
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
     } else {

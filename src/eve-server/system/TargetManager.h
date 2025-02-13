@@ -76,6 +76,28 @@ class PyRep;
 class PyTuple;
 class PyList;
 
+class TargetEntry {
+public:
+    TargetEntry()
+    : state(TargMgr::State::Idle), timer(0) {}
+
+    void Dump(SystemEntity* pSE) const;
+
+    uint8 state;
+
+    Timer timer;
+};
+
+class TargetedByEntry {
+public:
+    TargetedByEntry()
+    : state(TargMgr::State::Idle) {}
+
+    void Dump(SystemEntity* pSE) const;
+
+    uint8 state;
+};
+
 class TargetManager {
 public:
     TargetManager(SystemEntity* self);
@@ -83,19 +105,21 @@ public:
     TargetManager(const TargetManager&) =delete;
     TargetManager& operator=(const TargetManager&) =delete;
 
+    static const char*  GetModeName(uint8 mode);
+    static const char*  GetStateName(uint8 state);
+
     /* Common Methods for all objects */
     bool                Process();
     void                Unload();       // called on npcs from sysMgr when unloading system.
 
     // iterate thru the map of modules targeting this object and call AbortCycle on each.
     void                ClearModules();
+    
     void                TargetsCleared();
     void                ClearFromTargets();
     void                TargetLost(SystemEntity *tSE);
     void                ClearTarget(SystemEntity *tSE);
     void                TargetAdded(SystemEntity *tSE);
-    void                TargetedAdd(SystemEntity *tSE);
-    void                TargetedLost(SystemEntity *tSE);
     void                ClearTargets(bool notify=true);
     void                ClearAllTargets(bool notify=true);
 
@@ -138,12 +162,12 @@ public:
 
     /* PC Module Methods (for module deactivation on target removed) */
     void                Destroyed();    // this does NOT remove target from targeters map
+    void                AddTargetModule(ActiveModule* pMod);
+    void                RemoveTargetModule(ActiveModule* pMod);
     // only called by MiningLaser
     void                Depleted(MiningLaser* pMod);
     // only called by non-lasers
     void                Depleted(InventoryItemRef iRef);
-    void                AddTargetModule(ActiveModule* pMod);
-    void                RemoveTargetModule(ActiveModule* pMod);
 
     /* Packet builders: */
     PyList*             GetTargets() const;
@@ -162,38 +186,22 @@ public:
     // for querying targ count outside targMgr
     uint8               GetTargetCount()                { return m_targets.size(); }
 
+    // get full target list for advanced AI
+    void                GetAllTargets(std::map<SystemEntity*, TargetEntry*> &targets) { targets = m_targets; }
+    // get full targeter list for advanced AI
+    void                GetAllTargeters(std::map<SystemEntity*, TargetedByEntry*> &targetby) { targetby = m_targetedBy; }
+
 
 protected:
     float               TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const;
 
-    static const char*  GetModeName(uint8 mode);
-    static const char*  GetStateName(uint8 state);
-
-    //called in reaction to outgoing targeting events in other target managers.
+    //  add this object to our target list and informing target of yellowbox
+    void                TargetedAdd(SystemEntity *tSE); // this is initial targeting call.
+    //called from other targMgr once locking has been completed on this object
     void                TargetedByLocked(SystemEntity *tSE);
+
+    void                TargetedLost(SystemEntity *tSE);
     void                TargetedByLost(SystemEntity *tSE);
-
-    class TargetEntry {
-    public:
-        TargetEntry()
-        : state(TargMgr::State::Idle), timer(0) {}
-
-        void Dump(SystemEntity* pSE) const;
-
-        uint8 state;
-
-        Timer timer;
-    };
-
-    class TargetedByEntry {
-    public:
-        TargetedByEntry()
-        : state(TargMgr::State::Idle) {}
-
-        void Dump(SystemEntity* pSE) const;
-
-        uint8 state;
-    };
 
 private:
     SystemEntity* mySE;    //we do not own this.

@@ -332,6 +332,14 @@ public:
     virtual bool HasPilot()                             { return ((m_shipRef.get() == nullptr) ? false : m_shipRef->HasPilot()); }
     virtual Client* GetPilot()                          { return ((m_shipRef.get() == nullptr) ? nullptr : m_shipRef->GetPilot()); }
 
+    /* virtual functions for npc/drone AI and player reporting */
+    virtual void                ReportDamage(uint8 type=0) { /* do nothing here */ }
+    virtual void            TargetAdded(SystemEntity* pSE) { /* do nothing here */ }
+    // this is call to inform us of yellowbox
+    virtual void            TargetedAdd(SystemEntity* pSE) { /* do nothing here */ }
+    virtual void             TargetLost(SystemEntity* pSE) { /* do nothing here */ }
+    virtual void           TargetedLost(SystemEntity* pSE) { /* do nothing here */ }
+
     /* specific functions handled here. */
     void Dock();
     void Jump(int32 fromGateID, bool showCloak=true);        // this also sets ship cloak
@@ -369,8 +377,9 @@ public:
     bool LaunchDrone(InventoryItemRef dRef);
     bool ReconnectDrone(DroneSE* pSE);
     void ScoopDrone(SystemEntity* pSE);                 // this does not delete SE nor remove it from system
-    // used when drones enter/leave ship's control distance, including launch/scoop 
-    bool UpdateBandwidth(DroneSE* pSE);                 // drone's abandon and/or online status' must be set properly before calling
+    // used when drones enter/leave ship's control distance, including launch/scoop
+    bool AcquireBandwidth(DroneSE* pSE);
+    void ReleaseBandwidth(DroneSE* pSE);
 
     // returns current count of drones in space for this ship
     uint8 DroneCount()                                  { return m_drones.size(); }

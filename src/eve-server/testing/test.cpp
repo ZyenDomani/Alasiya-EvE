@@ -501,11 +501,17 @@ void testing::RunDroneAttribs() {
     double mass(0.0), inertiaMod(0.0), agility(0.0), alignTime(0.0), turnPct(0.0), accelTime(0.0);
     // loop thru drone refs and perform math as directed
     for (auto &cur : droneRefs) {
-        sLog.Yellow("   ", "%s(%u) [%s]:  AttrMaxRange: %u, AttrOrbitRange: %u, AttrEntityAttackRange: %u, AttrFalloff: %u, AttrEntityChaseMaxDistance: %u ", \
+        sLog.Yellow("   ", "%s(%u) [%s]:  AttrMaxVelocity: %u, AttrEntityCruiseSpeed: %u", \
+                cur->name(), cur->typeID(), cur->type().groupName().c_str(), cur->GetAttribute(AttrMaxVelocity).get_uint32(), \
+                cur->GetAttribute(AttrEntityCruiseSpeed).get_uint32());
+
+        /*
+        sLog.Yellow("   ", "%s(%u) [%s]:  AttrMaxRange: %u, AttrOrbitRange: %u, AttrEntityAttackRange: %u, AttrFalloff: %u, AttrEntityChaseMaxDistance: %u, AttrProximityRange: %u", \
                 cur->name(), cur->typeID(), cur->type().groupName().c_str(), cur->GetAttribute(AttrMaxRange).get_uint32(), \
                 cur->GetAttribute(AttrOrbitRange).get_uint32(), cur->GetAttribute(AttrEntityAttackRange).get_uint32(), \
-                cur->GetAttribute(AttrFalloff).get_uint32(), cur->GetAttribute(AttrEntityChaseMaxDistance).get_uint32());
-
+                cur->GetAttribute(AttrFalloff).get_uint32(), cur->GetAttribute(AttrEntityChaseMaxDistance).get_uint32(), \
+                cur->GetAttribute(AttrProximityRange).get_uint32());
+        */
         /*
         mass = cur->GetAttribute(AttrMass).get_double();
         inertiaMod = cur->GetAttribute(AttrInertiaMod).get_double();

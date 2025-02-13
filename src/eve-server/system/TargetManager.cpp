@@ -38,6 +38,7 @@
 #include "inventory/AttributeEnum.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
+#include <npc/Drone.h>
 #include "pos/Structure.h"
 #include "pos/Tower.h"
 #include "pos/sovStructures/TCU.h"
@@ -79,11 +80,11 @@ bool TargetManager::Process() {
                 if (itr->second->timer.Check(false)) {
                     itr->second->timer.Disable();
                     itr->second->state = TargMgr::State::Locked;
-                    _log(TARGET__TRACE, "%s(%u) has finished locking %s(%u)", \
-                            mySE->GetName(), mySE->GetID(), itr->first->GetName(), itr->first->GetID());
                     TargetAdded(itr->first);
                     itr->first->TargetMgr()->TargetedByLocked(mySE);
                     m_canAttack = true;
+                    _log(TARGET__TRACE, "%s(%u) has finished locking %s(%u)", \
+                            mySE->GetName(), mySE->GetID(), itr->first->GetName(), itr->first->GetID());
                 }
             } break;
         }
@@ -113,6 +114,8 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
         return false;
     }
 
+    if (tSE == nullptr)
+        return false;
     //first make sure they are not already in the list
     if (m_targets.find(tSE) != m_targets.end()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
@@ -193,6 +196,8 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
 
 bool TargetManager::StartTargeting(SystemEntity* tSE, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
 {       // NOTE  this is for npcs (including player drones)
+    if (tSE == nullptr)
+        return false;
     // error check for testing drones...will remove later
     if (maxLockedTargets < 1)
         sLog.Error("TM::StartTargeting()","<1 locked for %s", mySE->GetName());
@@ -234,6 +239,8 @@ bool TargetManager::StartTargeting(SystemEntity* tSE, float lockTime, uint8 maxL
 }
 
 void TargetManager::RemoveTarget(SystemEntity* tSE) {
+    if (tSE == nullptr)
+        return;
     std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.find(tSE);
     if (itr != m_targets.end()) {
         SafeDelete(itr->second);
@@ -251,6 +258,8 @@ void TargetManager::RemoveTarget(SystemEntity* tSE) {
 }
 
 void TargetManager::ClearTarget(SystemEntity *tSE) {
+    if (tSE == nullptr)
+        return;
     //let the other entity know they are no longer targeted.
     tSE->TargetMgr()->TargetedByLost(mySE);
     //clear it from our own state
@@ -328,6 +337,8 @@ void TargetManager::ClearFromTargets() {
 }
 
 void TargetManager::TargetLost(SystemEntity *tSE) {
+    if (tSE == nullptr)
+        return;
     std::map<SystemEntity *, TargetEntry *>::iterator itr = m_targets.find(tSE);
     if (itr == m_targets.end())
         return;
@@ -345,7 +356,12 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
     if (mySE->IsSentrySE())
         return;
 
-    mySE->DestinyMgr()->EntityRemoved(tSE);
+    if (mySE->IsDroneSE()) {
+        mySE->GetDroneSE()->GetAI()->TargetLost(tSE);
+        return;
+    } else {
+        mySE->DestinyMgr()->EntityRemoved(tSE);
+    }
     if (mySE->IsNPCSE())
         mySE->GetNPCSE()->TargetLost(tSE);
     if (!mySE->HasPilot())
@@ -364,6 +380,7 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
 }
 
 void TargetManager::TargetedByLocked(SystemEntity* pSE) {
+    // this call tells object that target lock has been completed
     _log(TARGET__TRACE, "%s(%u) has been locked by %s(%u)", \
             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
     // i think this is redundant....check
@@ -389,7 +406,7 @@ void TargetManager::TargetedByLost(SystemEntity* pSE) {
 /*****************
  * these are incomplete at this time....
  *
-    OnTarget.mode ( - reason)
+    OnTarget.mode (- reason)
         try - you begin target lock
         add - you successfully locked a target
         clear - you are clearing all targets
@@ -407,6 +424,8 @@ void TargetManager::TargetedByLost(SystemEntity* pSE) {
 */
 
 void TargetManager::TargetAdded(SystemEntity* tSE) {
+    if (tSE == nullptr)
+        return;
     _log(TARGET__TRACE, "%s(%u) - adding locked target %s(%u).", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
     if (!mySE->HasPilot())
@@ -426,6 +445,8 @@ void TargetManager::TargetAdded(SystemEntity* tSE) {
 }
 
 void TargetManager::TargetedAdd(SystemEntity *tSE) {
+    if (tSE == nullptr)
+        return;
     //first make sure they are not already in the list
     if (m_targetedBy.find(tSE) != m_targetedBy.end()) {
         _log(TARGET__INFO, "Cannot add %s(%u) to %s(%u)'s locked list: they're already in there.", \
@@ -440,7 +461,8 @@ void TargetManager::TargetedAdd(SystemEntity *tSE) {
         m_targetedBy[tSE] = te;
     }
     if (mySE->IsNPCSE())
-        mySE->GetNPCSE()->TargetedAdd(tSE);
+        mySE->GetNPCSE()->TargetedAdd(tSE);     // this is call to target inform of yellowbox
+
     if (!mySE->HasPilot())
         return;
     Notify_OnTarget te;
@@ -454,6 +476,8 @@ void TargetManager::TargetedAdd(SystemEntity *tSE) {
 }
 
 void TargetManager::TargetedLost(SystemEntity *tSE) {
+    if (tSE == nullptr)
+        return;
     _log(TARGET__TRACE, "%s(%u) - %s(%u) has lost target lock on me.", \
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
     if (!mySE->HasPilot())
@@ -516,7 +540,7 @@ PyList* TargetManager::GetTargets() const {
 
     std::map<SystemEntity *, TargetEntry *>::const_iterator itr = m_targets.begin();
     for (; itr != m_targets.end(); itr++)
-        result->AddItemInt( itr->first->GetID() );
+        result->AddItemInt(itr->first->GetID());
 
     return result;
 }
@@ -528,7 +552,7 @@ PyList* TargetManager::GetTargeters() const {
 
     std::map<SystemEntity*, TargetedByEntry*>::const_iterator itr = m_targetedBy.begin();
     for(; itr != m_targetedBy.end(); itr++)
-        result->AddItemInt( itr->first->GetID() );
+        result->AddItemInt(itr->first->GetID());
 
     return result;
 }
@@ -558,7 +582,7 @@ SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/
 void TargetManager::AddTargetModule(ActiveModule* pMod)
 {
     _log(TARGET__INFO, "Adding %s:%s to %s's activeModule list.", \
-            pMod->GetShipRef()->name(), pMod->GetSelf()->name(), mySE->GetName() );
+            pMod->GetShipRef()->name(), pMod->GetSelf()->name(), mySE->GetName());
 
     m_modules.emplace(pMod->itemID(), pMod);
 }
@@ -566,7 +590,7 @@ void TargetManager::AddTargetModule(ActiveModule* pMod)
 void TargetManager::RemoveTargetModule(ActiveModule* pMod)
 {
     _log(TARGET__INFO, "Removing the %s on %s from %s's activeModule list.", \
-            pMod->GetSelf()->name(), pMod->GetShipRef()->name(), mySE->GetName() );
+            pMod->GetSelf()->name(), pMod->GetShipRef()->name(), mySE->GetName());
 
     m_modules.erase(pMod->itemID());
 }
@@ -717,7 +741,7 @@ float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
         return time;
 }
 
-void TargetManager::QueueEvent( PyTuple** event ) const
+void TargetManager::QueueEvent(PyTuple** event) const
 {
     for (auto &cur : m_targetedBy)
         if (cur.first->HasPilot()) {
@@ -726,7 +750,7 @@ void TargetManager::QueueEvent( PyTuple** event ) const
         }
 }
 
-void TargetManager::QueueUpdate( PyTuple** update ) const
+void TargetManager::QueueUpdate(PyTuple** update) const
 {
     for (auto &cur : m_targetedBy)
         if (cur.first->HasPilot()) {
@@ -810,7 +834,9 @@ void TargetManager::Dump() const {
     }
 }
 
-void TargetManager::TargetEntry::Dump(SystemEntity* pSE) const {
+void TargetEntry::Dump(SystemEntity* pSE) const {
+    if (pSE == nullptr)
+        return;
     if (timer.Enabled()) {
         _log(TARGET__DUMP, "    Targeting %s(%u): %s - Timer Running with %ums remaining.", \
                 pSE->GetName(), pSE->GetID(), TargetManager::GetStateName(state), timer.GetRemainingTime());
@@ -819,11 +845,13 @@ void TargetManager::TargetEntry::Dump(SystemEntity* pSE) const {
     }
 }
 
-void TargetManager::TargetedByEntry::Dump( SystemEntity* pSE ) const {
+void TargetedByEntry::Dump(SystemEntity* pSE) const {
+    if (pSE == nullptr)
+        return;
     _log(TARGET__DUMP, "    Targeted By %s(%u): %s", pSE->GetName(), pSE->GetID(), TargetManager::GetStateName(state));
 }
 
-const char* TargetManager::GetStateName( uint8 state ) {
+const char* TargetManager::GetStateName(uint8 state) {
     switch(state) {
         case TargMgr::State::Idle:      return "Idle";
         case TargMgr::State::Locking:   return "Locking";
@@ -833,7 +861,7 @@ const char* TargetManager::GetStateName( uint8 state ) {
     }
 }
 
-const char* TargetManager::GetModeName ( uint8 mode ) {
+const char* TargetManager::GetModeName (uint8 mode) {
     switch(mode) {
         case TargMgr::Mode::None:       return "None";
         case TargMgr::Mode::Add:        return "Add";

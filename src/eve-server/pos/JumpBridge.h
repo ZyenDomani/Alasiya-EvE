@@ -20,14 +20,14 @@ class JumpBridgeSE
 {
 public:
     JumpBridgeSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& data);
-    virtual ~JumpBridgeSE()                                { /* do nothing here */ }
+    virtual ~JumpBridgeSE()                             { /* do nothing here */ }
 
     /* class type pointer querys. */
     virtual const char*         GetSEType()             { return "Bridge SE"; }
-    virtual JumpBridgeSE*       GetJumpBridgeSE()          { return this; }
+    virtual JumpBridgeSE*       GetJumpBridgeSE()       { return this; }
 
     /* class type tests. */
-    virtual bool                IsJumpBridgeSE()           { return true; }
+    virtual bool                IsJumpBridgeSE()        { return true; }
 
     /* SystemEntity interface */
     virtual void                Process();

@@ -53,8 +53,6 @@ public:
 
     /* SystemEntity interface */
     virtual void Process();
-    virtual void TargetLost(SystemEntity* who);
-    virtual void TargetedAdd(SystemEntity* who);
     virtual void EncodeDestiny(Buffer& into);
 
     /* virtual functions default to base class and overridden as needed */
@@ -63,7 +61,14 @@ public:
 
     /* virtual functions to be overridden in derived classes */
     virtual void MissileLaunched(Missile* pMissile);  // tells AI a missile has been launched at us.  allows defender missile code
-    virtual void        ReportDamage(uint8 type=0);
+
+    /* virtual functions for npc/drone AI and player reporting */
+    virtual void                ReportDamage(uint8 type=0);
+    virtual void            TargetAdded(SystemEntity* pSE) { /* do nothing here */ }
+    // this is call to inform us of yellowbox
+    virtual void            TargetedAdd(SystemEntity* pSE);
+    virtual void             TargetLost(SystemEntity* pSE);
+    virtual void           TargetedLost(SystemEntity* pSE) { /* do nothing here */ }
 
 
     /* specific functions handled here. */

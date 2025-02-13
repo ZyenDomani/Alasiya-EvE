@@ -27,20 +27,24 @@ NOTES:<br>
 I have begun working on coding player drones and other errors i find while testing.<br>
 I am also working on my TODO list where I can.  As there is around 1000 lines, this will take a while<br><br>
 Notable updates at this time are:<br>
-Drone System has been started.  Not pushed to main server yet.<br>
+Drone System mostly complete.  Not pushed to main server yet.<br>
 Recent Destiny rewrites have movement tracking around 98% with client except orbit.<br>
 NPC warping in and out of bubbles is working correctly again.<br>
 Blueprints are showing BOM correctly again.<br>
 The Implant system is implemented and working quite well.<br>
 Also, I have updated the Attribute Remapper for our character attributes. (still few hiccups with remapping)<br><br>
 UPDATES AND CHANGELOG:  (note: only major/significant updates are listed)<br><br>
-8Feb25 - Wrote and Debugged drone AI system<br>
-        Wrote and Debugged drone movement system(required custom Destiny)<br>
-        Wrote drone GFX based on existing working system (required custom GFX)<br>
+12Feb25 - Extended and Debugged advanced DroneAI system<br>
+        Started basic drone modes (settings)<br>
+        Started Advanced AI for target finding (aggressive mode)<br>
+        Completed drone error checks and reporting<br><br>
+8Feb25 - Wrote and Debugged basic DroneAI system<br>
+        Wrote and Debugged new drone movement system(required custom Destiny)<br>
+        Wrote new drone GFX based on existing working system (required custom GFX)<br>
         Enabled drone orbit in client (hacked server-side thru custom Destiny)<br><br>
 7Feb25 - Coded and tested drone error reporting: much different than current 'throw' errors<br><br>
 4Feb25 - Drone launching, abandon, reconnect, and scooping debugged and working<br>
-        Debugged Drone Item and Command systems<br><br>
+        Started extending and debugging Drone Item and Command systems<br><br>
 1Feb25 - Begin coding player drones: most systems are unique and will require custom code for drones<br>
         This will take a while, but I'll update status page every few days.<br>
         Drone Item and SysEntity objects written<br>
@@ -55,7 +59,7 @@ UPDATES AND CHANGELOG:  (note: only major/significant updates are listed)<br><br
         Rewrote GFX code for proper packet sending - all module gfx show properly now (unless missing from db)<br>
         Fixed segfault and major error with character creation<br>
         Fixed error where belt markers would be removed from overview when warping out of belt<br>
-        Rewrote wanderer code.  Working very well now<br>
+        Rewrote wanderer code.  Working correctly now (and faster)<br>
         Improvements on sending system data to clients<br>
         Found and fixed misc errors in some commands<br>
         Tweaked WarpTo distances for gates and stations (was a bit close, imo)<br>

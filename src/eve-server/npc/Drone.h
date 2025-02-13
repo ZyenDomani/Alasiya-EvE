@@ -63,18 +63,15 @@ public:
     virtual void        MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*     MakeSlimItem();
 
-    // override because drones dont have actual destiny...fake it via AI
-    //DroneAIMgr*         DestinyMgr()                    { return m_AI; }
-
     /* virtual functions default to base class and overridden as needed */
     virtual void        Killed(Damage &fatal_blow);
     virtual void        Abandon();     // reset all owner info and bubblecast new data
     virtual const GVector& GetVelocity()                { return m_AI->GetVelocity(); }
 
-
     virtual void        TargetAdded(SystemEntity* pSE);
-    virtual void        TargetLost(SystemEntity* pSE);
+    // this is call to inform us of yellowbox
     virtual void        TargetedAdd(SystemEntity* pSE);
+    virtual void        TargetLost(SystemEntity* pSE);
     virtual void        TargetedLost(SystemEntity* pSE);
 
     /* virtual functions to be overridden in derived classes */
@@ -85,9 +82,9 @@ public:
     Client*             GetOwner()                      { return m_pClient; }
     DroneAIMgr*         GetAI()                         { return m_AI; }
 
-    // assign drone to ship and add to system
-    void                Launched(ShipSE* pShipSE);       // this is only for drone owner.
-    void                Online(ShipSE* pShipSE=nullptr); // this is only for drone owner.
+    // assign drone to ship, add to system and update bandwidth
+    void                Launched(ShipSE* pShipSE);      // this is only for drone owner.
+    void                Online();                       // this is only for drone owner.  also updates drone with char skills
     // sent on every state or controller change
     void                StateChange();                  // droneAI.state must be set before calling this for client to get accurate state information
 
@@ -139,7 +136,8 @@ public:
 
     /* helper methods */
     bool                InControlDistance();            // returns true if drone within control distance
-    void                CheckCommand(PyDict* dict);     // runs multiple checks and will throw on error
+    void                CheckTarget(SystemEntity* pTarget, PyDict* dict); // run generic target checks against drone type for verification
+    void                CheckCommand(PyDict* dict);     // runs multiple checks and will return on error
     void                ChargeShield();                 // shield recharging while in space
     float               CalculateRechargeRate(float Capacity, float RechargeTimeMS, float Current);
 
@@ -151,6 +149,8 @@ protected:
     Client*             m_pClient;              //our owner
     ShipSE*             m_pShipSE;              //owning ship (home ship)
 
+    // current fx system doesnt process skills onto drones...especially drones reconnected in space.
+    void                UpdateDroneWithSkills();
 
 private:
     Timer               m_processTimer;

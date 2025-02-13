@@ -1654,8 +1654,7 @@ void Client::LoadStationHangar(uint32 stationID) {
     sItemFactory.UnsetUsingClient();
 }
 
-void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
-{
+void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag) {
     sItemFactory.SetUsingClient(this);
     InventoryItemRef iRef = sItemFactory.GetItemRef(itemID);
     if (iRef.get() == nullptr) {
@@ -1663,8 +1662,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
         return;
     }
 
-    EVEItemFlags oldflag = flagIllegal;
-    oldflag = iRef->flag();
+    EVEItemFlags oldflag(iRef->flag());
 
     iRef->Move(location, flag, true);
 

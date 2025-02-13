@@ -287,8 +287,14 @@ public:
     virtual bool                HasPilot()              { return false; }
     virtual Client*             GetPilot()              { return nullptr; }
 
-    /* virtual functions for advanced npc and drones */
+    /* virtual functions for npc/drone AI and player reporting */
     virtual void                ReportDamage(uint8 type=0) { /* do nothing here */ }
+    virtual void            TargetAdded(SystemEntity* pSE) { /* do nothing here */ }
+    // this is call to inform us of yellowbox
+    virtual void            TargetedAdd(SystemEntity* pSE) { /* do nothing here */ }
+    virtual void             TargetLost(SystemEntity* pSE) { /* do nothing here */ }
+    virtual void           TargetedLost(SystemEntity* pSE) { /* do nothing here */ }
+
 
 protected:
     SystemBubble*               m_bubble;               /* we do not own this. never NULL in space */

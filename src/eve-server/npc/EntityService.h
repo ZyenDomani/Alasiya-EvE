@@ -67,6 +67,9 @@ private:
     SystemManager* m_sysMgr;
     Client* m_pClient;
     ShipSE* m_shipSE;
+
+    bool m_attack;
+    bool m_delegate;
 };
 
 #endif  // __EVEMU_NPC_ENTITY_H

@@ -392,6 +392,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
         return nullptr;
     }
 
+    // TODO: update this to use this list for iteration
     PyList* PyToDropList(args.toDrop);
     uint32 ownerID(args.ownerID);  // not sent for LaunchDrone() command  (not needed)
     //used for LaunchUpgradePlatformWarning
@@ -428,9 +429,13 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                     .AddFormatValue("typeID", new PyInt(iRef->typeID()));
                 }
                 if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() <= pClient->GetShipSE()->DroneCount()) {
+                    throw CustomError("You cannot launch the %s because you are already controlling %u drones, as much as you have skill to", \
+                            iRef->name(), pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32());
+                    /*
                     throw UserError("NoDroneManagementAbilitiesLeft")
                     .AddFormatValue("item", new PyInt(iRef->itemID()))
                     .AddFormatValue("limit", new PyInt(pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32()));
+                    */
                 }
 
                 if (iRef->flag() != flagDroneBay) {
@@ -453,12 +458,6 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                             dropped = true;
                             shipDrop = true;
                             list->AddItem(new PyInt(newItem->itemID()));
-                        } else {
-                            // this is not in my list
-                            throw UserError("MaxBandwidthExceeded2")
-                            .AddFormatValue("droneName", new PyString(iRef->itemName()))
-                            .AddFormatValue("droneBandwithUsed", new PyInt(iRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32()))
-                            .AddFormatValue("bandwidthLeft", new PyInt(pShip->GetAttribute(AttrDroneBandwidth).get_uint32() - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32()));
                         }
                     }
                 } else {
@@ -466,12 +465,6 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                         dropped = true;
                         shipDrop = true;
                         list->AddItem(new PyInt(iRef->itemID()));
-                    } else {
-                        // this isnt worded right in client.  may change later
-                        throw UserError("MaxBandwidthExceeded")
-                                .AddFormatValue("droneName", new PyString(iRef->itemName()))
-                                .AddFormatValue("droneBandwithUsed", new PyInt(iRef->GetAttribute(AttrDroneBandwidthUsed).get_uint32()))
-                                .AddFormatValue("bandwidthNeeded", new PyInt(pShip->GetAttribute(AttrDroneBandwidth).get_uint32() - pShip->GetAttribute (AttrDroneBandwidthLoad).get_uint32()));
                     }
                 }
             } break;
@@ -673,6 +666,8 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
     // returns dict of dropped items as {itemID, data} where data is list of itemIDs dropped (split stack if applicable)
     // however, on non-throw error, data is tuple of errID, errDetailsType, errDetails (unknown where these are defined)
+    // UPDATE:  this is dict of errors as found in drone code.  see entityservice.cpp for info
+    //TODO:  update this with proper error messages
 
         if (dropped) {
             dict->SetItem(new PyInt(iRef->itemID()), list);
@@ -775,7 +770,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     SystemEntity* pDroneSE(nullptr);
     InventoryItemRef iRef(nullptr);
     SystemManager* pSysMgr(pClient->SystemMgr());
-    PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
+    //PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
 
     std::vector<int32>::const_iterator cur = args.ints.begin();
     for(; cur != args.ints.end(); ++cur) {

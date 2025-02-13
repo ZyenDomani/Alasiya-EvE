@@ -3,8 +3,9 @@
  *      this class is for drone AI
  *
  * @Author:     Allan
- * @Version:    0.15
- * @Date:       27Nov19
+ * @Version:    0.81
+ * @Date:       27Nov19  (copied from NPCAI.cpp)
+ * @Rewrite:    3Feb25  (complete refactor to process all types and actions of drones)
  */
 
 #ifndef __EVEMU_SHIP_DRONEAI_H__
@@ -15,45 +16,21 @@
 // only for drones
 namespace DroneAI {
     namespace State {
-        /*
-        droneStates = {const.entityIdle: 'UI/Inflight/Drone/Idle',
-         const.entityCombat: 'UI/Inflight/Drone/Fighting',
-         const.entityMining: 'UI/Inflight/Drone/Mining',
-         const.entityApproaching: 'UI/Inflight/Drone/Approaching',
-         const.entityDeparting: 'UI/Inflight/Drone/ReturningToShip',
-         const.entityDeparting2: 'UI/Inflight/Drone/ReturningToShip',
-         const.entityOperating: 'UI/Inflight/Drone/Operating',
-         const.entityPursuit: 'UI/Inflight/Drone/Following',
-         const.entityFleeing: 'UI/Inflight/Drone/Fleeing',
-         const.entityEngage: 'UI/Inflight/Drone/Repairing',
-
-
-         entityIdle = 0
-         entityCombat = 1
-         entityMining = 2
-         entityApproaching = 3
-         entityDeparting = 4
-         entityDeparting2 = 5
-         entityPursuit = 6
-         entityFleeing = 7
-         entityOperating = 9
-         entityEngage = 10
-         */
-
         enum {
             Incapacitated       = -2,
             Invalid             = -1,
             // defined in client
-            Idle                = 0,  // not doing anything....idle.
-            Combat              = 1,  // fighting - needs target
-            Mining              = 2,  // unsure - may need target
-            Approaching         = 3,  // too close to chase, but to far to engage
-            ReturnBay           = 4,  // return to bay  (Departing in client)
-            ReturnHome          = 5,  // return to ship  (Departing2 in client)
-            Pursuit             = 6,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-            Fleeing             = 7,  // running away
-            Operating           = 9,  // whats diff from engaged here? unanchoring?
-            Repairing           = 10, // repairing target (shield or armor)
+            Idle                = 0,  // UI/Inflight/Drone/Idle - not doing anything....idle.
+            Combat              = 1,  // UI/Inflight/Drone/Fighting - needs target
+            Mining              = 2,  // UI/Inflight/Drone/Mining - needs target
+            Approaching         = 3,  // UI/Inflight/Drone/Approaching  - too close to chase, but to far to engage
+            ReturnBay           = 4,  // return to bay  (Departing in client - UI/Inflight/Drone/ReturningToShip)
+            ReturnHome          = 5,  // return to ship  (Departing2 in client - UI/Inflight/Drone/ReturningToShip)
+            Pursuit             = 6,  // UI/Inflight/Drone/Following - target out of engage range...use mwd/ab if equipped
+            Fleeing             = 7,  // UI/Inflight/Drone/Fleeing
+            Unknown             = 8,  // not in client data.
+            Operating           = 9,  // UI/Inflight/Drone/Operating - whats diff from engaged here? unanchoring?
+            Repairing           = 10, // UI/Inflight/Drone/Repairing - repairing target (shield or armor) - listed as Engage in client
             // internal only
             Guarding            = 11, // as stated
             Assisting           = 12  //  this will be remote reppers/boosters
@@ -106,21 +83,21 @@ public:
     void                Process();
 
     SystemEntity*       GetTargetSE();
-    SystemEntity*       GetAssignedShipSE()             { return m_assignedShipSE; }
+    SystemEntity*       GetAssignedShipSE()             { return shipSE; }
 
     uint32              GetTargetID();
-    uint32              GetControllerID()               { return m_assignedShipSE->GetID(); }
+    uint32              GetControllerID()               { return shipSE->GetID(); }
     uint32              GetFollowDistance();
 
     // main entry into drone ai
     // called to perform action on target
     void                Engage(PyDict* dict, int8 state, bool repeat=0); // sets state and error dict, if applicable
 
-    void                SetIdle();                      // sets state and action  (idle)
+    void                SetIdle();                      // clears targets and timers then sets state and action to idle
 
     void                Target(SystemEntity* pTarget);
-    void                Targeted(SystemEntity *by_who);
-    void                TargetLost(SystemEntity *by_who);
+    void                Targeted(SystemEntity* pTarget);
+    void                TargetLost(SystemEntity* pTarget);
 
     void                ClearTargets();                 // clear our targets and set repeat=false
     void                ClearAllTargets();              // clear all targets and set repeat=false
@@ -139,12 +116,17 @@ public:
     float               GetVelocityY()                  { return m_velocity.y; }
     float               GetVelocityZ()                  { return m_velocity.z; }
 
+    // when player updates drone settings, this will notify AI of update
+    void                ModeChange();
+
     // advanced ai methods and calls
     void                MissileLaunched(Missile* pMissile);
     void                ReportDamage(uint8 type=0);
 
     // this is public to allow deletion from DroneSE object
     InventoryItemRef    m_ore;                          //ore from mining
+
+    void                SendGFX(Client* pClient=nullptr); // active = (action==engaged)
 
 
 protected:
@@ -153,24 +135,23 @@ protected:
     void                AttackTarget();                 // actual attack code
     void                RepairTarget();                 // called when close enough to engage - sets action
     void                OrbitTarget();                  // called when setting initial orbit - sets action, usf and heading
+    // this is advanced AI to determine threats to assigned ship and/or look for and acquire new targets
+    void                FindTarget();
 
-    bool                TargetValid();
+    bool                ValidTarget();
 
     // checks if target is within <config.interactdist> to interact with target
     bool                InActionDistance(SystemEntity* pTarget);        // ~600m
-    // checks if target is within m_orbitRange to engage with target
-    bool                InOrbitDistance(SystemEntity* pTarget);         // near range 1
+    // checks if target is within m_orbitRange to orbit target
+    bool                InOrbitDistance(SystemEntity* pTarget);         // near - range 1
     // checks if target is within m_falloffRange to move closer to target
-    bool                InFalloffDistance(SystemEntity* pTarget);        // close range 2
+    bool                InFalloffDistance(SystemEntity* pTarget);        // close - range 2
     // checks if target is within m_attackRange to engage with target
-    bool                InEngageDistance(SystemEntity* pTarget);        // mid range 3
-    // checks if target is within m_chaseRange to engage with target
-    bool                InChaseDistance(SystemEntity* pTarget);         // far range 4
-    // checks if target is within m_maxRange to engage with target
-    bool                InMaxDistance(SystemEntity* pTarget);           // distant range 5
-
-    void                SendGFX(bool repeat/*false*/, Client* pClient=nullptr); // active = (action==engaged)
-    void                SendShipEffect(bool start=false); // sent on begin and end of fx  ***NOT NEEDED***
+    bool                InEngageDistance(SystemEntity* pTarget);        // mid - range 3
+    // checks if target is within m_chaseRange to chase target
+    bool                InChaseDistance(SystemEntity* pTarget);         // far - range 4
+    // checks if target is within m_maxRange of target
+    bool                InMaxDistance(SystemEntity* pTarget);           // distant - range 5
 
     const char*         GetStateName(int8 stateID);
     const char*         GetActionName(int8 stateID);
@@ -186,14 +167,15 @@ protected:
     void                SendTrueState(int8 state=DroneAI::State::Idle);
 
     /* internal destiny methods.  testing drone w/o actual DestinyManager (dont need the overhead) */
-    GPoint              m_heading;                      // well, drone heading, ofc
+    GVector             m_heading;                      // well, drone heading, ofc
     GVector             m_velocity;                     // current speed and heading
 
     void                Stop();                         // called when offline - calls SetIdle()
     void                Pause();                        // called when orbiting - sets position and velocity then stops movement and processing
 
     void                Move(double timeStamp=0);       // called by proc tic to keep ship position accurate
-    void                UpdatePosition(bool update=false); // this is for tracking position changes
+    // this is for tracking position changes from moving drone
+    void                UpdatePosition(bool update=false); // where drone velocity changes
 
     void                SendSpeedFraction();            // orbit is only sent when target changes;  SF is sent when speed changes
 
@@ -201,11 +183,14 @@ protected:
     void                SetAction(int8 action=-1);
     void                MarkPoint(const GPoint& position);
 
+    // this is for tracking position changes from moving target
+    void                MoveDrone(SystemEntity* pTarget); // where drone remains in set orbit around moving target
+
 
 private:
-    SystemEntity*       m_targetSE;
-    DroneSE*            m_droneSE;
-    ShipSE*             m_assignedShipSE;
+    SystemEntity*       targSE;
+    DroneSE*            mySE;
+    ShipSE*             shipSE;
 
     TurretFormulas      m_formula;
 
@@ -218,17 +203,16 @@ private:
 
     bool                m_sendCmd;                      // send updated orbit packet?
     bool                m_booster;                      // repair drone
-    bool                m_repeat;                       // continue for mining drones, gfx repeat for others
+    bool                m_repeat;                       // is drone action repeatable?
 
     int8                m_state;
     int8                m_action;
 
     uint16              m_effectID;                     // default effectID
+    uint16              m_cycleTime;                    // time in ms for drone to complete an action
 
-    uint32              m_maxSpeed;                     // mwd speed
+    uint32              m_maxSpeed;                     // mwd speed  - stationary drones have zero here
     uint32              m_cruiseSpeed;                  // normal speed
-    uint32              m_armorRepairDuration;          //
-    uint32              m_shieldBoosterDuration;        //
 
     //in order of distance  far to close
     uint32              m_maxDistance;                  //[5] maximum engagement distance
@@ -236,12 +220,12 @@ private:
     uint32              m_attackDistance;               //[3] max distance drone will use weapons - weaponized drones only
     uint32              m_falloffDistance;              //[2] distance where accuracy has fallen by half  - weaponized only
     uint32              m_orbitDistance;                //[1] distance the drone orbits  - mining and unanchoring only
+    uint32              m_proximityDistance;            // distance at which drone acts to relevant objects (threat sensor distance)
 
     int64               m_startTime;                    // timestamp when effect started
 
     float               m_alignTime;
     float               m_accelTime;
-    float               m_cycleTime;                    // time in ms for drone to complete an action
 
     float               m_timeFraction;                 //fuzzy logic - holds current euler value for time
     float               m_prevSpeedFraction;            //fuzzy logic - previous percent of full speed.  used for speed changes

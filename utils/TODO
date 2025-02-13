@@ -104,7 +104,7 @@ remove GPoint/GVector code and just write my own using int64
         except on math calls where precision is required (turn, orbit)
 
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: med-hi
-NOTE:  copy idea from drones (state/actions)
+NOTE:  copy idea from drones (state/actions) using lessons gleaned
     - will need updates based on drone findings and learned methods
     - npc will attack drones based on class
     - npc lost target <- this method needs better thought to pick next target
@@ -152,7 +152,7 @@ update headers to fix 'class' vs 'struct' declarations  (most done years ago in 
 closely examine target mgr and see what we can improve.
     - test changing TargetEntry class (and enums) to struct
     - verify entries are placed timely and appropriately
-    - multiple throw msgs not implemented (client msgs in dogmaim)
+    - multiple throw msgs not implemented (client msgs in dogmaim, others in targetmgr.h)
     - update targ/npcai to inform npc of yellowbox instead of locked
 rewrite completed, but reverted due to multiple errors and inconsistencies (m_targMgr->OnTarget())
 
@@ -181,14 +181,12 @@ drones mass and maxspeed need attention
 does controller and controllerownerid change when assigning drone to other pilots?  depends
 drone ai needs:
   - assigned ship killed, need code to reset
-  - all states except idle
-  - does drone bound calls make new bound object?  seems like it does, but why?  keep same object for each drone.
 mining methods will need updates to test for drones vs pilots
 move mining item depleted call to targmgr
-shield regen
-write specific damage method  254 types coded with incapRation (below)
+write specific damage method  254 types coded with incapRatio (below)
 156     incapacitationRatio     NULL    0.75  << at this hull damage %, drone goes offline
 update sendGFX to distinguish between weapon and ewar for using AttrGfxTurretID or AttrGfxBoosterID
+   note:  not sure if either are used for drones
 
 RAM code - implement invention, re    -priority level: low
     - (reproc) update GetRecoverables to use sDataMgr...currently hitting db on every call...
@@ -459,8 +457,8 @@ this includes fx14 and fx10 calls
 
 ***  other
 
-all module gfx seems to be working properly
-  see if we can remove some of the args in SendGFX()
+all module gfx seem to be working properly
+all drone gfx seem to be working properly
 
 
 finish DestinyManager::SendCloakFx()
@@ -501,6 +499,7 @@ certificateMgr needs looking at
 paperDollServer incomplete
 factionWarMgr incomplete
 ShipService incomplete
+   Drop() needs dict of error msgs return a la drones
 LookupService needs update
 serviceDB needs update
     - maybe remove "Lookup*" shit to its own db file

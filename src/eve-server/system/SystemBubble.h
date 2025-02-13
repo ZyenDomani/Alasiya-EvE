@@ -205,9 +205,9 @@ private:
 
     std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
     std::map<uint32, DroneSE*> m_drones;                //we do not own these.
-    std::map<uint32, ActiveModule*> m_activeModules;    // for sending gfx to new ships in bubble
     std::map<uint32, SystemEntity*> m_markers;          // bubble marker cans.  we do own these.
     std::map<uint32, SystemEntity*> m_entities;         //we do not own these.
+    std::map<uint32, ActiveModule*> m_activeModules;    // for sending gfx to new ships in bubble
     std::map<uint32, SystemEntity*> m_dynamicEntities;  //entities which may/may not move. we do not own these.
 };
 
