@@ -389,7 +389,8 @@ public:
     bool isInf();
 
     bool get_bool();
-    int64 get_int();
+    int32 get_int();   // be careful with using this one...no overflow checks
+    int64 get_long();
     uint32 get_uint32();    // be careful with using this one...no overflow checks
     float get_float();
     double get_double();

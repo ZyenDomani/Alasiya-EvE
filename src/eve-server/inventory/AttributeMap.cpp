@@ -147,7 +147,7 @@ bool AttributeMap::Save() {
                     data.itemID = mItem.itemID();
                     data.attrID = itr->first;
                     data.decimal = false;
-                    data.valueInt = itr->second.get_int();
+                    data.valueInt = itr->second.get_long();
                     attribs.push_back(data);
                 }
             }
@@ -200,7 +200,7 @@ bool AttributeMap::Save() {
                 data.attrID = itr->first;
                 if (itr->second.isInt()) {
                     data.decimal = false;
-                    data.valueInt = itr->second.get_int();
+                    data.valueInt = itr->second.get_long();
                 } else {
                     data.decimal = true;
                     data.valueFloat = itr->second.get_double();
@@ -234,15 +234,15 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
                         attrID, num.get_float(), mItem.name(), mItem.itemID());
             } else {
                 _log(ATTRIBUTE__MISSING, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
-                    attrID, num.get_int(), mItem.name(), mItem.itemID());
+                    attrID, num.get_long(), mItem.name(), mItem.itemID());
             }
         } else if (is_log_enabled(ATTRIBUTE__ADD)) {
             if (num.isFloat()) {
                 _log(ATTRIBUTE__ADD, "Attribute %u not in map.  Adding as %.2f for %s(%u)", \
-                attrID, num.get_float(), mItem.name(), mItem.itemID());
+                    attrID, num.get_float(), mItem.name(), mItem.itemID());
             } else {
                 _log(ATTRIBUTE__ADD, "Attribute %u not in map.  Adding as %lli for %s(%u)", \
-                attrID, num.get_int(), mItem.name(), mItem.itemID());
+                    attrID, num.get_long(), mItem.name(), mItem.itemID());
             }
         }
 
@@ -261,7 +261,7 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
                         attrID, itr->second.get_float(), num.get_float(), mItem.name(), mItem.itemID());
             } else {
                 _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %.2f to %lli for %s(%u)", \
-                        attrID, itr->second.get_float(), num.get_int(), mItem.name(), mItem.itemID());
+                        attrID, itr->second.get_float(), num.get_long(), mItem.name(), mItem.itemID());
             }
         } else {
             if (num.isFloat()) {
@@ -269,7 +269,7 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
                         attrID, itr->second.get_int(), num.get_float(), mItem.name(), mItem.itemID());
             } else {
                 _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %lli to %lli for %s(%u)", \
-                        attrID, itr->second.get_int(), num.get_int(), mItem.name(), mItem.itemID());
+                        attrID, itr->second.get_int(), num.get_long(), mItem.name(), mItem.itemID());
             }
         }
     }
@@ -534,7 +534,7 @@ void AttributeMap::SaveShipState()
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
-            Inserts << cur->second.get_int() << ", NULL)";
+            Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }
@@ -546,7 +546,7 @@ void AttributeMap::SaveShipState()
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
-            Inserts << cur->second.get_int() << ", NULL)";
+            Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }
@@ -558,7 +558,7 @@ void AttributeMap::SaveShipState()
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
-            Inserts << cur->second.get_int() << ", NULL)";
+            Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }
@@ -570,7 +570,7 @@ void AttributeMap::SaveShipState()
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
-            Inserts << cur->second.get_int() << ", NULL)";
+            Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }
@@ -582,7 +582,7 @@ void AttributeMap::SaveShipState()
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
-            Inserts << cur->second.get_int() << ", NULL)";
+            Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }
@@ -594,7 +594,7 @@ void AttributeMap::SaveShipState()
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
-            Inserts << cur->second.get_int() << ", NULL)";
+            Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }
@@ -606,7 +606,7 @@ void AttributeMap::SaveShipState()
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
-            Inserts << cur->second.get_int() << ", NULL)";
+            Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }

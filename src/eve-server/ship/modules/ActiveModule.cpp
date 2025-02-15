@@ -499,10 +499,16 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         m_Stop = true;
 
     // check for one-hit kills and stop module after cycle completes (was elusive error)
-    if (m_needsTarget)
+    if (m_needsTarget) {
         if ((m_targetSE != nullptr)
-        and (m_targetSE->IsDead()))
+        and (m_targetSE->IsDead())) {
             m_Stop = true;
+            return;
+        }
+    }
+    // ship should tell drones we've activated an offensive module
+    if (sFxDataMgr.isOffensive(m_effectID))
+        m_shipRef->GetPilot()->GetShipSE()->ModuleActivated(m_targetSE);
 }
 
 void ActiveModule::Deactivate(std::string effect/*""*/)

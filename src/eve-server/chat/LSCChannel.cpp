@@ -215,8 +215,8 @@ void LSCChannel::SendMessage(Client * c, const char * message, bool self/*false*
 void LSCChannel::SendServerMOTD(Client* pClient) {
     std::string uptime;
     sEntityMgr.GetUpTime(uptime);
-    std::string msg = "<br>Welcome to Alasiya's EvEmu Server";
-    //msg += pClient->GetCharName();
+    std::string msg = "<br>Welcome to Alasiya's EvEmu Server ";
+    msg += pClient->GetCharName();
     msg += ".<br>Server Version: ";
     msg += EVEMU_REVISION;
     msg += "<br>Revision Date: ";
@@ -234,6 +234,12 @@ void LSCChannel::SendServerMOTD(Client* pClient) {
     }
     msg += "<br><font color='white'>Module AutoStop: </font>";
     if (pClient->AutoStop()) {
+        msg += "<font color='green'>On</font>";
+    } else {
+        msg += "<font color='red'>Off</font>";
+    }
+    msg += "<br><font color='white'>Drone AutoAttack: </font>";
+    if (pClient->AutoAttack()) {
         msg += "<font color='green'>On</font>";
     } else {
         msg += "<font color='red'>Off</font>";

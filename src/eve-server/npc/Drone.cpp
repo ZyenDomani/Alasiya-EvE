@@ -129,7 +129,7 @@ void DroneSE::Init() {
         m_controlDistance = 0;
         m_controllerOwnerID = 0;
         m_AI->AssignShip(nullptr);
-        m_AI->Abandon();
+        Abandon();
     }
 }
 
@@ -148,11 +148,12 @@ void DroneSE::Process() {
         return;
     double profileStartTime(GetTimeUSeconds());
 
-    if (m_online)
+    if (m_online) {
         m_AI->Process();
 
-    if (m_processTimer.Check())
-        ChargeShield();
+        if (m_processTimer.Check())
+            ChargeShield();
+    }
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
@@ -167,20 +168,27 @@ void DroneSE::RemoveDrone() {
     delete this;
 }
 
-void DroneSE::Launched(ShipSE* pShipSE) {
+void DroneSE::Launch(ShipSE* pShipSE) {
     m_abandoned = false;
     // set owning ship
     m_pShipSE = pShipSE;
     AssignShip(pShipSE);
 
-    // check for bandwidth here before onlining
-    if (!pShipSE->AcquireBandwidth(this))
+    // this one's weird...gotta add to system either way, but can only online if ship has bandwidth
+    //  however, we have to online before adding or the shields are wrong.
+    if (pShipSE->AcquireBandwidth(this)) {
+        Online();
+        // add drone to system, and add signal to AnomalyMgr...drones are scannable
+        m_system->AddEntity(this, true);
+    } else {
+        // add drone to system, and add signal to AnomalyMgr...drones are scannable
+        m_system->AddEntity(this, true);
+        // not enough bandwidth, so no online.  add to system and return
         return;
+    }
 
-    Online();
-
+    // ok, enough bandwidth, onlined, added to system, so now set idle.
     m_AI->SetIdle();
-    SendBallData();
 }
 
 void DroneSE::Online() {
@@ -197,7 +205,6 @@ void DroneSE::Online() {
 
     UpdateDroneWithSkills();
     SendBallData();
-
     // do we need a state change here?  yes, set status to idle
     StateChange();
 }
@@ -222,6 +229,7 @@ void DroneSE::DisableDrone() {
 }
 
 void DroneSE::Abandon() {
+    m_pClient = nullptr;
     m_abandoned = true;
     m_controllerID = 0;
     m_controllerOwnerID = 0;
@@ -240,8 +248,7 @@ void DroneSE::AssignShip(ShipSE* pShipSE) {
 }
 
 void DroneSE::ReturnBay(PyDict* dict) {
-    CheckCommand(dict);
-    if (!dict->empty())
+    if (!CheckCommand(dict))
         return;
 
     m_AI->Engage(dict, DroneAI::State::ReturnBay);
@@ -249,184 +256,11 @@ void DroneSE::ReturnBay(PyDict* dict) {
 }
 
 void DroneSE::ReturnHome(PyDict* dict) {
-    CheckCommand(dict);
-    if (!dict->empty())
+    if (!CheckCommand(dict))
         return;
 
     m_AI->Engage(dict, DroneAI::State::ReturnHome);
     StateChange();
-}
-
-void DroneSE::Mine(SystemEntity* pTarget, PyDict* dict, bool repeat/*false*/) {
-    CheckCommand(dict);
-    if (!dict->empty())
-        return;
-    CheckTarget(pTarget, dict);
-    if (!dict->empty())
-        return;
-
-    m_AI->Target(pTarget);
-    m_AI->Engage(dict, DroneAI::State::Mining, repeat);
-}
-
-void DroneSE::Engage(SystemEntity* pTarget, PyDict* dict) {
-    CheckCommand(dict);
-    if (!dict->empty())
-        return;
-
-    //  "engage" meaning depends on target and drone.
-    // we will allow this generic command for all drone types
-    // check all possibilities...when first combo check passes, allow action.
-    //  if any checks fail, return error (unknown command)
-
-    switch (GetGroupID()) {
-        case EVEDB::invGroups::Mining_Drone:  {
-            if (pTarget->IsAsteroidSE()) {
-                if (!m_bubble->IsIce()) {
-                    m_AI->Target(pTarget);
-                    m_AI->Engage(dict, DroneAI::State::Mining);
-                    return;
-                } // else trying to mine ice with drone...nope
-            } // else command unknown
-        } break;
-        case EVEDB::invGroups::Combat_Drone:
-        case EVEDB::invGroups::Fighter_Drone:
-        case EVEDB::invGroups::Fighter_Bomber:
-        case EVEDB::invGroups::Cap_Drain_Drone:
-        case EVEDB::invGroups::Stasis_Webifying_Drone:
-        case EVEDB::invGroups::Electronic_Warfare_Drone:  {
-            if (pTarget->IsNPCSE() or pTarget->IsDroneSE()) {
-                m_AI->Target(pTarget);
-                m_AI->Engage(dict, DroneAI::State::Combat);
-                return;
-            } else if (pTarget->IsShipSE()) {
-                // are we fighting or trying to repair?
-                if (!IsFleetID(pTarget->GetFleetID())
-                or (pTarget->GetFleetID() != m_pClient->GetFleetID())) {
-                    // they're not in our fleet...this is combat call
-                    m_AI->Target(pTarget);
-                    m_AI->Engage(dict, DroneAI::State::Combat);
-                    return;
-                } // in our fleet...probably repair call
-                if (pTarget->HasPilot()) {
-                    if ((IsPlayerCorp(pTarget->GetPilot()->GetCorporationID())                        // is player corp
-                        and (pTarget->GetPilot()->GetCorporationID() != m_pClient->GetCorporationID()))   //that we're not in
-                    or (IsAllianceID(pTarget->GetPilot()->GetAllianceID())                      // or is alliance
-                        and (pTarget->GetPilot()->GetAllianceID() != m_pClient->GetAllianceID()))) { // that we're not in
-                        // oh, looks like war...
-                        m_AI->Target(pTarget);
-                        m_AI->Engage(dict, DroneAI::State::Combat);
-                        return;
-                    }// same corp/ally.  probably repair call
-                } // npc or empty ship...
-                else if ((IsPlayerCorp(pTarget->GetOwnerID())                        // is player corp
-                    and (pTarget->GetOwnerID() != m_pClient->GetCorporationID()))   //that we're not in
-                or (IsAllianceID(pTarget->GetAllianceID())                      // or is alliance
-                    and (pTarget->GetAllianceID() != m_pClient->GetAllianceID()))) { // that we're not in
-                    // oh, looks like war...
-                    m_AI->Target(pTarget);
-                    m_AI->Engage(dict, DroneAI::State::Combat);
-                    return;
-                }// same corp/ally.  probably repair call
-            } else if (pTarget->IsPOSSE()) {
-                // this is player structure.  is it ours and we're repairing or enemy and we're attacking?
-                if ((IsPlayerCorp(pTarget->GetOwnerID())                        // is player corp
-                    and (pTarget->GetOwnerID() != m_pClient->GetCorporationID()))   //that we're not in
-                or (IsAllianceID(pTarget->GetAllianceID())                      // or is alliance
-                    and (pTarget->GetAllianceID() != m_pClient->GetAllianceID()))) { // that we're not in
-                    // oh, looks like war...
-                    m_AI->Target(pTarget);
-                    m_AI->Engage(dict, DroneAI::State::Combat);
-                    return;
-                }// same corp/ally.  probably repair call
-            } // else command unknown
-        } break;
-        case EVEDB::invGroups::Logistic_Drone: {
-            if (pTarget->IsShipSE()) {
-                // are we fighting or trying to repair?
-                if (IsFleetID(pTarget->GetFleetID())
-                and (pTarget->GetFleetID() == m_pClient->GetFleetID())) {
-                    // they're in our fleet...this is repair call
-                    m_AI->Target(pTarget);
-                    m_AI->Engage(dict, DroneAI::State::Repairing);
-                    return;
-                } // not in our fleet...probably combat call
-            } else if (pTarget->IsPOSSE()) {
-                // this is player structure.  is it ours and we're repairing or enemy and we're attacking?
-                if (IsPlayerCorp(pTarget->GetOwnerID())) {
-                    // ok, so its' a corp structure.  ours or theirs?
-                    if (pTarget->GetOwnerID() == m_pClient->GetCorporationID()) {
-                        // ok, our corp...allow repair
-                        m_AI->Target(pTarget);
-                        m_AI->Engage(dict, DroneAI::State::Repairing);
-                        return;
-                    } else if (IsAllianceID(pTarget->GetAllianceID())
-                    and (pTarget->GetAllianceID() == m_pClient->GetAllianceID())) {
-                        // oh, our alliance...allow repair
-                        m_AI->Target(pTarget);
-                        m_AI->Engage(dict, DroneAI::State::Repairing);
-                        return;
-                    }// diff corp/ally.  probably attack call
-                } else if (pTarget->GetOwnerID() == m_pClient->GetCharID()) {
-                    // ok, ours...allow repair
-                    m_AI->Target(pTarget);
-                    m_AI->Engage(dict, DroneAI::State::Repairing);
-                    return;
-                } else if (IsFleetID(pTarget->GetFleetID())
-                and (pTarget->GetFleetID() == m_pClient->GetFleetID())) {
-                    /* this is odd one....POS belonging to another corp/ally, but member is in our fleet.
-                     *   what a dilemma...how about this:
-                     * if no forcefield, allow it
-                     * if we can pass the field, then allow it.
-                     * if we cannot pass, then deny
-                     *    actually, at this point, the forcefield checks have passed (in entitysevice call)
-                     */
-                    m_AI->Target(pTarget);
-                    m_AI->Engage(dict, DroneAI::State::Repairing);
-                    return;
-                } // else this is an attack
-            } // else command unknown
-        } break;
-    }
-
-    PyDict* data = new PyDict();
-    data->SetItemString("targetTypeName", new PyString(GetName()));
-    PyTuple* error = new PyTuple(2);
-    error->SetItem(0, new PyString("EntityUnknownCommand"));
-    error->SetItem(1, data);
-    dict->SetItem(new PyInt(GetID()), error);
-}
-
-void DroneSE::Assist(SystemEntity* pTarget, PyDict* dict) {
-    CheckCommand(dict);
-    if (!dict->empty())
-        return;
-    CheckTarget(pTarget, dict);
-    if (!dict->empty())
-        return;
-
-    // target, check mode and distances, look for threats
-    m_AI->AssignShip(pTarget->GetShipSE());
-    m_AI->Engage(dict, DroneAI::State::Assisting);
-}
-
-void DroneSE::Guard(SystemEntity* pTarget, PyDict* dict) {
-    CheckCommand(dict);
-    if (!dict->empty())
-        return;
-    CheckTarget(pTarget, dict);
-    if (!dict->empty())
-        return;
-
-    // target, check mode and distances, look for threats
-    m_AI->AssignShip(pTarget->GetShipSE());
-    m_AI->Engage(dict, DroneAI::State::Guarding);
-}
-
-void DroneSE::Delegate(SystemEntity* pTarget, PyDict* dict) {
-    CheckCommand(dict);
-    // gonna get other shit working first...
-    // then deal with changing controller
 }
 
 void DroneSE::Reconnect(ShipSE* pShipSE, PyDict* dict) {
@@ -454,6 +288,176 @@ void DroneSE::Reconnect(ShipSE* pShipSE, PyDict* dict) {
     }
 }
 
+void DroneSE::Assist(SystemEntity* pTargetSE, PyDict* dict) {
+    if (!CheckCommand(dict))
+        return;
+    if (!CheckTarget(pTargetSE, dict))
+        return;
+
+    // target, check mode and distances, look for threats
+    m_AI->AssignShip(pTargetSE->GetShipSE());
+    m_AI->Engage(dict, DroneAI::State::Assisting);
+}
+
+void DroneSE::Guard(SystemEntity* pTargetSE, PyDict* dict) {
+    if (!CheckCommand(dict))
+        return;
+    if (!CheckTarget(pTargetSE, dict))
+        return;
+
+    // target, check mode and distances, look for threats
+    m_AI->AssignShip(pTargetSE->GetShipSE());
+    m_AI->Engage(dict, DroneAI::State::Guarding);
+}
+
+void DroneSE::Mine(SystemEntity* pTargetSE, PyDict* dict, bool repeat/*false*/) {
+    if (!CheckCommand(dict))
+        return;
+    if (!CheckTarget(pTargetSE, dict))
+        return;
+
+    m_AI->Target(pTargetSE);
+    m_AI->Engage(dict, DroneAI::State::Mining, repeat);
+}
+
+void DroneSE::Engage(SystemEntity* pTargetSE, PyDict* dict/*nullptr*/) {
+    if (dict != nullptr)
+        if (!CheckCommand(dict))
+            return;
+
+    switch (GetGroupID()) {
+        case EVEDB::invGroups::Mining_Drone:  {
+            if (pTargetSE->IsAsteroidSE()) {
+                if (!m_bubble->IsIce()) {
+                    m_AI->Target(pTargetSE);
+                    m_AI->Engage(dict, DroneAI::State::Mining);
+                    return;
+                } // else trying to mine ice with drone...nope
+            } // else command unknown
+        } break;
+        case EVEDB::invGroups::Combat_Drone:
+        case EVEDB::invGroups::Fighter_Drone:
+        case EVEDB::invGroups::Fighter_Bomber:
+        case EVEDB::invGroups::Cap_Drain_Drone:
+        case EVEDB::invGroups::Stasis_Webifying_Drone:
+        case EVEDB::invGroups::Electronic_Warfare_Drone:  {
+            if (pTargetSE->IsNPCSE() or pTargetSE->IsDroneSE()) {
+                m_AI->Target(pTargetSE);
+                m_AI->Engage(dict, DroneAI::State::Combat);
+                return;
+            } else if (pTargetSE->IsShipSE()) {
+                // are we fighting or trying to repair?
+                if (!IsFleetID(pTargetSE->GetFleetID())
+                or (pTargetSE->GetFleetID() != m_pClient->GetFleetID())) {
+                    // they're not in our fleet...this is combat call
+                    m_AI->Target(pTargetSE);
+                    m_AI->Engage(dict, DroneAI::State::Combat);
+                    return;
+                } // in our fleet...probably repair call
+                if (pTargetSE->HasPilot()) {
+                    if ((IsPlayerCorp(pTargetSE->GetPilot()->GetCorporationID())                        // is player corp
+                        and (pTargetSE->GetPilot()->GetCorporationID() != m_pClient->GetCorporationID()))   //that we're not in
+                    or (IsAllianceID(pTargetSE->GetPilot()->GetAllianceID())                      // or is alliance
+                        and (pTargetSE->GetPilot()->GetAllianceID() != m_pClient->GetAllianceID()))) { // that we're not in
+                        // oh, looks like war...
+                        m_AI->Target(pTargetSE);
+                        m_AI->Engage(dict, DroneAI::State::Combat);
+                        return;
+                    }// same corp/ally.  probably repair call
+                } // npc or empty ship...
+                else if ((IsPlayerCorp(pTargetSE->GetOwnerID())                        // is player corp
+                    and (pTargetSE->GetOwnerID() != m_pClient->GetCorporationID()))   //that we're not in
+                or (IsAllianceID(pTargetSE->GetAllianceID())                      // or is alliance
+                    and (pTargetSE->GetAllianceID() != m_pClient->GetAllianceID()))) { // that we're not in
+                    // oh, looks like war...
+                    m_AI->Target(pTargetSE);
+                    m_AI->Engage(dict, DroneAI::State::Combat);
+                    return;
+                }// same corp/ally.  probably repair call
+            } else if (pTargetSE->IsPOSSE()) {
+                // this is player structure.  is it ours and we're repairing or enemy and we're attacking?
+                if ((IsPlayerCorp(pTargetSE->GetOwnerID())                        // is player corp
+                    and (pTargetSE->GetOwnerID() != m_pClient->GetCorporationID()))   //that we're not in
+                or (IsAllianceID(pTargetSE->GetAllianceID())                      // or is alliance
+                    and (pTargetSE->GetAllianceID() != m_pClient->GetAllianceID()))) { // that we're not in
+                    // oh, looks like war...
+                    m_AI->Target(pTargetSE);
+                    m_AI->Engage(dict, DroneAI::State::Combat);
+                    return;
+                }// same corp/ally.  probably repair call
+            } // else command unknown
+        } break;
+        case EVEDB::invGroups::Logistic_Drone: {
+            if (pTargetSE->IsShipSE()) {
+                // are we fighting or trying to repair?
+                if (IsFleetID(pTargetSE->GetFleetID())
+                and (pTargetSE->GetFleetID() == m_pClient->GetFleetID())) {
+                    // they're in our fleet...this is repair call
+                    m_AI->Target(pTargetSE);
+                    m_AI->Engage(dict, DroneAI::State::Repairing);
+                    return;
+                } // not in our fleet...probably combat call
+            } else if (pTargetSE->IsPOSSE()) {
+                // this is player structure.  is it ours and we're repairing or enemy and we're attacking?
+                if (IsPlayerCorp(pTargetSE->GetOwnerID())) {
+                    // ok, so its' a corp structure.  ours or theirs?
+                    if (pTargetSE->GetOwnerID() == m_pClient->GetCorporationID()) {
+                        // ok, our corp...allow repair
+                        m_AI->Target(pTargetSE);
+                        m_AI->Engage(dict, DroneAI::State::Repairing);
+                        return;
+                    } else if (IsAllianceID(pTargetSE->GetAllianceID())
+                    and (pTargetSE->GetAllianceID() == m_pClient->GetAllianceID())) {
+                        // oh, our alliance...allow repair
+                        m_AI->Target(pTargetSE);
+                        m_AI->Engage(dict, DroneAI::State::Repairing);
+                        return;
+                    }// diff corp/ally.  probably attack call
+                } else if (pTargetSE->GetOwnerID() == m_pClient->GetCharID()) {
+                    // ok, ours...allow repair
+                    m_AI->Target(pTargetSE);
+                    m_AI->Engage(dict, DroneAI::State::Repairing);
+                    return;
+                } else if (IsFleetID(pTargetSE->GetFleetID())
+                and (pTargetSE->GetFleetID() == m_pClient->GetFleetID())) {
+                    /* this is odd one....POS belonging to another corp/ally, but member is in our fleet.
+                     *   what a dilemma...how about this:
+                     * if no forcefield, allow it
+                     * if we can pass the field, then allow it.
+                     * if we cannot pass, then deny
+                     *    actually, at this point, the forcefield checks have passed (in entitysevice call)
+                     */
+                    m_AI->Target(pTargetSE);
+                    m_AI->Engage(dict, DroneAI::State::Repairing);
+                    return;
+                } // else this is an attack
+            } // else command unknown
+        } break;
+    }
+
+    if ((dict != nullptr) and !dict->empty()) {
+        PyDict* data = new PyDict();
+        data->SetItemString("targetTypeName", new PyString(GetName()));
+        PyTuple* error = new PyTuple(2);
+        error->SetItem(0, new PyString("EntityUnknownCommand"));
+        error->SetItem(1, data);
+        dict->SetItem(new PyInt(GetID()), error);
+    }
+}
+
+void DroneSE::Delegate(SystemEntity* pSE, PyDict* dict) {
+    if (!CheckCommand(dict))
+        return;
+    // need to do more checks here...
+    if (!pSE->IsShipSE())
+        return;
+
+    // so we are handing control to another pilot...
+    AssignShip(pSE->GetShipSE());
+    m_AI->SetIdle();
+    // how to we tell pilot they now have control?
+}
+
 /*  not sure if/how to implement these...
  * {'messageKey': 'MiningDronesDeactivatedAsteroidEmpty', 'dataID': 17883322, 'suppressable': False, 'bodyID': 259462, 'messageType': 'notify', 'urlAudio': 'wise:/msg_MiningDronesDeactivatedAsteroidEmpty_play', 'urlIcon': '', 'titleID': None, 'messageID': 1168}
  * {'messageKey': 'MiningDronesDeactivatedCargoHoldFull', 'dataID': 17883265, 'suppressable': False, 'bodyID': 259442, 'messageType': 'notify', 'urlAudio': 'wise:/msg_MiningDronesDeactivatedCargoHoldFull_play', 'urlIcon': '', 'titleID': None, 'messageID': 1169}
@@ -464,7 +468,22 @@ void DroneSE::Reconnect(ShipSE* pShipSE, PyDict* dict) {
  *
  */
 
-void DroneSE::CheckCommand(PyDict* dict) {
+void DroneSE::TargetAdded(SystemEntity* pTargetSE) {
+    // for starters, are we currently idle?
+    if (!m_AI->IsIdle())
+        return;
+
+    // are we auto-engage on target add?
+    if (m_pClient->AutoAttack()) {
+        Engage(pTargetSE);
+        return;
+    }
+
+    // send it to AI for further processing
+    m_AI->ShipAddedTarget(pTargetSE);
+}
+
+bool DroneSE::CheckCommand(PyDict* dict) {
     // * 259606, 'label': u'EntityHasSkillPrerequisitesBody'}(u'You do not have the required {[numeric]skillCount -> "skill", "skills"} to do that. To command that drone requires having learned the following {[numeric]skillCount -> "skill", "skills"}: {requiredSkills}.', None, {u'{[numeric]skillCount -> "skill", "skills"}': {'conditionalValues': [u'skill', u'skills'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'skillCount'}, u'{requiredSkills}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'requiredSkills'}})
 
     if (m_abandoned or !m_online) {
@@ -474,7 +493,7 @@ void DroneSE::CheckCommand(PyDict* dict) {
         error->SetItem(0, new PyString("EntityIncapacitatedCommand"));
         error->SetItem(1, data);
         dict->SetItem(new PyInt(GetID()), error);
-        return;
+        return false;
     }
 
     if (m_damaged) {
@@ -484,7 +503,7 @@ void DroneSE::CheckCommand(PyDict* dict) {
         error->SetItem(0, new PyString("EntityBrokenCommand"));
         error->SetItem(1, data);
         dict->SetItem(new PyInt(GetID()), error);
-        return;
+        return false;
     }
 
     if ((m_controllerID != m_AI->GetControllerID()) or (m_pShipSE == nullptr)) {
@@ -494,7 +513,7 @@ void DroneSE::CheckCommand(PyDict* dict) {
         error->SetItem(0, new PyString("EntityNotYoursToCommand"));
         error->SetItem(1, data);
         dict->SetItem(new PyInt(GetID()), error);
-        return;
+        return false;
     }
 
     // check for target jammed
@@ -510,16 +529,18 @@ void DroneSE::CheckCommand(PyDict* dict) {
         error->SetItem(0, new PyString("EntityDistantCommand"));
         error->SetItem(1, data);
         dict->SetItem(new PyInt(GetID()), error);
-        return;
+        return false;
     }
+
+    return true;
 }
 
-void DroneSE::CheckTarget(SystemEntity* pTarget, PyDict* dict) {
+bool DroneSE::CheckTarget(SystemEntity* pTargetSE, PyDict* dict) {
     // run generic target checks against drone type for verification
     switch (GetGroupID()) {
         case EVEDB::invGroups::Mining_Drone:  {
-            if (pTarget->IsAsteroidSE())
-                return;
+            if (pTargetSE->IsAsteroidSE())
+                return true;
         } break;
         case EVEDB::invGroups::Combat_Drone:
         case EVEDB::invGroups::Fighter_Drone:
@@ -528,8 +549,8 @@ void DroneSE::CheckTarget(SystemEntity* pTarget, PyDict* dict) {
         case EVEDB::invGroups::Cap_Drain_Drone:
         case EVEDB::invGroups::Stasis_Webifying_Drone:
         case EVEDB::invGroups::Electronic_Warfare_Drone:  {
-            if (pTarget->IsNPCSE() or pTarget->IsDroneSE() or pTarget->IsShipSE())
-                return;
+            if (pTargetSE->IsNPCSE() or pTargetSE->IsDroneSE() or pTargetSE->IsShipSE())
+                return true;
         } break;
     }
 
@@ -539,6 +560,7 @@ void DroneSE::CheckTarget(SystemEntity* pTarget, PyDict* dict) {
     error->SetItem(0, new PyString("EntityUnknownCommand"));
     error->SetItem(1, data);
     dict->SetItem(new PyInt(GetID()), error);
+    return false;
 }
 
 
@@ -558,14 +580,16 @@ bool DroneSE::InControlDistance() {
     return (distance < m_controlDistance);
 }
 
-void DroneSE::ChargeShield() {
-    /* this can probably be simplified using:  (ships also)
-     * recharge time = (current shield / max shield) * [479 shieldRechargeRate]    250000
+void DroneSE::RepairInBay() {
+    //TODO:  finish this
+    /* recharge time = (current hp / max hp) * [some timeframe...config maybe]
      *   then just do +% each tic
-     *
-     * however, on live, its logarithmic, charging slower the more it fills up
-     *   the above hack will be linear...same amount each tic
      */
+
+}
+
+void DroneSE::ChargeShield() {
+    // on live, this is logarithmic, charging slower the more it fills up
     float Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
     float Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
     if (Charge < Capacity) {
@@ -577,7 +601,7 @@ void DroneSE::ChargeShield() {
         }
         m_self->SetAttribute(AttrShieldCharge, newCharge);
         SendDamageStateChanged();
-        _log(DRONE__MESSAGE, "DroneSE::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
+        _log(DRONE__MESSAGE, "DroneSE::Process(): %s(%u) - New Shield Charge: %f", m_self->name(), m_self->itemID(), newCharge);
     }
 }
 
@@ -764,6 +788,8 @@ void DroneSE::UpdateDroneWithSkills() {
     newValue = m_self->GetAttribute(AttrShieldCapacity).get_float();
     newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::DroneDurability, true))));
     m_self->SetAttribute(AttrShieldCapacity, newValue, false);
+    // set current shield amount to new capacity value also
+    m_self->SetAttribute(AttrShieldCharge, newValue, false);
     newValue = m_self->GetAttribute(AttrArmorHP).get_float();
     newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::DroneDurability, true))));
     m_self->SetAttribute(AttrArmorHP, newValue, false);
@@ -831,7 +857,7 @@ void DroneSE::UpdateDroneWithSkills() {
 
 void DroneSE::SendBallData() {
     // testing
-    return;
+    //return;
     //  testing....send ball data packets
     std::vector<PyTuple*> updates;
     SetBallAgility sbagility;
@@ -882,53 +908,6 @@ void DroneSE::Killed(Damage &fatal_blow) {
     // are we making wrecks from drones??  nah...this will just be little bits after being shot and they dont drop anything
 }
 
-
-//  Notifications for AI Processing
-// these should take current settings into account
-/* AttrDroneIsAgressive = 1275,
- * AttrDroneIsChaotic = 1278,           // disabled in crucible
- * AttrFightersAttackAndFollow = 1283,
- * AttrDroneFocusFire = 1297,
- */
-
 void DroneSE::ShipWarping(ShipSE* pShipSE) {
-
+    Abandon();
 }
-
-void DroneSE::TargetDestroyed(SystemEntity* pSE) {
-    m_AI->TargetLost(pSE);
-    // if aggressive, look for and engage another target
-    // if focus fire, ai should communicate with each other for next target
-}
-
-void DroneSE::TargetAdded(SystemEntity* pSE) {
-    // pass  we alredy know when we added a target
-}
-
-void DroneSE::TargetLost(SystemEntity* pSE) {
-    m_AI->TargetLost(pSE);
-    // if aggressive, look for and engage another target
-    // if focus fire, ai should communicate with each other for next target
-}
-
-void DroneSE::TargetedAdd(SystemEntity* pSE) {
-    m_AI->Targeted(pSE);
-    // if aggressive or chaotic, attack this target
-}
-
-void DroneSE::TargetedLost(SystemEntity* pSE) {
-    // pass  dont care if we were unlocked
-}
-
-void DroneSE::MissileLaunched(Missile* pMissile) {
-    //SystemEntity::MissileLaunched(pMissile);
-    m_AI->MissileLaunched(pMissile);
-}
-
-
-void DroneSE::ReportDamage(uint8 type/*0*/) {
-    //SystemEntity::ReportDamage(type);
-    m_AI->ReportDamage(type);
-}
-
-// will need a notification method of assigned ship being fired upon

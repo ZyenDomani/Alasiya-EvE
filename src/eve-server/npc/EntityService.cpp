@@ -118,12 +118,12 @@ PyResult EntityBound::Handle_CmdEngage(PyCallArgs &call) {
 }
 
 PyResult EntityBound::Handle_CmdRelinquishControl(PyCallArgs &call) {
+    call.client->SendNotifyMsg("Delegating Drones is not implemented.");
+    return PyStatic.mtDict();
+
     // return control to owner
     m_attack = false;
     m_delegate = false;
-
-    call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return PyStatic.mtDict();
 
     if (0) {
     PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
@@ -147,6 +147,9 @@ PyResult EntityBound::Handle_CmdRelinquishControl(PyCallArgs &call) {
 
 // give control to target
 PyResult EntityBound::Handle_CmdDelegateControl(PyCallArgs &call) {
+    call.client->SendNotifyMsg("Delegating Drones is not implemented.");
+    return PyStatic.mtDict();
+
     // this DOES assign control of drones to target ship
     m_attack = false;
     m_delegate = true;

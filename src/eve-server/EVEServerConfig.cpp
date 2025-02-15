@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    11.5
+    Version:    11.6
 */
 
 
@@ -184,6 +184,7 @@ EVEServerConfig::EVEServerConfig()
     drone.GuardPod = false;
     drone.RegenShields = true;
     drone.RepairInBay = false;
+    drone.ProcessAll = false;
     drone.InteractDistace = 2500;
     drone.RepairCostInBay = 1000.0f;
 
@@ -889,6 +890,7 @@ bool EVEServerConfig::ProcessDrone(const TiXmlElement* ele) {
     AddValueParser("RepairInBay",           drone.RepairInBay);
     AddValueParser("InteractDistace",       drone.InteractDistace);
     AddValueParser("RepairCostInBay",       drone.RepairCostInBay);
+    AddValueParser("ProcessAll",            drone.ProcessAll);
 
     const bool result = ParseElementChildren(ele);
 
@@ -903,6 +905,7 @@ bool EVEServerConfig::ProcessDrone(const TiXmlElement* ele) {
     RemoveParser("RepairInBay");
     RemoveParser("InteractDistace");
     RemoveParser("RepairCostInBay");
+    RemoveParser("ProcessAll");
 
     return result;
 }

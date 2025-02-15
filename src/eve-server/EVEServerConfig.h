@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    11.5
+    Version:    11.6
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -229,6 +229,7 @@ public:
         bool GuardPod;
         bool RegenShields;
         bool RepairInBay;
+        bool ProcessAll;
         uint16 InteractDistace;
         float RepairCostInBay;
     } drone;

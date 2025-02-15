@@ -984,7 +984,24 @@ PyResult Command_autostop(Client* pClient, CommandDB* db, PyServiceMgr* services
     }
 
     char reply[35];
-    snprintf(reply, 35, "Module Auto-Stop is %s.", stop.c_str());
+    snprintf(reply, 35, "Module AutoStop is %s.", stop.c_str());
+
+    pClient->SendNotifyMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_autoattack(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    std::string stop = "Enabled";
+    if (pClient->AutoAttack()) {
+        pClient->SetAutoAttack(false);
+        stop = "Disabled";
+    } else {
+        pClient->SetAutoAttack(true);
+    }
+
+    char reply[35];
+    snprintf(reply, 35, "Drone AutoAttack is %s.", stop.c_str());
 
     pClient->SendNotifyMsg(reply);
     return new PyString(reply);

@@ -804,7 +804,7 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
         ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);
 
     // set position to null for scooped space objects (dont need coords in db)
-    if (IsSolarSystemID(old_location) and !IsSolarSystemID(new_location))
+    if (!IsSolarSystemID(new_location))
         SetPosition(NULL_ORIGIN);
 
     //notify about the changes.
@@ -1289,7 +1289,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             if (IsCharacterID(m_itemID)) {
                 es.startTime = GetFileTimeNow() - EvE::Time::Minute; // m_timestamp
             } else {
-                es.startTime = GetFileTimeNow() - EvE::Time::Minute; // GetAttribute(AttrStartTime).get_int();
+                es.startTime = GetFileTimeNow() - EvE::Time::Minute; // GetAttribute(AttrStartTime).get_long();
             }
             es.duration = -1;
             es.repeat = 0;

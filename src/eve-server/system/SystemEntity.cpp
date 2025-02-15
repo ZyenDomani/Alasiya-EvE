@@ -155,13 +155,11 @@ void SystemEntity::Delete()
 {
     if (m_targMgr != nullptr)
         m_targMgr->ClearFromTargets(); //OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Deleted);
-    if (m_system != nullptr) {
+    if (m_system != nullptr)
         m_system->RemoveEntity(this);
-        m_system->AddToDeleteLater(this);
-    }
     if (!IsContainerSE())
         m_self->Delete();
-    // what do we do if it is a Container?
+    // what do we do if it is a Container?  handled in Container.cpp
 }
 
 double SystemEntity::DistanceTo2(const SystemEntity* other) {

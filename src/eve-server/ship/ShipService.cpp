@@ -423,19 +423,20 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 if (!sConfig.testing.EnableDrones) {
                     throw CustomError("Player Drones are disabled.");
                 }
-
                 if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() < 1) {
                     throw UserError("NoDroneManagementAbilities")
                     .AddFormatValue("typeID", new PyInt(iRef->typeID()));
                 }
-                if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() <= pClient->GetShipSE()->DroneCount()) {
-                    throw CustomError("You cannot launch the %s because you are already controlling %u drones, as much as you have skill to", \
+                if (sConfig.drone.StrictSkills) {
+                    if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() <= pClient->GetShipSE()->DroneCount()) {
+                        throw CustomError("You cannot launch the %s because you are already controlling %u drones, as much as you have skill to", \
                             iRef->name(), pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32());
-                    /*
-                    throw UserError("NoDroneManagementAbilitiesLeft")
-                    .AddFormatValue("item", new PyInt(iRef->itemID()))
-                    .AddFormatValue("limit", new PyInt(pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32()));
-                    */
+                        /*
+                        throw UserError("NoDroneManagementAbilitiesLeft")
+                        .AddFormatValue("item", new PyInt(iRef->itemID()))
+                        .AddFormatValue("limit", new PyInt(pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32()));
+                        */
+                    }
                 }
 
                 if (iRef->flag() != flagDroneBay) {

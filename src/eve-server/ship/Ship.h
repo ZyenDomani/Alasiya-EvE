@@ -308,37 +308,47 @@ public:
 
     /* class type pointer querys. */
     virtual const char*         GetSEType()             { return "Ship SE"; }
-    virtual ShipSE* GetShipSE()                         { return this; }
+    virtual ShipSE*             GetShipSE()             { return this; }
     /* class type tests. */
-    virtual bool IsShipSE()                             { return true; }
+    virtual bool                IsShipSE()              { return true; }
 
     /* SystemEntity interface */
-    virtual void Process();
-    virtual void EncodeDestiny(Buffer& into);
-    virtual void MakeDamageState(DoDestinyDamageState &into);
-    virtual PyDict *MakeSlimItem();
+    virtual void                Process();
+    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                MakeDamageState(DoDestinyDamageState &into);
+    virtual PyDict*             MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Killed(Damage &damage);            /* This method is defined in Damage.cpp */
+    virtual void                Killed(Damage &damage); /* This method is defined in Damage.cpp */
 
     /* virtual functions to be overridden in derived classes */
-    virtual void MissileLaunched(Missile* pMissile)     { /* Do nothing here */ }
-    virtual bool IsInvul();
-    virtual bool IsFrozen()                             { return false; }
-    virtual bool IsLogin();
+    virtual bool                IsInvul();
+    virtual bool                IsFrozen()              { return false; }
+    virtual bool                IsLogin();
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
-    virtual void SetPilot(Client* pClient);
-    virtual bool HasPilot()                             { return ((m_shipRef.get() == nullptr) ? false : m_shipRef->HasPilot()); }
-    virtual Client* GetPilot()                          { return ((m_shipRef.get() == nullptr) ? nullptr : m_shipRef->GetPilot()); }
+    virtual void                SetPilot(Client* pClient);
+    virtual bool                HasPilot()              { return ((m_shipRef.get() == nullptr) ? false : m_shipRef->HasPilot()); }
+    virtual Client*             GetPilot()              { return ((m_shipRef.get() == nullptr) ? nullptr : m_shipRef->GetPilot()); }
 
     /* virtual functions for npc/drone AI and player reporting */
-    virtual void                ReportDamage(uint8 type=0) { /* do nothing here */ }
-    virtual void            TargetAdded(SystemEntity* pSE) { /* do nothing here */ }
+    virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
+    virtual void             ReportDamage(uint8 type=0) { /* do nothing here */ }
+    // tell drones we have a new target
+    virtual void                TargetAdded(SystemEntity* pTargetSE);
     // this is call to inform us of yellowbox
-    virtual void            TargetedAdd(SystemEntity* pSE) { /* do nothing here */ }
-    virtual void             TargetLost(SystemEntity* pSE) { /* do nothing here */ }
-    virtual void           TargetedLost(SystemEntity* pSE) { /* do nothing here */ }
+    virtual void                TargetedAdd(SystemEntity* pSourceSE);
+    virtual void    TargetLost(SystemEntity* pTargetSE) { /* do nothing here */ }
+    virtual void  TargetedLost(SystemEntity* pSourceSE) { /* do nothing here */ }
+    // this is call to inform us of redbox
+    virtual void                ShipTargeted(SystemEntity* pSourceSE);
+    // our assigned ship was killed...wtf we do now?
+    virtual void                ShipKilled(SystemEntity* pSourceSE);
+    /*NOTE:  these next two have potential of taking a lot of clock cycles...not sure about implementing them yet. */
+    // not sure how to do this one and remain fast...
+    virtual void                ShipAttacked(SystemEntity* pSourceSE);
+    // make sure you check for nullptr here...ships firing missiles can be killed before missile hits
+    virtual void                ShipTakingDamage(SystemEntity* pSourceSE);
 
     /* specific functions handled here. */
     void Dock();
@@ -380,6 +390,10 @@ public:
     // used when drones enter/leave ship's control distance, including launch/scoop
     bool AcquireBandwidth(DroneSE* pSE);
     void ReleaseBandwidth(DroneSE* pSE);
+    // to assign drones to same target.  called by drone
+    void FocusFire(DroneSE* pFromSE, SystemEntity* pTargetSE);
+    // for assisting.  offensive module activated on target
+    void ModuleActivated(SystemEntity* pTargetSE);
 
     // returns current count of drones in space for this ship
     uint8 DroneCount()                                  { return m_drones.size(); }
@@ -414,7 +428,7 @@ private:
     std::string m_towerPass;
 
     /* launched drones */
-    std::map<uint32, InventoryItem*> m_drones;
+    std::map<uint32, DroneSE*> m_drones;
 };
 
 #endif /* !__SHIP__H__INCL__ */

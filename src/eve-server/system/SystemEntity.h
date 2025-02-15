@@ -289,11 +289,19 @@ public:
 
     /* virtual functions for npc/drone AI and player reporting */
     virtual void                ReportDamage(uint8 type=0) { /* do nothing here */ }
-    virtual void            TargetAdded(SystemEntity* pSE) { /* do nothing here */ }
+    // we have acquired a target lock
+    virtual void      TargetAdded(SystemEntity* pTargetSE) { /* do nothing here */ }
     // this is call to inform us of yellowbox
-    virtual void            TargetedAdd(SystemEntity* pSE) { /* do nothing here */ }
-    virtual void             TargetLost(SystemEntity* pSE) { /* do nothing here */ }
-    virtual void           TargetedLost(SystemEntity* pSE) { /* do nothing here */ }
+    virtual void      TargetedAdd(SystemEntity* pSourceSE) { /* do nothing here */ }
+    virtual void       TargetLost(SystemEntity* pTargetSE) { /* do nothing here */ }
+    virtual void     TargetedLost(SystemEntity* pSourceSE) { /* do nothing here */ }
+    // this is call to inform us of redbox
+    virtual void     ShipTargeted(SystemEntity* pSourceSE) { /* do nothing here */ }
+    virtual void     ShipAttacked(SystemEntity* pSourceSE) { /* do nothing here */ }
+    // make sure you check for nullptr here...ships firing missiles can be killed before missile hits
+    virtual void ShipTakingDamage(SystemEntity* pSourceSE) { /* do nothing here */ }
+    // our assigned ship was killed...wtf we do now?
+    virtual void       ShipKilled(SystemEntity* pSourceSE) { /* do nothing here */ }
 
 
 protected:

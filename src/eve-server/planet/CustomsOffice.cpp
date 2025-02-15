@@ -507,9 +507,9 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         data.finalSecurityStatus = 0;  /* fix this */
         data.finalDamageDone = fatal_blow.GetTotal();
 
-        uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
-            totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
-            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_int();
+        uint32 totalHP = m_self->GetAttribute(AttrHP).get_uint32();
+            totalHP += m_self->GetAttribute(AttrArmorHP).get_uint32();
+            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_uint32();
         data.victimDamageTaken = totalHP;
 
         data.killBlob = blob.str().c_str();

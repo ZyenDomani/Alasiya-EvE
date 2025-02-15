@@ -67,23 +67,31 @@ public:
     virtual void        Killed(Damage &fatal_blow);
     virtual void        Abandon();     // reset all owner info and bubblecast new data
     virtual const GVector& GetVelocity()                { return m_AI->GetVelocity(); }
-
-    virtual void        TargetAdded(SystemEntity* pSE);
+    // our ship has added a new target
+    virtual void   TargetAdded(SystemEntity* pTargetSE);
     // this is call to inform us of yellowbox
-    virtual void        TargetedAdd(SystemEntity* pSE);
-    virtual void        TargetLost(SystemEntity* pSE);
-    virtual void        TargetedLost(SystemEntity* pSE);
+    virtual void   TargetedAdd(SystemEntity* pSourceSE) { m_AI->Targeted(pSourceSE); }
+    // check mode to determine next action
+    virtual void    TargetLost(SystemEntity* pTargetSE) { m_AI->TargetLost(pTargetSE); }
+    // pass - dont care if we were unlocked
+    virtual void  TargetedLost(SystemEntity* pSourceSE) { /* do nothing here */ }
 
-    /* virtual functions to be overridden in derived classes */
-    virtual void        MissileLaunched(Missile* pMissile);  // tell AI a missile has been launched at us.  allows defender missile code
-    virtual void        ReportDamage(uint8 type=0);
+    /* for advanced AI communication */
+    virtual void  ShipAttacked(SystemEntity* pSourceSE) { m_AI->ShipAttacked(pSourceSE); }
+    virtual void ShipTakingDamage(SystemEntity* pSourceSE) { m_AI->ShipTakingDamage(pSourceSE); }
+    // tell AI a missile has been launched at us.  allows defender missile code (for drone??  probably not)
+    virtual void     MissileLaunched(Missile* pMissile) { /* m_AI->ShipAttacked(pMissile); */ }
+    virtual void        ReportDamage(uint8 type=0)      { /* m_AI->ShipAttacked(type); */ }
+
+    // tell AI it's target has been destroyed.
+    void       TargetDestroyed(SystemEntity* pTargetSE) { m_AI->TargetDestroyed(pTargetSE); }
 
     /* specific functions handled here. */
     Client*             GetOwner()                      { return m_pClient; }
     DroneAIMgr*         GetAI()                         { return m_AI; }
 
     // assign drone to ship, add to system and update bandwidth
-    void                Launched(ShipSE* pShipSE);      // this is only for drone owner.
+    void                Launch(ShipSE* pShipSE);        // this is only for drone owner.
     void                Online();                       // this is only for drone owner.  also updates drone with char skills
     // sent on every state or controller change
     void                StateChange();                  // droneAI.state must be set before calling this for client to get accurate state information
@@ -118,7 +126,6 @@ public:
     void                DisableDrone();                 // also calls StateChange
 
     void                AssignShip(ShipSE* pShipSE);
-    void                TargetDestroyed( SystemEntity* pSE );              // no need to clarify...drones have only one target
 
     ShipSE*             GetHomeShip()                   { return m_pShipSE; }
 
@@ -128,20 +135,27 @@ public:
     void                Reconnect(ShipSE* pShipSE, PyDict* dict);     // this is for previously abandonded drones
     void                ReturnBay(PyDict* dict);                      // return to owner's ship and dock in drone bay
     void                ReturnHome(PyDict* dict);                     // return to owner's ship and remain in range
-    void                Engage(SystemEntity* pTarget, PyDict* dict);  // this is for fighting
-    void                Assist(SystemEntity* pTarget, PyDict* dict);  // this is for assisting another pilot
-    void                Guard(SystemEntity* pTarget, PyDict* dict);   // this is for guarding another pilot
-    void                Delegate(SystemEntity* pTarget, PyDict* dict);// this is to give control to another pilot
-    void                Mine(SystemEntity* pTarget, PyDict* dict, bool repeat=false); // should i explain?
+    /*  "engage" meaning depends on target and drone.
+     * we will allow this generic command for all drone types and it is coded to
+     * check all possibilities...when first combo check passes, allow action.
+     *   if any checks fail, return first error (unknown command)
+     */
+    void                Engage(SystemEntity* pTargetSE, PyDict* dict=nullptr);
+    void                Assist(SystemEntity* pTargetSE, PyDict* dict);  // this is for assisting another pilot
+    void                Guard(SystemEntity* pTargetSE, PyDict* dict);   // this is for guarding another pilot
+    void                Delegate(SystemEntity* pShipSE, PyDict* dict);// this is to give control to another pilot
+    void                Mine(SystemEntity* pTargetSE, PyDict* dict, bool repeat=false); // should i explain?
 
     /* helper methods */
     bool                InControlDistance();            // returns true if drone within control distance
-    void                CheckTarget(SystemEntity* pTarget, PyDict* dict); // run generic target checks against drone type for verification
-    void                CheckCommand(PyDict* dict);     // runs multiple checks and will return on error
+    bool                CheckTarget( SystemEntity* pTargetSE, PyDict* dict ); // run generic target checks against drone type for verification
+    bool                CheckCommand(PyDict* dict);     // runs multiple checks and will return on error
     void                ChargeShield();                 // shield recharging while in space
     float               CalculateRechargeRate(float Capacity, float RechargeTimeMS, float Current);
+    void                RepairInBay();
 
     void                SendBallData();
+
 
 protected:
     SystemManager*      m_system;               //we do not own this

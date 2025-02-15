@@ -2751,10 +2751,6 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
 
     dRef->Move(GetLocationID(), flagNone, true);
 
-    GPoint position(GetPosition());
-    position.MakeRandomPointOnSphere(500.0);
-    dRef->SetPosition(position);
-
     //now we create an SE to represent it.
     FactionData data = FactionData();
         data.allianceID = pChar->allianceID();
@@ -2763,12 +2759,16 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
         data.ownerID = pChar->itemID();
     DroneSE* pDrone = new DroneSE(dRef, m_services, m_system, data);
     pDrone->Init();
-    // drones are scannable.  add signal to AnomalyMgr
-    m_system->AddEntity(pDrone, true);
-    // send new ball data
-    pDrone->Launched(this);
+
+    // this will launch drone (orbitDistance - 100m) from ship.  ai will adjust if needed
+    GPoint position(GetPosition());
+    position.MakeRandomPointOnSphere(pDrone->GetAI()->GetOrbitDistance() - 100.0);
+    dRef->SetPosition(position);
+
+    // add drone to system and send new ball data
+    pDrone->Launch(this);
     // add drone to launched drone map (whether onlined or not)
-    m_drones[dRef->itemID()] = dRef.get();
+    m_drones[dRef->itemID()] = pDrone;
 
     return pDrone->IsEnabled();
 }
@@ -2797,28 +2797,93 @@ void ShipSE::ScoopDrone(SystemEntity* pSE) {
     ReleaseBandwidth(pSE->GetDroneSE());
 }
 
-void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
-    // update drones in space with new attrib settings
-    SystemEntity* pSE(nullptr);
+void ShipSE::FocusFire(DroneSE* pFromSE, SystemEntity* pTargetSE) {
     for (auto &cur : m_drones) {
-        cur.second->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
-        cur.second->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
-        cur.second->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
-        //cur.second->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic]);    // no longer used?  still in client
-        pSE = m_system->GetEntityByID(cur.first);
-        if (pSE == nullptr)
+        if (cur.second == nullptr)
             continue;
-        pSE->GetDroneSE()->GetAI()->ModeChange();
+        cur.second->GetAI()->FocusFire(pFromSE, pTargetSE);
+    }
+}
+
+void ShipSE::ModuleActivated(SystemEntity* pTargetSE) {
+    for (auto &cur : m_drones) {
+        if (cur.second == nullptr)
+            continue;
+        cur.second->GetAI()->ModuleActivated(pTargetSE);
+    }
+}
+
+void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
+    // check to see if ship even has drones...
+    if (!m_shipRef->HasAttribute(AttrDroneCapacity))
+        return;
+
+    // it can...are any drones in the bay?  if so, update settings
+    std::vector<InventoryItemRef> iRefVec;
+    m_shipRef->GetMyInventory()->GetItemsByFlag(flagDroneBay, iRefVec);
+    for (auto &cur : iRefVec) {
+        // not sure why we'd need this...
+        if (cur.get() == nullptr)
+            continue;
+        // some drones wont be aggressive...
+        switch (cur->groupID()) {
+            case EVEDB::invGroups::Mining_Drone:
+            case EVEDB::invGroups::Logistic_Drone: {
+                continue;
+            } break;
+            // should these be aggressive?
+            case EVEDB::invGroups::Cap_Drain_Drone:
+            case EVEDB::invGroups::Stasis_Webifying_Drone:
+            case EVEDB::invGroups::Electronic_Warfare_Drone: {
+                continue;
+            } break;
+            /*  these can be aggresive
+            case EVEDB::invGroups::Combat_Drone:
+            case EVEDB::invGroups::Fighter_Drone:
+            case EVEDB::invGroups::Fighter_Bomber:
+            */
+        }
+        cur->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
+        cur->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
+        cur->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
+        // chaotic is no longer used in client, but i got ideas for later...
+        cur->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic]);
+    }
+
+    // now, update drones in space with new settings, if any
+    for (auto &cur : m_drones) {
+        if (cur.second == nullptr)
+            continue;
+        // some drones wont be aggressive...
+        switch (cur.second->GetSelf()->groupID()) {
+            case EVEDB::invGroups::Mining_Drone:
+            case EVEDB::invGroups::Logistic_Drone: {
+                continue;
+            } break;
+            // should these be aggressive?
+            case EVEDB::invGroups::Cap_Drain_Drone:
+            case EVEDB::invGroups::Stasis_Webifying_Drone:
+            case EVEDB::invGroups::Electronic_Warfare_Drone: {
+                continue;
+            } break;
+            /*  these can be aggresive
+             *   case EVEDB::invGroups::Combat_Drone:
+             *   case EVEDB::invGroups::Fighter_Drone:
+             *   case EVEDB::invGroups::Fighter_Bomber:
+             */
+        }
+        cur.second->GetSelf()->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
+        cur.second->GetSelf()->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
+        cur.second->GetSelf()->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
+        // chaotic is no longer used in client, but i got ideas for later...
+        cur.second->GetSelf()->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic]);
     }
 }
 
 void ShipSE::AbandonDrones() {
-    SystemEntity* pSE(nullptr);
     for (auto &cur : m_drones) {
-        pSE = m_system->GetSE(cur.first);
-        if (pSE != nullptr)
-            if (pSE->IsDroneSE())
-                pSE->GetDroneSE()->Abandon();   // this also updates bandwidth
+        if (cur.second != nullptr)
+            cur.second->Abandon();   // this also updates bandwidth
     }
 
     // all abandoned.  clear map
@@ -2862,3 +2927,34 @@ void ShipSE::ReleaseBandwidth(DroneSE* pSE) {
 //{'FullPath': u'UI/Messages', 'messageID': 257802, 'label': u'DronesDroppedBecauseOfBandwidthModificationBody'}(u'The drone control bandwidth of your ship has been modified causing you to lose the ability to control some drones.', None, None)
 //{'FullPath': u'UI/Messages', 'messageID': 258031, 'label': u'MaxBandwidthExceededBody'}(u"You don't have enough bandwidth to launch {droneName}. You need {bandwidthNeeded} Mbit/s but {droneName} requires {droneBandwidthUsed} Mbit/s.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}, u'{bandwidthNeeded}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthNeeded'}})
 //{'FullPath': u'UI/Messages', 'messageID': 258041, 'label': u'MaxBandwidthExceeded2Body'}(u"You don't have enough bandwidth to launch {droneName}. You need {droneBandwidthUsed} Mbit/s but only have {bandwidthLeft} Mbit/s available.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{bandwidthLeft}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthLeft'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}})
+
+void ShipSE::TargetedAdd(SystemEntity* pSourceSE) {
+    // if we have any drones out, let them know we've been targeted
+    for (auto &cur : m_drones)
+        cur.second->GetAI()->ShipAttacked(pSourceSE);
+}
+
+void ShipSE::TargetAdded(SystemEntity* pSourceSE) {
+    // if we have any drones out, let them know we've got a new target
+    for (auto &cur : m_drones)
+        cur.second->TargetAdded(pSourceSE);
+}
+
+void ShipSE::ShipTakingDamage(SystemEntity* pSourceSE) {
+}
+
+void ShipSE::ShipAttacked(SystemEntity* pSourceSE) {
+}
+
+void ShipSE::ShipTargeted(SystemEntity* pSourceSE) {
+    // if we have any drones out, let them know we've been target locked
+    for (auto &cur : m_drones)
+        cur.second->GetAI()->ShipTargeted(pSourceSE);
+
+}
+
+void ShipSE::ShipKilled(SystemEntity* pSourceSE) {
+    // if we have any drones out, let them know we've been killed and they have been abandoned
+    for (auto &cur : m_drones)
+        cur.second->Abandon();
+}

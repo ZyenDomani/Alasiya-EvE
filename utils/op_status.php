@@ -23,7 +23,8 @@ Items listed as "<font color=orange>Skeleton Code Only</font>" has a basic outli
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
-<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>11 February 2025</font><BR>
+<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.75.01</font><BR>
+<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>14 February 2025</font><BR>
 <font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=green>Current</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
@@ -49,11 +50,13 @@ There will be some response, like opening windows, but *should not* generate an 
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;"><tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td><td style="width: 26%;">Comments</td></tr>
-<tr><td> - Stable, Efficient Server Code</td><td class="working">80%
+<tr><td> - Stable, Efficient Server Code<BR>
+<font color=yellow>Gained valuable insight while coding DroneAI.<BR>
+This led to much faster runtime than I expected, and will be updating all systems with these leanings.</font></td><td class="working">60%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >10y<BR>30Jan25</td></tr>
+<td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >10y<BR>15Feb25</td></tr>
 <tr><td> - Memory Management<BR>
 <font color=green>InventoryItem and PhotoService are only classes with accurate MemMgmt</font></td><td class="working">35%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
@@ -2176,14 +2179,14 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Drones"> Drones (<font color=violet>Testing and Adding Features</font> - <font color=green>Current</font>) - <font color=yellow>v0.81</font></span></h2>
+<h2> <span class="mw-headline" id="Drones"> Drones (<font color=violet>PlayTesting</font> - <font color=green>Current</font>) - <font color=yellow>v1.03</font></span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:76%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:76%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>75.95</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>85.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -2212,12 +2215,14 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>8Feb25</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drone AI </h3></font></td></tr>
-<tr><td><font color=lime>Passive/Aggressive</font>   (toggle)<BR><font color=teal>Passive</font>: attack only upon command.<BR>
-<font color=teal>Aggressive</font>: attack any valid target within range.</td><td class="working">60%
+<tr><td><font color=lime>Passive/Aggressive</font>   (toggle)<BR>
+<font color=magenta>Passive</font>: attack only upon command.<BR>
+<font color=red>Aggressive</font>: attack any valid target within range. (may be a bit too aggressive)<BR>
+<font color=orange>AutoAttack</font>: Player command.  Drones will attack any target that locks your ship</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=violet>Somewhat Working</font><BR><font color=olive>Testing</font><BR>4Feb25</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>13Feb25</td></tr>
 <tr><td><font color=lime>Drone Destiny</font> - <font color=yellow>Drone-specific Implementation</font><BR>
 Drone movement is different than ships, so Destiny code is useless for them.<BR>
 Client will show drones orbiting, and server tracks accordingly</td><td class="working">95%
@@ -2226,11 +2231,11 @@ Client will show drones orbiting, and server tracks accordingly</td><td class="w
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Final Testing</font><BR>11Feb25</td></tr>
 <tr><td><font color=lime>Attack and Follow</font> <font color=yellow>(fighters only)</font><BR>
-Engage the first target of the assigned ship.<BR>Will chase target in warp.</td><td class="working">15%
+Engage the first target of the assigned ship.<BR>Will chase target in warp.</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font> - <font color=orange>Very Basic.</font><BR>4Feb25</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing.</font><BR>14Feb25</td></tr>
 <tr><td><font color=lime>Assist</font>   (enables passive mode)<BR>
 Drone will engage assigned ship's target once an offensive module is activated on that target. <BR>
 Drone will continue attack until itself, target or assigned ship is popped, or commanded otherwise.</td><td class="working">75%
@@ -2248,11 +2253,26 @@ Drone will continue attack until itself, target or assigned ship is popped, or c
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Final Testing</font><BR>11Feb25</td></tr>
-<tr><td><font color=lime>Focus Fire</font><BR>All drones engage same target till destroyed or commanded otherwise.</td><td class="working">15%
+<tr><td><font color=lime>Focus Fire</font><BR>All drones engage same target till destroyed or commanded otherwise.</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font> - <font color=orange>Very Basic.</font><BR>4Feb25</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>14Feb25</td></tr>
+<tr><td><font color=lime>Proximity Sensing</font> <font color=yellow> (Active Mode Combat Only)</font><BR>
+When idle or loss of target, drone will react to objects within it's detection range and react.<br>
+The action taken depends on drone type and object type.</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Final Testing</font><BR>15Feb25</td></tr>
+<!--
+<tr><td><font color=lime>Salvaging</font><BR>
+Drone will search out and salvage wrecks belonging to you or your fleet.</td><td class="working">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>30Nov15</td></tr>
+-->
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drone Commands </h3></font></td></tr>
 <tr><td><font color=lime>Attack</font><BR>Engage the current target of the assigned ship.</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
@@ -2272,11 +2292,12 @@ Drone will continue attack until itself, target or assigned ship is popped, or c
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Final Testing</font><BR>11Feb25</td></tr>
 <tr><td><font color=lime>Delegate</font><BR>Assign drone to another ship.<br>
-<font color=yellow>NOTE: Target must be in same fleet and have drone skills for types sent.</font></td><td class="broken">10%
+<font color=yellow>NOTE: Target must be in same fleet and have drone skills for types sent.</font><br>
+<font color=magenta>NOTE: Have not gotten this to work yet.  Disabled for now.</font></td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>11Feb25</td></tr>
+<td><font color=red>Not Working - Disabled</font><BR>14Feb25</td></tr>
 <tr><td><font color=lime>Mine</font><BR>Mine assigned asteroid for one cycle then return to ship.</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2303,7 +2324,7 @@ Drone will continue attack until itself, target or assigned ship is popped, or c
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Final Testing</font><BR>7Feb25</td></tr>
 <tr><td><font color=lime>Reconnect to Lost Drones</font><BR>Try to reestablish communication with abandoned or incapacitated drones.<br>
-<font color=yellow>NOTE: you must be owner of drone and in same bubble to reconnect</font></td><td class="working">95%
+<font color=yellow>NOTE: you must be owner of drone and in same local space to reconnect</font></td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>

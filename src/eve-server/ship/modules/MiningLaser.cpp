@@ -35,7 +35,7 @@ m_crystalDmgChance(0.0f),
 m_holdFlag(flagCargoHold)
 {
 
-    _log(MINING__TRACE, "MiningLaser Created for %s with %llims Duration.", mRef->name(), GetAttribute(AttrDuration).get_int());
+    _log(MINING__TRACE, "MiningLaser Created for %s with %ims Duration.", mRef->name(), GetAttribute(AttrDuration).get_int());
 }
 
 void MiningLaser::Init() {

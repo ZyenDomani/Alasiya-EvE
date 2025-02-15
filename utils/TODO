@@ -36,10 +36,11 @@ market --  some queries dont work...sending price data returns null
 
 work on buglist, integrate this list in there where i can (in order)
     - modules/fitting  ...  see 'module system coding' below for list of current problems
-    - drones  ... started coding commands.  lots of msgs to implement
+    - drones  ... mostly done.  check advanced and delegate later
+      * add salvage drone later.  data in cruc/drones
     - standings  ... multiple notes in code for implementing and improvements
     - corp  ...  multiple systems incomplete
-    - mail/notifications  ... there is still multiple mail db tables.  pick one.
+    - mail/notifications  ... needs rewrite.  there is still multiple mail db tables.  pick one.
     - lsc  ... probably needs complete rewrite.  see below
     - missions  - still have a long way to go here.  courier should be >95% before moving to next group
     - calendar - mostly working.  only goes back 12 months in client
@@ -62,19 +63,11 @@ also check containers for contents and remove/deny before repack
 check insurance payouts.   rounds full ship value up
     - this will need base prices fixed
 
-check trade - ships retain insurance
-
 check for item ownership before rename
     verify OnCfgDataChanged
     Structure items have throw.  not sure if this is valid
 
 dungeon deco items need better placement
-
-error:
-"turret not fitted on shipID (npc)"  look for AttrGfxTurretID = 245,
-shoot sends shipID, targetID, moduleID, etc
-this is used as 'trigger' in __INIT__ for turret/missile
-
 
 char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.
@@ -176,17 +169,14 @@ reconnect to lost probes not implemented yet.
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 	- james did lots of work on this system in official
 
-player drones - started coding functionality    -priority level: med-h
-drones mass and maxspeed need attention
-does controller and controllerownerid change when assigning drone to other pilots?  depends
+player drones - 85% complete    -priority level: med-h
 drone ai needs:
-  - assigned ship killed, need code to reset
+    - large drones need coding
 mining methods will need updates to test for drones vs pilots
 move mining item depleted call to targmgr
 write specific damage method  254 types coded with incapRatio (below)
 156     incapacitationRatio     NULL    0.75  << at this hull damage %, drone goes offline
-update sendGFX to distinguish between weapon and ewar for using AttrGfxTurretID or AttrGfxBoosterID
-   note:  not sure if either are used for drones
+
 
 RAM code - implement invention, re    -priority level: low
     - (reproc) update GetRecoverables to use sDataMgr...currently hitting db on every call...
@@ -403,6 +393,9 @@ look into removing xmlp encode() for things we can build in code
 *****************   module system coding
 
 module/charge fx out of order in map.
+
+module reloading dosnt update cargo properly...
+   load last veldspar crystal isnt removed from cargo
 
 module add/remove isnt fully thought out at this point.
     - will need complete walk thru to verify proper operation
@@ -665,6 +658,7 @@ petition system missing most calls
 
 belt spawns - rework for better ship group selection   -priority level: med
     - update entire system based on lessons learned over past years
+    - cruiser roid rat in 0.7? angel predator in ibaria
 
 belt manager 'active' status on timer?
 

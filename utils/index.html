@@ -14,26 +14,30 @@
 This is the updates page for Alasiya-EvE.<br>
 I will eventually make this a little more aesthetically pleasing  (maybe)<br><br>
 CURRENT TEST POINTS<br>
- - Ship Movement<br>
  - Modules (most are working correctly.  gang modules not coded)<br>
  - Effects (most working correctly)<br>
- - Combat<br>
- - Mining (seems to be complete)<br>
  - Probe Scanning (some locations wrong)<br>
  - Market (still some bugs after rewrite)<br>
  - R.A.M.(still need to update research times for my server)<br>
 <br>
 NOTES:<br>
-I have begun working on coding player drones and other errors i find while testing.<br>
-I am also working on my TODO list where I can.  As there is around 1000 lines, this will take a while<br><br>
+Still looking for bugs and other errors.<br>
+I am kinda working on my TODO list where I can.  As there is around 1000 lines, this will take a while<br>
+<br>
 Notable updates at this time are:<br>
-Drone System mostly complete.  Not pushed to main server yet.<br>
+Drone System mostly complete and live.<br>
 Recent Destiny rewrites have movement tracking around 98% with client except orbit.<br>
 NPC warping in and out of bubbles is working correctly again.<br>
 Blueprints are showing BOM correctly again.<br>
 The Implant system is implemented and working quite well.<br>
-Also, I have updated the Attribute Remapper for our character attributes. (still few hiccups with remapping)<br><br>
+<br>
 UPDATES AND CHANGELOG:  (note: only major/significant updates are listed)<br><br>
+15Feb25 - Rewrote Drone Process() code for better distance checks<br>
+        Found and Added missing action checks in Drone Process()<br><br>
+14Feb25 - Many updates to drone AI, including autoattack<br><br>
+<font color=yellow>
+13Feb25 - Pushed Drone code and updates to main server<br>
+        106 files with 6038 lines changed<br><br></font>
 12Feb25 - Extended and Debugged advanced DroneAI system<br>
         Started basic drone modes (settings)<br>
         Started Advanced AI for target finding (aggressive mode)<br>
@@ -66,7 +70,8 @@ UPDATES AND CHANGELOG:  (note: only major/significant updates are listed)<br><br
         A bit of code streamlining and removed some redundant calls<br>
         More work on MemMgmt (still horribly incomplete)<br>
         Fixed wreck icons not showing proper empty status on overview (was always empty)<br>
-        Fix for error when shooting rogue drones (was giving warning about "peaceful entities")</font><br><br>
+        Fix for error when shooting rogue drones (was giving warning about "peaceful entities")<br>
+        Pushed all updates to main server - 84 files and 20254 lines changed</font><br><br>
 26Jan25 - Disabled Orbiting until i get server/client tracking closer than it currently is<br><br>
 25Jan25 - Refactored turn code for better implementation with existing movement code (instead of separate systems)<br>
         Updated wrong/missing variables with NPCs movement; This has corrected NPC warping<br><br>

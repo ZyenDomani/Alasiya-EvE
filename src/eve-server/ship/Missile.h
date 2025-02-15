@@ -79,8 +79,6 @@ protected:
 
     bool m_alive;
 
-    uint32 m_orbitingID;
-
     float m_damageMod;
 
     uint16 m_speed;

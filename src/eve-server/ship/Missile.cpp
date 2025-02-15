@@ -44,7 +44,6 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
   m_hitTimer(0),
   m_lifeTimer(0),
   m_alive(true),
-  m_orbitingID(0),
   m_damageMod(1),
   m_speed(0),
   m_hullHP(self->GetAttribute(AttrHP).get_int())
@@ -153,7 +152,7 @@ void Missile::Process() {
         return;
     }
     double profileStartTime(GetTimeUSeconds());
-    
+
     /*   Base call to Process Movement  */
     SystemEntity::Process();
 

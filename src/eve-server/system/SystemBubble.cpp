@@ -323,6 +323,7 @@ void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
      *    SystemManager::MakeSetState()   --for player entering new system
      *    Command_killallnpcs()           --GM command
      *    StructureSE::InitData()         --Get TowerSE for pos items
+     *    DroneAI::FindTarget()           --Drone AI target finding
      */
     if (m_dynamicEntities.empty())
         return;
@@ -763,13 +764,14 @@ void SystemBubble::CmdDropLoot()
 
 void SystemBubble::RemoveMarkers()
 {
-    if (m_hasMarkers)
+    if (m_hasMarkers) {
+        SystemEntity* pSE(nullptr);
         for (auto &cur : m_markers) {
-            m_system->RemoveEntity(cur.second);
-            m_system->AddToDeleteLater(cur.second);
-            // delete marker can item here
-            cur.second->Delete();
+            pSE = cur.second;
+            pSE->Delete();
+            SafeDelete(pSE);
         }
+    }
     m_markers.clear();
     m_centerSE = nullptr;
     m_hasMarkers = false;

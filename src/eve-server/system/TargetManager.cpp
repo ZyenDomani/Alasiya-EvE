@@ -383,8 +383,8 @@ void TargetManager::TargetedByLocked(SystemEntity* pSE) {
     // this call tells object that target lock has been completed
     _log(TARGET__TRACE, "%s(%u) has been locked by %s(%u)", \
             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
-    // i think this is redundant....check
-    //mySE->TargetMgr()->TargetedAdd(pSE);
+
+    mySE->ShipTargeted(pSE);
 }
 
 void TargetManager::TargetedByLost(SystemEntity* pSE) {
@@ -430,6 +430,9 @@ void TargetManager::TargetAdded(SystemEntity* tSE) {
             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
     if (!mySE->HasPilot())
         return;
+    // call TargetAdded() for AI (if any)
+    mySE->TargetAdded(tSE);
+    
     PyTuple* up(nullptr);
     Notify_OnTarget te;
         te.mode = "add";
@@ -460,8 +463,8 @@ void TargetManager::TargetedAdd(SystemEntity *tSE) {
         te->state = TargMgr::State::Locking;
         m_targetedBy[tSE] = te;
     }
-    if (mySE->IsNPCSE())
-        mySE->GetNPCSE()->TargetedAdd(tSE);     // this is call to target inform of yellowbox
+
+    mySE->TargetedAdd(tSE);
 
     if (!mySE->HasPilot())
         return;
@@ -603,7 +606,11 @@ void TargetManager::Destroyed()
 
     std::string effect = "TargetDestroyed";
 
-    //TODO:  determine if this target has assigned drones in space and call drone:targetdestroyed
+    // determine if this target has assigned drones in space and let them know
+    for (auto &cur : m_targetedBy) {
+        if (cur.first->IsDroneSE())
+            cur.first->GetDroneSE()->TargetDestroyed(mySE);
+    }
 
     ActiveModule* module(nullptr);
     // iterate thru the map of modules targeting this object, and call Deactivate on each.

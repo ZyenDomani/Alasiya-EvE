@@ -187,6 +187,8 @@ void Profiler::PrintProfile()
 {
     /** @todo figure out how to color this based on times....R,Y,G,M,B,W  */
 
+    //TODO:  switch from
+
     double startTime = GetTimeUSeconds();
     std::string fSize;
     double h(0.0), l(0.0), a(0.0);
@@ -195,61 +197,61 @@ void Profiler::PrintProfile()
     std::printf("\t\tLoop Calls\n");
     //GetRunTimes(m_entityP, h, l, a);
     //GetSize(m_entityP.size(), fSize);
-    //std::printf("  EntList Proc   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    //std::printf("  EntList Proc   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_entityS, h, l, a);
     GetSize(m_entityS.size(), fSize);
-    std::printf("    EntMgr Tic   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("    EntMgr Tic   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_client, h, l, a);
     GetSize(m_client.size(), fSize);
-    std::printf("Client Network   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("Client Network   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_system, h, l, a);
     GetSize(m_system.size(), fSize);
-    std::printf("     SystemMgr   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("     SystemMgr   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_bubbles, h, l, a);
     GetSize(m_bubbles.size(), fSize);
-    std::printf("       Bubbles   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("       Bubbles   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_destiny, h, l, a);
     GetSize(m_destiny.size(), fSize);
-    std::printf("       Destiny   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("       Destiny   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_npc, h, l, a);
     GetSize(m_npc.size(), fSize);
-    std::printf("           NPC   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("           NPC   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_modules, h, l, a);
     GetSize(m_modules.size(), fSize);
-    std::printf("       Modules   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("       Modules   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_ship, h, l, a);
     GetSize(m_ship.size(), fSize);
-    std::printf("          Ship   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("          Ship   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     //GetRunTimes(m_ontarget, h, l, a);
     //GetSize(m_ontarget.size(), fSize);
-    //std::printf("      OnTarget   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    //std::printf("      OnTarget   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_targets, h, l, a);
     GetSize(m_targets.size(), fSize);
-    std::printf("    TargetProc   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("    TargetProc   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_missile, h, l, a);
     GetSize(m_missile.size(), fSize);
-    std::printf("       Missile   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("       Missile   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_damage, h, l, a);
     GetSize(m_damage.size(), fSize);
-    std::printf("        Damage   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("        Damage   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     if (sConfig.npc.RoamingSpawns or sConfig.npc.StaticSpawns) {
         GetRunTimes(m_spawn, h, l, a);
         GetSize(m_spawn.size(), fSize);
-        std::printf("        Spawns   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+        std::printf("        Spawns   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     } else {
         std::printf("        Spawns   Disabled.\n");
     }
     if (sConfig.cosmic.BumpEnabled) {
         GetRunTimes(m_collision, h, l, a);
         GetSize(m_collision.size(), fSize);
-        std::printf("    Collisions   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+        std::printf("    Collisions   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     } else {
         std::printf("    Collisions   Disabled.\n");
     }
     if (sConfig.testing.EnableDrones) {
         GetRunTimes(m_drone, h, l, a);
         GetSize(m_drone.size(), fSize);
-        std::printf("        Drones   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+        std::printf("        Drones   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     } else {
         std::printf("        Drones   Disabled.\n");
     }
@@ -258,41 +260,41 @@ void Profiler::PrintProfile()
     std::printf("\t\tPeriodic Calls\n");
     GetRunTimes(m_itemload, h, l, a);
     GetSize(m_itemload.size(), fSize);
-    std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("  Item Loading   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_clientCall, h, l, a);
     GetSize(m_clientCall.size(), fSize);
-    std::printf("  Client Calls   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("  Client Calls   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_db, h, l, a);
     GetSize(m_db.size(), fSize);
-    std::printf("            DB   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("            DB   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_effects1, h, l, a);
     GetSize(m_effects1.size(), fSize);
-    std::printf(" Parse Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf(" Parse Effects   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_effects2, h, l, a);
     GetSize(m_effects2.size(), fSize);
-    std::printf(" Apply Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf(" Apply Effects   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_loot, h, l, a);
     GetSize(m_loot.size(), fSize);
-    std::printf("          Loot   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("          Loot   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_salvage, h, l, a);
     GetSize(m_salvage.size(), fSize);
-    std::printf("       Salvage   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("       Salvage   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     if (sConfig.cosmic.PIEnabled) {
         GetRunTimes(m_colony, h, l, a);
         GetSize(m_colony.size(), fSize);
-        std::printf("        Colony   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+        std::printf("        Colony   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     } else {
         std::printf("        Colony   Disabled.\n");
     }
     if (sConfig.crime.Enabled) {
         GetRunTimes(m_concord, h, l, a);GetSize(m_concord.size(), fSize);
-        std::printf("       Concord   %s times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+        std::printf("       Concord   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     } else {
         std::printf("       Concord   Disabled.\n");
     }
     if (sConfig.cosmic.CiviliansEnabled) {
         GetRunTimes(m_civilians, h, l, a);GetSize(m_civilians.size(), fSize);
-        std::printf("Civilian Ships   %s times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+        std::printf("Civilian Ships   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     } else {
         std::printf("Civilian Ships   Disabled.\n");
     }
@@ -300,15 +302,15 @@ void Profiler::PrintProfile()
     //std::printf("\n");     // spacer
     std::printf("\t\tUnimplemented Calls\n");
     GetRunTimes(m_server, h, l, a);
-    std::printf("        *Main()  %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_server.size(), h, l, a );
+    std::printf("        *Main()  %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_server.size(), h, l, a );
     GetRunTimes(m_map, h, l, a);
-    std::printf("          *Map   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_map.size(), h, l, a );
+    std::printf("          *Map   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_map.size(), h, l, a );
     GetRunTimes(m_items, h, l, a);
-    std::printf("        *Items   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_items.size(),  h, l, a );
+    std::printf("        *Items   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_items.size(),  h, l, a );
     GetRunTimes(m_functions, h, l, a);
-    std::printf("    *Functions   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_functions.size(), h, l, a );
+    std::printf("    *Functions   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_functions.size(), h, l, a );
 */
-    std::printf(" Profile Times Compiled in %.4fus\n", (GetTimeUSeconds() -startTime) );
+    std::printf(" Profile Times Compiled in %.2fus\n", (GetTimeUSeconds() -startTime) );
 }
 
 void Profiler::PrintStartUpData()
@@ -320,23 +322,23 @@ void Profiler::PrintStartUpData()
 
     GetRunTimes(m_db, h, l, a);
     GetSize(m_db.size(), fSize);
-    std::printf("            DB   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("            DB   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     GetRunTimes(m_itemload, h, l, a);
     GetSize(m_itemload.size(), fSize);
-    std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", fSize.c_str(), h, l, a );
+    std::printf("  Item Loading   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
     /*
     std::printf("\n");     // spacer
     std::printf("\t\tUnimplemented Calls\n");
     GetRunTimes(m_server, h, l, a);
-    std::printf("        *Main()  %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_server.size(), h, l, a );
+    std::printf("        *Main()  %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_server.size(), h, l, a );
     GetRunTimes(m_map, h, l, a);
-    std::printf("          *Map   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_map.size(), h, l, a );
+    std::printf("          *Map   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_map.size(), h, l, a );
     GetRunTimes(m_items, h, l, a);
-    std::printf("        *Items   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_items.size(),  h, l, a );
+    std::printf("        *Items   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_items.size(),  h, l, a );
     GetRunTimes(m_functions, h, l, a);
-    std::printf("    *Functions   %lu times.   \tHi: %.4f   \tLo: %.4fus   \tAvg: %.4fus\n", m_functions.size(), h, l, a );
+    std::printf("    *Functions   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_functions.size(), h, l, a );
     */
-    std::printf(" Profile Times Compiled in %.4fus\n", (GetTimeUSeconds() -startTime) );
+    std::printf(" Profile Times Compiled in %.2fus\n", (GetTimeUSeconds() -startTime) );
 }
 
 void Profiler::GetRunTimes(std::vector< double >& container, double& h, double& l, double& a) {

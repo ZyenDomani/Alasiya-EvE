@@ -58,6 +58,8 @@
           " - shows all dynamic items in system on ship scanner.")
  COMMAND( autostop, Acct::Role::PLAYER,
           " - sets repair, boost, and ?? modules to stop when target full")
+ COMMAND( autoattack, Acct::Role::PLAYER,
+          " - sets drones to auto attack on new target")
  COMMAND( bubblewarp, Acct::Role::GMH,
           " - begin warp to given bubbleID in current ship.")
  COMMAND( runtest, Acct::Role::PROGRAMMER,

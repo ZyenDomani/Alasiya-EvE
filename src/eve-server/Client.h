@@ -277,6 +277,10 @@ public:
     void SetAutoStop(bool set=false)                    { m_autoStop = set; }
     bool AutoStop()                                     { return m_autoStop; }
 
+    void SetAutoAttack(bool set=false)                  { m_autoAttack = set; }
+    bool AutoAttack()                                   { return m_autoAttack; }
+
+
     //messages and LSC
     // error requires dismissal (click 'ok')
     void SendErrorMsg(const char *fmt, ...);
@@ -365,6 +369,7 @@ protected:
     bool m_uncloak;
     bool m_showall;         // boolean for showing all dynamics in system on ships scanner (ROLE_GMH)
     bool m_autoStop;        // boolean for auto-stopping modules when target attrib is full (ROLE_PLAYER)
+    bool m_autoAttack;      // boolean for drones auto-attacking when ship acquires new target (ROLE_PLAYER)
     bool m_packaged;        // used to correctly package updates into a PackagedAction list
     bool m_portrait;        // used to verify new char pic received
     bool m_scanProbe;       // scanning with probes

@@ -154,20 +154,33 @@ bool EvilNumber::get_bool()
     return false;
 }
 
-int64 EvilNumber::get_int()
+int64 EvilNumber::get_long()
 {
     if (mType == evil_number_float)
         return (int64)floor(fVal);
     return iVal;
 }
 
+int32 EvilNumber::get_int()
+{
+    int32 value(0);
+    if (mType == evil_number_float) {
+        value = (int32)floor(fVal);
+    } else {
+        value = (int32)iVal;
+    }
+
+    return value;
+}
+
 uint32 EvilNumber::get_uint32()
 {
     uint32 value(0);
-    if (mType == evil_number_float)
+    if (mType == evil_number_float) {
         value = (uint32)floor(fVal);
-    else
+    } else {
         value = (uint32)iVal;
+    }
 
     return value;
 }
@@ -191,10 +204,11 @@ double EvilNumber::get_double()
 EvilNumber EvilNumber::sin( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::sin( val.fVal );
-    else
+    } else {
         result.fVal = std::sin( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -203,10 +217,11 @@ EvilNumber EvilNumber::sin( const EvilNumber & val )
 EvilNumber EvilNumber::cos( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::cos( val.fVal );
-    else
+    } else {
         result.fVal = std::cos( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -215,10 +230,11 @@ EvilNumber EvilNumber::cos( const EvilNumber & val )
 EvilNumber EvilNumber::tan( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::tan( val.fVal );
-    else
+    } else {
         result.fVal = std::tan( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -227,10 +243,11 @@ EvilNumber EvilNumber::tan( const EvilNumber & val )
 EvilNumber EvilNumber::asin( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::asin( val.fVal );
-    else
+    } else {
         result.fVal = std::asin( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -239,10 +256,11 @@ EvilNumber EvilNumber::asin( const EvilNumber & val )
 EvilNumber EvilNumber::acos( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::acos( val.fVal );
-    else
+    } else {
         result.fVal = std::acos( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -251,10 +269,11 @@ EvilNumber EvilNumber::acos( const EvilNumber & val )
 EvilNumber EvilNumber::atan( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::atan( val.fVal );
-    else
+    } else {
         result.fVal = std::atan( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -263,10 +282,11 @@ EvilNumber EvilNumber::atan( const EvilNumber & val )
 EvilNumber EvilNumber::sqrt( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::sqrt( val.fVal );
-    else
+    } else {
         result.fVal = std::sqrt( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -276,16 +296,18 @@ EvilNumber EvilNumber::pow( const EvilNumber & val1, const EvilNumber & val2 )
 {
     EvilNumber exponent = EvilNumber();
     EvilNumber result = EvilNumber();
-    if ( val2.mType == evil_number_float )
+    if ( val2.mType == evil_number_float ) {
         exponent.fVal = val2.fVal;
-    else
+    } else {
         exponent.fVal = (double)(val2.iVal);
+    }
     exponent.mType = evil_number_float;
 
-    if ( val1.mType == evil_number_float )
+    if ( val1.mType == evil_number_float ) {
         result.fVal = std::pow( val1.fVal, exponent.fVal );
-    else
+    } else {
         result.fVal = std::pow( (double)(val1.iVal), exponent.fVal );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -294,10 +316,11 @@ EvilNumber EvilNumber::pow( const EvilNumber & val1, const EvilNumber & val2 )
 EvilNumber EvilNumber::log( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::log( val.fVal );
-    else
+    } else {
         result.fVal = std::log( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -306,10 +329,11 @@ EvilNumber EvilNumber::log( const EvilNumber & val )
 EvilNumber EvilNumber::log10( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::log10( val.fVal );
-    else
+    } else {
         result.fVal = std::log10( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -318,10 +342,11 @@ EvilNumber EvilNumber::log10( const EvilNumber & val )
 EvilNumber EvilNumber::exp( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-    if ( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float ) {
         result.fVal = std::exp( val.fVal );
-    else
+    } else {
         result.fVal = std::exp( (double)(val.iVal) );
+    }
 
     result.mType = evil_number_float;
     return result;
@@ -624,49 +649,42 @@ EvilNumber EvilNumber::_SelfModulus( const EvilNumber & val )
     return *this;
 }
 
-EvilNumber EvilNumber::_SelfIncrement()
-{
+EvilNumber EvilNumber::_SelfIncrement() {
     return _SelfAdd(EvilOne);
 }
 
-EvilNumber EvilNumber::_SelfDecrement()
-{
+EvilNumber EvilNumber::_SelfDecrement() {
     return _SelfSubtract(EvilOne);
 }
 
 
 // GLOBAL FUNCTIONS:
 
-EvilNumber operator+(const EvilNumber& val, const EvilNumber& val2)
-{
+EvilNumber operator+(const EvilNumber& val, const EvilNumber& val2) {
     EvilNumber result(val);
     result += val2;
     return result;
 }
 
-EvilNumber operator-(const EvilNumber& val, const EvilNumber& val2)
-{
+EvilNumber operator-(const EvilNumber& val, const EvilNumber& val2) {
     EvilNumber result(val);
     result -= val2;
     return result;
 }
 
-EvilNumber operator*(const EvilNumber& val, const EvilNumber& val2)
-{
+EvilNumber operator*(const EvilNumber& val, const EvilNumber& val2) {
     EvilNumber result(val);
     result *= val2;
     return result;
 }
 
-EvilNumber operator/(const EvilNumber& val, const EvilNumber& val2)
-{
+EvilNumber operator/(const EvilNumber& val, const EvilNumber& val2) {
     EvilNumber result(val);
     result /= val2;
     return result;
 }
 
-EvilNumber operator%(const EvilNumber& val, const EvilNumber& val2)
-{
+EvilNumber operator%(const EvilNumber& val, const EvilNumber& val2) {
     EvilNumber result(val);
     result %= val2;
     return result;

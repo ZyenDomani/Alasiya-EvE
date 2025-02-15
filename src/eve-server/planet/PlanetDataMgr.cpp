@@ -306,7 +306,7 @@ uint32 PIDataMgr::GetMaxOutput(InventoryItemRef iRef, uint32 qtyPerCycle/*0*/, i
     if (qtyPerCycle == 0)
         qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_uint32();
     if (cycleTime == 0)
-        cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_int() * EvE::Time::Second; // base time is 300s
+        cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_long() * EvE::Time::Second; // base time is 300s
     float scalar = iRef->GetAttribute(AttrECUNoiseFactor).get_float() + 1;
     return (scalar * qtyPerCycle) * cycleTime / EvE::Time::Second / 900.0;
 }

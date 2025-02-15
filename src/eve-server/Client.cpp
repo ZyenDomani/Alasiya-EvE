@@ -111,6 +111,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_canThrow = false;
     m_packaged = false;
     m_portrait = false;
+    m_autoAttack = false;
     m_bubbleWait = false;     // allow client processing of subsequent destiny msgs
     m_charCreation = false;
     m_setStateSent = false;
@@ -1419,13 +1420,13 @@ void Client::WormholeJump(InventoryItemRef wormhole) {
     pShipSE->DestinyMgr()->SendJumpOutWormhole(wormhole->itemID());
     pShipSE->DestinyMgr()->SendWormholeActivity(wormhole->itemID());
 
-    m_moveSystemID = wormhole->GetAttribute(AttrWormholeTargetSystem1).get_int();
+    m_moveSystemID = wormhole->GetAttribute(AttrWormholeTargetSystem1).get_uint32();
     MapDB::AddJump(m_moveSystemID);
     m_char->VisitSystem(m_moveSystemID);
 
     // Get destination wormhole position and start jump timer
     InventoryItemRef destWh;
-    destWh = sItemFactory.GetItemRefFromID(wormhole->GetAttribute(AttrWormholeTargetSystem2).get_int());
+    destWh = sItemFactory.GetItemRefFromID(wormhole->GetAttribute(AttrWormholeTargetSystem2).get_uint32());
 
     m_movePoint = destWh->position();
     m_movePoint.MakeRandomPointOnSphere(2000);
@@ -1670,7 +1671,8 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag) {
         if (IsModuleSlot(iRef->flag())) {
             m_ship->UpdateModules(iRef->flag());
         } else if (IsCargoHoldFlag(iRef->flag()) or (iRef->flag() == flagDroneBay)) {
-            // do nothing here.  this is to avoid throwing error msg below
+            // may not need this here
+            //iRef->SetPosition(NULL_ORIGIN);
         } else {
             _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %s (%u) from flag %s to flag %s.", \
                     m_char->name(), iRef->name(), itemID, sDataMgr.GetFlagName(oldflag), sDataMgr.GetFlagName(flag));

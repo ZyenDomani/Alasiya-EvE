@@ -551,15 +551,18 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
         pOther = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.herID);
         pClient = sEntityMgr.FindClientByCharID(pTSes->m_tradeSession.myID);
     }
-    // transfer funds and add journal entries for both sides
-    std::string reason = "Player Trade between ";
-    reason += pClient->GetCharName();
-    reason += " and ";
-    reason += pOther->GetCharName();
-    reason += " in ";
-    reason += pClient->GetSystemName();     // use system name or station name here?
-    AccountService::TransferFunds(pClient->GetCharacterID(), pOther->GetCharacterID(), pTSes->m_tradeSession.myMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
-    AccountService::TransferFunds(pOther->GetCharacterID(), pClient->GetCharacterID(), pTSes->m_tradeSession.herMoney, std::move(reason), Journal::EntryType::PlayerTrading, pClient->GetStationID());
+    if ((pTSes->m_tradeSession.myMoney > 0.0)
+    or (pTSes->m_tradeSession.herMoney > 0.0)) {
+        // transfer funds and add journal entries for both sides
+        std::string reason = "Player Trade between ";
+        reason += pClient->GetCharName();
+        reason += " and ";
+        reason += pOther->GetCharName();
+        reason += " in ";
+        reason += pClient->GetSystemName();     // use system name or station name here?
+        AccountService::TransferFunds(pClient->GetCharacterID(), pOther->GetCharacterID(), pTSes->m_tradeSession.myMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
+        AccountService::TransferFunds(pOther->GetCharacterID(), pClient->GetCharacterID(), pTSes->m_tradeSession.herMoney, std::move(reason), Journal::EntryType::PlayerTrading, pClient->GetStationID());
+    }
 
     /** @todo  where does this dict go??  */
     //PyDict* dict = new PyDict();
@@ -567,22 +570,27 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
 
     uint32 stationID = pTSes->m_tradeSession.stationID;
     for (auto &cur : pTSes->m_tradelist) {
-        InventoryItemRef itemRef = sItemFactory.GetItemRef(cur.itemID);
-        if (itemRef.get() == nullptr)  {
+        InventoryItemRef iRef = sItemFactory.GetItemRef(cur.itemID);
+        if (iRef.get() == nullptr)  {
             _log(PLAYER__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
             continue;
         }
 
         uint32 newOwnerID = (cur.ownerID == pTSes->m_tradeSession.myID ? pTSes->m_tradeSession.herID : pTSes->m_tradeSession.myID);
-        itemRef->ChangeOwner(newOwnerID, true);
-        itemRef->Move(stationID, flagHangar, true);
+        iRef->ChangeOwner(newOwnerID, true);
+        iRef->Move(stationID, flagHangar, true);
 
-        if ((itemRef->categoryID() == EVEDB::invCategories::Ship)
-            || (itemRef->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
-            || (itemRef->groupID() == EVEDB::invGroups::Cargo_Container)
-            || (itemRef->groupID() == EVEDB::invGroups::Freight_Container)
-            || (itemRef->groupID() == EVEDB::invGroups::Secure_Cargo_Container))
-            m_TSvc->TransferContainerContents(pClient->SystemMgr(), itemRef, newOwnerID);
+        // check for and cancel insurance as applicable
+        if (iRef->categoryID() == EVEDB::invCategories::Ship)
+            ShipDB::DeleteInsuranceByShipID(iRef->itemID());
+
+        if ((iRef->categoryID() == EVEDB::invCategories::Ship)
+        or (iRef->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
+        or (iRef->groupID() == EVEDB::invGroups::Cargo_Container)
+        or (iRef->groupID() == EVEDB::invGroups::Freight_Container)
+        or (iRef->groupID() == EVEDB::invGroups::Secure_Cargo_Container)) {
+            m_TSvc->TransferContainerContents(pClient->SystemMgr(), iRef, newOwnerID);
+        }
     }
 
     PyTuple* tuple = new PyTuple(2);
