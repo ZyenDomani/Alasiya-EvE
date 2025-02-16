@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-Version: 11.5 -->
+Version: 11.6 -->
 
 <!--
 unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -166,15 +166,15 @@ boolean can use either 0/1 OR true/false.
 
     <npc>
         <IdleWander>true</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
-        <WarpOut>600</WarpOut><!-- time npc wanders around bubble before leaving, in sec (5 min default) -->
-        <WarpFollowChance>0.15</WarpFollowChance><!-- chance for npc to follow warping player (15% default) -->
+        <WarpOut>600</WarpOut><!-- uint16  time npc wanders around bubble before leaving, in sec (5 min default) -->
+        <WarpFollowChance>0.15</WarpFollowChance><!-- float  chance for npc to follow warping player (15% default) -->
         <!-- npc podkilling not implemented yet -->
         <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
         <TargetPodSec>0.2</TargetPodSec><!-- npc target/attack pod in truSec lower than this  -->
         <!-- Threat not implemented yet -->
         <ThreatRadius>1.0</ThreatRadius> <!-- used in conjunction with npc ai target switching -->
         <!-- Spawns are implemented -->
-        <RoamingSpawns>false</RoamingSpawns><!-- bool  these are roid rats.  they move -->
+        <RoamingSpawns>true</RoamingSpawns><!-- bool  these are roid rats.  they move -->
         <StaticSpawns>true</StaticSpawns><!-- bool  these are gate rats.  they dont move -->
         <DefenderMissileChance>0</DefenderMissileChance><!-- chance to use defender.  overrides npc default from db. 0 default -->
         <RoamingTimer>300</RoamingTimer><!-- max time between spawn checks, in seconds  5m default -->
@@ -188,17 +188,19 @@ boolean can use either 0/1 OR true/false.
         <UseOrbit>false</UseOrbit><!-- bool -- secondary    this is actually for testing -->
     </npc>
 
-    <drone><!-- most of these are not implemented yet - ideas for later -->
-        <Enabled>true</Enabled><!-- bool  drone system -->
+    <drone><!-- some of these are not implemented yet - ideas for later -->
+        <Enabled>true</Enabled><!-- bool  main drone system -->
+        <InteractDistace>600</InteractDistace><!-- uint16  min distance for drone to xfer, regen, repair  -->
         <AutoReconnect>false</AutoReconnect><!-- bool  automatically reconnect to drones on grid -->
         <FleetOnly>true</FleetOnly><!-- bool  restrict to fleet members for assist/guard-->
         <LocalOnly>true</LocalOnly><!-- bool  restrict to current grid only -->
-        <StrictSkills>true</StrictSkills><!-- bool  strict skill checks when deletaging drones -->
-        <StrictDistance>true</StrictDistance><!-- bool  strict distance checks when targeting and commanding -->
+        <StrictSkills>true</StrictSkills><!-- bool  strict skill checks when launching and deletaging drones -->
+        <StrictDistance>false</StrictDistance><!-- bool  strict distance checks when targeting and commanding -->
         <GuardPod>false</GuardPod><!-- bool  allow guarding pods -->
-        <RegenShields>false</RegenShields><!-- bool  allow shield regeneration (same as ships) -->
+        <RegenShields>true</RegenShields><!-- bool  allow shield regeneration (same as ships) -->
         <RepairInBay>false</RepairInBay><!-- bool  allow repairing drones in drone bay -->
         <RepairCostInBay>1000</RepairCostInBay><!-- float  cost to repair drones when docked in bay -->
+        <ProcessAll>true</ProcessAll><!-- bool  - when enabled, dont check for time=0 to skip processing -->
     </drone>
 
     <standings><!-- these are in percent -->
@@ -302,7 +304,7 @@ boolean can use either 0/1 OR true/false.
         <useSocket>true</useSocket><!-- bool  use socket connection instead of port (MUST be local)  (SIGPIPE hits on debug code) -->
         <autoReconnect>true</autoReconnect><!-- bool  enable auto Reconnect on lost connection -->
         <dbTimeout>2</dbTimeout><!-- seconds  timeout value for db response, in seconds  default: 2s  **NOT USED** -->
-        <pingTime>10</pingTime><!-- minutes  ping db every x minutes  default: 10m  **NOT USED**  hard-coded to 10m -->
+        <pingTime>10</pingTime><!-- minutes  ping db every x minutes  default: 10m  **NOT USED**  hard-coded to 5m in EntityMgr -->
     </database>
 
     <files>
