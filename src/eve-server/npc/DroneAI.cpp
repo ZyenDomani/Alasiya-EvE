@@ -255,8 +255,9 @@ void DroneAIMgr::Process() {
                 case EVEDB::invGroups::Combat_Drone:
                 case EVEDB::invGroups::Fighter_Drone:
                 case EVEDB::invGroups::Fighter_Bomber: {
-                    // if aggressive, look for targets and attack.
-                    if (mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
+                    // if aggressive or auto, look for targets and attack.
+                    if (mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()
+                    or mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
                         FindTarget();
                 } break;
             }
@@ -654,8 +655,9 @@ void DroneAIMgr::Process() {
                     case EVEDB::invGroups::Combat_Drone:
                     case EVEDB::invGroups::Fighter_Drone:
                     case EVEDB::invGroups::Fighter_Bomber: {
-                        // if aggressive, look for targets and attack.
-                        if (mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
+                        // if aggressive or auto, look for targets and attack.
+                        if (mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()
+                        or mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
                             FindTarget();
                     } break;
                 }
@@ -856,9 +858,7 @@ void DroneAIMgr::Process() {
 
 void DroneAIMgr::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
     // this is the main entry point into drone movement and actions
-
     //  so....we gotta decide what the hell's going on here to start with...
-    // do we need to check FocusFire here?
 
     // are we currently doing anything?
     bool busy(m_state > DroneAI::State::Idle);
@@ -1997,9 +1997,9 @@ void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
      *   targMgr will clean up previous target data, we'll do timers, and set up to pounce on new victim
      * TODO:  figure out delay time (>1s?)
      */
-    if (!mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool())
-        return;
-    if (!mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
+    // if aggressive or auto, look for targets and attack.
+    if (!mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()
+    and !mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
         return;
 
     switch (m_state) {
@@ -2042,7 +2042,11 @@ void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
                 OrbitTarget();
             } else {
                 if (m_focusfire) {
+                    if (targSE == fTargSE)
+                        return;
+                    mySE->TargetMgr()->ClearTarget(targSE);
                     targSE = fTargSE;
+                    mySE->TargetMgr()->StartTargeting(targSE);
                     SetState(DroneAI::State::Combat);
                     if (InEngageDistance(targSE)) {
                         SetAction(DroneAI::Action::OrbitTarget);
@@ -2051,6 +2055,8 @@ void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
                         SetAction(DroneAI::Action::AccelToTarget);
                         SendTrueState(DroneAI::State::Approaching);
                     }
+                    // clear target on lost wont be called here...cancel gfx
+                    SendGFX();
                     m_sendCmd = true;
                     OrbitTarget();
                 }

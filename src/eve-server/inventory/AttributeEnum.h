@@ -1185,7 +1185,7 @@ enum EveAttrEnum {
     AttrDroneIsAgressive = 1275,
     AttrNonBrokenModuleRepairCostMultiplier = 1276,
     AttrShipBrokenModuleRepairCostMultiplier = 1277,
-    AttrDroneIsChaotic = 1278,                                     // disabled in crucible
+    AttrDroneIsChaotic = 1278,                                  // disabled in crucible.  used here for .autoattack
     AttrEliteBonusViolatorsRole3 = 1279,
     AttrEliteBonusInterceptorRole = 1280,
     AttrBaseWarpSpeed = 1281,
