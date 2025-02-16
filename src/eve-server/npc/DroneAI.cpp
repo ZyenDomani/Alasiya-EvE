@@ -1541,16 +1541,18 @@ void DroneAIMgr::OrbitTarget() {
             //travel required; set full speed
             m_userSpeedFraction = 1.0f;
             m_accelTime = (-log(ASF_CHECK) * m_agility);
-        } else if (distance > 2 * m_chaseDistance) {
+        } else if (distance > m_chaseDistance) {
             //some travel required; set 60% speed
             m_userSpeedFraction = 0.6f;
-            m_accelTime = (-log(ASF_CHECK) * m_agility * 0.6f);
+            m_accelTime = (-log(ASF_CHECK) * m_agility * m_userSpeedFraction);
+        } else {
+            m_userSpeedFraction = (float)m_cruiseSpeed / m_maxSpeed;
+            m_accelTime = (-log(ASF_CHECK) * m_agility * m_userSpeedFraction);
         }
     } else {
         // returning from outside of control distance or close enough for impulse drives; set orbit speed
         m_userSpeedFraction = (float)m_cruiseSpeed / m_maxSpeed;
-        m_accelTime = (-log(ASF_CHECK) * m_agility);
-        m_accelTime *= m_accelTime;
+        m_accelTime = (-log(ASF_CHECK) * m_agility * m_userSpeedFraction);
     }
 
     if (m_accelTime < 1.0f)
