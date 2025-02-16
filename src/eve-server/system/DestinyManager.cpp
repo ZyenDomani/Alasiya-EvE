@@ -1646,6 +1646,12 @@ void DestinyManager::InitWarp() {
         mySE->GetShipSE()->Warp();
         //drain cap
         mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_warpCapacitorNeed);
+        // reset warp cap need
+        if (mySE->GetSelf()->HasAttribute(AttrWarpCapacitorNeed)) {
+            m_warpCapacitorNeed = mySE->GetSelf()->GetAttribute(AttrWarpCapacitorNeed).get_double();
+        } else {
+            m_warpCapacitorNeed = 0.000000138;   // lowest value in db
+        }
     }
     // do npcs need to notify ai of warping?
 
@@ -1792,14 +1798,6 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
 
     if ((mySE->IsNPCSE()) and (mySE->GetNPCSE()->GetAIMgr() != nullptr))
         mySE->GetNPCSE()->GetAIMgr()->WarpOutComplete();
-
-    // reset warp cap need
-    if (mySE->GetSelf()->HasAttribute(AttrWarpCapacitorNeed)) {
-        m_warpCapacitorNeed = mySE->GetSelf()->GetAttribute(AttrWarpCapacitorNeed).get_double() * 10;
-    } else {
-        m_warpCapacitorNeed = 0.000000138;   // lowest value in db
-    }
-
 
     /*  this isnt used yet, but will be needed once bumping is implemented...
     // reset bump checks
@@ -2829,7 +2827,7 @@ Battleships                             0.155
         m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
     }
     if (sRef->HasAttribute(AttrWarpCapacitorNeed)) {
-        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_double() * 10;
+        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_double();
     } else {
         m_warpCapacitorNeed = 0.000000138;   // lowest value in db
     }

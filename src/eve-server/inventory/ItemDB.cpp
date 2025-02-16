@@ -173,9 +173,9 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
     into.singleton = row.GetInt(6) ? true : false;
     into.quantity = row.GetUInt(7);
 
-    into.position.x = row.GetDouble(8);
-    into.position.y = row.GetDouble(9);
-    into.position.z = row.GetDouble(10);
+    into.position.x = row.GetInt64(8);
+    into.position.y = row.GetInt64(9);
+    into.position.z = row.GetInt64(10);
 
     into.customInfo = (row.IsNull(11) ? "" : row.GetText(11));
 
