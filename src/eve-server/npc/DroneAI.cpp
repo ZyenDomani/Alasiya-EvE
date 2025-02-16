@@ -2046,7 +2046,7 @@ void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
                         return;
                     mySE->TargetMgr()->ClearTarget(targSE);
                     targSE = fTargSE;
-                    mySE->TargetMgr()->StartTargeting(targSE);
+                    Target(targSE);
                     SetState(DroneAI::State::Combat);
                     if (InEngageDistance(targSE)) {
                         SetAction(DroneAI::Action::OrbitTarget);
