@@ -199,7 +199,7 @@ float EvEMath::Market::BrokerFee(uint8 brSkillLvl, float fStanding, float cStand
 {
     float wStanding = (0.7f * fStanding + 0.3f * cStanding) / 10.0f;
     float fee = 0.01f * (1.0f - (0.05f * brSkillLvl)) * pow(2, -2 * wStanding);
-    return EvE::max(fee, 100.0f);
+    return EvE::min(fee, 10.0f);
 }
 
 float EvEMath::Market::RelistFee(float oldPrice, float newPrice, float brokerPercent/*0.01*/, float discount/*0.0*/)
@@ -212,12 +212,35 @@ float EvEMath::Market::SalesTax(uint8 accountingLvl/*0*/, uint8 taxEvasionLvl/*0
 {
     /** @todo  add skillTaxEvasion to this formula; its not calculated in client... */
     float tax = 0.01f * (1 - 0.1f * accountingLvl);
-    return EvE::max(tax, 100.0f);
+    return EvE::min(tax, 10.0f);
 }
 
 void EvEMath::PI::Dijkstra(uint32 sourcePin, uint32 destinationPin)
 {
-    // not used yet...
+    /*
+    D = {}
+    P = {}
+    Q = planetCommon.priority_dict()
+    Q[sourcePin] = 0.0
+    while len(Q) > 0:
+        vPin = Q.smallest()
+        D[vPin] = Q[vPin]
+        if vPin == destinationPin:
+            break
+            Q.pop_smallest()
+            for wDestinationID in self.colonyData.GetLinksForPin(vPin.id):
+                wLink = self.GetLink(vPin.id, wDestinationID)
+                wPin = self.GetPin(wDestinationID)
+                vwLength = D[vPin] + self._GetLinkWeight(wLink, wPin, vPin)
+                if wPin in D:
+                    if vwLength < D[wPin]:
+                        raise ValueError, 'Dijkstra: found better path to already-final vertex'
+                        elif wPin not in Q or vwLength < Q[wPin]:
+                        Q[wPin] = vwLength
+                        P[wPin] = vPin
+
+                        return (D, P)
+    */
 }
 
 

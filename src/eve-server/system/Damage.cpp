@@ -131,7 +131,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
             // apply damage modifier from config
             damage *= sConfig.rates.missileDamage;
             // should this be adjusted based on damage?  no, missiles always hit
-            damageID = 6;
+            damageID = 5;
         } break;
         case EVEDB::invGroups::Super_Weapon: {
         /*   TODO

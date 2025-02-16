@@ -248,7 +248,6 @@ void DroneAIMgr::Process() {
     if (targSE != nullptr)
         targDistance = mySE->GetPosition().distance(targSE->GetPosition() - targSE->GetRadius());
 
-    //TODO:  check mode and proximity when idle
     switch(m_state) {
         case DroneAI::State::Idle: {
             // some drones wont be aggressive...
@@ -264,6 +263,8 @@ void DroneAIMgr::Process() {
             // orbiting controlling ship  do nothing until next command
             switch (m_action) {
                 case DroneAI::Action::Invalid: {
+                    // stop processing Move() until another call hits
+                    move = false;
                     SetAction(DroneAI::Action::Idle);
                 } break;
                 case DroneAI::Action::Idle: {
@@ -275,6 +276,8 @@ void DroneAIMgr::Process() {
                         m_sendCmd = true;
                         OrbitTarget();
                     } else if (shipDistance > m_orbitDistance) {
+                        // stop processing Move() until another call hits
+                        move = false;
                         // has target moved any?
                         MoveDrone(shipSE);
                         _log(DRONE__AI_TRACE, "Proc(OrbitShip) - outside orbit distance.");
@@ -1533,10 +1536,16 @@ void DroneAIMgr::OrbitTarget() {
     m_prevSpeedFraction = m_activeSpeedFraction;
 
     // for travel > chase dist, sf=1.0
-    if (!idle and  (distance > m_chaseDistance)) {
-        //travel required; set full speed
-        m_userSpeedFraction = 1.0f;
-        m_accelTime = (-log(ASF_CHECK) * m_agility);
+    if (!idle) {
+        if (distance > 2 * m_chaseDistance) {
+            //travel required; set full speed
+            m_userSpeedFraction = 1.0f;
+            m_accelTime = (-log(ASF_CHECK) * m_agility);
+        } else if (distance > 2 * m_chaseDistance) {
+            //some travel required; set 60% speed
+            m_userSpeedFraction = 0.6f;
+            m_accelTime = (-log(ASF_CHECK) * m_agility * 0.6f);
+        }
     } else {
         // returning from outside of control distance or close enough for impulse drives; set orbit speed
         m_userSpeedFraction = (float)m_cruiseSpeed / m_maxSpeed;
@@ -2290,10 +2299,6 @@ bool DroneAIMgr::InMaxDistance(SystemEntity* pTargetSE) {
 // destiny methods below...
 
 void DroneAIMgr::Stop() {
-    // only called when drone offline or disabled
-    if (mySE->IsEnabled())
-        mySE->DisableDrone();
-
     m_velocity = NULL_ORIGIN_V;
     UpdatePosition();
     m_moveTime = 0;
@@ -2334,7 +2339,6 @@ void DroneAIMgr::Pause() {
         }
     }
 
-
     m_moveTime = 0;
     if (is_log_enabled(DRONE__MOVE))
         sLog.Error("movetime", "0 - Pause() %s(%s)", GetStateName(m_state), GetActionName(m_action));
@@ -2351,7 +2355,7 @@ void DroneAIMgr::Move(double timeStamp) {
     if ((m_state < DroneAI::State::Combat) and (m_action == DroneAI::Action::DecelToStop)) {
         _log(DRONE__AI_TRACE, "%s - Move() called.  %s and decel to stop", mySE->GetName(), GetStateName(m_state));
         m_moveTime = 0;
-        //sLog.Error("movetime", "0 - Move::stop()  - %s(%s)", GetStateName(m_state), GetActionName(m_action));
+        Stop();
         return;
     }
 

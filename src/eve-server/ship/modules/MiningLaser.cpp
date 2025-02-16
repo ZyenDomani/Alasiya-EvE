@@ -387,7 +387,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
         PyDict* dict = new PyDict();
             dict->SetItemString("modulename", new PyString(cur.second->GetSelf()->itemName()));
             tuple->SetItem(1, dict);
-        cur.second->GetShipRef()->GetPilot()->QueueDestinyUpdate(&tuple);
+        cur.second->GetShipRef()->GetPilot()->QueueDestinyEvent(&tuple);
     }
 
     // calculate ore for this laser
