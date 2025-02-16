@@ -274,7 +274,6 @@ void DroneAIMgr::Process() {
                         // should we resend the orbit packet?
                         m_sendCmd = true;
                         OrbitTarget();
-                        move = true;
                     } else if (shipDistance > m_orbitDistance) {
                         // has target moved any?
                         MoveDrone(shipSE);
@@ -1548,7 +1547,7 @@ void DroneAIMgr::OrbitTarget() {
     if (m_accelTime < 1.0f)
         m_accelTime = 1.0f;
 
-    if (is_log_enabled(DRONE__AI_TRACE))
+    if (is_log_enabled(DRONE__MOVE))
         sLog.Cyan("OrbitTarget()", "%s(%u) - %s(%s):  set usf to %.2f.  distance to target is %lli.   %ssending packet.", \
             mySE->GetName(), mySE->GetID(), GetStateName(m_state), GetActionName(m_action), \
             m_userSpeedFraction, distance, (m_sendCmd?"":"not "));
@@ -1562,7 +1561,7 @@ void DroneAIMgr::OrbitTarget() {
 
     //  orbit is only sent once per target
     if (m_sendCmd) {
-        if (is_log_enabled(DRONE__MESSAGE))
+        if (is_log_enabled(DRONE__MOVE))
             sLog.Yellow("OrbitTarget()", "sending CmdOrbit packet");
         int32 close(sConfig.drone.InteractDistace - 100);
         if (m_state == DroneAI::State::ReturnBay)
@@ -1578,7 +1577,7 @@ void DroneAIMgr::OrbitTarget() {
     mySE->SysBubble()->BubblecastDestinyUpdate(updates, "drone ssf (maybe orbit)");
 
     m_moveTime = GetTimeMSeconds();
-    if (is_log_enabled(DRONE__TRACE))
+    if (is_log_enabled(DRONE__MOVE))
         sLog.Error("movetime", "set - OrbitTarget()  %s(%s)", GetStateName(m_state), GetActionName(m_action));
 }
 
@@ -1605,7 +1604,7 @@ void DroneAIMgr::FindTarget() {
     if (!mySE->InControlDistance())
         return;
 
-    //if (is_log_enabled(DRONE__AI_TRACE))
+    if (is_log_enabled(DRONE__AI_TRACE))
        sLog.Blue("FindTarget()", "begin for %s(%u).", mySE->GetName(), mySE->GetID());
 
     //start with mode...
@@ -1675,8 +1674,10 @@ void DroneAIMgr::FindTarget() {
                 }
                 if (sizeMap.empty()) {
                     // ok, so absolutely no targets in local space...get outta here.
-                    //if (is_log_enabled(DRONE__AI_TRACE))
+                    if (is_log_enabled(DRONE__AI_TRACE))
                         sLog.Error("FindTarget()", "nothing in bubble for %s(%u).", mySE->GetName(), mySE->GetID());
+                    // nothing around.  full stop till something changes.
+                    Stop();
                     return;  // ok, so nothing in bubble here.
                 }
             }
@@ -1743,6 +1744,7 @@ void DroneAIMgr::FindTarget() {
                 return;
             } break;
         }
+        Stop();
     }
 }
 
@@ -2295,16 +2297,16 @@ void DroneAIMgr::Stop() {
     m_velocity = NULL_ORIGIN_V;
     UpdatePosition();
     m_moveTime = 0;
-    if (is_log_enabled(DRONE__TRACE))
+    if (is_log_enabled(DRONE__MOVE))
         sLog.Error("movetime", "0 - Stop() %s(%s)", GetStateName(m_state), GetActionName(m_action));
     m_startTime = 0;
-    SetState(DroneAI::State::Invalid);
+    SetState(DroneAI::State::Idle);
 
     if (mySE->SysBubble() != nullptr) {
         CmdStop stop;
             stop.entityID = mySE->GetID();
         PyTuple* up = stop.Encode();
-        // edit  mySE->SysBubble()->BubblecastDestinyUpdate(&up, "destiny drone");
+        mySE->SysBubble()->BubblecastDestinyUpdate(&up, "destiny drone stop");
     }
 }
 
@@ -2334,7 +2336,7 @@ void DroneAIMgr::Pause() {
 
 
     m_moveTime = 0;
-    if (is_log_enabled(DRONE__AI_TRACE))
+    if (is_log_enabled(DRONE__MOVE))
         sLog.Error("movetime", "0 - Pause() %s(%s)", GetStateName(m_state), GetActionName(m_action));
 }
 
@@ -2539,7 +2541,8 @@ void DroneAIMgr::Move(double timeStamp) {
                 m_activeSpeedFraction = m_prevSpeedFraction - ((m_prevSpeedFraction - m_userSpeedFraction) * m_timeFraction);
             } else {
                 // this should never hit....should not have decel w/o psf
-                sLog.Warning("DroneAI::Move()", "decel = true, but psf = 0.");
+                if (is_log_enabled(DRONE__MOVE))
+                    sLog.Warning("DroneAI::Move()", "decel = true, but psf = 0.");
             }
         }
         speed = m_maxSpeed * m_activeSpeedFraction;
@@ -2799,8 +2802,9 @@ const char* DroneAIMgr::GetActionName(int8 stateID) {
  *            } else {
  *                // outside max distance
  *            }
- *
- *
+ */
+
+/*
 switch (m_state) {
     case DroneAI::State::Idle: {
     } break;

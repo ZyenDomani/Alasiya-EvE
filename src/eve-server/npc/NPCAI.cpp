@@ -872,3 +872,25 @@ std::string NPCAIMgr::GetStateName(int8 stateID)
         default:                           return "Invalid";
     }
 }
+
+/*
+  switch (m_state) {
+     case NPCAI::State::Idle: {
+     } break;
+     case NPCAI::State::Chasing: {
+     } break;
+     case NPCAI::State::Engaged: {
+     } break;
+     case NPCAI::State::Fleeing: {
+     } break;
+     case NPCAI::State::Following: {
+     } break;
+     case NPCAI::State::Signaling: {
+     } break;
+     case NPCAI::State::WarpOut: {
+     } break;
+     case NPCAI::State::WarpFollow: {
+     } break;
+  }
+
+ */

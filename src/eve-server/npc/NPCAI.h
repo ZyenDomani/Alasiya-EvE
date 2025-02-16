@@ -44,21 +44,6 @@ namespace NPCAI {
             WarpFollow  = 8   // will follow warping ship to their destination (adv)
         };
     }
-    
-    namespace Action {
-        enum {
-            // TODO:  update these with proper names for npcs
-            Invalid     = -1,
-            Idle        = 1,  // not doing anything....idle.
-            Engaged     = 2,  // currently performing it's intended action
-            ToTarget    = 3,  // traveling to target
-            FromTarget  = 4,  // traveling from target
-            ToShip      = 5,  // traveling to assigned ship if !owner
-            FromShip    = 6,  // traveling from assigned ship if !owner
-            ReturnHome  = 7,  // return to home ship and follow
-            ReturnBay   = 8   // return to home ship and dock
-        };
-    }
 }
 
 class NPC;
@@ -149,6 +134,21 @@ private:
     uint32 m_maxAttackRange;// max firing range   default:15000
     uint32 m_warpScramRange;
 
+    /*
+    //in order of distance  far to close
+    int32               m_maxDistance;                  //[5] maximum engagement distance
+    int32               m_chaseDistance;                //[4] min distance to activate mwd, if equipped
+    int32               m_engageDistance;               //[3] max distance drone will engage a target
+    int32               m_falloffDistance;              //[2] distance where accuracy has fallen by half
+    int32               m_orbitDistance;                //[1] distance the drone orbits
+    int32               m_proximityDistance;            // distance at which drone reacts to relevant objects (threat sensor distance)
+
+    uint32              m_maxSpeed;                     // mwd speed  - stationary drones have zero here
+    uint32              m_cruiseSpeed;                  // normal speed
+
+    int64               m_startTime;                    // timestamp when effect started
+*/
+    
     float m_warpScramChance;
     float m_armorRepairDelayChance;
     float m_shieldBoosterDelayChance;

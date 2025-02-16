@@ -2812,7 +2812,7 @@ Battleships                             0.155
     double mass = sRef->GetAttribute(AttrMass).get_double();
     double inertiaMod = sRef->GetAttribute(AttrInertiaMod).get_double();
 
-    m_agility = mass * inertiaMod / 1000000;
+    m_agility = mass * inertiaMod / 1000000.0;
 
     sRef->SetAttribute(AttrAgility, m_agility, false);
 
