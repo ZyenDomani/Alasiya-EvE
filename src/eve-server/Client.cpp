@@ -359,7 +359,7 @@ void Client::ProcessClient() {
 
     m_profileStartTime = GetTimeUSeconds();
 
-    // wtf is this for?
+    // client connection keepalive
     if (m_pingTimer.Check()) {
         _SendPingRequest();  //10m
         m_char->SetLogonMinutes();
