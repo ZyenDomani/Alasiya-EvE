@@ -13,7 +13,7 @@
   * this will have to be revisited and corrected to properly implement persistent roids/belts
   */
 
-
+#include <math.h>
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"

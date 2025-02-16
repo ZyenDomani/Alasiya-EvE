@@ -1,13 +1,13 @@
 
 /**
- * @name EVE_Trig.h
+ * @name Trig.h
  *    math defines and methods for trig used in EvEmu
  *  using EvE namespace
  * @Author:         Allan
  * @date:   30 Aug 2015
  */
 
-#include "math/gpoint.h"
+#include "../eve-compat.h"
 
 // EvE uses the 3d left hand cartesian coordinate system, centered on star.
 // +x is left, +y is up elevation, +z is "into", or up in 2d
