@@ -2890,6 +2890,10 @@ void ShipSE::AbandonDrones() {
     m_drones.clear();
 }
 
+void ShipSE::AbandonDrone(DroneSE* pSE) {
+    m_drones.erase(pSE->GetID());
+}
+
     /*
     AttrDroneBandwidth = 1271,         // ship attribute - total available
     AttrDroneBandwidthUsed = 1272,     // drone attribute - required for communication

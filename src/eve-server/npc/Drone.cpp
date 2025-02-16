@@ -229,6 +229,7 @@ void DroneSE::DisableDrone() {
 }
 
 void DroneSE::Abandon() {
+    m_pShipSE->AbandonDrone(this);
     m_pClient = nullptr;
     m_abandoned = true;
     m_controllerID = 0;
@@ -469,6 +470,9 @@ void DroneSE::Delegate(SystemEntity* pSE, PyDict* dict) {
  */
 
 void DroneSE::TargetAdded(SystemEntity* pTargetSE) {
+    if (!m_online)
+        return;
+
     // for starters, are we currently idle?
     if (!m_AI->IsIdle())
         return;

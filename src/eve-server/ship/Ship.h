@@ -384,6 +384,7 @@ public:
     float CalculateRechargeRate(float Capacity, float RechargeTimeMS, float Current);
 
     void AbandonDrones();
+    void AbandonDrone(DroneSE* pSE);
     bool LaunchDrone(InventoryItemRef dRef);
     bool ReconnectDrone(DroneSE* pSE);
     void ScoopDrone(SystemEntity* pSE);                 // this does not delete SE nor remove it from system
