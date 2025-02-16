@@ -1956,6 +1956,8 @@ bool DroneAIMgr::ValidTarget() {
         return false;
     if (targSE->SysBubble() == nullptr)
         return false;
+    if (targSE->IsDead())
+        return false;
 
     DestinyManager* pDestiny = targSE->DestinyMgr();
     if (pDestiny == nullptr) {
@@ -2314,6 +2316,7 @@ void DroneAIMgr::Stop() {
         sLog.Error("movetime", "0 - Stop() %s(%s)", GetStateName(m_state), GetActionName(m_action));
     m_startTime = 0;
     SetState(DroneAI::State::Idle);
+    SendTrueState(m_state);
 
     if (mySE->SysBubble() != nullptr) {
         CmdStop stop;
@@ -2376,6 +2379,22 @@ void DroneAIMgr::Move(double timeStamp) {
     _log(DRONE__AI_TRACE, "Move() - %s(%u):  %s(%s) - targDistance: %u, shipDistance: %u", \
                 mySE->GetName(), mySE->GetID(), GetStateName(m_state), GetActionName(m_action), targDistance, shipDistance);
 
+    // after seeing drones haul ass out of bubble, lets do sanity checks....
+    if (timeStamp > 90) {
+        // still moving for 1.5 mins?
+        if (shipDistance > 100000) {
+            // we're a damn long way from our ship...are we chasing something?
+            if (m_state != DroneAI::State::Pursuit) {
+                // too far...reset.
+                ClearTarget();
+                SetState(DroneAI::State::ReturnHome);
+                SetAction(DroneAI::Action::AccelToShip);
+                OrbitTarget();
+                return;
+            }
+        }
+    }
+    
     // if we're still traveling, we will need to do accel/decel and keep track of timestamps like destiny does
     // some drones have accel/decel times > 5s
     bool accel(false), decel(false), stop(false);
@@ -2635,12 +2654,6 @@ void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
         return;
     }
 
-    bool active(false), start(false);
-    if (m_action == DroneAI::Action::Engaged) {
-        start = true;
-        active = true;
-    }
-
     InventoryItemRef iRef = mySE->GetSelf();
     // effects are listed in EVE_Effects.h
     //  NOTE: drones are called 'entities' in client; EVE_Effects has 'entityxxx' for gfx...may not be used like this.
@@ -2651,9 +2664,13 @@ void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
         gfxID = iRef->GetAttribute(AttrGfxTurretID).get_uint32();
     }
 
-    bool repeat(true);
-    if (iRef->groupID() == EVEDB::invGroups::Mining_Drone)
-        repeat = false;
+    bool active(false), start(false), repeat(false);
+    if (m_action == DroneAI::Action::Engaged) {
+        if (iRef->groupID() != EVEDB::invGroups::Mining_Drone)
+            repeat = true;
+        start = true;
+        active = true;
+    }
 
     /*  not sure if this is right for drones...im thinking not
     std::string guidStr = sFxDataMgr.GetEffectGuid(gfxID);
