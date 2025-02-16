@@ -651,16 +651,8 @@ void DroneAIMgr::Process() {
         case DroneAI::State::Combat:
         case DroneAI::State::Operating: {
             if (!ValidTarget()) {
-                switch (mySE->GetGroupID()) {
-                    case EVEDB::invGroups::Combat_Drone:
-                    case EVEDB::invGroups::Fighter_Drone:
-                    case EVEDB::invGroups::Fighter_Bomber: {
-                        // if aggressive or auto, look for targets and attack.
-                        if (mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()
-                        or mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
-                            FindTarget();
-                    } break;
-                }
+                SetIdle();
+                return;
             }
             switch (m_action) {
                 case DroneAI::Action::Invalid: {
@@ -710,7 +702,7 @@ void DroneAIMgr::Process() {
                 default: {
                     // error
                     _log(DRONE__AI_TRACE, "%s - hmmmmm... state is %s but action is %s.  returning home.", \
-                    mySE->GetName(), GetStateName(m_state), GetActionName(m_action));
+                            mySE->GetName(), GetStateName(m_state), GetActionName(m_action));
                     move = true;
                     SetAction(DroneAI::Action::AccelToShip);
                     m_sendCmd = true;
@@ -2394,7 +2386,7 @@ void DroneAIMgr::Move(double timeStamp) {
             }
         }
     }
-    
+
     // if we're still traveling, we will need to do accel/decel and keep track of timestamps like destiny does
     // some drones have accel/decel times > 5s
     bool accel(false), decel(false), stop(false);
