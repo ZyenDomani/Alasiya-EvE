@@ -2081,8 +2081,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
 
         double dist(((double)m_targetDistance / ONE_AU_IN_METERS));
         double currentShipCap = pClient->GetShip()->GetAttribute(AttrCapacitorCharge).get_double();
-        double capNeeded = mySE->GetSelf()->GetAttribute(AttrMass).get_double();
-        capNeeded *= m_warpCapacitorNeed * dist;
+        double capNeeded = mySE->GetSelf()->GetAttribute(AttrMass).get_double() * m_warpCapacitorNeed * dist;
         capNeeded *= (1.0f - (0.1f * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
 
         _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %llim (%.3f AU) is %.5f GJ", \

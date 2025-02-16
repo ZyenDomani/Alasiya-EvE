@@ -85,7 +85,9 @@ public:
 
     // tell AI it's target has been destroyed.
     void       TargetDestroyed(SystemEntity* pTargetSE) { m_AI->TargetDestroyed(pTargetSE); }
-
+    // player command
+    void SetAutoAttack(bool set=false);
+    
     /* specific functions handled here. */
     Client*             GetOwner()                      { return m_pClient; }
     DroneAIMgr*         GetAI()                         { return m_AI; }

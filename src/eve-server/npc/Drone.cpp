@@ -189,6 +189,8 @@ void DroneSE::Launch(ShipSE* pShipSE) {
 
     // ok, enough bandwidth, onlined, added to system, so now set idle.
     m_AI->SetIdle();
+    if (m_pClient->AutoAttack())
+        m_self->SetAttribute(AttrDroneIsChaotic, true, false);
 }
 
 void DroneSE::Online() {
@@ -229,7 +231,8 @@ void DroneSE::DisableDrone() {
 }
 
 void DroneSE::Abandon() {
-    m_pShipSE->AbandonDrone(this);
+    if (m_pShipSE != nullptr)
+        m_pShipSE->AbandonDrone(this);
     m_pClient = nullptr;
     m_abandoned = true;
     m_controllerID = 0;
@@ -282,6 +285,7 @@ void DroneSE::Reconnect(ShipSE* pShipSE, PyDict* dict) {
     if (pShipSE->ReconnectDrone(this)) {
         Online();
         m_AI->SetIdle();
+        pShipSE->AddDroneToMap(this);
     } else {
         // make note about not enough bandwidth to online reconnected drones
         pShipSE->GetPilot()->SendNotifyMsg("Your %s tried reconnecting, but there is not enough bandwidth available to bring it online.<br>You can try scooping up some drones to free bandwidth, or scoop this one either to your cargo bay or drone bay.", m_self->name());
@@ -468,6 +472,10 @@ void DroneSE::Delegate(SystemEntity* pSE, PyDict* dict) {
  * {'FullPath': u'UI/Messages', 'messageID': 258393, 'label': u'EntityTargetWarpDisruptedBody'}(u'Control of the {[item]item.name} cannot be delegated to someone who the drones cannot warp to.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
  *
  */
+
+void DroneSE::SetAutoAttack(bool set) {
+    m_self->SetAttribute(AttrDroneIsChaotic, set, false);
+}
 
 void DroneSE::TargetAdded(SystemEntity* pTargetSE) {
     if (!m_online)

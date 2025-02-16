@@ -2762,8 +2762,9 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
 
     // this will launch drone (orbitDistance - 100m) from ship.  ai will adjust if needed
     GPoint position(GetPosition());
-    position.MakeRandomPointOnSphere(pDrone->GetAI()->GetOrbitDistance() - 100.0);
+    position.MakeRandomPointOnSphere(pDrone->GetAI()->GetOrbitDistance() - 50.0);
     dRef->SetPosition(position);
+    dRef->SaveItem();
 
     // add drone to system and send new ball data
     pDrone->Launch(this);
@@ -2805,6 +2806,18 @@ void ShipSE::FocusFire(DroneSE* pFromSE, SystemEntity* pTargetSE) {
     }
 }
 
+void ShipSE::AddDroneToMap(DroneSE* pSE) {
+    m_drones[pSE->GetID()] = pSE;
+}
+
+void ShipSE::SetAutoAttack(bool set) {
+    for (auto &cur : m_drones) {
+        if (cur.second == nullptr)
+            continue;
+        cur.second->SetAutoAttack(set);
+    }
+}
+
 void ShipSE::ModuleActivated(SystemEntity* pTargetSE) {
     for (auto &cur : m_drones) {
         if (cur.second == nullptr)
@@ -2843,11 +2856,11 @@ void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
             case EVEDB::invGroups::Fighter_Bomber:
             */
         }
-        cur->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
-        cur->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
-        cur->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
+        cur->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire], false);
+        cur->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive], false);
+        cur->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow], false);
         // chaotic is no longer used in client, but i got ideas for later...
-        cur->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic]);
+        cur->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic], false);
     }
 
     // now, update drones in space with new settings, if any
@@ -2872,11 +2885,11 @@ void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
              *   case EVEDB::invGroups::Fighter_Bomber:
              */
         }
-        cur.second->GetSelf()->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
-        cur.second->GetSelf()->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
-        cur.second->GetSelf()->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
+        cur.second->GetSelf()->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire], false);
+        cur.second->GetSelf()->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive], false);
+        cur.second->GetSelf()->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow], false);
         // chaotic is no longer used in client, but i got ideas for later...
-        cur.second->GetSelf()->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic]);
+        cur.second->GetSelf()->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic], false);
     }
 }
 

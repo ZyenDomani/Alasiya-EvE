@@ -257,7 +257,7 @@ void DroneAIMgr::Process() {
                 case EVEDB::invGroups::Fighter_Drone:
                 case EVEDB::invGroups::Fighter_Bomber: {
                     // if aggressive, look for targets and attack.
-                    if (mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool())
+                    if (mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
                         FindTarget();
                 } break;
             }
@@ -653,7 +653,7 @@ void DroneAIMgr::Process() {
                     case EVEDB::invGroups::Fighter_Drone:
                     case EVEDB::invGroups::Fighter_Bomber: {
                         // if aggressive, look for targets and attack.
-                        if (mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool())
+                        if (mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
                             FindTarget();
                     } break;
                 }
@@ -1099,6 +1099,7 @@ void DroneAIMgr::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
             m_sendCmd = true;
             // check mode
             if (mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()
+            or mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool()
             or mySE->GetSelf()->GetAttribute(AttrFightersAttackAndFollow).get_bool()) {
                 // aggressive mode.  pick next and engage
                 FindTarget();
@@ -1295,8 +1296,7 @@ void DroneAIMgr::ClearTarget() {
     //mySE->TargetMgr()->OnTarget(pSE, TargMgr::Mode::Lost);
 
     targSE = nullptr;
-    if (mySE->TargetMgr()->HasNoTargets())
-        SetIdle();
+    SetIdle();
 }
 
 void DroneAIMgr::RepairTarget() {
@@ -1340,6 +1340,11 @@ void DroneAIMgr::RepairTarget() {
 void DroneAIMgr::AttackTarget() {
     if (!mySE->TargetMgr()->CanAttack())
         return;
+
+    if (!ValidTarget()) {
+        SetIdle();
+        return;
+    }
 
     // determine what we're supposed to be doing here...
     switch (mySE->GetGroupID()) {
@@ -1604,8 +1609,9 @@ void DroneAIMgr::FindTarget() {
        sLog.Blue("FindTarget()", "begin for %s(%u).", mySE->GetName(), mySE->GetID());
 
     //start with mode...
-    bool focus(mySE->GetSelf()->GetAttribute(AttrDroneFocusFire).get_bool());
-    bool aggressive(mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool());
+       bool focus(mySE->GetSelf()->GetAttribute(AttrDroneFocusFire).get_bool());
+    bool aggressive(mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()
+                    or mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool());
     bool follow(mySE->GetSelf()->GetAttribute(AttrFightersAttackAndFollow).get_bool());
 
     if (focus and !m_focusfire) {
@@ -1626,7 +1632,7 @@ void DroneAIMgr::FindTarget() {
      */
 
     // is drone aggressive?
-    if (aggressive) {
+    if (aggressive or shipSE->GetPilot()->AutoAttack()) {
         //  yep, find smallest entity targeting our ship and begin attack
         std::map<SystemEntity*, TargetedByEntry*> targetby;
         shipSE->TargetMgr()->GetAllTargeters(targetby);
@@ -1845,7 +1851,8 @@ void DroneAIMgr::ShipAddedTarget(SystemEntity* pTargetSE) {
         return;
 
     // close enough...now we check aggression
-    if (mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()) {
+    if (mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()
+    or mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool()) {
         // well alright alright...lets pewpew sommfin
         Target(pTargetSE);
         SetState(DroneAI::State::Combat);
@@ -1960,10 +1967,7 @@ void DroneAIMgr::TargetLost(SystemEntity* pTargetSE) {
     }
     _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) lost.",
                  mySE->GetName(), mySE->GetID(), pTargetSE->GetName(), pTargetSE->GetID());
-    // if we're not aggressive, clear target and return to idle till next command
-    //  if we are aggressive, this has already been updated
-    if (!mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool())
-        ClearTarget();
+    ClearTarget();
 }
 
 void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
@@ -1983,6 +1987,8 @@ void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
      * TODO:  figure out delay time (>1s?)
      */
     if (!mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool())
+        return;
+    if (!mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool())
         return;
 
     switch (m_state) {

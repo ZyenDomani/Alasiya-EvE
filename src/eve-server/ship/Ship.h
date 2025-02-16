@@ -395,6 +395,9 @@ public:
     void FocusFire(DroneSE* pFromSE, SystemEntity* pTargetSE);
     // for assisting.  offensive module activated on target
     void ModuleActivated(SystemEntity* pTargetSE);
+    // player command
+    void SetAutoAttack(bool set=false);
+    void AddDroneToMap(DroneSE* pSE);
 
     // returns current count of drones in space for this ship
     uint8 DroneCount()                                  { return m_drones.size(); }

@@ -996,8 +996,12 @@ PyResult Command_autoattack(Client* pClient, CommandDB* db, PyServiceMgr* servic
     if (pClient->AutoAttack()) {
         pClient->SetAutoAttack(false);
         stop = "Disabled";
+        if (pClient->GetShipSE() != nullptr)
+            pClient->GetShipSE()->SetAutoAttack(false);
     } else {
         pClient->SetAutoAttack(true);
+        if (pClient->GetShipSE() != nullptr)
+            pClient->GetShipSE()->SetAutoAttack(true);
     }
 
     char reply[35];
