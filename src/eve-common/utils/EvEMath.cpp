@@ -14,7 +14,7 @@ uint32 EvEMath::Skill::PointsAtLevel(uint8 level, float rank)
 {
     if (level > EvESkill::MAXSKILLLEVEL)
         level = EvESkill::MAXSKILLLEVEL;
-    float ret = pow(sqrt(32), (level - 1)) * EvESkill::skillPointMultiplier * rank;
+    float ret = pow(sqrt(32), (level - 1.0f)) * EvESkill::skillPointMultiplier * rank;
     return (uint32)ceil(ret);
 }
 
@@ -36,7 +36,7 @@ uint8 EvEMath::Skill::PointsPerMinute(uint8 pAttr, uint8 sAttr)
 
 int64 EvEMath::Skill::StartTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow)
 {
-    return (timeNow - (((nextSP - currentSP) / SPMin) * EvE::Time::Minute));
+    return (timeNow - (((float)(nextSP - currentSP) / SPMin) * EvE::Time::Minute));
 }
 
 int64 EvEMath::Skill::EndTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow)
@@ -116,7 +116,7 @@ float EvEMath::RAM::WasteSkillBased( uint32 MaterialAmount, float ProductionEffi
 
 float EvEMath::RAM::InventionChance( float BaseChance, uint8 EncryptionLevel, uint8 DataCore1SkillLevel, uint8 DataCore2SkillLevel, uint8 MetaLevel, float DecryptorModifier )
 {
-     return (BaseChance * (1 + 0.11f * EncryptionLevel) * (1.0f + (DataCore1SkillLevel + DataCore2SkillLevel)
+     return (BaseChance * (1.0f + 0.11f * EncryptionLevel) * (1.0f + (DataCore1SkillLevel + DataCore2SkillLevel)
      * (0.8f / (5.0f - MetaLevel)) * DecryptorModifier));
      // fuzzysteve's formula (23may13)
      // base * (1+0.01*EncryptionLevel) * (1+ (skill*(0.1/(5-metalevel)))) * max(decryptor,1)
@@ -205,13 +205,13 @@ float EvEMath::Market::BrokerFee(uint8 brSkillLvl, float fStanding, float cStand
 float EvEMath::Market::RelistFee(float oldPrice, float newPrice, float brokerPercent/*0.01*/, float discount/*0.0*/)
 {
     // this needs a 'Relist Discount' but no clue where to find data for it yet
-    return EvE::max(brokerPercent * (newPrice -oldPrice)) + (1 -discount) * brokerPercent * newPrice;
+    return EvE::max(brokerPercent * (newPrice - oldPrice)) + (1.0f - discount) * brokerPercent * newPrice;
 }
 
 float EvEMath::Market::SalesTax(uint8 accountingLvl/*0*/, uint8 taxEvasionLvl/*0*/)
 {
-    /** @todo  add skillTaxEvasion to this formula; its not calculated in client... */
-    float tax = 0.01f * (1 - 0.1f * accountingLvl);
+    float tax = 0.01f * (1.0f - 0.1f * accountingLvl);
+    tax *= (1.0f - 0.02f * taxEvasionLvl);
     return EvE::min(tax, 10.0f);
 }
 

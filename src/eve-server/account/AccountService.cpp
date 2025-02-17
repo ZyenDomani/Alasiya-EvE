@@ -269,7 +269,7 @@ void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, st
     if (is_log_enabled(ACCOUNT__TRACE))
         _log(ACCOUNT__TRACE, "TransferFunds() - from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, fKey: %u, tKey: %u", \
                             fromID, toID, entryTypeID, referenceID, amount, fromKey, toKey);
-    uint8 fromCurrency = Account::CreditType::ISK;
+    uint8 fromCurrency(Account::CreditType::ISK);
     if (IsAUR(fromKey)) {
         fromCurrency = Account::CreditType::AURUM;
     } else if (IsDustKey(fromKey)) {
@@ -296,7 +296,7 @@ void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, st
         HandleCorpTransaction(fromID, entryTypeID, userID?userID:fromID, toID, fromCurrency, fromKey, -amount, reason, referenceID);
     } // fromID could be npc or _System.  nothing to do on this side.
 
-    uint8 toCurrency = Account::CreditType::ISK;
+    uint8 toCurrency(Account::CreditType::ISK);
     if (IsAUR(toKey)) {
         toCurrency = Account::CreditType::AURUM;
     } else if (IsDustKey(toKey)) {
@@ -344,8 +344,8 @@ void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, st
         if (sConfig.server.BountyPayoutDelayed)
             if (amount < sConfig.rates.TaxedAmount)  // is amount worth taxing?  default is 75k
                 return;
-    float tax = 0;
-    uint32 corpID = 0;
+    float tax(0);
+    uint32 corpID(0);
     if (pClientTo != nullptr) {
         tax = pClientTo->GetCorpTaxRate() * amount;
         corpID = pClientTo->GetCorporationID();
@@ -385,7 +385,7 @@ void AccountService::HandleCorpTransaction(uint32 corpID, int8 entryTypeID, uint
     if (is_log_enabled(ACCOUNT__TRACE))
         _log(ACCOUNT__TRACE, "HandleCorpTransaction() - corp: %u, from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, key: %u, currency: %u", \
                         corpID, fromID, toID, entryTypeID, referenceID, amount, accountKey, currency);
-    double balance = AccountDB::GetCorpBalance(corpID, accountKey);
+    double balance(AccountDB::GetCorpBalance(corpID, accountKey));
     // verify funds available for withdraw first
     if (amount < 0) {
         if (-amount > balance) {

@@ -538,7 +538,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
     float tax = EvEMath::Market::SalesTax(buyer->GetChar()->GetSkillLevel(EvESkill::Accounting), buyer->GetChar()->GetSkillLevel(EvESkill::TaxEvasion));
     tax *= money;
     _log(MARKET__DEBUG, "ExecuteSellOrder - Buyer is Player: Price: %.2f, Tax: %.2f", money, tax);
-    AccountService::TransferFunds(buyer->GetCharacterID(), corpSCC, money, reason.c_str(), \
+    AccountService::TransferFunds(buyer->GetCharacterID(), corpSCC, tax, reason.c_str(), \
             Journal::EntryType::TransactionTax, orderID, Account::KeyType::Cash);
 
     // after money is xferd, create and add item.
