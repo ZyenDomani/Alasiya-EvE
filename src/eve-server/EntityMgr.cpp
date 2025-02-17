@@ -263,8 +263,6 @@ void EntityMgr::Process() {
         if (m_minuteTimer.Check()) {
             ++m_minutes;
             sMissionDataMgr.Process();  // 1m
-            // testing db ping
-            sDatabase.ping();
 
             if (m_minutes % 5 == 0) { // ~5m
                 sWHMgr.Process();
