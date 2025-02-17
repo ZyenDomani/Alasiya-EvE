@@ -209,13 +209,6 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         if (iRef.get() == nullptr)
             continue;
 
-        // this should never happen, but just to be sure ... may have hit on reprocess
-        // TODO:  one of these isnt working right...
-        if (iRef->type().portionSize() > iRef->quantity()) {
-            throw UserError("QuantityLessThanMinimumPortion")
-                    .AddAmountU("portion", iRef->type().portionSize());
-        }
-
         // dont hit db for this shit...we kinda have to....dont have this data in static shit.
         // TODO:  put this in static data for faster call and avoid db hits
         std::vector<Recoverable> recoverables;
