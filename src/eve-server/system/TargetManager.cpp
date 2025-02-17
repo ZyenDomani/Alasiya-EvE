@@ -432,7 +432,7 @@ void TargetManager::TargetAdded(SystemEntity* tSE) {
         return;
     // call TargetAdded() for AI (if any)
     mySE->TargetAdded(tSE);
-    
+
     PyTuple* up(nullptr);
     Notify_OnTarget te;
         te.mode = "add";
@@ -606,11 +606,12 @@ void TargetManager::Destroyed()
 
     std::string effect = "TargetDestroyed";
 
+    /*
     // determine if this target has assigned drones in space and let them know
     for (auto &cur : m_targetedBy) {
         if (cur.first->IsDroneSE())
             cur.first->GetDroneSE()->TargetDestroyed(mySE);
-    }
+    } */
 
     ActiveModule* module(nullptr);
     // iterate thru the map of modules targeting this object, and call Deactivate on each.

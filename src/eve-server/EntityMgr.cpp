@@ -263,10 +263,10 @@ void EntityMgr::Process() {
         if (m_minuteTimer.Check()) {
             ++m_minutes;
             sMissionDataMgr.Process();  // 1m
+            // testing db ping
+            sDatabase.ping();
 
             if (m_minutes % 5 == 0) { // ~5m
-                // testing db ping @ 5m
-                sDatabase.ping();
                 sWHMgr.Process();
                 // write something to tic corps vote cases.
                 /** @todo  this slow.  update/remove as needed. */

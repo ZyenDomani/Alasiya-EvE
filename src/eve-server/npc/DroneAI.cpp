@@ -1967,7 +1967,7 @@ bool DroneAIMgr::ValidTarget() {
     return true;
 }
 
-void DroneAIMgr::TargetLost(SystemEntity* pTargetSE) {
+void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
     if (targSE != pTargetSE) {
         // not current target...dont care
         return;
@@ -1977,12 +1977,13 @@ void DroneAIMgr::TargetLost(SystemEntity* pTargetSE) {
     ClearTarget();
 }
 
-void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
+void DroneAIMgr::TargetLost(SystemEntity* pTargetSE) {
     if (targSE != pTargetSE) {
         // not current target...dont care
         return;
     }
-    _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) destroyed.  currently %s(%s)",
+
+    _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) lost.  currently %s(%s)",
          mySE->GetName(), mySE->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
          GetStateName(m_state), GetActionName(m_action));
     //TODO:  check mode and enable proximity here
