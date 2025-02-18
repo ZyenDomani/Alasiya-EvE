@@ -46,7 +46,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
   m_alive(true),
   m_damageMod(1),
   m_speed(0),
-  m_hullHP(self->GetAttribute(AttrHP).get_int())
+  m_hullHP(self->GetAttribute(AttrHP).get_uint32())
 {
     if (pSE->HasPilot()) {
         m_ownerID = pSE->GetPilot()->GetChar()->itemID();

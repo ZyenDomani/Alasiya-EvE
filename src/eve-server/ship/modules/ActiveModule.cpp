@@ -1005,7 +1005,7 @@ void ActiveModule::UnloadCharge()
     // scripts boost one attrib, while reducing or deleting others.  once the attrib is deleted, i cant 'undo' without reload
     EvilNumber typeID(EvilZero);
     if (m_modRef->HasAttribute(AttrChargeGroup1, typeID)) {
-        switch (typeID.get_int()) {
+        switch (typeID.get_uint32()) {
             // find what attribs were changed and reload them to default once charge is removed
             case 907:   //    Tracking Script
             case 909: { //    Tracking Disruption Script

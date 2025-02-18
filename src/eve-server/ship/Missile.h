@@ -82,7 +82,7 @@ protected:
     float m_damageMod;
 
     uint16 m_speed;
-    double m_hullHP;
+    uint16 m_hullHP;
 };
 
 #endif  //EVE_SHIP_MISSILE_H

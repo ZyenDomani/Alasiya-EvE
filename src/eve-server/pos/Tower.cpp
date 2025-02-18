@@ -117,23 +117,20 @@
 
 TowerSE::TowerSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& fData)
 : StructureSE(structure, services, system, fData),
-m_pShieldSE(nullptr)
+m_pShieldSE(nullptr),
+m_tdata(EVEPOS::TowerData()),
+m_hasShield(false)
 {
-    m_hasShield = false;
-    m_structs.clear();
-
     // create AI object for tower here....not written yet.
     //m_ai = new POS_AI(this);
 
-    m_pg = m_self->GetAttribute(AttrPowerOutput).get_int();
-    m_cpu = m_self->GetAttribute(AttrCpuOutput).get_int();
+    m_pg = m_self->GetAttribute(AttrPowerOutput).get_float();
+    m_cpu = m_self->GetAttribute(AttrCpuOutput).get_float();
 
     m_tsize = m_self->GetAttribute(AttrControlTowerSize).get_int();
     if ((m_tsize < 1) or (m_tsize > 3))
         m_tsize = 1;  // do something constructive here cause size is wrong
-    m_soi = m_self->GetAttribute(AttrPosStructureControlDistanceMax).get_int() * m_tsize;
-
-    m_tdata = EVEPOS::TowerData();
+    m_soi = m_self->GetAttribute(AttrPosStructureControlDistanceMax).get_uint32() * m_tsize;
 
     /** @note these are defined, but i dunno what they are
      * AttrControlTowerMinimumDistance
@@ -233,7 +230,7 @@ void TowerSE::SetOnline()
     m_data.state = EVEPOS::StructureState::Online;
     m_harmonic = EVEPOS::Harmonic::Online;
     m_tdata.harmonic = m_harmonic;
-    SetTimer(m_self->GetAttribute(AttrOnliningDelay).get_int());
+    SetTimer(m_self->GetAttribute(AttrOnliningDelay).get_uint32());
 
     if ((m_harmonic > EVEPOS::Harmonic::Offline)
     and (!m_tdata.password.empty()))

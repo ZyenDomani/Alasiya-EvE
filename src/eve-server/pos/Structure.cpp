@@ -616,7 +616,7 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
     if ((m_generator) || (m_jammer) || (m_bridge)) {
         SovereigntyData sovData = svDataMgr.GetSovereigntyData(pClient->GetLocationID());
         InventoryItemRef ihubRef = sItemFactory.GetItemRef(sovData.hubID);
-        uint32 upgType = m_self->GetAttribute(EveAttrEnum::AttranchoringRequiresSovUpgrade1).get_int();
+        uint32 upgType = m_self->GetAttribute(EveAttrEnum::AttranchoringRequiresSovUpgrade1).get_uint32();
 
         if (!ihubRef->GetMyInventory()->ContainsTypeQty(upgType,1)) {
             pClient->SendErrorMsg("This module requires %s to be installed in the Infrastructure Hub.",

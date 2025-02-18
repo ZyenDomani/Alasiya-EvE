@@ -1613,7 +1613,7 @@ void DestinyManager::InitWarp() {
 
     //sLog.Warning("warptest 1", "step: %u, time: %.1f, speed: %.1f", step, decelTime, speed);
     //decelTime = 0.0f;
-    double distance(0.0f);
+    double distance(0.0);
     while (step > 0) {
         distance += exp(decelTime++);
         --step;
@@ -1634,8 +1634,8 @@ void DestinyManager::InitWarp() {
                 mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
     }
 
-    uint16 intAccel = m_accelTime;
-    double accelFraction = (m_accelTime - intAccel);
+    uint16 intAccel(m_accelTime);
+    float accelFraction(m_accelTime - intAccel);
 
     m_warpState = new WarpState(m_stateStamp, m_targetDistance, warpSpeedInMeters, accelDistance, cruiseDistance,
                                 decelDistance, warpTime, accelFraction, true, false, false);
@@ -1839,7 +1839,9 @@ bool DestinyManager::IsTargetInvalid()
         Stop();
         return true;
     }
-    if (!m_targetEntity.second->IsDynamicEntity())
+    if (m_targetEntity.second->IsDead())
+        return true;
+    if (m_targetEntity.second->IsDynamicEntity())
         return false;
     if (m_targetEntity.second->HasPilot()) {
         if (m_targetEntity.second->GetPilot()->IsDocked()) {  // Our target docked, so STOP
@@ -1988,8 +1990,8 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
     sLog.Blue("", "refcount: after dec %u", up->GetRefCount());
     // TODO:  check ref counts in sent packets
     /* 22:26:23 B refcount: before 1
-     * 22:26:23 B refcount: after send 2
-     * 22:26:23 B refcount: after dec 1
+     * 22:26:23 B refcount: after send 1
+     * 22:26:23 B refcount: after dec 0
      */
 }
 
@@ -2437,7 +2439,7 @@ void DestinyManager::SetUndockSpeed() {
     // this simulates being forcefully "ejected" from station (and is currently off)
     //m_accel = true;
     m_changeDelay = true;   // skip next tic before making change
-    m_shipAccelTime = 0.8f;
+    m_shipAccelTime = 0.5f;
     m_prevSpeedFraction = 0.0f;
     m_userSpeedFraction = 1.0f;
     m_activeSpeedFraction = 1.0f;
@@ -2450,18 +2452,18 @@ void DestinyManager::SetUndockSpeed() {
 
     m_ballMode = Destiny::Ball::Mode::GOTO;
     std::vector<PyTuple*> updates;
-    SetBallVelocity bv;
-        bv.entityID = mySE->GetID();
-        bv.x = m_velocity.x;
-        bv.y = m_velocity.y;
-        bv.z = m_velocity.z;
-    updates.push_back(bv.Encode());
     CmdGotoDirection du;
         du.entityID = mySE->GetID();
         du.x = m_shipHeading.x;
         du.y = m_shipHeading.y;
         du.z = m_shipHeading.z;
     updates.push_back(du.Encode());
+    SetBallVelocity bv;
+        bv.entityID = mySE->GetID();
+        bv.x = m_velocity.x;
+        bv.y = m_velocity.y;
+        bv.z = m_velocity.z;
+    updates.push_back(bv.Encode());
     SendDestinyUpdates(updates); //consumed
 }
 
@@ -2476,7 +2478,7 @@ PyResult DestinyManager::AttemptDockOperation() {
         return PyStatic.NewNone();
     }
 
-    //get the station Docking Perimiter
+    //get the station Docking Perimeter
     const GPoint stationPos = stationSE->GetPosition();
     double rangeToStationPerimiter = m_position.distance(stationPos);
     rangeToStationPerimiter -= mySE->GetRadius();
@@ -2504,7 +2506,7 @@ void DestinyManager::DockingAccepted()
     Stop();
     // does ship need to be uncloaked to dock?  probably not...
     //UnCloak();
-    Client *pClient = mySE->GetPilot();
+    Client *pClient(mySE->GetPilot());
     // this would be an error.  only players call this method.
     if (pClient == nullptr)
         return;
@@ -2608,7 +2610,7 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     // this will need a lot of testing after Turn() is working
     if (m_turning) {
         // if turning when propmod (de)activated,  do we have to update turnmap?
-        if (m_turnTime < (m_alignTime * 0.5)) {
+        if (m_turnTime < (m_alignTime * 0.5f)) {
             // ship is still in decel.
         }
     } else {
@@ -2757,7 +2759,7 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     slim->SetItemString("securityStatus",           new PyFloat(pClient->GetSecurityRating()));
     if (newShipRef->typeID() == EVEDB::invTypes::Capsule) {
         slim->SetItemString("launcherID",               new PyInt(mySE->GetShipSE()->GetLauncherID()));
-        slim->SetItemString("modules",                  new PyList());
+        slim->SetItemString("modules",                  PyStatic.mtList());
     } else {
         slim->SetItemString("categoryID",               new PyInt(newShipRef->categoryID()));
         slim->SetItemString("groupID",                  new PyInt(newShipRef->groupID()));
@@ -2767,7 +2769,7 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     std::vector<PyTuple*> updates;
     PyTuple* shipData = new PyTuple(2);
         shipData->SetItem(0, new PyLong(newShipRef->itemID()));
-        shipData->SetItem(1, new PyObject( "foo.SlimItem", slim));
+        shipData->SetItem(1, new PyObject("foo.SlimItem", slim));
     PyTuple* shipItem = new PyTuple(2);
         shipItem->SetItem(0, new PyString("OnSlimItemChange"));
         shipItem->SetItem(1, shipData);
@@ -2811,6 +2813,7 @@ Battleships                             0.155
 
     double mass = sRef->GetAttribute(AttrMass).get_double();
     double inertiaMod = sRef->GetAttribute(AttrInertiaMod).get_double();
+    sLog.Warning("DM::UpdateShipVariables", "%s (%u)  InertiaMod: %.4f", mySE->GetName(), mySE->GetID(), inertiaMod);
 
     m_agility = mass * inertiaMod / 1000000.0;
 
@@ -3078,32 +3081,6 @@ void DestinyManager::SendGFX10(uint32 entityID, std::string guid, int32 targetID
 }
 
 // def OnSpecialFX(shipID, moduleID, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration = -1, repeat = None, startTime = None, graphicInfo = None):
-// GFX method for module effects
-void DestinyManager::SendModGFX(ModuleItemRef rMod) {
-    /*
-    OnSpecialFX14 effect;
-        effect.entityID = entityID;
-        effect.moduleID = moduleID;             // npc UID for npc's
-        effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's
-        effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
-        effect.otherTypeID = (chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID));
-        effect.area = PyStatic.mtList();        // no data.  not used in client
-        effect.guid = std::move(guid);
-        effect.isOffensive = isOffensive;       // bool
-        effect.start = start;                   // int bool
-        effect.active = isActive;               // int bool
-        effect.duration = duration;             // in ms
-        effect.repeat = repeat;
-        effect.startTime = GetFileTimeNow();    // to use event start time from II once completed (this currently isnt right)
-        effect.graphicInfo = (graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo));
-    PyTuple *up = effect.Encode();
-    if (is_log_enabled(EFFECTS__DUMP))
-        up->Dump(EFFECTS__DUMP, "");
-    SendSingleDestinyUpdate(&up);
-    PyDecRef(up);
-    */
-}
-
 // GFX method for graphics effects
 void DestinyManager::SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeID, int32 targetID,
                                int32 chargeTypeID, std::string guid, bool isOffensive, bool start,

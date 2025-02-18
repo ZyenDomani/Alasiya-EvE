@@ -1269,7 +1269,7 @@ void DroneAIMgr::Target(SystemEntity* pTargetSE) {
     bool chase(false);  // chase ref isnt used for drones
     if (!mySE->TargetMgr()->StartTargeting(pTargetSE,
                                             mySE->GetSelf()->GetAttribute(AttrScanSpeed).get_float(),
-                                            (uint8)mySE->GetSelf()->GetAttribute(AttrMaxLockedTargets).get_int(),
+                                            (uint8)mySE->GetSelf()->GetAttribute(AttrMaxLockedTargets).get_uint32(),
                                             shipSE->GetSelf()->GetAttribute(AttrMaxTargetRange).get_double(), chase))
     {
         _log(DRONE__AI_TRACE, "Drone %s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",

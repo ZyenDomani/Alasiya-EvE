@@ -405,7 +405,7 @@ void TargetManager::TargetedByLost(SystemEntity* pSE) {
 
 /*****************
  * these are incomplete at this time....
- *
+ *   NOTE:  some of these are updates, some events, and some are just notifications
     OnTarget.mode (- reason)
         try - you begin target lock
         add - you successfully locked a target

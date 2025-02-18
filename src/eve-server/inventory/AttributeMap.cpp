@@ -266,10 +266,10 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
         } else {
             if (num.isFloat()) {
                 _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %lli to %.2f for %s(%u)", \
-                        attrID, itr->second.get_int(), num.get_float(), mItem.name(), mItem.itemID());
+                        attrID, itr->second.get_long(), num.get_float(), mItem.name(), mItem.itemID());
             } else {
                 _log(ATTRIBUTE__CHANGE, "Changing Attribute %u from %lli to %lli for %s(%u)", \
-                        attrID, itr->second.get_int(), num.get_long(), mItem.name(), mItem.itemID());
+                        attrID, itr->second.get_long(), num.get_long(), mItem.name(), mItem.itemID());
             }
         }
     }
@@ -533,7 +533,7 @@ void AttributeMap::SaveShipState()
     if (cur != mAttributes.end()) {
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
-        if ( cur->second.get_type() == evil_number_int ) {
+        if (cur->second.isInt()) {
             Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
@@ -545,7 +545,7 @@ void AttributeMap::SaveShipState()
             Inserts << ",";
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
-        if ( cur->second.get_type() == evil_number_int ) {
+        if (cur->second.isInt()) {
             Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
@@ -557,7 +557,7 @@ void AttributeMap::SaveShipState()
             Inserts << ",";
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
-        if ( cur->second.get_type() == evil_number_int ) {
+        if (cur->second.isInt()) {
             Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
@@ -569,7 +569,7 @@ void AttributeMap::SaveShipState()
             Inserts << ",";
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
-        if ( cur->second.get_type() == evil_number_int ) {
+        if (cur->second.isInt()) {
             Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
@@ -581,7 +581,7 @@ void AttributeMap::SaveShipState()
             Inserts << ",";
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
-        if ( cur->second.get_type() == evil_number_int ) {
+        if (cur->second.isInt()) {
             Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
@@ -593,7 +593,7 @@ void AttributeMap::SaveShipState()
             Inserts << ",";
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
-        if ( cur->second.get_type() == evil_number_int ) {
+        if (cur->second.isInt()) {
             Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";
@@ -605,7 +605,7 @@ void AttributeMap::SaveShipState()
             Inserts << ",";
         save = true;
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
-        if ( cur->second.get_type() == evil_number_int ) {
+        if (cur->second.isInt()) {
             Inserts << cur->second.get_long() << ", NULL)";
         } else {
             Inserts << " NULL, " << cur->second.get_double() << ")";

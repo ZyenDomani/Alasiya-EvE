@@ -488,9 +488,9 @@ void ShipSE::Killed(Damage &damage) {
         data.finalSecurityStatus = 0;   /* fix this */
         data.finalDamageDone = damage.GetTotal();
 
-        uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
-            totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
-            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_int();
+        uint32 totalHP = m_self->GetAttribute(AttrHP).get_uint32();
+            totalHP += m_self->GetAttribute(AttrArmorHP).get_uint32();
+            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_uint32();
         data.victimDamageTaken = totalHP;
 
     std::stringstream blob;

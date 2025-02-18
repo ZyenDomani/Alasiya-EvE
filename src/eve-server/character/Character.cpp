@@ -633,7 +633,7 @@ int8 Character::GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected /*true
     if (requiredSkill.get() == nullptr)
         return (zeroForNotInjected ? 0 : -1);
 
-    return (int8)requiredSkill->GetAttribute(AttrSkillLevel).get_uint32() ;
+    return (int8)requiredSkill->GetAttribute(AttrSkillLevel).get_int() ;
 }
 
 bool Character::HasSkillTrainedToLevel(uint16 skillTypeID, uint8 skillLevel) const {

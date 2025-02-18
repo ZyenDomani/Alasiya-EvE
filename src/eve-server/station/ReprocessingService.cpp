@@ -260,7 +260,7 @@ float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient
                         * (1 + (0.04f * cRef->GetSkillLevel(EvESkill::RefineryEfficiency)))); // 4% lvl
 
     if (item.get() != nullptr) {
-        uint32 specificSkill = item->GetAttribute(AttrReprocessingSkillType).get_int();
+        uint32 specificSkill = item->GetAttribute(AttrReprocessingSkillType).get_uint32();
         if (specificSkill) {
             efficiency *= (1 + 0.05f * cRef->GetSkillLevel(specificSkill));
         } else {

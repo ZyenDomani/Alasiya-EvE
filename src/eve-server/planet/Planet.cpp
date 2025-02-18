@@ -320,7 +320,7 @@ void PlanetSE::CreateCustomsOffice()
     GPoint pos(GetPosition());
     //pos.MakeRandomPointOnSphere(GetRadius() + 700000);
 
-    //uint32 dist = BUBBLE_RADIUS_METERS + 10000/*m_self->GetAttribute(AttrMoonAnchorDistance).get_int()*/;
+    //uint32 dist = BUBBLE_RADIUS_METERS + 10000/*m_self->GetAttribute(AttrMoonAnchorDistance).get_long()*/;
     uint32 radius = GetRadius();
     float rad = EvE::Trig::Deg2Rad(25);
 
