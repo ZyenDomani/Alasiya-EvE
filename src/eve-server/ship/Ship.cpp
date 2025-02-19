@@ -2493,12 +2493,16 @@ bool ShipSE::IsLogin()
 }
 
 void ShipSE::Dock() {
+    // if any modules are active, remove them from target map
     if (m_targMgr != nullptr) {
         m_targMgr->ClearModules();
         m_targMgr->ClearAllTargets(false);
         //m_targMgr->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Docking);
     }
 
+    // if any drones are out, abandon them
+    AbandonDrones();
+    
     m_shipRef->Dock();
 }
 
