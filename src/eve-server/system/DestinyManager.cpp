@@ -644,10 +644,8 @@ void DestinyManager::Bounce(GVector direction, float speed)
 // main movement method
 void DestinyManager::MoveObject() {
     if (m_changeDelay) {
-        // reset m_moveTime and skip this tic
-        // only used by undock
+        // skip this tic - only used by undock
         m_changeDelay = false;
-        //m_moveTime = GetTimeMSeconds() - EvE::Time::Second;
         m_stateStamp = (int32)sEntityMgr.GetStamp();
         _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - ChangeDelay - %s(%u): stateStamp: %i", \
                 mySE->GetName(), mySE->GetID(), m_stateStamp);
@@ -741,7 +739,11 @@ void DestinyManager::MoveObject() {
 
         if (m_userSpeedFraction) {
             // ship has reached full commanded speed
-            move = "at full commanded speed, going";
+            if (mySE->HasPilot() and mySE->GetPilot()->IsUndock()) {
+                move = "ejected from station";
+            } else {
+                move = "at full commanded speed, going";
+            }
             m_activeSpeedFraction = m_userSpeedFraction;
             speed = m_maxSpeed * m_activeSpeedFraction;
         } else {
@@ -793,9 +795,6 @@ void DestinyManager::MoveObject() {
             }
         } else if (m_tractored or m_tractorPause) {
             move = "tractored";
-        } else if (mySE->HasPilot() and mySE->GetPilot()->IsUndock()) {
-            //m_moveTime -= (EvE::Time::Second * m_alignTime);
-            move = "ejected from station";
         } else {
             sLog.Error("Destiny::MoveObject()", "%s(%u) - move checks are not set right. Acc:%s, Dec:%s, timeStamp:%.3f, Tractored:%s, TractorPause:%s", \
                     mySE->GetName(), mySE->GetID(), (m_accel ? "True" : "False"), (m_decel ? "True" : "False"), \
@@ -832,7 +831,7 @@ void DestinyManager::MoveObject() {
         mySE->SetPosition(m_position);
     }
 
-    if (0 and is_log_enabled(DESTINY__MOVE_TRACE)) {
+    if (is_log_enabled(DESTINY__MOVE_TRACE)) {
         if (m_prevSpeedFraction) {
             _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.3f m/s (tf:%.4f asf:%.4f ps:%.2f psf:%.4f).", \
                 mySE->GetName(), mySE->GetID(), move.c_str(), speed, m_timeFraction, m_activeSpeedFraction, m_prevSpeed, m_prevSpeedFraction);
@@ -2430,14 +2429,14 @@ bool DestinyManager::IsAligned(GPoint& targetPoint)
 void DestinyManager::Undock(GPoint dir) {
     //set movement direction
     m_targetPoint = dir * 1.0e15;
-    m_shipHeading = GVector(dir);
+    m_shipHeading = std::move(GVector(dir));
     SetUndockSpeed();
 }
 
 void DestinyManager::SetUndockSpeed() {
-    //start ship movement @ max velocity for undocking.
-    // this simulates being forcefully "ejected" from station (and is currently off)
-    //m_accel = true;
+    //start ship movement @ max velocity for undocking.  also used by missiles to simulate launching @ full speed
+    // this simulates being forcefully "ejected" from station
+    m_accel = true;
     m_changeDelay = true;   // skip next tic before making change
     m_shipAccelTime = 0.5f;
     m_prevSpeedFraction = 0.0f;
@@ -2446,6 +2445,8 @@ void DestinyManager::SetUndockSpeed() {
 
     m_maxSpeed = m_maxShipSpeed;
     m_velocity = m_shipHeading * m_maxSpeed;
+
+    m_moveTime = GetTimeMSeconds();
 
     if (m_ballMode == Destiny::Ball::Mode::MISSILE)
         return;

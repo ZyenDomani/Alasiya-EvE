@@ -220,16 +220,12 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 }
 
 PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
-    _log(AUTOPILOT__MESSAGE, "%s called SetSpeedFraction. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-
     DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
     } else if (pDestiny->IsWarping()) {
-        //{'FullPath': u'UI/Inflight', 'messageID': 237387, 'label': u'CanNotChangeSpeedWhileWarping'}(u'You cannot change speed while warping', None, None)
-
-        call.client->SendNotifyMsg( "You can't do this while warping");
+        call.client->SendNotifyMsg( "You cannot change speed while warping.");
         return PyStatic.NewNone();
     }
 
@@ -238,6 +234,9 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
+
+    _log(AUTOPILOT__MESSAGE, "%s called SetSpeedFraction to %.3f. AP: %s", \
+            call.client->GetName(), arg.arg, (call.client->IsAutoPilot() ? "true" : "false"));
 
     // client should not legally send anything < 0.1 (except on rare occasion a 0.0 instead of Stop.)
     if ((arg.arg != 0.0) and (arg.arg < 0.1))

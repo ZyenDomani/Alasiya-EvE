@@ -174,6 +174,7 @@ Client::~Client() {
         m_char->LogOut();
     }
 
+    //NOTE:  once WarpOut() enabled, dont LogOut or remove ship until they are out of bubble
     // save shipstate and remove from ItemFactory
     m_ship->LogOut();
 
@@ -337,8 +338,6 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
     sItemFactory.UnsetUsingClient();
 
     SetStateTimer(Player::State::Login, Player::Timer::Login);
-    SetInvulTimer(Player::Timer::WarpInInvul);
-    //SetCloakTimer(Player::Timer::LoginCloak);
 
     // set ship cap and shields to full
     m_ship->SetShipShield(1.0);
@@ -556,6 +555,8 @@ void Client::WarpIn() {
     char ci[45];
     snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);
+    SetInvulTimer(Player::Timer::WarpInInvul);
+    SetCloakTimer(Player::Timer::LoginCloak);
     return;
     /*
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.

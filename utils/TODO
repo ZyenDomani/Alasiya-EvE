@@ -773,6 +773,8 @@ create ".modify" command to allow ingame setting of attributes
     - groove has this functionality in his launcher
     - this is done already, but incomplete.  search for ".dogma" command
 
+on tracking, autostop, autoattack command, send lsc msg with current status (like motd)
+
 ***  errors
 
 
