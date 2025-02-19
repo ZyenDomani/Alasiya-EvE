@@ -2505,6 +2505,8 @@ bool ShipSE::IsLogin() {
 }
 
 void ShipSE::Dock() {
+    m_shipRef->Dock();
+
     // if any modules are active, remove them from target map
     if (m_targMgr != nullptr) {
         m_targMgr->ClearModules();
@@ -2514,8 +2516,6 @@ void ShipSE::Dock() {
 
     // if any drones are out, abandon them
     AbandonDrones();
-
-    m_shipRef->Dock();
 }
 
 void ShipSE::Jump(int32 fromGateID, bool showCloak/*true*/) {

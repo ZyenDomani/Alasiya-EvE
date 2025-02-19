@@ -40,8 +40,7 @@ BaseTCPServer::BaseTCPServer()
 {
 }
 
-BaseTCPServer::~BaseTCPServer()
-{
+BaseTCPServer::~BaseTCPServer() {
     // Close socket
     Close();
     // Wait until worker thread terminates
@@ -50,16 +49,14 @@ BaseTCPServer::~BaseTCPServer()
     sThread.RemoveThread(pthread_self());
 }
 
-bool BaseTCPServer::IsOpen() const
-{
+bool BaseTCPServer::IsOpen() const{
     mMSock.Lock();
-    bool ret = (mSock != nullptr);
+    bool ret(mSock != nullptr);
     mMSock.Unlock();
     return ret;
 }
 
-bool BaseTCPServer::Open( uint16 port, char* errbuf )
-{
+bool BaseTCPServer::Open(uint16 port, char* errbuf) {
     if (errbuf != nullptr)
         errbuf[0] = 0;
 
@@ -80,7 +77,7 @@ bool BaseTCPServer::Open( uint16 port, char* errbuf )
     // Setting up TCP port for new TCP connections
     mSock = new Socket( AF_INET, SOCK_STREAM, 0 );
 
-    unsigned int reuse_addr = 1;
+    uint reuse_addr(1);
     mSock->setopt( SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof( reuse_addr ) );
 
     // Setup internet address information.
@@ -99,7 +96,7 @@ bool BaseTCPServer::Open( uint16 port, char* errbuf )
         return false;
     }
 
-    unsigned int bufsize = 64 * 1024; // 64kbyte receive buffer, up from default of 8k
+    uint bufsize(64 * 1024); // 64kbyte receive buffer, up from default of 8k
     mSock->setopt( SOL_SOCKET, SO_RCVBUF, &bufsize, sizeof( bufsize ) );
     mSock->fcntl( F_SETFL, O_NONBLOCK );
     if (mSock->listen() == SOCKET_ERROR) {
@@ -115,21 +112,16 @@ bool BaseTCPServer::Open( uint16 port, char* errbuf )
     return true;
 }
 
-void BaseTCPServer::Close()
-{
-    MutexLock lock(mMSock);
+void BaseTCPServer::Close() {
+    //MutexLock lock(mMSock);
     SafeDelete(mSock);
     mPort = 0;
 }
 
-void BaseTCPServer::StartLoop()
-{
-    /* since there is only one instance of BaseTCPServer, we can create thread here instead
-     * of sending to Thread class for creation and management
-     * update this to use Thread class management (sThread) if management here becomes a problem.
-     */
+void BaseTCPServer::StartLoop() {
+    //  send to Thread class for creation and management
     sThread.CreateThread(TCPServerLoop, this);
-    sLog.Blue( "    BaseTCPServer", "TCP Server threadID 0x%X started on port %u.", pthread_self(), mPort );
+    sLog.Blue("    BaseTCPServer", "TCP Server thread started on port %u.", mPort);
     /*
     pthread_t thread;
     pthread_create( &thread, nullptr, TCPServerLoop, this );
@@ -137,16 +129,14 @@ void BaseTCPServer::StartLoop()
     sThread.AddThread(thread);*/
 }
 
-void BaseTCPServer::WaitLoop()
-{
+void BaseTCPServer::WaitLoop() {
     //wait for running loop to stop.
     mMLoopRunning.Lock();
     mMLoopRunning.Unlock();
 }
 
-bool BaseTCPServer::Process()
-{
-    MutexLock lock( mMSock );
+bool BaseTCPServer::Process() {
+    //MutexLock lock( mMSock );
     if (IsOpen()) {
         ListenNewConnections();
         return true;
@@ -154,8 +144,7 @@ bool BaseTCPServer::Process()
     return false;
 }
 
-void BaseTCPServer::ListenNewConnections()
-{
+void BaseTCPServer::ListenNewConnections() {
     Socket* sock(nullptr);
     sockaddr_in from = sockaddr_in();
     from.sin_family = AF_INET;
@@ -171,8 +160,7 @@ void BaseTCPServer::ListenNewConnections()
     }
 }
 
-void* BaseTCPServer::TCPServerLoop( void* arg )
-{
+void* BaseTCPServer::TCPServerLoop( void* arg ) {
     BaseTCPServer* tcps = reinterpret_cast< BaseTCPServer* >( arg );
     assert( tcps != nullptr );
 
@@ -181,10 +169,9 @@ void* BaseTCPServer::TCPServerLoop( void* arg )
     return nullptr;
 }
 
-void BaseTCPServer::TCPServerLoop()
-{
+void BaseTCPServer::TCPServerLoop() {
     mMLoopRunning.Lock();
-    uint32 start = GetTickCount();
+    uint32 start(GetTickCount());
     while (Process()) {
         // do the stuff for thread sleeping
         start = GetTickCount() - start;

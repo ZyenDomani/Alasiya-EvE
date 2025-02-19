@@ -1070,6 +1070,7 @@ int main( int argc, char* argv[] )
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
     /* close logfile */
     //log_close_logfile();
+    pthread_exit(nullptr);
     return EXIT_SUCCESS;
 }
 

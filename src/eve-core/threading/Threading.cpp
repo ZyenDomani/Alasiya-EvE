@@ -104,10 +104,10 @@ void Threading::AddThread(pthread_t thread) {
 }
 
 void Threading::RemoveThread(pthread_t thread) {
-    for (std::vector<pthread_t>::iterator cur = m_threads.begin(); cur != m_threads.end(); ++cur) {
-        if ((*cur) == thread) {
+    for (std::vector<pthread_t>::iterator itr = m_threads.begin(); itr != m_threads.end(); ++itr) {
+        if ((*itr) == thread) {
             _log(THREAD__INFO, "RemoveThread() called for thread ID 0x%X", thread);
-            m_threads.erase(cur);
+            m_threads.erase(itr);
             return;
         }
     }
@@ -120,16 +120,16 @@ void Threading::ListThreads() {
 }
 
 void Threading::EndThreads() {
-    // should we join here??
+    // should we join here?  no, cant join() detached threads
     if (!m_threads.size()) {
         _log(THREAD__MESSAGE, "EndThreads() - There are no active threads.");
         return;
     }
     _log(THREAD__MESSAGE, "EndThreads() - Joining %lu currently active threads.", m_threads.size());
-    std::vector<pthread_t>::iterator cur = m_threads.begin();
-    while ((cur != m_threads.end())) {
-        _log(THREAD__TRACE, "EndThreads() - Removing threadID 0x%X", (*cur));
-        cur = m_threads.erase(cur);
+    std::vector<pthread_t>::iterator itr = m_threads.begin();
+    while ((itr != m_threads.end())) {
+        _log(THREAD__TRACE, "EndThreads() - Removing threadID 0x%X", (*itr));
+        itr = m_threads.erase(itr);
     }
     m_threads.clear();
 }
