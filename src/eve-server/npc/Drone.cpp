@@ -213,7 +213,8 @@ void DroneSE::DisableDrone() {
 }
 
 void DroneSE::Abandon() {
-    if (m_pShipSE != nullptr)
+    // if ship is docking with drones in space, ShipSE::AbandonDrone(DroneSE*) will invalidate the iterator in ShipSE::AbandonDrones()
+    if ((m_pShipSE != nullptr) and (!m_pShipSE->GetShipItemRef()->IsDocking()))
         m_pShipSE->AbandonDrone(this);
     m_pClient = nullptr;
     m_abandoned = true;
