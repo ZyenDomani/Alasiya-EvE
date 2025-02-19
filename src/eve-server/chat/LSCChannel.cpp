@@ -50,7 +50,7 @@ PyRep *LSCChannelChar::Encode() const {
     rs.line = new PyList();
     rs.line->AddItemInt( m_charID );
     rs.line->AddItemString( m_charName.c_str() );
-    rs.line->AddItemInt( 1378 );    // fix this ... wtf is this??
+    rs.line->AddItemInt( 1378 );    // fix this ... wtf is this??  character typeID?
     line.extra = rs.Encode();//m_extra;
 
     return line.Encode();

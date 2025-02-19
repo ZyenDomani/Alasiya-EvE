@@ -40,7 +40,7 @@ void Threading::Initialize() {
     sleepTime = 10;     //sConfig.rates.NetSleepTime
     tv.tv_sec = 0;
     tv.tv_usec = 0;
-    m_threads.clear();
+    //m_threads.clear();
     sLog.Blue( "        Threading", "Threading System Initialized.");
 }
 
@@ -120,6 +120,7 @@ void Threading::ListThreads() {
 }
 
 void Threading::EndThreads() {
+    // should we join here??
     if (!m_threads.size()) {
         _log(THREAD__MESSAGE, "EndThreads() - There are no active threads.");
         return;

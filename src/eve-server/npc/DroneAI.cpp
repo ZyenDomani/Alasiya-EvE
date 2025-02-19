@@ -1256,10 +1256,10 @@ void DroneAIMgr::Target(SystemEntity* pTargetSE) {
     if (targSE == pTargetSE) {
         // same target.  do nothing
         return;
-    } else {
-        // different target.  check current status
-        //TODO: finish this...
     }
+
+    // different target.  check current status
+    //TODO: finish this...
 
     _log(DRONE__AI_TRACE, "%s(%u) Target() - %s(%s).", \
     mySE->GetName(), mySE->GetID(), GetStateName(m_state), GetActionName(m_action));
@@ -1599,7 +1599,7 @@ void DroneAIMgr::FindTarget() {
 
     if (shipSE == nullptr) {
         //  well, we dont have an assigned ship...now what?
-        SetIdle();
+        Abandon();
         return;
     }
 
@@ -1753,8 +1753,10 @@ void DroneAIMgr::FindTarget() {
 
 void DroneAIMgr::AssignShip(ShipSE* pSE) {
     shipSE = pSE;
-    if (shipSE == nullptr)
+    if (shipSE == nullptr) {
+        Abandon();
         return;
+    }
 
     if (shipSE->GetSelf()->HasAttribute(AttrOreHoldCapacity)) {
         m_holdFlag = flagOreHold;
@@ -1936,6 +1938,9 @@ void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
     _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while %s & %s.", \
                 mySE->GetName(), mySE->GetID(), pAgressor->GetName(), \
                 pAgressor->GetID(), GetStateName(m_state)), GetActionName(m_action);
+
+    if (shipSE == nullptr)
+        return;
 
     std::string text = "target lock on me";
     //01110100 01100001 01110010 01100111 01100101 01110100 00100000 01101100 01101111 01100011 01101011 00100000 01101111 01101110 00100000 01101101 01100101
@@ -2206,12 +2211,14 @@ uint32 DroneAIMgr::GetTargetID() {
         case DroneAI::Action::OrbitTarget:
         case DroneAI::Action::AccelToTarget:
         case DroneAI::Action::DecelToTarget: {
-            return targSE->GetID();
+            if (targSE != nullptr)
+                return targSE->GetID();
         } break;
         case DroneAI::Action::OrbitShip:
         case DroneAI::Action::AccelToShip:
         case DroneAI::Action::DecelToShip: {
-            return shipSE->GetID();
+            if (shipSE != nullptr)
+                return shipSE->GetID();
         } break;
     }
     return 0;
@@ -2351,6 +2358,12 @@ void DroneAIMgr::Pause() {
 void DroneAIMgr::Move(double timeStamp) {
     if (m_maxSpeed == 0)
         return;
+
+    // not sure if this would every be null here...
+    if (shipSE == nullptr) {
+        Abandon();
+        return;
+    }
 
     // this will keep our position ref accurate, so we do need somewhat accurate processing
     //  note that we are hacking this, and not actually orbiting anything

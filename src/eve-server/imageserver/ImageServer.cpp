@@ -23,7 +23,6 @@
     Author:        caytchen
 */
 
-/** @todo  boost is the only system in this code that does NOT leak */
 
 #include "imageserver/ImageServer.h"
 #include "imageserver/ImageServerListener.h"
@@ -58,7 +57,18 @@ void ImageServer::Init() {
             subdir.append(Categories[i]);
             CreateDirectory( subdir.c_str(), NULL );
         }
-    } /* else directory probably exists */
+    }
+
+    // add thread to threadserver?  no, this uses boost and is only system that DOESN'T leak...
+
+    /*
+    sThread.CreateThread(ImgServerLoop, this);
+    --or--
+    pthread_t thread;
+    pthread_create( &thread, nullptr, ImgServerLoop, this );
+    _log(THREAD__WARNING, "StartLoop() - Created thread ID 0x%X for TCPServerLoop", thread);
+    sThread.AddThread(thread);*/
+
     sLog.Blue("      ImageServer", "Image Server Initalized.");
 }
 

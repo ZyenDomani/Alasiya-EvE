@@ -180,7 +180,9 @@ void SystemBubble::Add(SystemEntity* pSE) {
                 SetSpawnTimer(false);
 
         Client* pClient(pSE->GetPilot());
-        SendAddBalls2(pSE);
+        // this is sent in state when undocking
+        if (!pClient->IsUndock())
+            SendAddBalls2(pSE);
         if (!m_players.empty())
             AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
 

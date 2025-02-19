@@ -48,15 +48,7 @@ m_online(false),
 m_damaged(false),
 m_controlDistance(20000),       // 20km default
 m_controllerID(0),
-m_controllerOwnerID(0),
-m_emDamage(0.0f),
-m_expDamage(0.0f),
-m_kinDamage(0.0f),
-m_therDamage(0.0f),
-m_hullDamage(0.0f),
-m_armorDamage(0.0f),
-m_shieldCharge(0.0f),
-m_shieldCapacity(0.0f)
+m_controllerOwnerID(0)
 {
     assert (m_AI != nullptr);
     assert (m_system != nullptr);
@@ -82,9 +74,9 @@ void DroneSE::Init() {
     m_self->SetAttribute(AttrMass,                m_self->type().mass(), false);
     m_self->SetAttribute(AttrRadius,              m_self->type().radius(), false);
     m_self->SetAttribute(AttrVolume,              m_self->type().volume(), false);
-    m_self->SetAttribute(AttrCapacity,            m_self->type().capacity(), false);
-    m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
-    m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
+    //m_self->SetAttribute(AttrCapacity,            m_self->type().capacity(), false);
+    m_self->SetAttribute(AttrShieldCharge,        m_self->type().GetAttribute(AttrShieldCapacity), false);
+    m_self->SetAttribute(AttrCapacitorCharge,     m_self->type().GetAttribute(AttrCapacitorCapacity), false);
 
     // some drones dont have this...check and set as needed
     if (!m_self->HasAttribute(AttrOrbitRange))
@@ -95,16 +87,6 @@ void DroneSE::Init() {
         sLog.Warning("Drone::Init", "%s has no AttrSpeed and AttrDuration", m_self->name());
 
     SetResists();
-
-    /* Gets the value from the Drone and put on our own vars */
-    m_emDamage = m_self->GetAttribute(AttrEmDamage).get_float();
-    m_kinDamage = m_self->GetAttribute(AttrKineticDamage).get_float();
-    m_therDamage = m_self->GetAttribute(AttrThermalDamage).get_float();
-    m_expDamage = m_self->GetAttribute(AttrExplosiveDamage).get_float();
-    m_hullDamage = m_self->GetAttribute(AttrDamage).get_float();
-    m_armorDamage = m_self->GetAttribute(AttrArmorDamage).get_float();
-    m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
-    m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
 
     if (sConfig.drone.RegenShields)
         m_processTimer.Start(SHIP_PROCESS_TICK_MS);
@@ -750,7 +732,9 @@ void DroneSE::EncodeDestiny(Buffer& into) {
 }
 
 void DroneSE::MakeDamageState(DoDestinyDamageState &into) {
-    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
+    float charge(m_self->GetAttribute(AttrShieldCharge).get_float());
+    float capy(m_self->GetAttribute(AttrShieldCapacity).get_float());
+    into.shield = (charge / capy);
     into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() + 5;
     into.timestamp = GetFileTimeNow();
     into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
@@ -826,7 +810,7 @@ void DroneSE::UpdateDroneWithSkills() {
             newValue = m_self->GetAttribute(AttrDamageMultiplier).get_float();
             newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::CombatDroneOperation, true))));
             m_self->SetAttribute(AttrDamageMultiplier, newValue, false);
-        } else if (m_self->type().volume() < 20) {
+        } else if (m_self->type().volume() > 20) {
             // 3441    Heavy Drone Operation  5% Bonus to heavy drone damage per level.
             newValue = m_self->GetAttribute(AttrDamageMultiplier).get_float();
             newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::HeavyDroneOperation, true))));

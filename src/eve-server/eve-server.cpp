@@ -675,6 +675,12 @@ int main( int argc, char* argv[] )
     }
     std::printf("\n");     // spacer
 
+    /* Config loaded, Start thread server and add our main thread. */
+    sThread.Initialize();
+    sLog.Green( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
+    sThread.AddThread(pthread_self());
+    std::printf("\n");     // spacer
+
     /* Start up the TCP server */
     EVETCPServer tcps;
     char errbuf[ TCPCONN_ERRBUF_SIZE ];
@@ -715,10 +721,6 @@ int main( int argc, char* argv[] )
     sImageServer.Run();
     //  this gives the imageserver's server time to load so the dynamic database msgs are in order
     Sleep(250);
-
-    sThread.Initialize();
-    sLog.Green( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
-    sThread.AddThread(pthread_self());
     std::printf("\n");     // spacer
 
     // basic shit done.  begin loading server specifics...

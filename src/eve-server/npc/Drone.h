@@ -105,10 +105,11 @@ public:
 
     uint32              GetBounty() const               { return (m_pClient == nullptr ? 0 : m_pClient->GetChar()->bounty()); }
 
-    float               GetThermal()                    { return m_therDamage; }
-    float               GetEM()                         { return m_emDamage; }
-    float               GetKinetic()                    { return m_kinDamage; }
-    float               GetExplosive()                  { return m_expDamage; }
+    float               GetThermal()                    { return m_self->GetAttribute(AttrThermalDamage).get_float(); }
+    float               GetEM()                         { return m_self->GetAttribute(AttrEmDamage).get_float(); }
+    float               GetKinetic()                    { return m_self->GetAttribute(AttrKineticDamage).get_float(); }
+    float               GetExplosive()                  { return m_self->GetAttribute(AttrExplosiveDamage).get_float(); }
+
     float               GetSecurityRating() const       { return (m_pClient == nullptr ? 0.0f : m_pClient->GetChar()->GetSecurityRating()); }
 
     /* for destiny setstate */
@@ -177,15 +178,6 @@ private:
     uint32              m_controlDistance;
     uint32              m_controllerID;
     uint32              m_controllerOwnerID;
-
-    float               m_emDamage;
-    float               m_expDamage;
-    float               m_kinDamage;
-    float               m_therDamage;
-    float               m_hullDamage;
-    float               m_armorDamage;
-    float               m_shieldCharge;
-    float               m_shieldCapacity;
 };
 
 #endif /* !__DRONE__H__INCL__ */

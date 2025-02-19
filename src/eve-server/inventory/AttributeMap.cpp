@@ -117,7 +117,7 @@ bool AttributeMap::Save() {
      *
      *  ship damage saved separately
      */
-    if (IsStaticItem(mItem.itemID()))
+    if (IsStaticItem(mItem.itemID()) or IsTempItem(mItem.itemID()))
         return true;
 
     bool save(false);

@@ -207,22 +207,35 @@ void ShipItem::InitAttribs()
     SetAttribute(AttrAgility, agility, false);
 
     // Check for existence of attributes.  if not loaded then set them to default values:
-    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, EvilZero, false);
-    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, EvilZero, false);
+    if (!HasAttribute(AttrDamage))
+        SetAttribute(AttrDamage, EvilZero, false);
+    if (!HasAttribute(AttrArmorDamage))
+        SetAttribute(AttrArmorDamage, EvilZero, false);
     // shield and cap are part of persistence, and loaded on attrib map initialization.  check for and set to full if no saved value found
-    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrShieldCharge,  GetAttribute(AttrShieldCapacity), false);
-    if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrCapacitorCharge,  GetAttribute(AttrCapacitorCapacity), false);
-    if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((float)BUBBLE_RADIUS_METERS), false);
+    if (!HasAttribute(AttrShieldCharge))
+        SetAttribute(AttrShieldCharge,  type().GetAttribute(AttrShieldCapacity), false);
+    if (!HasAttribute(AttrCapacitorCharge))
+        SetAttribute(AttrCapacitorCharge,  type().GetAttribute(AttrCapacitorCapacity), false);
+    if (!HasAttribute(AttrMaximumRangeCap))
+        SetAttribute(AttrMaximumRangeCap, ((float)BUBBLE_RADIUS_METERS), false);
     // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some (t2 indy) already have it defined):
-    if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, EvilZero, false);
-    if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, EvilOne, false);
-    if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, EvilOne, false);
-    if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, EvilOne, false);
+    if (!HasAttribute(AttrWarpScrambleStatus))
+        SetAttribute(AttrWarpScrambleStatus, EvilZero, false);
+    if (!HasAttribute(AttrWarpSpeedMultiplier))
+        SetAttribute(AttrWarpSpeedMultiplier, EvilOne, false);
+    if (!HasAttribute(AttrArmorMaxDamageResonance))
+        SetAttribute(AttrArmorMaxDamageResonance, EvilOne, false);
+    if (!HasAttribute(AttrShieldMaxDamageResonance))
+        SetAttribute(AttrShieldMaxDamageResonance, EvilOne, false);
     // hull res is stored in item type as AttrHull*Resonance for 6 ships.  set accordingly
-    if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance,  GetAttribute(AttrHullEmDamageResonance), false);
-    if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance,  GetAttribute(AttrHullKineticDamageResonance), false);
-    if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance,  GetAttribute(AttrHullThermalDamageResonance), false);
-    if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance,  GetAttribute(AttrHullExplosiveDamageResonance), false);
+    if (!HasAttribute(AttrEmDamageResonance))
+        SetAttribute(AttrEmDamageResonance,  GetAttribute(AttrHullEmDamageResonance), false);
+    if (!HasAttribute(AttrKineticDamageResonance))
+        SetAttribute(AttrKineticDamageResonance,  GetAttribute(AttrHullKineticDamageResonance), false);
+    if (!HasAttribute(AttrThermalDamageResonance))
+        SetAttribute(AttrThermalDamageResonance,  GetAttribute(AttrHullThermalDamageResonance), false);
+    if (!HasAttribute(AttrExplosiveDamageResonance))
+        SetAttribute(AttrExplosiveDamageResonance,  GetAttribute(AttrHullExplosiveDamageResonance), false);
 
     // ship bonuses....are these set in ship fx?
     /*
@@ -2485,8 +2498,7 @@ bool ShipSE::IsInvul() {
     return false;
 }
 
-bool ShipSE::IsLogin()
-{
+bool ShipSE::IsLogin() {
     if (m_shipRef->HasPilot())
         return m_shipRef->GetPilot()->IsLogin();
     return false;
@@ -2502,7 +2514,7 @@ void ShipSE::Dock() {
 
     // if any drones are out, abandon them
     AbandonDrones();
-    
+
     m_shipRef->Dock();
 }
 
@@ -2639,7 +2651,10 @@ void ShipSE::EncodeDestiny( Buffer& into) {
 }
 
 void ShipSE::MakeDamageState(DoDestinyDamageState &into) {
-    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
+    float charge(m_self->GetAttribute(AttrShieldCharge).get_float());
+    float capy(m_self->GetAttribute(AttrShieldCapacity).get_float());
+    into.shield = (charge / capy);
+    //into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
     into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() + 7;
     into.timestamp = GetFileTimeNow();
     into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
