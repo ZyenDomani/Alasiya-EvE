@@ -104,7 +104,7 @@ void Threading::AddThread(pthread_t thread) {
 }
 
 void Threading::RemoveThread(pthread_t thread) {
-    for (std::vector<pthread_t>::iterator cur = m_threads.begin(); cur != m_threads.end(); cur++) {
+    for (std::vector<pthread_t>::iterator cur = m_threads.begin(); cur != m_threads.end(); ++cur) {
         if ((*cur) == thread) {
             _log(THREAD__INFO, "RemoveThread() called for thread ID 0x%X", thread);
             m_threads.erase(cur);

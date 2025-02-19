@@ -718,7 +718,7 @@ int main( int argc, char* argv[] )
 
     sThread.Initialize();
     sLog.Green( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
-    //sThread.AddThread(pthread_self());
+    sThread.AddThread(pthread_self());
     std::printf("\n");     // spacer
 
     // basic shit done.  begin loading server specifics...
