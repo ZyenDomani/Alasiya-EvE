@@ -289,7 +289,7 @@ void MapDB::GetSystemJumps(DBQueryResult& res)
 void MapDB::SystemStartup()
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = 0, jumpsHour = 0, pilotsDocked = 0, pilotsInSpace = 0, moduleCnt = 0, structureCnt = 0 WHERE 1");
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = 0, jumpsHour = 0, pilotsDocked = 0, pilotsInSpace = 0, moduleCnt = 0, structureCnt = 0 ");
 }
 
 /**

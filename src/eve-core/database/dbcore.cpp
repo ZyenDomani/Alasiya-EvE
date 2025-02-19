@@ -36,7 +36,7 @@
 #define COLUMN_BOUNDS_CHECKING
 
 // this is to enable profile tracking for db
-#define sProfiler ( Profiler::get() )
+#define sProfiler (Profiler::get())
 class Profiler
 : public Singleton<Profiler>
 {
@@ -54,12 +54,49 @@ pSocket(false),
 pSSL(false),
 pPort(3306)
 {
-    mysql_thread_init();    // this is for each thread used for db connections
+    // this is for each thread used for db connections
+    // since this is a singleton, only one thread is ever used.  may change this later.
+    mysql_thread_init();
     mysql = mysql_init(nullptr);
 }
 
-void DBcore::Connect(uint* errnum, char* errbuf)
+void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/,
+                        bool SSL/*false*/, int16 port/*3306*/, bool socket/*false*/, bool reconnect/*false*/, bool profile/*false*/)
 {
+    if (mysql == nullptr)
+        mysql = mysql_init(nullptr);    // try again
+    if (mysql == nullptr) {
+        sLog.Error("       ServerInit", "Unable to connect to the database:  mysql_init returned null");
+        return;
+    }
+    if (pStatus == Connected)
+        return;
+
+    pHost = std::move(host);
+    pUser = std::move(user);
+    pPassword = std::move(password);
+    pDatabase = std::move(database);
+    pPort = std::move(port);
+    pSSL = std::move(SSL);
+    pCompress = std::move(compress);
+    pSocket = std::move(socket);
+    pReconnect = std::move(reconnect);
+    pProfile = std::move(profile);
+
+    if (pHost.empty() or pUser.empty() or pPassword.empty() or pDatabase.empty()) {
+        sLog.Error("       ServerInit", "Unable to connect to the database:  required connect field(s) are empty.");
+        return;
+    }
+
+    uint errnum(0);
+    char errbuf[1024];
+    errbuf[0] = 0;
+
+    Connect(&errnum, errbuf);
+    sLog.Blue(" DataBase Manager", "DataBase Manager Initialized");
+}
+
+void DBcore::Connect(uint* errnum, char* errbuf) {
     sLog.Cyan("          DB User", " %s", pUser.c_str());
     sLog.Cyan("         DataBase", " %s", pDatabase.c_str());
 
@@ -128,9 +165,9 @@ void DBcore::Connect(uint* errnum, char* errbuf)
             snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
             DBerror err;
             err.SetError(*errnum, errbuf);
-            sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
+            sLog.Error("       ServerInit", "Unable to connect to the database: %s", err.c_str());
         } else {
-            sLog.Error( "       ServerInit", "Unable to connect to the database: Error returned null");
+            sLog.Error("       ServerInit", "Unable to connect to the database: Error returned null");
         }
         return;
     } else {
@@ -144,15 +181,14 @@ void DBcore::Connect(uint* errnum, char* errbuf)
         sLog.Cyan(" DataBase Manager", "DataBase Character set: %s", mysql_character_set_name(mysql));
 }
 
-bool DBcore::Reconnect()
-{
+bool DBcore::Reconnect() {
     _log(DATABASE__MESSAGE, "DBCore attempting to recover...");
     Close();
     mysql = mysql_init(nullptr);
-    uint errnum = 0;
+    uint errnum(0);
     char errbuf[1024];
     errbuf[0] = 0;
-    MutexLock lock(MDatabase);
+    //MutexLock lock(MDatabase);
     Connect(&errnum, errbuf);
 
     if (pStatus == Connected)
@@ -161,47 +197,9 @@ bool DBcore::Reconnect()
     return pStatus;
 }
 
-void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/,
-                        bool SSL/*false*/, int16 port/*3306*/, bool socket/*false*/, bool reconnect/*false*/, bool profile/*false*/)
-{
-    if (mysql == nullptr)
-        mysql = mysql_init(nullptr);    // try again
-    if (mysql == nullptr) {
-        sLog.Error( "       ServerInit", "Unable to connect to the database:  mysql_init returned null");
-        return;
-    }
-    if (pStatus == Connected)
-        return;
-
-    pHost = std::move(host);
-    pUser = std::move(user);
-    pPassword = std::move(password);
-    pDatabase = std::move(database);
-    pPort = std::move(port);
-    pSSL = std::move(SSL);
-    pCompress = std::move(compress);
-    pSocket = std::move(socket);
-    pReconnect = std::move(reconnect);
-    pProfile = std::move(profile);
-
-    if (pHost.empty() or pUser.empty() or pPassword.empty() or pDatabase.empty()) {
-        sLog.Error( "       ServerInit", "Unable to connect to the database:  required connect field(s) are empty.");
-        return;
-    }
-
-    uint errnum = 0;
-    char errbuf[1024];
-    errbuf[0] = 0;
-
-    MutexLock lock(MDatabase);
-
-    Connect(&errnum, errbuf);
-    sLog.Blue(" DataBase Manager", "DataBase Manager Initialized");
-}
-
 void DBcore::Close() {
-    pStatus = Closed;
     mysql_close(mysql);
+    pStatus = Closed;
     mysql_server_end();
     mysql_thread_end();   // this is for each thread used for db connections
 }
@@ -221,7 +219,7 @@ void DBcore::CallShutdown()
 // Sends the MySQL server a ping
 void DBcore::ping() {
     // well, if it's locked, someone's using it. If someone's using it, it doesn't need a ping
-    if ( MDatabase.TryLock() ) {
+    if (MDatabase.TryLock()) {
         mysql_ping(mysql);
         MDatabase.Unlock();
     }
@@ -229,12 +227,10 @@ void DBcore::ping() {
 
 //query which returns a result (error is stored in the result if it occurs)
 bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
-    MutexLock lock(MDatabase);
-
-    char query[4096];
+    char query[1096];
     va_list vlist;
     va_start(vlist, query_fmt);
-    int querylen = std::vsnprintf(query, 4096, query_fmt, vlist);
+    int querylen = std::vsnprintf(query, 1096, query_fmt, vlist);
     va_end(vlist);
 
     if (!DoQuery_locked(into.error, query, querylen))
@@ -254,8 +250,6 @@ bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
 
 //query which returns only error status
 bool DBcore::RunQuery(DBerror &err, const char *query_fmt, ...) {
-    MutexLock lock(MDatabase);
-
     va_list args;
     va_start(args, query_fmt);
     char* query(nullptr);
@@ -273,8 +267,6 @@ bool DBcore::RunQuery(DBerror &err, const char *query_fmt, ...) {
 
 //query which returns affected rows:  (not used)
 bool DBcore::RunQuery(DBerror &err, uint32 &affected_rows, const char *query_fmt, ...) {
-    MutexLock lock(MDatabase);
-
     va_list args;
     va_start(args, query_fmt);
     char* query(nullptr);
@@ -292,8 +284,6 @@ bool DBcore::RunQuery(DBerror &err, uint32 &affected_rows, const char *query_fmt
 
 //query which returns last insert ID:
 bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query_fmt, ...) {
-    MutexLock lock(MDatabase);
-
     va_list args;
     va_start(args, query_fmt);
     char* query(nullptr);
@@ -309,24 +299,23 @@ bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query
     return true;
 }
 
-bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool retry/*true*/)
-{
+bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool retry/*true*/) {
     double profileStartTime = GetTimeUSeconds();
-
+/*
     if (mysql == nullptr) {
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore - mysql = null");
-        //if (!Reconnect())
+        if (!Reconnect())
             return false;
     }
 
     if (pStatus != Connected) {
         codelog(DATABASE__ERROR, "DBCore - Status != Connected");
         _log(DATABASE__MESSAGE, "DBCore error detected.  Look for error msgs in logs prior to this point.");
-        //if (!Reconnect())
-        //    return false;
+        if (!Reconnect())
+            return false;
     }
-
+*/
     if (is_log_enabled(DATABASE__QUERIES))
         _log(DATABASE__QUERIES, "DBcore Query - %s", query);
 
@@ -338,8 +327,8 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
         // there are many correctable errors to check for
         if ((num == CR_SERVER_LOST) or (num == CR_SERVER_GONE_ERROR)) {
             _log(DATABASE__ERROR, "DBCore error - server lost or gone.");
-            //if (!Reconnect())
-            //    return false;
+            if (!Reconnect())
+                return false;
         }
 
         if ((pStatus == Connected) and retry)
@@ -419,7 +408,7 @@ DBerror::~DBerror()
     mErrStr.clear();
 }
 
-void DBerror::SetError( uint err, const char* str )
+void DBerror::SetError(uint err, const char* str)
 {
     mErrStr = str;
     mErrNo = err;
@@ -508,37 +497,32 @@ mFields(nullptr)
 {
 }
 
-DBQueryResult::~DBQueryResult()
-{
-    SafeDeleteArray( mFields );
-
-    if (mResult != nullptr)
-        mysql_free_result( mResult );
-}
-
-void DBQueryResult::Reset()
-{
-    mColumnCount = 0;
-    SafeDeleteArray( mFields );
+DBQueryResult::~DBQueryResult() {
+    SafeDeleteArray(mFields);
 
     if (mResult != nullptr)
         mysql_free_result(mResult);
 }
 
-bool DBQueryResult::IsUnsigned( uint32 index ) const
-{
+void DBQueryResult::Reset() {
+    mColumnCount = 0;
+    SafeDeleteArray(mFields);
+
+    if (mResult != nullptr)
+        mysql_free_result(mResult);
+}
+
+bool DBQueryResult::IsUnsigned(uint32 index) const {
     return ((mFields[index]->flags & UNSIGNED_FLAG) == UNSIGNED_FLAG);
 }
 
-bool DBQueryResult::IsBinary( uint32 index ) const
-{
+bool DBQueryResult::IsBinary(uint32 index) const {
     // According to MySQL C API Documentation, binary string
     // fields like BLOB or VAR_BINARY have charset "63".
     return (mFields[index]->charsetnr == 63);
 }
 
-void DBQueryResult::SetResult( MYSQL_RES* res, uint32 colCount )
-{
+void DBQueryResult::SetResult(MYSQL_RES* res, uint32 colCount) {
     Reset();
 
     mResult = res;
@@ -546,32 +530,30 @@ void DBQueryResult::SetResult( MYSQL_RES* res, uint32 colCount )
 
     if (mResult != nullptr) {
         mFields = new MYSQL_FIELD*[ mColumnCount ];
-        for( uint16 i = 0; i < mColumnCount; i++ )
-            mFields[ i ] = mysql_fetch_field( mResult );
+        for(uint16 i = 0; i < mColumnCount; i++)
+            mFields[ i ] = mysql_fetch_field(mResult);
     }
 }
 
-bool DBQueryResult::GetRow( DBResultRow& into )
-{
+bool DBQueryResult::GetRow(DBResultRow& into) {
     if (mResult == nullptr)
         return false;
 
-    MYSQL_ROW row = mysql_fetch_row( mResult );
+    MYSQL_ROW row = mysql_fetch_row(mResult);
     if (row == nullptr)
         return false;
 
-    const ulong* lengths = mysql_fetch_lengths( mResult );
+    const ulong* lengths = mysql_fetch_lengths(mResult);
     if (lengths == nullptr)
         return false;
 
-    into.SetData( this, row, lengths );
+    into.SetData(this, row, lengths);
     return true;
 }
 
-const char* DBQueryResult::ColumnName( uint32 index ) const
-{
+const char* DBQueryResult::ColumnName(uint32 index) const {
     if (index >= mColumnCount) {
-        _log(DATABASE__ERROR,  "DBCore ColumnName: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount );
+        _log(DATABASE__ERROR,  "DBCore ColumnName: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount);
         EvE::traceStack();
         return "(ERROR)";
     }
@@ -579,20 +561,19 @@ const char* DBQueryResult::ColumnName( uint32 index ) const
     return mFields[ index ]->name;
 }
 
-DBTYPE DBQueryResult::ColumnType( uint32 index ) const
-{
+DBTYPE DBQueryResult::ColumnType(uint32 index) const {
     if (index >= mColumnCount) {
-        _log(DATABASE__ERROR,  "DBCore ColumnType: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount );
+        _log(DATABASE__ERROR,  "DBCore ColumnType: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount);
         EvE::traceStack();
         return DBTYPE_STR;
     }
 
     uint16 columnType = mFields[ index ]->type;
 
-    if ( columnType > MYSQL_TYPE_BIT )
-        columnType -= 229;  //( MYSQL_TYPE_NEWDECIMAL - MYSQL_TYPE_BIT - 1 )
+    if (columnType > MYSQL_TYPE_BIT)
+        columnType -= 229;  //(MYSQL_TYPE_NEWDECIMAL - MYSQL_TYPE_BIT - 1)
 
-    DBTYPE result = ( IsUnsigned( index ) ? MYSQL_DBTYPE_TABLE_UNSIGNED : MYSQL_DBTYPE_TABLE_SIGNED )[ columnType ];
+    DBTYPE result = (IsUnsigned(index) ? MYSQL_DBTYPE_TABLE_UNSIGNED : MYSQL_DBTYPE_TABLE_SIGNED)[ columnType ];
 
     // test for numeric type and set to signed 64b integer.  may have to revise this to float/double depending on what's found.
     if (result == DBTYPE_ERROR)
@@ -604,29 +585,27 @@ DBTYPE DBQueryResult::ColumnType( uint32 index ) const
         result = DBTYPE_BYTES;
 
     /* debug check */
-    assert( result != DBTYPE_ERROR);
+    assert(result != DBTYPE_ERROR);
     return result;
 }
 
 
 DBResultRow::DBResultRow()
-: mRow( nullptr ),
-mLengths( nullptr ),
-mResult( nullptr )
+: mRow(nullptr),
+mLengths(nullptr),
+mResult(nullptr)
 {
 }
 
-void DBResultRow::SetData( DBQueryResult* res, MYSQL_ROW& row, const ulong* lengths )
-{
+void DBResultRow::SetData(DBQueryResult* res, MYSQL_ROW& row, const ulong* lengths) {
     mRow = row;
     mResult = res;
     mLengths = lengths;
 }
 
-uint32 DBResultRow::ColumnLength( uint32 index ) const
-{
+uint32 DBResultRow::ColumnLength(uint32 index) const {
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetColumnLength: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetColumnLength: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
@@ -634,22 +613,20 @@ uint32 DBResultRow::ColumnLength( uint32 index ) const
     return mLengths[ index ];
 }
 
-int32 DBResultRow::GetInt( uint32 index ) const
-{
+int32 DBResultRow::GetInt(uint32 index) const {
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtol( mRow[index], nullptr, 0 );
+    return strtol(mRow[index], nullptr, 0);
 }
 
-bool DBResultRow::GetBool( uint32 index ) const
-{
+bool DBResultRow::GetBool(uint32 index) const {
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetBool: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetBool: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return false;
     }
@@ -657,60 +634,55 @@ bool DBResultRow::GetBool( uint32 index ) const
     return (mRow[index][0] != 0);
 }
 
-uint8 DBResultRow::GetUInt8( uint32 index ) const
-{
+uint8 DBResultRow::GetUInt8(uint32 index) const {
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtoul( mRow[index], nullptr, 0 );
+    return strtoul(mRow[index], nullptr, 0);
 }
 
-uint32 DBResultRow::GetUInt( uint32 index ) const
-{
+uint32 DBResultRow::GetUInt(uint32 index) const {
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetUInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetUInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtoul( mRow[index], nullptr, 0 );
+    return strtoul(mRow[index], nullptr, 0);
 }
 
-int64 DBResultRow::GetInt64( uint32 index ) const
-{
+int64 DBResultRow::GetInt64(uint32 index) const {
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetInt64: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetInt64: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtoll( mRow[index], nullptr, 0 );
+    return strtoll(mRow[index], nullptr, 0);
 }
 
-float DBResultRow::GetFloat( uint32 index ) const
-{
+float DBResultRow::GetFloat(uint32 index) const {
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetFloat: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetFloat: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0.0f;
     }
 
-    return strtof( mRow[index], nullptr );
+    return strtof(mRow[index], nullptr);
 }
 
-double DBResultRow::GetDouble( uint32 index ) const
-{
+double DBResultRow::GetDouble(uint32 index) const {
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetDouble: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetDouble: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0.0;
     }
 
-    return strtod( mRow[index], nullptr );
+    return strtod(mRow[index], nullptr);
 }

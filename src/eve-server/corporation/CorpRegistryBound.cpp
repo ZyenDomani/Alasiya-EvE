@@ -189,7 +189,7 @@ PyResult CorpRegistryBound::Handle_GetCorporation(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_GetRoles(PyCallArgs &call)
-{   // working  
+{   // working
     return m_db.GetCorpRoles();
 }
 
@@ -1222,7 +1222,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
 //SELECT `characterID`\
 `corpRole`, `rolesAtAll`, `rolesAtHQ`, `rolesAtBase`, `rolesAtOther`, \
 `grantableRoles`, `grantableRolesAtHQ`, `grantableRolesAtBase`, `grantableRolesAtOther`,\
-`titleMask`, `blockRoles`, `baseID`, `startDateTime` FROM `chrCharacters` WHERE 1
+`titleMask`, `blockRoles`, `baseID`, `startDateTime` FROM `chrCharacters` 
 bool CorpRegistryBound::GetSearchValues(int8 op, PyRep* rep, std::ostringstream& query)
 {
     using namespace Corp;

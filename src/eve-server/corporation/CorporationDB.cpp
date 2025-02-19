@@ -1973,7 +1973,7 @@ void CorporationDB::GetAutoPay(uint32 corpID, DBQueryResult& res)
 
 void CorporationDB::SetAutoPay()
 {
-    //UPDATE crpAutoPay SET corporationID=[value-1],market=[value-2],rental=[value-3],broker=[value-4],war=[value-5],alliance=[value-6],sov=[value-7] WHERE 1
+    //UPDATE crpAutoPay SET corporationID=[value-1],market=[value-2],rental=[value-3],broker=[value-4],war=[value-5],alliance=[value-6],sov=[value-7]
 }
 
 void CorporationDB::AddItemEvent(uint32 corpID, uint32 charID, uint16 eTypeID)

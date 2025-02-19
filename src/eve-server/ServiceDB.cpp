@@ -191,9 +191,10 @@ void ServiceDB::SetServerOnlineStatus(bool online) {
                        (online ? 1 : 0), (online ? "UNIX_TIMESTAMP(CURRENT_TIMESTAMP)" : "0"));
 
     //this is only called on startup/shutdown.  reset all char online counts/status'
-    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = 0 WHERE 1");
-    sDatabase.RunQuery(err, "UPDATE account SET online = 0 WHERE 1");
-    sDatabase.RunQuery( err, "DELETE FROM chrPausedSkillQueue WHERE 1");
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = 0");
+    sDatabase.RunQuery(err, "UPDATE account SET online = 0");
+    //sDatabase.RunQuery(err, "TRUNCATE TABLE chrPausedSkillQueue");  //0.2980 s
+    sDatabase.RunQuery(err, "DELETE FROM `chrPausedSkillQueue` ");    //0.0029 s
 }
 
 void ServiceDB::SetAccountOnlineStatus(uint32 accountID, bool online) {
@@ -228,7 +229,7 @@ uint32 ServiceDB::GetStationOwner(uint32 stationID)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT corporationID FROM staStations WHERE stationID = %u", stationID)) {
-        codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query ownerID for station %u: %s.", stationID, res.error.c_str());
         return false;
     }
 
@@ -240,6 +241,7 @@ uint32 ServiceDB::GetStationOwner(uint32 stationID)
     }
 }
 
+// not used...not sure what this was for...
 bool ServiceDB::GetConstant(const char *name, uint32 &into)
 {
     DBQueryResult res;

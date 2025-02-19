@@ -193,6 +193,7 @@ private:
     bool    DoQuery_locked(DBerror &err, const char *query, int querylen, bool retry = true);
 
     MYSQL*  mysql;
+    // this is not used right, nor is it needed for single-thread instance
     Mutex   MDatabase;
     eStatus pStatus;
 

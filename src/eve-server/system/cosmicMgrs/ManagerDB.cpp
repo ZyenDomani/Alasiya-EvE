@@ -578,7 +578,7 @@ void ManagerDB::RemoveAsteroid(uint32 asteroidID)
 void ManagerDB::ClearAsteroids()
 {
     DBerror err;
-    sDatabase.RunQuery(err, "DELETE FROM sysAsteroids WHERE 1");
+    sDatabase.RunQuery(err, "DELETE FROM sysAsteroids");
     sDatabase.RunQuery(err, "ALTER TABLE sysAsteroids auto_increment = 450000000");
 }
 
@@ -723,8 +723,8 @@ void ManagerDB::SaveActiveDungeon(Dungeon::ActiveData& dun)
 void ManagerDB::ClearDungeons()
 {
     DBerror err;
-    sDatabase.RunQuery(err, "DELETE FROM dunActive WHERE 1");
-    sDatabase.RunQuery(err, "DELETE FROM sysSignatures WHERE dungeonType != 6 AND 1");
+    sDatabase.RunQuery(err, "DELETE FROM dunActive");
+    sDatabase.RunQuery(err, "DELETE FROM sysSignatures WHERE dungeonType != 6");
     // anomaly items are all temp, except roids, so we may not need this...
     //sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID IN (SELECT itemID FROM entity WHERE customInfo LIKE 'Dungeon%%')");
     //sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE 'Dungeon%%'");

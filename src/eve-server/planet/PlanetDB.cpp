@@ -193,7 +193,7 @@ void PlanetDB::UpdateLaunchStatus(uint32 itemID, uint8 status)
 
 void PlanetDB::GetExtractorsForPlanet(uint32 planetID, DBQueryResult& res)
 {
-    //SELECT ccPinID, ownerID, ecuID, headID, typeID, latitude, longitude FROM piECUHeads WHERE 1
+    //SELECT ccPinID, ownerID, ecuID, headID, typeID, latitude, longitude FROM piECUHeads
     if (!sDatabase.RunQuery(res,
         "SELECT headID, typeID, ownerID, latitude, longitude"
         " FROM piECUHeads"
