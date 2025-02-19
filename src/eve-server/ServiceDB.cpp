@@ -75,7 +75,7 @@ bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& 
     sDatabase.DoEscapeString(eLogin, ccp.user_name);
 
     DBQueryResult res;
-    if ( !sDatabase.RunQuery( res,
+    if ( !sDatabase.RunQuery(res,
         "SELECT accountID, clientID, password, hash, role, type, online, banned, logonCount, lastLogin"
         " FROM account WHERE accountName = '%s'", eLogin.c_str()))
     {

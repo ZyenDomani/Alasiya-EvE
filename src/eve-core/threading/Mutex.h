@@ -64,13 +64,8 @@ public:
     void Unlock();
 
 protected:
-#ifdef HAVE_WINDOWS_H
-    /// A critical section used for mutex implementation on Windows.
-    CRITICAL_SECTION mCriticalSection;
-#else /* !HAVE_WINDOWS_H */
-    /// A pthread mutex used for mutex implementation using pthread library.
+    // A pthread mutex used for mutex implementation using pthread library.
     pthread_mutex_t mMutex;
-#endif /* !HAVE_WINDOWS_H */
 };
 
 /// Convenience typedef for Mutex's lock.

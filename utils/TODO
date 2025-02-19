@@ -329,6 +329,12 @@ DATA RACE!!
 19:07:07 [SetStateDump]           [16]   Args:   [10]   Key:     String: 'allianceID'
 
 
+after all sDatabase.RunQuery(res, ...) queries that return result, add mysql_free_result(res);
+    * >655 matches @45% search
+    currently, this is only called on Reset() which is called before running a new query...
+    no...dtor and Reset() both call mysql_free_result().
+
+
 RefObjects -
     - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
     - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr  (see core/utils/singleton.h)

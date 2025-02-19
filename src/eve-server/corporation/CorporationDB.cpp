@@ -997,7 +997,7 @@ void CorporationDB::GetMemberIDs(uint32 corpID, std::vector< uint32 >& ids, bool
 PyRep* CorporationDB::GetCorpRoles()
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery( res, "SELECT roleID, roleName, shortDescriptionID, descriptionID, roleIID FROM crpRoles")) {
+    if (!sDatabase.RunQuery(res, "SELECT roleID, roleName, shortDescriptionID, descriptionID, roleIID FROM crpRoles")) {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
@@ -1008,7 +1008,7 @@ PyRep* CorporationDB::GetCorpRoles()
 PyRep* CorporationDB::GetCorpRoleGroups()
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery( res,
+    if (!sDatabase.RunQuery(res,
         "SELECT roleGroupID, roleGroupName, roleGroupNameID, roleMask, appliesTo, appliesToGrantable, isLocational, isDivisional"
         " FROM crpRoleGroups"))
     {
@@ -1034,7 +1034,7 @@ bool CorporationDB::UpdateTitle(uint32 corpID, Call_UpdateTitleData& args, PyDic
         return false;
 
     DBQueryResult res;
-    if (!sDatabase.RunQuery( res,
+    if (!sDatabase.RunQuery(res,
         "SELECT titleName, roles, grantableRoles, rolesAtHQ, grantableRolesAtHQ, rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther "
         " FROM crpRoleTitles WHERE corporationID = %u AND titleID = %u", corpID, args.titleID))
     {
@@ -1090,7 +1090,7 @@ bool CorporationDB::UpdateTitle(uint32 corpID, Call_UpdateTitleData& args, PyDic
 PyRep* CorporationDB::GetTitles(uint32 corpID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery( res,
+    if (!sDatabase.RunQuery(res,
         "SELECT corporationID, titleID, titleName, roles, grantableRoles, rolesAtHQ, grantableRolesAtHQ, rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther "
         " FROM crpRoleTitles WHERE corporationID = %u", corpID)) {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -1136,7 +1136,7 @@ PyRep* CorporationDB::GetContacts(uint32 corpID)
     _log(SOV__DEBUG, "CorporationDB::GetContacts() called...");
 
     DBQueryResult res;
-    if (!sDatabase.RunQuery( res,
+    if (!sDatabase.RunQuery(res,
         "SELECT contactID, inWatchlist, relationshipID, labelMask"
         " FROM crpContacts WHERE ownerID = %u", corpID))
     {
@@ -1190,7 +1190,7 @@ PyObject *CorporationDB::GetEveOwners(uint32 corpID) {
               ["gender" => <1> [Bool]]
               */
 
-    if (!sDatabase.RunQuery( res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " characterID AS ownerID,"
         " characterName AS ownerName,"

@@ -92,7 +92,7 @@ void CertificateMgrDB::UpdateCertificate ( uint32 charID, uint32 certificateID, 
 bool CertificateMgrDB::LoadCertificates( uint32 characterID, CertMap &into )
 {
     DBQueryResult res;
-    if ( !sDatabase.RunQuery( res, "SELECT certificateID, grantDate, visibilityFlags FROM chrCertificates WHERE characterID=%u", characterID)) {
+    if ( !sDatabase.RunQuery(res, "SELECT certificateID, grantDate, visibilityFlags FROM chrCertificates WHERE characterID=%u", characterID)) {
         _log(DATABASE__ERROR, "Failed to query certificates of character %u: %s", characterID, res.error.c_str() );
         return false;
     }

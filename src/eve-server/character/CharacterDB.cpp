@@ -895,7 +895,7 @@ void CharacterDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
 PyRep* CharacterDB::GetContacts(uint32 charID, bool blocked)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery( res,
+    if (!sDatabase.RunQuery(res,
         "SELECT contactID, inWatchlist, relationshipID, labelMask"
         " FROM chrContacts WHERE ownerID = %u and blocked = %u", charID, blocked))
     {
@@ -1423,7 +1423,7 @@ void CharacterDB::DeleteLabel(uint32 charID, uint32 labelID)
 
 bool CharacterDB::LoadSkillQueue(uint32 characterID, SkillQueue &into) {
     DBQueryResult res;
-    if (!sDatabase.RunQuery( res, "SELECT typeID, level, startTime, endTime FROM chrSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID, level, startTime, endTime FROM chrSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
         _log(DATABASE__ERROR, "Failed to query skill queue of character %u: %s.", characterID, res.error.c_str());
         return false;
     }
@@ -1443,7 +1443,7 @@ bool CharacterDB::LoadSkillQueue(uint32 characterID, SkillQueue &into) {
 
 bool CharacterDB::LoadPausedSkillQueue(uint32 characterID, SkillQueue &into) {
     DBQueryResult res;
-    if (!sDatabase.RunQuery( res, "SELECT typeID, level FROM chrPausedSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID, level FROM chrPausedSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
         _log(DATABASE__ERROR, "Failed to query paused skill queue of character %u: %s.", characterID, res.error.c_str());
         return false;
     }

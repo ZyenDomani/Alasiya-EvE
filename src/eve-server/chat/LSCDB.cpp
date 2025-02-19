@@ -59,7 +59,7 @@ int32 LSCDB::GetNextAvailableChannelID()
 {
     /** @todo fix this shit */
     DBQueryResult res;
-    if ( !sDatabase.RunQuery( res,
+    if ( !sDatabase.RunQuery(res,
         "SELECT"
         "    channelID "
         " FROM channels "

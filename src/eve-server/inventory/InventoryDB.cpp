@@ -98,7 +98,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<
 {
     DBQueryResult res;
 
-    if ( !sDatabase.RunQuery( res,
+    if ( !sDatabase.RunQuery(res,
         "SELECT "
         "  itemID"
         " FROM entity "
@@ -123,7 +123,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
 {
     DBQueryResult res;
 
-    if ( !sDatabase.RunQuery( res,
+    if ( !sDatabase.RunQuery(res,
         "SELECT "
         "  itemID"
         " FROM entity "
