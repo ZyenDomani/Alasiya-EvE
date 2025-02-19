@@ -676,8 +676,8 @@ int main( int argc, char* argv[] )
     std::printf("\n");     // spacer
 
     /* Config loaded, Start thread server and add our main thread. */
+    sLog.Green( "        Threading", "Starting Main Loop threadID 0x%X", pthread_self() );
     sThread.Initialize();
-    sLog.Green( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
     sThread.AddThread(pthread_self());
     std::printf("\n");     // spacer
 
@@ -685,9 +685,7 @@ int main( int argc, char* argv[] )
     EVETCPServer tcps;
     char errbuf[ TCPCONN_ERRBUF_SIZE ];
     sLog.Green( "       ServerInit", "Starting TCP Server");
-    if (tcps.Open(sConfig.net.port, errbuf)) {
-        sLog.Blue( "    BaseTCPServer", "TCP Server started on port %u.", sConfig.net.port );
-    } else {
+    if (!tcps.Open(sConfig.net.port, errbuf)) {
         sLog.Error( "    BaseTCPServer", "Error starting TCP Server: %s.", errbuf );
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
         return EXIT_FAILURE;

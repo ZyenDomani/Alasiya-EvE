@@ -129,6 +129,7 @@ void BaseTCPServer::StartLoop()
      * update this to use Thread class management (sThread) if management here becomes a problem.
      */
     sThread.CreateThread(TCPServerLoop, this);
+    sLog.Blue( "    BaseTCPServer", "TCP Server threadID 0x%X started on port %u.", pthread_self(), mPort );
     /*
     pthread_t thread;
     pthread_create( &thread, nullptr, TCPServerLoop, this );
