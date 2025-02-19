@@ -23,7 +23,7 @@ Items listed as "<font color=orange>Skeleton Code Only</font>" has a basic outli
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
-<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.75.01</font><BR>
+<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.75.07</font><BR>
 <font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>14 February 2025</font><BR>
 <font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=green>Current</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review.</font><BR><BR>
@@ -2179,7 +2179,7 @@ Destroy ships in deadspace pockets using acceleration gates.</td><td class="brok
 <td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Drones"> Drones (<font color=violet>PlayTesting</font> - <font color=green>Current</font>) - <font color=yellow>v1.03</font></span></h2>
+<h2> <span class="mw-headline" id="Drones"> Drones (<font color=violet>PlayTesting</font> - <font color=green>Current</font>) - <font color=yellow>v1.05</font></span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>

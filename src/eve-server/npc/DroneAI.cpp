@@ -190,6 +190,9 @@ void DroneAIMgr::Init() {
      *  Agility = Mass x InertiaMod / 1000000
      *  Agility is an internal server variable.
      */
+
+    bool update(!mySE->IsAbandoned());
+    
     double mass = dRef->GetAttribute(AttrMass).get_double();
     double inertiaMod = dRef->GetAttribute(AttrInertiaMod).get_double();
 
@@ -197,13 +200,13 @@ void DroneAIMgr::Init() {
         if (is_log_enabled(DRONE__TRACE))
             sLog.Warning("DroneAI::Init()", " %s  has no mass defined.  setting to 1000.0", dRef->name());
         mass = 1000.0;
-        dRef->SetAttribute(AttrMass, mass, false);
+        dRef->SetAttribute(AttrMass, mass, update);
     }
     if (inertiaMod < 99.0) {
         if (is_log_enabled(DRONE__TRACE))
             sLog.Warning("DroneAI::Init()", "%s  has no inertiaMod defined.  setting to 100.0", dRef->name());
         inertiaMod = 100.0;
-        dRef->SetAttribute(AttrInertiaMod, inertiaMod, false);
+        dRef->SetAttribute(AttrInertiaMod, inertiaMod, update);
     }
 
     m_agility = mass * inertiaMod / 1000000;

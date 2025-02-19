@@ -332,8 +332,8 @@ void Character::LogOut()
 
     if (!m_pClient->IsCharCreation()) {
         sItemFactory.RemoveItem(m_itemID);
-        if (sDataMgr.IsStation(m_charData.locationID))
-            ;   // do we need to do anything here?
+        //if (sDataMgr.IsStation(m_charData.locationID))
+              // do we need to do anything here?
     }
 }
 

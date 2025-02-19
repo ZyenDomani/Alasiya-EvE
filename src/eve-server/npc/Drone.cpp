@@ -759,37 +759,39 @@ void DroneSE::SetResists() {
 }
 
 void DroneSE::UpdateDroneWithSkills() {
+    bool update(!m_abandoned);
+    
     // first, start with basic skills applicable to all drones...
     //Drone Sharpshooting     Increases drone optimal range. (maxrange)
     float newValue(m_self->GetAttribute(AttrMaxRange).get_float());
     newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::DroneSharpshooting, true))));
-    m_self->SetAttribute(AttrMaxRange, newValue, false);
+    m_self->SetAttribute(AttrMaxRange, newValue, update);
     //Drone Navigation    5% increase in drone MicroWarpdrive speed per level.
     newValue = m_self->GetAttribute(AttrMaxVelocity).get_float();
     newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::DroneNavigation, true))));
-    m_self->SetAttribute(AttrMaxVelocity, newValue, false);
+    m_self->SetAttribute(AttrMaxVelocity, newValue, update);
         //Drone Interfacing   20% bonus to drone damage, drone mining yield per level.
     if (m_self->groupID() == EVEDB::invGroups::Mining_Drone) {
         newValue = m_self->GetAttribute(AttrMiningAmount).get_float();
         newValue *= (1 + (0.2f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::DroneInterfacing, true))));
-        m_self->SetAttribute(AttrMiningAmount, newValue, false);
+        m_self->SetAttribute(AttrMiningAmount, newValue, update);
     } else {
         newValue = m_self->GetAttribute(AttrDamageMultiplier).get_float();
         newValue *= (1 + (0.2f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::DroneInterfacing, true))));
-        m_self->SetAttribute(AttrDamageMultiplier, newValue, false);
+        m_self->SetAttribute(AttrDamageMultiplier, newValue, update);
     }
     //Drone Durability    5% bonus to drone shield, armor and hull hit points per level.
     newValue = m_self->GetAttribute(AttrHP).get_float();
     newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::DroneDurability, true))));
-    m_self->SetAttribute(AttrHP, newValue, false);
+    m_self->SetAttribute(AttrHP, newValue, update);
     newValue = m_self->GetAttribute(AttrShieldCapacity).get_float();
     newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::DroneDurability, true))));
-    m_self->SetAttribute(AttrShieldCapacity, newValue, false);
+    m_self->SetAttribute(AttrShieldCapacity, newValue, update);
     // set current shield amount to new capacity value also
-    m_self->SetAttribute(AttrShieldCharge, newValue, false);
+    m_self->SetAttribute(AttrShieldCharge, newValue, update);
     newValue = m_self->GetAttribute(AttrArmorHP).get_float();
     newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::DroneDurability, true))));
-    m_self->SetAttribute(AttrArmorHP, newValue, false);
+    m_self->SetAttribute(AttrArmorHP, newValue, update);
 
     // now, check types & groups for specific skills...
     // Repair Drone Operation  5% increased repair amount per level.
@@ -797,11 +799,11 @@ void DroneSE::UpdateDroneWithSkills() {
         if (m_self->HasAttribute(AttrEntityArmorRepairDuration)) {
             newValue = m_self->GetAttribute(AttrEntityArmorRepairDuration).get_float();
             newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::RepairDroneOperation, true))));
-            m_self->SetAttribute(AttrEntityArmorRepairDuration, newValue, false);
+            m_self->SetAttribute(AttrEntityArmorRepairDuration, newValue, update);
         } else if (m_self->HasAttribute(AttrEntityShieldBoostDuration)) {
             newValue = m_self->GetAttribute(AttrEntityShieldBoostDuration).get_float();
             newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::RepairDroneOperation, true))));
-            m_self->SetAttribute(AttrEntityShieldBoostDuration, newValue, false);
+            m_self->SetAttribute(AttrEntityShieldBoostDuration, newValue, update);
         }
     }
 
@@ -810,12 +812,12 @@ void DroneSE::UpdateDroneWithSkills() {
             // 24241   Combat Drone Operation   5% Bonus to drone damage of light and medium drones per level.
             newValue = m_self->GetAttribute(AttrDamageMultiplier).get_float();
             newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::CombatDroneOperation, true))));
-            m_self->SetAttribute(AttrDamageMultiplier, newValue, false);
+            m_self->SetAttribute(AttrDamageMultiplier, newValue, update);
         } else if (m_self->type().volume() > 20) {
             // 3441    Heavy Drone Operation  5% Bonus to heavy drone damage per level.
             newValue = m_self->GetAttribute(AttrDamageMultiplier).get_float();
             newValue *= (1 + (0.05f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::HeavyDroneOperation, true))));
-            m_self->SetAttribute(AttrDamageMultiplier, newValue, false);
+            m_self->SetAttribute(AttrDamageMultiplier, newValue, update);
         }
     }
 
@@ -823,13 +825,13 @@ void DroneSE::UpdateDroneWithSkills() {
         // Fighter Bombers  20% increase in fighter bomber damage per level.
         newValue = m_self->GetAttribute(AttrDamageMultiplier).get_float();
         newValue *= (1 + (0.2f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::FighterBombers, true))));
-        m_self->SetAttribute(AttrDamageMultiplier, newValue, false);
+        m_self->SetAttribute(AttrDamageMultiplier, newValue, update);
     }
     if (m_self->groupID() == EVEDB::invGroups::Fighter_Drone) {
         // Fighters   20% increase in fighter damage per level.
         newValue = m_self->GetAttribute(AttrDamageMultiplier).get_float();
         newValue *= (1 + (0.2f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Fighters, true))));
-        m_self->SetAttribute(AttrDamageMultiplier, newValue, false);
+        m_self->SetAttribute(AttrDamageMultiplier, newValue, update);
     }
 
     /*  not sure what these are yet...
@@ -837,7 +839,7 @@ void DroneSE::UpdateDroneWithSkills() {
         // Sentry Drone Interfacing   5% bonus to Sentry Drone damage per level. ?
         newValue = m_self->GetAttribute(AttrDamageMultiplier).get_float();
         newValue *= (1 + (0.2f * (m_pShipSE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::SentryDroneInterfacing, true))));
-        m_self->SetAttribute(AttrDamageMultiplier, newValue, false);
+        m_self->SetAttribute(AttrDamageMultiplier, newValue, update);
     } */
 
 

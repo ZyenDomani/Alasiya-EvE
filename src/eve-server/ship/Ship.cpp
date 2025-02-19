@@ -97,8 +97,8 @@ void ShipItem::LogOut()
     if (pInv != nullptr)
         pInv->RemoveItem(ShipItemRef(this));
 
+    SetFlag(flagShipOffline);
     SaveShip();
-    SetPlayer(nullptr);
     pInventory->Unload();
 }
 
