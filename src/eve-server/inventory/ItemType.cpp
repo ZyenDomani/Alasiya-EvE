@@ -152,6 +152,7 @@ const void ItemType::CopyAttributes(InventoryItem& itemRef) const {
     // set attributes in the item's own attrMap.
     for (auto &cur : m_AttributeMap)
         itemRef.SetAttribute(cur.first, cur.second, false);
+        //itemRef.GetAttributeMap()->SetAttribute(cur.first, cur.second, false);
 }
 
 const bool ItemType::HasAttribute(const uint16 attributeID) const {

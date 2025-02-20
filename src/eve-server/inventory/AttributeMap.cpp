@@ -98,7 +98,8 @@ bool AttributeMap::Load(bool reset/*false*/) {
 
     /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
     if (is_log_enabled(ATTRIBUTE__INFO))
-        _log(ATTRIBUTE__INFO, "AttributeMap::Load()  Loaded %lu attribs for %s.", mAttributes.size(), mItem.name());
+        _log(ATTRIBUTE__INFO, "AttributeMap::Load(%s)  Loaded %lu attribs for %s(%u).", \
+            reset?"reset":"", mAttributes.size(), mItem.name(), mItem.itemID());
     return true;
 }
 
@@ -225,7 +226,7 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
     }
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end()) {
-        mAttributes.emplace(attrID, num);
+        mAttributes[attrID] = num;
         if (notify) {
             Add(attrID, num);
         } else if (is_log_enabled(ATTRIBUTE__MISSING)) {
@@ -377,7 +378,7 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
         if (pClient->IsDocked())
             return true;
     }  */
-
+    //eventName, ownerID, itemID, attributeID, time, newValue, oldValue = change
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
 
@@ -399,17 +400,17 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
         /*  not sure about this one yet, used in cap charge (more?)....oldValue is list for this server rsp
          *
                   [PyTuple 7 items]
-                    [PyString "OnModuleAttributeChange"]
-                    [PyInt 649670823]
-                    [PyIntegerVar 1005885567714]
-                    [PyInt 18]
-                    [PyIntegerVar 129756563388570240]
-                    [PyFloat 680.554999862301]
-                    [PyList 4 items]
+                    [PyString "OnModuleAttributeChange"] <<- eventName
+                    [PyInt 649670823]                   <<- ownerID
+                    [PyIntegerVar 1005885567714]        <<- itemID   (typhoon)
+                    [PyInt 18]                          <<- attributeID (AttrCapacitorCharge = 18)
+                    [PyIntegerVar 129756563388570240]   <<- start time?
+                    [PyFloat 680.554999862301]          <<- newValue
+                    [PyList 4 items]                    <<- oldValue
                       [PyFloat 526.692785423517]        <<- old value
-                      [PyIntegerVar 129756563391382864] <<- old time?
+                      [PyIntegerVar 129756563391382864] <<- current time?  time diff 2812624
                       [PyFloat 104400]                  <<- recharge time ??
-                      [PyFloat 4860]                    <<-  ??
+                      [PyFloat 4860]                    <<- total value for this attrib?  (default 5000)
         */
     return SendChanges(modChange.Encode());
 }

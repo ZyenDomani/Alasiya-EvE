@@ -322,8 +322,8 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
    *   *******    UPDATED VAR NAMES TO MATCH CLIENT CODE  -allan 26Jul14  *************
    */
   _log(MODULE__TRACE, "DogmaIMBound::Handle_LoadAmmoToBank()");
-  call.Dump(MODULE__TRACE);
-	Call_Dogma_LoadAmmoToBank args;
+    call.Dump(MODULE__TRACE);
+    Call_Dogma_LoadAmmoToBank args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
