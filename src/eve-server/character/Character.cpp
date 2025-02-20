@@ -791,8 +791,8 @@ uint8 Character::InjectSkillIntoBrain(SkillRef skill) {
 
     skill->ChangeSingleton(true);
     skill->Move(m_itemID, flagSkill, true);
-    skill->SetAttribute(AttrSkillPoints, EvilZero);
-    skill->SetAttribute(AttrSkillLevel, EvilZero, false);
+    skill->SetAttribute(AttrSkillPoints, (uint)0);
+    skill->SetAttribute(AttrSkillLevel, (uint)0, false);
 
     SaveSkillHistory(EvESkill::Event::SkillInjected, GetFileTimeNow(), m_itemID, skill->typeID(), 0, 0);
     _log(SKILL__MESSAGE, "%s(%u) has injected %s(%u)", name(), m_itemID, skill->name(), skill->itemID());
