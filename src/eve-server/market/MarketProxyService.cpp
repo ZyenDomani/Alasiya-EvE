@@ -75,6 +75,32 @@ MarketProxyService::~MarketProxyService() {
     delete m_dispatch;
 }
 
+// this is static data, loaded on server startup
+PyResult MarketProxyService::Handle_GetMarketGroups(PyCallArgs &call) {
+    return sMktMgr.GetMarketGroups();
+}
+
+PyResult MarketProxyService::Handle_GetCharOrders(PyCallArgs &call) {
+    return sMktMgr.GetOrdersForOwner(call.client->GetCharacterID());
+}
+
+PyResult MarketProxyService::Handle_GetCorporationOrders(PyCallArgs &call) {
+    return sMktMgr.GetOrdersForOwner(call.client->GetCorporationID());
+}
+
+// station, system, region based on selection in market window
+PyResult MarketProxyService::Handle_GetStationAsks(PyCallArgs &call) {
+    return sMktMgr.GetStationAsks(call.client->GetStationID());
+}
+
+PyResult MarketProxyService::Handle_GetSystemAsks(PyCallArgs &call) {
+    return sMktMgr.GetSystemAsks(call.client->GetSystemID());
+}
+
+PyResult MarketProxyService::Handle_GetRegionBest(PyCallArgs &call) {
+    return sMktMgr.GetRegionBest(call.client->GetRegionID());
+}
+
 PyResult MarketProxyService::Handle_StartupCheck(PyCallArgs &call) {
     //if (sMktMgr.NeedsUpdate())
     //    sMktMgr.UpdatePriceHistory();
@@ -138,32 +164,6 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
         data.accountKey = args.accountKey;
         data.memberID = args.memberID;
     return m_db.GetTransactions(call.client->GetCorporationID(), data);
-}
-
-// this is static data, loaded on server startup
-PyResult MarketProxyService::Handle_GetMarketGroups(PyCallArgs &call) {
-    return sMktMgr.GetMarketGroups();
-}
-
-PyResult MarketProxyService::Handle_GetCharOrders(PyCallArgs &call) {
-    return sMktMgr.GetOrdersForOwner(call.client->GetCharacterID());
-}
-
-PyResult MarketProxyService::Handle_GetCorporationOrders(PyCallArgs &call) {
-    return sMktMgr.GetOrdersForOwner(call.client->GetCorporationID());
-}
-
-// station, system, region based on selection in market window
-PyResult MarketProxyService::Handle_GetStationAsks(PyCallArgs &call) {
-    return sMktMgr.GetStationAsks(call.client->GetStationID());
-}
-
-PyResult MarketProxyService::Handle_GetSystemAsks(PyCallArgs &call) {
-    return sMktMgr.GetSystemAsks(call.client->GetSystemID());
-}
-
-PyResult MarketProxyService::Handle_GetRegionBest(PyCallArgs &call) {
-    return sMktMgr.GetRegionBest(call.client->GetRegionID());
 }
 
 PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {

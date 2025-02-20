@@ -198,6 +198,8 @@ PyRep* MarketMgr::GetOrdersForOwner(int32 ownerID) {
 
 // station, system, region based on selection in market window
 PyRep* MarketMgr::GetStationAsks(int32 stationID) {
+    return m_db.GetStationAsks(stationID);
+    /*
     PyRep* result(nullptr);
     std::string method_name ("GetStationOrders_");
     method_name += std::to_string(stationID);
@@ -209,9 +211,12 @@ PyRep* MarketMgr::GetStationAsks(int32 stationID) {
 
     result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
     return result;
+    */
 }
 
 PyRep* MarketMgr::GetSystemAsks(uint32 systemID) {
+    return m_db.GetSystemAsks(systemID);
+    /*
     PyRep* result(nullptr);
     std::string method_name ("GetSystemOrders_");
     method_name += std::to_string(systemID);
@@ -223,9 +228,12 @@ PyRep* MarketMgr::GetSystemAsks(uint32 systemID) {
 
     result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
     return result;
+    */
 }
 
 PyRep* MarketMgr::GetRegionBest(uint32 regionID) {
+    return m_db.GetRegionBest(regionID);
+    /*
     PyRep* result(nullptr);
     std::string method_name ("GetRegionOrders_");
     method_name += std::to_string(regionID);
@@ -237,6 +245,7 @@ PyRep* MarketMgr::GetRegionBest(uint32 regionID) {
 
     result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
     return result;
+    */
 }
 
 void MarketMgr::SendOnOwnOrderChanged(Client* pClient, uint32 orderID, uint8 action, bool isCorp/*false*/, PyRep* order/*nullptr*/) {
