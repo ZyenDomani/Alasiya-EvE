@@ -70,7 +70,7 @@ void TurretModule::ApplyDamage()
     }
 
     // send gfx for this cycle
-    if (m_needsCharge)
+    if (m_needsCharge and (m_ModuleState == Module::State::Activated))
         SendGFX();
 
     // add data to StatisticMgr

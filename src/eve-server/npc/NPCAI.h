@@ -101,8 +101,6 @@ protected:
 
     std::string GetStateName(int8 stateID);
 
-    // checks if target is within <config.interactdist> to interact with target
-    bool                InActionDistance(SystemEntity* pTargetSE);        // ~600m
     // checks if target is within m_orbitRange to orbit target
     bool                InOrbitDistance(SystemEntity* pTargetSE);         // near - range 1
     // checks if target is within m_falloffRange to move closer to target

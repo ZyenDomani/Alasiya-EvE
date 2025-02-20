@@ -2195,8 +2195,8 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
             SendGFX10(mySE->GetID(),"effects.Warping" );
         }
         if (is_log_enabled(NPC__MESSAGE))
-            _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %li  m_targetDistance: %lli",\
-                    mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), mySE->SysBubble()->GetID(), \
+            _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) %u -> %u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %li  m_targetDistance: %lli",\
+                    mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID(), m_targBubble->GetID(), \
                     m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
         return;
     }
@@ -2292,8 +2292,8 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
     SendDestinyUpdates(updates); //consumed
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %i  m_targetDistance: %lli",
-             m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() %u -> %u, m_targetPoint: %.2f,%.2f,%.2f  stop distance: %i  m_targetDistance: %lli",
+             mySE->SysBubble()->GetID(), m_targBubble->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, distance, m_targetDistance);
 }
 
 void DestinyManager::InitOrbit(SystemEntity *pSE, uint32 distance/*0*/) {
@@ -2831,7 +2831,7 @@ Battleships                             0.155
 
     double mass = sRef->GetAttribute(AttrMass).get_double();
     double inertiaMod = sRef->GetAttribute(AttrInertiaMod).get_double();
-    sLog.Warning("DM::UpdateShipVariables", "%s (%u)  InertiaMod: %.4f", mySE->GetName(), mySE->GetID(), inertiaMod);
+    //sLog.Warning("DM::UpdateShipVariables", "%s (%u)  InertiaMod: %.4f", mySE->GetName(), mySE->GetID(), inertiaMod);
 
     m_agility = mass * inertiaMod / 1000000.0;
 

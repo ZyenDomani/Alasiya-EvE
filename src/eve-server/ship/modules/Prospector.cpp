@@ -167,7 +167,7 @@ void Prospector::DropSalvage()
     sDataMgr.GetSalvage(atoi(m_targetSE->GetSelf()->customInfo().c_str()), list);
 
     if (!list.empty()) {
-        uint8 drop = 0;
+        uint8 drop(0);
         switch (m_accessChance) {       // drop qty * rate in config
             case  30: drop = 1; break;  //  1 to 3
             case  20: drop = 2; break;  //  2 to 6

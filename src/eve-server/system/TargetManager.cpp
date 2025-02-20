@@ -584,7 +584,7 @@ SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/
 
 void TargetManager::AddTargetModule(ActiveModule* pMod)
 {
-    _log(TARGET__INFO, "Adding %s:%s to %s's activeModule list.", \
+    _log(TARGET__INFO, "Adding %s's %s to %s's activeModule list.", \
             pMod->GetShipRef()->name(), pMod->GetSelf()->name(), mySE->GetName());
 
     m_modules.emplace(pMod->itemID(), pMod);
@@ -639,9 +639,6 @@ void TargetManager::Destroyed()
                 itr = m_modules.erase(itr);
                 module->AbortCycle();
             } break;
-            case EVEDB::invGroups::Salvager:
-                // set success=false and fall thru
-                itr->second->GetProspectModule()->TargetDestroyed();
             default: {
                 itr->second->Deactivate(effect);
                 ++itr;

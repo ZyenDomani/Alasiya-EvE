@@ -56,7 +56,7 @@ m_spawnID(1)    // gotta start somewhere
 
 bool SpawnMgr::Init()
 {
-    // even if belt spawns arent activated, still allow anomaly spawnining
+    // even if belt spawns arent activated, still allow anomaly spawning
     m_initalized = true;
 
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
@@ -385,31 +385,31 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     float secRating(m_system->GetSecValue());
     bool anomaly(false);
     // get faction for this region
-    uint32 factionID = factionRogueDrones;  // default to rogue drones.  this is my internal rogue drone factionID.
+    uint32 factionID(factionRogueDrones);  // default to rogue drones.  this is my internal rogue drone factionID.
     if (sConfig.npc.RatFaction) {            // is RatFaction set in config?
         factionID = sConfig.npc.RatFaction;
-    } else if (MakeRandomFloat() > 0.05) {      // 5% chance for ANY spawn to be rogue drone.
+    } else if (MakeRandomFloat() > 0.05f) {      // 5% chance for ANY spawn to be rogue drone.
         factionID = sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
     }
 
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - faction: %s, region %u. (config set %s)", \
-                sDataMgr.GetFactionName(factionID).c_str(), m_system->GetRegionID(), (sConfig.npc.RatFaction?"true":"false"));
+                sDataMgr.GetFactionName(factionID).c_str(), m_system->GetRegionID(), (sConfig.npc.RatFaction > 0?"true":"false"));
 
     // if rat, get possible spawn groups for this secRating.
     if (sClass == Spawn::Class::None) {
         if ((secRating < 0.2) and pBubble->IsBelt()) {   // check for hauler, commander, officer spawn, but ONLY in a belt
             //NOTE  random checks here are for TESTING only....all rates are high.  make config option later?
-            double rand = MakeRandomFloat();
-            if (rand < 0.1) { // officer spawn
+            float rand = MakeRandomFloat();
+            if (rand < 0.1f) { // officer spawn
                 if (factionID != factionRogueDrones) {  //but not for drones.  they dont have officers..make this the rare drone hauler spawn (which isnt written yet)
                     sClass = Spawn::Class::Officer;
                 } else {
                     sClass = Spawn::Class::Hauler;
                 }
-            } else if (rand < 0.15) { // commander spawn
+            } else if (rand < 0.15f) { // commander spawn
                 sClass = Spawn::Class::Commander;
-            } else if (rand < 0.25) { // hauler spawn
+            } else if (rand < 0.25f) { // hauler spawn
                 if (factionID != factionRogueDrones)
                     sClass = Spawn::Class::Hauler;
             }
@@ -485,7 +485,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         ++level;    // increment wave
         // check wave # vs possible waves.  (oob check)
         if (spawnEntry.size() < level) {
-            _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - spawnEntry.size (%lu) < level (%u) for anomaly class %s.  Cancelling spawn.", spawnEntry.size(), level, GetSpawnClassName(sClass).c_str());
+            _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - spawnEntry.size (%lu) < level (%u) for anomaly class %s.  Canceling spawn.", spawnEntry.size(), level, GetSpawnClassName(sClass).c_str());
             return false;
         }
         /** @todo  test for overseer wave and spawn correct overseer for this anomaly  */
@@ -505,8 +505,8 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         // do we need anything else here?
     }
 
-    // get ship class data from spawnEntry.at(subtype)
-    // and put this spawn's group information in class designators
+    // get ship class data from spawnEntry[subtype]
+    // and put this spawn's group information in class designation
     uint8 f = spawnEntry[level].f;
     uint8 af = spawnEntry[level].af;
     uint8 d = spawnEntry[level].d;
@@ -612,7 +612,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
                 toSpawn.typeID = GetRandTypeID(22);
             }
             // spawn 4 swarm ships for each bc/bs
-            toSpawn.quantity = ((bs > 0 ? bs : bc) *4);
+            toSpawn.quantity = ((bs > 0 ? bs : bc) * 4);
             m_toSpawn.push_back(toSpawn);
         } else if (o > 0) {
             // drones dont have officers.  spawn swarm x10
@@ -754,7 +754,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
                 se.stamp = sEntityMgr.GetStamp(); // set time of this spawn for ??
             }
             m_spawns.emplace(pBubble->GetID(), se);
-            _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry for %s with ID %u to m_spawns. Class: %s, Group:%s, Level: %u.", \
+            _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry for %s with ID %u to m_spawns. Class: %s, Group: %s, Level: %u.", \
                 iRef->name(), se.spawnID, GetSpawnClassName(se.spawnClass).c_str(), GetSpawnGroupName(se.spawnGroup).c_str(), level);
         }
     }

@@ -580,11 +580,6 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
     m_warpOutTimer.Disable();
 }
 
-bool NPCAIMgr::InActionDistance(SystemEntity* pTargetSE) {
-    double dist(myNPC->GetPosition().distance(pTargetSE->GetPosition()) - pTargetSE->GetRadius());
-    return (dist < sConfig.drone.InteractDistace);
-}
-
 bool NPCAIMgr::InOrbitDistance(SystemEntity* pTargetSE) {
     double dist(myNPC->GetPosition().distance(pTargetSE->GetPosition()) - pTargetSE->GetRadius());
     return (dist < m_orbitDistance);

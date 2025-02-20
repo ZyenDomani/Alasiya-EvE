@@ -262,8 +262,7 @@ void ActiveModule::Update() {
     }
 }
 
-void ActiveModule::Clear()
-{
+void ActiveModule::Clear() {
     _log(MODULE__TRACE, "%s(%u) calling Clear()", m_modRef->name(), m_modRef->itemID());
     if (m_targetSE != nullptr)
         if (m_targetSE->TargetMgr() != nullptr)
@@ -343,8 +342,7 @@ void ActiveModule::RemoveTarget(SystemEntity* pSE) {
     }
 }
 
-void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
-{
+void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/) {
     if (effectID == 16) {
         // catchall for elusive online/offline error, but should be caught in Ship::Activate(), backup in MM::Activate()
         sLog.Error("AM::Activate()", "effectID 16 got here.");
@@ -518,8 +516,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         m_shipRef->GetPilot()->GetShipSE()->ModuleActivated(m_targetSE);
 }
 
-void ActiveModule::Deactivate(std::string effect/*""*/)
-{
+void ActiveModule::Deactivate(std::string effect/*""*/) {
     if (m_ModuleState != Module::State::Activated) {
         _log(MODULE__TRACE, "ActiveModule::Deactivate - %s called Deactivate but is not currently Activated (%s).", m_modRef->name(), GetModuleStateName(m_ModuleState));
         return;
@@ -540,8 +537,12 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
 
     if (effect.compare("TargetDestroyed") == 0) {
         m_targetSE = nullptr;
-        if (IsProspectModule())
+        // are there others that we can deactivate immediately?  do we need to test them here?
+        if (IsProspectModule()) {
             GetProspectModule()->TargetDestroyed();
+            DeactivateCycle(true);
+            return;
+        }
     }
 
     // let module complete current cycle then shut it down.
@@ -555,14 +556,12 @@ void ActiveModule::SetSlaveData(ShipSE* pShip) {
     m_destinyMgr = pShip->DestinyMgr();
 }
 
-void ActiveModule::Overload()
-{
+void ActiveModule::Overload() {
     m_overLoaded = true;
     GenericModule::Overload();
 }
 
-void ActiveModule::DeOverload()
-{
+void ActiveModule::DeOverload() {
     GenericModule::DeOverload();
     m_overLoaded = false;
 }
@@ -601,9 +600,6 @@ uint32 ActiveModule::DoCycle() {
             }
         }
     }
-
-    // broadcast module gfx for this cycle
-    //SendGFX(true);
 
     // not sure if this is entirely accurate...wip
     switch (m_modRef->groupID()) {
@@ -676,17 +672,18 @@ uint32 ActiveModule::DoCycle() {
         case EVEDB::invGroups::Projected_ECCM:
         case EVEDB::invGroups::Remote_Sensor_Booster: {
         } break;
+        // i dunno wth this is yet...
         case EVEDB::invGroups::Artifacts_and_Prototypes: {
-        } break;
-        // these passive modules will need specific code
-        case EVEDB::invGroups::Missile_Launcher_Defender:
-        case EVEDB::invGroups::Countermeasure_Launcher:
-        case EVEDB::invGroups::Passive_Targeting_System: {
         } break;
         // these active modules will need specific code
         case EVEDB::invGroups::Cynosural_Field_Generator:
         case EVEDB::invGroups::Covert_Cynosural_Field_Generator:
         case EVEDB::invGroups::Automated_Targeting_System: {
+        } break;
+        // these passive modules will need specific code
+        case EVEDB::invGroups::Missile_Launcher_Defender:
+        case EVEDB::invGroups::Countermeasure_Launcher:
+        case EVEDB::invGroups::Passive_Targeting_System: {
         } break;
         // these im not sure about yet
         case EVEDB::invGroups::ECM:
@@ -1161,8 +1158,9 @@ bool ActiveModule::CanActivate() {
                     m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
                 } else {
                     Clear();
-                    throw UserError("InvalidTargetCanOwner")
-                            .AddFormatValue("module", new PyInt(m_modRef->itemID()));
+                    m_shipRef->GetPilot()->SendNotifyMsg("The %s cannot engage a tractor beam on that object as it is not owned by you, a fellow fleet member or another member of a player corporation you belong to.",
+                                                            m_modRef->name());
+                    return false;
                 }
             } break;
             case Shield_Transporter: {
