@@ -10,12 +10,10 @@
 
 /** @todo notes for incomplete drone systems
  * modes.  started for TargetLost
- * incomplete states.  assist, guard, xfer, flee,
+ * incomplete states.  xfer, flee,
  * incomplete systems.  web, ewar
  * need response method for objects in sight range (proximity)
  *   - all drones have proximity range data
- *
- *
  */
 
 #include "eve-server.h"
@@ -192,7 +190,7 @@ void DroneAIMgr::Init() {
      */
 
     bool update(!mySE->IsAbandoned());
-    
+
     double mass = dRef->GetAttribute(AttrMass).get_double();
     double inertiaMod = dRef->GetAttribute(AttrInertiaMod).get_double();
 
@@ -2659,7 +2657,7 @@ void DroneAIMgr::CancelGFX() {
 void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
     if (m_effectID < 1) {
         // not necessarily an error.  just make note
-        _log(DRONE__WARNING, "m_effectID < 1 for %s.", mySE->GetName());
+        _log(DRONE__WARNING, "m_effectID < 1 for typeID:%u (%s).", mySE->GetTypeID(), mySE->GetName());
         return;
     }
 

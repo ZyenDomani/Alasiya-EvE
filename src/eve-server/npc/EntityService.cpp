@@ -75,7 +75,7 @@ m_delegate(false)
 
     m_strBoundObjectName = "EntityBound";
 
-    PyCallable_REG_CALL(EntityBound, CmdEngage);                // called from EngageTarget...mears "Repair"
+    PyCallable_REG_CALL(EntityBound, CmdEngage);                // called from EngageTarget...means "Repair"
     PyCallable_REG_CALL(EntityBound, CmdAssist);
     PyCallable_REG_CALL(EntityBound, CmdGuard);
     PyCallable_REG_CALL(EntityBound, CmdMine);
@@ -87,6 +87,7 @@ m_delegate(false)
     PyCallable_REG_CALL(EntityBound, CmdReturnHome);            // called from ReturnAndOrbit
     PyCallable_REG_CALL(EntityBound, CmdAbandonDrone);
     PyCallable_REG_CALL(EntityBound, CmdReconnectToDrones);
+    //ret = entity.CmdSalvage(droneIDs, targetID)
 }
 
 PyResult EntityBound::Handle_CmdEngage(PyCallArgs &call) {

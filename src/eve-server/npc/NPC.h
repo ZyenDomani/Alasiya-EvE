@@ -28,6 +28,7 @@
 #ifndef __NPC_H_INCL__
 #define __NPC_H_INCL__
 
+#include "npc/NPCAI.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
 #include "system/SystemEntity.h"
 
@@ -35,7 +36,6 @@ class PyServiceMgr;
 class DestinyManager;
 class InventoryItem;
 class Missile;
-class NPCAIMgr;
 class SystemManager;
 
 class NPC
@@ -47,66 +47,57 @@ public:
 
     /* class type pointer querys. */
     virtual const char*         GetSEType()             { return "NPC SE"; }
-    virtual NPC* GetNPCSE()                             { return this; }
+    virtual NPC*        GetNPCSE()                      { return this; }
     /* class type tests. */
-    virtual bool IsNPCSE()                              { return true; }
+    virtual bool        IsNPCSE()                       { return true; }
 
     /* SystemEntity interface */
-    virtual void Process();
-    virtual void EncodeDestiny(Buffer& into);
+    virtual void        Process();
+    virtual void        EncodeDestiny(Buffer& into);
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Killed(Damage &fatal_blow);
-    virtual bool Load();  // sets orbit range and initalizes the AIMgr
-
-    /* virtual functions to be overridden in derived classes */
-    virtual void MissileLaunched(Missile* pMissile);  // tells AI a missile has been launched at us.  allows defender missile code
+    virtual void        Killed(Damage &fatal_blow);
+    virtual bool        Load();  // sets orbit range and initalizes the AIMgr
 
     /* virtual functions for npc/drone AI and player reporting */
-    virtual void                ReportDamage(uint8 type=0);
-    virtual void            TargetAdded(SystemEntity* pSE) { /* do nothing here */ }
+    virtual void        ReportDamage(uint8 type=0)      { /* do nothing here */ }  // not used yet
+    // tells AI a missile has been launched at us.  allows defender missile code
+    virtual void     MissileLaunched(Missile* pMissile) { m_AI->MissileLaunched(pMissile); }
+    virtual void    TargetLost(SystemEntity* pTargetSE) { m_AI->TargetLost(pTargetSE); }
+    virtual void   TargetAdded(SystemEntity* pTargetSE) { /* do nothing here */ }
     // this is call to inform us of yellowbox
-    virtual void            TargetedAdd(SystemEntity* pSE);
-    virtual void             TargetLost(SystemEntity* pSE);
-    virtual void           TargetedLost(SystemEntity* pSE) { /* do nothing here */ }
+    virtual void   TargetedAdd(SystemEntity* pTargetSE) { m_AI->Targeted(pTargetSE); }
+    virtual void  TargetedLost(SystemEntity* pTargetSE) { /* do nothing here */ }
 
 
     /* specific functions handled here. */
-    void SaveNPC();
-    void RemoveNPC();
-    void SetResists();
-    void UseHullRepairer();
-    void UseArmorRepairer();
-    void UseShieldRecharge();
-    void Orbit(SystemEntity* who);
-    void ForceSetSpawner(SpawnMgr* spawnMgr)            { m_spawnMgr = spawnMgr; }
+    void                SaveNPC()                       { m_self->SaveItem(); }
+        //this is called from SystemManager::RemoveNPC() which calls other SE* methods as needed
+    void                RemoveNPC()                     { m_self->Delete(); }
+    void                SetResists();
+    void                UseHullRepairer();
+    void                UseArmorRepairer();
+    void                UseShieldRecharge();
+    void                Orbit(SystemEntity* pTargetSE);
+    void            ForceSetSpawner(SpawnMgr* spawnMgr) { m_spawnMgr = spawnMgr; }
 
-    float GetThermal()                                  { return m_therDamage; }
-    float GetEM()                                       { return m_emDamage; }
-    float GetKinetic()                                  { return m_kinDamage; }
-    float GetExplosive()                                { return m_expDamage; }
+    float               GetThermal()                    { return m_self->GetAttribute(AttrThermalDamage).get_float(); }
+    float               GetEM()                         { return m_self->GetAttribute(AttrEmDamage).get_float(); }
+    float               GetKinetic()                    { return m_self->GetAttribute(AttrKineticDamage).get_float(); }
+    float               GetExplosive()                  { return m_self->GetAttribute(AttrExplosiveDamage).get_float(); }
 
-    NPCAIMgr* GetAIMgr()                                { return m_AI; }
-    SpawnMgr* GetSpawnMgr()                             { return m_spawnMgr; }
+    NPCAIMgr*           GetAI()                         { return m_AI; }
+    SpawnMgr*           GetSpawnMgr()                   { return m_spawnMgr; }
 
     /* for command dropLoot - commands all npcs in bubble to jettison loot */
-    void CmdDropLoot();
+    void                CmdDropLoot();
 
 protected:
-    NPCAIMgr* m_AI;
-    SpawnMgr* m_spawnMgr;
 
 private:
-    uint32 m_orbitingID;
-
-    float m_emDamage;
-    float m_expDamage;
-    float m_kinDamage;
-    float m_therDamage;
-    float m_hullDamage;
-    float m_armorDamage;
-    float m_shieldCharge;
-    float m_shieldCapacity;
+    NPCAIMgr*           m_AI;
+    SpawnMgr*           m_spawnMgr;
+    uint32              m_orbitingID;
 };
 
 #endif

@@ -188,7 +188,7 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble)
             continue;
         }
         rNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) * 100);
-        rNPC->GetAIMgr()->DisableWarpOutTimer();
+        rNPC->GetAI()->DisableWarpOutTimer();
         m_spawns.emplace(pBubble->GetID(), itr->second);
         itr = m_spawns.erase(itr);
     }

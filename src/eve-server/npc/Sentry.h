@@ -49,7 +49,7 @@ public:
     float GetKinetic()                                  { return m_kinDamage; }
     float GetExplosive()                                { return m_expDamage; }
 
-    SentryAI* GetAIMgr()                                { return m_AI; }
+    SentryAI* GetAI()                                { return m_AI; }
 
 protected:
     SentryAI* m_AI;

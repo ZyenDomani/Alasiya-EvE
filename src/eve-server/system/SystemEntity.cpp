@@ -234,11 +234,14 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
 void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) {
     //New Status = ((10 - Old Status) * Sec Incr) + Old Status
     double oldSec = pChar->GetSecurityRating();
-    EvilNumber maxGain = 0;
+
+    EvilNumber maxGain(EvilZerof);
     if (iRef->HasAttribute(AttrEntitySecurityMaxGain, maxGain))
         if (oldSec > maxGain.get_double())
             return;
-    float killBonus = iRef->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
+    float killBonus(1.0f);
+    if (iRef->HasAttribute(AttrEntitySecurityStatusKillBonus))
+        killBonus = iRef->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
     double secAward = (((10 - oldSec) * killBonus) + oldSec) / 100;
     secAward *=  (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::FastTalk, true))));      // 5% increase
     if (killBonus and secAward) {
@@ -256,8 +259,12 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
             msg += " pirates in ";
             msg += m_system->GetNameStr();
             sStandingMgr.UpdateStandings(corpCONCORD, pChar->itemID(), Standings::LawEnforcement, secAward, msg);
-            // decrease standings with faction of this npc kill
-            sStandingMgr.UpdateStandings(iRef->ownerID(), pChar->itemID(), Standings::CombatShipKill, -secAward, std::move(msg));
+            if (iRef->HasAttribute(AttrEntityFactionLoss)) {
+                // decrease standings with faction of this npc kill
+                secAward = iRef->GetAttribute(AttrEntityFactionLoss).get_double();
+                // TODO:  check for modifiers to this faction loss.
+                sStandingMgr.UpdateStandings(iRef->ownerID(), pChar->itemID(), Standings::CombatShipKill, -secAward, std::move(msg));
+            }
         }
     }
 

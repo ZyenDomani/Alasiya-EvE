@@ -439,6 +439,13 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         return;
     }
 
+    /* TODO:  check these once implemented for target loss on activate...
+     *  4292    Siege Module II         855     activationTargetLoss
+     * 20280   Siege Module I  855     activationTargetLoss
+     * 23953   Jump Portal Generator I         855     activationTargetLoss
+     * 28652   Covert Jump Portal Generator I  855     activationTargetLoss
+     */
+
     // we have gotten this far, so activation is valid.
     // record start time
     m_startTime = GetFileTimeNow();
@@ -1238,7 +1245,7 @@ bool ActiveModule::CanActivate() {
 void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/) {
     if (m_effectID < 1) {
         // not necessarily an error.  just make note
-        sLog.Error("AM::SendGFX()", "m_effectID < 1 for %s.", m_modRef->name());
+        sLog.Error("AM::SendGFX()", "m_effectID < 1 for typeID:%u (%s).", m_modRef->typeID(), m_modRef->name());
         //EvE::traceStack();
         return;
     }
@@ -1256,7 +1263,7 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
         start = false;
         active = false;
     } else {
-        sLog.Warning("AM::SendGFX()", "%s on %s at %s has Invalid Module State for GFX: %s.  Sending False for start & active.", \
+        sLog.Warning("AM::SendGFX()", "%s on %s at %s has Invalid Module State for GFX: [%s].  Sending False for start & active.", \
                 m_modRef->name(), m_shipRef->name(), sDataMgr.GetFlagName(m_modRef->flag()), GetModuleStateName(m_ModuleState));
     }
 

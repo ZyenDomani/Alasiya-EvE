@@ -295,8 +295,8 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
             SystemEntity::Killed(damage); // this removes dead SE from system then deletes itemRef and all its contents
     } else {
         /**
-         * ALL dmg msgs working  22Apr15 (was hacked - found the actual msgIDs)
-         * fixed msgIDs and removed xmlp  - 15Sept19
+         * ALL dmg msgs working  22Apr15
+         * fixed msgIDs and removed xmlp  - 15Sept19 (was hacked - found the actual msgIDs)
          * @todo  still need to check/add detailed dmg msgs
          */
         // check for srcSE destroyed before missile hit

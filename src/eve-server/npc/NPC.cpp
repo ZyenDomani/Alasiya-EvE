@@ -34,7 +34,6 @@
 #include "inventory/AttributeEnum.h"
 #include "map/MapDB.h"
 #include "npc/NPC.h"
-#include "npc/NPCAI.h"
 #include "system/Container.h"
 #include "system/Damage.h"
 #include "system/DestinyManager.h"
@@ -45,8 +44,8 @@
 
 NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr)
 : DynamicSystemEntity(self, services, system),
-m_spawnMgr(spawnMgr),
 m_AI(new NPCAIMgr(this)),
+m_spawnMgr(spawnMgr),
 m_orbitingID(0)
 {
     m_allyID = data.allianceID;
@@ -65,16 +64,6 @@ m_orbitingID(0)
     m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
-    /* Gets the value from the NPC type and put on our own vars */
-    m_emDamage = m_self->GetAttribute(AttrEmDamage).get_float();
-    m_kinDamage = m_self->GetAttribute(AttrKineticDamage).get_float();
-    m_therDamage = m_self->GetAttribute(AttrThermalDamage).get_float();
-    m_expDamage = m_self->GetAttribute(AttrExplosiveDamage).get_float();
-    m_hullDamage = m_self->GetAttribute(AttrDamage).get_float();
-    m_armorDamage = m_self->GetAttribute(AttrArmorDamage).get_float();
-    m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
-    m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
-
     _log(NPC__TRACE, "Created NPC object for %s (%u) - Data: O:%u, C:%u, A:%u, W:%u", \
             m_self.get()->name(), m_self.get()->itemID(), \
             m_ownerID, m_corpID, m_allyID, m_warID);
@@ -84,15 +73,11 @@ NPC::~NPC() {
     SafeDelete(m_AI);
 }
 
-bool NPC::Load()
-{
+bool NPC::Load() {
     m_destiny->UpdateShipVariables();
-
     SetResists();
-
     return DynamicSystemEntity::Load();
 }
-
 
 void NPC::Process() {
     if (m_killed)
@@ -109,20 +94,122 @@ void NPC::Process() {
         sProfiler.AddTime(Profile::npc, GetTimeUSeconds() - profileStartTime);
 }
 
-void NPC::Orbit(SystemEntity *who) {
-    if (who == nullptr) {
+void NPC::Orbit(SystemEntity *pTargetSE) {
+    if (pTargetSE == nullptr) {
         m_orbitingID = 0;
     } else {
-        m_orbitingID = who->GetID();
+        m_orbitingID = pTargetSE->GetID();
     }
 }
 
-void NPC::TargetLost(SystemEntity *who) {
-    m_AI->TargetLost(who);
+void NPC::UseShieldRecharge() {
+    if (!sConfig.npc.UseRegen) {
+        m_AI->DisableRepTimers(true, false);
+        return;
+    }
+    if (!m_self->HasAttribute(AttrEntityShieldBoostAmount)) {
+        m_AI->DisableRepTimers(true, false);
+        return;
+    }
+    // We recharge our shield until it's full.
+    float shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
+
+    if (m_self->GetAttribute(AttrShieldCapacity) > (shieldCharge - 0.1f)) {
+        shieldCharge += m_self->GetAttribute(AttrEntityShieldBoostAmount).get_float();
+        if (shieldCharge > m_self->GetAttribute(AttrShieldCapacity).get_float())
+            shieldCharge = m_self->GetAttribute(AttrShieldCapacity).get_float();
+        m_self->SetAttribute(AttrShieldCharge, shieldCharge);
+    } else {
+        m_AI->DisableRepTimers(true, false);
+    }
+
+    // TODO: Need to send SpecialFX / amount update
+    UpdateDamage();
 }
 
-void NPC::TargetedAdd(SystemEntity *who) {
-    m_AI->Targeted(who);
+void NPC::UseArmorRepairer() {
+    if (!sConfig.npc.UseRepair) {
+        m_AI->DisableRepTimers(false, true);
+        return;
+    }
+    if (!m_self->HasAttribute(AttrEntityArmorRepairAmount)) {
+        m_AI->DisableRepTimers(false, true);
+        return;
+    }
+    // disable this for now...
+    return;
+    float armorDamage(0.0f);
+    if (m_self->GetAttribute(AttrArmorDamage) > 0) {
+        armorDamage -= m_self->GetAttribute(AttrEntityArmorRepairAmount).get_float();
+        if (armorDamage < 0.0f)
+            armorDamage = 0.0f;
+        m_self->SetAttribute(AttrArmorDamage, armorDamage);
+    } else {
+        m_AI->DisableRepTimers(false, true);
+    }
+
+    // TODO: Need to send SpecialFX / amount update
+    UpdateDamage();
+}
+
+void NPC::UseHullRepairer() {
+    if (!sConfig.npc.UseRepair) {
+        //m_AI->DisableRepTimers(false, true);
+        return;
+    }
+    /*
+    if (!m_self->HasAttribute(AttrEntityhullRepairAmount)) {
+        m_AI->DisableRepTimers(false, true);
+        return;
+    } */
+    // disable this for now...
+    return;
+
+    float hullDamage(0.0f);
+    if (m_self->GetAttribute(AttrDamage) > 0) {
+        //hullDamage -= m_self->GetAttribute(AttrEntityhullRepairAmount).get_float();  << NSA - create later
+        if (hullDamage < 0.0f)
+            hullDamage = 0.0f;
+        m_self->SetAttribute(AttrDamage, hullDamage);
+    } else {
+        m_AI->DisableRepTimers(false, false);
+    }
+
+    // TODO: Need to send SpecialFX / amount update
+    // gfxBoosterID
+    UpdateDamage();
+}
+
+
+void NPC::SetResists() {
+    /* fix for missing resist attribs -allan 18April16  */
+    // Shield Resonance
+    if (!m_self->HasAttribute(AttrShieldEmDamageResonance))
+        m_self->SetAttribute(AttrShieldEmDamageResonance, EvilOne, false);
+    if (!m_self->HasAttribute(AttrShieldExplosiveDamageResonance))
+        m_self->SetAttribute(AttrShieldExplosiveDamageResonance, EvilOne, false);
+    if (!m_self->HasAttribute(AttrShieldKineticDamageResonance))
+        m_self->SetAttribute(AttrShieldKineticDamageResonance, EvilOne, false);
+    if (!m_self->HasAttribute(AttrShieldThermalDamageResonance))
+        m_self->SetAttribute(AttrShieldThermalDamageResonance, EvilOne, false);
+    // Armor Resonance
+    if (!m_self->HasAttribute(AttrArmorEmDamageResonance))
+        m_self->SetAttribute(AttrArmorEmDamageResonance, EvilOne, false);
+    if (!m_self->HasAttribute(AttrArmorExplosiveDamageResonance))
+        m_self->SetAttribute(AttrArmorExplosiveDamageResonance, EvilOne, false);
+    if (!m_self->HasAttribute(AttrArmorKineticDamageResonance))
+        m_self->SetAttribute(AttrArmorKineticDamageResonance, EvilOne, false);
+    if (!m_self->HasAttribute(AttrArmorThermalDamageResonance))
+        m_self->SetAttribute(AttrArmorThermalDamageResonance, EvilOne, false);
+    // Hull Resonance
+    if (!m_self->HasAttribute(AttrEmDamageResonance))
+        m_self->SetAttribute(AttrEmDamageResonance, EvilOne, false);
+    if (!m_self->HasAttribute(AttrExplosiveDamageResonance))
+        m_self->SetAttribute(AttrExplosiveDamageResonance, EvilOne, false);
+    if (!m_self->HasAttribute(AttrKineticDamageResonance))
+        m_self->SetAttribute(AttrKineticDamageResonance, EvilOne, false);
+    if (!m_self->HasAttribute(AttrThermalDamageResonance))
+        m_self->SetAttribute(AttrThermalDamageResonance, EvilOne, false);
 }
 
 void NPC::EncodeDestiny(Buffer& into)
@@ -132,70 +219,70 @@ void NPC::EncodeDestiny(Buffer& into)
     uint8 mode = m_destiny->GetState(); //Ball::Mode::STOP;
 
     BallHeader head = BallHeader();
-        head.entityID = GetID();
-        head.mode = mode;
-        head.radius = GetRadius();
-        head.posX = x();
-        head.posY = y();
-        head.posZ = z();
-        head.flags = Ball::Flag::IsMassive | Ball::Flag::IsFree;
+    head.entityID = GetID();
+    head.mode = mode;
+    head.radius = GetRadius();
+    head.posX = x();
+    head.posY = y();
+    head.posZ = z();
+    head.flags = Ball::Flag::IsMassive | Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
-        mass.mass = m_self->GetAttribute(AttrMass).get_double();
-        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-        mass.harmonic = m_harmonic;
-        mass.corporationID = m_corpID;
-        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
+    mass.mass = m_self->GetAttribute(AttrMass).get_double();
+    mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
+    mass.harmonic = m_harmonic;
+    mass.corporationID = m_corpID;
+    mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
-        data.maxSpeed = m_destiny->GetMaxVelocity();
-        data.velX = m_destiny->GetVelocity().x;
-        data.velY = m_destiny->GetVelocity().y;
-        data.velZ = m_destiny->GetVelocity().z;
-        data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
-        data.speedfraction = m_destiny->GetSpeedFraction();
+    data.maxSpeed = m_destiny->GetMaxVelocity();
+    data.velX = m_destiny->GetVelocity().x;
+    data.velY = m_destiny->GetVelocity().y;
+    data.velZ = m_destiny->GetVelocity().z;
+    data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
+    data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     switch (mode) {
         case Ball::Mode::WARP: {
             GPoint target = m_destiny->GetTargetPoint();
             WARP_Struct warp;
-                warp.formationID = 0xFF;
-                warp.targX = target.x;
-                warp.targY = target.y;
-                warp.targZ = target.z;
-                warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-                // warp timing.  see Ship::EncodeDestiny() for notes/updates
-                warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
-                warp.followRange = 0;   //this isnt right
-                warp.followID = 0;  //this isnt right
+            warp.formationID = 0xFF;
+            warp.targX = target.x;
+            warp.targY = target.y;
+            warp.targZ = target.z;
+            warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+            // warp timing.  see Ship::EncodeDestiny() for notes/updates
+            warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.followRange = 0;   //this isnt right
+            warp.followID = 0;  //this isnt right
             into.Append( warp );
         }  break;
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
-                follow.followID = m_destiny->GetTargetID();
-                follow.followRange = m_destiny->GetFollowDistance();
-                follow.formationID = 0xFF;
+            follow.followID = m_destiny->GetTargetID();
+            follow.followRange = m_destiny->GetFollowDistance();
+            follow.formationID = 0xFF;
             into.Append( follow );
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
-                orbit.targetID = m_destiny->GetTargetID();
-                orbit.followRange = m_destiny->GetFollowDistance();
-                orbit.formationID = 0xFF;
+            orbit.targetID = m_destiny->GetTargetID();
+            orbit.followRange = m_destiny->GetFollowDistance();
+            orbit.formationID = 0xFF;
             into.Append( orbit );
         }  break;
         case Ball::Mode::GOTO: {
             GPoint target = m_destiny->GetTargetPoint();
             GOTO_Struct go;
-                go.formationID = 0xFF;
-                go.x = target.x;
-                go.y = target.y;
-                go.z = target.z;
+            go.formationID = 0xFF;
+            go.x = target.x;
+            go.y = target.y;
+            go.z = target.z;
             into.Append( go );
         }  break;
         default: {
             STOP_Struct main;
-                main.formationID = 0xFF;
+            main.formationID = 0xFF;
             into.Append( main );
         } break;
     }
@@ -217,115 +304,7 @@ void NPC::EncodeDestiny(Buffer& into)
     }
 
     _log(SE__DESTINY, "NPC::EncodeDestiny(): %s - id:%lli, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
-            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);
-}
-
-void NPC::UseShieldRecharge() {
-    if (!sConfig.npc.UseRegen) {
-        m_AI->DisableRepTimers(true, false);
-        return;
-    }
-    if (!m_self->HasAttribute(AttrEntityShieldBoostAmount)) {
-        m_AI->DisableRepTimers(true, false);
-        return;
-    }
-    // We recharge our shield until it's full.
-    if (m_self->GetAttribute(AttrShieldCapacity) > (m_shieldCharge - 0.1f)) {
-        m_shieldCharge += m_self->GetAttribute(AttrEntityShieldBoostAmount).get_float();
-        if (m_shieldCharge > m_self->GetAttribute(AttrShieldCapacity).get_float())
-            m_shieldCharge = m_self->GetAttribute(AttrShieldCapacity).get_float();
-        m_self->SetAttribute(AttrShieldCharge, m_shieldCharge);
-    } else {
-        m_AI->DisableRepTimers(true, false);
-    }
-
-    // TODO: Need to send SpecialFX / amount update
-    UpdateDamage();
-}
-
-void NPC::UseArmorRepairer() {
-    if (!sConfig.npc.UseRepair) {
-        m_AI->DisableRepTimers(false, true);
-        return;
-    }
-    if (!m_self->HasAttribute(AttrEntityArmorRepairAmount)) {
-        m_AI->DisableRepTimers(false, true);
-        return;
-    }
-    if (m_armorDamage > 0) {
-        m_armorDamage -= m_self->GetAttribute(AttrEntityArmorRepairAmount).get_float();
-        if (m_armorDamage < 0.0f)
-            m_armorDamage = 0.0f;
-        m_self->SetAttribute(AttrArmorDamage, m_armorDamage);
-    } else {
-        m_AI->DisableRepTimers(false, true);
-    }
-
-    // TODO: Need to send SpecialFX / amount update
-    UpdateDamage();
-}
-
-void NPC::UseHullRepairer() {
-    if (!sConfig.npc.UseRepair) {
-        //m_AI->DisableRepTimers(false, true);
-        return;
-    }
-    /*
-    if (!m_self->HasAttribute(AttrEntityhullRepairAmount)) {
-        m_AI->DisableRepTimers(false, true);
-        return;
-    } */
-    if (m_hullDamage > 0) {
-        //m_hullDamage -= m_self->GetAttribute(AttrEntityhullRepairAmount).get_float();  << NSA - create later
-        if (m_hullDamage < 0.0f)
-            m_hullDamage = 0.0f;
-        m_self->SetAttribute(AttrDamage, m_hullDamage);
-    } else {
-        m_AI->DisableRepTimers(false, false);
-    }
-
-    // TODO: Need to send SpecialFX / amount update
-    // gfxBoosterID
-    UpdateDamage();
-}
-
-void NPC::MissileLaunched(Missile* pMissile)
-{
-    m_AI->MissileLaunched(pMissile);
-}
-
-void NPC::ReportDamage(uint8 type) {
-    SystemEntity::ReportDamage(type);
-}
-
-void NPC::SaveNPC()
-{
-    m_self->SaveItem();
-}
-
-void NPC::RemoveNPC()
-{
-    //this is called from SystemManager::RemoveNPC() which calls other SE* methods as needed
-    m_self->Delete();
-}
-
-void NPC::SetResists() {
-    /* fix for missing resist attribs -allan 18April16  */
-    // Shield Resonance
-    if (!m_self->HasAttribute(AttrShieldEmDamageResonance)) m_self->SetAttribute(AttrShieldEmDamageResonance, EvilOne, false);
-    if (!m_self->HasAttribute(AttrShieldExplosiveDamageResonance)) m_self->SetAttribute(AttrShieldExplosiveDamageResonance, EvilOne, false);
-    if (!m_self->HasAttribute(AttrShieldKineticDamageResonance)) m_self->SetAttribute(AttrShieldKineticDamageResonance, EvilOne, false);
-    if (!m_self->HasAttribute(AttrShieldThermalDamageResonance)) m_self->SetAttribute(AttrShieldThermalDamageResonance, EvilOne, false);
-    // Armor Resonance
-    if (!m_self->HasAttribute(AttrArmorEmDamageResonance)) m_self->SetAttribute(AttrArmorEmDamageResonance, EvilOne, false);
-    if (!m_self->HasAttribute(AttrArmorExplosiveDamageResonance)) m_self->SetAttribute(AttrArmorExplosiveDamageResonance, EvilOne, false);
-    if (!m_self->HasAttribute(AttrArmorKineticDamageResonance)) m_self->SetAttribute(AttrArmorKineticDamageResonance, EvilOne, false);
-    if (!m_self->HasAttribute(AttrArmorThermalDamageResonance)) m_self->SetAttribute(AttrArmorThermalDamageResonance, EvilOne, false);
-    // Hull Resonance
-    if (!m_self->HasAttribute(AttrEmDamageResonance)) m_self->SetAttribute(AttrEmDamageResonance, EvilOne, false);
-    if (!m_self->HasAttribute(AttrExplosiveDamageResonance)) m_self->SetAttribute(AttrExplosiveDamageResonance, EvilOne, false);
-    if (!m_self->HasAttribute(AttrKineticDamageResonance)) m_self->SetAttribute(AttrKineticDamageResonance, EvilOne, false);
-    if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, EvilOne, false);
+    GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);
 }
 
 void NPC::Killed(Damage &fatal_blow) {

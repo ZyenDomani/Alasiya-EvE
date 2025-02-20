@@ -90,11 +90,11 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
 float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
-    uint16 sigRes = pNPC->GetAIMgr()->GetSigRes();
-    uint16 range = pNPC->GetAIMgr()->GetOptimalRange();
-    uint32 falloff = pNPC->GetAIMgr()->GetFalloff();
+    uint16 sigRes = pNPC->GetAI()->GetSigRes();
+    uint16 range = pNPC->GetAI()->GetOptimalRange();
+    uint32 falloff = pNPC->GetAI()->GetFalloff();
     float distance = pNPC->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
-    float trackSpeed = pNPC->GetAIMgr()->GetTrackingSpeed();
+    float trackSpeed = pNPC->GetAI()->GetTrackingSpeed();
     float targSig = pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();
     _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - distance:%.2f, range:%.u, falloff:%u", distance, range, falloff);
 

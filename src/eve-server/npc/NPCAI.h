@@ -58,7 +58,7 @@ public:
     // this is called from NPC::Process() which is called from SystemManager::Process()
     void Process();
 
-    void Target(SystemEntity* pSE);
+    void Target(SystemEntity* pTargetSE);
     void Targeted(SystemEntity* pSE);
     void TargetLost(SystemEntity* pSE);
 
@@ -77,22 +77,22 @@ public:
     void DisableWarpOutTimer()                          { m_warpOutTimer.Disable(); }
     void WarpOutComplete()                              { m_warpOutTimer.Disable(); m_state = NPCAI::State::Idle; }
 
-    void LaunchMissile(uint16 typeID, SystemEntity* pSE);   // us to them
+    void LaunchMissile(uint16 typeID, SystemEntity* pTargetSE);   // us to them
     void MissileLaunched(Missile* pMissile); // them to us
 
 protected:
-    void Attack(SystemEntity* pSE);
+    void Attack(SystemEntity* pTargetSE);
     void SetIdle();
     void WarpOut();
     void SetWander();
-    void SetChasing(SystemEntity* pSE);
-    void SetEngaged(SystemEntity* pSE);
-    void SetFleeing(SystemEntity* pSE);
-    void ClearTarget(SystemEntity* pSE);
-    void SetFollowing(SystemEntity* pSE);
-    void SetSignaling(SystemEntity* pSE);
-    void AttackTarget(SystemEntity* pSE);
-    void CheckDistance(SystemEntity* pSE);
+    void SetChasing(SystemEntity* pTargetSE);
+    void SetEngaged(SystemEntity* pTargetSE);
+    void SetFleeing(SystemEntity* pTargetSE);
+    void ClearTarget(SystemEntity* pTargetSE);
+    void SetFollowing(SystemEntity* pTargetSE);
+    void SetSignaling(SystemEntity* pTargetSE);
+    void AttackTarget(SystemEntity* pTargetSE);
+    void CheckDistance(SystemEntity* pTargetSE);
 
     float GetTargetTime();
 
@@ -101,7 +101,27 @@ protected:
 
     std::string GetStateName(int8 stateID);
 
+    // checks if target is within <config.interactdist> to interact with target
+    bool                InActionDistance(SystemEntity* pTargetSE);        // ~600m
+    // checks if target is within m_orbitRange to orbit target
+    bool                InOrbitDistance(SystemEntity* pTargetSE);         // near - range 1
+    // checks if target is within m_falloffRange to move closer to target
+    bool                InFalloffDistance(SystemEntity* pTargetSE);       // close - range 2
+    // checks if target is within m_engageDistance to engage with target
+    bool                InEngageDistance(SystemEntity* pTargetSE);        // mid - range 3
+    // checks if target is within m_chaseRange to chase target
+    bool                InChaseDistance(SystemEntity* pTargetSE);         // far - range 4
+    // checks if target is within m_maxRange of target
+    bool                InMaxDistance(SystemEntity* pTargetSE);           // distant - range 5
+
+
 private:
+    NPC* myNPC;
+    DestinyManager* m_destiny;
+    InventoryItemRef m_self;
+
+    TurretFormulas m_formula;
+
     bool m_webber           :1;
     bool m_warpScram        :1;
     bool m_isWandering      :1;
@@ -112,10 +132,9 @@ private:
     float m_switchTargChance;   //fuzzy logic
     uint16 m_preferedSigRadius;
 
-    //these attributes are cached to reduce access times. (much faster but uses more memory)
+    //these attributes are cached to reduce access times. (faster but uses more memory)
     uint8 m_maxAttackTargets;
     uint8 m_maxLockedTargets;
-    uint16 m_maxSpeed;
     uint16 m_attackSpeed;
     uint16 m_missileTypeID;
     uint16 m_launcherCycleTime;
@@ -134,33 +153,25 @@ private:
     uint32 m_maxAttackRange;// max firing range   default:15000
     uint32 m_warpScramRange;
 
-    /*
     //in order of distance  far to close
     int32               m_maxDistance;                  //[5] maximum engagement distance
     int32               m_chaseDistance;                //[4] min distance to activate mwd, if equipped
     int32               m_engageDistance;               //[3] max distance drone will engage a target
     int32               m_falloffDistance;              //[2] distance where accuracy has fallen by half
     int32               m_orbitDistance;                //[1] distance the drone orbits
-    int32               m_proximityDistance;            // distance at which drone reacts to relevant objects (threat sensor distance)
 
-    uint32              m_maxSpeed;                     // mwd speed  - stationary drones have zero here
+    uint16              m_maxSpeed;                     // mwd speed
     uint32              m_cruiseSpeed;                  // normal speed
 
     int64               m_startTime;                    // timestamp when effect started
-*/
-    
+
+
     float m_warpScramChance;
     float m_armorRepairDelayChance;
     float m_shieldBoosterDelayChance;
 
     double m_trackingSpeed;
     double m_damageMultiplier;
-
-    NPC* m_npc;
-    DestinyManager* m_destiny;
-    InventoryItemRef m_self;
-
-    TurretFormulas m_formula;
 
     Timer m_processTimer;
     Timer m_mainAttackTimer;
@@ -175,7 +186,7 @@ private:
 
 #endif
 
-/*
+/*  these are only for sleepers (hence the high attr #'s)
     AttrAI_ShouldUseTargetSwitching = 1648,
     AttrAI_ShouldUseSecondaryTarget = 1649,
     AttrAI_ShouldUseSignatureRadius = 1650,
@@ -185,5 +196,4 @@ private:
     AttrAI_PreferredSignatureRadius = 1655,
     AttrAI_TankingModifierDrone = 1656,
     AttrAI_TankingModifier = 1657,
-
     */

@@ -1803,8 +1803,8 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
 
     Stop();
 
-    if ((mySE->IsNPCSE()) and (mySE->GetNPCSE()->GetAIMgr() != nullptr))
-        mySE->GetNPCSE()->GetAIMgr()->WarpOutComplete();
+    if ((mySE->IsNPCSE()) and (mySE->GetNPCSE()->GetAI() != nullptr))
+        mySE->GetNPCSE()->GetAI()->WarpOutComplete();
 
     /*  this isnt used yet, but will be needed once bumping is implemented...
     // reset bump checks
