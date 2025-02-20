@@ -211,7 +211,7 @@ public:
     void SendDestinyUpdates(std::vector<PyTuple*> &updates, bool self_only=false) const;// this will consume all updates in vector
 
 protected:
-    bool IsTargetInvalid();              //performs common target checks
+    bool ValidTarget();                 //performs common target checks
 
     // movement methods
     void MoveObject();                  //apply velocity to our position for this round of movement
