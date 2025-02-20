@@ -105,14 +105,12 @@ void DestinyManager::Process() {
             return;
         } break;
         case Ball::Mode::ORBIT: {
-            if (IsTargetInvalid())
-                return;
-            Orbit();
+            if (ValidTarget())
+                Orbit();
         } break;
         case Ball::Mode::FOLLOW: {
-            if (IsTargetInvalid())
-                return;
-            Follow();
+            if (ValidTarget())
+                Follow();
         } break;
         case Ball::Mode::WARP: {
             /*
@@ -1830,32 +1828,43 @@ void DestinyManager::EntityRemoved(SystemEntity *pSE) {
     }
 }
 
-bool DestinyManager::IsTargetInvalid()
-{
-    /** @todo  this needs a good lookover */
-    if (mySE->SystemMgr()->GetSE(m_targetEntity.first) == nullptr) {
-        // Our target was removed
-        Stop();
-        return true;
-    }
+bool DestinyManager::ValidTarget() {
+    bool valid(true);
+    if (mySE->SystemMgr()->GetSE(m_targetEntity.first) == nullptr)
+        valid = false;
+    if (m_targetEntity.second == nullptr)
+        valid = false;
     if (m_targetEntity.second->IsDead())
-        return true;
-    if (m_targetEntity.second->IsDynamicEntity())
-        return false;
-    if (m_targetEntity.second->HasPilot()) {
-        if (m_targetEntity.second->GetPilot()->IsDocked()) {  // Our target docked, so STOP
-            //mySE->TargetMgr()->ClearTarget(m_targetEntity.second);
-            Stop();
-            return true;
-        }
-        // also check for jump, pos field, more?
+        valid = false;
+    if (m_targetEntity.second->IsInvul())
+        valid = false;
+    if (m_targetEntity.second->DestinyMgr() == nullptr) {
+        if (m_targetEntity.second->IsStaticEntity())
+            valid = true;
+        if (m_targetEntity.second->IsItemEntity())
+            valid = true;
+        if (m_targetEntity.second->IsObjectEntity())
+            valid = true;
     }
-    if (m_targetEntity.second->DestinyMgr()->IsWarping()) { // The target is warping
-        //mySE->TargetMgr()->ClearTarget(m_targetEntity.second);
+
+    if (m_targetEntity.second->DestinyMgr()->IsWarping())
+        valid = false;
+
+    if (m_targetEntity.second->DestinyMgr()->IsCloaked())
+        valid = false;
+
+    if (m_targetEntity.second->DestinyMgr()->IsFrozen())
+        valid = false;
+
+    if (m_targetEntity.second->HasPilot())
+        if (m_targetEntity.second->GetPilot()->IsDocked())
+            valid = false;
+
+    if (!valid) {
         Stop();
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 void DestinyManager::UpdateSpeedFraction(float speedPct/*0*/) {
