@@ -126,7 +126,7 @@ public:
     uint8 GetState()                                    { return m_ballMode; }  // this is only used by my bubble debug command
     std::string GetStateName();
     bool IsFrozen()                                     { return m_frozen; }
-    bool IsMoving()                                     { return (m_activeSpeedFraction > ASF_CHECK); }
+    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.0005); }
     bool IsGoto()                                       { return (m_ballMode == Destiny::Ball::Mode::GOTO); }
     bool IsStopped()                                    { return (m_ballMode == Destiny::Ball::Mode::STOP); }
     bool IsOrbiting()                                   { return (m_ballMode == Destiny::Ball::Mode::ORBIT); }
@@ -213,6 +213,9 @@ public:
 protected:
     bool ValidTarget();                 //performs common target checks
 
+    // since orbit is disabled, we are 'faking' velocity for tohit checks.  this stops movement, but allows velocity to remain
+    void Pause();
+
     // movement methods
     void MoveObject();                  //apply velocity to our position for this round of movement
     void Orbit();
@@ -287,6 +290,7 @@ private:
     bool m_frozen;                      // hack to keep ship from moving when using modules that prevent movement
     bool m_changeDelay;                 // this is to try to sync destiny with client, as client has a delay when changing destiny states.
     bool m_moveDelay;                   // same as above, for less of a delay when changing direction or speed
+    bool m_paused;                      // used to fake orbit while keeping velocity but not actually move ship.
     float m_agility;                    //unitless?   - not sent to client
 
     // Internal Collision Methods   -allan Nov 2015

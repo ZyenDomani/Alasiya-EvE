@@ -53,7 +53,7 @@ DestinyManager::DestinyManager(SystemEntity *self)
 : mySE(self), m_targBubble(nullptr), m_ballMode(Destiny::Ball::Mode::STOP), m_hasSentShipUpdates(false), m_radius(self->GetRadius()),
 m_warpCapacitorNeed(0.000000138), m_alignTime(5), m_prevSpeed(0.0f), m_maxShipSpeed(100.0f), m_shipWarpSpeed(1.0f), m_speedToLeaveWarp(100), m_maxSpeed(1.0f),
 m_shipAccelTime(0.0f), m_shipMaxAccelTime(0.0f), m_stop(false), m_accel(false), m_decel(false), m_cloaked(false), m_turning(false),
-m_tractored(false), m_tractorPause(false), m_orbiting(0), m_stateStamp(0), m_degPerTic(0.0), m_orbitTime(0.0), m_orbitRadTic(0.0), m_radians(0.0),
+m_tractored(false), m_tractorPause(false), m_paused(false), m_orbiting(0), m_stateStamp(0), m_degPerTic(0.0), m_orbitTime(0.0), m_orbitRadTic(0.0), m_radians(0.0),
 m_timeFraction(0.0f), m_turnMinFraction(0), m_origSpeedFraction(0.0f), m_prevSpeedFraction(0.0f), m_userSpeedFraction(0.0f), m_activeSpeedFraction(0.0f), m_maxOrbitSpeedFraction(1.0f),
 m_turnTime(0), m_followDistance(0), m_targetDistance(0), m_moveTime(0.0),
 m_position(self->GetPosition()), m_velocity(NULL_ORIGIN_V), m_targetPoint(NULL_ORIGIN), m_shipHeading(NULL_ORIGIN_V), m_targetHeading(NULL_ORIGIN_V),
@@ -85,9 +85,13 @@ void DestinyManager::Process() {
     using namespace Destiny;
     switch(m_ballMode) {
         case Ball::Mode::STOP: {
-            if (IsMoving())
+            if (IsMoving()) {
                 MoveObject();
-            return;
+            } else if (m_stop) {
+                return;
+            } else {
+                Stop();
+            }
         } break;
         case Ball::Mode::GOTO: {
             MoveObject();
@@ -223,7 +227,7 @@ void DestinyManager::SetSpeedFraction(float fraction/*1.0*/, bool startMovement/
      * all *Fraction variables use fuzzy logic
      *  -allan 8Oct14  -major update 20Nov15  -added prop mod code 29Mar17
      *  -base movement rewrite/update 18Oct21
-	 *  -turn rewrite 9Feb23
+     *  -turn rewrite 9Feb23
      *
      *  speed is the actual distance an object travels over a given time
      *   -> time is measured in seconds
@@ -414,6 +418,11 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
     }
 }
 
+void DestinyManager::Pause() {
+
+    m_velocity = GVector(NULL_ORIGIN);
+}
+
 //Global Actions:
 void DestinyManager::Stop() {
     if (m_stop)
@@ -462,6 +471,7 @@ void DestinyManager::Stop() {
     SafeDelete(m_warpState);
 
     if (m_ballMode == Destiny::Ball::Mode::WARP) {
+        // sending stop packet while in warp does funny things...dont send it.
         m_ballMode = Destiny::Ball::Mode::STOP;
     } else if (m_ballMode != Destiny::Ball::Mode::STOP) {
         m_ballMode = Destiny::Ball::Mode::STOP;
@@ -2602,8 +2612,9 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
 
     // verify hull overspeed isnt reached
     m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
-    if (m_maxShipSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
-        m_maxShipSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
+    if (sRef->HasAttribute(AttrMaxDirectionalVelocity))
+        if (m_maxShipSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
+            m_maxShipSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
 
     // reset ship max commanded speed using updated m_maxShipSpeed
     if (m_decel) {

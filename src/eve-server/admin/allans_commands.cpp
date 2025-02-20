@@ -202,7 +202,7 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
                 }
             }
 
-            str << modeStr.c_str() << " (csf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
+            str << modeStr.c_str() << " (asf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
             str << cur.second->DestinyMgr()->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         } else {
             str << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
@@ -273,10 +273,10 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
             } else {
                 str << ": ";
             }
-            str << modeStr.c_str() << " (csf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
+            str << modeStr.c_str() << " (asf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
             str << cur.second->DestinyMgr()->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         } else {
-            str << cur.first << ": None (csf: 0) speed: 0 [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
+            str << cur.first << ": None (asf: 0) speed: 0 [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         }
     }
 
@@ -320,7 +320,7 @@ PyResult Command_secstatus(Client* pClient, CommandDB* db, PyServiceMgr* service
     return new PyString(reply);
 }
 
-PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (!pClient->IsInSpace())
         throw CustomError("You're not in space.  This call needs DestinyMgr.");
@@ -330,9 +330,19 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
         pClient->SetDestiny(NULL_ORIGIN);
 
     DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
+    /*
+    InventoryItemRef sRef = pClient->GetShipSE()->GetSelf();
+    // test for args:   targ.
+    if (args.argCount() == 2) {
+        if (strcmp(args.arg(1).c_str(), "targ") == 0) {
+            sRef = pClient->GetShipSE()->TargetMgr()->GetFirstTarget()->GetSelf();
+            dm = pClient->GetShipSE()->TargetMgr()->GetFirstTarget()->GetShipSE()->DestinyMgr();
+        }
+    }*/
 
-    char reply[250];
-    snprintf(reply, 250,
+    char reply[350];
+    snprintf(reply, 350,
+             "Ship Variable List for %s<br><br>" //60
              "ShipID: %u<br>"
              "IsCloaked: %u<br>" //28
              "IsWarping: %u<br>" //27
@@ -346,8 +356,10 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
              "HasBeyonce: %u<br>" //27
              "IsBubbleWait: %u<br>" //27
              "IsSetStateSent: %u<br>", //27
-                pClient->GetShipID(), dm->IsCloaked(), dm->IsWarping(), pClient->InPod(), pClient->IsInSpace(), pClient->IsDocked(), pClient->IsJump(),
-                pClient->IsInvul(), pClient->IsLogin(),  pClient->IsUndock(), pClient->HasBeyonce(), pClient->IsBubbleWait(), pClient->IsSetStateSent()
+                pClient->GetShipSE()->GetName(), pClient->GetShipID(), dm->IsCloaked(), dm->IsWarping(),
+                pClient->InPod(), pClient->IsInSpace(), pClient->IsDocked(), pClient->IsJump(), pClient->IsInvul(),
+                pClient->IsLogin(),  pClient->IsUndock(), pClient->HasBeyonce(), pClient->IsBubbleWait(),
+                pClient->IsSetStateSent()
             );
 
     pClient->SendInfoModalMsg(reply);
@@ -355,7 +367,7 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
     return new PyString(reply);
 }
 
-PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (!pClient->IsInSpace())
         throw CustomError("You're not in space.");
@@ -364,8 +376,9 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
     if (!pClient->GetShipSE()->DestinyMgr())
         pClient->SetDestiny(NULL_ORIGIN);
 
-    InventoryItemRef sRef = pClient->GetShipSE()->GetSelf();
     DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
+    InventoryItemRef sRef = pClient->GetShipSE()->GetSelf();
+
     GPoint heading(dm->GetHeading());
 
     // test for args:   targ.
