@@ -1845,17 +1845,14 @@ bool DestinyManager::ValidTarget() {
             valid = true;
         if (m_targetEntity.second->IsObjectEntity())
             valid = true;
+    } else {
+        if (m_targetEntity.second->DestinyMgr()->IsWarping())
+            valid = false;
+        if (m_targetEntity.second->DestinyMgr()->IsCloaked())
+            valid = false;
+        if (m_targetEntity.second->DestinyMgr()->IsFrozen())
+            valid = false;
     }
-
-    if (m_targetEntity.second->DestinyMgr()->IsWarping())
-        valid = false;
-
-    if (m_targetEntity.second->DestinyMgr()->IsCloaked())
-        valid = false;
-
-    if (m_targetEntity.second->DestinyMgr()->IsFrozen())
-        valid = false;
-
     if (m_targetEntity.second->HasPilot())
         if (m_targetEntity.second->GetPilot()->IsDocked())
             valid = false;
