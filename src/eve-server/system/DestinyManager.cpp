@@ -435,7 +435,8 @@ void DestinyManager::Stop() {
         return;
     }
 
-    sLog.Warning("DestinyManager", "%s calling stop", mySE->GetName());
+    if (is_log_enabled(DESTINY__MOVE_DEBUG))
+        sLog.Warning("DestinyManager", "%s calling stop", mySE->GetName());
     // set marker for calc'd stop distance (testing)
     if (is_log_enabled(DESTINY__WARP_DEBUG)) {
         uint16 dist = m_maxShipSpeed * m_activeSpeedFraction * m_agility;
@@ -1109,7 +1110,8 @@ void DestinyManager::Turn(float& speed, std::string& move) {
 }
 
 void DestinyManager::ClearTurn() {
-    sLog.Warning("DM", "%s calling ClearTurn()", mySE->GetName());
+    if (is_log_enabled(DESTINY__MOVE_DEBUG))
+        sLog.Warning("DM", "%s calling ClearTurn()", mySE->GetName());
     m_radians = 0.0;
     m_turnTime = 0;
     m_turning = false;  // can probably del this and use m_turnTime for active check
@@ -1516,7 +1518,8 @@ GPoint DestinyManager::ComputePosition(double curRad) {
 }
 
 void DestinyManager::ClearOrbit() {
-    sLog.Cyan("DM", "%s calling ClearOrbit()", mySE->GetName());
+    if (is_log_enabled(DESTINY__MOVE_DEBUG))
+        sLog.Cyan("DM", "%s calling ClearOrbit()", mySE->GetName());
     m_orbiting = Destiny::Ball::Orbit::None;
     m_orbitTime = 0.0;
     m_orbitRadTic = 0.0;
@@ -1998,11 +2001,14 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
         du.y = m_targetHeading.y;
         du.z = m_targetHeading.z;
     PyTuple* up = du.Encode();
-    sLog.Blue("", "refcount: before %u", up->GetRefCount());
+    //if (is_log_enabled(REFPTR__TRACE))
+        sLog.Blue("", "refcount: before %u", up->GetRefCount());
     SendSingleDestinyUpdate(&up);
-    sLog.Blue("", "refcount: after send %u", up->GetRefCount());
+    //if (is_log_enabled(REFPTR__TRACE))
+        sLog.Blue("", "refcount: after send %u", up->GetRefCount());
     PyDecRef(up);
-    sLog.Blue("", "refcount: after dec %u", up->GetRefCount());
+   // if (is_log_enabled(REFPTR__TRACE))
+        sLog.Blue("", "refcount: after dec %u", up->GetRefCount());
     // TODO:  check ref counts in sent packets
     /* 22:26:23 B refcount: before 1
      * 22:26:23 B refcount: after send 1

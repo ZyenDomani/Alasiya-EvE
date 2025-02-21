@@ -246,7 +246,8 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
     secAward *=  (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::FastTalk, true))));      // 5% increase
     if (killBonus and secAward) {
         secAward *= sConfig.rates.secRate;
-        sLog.Magenta("SE::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
+        if (is_log_enabled(STANDING__MESSAGE))
+            sLog.Magenta("SE::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
                      GetName(), iRef->itemID(), killBonus, oldSec, secAward);
         pChar->secStatusChange( secAward );
         std::string msg = "Status Change for killing";
