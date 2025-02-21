@@ -31,6 +31,7 @@
 #include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
+#include "fleet/FleetService.h"
 #include "inventory/AttributeEnum.h"
 #include "map/MapDB.h"
 #include "npc/NPC.h"
@@ -341,8 +342,19 @@ void NPC::Killed(Damage &fatal_blow) {
     if (pClient != nullptr) {
         //award kill bounty.
         AwardBounty( pClient );
-        if (m_system->GetSystemSecurityRating() > 0)
-            AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
+        if (m_system->GetSystemSecurityRating() > 0) {
+            if (pClient->InFleet()) {
+                // also distribute to fleet members in local space
+                std::vector<Client*> mVec;
+                sFltSvc.GetMemeberVec(pClient->GetFleetID(), mVec);
+                for (auto &cur : mVec)
+                    if (cur->IsInSpace())
+                        if (cur->GetShipSE()->SysBubble()->GetID() == pClient->GetShipSE()->SysBubble()->GetID())
+                            AwardSecurityStatus(m_self, cur->GetChar().get());
+            } else {
+                AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
+            }
+        }
     }
 
     GPoint wreckPosition = m_destiny->GetPosition();

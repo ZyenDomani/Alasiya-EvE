@@ -242,7 +242,7 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
     float killBonus(1.0f);
     if (iRef->HasAttribute(AttrEntitySecurityStatusKillBonus))
         killBonus = iRef->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
-    double secAward = (((10 - oldSec) * killBonus) + oldSec) / 100;
+    double secAward = (((10.0 - oldSec) * killBonus) + oldSec) / 100.0;
     secAward *=  (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::FastTalk, true))));      // 5% increase
     if (killBonus and secAward) {
         secAward *= sConfig.rates.secRate;
@@ -267,6 +267,7 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
             }
         }
     }
+
 
     /** @todo msg need work for details to appear correctly.  currently working, but could be better. (incomplete, but working)
      * see data in eve/common/script/util/eveFormat.py:300 for details
